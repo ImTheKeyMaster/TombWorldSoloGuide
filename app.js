@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.1.7';
+  const APP_VERSION = '1.3.0';
   const MAX_NPOS = 10;
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -48,7 +48,7 @@
   ];
 
   const initialState = () => ({
-    version:'1.1.0', screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:'1.3.0', screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:[], roster:[], enemyCount:6, enemyReady:6, turningPoint:0,
     threat:0, initiative:'enemy', phase:'setup', nextSide:'enemy', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
@@ -266,51 +266,232 @@
   function nextNpo(){ let n=state.roster.find(x=>x.id===state.activeNpoId&&x.ready&&x.wounds>0); if(!n){n=readyNpos().sort((a,b)=>priority(b)-priority(a))[0];state.activeNpoId=n?.id||null;} return n; }
   function priority(n){return ({Guardian:4,Marksman:3,Brawler:2,Sentinel:1}[n.behavior]||1)+(n.wounds/n.maxWounds<.5?-.5:0);}
 
-  function showEnemyActivation(){
+  function showEnemyActivation(stage={}){
+    const living=activeNpos();
+    const checked=key=>stage[key]?'checked':'';
     showModal('Record Enemy Activation',`<p>Select everything that occurred during this Enemy operative’s activation.</p><div class="toggle-list">
-      <label><input type="checkbox" id="eaShoot">Used a non-Silent Shoot action</label>
-      <label><input type="checkbox" id="eaFight">Used a Fight action</label>
-      <label><input type="checkbox" id="eaDamage">Damaged an NPO with another action</label>
-      <label><input type="checkbox" id="eaHatch">Operated a hatch</label>
-      <label><input type="checkbox" id="eaBreach">Performed a Breach</label>
-      <label><input type="checkbox" id="eaObjective">Interacted with a mission objective</label>
-    </div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmEnemy">Complete Activation</button></div>`);
-    $('#confirmEnemy').onclick=()=>{
-      let inc=0; if($('#eaShoot').checked)inc++; if($('#eaFight').checked)inc++; if($('#eaDamage').checked)inc++;
-      if($('#eaHatch').checked){const r=roll();if(r>=4)inc++;showToast(`Operate Hatch rolled ${r}${r>=4?'... Threat +1':'... no Threat increase'}`);}
-      if($('#eaBreach').checked){inc++;const r=roll();if(r>=4)inc++;showToast(`Breach rolled ${r}${r>=4?'... Threat +2 total':'... Threat +1 total'}`);}
-      if(inc)setThreat(inc,'Enemy activation');
-      state.enemyReady=Math.max(0,state.enemyReady-1);state.enemyActivated++;state.activationNumber++;state.activationHistory.unshift({side:'enemy',label:`Enemy activation ${state.enemyActivated}`});state.nextSide=readyNpos().length?'npo':'enemy';log(`Enemy operative completed activation ${state.enemyActivated}.`);closeModal();save();render();
-    };
+      <label><input type="checkbox" id="eaShoot" ${checked('shoot')}>Used a non-Silent Shoot action</label>
+      <label><input type="checkbox" id="eaFight" ${checked('fight')}>Used a Fight action</label>
+      <label><input type="checkbox" id="eaDamage" ${checked('damage')}>Damaged an NPO with another action</label>
+      <label><input type="checkbox" id="eaHatch" ${checked('hatch')}>Operated a hatch</label>
+      <label><input type="checkbox" id="eaBreach" ${checked('breach')}>Performed a Breach</label>
+      <label><input type="checkbox" id="eaObjective" ${checked('objective')}>Interacted with a mission objective</label>
+    </div>${living.length?`<div class="combat-launch"><p><strong>Did the Enemy attack an NPO?</strong></p><button class="btn secondary" id="launchEnemyAttack">Open Enemy Attack Wizard</button><small>${stage.combatResolved?'Combat result recorded. Complete the activation when ready.':'No combat result recorded for this activation.'}</small></div>`:''}<div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmEnemy">Complete Activation</button></div>`);
+    $('#launchEnemyAttack')?.addEventListener('click',()=>{
+      const nextStage={shoot:$('#eaShoot').checked,fight:$('#eaFight').checked,damage:$('#eaDamage').checked,hatch:$('#eaHatch').checked,breach:$('#eaBreach').checked,objective:$('#eaObjective').checked,combatResolved:stage.combatResolved};
+      showEnemyAttackWizard(null,()=>showEnemyActivation({...nextStage,combatResolved:true}));
+    });
+    $('#confirmEnemy').onclick=()=>completeEnemyActivation();
   }
+
+  function completeEnemyActivation(){
+    let inc=0; if($('#eaShoot')?.checked)inc++; if($('#eaFight')?.checked)inc++; if($('#eaDamage')?.checked)inc++;
+    if($('#eaHatch')?.checked){const r=roll();if(r>=4)inc++;showToast(`Operate Hatch rolled ${r}${r>=4?'... Threat +1':'... no Threat increase'}`);}
+    if($('#eaBreach')?.checked){inc++;const r=roll();if(r>=4)inc++;showToast(`Breach rolled ${r}${r>=4?'... Threat +2 total':'... Threat +1 total'}`);}
+    if(inc)setThreat(inc,'Enemy activation');
+    state.enemyReady=Math.max(0,state.enemyReady-1);state.enemyActivated++;state.activationNumber++;
+    state.activationHistory.unshift({side:'enemy',label:`Enemy activation ${state.enemyActivated}`});
+    state.nextSide=readyNpos().length?'npo':'enemy';log(`Enemy operative completed activation ${state.enemyActivated}.`);closeModal();save();render();
+  }
+
+  function showEnemyAttackWizard(targetId,onDone){
+    const targets=activeNpos(); if(!targets.length){showToast('No active NPO is available as a target.');return;}
+    showModal('Enemy Attack Wizard',`<p>Enter the Enemy weapon profile. The Guide will roll the attack, roll the selected NPO’s saves, and preview damage before you confirm it.</p>
+      <div class="field"><label>Target NPO</label><select id="combatTarget">${targets.map(n=>`<option value="${n.id}" ${n.id===targetId?'selected':''}>${escapeHtml(n.name)} · ${n.wounds}/${n.maxWounds} wounds · Save ${n.save}+</option>`).join('')}</select></div>
+      <div class="combat-grid">
+        ${spinnerField('enemyAttackDice','Attack dice',4,1,12)}
+        ${spinnerField('enemyHit','Hit on',3,2,6)}
+        ${spinnerField('enemyNormalDamage','Normal damage',3,0,12)}
+        ${spinnerField('enemyCritDamage','Critical damage',4,0,15)}
+        ${spinnerField('enemyAp','AP',0,0,3)}
+        ${spinnerField('npoDefenseDice','NPO Defense Dice',3,0,6)}
+      </div>
+      <label class="check-row compact-check"><input type="checkbox" id="npoCover"><span><strong>NPO retains one normal save for cover</strong></span></label>
+      <div id="combatResults" class="combat-results"><p>Set the profile, then roll the attack.</p></div>
+      <div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="rollEnemyAttack">Roll Attack & Saves</button></div>`);
+    bindSpinners(modal);
+    $('#rollEnemyAttack').onclick=()=>rollEnemyAttackPreview(onDone);
+  }
+
+  function rollEnemyAttackPreview(onDone){
+    const n=state.roster.find(x=>x.id===$('#combatTarget').value); if(!n)return;
+    const profile={dice:num('enemyAttackDice'),hit:num('enemyHit'),normal:num('enemyNormalDamage'),crit:num('enemyCritDamage')};
+    const attackDice=rollAttack(profile);
+    const defense=resolveDefense(attackDice,num('npoDefenseDice'),n.save,num('enemyAp'),$('#npoCover').checked,profile);
+    const before=n.wounds,after=Math.max(0,before-defense.damage);
+    const box=$('#combatResults');
+    box.innerHTML=`<div class="combat-stage"><small>ENEMY ATTACK DICE</small><div class="dice-row animated-roll" id="enemyAttackDiceResult">${attackDice.map(()=>rollingDieHtml()).join('')}</div></div>
+      <div class="combat-stage"><small>NPO SAVE DICE</small><div class="dice-row animated-roll" id="npoSaveDiceResult">${defense.saveDice.map(()=>rollingDieHtml()).join('')||'<span class="muted">No save dice rolled</span>'}</div>${defense.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':''}</div>
+      <div class="damage-summary"><div><small>Unsaved normal hits</small><strong>${defense.normalRemaining}</strong></div><div><small>Unsaved critical hits</small><strong>${defense.critRemaining}</strong></div><div><small>Damage</small><strong>${defense.damage}</strong></div><div><small>Wounds after confirmation</small><strong>${before} → ${after}</strong></div></div>
+      <p class="muted">Damage is only applied after you press Confirm Damage.</p>`;
+    $('#rollEnemyAttack').textContent='Confirm Damage';
+    $('#rollEnemyAttack').onclick=()=>{
+      n.wounds=after;if(n.wounds===0)n.ready=false;
+      log(`Enemy attack dealt ${defense.damage} damage to ${n.name} (${before} → ${after} wounds).`);
+      save();closeModal();showToast(`${n.name}: ${defense.damage} damage confirmed.`);if(onDone)onDone();else render();
+    };
+    setTimeout(()=>{
+      const a=$('#enemyAttackDiceResult');if(a){a.innerHTML=attackDice.map(dieHtml).join('');a.classList.add('settled');}
+      const d=$('#npoSaveDiceResult');if(d&&defense.saveDice.length){d.innerHTML=defense.saveDice.map(dieHtml).join('');d.classList.add('settled');}
+    },700);
+  }
+
+  const npoQuestions = [
+    {key:'engaged',title:'Is an Enemy operative in control range?',help:'Choose Yes when this NPO can immediately Fight an Enemy operative without moving.'},
+    {key:'charge',title:'Can this NPO complete a Charge?',help:'Choose Yes only when a legal Charge can finish within control range of an Enemy operative.'},
+    {key:'shot',title:'Does this NPO have a valid shooting target?',help:'The target must be valid for the NPO’s ranged weapon after any movement you expect it to make.'},
+    {key:'objective',title:'Is an Enemy operative controlling a mission objective?',help:'This gives mission denial priority over an otherwise equal target.'},
+    {key:'wounded',title:'Is a valid Enemy target wounded?',help:'A wounded target is below its starting wounds and can reasonably be attacked by this NPO.'},
+    {key:'hatch',title:'Does a closed hatch block the best route?',help:'Choose Yes when operating the hatch is the clearest way to advance toward an Enemy or objective.'},
+    {key:'cover',title:'Can the NPO remain in cover while acting?',help:'This affects whether the Guide recommends holding position, moving minimally, or advancing aggressively.'},
+    {key:'clustered',title:'Are multiple valid Enemy targets clustered together?',help:'This is used as a final target-priority tie breaker for pressure and board control.'}
+  ];
 
   function showNpoWizard(){
     const n=nextNpo(); if(!n)return;
-    showModal(`Guide ${escapeHtml(n.name)}`,`<p>Answer from this NPO’s current position.</p><div class="toggle-list">
-      <label><input type="checkbox" id="nwEngaged">An Enemy is in control range</label>
-      <label><input type="checkbox" id="nwCharge">Can complete a Charge</label>
-      <label><input type="checkbox" id="nwShot" checked>Has a valid shooting target</label>
-      <label><input type="checkbox" id="nwObjective">An Enemy controls a mission objective</label>
-      <label><input type="checkbox" id="nwWounded">A valid Enemy target is wounded</label>
-      <label><input type="checkbox" id="nwHatch">A closed hatch blocks the best route</label>
-    </div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="decideNpo">Determine Activation</button></div>`);
-    $('#decideNpo').onclick=()=>resolveNpo(n);
+    runNpoPrompt(n,0,{});
   }
 
-  function resolveNpo(n){
-    const c={engaged:$('#nwEngaged').checked,charge:$('#nwCharge').checked,shot:$('#nwShot').checked,objective:$('#nwObjective').checked,wounded:$('#nwWounded').checked,hatch:$('#nwHatch').checked};
-    let action,target='closest visible Enemy operative',threat=0;
-    if(c.engaged){action='Fight, then reposition toward cover or the mission objective';threat=1;}
-    else if(c.charge&&(n.behavior==='Brawler'||c.objective)){action='Charge the highest-priority Enemy, then Fight';threat=1;}
-    else if(c.shot){action='Move only if needed for line of sight, then Shoot';threat=1;}
-    else if(c.hatch){action='Operate the blocking hatch, then move toward the nearest Enemy';}
-    else action='Move toward the nearest Enemy or mission objective, retaining cover where possible';
-    if(c.objective)target='Enemy operative controlling the mission objective';else if(c.wounded)target='wounded valid Enemy operative';
-    const dice=action.includes('Fight')||action.includes('Shoot')?rollAttack(n.attack):[];
-    if(threat)setThreat(threat,`${n.name} ${action.includes('Fight')?'Fight':'Shoot'}`);
-    n.ready=false;state.npoActivated++;state.activationNumber++;state.activationHistory.unshift({side:'npo',label:n.name});state.activeNpoId=null;state.nextSide=state.enemyReady>0?'enemy':'npo';state.lastActivation={name:n.name,action,target,dice};log(`${n.name}: ${action}.`);save();
-    modalBody.innerHTML=`<div class="modal-inner"><p class="eyebrow">RECOMMENDED ACTIVATION</p><h2>${escapeHtml(n.name)}</h2><div class="summary-box"><strong>${action}</strong><br>Target: ${target}</div>${dice.length?`<h3>Attack roll</h3><div class="dice-row">${dice.map(dieHtml).join('')}</div><p>${dice.filter(d=>d.kind==='crit').length} critical · ${dice.filter(d=>d.kind==='hit').length} normal · ${dice.filter(d=>d.kind==='miss').length} miss</p>`:''}<div class="wizard-actions"><button class="btn primary" id="completeNpo">Activation Complete</button></div></div>`;
+  function runNpoPrompt(n,index,answers){
+    const q=npoQuestions[index];
+    const progress=Math.round((index/npoQuestions.length)*100);
+    showModal(`Guide ${escapeHtml(n.name)}`,`<div class="ai-wizard">
+      <div class="ai-progress-head"><span>QUESTION ${index+1} OF ${npoQuestions.length}</span><strong>${progress}%</strong></div>
+      <div class="ai-progress"><span style="width:${progress}%"></span></div>
+      <p class="eyebrow">NPO PERSPECTIVE</p>
+      <h3>${q.title}</h3>
+      <p>${q.help}</p>
+      <div class="ai-choice-grid">
+        <button class="ai-choice yes" data-answer="yes"><span>✓</span><strong>Yes</strong></button>
+        <button class="ai-choice no" data-answer="no"><span>×</span><strong>No</strong></button>
+      </div>
+      <div class="wizard-actions">
+        <button class="btn ghost" data-close>Cancel</button>
+        <button class="btn ghost" id="aiBack" ${index===0?'disabled':''}>Back</button>
+      </div>
+    </div>`);
+    $$('[data-answer]',modal).forEach(btn=>btn.onclick=()=>{
+      const next={...answers,[q.key]:btn.dataset.answer==='yes'};
+      if(index<npoQuestions.length-1) runNpoPrompt(n,index+1,next);
+      else resolveNpo(n,next);
+    });
+    $('#aiBack')?.addEventListener('click',()=>runNpoPrompt(n,index-1,answers));
+  }
+
+  function chooseNpoDecision(n,c){
+    const path=[];
+    let action,target='closest valid Enemy operative',stance='Engage',threat=0,reason='Advance pressure toward the nearest relevant target.';
+    if(c.objective){target='Enemy operative controlling the mission objective';path.push('Mission objective is threatened');}
+    else if(c.wounded){target='wounded valid Enemy operative';path.push('A wounded target can be finished');}
+    else if(c.clustered){target='the Enemy target in the largest cluster';path.push('Clustered targets offer the most board pressure');}
+    else path.push('Use the closest valid Enemy operative');
+
+    if(c.engaged){
+      action='Fight the selected target, then reposition toward cover or the mission objective';
+      reason='An Enemy is already in control range, so immediate melee takes priority.';threat=1;path.unshift('Enemy in control range → Fight');
+    } else if(c.charge && (n.behavior==='Brawler'||n.behavior==='Guardian'||c.objective||c.wounded)){
+      action='Charge the selected target, then Fight';
+      reason=`${n.behavior} behavior favors decisive melee when the target is tactically important.`;threat=1;path.unshift('Legal high-value Charge → Charge and Fight');
+    } else if(c.shot){
+      const movement=c.cover?'Remain in cover or move only enough to gain line of sight':'Move to the nearest legal firing position';
+      action=`${movement}, then Shoot the selected target`;
+      reason='A valid ranged attack is available and no higher-priority melee action applies.';threat=1;path.unshift('Valid shooting target → Shoot');
+    } else if(c.hatch){
+      action='Operate the blocking hatch, then move toward the selected target';
+      reason='The closed hatch prevents the best advance and no immediate attack is available.';path.unshift('Route blocked by hatch → Operate Hatch');
+    } else if(c.objective){
+      action='Move toward and contest the mission objective, retaining cover where possible';
+      reason='No attack is available, so denying mission progress becomes the priority.';path.unshift('No attack → Contest objective');
+    } else {
+      action='Move toward the selected target, retaining cover and avoiding unnecessary exposure';
+      reason='No immediate attack or mission interaction is available.';path.unshift('No attack available → Reposition');
+      stance=c.cover?'Conceal':'Engage';
+    }
+    return {action,target,stance,threat,reason,path};
+  }
+
+  function resolveNpo(n,c){
+    const decision=chooseNpoDecision(n,c);
+    const attacks=decision.action.includes('Fight')||decision.action.includes('Shoot');
+    const dice=attacks?rollAttack(n.attack):[];
+    if(decision.threat)setThreat(decision.threat,`${n.name} ${decision.action.includes('Fight')?'Fight':'Shoot'}`);
+    n.ready=false;state.npoActivated++;state.activationNumber++;
+    state.activationHistory.unshift({side:'npo',label:n.name,action:decision.action});
+    state.activeNpoId=null;state.nextSide=state.enemyReady>0?'enemy':'npo';
+    state.lastActivation={name:n.name,...decision,dice,answers:c};
+    log(`${n.name}: ${decision.action}.`);save();
+
+    modalBody.innerHTML=`<div class="modal-inner ai-result">
+      <p class="eyebrow">RECOMMENDED ACTIVATION</p>
+      <div class="ai-result-title"><div><h2>${escapeHtml(n.name)}</h2><p>${escapeHtml(n.type)} · ${escapeHtml(n.behavior)}</p></div><span class="order-badge">${decision.stance}</span></div>
+      <div class="activation-command"><small>ACTION SEQUENCE</small><strong>${escapeHtml(decision.action)}</strong></div>
+      <div class="target-command"><small>TARGET PRIORITY</small><strong>${escapeHtml(decision.target)}</strong></div>
+      ${dice.length?`<h3>Attack roll</h3><div class="dice-row animated-roll" id="aiDice">${dice.map(()=>rollingDieHtml()).join('')}</div><p id="aiDiceSummary" class="muted">Rolling ${dice.length} attack dice…</p><button class="btn secondary big-action" id="resolveNpoAttack">Resolve NPO Attack</button>`:''}
+      <details class="decision-path"><summary>Why did the Guide choose this?</summary><p>${escapeHtml(decision.reason)}</p><ol>${decision.path.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ol></details>
+      <div class="wizard-actions"><button class="btn primary" id="completeNpo">Activation Complete</button></div>
+    </div>`;
+    if(dice.length){
+      setTimeout(()=>{
+        const box=$('#aiDice'); if(!box)return;
+        box.innerHTML=dice.map(dieHtml).join('');box.classList.add('settled');
+        const crits=dice.filter(d=>d.kind==='crit').length,hits=dice.filter(d=>d.kind==='hit').length,misses=dice.filter(d=>d.kind==='miss').length;
+        $('#aiDiceSummary').textContent=`${crits} critical · ${hits} normal · ${misses} miss`;
+      },850);
+      $('#resolveNpoAttack').onclick=()=>showNpoAttackWizard(n,dice,()=>renderNpoResultAgain(n,decision,dice,c));
+    }
     $('#completeNpo').onclick=()=>{closeModal();render();};
+  }
+
+  function renderNpoResultAgain(n,decision,dice,answers){
+    state.lastActivation={name:n.name,...decision,dice,answers};save();
+    showToast('NPO attack result recorded.');closeModal();render();
+  }
+
+  function showNpoAttackWizard(n,attackDice,onDone){
+    showModal('NPO Attack Wizard',`<p>${escapeHtml(n.name)} rolled the attack dice shown below. Enter the Enemy operative’s defense profile to resolve saves and damage.</p>
+      <div class="combat-stage"><small>NPO ATTACK DICE</small><div class="dice-row">${attackDice.map(dieHtml).join('')}</div><p>${n.attack.normal}/${n.attack.crit} damage · Hit ${n.attack.hit}+</p></div>
+      <div class="combat-grid">
+        ${spinnerField('enemyDefenseDice','Enemy Defense Dice',3,0,6)}
+        ${spinnerField('enemySave','Enemy Save',3,2,6)}
+        ${spinnerField('npoAp','NPO AP',0,0,3)}
+        ${spinnerField('enemyWounds','Enemy wounds remaining',10,1,30)}
+      </div>
+      <label class="check-row compact-check"><input type="checkbox" id="enemyCover"><span><strong>Enemy retains one normal save for cover</strong></span></label>
+      <div id="combatResults" class="combat-results"><p>Enter the defense profile, then roll saves.</p></div>
+      <div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="rollNpoSaves">Roll Saves & Preview Damage</button></div>`);
+    bindSpinners(modal);
+    $('#rollNpoSaves').onclick=()=>{
+      const before=num('enemyWounds');
+      const result=resolveDefense(attackDice,num('enemyDefenseDice'),num('enemySave'),num('npoAp'),$('#enemyCover').checked,n.attack);
+      const after=Math.max(0,before-result.damage);
+      $('#combatResults').innerHTML=`<div class="combat-stage"><small>ENEMY SAVE DICE</small><div class="dice-row animated-roll" id="enemySaveDiceResult">${result.saveDice.map(()=>rollingDieHtml()).join('')||'<span class="muted">No save dice rolled</span>'}</div>${result.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':''}</div><div class="damage-summary"><div><small>Unsaved normal hits</small><strong>${result.normalRemaining}</strong></div><div><small>Unsaved critical hits</small><strong>${result.critRemaining}</strong></div><div><small>Damage</small><strong>${result.damage}</strong></div><div><small>Enemy wounds</small><strong>${before} → ${after}</strong></div></div><p class="muted">Apply this wound change to the Enemy operative on the tabletop.</p>`;
+      $('#rollNpoSaves').textContent='Confirm Result';
+      $('#rollNpoSaves').onclick=()=>{log(`${n.name} dealt ${result.damage} damage to an Enemy operative (${before} → ${after} wounds).`);save();closeModal();if(onDone)onDone();};
+      setTimeout(()=>{const d=$('#enemySaveDiceResult');if(d&&result.saveDice.length){d.innerHTML=result.saveDice.map(dieHtml).join('');d.classList.add('settled');}},700);
+    };
+  }
+
+  function resolveDefense(attackDice,defenseDice,saveTarget,ap,cover,damageProfile){
+    let critRemaining=attackDice.filter(d=>d.kind==='crit').length;
+    let normalRemaining=attackDice.filter(d=>d.kind==='hit').length;
+    const count=Math.max(0,defenseDice-ap);
+    const saveDice=Array.from({length:count},()=>{const value=roll();return{value,kind:value===6?'crit':value>=saveTarget?'save':'miss'};});
+    let critSaves=saveDice.filter(d=>d.kind==='crit').length;
+    let normalSaves=saveDice.filter(d=>d.kind==='save').length+(cover?1:0);
+    const critCancelled=Math.min(critRemaining,critSaves);critRemaining-=critCancelled;critSaves-=critCancelled;
+    const normalsByCrit=Math.min(normalRemaining,critSaves);normalRemaining-=normalsByCrit;
+    const normalsCancelled=Math.min(normalRemaining,normalSaves);normalRemaining-=normalsCancelled;
+    const damage=critRemaining*damageProfile.crit+normalRemaining*damageProfile.normal;
+    return {saveDice,coverRetained:cover,critRemaining,normalRemaining,damage};
+  }
+
+  function spinnerField(id,label,value,min,max){return `<div class="field spinner-field"><label>${label}</label><div class="spinner"><input id="${id}" type="number" value="${value}" min="${min}" max="${max}" inputmode="numeric"><button type="button" data-spin="${id}" data-delta="-1" aria-label="Decrease ${label}">−</button><button type="button" data-spin="${id}" data-delta="1" aria-label="Increase ${label}">+</button></div></div>`;}
+  function bindSpinners(root){$$('[data-spin]',root).forEach(b=>b.onclick=()=>{const input=$(`#${b.dataset.spin}`);const min=Number(input.min||0),max=Number(input.max||99);input.value=Math.max(min,Math.min(max,(Number(input.value)||0)+Number(b.dataset.delta)));});}
+  function num(id){return Number($(`#${id}`)?.value)||0;}
+
+  function rollingDieHtml(){
+    const value=roll();
+    return `<div class="die hit rolling" aria-label="Rolling die">${pipPositions[value].map(p=>`<span class="pip" style="grid-area:${Math.ceil(p/3)}/${((p-1)%3)+1}"></span>`).join('')}</div>`;
   }
 
   function rollAttack(profile){return Array.from({length:profile.dice},()=>{const value=roll();return{value,kind:value===6?'crit':value>=profile.hit?'hit':'miss'};});}
@@ -318,8 +499,8 @@
   function dieHtml(d){return `<div class="die ${d.kind}" aria-label="${d.value} ${d.kind}">${pipPositions[d.value].map(p=>`<span class="pip" style="grid-area:${Math.ceil(p/3)}/${((p-1)%3)+1}"></span>`).join('')}</div>`;}
 
   function renderMission(){const m=mission();app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">MISSION</p><h2>${m.number} · ${m.name}</h2><p>${m.brief}</p></div></div><section class="card"><h3>Objective</h3><p>${m.objective}</p><div class="stat-grid"><div class="stat"><small>Starting NPOs</small><strong>${m.setup}</strong></div><div class="stat"><small>${m.tracker}</small><strong>${state.tracker} / ${m.max}</strong></div></div></section>${boardSvg(m.id)}<section class="card"><h3>Special rule reminder</h3><p>${m.special}</p></section><section class="card"><p class="eyebrow">SESSION</p><div class="session-actions"><button class="btn danger" id="newGameSession">Start New Game</button><button class="btn secondary" id="exportSave">Export Save</button><button class="btn secondary" id="importSave">Import Save</button></div></section>`;$('#newGameSession').onclick=confirmNewGame;$('#exportSave').onclick=exportSave;$('#importSave').onclick=()=>importInput.click();}
-  function renderRoster(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">NPO ROSTER</p><h2>${activeNpos().length} active NPOs</h2><p>Wounds and Ready status update the guided activation flow.</p></div><button class="btn secondary" id="addNpo">Add NPO</button></div><div class="roster-grid">${state.roster.length?state.roster.map(n=>operativeCard(n,true)).join(''):'<div class="card empty">No NPOs are currently on the battlefield.</div>'}</div>`;$('#addNpo').onclick=showAddNpo;$$('[data-wound]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.wound,-1));$$('[data-heal]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.heal,1));$$('[data-ready]').forEach(b=>b.onclick=()=>toggleReady(b.dataset.ready));$$('[data-delete]').forEach(b=>b.onclick=()=>deleteNpo(b.dataset.delete));}
-  function operativeCard(n,controls){return `<article class="operative-card ${n.wounds<=0?'dead':''}"><h4>${escapeHtml(n.name)}</h4><p>${n.type} · ${n.behavior} · Save ${n.save}+</p><div class="wounds"><meter min="0" max="${n.maxWounds}" value="${n.wounds}"></meter><strong>${n.wounds}/${n.maxWounds}</strong></div><p>${n.ready&&n.wounds>0?'READY':'EXPENDED'}</p>${controls?`<div class="quick-actions"><button class="btn ghost" data-wound="${n.id}">− Wound</button><button class="btn ghost" data-heal="${n.id}">+ Heal</button><button class="btn secondary" data-ready="${n.id}">${n.ready?'Expend':'Ready'}</button><button class="btn danger" data-delete="${n.id}">Delete</button></div>`:''}</article>`;}
+  function renderRoster(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">NPO ROSTER</p><h2>${activeNpos().length} active NPOs</h2><p>Wounds and Ready status update the guided activation flow.</p></div><button class="btn secondary" id="addNpo">Add NPO</button></div><div class="roster-grid">${state.roster.length?state.roster.map(n=>operativeCard(n,true)).join(''):'<div class="card empty">No NPOs are currently on the battlefield.</div>'}</div>`;$('#addNpo').onclick=showAddNpo;$$('[data-enemy-attack]').forEach(b=>b.onclick=()=>showEnemyAttackWizard(b.dataset.enemyAttack));$$('[data-wound]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.wound,-1));$$('[data-heal]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.heal,1));$$('[data-ready]').forEach(b=>b.onclick=()=>toggleReady(b.dataset.ready));$$('[data-delete]').forEach(b=>b.onclick=()=>deleteNpo(b.dataset.delete));}
+  function operativeCard(n,controls){return `<article class="operative-card ${n.wounds<=0?'dead':''}"><h4>${escapeHtml(n.name)}</h4><p>${n.type} · ${n.behavior} · Save ${n.save}+</p><div class="wounds"><meter min="0" max="${n.maxWounds}" value="${n.wounds}"></meter><strong>${n.wounds}/${n.maxWounds}</strong></div><p>${n.ready&&n.wounds>0?'READY':'EXPENDED'}</p>${controls?`<div class="quick-actions"><button class="btn secondary" data-enemy-attack="${n.id}">Enemy Attack</button><button class="btn ghost" data-wound="${n.id}">− Wound</button><button class="btn ghost" data-heal="${n.id}">+ Heal</button><button class="btn secondary" data-ready="${n.id}">${n.ready?'Expend':'Ready'}</button><button class="btn danger" data-delete="${n.id}">Delete</button></div>`:''}</article>`;}
   function renderJournal(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">JOURNAL</p><h2>Battle Record</h2><p>Automatic game-state and Threat history.</p></div><button class="btn ghost" id="clearJournal">Clear</button></div><section class="card"><ol class="activity-log">${state.journal.length?state.journal.map(j=>`<li><time>${new Date(j.time).toLocaleString()}</time>${escapeHtml(j.text)}</li>`).join(''):'<li>No events recorded.</li>'}</ol></section>`;$('#clearJournal').onclick=()=>{state.journal=[];save();render();};}
   function renderHelp(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">FIELD HELP</p><h2>Quick explanations</h2><p>Open an item without leaving the current game.</p></div></div><section class="card help-list">
     <details><summary>What does Enemy mean?</summary><p>Your solo player-controlled Kill Team operatives. Prompts are written from an NPO’s perspective, so your models are the NPO’s enemies.</p></details>
@@ -329,7 +510,7 @@
     <details><summary>When do I start the next Turning Point?</summary><p>After every ready Enemy operative and NPO has activated, complete end-of-turn scoring and press Finish Turning Point. The Play tab will then offer Start Next Turning Point.</p></details>
     <details><summary>What happens during the Strategy Phase?</summary><p>The Guide readies operatives, evaluates Threat Grade, generates reinforcements after Turning Point 1, checks for Tomb World events, and rolls initiative. You review each result before activations begin.</p></details>
     <details><summary>How does activation tracking work?</summary><p>Each completed Enemy or NPO activation is recorded. Ready counts and the next side update automatically. When both sides have no ready operatives, the Guide advances to end-of-turn scoring.</p></details>
-    <details><summary>How are saves and damage handled?</summary><p>V1.1 focuses on the Turning Point engine and activation tracking. Use the Roster tab to adjust NPO wounds. A full attack and save resolver is planned for the combat release.</p></details>
+    <details><summary>How are saves and damage handled?</summary><p>V1.3 includes guided Enemy and NPO attack wizards. Attack dice and save dice are rolled with visual pips, saves cancel hits, and damage is previewed before confirmation. Enemy attacks can update NPO wounds automatically.</p></details>
   </section>`;}
 
   function boardSvg(id){
@@ -361,7 +542,7 @@
   function toggleReady(id){const n=state.roster.find(x=>x.id===id);if(n&&n.wounds>0)n.ready=!n.ready;save();render();}
   function deleteNpo(id){state.roster=state.roster.filter(x=>x.id!==id);save();render();}
 
-  function showModal(title,content,onClose){modalBody.innerHTML=`<div class="modal-inner"><h2>${title}</h2>${content}</div>`;modal.showModal();modal._onClose=onClose;$$('[data-close]',modal).forEach(b=>b.onclick=closeModal);}
+  function showModal(title,content,onClose){modalBody.innerHTML=`<div class="modal-inner"><h2>${title}</h2>${content}</div>`;if(!modal.open)modal.showModal();modal._onClose=onClose;$$('[data-close]',modal).forEach(b=>b.onclick=closeModal);}
   function closeModal(){if(modal.open)modal.close();const cb=modal._onClose;modal._onClose=null;if(cb)cb();}
   modal.addEventListener('cancel',e=>{e.preventDefault();closeModal();});
   function showToast(text){toast.textContent=text;toast.hidden=false;clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.hidden=true,6500);}

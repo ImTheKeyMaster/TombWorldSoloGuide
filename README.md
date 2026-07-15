@@ -76,3 +76,25 @@ Upload the **contents of this folder while preserving the folder structure**. In
 - `Assets/Tomb-World-Mission-Pack.pdf` must remain inside `Assets`.
 
 Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll` file tells GitHub Pages to publish the static files as-is.
+
+
+## v1.3.0 AI release
+
+- Guided one-question-at-a-time NPO activation wizard
+- Behavior-aware decision tree for Fight, Charge, Shoot, Operate Hatch, contesting objectives, and repositioning
+- Explicit target-priority selection
+- Decision-path explanation for each recommendation
+- Animated visual NPO attack dice with critical, normal-hit, and miss results
+- Activation history records the recommended action
+
+
+## v1.3.0 Combat
+
+- Guided Enemy attack wizard targeting an NPO
+- Guided NPO attack save and damage wizard
+- Visual attack and save dice with pips
+- Critical and normal save cancellation
+- AP, cover retention, configurable defense dice, saves, and damage profiles
+- Damage preview before confirmation
+- Confirmed Enemy damage automatically updates NPO wounds
+- NPO damage is recorded for application to the Enemy operative on the tabletop
