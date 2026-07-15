@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-labelledby="title desc">
+  <title id="title">Tomb World obelisk</title>
+  <desc id="desc">A luminous geometric tomb obelisk and stairway drawn in green line art.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b2118"/>
+      <stop offset="1" stop-color="#020806"/>
+    </linearGradient>
+    <linearGradient id="energy" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b7ffd6"/>
+      <stop offset="0.45" stop-color="#61ffad"/>
+      <stop offset="1" stop-color="#18d778"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect x="2" y="2" width="96" height="96" rx="22" fill="url(#bg)" stroke="#27885c" stroke-width="2"/>
+  <g fill="none" stroke="url(#energy)" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+    <!-- stepped tomb silhouette -->
+    <path stroke-width="2.5" d="M16 78h68M21 72h58M27 65h46M31 58h38M35 51h30" opacity=".72"/>
+    <path stroke-width="3" d="M24 72 35 42 42 31 46 18h8l4 13 7 11 11 30"/>
+    <path stroke-width="2" d="M24 72h52M35 42h30M42 31h16" opacity=".8"/>
+    <!-- central obelisk -->
+    <path stroke-width="3.5" d="M46 18 50 12l4 6v47l-4 8-4-8Z"/>
+    <circle cx="50" cy="34" r="7.5" stroke-width="3" fill="#07140f"/>
+    <path stroke-width="2" d="M50 26.5v-8M50 41.5V65"/>
+    <!-- flank masonry -->
+    <path stroke-width="2" d="M35 42 27 65M65 42l8 23M31 58h11M58 58h11M29 65h14M57 65h14" opacity=".76"/>
+    <!-- circuit pylons -->
+    <path stroke-width="1.7" d="M15 31h9l4 4h7M85 31h-9l-4 4h-7M18 46h8l4-4M82 46h-8l-4-4" opacity=".58"/>
+    <circle cx="14" cy="31" r="2" stroke-width="1.7"/>
+    <circle cx="86" cy="31" r="2" stroke-width="1.7"/>
+    <!-- stairway -->
+    <path stroke-width="2.5" d="M36 72h28l6 10H30Z"/>
+    <path stroke-width="1.6" d="M34 76h32M32 79h36" opacity=".85"/>
+  </g>
+</svg>
