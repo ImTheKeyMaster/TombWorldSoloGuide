@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.3.7';
+  const APP_VERSION = '1.3.7b';
   const MAX_NPOS = 10;
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -48,7 +48,7 @@
   ];
 
   const initialState = () => ({
-    version:'1.3.7', screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:'1.3.7b', screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:[], roster:[], playerCount:6, playerReady:6, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,

@@ -300,3 +300,22 @@
     font-size:.78rem;
   }
 }
+
+
+/* v1.3.7b mobile step indicator */
+.step-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+.step-header > :first-child{
+  min-width:0;
+  flex:1 1 auto;
+}
+.step-indicator,
+.step-progress,
+.step-count{
+  white-space:nowrap;
+  flex:0 0 auto;
+}

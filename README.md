@@ -162,3 +162,7 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 - Separated each NPO name from its operative type.
 - NPO names stay on one line and truncate cleanly if necessary.
 - Operative type now appears on its own line beneath the name.
+
+
+## v1.3.7b
+- Prevented the step indicator (e.g. 3/6) from wrapping on narrow mobile screens.
