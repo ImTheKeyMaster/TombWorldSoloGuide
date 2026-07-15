@@ -148,3 +148,17 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 - Activated operatives use a green circle and check badge.
 - Operatives that still need to activate use a neutral outlined circle.
 - Added live Activated and Remaining counts.
+
+
+## v1.3.6 Map update
+
+- Replaced all six mission maps with newly cropped 767×661 PNG files.
+- Preserved existing paths and gameplay behavior.
+
+
+## v1.3.7 Mobile deployment polish
+
+- Standardized every **Mark Placed** / **Placed** button to the same width on iOS and other mobile browsers.
+- Separated each NPO name from its operative type.
+- NPO names stay on one line and truncate cleanly if necessary.
+- Operative type now appears on its own line beneath the name.
