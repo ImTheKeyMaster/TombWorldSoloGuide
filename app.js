@@ -105,7 +105,7 @@
   function renderHome(){
     const canContinue=Boolean(load()?.missionId && load()?.screen==='game');
     app.innerHTML=`<section class="hero-card">
-      <img class="hero-symbol" src="assets/icon.svg" alt="">
+      <img class="hero-symbol" src="Assets/icon.svg" alt="">
       <p class="eyebrow">A STEP-BY-STEP DIGITAL GAME MASTER</p>
       <h2>Enter the Tomb</h2>
       <p>Choose a mission, build the board, deploy the correct NPO roster, and follow one clear next action through every Turning Point.</p>
