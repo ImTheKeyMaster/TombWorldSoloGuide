@@ -186,3 +186,12 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 - When neither side has ready operatives, the Guide automatically enters End of Turning Point.
 - Added a prominent **Next Activation** banner to Guided Play.
 - At Threat 0, NPOs remain dormant, so the Player correctly completes all Player activations.
+
+
+## v1.3.9a Turning Point initiative fix
+
+- Automatic Player initiative now applies only during Turning Point 1.
+- NPO dormancy now applies only during Turning Point 1.
+- Beginning with Turning Point 2, surviving NPOs are readied even if Threat is still 0.
+- Initiative is rolled normally from Turning Point 2 onward.
+- Corrected the Strategy Phase explanation so it no longer implies that Threat 0 permanently prevents NPO activation.
