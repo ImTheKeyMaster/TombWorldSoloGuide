@@ -47,3 +47,37 @@
   .guide-map-wall-core{stroke-width:12}
   .guide-map-caption{font-size:8px}
 }
+
+/* v1.1.5: portrait-phone map scrolling */
+.board-map.guide-map-frame{
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-inline:contain;
+  touch-action:pan-x pan-y;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(118,245,168,.55) rgba(5,12,8,.9);
+}
+.board-map.guide-map-frame::-webkit-scrollbar{height:9px}
+.board-map.guide-map-frame::-webkit-scrollbar-track{background:rgba(5,12,8,.9);border-radius:999px}
+.board-map.guide-map-frame::-webkit-scrollbar-thumb{background:rgba(118,245,168,.55);border-radius:999px;border:2px solid rgba(5,12,8,.9)}
+.board-map.guide-map-frame .guide-map-svg{
+  width:800px;
+  min-width:800px;
+  max-width:none;
+  height:auto;
+}
+.map-scroll-hint{
+  margin:-8px 2px 16px;
+  color:var(--muted);
+  font-size:.75rem;
+  text-align:center;
+}
+@media(min-width:821px){
+  .board-map.guide-map-frame .guide-map-svg{width:100%;min-width:0}
+  .map-scroll-hint{display:none}
+}

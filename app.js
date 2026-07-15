@@ -366,7 +366,7 @@
         ${markers}
         <text class="guide-map-caption" x="748" y="454" text-anchor="end">${escapeHtml(currentMission.number)} · ${escapeHtml(currentMission.name.toUpperCase())} · NOT TO SCALE</text>
       </svg>
-    </div>`;
+    </div><p class="map-scroll-hint">Swipe left or right to view the full map.</p>`;
   }
 
   function renderGuideMapMarker(marker){
