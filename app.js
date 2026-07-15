@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.3.7b';
+  const APP_VERSION = '1.3.8';
   const MAX_NPOS = 10;
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -48,7 +48,7 @@
   ];
 
   const initialState = () => ({
-    version:'1.3.7b', screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:'1.3.8', screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:[], roster:[], playerCount:6, playerReady:6, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
@@ -57,6 +57,7 @@
   });
 
   let state = normalizeState(load() || initialState());
+  let lastRenderedStepKey = null;
 
   function save(){ state.version=APP_VERSION; localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
   function load(){ try{return JSON.parse(localStorage.getItem(STORAGE_KEY));}catch{return null;} }
@@ -95,11 +96,31 @@
   }
 
   function render(){
+    const currentStepKey = [
+      state.screen,
+      state.setupStep ?? '',
+      state.tab ?? '',
+      state.phase ?? '',
+      state.turningPoint ?? '',
+      state.nextSide ?? '',
+      state.activationNumber ?? ''
+    ].join(':');
+    const movedToNewStep = lastRenderedStepKey !== null && currentStepKey !== lastRenderedStepKey;
+    lastRenderedStepKey = currentStepKey;
+
     gameMenuBtn.hidden = state.screen !== 'game';
     if(state.screen==='home') renderHome();
     else if(state.screen==='setup') renderSetup();
     else renderGame();
     bindCommon();
+
+    if(movedToNewStep){
+      requestAnimationFrame(()=>{
+        window.scrollTo({top:0,left:0,behavior:'auto'});
+        document.documentElement.scrollTop=0;
+        document.body.scrollTop=0;
+      });
+    }
   }
 
   function renderHome(){

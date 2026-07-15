@@ -166,3 +166,11 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 
 ## v1.3.7b
 - Prevented the step indicator (e.g. 3/6) from wrapping on narrow mobile screens.
+
+
+## v1.3.8 Step navigation
+
+- Moving to a different setup or gameplay step now returns the page to the top.
+- The scroll reset only occurs when the guided step changes.
+- Toggling controls within the same step does not reset the scroll position.
+- Includes an iOS-compatible top reset after the new content renders.
