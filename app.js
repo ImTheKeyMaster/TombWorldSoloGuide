@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.3.1';
+  const APP_VERSION = '1.3.2';
   const MAX_NPOS = 10;
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -48,7 +48,7 @@
   ];
 
   const initialState = () => ({
-    version:'1.3.1', screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:'1.3.2', screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:[], roster:[], enemyCount:6, enemyReady:6, turningPoint:0,
     threat:0, initiative:'enemy', phase:'setup', nextSide:'enemy', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
@@ -279,34 +279,81 @@
   function showEnemyActivation(stage={}){
     const living=activeNpos();
     const checked=key=>stage[key]?'checked':'';
-    showModal('Record Enemy Activation',`<p>Select everything that occurred during this Enemy operative’s activation. Movement actions do not increase Threat, but recording them keeps the activation history clear.</p><div class="toggle-list enemy-action-list">
-      <label><input type="checkbox" id="eaMove" ${checked('move')}>Moved</label>
-      <label><input type="checkbox" id="eaDash" ${checked('dash')}>Dashed</label>
-      <label><input type="checkbox" id="eaCharge" ${checked('charge')}>Charged</label>
-      <label><input type="checkbox" id="eaFallBack" ${checked('fallBack')}>Fell Back</label>
-      <label><input type="checkbox" id="eaShoot" ${checked('shoot')}>Used a non-Silent Shoot action</label>
-      <label><input type="checkbox" id="eaFight" ${checked('fight')}>Used a Fight action</label>
-      <label><input type="checkbox" id="eaDamage" ${checked('damage')}>Damaged an NPO with another action</label>
-      <label><input type="checkbox" id="eaHatch" ${checked('hatch')}>Operated a hatch</label>
-      <label><input type="checkbox" id="eaBreach" ${checked('breach')}>Performed a Breach</label>
-      <label><input type="checkbox" id="eaObjective" ${checked('objective')}>Performed a mission or objective action</label>
-      <label><input type="checkbox" id="eaPass" ${checked('pass')}>Passed or no action recorded</label>
-    </div>${living.length?`<div class="combat-launch"><p><strong>Did the Enemy attack an NPO?</strong></p><button class="btn secondary" id="launchEnemyAttack">Open Enemy Attack Wizard</button><small>${stage.combatResolved?'Combat result recorded. Complete the activation when ready.':'No combat result recorded for this activation.'}</small></div>`:''}<div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmEnemy">Complete Activation</button></div>`);
+    const shootResolved=Boolean(stage.shootResolved);
+    const meleeResolved=Boolean(stage.meleeResolved);
+    showModal('Record Enemy Activation',`<p>Select everything that occurred during this Enemy operative’s activation. Movement actions do not increase Threat, but recording them keeps the activation history clear.</p>
+      <div class="activation-groups">
+        <section class="activation-group">
+          <div class="activation-group-title"><span>↔</span><div><strong>Movement</strong><small>Position and control actions</small></div></div>
+          <div class="toggle-list enemy-action-list">
+            <label><input type="checkbox" id="eaMove" ${checked('move')}>Move</label>
+            <label><input type="checkbox" id="eaDash" ${checked('dash')}>Dash</label>
+            <label><input type="checkbox" id="eaCharge" ${checked('charge')}>Charge</label>
+            <label><input type="checkbox" id="eaFallBack" ${checked('fallBack')}>Fall Back</label>
+          </div>
+        </section>
 
-    const actionIds=['eaMove','eaDash','eaCharge','eaFallBack','eaShoot','eaFight','eaDamage','eaHatch','eaBreach','eaObjective'];
+        <section class="activation-group">
+          <div class="activation-group-title"><span>⚔</span><div><strong>Combat</strong><small>Record and resolve attacks</small></div></div>
+          <div class="combat-action-card">
+            <label><input type="checkbox" id="eaShoot" ${checked('shoot')}><span><strong>Shoot</strong><small>Use a non-Silent ranged weapon</small></span></label>
+            <div class="inline-resolver ${stage.shoot?'':'hidden'}" id="shootResolver">
+              ${living.length?`<button class="btn secondary" id="resolveShoot">Resolve Shooting Attack</button><small>${shootResolved?'Shooting attack resolved.':'Optional... open the attack wizard to roll dice and apply damage.'}</small>`:'<small>No active NPO is available as a target.</small>'}
+            </div>
+          </div>
+          <div class="combat-action-card">
+            <label><input type="checkbox" id="eaMelee" ${checked('melee')||checked('fight')}><span><strong>Melee</strong><small>Use the Kill Team Fight action</small></span></label>
+            <div class="inline-resolver ${(stage.melee||stage.fight)?'':'hidden'}" id="meleeResolver">
+              ${living.length?`<button class="btn secondary" id="resolveMelee">Resolve Melee Attack</button><small>${meleeResolved?'Melee attack resolved.':'Optional... open the attack wizard to roll dice and apply damage.'}</small>`:'<small>No active NPO is available as a target.</small>'}
+            </div>
+          </div>
+          <div class="toggle-list enemy-action-list compact-actions">
+            <label><input type="checkbox" id="eaDamage" ${checked('damage')}>Damaged an NPO with another action</label>
+          </div>
+        </section>
+
+        <section class="activation-group">
+          <div class="activation-group-title"><span>▣</span><div><strong>Battlefield</strong><small>Terrain and mission interactions</small></div></div>
+          <div class="toggle-list enemy-action-list">
+            <label><input type="checkbox" id="eaHatch" ${checked('hatch')}>Operate Hatch</label>
+            <label><input type="checkbox" id="eaBreach" ${checked('breach')}>Breach</label>
+            <label><input type="checkbox" id="eaObjective" ${checked('objective')}>Mission or objective action</label>
+          </div>
+        </section>
+
+        <section class="activation-group pass-group">
+          <div class="toggle-list enemy-action-list">
+            <label><input type="checkbox" id="eaPass" ${checked('pass')}>Pass / no action recorded</label>
+          </div>
+        </section>
+      </div>
+      <div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmEnemy">Complete Activation</button></div>`);
+
+    const actionIds=['eaMove','eaDash','eaCharge','eaFallBack','eaShoot','eaMelee','eaDamage','eaHatch','eaBreach','eaObjective'];
+    const clearPass=()=>{if($('#eaPass'))$('#eaPass').checked=false;};
     $('#eaPass')?.addEventListener('change',e=>{
-      if(e.target.checked) actionIds.forEach(id=>{const box=$(`#${id}`);if(box)box.checked=false;});
+      if(e.target.checked){
+        actionIds.forEach(id=>{const box=$(`#${id}`);if(box)box.checked=false;});
+        $('#shootResolver')?.classList.add('hidden');
+        $('#meleeResolver')?.classList.add('hidden');
+      }
     });
-    actionIds.forEach(id=>$( `#${id}` )?.addEventListener('change',e=>{
-      if(e.target.checked && $('#eaPass'))$('#eaPass').checked=false;
+    actionIds.forEach(id=>$(`#${id}`)?.addEventListener('change',e=>{
+      if(e.target.checked)clearPass();
     }));
+    $('#eaShoot')?.addEventListener('change',e=>$('#shootResolver')?.classList.toggle('hidden',!e.target.checked));
+    $('#eaMelee')?.addEventListener('change',e=>$('#meleeResolver')?.classList.toggle('hidden',!e.target.checked));
 
-    $('#launchEnemyAttack')?.addEventListener('click',()=>{
-      const nextStage=readEnemyActivationStage(stage.combatResolved);
-      showEnemyAttackWizard(null,()=>showEnemyActivation({...nextStage,combatResolved:true}));
+    $('#resolveShoot')?.addEventListener('click',()=>{
+      const nextStage=readEnemyActivationStage(shootResolved,meleeResolved);
+      showEnemyAttackWizard(null,()=>showEnemyActivation({...nextStage,shootResolved:true}),'shoot');
+    });
+    $('#resolveMelee')?.addEventListener('click',()=>{
+      const nextStage=readEnemyActivationStage(shootResolved,meleeResolved);
+      showEnemyAttackWizard(null,()=>showEnemyActivation({...nextStage,meleeResolved:true}),'melee');
     });
     $('#confirmEnemy').onclick=()=>{
-      const finalStage=readEnemyActivationStage(stage.combatResolved);
+      const finalStage=readEnemyActivationStage(shootResolved,meleeResolved);
       const hasRecordedAction=enemyActivationHasAction(finalStage);
       if(!hasRecordedAction){
         showModal('No actions selected',`<p>Mark this Enemy operative as activated without recording an action?</p><div class="wizard-actions"><button class="btn ghost" id="returnEnemyActivation">Go Back</button><button class="btn primary" id="confirmEmptyEnemyActivation">Complete Activation</button></div>`);
@@ -318,26 +365,27 @@
     };
   }
 
-  function readEnemyActivationStage(combatResolved=false){
+  function readEnemyActivationStage(shootResolved=false,meleeResolved=false){
     return {
       move:Boolean($('#eaMove')?.checked),
       dash:Boolean($('#eaDash')?.checked),
       charge:Boolean($('#eaCharge')?.checked),
       fallBack:Boolean($('#eaFallBack')?.checked),
       shoot:Boolean($('#eaShoot')?.checked),
-      fight:Boolean($('#eaFight')?.checked),
+      melee:Boolean($('#eaMelee')?.checked),
       damage:Boolean($('#eaDamage')?.checked),
       hatch:Boolean($('#eaHatch')?.checked),
       breach:Boolean($('#eaBreach')?.checked),
       objective:Boolean($('#eaObjective')?.checked),
       pass:Boolean($('#eaPass')?.checked),
-      combatResolved:Boolean(combatResolved)
+      shootResolved:Boolean(shootResolved),
+      meleeResolved:Boolean(meleeResolved)
     };
   }
 
   function enemyActivationHasAction(stage){
-    return Boolean(stage.combatResolved || stage.move || stage.dash || stage.charge || stage.fallBack ||
-      stage.shoot || stage.fight || stage.damage || stage.hatch || stage.breach || stage.objective || stage.pass);
+    return Boolean(stage.shootResolved || stage.meleeResolved || stage.move || stage.dash || stage.charge || stage.fallBack ||
+      stage.shoot || stage.melee || stage.damage || stage.hatch || stage.breach || stage.objective || stage.pass);
   }
 
   function enemyActivationSummary(stage){
@@ -346,13 +394,12 @@
     if(stage.dash)actions.push('Dash');
     if(stage.charge)actions.push('Charge');
     if(stage.fallBack)actions.push('Fall Back');
-    if(stage.shoot)actions.push('Shoot');
-    if(stage.fight)actions.push('Fight');
+    if(stage.shoot)actions.push(stage.shootResolved?'Shooting attack resolved':'Shoot');
+    if(stage.melee)actions.push(stage.meleeResolved?'Melee attack resolved':'Melee');
     if(stage.damage)actions.push('Damaging action');
     if(stage.hatch)actions.push('Operate Hatch');
     if(stage.breach)actions.push('Breach');
     if(stage.objective)actions.push('Mission action');
-    if(stage.combatResolved)actions.push('Combat resolved');
     if(stage.pass)actions.push('Pass / no action recorded');
     return actions.length?actions.join(', '):'No actions recorded';
   }
@@ -360,7 +407,7 @@
   function completeEnemyActivation(stage={}){
     let inc=0;
     if(stage.shoot)inc++;
-    if(stage.fight)inc++;
+    if(stage.melee)inc++;
     if(stage.damage)inc++;
     if(stage.hatch){
       const r=roll();
@@ -386,9 +433,10 @@
     render();
   }
 
-  function showEnemyAttackWizard(targetId,onDone){
+  function showEnemyAttackWizard(targetId,onDone,attackType='attack'){
     const targets=activeNpos(); if(!targets.length){showToast('No active NPO is available as a target.');return;}
-    showModal('Enemy Attack Wizard',`<p>Enter the Enemy weapon profile. The Guide will roll the attack, roll the selected NPO’s saves, and preview damage before you confirm it.</p>
+    const attackLabel=attackType==='shoot'?'Shooting':attackType==='melee'?'Melee':'Enemy';
+    showModal(`${attackLabel} Attack Wizard`,`<p>Enter the ${attackType==='melee'?'melee weapon':'weapon'} profile. The Guide will roll the attack, roll the selected NPO’s saves, and preview damage before you confirm it.</p>
       <div class="field"><label>Target NPO</label><select id="combatTarget">${targets.map(n=>`<option value="${n.id}" ${n.id===targetId?'selected':''}>${escapeHtml(n.name)} · ${n.wounds}/${n.maxWounds} wounds · Save ${n.save}+</option>`).join('')}</select></div>
       <div class="combat-grid">
         ${spinnerField('enemyAttackDice','Attack dice',4,1,12)}

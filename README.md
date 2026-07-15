@@ -108,3 +108,13 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 - Movement actions are recorded without changing Threat.
 - Completing an activation with no selected actions now requires explicit confirmation.
 - Enemy activation history and Journal entries now summarize the recorded actions.
+
+
+## v1.3.2 Enemy activation combat flow
+
+- Grouped Enemy activation actions into Movement, Combat, Battlefield, and Pass sections.
+- Renamed the Fight-facing UI to Melee while retaining the underlying Kill Team Fight action meaning.
+- Checking Shoot reveals Resolve Shooting Attack.
+- Checking Melee reveals Resolve Melee Attack.
+- Removed the separate Did the Enemy attack an NPO section.
+- Shooting and Melee attacks can be resolved independently in the same activation.
