@@ -319,3 +319,27 @@
   white-space:nowrap;
   flex:0 0 auto;
 }
+
+
+/* v1.3.9 alternating activation flow */
+.next-activation-banner{
+  display:grid;
+  gap:4px;
+  margin:0 0 14px;
+  padding:14px 16px;
+  border:1px solid var(--green);
+  border-radius:15px;
+  background:linear-gradient(135deg,#091911,#123624);
+  box-shadow:0 0 20px rgba(90,255,145,.10);
+}
+.next-activation-banner small{
+  color:var(--muted);
+  font-weight:850;
+  letter-spacing:.12em;
+}
+.next-activation-banner strong{
+  color:var(--green);
+  font-size:1.55rem;
+  line-height:1.1;
+}
+.next-activation-banner span{color:var(--text)}

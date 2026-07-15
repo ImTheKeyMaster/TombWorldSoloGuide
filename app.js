@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.3.8';
+  const APP_VERSION = '1.3.9';
   const MAX_NPOS = 10;
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -48,7 +48,7 @@
   ];
 
   const initialState = () => ({
-    version:'1.3.8', screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:'1.3.9', screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:[], roster:[], playerCount:6, playerReady:6, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
@@ -75,6 +75,34 @@
   function uid(){ return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`; }
   function activeNpos(){ return state.roster.filter(n => n.wounds > 0); }
   function readyNpos(){ return activeNpos().filter(n => n.ready); }
+  function playerOperativesRemaining(){ return Math.max(0, Number(state.playerReady || 0)); }
+
+  function setNextActivation(preferredSide){
+    const playerRemaining=playerOperativesRemaining();
+    const npoRemaining=readyNpos().length;
+
+    if(playerRemaining<=0 && npoRemaining<=0){
+      state.nextSide=null;
+      state.phase='end';
+      return null;
+    }
+    if(playerRemaining<=0){
+      state.nextSide='npo';
+      return 'npo';
+    }
+    if(npoRemaining<=0){
+      state.nextSide='player';
+      return 'player';
+    }
+
+    state.nextSide=preferredSide==='npo'?'npo':'player';
+    return state.nextSide;
+  }
+
+  function advanceAfterActivation(completedSide){
+    return setNextActivation(completedSide==='player'?'npo':'player');
+  }
+
   function threatGrade(){ return state.threat === 0 ? 0 : state.threat <= 5 ? 1 : state.threat <= 10 ? 2 : 3; }
   function threatLabel(){ return ['Dormant','Alert','Awakened','Full Awakening'][threatGrade()]; }
   function threatToNext(){ const g=threatGrade(); if(g===3)return 0; return [1,6,11][g]-state.threat; }
@@ -205,7 +233,8 @@
   function hud(){return `<div class="hud"><div><small>Turning Point</small><strong>${state.turningPoint||'Setup'}</strong></div><div><small>Threat</small><strong>${state.threat}</strong></div><div><small>Grade</small><strong>${threatGrade()}</strong></div><div><small>Player Ready</small><strong>${state.playerReady}</strong></div><div><small>NPO Ready</small><strong>${readyNpos().length}</strong></div></div><div class="threat-strip"><div><strong>${threatLabel()}</strong><small>${threatGrade()===3?'Maximum grade':`${threatToNext()} Threat to next grade`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
 
   function renderPlay(){
-    app.innerHTML=hud()+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${nextStepCard()}${state.phase==='firefight'?activationTracker():''}`;
+    const nextBanner=state.phase==='firefight'?`<section class="next-activation-banner"><small>NEXT ACTIVATION</small><strong>${state.nextSide==='npo'?'NPO':'Player'}</strong><span>${state.nextSide==='npo'?`${readyNpos().length} ready NPO${readyNpos().length===1?'':'s'}`:`${playerOperativesRemaining()} ready Player operative${playerOperativesRemaining()===1?'':'s'}`}</span></section>`:'';
+    app.innerHTML=hud()+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${nextBanner}${nextStepCard()}${state.phase==='firefight'?activationTracker():''}`;
     bindPlay();
   }
 
@@ -214,11 +243,13 @@
     if(state.phase==='between') return `<section class="next-card"><span class="phase">NEXT STEP</span><h2>Start Turning Point ${state.turningPoint+1}</h2><p>The Guide will ready operatives, determine the current Threat Grade, generate reinforcements, check Tomb World events, and resolve initiative.</p><button class="btn primary big-action" id="startTp">Start Next Turning Point</button></section>`;
     if(state.phase==='strategy') return strategyCard();
     if(state.phase==='end') return `<section class="next-card"><span class="phase">END OF TURNING POINT</span><h2>Score and clean up</h2><p>Score mission objectives, resolve end-of-turn effects, and confirm all temporary markers have been cleared.</p><div class="field"><label>Mission progress: ${mission().tracker}</label><input id="tracker" type="number" min="0" max="${mission().max}" value="${state.tracker}"></div><div class="checklist"><label class="check-row"><input id="endChecked" type="checkbox"><span><strong>End-of-turn steps complete</strong><small>Objectives scored, temporary effects resolved, and physical tokens cleaned up.</small></span></label></div><button class="btn primary big-action" id="finishTp" disabled>Finish Turning Point</button></section>`;
-    if(state.playerReady<=0 && readyNpos().length===0){ state.phase='end'; save(); return nextStepCard(); }
-    if(state.nextSide==='player' && state.playerReady>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ACTIVATION ${state.activationNumber+1}</span><h2>Activate a Player operative</h2><p>Resolve one of your solo player-controlled operatives on the tabletop, then record what happened so Threat and alternation remain accurate.</p><button class="btn primary big-action" id="playerActivation">Resolve Player Activation</button><button class="btn ghost big-action" id="skipPlayer">No Player Operatives Ready</button></section>`;
-    if(readyNpos().length>0){const n=nextNpo();return `<section class="next-card"><span class="phase">NPO ACTIVATION · ACTIVATION ${state.activationNumber+1}</span><h2>${escapeHtml(n.name)}</h2><p>${n.type} · ${n.behavior} · ${n.wounds}/${n.maxWounds} wounds</p><div class="summary-box"><strong>Next step:</strong> answer a short set of battlefield questions from this NPO’s perspective.</div><button class="btn primary big-action" id="npoActivation">Guide This NPO</button></section>`;}
-    if(state.playerReady>0){state.nextSide='player';save();return nextStepCard();}
-    state.phase='end';save();return nextStepCard();
+    setNextActivation(state.nextSide || state.initiative || 'player');
+    if(state.phase==='end'){save();return nextStepCard();}
+    if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ACTIVATION ${state.activationNumber+1}</span><h2>Activate a Player operative</h2><p>Resolve one Player operative on the tabletop. After it completes, the Guide will alternate to an NPO if one is ready.</p><button class="btn primary big-action" id="playerActivation">Resolve Player Activation</button><button class="btn ghost big-action" id="skipPlayer">No Player Operatives Ready</button></section>`;
+    if(state.nextSide==='npo' && readyNpos().length>0){const n=nextNpo();return `<section class="next-card"><span class="phase">NPO ACTIVATION · ACTIVATION ${state.activationNumber+1}</span><h2>${escapeHtml(n.name)}</h2><p>${n.type} · ${n.behavior} · ${n.wounds}/${n.maxWounds} wounds</p><div class="summary-box"><strong>Next step:</strong> answer a short set of battlefield questions from this NPO’s perspective. After it completes, the Guide will alternate to a Player operative if one remains.</div><button class="btn primary big-action" id="npoActivation">Guide This NPO</button></section>`;}
+    setNextActivation(state.nextSide==='player'?'npo':'player');
+    save();
+    return nextStepCard();
   }
 
   function strategyCard(){
@@ -248,7 +279,7 @@
     $('#rerollInitiative')?.addEventListener('click',()=>{rollInitiative();save();render();});
     $$('[data-init]').forEach(b=>b.onclick=()=>beginFirefight(b.dataset.init));
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
-    $('#skipPlayer')?.addEventListener('click',()=>{state.playerReady=0;state.nextSide=readyNpos().length?'npo':'player';log('No Player operatives remain ready.');save();render();});
+    $('#skipPlayer')?.addEventListener('click',()=>{state.playerReady=0;setNextActivation('npo');log('No Player operatives remain ready.');save();render();});
     $('#npoActivation')?.addEventListener('click',showNpoWizard);
     $('#tracker')?.addEventListener('change',e=>{state.tracker=Math.max(0,Math.min(mission().max,Number(e.target.value)||0));save();});
     $('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked;});
@@ -291,9 +322,14 @@
   }
 
   function beginFirefight(side){
-    state.initiative=side;state.phase='firefight';state.strategyStage=null;state.nextSide=side;
+    state.initiative=side;
+    state.phase='firefight';
+    state.strategyStage=null;
     if(state.threat===0)activeNpos().forEach(n=>n.ready=false);
-    log(`${side==='npo'?'NPOs':'Player'} begin the Firefight Phase with initiative.`);save();render();
+    setNextActivation(side);
+    log(`${side==='npo'?'NPOs':'Player'} begin the Firefight Phase with initiative.`);
+    save();
+    render();
   }
 
   function applyStrategyEvent(event){
@@ -465,7 +501,7 @@
     state.activationNumber++;
     const summary=playerActivationSummary(stage);
     state.activationHistory.unshift({side:'player',label:`Player activation ${state.playerActivated}`,summary});
-    state.nextSide=readyNpos().length?'npo':'player';
+    advanceAfterActivation('player');
     log(`Player operative completed activation ${state.playerActivated}: ${summary}.`);
     closeModal();
     save();
@@ -606,7 +642,7 @@
     if(decision.threat)setThreat(decision.threat,`${n.name} ${decision.action.includes('Fight')?'Fight':'Shoot'}`);
     n.ready=false;state.npoActivated++;state.activationNumber++;
     state.activationHistory.unshift({side:'npo',label:n.name,action:decision.action});
-    state.activeNpoId=null;state.nextSide=state.playerReady>0?'player':'npo';
+    state.activeNpoId=null;advanceAfterActivation('npo');
     state.lastActivation={name:n.name,...decision,dice,answers:c};
     log(`${n.name}: ${decision.action}.`);save();
 

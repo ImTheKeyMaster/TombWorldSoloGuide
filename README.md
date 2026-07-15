@@ -174,3 +174,15 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 - The scroll reset only occurs when the guided step changes.
 - Toggling controls within the same step does not reset the scroll position.
 - Includes an iOS-compatible top reset after the new content renders.
+
+
+## v1.3.9 Alternating activations
+
+- Player and NPO operatives now alternate one activation at a time.
+- Initiative determines which side activates first.
+- After a Player activation, an NPO activates next when one is ready.
+- After an NPO activation, a Player operative activates next when one remains.
+- If one side runs out of ready operatives, the other side completes its remaining activations consecutively.
+- When neither side has ready operatives, the Guide automatically enters End of Turning Point.
+- Added a prominent **Next Activation** banner to Guided Play.
+- At Threat 0, NPOs remain dormant, so the Player correctly completes all Player activations.
