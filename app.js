@@ -2,6 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
+  const APP_VERSION = '1.1.0';
   const MAX_NPOS = 10;
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -47,16 +48,26 @@
   ];
 
   const initialState = () => ({
-    version:1, screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:'1.1.0', screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:[], roster:[], enemyCount:6, enemyReady:6, turningPoint:0,
     threat:0, initiative:'enemy', phase:'setup', nextSide:'enemy', tracker:0,
-    activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false
+    activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
+    strategyStage:null, strategyData:null, activationNumber:0, enemyActivated:0, npoActivated:0,
+    activationHistory:[], reinforcementEntry:'Nearest valid entry point'
   });
 
-  let state = load() || initialState();
+  let state = normalizeState(load() || initialState());
 
-  function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function save(){ state.version=APP_VERSION; localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
   function load(){ try{return JSON.parse(localStorage.getItem(STORAGE_KEY));}catch{return null;} }
+  function normalizeState(raw){
+    const base=initialState(), merged={...base,...raw};
+    merged.roster=Array.isArray(raw?.roster)?raw.roster:[];
+    merged.journal=Array.isArray(raw?.journal)?raw.journal:[];
+    merged.newIds=Array.isArray(raw?.newIds)?raw.newIds:[];
+    merged.activationHistory=Array.isArray(raw?.activationHistory)?raw.activationHistory:[];
+    return merged;
+  }
   function mission(){ return missions.find(m => m.id === state.missionId) || missions[0]; }
   function roll(sides=6){ return Math.floor(Math.random()*sides)+1; }
   function rollD3(){ return roll(3); }
@@ -64,6 +75,8 @@
   function activeNpos(){ return state.roster.filter(n => n.wounds > 0); }
   function readyNpos(){ return activeNpos().filter(n => n.ready); }
   function threatGrade(){ return state.threat === 0 ? 0 : state.threat <= 5 ? 1 : state.threat <= 10 ? 2 : 3; }
+  function threatLabel(){ return ['Dormant','Alert','Awakened','Full Awakening'][threatGrade()]; }
+  function threatToNext(){ const g=threatGrade(); if(g===3)return 0; return [1,6,11][g]-state.threat; }
   function log(text){ state.journal.unshift({time:new Date().toISOString(),text}); state.journal=state.journal.slice(0,150); }
   function setThreat(amount,reason){ const before=state.threat; state.threat=Math.max(0,Math.min(15,state.threat+amount)); if(state.threat!==before) log(`Threat ${before} → ${state.threat}: ${reason}`); }
   function escapeHtml(s){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
@@ -152,55 +165,104 @@
     else renderHelp();
   }
 
-  function hud(){return `<div class="hud"><div><small>Turning Point</small><strong>${state.turningPoint||'Setup'}</strong></div><div><small>Threat</small><strong>${state.threat}</strong></div><div><small>Grade</small><strong>${threatGrade()}</strong></div><div><small>Enemy Ready</small><strong>${state.enemyReady}</strong></div><div><small>NPO Ready</small><strong>${readyNpos().length}</strong></div></div>`;}
+  function hud(){return `<div class="hud"><div><small>Turning Point</small><strong>${state.turningPoint||'Setup'}</strong></div><div><small>Threat</small><strong>${state.threat}</strong></div><div><small>Grade</small><strong>${threatGrade()}</strong></div><div><small>Enemy Ready</small><strong>${state.enemyReady}</strong></div><div><small>NPO Ready</small><strong>${readyNpos().length}</strong></div></div><div class="threat-strip"><div><strong>${threatLabel()}</strong><small>${threatGrade()===3?'Maximum grade':`${threatToNext()} Threat to next grade`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
 
   function renderPlay(){
-    app.innerHTML=hud()+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${nextStepCard()}`;
+    app.innerHTML=hud()+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${nextStepCard()}${state.phase==='firefight'?activationTracker():''}`;
     bindPlay();
   }
 
   function nextStepCard(){
     if(state.completed) return `<section class="next-card"><span class="phase">MISSION COMPLETE</span><h2>Record the outcome</h2><p>The mission has reached its conclusion. Review the Journal or begin a new game.</p><button class="btn primary big-action" id="newGameFromPlay">Start New Game</button></section>`;
-    if(state.phase==='between') return `<section class="next-card"><span class="phase">NEXT STEP</span><h2>Start Turning Point ${state.turningPoint+1}</h2><p>The Guide will ready surviving NPOs, calculate Threat Grade, generate reinforcements after Turning Point 1, and check Tomb World events.</p><button class="btn primary big-action" id="startTp">Start Next Turning Point</button></section>`;
-    if(state.phase==='strategy') return `<section class="next-card"><span class="phase">STRATEGY PHASE</span><h2>Resolve initiative</h2><p>Choose which side has initiative for this Turning Point. At Threat 0, the Enemy automatically has initiative and NPOs remain dormant.</p><div class="quick-actions"><button class="btn primary" data-init="enemy">Enemy Has Initiative</button><button class="btn secondary" data-init="npo" ${state.threat===0?'disabled':''}>NPOs Have Initiative</button></div></section>`;
-    if(state.phase==='end') return `<section class="next-card"><span class="phase">END OF TURNING POINT</span><h2>Score and clean up</h2><p>Score mission objectives, resolve end-of-turn effects, and confirm all temporary markers have been cleared.</p><div class="field"><label>Mission progress: ${mission().tracker}</label><input id="tracker" type="number" min="0" max="${mission().max}" value="${state.tracker}"></div><div class="checklist"><label class="check-row"><input id="endChecked" type="checkbox"><span><strong>End-of-turn steps complete</strong><small>Objectives scored and temporary effects resolved.</small></span></label></div><button class="btn primary big-action" id="finishTp" disabled>Finish Turning Point</button></section>`;
+    if(state.phase==='between') return `<section class="next-card"><span class="phase">NEXT STEP</span><h2>Start Turning Point ${state.turningPoint+1}</h2><p>The Guide will ready operatives, determine the current Threat Grade, generate reinforcements, check Tomb World events, and resolve initiative.</p><button class="btn primary big-action" id="startTp">Start Next Turning Point</button></section>`;
+    if(state.phase==='strategy') return strategyCard();
+    if(state.phase==='end') return `<section class="next-card"><span class="phase">END OF TURNING POINT</span><h2>Score and clean up</h2><p>Score mission objectives, resolve end-of-turn effects, and confirm all temporary markers have been cleared.</p><div class="field"><label>Mission progress: ${mission().tracker}</label><input id="tracker" type="number" min="0" max="${mission().max}" value="${state.tracker}"></div><div class="checklist"><label class="check-row"><input id="endChecked" type="checkbox"><span><strong>End-of-turn steps complete</strong><small>Objectives scored, temporary effects resolved, and physical tokens cleaned up.</small></span></label></div><button class="btn primary big-action" id="finishTp" disabled>Finish Turning Point</button></section>`;
     if(state.enemyReady<=0 && readyNpos().length===0){ state.phase='end'; save(); return nextStepCard(); }
-    if(state.nextSide==='enemy' && state.enemyReady>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE</span><h2>Activate an Enemy operative</h2><p>Resolve one of your solo player-controlled operatives on the tabletop, then tell the Guide what it did.</p><button class="btn primary big-action" id="enemyActivation">Record Enemy Activation</button><button class="btn ghost big-action" id="skipEnemy">No Enemy Operatives Ready</button></section>`;
-    if(readyNpos().length>0){const n=nextNpo();return `<section class="next-card"><span class="phase">NPO ACTIVATION</span><h2>${escapeHtml(n.name)}</h2><p>${n.type} · ${n.behavior} · ${n.wounds}/${n.maxWounds} wounds</p><div class="summary-box"><strong>Next step:</strong> answer a short set of battlefield questions from this NPO’s perspective.</div><button class="btn primary big-action" id="npoActivation">Guide This NPO</button></section>`;}
+    if(state.nextSide==='enemy' && state.enemyReady>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ACTIVATION ${state.activationNumber+1}</span><h2>Activate an Enemy operative</h2><p>Resolve one of your solo player-controlled operatives on the tabletop, then record what happened so Threat and alternation remain accurate.</p><button class="btn primary big-action" id="enemyActivation">Record Enemy Activation</button><button class="btn ghost big-action" id="skipEnemy">No Enemy Operatives Ready</button></section>`;
+    if(readyNpos().length>0){const n=nextNpo();return `<section class="next-card"><span class="phase">NPO ACTIVATION · ACTIVATION ${state.activationNumber+1}</span><h2>${escapeHtml(n.name)}</h2><p>${n.type} · ${n.behavior} · ${n.wounds}/${n.maxWounds} wounds</p><div class="summary-box"><strong>Next step:</strong> answer a short set of battlefield questions from this NPO’s perspective.</div><button class="btn primary big-action" id="npoActivation">Guide This NPO</button></section>`;}
     if(state.enemyReady>0){state.nextSide='enemy';save();return nextStepCard();}
     state.phase='end';save();return nextStepCard();
   }
 
+  function strategyCard(){
+    const d=state.strategyData||{};
+    if(state.strategyStage==='summary'){
+      const rolls=(d.reinforcements||[]).map(r=>`<div class="reinforcement-result"><div class="dice-row compact">${r.rolls.map(v=>dieHtml({value:v,kind:'hit'})).join('')}</div><strong>${r.type}</strong></div>`).join('');
+      return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 1 OF 2</span><h2>Turning Point ${state.turningPoint} prepared</h2><div class="stat-grid"><div class="stat"><small>Threat</small><strong>${state.threat}</strong></div><div class="stat"><small>Grade</small><strong>${d.grade??threatGrade()}</strong></div><div class="stat"><small>NPOs Ready</small><strong>${readyNpos().length}</strong></div><div class="stat"><small>Reinforcements</small><strong>${(d.reinforcements||[]).length}</strong></div></div>${rolls?`<h3>Reinforcements generated</h3><div class="reinforcement-grid">${rolls}</div><div class="field"><label>Reinforcement entry point</label><select id="reinforcementEntry"><option>Nearest valid entry point</option><option>Entry Point A</option><option>Entry Point B</option><option>Entry Point C</option><option>Custom placement</option></select></div>`:'<div class="summary-box"><strong>No reinforcements arrive.</strong></div>'}${d.blocked?`<p class="warning-text">${d.blocked} reinforcement(s) were blocked by the 10-NPO battlefield limit.</p>`:''}${d.event?`<div class="summary-box"><strong>${d.event[0]}</strong><br>${d.event[1]}</div>`:'<p>No Tomb World event is required.</p>'}<button class="btn primary big-action" id="continueStrategy">Continue to Initiative</button></section>`;
+    }
+    const auto=state.threat===0;
+    return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 2 OF 2</span><h2>${auto?'Enemy automatically has initiative':'Determine initiative'}</h2>${auto?`<p>At Threat 0, the tomb remains dormant. NPOs are expended and the Enemy begins the Firefight Phase.</p>`:`<p>The Guide rolled once for each side. Use the result, reroll both dice, or override it if your tabletop rules require a different outcome.</p><div class="initiative-roll"><div><small>Enemy</small>${dieHtml({value:state.strategyData.enemyRoll,kind:'hit'})}</div><div><small>NPOs</small>${dieHtml({value:state.strategyData.npoRoll,kind:'hit'})}</div></div><div class="summary-box"><strong>${state.strategyData.suggestedInitiative==='npo'?'NPOs':'Enemy'} win initiative${state.strategyData.enemyRoll===state.strategyData.npoRoll?' after the tie-break':''}.</strong></div>`}<div class="quick-actions">${auto?'':`<button class="btn ghost" id="rerollInitiative">Reroll Both</button>`}<button class="btn primary" data-init="enemy">Begin with Enemy</button><button class="btn secondary" data-init="npo" ${auto?'disabled':''}>Begin with NPOs</button></div></section>`;
+  }
+
+  function activationTracker(){
+    const enemySpent=state.enemyCount-state.enemyReady;
+    const enemyDots=Array.from({length:state.enemyCount},(_,i)=>`<span class="activation-dot ${i<enemySpent?'spent':'ready'}" title="Enemy operative ${i+1}"></span>`).join('');
+    const npoRows=activeNpos().map(n=>`<div class="tracker-npo ${n.ready?'ready':'spent'}"><span>${escapeHtml(n.name)}</span><strong>${n.ready?'READY':'EXPENDED'}</strong></div>`).join('');
+    return `<section class="card activation-tracker"><div class="panel-title"><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div><div class="turn-badge">Next: ${state.nextSide==='npo'?'NPO':'Enemy'}</div></div><div class="tracker-section"><small>Enemy operatives</small><div class="enemy-dots">${enemyDots}</div></div><div class="tracker-section"><small>NPOs</small><div class="tracker-npos">${npoRows||'<span class="muted">No active NPOs</span>'}</div></div></section>`;
+  }
+
   function bindPlay(){
     $('#startTp')?.addEventListener('click',startTurningPoint);
-    $$('[data-init]').forEach(b=>b.onclick=()=>{state.initiative=b.dataset.init;state.phase='firefight';state.nextSide=state.initiative==='npo'?'npo':'enemy';log(`${state.initiative==='npo'?'NPOs':'Enemy'} gained initiative.`);save();render();});
+    $('#continueStrategy')?.addEventListener('click',()=>{state.reinforcementEntry=$('#reinforcementEntry')?.value||state.reinforcementEntry;state.strategyStage='initiative';save();render();});
+    $('#rerollInitiative')?.addEventListener('click',()=>{rollInitiative();save();render();});
+    $$('[data-init]').forEach(b=>b.onclick=()=>beginFirefight(b.dataset.init));
     $('#enemyActivation')?.addEventListener('click',showEnemyActivation);
-    $('#skipEnemy')?.addEventListener('click',()=>{state.enemyReady=0;state.nextSide='npo';save();render();});
+    $('#skipEnemy')?.addEventListener('click',()=>{state.enemyReady=0;state.nextSide=readyNpos().length?'npo':'enemy';log('No Enemy operatives remain ready.');save();render();});
     $('#npoActivation')?.addEventListener('click',showNpoWizard);
     $('#tracker')?.addEventListener('change',e=>{state.tracker=Math.max(0,Math.min(mission().max,Number(e.target.value)||0));save();});
     $('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked;});
-    $('#finishTp')?.addEventListener('click',()=>{state.phase='between';state.newIds=[];log(`Turning Point ${state.turningPoint} completed.`);save();render();});
+    $('#finishTp')?.addEventListener('click',()=>{state.phase='between';state.strategyStage=null;state.strategyData=null;state.newIds=[];log(`Turning Point ${state.turningPoint} completed.`);save();render();});
     $('#newGameFromPlay')?.addEventListener('click',confirmNewGame);
+    $('#threatUp')?.addEventListener('click',()=>{setThreat(1,'Manual adjustment');save();render();});
+    $('#threatDown')?.addEventListener('click',()=>{setThreat(-1,'Manual adjustment');save();render();});
   }
 
   function startTurningPoint(){
     state.turningPoint++;
     state.enemyReady=state.enemyCount;
+    state.enemyActivated=0;state.npoActivated=0;state.activationNumber=0;state.activationHistory=[];
+    const grade=threatGrade();
     activeNpos().forEach(n=>n.ready=state.threat>0);
-    const grade=threatGrade(), spawned=[];
+    const reinforcements=[];
+    let blocked=0;
     if(state.turningPoint>1 && grade>0){
-      const slots=Math.max(0,MAX_NPOS-activeNpos().length), amount=Math.min(grade,slots);
-      for(let i=0;i<amount;i++){const type=randomReinforcement();const p=profiles[type];const n={id:uid(),name:`${type} R${state.turningPoint}-${i+1}`,type,behavior:p.behavior,maxWounds:p.wounds,wounds:p.wounds,save:p.save,attack:{...p.attack},ready:true,deployed:true};state.roster.push(n);state.newIds.push(n.id);spawned.push(type);}
+      const requested=grade, slots=Math.max(0,MAX_NPOS-activeNpos().length), amount=Math.min(requested,slots); blocked=requested-amount;
+      for(let i=0;i<amount;i++){
+        const rr=randomReinforcement();const type=rr.type,p=profiles[type];
+        const n={id:uid(),name:`${type} R${state.turningPoint}-${i+1}`,type,behavior:p.behavior,maxWounds:p.wounds,wounds:p.wounds,save:p.save,attack:{...p.attack},ready:true,deployed:true};
+        state.roster.push(n);state.newIds.push(n.id);reinforcements.push(rr);
+      }
     }
     let event=null;
-    if(grade===3){event=events[roll(events.length)-1]; if(event[0]==='Stirrings of Horror')setThreat(1,event[0]);}
-    state.phase='strategy';state.nextSide='enemy';
-    log(`Turning Point ${state.turningPoint} started. Grade ${grade}; ${spawned.length} reinforcement(s).`);
-    save();
-    showModal(`Turning Point ${state.turningPoint}`,`<div class="stat-grid"><div class="stat"><small>Threat</small><strong>${state.threat}</strong></div><div class="stat"><small>Grade</small><strong>${grade}</strong></div><div class="stat"><small>NPOs readied</small><strong>${readyNpos().length}</strong></div><div class="stat"><small>Reinforcements</small><strong>${spawned.length}</strong></div></div>${spawned.length?`<h3>Reinforcements</h3><p>${spawned.join(', ')}</p>`:'<p>No reinforcements arrive.</p>'}${event?`<div class="summary-box"><strong>${event[0]}</strong><br>${event[1]}</div>`:''}<div class="wizard-actions"><button class="btn primary" data-close>Resolve Initiative</button></div>`,()=>render());
+    if(grade===3){event=events[roll(events.length)-1];applyStrategyEvent(event);}
+    state.strategyData={grade,reinforcements,blocked,event,enemyRoll:null,npoRoll:null,suggestedInitiative:'enemy'};
+    rollInitiative();
+    state.phase='strategy';state.strategyStage='summary';state.nextSide='enemy';state.activeNpoId=null;
+    log(`Turning Point ${state.turningPoint} started. Grade ${grade}; ${reinforcements.length} reinforcement(s).`);
+    save();render();
   }
 
-  function randomReinforcement(){ const r=roll(6)+roll(6); return r<=4?'Canoptek Scarab Swarm':r<=6?'Canoptek Macrocyte':r<=10?'Necron Warrior':'Canoptek Tomb Crawler'; }
+  function rollInitiative(){
+    if(!state.strategyData)state.strategyData={};
+    if(state.threat===0){state.strategyData.enemyRoll=null;state.strategyData.npoRoll=null;state.strategyData.suggestedInitiative='enemy';return;}
+    const e=roll(),n=roll();state.strategyData.enemyRoll=e;state.strategyData.npoRoll=n;
+    state.strategyData.suggestedInitiative=n>e?'npo':'enemy';
+  }
+
+  function beginFirefight(side){
+    state.initiative=side;state.phase='firefight';state.strategyStage=null;state.nextSide=side;
+    if(state.threat===0)activeNpos().forEach(n=>n.ready=false);
+    log(`${side==='npo'?'NPOs':'Enemy'} begin the Firefight Phase with initiative.`);save();render();
+  }
+
+  function applyStrategyEvent(event){
+    if(!event)return;
+    if(event[0]==='Stirrings of Horror')setThreat(1,event[0]);
+    if(event[0]==='Living Metal Flux')activeNpos().forEach(n=>{if(n.wounds<n.maxWounds)n.wounds=Math.min(n.maxWounds,n.wounds+rollD3()+2);});
+    if(event[0]==='Awakened Warrior' && activeNpos().length<MAX_NPOS){const p=profiles['Necron Warrior'];state.roster.push({id:uid(),name:`Necron Warrior E${state.turningPoint}`,type:'Necron Warrior',behavior:p.behavior,maxWounds:p.wounds,wounds:p.wounds,save:p.save,attack:{...p.attack},ready:true,deployed:true});}
+  }
+
+  function randomReinforcement(){ const a=roll(),b=roll(),r=a+b; return {rolls:[a,b],total:r,type:r<=4?'Canoptek Scarab Swarm':r<=6?'Canoptek Macrocyte':r<=10?'Necron Warrior':'Canoptek Tomb Crawler'}; }
   function nextNpo(){ let n=state.roster.find(x=>x.id===state.activeNpoId&&x.ready&&x.wounds>0); if(!n){n=readyNpos().sort((a,b)=>priority(b)-priority(a))[0];state.activeNpoId=n?.id||null;} return n; }
   function priority(n){return ({Guardian:4,Marksman:3,Brawler:2,Sentinel:1}[n.behavior]||1)+(n.wounds/n.maxWounds<.5?-.5:0);}
 
@@ -218,7 +280,7 @@
       if($('#eaHatch').checked){const r=roll();if(r>=4)inc++;showToast(`Operate Hatch rolled ${r}${r>=4?'... Threat +1':'... no Threat increase'}`);}
       if($('#eaBreach').checked){inc++;const r=roll();if(r>=4)inc++;showToast(`Breach rolled ${r}${r>=4?'... Threat +2 total':'... Threat +1 total'}`);}
       if(inc)setThreat(inc,'Enemy activation');
-      state.enemyReady=Math.max(0,state.enemyReady-1);state.nextSide=readyNpos().length?'npo':'enemy';log('Enemy operative completed an activation.');closeModal();save();render();
+      state.enemyReady=Math.max(0,state.enemyReady-1);state.enemyActivated++;state.activationNumber++;state.activationHistory.unshift({side:'enemy',label:`Enemy activation ${state.enemyActivated}`});state.nextSide=readyNpos().length?'npo':'enemy';log(`Enemy operative completed activation ${state.enemyActivated}.`);closeModal();save();render();
     };
   }
 
@@ -246,7 +308,7 @@
     if(c.objective)target='Enemy operative controlling the mission objective';else if(c.wounded)target='wounded valid Enemy operative';
     const dice=action.includes('Fight')||action.includes('Shoot')?rollAttack(n.attack):[];
     if(threat)setThreat(threat,`${n.name} ${action.includes('Fight')?'Fight':'Shoot'}`);
-    n.ready=false;state.activeNpoId=null;state.nextSide=state.enemyReady>0?'enemy':'npo';state.lastActivation={name:n.name,action,target,dice};log(`${n.name}: ${action}.`);save();
+    n.ready=false;state.npoActivated++;state.activationNumber++;state.activationHistory.unshift({side:'npo',label:n.name});state.activeNpoId=null;state.nextSide=state.enemyReady>0?'enemy':'npo';state.lastActivation={name:n.name,action,target,dice};log(`${n.name}: ${action}.`);save();
     modalBody.innerHTML=`<div class="modal-inner"><p class="eyebrow">RECOMMENDED ACTIVATION</p><h2>${escapeHtml(n.name)}</h2><div class="summary-box"><strong>${action}</strong><br>Target: ${target}</div>${dice.length?`<h3>Attack roll</h3><div class="dice-row">${dice.map(dieHtml).join('')}</div><p>${dice.filter(d=>d.kind==='crit').length} critical · ${dice.filter(d=>d.kind==='hit').length} normal · ${dice.filter(d=>d.kind==='miss').length} miss</p>`:''}<div class="wizard-actions"><button class="btn primary" id="completeNpo">Activation Complete</button></div></div>`;
     $('#completeNpo').onclick=()=>{closeModal();render();};
   }
@@ -265,7 +327,9 @@
     <details><summary>What is Threat Level?</summary><p>A 0–15 alert meter that rises from loud or destructive actions. Higher Threat produces higher grades, more reinforcements, and eventually Tomb World events.</p></details>
     <details><summary>What is Threat Grade?</summary><p>Grade 0 at Threat 0, Grade 1 at 1–5, Grade 2 at 6–10, and Grade 3 at 11–15. Reinforcements normally equal the current grade after Turning Point 1.</p></details>
     <details><summary>When do I start the next Turning Point?</summary><p>After every ready Enemy operative and NPO has activated, complete end-of-turn scoring and press Finish Turning Point. The Play tab will then offer Start Next Turning Point.</p></details>
-    <details><summary>How are saves and damage handled?</summary><p>V1 focuses on setup and guided activations. Use the Roster tab to adjust NPO wounds. A full attack and save resolver is planned for the next gameplay release.</p></details>
+    <details><summary>What happens during the Strategy Phase?</summary><p>The Guide readies operatives, evaluates Threat Grade, generates reinforcements after Turning Point 1, checks for Tomb World events, and rolls initiative. You review each result before activations begin.</p></details>
+    <details><summary>How does activation tracking work?</summary><p>Each completed Enemy or NPO activation is recorded. Ready counts and the next side update automatically. When both sides have no ready operatives, the Guide advances to end-of-turn scoring.</p></details>
+    <details><summary>How are saves and damage handled?</summary><p>V1.1 focuses on the Turning Point engine and activation tracking. Use the Roster tab to adjust NPO wounds. A full attack and save resolver is planned for the combat release.</p></details>
   </section>`;}
 
   function boardSvg(id){const m=maps[id];const orient=mission().orientation;let zone=orient==='left'?'<rect x="30" y="30" width="110" height="430" fill="#244b74" opacity=".48"/><text x="85" y="250" fill="#a8d6ff" text-anchor="middle" transform="rotate(-90 85 250)">ENEMY DROP ZONE</text>':'<rect x="30" y="390" width="740" height="70" fill="#244b74" opacity=".48"/><text x="400" y="432" fill="#a8d6ff" text-anchor="middle">ENEMY DROP ZONE</text>';return `<div class="board-map"><svg viewBox="0 0 800 490" role="img" aria-label="Simplified board layout for ${mission().name}"><rect x="20" y="20" width="760" height="450" rx="10" fill="#08150f" stroke="#3e7558" stroke-width="3"/>${zone}<rect x="140" y="30" width="630" height="350" fill="#173721" opacity=".2"/><text x="610" y="55" fill="#7ee9a5" font-size="15">NPO TERRITORY</text>${m.walls.map(w=>`<line x1="${w[0]}" y1="${w[1]}" x2="${w[2]}" y2="${w[3]}" stroke="#80958a" stroke-width="12" stroke-linecap="square"/>`).join('')}${m.hatches.map(h=>h[2]==='v'?`<rect x="${h[0]-7}" y="${h[1]-20}" width="14" height="40" rx="4" fill="#67df99"/>`:`<rect x="${h[0]-20}" y="${h[1]-7}" width="40" height="14" rx="4" fill="#67df99"/>`).join('')}${m.markers.map(x=>`<circle cx="${x[0]}" cy="${x[1]}" r="21" fill="#b98732" stroke="#f0d074" stroke-width="3"/><text x="${x[0]}" y="${x[1]+5}" text-anchor="middle" fill="#fff" font-size="11" font-weight="800">${x[2]}</text>`).join('')}</svg></div>`;}
@@ -281,7 +345,7 @@
   function showToast(text){toast.textContent=text;toast.hidden=false;clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.hidden=true,6500);}
   function confirmNewGame(){showModal('Start New Game?',`<p>This will replace the current mission, roster, Threat, Turning Point, and Journal.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmNewGame">Start New Game</button></div>`);$('#confirmNewGame').onclick=()=>{localStorage.removeItem(STORAGE_KEY);state=initialState();state.screen='setup';closeModal();save();render();};}
   function exportSave(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tomb-world-solo-guide-save.json';a.click();URL.revokeObjectURL(a.href);}
-  importInput.addEventListener('change',async()=>{const f=importInput.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!data.version)throw new Error();state=data;state.screen='game';save();render();showToast('Save imported.');}catch{showToast('That file is not a valid Tomb World Solo Guide save.');}finally{importInput.value='';}});
+  importInput.addEventListener('change',async()=>{const f=importInput.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!data.version)throw new Error();state=normalizeState(data);state.screen='game';save();render();showToast('Save imported.');}catch{showToast('That file is not a valid Tomb World Solo Guide save.');}finally{importInput.value='';}});
 
   function bindCommon(){
     $$('#bottomNav button').forEach(b=>b.onclick=()=>{state.tab=b.dataset.nav;save();render();});
