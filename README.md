@@ -98,3 +98,13 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 - Damage preview before confirmation
 - Confirmed Enemy damage automatically updates NPO wounds
 - NPO damage is recorded for application to the Enemy operative on the tabletop
+
+
+## v1.3.1 Guided-flow refinements
+
+- `Begin Turning Point 1` now proceeds directly into Turning Point preparation and initiative.
+- Removed the redundant intermediate `Start Turning Point 1` screen from initial setup.
+- Added Move, Dash, Charge, Fall Back, Mission Action, and Pass options to Enemy activation recording.
+- Movement actions are recorded without changing Threat.
+- Completing an activation with no selected actions now requires explicit confirmation.
+- Enemy activation history and Journal entries now summarize the recorded actions.

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.3.0';
+  const APP_VERSION = '1.3.1';
   const MAX_NPOS = 10;
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -48,7 +48,7 @@
   ];
 
   const initialState = () => ({
-    version:'1.3.0', screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:'1.3.1', screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:[], roster:[], enemyCount:6, enemyReady:6, turningPoint:0,
     threat:0, initiative:'enemy', phase:'setup', nextSide:'enemy', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
@@ -153,7 +153,17 @@
     $$('[data-deploy]').forEach(b=>b.onclick=()=>{const n=state.roster.find(x=>x.id===b.dataset.deploy);n.deployed=!n.deployed;save();render();});
     $('#enemyCount')?.addEventListener('change',e=>{state.enemyCount=Math.max(1,Math.min(20,Number(e.target.value)||1));state.enemyReady=state.enemyCount;save();});
     $('#enemyDeployed')?.addEventListener('change',e=>{$('#setupNext').disabled=!e.target.checked;});
-    $('#beginGame')?.addEventListener('click',()=>{state.screen='game';state.tab='play';state.turningPoint=0;state.phase='between';state.nextSide='enemy';state.enemyReady=state.enemyCount;state.roster.forEach(n=>n.ready=false);log(`Mission started: ${mission().name}.`);save();render();});
+    $('#beginGame')?.addEventListener('click',()=>{
+      state.screen='game';
+      state.tab='play';
+      state.turningPoint=0;
+      state.phase='between';
+      state.nextSide='enemy';
+      state.enemyReady=state.enemyCount;
+      state.roster.forEach(n=>n.ready=false);
+      log(`Mission started: ${mission().name}.`);
+      startTurningPoint();
+    });
   }
 
   function renderGame(){
@@ -206,7 +216,7 @@
     $('#continueStrategy')?.addEventListener('click',()=>{state.reinforcementEntry=$('#reinforcementEntry')?.value||state.reinforcementEntry;state.strategyStage='initiative';save();render();});
     $('#rerollInitiative')?.addEventListener('click',()=>{rollInitiative();save();render();});
     $$('[data-init]').forEach(b=>b.onclick=()=>beginFirefight(b.dataset.init));
-    $('#enemyActivation')?.addEventListener('click',showEnemyActivation);
+    $('#enemyActivation')?.addEventListener('click',()=>showEnemyActivation());
     $('#skipEnemy')?.addEventListener('click',()=>{state.enemyReady=0;state.nextSide=readyNpos().length?'npo':'enemy';log('No Enemy operatives remain ready.');save();render();});
     $('#npoActivation')?.addEventListener('click',showNpoWizard);
     $('#tracker')?.addEventListener('change',e=>{state.tracker=Math.max(0,Math.min(mission().max,Number(e.target.value)||0));save();});
@@ -269,29 +279,111 @@
   function showEnemyActivation(stage={}){
     const living=activeNpos();
     const checked=key=>stage[key]?'checked':'';
-    showModal('Record Enemy Activation',`<p>Select everything that occurred during this Enemy operative’s activation.</p><div class="toggle-list">
+    showModal('Record Enemy Activation',`<p>Select everything that occurred during this Enemy operative’s activation. Movement actions do not increase Threat, but recording them keeps the activation history clear.</p><div class="toggle-list enemy-action-list">
+      <label><input type="checkbox" id="eaMove" ${checked('move')}>Moved</label>
+      <label><input type="checkbox" id="eaDash" ${checked('dash')}>Dashed</label>
+      <label><input type="checkbox" id="eaCharge" ${checked('charge')}>Charged</label>
+      <label><input type="checkbox" id="eaFallBack" ${checked('fallBack')}>Fell Back</label>
       <label><input type="checkbox" id="eaShoot" ${checked('shoot')}>Used a non-Silent Shoot action</label>
       <label><input type="checkbox" id="eaFight" ${checked('fight')}>Used a Fight action</label>
       <label><input type="checkbox" id="eaDamage" ${checked('damage')}>Damaged an NPO with another action</label>
       <label><input type="checkbox" id="eaHatch" ${checked('hatch')}>Operated a hatch</label>
       <label><input type="checkbox" id="eaBreach" ${checked('breach')}>Performed a Breach</label>
-      <label><input type="checkbox" id="eaObjective" ${checked('objective')}>Interacted with a mission objective</label>
+      <label><input type="checkbox" id="eaObjective" ${checked('objective')}>Performed a mission or objective action</label>
+      <label><input type="checkbox" id="eaPass" ${checked('pass')}>Passed or no action recorded</label>
     </div>${living.length?`<div class="combat-launch"><p><strong>Did the Enemy attack an NPO?</strong></p><button class="btn secondary" id="launchEnemyAttack">Open Enemy Attack Wizard</button><small>${stage.combatResolved?'Combat result recorded. Complete the activation when ready.':'No combat result recorded for this activation.'}</small></div>`:''}<div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmEnemy">Complete Activation</button></div>`);
+
+    const actionIds=['eaMove','eaDash','eaCharge','eaFallBack','eaShoot','eaFight','eaDamage','eaHatch','eaBreach','eaObjective'];
+    $('#eaPass')?.addEventListener('change',e=>{
+      if(e.target.checked) actionIds.forEach(id=>{const box=$(`#${id}`);if(box)box.checked=false;});
+    });
+    actionIds.forEach(id=>$( `#${id}` )?.addEventListener('change',e=>{
+      if(e.target.checked && $('#eaPass'))$('#eaPass').checked=false;
+    }));
+
     $('#launchEnemyAttack')?.addEventListener('click',()=>{
-      const nextStage={shoot:$('#eaShoot').checked,fight:$('#eaFight').checked,damage:$('#eaDamage').checked,hatch:$('#eaHatch').checked,breach:$('#eaBreach').checked,objective:$('#eaObjective').checked,combatResolved:stage.combatResolved};
+      const nextStage=readEnemyActivationStage(stage.combatResolved);
       showEnemyAttackWizard(null,()=>showEnemyActivation({...nextStage,combatResolved:true}));
     });
-    $('#confirmEnemy').onclick=()=>completeEnemyActivation();
+    $('#confirmEnemy').onclick=()=>{
+      const finalStage=readEnemyActivationStage(stage.combatResolved);
+      const hasRecordedAction=enemyActivationHasAction(finalStage);
+      if(!hasRecordedAction){
+        showModal('No actions selected',`<p>Mark this Enemy operative as activated without recording an action?</p><div class="wizard-actions"><button class="btn ghost" id="returnEnemyActivation">Go Back</button><button class="btn primary" id="confirmEmptyEnemyActivation">Complete Activation</button></div>`);
+        $('#returnEnemyActivation').onclick=()=>showEnemyActivation(finalStage);
+        $('#confirmEmptyEnemyActivation').onclick=()=>completeEnemyActivation(finalStage);
+        return;
+      }
+      completeEnemyActivation(finalStage);
+    };
   }
 
-  function completeEnemyActivation(){
-    let inc=0; if($('#eaShoot')?.checked)inc++; if($('#eaFight')?.checked)inc++; if($('#eaDamage')?.checked)inc++;
-    if($('#eaHatch')?.checked){const r=roll();if(r>=4)inc++;showToast(`Operate Hatch rolled ${r}${r>=4?'... Threat +1':'... no Threat increase'}`);}
-    if($('#eaBreach')?.checked){inc++;const r=roll();if(r>=4)inc++;showToast(`Breach rolled ${r}${r>=4?'... Threat +2 total':'... Threat +1 total'}`);}
+  function readEnemyActivationStage(combatResolved=false){
+    return {
+      move:Boolean($('#eaMove')?.checked),
+      dash:Boolean($('#eaDash')?.checked),
+      charge:Boolean($('#eaCharge')?.checked),
+      fallBack:Boolean($('#eaFallBack')?.checked),
+      shoot:Boolean($('#eaShoot')?.checked),
+      fight:Boolean($('#eaFight')?.checked),
+      damage:Boolean($('#eaDamage')?.checked),
+      hatch:Boolean($('#eaHatch')?.checked),
+      breach:Boolean($('#eaBreach')?.checked),
+      objective:Boolean($('#eaObjective')?.checked),
+      pass:Boolean($('#eaPass')?.checked),
+      combatResolved:Boolean(combatResolved)
+    };
+  }
+
+  function enemyActivationHasAction(stage){
+    return Boolean(stage.combatResolved || stage.move || stage.dash || stage.charge || stage.fallBack ||
+      stage.shoot || stage.fight || stage.damage || stage.hatch || stage.breach || stage.objective || stage.pass);
+  }
+
+  function enemyActivationSummary(stage){
+    const actions=[];
+    if(stage.move)actions.push('Move');
+    if(stage.dash)actions.push('Dash');
+    if(stage.charge)actions.push('Charge');
+    if(stage.fallBack)actions.push('Fall Back');
+    if(stage.shoot)actions.push('Shoot');
+    if(stage.fight)actions.push('Fight');
+    if(stage.damage)actions.push('Damaging action');
+    if(stage.hatch)actions.push('Operate Hatch');
+    if(stage.breach)actions.push('Breach');
+    if(stage.objective)actions.push('Mission action');
+    if(stage.combatResolved)actions.push('Combat resolved');
+    if(stage.pass)actions.push('Pass / no action recorded');
+    return actions.length?actions.join(', '):'No actions recorded';
+  }
+
+  function completeEnemyActivation(stage={}){
+    let inc=0;
+    if(stage.shoot)inc++;
+    if(stage.fight)inc++;
+    if(stage.damage)inc++;
+    if(stage.hatch){
+      const r=roll();
+      if(r>=4)inc++;
+      showToast(`Operate Hatch rolled ${r}${r>=4?'... Threat +1':'... no Threat increase'}`);
+    }
+    if(stage.breach){
+      inc++;
+      const r=roll();
+      if(r>=4)inc++;
+      showToast(`Breach rolled ${r}${r>=4?'... Threat +2 total':'... Threat +1 total'}`);
+    }
     if(inc)setThreat(inc,'Enemy activation');
-    state.enemyReady=Math.max(0,state.enemyReady-1);state.enemyActivated++;state.activationNumber++;
-    state.activationHistory.unshift({side:'enemy',label:`Enemy activation ${state.enemyActivated}`});
-    state.nextSide=readyNpos().length?'npo':'enemy';log(`Enemy operative completed activation ${state.enemyActivated}.`);closeModal();save();render();
+    state.enemyReady=Math.max(0,state.enemyReady-1);
+    state.enemyActivated++;
+    state.activationNumber++;
+    const summary=enemyActivationSummary(stage);
+    state.activationHistory.unshift({side:'enemy',label:`Enemy activation ${state.enemyActivated}`,summary});
+    state.nextSide=readyNpos().length?'npo':'enemy';
+    log(`Enemy operative completed activation ${state.enemyActivated}: ${summary}.`);
+    closeModal();
+    save();
+    render();
   }
 
   function showEnemyAttackWizard(targetId,onDone){
