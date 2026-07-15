@@ -118,3 +118,13 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 - Checking Melee reveals Resolve Melee Attack.
 - Removed the separate Did the Enemy attack an NPO section.
 - Shooting and Melee attacks can be resolved independently in the same activation.
+
+
+## v1.3.3 Setup and combat safeguards
+
+- Attack Wizard target selection now starts blank.
+- All attack profile controls remain disabled until a Target NPO is selected.
+- Added **Check All** to the Build the Killzone setup step.
+- Added **Place All** to the Deploy NPOs setup step.
+- Enemy activations cannot be completed while Shoot or Melee is checked but unresolved.
+- Players can either resolve the checked attack or return and uncheck the action.

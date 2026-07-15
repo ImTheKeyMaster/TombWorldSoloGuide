@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.3.2';
+  const APP_VERSION = '1.3.3';
   const MAX_NPOS = 10;
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -48,7 +48,7 @@
   ];
 
   const initialState = () => ({
-    version:'1.3.2', screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:'1.3.3', screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:[], roster:[], enemyCount:6, enemyReady:6, turningPoint:0,
     threat:0, initiative:'enemy', phase:'setup', nextSide:'enemy', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
@@ -136,9 +136,9 @@
   ][step];}
   function setupContent(step){
     if(step===0) return `<h3>Which mission are you playing?</h3><p>You can review the objective before committing.</p><div class="mission-list">${missions.map(m=>`<button class="mission-choice ${state.missionId===m.id?'selected':''}" data-mission="${m.id}"><small>${m.number}</small><strong>${m.name}</strong><span>${m.brief}</span></button>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="setupHome">Back</button><button class="btn primary" id="setupNext" ${state.missionId?'':'disabled'}>Next</button></div>`;
-    if(step===1){const m=mission();const checks=['Place walls and hatchways as shown','Place mission objective markers','Identify the Enemy drop zone','Identify NPO deployment areas'];return `<h3>${m.name} board setup</h3><p><strong>Objective:</strong> ${m.objective}</p>${boardSvg(m.id)}<div class="checklist">${checks.map((c,i)=>`<label class="check-row"><input type="checkbox" data-check="${i}" ${state.setupChecks[i]?'checked':''}><span><strong>${c}</strong><small>${i===0?'Use the official mission map shown above to place the terrain and markers.':'Confirm this step on the physical board.'}</small></span></label>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${checks.every((_,i)=>state.setupChecks[i])?'':'disabled'}>Board Ready</button></div>`;}
+    if(step===1){const m=mission();const checks=['Place walls and hatchways as shown','Place mission objective markers','Identify the Enemy drop zone','Identify NPO deployment areas'];const allChecked=checks.every((_,i)=>state.setupChecks[i]);return `<h3>${m.name} board setup</h3><p><strong>Objective:</strong> ${m.objective}</p>${boardSvg(m.id)}<div class="setup-bulk-row"><button class="btn secondary" id="checkAllSetup" ${allChecked?'disabled':''}>Check All</button></div><div class="checklist">${checks.map((c,i)=>`<label class="check-row"><input type="checkbox" data-check="${i}" ${state.setupChecks[i]?'checked':''}><span><strong>${c}</strong><small>${i===0?'Use the official mission map shown above to place the terrain and markers.':'Confirm this step on the physical board.'}</small></span></label>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${allChecked?'':'disabled'}>Board Ready</button></div>`;}
     if(step===2){const m=mission();return `<h3>Mission starting roster</h3><p>${m.name} begins with <strong>${m.setup}</strong> NPOs.</p>${state.roster.length?`<div class="summary-box"><strong>${state.roster.length} NPOs generated</strong><br>${rosterBreakdown()}</div><div class="roster-preview">${state.roster.map(n=>operativeCard(n,false)).join('')}</div>`:`<div class="empty">No roster generated yet.</div>`}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn secondary" id="generateBtn">${state.roster.length?'Regenerate':'Generate'} Roster</button><button class="btn primary" id="setupNext" ${state.roster.length||m.setup==='0'?'':'disabled'}>Continue</button></div>`;}
-    if(step===3){return `<h3>Deploy the NPOs</h3><p>${mission().setup==='0'?'This mission starts with no deployed NPOs. The Guide will add them as rooms awaken.':'Place each NPO on the physical board, then mark it deployed.'}</p><div class="deployment-list">${state.roster.length?state.roster.map(n=>`<div class="deployment-item ${n.deployed?'done':''}"><span><strong>${escapeHtml(n.name)}</strong><small>${n.behavior}</small></span><button class="btn ${n.deployed?'ghost':'secondary'}" data-deploy="${n.id}">${n.deployed?'Placed':'Mark Placed'}</button></div>`).join(''):'<div class="summary-box"><strong>No starting NPO deployment required.</strong></div>'}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${state.roster.every(n=>n.deployed)?'':'disabled'}>NPOs Deployed</button></div>`;}
+    if(step===3){const allPlaced=state.roster.every(n=>n.deployed);return `<h3>Deploy the NPOs</h3><p>${mission().setup==='0'?'This mission starts with no deployed NPOs. The Guide will add them as rooms awaken.':'Place each NPO on the physical board, then mark it deployed.'}</p>${state.roster.length?`<div class="setup-bulk-row"><button class="btn secondary" id="placeAllNpos" ${allPlaced?'disabled':''}>Place All</button></div>`:''}<div class="deployment-list">${state.roster.length?state.roster.map(n=>`<div class="deployment-item ${n.deployed?'done':''}"><span><strong>${escapeHtml(n.name)}</strong><small>${n.behavior}</small></span><button class="btn ${n.deployed?'ghost':'secondary'}" data-deploy="${n.id}">${n.deployed?'Placed':'Mark Placed'}</button></div>`).join(''):'<div class="summary-box"><strong>No starting NPO deployment required.</strong></div>'}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${allPlaced?'':'disabled'}>NPOs Deployed</button></div>`;}
     if(step===4) return `<h3>Deploy your Enemy kill team</h3><p>In the Guide, your solo player-controlled operatives are called <strong>Enemy operatives</strong> because all tactical prompts are written from the NPO’s perspective.</p><div class="field"><label for="enemyCount">Number of Enemy operatives</label><input id="enemyCount" type="number" min="1" max="20" value="${state.enemyCount}"></div><div class="checklist"><label class="check-row"><input id="enemyDeployed" type="checkbox"><span><strong>Enemy operatives deployed</strong><small>Confirm that your kill team has been placed in its drop zone.</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" disabled>Continue</button></div>`;
     return `<h3>Setup complete</h3><div class="summary-box"><strong>${mission().number} · ${mission().name}</strong><br>${state.roster.length} starting NPOs · ${state.enemyCount} Enemy operatives</div>${boardSvg(mission().id)}<p><strong>Mission objective:</strong> ${mission().objective}</p><p><strong>Special rule reminder:</strong> ${mission().special}</p><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
   }
@@ -149,8 +149,10 @@
     $('#setupBack')?.addEventListener('click',()=>{state.setupStep=Math.max(0,state.setupStep-1);save();render();});
     $('#setupNext')?.addEventListener('click',()=>{state.setupStep=Math.min(5,state.setupStep+1);save();render();});
     $$('[data-check]').forEach(c=>c.onchange=()=>{state.setupChecks[Number(c.dataset.check)]=c.checked;save();render();});
+    $('#checkAllSetup')?.addEventListener('click',()=>{state.setupChecks=[true,true,true,true];save();render();});
     $('#generateBtn')?.addEventListener('click',()=>{generateRoster();save();render();});
     $$('[data-deploy]').forEach(b=>b.onclick=()=>{const n=state.roster.find(x=>x.id===b.dataset.deploy);n.deployed=!n.deployed;save();render();});
+    $('#placeAllNpos')?.addEventListener('click',()=>{state.roster.forEach(n=>n.deployed=true);save();render();});
     $('#enemyCount')?.addEventListener('change',e=>{state.enemyCount=Math.max(1,Math.min(20,Number(e.target.value)||1));state.enemyReady=state.enemyCount;save();});
     $('#enemyDeployed')?.addEventListener('change',e=>{$('#setupNext').disabled=!e.target.checked;});
     $('#beginGame')?.addEventListener('click',()=>{
@@ -298,13 +300,13 @@
           <div class="combat-action-card">
             <label><input type="checkbox" id="eaShoot" ${checked('shoot')}><span><strong>Shoot</strong><small>Use a non-Silent ranged weapon</small></span></label>
             <div class="inline-resolver ${stage.shoot?'':'hidden'}" id="shootResolver">
-              ${living.length?`<button class="btn secondary" id="resolveShoot">Resolve Shooting Attack</button><small>${shootResolved?'Shooting attack resolved.':'Optional... open the attack wizard to roll dice and apply damage.'}</small>`:'<small>No active NPO is available as a target.</small>'}
+              ${living.length?`<button class="btn secondary" id="resolveShoot">Resolve Shooting Attack</button><small>${shootResolved?'Shooting attack resolved.':'Required before completing the activation while this action is checked.'}</small>`:'<small>No active NPO is available as a target.</small>'}
             </div>
           </div>
           <div class="combat-action-card">
             <label><input type="checkbox" id="eaMelee" ${checked('melee')||checked('fight')}><span><strong>Melee</strong><small>Use the Kill Team Fight action</small></span></label>
             <div class="inline-resolver ${(stage.melee||stage.fight)?'':'hidden'}" id="meleeResolver">
-              ${living.length?`<button class="btn secondary" id="resolveMelee">Resolve Melee Attack</button><small>${meleeResolved?'Melee attack resolved.':'Optional... open the attack wizard to roll dice and apply damage.'}</small>`:'<small>No active NPO is available as a target.</small>'}
+              ${living.length?`<button class="btn secondary" id="resolveMelee">Resolve Melee Attack</button><small>${meleeResolved?'Melee attack resolved.':'Required before completing the activation while this action is checked.'}</small>`:'<small>No active NPO is available as a target.</small>'}
             </div>
           </div>
           <div class="toggle-list enemy-action-list compact-actions">
@@ -354,6 +356,14 @@
     });
     $('#confirmEnemy').onclick=()=>{
       const finalStage=readEnemyActivationStage(shootResolved,meleeResolved);
+      const unresolved=[];
+      if(finalStage.shoot&&!finalStage.shootResolved)unresolved.push('Shooting');
+      if(finalStage.melee&&!finalStage.meleeResolved)unresolved.push('Melee');
+      if(unresolved.length){
+        showModal('Resolve selected attacks',`<p>${unresolved.join(' and ')} ${unresolved.length===1?'is':'are'} checked but not resolved. Resolve ${unresolved.length===1?'the attack':'those attacks'}, or go back and uncheck the action before completing the activation.</p><div class="wizard-actions"><button class="btn primary" id="returnUnresolvedAttack">Go Back</button></div>`);
+        $('#returnUnresolvedAttack').onclick=()=>showEnemyActivation(finalStage);
+        return;
+      }
       const hasRecordedAction=enemyActivationHasAction(finalStage);
       if(!hasRecordedAction){
         showModal('No actions selected',`<p>Mark this Enemy operative as activated without recording an action?</p><div class="wizard-actions"><button class="btn ghost" id="returnEnemyActivation">Go Back</button><button class="btn primary" id="confirmEmptyEnemyActivation">Complete Activation</button></div>`);
@@ -436,20 +446,30 @@
   function showEnemyAttackWizard(targetId,onDone,attackType='attack'){
     const targets=activeNpos(); if(!targets.length){showToast('No active NPO is available as a target.');return;}
     const attackLabel=attackType==='shoot'?'Shooting':attackType==='melee'?'Melee':'Enemy';
-    showModal(`${attackLabel} Attack Wizard`,`<p>Enter the ${attackType==='melee'?'melee weapon':'weapon'} profile. The Guide will roll the attack, roll the selected NPO’s saves, and preview damage before you confirm it.</p>
-      <div class="field"><label>Target NPO</label><select id="combatTarget">${targets.map(n=>`<option value="${n.id}" ${n.id===targetId?'selected':''}>${escapeHtml(n.name)} · ${n.wounds}/${n.maxWounds} wounds · Save ${n.save}+</option>`).join('')}</select></div>
-      <div class="combat-grid">
-        ${spinnerField('enemyAttackDice','Attack dice',4,1,12)}
-        ${spinnerField('enemyHit','Hit on',3,2,6)}
-        ${spinnerField('enemyNormalDamage','Normal damage',3,0,12)}
-        ${spinnerField('enemyCritDamage','Critical damage',4,0,15)}
-        ${spinnerField('enemyAp','AP',0,0,3)}
-        ${spinnerField('npoDefenseDice','NPO Defense Dice',3,0,6)}
-      </div>
-      <label class="check-row compact-check"><input type="checkbox" id="npoCover"><span><strong>NPO retains one normal save for cover</strong></span></label>
-      <div id="combatResults" class="combat-results"><p>Set the profile, then roll the attack.</p></div>
-      <div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="rollEnemyAttack">Roll Attack & Saves</button></div>`);
+    showModal(`${attackLabel} Attack Wizard`,`<p>Select the target NPO first. The remaining attack controls will unlock after a target is chosen.</p>
+      <div class="field"><label>Target NPO</label><select id="combatTarget"><option value="" selected>Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}">${escapeHtml(n.name)} · ${n.wounds}/${n.maxWounds} wounds · Save ${n.save}+</option>`).join('')}</select></div>
+      <fieldset id="combatControls" class="combat-fieldset" disabled>
+        <p class="combat-fieldset-note">Enter the ${attackType==='melee'?'melee weapon':'weapon'} profile. The Guide will roll the attack, roll the selected NPO’s saves, and preview damage before you confirm it.</p>
+        <div class="combat-grid">
+          ${spinnerField('enemyAttackDice','Attack dice',4,1,12)}
+          ${spinnerField('enemyHit','Hit on',3,2,6)}
+          ${spinnerField('enemyNormalDamage','Normal damage',3,0,12)}
+          ${spinnerField('enemyCritDamage','Critical damage',4,0,15)}
+          ${spinnerField('enemyAp','AP',0,0,3)}
+          ${spinnerField('npoDefenseDice','NPO Defense Dice',3,0,6)}
+        </div>
+        <label class="check-row compact-check"><input type="checkbox" id="npoCover"><span><strong>NPO retains one normal save for cover</strong></span></label>
+        <div id="combatResults" class="combat-results"><p>Select a target NPO to begin.</p></div>
+        <div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="rollEnemyAttack">Roll Attack & Saves</button></div>
+      </fieldset>`);
     bindSpinners(modal);
+    const targetSelect=$('#combatTarget');
+    const controls=$('#combatControls');
+    targetSelect.addEventListener('change',()=>{
+      const selected=Boolean(targetSelect.value);
+      controls.disabled=!selected;
+      if(selected)$('#combatResults').innerHTML='<p>Set the profile, then roll the attack.</p>';
+    });
     $('#rollEnemyAttack').onclick=()=>rollEnemyAttackPreview(onDone);
   }
 

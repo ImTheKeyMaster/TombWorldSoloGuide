@@ -167,3 +167,15 @@
 
 /* v1.3.2 Enemy activation grouping */
 .activation-groups{display:grid;gap:14px;margin:18px 0}.activation-group{padding:14px;border:1px solid var(--line);border-radius:16px;background:#07140f}.activation-group-title{display:flex;align-items:center;gap:10px;margin-bottom:11px}.activation-group-title>span{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#123523;border:1px solid #316a4b;color:var(--green);font-weight:950}.activation-group-title strong{display:block}.activation-group-title small{display:block;color:var(--muted);margin-top:2px}.combat-action-card{border:1px solid rgba(118,245,168,.18);border-radius:13px;background:#091912;margin:9px 0;overflow:hidden}.combat-action-card>label{display:flex;align-items:flex-start;gap:11px;padding:13px;cursor:pointer}.combat-action-card input{width:21px;height:21px;accent-color:var(--green);flex:0 0 auto}.combat-action-card label span{display:block}.combat-action-card label strong{display:block}.combat-action-card label small{display:block;color:var(--muted);margin-top:3px}.inline-resolver{padding:0 13px 13px;border-top:1px solid rgba(118,245,168,.12);padding-top:12px}.inline-resolver .btn{width:100%}.inline-resolver small{display:block;color:var(--muted);margin-top:7px;line-height:1.4}.compact-actions{margin-top:9px}.pass-group{padding:0;border:0;background:transparent}.pass-group .toggle-list label{background:#07140f}@media(max-width:600px){.activation-group{padding:11px}.activation-group-title{margin-bottom:8px}}
+
+
+/* v1.3.3 setup and combat refinements */
+.setup-bulk-row{display:flex;justify-content:flex-end;margin:14px 0 4px}
+.setup-bulk-row .btn{min-width:120px}
+.combat-fieldset{border:0;padding:0;margin:0;min-width:0}
+.combat-fieldset:disabled{opacity:.48}
+.combat-fieldset:disabled .wizard-actions .btn.ghost{opacity:1}
+.combat-fieldset-note{color:var(--muted);line-height:1.5;margin:16px 0 0}
+@media(max-width:600px){
+  .setup-bulk-row .btn{width:100%}
+}
