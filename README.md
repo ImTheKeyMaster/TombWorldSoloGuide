@@ -139,3 +139,12 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 - Added an always-available **Start New Game** command to the Game Menu.
 - Export and Import Save are also available from the Game Menu.
 - Removed duplicate session controls from the Mission reference screen.
+
+
+## v1.3.5b activation tracker fix
+
+- Corrected the Player operative indicator layout class mismatch.
+- Replaced malformed bars with numbered circular indicators.
+- Activated operatives use a green circle and check badge.
+- Operatives that still need to activate use a neutral outlined circle.
+- Added live Activated and Remaining counts.

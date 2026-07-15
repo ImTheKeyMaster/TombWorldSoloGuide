@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.3.5';
+  const APP_VERSION = '1.3.5b';
   const MAX_NPOS = 10;
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -48,7 +48,7 @@
   ];
 
   const initialState = () => ({
-    version:'1.3.5', screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:'1.3.5b', screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:[], roster:[], playerCount:6, playerReady:6, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
@@ -211,10 +211,14 @@
   }
 
   function activationTracker(){
-    const playerSpent=state.playerCount-state.playerReady;
-    const playerDots=Array.from({length:state.playerCount},(_,i)=>`<span class="activation-dot ${i<playerSpent?'spent':'ready'}" title="Player operative ${i+1}"></span>`).join('');
+    const playerActivated=Math.max(0,state.playerCount-state.playerReady);
+    const playerIndicators=Array.from({length:state.playerCount},(_,i)=>{
+      const activated=i<playerActivated;
+      const status=activated?'Activated':'Remaining';
+      return `<span class="player-operative-indicator ${activated?'activated':'remaining'}" title="Player operative ${i+1}: ${status}" aria-label="Player operative ${i+1}: ${status}"><span class="operative-number">${i+1}</span>${activated?'<span class="activation-check" aria-hidden="true">✓</span>':''}</span>`;
+    }).join('');
     const npoRows=activeNpos().map(n=>`<div class="tracker-npo ${n.ready?'ready':'spent'}"><span>${escapeHtml(n.name)}</span><strong>${n.ready?'READY':'EXPENDED'}</strong></div>`).join('');
-    return `<section class="card activation-tracker"><div class="panel-title"><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div><div class="turn-badge">Next: ${state.nextSide==='npo'?'NPO':'Player'}</div></div><div class="tracker-section"><small>Player operatives</small><div class="player-dots">${playerDots}</div></div><div class="tracker-section"><small>NPOs</small><div class="tracker-npos">${npoRows||'<span class="muted">No active NPOs</span>'}</div></div></section>`;
+    return `<section class="card activation-tracker"><div class="panel-title"><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div><div class="turn-badge">Next: ${state.nextSide==='npo'?'NPO':'Player'}</div></div><div class="tracker-section player-tracker-section"><div class="tracker-section-heading"><small>Player operatives</small><div class="activation-legend"><span><i class="legend-dot activated"></i>Activated (${playerActivated})</span><span><i class="legend-dot remaining"></i>Remaining (${state.playerReady})</span></div></div><div class="player-dots">${playerIndicators}</div></div><div class="tracker-section"><small>NPOs</small><div class="tracker-npos">${npoRows||'<span class="muted">No active NPOs</span>'}</div></div></section>`;
   }
 
   function bindPlay(){

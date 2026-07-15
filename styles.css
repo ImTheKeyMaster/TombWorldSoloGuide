@@ -225,3 +225,24 @@
   .game-menu-grid,.game-menu-session{grid-template-columns:1fr}
   .game-menu-grid .btn:first-child,.game-menu-session .danger{grid-column:auto}
 }
+
+
+/* v1.3.5b: Player operative activation indicators */
+.tracker-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.tracker-section-heading>small{display:block;color:var(--muted);font-weight:800}
+.activation-legend{display:flex;flex-wrap:wrap;gap:12px;color:var(--muted);font-size:.72rem;font-weight:750}
+.activation-legend span{display:inline-flex;align-items:center;gap:6px}
+.legend-dot{display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid #788981;background:transparent}
+.legend-dot.activated{border-color:var(--green);background:var(--green)}
+.player-dots{display:flex;flex-wrap:wrap;align-items:center;gap:10px;min-width:0}
+.player-operative-indicator{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 42px;width:42px;height:42px;border-radius:50%;box-sizing:border-box;font-weight:900;line-height:1;transition:transform .15s ease,border-color .15s ease,background .15s ease}
+.player-operative-indicator .operative-number{font-size:.86rem}
+.player-operative-indicator.remaining{border:2px solid #75877e;background:#0b1712;color:#e8f2ec}
+.player-operative-indicator.activated{border:2px solid var(--green);background:rgba(92,245,157,.16);color:#fff;box-shadow:0 0 0 2px rgba(92,245,157,.08) inset}
+.activation-check{position:absolute;right:-4px;top:-5px;display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--green);color:#06110b;border:2px solid #07140f;font-size:.7rem;font-weight:950}
+@media(max-width:600px){
+  .tracker-section-heading{align-items:flex-start;flex-direction:column;gap:7px}
+  .activation-legend{gap:10px}
+  .player-dots{gap:8px}
+  .player-operative-indicator{flex-basis:38px;width:38px;height:38px}
+}
