@@ -179,3 +179,49 @@
 @media(max-width:600px){
   .setup-bulk-row .btn{width:100%}
 }
+
+
+/* v1.3.4: guided-flow navigation */
+.header-actions{display:flex;align-items:center;gap:10px}
+.header-menu-btn{
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:#123523;
+  color:var(--text);
+  padding:9px 12px;
+  font-weight:850;
+  cursor:pointer;
+}
+.header-menu-btn:hover,.header-menu-btn:focus-visible{border-color:var(--green);color:var(--green)}
+.reference-return{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+  padding:11px 13px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:#08150f;
+}
+.reference-return small{color:var(--muted);line-height:1.35}
+.game-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:18px 0}
+.game-menu-grid .btn:first-child{grid-column:1/-1}
+.game-menu-session{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+  padding-top:15px;
+  border-top:1px solid var(--line);
+}
+.game-menu-session .danger{grid-column:1/-1}
+@media(max-width:600px){
+  .app-header{gap:8px}
+  .header-actions{gap:6px}
+  .header-menu-btn{padding:8px 9px;font-size:.72rem}
+  .version{display:none}
+  .reference-return{align-items:stretch;flex-direction:column}
+  .reference-return .btn{width:100%}
+  .game-menu-grid,.game-menu-session{grid-template-columns:1fr}
+  .game-menu-grid .btn:first-child,.game-menu-session .danger{grid-column:auto}
+}

@@ -2,12 +2,12 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.3.3';
+  const APP_VERSION = '1.3.4';
   const MAX_NPOS = 10;
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const app = $('#app');
-  const nav = $('#bottomNav');
+  const gameMenuBtn = $('#gameMenuBtn');
   const modal = $('#modal');
   const modalBody = $('#modalBody');
   const toast = $('#toast');
@@ -48,7 +48,7 @@
   ];
 
   const initialState = () => ({
-    version:'1.3.3', screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:'1.3.4', screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:[], roster:[], enemyCount:6, enemyReady:6, turningPoint:0,
     threat:0, initiative:'enemy', phase:'setup', nextSide:'enemy', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
@@ -95,7 +95,7 @@
   }
 
   function render(){
-    nav.hidden = state.screen !== 'game';
+    gameMenuBtn.hidden = state.screen !== 'game';
     if(state.screen==='home') renderHome();
     else if(state.screen==='setup') renderSetup();
     else renderGame();
@@ -169,12 +169,16 @@
   }
 
   function renderGame(){
-    $$('#bottomNav button').forEach(b=>b.classList.toggle('active',b.dataset.nav===state.tab));
     if(state.tab==='play') renderPlay();
     else if(state.tab==='mission') renderMission();
     else if(state.tab==='roster') renderRoster();
     else if(state.tab==='journal') renderJournal();
     else renderHelp();
+
+    if(state.tab!=='play'){
+      app.insertAdjacentHTML('afterbegin',`<div class="reference-return"><button class="btn primary" id="returnToGuide">Return to Guided Play</button><small>Reference screens do not change the current Turning Point or activation state.</small></div>`);
+      $('#returnToGuide').onclick=()=>{state.tab='play';save();render();};
+    }
   }
 
   function hud(){return `<div class="hud"><div><small>Turning Point</small><strong>${state.turningPoint||'Setup'}</strong></div><div><small>Threat</small><strong>${state.threat}</strong></div><div><small>Grade</small><strong>${threatGrade()}</strong></div><div><small>Enemy Ready</small><strong>${state.enemyReady}</strong></div><div><small>NPO Ready</small><strong>${readyNpos().length}</strong></div></div><div class="threat-strip"><div><strong>${threatLabel()}</strong><small>${threatGrade()===3?'Maximum grade':`${threatToNext()} Threat to next grade`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
@@ -658,7 +662,7 @@
   const pipPositions={1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};
   function dieHtml(d){return `<div class="die ${d.kind}" aria-label="${d.value} ${d.kind}">${pipPositions[d.value].map(p=>`<span class="pip" style="grid-area:${Math.ceil(p/3)}/${((p-1)%3)+1}"></span>`).join('')}</div>`;}
 
-  function renderMission(){const m=mission();app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">MISSION</p><h2>${m.number} · ${m.name}</h2><p>${m.brief}</p></div></div><section class="card"><h3>Objective</h3><p>${m.objective}</p><div class="stat-grid"><div class="stat"><small>Starting NPOs</small><strong>${m.setup}</strong></div><div class="stat"><small>${m.tracker}</small><strong>${state.tracker} / ${m.max}</strong></div></div></section>${boardSvg(m.id)}<section class="card"><h3>Special rule reminder</h3><p>${m.special}</p></section><section class="card"><p class="eyebrow">SESSION</p><div class="session-actions"><button class="btn danger" id="newGameSession">Start New Game</button><button class="btn secondary" id="exportSave">Export Save</button><button class="btn secondary" id="importSave">Import Save</button></div></section>`;$('#newGameSession').onclick=confirmNewGame;$('#exportSave').onclick=exportSave;$('#importSave').onclick=()=>importInput.click();}
+  function renderMission(){const m=mission();app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">MISSION</p><h2>${m.number} · ${m.name}</h2><p>${m.brief}</p></div></div><section class="card"><h3>Objective</h3><p>${m.objective}</p><div class="stat-grid"><div class="stat"><small>Starting NPOs</small><strong>${m.setup}</strong></div><div class="stat"><small>${m.tracker}</small><strong>${state.tracker} / ${m.max}</strong></div></div></section>${boardSvg(m.id)}<section class="card"><h3>Special rule reminder</h3><p>${m.special}</p></section>`;}
   function renderRoster(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">NPO ROSTER</p><h2>${activeNpos().length} active NPOs</h2><p>Wounds and Ready status update the guided activation flow.</p></div><button class="btn secondary" id="addNpo">Add NPO</button></div><div class="roster-grid">${state.roster.length?state.roster.map(n=>operativeCard(n,true)).join(''):'<div class="card empty">No NPOs are currently on the battlefield.</div>'}</div>`;$('#addNpo').onclick=showAddNpo;$$('[data-enemy-attack]').forEach(b=>b.onclick=()=>showEnemyAttackWizard(b.dataset.enemyAttack));$$('[data-wound]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.wound,-1));$$('[data-heal]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.heal,1));$$('[data-ready]').forEach(b=>b.onclick=()=>toggleReady(b.dataset.ready));$$('[data-delete]').forEach(b=>b.onclick=()=>deleteNpo(b.dataset.delete));}
   function operativeCard(n,controls){return `<article class="operative-card ${n.wounds<=0?'dead':''}"><h4>${escapeHtml(n.name)}</h4><p>${n.type} · ${n.behavior} · Save ${n.save}+</p><div class="wounds"><meter min="0" max="${n.maxWounds}" value="${n.wounds}"></meter><strong>${n.wounds}/${n.maxWounds}</strong></div><p>${n.ready&&n.wounds>0?'READY':'EXPENDED'}</p>${controls?`<div class="quick-actions"><button class="btn secondary" data-enemy-attack="${n.id}">Enemy Attack</button><button class="btn ghost" data-wound="${n.id}">− Wound</button><button class="btn ghost" data-heal="${n.id}">+ Heal</button><button class="btn secondary" data-ready="${n.id}">${n.ready?'Expend':'Ready'}</button><button class="btn danger" data-delete="${n.id}">Delete</button></div>`:''}</article>`;}
   function renderJournal(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">JOURNAL</p><h2>Battle Record</h2><p>Automatic game-state and Threat history.</p></div><button class="btn ghost" id="clearJournal">Clear</button></div><section class="card"><ol class="activity-log">${state.journal.length?state.journal.map(j=>`<li><time>${new Date(j.time).toLocaleString()}</time>${escapeHtml(j.text)}</li>`).join(''):'<li>No events recorded.</li>'}</ol></section>`;$('#clearJournal').onclick=()=>{state.journal=[];save();render();};}
@@ -706,12 +710,37 @@
   function closeModal(){if(modal.open)modal.close();const cb=modal._onClose;modal._onClose=null;if(cb)cb();}
   modal.addEventListener('cancel',e=>{e.preventDefault();closeModal();});
   function showToast(text){toast.textContent=text;toast.hidden=false;clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.hidden=true,6500);}
+  function showGameMenu(){
+    showModal('Game Menu',`<p>Open a reference screen without changing the guided play sequence, or begin a completely new game.</p>
+      <div class="game-menu-grid">
+        <button class="btn primary" data-game-view="play">Return to Guided Play</button>
+        <button class="btn secondary" data-game-view="mission">Mission & Map</button>
+        <button class="btn secondary" data-game-view="roster">NPO Roster</button>
+        <button class="btn secondary" data-game-view="journal">Battle Journal</button>
+        <button class="btn secondary" data-game-view="help">Help</button>
+      </div>
+      <div class="game-menu-session">
+        <button class="btn ghost" id="menuExportSave">Export Save</button>
+        <button class="btn ghost" id="menuImportSave">Import Save</button>
+        <button class="btn danger" id="menuNewGame">Start New Game</button>
+      </div>`);
+    $$('[data-game-view]',modal).forEach(button=>button.onclick=()=>{
+      state.tab=button.dataset.gameView;
+      closeModal();
+      save();
+      render();
+    });
+    $('#menuExportSave').onclick=exportSave;
+    $('#menuImportSave').onclick=()=>importInput.click();
+    $('#menuNewGame').onclick=confirmNewGame;
+  }
+
   function confirmNewGame(){showModal('Start New Game?',`<p>This will replace the current mission, roster, Threat, Turning Point, and Journal.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmNewGame">Start New Game</button></div>`);$('#confirmNewGame').onclick=()=>{localStorage.removeItem(STORAGE_KEY);state=initialState();state.screen='setup';closeModal();save();render();};}
   function exportSave(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tomb-world-solo-guide-save.json';a.click();URL.revokeObjectURL(a.href);}
   importInput.addEventListener('change',async()=>{const f=importInput.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!data.version)throw new Error();state=normalizeState(data);state.screen='game';save();render();showToast('Save imported.');}catch{showToast('That file is not a valid Tomb World Solo Guide save.');}finally{importInput.value='';}});
 
   function bindCommon(){
-    $$('#bottomNav button').forEach(b=>b.onclick=()=>{state.tab=b.dataset.nav;save();render();});
+    gameMenuBtn.onclick=showGameMenu;
   }
 
   render();

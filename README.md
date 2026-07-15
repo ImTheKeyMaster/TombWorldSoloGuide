@@ -128,3 +128,14 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 - Added **Place All** to the Deploy NPOs setup step.
 - Enemy activations cannot be completed while Shoot or Melee is checked but unresolved.
 - Players can either resolve the checked attack or return and uncheck the action.
+
+
+## v1.3.4 Guided navigation cleanup
+
+- Removed the permanent bottom navigation bar.
+- Added a single **Game Menu** button to the header during an active game.
+- Mission, Roster, Journal, and Help are now optional reference screens and do not alter the current guided-play state.
+- Added **Return to Guided Play** at the top of every reference screen.
+- Added an always-available **Start New Game** command to the Game Menu.
+- Export and Import Save are also available from the Game Menu.
+- Removed duplicate session controls from the Mission reference screen.
