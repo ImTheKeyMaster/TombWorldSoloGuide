@@ -12,15 +12,15 @@ A separate, mobile-first guided-play application for solo Kill Team missions in 
 - Two-step guided Strategy Phase
 - Automatic Turning Point preparation
 - Threat meter with grade labels and manual correction controls
-- Automatic NPO readying and Enemy reset
+- Automatic NPO readying and Player reset
 - Mission-aware reinforcement generation after Turning Point 1
 - Visual 2D6 reinforcement rolls with pip dice
 - Ten-NPO battlefield limit handling
 - Reinforcement entry-point recording
 - Grade 3 Tomb World event checks and supported automatic effects
 - Guided initiative rolls, rerolls, and manual override
-- Persistent activation tracker for Enemy operatives and individual NPOs
-- Automatic alternation between Enemy and NPO activations
+- Persistent activation tracker for Player operatives and individual NPOs
+- Automatic alternation between Player and NPO activations
 - Automatic transition to end-of-Turning-Point scoring
 - Backward-compatible migration of v1 saved games
 
@@ -29,7 +29,7 @@ A separate, mobile-first guided-play application for solo Kill Team missions in 
 - New Game setup wizard
 - Six mission briefings and schematic board layouts
 - Mission-specific starting NPO roster generation
-- Guided NPO and Enemy deployment
+- Guided NPO and Player deployment
 - Persistent Play dashboard showing the next required action
 - Guided NPO decision wizard and visual attack dice
 - Editable NPO roster, Battle Journal, import/export, and PWA support
@@ -90,33 +90,33 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 
 ## v1.3.0 Combat
 
-- Guided Enemy attack wizard targeting an NPO
+- Guided Player attack wizard targeting an NPO
 - Guided NPO attack save and damage wizard
 - Visual attack and save dice with pips
 - Critical and normal save cancellation
 - AP, cover retention, configurable defense dice, saves, and damage profiles
 - Damage preview before confirmation
-- Confirmed Enemy damage automatically updates NPO wounds
-- NPO damage is recorded for application to the Enemy operative on the tabletop
+- Confirmed Player damage automatically updates NPO wounds
+- NPO damage is recorded for application to the Player operative on the tabletop
 
 
 ## v1.3.1 Guided-flow refinements
 
 - `Begin Turning Point 1` now proceeds directly into Turning Point preparation and initiative.
 - Removed the redundant intermediate `Start Turning Point 1` screen from initial setup.
-- Added Move, Dash, Charge, Fall Back, Mission Action, and Pass options to Enemy activation recording.
+- Added Move, Dash, Charge, Fall Back, Mission Action, and Pass options to Player activation recording.
 - Movement actions are recorded without changing Threat.
 - Completing an activation with no selected actions now requires explicit confirmation.
-- Enemy activation history and Journal entries now summarize the recorded actions.
+- Player activation history and Journal entries now summarize the recorded actions.
 
 
-## v1.3.2 Enemy activation combat flow
+## v1.3.2 Player activation combat flow
 
-- Grouped Enemy activation actions into Movement, Combat, Battlefield, and Pass sections.
+- Grouped Player activation actions into Movement, Combat, Battlefield, and Pass sections.
 - Renamed the Fight-facing UI to Melee while retaining the underlying Kill Team Fight action meaning.
 - Checking Shoot reveals Resolve Shooting Attack.
 - Checking Melee reveals Resolve Melee Attack.
-- Removed the separate Did the Enemy attack an NPO section.
+- Removed the separate Did the Player attack an NPO section.
 - Shooting and Melee attacks can be resolved independently in the same activation.
 
 
@@ -126,11 +126,11 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 - All attack profile controls remain disabled until a Target NPO is selected.
 - Added **Check All** to the Build the Killzone setup step.
 - Added **Place All** to the Deploy NPOs setup step.
-- Enemy activations cannot be completed while Shoot or Melee is checked but unresolved.
+- Player activations cannot be completed while Shoot or Melee is checked but unresolved.
 - Players can either resolve the checked attack or return and uncheck the action.
 
 
-## v1.3.4 Guided navigation cleanup
+## v1.3.5 Guided navigation cleanup
 
 - Removed the permanent bottom navigation bar.
 - Added a single **Game Menu** button to the header during an active game.
