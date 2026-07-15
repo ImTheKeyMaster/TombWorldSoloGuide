@@ -195,3 +195,10 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 - Beginning with Turning Point 2, surviving NPOs are readied even if Threat is still 0.
 - Initiative is rolled normally from Turning Point 2 onward.
 - Corrected the Strategy Phase explanation so it no longer implies that Threat 0 permanently prevents NPO activation.
+
+
+## v1.3.9b Initiative button emphasis
+
+- The side that wins the initiative roll now receives the highlighted primary action button.
+- The other side remains available as a secondary override.
+- During Turning Point 1, Player initiative remains automatic and the NPO option stays disabled.

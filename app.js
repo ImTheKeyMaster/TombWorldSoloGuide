@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.3.9a';
+  const APP_VERSION = '1.3.9b';
   const MAX_NPOS = 10;
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -48,7 +48,7 @@
   ];
 
   const initialState = () => ({
-    version:'1.3.9a', screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:'1.3.9b', screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:[], roster:[], playerCount:6, playerReady:6, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
@@ -259,7 +259,7 @@
       return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 1 OF 2</span><h2>Turning Point ${state.turningPoint} prepared</h2><div class="stat-grid"><div class="stat"><small>Threat</small><strong>${state.threat}</strong></div><div class="stat"><small>Grade</small><strong>${d.grade??threatGrade()}</strong></div><div class="stat"><small>NPOs Ready</small><strong>${readyNpos().length}</strong></div><div class="stat"><small>Reinforcements</small><strong>${(d.reinforcements||[]).length}</strong></div></div>${rolls?`<h3>Reinforcements generated</h3><div class="reinforcement-grid">${rolls}</div><div class="field"><label>Reinforcement entry point</label><select id="reinforcementEntry"><option>Nearest valid entry point</option><option>Entry Point A</option><option>Entry Point B</option><option>Entry Point C</option><option>Custom placement</option></select></div>`:'<div class="summary-box"><strong>No reinforcements arrive.</strong></div>'}${d.blocked?`<p class="warning-text">${d.blocked} reinforcement(s) were blocked by the 10-NPO battlefield limit.</p>`:''}${d.event?`<div class="summary-box"><strong>${d.event[0]}</strong><br>${d.event[1]}</div>`:'<p>No Tomb World event is required.</p>'}<button class="btn primary big-action" id="continueStrategy">Continue to Initiative</button></section>`;
     }
     const auto=state.turningPoint===1;
-    return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 2 OF 2</span><h2>${auto?'The Player has initiative during Turning Point 1':'Determine initiative'}</h2>${auto?`<p>During Turning Point 1, the tomb remains dormant. NPOs are expended and the Player begins the Firefight Phase.</p>`:`<p>The Guide rolled once for each side. Use the result, reroll both dice, or override it if your tabletop rules require a different outcome.</p><div class="initiative-roll"><div><small>Player</small>${dieHtml({value:state.strategyData.playerRoll,kind:'hit'})}</div><div><small>NPOs</small>${dieHtml({value:state.strategyData.npoRoll,kind:'hit'})}</div></div><div class="summary-box"><strong>${state.strategyData.suggestedInitiative==='npo'?'NPOs':'Player'} win initiative${state.strategyData.playerRoll===state.strategyData.npoRoll?' after the tie-break':''}.</strong></div>`}<div class="quick-actions">${auto?'':`<button class="btn ghost" id="rerollInitiative">Reroll Both</button>`}<button class="btn primary" data-init="player">Begin Player Activation</button><button class="btn secondary" data-init="npo" ${auto?'disabled':''}>Begin with NPOs</button></div></section>`;
+    return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 2 OF 2</span><h2>${auto?'The Player has initiative during Turning Point 1':'Determine initiative'}</h2>${auto?`<p>During Turning Point 1, the tomb remains dormant. NPOs are expended and the Player begins the Firefight Phase.</p>`:`<p>The Guide rolled once for each side. Use the result, reroll both dice, or override it if your tabletop rules require a different outcome.</p><div class="initiative-roll"><div><small>Player</small>${dieHtml({value:state.strategyData.playerRoll,kind:'hit'})}</div><div><small>NPOs</small>${dieHtml({value:state.strategyData.npoRoll,kind:'hit'})}</div></div><div class="summary-box"><strong>${state.strategyData.suggestedInitiative==='npo'?'NPOs':'Player'} win initiative${state.strategyData.playerRoll===state.strategyData.npoRoll?' after the tie-break':''}.</strong></div>`}<div class="quick-actions">${auto?'':`<button class="btn ghost" id="rerollInitiative">Reroll Both</button>`}<button class="btn ${d.suggestedInitiative==='player'?'primary':'secondary'}" data-init="player">Begin Player Activation</button><button class="btn ${d.suggestedInitiative==='npo'?'primary':'secondary'}" data-init="npo" ${auto?'disabled':''}>Begin with NPOs</button></div></section>`;
   }
 
   function activationTracker(){
