@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.1.0';
+  const APP_VERSION = '1.1.4';
   const MAX_NPOS = 10;
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -332,7 +332,52 @@
     <details><summary>How are saves and damage handled?</summary><p>V1.1 focuses on the Turning Point engine and activation tracking. Use the Roster tab to adjust NPO wounds. A full attack and save resolver is planned for the combat release.</p></details>
   </section>`;}
 
-  function boardSvg(id){const m=maps[id];const orient=mission().orientation;let zone=orient==='left'?'<rect x="30" y="30" width="110" height="430" fill="#244b74" opacity=".48"/><text x="85" y="250" fill="#a8d6ff" text-anchor="middle" transform="rotate(-90 85 250)">ENEMY DROP ZONE</text>':'<rect x="30" y="390" width="740" height="70" fill="#244b74" opacity=".48"/><text x="400" y="432" fill="#a8d6ff" text-anchor="middle">ENEMY DROP ZONE</text>';return `<div class="board-map"><svg viewBox="0 0 800 490" role="img" aria-label="Simplified board layout for ${mission().name}"><rect x="20" y="20" width="760" height="450" rx="10" fill="#08150f" stroke="#3e7558" stroke-width="3"/>${zone}<rect x="140" y="30" width="630" height="350" fill="#173721" opacity=".2"/><text x="610" y="55" fill="#7ee9a5" font-size="15">NPO TERRITORY</text>${m.walls.map(w=>`<line x1="${w[0]}" y1="${w[1]}" x2="${w[2]}" y2="${w[3]}" stroke="#80958a" stroke-width="12" stroke-linecap="square"/>`).join('')}${m.hatches.map(h=>h[2]==='v'?`<rect x="${h[0]-7}" y="${h[1]-20}" width="14" height="40" rx="4" fill="#67df99"/>`:`<rect x="${h[0]-20}" y="${h[1]-7}" width="40" height="14" rx="4" fill="#67df99"/>`).join('')}${m.markers.map(x=>`<circle cx="${x[0]}" cy="${x[1]}" r="21" fill="#b98732" stroke="#f0d074" stroke-width="3"/><text x="${x[0]}" y="${x[1]+5}" text-anchor="middle" fill="#fff" font-size="11" font-weight="800">${x[2]}</text>`).join('')}</svg></div>`;}
+  function boardSvg(id){
+    const m=maps[id];
+    const currentMission=mission();
+    const orient=currentMission.orientation;
+    const safeId=id.replace(/[^a-z0-9-]/gi,'');
+    const zone=orient==='left'
+      ? `<g class="guide-map-zone"><rect class="guide-map-zone-enemy" x="30" y="30" width="110" height="430" rx="5"/><text class="guide-map-zone-label guide-map-zone-label-vertical" x="85" y="250" text-anchor="middle" transform="rotate(-90 85 250)">ENEMY DROP ZONE</text></g>`
+      : `<g class="guide-map-zone"><rect class="guide-map-zone-enemy" x="30" y="390" width="740" height="70" rx="5"/><text class="guide-map-zone-label" x="400" y="432" text-anchor="middle">ENEMY DROP ZONE</text></g>`;
+    const walls=m.walls.map(w=>`<g class="guide-map-wall"><line class="guide-map-wall-shadow" x1="${w[0]}" y1="${w[1]}" x2="${w[2]}" y2="${w[3]}"/><line class="guide-map-wall-core" x1="${w[0]}" y1="${w[1]}" x2="${w[2]}" y2="${w[3]}"/></g>`).join('');
+    const hatches=m.hatches.map(h=>{
+      const vertical=h[2]==='v';
+      const x1=vertical?h[0]:h[0]-20, y1=vertical?h[1]-20:h[1];
+      const x2=vertical?h[0]:h[0]+20, y2=vertical?h[1]+20:h[1];
+      return `<g class="guide-map-hatch"><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><circle cx="${x1}" cy="${y1}" r="5"/><circle cx="${x2}" cy="${y2}" r="5"/></g>`;
+    }).join('');
+    const markers=m.markers.map(x=>renderGuideMapMarker(x)).join('');
+    return `<div class="board-map guide-map-frame">
+      <svg class="guide-map-svg" viewBox="0 0 800 490" role="img" aria-label="Simplified board layout for ${escapeHtml(currentMission.name)}">
+        <defs>
+          <pattern id="guide-grid-${safeId}" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" class="guide-map-grid-line"/></pattern>
+          <radialGradient id="guide-glow-${safeId}" cx="50%" cy="45%" r="70%"><stop offset="0" stop-color="#173522" stop-opacity=".7"/><stop offset="1" stop-color="#050c08" stop-opacity="0"/></radialGradient>
+          <filter id="guide-wall-glow-${safeId}" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <rect class="guide-map-canvas" x="20" y="20" width="760" height="450" rx="12"/>
+        <rect x="25" y="25" width="750" height="440" rx="9" fill="url(#guide-glow-${safeId})"/>
+        <rect class="guide-map-grid-fill" x="30" y="30" width="740" height="430" rx="7" fill="url(#guide-grid-${safeId})"/>
+        ${zone}
+        <rect class="guide-map-zone-npo" x="140" y="30" width="630" height="350" rx="5"/>
+        <text class="guide-map-npo-label" x="748" y="54" text-anchor="end">NPO TERRITORY</text>
+        ${walls}
+        ${hatches}
+        ${markers}
+        <text class="guide-map-caption" x="748" y="454" text-anchor="end">${escapeHtml(currentMission.number)} · ${escapeHtml(currentMission.name.toUpperCase())} · NOT TO SCALE</text>
+      </svg>
+    </div>`;
+  }
+
+  function renderGuideMapMarker(marker){
+    const [x,y,rawLabel]=marker;
+    const label=escapeHtml(rawLabel);
+    if(rawLabel==='SARCOPHAGUS') return `<g class="guide-map-marker guide-map-sarcophagus" transform="translate(${x} ${y})"><rect x="-58" y="-22" width="116" height="44" rx="12"/><path d="M-38 0H38"/><text y="5" text-anchor="middle">S</text><text class="guide-map-marker-caption" y="42" text-anchor="middle">SARCOPHAGUS</text></g>`;
+    if(rawLabel==='ESCAPE') return `<g class="guide-map-marker guide-map-exit" transform="translate(${x-12} ${y})"><path d="M-36 -21H-8V-35L23 0-8 35V21H-36Z"/><text class="guide-map-marker-caption" x="-46" y="5" text-anchor="end">ESCAPE</text></g>`;
+    if(rawLabel==='BREACH') return `<g class="guide-map-marker guide-map-breach" transform="translate(${x} ${y})"><circle r="17"/><path d="M-8 8 8-8M-8-8 8 8"/><text class="guide-map-marker-caption" y="38" text-anchor="middle">BREACH</text></g>`;
+    if(rawLabel==='REGROUP') return `<g class="guide-map-marker guide-map-regroup" transform="translate(${x} ${y})"><circle r="27"/><path d="M-12 0H12M0-12V12"/><text class="guide-map-marker-caption" y="46" text-anchor="middle">REGROUP</text></g>`;
+    return `<g class="guide-map-marker guide-map-objective" transform="translate(${x} ${y})"><path d="M0-18 18 0 0 18-18 0Z"/><text y="5" text-anchor="middle">${label}</text></g>`;
+  }
   function rosterBreakdown(){const counts={};state.roster.forEach(n=>counts[n.type]=(counts[n.type]||0)+1);return Object.entries(counts).map(([k,v])=>`${v} ${k}${v>1?'s':''}`).join(' · ')||'No starting NPOs';}
   function showAddNpo(){showModal('Add NPO',`<div class="field"><label>NPO type</label><select id="newNpoType">${Object.keys(profiles).map(x=>`<option>${x}</option>`).join('')}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmAdd">Add NPO</button></div>`);$('#confirmAdd').onclick=()=>{const type=$('#newNpoType').value,p=profiles[type];state.roster.push({id:uid(),name:`${type} ${state.roster.length+1}`,type,behavior:p.behavior,maxWounds:p.wounds,wounds:p.wounds,save:p.save,attack:{...p.attack},ready:true,deployed:true});log(`${type} added to the battlefield.`);closeModal();save();render();};}
   function adjustWounds(id,d){const n=state.roster.find(x=>x.id===id);if(!n)return;n.wounds=Math.max(0,Math.min(n.maxWounds,n.wounds+d));if(n.wounds===0)n.ready=false;save();render();}

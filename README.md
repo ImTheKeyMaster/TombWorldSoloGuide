@@ -1,8 +1,8 @@
-# Tomb World Solo Guide v1.1.0
+# Tomb World Solo Guide v1.1.4
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
-## v1.1.0 additions
+## v1.1.4 additions
 
 - Two-step guided Strategy Phase
 - Automatic Turning Point preparation
@@ -41,3 +41,10 @@ No build step or server is required.
 ## Important
 
 This is an unofficial play aid. Use the official Kill Team and Tomb World publications for authoritative rules, mission wording, terrain placement, and datacards.
+
+
+## v1.1.4
+- Restyled all six generated mission maps to match the darker, higher-contrast Solo Command presentation.
+- Added grid, framed canvas, glowing hatchways, stronger walls, and differentiated mission markers.
+- Preserved the Guide map geometry and guided-play workflow.
+- Standardized the asset directory name to `Assets`.
