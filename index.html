@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07140f">
+  <meta name="description" content="A guided solo-play companion for Kill Team missions in a Necron tomb world.">
+  <title>Tomb World Solo Guide</title>
+  <link rel="icon" href="Assets/icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css?v=1.1.7">
+</head>
+<body>
+  <div class="ambient-grid" aria-hidden="true"></div>
+  <header class="app-header">
+    <div class="brand">
+      <img src="Assets/icon.svg" alt="" class="brand-icon">
+      <div><span>UNOFFICIAL SOLO PLAY AID</span><h1>Tomb World Solo Guide</h1></div>
+    </div>
+    <div class="version">V1.1.7</div>
+  </header>
+
+  <main id="app" class="app-shell" aria-live="polite"></main>
+
+  <nav id="bottomNav" class="bottom-nav" hidden aria-label="Main navigation">
+    <button data-nav="play" class="active"><span>▶</span>Play</button>
+    <button data-nav="mission"><span>◇</span>Mission</button>
+    <button data-nav="roster"><span>☷</span>Roster</button>
+    <button data-nav="journal"><span>≡</span>Journal</button>
+    <button data-nav="help"><span>?</span>Help</button>
+  </nav>
+
+  <dialog id="modal" class="modal"><div id="modalBody"></div></dialog>
+  <div id="toast" class="toast" hidden></div>
+  <input id="importInput" type="file" accept="application/json" hidden>
+  <script src="app.js?v=1.1.7"></script>
+</body>
+</html>
