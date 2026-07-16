@@ -346,3 +346,17 @@
 
 html,body{touch-action:manipulation;-webkit-text-size-adjust:100%;}
 button,.btn,input,select,label,summary,a{touch-action:manipulation;}
+
+
+/* v1.3.9d transactional Player activations */
+#playerActivationControls:disabled{opacity:.48}
+.pending-attack-summary{
+  margin:8px 0 0 30px;
+  padding:8px 10px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:#08150f;
+  color:var(--muted);
+  font-size:.86rem;
+}
+.pending-attack-summary strong{color:var(--green)}

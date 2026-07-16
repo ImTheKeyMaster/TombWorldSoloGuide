@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.3.9c';
+  const APP_VERSION = '1.3.9d';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -51,12 +51,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   ];
 
   const initialState = () => ({
-    version:'1.3.9b', screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:'1.3.9d', screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:[], roster:[], playerCount:6, playerReady:6, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
     strategyStage:null, strategyData:null, activationNumber:0, playerActivated:0, npoActivated:0,
-    activationHistory:[], reinforcementEntry:'Nearest valid entry point'
+    activationHistory:[], playerActivatedIds:[], reinforcementEntry:'Nearest valid entry point'
   });
 
   let state = normalizeState(load() || initialState());
@@ -70,6 +70,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.journal=Array.isArray(raw?.journal)?raw.journal:[];
     merged.newIds=Array.isArray(raw?.newIds)?raw.newIds:[];
     merged.activationHistory=Array.isArray(raw?.activationHistory)?raw.activationHistory:[];
+    merged.playerActivatedIds=Array.isArray(raw?.playerActivatedIds)?raw.playerActivatedIds:[];
     return merged;
   }
   function mission(){ return missions.find(m => m.id === state.missionId) || missions[0]; }
@@ -266,11 +267,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function activationTracker(){
-    const playerActivated=Math.max(0,state.playerCount-state.playerReady);
+    const activatedIds=new Set(state.playerActivatedIds||[]);
+    const playerActivated=activatedIds.size;
     const playerIndicators=Array.from({length:state.playerCount},(_,i)=>{
-      const activated=i<playerActivated;
+      const operativeId=i+1;
+      const activated=activatedIds.has(operativeId);
       const status=activated?'Activated':'Remaining';
-      return `<span class="player-operative-indicator ${activated?'activated':'remaining'}" title="Player operative ${i+1}: ${status}" aria-label="Player operative ${i+1}: ${status}"><span class="operative-number">${i+1}</span>${activated?'<span class="activation-check" aria-hidden="true">✓</span>':''}</span>`;
+      return `<span class="player-operative-indicator ${activated?'activated':'remaining'}" title="Player operative ${operativeId}: ${status}" aria-label="Player operative ${operativeId}: ${status}"><span class="operative-number">${operativeId}</span>${activated?'<span class="activation-check" aria-hidden="true">✓</span>':''}</span>`;
     }).join('');
     const npoRows=activeNpos().map(n=>`<div class="tracker-npo ${n.ready?'ready':'spent'}"><span>${escapeHtml(n.name)}</span><strong>${n.ready?'READY':'EXPENDED'}</strong></div>`).join('');
     return `<section class="card activation-tracker"><div class="panel-title"><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div><div class="turn-badge">Next: ${state.nextSide==='npo'?'NPO':'Player'}</div></div><div class="tracker-section player-tracker-section"><div class="tracker-section-heading"><small>Player operatives</small><div class="activation-legend"><span><i class="legend-dot activated"></i>Activated (${playerActivated})</span><span><i class="legend-dot remaining"></i>Remaining (${state.playerReady})</span></div></div><div class="player-dots">${playerIndicators}</div></div><div class="tracker-section"><small>NPOs</small><div class="tracker-npos">${npoRows||'<span class="muted">No active NPOs</span>'}</div></div></section>`;
@@ -295,7 +298,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function startTurningPoint(){
     state.turningPoint++;
     state.playerReady=state.playerCount;
-    state.playerActivated=0;state.npoActivated=0;state.activationNumber=0;state.activationHistory=[];
+    state.playerActivated=0;state.npoActivated=0;state.activationNumber=0;state.activationHistory=[];state.playerActivatedIds=[];
     const grade=threatGrade();
     activeNpos().forEach(n=>n.ready=state.turningPoint>1 || state.threat>0);
     const reinforcements=[];
@@ -353,124 +356,136 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function nextNpo(){ let n=state.roster.find(x=>x.id===state.activeNpoId&&x.ready&&x.wounds>0); if(!n){n=readyNpos().sort((a,b)=>priority(b)-priority(a))[0];state.activeNpoId=n?.id||null;} return n; }
   function priority(n){return ({Guardian:4,Marksman:3,Brawler:2,Sentinel:1}[n.behavior]||1)+(n.wounds/n.maxWounds<.5?-.5:0);}
 
+  function remainingPlayerOperatives(){
+    const used=new Set(state.playerActivatedIds||[]);
+    return Array.from({length:state.playerCount},(_,i)=>i+1).filter(id=>!used.has(id));
+  }
+
   function showPlayerActivation(stage={}){
-    const living=activeNpos();
+    const remaining=remainingPlayerOperatives();
+    if(!remaining.length){
+      state.playerReady=0;
+      setNextActivation('npo');
+      save();
+      render();
+      return;
+    }
+
     const checked=key=>stage[key]?'checked':'';
-    const shootResolved=Boolean(stage.shootResolved);
-    const meleeResolved=Boolean(stage.meleeResolved);
-    showModal('Resolve Player Activation',`<p>Select everything that occurred during this Player operative’s activation. Movement actions do not increase Threat, but recording them keeps the activation history clear.</p>
-      <div class="activation-groups">
-        <section class="activation-group">
-          <div class="activation-group-title"><span>↔</span><div><strong>Movement</strong><small>Position and control actions</small></div></div>
-          <div class="toggle-list player-action-list">
-            <label><input type="checkbox" id="eaMove" ${checked('move')}>Move</label>
-            <label><input type="checkbox" id="eaDash" ${checked('dash')}>Dash</label>
-            <label><input type="checkbox" id="eaCharge" ${checked('charge')}>Charge</label>
-            <label><input type="checkbox" id="eaFallBack" ${checked('fallBack')}>Fall Back</label>
-          </div>
-        </section>
+    const selectedId=Number(stage.playerOperativeId||0);
+    const shootPending=stage.pendingShoot||null;
+    const meleePending=stage.pendingMelee||null;
 
-        <section class="activation-group">
-          <div class="activation-group-title"><span>⚔</span><div><strong>Combat</strong><small>Record and resolve attacks</small></div></div>
-          <div class="combat-action-card">
-            <label><input type="checkbox" id="eaShoot" ${checked('shoot')}><span><strong>Shoot</strong><small>Use a non-Silent ranged weapon</small></span></label>
-            <div class="inline-resolver ${stage.shoot?'':'hidden'}" id="shootResolver">
-              ${living.length?`<button class="btn secondary" id="resolveShoot">Resolve Shooting Attack</button><small>${shootResolved?'Shooting attack resolved.':'Required before completing the activation while this action is checked.'}</small>`:'<small>No active NPO is available as a target.</small>'}
-            </div>
-          </div>
-          <div class="combat-action-card">
-            <label><input type="checkbox" id="eaMelee" ${checked('melee')||checked('fight')}><span><strong>Melee</strong><small>Use the Kill Team Fight action</small></span></label>
-            <div class="inline-resolver ${(stage.melee||stage.fight)?'':'hidden'}" id="meleeResolver">
-              ${living.length?`<button class="btn secondary" id="resolveMelee">Resolve Melee Attack</button><small>${meleeResolved?'Melee attack resolved.':'Required before completing the activation while this action is checked.'}</small>`:'<small>No active NPO is available as a target.</small>'}
-            </div>
-          </div>
-          <div class="toggle-list player-action-list compact-actions">
-            <label><input type="checkbox" id="eaDamage" ${checked('damage')}>Damaged an NPO with another action</label>
-          </div>
-        </section>
-
-        <section class="activation-group">
-          <div class="activation-group-title"><span>▣</span><div><strong>Battlefield</strong><small>Terrain and mission interactions</small></div></div>
-          <div class="toggle-list player-action-list">
-            <label><input type="checkbox" id="eaHatch" ${checked('hatch')}>Operate Hatch</label>
-            <label><input type="checkbox" id="eaBreach" ${checked('breach')}>Breach</label>
-            <label><input type="checkbox" id="eaObjective" ${checked('objective')}>Mission or objective action</label>
-          </div>
-        </section>
-
-        <section class="activation-group pass-group">
-          <div class="toggle-list player-action-list">
-            <label><input type="checkbox" id="eaPass" ${checked('pass')}>Pass / no action recorded</label>
-          </div>
-        </section>
+    showModal('Resolve Player Activation',`
+      <p>Choose the Player operative being activated. That operative cannot activate again during this Turning Point after the activation is confirmed.</p>
+      <div class="field">
+        <label>Player operative</label>
+        <select id="playerOperativeSelect">
+          <option value="">Select a Player operative...</option>
+          ${remaining.map(id=>`<option value="${id}" ${selectedId===id?'selected':''}>Player operative ${id}</option>`).join('')}
+        </select>
       </div>
-      <div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmPlayer">Complete Activation</button></div>`);
+      <fieldset id="playerActivationControls" ${selectedId?'':'disabled'}>
+        <p class="muted">Select everything this operative will do. Shooting and Melee attacks are resolved only after you press Complete Activation.</p>
+        <div class="activation-groups">
+          <section class="activation-group">
+            <div class="activation-group-title"><span>↔</span><div><strong>Movement</strong><small>Position and control actions</small></div></div>
+            <div class="toggle-list player-action-list">
+              <label><input type="checkbox" id="eaMove" ${checked('move')}>Move</label>
+              <label><input type="checkbox" id="eaDash" ${checked('dash')}>Dash</label>
+              <label><input type="checkbox" id="eaCharge" ${checked('charge')}>Charge</label>
+              <label><input type="checkbox" id="eaFallBack" ${checked('fallBack')}>Fall Back</label>
+            </div>
+          </section>
+
+          <section class="activation-group">
+            <div class="activation-group-title"><span>⚔</span><div><strong>Combat</strong><small>Resolved after Complete Activation</small></div></div>
+            <div class="combat-action-card">
+              <label><input type="checkbox" id="eaShoot" ${checked('shoot')}><span><strong>Shoot</strong><small>One Shooting action for this operative</small></span></label>
+              ${shootPending?`<div class="pending-attack-summary"><strong>Pending:</strong> ${escapeHtml(shootPending.targetName)} · ${shootPending.damage} damage</div>`:''}
+            </div>
+            <div class="combat-action-card">
+              <label><input type="checkbox" id="eaMelee" ${checked('melee')||checked('fight')}><span><strong>Melee</strong><small>One Melee action for this operative</small></span></label>
+              ${meleePending?`<div class="pending-attack-summary"><strong>Pending:</strong> ${escapeHtml(meleePending.targetName)} · ${meleePending.damage} damage</div>`:''}
+            </div>
+            <div class="toggle-list player-action-list compact-actions">
+              <label><input type="checkbox" id="eaDamage" ${checked('damage')}>Damaged an NPO with another action</label>
+            </div>
+          </section>
+
+          <section class="activation-group">
+            <div class="activation-group-title"><span>▣</span><div><strong>Battlefield</strong><small>Terrain and mission interactions</small></div></div>
+            <div class="toggle-list player-action-list">
+              <label><input type="checkbox" id="eaHatch" ${checked('hatch')}>Operate Hatch</label>
+              <label><input type="checkbox" id="eaBreach" ${checked('breach')}>Breach</label>
+              <label><input type="checkbox" id="eaObjective" ${checked('objective')}>Mission or objective action</label>
+            </div>
+          </section>
+
+          <section class="activation-group pass-group">
+            <div class="toggle-list player-action-list">
+              <label><input type="checkbox" id="eaPass" ${checked('pass')}>Pass / no action recorded</label>
+            </div>
+          </section>
+        </div>
+        <div class="wizard-actions"><button class="btn ghost" id="cancelPlayerActivation">Cancel</button><button class="btn primary" id="confirmPlayer">Complete Activation</button></div>
+      </fieldset>`);
+
+    const operativeSelect=$('#playerOperativeSelect');
+    const controls=$('#playerActivationControls');
+    operativeSelect.addEventListener('change',()=>{
+      const updated={...stage,playerOperativeId:Number(operativeSelect.value||0)};
+      showPlayerActivation(updated);
+    });
 
     const actionIds=['eaMove','eaDash','eaCharge','eaFallBack','eaShoot','eaMelee','eaDamage','eaHatch','eaBreach','eaObjective'];
     const clearPass=()=>{if($('#eaPass'))$('#eaPass').checked=false;};
     $('#eaPass')?.addEventListener('change',e=>{
-      if(e.target.checked){
-        actionIds.forEach(id=>{const box=$(`#${id}`);if(box)box.checked=false;});
-        $('#shootResolver')?.classList.add('hidden');
-        $('#meleeResolver')?.classList.add('hidden');
-      }
+      if(e.target.checked)actionIds.forEach(id=>{const box=$(`#${id}`);if(box)box.checked=false;});
     });
-    actionIds.forEach(id=>$(`#${id}`)?.addEventListener('change',e=>{
-      if(e.target.checked)clearPass();
-    }));
-    $('#eaShoot')?.addEventListener('change',e=>$('#shootResolver')?.classList.toggle('hidden',!e.target.checked));
-    $('#eaMelee')?.addEventListener('change',e=>$('#meleeResolver')?.classList.toggle('hidden',!e.target.checked));
+    actionIds.forEach(id=>$(`#${id}`)?.addEventListener('change',e=>{if(e.target.checked)clearPass();}));
 
-    $('#resolveShoot')?.addEventListener('click',()=>{
-      const nextStage=readPlayerActivationStage(shootResolved,meleeResolved);
-      showPlayerAttackWizard(null,()=>showPlayerActivation({...nextStage,shootResolved:true}),'shoot');
-    });
-    $('#resolveMelee')?.addEventListener('click',()=>{
-      const nextStage=readPlayerActivationStage(shootResolved,meleeResolved);
-      showPlayerAttackWizard(null,()=>showPlayerActivation({...nextStage,meleeResolved:true}),'melee');
-    });
+    $('#cancelPlayerActivation').onclick=()=>{closeModal();render();};
     $('#confirmPlayer').onclick=()=>{
-      const finalStage=readPlayerActivationStage(shootResolved,meleeResolved);
-      const unresolved=[];
-      if(finalStage.shoot&&!finalStage.shootResolved)unresolved.push('Shooting');
-      if(finalStage.melee&&!finalStage.meleeResolved)unresolved.push('Melee');
-      if(unresolved.length){
-        showModal('Resolve selected attacks',`<p>${unresolved.join(' and ')} ${unresolved.length===1?'is':'are'} checked but not resolved. Resolve ${unresolved.length===1?'the attack':'those attacks'}, or go back and uncheck the action before completing the activation.</p><div class="wizard-actions"><button class="btn primary" id="returnUnresolvedAttack">Go Back</button></div>`);
-        $('#returnUnresolvedAttack').onclick=()=>showPlayerActivation(finalStage);
+      const finalStage=readPlayerActivationStage(stage);
+      if(!finalStage.playerOperativeId){
+        showToast('Select a Player operative first.');
         return;
       }
-      const hasRecordedAction=playerActivationHasAction(finalStage);
-      if(!hasRecordedAction){
-        showModal('No actions selected',`<p>Mark this Player operative as activated without recording an action?</p><div class="wizard-actions"><button class="btn ghost" id="returnPlayerActivation">Go Back</button><button class="btn primary" id="confirmEmptyPlayerActivation">Complete Activation</button></div>`);
+      if(!playerActivationHasAction(finalStage)){
+        showModal('No actions selected',`<p>Mark Player operative ${finalStage.playerOperativeId} as activated without recording an action?</p><div class="wizard-actions"><button class="btn ghost" id="returnPlayerActivation">Go Back</button><button class="btn primary" id="confirmEmptyPlayerActivation">Continue</button></div>`);
         $('#returnPlayerActivation').onclick=()=>showPlayerActivation(finalStage);
-        $('#confirmEmptyPlayerActivation').onclick=()=>completePlayerActivation(finalStage);
+        $('#confirmEmptyPlayerActivation').onclick=()=>resolvePendingPlayerAttacks(finalStage);
         return;
       }
-      completePlayerActivation(finalStage);
+      resolvePendingPlayerAttacks(finalStage);
     };
   }
 
-  function readPlayerActivationStage(shootResolved=false,meleeResolved=false){
+  function readPlayerActivationStage(previous={}){
+    const shoot=Boolean($('#eaShoot')?.checked);
+    const melee=Boolean($('#eaMelee')?.checked);
     return {
+      playerOperativeId:Number($('#playerOperativeSelect')?.value||previous.playerOperativeId||0),
       move:Boolean($('#eaMove')?.checked),
       dash:Boolean($('#eaDash')?.checked),
       charge:Boolean($('#eaCharge')?.checked),
       fallBack:Boolean($('#eaFallBack')?.checked),
-      shoot:Boolean($('#eaShoot')?.checked),
-      melee:Boolean($('#eaMelee')?.checked),
+      shoot,
+      melee,
       damage:Boolean($('#eaDamage')?.checked),
       hatch:Boolean($('#eaHatch')?.checked),
       breach:Boolean($('#eaBreach')?.checked),
       objective:Boolean($('#eaObjective')?.checked),
       pass:Boolean($('#eaPass')?.checked),
-      shootResolved:Boolean(shootResolved),
-      meleeResolved:Boolean(meleeResolved)
+      pendingShoot:shoot?previous.pendingShoot||null:null,
+      pendingMelee:melee?previous.pendingMelee||null:null
     };
   }
 
   function playerActivationHasAction(stage){
-    return Boolean(stage.shootResolved || stage.meleeResolved || stage.move || stage.dash || stage.charge || stage.fallBack ||
-      stage.shoot || stage.melee || stage.damage || stage.hatch || stage.breach || stage.objective || stage.pass);
+    return Boolean(stage.move || stage.dash || stage.charge || stage.fallBack || stage.shoot || stage.melee ||
+      stage.damage || stage.hatch || stage.breach || stage.objective || stage.pass);
   }
 
   function playerActivationSummary(stage){
@@ -479,14 +494,61 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(stage.dash)actions.push('Dash');
     if(stage.charge)actions.push('Charge');
     if(stage.fallBack)actions.push('Fall Back');
-    if(stage.shoot)actions.push(stage.shootResolved?'Shooting attack resolved':'Shoot');
-    if(stage.melee)actions.push(stage.meleeResolved?'Melee attack resolved':'Melee');
+    if(stage.shoot)actions.push('Shooting attack resolved');
+    if(stage.melee)actions.push('Melee attack resolved');
     if(stage.damage)actions.push('Damaging action');
     if(stage.hatch)actions.push('Operate Hatch');
     if(stage.breach)actions.push('Breach');
     if(stage.objective)actions.push('Mission action');
     if(stage.pass)actions.push('Pass / no action recorded');
     return actions.length?actions.join(', '):'No actions recorded';
+  }
+
+  function projectedNpoWounds(npoId,stage){
+    let wounds=state.roster.find(n=>n.id===npoId)?.wounds||0;
+    for(const pending of [stage.pendingShoot,stage.pendingMelee]){
+      if(pending?.targetId===npoId)wounds=pending.after;
+    }
+    return wounds;
+  }
+
+  function resolvePendingPlayerAttacks(stage){
+    if(stage.shoot&&!stage.pendingShoot){
+      showPendingPlayerAttackWizard(stage,'shoot',result=>resolvePendingPlayerAttacks({...stage,pendingShoot:result}),()=>showPlayerActivation(stage));
+      return;
+    }
+    if(stage.melee&&!stage.pendingMelee){
+      showPendingPlayerAttackWizard(stage,'melee',result=>resolvePendingPlayerAttacks({...stage,pendingMelee:result}),()=>showPlayerActivation(stage));
+      return;
+    }
+    showPlayerActivationConfirmation(stage);
+  }
+
+  function showPlayerActivationConfirmation(stage){
+    const pending=[stage.pendingShoot,stage.pendingMelee].filter(Boolean);
+    const attackRows=pending.map(p=>`<div class="summary-box"><strong>${p.attackType==='shoot'?'Shooting':'Melee'}:</strong> ${escapeHtml(p.targetName)} · ${p.before} → ${p.after} wounds (${p.damage} damage)</div>`).join('');
+    showModal('Confirm Player Activation',`
+      <p>Player operative ${stage.playerOperativeId} will be marked activated. NPO damage has not been applied yet.</p>
+      ${attackRows||'<div class="summary-box"><strong>No attacks to apply.</strong></div>'}
+      <div class="summary-box"><strong>Actions:</strong> ${escapeHtml(playerActivationSummary(stage))}</div>
+      <div class="wizard-actions"><button class="btn ghost" id="backToPlayerActivation">Go Back</button><button class="btn primary" id="commitPlayerActivation">Confirm Activation</button></div>`);
+    $('#backToPlayerActivation').onclick=()=>showPlayerActivation(stage);
+    $('#commitPlayerActivation').onclick=()=>{
+      applyPendingPlayerDamage(stage);
+      completePlayerActivation(stage);
+    };
+  }
+
+  function applyPendingPlayerDamage(stage){
+    for(const pending of [stage.pendingShoot,stage.pendingMelee]){
+      if(!pending)continue;
+      const n=state.roster.find(x=>x.id===pending.targetId);
+      if(!n)continue;
+      const before=n.wounds;
+      n.wounds=Math.max(0,pending.after);
+      if(n.wounds===0)n.ready=false;
+      log(`Player operative ${stage.playerOperativeId} ${pending.attackType==='shoot'?'shot':'made a Melee attack against'} ${n.name} for ${pending.damage} damage (${before} → ${n.wounds} wounds).`);
+    }
   }
 
   function completePlayerActivation(stage={}){
@@ -506,25 +568,32 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       showToast(`Breach rolled ${r}${r>=4?'... Threat +2 total':'... Threat +1 total'}`);
     }
     if(inc)setThreat(inc,'Player activation');
-    state.playerReady=Math.max(0,state.playerReady-1);
-    state.playerActivated++;
+    const operativeId=Number(stage.playerOperativeId);
+    if(!state.playerActivatedIds.includes(operativeId))state.playerActivatedIds.push(operativeId);
+    state.playerReady=Math.max(0,state.playerCount-state.playerActivatedIds.length);
+    state.playerActivated=state.playerActivatedIds.length;
     state.activationNumber++;
     const summary=playerActivationSummary(stage);
-    state.activationHistory.unshift({side:'player',label:`Player activation ${state.playerActivated}`,summary});
+    state.activationHistory.unshift({side:'player',label:`Player operative ${operativeId}`,summary});
     advanceAfterActivation('player');
-    log(`Player operative completed activation ${state.playerActivated}: ${summary}.`);
+    log(`Player operative ${operativeId} completed activation: ${summary}.`);
     closeModal();
     save();
     render();
   }
 
-  function showPlayerAttackWizard(targetId,onDone,attackType='attack'){
-    const targets=activeNpos(); if(!targets.length){showToast('No active NPO is available as a target.');return;}
-    const attackLabel=attackType==='shoot'?'Shooting':attackType==='melee'?'Melee':'Player';
-    showModal(`${attackLabel} Attack Wizard`,`<p>Select the target NPO first. The remaining attack controls will unlock after a target is chosen.</p>
-      <div class="field"><label>Target NPO</label><select id="combatTarget"><option value="" selected>Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}">${escapeHtml(n.name)} · ${n.wounds}/${n.maxWounds} wounds · Save ${n.save}+</option>`).join('')}</select></div>
+  function showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel){
+    const targets=activeNpos().filter(n=>projectedNpoWounds(n.id,stage)>0);
+    if(!targets.length){
+      showToast('No active NPO is available as a target.');
+      showPlayerActivation(stage);
+      return;
+    }
+    const attackLabel=attackType==='shoot'?'Shooting':'Melee';
+    showModal(`Resolve ${attackLabel} Attack`,`
+      <p>Select the target NPO. This attack remains pending until the entire Player activation is confirmed.</p>
+      <div class="field"><label>Target NPO</label><select id="combatTarget"><option value="">Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}">${escapeHtml(n.name)} · ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} projected wounds · Save ${n.save}+</option>`).join('')}</select></div>
       <fieldset id="combatControls" class="combat-fieldset" disabled>
-        <p class="combat-fieldset-note">Enter the ${attackType==='melee'?'melee weapon':'weapon'} profile. The Guide will roll the attack, roll the selected NPO’s saves, and preview damage before you confirm it.</p>
         <div class="combat-grid">
           ${spinnerField('playerAttackDice','Attack dice',4,1,12)}
           ${spinnerField('playerHit','Hit on',3,2,6)}
@@ -535,36 +604,39 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         </div>
         <label class="check-row compact-check"><input type="checkbox" id="npoCover"><span><strong>NPO retains one normal save for cover</strong></span></label>
         <div id="combatResults" class="combat-results"><p>Select a target NPO to begin.</p></div>
-        <div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="rollPlayerAttack">Roll Attack & Saves</button></div>
+        <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button><button class="btn primary" id="rollPendingAttack">Roll Attack & Saves</button></div>
       </fieldset>`);
     bindSpinners(modal);
     const targetSelect=$('#combatTarget');
     const controls=$('#combatControls');
     targetSelect.addEventListener('change',()=>{
-      const selected=Boolean(targetSelect.value);
-      controls.disabled=!selected;
-      if(selected)$('#combatResults').innerHTML='<p>Set the profile, then roll the attack.</p>';
+      controls.disabled=!targetSelect.value;
+      if(targetSelect.value)$('#combatResults').innerHTML='<p>Set the profile, then roll the attack.</p>';
     });
-    $('#rollPlayerAttack').onclick=()=>rollPlayerAttackPreview(onDone);
+    $('#cancelPendingAttack').onclick=onCancel;
+    $('#rollPendingAttack').onclick=()=>previewPendingPlayerAttack(stage,attackType,onResolved,onCancel);
   }
 
-  function rollPlayerAttackPreview(onDone){
-    const n=state.roster.find(x=>x.id===$('#combatTarget').value); if(!n)return;
+  function previewPendingPlayerAttack(stage,attackType,onResolved,onCancel){
+    const n=state.roster.find(x=>x.id===$('#combatTarget').value);
+    if(!n)return;
     const profile={dice:num('playerAttackDice'),hit:num('playerHit'),normal:num('playerNormalDamage'),crit:num('playerCritDamage')};
     const attackDice=rollAttack(profile);
     const defense=resolveDefense(attackDice,num('npoDefenseDice'),n.save,num('playerAp'),$('#npoCover').checked,profile);
-    const before=n.wounds,after=Math.max(0,before-defense.damage);
-    const box=$('#combatResults');
-    box.innerHTML=`<div class="combat-stage"><small>ENEMY ATTACK DICE</small><div class="dice-row animated-roll" id="playerAttackDiceResult">${attackDice.map(()=>rollingDieHtml()).join('')}</div></div>
+    const before=projectedNpoWounds(n.id,stage);
+    const after=Math.max(0,before-defense.damage);
+    const result={attackType,targetId:n.id,targetName:n.name,before,after,damage:defense.damage};
+
+    $('#combatResults').innerHTML=`<div class="combat-stage"><small>PLAYER ATTACK DICE</small><div class="dice-row animated-roll" id="playerAttackDiceResult">${attackDice.map(()=>rollingDieHtml()).join('')}</div></div>
       <div class="combat-stage"><small>NPO SAVE DICE</small><div class="dice-row animated-roll" id="npoSaveDiceResult">${defense.saveDice.map(()=>rollingDieHtml()).join('')||'<span class="muted">No save dice rolled</span>'}</div>${defense.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':''}</div>
-      <div class="damage-summary"><div><small>Unsaved normal hits</small><strong>${defense.normalRemaining}</strong></div><div><small>Unsaved critical hits</small><strong>${defense.critRemaining}</strong></div><div><small>Damage</small><strong>${defense.damage}</strong></div><div><small>Wounds after confirmation</small><strong>${before} → ${after}</strong></div></div>
-      <p class="muted">Damage is only applied after you press Confirm Damage.</p>`;
-    $('#rollPlayerAttack').textContent='Confirm Damage';
-    $('#rollPlayerAttack').onclick=()=>{
-      n.wounds=after;if(n.wounds===0)n.ready=false;
-      log(`Player attack dealt ${defense.damage} damage to ${n.name} (${before} → ${after} wounds).`);
-      save();closeModal();showToast(`${n.name}: ${defense.damage} damage confirmed.`);if(onDone)onDone();else render();
-    };
+      <div class="damage-summary"><div><small>Unsaved normal hits</small><strong>${defense.normalRemaining}</strong></div><div><small>Unsaved critical hits</small><strong>${defense.critRemaining}</strong></div><div><small>Pending damage</small><strong>${defense.damage}</strong></div><div><small>Projected wounds</small><strong>${before} → ${after}</strong></div></div>
+      <p class="muted">No wounds have been changed. Use This Result stores the attack until the Player activation is confirmed.</p>`;
+
+    const button=$('#rollPendingAttack');
+    button.textContent='Use This Result';
+    button.onclick=()=>onResolved(result);
+    $('#cancelPendingAttack').onclick=onCancel;
+
     setTimeout(()=>{
       const a=$('#playerAttackDiceResult');if(a){a.innerHTML=attackDice.map(dieHtml).join('');a.classList.add('settled');}
       const d=$('#npoSaveDiceResult');if(d&&defense.saveDice.length){d.innerHTML=defense.saveDice.map(dieHtml).join('');d.classList.add('settled');}

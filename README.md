@@ -202,3 +202,14 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 - The side that wins the initiative roll now receives the highlighted primary action button.
 - The other side remains available as a secondary override.
 - During Turning Point 1, Player initiative remains automatic and the NPO option stays disabled.
+
+
+## v1.3.9d Player activation transaction fix
+
+- A specific remaining Player operative must be selected before recording an activation.
+- Activated Player operatives cannot be selected again during the same Turning Point.
+- Shoot and Melee are resolved only after **Complete Activation** is pressed.
+- Attack damage remains pending and does not change NPO wounds until **Confirm Activation**.
+- Canceling an attack returns to the Player activation screen with no damage applied.
+- Going back from final confirmation allows actions to be changed or unchecked safely.
+- Activation tracker circles now reflect the exact Player operative numbers already activated.
