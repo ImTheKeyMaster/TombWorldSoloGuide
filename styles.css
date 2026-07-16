@@ -343,3 +343,6 @@
   line-height:1.1;
 }
 .next-activation-banner span{color:var(--text)}
+
+html,body{touch-action:manipulation;-webkit-text-size-adjust:100%;}
+button,.btn,input,select,label,summary,a{touch-action:manipulation;}
