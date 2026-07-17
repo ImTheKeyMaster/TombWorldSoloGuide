@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.5.5';
+  const APP_VERSION = '2.0.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -15,6 +15,18 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const modalBody = $('#modalBody');
   const toast = $('#toast');
   const importInput = $('#importInput');
+
+  let playerTeamData=null;
+  async function loadPlayerTeamData(){
+    const response=await fetch('Player_Operatives/DeathWatch.json',{cache:'no-store'});
+    if(!response.ok)throw new Error(`Unable to load DeathWatch.json (${response.status})`);
+    const data=await response.json();
+    if(!Array.isArray(data.operatives)||!data.operatives.length)throw new Error('DeathWatch.json has no operatives.');
+    playerTeamData=data;
+  }
+  function playerDefinition(id){return playerTeamData?.operatives?.find(o=>o.id===id)||null;}
+  function selectedPlayerOperatives(){return (state.playerRoster||[]).map(playerDefinition).filter(Boolean);}
+  function playerName(id){return playerDefinition(id)?.name||String(id);}
 
   const missions = [
     {id:'shifting-labyrinth',number:'01',name:'Shifting Labyrinth',brief:'Escape a tomb complex while its route shifts around the kill team.',objective:'Get at least half of your surviving Player operatives through the escape point.',setup:'2D3 + 3',tracker:'Operatives escaped',max:12,orientation:'left',special:'The escape point may move during the mission.'},
@@ -52,7 +64,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   const initialState = () => ({
     version:'1.4.0c', screen:'home', tab:'play', setupStep:0, missionId:null,
-    setupChecks:[], roster:[], playerCount:6, playerReady:6, turningPoint:0,
+    setupChecks:[], roster:[], playerTeamFile:'DeathWatch.json', playerRoster:[], playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
     strategyStage:null, strategyData:null, activationNumber:0, playerActivated:0, npoActivated:0,
@@ -73,6 +85,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.activationHistory=Array.isArray(raw?.activationHistory)?raw.activationHistory:[];
     merged.playerActivatedIds=Array.isArray(raw?.playerActivatedIds)?raw.playerActivatedIds:[];
     merged.playerCasualtyIds=Array.isArray(raw?.playerCasualtyIds)?raw.playerCasualtyIds:[];
+    merged.playerRoster=Array.isArray(raw?.playerRoster)?raw.playerRoster:[];
+    merged.playerCount=merged.playerRoster.length;
     return merged;
   }
   function mission(){ return missions.find(m => m.id === state.missionId) || missions[0]; }
@@ -84,7 +98,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function playerOperativesRemaining(){
     const casualties=new Set(state.playerCasualtyIds||[]);
     const activated=new Set(state.playerActivatedIds||[]);
-    return Array.from({length:state.playerCount},(_,i)=>i+1).filter(id=>!casualties.has(id)&&!activated.has(id)).length;
+    return (state.playerRoster||[]).filter(id=>!casualties.has(id)&&!activated.has(id)).length;
   }
   function destroyedNpoCount(){ return state.roster.filter(n=>n.wounds<=0).length; }
 
@@ -271,7 +285,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#howItWorksDoneBtn').onclick=goHome;
   }
 
-  const setupTitles=['Choose Mission','Build the Killzone','Generate NPO Roster','Deploy NPOs','Deploy Player Kill Team','Ready to Begin'];
+  const setupTitles=['Choose Mission','Build the Killzone','Generate NPO Roster','Deploy NPOs','Build Deathwatch Roster','Ready to Begin'];
   function renderSetup(){
     const step=state.setupStep;
     app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>${setupTitles[step]}</h2><p>${setupSubtitle(step)}</p></div><div class="step-count">${step+1} / 6</div></div><div class="progress-bar"><span style="width:${((step+1)/6)*100}%"></span></div><section class="wizard-card">${setupContent(step)}</section></div>`;
@@ -290,8 +304,27 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(step===1){const m=mission();const checks=['Place walls and hatchways as shown','Place mission objective markers','Identify the Player drop zone','Identify NPO deployment areas'];const allChecked=checks.every((_,i)=>state.setupChecks[i]);return `<h3>${m.name} board setup</h3><p><strong>Objective:</strong> ${m.objective}</p>${boardSvg(m.id)}<div class="setup-bulk-row"><button class="btn secondary" id="checkAllSetup" ${allChecked?'disabled':''}>Check All</button></div><div class="checklist">${checks.map((c,i)=>`<label class="check-row"><input type="checkbox" data-check="${i}" ${state.setupChecks[i]?'checked':''}><span><strong>${c}</strong><small>${i===0?'Use the official mission map shown above to place the terrain and markers.':'Confirm this step on the physical board.'}</small></span></label>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${allChecked?'':'disabled'}>Board Ready</button></div>`;}
     if(step===2){const m=mission();return `<h3>Mission starting roster</h3><p>${m.name} begins with <strong>${m.setup}</strong> NPOs.</p>${state.roster.length?`<div class="summary-box"><strong>${state.roster.length} NPOs generated</strong><br>${rosterBreakdown()}</div><div class="roster-preview">${state.roster.map(n=>operativeCard(n,false)).join('')}</div>`:`<div class="empty">No roster generated yet.</div>`}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn secondary" id="generateBtn">${state.roster.length?'Regenerate':'Generate'} Roster</button><button class="btn primary" id="setupNext" ${state.roster.length||m.setup==='0'?'':'disabled'}>Continue</button></div>`;}
     if(step===3){const allPlaced=state.roster.every(n=>n.deployed);return `<h3>Deploy the NPOs</h3><p>${mission().setup==='0'?'This mission starts with no deployed NPOs. The Guide will add them as rooms awaken.':'Place each NPO on the physical board, then mark it deployed.'}</p>${state.roster.length?`<div class="setup-bulk-row"><button class="btn secondary" id="placeAllNpos" ${allPlaced?'disabled':''}>Place All</button></div>`:''}<div class="deployment-list">${state.roster.length?state.roster.map(n=>`<div class="deployment-item ${n.deployed?'done':''}"><span class="deployment-copy"><strong class="deployment-name">${escapeHtml(n.name)}</strong><small class="deployment-type">${escapeHtml(n.behavior)}</small></span><button class="btn ${n.deployed?'ghost':'secondary'} deployment-place-btn" data-deploy="${n.id}">${n.deployed?'Placed':'Mark Placed'}</button></div>`).join(''):'<div class="summary-box"><strong>No starting NPO deployment required.</strong></div>'}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${allPlaced?'':'disabled'}>NPOs Deployed</button></div>`;}
-    if(step===4) return `<h3>Deploy your Player kill team</h3><p>In the Guide, your solo player-controlled operatives are called <strong>Player operatives</strong> because all tactical prompts are written from the NPO’s perspective.</p><div class="field"><label for="playerCount">Number of Player operatives</label><input id="playerCount" type="number" min="1" max="20" value="${state.playerCount}"></div><div class="checklist"><label class="check-row"><input id="playerDeployed" type="checkbox"><span><strong>Player operatives deployed</strong><small>Confirm that your kill team has been placed in its drop zone.</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" disabled>Continue</button></div>`;
-    return `<h3>Setup complete</h3><div class="summary-box"><strong>${mission().number} · ${mission().name}</strong><br>${state.roster.length} starting NPOs · ${state.playerCount} Player operatives</div>${boardSvg(mission().id)}<p><strong>Mission objective:</strong> ${mission().objective}</p><p><strong>Special rule reminder:</strong> ${mission().special}</p><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
+    if(step===4){
+      const selected=new Set(state.playerRoster||[]);
+      const selectedDefs=selectedPlayerOperatives();
+      const gravisCount=selectedDefs.filter(o=>o.gravis).length;
+      const valid=selected.size===(playerTeamData?.rosterSize||5)&&gravisCount<=1;
+      const cards=(playerTeamData?.operatives||[]).map(o=>{
+        const chosen=selected.has(o.id);
+        const gravisBlocked=!chosen&&o.gravis&&gravisCount>=1;
+        return `<button type="button" class="player-roster-card ${chosen?'selected':''}" data-select-player="${o.id}" ${gravisBlocked?'disabled':''}>
+          <div class="player-roster-card-head"><div><strong>${escapeHtml(o.name)}</strong><small>${escapeHtml(o.role)}${o.gravis?' · GRAVIS':''}</small></div><span>${chosen?'✓':'+'}</span></div>
+          <div class="operative-stat-line"><span><small>APL</small><b>${o.apl}</b></span><span><small>MOVE</small><b>${o.move}"</b></span><span><small>SAVE</small><b>${o.save}+</b></span><span><small>WOUNDS</small><b>${o.wounds}</b></span></div>
+        </button>`;
+      }).join('');
+      return `<h3>Choose your Deathwatch kill team</h3><p>Select exactly <strong>${playerTeamData?.rosterSize||5}</strong> unique operatives. Official roster restriction: no more than one <strong>Gravis</strong> operative.</p>
+        <div class="player-roster-summary"><strong>${selected.size} / ${playerTeamData?.rosterSize||5} selected</strong><span>${gravisCount} / 1 Gravis</span></div>
+        <div class="player-roster-grid">${cards}</div>
+        ${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}
+        <div class="checklist"><label class="check-row"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${valid?'':'disabled'}><span><strong>Deathwatch operatives deployed</strong><small>Confirm that the selected kill team has been placed in its drop zone.</small></span></label></div>
+        <div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid&&state.playerDeployed?'':'disabled'}>Continue</button></div>`;
+    }
+    return `<h3>Setup complete</h3><div class="summary-box"><strong>${mission().number} · ${mission().name}</strong><br>${state.roster.length} starting NPOs · ${state.playerCount} Deathwatch operatives<br>${selectedPlayerOperatives().map(o=>escapeHtml(o.name)).join(' · ')}</div>${boardSvg(mission().id)}<p><strong>Mission objective:</strong> ${mission().objective}</p><p><strong>Special rule reminder:</strong> ${mission().special}</p><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
   }
 
   function bindSetup(step){
@@ -304,14 +337,31 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#generateBtn')?.addEventListener('click',()=>{generateRoster();save();render();});
     $$('[data-deploy]').forEach(b=>b.onclick=()=>{const n=state.roster.find(x=>x.id===b.dataset.deploy);n.deployed=!n.deployed;save();render();});
     $('#placeAllNpos')?.addEventListener('click',()=>{state.roster.forEach(n=>n.deployed=true);save();render();});
-    $('#playerCount')?.addEventListener('change',e=>{state.playerCount=Math.max(1,Math.min(20,Number(e.target.value)||1));state.playerReady=state.playerCount;state.playerCasualtyIds=[];save();});
-    $('#playerDeployed')?.addEventListener('change',e=>{$('#setupNext').disabled=!e.target.checked;});
+    $$('[data-select-player]').forEach(button=>button.addEventListener('click',()=>{
+      const id=button.dataset.selectPlayer;
+      const selected=new Set(state.playerRoster||[]);
+      if(selected.has(id))selected.delete(id);
+      else if(selected.size<(playerTeamData?.rosterSize||5)){
+        const candidate=playerDefinition(id);
+        if(candidate?.gravis&&selectedPlayerOperatives().some(o=>o.gravis)){showToast('A Deathwatch kill team can include only one Gravis operative.');return;}
+        selected.add(id);
+      }
+      state.playerRoster=[...selected];
+      state.playerCount=state.playerRoster.length;
+      state.playerReady=state.playerCount;
+      state.playerCasualtyIds=[];
+      state.playerActivatedIds=[];
+      state.playerDeployed=false;
+      save();render();
+    }));
+    $('#playerDeployed')?.addEventListener('change',e=>{state.playerDeployed=e.target.checked;save();render();});
     $('#beginGame')?.addEventListener('click',()=>{
       state.screen='game';
       state.tab='play';
       state.turningPoint=0;
       state.phase='between';
       state.nextSide='player';
+      state.playerCount=(state.playerRoster||[]).length;
       state.playerReady=state.playerCount;
       state.roster.forEach(n=>n.ready=false);
       log(`Mission started: ${mission().name}.`);
@@ -405,23 +455,25 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const casualtyIds=new Set(state.playerCasualtyIds||[]);
     const playerActivated=activatedIds.size;
     const playerCasualties=casualtyIds.size;
-    const playerIndicators=Array.from({length:state.playerCount},(_,i)=>{
-      const operativeId=i+1;
+    const playerIndicators=(state.playerRoster||[]).map(operativeId=>{
+      const operative=playerDefinition(operativeId);
       const casualty=casualtyIds.has(operativeId);
       const activated=activatedIds.has(operativeId);
       const status=casualty?'Eliminated':activated?'Activated':'Remaining';
       const cls=casualty?'casualty':activated?'activated':'remaining';
-      const mark=casualty?'<span class="casualty-mark" aria-hidden="true">×</span>':activated?'<span class="activation-check" aria-hidden="true">✓</span>':'';
-      return `<button type="button" class="player-operative-indicator ${cls}" data-player-operative="${operativeId}" title="Player operative ${operativeId}: ${status}. Select to update status." aria-label="Player operative ${operativeId}: ${status}. Select to update status."><span class="operative-number">${operativeId}</span>${mark}</button>`;
+      return `<button type="button" class="player-operative-row ${cls}" data-player-operative="${operativeId}" title="${escapeHtml(operative?.name||operativeId)}: ${status}">
+        <span><strong>${escapeHtml(operative?.name||operativeId)}</strong><small>${escapeHtml(operative?.role||'Deathwatch operative')}</small></span><b>${status.toUpperCase()}</b>
+      </button>`;
     }).join('');
     const npoRows=activeNpos().map(n=>`<div class="tracker-npo ${n.ready?'ready':'spent'}"><span>${escapeHtml(n.name)}</span><strong>${n.ready?'READY':'EXPENDED'}</strong></div>`).join('');
-    return `<section class="card activation-tracker"><div class="panel-title"><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div><div class="turn-badge">Next: ${state.nextSide==='npo'?'NPO':'Player'}</div></div><div class="tracker-section player-tracker-section"><div class="tracker-section-heading"><small>Player operatives</small><div class="activation-legend"><span><i class="legend-dot activated"></i>Activated (${playerActivated})</span><span><i class="legend-dot remaining"></i>Remaining (${playerOperativesRemaining()})</span><span><i class="legend-dot casualty"></i>Eliminated (${playerCasualties})</span></div></div><p class="muted compact-copy">Select an operative to mark it eliminated or restore it.</p><div class="player-dots">${playerIndicators}</div></div><div class="tracker-section"><small>NPOs</small><div class="tracker-npos">${npoRows||'<span class="muted">No active NPOs</span>'}</div></div></section>`;
+    return `<section class="card activation-tracker"><div class="panel-title"><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div><div class="turn-badge">Next: ${state.nextSide==='npo'?'NPO':'Player'}</div></div><div class="tracker-section player-tracker-section"><div class="tracker-section-heading"><small>Deathwatch operatives</small><div class="activation-legend"><span><i class="legend-dot activated"></i>Activated (${playerActivated})</span><span><i class="legend-dot remaining"></i>Remaining (${playerOperativesRemaining()})</span><span><i class="legend-dot casualty"></i>Eliminated (${playerCasualties})</span></div></div><p class="muted compact-copy">Select an operative to mark it eliminated or restore it.</p><div class="player-operative-list">${playerIndicators}</div></div><div class="tracker-section"><small>NPOs</small><div class="tracker-npos">${npoRows||'<span class="muted">No active NPOs</span>'}</div></div></section>`;
   }
 
   function showPlayerOperativeStatus(operativeId){
     const casualties=new Set(state.playerCasualtyIds||[]);
     const eliminated=casualties.has(operativeId);
-    showModal(`Player operative ${operativeId}`,`
+    const operativeName=playerName(operativeId);
+    showModal(operativeName,`
       <p>This status carries across Turning Points and is reflected in the activation tracker and Player Ready count.</p>
       <div class="summary-box"><strong>Current status:</strong> ${eliminated?'Eliminated':'Active'}</div>
       <div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn ${eliminated?'secondary':'danger'}" id="togglePlayerCasualty">${eliminated?'Restore Operative':'Mark Eliminated'}</button></div>`);
@@ -429,13 +481,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const ids=new Set(state.playerCasualtyIds||[]);
       if(ids.has(operativeId)){
         ids.delete(operativeId);
-        log(`Player operative ${operativeId} restored.`);
+        log(`${operativeName} restored.`);
       }else{
         ids.add(operativeId);
         if(!state.playerActivatedIds.includes(operativeId))state.playerActivatedIds.push(operativeId);
-        log(`Player operative ${operativeId} eliminated.`);
+        log(`${operativeName} eliminated.`);
       }
-      state.playerCasualtyIds=[...ids].sort((a,b)=>a-b);
+      state.playerCasualtyIds=[...ids];
       state.playerReady=playerOperativesRemaining();
       setNextActivation(state.nextSide||'npo');
       closeModal();
@@ -446,7 +498,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function bindPlay(){
     $('#dismissGradeMilestone')?.addEventListener('click',()=>{state.gradeMilestone=null;save();render();});
-    $$('[data-player-operative]').forEach(button=>button.addEventListener('click',()=>showPlayerOperativeStatus(Number(button.dataset.playerOperative))));
+    $$('[data-player-operative]').forEach(button=>button.addEventListener('click',()=>showPlayerOperativeStatus(button.dataset.playerOperative)));
     $('#startTp')?.addEventListener('click',startTurningPoint);
     $('#continueStrategy')?.addEventListener('click',()=>{state.reinforcementEntry=$('#reinforcementEntry')?.value||state.reinforcementEntry;state.strategyStage='initiative';initiativeRolling=state.turningPoint!==1;save();render();if(initiativeRolling)animateInitiativeResult();});
     $('#rerollInitiative')?.addEventListener('click',()=>{rollInitiative();initiativeRolling=true;save();render();animateInitiativeResult();});
@@ -531,7 +583,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function remainingPlayerOperatives(){
     const used=new Set(state.playerActivatedIds||[]);
     const casualties=new Set(state.playerCasualtyIds||[]);
-    return Array.from({length:state.playerCount},(_,i)=>i+1).filter(id=>!used.has(id)&&!casualties.has(id));
+    return (state.playerRoster||[]).filter(id=>!used.has(id)&&!casualties.has(id));
   }
 
   
@@ -578,7 +630,7 @@ function showPlayerActivation(stage={}){
     }
 
     const checked=key=>stage[key]?'checked':'';
-    const selectedId=Number(stage.playerOperativeId||0);
+    const selectedId=String(stage.playerOperativeId||'');
     const shootPending=stage.pendingShoot||null;
     const meleePending=stage.pendingMelee||null;
 
@@ -588,7 +640,7 @@ function showPlayerActivation(stage={}){
         <label>Player operative</label>
         <select id="playerOperativeSelect">
           <option value="">Select a Player operative...</option>
-          ${remaining.map(id=>`<option value="${id}" ${selectedId===id?'selected':''}>Player operative ${id}</option>`).join('')}
+          ${remaining.map(id=>`<option value="${id}" ${selectedId===id?'selected':''}>${escapeHtml(playerName(id))}</option>`).join('')}
         </select>
       </div>
       <fieldset id="playerActivationControls" ${selectedId?'':'disabled'}>
@@ -596,7 +648,7 @@ function showPlayerActivation(stage={}){
           <div class="field apl-field">
             <label>APL</label>
             <select id="playerApl">
-              ${[1,2,3,4,5].map(v=>`<option value="${v}" ${Number(stage.apl||3)===v?'selected':''}>${v}</option>`).join('')}
+              ${[1,2,3,4,5].map(v=>`<option value="${v}" ${Number(stage.apl||playerDefinition(selectedId)?.apl||3)===v?'selected':''}>${v}</option>`).join('')}
             </select>
           </div>
           <div class="ap-usage" id="apUsage"><small>AP used</small><strong>0 / ${Number(stage.apl||3)}</strong></div>
@@ -650,7 +702,7 @@ function showPlayerActivation(stage={}){
     const operativeSelect=$('#playerOperativeSelect');
     const controls=$('#playerActivationControls');
     operativeSelect.addEventListener('change',()=>{
-      const updated={...stage,playerOperativeId:Number(operativeSelect.value||0),apl:Number($('#playerApl')?.value||stage.apl||3)};
+      const selectedOperative=playerDefinition(operativeSelect.value);const updated={...stage,playerOperativeId:operativeSelect.value||'',apl:Number(selectedOperative?.apl||$('#playerApl')?.value||stage.apl||3)};
       showPlayerActivation(updated);
     });
 
@@ -714,7 +766,7 @@ function showPlayerActivation(stage={}){
         return;
       }
       if(!playerActivationHasAction(finalStage)){
-        showModal('No actions selected',`<p>Mark Player operative ${finalStage.playerOperativeId} as activated without recording an action?</p><div class="wizard-actions"><button class="btn ghost" id="returnPlayerActivation">Go Back</button><button class="btn primary" id="confirmEmptyPlayerActivation">Continue</button></div>`);
+        showModal('No actions selected',`<p>Mark ${escapeHtml(playerName(finalStage.playerOperativeId))} as activated without recording an action?</p><div class="wizard-actions"><button class="btn ghost" id="returnPlayerActivation">Go Back</button><button class="btn primary" id="confirmEmptyPlayerActivation">Continue</button></div>`);
         $('#returnPlayerActivation').onclick=()=>showPlayerActivation(finalStage);
         $('#confirmEmptyPlayerActivation').onclick=()=>resolvePendingPlayerAttacks(finalStage);
         return;
@@ -727,7 +779,7 @@ function showPlayerActivation(stage={}){
     const shoot=Boolean($('#eaShoot')?.checked);
     const melee=Boolean($('#eaMelee')?.checked);
     return {
-      playerOperativeId:Number($('#playerOperativeSelect')?.value||previous.playerOperativeId||0),
+      playerOperativeId:String($('#playerOperativeSelect')?.value||previous.playerOperativeId||''),
       apl:Number($('#playerApl')?.value||previous.apl||3),
       move:Boolean($('#eaMove')?.checked),
       dash:Boolean($('#eaDash')?.checked),
@@ -790,7 +842,7 @@ function showPlayerActivation(stage={}){
     const pending=[stage.pendingShoot,stage.pendingMelee].filter(Boolean);
     const attackRows=pending.map(p=>`<div class="summary-box"><strong>${p.attackType==='shoot'?'Shooting':'Melee'}:</strong> ${escapeHtml(p.targetName)} · ${p.before} → ${p.after} wounds (${p.damage} damage)</div>`).join('');
     showModal('Confirm Player Activation',`
-      <p>Player operative ${stage.playerOperativeId} will be marked activated. NPO damage has not been applied yet.</p>
+      <p>${escapeHtml(playerName(stage.playerOperativeId))} will be marked activated. NPO damage has not been applied yet.</p>
       <div class="summary-box"><strong>AP used:</strong> ${playerActionCost(stage)} / ${stage.apl}</div>
       ${attackRows||'<div class="summary-box"><strong>No attacks to apply.</strong></div>'}
       <div class="summary-box"><strong>Actions:</strong> ${escapeHtml(playerActivationSummary(stage))}</div>
@@ -810,7 +862,7 @@ function showPlayerActivation(stage={}){
       const before=n.wounds;
       n.wounds=Math.max(0,pending.after);
       if(n.wounds===0)n.ready=false;
-      log(`Player operative ${stage.playerOperativeId} ${pending.attackType==='shoot'?'shot':'made a Melee attack against'} ${n.name} for ${pending.damage} damage (${before} → ${n.wounds} wounds).`);
+      log(`${playerName(stage.playerOperativeId)} ${pending.attackType==='shoot'?'shot':'made a Melee attack against'} ${n.name} for ${pending.damage} damage (${before} → ${n.wounds} wounds).`);
     }
   }
 
@@ -831,15 +883,15 @@ function showPlayerActivation(stage={}){
       showToast(`Breach rolled ${r}${r>=4?'... Threat +2 total':'... Threat +1 total'}`);
     }
     if(inc)setThreat(inc,'Player activation');
-    const operativeId=Number(stage.playerOperativeId);
+    const operativeId=String(stage.playerOperativeId);
     if(!state.playerActivatedIds.includes(operativeId))state.playerActivatedIds.push(operativeId);
     state.playerReady=playerOperativesRemaining();
     state.playerActivated=state.playerActivatedIds.length;
     state.activationNumber++;
     const summary=playerActivationSummary(stage);
-    state.activationHistory.unshift({side:'player',label:`Player operative ${operativeId}`,summary});
+    state.activationHistory.unshift({side:'player',label:playerName(operativeId),summary});
     advanceAfterActivation('player');
-    log(`Player operative ${operativeId} completed activation: ${summary}.`);
+    log(`${playerName(operativeId)} completed activation: ${summary}.`);
     closeModal();
     save();
     render();
@@ -1175,5 +1227,11 @@ function showPlayerActivation(stage={}){
     gameMenuBtn.onclick=showGameMenu;
   }
 
-  render();
+  loadPlayerTeamData()
+    .then(()=>render())
+    .catch(error=>{
+      console.error(error);
+      app.innerHTML=`<section class="card"><h2>Player operative data could not be loaded</h2><p>${escapeHtml(error.message)}</p><p>Run the app from a web server so it can load <code>Player_Operatives/DeathWatch.json</code>.</p></section>`;
+      bindCommon();
+    });
 })();

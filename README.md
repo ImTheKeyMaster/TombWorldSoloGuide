@@ -350,3 +350,17 @@ v1.4.4: Correct initiative message grammar (wins vs win).
 - Canceling the Resolve NPO Attack dialog now returns to the activation result with the exact same stored attack dice.
 - The attack dice no longer replay their rolling animation after canceling, which previously made them appear to be rerolled.
 - Reopening Resolve NPO Attack continues to use the original stored dice.
+
+
+## v2.0.0
+
+Major player-roster update:
+
+- Added `Player_Operatives/DeathWatch.json` as the external source for Deathwatch operative data.
+- Added all 11 official Deathwatch operative choices:
+  Sergeant, Aegis, Breacher, Blademaster, Marksman, Demolisher, Horde-Slayer, Headtaker, Gunner, Bombard, and Disruptor.
+- Added official APL, Move, Save, Wounds, base size, weapon profiles, weapon rules, and named abilities.
+- Replaced the manual Player operative count with a Deathwatch roster builder.
+- Enforced the official roster rules: exactly five unique operatives and no more than one Gravis operative.
+- Player operative names now appear in setup, activation selection, activation history, casualty controls, and the activation tracker.
+- The data-loading structure supports adding more team JSON files to `Player_Operatives` later.
