@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.4.0';
+  const APP_VERSION = '1.4.0b';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -51,7 +51,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   ];
 
   const initialState = () => ({
-    version:'1.4.0', screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:'1.4.0b', screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:[], roster:[], playerCount:6, playerReady:6, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,

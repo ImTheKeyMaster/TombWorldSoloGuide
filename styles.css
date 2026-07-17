@@ -414,10 +414,11 @@ button,.btn,input,select,label,summary,a{touch-action:manipulation;}
 .help-section h3{margin:0 0 10px;color:var(--green)}
 .help-section p{margin:0;color:var(--muted);line-height:1.55}
 .guide-flow-list{display:grid;gap:10px;margin:0;padding:0;list-style:none;counter-reset:guideflow}
-.guide-flow-list li{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start}
-.guide-flow-list li:before{counter-increment:guideflow;content:counter(guideflow);display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--green);border-radius:50%;color:var(--green);font-weight:900}
-.guide-flow-list strong,.guide-flow-list span{display:block}
-.guide-flow-list span{margin-top:3px;color:var(--muted);line-height:1.4}
+.guide-flow-list li{display:grid;grid-template-columns:34px minmax(0,1fr);column-gap:10px;row-gap:3px;align-items:start}
+.guide-flow-list li:before{counter-increment:guideflow;content:counter(guideflow);display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--green);border-radius:50%;color:var(--green);font-weight:900;grid-column:1;grid-row:1 / span 2}
+.guide-flow-list li>strong,.guide-flow-list li>span{display:block;grid-column:2;min-width:0;width:100%}
+.guide-flow-list li>strong{grid-row:1}
+.guide-flow-list li>span{grid-row:2;margin-top:0;color:var(--muted);line-height:1.4;overflow-wrap:anywhere}
 .ai-step-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .ai-step-grid article{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:12px;border:1px solid var(--line);border-radius:13px;background:#07120d}
 .ai-step-grid article>span{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:#123d27;color:var(--green);font-weight:900}

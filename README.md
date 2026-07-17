@@ -237,3 +237,11 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 - Added a detailed NPO AI decision explanation based on the Solo Command logic.
 - Added the same AI guidance and quick-reference terminology to Game Menu → Help.
 - No gameplay logic changed in this initial v1.4.0 release.
+
+
+## v1.4.0b Game Flow layout fix
+
+- Confirmed that the numbered circle, title, and description were being treated as three separate grid items inside a two-column layout.
+- Assigned the title and description to the full-width second column.
+- Made the numbered circle span both text rows.
+- Prevented the Game Flow description from collapsing into a one-word-wide column on mobile.
