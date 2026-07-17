@@ -379,3 +379,13 @@ Major player-roster update:
 - Standardized activation terminology across both sides.
 - Player operatives and NPOs now both use `READY` before acting and `ACTIVATED` after acting.
 - Removed the visible `EXPENDED` status from the NPO activation tracker.
+
+
+## v2.1.0
+
+- Added `Player_Operatives/manifest.json`.
+- Player Kill Teams are discovered from the manifest instead of being hardcoded.
+- Added a Kill Team selection screen when the manifest contains two or more teams.
+- When the manifest contains exactly one team, that team loads automatically and the selection screen is skipped.
+- Save data now stores `playerTeamId`; the manifest resolves the matching JSON filename.
+- Additional teams can be supported by adding a JSON file and manifest entry without changing application code.

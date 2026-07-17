@@ -740,3 +740,27 @@ button.tracker-operative:hover{
 @media(max-width:600px){
   .tracker-operative-grid{grid-template-columns:1fr}
 }
+
+/* v2.1.0 manifest-driven Kill Team selection */
+.team-select-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:12px;
+  margin:8px 0 18px;
+}
+.team-select-card{
+  appearance:none;
+  width:100%;
+  padding:17px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#091912;
+  color:var(--text);
+  text-align:left;
+  cursor:pointer;
+}
+.team-select-card:hover{border-color:#3b7755;background:#10251a}
+.team-select-card strong,.team-select-card small{display:block}
+.team-select-card strong{font-size:1.08rem}
+.team-select-card small{margin-top:4px;color:var(--green);font-weight:800}
+.team-select-card p{margin:12px 0 0;color:var(--muted)}

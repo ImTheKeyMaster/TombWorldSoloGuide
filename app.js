@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.0.2';
+  const APP_VERSION = '2.1.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -16,13 +16,30 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const toast = $('#toast');
   const importInput = $('#importInput');
 
+  let playerManifest=null;
   let playerTeamData=null;
-  async function loadPlayerTeamData(){
-    const response=await fetch('Player_Operatives/DeathWatch.json',{cache:'no-store'});
-    if(!response.ok)throw new Error(`Unable to load DeathWatch.json (${response.status})`);
+  async function loadPlayerManifest(){
+    const response=await fetch('Player_Operatives/manifest.json',{cache:'no-store'});
+    if(!response.ok)throw new Error(`Unable to load manifest.json (${response.status})`);
     const data=await response.json();
-    if(!Array.isArray(data.operatives)||!data.operatives.length)throw new Error('DeathWatch.json has no operatives.');
+    if(!Array.isArray(data.teams)||!data.teams.length)throw new Error('manifest.json has no Kill Teams.');
+    playerManifest=data;
+    return data;
+  }
+  function playerTeamEntry(teamId=state.playerTeamId){
+    return playerManifest?.teams?.find(team=>team.id===teamId)||null;
+  }
+  async function loadPlayerTeamData(teamId=state.playerTeamId){
+    const entry=playerTeamEntry(teamId);
+    if(!entry)throw new Error(`Kill Team "${teamId||'unknown'}" is not listed in manifest.json.`);
+    const response=await fetch(`Player_Operatives/${entry.file}`,{cache:'no-store'});
+    if(!response.ok)throw new Error(`Unable to load ${entry.file} (${response.status})`);
+    const data=await response.json();
+    if(!Array.isArray(data.operatives)||!data.operatives.length)throw new Error(`${entry.file} has no operatives.`);
     playerTeamData=data;
+    state.playerTeamId=entry.id;
+    state.playerTeamFile=entry.file;
+    return data;
   }
   function playerDefinition(id){return playerTeamData?.operatives?.find(o=>o.id===id)||null;}
   function selectedPlayerOperatives(){return (state.playerRoster||[]).map(playerDefinition).filter(Boolean);}
@@ -64,7 +81,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   const initialState = () => ({
     version:'1.4.0c', screen:'home', tab:'play', setupStep:0, missionId:null,
-    setupChecks:[], roster:[], playerTeamFile:'DeathWatch.json', playerRoster:[], playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
+    setupChecks:[], roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
     strategyStage:null, strategyData:null, activationNumber:0, playerActivated:0, npoActivated:0,
@@ -86,6 +103,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.playerActivatedIds=Array.isArray(raw?.playerActivatedIds)?raw.playerActivatedIds:[];
     merged.playerCasualtyIds=Array.isArray(raw?.playerCasualtyIds)?raw.playerCasualtyIds:[];
     merged.playerRoster=Array.isArray(raw?.playerRoster)?raw.playerRoster:[];
+    merged.playerTeamId=raw?.playerTeamId||'';
     merged.playerCount=merged.playerRoster.length;
     return merged;
   }
@@ -285,8 +303,36 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#howItWorksDoneBtn').onclick=goHome;
   }
 
-  const setupTitles=['Choose Mission','Build the Killzone','Generate NPO Roster','Deploy NPOs','Build Deathwatch Roster','Ready to Begin'];
+  function hasMultiplePlayerTeams(){return (playerManifest?.teams?.length||0)>1;}
+  function renderTeamSelection(){
+    const cards=(playerManifest?.teams||[]).map(team=>`<button type="button" class="team-select-card" data-player-team="${escapeHtml(team.id)}">
+      <div><strong>${escapeHtml(team.name)}</strong><small>${escapeHtml(team.faction||'Kill Team')}</small></div>
+      <p>${escapeHtml(team.description||'')}</p>
+    </button>`).join('');
+    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Choose Kill Team</h2><p>Select the player-controlled Kill Team for this battle.</p></div></div><section class="wizard-card"><div class="team-select-grid">${cards}</div><div class="wizard-actions"><button class="btn ghost" id="teamSelectHome">Back</button></div></section></div>`;
+    $('#teamSelectHome').onclick=()=>{state.screen='home';save();render();};
+    $$('[data-player-team]').forEach(button=>button.onclick=async()=>{
+      try{
+        state.playerTeamId=button.dataset.playerTeam;
+        state.playerRoster=[];
+        state.playerCount=0;
+        state.playerReady=0;
+        state.playerCasualtyIds=[];
+        state.playerActivatedIds=[];
+        state.playerDeployed=false;
+        await loadPlayerTeamData(state.playerTeamId);
+        save();
+        render();
+      }catch(error){
+        console.error(error);
+        showToast(error.message);
+      }
+    });
+  }
+
+  const setupTitles=['Choose Mission','Build the Killzone','Generate NPO Roster','Deploy NPOs','Build Player Roster','Ready to Begin'];
   function renderSetup(){
+    if(hasMultiplePlayerTeams()&&!state.playerTeamId){renderTeamSelection();return;}
     const step=state.setupStep;
     app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>${setupTitles[step]}</h2><p>${setupSubtitle(step)}</p></div><div class="step-count">${step+1} / 6</div></div><div class="progress-bar"><span style="width:${((step+1)/6)*100}%"></span></div><section class="wizard-card">${setupContent(step)}</section></div>`;
     bindSetup(step);
@@ -317,14 +363,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
           <div class="operative-stat-line"><span><small>APL</small><b>${o.apl}</b></span><span><small>MOVE</small><b>${o.move}"</b></span><span><small>SAVE</small><b>${o.save}+</b></span><span><small>WOUNDS</small><b>${o.wounds}</b></span></div>
         </button>`;
       }).join('');
-      return `<h3>Choose your Deathwatch kill team</h3><p>Select exactly <strong>${playerTeamData?.rosterSize||5}</strong> unique operatives. Official roster restriction: no more than one <strong>Gravis</strong> operative.</p>
+      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>Select exactly <strong>${playerTeamData?.rosterSize||5}</strong> unique operatives. Official roster restriction: no more than one <strong>Gravis</strong> operative.</p>
         <div class="player-roster-summary"><strong>${selected.size} / ${playerTeamData?.rosterSize||5} selected</strong><span>${gravisCount} / 1 Gravis</span></div>
         <div class="player-roster-grid">${cards}</div>
         ${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}
-        <div class="checklist"><label class="check-row"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${valid?'':'disabled'}><span><strong>Deathwatch operatives deployed</strong><small>Confirm that the selected kill team has been placed in its drop zone.</small></span></label></div>
+        <div class="checklist"><label class="check-row"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${valid?'':'disabled'}><span><strong>${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} operatives deployed</strong><small>Confirm that the selected kill team has been placed in its drop zone.</small></span></label></div>
         <div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid&&state.playerDeployed?'':'disabled'}>Continue</button></div>`;
     }
-    return `<h3>Setup complete</h3><div class="summary-box"><strong>${mission().number} · ${mission().name}</strong><br>${state.roster.length} starting NPOs · ${state.playerCount} Deathwatch operatives<br>${selectedPlayerOperatives().map(o=>escapeHtml(o.name)).join(' · ')}</div>${boardSvg(mission().id)}<p><strong>Mission objective:</strong> ${mission().objective}</p><p><strong>Special rule reminder:</strong> ${mission().special}</p><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
+    return `<h3>Setup complete</h3><div class="summary-box"><strong>${mission().number} · ${mission().name}</strong><br>${state.roster.length} starting NPOs · ${state.playerCount} ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} operatives<br>${selectedPlayerOperatives().map(o=>escapeHtml(o.name)).join(' · ')}</div>${boardSvg(mission().id)}<p><strong>Mission objective:</strong> ${mission().objective}</p><p><strong>Special rule reminder:</strong> ${mission().special}</p><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
   }
 
   function bindSetup(step){
@@ -343,7 +389,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       if(selected.has(id))selected.delete(id);
       else if(selected.size<(playerTeamData?.rosterSize||5)){
         const candidate=playerDefinition(id);
-        if(candidate?.gravis&&selectedPlayerOperatives().some(o=>o.gravis)){showToast('A Deathwatch kill team can include only one Gravis operative.');return;}
+        if(candidate?.gravis&&selectedPlayerOperatives().some(o=>o.gravis)){showToast('This Kill Team can include only one Gravis operative.');return;}
         selected.add(id);
       }
       state.playerRoster=[...selected];
@@ -467,9 +513,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return `<section class="card activation-tracker">
       <div class="panel-title"><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div><div class="turn-badge">Next: ${state.nextSide==='npo'?'NPO':'Player'}</div></div>
       <div class="tracker-section">
-        <small>Deathwatch operatives</small>
+        <small>${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} operatives</small>
         <p class="muted compact-copy">Select an operative to mark it eliminated or restore it.</p>
-        <div class="tracker-operative-grid">${playerRows||'<span class="muted">No Deathwatch operatives selected</span>'}</div>
+        <div class="tracker-operative-grid">${playerRows||'<span class="muted">No player operatives selected</span>'}</div>
       </div>
       <div class="tracker-section">
         <small>NPOs</small>
@@ -1236,11 +1282,24 @@ function showPlayerActivation(stage={}){
     gameMenuBtn.onclick=showGameMenu;
   }
 
-  loadPlayerTeamData()
-    .then(()=>render())
+  loadPlayerManifest()
+    .then(async manifest=>{
+      const teams=manifest.teams||[];
+      if(teams.length===1){
+        state.playerTeamId=teams[0].id;
+        await loadPlayerTeamData(teams[0].id);
+      }else if(state.playerTeamId&&teams.some(team=>team.id===state.playerTeamId)){
+        await loadPlayerTeamData(state.playerTeamId);
+      }else{
+        state.playerTeamId='';
+        state.playerTeamFile='';
+        playerTeamData=null;
+      }
+      render();
+    })
     .catch(error=>{
       console.error(error);
-      app.innerHTML=`<section class="card"><h2>Player operative data could not be loaded</h2><p>${escapeHtml(error.message)}</p><p>Run the app from a web server so it can load <code>Player_Operatives/DeathWatch.json</code>.</p></section>`;
+      app.innerHTML=`<section class="card"><h2>Player operative data could not be loaded</h2><p>${escapeHtml(error.message)}</p><p>Run the app from a web server so it can load <code>Player_Operatives/manifest.json</code> and the selected team JSON file.</p></section>`;
       bindCommon();
     });
 })();
