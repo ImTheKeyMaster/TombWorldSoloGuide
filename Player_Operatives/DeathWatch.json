@@ -1,0 +1,563 @@
+{
+  "schemaVersion": 1,
+  "teamId": "deathwatch",
+  "teamName": "Deathwatch",
+  "faction": "Imperium",
+  "keywords": [
+    "DEATHWATCH",
+    "IMPERIUM",
+    "ADEPTUS ASTARTES"
+  ],
+  "rosterSize": 5,
+  "selectionRules": {
+    "uniqueOperatives": true,
+    "maxGravis": 1
+  },
+  "source": {
+    "publisher": "Games Workshop",
+    "document": "Deathwatch Kill Team Rules",
+    "revision": "28 January 2026"
+  },
+  "operatives": [
+    {
+      "id": "sergeant",
+      "name": "Sergeant",
+      "officialName": "Deathwatch Watch Sergeant",
+      "role": "Leader",
+      "apl": 3,
+      "move": 6,
+      "save": 3,
+      "wounds": 15,
+      "baseSize": 32,
+      "gravis": false,
+      "abilities": [
+        "Adaptable Armoury",
+        "Strategic Command"
+      ],
+      "weapons": [
+        {
+          "name": "Plasma pistol (standard)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/5",
+          "rules": [
+            "Range 8\"",
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Plasma pistol (supercharge)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": [
+            "Range 8\"",
+            "Hot",
+            "Lethal 5+",
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Power weapon",
+          "type": "melee",
+          "attacks": 5,
+          "hit": 3,
+          "damage": "4/6",
+          "rules": [
+            "Lethal 5+"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "aegis",
+      "name": "Aegis",
+      "officialName": "Deathwatch Aegis Veteran",
+      "role": "Veteran",
+      "apl": 3,
+      "move": 6,
+      "save": 2,
+      "wounds": 15,
+      "baseSize": 32,
+      "gravis": false,
+      "abilities": [
+        "Storm Shield"
+      ],
+      "weapons": [
+        {
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "name": "Power maul & storm shield",
+          "type": "melee",
+          "attacks": 5,
+          "hit": 3,
+          "damage": "4/6",
+          "rules": [
+            "Shock",
+            "Shield"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "breacher",
+      "name": "Breacher",
+      "officialName": "Deathwatch Breacher Veteran",
+      "role": "Gravis Veteran",
+      "apl": 3,
+      "move": 5,
+      "save": 3,
+      "wounds": 18,
+      "baseSize": 40,
+      "gravis": true,
+      "abilities": [],
+      "weapons": [
+        {
+          "name": "Auxiliary grenade launcher (frag)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/4",
+          "rules": [
+            "Blast 2\""
+          ]
+        },
+        {
+          "name": "Auxiliary grenade launcher (krak)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": [
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Hellstorm bolt rifle",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": [
+            "Torrent 1\""
+          ]
+        },
+        {
+          "name": "Melta bomb",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "5/3",
+          "rules": [
+            "Range 3\"",
+            "Devastating 3",
+            "Heavy (Reposition only)",
+            "Limited 1",
+            "Piercing 2"
+          ]
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "blademaster",
+      "name": "Blademaster",
+      "officialName": "Deathwatch Blademaster Veteran",
+      "role": "Veteran",
+      "apl": 3,
+      "move": 6,
+      "save": 3,
+      "wounds": 15,
+      "baseSize": 32,
+      "gravis": false,
+      "abilities": [
+        "Adaptive Swordsmanship",
+        "Phase Sweep"
+      ],
+      "weapons": [
+        {
+          "name": "Special issue bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\"",
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Xenophase blade (duel)",
+          "type": "melee",
+          "attacks": 5,
+          "hit": 3,
+          "damage": "4/6",
+          "rules": [
+            "Brutal",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "name": "Xenophase blade (phase sweep)",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/6",
+          "rules": [
+            "Brutal",
+            "Lethal 5+",
+            "Phase Sweep"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "marksman",
+      "name": "Marksman",
+      "officialName": "Deathwatch Marksman Veteran",
+      "role": "Veteran",
+      "apl": 3,
+      "move": 6,
+      "save": 3,
+      "wounds": 15,
+      "baseSize": 32,
+      "gravis": false,
+      "abilities": [
+        "Vigilant Marksman"
+      ],
+      "weapons": [
+        {
+          "name": "Stalker bolt rifle (mobile)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Stalker bolt rifle (heavy)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "3/5",
+          "rules": [
+            "Heavy (Dash only)",
+            "Lethal 5+",
+            "Piercing Crits 1"
+          ]
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "demolisher",
+      "name": "Demolisher",
+      "officialName": "Deathwatch Demolisher Veteran",
+      "role": "Veteran",
+      "apl": 3,
+      "move": 6,
+      "save": 3,
+      "wounds": 15,
+      "baseSize": 32,
+      "gravis": false,
+      "abilities": [
+        "Brutal Assault",
+        "Aggressive Force"
+      ],
+      "weapons": [
+        {
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "name": "Heavy thunder hammer",
+          "type": "melee",
+          "attacks": 5,
+          "hit": 4,
+          "damage": "6/7",
+          "rules": [
+            "Shock",
+            "Stun"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "horde-slayer",
+      "name": "Horde-Slayer",
+      "officialName": "Deathwatch Horde-Slayer Veteran",
+      "role": "Gravis Veteran",
+      "apl": 3,
+      "move": 5,
+      "save": 3,
+      "wounds": 18,
+      "baseSize": 40,
+      "gravis": true,
+      "abilities": [],
+      "weapons": [
+        {
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "name": "Infernus heavy bolter (flame)",
+          "type": "ranged",
+          "attacks": 5,
+          "hit": 2,
+          "damage": "3/3",
+          "rules": [
+            "Range 8\"",
+            "Saturate",
+            "Torrent 2\""
+          ]
+        },
+        {
+          "name": "Infernus heavy bolter (focused bolt)",
+          "type": "ranged",
+          "attacks": 5,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": [
+            "Piercing Crits 1"
+          ]
+        },
+        {
+          "name": "Infernus heavy bolter (sweeping bolt)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": [
+            "Piercing Crits 1",
+            "Torrent 1\""
+          ]
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "headtaker",
+      "name": "Headtaker",
+      "officialName": "Deathwatch Headtaker Veteran",
+      "role": "Veteran",
+      "apl": 3,
+      "move": 7,
+      "save": 3,
+      "wounds": 13,
+      "baseSize": 32,
+      "gravis": false,
+      "abilities": [
+        "Grav-chute and Grapnel Launcher",
+        "Clandestine Headtaker"
+      ],
+      "weapons": [
+        {
+          "name": "Special issue bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\"",
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Combat knives",
+          "type": "melee",
+          "attacks": 5,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "gunner",
+      "name": "Gunner",
+      "officialName": "Deathwatch Gunner Veteran",
+      "role": "Veteran",
+      "apl": 3,
+      "move": 6,
+      "save": 3,
+      "wounds": 15,
+      "baseSize": 32,
+      "gravis": false,
+      "abilities": [],
+      "weapons": [
+        {
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "name": "Heavy plasma incinerator (standard)",
+          "type": "ranged",
+          "attacks": 5,
+          "hit": 3,
+          "damage": "4/6",
+          "rules": [
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Heavy plasma incinerator (supercharge)",
+          "type": "ranged",
+          "attacks": 5,
+          "hit": 3,
+          "damage": "5/6",
+          "rules": [
+            "Hot",
+            "Lethal 5+",
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "bombard",
+      "name": "Bombard",
+      "officialName": "Deathwatch Bombard Veteran",
+      "role": "Gravis Veteran",
+      "apl": 3,
+      "move": 5,
+      "save": 3,
+      "wounds": 18,
+      "baseSize": 40,
+      "gravis": true,
+      "abilities": [],
+      "weapons": [
+        {
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "name": "Frag cannon (shell)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "5/7",
+          "rules": [
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Frag cannon (shrapnel)",
+          "type": "ranged",
+          "attacks": 5,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": [
+            "Torrent 2\""
+          ]
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "disruptor",
+      "name": "Disruptor",
+      "officialName": "Deathwatch Disruptor Veteran",
+      "role": "Veteran",
+      "apl": 3,
+      "move": 7,
+      "save": 3,
+      "wounds": 13,
+      "baseSize": 32,
+      "gravis": false,
+      "abilities": [
+        "Advanced Omni-Scrambler",
+        "Auspex Triangulation"
+      ],
+      "weapons": [
+        {
+          "name": "Marksman bolt carbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Lethal 5+"
+          ]
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ]
+    }
+  ]
+}
