@@ -418,3 +418,13 @@ Major player-roster update:
 - Selecting an operative automatically loads its Save and starting Wounds values.
 - The selected target persists if the wizard is canceled and reopened.
 - Combat results and the journal now identify the targeted Player operative by name.
+
+
+## v2.2.2
+
+- Moved Player operative selection to the `Target Priority` section.
+- `Resolve NPO Attack` remains disabled until a living Player operative is selected.
+- Removed target selection from the NPO Attack Wizard; the selected target is shown read-only.
+- After `Roll Saves & Preview Damage`, the defense controls and target are locked unless the wizard is canceled.
+- Removed the `Review NPO Attack` button after resolution.
+- Target selection resets for each new NPO activation and clears when the activation is completed.
