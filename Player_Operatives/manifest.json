@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "teams": [
+    {
+      "id": "deathwatch",
+      "name": "Deathwatch",
+      "file": "DeathWatch.json",
+      "faction": "Imperium",
+      "description": "Elite Adeptus Astartes xenos hunters"
+    }
+  ]
+}
