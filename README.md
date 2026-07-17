@@ -254,3 +254,5 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 - Makes the dialog content the only vertical scrolling region.
 - Uses dynamic viewport height and safe-area spacing for iPhone.
 - Removes the scroll lock whenever the dialog closes.
+
+v1.4.0d: Dialog scroll simplification.

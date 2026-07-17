@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.4.0c';
+  const APP_VERSION = '1.4.0d';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -219,8 +219,6 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#continueBtn').onclick=()=>{ const saved=load(); if(saved){state=saved;state.screen='game';render();} };
     $('#homeHelpBtn').onclick=()=>{
       showModal('How Tomb World Solo Guide Works',`${guideInstructionsHtml(true)}<div class="wizard-actions"><button class="btn primary" data-close>Understood</button></div>`);
-      modal.classList.add('help-modal');
-      document.body.classList.add('modal-open');
     };
   }
 
@@ -993,14 +991,12 @@ function showPlayerActivation(stage={}){
   function showModal(title,content,onClose){modalBody.innerHTML=`<div class="modal-inner"><h2>${title}</h2>${content}</div>`;if(!modal.open)modal.showModal();modal._onClose=onClose;$$('[data-close]',modal).forEach(b=>b.onclick=closeModal);}
   function closeModal(){
     if(modal.open)modal.close();
-    modal.classList.remove('help-modal');
-    document.body.classList.remove('modal-open');
     const cb=modal._onClose;
     modal._onClose=null;
     if(cb)cb();
   }
   modal.addEventListener('cancel',e=>{e.preventDefault();closeModal();});
-  modal.addEventListener('close',()=>{modal.classList.remove('help-modal');document.body.classList.remove('modal-open');});
+
   function showToast(text){toast.textContent=text;toast.hidden=false;clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.hidden=true,6500);}
   function showGameMenu(){
     showModal('Game Menu',`<p>Open a reference screen without changing the guided play sequence, or begin a completely new game.</p>

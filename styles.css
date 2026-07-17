@@ -466,3 +466,19 @@ body.modal-open{
     max-height:calc(100vh - 40px);
   }
 }
+
+
+/* v1.4.0d */
+body.modal-open{overflow:initial!important;overscroll-behavior:auto!important;}
+.modal.help-modal{max-height:none!important;overflow:visible!important;}
+.modal{
+max-height:calc(100dvh - 20px);
+overflow-y:auto;
+overflow-x:hidden;
+-webkit-overflow-scrolling:touch;
+}
+.modal .modal-inner{
+max-height:none!important;
+overflow:visible!important;
+}
+@supports not (height:100dvh){.modal{max-height:calc(100vh - 20px);}}
