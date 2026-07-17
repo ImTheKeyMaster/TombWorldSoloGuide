@@ -439,3 +439,12 @@ Major player-roster update:
 - After saves are rolled, the final action is `Apply Damage`.
 - Canceling the save workflow returns to Target Priority, unlocks the target, and discards the previous attack roll so a new target can be confirmed and rolled correctly.
 - The obsolete `Review NPO Attack` action remains removed.
+
+
+## v2.2.4
+
+- Added a permanent, non-collapsible `NPO Attack Summary` to the Recommended Activation screen after damage is applied.
+- The summary shows the targeted Player operative, Player save roll, unsaved normal and critical hits, damage, and wounds before and after.
+- The Player save roll now appears immediately after the NPO attack roll.
+- The attack summary remains visible until the NPO activation is completed.
+- Renamed `Activation Complete` to `Complete Activation`.
