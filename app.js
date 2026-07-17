@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.4.7';
+  const APP_VERSION = '1.4.8';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -108,7 +108,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function threatGrade(){ return state.threat === 0 ? 0 : state.threat <= 5 ? 1 : state.threat <= 10 ? 2 : 3; }
-  function threatLabel(){ return ['Dormant','Alert','Awakened','Full Awakening'][threatGrade()]; }
+  function threatLabel(){ return ['Dormant','Stirring','Awakened','Overrun'][threatGrade()]; }
   function threatToNext(){ const g=threatGrade(); if(g===3)return 0; return [1,6,11][g]-state.threat; }
   function log(text){ state.journal.unshift({time:new Date().toISOString(),text}); state.journal=state.journal.slice(0,150); }
   function setThreat(amount,reason){ const before=state.threat; state.threat=Math.max(0,Math.min(15,state.threat+amount)); if(state.threat!==before) log(`Threat ${before} → ${state.threat}: ${reason}`); }
@@ -315,7 +315,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
   }
 
-  function hud(){return `<div class="hud"><div><small>Turning Point</small><strong>${state.turningPoint||'Setup'}</strong></div><div><small>Threat Level: Threat Level: ${threatGrade()}</small><strong></div><div><small>GRADE LEVEL</small><strong>${threatGrade()}</strong></div><div><small>Player Ready</small><strong>${state.playerReady}</strong></div><div><small>NPO Ready</small><strong>${readyNpos().length}</strong></div></div><div class="threat-strip"><div><strong>${threatLabel()}</strong><small>${threatGrade()===3?'Maximum grade':`${threatToNext()} Threat to next grade`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
+  function hud(){return `<div class="hud"><div><small>Turning Point</small><strong>${state.turningPoint||'Setup'}</strong></div><div><small>THREAT LEVEL</small><strong>${state.threat}</strong></div><div><small>GRADE LEVEL</small><strong>${threatGrade()}</strong></div><div><small>Player Ready</small><strong>${state.playerReady}</strong></div><div><small>NPO Ready</small><strong>${readyNpos().length}</strong></div></div><div class="threat-strip"><div><strong>THREAT LEVEL: ${threatLabel()}</strong><small>${threatGrade()===3?'Maximum grade':`${threatToNext()} Threat to next grade`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
 
   function renderPlay(){
     const nextBanner=state.phase==='firefight'?`<section class="next-activation-banner"><small>NEXT ACTIVATION</small><strong>${state.nextSide==='npo'?'NPO':'Player'}</strong><span>${state.nextSide==='npo'?`${readyNpos().length} ready NPO${readyNpos().length===1?'':'s'}`:`${playerOperativesRemaining()} ready Player operative${playerOperativesRemaining()===1?'':'s'}`}</span></section>`:'';

@@ -297,3 +297,10 @@ v1.4.4: Correct initiative message grammar (wins vs win).
 - Threat strip now displays 'Threat Level: <state>'.
 - HUD labels updated to THREAT LEVEL and GRADE LEVEL.
 - Removed numeric Threat value from HUD.
+
+
+## v1.4.8
+
+- Fixed the HUD so it displays **THREAT LEVEL** with the current numeric Threat value beneath it.
+- Updated the Threat controls heading to **THREAT LEVEL: Dormant/Stirring/Awakened/Overrun**.
+- Corrected the threat-state names to Dormant, Stirring, Awakened, and Overrun.
