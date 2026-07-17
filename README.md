@@ -318,3 +318,11 @@ v1.4.4: Correct initiative message grammar (wins vs win).
 - Added prominent Grade escalation milestone banners when Threat crosses into a new Grade.
 - Added persistent Player casualty tracking. Player operative indicators can now be selected to mark an operative eliminated or restore it.
 - Eliminated Player operatives are visually grayed out, excluded from Player Ready counts, and remain eliminated across Turning Points.
+
+
+## v1.5.1
+
+- NPO activations that include an attack can no longer be completed before the attack is resolved.
+- **Activation Complete** remains disabled until the NPO Attack Wizard is confirmed.
+- Canceling the attack wizard returns to the activation result with completion still disabled.
+- After confirming the attack result, the activation screen returns with **Activation Complete** enabled.
