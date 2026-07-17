@@ -343,3 +343,10 @@ v1.4.4: Correct initiative message grammar (wins vs win).
 - The losing initiative die now uses the same gray styling as an Attack Roll miss.
 - If the displayed initiative dice are tied, both remain green.
 - The styling is applied both on the initial result and after reroll animations.
+
+
+## v1.5.5
+
+- Canceling the Resolve NPO Attack dialog now returns to the activation result with the exact same stored attack dice.
+- The attack dice no longer replay their rolling animation after canceling, which previously made them appear to be rerolled.
+- Reopening Resolve NPO Attack continues to use the original stored dice.

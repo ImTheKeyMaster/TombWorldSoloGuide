@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.5.4';
+  const APP_VERSION = '1.5.5';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -994,34 +994,41 @@ function showPlayerActivation(stage={}){
     renderNpoDecisionResult(n,decision,dice,c,false);
   }
 
-  function renderNpoDecisionResult(n,decision,dice,answers,attackResolved){
+  function initiativeSummary(dice){
+    const crits=dice.filter(d=>d.kind==='crit').length;
+    const hits=dice.filter(d=>d.kind==='hit').length;
+    const misses=dice.filter(d=>d.kind==='miss').length;
+    if(crits===0&&hits===0)return 'Attack missed. No saves or damage required.';
+    return `${crits} critical · ${hits} normal · ${misses} miss`;
+  }
+
+  function renderNpoDecisionResult(n,decision,dice,answers,attackResolved,animateDice=true){
     state.lastActivation={name:n.name,...decision,dice,answers,attackResolved};save();
     modalBody.innerHTML=`<div class="modal-inner ai-result">
       <p class="eyebrow">RECOMMENDED ACTIVATION</p>
       <div class="ai-result-title"><div><h2>${escapeHtml(n.name)}</h2><p>${escapeHtml(n.type)} · ${escapeHtml(n.behavior)}</p></div><span class="order-badge">${decision.stance}</span></div>
       <div class="activation-command"><small>ACTION SEQUENCE</small><strong>${escapeHtml(decision.action)}</strong></div>
       <div class="target-command"><small>TARGET PRIORITY</small><strong>${escapeHtml(decision.target)}</strong></div>
-      ${dice.length?`<h3>Attack roll</h3><div class="dice-row ${attackResolved?'settled':'animated-roll'}" id="aiDice">${attackResolved?dice.map(dieHtml).join(''):dice.map(()=>rollingDieHtml()).join('')}</div><p id="aiDiceSummary" class="muted">${attackResolved?'Attack resolved.':`Rolling ${dice.length} attack dice…`}</p><button class="btn secondary big-action" id="resolveNpoAttack">${attackResolved?'Review NPO Attack':'Resolve NPO Attack'}</button>`:''}
+      ${dice.length?`<h3>Attack roll</h3><div class="dice-row ${attackResolved||!animateDice?'settled':'animated-roll'}" id="aiDice">${attackResolved||!animateDice?dice.map(dieHtml).join(''):dice.map(()=>rollingDieHtml()).join('')}</div><p id="aiDiceSummary" class="muted">${attackResolved?'Attack resolved.':animateDice?`Rolling ${dice.length} attack dice…`:initiativeSummary(dice)}</p><button class="btn secondary big-action" id="resolveNpoAttack">${attackResolved?'Review NPO Attack':'Resolve NPO Attack'}</button>`:''}
       ${dice.length&&!attackResolved?'<p class="validation-message">Resolve the NPO attack before completing this activation.</p>':''}
       <details class="decision-path"><summary>Why did the Guide choose this?</summary><p>${escapeHtml(decision.reason)}</p><ol>${decision.path.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ol></details>
       <div class="wizard-actions"><button class="btn primary" id="completeNpo" ${dice.length&&!attackResolved?'disabled':''}>Activation Complete</button></div>
     </div>`;
     if(!modal.open)modal.showModal();
 
-    if(dice.length&&!attackResolved){
+    if(dice.length&&!attackResolved&&animateDice){
       setTimeout(()=>{
         const box=$('#aiDice'); if(!box)return;
         box.innerHTML=dice.map(dieHtml).join('');box.classList.add('settled');
-        const crits=dice.filter(d=>d.kind==='crit').length,hits=dice.filter(d=>d.kind==='hit').length,misses=dice.filter(d=>d.kind==='miss').length;
-        $('#aiDiceSummary').textContent=`${crits} critical · ${hits} normal · ${misses} miss`;
+        $('#aiDiceSummary').textContent=initiativeSummary(dice);
       },850);
     }
 
     $('#resolveNpoAttack')?.addEventListener('click',()=>{ if($('#resolveNpoAttack').disabled)return; showNpoAttackWizard(
       n,
       dice,
-      ()=>{showToast('NPO attack result recorded.');renderNpoDecisionResult(n,decision,dice,answers,true);},
-      ()=>renderNpoDecisionResult(n,decision,dice,answers,attackResolved)
+      ()=>{showToast('NPO attack result recorded.');renderNpoDecisionResult(n,decision,dice,answers,true,false);},
+      ()=>renderNpoDecisionResult(n,decision,dice,answers,attackResolved,false)
     );});
 
     $('#completeNpo').onclick=()=>{closeModal();render();};
