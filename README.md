@@ -287,3 +287,7 @@ v1.4.4: Correct initiative message grammar (wins vs win).
 - Both Player and NPO dice animate simultaneously on the initial initiative reveal.
 - **Reroll Both** now repeats the animation before revealing the new values.
 - The initiative winner and activation controls remain hidden or disabled until the 700 ms roll animation settles.
+
+
+## v1.4.6
+- Updated the Threat label to 'Threat Level: <Grade>' on the Strategy Phase and Activation Phase screens while leaving the +/- controls in their existing positions.
