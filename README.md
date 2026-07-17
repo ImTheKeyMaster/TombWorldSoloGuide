@@ -506,3 +506,10 @@ Major player-roster update:
 - Applying damage writes the new wound value back to game state immediately.
 - Player operatives reduced to 0 wounds are automatically marked as casualties.
 - Restoring an operative restores its full starting wounds.
+
+
+## v2.2.9e
+
+- Removed the redundant `No Player Operatives Ready` button.
+- The Guide now relies entirely on tracked Player readiness.
+- When no Player operatives remain ready, the activation flow automatically advances to an NPO, or to End Turning Point when neither side has operatives left to activate.

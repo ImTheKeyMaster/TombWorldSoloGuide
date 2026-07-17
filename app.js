@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.2.9d';
+  const APP_VERSION = '2.2.9e';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -499,7 +499,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
     setNextActivation(state.nextSide || state.initiative || 'player');
     if(state.phase==='end'){save();return nextStepCard();}
-    if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>Activate a Player operative</h2><p>Resolve one Player operative on the tabletop. After it completes, the Guide will alternate to an NPO if one is ready.</p><button class="btn primary big-action" id="playerActivation">Resolve Player Activation</button><button class="btn ghost big-action" id="skipPlayer">No Player Operatives Ready</button></section>`;
+    if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>Activate a Player operative</h2><p>Resolve one Player operative on the tabletop. After it completes, the Guide will alternate to an NPO if one is ready.</p><button class="btn primary big-action" id="playerActivation">Resolve Player Activation</button></section>`;
     if(state.nextSide==='npo' && readyNpos().length>0){const n=nextNpo();return `<section class="next-card"><span class="phase">NPO ACTIVATION · ${activationProgressLabel()}</span><h2>${escapeHtml(n.name)}</h2><p>${n.type} · ${n.behavior} · ${n.wounds}/${n.maxWounds} wounds</p><div class="summary-box"><strong>Next step:</strong> answer a short set of battlefield questions from this NPO’s perspective. After it completes, the Guide will alternate to a Player operative if one remains.</div><button class="btn primary big-action" id="npoActivation">Guide This NPO</button></section>`;}
     setNextActivation(state.nextSide==='player'?'npo':'player');
     save();
@@ -611,7 +611,6 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#rerollInitiative')?.addEventListener('click',()=>{rollInitiative();initiativeRolling=true;save();render();animateInitiativeResult();});
     $$('[data-init]').forEach(b=>b.onclick=()=>beginFirefight(b.dataset.init));
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
-    $('#skipPlayer')?.addEventListener('click',()=>{state.playerReady=0;setNextActivation('npo');log('No Player operatives remain ready.');save();render();});
     $('#npoActivation')?.addEventListener('click',showNpoWizard);
     $('#tracker')?.addEventListener('change',e=>{state.tracker=Math.max(0,Math.min(missionTrackerMax(),Number(e.target.value)||0));save();});
     $('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked;});
