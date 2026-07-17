@@ -310,3 +310,11 @@ v1.4.4: Correct initiative message grammar (wins vs win).
 
 - Fixed the Strategy Phase Guide so **GRADE LEVEL** updates live whenever Threat crosses a grade threshold.
 - The Strategy Phase Guide and HUD now both use the current `threatGrade()` value.
+
+
+## v1.5.0
+
+- Added a Turning Point completion summary showing Threat, Grade, NPO losses, and Player casualties.
+- Added prominent Grade escalation milestone banners when Threat crosses into a new Grade.
+- Added persistent Player casualty tracking. Player operative indicators can now be selected to mark an operative eliminated or restore it.
+- Eliminated Player operatives are visually grayed out, excluded from Player Ready counts, and remain eliminated across Turning Points.

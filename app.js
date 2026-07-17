@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.4.10';
+  const APP_VERSION = '1.5.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -56,7 +56,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
     strategyStage:null, strategyData:null, activationNumber:0, playerActivated:0, npoActivated:0,
-    activationHistory:[], playerActivatedIds:[], reinforcementEntry:'Nearest valid entry point'
+    activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], reinforcementEntry:'Nearest valid entry point',
+    gradeMilestone:null, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0
   });
 
   let state = normalizeState(load() || initialState());
@@ -71,6 +72,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.newIds=Array.isArray(raw?.newIds)?raw.newIds:[];
     merged.activationHistory=Array.isArray(raw?.activationHistory)?raw.activationHistory:[];
     merged.playerActivatedIds=Array.isArray(raw?.playerActivatedIds)?raw.playerActivatedIds:[];
+    merged.playerCasualtyIds=Array.isArray(raw?.playerCasualtyIds)?raw.playerCasualtyIds:[];
     return merged;
   }
   function mission(){ return missions.find(m => m.id === state.missionId) || missions[0]; }
@@ -79,7 +81,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function uid(){ return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`; }
   function activeNpos(){ return state.roster.filter(n => n.wounds > 0); }
   function readyNpos(){ return activeNpos().filter(n => n.ready); }
-  function playerOperativesRemaining(){ return Math.max(0, Number(state.playerReady || 0)); }
+  function playerOperativesRemaining(){
+    const casualties=new Set(state.playerCasualtyIds||[]);
+    const activated=new Set(state.playerActivatedIds||[]);
+    return Array.from({length:state.playerCount},(_,i)=>i+1).filter(id=>!casualties.has(id)&&!activated.has(id)).length;
+  }
+  function destroyedNpoCount(){ return state.roster.filter(n=>n.wounds<=0).length; }
 
   function setNextActivation(preferredSide){
     const playerRemaining=playerOperativesRemaining();
@@ -111,7 +118,17 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function threatLabel(){ return ['Dormant','Stirring','Awakened','Overrun'][threatGrade()]; }
   function threatToNext(){ const g=threatGrade(); if(g===3)return 0; return [1,6,11][g]-state.threat; }
   function log(text){ state.journal.unshift({time:new Date().toISOString(),text}); state.journal=state.journal.slice(0,150); }
-  function setThreat(amount,reason){ const before=state.threat; state.threat=Math.max(0,Math.min(15,state.threat+amount)); if(state.threat!==before) log(`Threat ${before} → ${state.threat}: ${reason}`); }
+  function setThreat(amount,reason){
+    const before=state.threat;
+    const beforeGrade=threatGrade();
+    state.threat=Math.max(0,Math.min(15,state.threat+amount));
+    const afterGrade=threatGrade();
+    if(state.threat!==before) log(`Threat ${before} → ${state.threat}: ${reason}`);
+    if(afterGrade>beforeGrade){
+      state.gradeMilestone={grade:afterGrade,threat:state.threat,label:threatLabel()};
+      log(`Threat reached Grade ${afterGrade}: ${threatLabel()}.`);
+    }
+  }
   function escapeHtml(s){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 
   function generateRoster(){
@@ -287,7 +304,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#generateBtn')?.addEventListener('click',()=>{generateRoster();save();render();});
     $$('[data-deploy]').forEach(b=>b.onclick=()=>{const n=state.roster.find(x=>x.id===b.dataset.deploy);n.deployed=!n.deployed;save();render();});
     $('#placeAllNpos')?.addEventListener('click',()=>{state.roster.forEach(n=>n.deployed=true);save();render();});
-    $('#playerCount')?.addEventListener('change',e=>{state.playerCount=Math.max(1,Math.min(20,Number(e.target.value)||1));state.playerReady=state.playerCount;save();});
+    $('#playerCount')?.addEventListener('change',e=>{state.playerCount=Math.max(1,Math.min(20,Number(e.target.value)||1));state.playerReady=state.playerCount;state.playerCasualtyIds=[];save();});
     $('#playerDeployed')?.addEventListener('change',e=>{$('#setupNext').disabled=!e.target.checked;});
     $('#beginGame')?.addEventListener('click',()=>{
       state.screen='game';
@@ -319,7 +336,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function renderPlay(){
     const nextBanner=state.phase==='firefight'?`<section class="next-activation-banner"><small>NEXT ACTIVATION</small><strong>${state.nextSide==='npo'?'NPO':'Player'}</strong><span>${state.nextSide==='npo'?`${readyNpos().length} ready NPO${readyNpos().length===1?'':'s'}`:`${playerOperativesRemaining()} ready Player operative${playerOperativesRemaining()===1?'':'s'}`}</span></section>`:'';
-    app.innerHTML=hud()+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${nextBanner}${nextStepCard()}${state.phase==='firefight'?activationTracker():''}`;
+    const milestone=state.gradeMilestone?`<section class="grade-milestone"><div><small>THREAT ESCALATION</small><strong>Grade ${state.gradeMilestone.grade}: ${escapeHtml(state.gradeMilestone.label)}</strong><span>Threat has reached Level ${state.gradeMilestone.threat}.</span></div><button class="btn ghost compact" id="dismissGradeMilestone">Dismiss</button></section>`:'';
+    app.innerHTML=hud()+milestone+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${nextBanner}${nextStepCard()}${state.phase==='firefight'?activationTracker():''}`;
     bindPlay();
   }
 
@@ -327,7 +345,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(state.completed) return `<section class="next-card"><span class="phase">MISSION COMPLETE</span><h2>Record the outcome</h2><p>The mission has reached its conclusion. Review the Journal or begin a new game.</p><button class="btn primary big-action" id="newGameFromPlay">Start New Game</button></section>`;
     if(state.phase==='between') return `<section class="next-card"><span class="phase">NEXT STEP</span><h2>Start Turning Point ${state.turningPoint+1}</h2><p>The Guide will ready operatives, determine the current Threat Grade, generate reinforcements, check Tomb World events, and resolve initiative.</p><button class="btn primary big-action" id="startTp">Start Next Turning Point</button></section>`;
     if(state.phase==='strategy') return strategyCard();
-    if(state.phase==='end') return `<section class="next-card"><span class="phase">END OF TURNING POINT</span><h2>Score and clean up</h2><p>Score mission objectives, resolve end-of-turn effects, and confirm all temporary markers have been cleared.</p><div class="field"><label>Mission progress: ${mission().tracker}</label><input id="tracker" type="number" min="0" max="${mission().max}" value="${state.tracker}"></div><div class="checklist"><label class="check-row"><input id="endChecked" type="checkbox"><span><strong>End-of-turn steps complete</strong><small>Objectives scored, temporary effects resolved, and physical tokens cleaned up.</small></span></label></div><button class="btn primary big-action" id="finishTp" disabled>Finish Turning Point</button></section>`;
+    if(state.phase==='end'){
+      const npoLosses=Math.max(0,destroyedNpoCount()-(state.tpStartDestroyedNpos||0));
+      const playerLosses=Math.max(0,(state.playerCasualtyIds||[]).length-(state.tpStartPlayerCasualties||0));
+      const threatChanged=state.threat!==(state.tpStartThreat??state.threat);
+      const gradeChanged=threatGrade()!==(state.tpStartGrade??threatGrade());
+      return `<section class="next-card"><span class="phase">TURNING POINT ${state.turningPoint} COMPLETE</span><h2>Battle summary</h2><div class="turn-summary-grid"><div><small>Threat</small><strong>${state.tpStartThreat??state.threat} → ${state.threat}</strong><span>${threatChanged?'Changed this Turning Point':'No change'}</span></div><div><small>Grade</small><strong>${state.tpStartGrade??threatGrade()} → ${threatGrade()}</strong><span>${gradeChanged?'Grade increased':'Grade unchanged'}</span></div><div><small>NPOs destroyed</small><strong>${npoLosses}</strong><span>This Turning Point</span></div><div><small>Player casualties</small><strong>${playerLosses}</strong><span>This Turning Point</span></div></div><h3>Score and clean up</h3><p>Score mission objectives, resolve end-of-turn effects, and confirm all temporary markers have been cleared.</p><div class="field"><label>Mission progress: ${mission().tracker}</label><input id="tracker" type="number" min="0" max="${mission().max}" value="${state.tracker}"></div><div class="checklist"><label class="check-row"><input id="endChecked" type="checkbox"><span><strong>End-of-turn steps complete</strong><small>Objectives scored, temporary effects resolved, and physical tokens cleaned up.</small></span></label></div><button class="btn primary big-action" id="finishTp" disabled>Finish Turning Point</button></section>`;
+    }
     setNextActivation(state.nextSide || state.initiative || 'player');
     if(state.phase==='end'){save();return nextStepCard();}
     if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ACTIVATION ${state.activationNumber+1}</span><h2>Activate a Player operative</h2><p>Resolve one Player operative on the tabletop. After it completes, the Guide will alternate to an NPO if one is ready.</p><button class="btn primary big-action" id="playerActivation">Resolve Player Activation</button><button class="btn ghost big-action" id="skipPlayer">No Player Operatives Ready</button></section>`;
@@ -372,18 +396,51 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function activationTracker(){
     const activatedIds=new Set(state.playerActivatedIds||[]);
+    const casualtyIds=new Set(state.playerCasualtyIds||[]);
     const playerActivated=activatedIds.size;
+    const playerCasualties=casualtyIds.size;
     const playerIndicators=Array.from({length:state.playerCount},(_,i)=>{
       const operativeId=i+1;
+      const casualty=casualtyIds.has(operativeId);
       const activated=activatedIds.has(operativeId);
-      const status=activated?'Activated':'Remaining';
-      return `<span class="player-operative-indicator ${activated?'activated':'remaining'}" title="Player operative ${operativeId}: ${status}" aria-label="Player operative ${operativeId}: ${status}"><span class="operative-number">${operativeId}</span>${activated?'<span class="activation-check" aria-hidden="true">✓</span>':''}</span>`;
+      const status=casualty?'Eliminated':activated?'Activated':'Remaining';
+      const cls=casualty?'casualty':activated?'activated':'remaining';
+      const mark=casualty?'<span class="casualty-mark" aria-hidden="true">×</span>':activated?'<span class="activation-check" aria-hidden="true">✓</span>':'';
+      return `<button type="button" class="player-operative-indicator ${cls}" data-player-operative="${operativeId}" title="Player operative ${operativeId}: ${status}. Select to update status." aria-label="Player operative ${operativeId}: ${status}. Select to update status."><span class="operative-number">${operativeId}</span>${mark}</button>`;
     }).join('');
     const npoRows=activeNpos().map(n=>`<div class="tracker-npo ${n.ready?'ready':'spent'}"><span>${escapeHtml(n.name)}</span><strong>${n.ready?'READY':'EXPENDED'}</strong></div>`).join('');
-    return `<section class="card activation-tracker"><div class="panel-title"><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div><div class="turn-badge">Next: ${state.nextSide==='npo'?'NPO':'Player'}</div></div><div class="tracker-section player-tracker-section"><div class="tracker-section-heading"><small>Player operatives</small><div class="activation-legend"><span><i class="legend-dot activated"></i>Activated (${playerActivated})</span><span><i class="legend-dot remaining"></i>Remaining (${state.playerReady})</span></div></div><div class="player-dots">${playerIndicators}</div></div><div class="tracker-section"><small>NPOs</small><div class="tracker-npos">${npoRows||'<span class="muted">No active NPOs</span>'}</div></div></section>`;
+    return `<section class="card activation-tracker"><div class="panel-title"><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div><div class="turn-badge">Next: ${state.nextSide==='npo'?'NPO':'Player'}</div></div><div class="tracker-section player-tracker-section"><div class="tracker-section-heading"><small>Player operatives</small><div class="activation-legend"><span><i class="legend-dot activated"></i>Activated (${playerActivated})</span><span><i class="legend-dot remaining"></i>Remaining (${playerOperativesRemaining()})</span><span><i class="legend-dot casualty"></i>Eliminated (${playerCasualties})</span></div></div><p class="muted compact-copy">Select an operative to mark it eliminated or restore it.</p><div class="player-dots">${playerIndicators}</div></div><div class="tracker-section"><small>NPOs</small><div class="tracker-npos">${npoRows||'<span class="muted">No active NPOs</span>'}</div></div></section>`;
+  }
+
+  function showPlayerOperativeStatus(operativeId){
+    const casualties=new Set(state.playerCasualtyIds||[]);
+    const eliminated=casualties.has(operativeId);
+    showModal(`Player operative ${operativeId}`,`
+      <p>This status carries across Turning Points and is reflected in the activation tracker and Player Ready count.</p>
+      <div class="summary-box"><strong>Current status:</strong> ${eliminated?'Eliminated':'Active'}</div>
+      <div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn ${eliminated?'secondary':'danger'}" id="togglePlayerCasualty">${eliminated?'Restore Operative':'Mark Eliminated'}</button></div>`);
+    $('#togglePlayerCasualty').onclick=()=>{
+      const ids=new Set(state.playerCasualtyIds||[]);
+      if(ids.has(operativeId)){
+        ids.delete(operativeId);
+        log(`Player operative ${operativeId} restored.`);
+      }else{
+        ids.add(operativeId);
+        if(!state.playerActivatedIds.includes(operativeId))state.playerActivatedIds.push(operativeId);
+        log(`Player operative ${operativeId} eliminated.`);
+      }
+      state.playerCasualtyIds=[...ids].sort((a,b)=>a-b);
+      state.playerReady=playerOperativesRemaining();
+      setNextActivation(state.nextSide||'npo');
+      closeModal();
+      save();
+      render();
+    };
   }
 
   function bindPlay(){
+    $('#dismissGradeMilestone')?.addEventListener('click',()=>{state.gradeMilestone=null;save();render();});
+    $$('[data-player-operative]').forEach(button=>button.addEventListener('click',()=>showPlayerOperativeStatus(Number(button.dataset.playerOperative))));
     $('#startTp')?.addEventListener('click',startTurningPoint);
     $('#continueStrategy')?.addEventListener('click',()=>{state.reinforcementEntry=$('#reinforcementEntry')?.value||state.reinforcementEntry;state.strategyStage='initiative';initiativeRolling=state.turningPoint!==1;save();render();if(initiativeRolling)animateInitiativeResult();});
     $('#rerollInitiative')?.addEventListener('click',()=>{rollInitiative();initiativeRolling=true;save();render();animateInitiativeResult();});
@@ -401,7 +458,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function startTurningPoint(){
     state.turningPoint++;
-    state.playerReady=state.playerCount;
+    state.tpStartThreat=state.threat;
+    state.tpStartGrade=threatGrade();
+    state.tpStartDestroyedNpos=destroyedNpoCount();
+    state.tpStartPlayerCasualties=(state.playerCasualtyIds||[]).length;
+    state.gradeMilestone=null;
+    state.playerReady=Math.max(0,state.playerCount-(state.playerCasualtyIds||[]).length);
     state.playerActivated=0;state.npoActivated=0;state.activationNumber=0;state.activationHistory=[];state.playerActivatedIds=[];
     const grade=threatGrade();
     activeNpos().forEach(n=>n.ready=state.turningPoint>1 || state.threat>0);
@@ -462,7 +524,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function remainingPlayerOperatives(){
     const used=new Set(state.playerActivatedIds||[]);
-    return Array.from({length:state.playerCount},(_,i)=>i+1).filter(id=>!used.has(id));
+    const casualties=new Set(state.playerCasualtyIds||[]);
+    return Array.from({length:state.playerCount},(_,i)=>i+1).filter(id=>!used.has(id)&&!casualties.has(id));
   }
 
   
@@ -764,7 +827,7 @@ function showPlayerActivation(stage={}){
     if(inc)setThreat(inc,'Player activation');
     const operativeId=Number(stage.playerOperativeId);
     if(!state.playerActivatedIds.includes(operativeId))state.playerActivatedIds.push(operativeId);
-    state.playerReady=Math.max(0,state.playerCount-state.playerActivatedIds.length);
+    state.playerReady=playerOperativesRemaining();
     state.playerActivated=state.playerActivatedIds.length;
     state.activationNumber++;
     const summary=playerActivationSummary(stage);

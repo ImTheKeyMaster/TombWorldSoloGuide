@@ -573,3 +573,83 @@ body.modal-open{
   margin:0;
   line-height:1.45;
 }
+
+
+/* v1.5.0 Turning Point summaries, Grade milestones, and Player casualties */
+.grade-milestone{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin:0 0 14px;
+  padding:16px;
+  border:1px solid #d49b38;
+  border-radius:16px;
+  background:linear-gradient(135deg,rgba(212,155,56,.2),rgba(77,24,12,.38));
+  box-shadow:0 0 24px rgba(212,155,56,.12);
+}
+.grade-milestone div{display:grid;gap:3px}
+.grade-milestone small{font-weight:900;letter-spacing:.12em;color:#efc36d}
+.grade-milestone strong{font-size:1.15rem}
+.grade-milestone span{color:var(--muted)}
+.turn-summary-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin:14px 0 22px;
+}
+.turn-summary-grid>div{
+  display:grid;
+  gap:3px;
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:rgba(255,255,255,.035);
+}
+.turn-summary-grid small{
+  color:var(--muted);
+  font-weight:850;
+  text-transform:uppercase;
+  letter-spacing:.07em;
+}
+.turn-summary-grid strong{font-size:1.35rem}
+.turn-summary-grid span{color:var(--muted);font-size:.85rem}
+.player-operative-indicator{
+  appearance:none;
+  -webkit-appearance:none;
+  cursor:pointer;
+  font:inherit;
+}
+.player-operative-indicator.casualty{
+  opacity:.58;
+  filter:grayscale(1);
+  border-color:#8d5555;
+  background:#251313;
+  color:#dca4a4;
+  text-decoration:line-through;
+}
+.casualty-mark{
+  position:absolute;
+  right:-3px;
+  top:-5px;
+  display:grid;
+  place-items:center;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:#8e2e2e;
+  color:white;
+  font-size:.85rem;
+  font-weight:900;
+}
+.legend-dot.casualty{background:#8e2e2e}
+.compact-copy{margin:6px 0 10px;font-size:.85rem}
+.btn.danger{
+  background:#8e2e2e;
+  border-color:#b74747;
+  color:#fff;
+}
+@media(max-width:600px){
+  .grade-milestone{align-items:flex-start;flex-direction:column}
+  .turn-summary-grid{grid-template-columns:1fr 1fr}
+}
