@@ -771,3 +771,14 @@ button.tracker-operative:hover{
 .mission-rule strong,.mission-rule small{display:block}
 .mission-rule small{margin-top:3px;color:var(--green);font-weight:800}
 .mission-rule p{margin:8px 0 0;color:var(--muted)}
+
+/* v2.2.5: aligned portrait HUD labels and on-demand Threat controls */
+.hud .hud-cell{appearance:none;border:0;border-radius:0;background:#0a1912;color:inherit;padding:10px 8px;text-align:center;cursor:pointer}
+.hud .hud-cell:focus-visible{outline:2px solid var(--green);outline-offset:-3px}
+.hud .hud-threat[aria-expanded="true"]{background:#102a1d}
+.portrait-break{display:none}
+@media (max-width:600px) and (orientation:portrait){
+  .portrait-break{display:inline}
+  .hud small{min-height:2.2em;line-height:1.1}
+  .hud .hud-cell{padding:8px 3px}
+}

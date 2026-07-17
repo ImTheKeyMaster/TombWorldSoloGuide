@@ -448,3 +448,11 @@ Major player-roster update:
 - The Player save roll now appears immediately after the NPO attack roll.
 - The attack summary remains visible until the NPO activation is completed.
 - Renamed `Activation Complete` to `Complete Activation`.
+
+
+## v2.2.5
+
+- In phone portrait orientation, every HUD heading uses the same two-line layout so all values align.
+- Landscape and desktop HUD headings remain on one line when space allows.
+- The Threat Level adjuster is hidden by default.
+- Tap the Threat Level HUD cell to show or hide the manual Threat controls.

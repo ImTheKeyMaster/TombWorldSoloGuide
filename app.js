@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.2.4';
+  const APP_VERSION = '2.2.5';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -93,6 +93,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   let state = normalizeState(load() || initialState());
   let lastRenderedStepKey = null;
+  let threatAdjustOpen = false;
 
   function save(){ state.version=APP_VERSION; localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
   function load(){ try{return JSON.parse(localStorage.getItem(STORAGE_KEY));}catch{return null;} }
@@ -443,7 +444,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
   }
 
-  function hud(){return `<div class="hud"><div><small>Turning Point</small><strong>${state.turningPoint||'Setup'}</strong></div><div><small>THREAT LEVEL</small><strong>${state.threat}</strong></div><div><small>GRADE LEVEL</small><strong>${threatGrade()}</strong></div><div><small>Player Ready</small><strong>${state.playerReady}</strong></div><div><small>NPO Ready</small><strong>${readyNpos().length}</strong></div></div><div class="threat-strip"><div><strong>THREAT LEVEL: ${threatLabel()}</strong><small>${threatGrade()===3?'Maximum Grade':`Next Grade at Threat Level ${[1,6,11][threatGrade()]}`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
+  function hud(){return `<div class="hud"><div><small>Turning<span class="portrait-break"><br></span> Point</small><strong>${state.turningPoint||'Setup'}</strong></div><button class="hud-cell hud-threat" id="threatHudToggle" type="button" aria-expanded="${threatAdjustOpen}" aria-controls="threatAdjuster"><small>Threat<span class="portrait-break"><br></span> Level</small><strong>${state.threat}</strong></button><div><small>Grade<span class="portrait-break"><br></span> Level</small><strong>${threatGrade()}</strong></div><div><small>Player<span class="portrait-break"><br></span> Ready</small><strong>${state.playerReady}</strong></div><div><small>NPO<span class="portrait-break"><br></span> Ready</small><strong>${readyNpos().length}</strong></div></div><div class="threat-strip ${threatAdjustOpen?'':'hidden'}" id="threatAdjuster"><div><strong>THREAT LEVEL: ${threatLabel()}</strong><small>${threatGrade()===3?'Maximum Grade':`Next Grade at Threat Level ${[1,6,11][threatGrade()]}`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
 
   function renderPlay(){
     const nextBanner=state.phase==='firefight'?`<section class="next-activation-banner"><small>NEXT ACTIVATION</small><strong>${state.nextSide==='npo'?'NPO':'Player'}</strong><span>${state.nextSide==='npo'?`${readyNpos().length} ready NPO${readyNpos().length===1?'':'s'}`:`${playerOperativesRemaining()} ready Player operative${playerOperativesRemaining()===1?'':'s'}`}</span></section>`:'';
@@ -580,6 +581,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked;});
     $('#finishTp')?.addEventListener('click',()=>{state.phase='between';state.strategyStage=null;state.strategyData=null;state.newIds=[];log(`Turning Point ${state.turningPoint} completed.`);save();render();});
     $('#newGameFromPlay')?.addEventListener('click',confirmNewGame);
+    $('#threatHudToggle')?.addEventListener('click',()=>{threatAdjustOpen=!threatAdjustOpen;render();});
     $('#threatUp')?.addEventListener('click',()=>{setThreat(1,'Manual adjustment');save();render();});
     $('#threatDown')?.addEventListener('click',()=>{setThreat(-1,'Manual adjustment');save();render();});
   }
