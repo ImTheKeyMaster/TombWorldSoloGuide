@@ -1,0 +1,124 @@
+{
+  "id": "shifting-labyrinth",
+  "number": "01",
+  "name": "Shifting Labyrinth",
+  "brief": "Escape a tomb complex while its route shifts around the kill team.",
+  "objective": "Get at least half of the player operatives to escape.",
+  "firstTurningPointInitiative": "player",
+  "startingNpos": {
+    "formula": "2D3+3",
+    "deployment": "Wholly within Player B territory, spread evenly with intervening terrain in control range when viewed from Player A's drop zone.",
+    "order": "Conceal"
+  },
+  "tracker": {
+    "label": "Operatives escaped",
+    "max": 12
+  },
+  "orientation": "left",
+  "rules": [
+    {
+      "name": "Escape",
+      "summary": "Place an Escape marker at the centre of Player B's killzone edge. Player operatives within 1 inch can move over that edge and escape."
+    },
+    {
+      "name": "Auspex Calibration",
+      "timing": "Strategic Gambit in each Turning Point after the first, if no operatives have escaped",
+      "summary": "Roll D3: move the Escape marker D3+3 inches left on 1, do not move it on 2, or D3+3 inches right on 3."
+    }
+  ],
+  "victory": {
+    "win": "When all player operatives have left the killzone, at least half escaped.",
+    "lose": "When all player operatives have left the killzone and fewer than half escaped."
+  },
+  "map": {
+    "walls": [
+      [
+        180,
+        30,
+        180,
+        155
+      ],
+      [
+        270,
+        155,
+        270,
+        300
+      ],
+      [
+        430,
+        30,
+        430,
+        160
+      ],
+      [
+        610,
+        150,
+        610,
+        300
+      ],
+      [
+        680,
+        300,
+        680,
+        460
+      ],
+      [
+        180,
+        155,
+        610,
+        155
+      ],
+      [
+        270,
+        300,
+        680,
+        300
+      ],
+      [
+        430,
+        390,
+        610,
+        390
+      ]
+    ],
+    "hatches": [
+      [
+        270,
+        215,
+        "v"
+      ],
+      [
+        430,
+        95,
+        "v"
+      ],
+      [
+        430,
+        350,
+        "v"
+      ],
+      [
+        520,
+        155,
+        "h"
+      ],
+      [
+        560,
+        300,
+        "h"
+      ],
+      [
+        610,
+        225,
+        "v"
+      ]
+    ],
+    "markers": [
+      [
+        770,
+        245,
+        "ESCAPE"
+      ]
+    ]
+  }
+}

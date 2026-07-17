@@ -1,0 +1,133 @@
+{
+  "id": "demolition-protocol",
+  "number": "02",
+  "name": "Demolition Protocol",
+  "brief": "Open a route by operating hatchways and breaching sealed access points.",
+  "objective": "Perform Breach on at least seven breach points or hatchways and leave at least seven open.",
+  "firstTurningPointInitiative": "player",
+  "startingNpos": {
+    "formula": "2D3+3",
+    "deployment": "Wholly within Player B territory, spread evenly with intervening terrain in control range when viewed from Player A's drop zone.",
+    "order": "Conceal"
+  },
+  "tracker": {
+    "label": "Access points breached",
+    "max": 7
+  },
+  "orientation": "left",
+  "rules": [
+    {
+      "name": "Sabotage",
+      "summary": "Player operatives can perform Breach on a hatchway access point. Open it, and it cannot be closed for the rest of the battle."
+    }
+  ],
+  "victory": {
+    "win": "Seven or more breach point or hatchway terrain features are open and Breach has been performed on at least seven of them.",
+    "lose": "Every player operative is incapacitated."
+  },
+  "map": {
+    "walls": [
+      [
+        350,
+        30,
+        350,
+        175
+      ],
+      [
+        500,
+        30,
+        500,
+        185
+      ],
+      [
+        140,
+        175,
+        650,
+        175
+      ],
+      [
+        250,
+        175,
+        250,
+        325
+      ],
+      [
+        450,
+        175,
+        450,
+        460
+      ],
+      [
+        650,
+        175,
+        650,
+        325
+      ],
+      [
+        150,
+        325,
+        650,
+        325
+      ]
+    ],
+    "hatches": [
+      [
+        350,
+        100,
+        "v"
+      ],
+      [
+        500,
+        110,
+        "v"
+      ],
+      [
+        250,
+        245,
+        "v"
+      ],
+      [
+        450,
+        245,
+        "v"
+      ],
+      [
+        650,
+        245,
+        "v"
+      ],
+      [
+        300,
+        175,
+        "h"
+      ],
+      [
+        550,
+        175,
+        "h"
+      ],
+      [
+        340,
+        325,
+        "h"
+      ],
+      [
+        555,
+        325,
+        "h"
+      ]
+    ],
+    "markers": [
+      [
+        300,
+        175,
+        "BREACH"
+      ],
+      [
+        555,
+        325,
+        "BREACH"
+      ]
+    ]
+  }
+}

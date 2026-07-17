@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "packId": "joint-ops-tomb-world",
+  "packName": "Joint Ops: Tomb World",
+  "source": {
+    "publisher": "Games Workshop",
+    "document": "Joint Ops: Tomb World Mission Pack",
+    "revision": "19 November 2025"
+  },
+  "missions": [
+    {
+      "id": "shifting-labyrinth",
+      "file": "01-shifting-labyrinth.json"
+    },
+    {
+      "id": "demolition-protocol",
+      "file": "02-demolition-protocol.json"
+    },
+    {
+      "id": "recover-transponder",
+      "file": "03-recover-transponder.json"
+    },
+    {
+      "id": "destroy-sarcophagus",
+      "file": "04-destroy-sarcophagus.json"
+    },
+    {
+      "id": "scout-sub-crypt",
+      "file": "05-scout-sub-crypt.json"
+    },
+    {
+      "id": "regroup",
+      "file": "06-regroup.json"
+    }
+  ]
+}

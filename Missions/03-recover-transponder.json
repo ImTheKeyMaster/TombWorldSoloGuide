@@ -1,0 +1,119 @@
+{
+  "id": "recover-transponder",
+  "number": "03",
+  "name": "Recover Transponder",
+  "brief": "Search several locations for a hidden device and carry it back to safety.",
+  "objective": "Locate the true transponder and escape over Player A's killzone edge while carrying it.",
+  "firstTurningPointInitiative": "player",
+  "startingNpos": {
+    "formula": "2D3+3",
+    "deployment": "Wholly within Player B territory, spread evenly across rooms containing objective markers, with intervening terrain in control range when viewed from Player A's drop zone.",
+    "order": "Conceal"
+  },
+  "tracker": {
+    "label": "Search sites resolved",
+    "max": 3
+  },
+  "orientation": "bottom",
+  "rules": [
+    {
+      "name": "Objective Markers",
+      "summary": "Set up three objective markers as shown on the mission map."
+    },
+    {
+      "name": "Locate Item",
+      "summary": "When picking up an unresolved marker, roll D3. The item is found if the result is higher than the number of other markers remaining; otherwise remove that marker."
+    },
+    {
+      "name": "Escape",
+      "summary": "Player operatives can leave over Player A's killzone edge."
+    }
+  ],
+  "victory": {
+    "win": "A player operative carrying the objective marker escapes.",
+    "lose": "Every player operative is incapacitated."
+  },
+  "map": {
+    "walls": [
+      [
+        30,
+        110,
+        770,
+        110
+      ],
+      [
+        250,
+        110,
+        250,
+        265
+      ],
+      [
+        520,
+        110,
+        520,
+        365
+      ],
+      [
+        30,
+        265,
+        520,
+        265
+      ],
+      [
+        250,
+        365,
+        770,
+        365
+      ]
+    ],
+    "hatches": [
+      [
+        250,
+        185,
+        "v"
+      ],
+      [
+        520,
+        190,
+        "v"
+      ],
+      [
+        520,
+        320,
+        "v"
+      ],
+      [
+        150,
+        265,
+        "h"
+      ],
+      [
+        385,
+        265,
+        "h"
+      ],
+      [
+        650,
+        365,
+        "h"
+      ]
+    ],
+    "markers": [
+      [
+        165,
+        205,
+        "1"
+      ],
+      [
+        440,
+        185,
+        "2"
+      ],
+      [
+        625,
+        320,
+        "3"
+      ]
+    ]
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "id": "scout-sub-crypt",
+  "number": "05",
+  "name": "Scout Sub-Crypt",
+  "brief": "Explore sealed rooms and clear the guardians that awaken inside.",
+  "objective": "Scout three eligible rooms.",
+  "firstTurningPointInitiative": "player",
+  "startingNpos": {
+    "formula": "0",
+    "deployment": "No NPOs are set up before the battle.",
+    "order": "Conceal"
+  },
+  "tracker": {
+    "label": "Rooms scouted",
+    "max": 3
+  },
+  "orientation": "bottom",
+  "rules": [
+    {
+      "name": "Awaken Rooms",
+      "summary": "Excluding Player A's drop-zone rooms, the first time each room is opened or entered, set up D3 plus current Threat Grade NPOs, maximum 5, ready with Conceal orders."
+    },
+    {
+      "name": "Dormant",
+      "summary": "Operate Hatch does not increase Threat in this mission."
+    },
+    {
+      "name": "Scout Room",
+      "summary": "A player operative can spend 1AP to scout an eligible cleared room and reduce Threat to the highest level of the grade below."
+    }
+  ],
+  "victory": {
+    "win": "Three rooms are scouted.",
+    "lose": "Every player operative is incapacitated."
+  },
+  "map": {
+    "walls": [
+      [
+        160,
+        30,
+        160,
+        235
+      ],
+      [
+        360,
+        30,
+        360,
+        335
+      ],
+      [
+        590,
+        100,
+        590,
+        335
+      ],
+      [
+        30,
+        165,
+        360,
+        165
+      ],
+      [
+        360,
+        255,
+        770,
+        255
+      ],
+      [
+        150,
+        345,
+        590,
+        345
+      ]
+    ],
+    "hatches": [
+      [
+        160,
+        105,
+        "v"
+      ],
+      [
+        360,
+        100,
+        "v"
+      ],
+      [
+        360,
+        285,
+        "v"
+      ],
+      [
+        590,
+        180,
+        "v"
+      ],
+      [
+        250,
+        165,
+        "h"
+      ],
+      [
+        480,
+        255,
+        "h"
+      ],
+      [
+        300,
+        345,
+        "h"
+      ]
+    ],
+    "markers": [
+      [
+        95,
+        95,
+        "1"
+      ],
+      [
+        260,
+        95,
+        "2"
+      ],
+      [
+        475,
+        175,
+        "3"
+      ],
+      [
+        680,
+        165,
+        "4"
+      ],
+      [
+        480,
+        390,
+        "5"
+      ]
+    ]
+  }
+}

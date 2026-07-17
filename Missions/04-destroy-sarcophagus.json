@@ -1,0 +1,112 @@
+{
+  "id": "destroy-sarcophagus",
+  "number": "04",
+  "name": "Destroy Sarcophagus",
+  "brief": "Overload a damaged stasis crypt while tomb systems attempt to repair it.",
+  "objective": "Accumulate 20 Destruction points on the sarcophagus.",
+  "firstTurningPointInitiative": "player",
+  "startingNpos": {
+    "formula": "D3+6",
+    "deployment": "Wholly within Player B territory. Put half, rounding down, in the sarcophagus room and spread the remainder across the other rooms.",
+    "order": "Conceal"
+  },
+  "tracker": {
+    "label": "Destruction points",
+    "max": 20
+  },
+  "orientation": "bottom",
+  "rules": [
+    {
+      "name": "Sarcophagus",
+      "summary": "Treat C1 as an objective marker. Breach performed within its control range adds 2D6 Destruction points instead of normal Breach effects."
+    },
+    {
+      "name": "Nanoscarab Repair",
+      "timing": "Ready step of each Strategy phase",
+      "summary": "Roll D6, subtracting 1 for each player operative controlling the sarcophagus, and remove that many Destruction points, to a minimum of 0."
+    }
+  ],
+  "victory": {
+    "win": "The sarcophagus has 20 or more Destruction points.",
+    "lose": "Every player operative is incapacitated."
+  },
+  "map": {
+    "walls": [
+      [
+        350,
+        30,
+        350,
+        305
+      ],
+      [
+        530,
+        120,
+        530,
+        365
+      ],
+      [
+        350,
+        120,
+        770,
+        120
+      ],
+      [
+        30,
+        305,
+        530,
+        305
+      ],
+      [
+        150,
+        305,
+        150,
+        460
+      ],
+      [
+        150,
+        395,
+        530,
+        395
+      ]
+    ],
+    "hatches": [
+      [
+        350,
+        185,
+        "v"
+      ],
+      [
+        530,
+        185,
+        "v"
+      ],
+      [
+        530,
+        340,
+        "v"
+      ],
+      [
+        245,
+        305,
+        "h"
+      ],
+      [
+        440,
+        305,
+        "h"
+      ],
+      [
+        330,
+        395,
+        "h"
+      ]
+    ],
+    "markers": [
+      [
+        435,
+        215,
+        "SARCOPHAGUS"
+      ]
+    ]
+  }
+}
