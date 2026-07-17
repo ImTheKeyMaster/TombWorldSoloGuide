@@ -490,3 +490,10 @@ Major player-roster update:
 - Added a shared activation-progress formatter to keep activation titles consistent.
 - Corrected the Turning Point total to count all active NPOs, regardless of their previous ready state.
 - Removed routine success toasts while retaining validation and error messages.
+
+
+## v2.2.9c
+
+- Corrected the activation total to equal the number of living operatives currently in the game.
+- The total is calculated as all Player operatives not listed as casualties plus all NPO operatives with wounds remaining.
+- Activated status and ready status no longer affect the denominator.

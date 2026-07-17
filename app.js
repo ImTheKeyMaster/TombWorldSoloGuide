@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.2.9b';
+  const APP_VERSION = '2.2.9c';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -122,10 +122,18 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function uid(){ return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`; }
   function activeNpos(){ return state.roster.filter(n => n.wounds > 0); }
   function readyNpos(){ return activeNpos().filter(n => n.ready); }
+  function livingPlayerOperativeCount(){
+    const casualties=new Set(state.playerCasualtyIds||[]);
+    return (state.playerRoster||[]).filter(id=>!casualties.has(id)).length;
+  }
+
+  function totalLivingOperatives(){
+    return livingPlayerOperativeCount()+activeNpos().length;
+  }
+
   function activationProgressLabel(){
     const current=Math.max(1,state.activationNumber+1);
-    const total=Math.max(current,state.totalActivationsThisTP||0);
-    return `ACTIVATION ${current} OF ${total}`;
+    return `ACTIVATION ${current} OF ${totalLivingOperatives()}`;
   }
 
   function playerOperativesRemaining(){
@@ -599,8 +607,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     state.tpStartPlayerCasualties=(state.playerCasualtyIds||[]).length;
     state.gradeMilestone=null;
     state.playerReady=Math.max(0,state.playerCount-(state.playerCasualtyIds||[]).length);
-    state.playerActivated=0;state.npoActivated=0;state.activationNumber=0;
-      state.totalActivationsThisTP=state.playerReady+activeNpos().length;state.activationHistory=[];state.playerActivatedIds=[];
+    state.playerActivated=0;state.npoActivated=0;state.activationNumber=0;state.activationHistory=[];state.playerActivatedIds=[];
     const grade=threatGrade();
     activeNpos().forEach(n=>n.ready=true);
     const reinforcements=[];
