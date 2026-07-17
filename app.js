@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.4.4';
+  const APP_VERSION = '1.4.5';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -337,6 +337,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return nextStepCard();
   }
 
+  let initiativeRolling=false;
+
   function strategyCard(){
     const d=state.strategyData||{};
     if(state.strategyStage==='summary'){
@@ -344,7 +346,28 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 1 OF 2</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol><p>When all Strategy Phase actions are complete, continue to initiative.</p></div><div class="stat-grid"><div class="stat"><small>Threat</small><strong>${state.threat}</strong></div><div class="stat"><small>Grade</small><strong>${d.grade??threatGrade()}</strong></div><div class="stat"><small>NPOs Ready</small><strong>${readyNpos().length}</strong></div><div class="stat"><small>Reinforcements</small><strong>${(d.reinforcements||[]).length}</strong></div></div>${rolls?`<h3>Reinforcements generated</h3><div class="reinforcement-grid">${rolls}</div><div class="field"><label>Reinforcement entry point</label><select id="reinforcementEntry"><option>Nearest valid entry point</option><option>Entry Point A</option><option>Entry Point B</option><option>Entry Point C</option><option>Custom placement</option></select></div>`:'<div class="summary-box"><strong>No reinforcements arrive.</strong></div>'}${d.blocked?`<p class="warning-text">${d.blocked} reinforcement(s) were blocked by the 10-NPO battlefield limit.</p>`:''}${d.event?`<div class="summary-box"><strong>${d.event[0]}</strong><br>${d.event[1]}</div>`:'<p>No Tomb World event is required.</p>'}<button class="btn primary big-action" id="continueStrategy">Strategy Phase Complete · Continue to Initiative</button></section>`;
     }
     const auto=state.turningPoint===1;
-    return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 2 OF 2</span><h2>${auto?'The Player has initiative during Turning Point 1':'Determine initiative'}</h2>${auto?`<p>During Turning Point 1, the tomb remains dormant. NPOs are expended and the Player begins the Firefight Phase.</p>`:`<p>The Guide rolled once for each side. Use the result, reroll both dice, or override it if your tabletop rules require a different outcome.</p><div class="initiative-roll"><div><small>Player</small>${dieHtml({value:state.strategyData.playerRoll,kind:'hit'})}</div><div><small>NPOs</small>${dieHtml({value:state.strategyData.npoRoll,kind:'hit'})}</div></div><div class="summary-box"><strong>${state.strategyData.suggestedInitiative==='npo'?'NPOs win':'The Player wins'} initiative${state.strategyData.playerRoll===state.strategyData.npoRoll?' after the tie-break':''}.</strong></div>`}<div class="quick-actions">${auto?'':`<button class="btn ghost" id="rerollInitiative">Reroll Both</button>`}<button class="btn ${d.suggestedInitiative==='player'?'primary':'secondary'}" data-init="player">Begin Player Activation</button><button class="btn ${d.suggestedInitiative==='npo'?'primary':'secondary'}" data-init="npo" ${auto?'disabled':''}>Begin with NPOs</button></div></section>`;
+    return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 2 OF 2</span><h2>${auto?'The Player has initiative during Turning Point 1':'Determine initiative'}</h2>${auto?`<p>During Turning Point 1, the tomb remains dormant. NPOs are expended and the Player begins the Firefight Phase.</p>`:`<p>The Guide rolled once for each side. Use the result, reroll both dice, or override it if your tabletop rules require a different outcome.</p><div class="initiative-roll"><div><small>Player</small><div class="dice-row animated-roll" id="playerInitiativeDie">${initiativeRolling?rollingDieHtml():dieHtml({value:state.strategyData.playerRoll,kind:'hit'})}</div></div><div><small>NPOs</small><div class="dice-row animated-roll" id="npoInitiativeDie">${initiativeRolling?rollingDieHtml():dieHtml({value:state.strategyData.npoRoll,kind:'hit'})}</div></div></div><div class="summary-box" id="initiativeResult" ${initiativeRolling?'hidden':''}><strong>${state.strategyData.suggestedInitiative==='npo'?'NPOs win':'The Player wins'} initiative${state.strategyData.playerRoll===state.strategyData.npoRoll?' after the tie-break':''}.</strong></div>`}<div class="quick-actions">${auto?'':`<button class="btn ghost" id="rerollInitiative" ${initiativeRolling?'disabled':''}>Reroll Both</button>`}<button class="btn ${d.suggestedInitiative==='player'?'primary':'secondary'}" data-init="player" ${initiativeRolling?'disabled':''}>Begin Player Activation</button><button class="btn ${d.suggestedInitiative==='npo'?'primary':'secondary'}" data-init="npo" ${(auto||initiativeRolling)?'disabled':''}>Begin with NPOs</button></div></section>`;
+  }
+
+  function animateInitiativeResult(){
+    if(state.turningPoint===1){initiativeRolling=false;return;}
+    setTimeout(()=>{
+      const player=$('#playerInitiativeDie');
+      if(player){
+        player.innerHTML=dieHtml({value:state.strategyData.playerRoll,kind:'hit'});
+        player.classList.add('settled');
+      }
+      const npo=$('#npoInitiativeDie');
+      if(npo){
+        npo.innerHTML=dieHtml({value:state.strategyData.npoRoll,kind:'hit'});
+        npo.classList.add('settled');
+      }
+      const result=$('#initiativeResult');
+      if(result)result.hidden=false;
+      initiativeRolling=false;
+      $('#rerollInitiative')?.removeAttribute('disabled');
+      $$('[data-init]').forEach(button=>button.removeAttribute('disabled'));
+    },700);
   }
 
   function activationTracker(){
@@ -362,8 +385,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function bindPlay(){
     $('#startTp')?.addEventListener('click',startTurningPoint);
-    $('#continueStrategy')?.addEventListener('click',()=>{state.reinforcementEntry=$('#reinforcementEntry')?.value||state.reinforcementEntry;state.strategyStage='initiative';save();render();});
-    $('#rerollInitiative')?.addEventListener('click',()=>{rollInitiative();save();render();});
+    $('#continueStrategy')?.addEventListener('click',()=>{state.reinforcementEntry=$('#reinforcementEntry')?.value||state.reinforcementEntry;state.strategyStage='initiative';initiativeRolling=state.turningPoint!==1;save();render();if(initiativeRolling)animateInitiativeResult();});
+    $('#rerollInitiative')?.addEventListener('click',()=>{rollInitiative();initiativeRolling=true;save();render();animateInitiativeResult();});
     $$('[data-init]').forEach(b=>b.onclick=()=>beginFirefight(b.dataset.init));
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
     $('#skipPlayer')?.addEventListener('click',()=>{state.playerReady=0;setNextActivation('npo');log('No Player operatives remain ready.');save();render();});

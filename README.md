@@ -279,3 +279,11 @@ v1.4.2: Expanded Strategy Phase guidance and renamed 'Turning Point 1 Prepared' 
 
 
 v1.4.4: Correct initiative message grammar (wins vs win).
+
+
+## v1.4.5
+
+- Added the same rolling-dice animation used by **Roll Attack & Saves** to **Determine initiative**.
+- Both Player and NPO dice animate simultaneously on the initial initiative reveal.
+- **Reroll Both** now repeats the animation before revealing the new values.
+- The initiative winner and activation controls remain hidden or disabled until the 700 ms roll animation settles.
