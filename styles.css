@@ -782,3 +782,30 @@ button.tracker-operative:hover{
   .hud small{min-height:2.2em;line-height:1.1}
   .hud .hud-cell{padding:8px 3px}
 }
+
+
+/* v2.2.8: read-only Player defense profile */
+.defense-profile{
+  margin:16px 0;
+  padding:16px;
+  border:1px solid var(--line);
+  border-radius:15px;
+  background:rgba(6,16,12,.42);
+}
+.defense-profile .eyebrow{margin:0 0 12px}
+.defense-profile-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.defense-profile-grid>div{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(6,16,12,.5);
+}
+.defense-profile-grid small{color:var(--muted)}
+.defense-profile-grid strong{font-size:1.2rem}

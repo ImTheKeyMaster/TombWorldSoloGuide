@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.2.7';
+  const APP_VERSION = '2.2.8';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1184,18 +1184,28 @@ function showPlayerActivation(stage={}){
     showModal('NPO Attack Wizard',`<p>${escapeHtml(n.name)} is attacking <strong>${escapeHtml(target.name)}</strong>.</p>
       <div class="combat-stage"><small>NPO ATTACK DICE</small><div class="dice-row">${attackDice.map(dieHtml).join('')}</div><p>${n.attack.normal}/${n.attack.crit} damage · Hit ${n.attack.hit}+</p></div>
       <div class="combat-stage target-summary"><small>TARGET PLAYER OPERATIVE</small><strong>${escapeHtml(target.name)}</strong><p>${escapeHtml(target.type||target.role||'Player Operative')}</p></div>
-      <div class="combat-grid">${spinnerField('playerDefenseDice','Player Defense Dice',3,0,6)}${spinnerField('playerSave','Player Save',target.save||3,2,6)}${spinnerField('npoAp','NPO AP',0,0,3)}${spinnerField('playerWounds','Player wounds remaining',target.wounds||10,1,30)}</div>
+      <section class="defense-profile" aria-label="Player defense profile">
+        <p class="eyebrow">PLAYER DEFENSE PROFILE</p>
+        <div class="defense-profile-grid">
+          <div><small>Defense Dice</small><strong>3</strong></div>
+          <div><small>Save</small><strong>${target.save||3}+</strong></div>
+          <div><small>NPO AP</small><strong>${n.attack.ap||0}</strong></div>
+          <div><small>Current Wounds</small><strong>${target.wounds||10}</strong></div>
+        </div>
+      </section>
       <label class="check-row compact-check"><input type="checkbox" id="playerCover"><span><strong>Player retains one normal save for cover</strong></span></label>
-      <div id="combatResults" class="combat-results"><p>Confirm the defense profile, then roll saves.</p></div>
+      <div id="combatResults" class="combat-results"><p>Review the defense profile, then roll saves.</p></div>
       <div class="wizard-actions"><button class="btn ghost" id="cancelNpoAttack">Cancel</button><button class="btn primary" id="rollNpoSaves">Roll Player Saves</button></div>`);
-    bindSpinners(modal);
     $('#cancelNpoAttack').onclick=()=>{save();if(onCancel)onCancel();};
     $('#rollNpoSaves').onclick=()=>{
-      const before=num('playerWounds');
-      const result=resolveDefense(attackDice,num('playerDefenseDice'),num('playerSave'),num('npoAp'),$('#playerCover').checked,n.attack);
+      const defenseDice=3;
+      const saveTarget=target.save||3;
+      const npoAp=n.attack.ap||0;
+      const before=target.wounds||10;
+      const result=resolveDefense(attackDice,defenseDice,saveTarget,npoAp,$('#playerCover').checked,n.attack);
       const after=Math.max(0,before-result.damage);
       $('#combatResults').innerHTML=`<div class="combat-stage"><small>PLAYER SAVE DICE</small><div class="dice-row animated-roll" id="playerSaveDiceResult">${result.saveDice.map(()=>rollingDieHtml()).join('')||'<span class="muted">No save dice rolled</span>'}</div>${result.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':''}</div><div class="damage-summary"><div><small>Target</small><strong>${escapeHtml(target.name)}</strong></div><div><small>Unsaved normal hits</small><strong>${result.normalRemaining}</strong></div><div><small>Unsaved critical hits</small><strong>${result.critRemaining}</strong></div><div><small>Damage</small><strong>${result.damage}</strong></div><div><small>Player wounds</small><strong>${before} → ${after}</strong></div></div><p class="muted">Apply this wound change to ${escapeHtml(target.name)} on the tabletop.</p>`;
-      $$('.combat-grid input, .combat-grid button',modal).forEach(el=>el.disabled=true);$('#playerCover').disabled=true;
+      $('#playerCover').disabled=true;
       $('#rollNpoSaves').textContent='Apply Damage';
       $('#rollNpoSaves').onclick=()=>{
         const summary={

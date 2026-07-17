@@ -468,3 +468,11 @@ Major player-roster update:
 
 - Removed the redundant `Next Activation` banner from the Activations screen.
 - The existing Firefight Phase activation card remains the single source of next-action guidance.
+
+
+## v2.2.8
+
+- Replaced the editable Player defense controls in the NPO Attack Wizard with a read-only defense profile.
+- Removed the plus/minus buttons and editable fields for Defense Dice, Save, NPO AP, and Current Wounds.
+- Defense Dice is fixed at 3; Save and Wounds come from the selected Player operative; NPO AP comes from the attacking profile and defaults to 0.
+- Cover remains the only defense option the user selects before rolling Player saves.
