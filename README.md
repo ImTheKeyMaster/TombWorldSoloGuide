@@ -462,3 +462,9 @@ Major player-roster update:
 
 - Removed sticky positioning from the HUD so it scrolls normally with the page.
 - Kept the title bar and Game Menu sticky at the top.
+
+
+## v2.2.7
+
+- Removed the redundant `Next Activation` banner from the Activations screen.
+- The existing Firefight Phase activation card remains the single source of next-action guidance.
