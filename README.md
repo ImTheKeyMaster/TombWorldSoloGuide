@@ -428,3 +428,14 @@ Major player-roster update:
 - After `Roll Saves & Preview Damage`, the defense controls and target are locked unless the wizard is canceled.
 - Removed the `Review NPO Attack` button after resolution.
 - Target selection resets for each new NPO activation and clears when the activation is completed.
+
+
+## v2.2.3
+
+- NPO attack dice are no longer rolled before target priority is resolved.
+- The Player operative is selected in the Target Priority section and locked with `Confirm Target`.
+- Confirming the target immediately rolls the NPO attack dice and disables the target selector.
+- The next action is now `Roll Player Saves`.
+- After saves are rolled, the final action is `Apply Damage`.
+- Canceling the save workflow returns to Target Priority, unlocks the target, and discards the previous attack roll so a new target can be confirmed and rolled correctly.
+- The obsolete `Review NPO Attack` action remains removed.
