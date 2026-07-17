@@ -482,3 +482,11 @@ Major player-roster update:
 - Removed normal success toast after NPO attack resolution.
 - Firefight header now shows ACTIVATION X OF Y.
 - Total activations are calculated at the start of each Turning Point.
+
+
+## v2.2.9b
+
+- Fixed the activation card headers so both Player and NPO activation screens display `ACTIVATION X OF Y`.
+- Added a shared activation-progress formatter to keep activation titles consistent.
+- Corrected the Turning Point total to count all active NPOs, regardless of their previous ready state.
+- Removed routine success toasts while retaining validation and error messages.

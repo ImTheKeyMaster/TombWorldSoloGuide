@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.2.9';
+  const APP_VERSION = '2.2.9b';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -122,6 +122,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function uid(){ return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`; }
   function activeNpos(){ return state.roster.filter(n => n.wounds > 0); }
   function readyNpos(){ return activeNpos().filter(n => n.ready); }
+  function activationProgressLabel(){
+    const current=Math.max(1,state.activationNumber+1);
+    const total=Math.max(current,state.totalActivationsThisTP||0);
+    return `ACTIVATION ${current} OF ${total}`;
+  }
+
   function playerOperativesRemaining(){
     const casualties=new Set(state.playerCasualtyIds||[]);
     const activated=new Set(state.playerActivatedIds||[]);
@@ -465,8 +471,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
     setNextActivation(state.nextSide || state.initiative || 'player');
     if(state.phase==='end'){save();return nextStepCard();}
-    if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ACTIVATION ${state.activationNumber+1}</span><h2>Activate a Player operative</h2><p>Resolve one Player operative on the tabletop. After it completes, the Guide will alternate to an NPO if one is ready.</p><button class="btn primary big-action" id="playerActivation">Resolve Player Activation</button><button class="btn ghost big-action" id="skipPlayer">No Player Operatives Ready</button></section>`;
-    if(state.nextSide==='npo' && readyNpos().length>0){const n=nextNpo();return `<section class="next-card"><span class="phase">NPO ACTIVATION · ACTIVATION ${state.activationNumber+1}</span><h2>${escapeHtml(n.name)}</h2><p>${n.type} · ${n.behavior} · ${n.wounds}/${n.maxWounds} wounds</p><div class="summary-box"><strong>Next step:</strong> answer a short set of battlefield questions from this NPO’s perspective. After it completes, the Guide will alternate to a Player operative if one remains.</div><button class="btn primary big-action" id="npoActivation">Guide This NPO</button></section>`;}
+    if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>Activate a Player operative</h2><p>Resolve one Player operative on the tabletop. After it completes, the Guide will alternate to an NPO if one is ready.</p><button class="btn primary big-action" id="playerActivation">Resolve Player Activation</button><button class="btn ghost big-action" id="skipPlayer">No Player Operatives Ready</button></section>`;
+    if(state.nextSide==='npo' && readyNpos().length>0){const n=nextNpo();return `<section class="next-card"><span class="phase">NPO ACTIVATION · ${activationProgressLabel()}</span><h2>${escapeHtml(n.name)}</h2><p>${n.type} · ${n.behavior} · ${n.wounds}/${n.maxWounds} wounds</p><div class="summary-box"><strong>Next step:</strong> answer a short set of battlefield questions from this NPO’s perspective. After it completes, the Guide will alternate to a Player operative if one remains.</div><button class="btn primary big-action" id="npoActivation">Guide This NPO</button></section>`;}
     setNextActivation(state.nextSide==='player'?'npo':'player');
     save();
     return nextStepCard();
@@ -594,7 +600,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     state.gradeMilestone=null;
     state.playerReady=Math.max(0,state.playerCount-(state.playerCasualtyIds||[]).length);
     state.playerActivated=0;state.npoActivated=0;state.activationNumber=0;
-      state.totalActivationsThisTP=state.playerReady+readyNpos().length;state.activationHistory=[];state.playerActivatedIds=[];
+      state.totalActivationsThisTP=state.playerReady+activeNpos().length;state.activationHistory=[];state.playerActivatedIds=[];
     const grade=threatGrade();
     activeNpos().forEach(n=>n.ready=true);
     const reinforcements=[];
