@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.1.1';
+  const APP_VERSION = '2.2.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -15,6 +15,21 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const modalBody = $('#modalBody');
   const toast = $('#toast');
   const importInput = $('#importInput');
+
+  let missionManifest=null;
+  async function loadMissionPack(){
+    const manifestResponse=await fetch('Missions/manifest.json',{cache:'no-store'});
+    if(!manifestResponse.ok)throw new Error(`Unable to load Missions/manifest.json (${manifestResponse.status})`);
+    missionManifest=await manifestResponse.json();
+    if(!Array.isArray(missionManifest.missions)||!missionManifest.missions.length)throw new Error('Mission manifest has no missions.');
+    const loaded=await Promise.all(missionManifest.missions.map(async entry=>{
+      const response=await fetch(`Missions/${entry.file}`,{cache:'no-store'});
+      if(!response.ok)throw new Error(`Unable to load ${entry.file} (${response.status})`);
+      return response.json();
+    }));
+    missions=loaded.sort((a,b)=>String(a.number).localeCompare(String(b.number)));
+    maps=Object.fromEntries(missions.map(m=>[m.id,m.map||{walls:[],hatches:[],markers:[]}]));
+  }
 
   let playerManifest=null;
   let playerTeamData=null;
@@ -45,29 +60,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function selectedPlayerOperatives(){return (state.playerRoster||[]).map(playerDefinition).filter(Boolean);}
   function playerName(id){return playerDefinition(id)?.name||String(id);}
 
-  const missions = [
-    {id:'shifting-labyrinth',number:'01',name:'Shifting Labyrinth',brief:'Escape a tomb complex while its route shifts around the kill team.',objective:'Get at least half of your surviving Player operatives through the escape point.',setup:'2D3 + 3',tracker:'Operatives escaped',max:12,orientation:'left',special:'The escape point may move during the mission.'},
-    {id:'demolition-protocol',number:'02',name:'Demolition Protocol',brief:'Open a route by operating hatchways and breaching sealed access points.',objective:'Open and breach seven access points before the Player kill team is eliminated.',setup:'2D3 + 3',tracker:'Access points breached',max:7,orientation:'left',special:'Operate Hatch and Breach can increase Threat.'},
-    {id:'recover-transponder',number:'03',name:'Recover Transponder',brief:'Search several locations for a hidden device and carry it back to safety.',objective:'Find the true transponder and escape through the Player board edge.',setup:'2D3 + 3',tracker:'Search sites resolved',max:3,orientation:'bottom',special:'Only one objective is the true transponder.'},
-    {id:'destroy-sarcophagus',number:'04',name:'Destroy Sarcophagus',brief:'Overload a damaged stasis crypt while tomb systems attempt to repair it.',objective:'Accumulate 20 destruction points before the Player team is eliminated.',setup:'D3 + 6',tracker:'Destruction points',max:20,orientation:'bottom',special:'The sarcophagus may repair itself during strategy resolution.'},
-    {id:'scout-sub-crypt',number:'05',name:'Scout Sub-Crypt',brief:'Explore sealed rooms and clear the guardians that awaken inside.',objective:'Scout three eligible rooms after clearing each room of active NPOs.',setup:'0',tracker:'Rooms scouted',max:3,orientation:'bottom',special:'No NPOs start on the board. Rooms awaken NPOs when opened or entered.'},
-    {id:'regroup',number:'06',name:'Regroup',brief:'Navigate unstable phasing routes and reunite the scattered Player team.',objective:'Finish a Turning Point with every surviving Player operative in the regroup zone.',setup:'2D3 + 3',tracker:'Operatives regrouped',max:12,orientation:'left',special:'Hatchway access points may relocate operatives.'}
-  ];
+  let missions=[];
+  let maps={};
 
   const profiles = {
     'Necron Warrior': {behavior:'Marksman',wounds:10,save:3,attack:{dice:4,hit:4,normal:3,crit:4}},
     'Canoptek Scarab Swarm': {behavior:'Brawler',wounds:8,save:4,attack:{dice:5,hit:4,normal:2,crit:3}},
     'Canoptek Macrocyte': {behavior:'Sentinel',wounds:9,save:4,attack:{dice:4,hit:3,normal:3,crit:4}},
     'Canoptek Tomb Crawler': {behavior:'Guardian',wounds:12,save:3,attack:{dice:4,hit:3,normal:4,crit:5}}
-  };
-
-  const maps = {
-    'shifting-labyrinth': {walls:[[180,30,180,155],[270,155,270,300],[430,30,430,160],[610,150,610,300],[680,300,680,460],[180,155,610,155],[270,300,680,300],[430,390,610,390]],hatches:[[270,215,'v'],[430,95,'v'],[430,350,'v'],[520,155,'h'],[560,300,'h'],[610,225,'v']],markers:[[770,245,'ESCAPE']]},
-    'demolition-protocol': {walls:[[350,30,350,175],[500,30,500,185],[140,175,650,175],[250,175,250,325],[450,175,450,460],[650,175,650,325],[150,325,650,325]],hatches:[[350,100,'v'],[500,110,'v'],[250,245,'v'],[450,245,'v'],[650,245,'v'],[300,175,'h'],[550,175,'h'],[340,325,'h'],[555,325,'h']],markers:[[300,175,'BREACH'],[555,325,'BREACH']]},
-    'recover-transponder': {walls:[[30,110,770,110],[250,110,250,265],[520,110,520,365],[30,265,520,265],[250,365,770,365]],hatches:[[250,185,'v'],[520,190,'v'],[520,320,'v'],[150,265,'h'],[385,265,'h'],[650,365,'h']],markers:[[165,205,'1'],[440,185,'2'],[625,320,'3']]},
-    'destroy-sarcophagus': {walls:[[350,30,350,305],[530,120,530,365],[350,120,770,120],[30,305,530,305],[150,305,150,460],[150,395,530,395]],hatches:[[350,185,'v'],[530,185,'v'],[530,340,'v'],[245,305,'h'],[440,305,'h'],[330,395,'h']],markers:[[435,215,'SARCOPHAGUS']]},
-    'scout-sub-crypt': {walls:[[160,30,160,235],[360,30,360,335],[590,100,590,335],[30,165,360,165],[360,255,770,255],[150,345,590,345]],hatches:[[160,105,'v'],[360,100,'v'],[360,285,'v'],[590,180,'v'],[250,165,'h'],[480,255,'h'],[300,345,'h']],markers:[[95,95,'1'],[260,95,'2'],[475,175,'3'],[680,165,'4'],[480,390,'5']]},
-    'regroup': {walls:[[200,30,200,250],[390,30,390,460],[520,30,520,205],[200,135,650,135],[30,285,520,285],[200,395,770,395]],hatches:[[200,100,'v'],[390,90,'v'],[390,225,'v'],[520,115,'v'],[285,285,'h'],[455,285,'h'],[300,395,'h'],[620,395,'h']],markers:[[690,235,'REGROUP']]}
   };
 
   const events = [
@@ -108,6 +108,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return merged;
   }
   function mission(){ return missions.find(m => m.id === state.missionId) || missions[0]; }
+  function missionSetup(m=mission()){return m?.startingNpos?.formula||'0';}
+  function missionTracker(m=mission()){return m?.tracker?.label||'Mission progress';}
+  function missionTrackerMax(m=mission()){return Number(m?.tracker?.max||0);}
+  function missionSpecial(m=mission()){return (m?.rules||[]).map(rule=>`${rule.name}: ${rule.summary}`).join(' ');}
+  function missionFirstInitiative(m=mission()){return m?.firstTurningPointInitiative||'player';}
+
   function roll(sides=6){ return Math.floor(Math.random()*sides)+1; }
   function rollD3(){ return roll(3); }
   function uid(){ return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`; }
@@ -165,8 +171,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function generateRoster(){
     const m=mission(); let count=0, formula='0';
-    if(m.setup==='2D3 + 3'){ const a=rollD3(),b=rollD3(); count=a+b+3; formula=`${a} + ${b} + 3 = ${count}`; }
-    if(m.setup==='D3 + 6'){ const a=rollD3(); count=a+6; formula=`${a} + 6 = ${count}`; }
+    if(missionSetup(m)==='2D3+3'){ const a=rollD3(),b=rollD3(); count=a+b+3; formula=`${a} + ${b} + 3 = ${count}`; }
+    if(missionSetup(m)==='D3+6'){ const a=rollD3(); count=a+6; formula=`${a} + 6 = ${count}`; }
     const table=['Canoptek Scarab Swarm','Canoptek Scarab Swarm','Canoptek Macrocyte','Necron Warrior','Necron Warrior','Necron Warrior','Necron Warrior','Necron Warrior','Canoptek Tomb Crawler','Canoptek Tomb Crawler','Necron Warrior'];
     state.roster=[];
     for(let i=0;i<count;i++){
@@ -348,8 +354,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function setupContent(step){
     if(step===0) return `<h3>Which mission are you playing?</h3><p>You can review the objective before committing.</p><div class="mission-list">${missions.map(m=>`<button class="mission-choice ${state.missionId===m.id?'selected':''}" data-mission="${m.id}"><small>${m.number}</small><strong>${m.name}</strong><span>${m.brief}</span></button>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="setupHome">Back</button><button class="btn primary" id="setupNext" ${state.missionId?'':'disabled'}>Next</button></div>`;
     if(step===1){const m=mission();const checks=['Place walls and hatchways as shown','Place mission objective markers','Identify the Player drop zone','Identify NPO deployment areas'];const allChecked=checks.every((_,i)=>state.setupChecks[i]);return `<h3>${m.name} board setup</h3><p><strong>Objective:</strong> ${m.objective}</p>${boardSvg(m.id)}<div class="setup-bulk-row"><button class="btn secondary" id="checkAllSetup" ${allChecked?'disabled':''}>Check All</button></div><div class="checklist">${checks.map((c,i)=>`<label class="check-row"><input type="checkbox" data-check="${i}" ${state.setupChecks[i]?'checked':''}><span><strong>${c}</strong><small>${i===0?'Use the official mission map shown above to place the terrain and markers.':'Confirm this step on the physical board.'}</small></span></label>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${allChecked?'':'disabled'}>Board Ready</button></div>`;}
-    if(step===2){const m=mission();return `<h3>Mission starting roster</h3><p>${m.name} begins with <strong>${m.setup}</strong> NPOs.</p>${state.roster.length?`<div class="summary-box"><strong>${state.roster.length} NPOs generated</strong><br>${rosterBreakdown()}</div><div class="roster-preview">${state.roster.map(n=>operativeCard(n,false)).join('')}</div>`:`<div class="empty">No roster generated yet.</div>`}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn secondary" id="generateBtn">${state.roster.length?'Regenerate':'Generate'} Roster</button><button class="btn primary" id="setupNext" ${state.roster.length||m.setup==='0'?'':'disabled'}>Continue</button></div>`;}
-    if(step===3){const allPlaced=state.roster.every(n=>n.deployed);return `<h3>Deploy the NPOs</h3><p>${mission().setup==='0'?'This mission starts with no deployed NPOs. The Guide will add them as rooms awaken.':'Place each NPO on the physical board, then mark it deployed.'}</p>${state.roster.length?`<div class="setup-bulk-row"><button class="btn secondary" id="placeAllNpos" ${allPlaced?'disabled':''}>Place All</button></div>`:''}<div class="deployment-list">${state.roster.length?state.roster.map(n=>`<div class="deployment-item ${n.deployed?'done':''}"><span class="deployment-copy"><strong class="deployment-name">${escapeHtml(n.name)}</strong><small class="deployment-type">${escapeHtml(n.behavior)}</small></span><button class="btn ${n.deployed?'ghost':'secondary'} deployment-place-btn" data-deploy="${n.id}">${n.deployed?'Placed':'Mark Placed'}</button></div>`).join(''):'<div class="summary-box"><strong>No starting NPO deployment required.</strong></div>'}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${allPlaced?'':'disabled'}>NPOs Deployed</button></div>`;}
+    if(step===2){const m=mission();return `<h3>Mission starting roster</h3><p>${m.name} begins with <strong>${missionSetup(m)}</strong> NPOs.</p>${state.roster.length?`<div class="summary-box"><strong>${state.roster.length} NPOs generated</strong><br>${rosterBreakdown()}</div><div class="roster-preview">${state.roster.map(n=>operativeCard(n,false)).join('')}</div>`:`<div class="empty">No roster generated yet.</div>`}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn secondary" id="generateBtn">${state.roster.length?'Regenerate':'Generate'} Roster</button><button class="btn primary" id="setupNext" ${state.roster.length||missionSetup(m)==='0'?'':'disabled'}>Continue</button></div>`;}
+    if(step===3){const allPlaced=state.roster.every(n=>n.deployed);return `<h3>Deploy the NPOs</h3><p>${missionSetup()==='0'?'This mission starts with no deployed NPOs. The Guide will add them as rooms awaken.':'Place each NPO on the physical board, then mark it deployed.'}</p>${state.roster.length?`<div class="setup-bulk-row"><button class="btn secondary" id="placeAllNpos" ${allPlaced?'disabled':''}>Place All</button></div>`:''}<div class="deployment-list">${state.roster.length?state.roster.map(n=>`<div class="deployment-item ${n.deployed?'done':''}"><span class="deployment-copy"><strong class="deployment-name">${escapeHtml(n.name)}</strong><small class="deployment-type">${escapeHtml(n.behavior)}</small></span><button class="btn ${n.deployed?'ghost':'secondary'} deployment-place-btn" data-deploy="${n.id}">${n.deployed?'Placed':'Mark Placed'}</button></div>`).join(''):'<div class="summary-box"><strong>No starting NPO deployment required.</strong></div>'}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${allPlaced?'':'disabled'}>NPOs Deployed</button></div>`;}
     if(step===4){
       const selected=new Set(state.playerRoster||[]);
       const selectedDefs=selectedPlayerOperatives();
@@ -370,7 +376,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         <div class="checklist"><label class="check-row"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${valid?'':'disabled'}><span><strong>${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} operatives deployed</strong><small>Confirm that the selected kill team has been placed in its drop zone.</small></span></label></div>
         <div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid&&state.playerDeployed?'':'disabled'}>Continue</button></div>`;
     }
-    return `<h3>Setup complete</h3><div class="summary-box"><strong>${mission().number} · ${mission().name}</strong><br>${state.roster.length} starting NPOs · ${state.playerCount} ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} operatives<br>${selectedPlayerOperatives().map(o=>escapeHtml(o.name)).join(' · ')}</div>${boardSvg(mission().id)}<p><strong>Mission objective:</strong> ${mission().objective}</p><p><strong>Special rule reminder:</strong> ${mission().special}</p><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
+    return `<h3>Setup complete</h3><div class="summary-box"><strong>${mission().number} · ${mission().name}</strong><br>${state.roster.length} starting NPOs · ${state.playerCount} ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} operatives<br>${selectedPlayerOperatives().map(o=>escapeHtml(o.name)).join(' · ')}</div>${boardSvg(mission().id)}<p><strong>Mission objective:</strong> ${mission().objective}</p><p><strong>Special rule reminder:</strong> ${missionSpecial()}</p><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
   }
 
   function bindSetup(step){
@@ -446,7 +452,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const playerLosses=Math.max(0,(state.playerCasualtyIds||[]).length-(state.tpStartPlayerCasualties||0));
       const threatChanged=state.threat!==(state.tpStartThreat??state.threat);
       const gradeChanged=threatGrade()!==(state.tpStartGrade??threatGrade());
-      return `<section class="next-card"><span class="phase">TURNING POINT ${state.turningPoint} COMPLETE</span><h2>Battle summary</h2><div class="turn-summary-grid"><div><small>Threat</small><strong>${state.tpStartThreat??state.threat} → ${state.threat}</strong><span>${threatChanged?'Changed this Turning Point':'No change'}</span></div><div><small>Grade</small><strong>${state.tpStartGrade??threatGrade()} → ${threatGrade()}</strong><span>${gradeChanged?'Grade increased':'Grade unchanged'}</span></div><div><small>NPOs destroyed</small><strong>${npoLosses}</strong><span>This Turning Point</span></div><div><small>Player casualties</small><strong>${playerLosses}</strong><span>This Turning Point</span></div></div><h3>Score and clean up</h3><p>Score mission objectives, resolve end-of-turn effects, and confirm all temporary markers have been cleared.</p><div class="field"><label>Mission progress: ${mission().tracker}</label><input id="tracker" type="number" min="0" max="${mission().max}" value="${state.tracker}"></div><div class="checklist"><label class="check-row"><input id="endChecked" type="checkbox"><span><strong>End-of-turn steps complete</strong><small>Objectives scored, temporary effects resolved, and physical tokens cleaned up.</small></span></label></div><button class="btn primary big-action" id="finishTp" disabled>Finish Turning Point</button></section>`;
+      return `<section class="next-card"><span class="phase">TURNING POINT ${state.turningPoint} COMPLETE</span><h2>Battle summary</h2><div class="turn-summary-grid"><div><small>Threat</small><strong>${state.tpStartThreat??state.threat} → ${state.threat}</strong><span>${threatChanged?'Changed this Turning Point':'No change'}</span></div><div><small>Grade</small><strong>${state.tpStartGrade??threatGrade()} → ${threatGrade()}</strong><span>${gradeChanged?'Grade increased':'Grade unchanged'}</span></div><div><small>NPOs destroyed</small><strong>${npoLosses}</strong><span>This Turning Point</span></div><div><small>Player casualties</small><strong>${playerLosses}</strong><span>This Turning Point</span></div></div><h3>Score and clean up</h3><p>Score mission objectives, resolve end-of-turn effects, and confirm all temporary markers have been cleared.</p><div class="field"><label>Mission progress: ${missionTracker()}</label><input id="tracker" type="number" min="0" max="${missionTrackerMax()}" value="${state.tracker}"></div><div class="checklist"><label class="check-row"><input id="endChecked" type="checkbox"><span><strong>End-of-turn steps complete</strong><small>Objectives scored, temporary effects resolved, and physical tokens cleaned up.</small></span></label></div><button class="btn primary big-action" id="finishTp" disabled>Finish Turning Point</button></section>`;
     }
     setNextActivation(state.nextSide || state.initiative || 'player');
     if(state.phase==='end'){save();return nextStepCard();}
@@ -472,11 +478,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 1 OF 2</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol><p>When all Strategy Phase actions are complete, continue to initiative.</p></div><div class="stat-grid"><div class="stat"><small>THREAT LEVEL</small><strong>${state.threat}</strong></div><div class="stat"><small>GRADE LEVEL</small><strong>${threatGrade()}</strong></div><div class="stat"><small>NPOs Ready</small><strong>${readyNpos().length}</strong></div><div class="stat"><small>Reinforcements</small><strong>${(d.reinforcements||[]).length}</strong></div></div>${rolls?`<h3>Reinforcements generated</h3><div class="reinforcement-grid">${rolls}</div><div class="field"><label>Reinforcement entry point</label><select id="reinforcementEntry"><option>Nearest valid entry point</option><option>Entry Point A</option><option>Entry Point B</option><option>Entry Point C</option><option>Custom placement</option></select></div>`:'<div class="summary-box"><strong>No reinforcements arrive.</strong></div>'}${d.blocked?`<p class="warning-text">${d.blocked} reinforcement(s) were blocked by the 10-NPO battlefield limit.</p>`:''}${d.event?`<div class="summary-box"><strong>${d.event[0]}</strong><br>${d.event[1]}</div>`:'<p>No Tomb World event is required.</p>'}<button class="btn primary big-action" id="continueStrategy">Strategy Phase Complete · Continue to Initiative</button></section>`;
     }
     const auto=state.turningPoint===1;
-    return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 2 OF 2</span><h2>${auto?'The Player has initiative during Turning Point 1':'Determine initiative'}</h2>${auto?`<p>During Turning Point 1, the Player has initiative. Both Player operatives and NPOs begin the Firefight Phase ready.</p>`:`<p>The Guide rolled once for each side. Use the result, reroll both dice, or override it if your tabletop rules require a different outcome.</p><div class="initiative-roll"><div><small>Player</small><div class="dice-row animated-roll" id="playerInitiativeDie">${initiativeRolling?rollingDieHtml():dieHtml({value:state.strategyData.playerRoll,kind:initiativeDieKind('player')})}</div></div><div><small>NPOs</small><div class="dice-row animated-roll" id="npoInitiativeDie">${initiativeRolling?rollingDieHtml():dieHtml({value:state.strategyData.npoRoll,kind:initiativeDieKind('npo')})}</div></div></div><div class="summary-box" id="initiativeResult" ${initiativeRolling?'hidden':''}><strong>${state.strategyData.suggestedInitiative==='npo'?'NPOs win':'The Player wins'} initiative${state.strategyData.playerRoll===state.strategyData.npoRoll?' after the tie-break':''}.</strong></div>`}<div class="quick-actions">${auto?'':`<button class="btn ghost" id="rerollInitiative" ${initiativeRolling?'disabled':''}>Reroll Both</button>`}<button class="btn ${d.suggestedInitiative==='player'?'primary':'secondary'}" data-init="player" ${initiativeRolling?'disabled':''}>Begin Player Activation</button><button class="btn ${d.suggestedInitiative==='npo'?'primary':'secondary'}" data-init="npo" ${(auto||initiativeRolling)?'disabled':''}>Begin with NPOs</button></div></section>`;
+    return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 2 OF 2</span><h2>${auto?`${missionFirstInitiative()==='npo'?'NPOs have':'The Player has'} initiative during Turning Point 1`:'Determine initiative'}</h2>${auto?`<p>During Turning Point 1, ${missionFirstInitiative()==='npo'?'NPOs have':'the Player has'} initiative. Both Player operatives and NPOs begin the Firefight Phase ready.</p>`:`<p>The Guide rolled once for each side. Use the result, reroll both dice, or override it if your tabletop rules require a different outcome.</p><div class="initiative-roll"><div><small>Player</small><div class="dice-row animated-roll" id="playerInitiativeDie">${initiativeRolling?rollingDieHtml():dieHtml({value:state.strategyData.playerRoll,kind:initiativeDieKind('player')})}</div></div><div><small>NPOs</small><div class="dice-row animated-roll" id="npoInitiativeDie">${initiativeRolling?rollingDieHtml():dieHtml({value:state.strategyData.npoRoll,kind:initiativeDieKind('npo')})}</div></div></div><div class="summary-box" id="initiativeResult" ${initiativeRolling?'hidden':''}><strong>${state.strategyData.suggestedInitiative==='npo'?'NPOs win':'The Player wins'} initiative${state.strategyData.playerRoll===state.strategyData.npoRoll?' after the tie-break':''}.</strong></div>`}<div class="quick-actions">${auto?'':`<button class="btn ghost" id="rerollInitiative" ${initiativeRolling?'disabled':''}>Reroll Both</button>`}<button class="btn ${(auto?missionFirstInitiative():d.suggestedInitiative)==='player'?'primary':'secondary'}" data-init="player" ${(auto&&missionFirstInitiative()!=='player')||initiativeRolling?'disabled':''}>Begin Player Activation</button><button class="btn ${(auto?missionFirstInitiative():d.suggestedInitiative)==='npo'?'primary':'secondary'}" data-init="npo" ${(auto&&missionFirstInitiative()!=='npo')||initiativeRolling?'disabled':''}>Begin with NPOs</button></div></section>`;
   }
 
   function animateInitiativeResult(){
-    if(state.turningPoint===1){initiativeRolling=false;return;}
+    if(state.turningPoint===1){state.strategyData.suggestedInitiative=missionFirstInitiative();initiativeRolling=false;return;}
     setTimeout(()=>{
       const player=$('#playerInitiativeDie');
       if(player){
@@ -561,7 +567,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
     $('#skipPlayer')?.addEventListener('click',()=>{state.playerReady=0;setNextActivation('npo');log('No Player operatives remain ready.');save();render();});
     $('#npoActivation')?.addEventListener('click',showNpoWizard);
-    $('#tracker')?.addEventListener('change',e=>{state.tracker=Math.max(0,Math.min(mission().max,Number(e.target.value)||0));save();});
+    $('#tracker')?.addEventListener('change',e=>{state.tracker=Math.max(0,Math.min(missionTrackerMax(),Number(e.target.value)||0));save();});
     $('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked;});
     $('#finishTp')?.addEventListener('click',()=>{state.phase='between';state.strategyStage=null;state.strategyData=null;state.newIds=[];log(`Turning Point ${state.turningPoint} completed.`);save();render();});
     $('#newGameFromPlay')?.addEventListener('click',confirmNewGame);
@@ -1192,7 +1198,15 @@ function showPlayerActivation(stage={}){
   const pipPositions={1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};
   function dieHtml(d){return `<div class="die ${d.kind}" aria-label="${d.value} ${d.kind}">${pipPositions[d.value].map(p=>`<span class="pip" style="grid-area:${Math.ceil(p/3)}/${((p-1)%3)+1}"></span>`).join('')}</div>`;}
 
-  function renderMission(){const m=mission();app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">MISSION</p><h2>${m.number} · ${m.name}</h2><p>${m.brief}</p></div></div><section class="card"><h3>Objective</h3><p>${m.objective}</p><div class="stat-grid"><div class="stat"><small>Starting NPOs</small><strong>${m.setup}</strong></div><div class="stat"><small>${m.tracker}</small><strong>${state.tracker} / ${m.max}</strong></div></div></section>${boardSvg(m.id)}<section class="card"><h3>Special rule reminder</h3><p>${m.special}</p></section>`;}
+  function renderMission(){
+    const m=mission();
+    const rules=(m.rules||[]).map(rule=>`<div class="mission-rule"><strong>${escapeHtml(rule.name)}</strong>${rule.timing?`<small>${escapeHtml(rule.timing)}</small>`:''}<p>${escapeHtml(rule.summary)}</p></div>`).join('');
+    app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">MISSION</p><h2>${m.number} · ${m.name}</h2><p>${m.brief}</p></div></div>
+      <section class="card"><h3>Objective</h3><p>${m.objective}</p><div class="stat-grid"><div class="stat"><small>Starting NPOs</small><strong>${missionSetup(m)}</strong></div><div class="stat"><small>TP1 Initiative</small><strong>${missionFirstInitiative(m)==='npo'?'NPOs':'Player'}</strong></div><div class="stat"><small>${missionTracker(m)}</small><strong>${state.tracker} / ${missionTrackerMax(m)}</strong></div></div><p><strong>NPO deployment:</strong> ${escapeHtml(m.startingNpos?.deployment||'Use the mission rules.')}</p></section>
+      ${boardSvg(m.id)}
+      <section class="card"><h3>Mission rules</h3><div class="mission-rules">${rules}</div></section>
+      <section class="card"><h3>Victory</h3><p><strong>Win:</strong> ${escapeHtml(m.victory?.win||'See mission rules.')}</p><p><strong>Lose:</strong> ${escapeHtml(m.victory?.lose||'See mission rules.')}</p></section>`;
+  }
   function renderRoster(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">NPO ROSTER</p><h2>${activeNpos().length} active NPOs</h2><p>Wounds and Ready status update the guided activation flow.</p></div><button class="btn secondary" id="addNpo">Add NPO</button></div><div class="roster-grid">${state.roster.length?state.roster.map(n=>operativeCard(n,true)).join(''):'<div class="card empty">No NPOs are currently on the battlefield.</div>'}</div>`;$('#addNpo').onclick=showAddNpo;$$('[data-player-attack]').forEach(b=>b.onclick=()=>showPlayerAttackWizard(b.dataset.playerAttack));$$('[data-wound]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.wound,-1));$$('[data-heal]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.heal,1));$$('[data-ready]').forEach(b=>b.onclick=()=>toggleReady(b.dataset.ready));$$('[data-delete]').forEach(b=>b.onclick=()=>deleteNpo(b.dataset.delete));}
   function operativeCard(n,controls){return `<article class="operative-card ${n.wounds<=0?'dead':''}"><h4>${escapeHtml(n.name)}</h4><p>${n.type} · ${n.behavior} · Save ${n.save}+</p><div class="wounds"><meter min="0" max="${n.maxWounds}" value="${n.wounds}"></meter><strong>${n.wounds}/${n.maxWounds}</strong></div><p>${n.ready&&n.wounds>0?'READY':'ACTIVATED'}</p>${controls?`<div class="quick-actions"><button class="btn secondary" data-player-attack="${n.id}">Player Attack</button><button class="btn ghost" data-wound="${n.id}">− Wound</button><button class="btn ghost" data-heal="${n.id}">+ Heal</button><button class="btn secondary" data-ready="${n.id}">${n.ready?'Expend':'Ready'}</button><button class="btn danger" data-delete="${n.id}">Delete</button></div>`:''}</article>`;}
   function renderJournal(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">JOURNAL</p><h2>Battle Record</h2><p>Automatic game-state and Threat history.</p></div><button class="btn ghost" id="clearJournal">Clear</button></div><section class="card"><ol class="activity-log">${state.journal.length?state.journal.map(j=>`<li><time>${new Date(j.time).toLocaleString()}</time>${escapeHtml(j.text)}</li>`).join(''):'<li>No events recorded.</li>'}</ol></section>`;$('#clearJournal').onclick=()=>{state.journal=[];save();render();};}
@@ -1281,8 +1295,8 @@ function showPlayerActivation(stage={}){
     gameMenuBtn.onclick=showGameMenu;
   }
 
-  loadPlayerManifest()
-    .then(async manifest=>{
+  Promise.all([loadMissionPack(),loadPlayerManifest()])
+    .then(async ([,manifest])=>{
       const teams=manifest.teams||[];
       if(teams.length===1){
         state.playerTeamId=teams[0].id;
@@ -1298,7 +1312,7 @@ function showPlayerActivation(stage={}){
     })
     .catch(error=>{
       console.error(error);
-      app.innerHTML=`<section class="card"><h2>Player operative data could not be loaded</h2><p>${escapeHtml(error.message)}</p><p>Run the app from a web server so it can load <code>Player_Operatives/manifest.json</code> and the selected team JSON file.</p></section>`;
+      app.innerHTML=`<section class="card"><h2>Player operative data could not be loaded</h2><p>${escapeHtml(error.message)}</p><p>Run the app from a web server so it can load the mission and player-operative JSON files.</p></section>`;
       bindCommon();
     });
 })();

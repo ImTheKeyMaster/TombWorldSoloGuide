@@ -398,3 +398,13 @@ Major player-roster update:
 - Beginning the Turning Point 1 Firefight Phase no longer marks the entire NPO force as activated.
 - Shifting Labyrinth still begins Turning Point 1 with the Player, but both forces remain ready and alternate normally.
 - Updated the Turning Point 1 guidance text to match the corrected behavior.
+
+
+## v2.2.0
+
+- Added `Missions/manifest.json` and one external JSON file for each of the six official Joint Ops: Tomb World missions.
+- Removed embedded mission definitions and map data from `app.js`.
+- Mission selection, starting NPO formula, deployment instructions, Turning Point 1 initiative, progress tracker, mission rules, victory conditions, and maps are now loaded from mission JSON.
+- All six official missions specify Player initiative in Turning Point 1, as required by the common Joint Ops game sequence.
+- Both Player operatives and NPOs begin every Turning Point ready.
+- Future missions can be added by creating a mission JSON file and adding it to the mission manifest, without changing application code.

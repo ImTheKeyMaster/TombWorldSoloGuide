@@ -764,3 +764,10 @@ button.tracker-operative:hover{
 .team-select-card strong{font-size:1.08rem}
 .team-select-card small{margin-top:4px;color:var(--green);font-weight:800}
 .team-select-card p{margin:12px 0 0;color:var(--muted)}
+
+/* v2.2.0 data-driven mission rules */
+.mission-rules{display:grid;gap:10px}
+.mission-rule{padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:#091912}
+.mission-rule strong,.mission-rule small{display:block}
+.mission-rule small{margin-top:3px;color:var(--green);font-weight:800}
+.mission-rule p{margin:8px 0 0;color:var(--muted)}
