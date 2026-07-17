@@ -360,3 +360,44 @@ button,.btn,input,select,label,summary,a{touch-action:manipulation;}
   font-size:.86rem;
 }
 .pending-attack-summary strong{color:var(--green)}
+
+
+/* v1.3.9e APL enforcement */
+.activation-apl-bar{
+  display:grid;
+  grid-template-columns:minmax(120px,180px) 1fr;
+  gap:12px;
+  align-items:end;
+  margin:0 0 12px;
+}
+.apl-field{margin:0}
+.ap-usage{
+  min-height:54px;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#08150f;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.ap-usage small{color:var(--muted);font-weight:800}
+.ap-usage strong{font-size:1.2rem;color:var(--green)}
+.player-action-list label span{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  width:100%;
+}
+.player-action-list label span small{
+  color:var(--muted);
+  white-space:nowrap;
+}
+.player-action-list input:disabled + span,
+.player-action-list input:disabled ~ span{
+  opacity:.42;
+}
+@media(max-width:600px){
+  .activation-apl-bar{grid-template-columns:1fr}
+}

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.3.9d';
+  const APP_VERSION = '1.3.9e';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -51,7 +51,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   ];
 
   const initialState = () => ({
-    version:'1.3.9d', screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:'1.3.9e', screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:[], roster:[], playerCount:6, playerReady:6, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
@@ -361,7 +361,40 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return Array.from({length:state.playerCount},(_,i)=>i+1).filter(id=>!used.has(id));
   }
 
-  function showPlayerActivation(stage={}){
+  
+  const PLAYER_ACTION_COSTS={
+    move:1,
+    dash:1,
+    charge:1,
+    fallBack:2,
+    shoot:1,
+    melee:1,
+    damage:1,
+    hatch:1,
+    breach:1,
+    objective:1,
+    pass:0
+  };
+
+  function playerActionCost(stage){
+    return Object.entries(PLAYER_ACTION_COSTS).reduce((total,[key,cost])=>total+(stage[key]?cost:0),0);
+  }
+
+  function playerActionConflicts(stage){
+    const conflicts=[];
+    if(stage.charge && (stage.move || stage.dash || stage.fallBack)){
+      conflicts.push('Charge cannot be combined with Move, Dash, or Fall Back.');
+    }
+    if(stage.fallBack && (stage.move || stage.charge)){
+      conflicts.push('Fall Back cannot be combined with Move or Charge.');
+    }
+    if(stage.pass && playerActionCost({...stage,pass:false})>0){
+      conflicts.push('Pass cannot be combined with another action.');
+    }
+    return conflicts;
+  }
+
+function showPlayerActivation(stage={}){
     const remaining=remainingPlayerOperatives();
     if(!remaining.length){
       state.playerReady=0;
@@ -386,39 +419,49 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         </select>
       </div>
       <fieldset id="playerActivationControls" ${selectedId?'':'disabled'}>
+        <div class="activation-apl-bar">
+          <div class="field apl-field">
+            <label>APL</label>
+            <select id="playerApl">
+              ${[1,2,3,4,5].map(v=>`<option value="${v}" ${Number(stage.apl||3)===v?'selected':''}>${v}</option>`).join('')}
+            </select>
+          </div>
+          <div class="ap-usage" id="apUsage"><small>AP used</small><strong>0 / ${Number(stage.apl||3)}</strong></div>
+        </div>
+        <div id="apWarning" class="warning-text hidden"></div>
         <p class="muted">Select everything this operative will do. Shooting and Melee attacks are resolved only after you press Complete Activation.</p>
         <div class="activation-groups">
           <section class="activation-group">
             <div class="activation-group-title"><span>↔</span><div><strong>Movement</strong><small>Position and control actions</small></div></div>
             <div class="toggle-list player-action-list">
-              <label><input type="checkbox" id="eaMove" ${checked('move')}>Move</label>
-              <label><input type="checkbox" id="eaDash" ${checked('dash')}>Dash</label>
-              <label><input type="checkbox" id="eaCharge" ${checked('charge')}>Charge</label>
-              <label><input type="checkbox" id="eaFallBack" ${checked('fallBack')}>Fall Back</label>
+              <label><input type="checkbox" id="eaMove" ${checked('move')}><span>Move <small>1 AP</small></span></label>
+              <label><input type="checkbox" id="eaDash" ${checked('dash')}><span>Dash <small>1 AP</small></span></label>
+              <label><input type="checkbox" id="eaCharge" ${checked('charge')}><span>Charge <small>1 AP</small></span></label>
+              <label><input type="checkbox" id="eaFallBack" ${checked('fallBack')}><span>Fall Back <small>2 AP</small></span></label>
             </div>
           </section>
 
           <section class="activation-group">
             <div class="activation-group-title"><span>⚔</span><div><strong>Combat</strong><small>Resolved after Complete Activation</small></div></div>
             <div class="combat-action-card">
-              <label><input type="checkbox" id="eaShoot" ${checked('shoot')}><span><strong>Shoot</strong><small>One Shooting action for this operative</small></span></label>
+              <label><input type="checkbox" id="eaShoot" ${checked('shoot')}><span><strong>Shoot</strong><small>1 AP · One Shooting action for this operative</small></span></label>
               ${shootPending?`<div class="pending-attack-summary"><strong>Pending:</strong> ${escapeHtml(shootPending.targetName)} · ${shootPending.damage} damage</div>`:''}
             </div>
             <div class="combat-action-card">
-              <label><input type="checkbox" id="eaMelee" ${checked('melee')||checked('fight')}><span><strong>Melee</strong><small>One Melee action for this operative</small></span></label>
+              <label><input type="checkbox" id="eaMelee" ${checked('melee')||checked('fight')}><span><strong>Melee</strong><small>1 AP · One Melee action for this operative</small></span></label>
               ${meleePending?`<div class="pending-attack-summary"><strong>Pending:</strong> ${escapeHtml(meleePending.targetName)} · ${meleePending.damage} damage</div>`:''}
             </div>
             <div class="toggle-list player-action-list compact-actions">
-              <label><input type="checkbox" id="eaDamage" ${checked('damage')}>Damaged an NPO with another action</label>
+              <label><input type="checkbox" id="eaDamage" ${checked('damage')}><span>Damaged an NPO with another action <small>1 AP</small></span></label>
             </div>
           </section>
 
           <section class="activation-group">
             <div class="activation-group-title"><span>▣</span><div><strong>Battlefield</strong><small>Terrain and mission interactions</small></div></div>
             <div class="toggle-list player-action-list">
-              <label><input type="checkbox" id="eaHatch" ${checked('hatch')}>Operate Hatch</label>
-              <label><input type="checkbox" id="eaBreach" ${checked('breach')}>Breach</label>
-              <label><input type="checkbox" id="eaObjective" ${checked('objective')}>Mission or objective action</label>
+              <label><input type="checkbox" id="eaHatch" ${checked('hatch')}><span>Operate Hatch <small>1 AP</small></span></label>
+              <label><input type="checkbox" id="eaBreach" ${checked('breach')}><span>Breach <small>1 AP</small></span></label>
+              <label><input type="checkbox" id="eaObjective" ${checked('objective')}><span>Mission or objective action <small>1 AP</small></span></label>
             </div>
           </section>
 
@@ -434,20 +477,65 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const operativeSelect=$('#playerOperativeSelect');
     const controls=$('#playerActivationControls');
     operativeSelect.addEventListener('change',()=>{
-      const updated={...stage,playerOperativeId:Number(operativeSelect.value||0)};
+      const updated={...stage,playerOperativeId:Number(operativeSelect.value||0),apl:Number($('#playerApl')?.value||stage.apl||3)};
       showPlayerActivation(updated);
     });
 
     const actionIds=['eaMove','eaDash','eaCharge','eaFallBack','eaShoot','eaMelee','eaDamage','eaHatch','eaBreach','eaObjective'];
     const clearPass=()=>{if($('#eaPass'))$('#eaPass').checked=false;};
+
+    function updatePlayerActionAvailability(){
+      const current=readPlayerActivationStage(stage);
+      const apl=Number($('#playerApl')?.value||current.apl||3);
+      current.apl=apl;
+      const used=playerActionCost(current);
+      const conflicts=playerActionConflicts(current);
+      const usage=$('#apUsage');
+      if(usage)usage.innerHTML=`<small>AP used</small><strong>${used} / ${apl}</strong>`;
+      const warning=$('#apWarning');
+      const messages=[...conflicts];
+      if(used>apl)messages.push(`This activation uses ${used} AP, but the operative only has ${apl} APL.`);
+      if(warning){
+        warning.textContent=messages.join(' ');
+        warning.classList.toggle('hidden',messages.length===0);
+      }
+      $('#confirmPlayer').disabled=used>apl || conflicts.length>0;
+
+      // Disable unchecked actions that would exceed APL if added.
+      const map={
+        eaMove:'move',eaDash:'dash',eaCharge:'charge',eaFallBack:'fallBack',
+        eaShoot:'shoot',eaMelee:'melee',eaDamage:'damage',eaHatch:'hatch',
+        eaBreach:'breach',eaObjective:'objective'
+      };
+      Object.entries(map).forEach(([id,key])=>{
+        const box=$(`#${id}`);
+        if(!box)return;
+        if(box.checked){box.disabled=false;return;}
+        const hypothetical={...current,[key]:true};
+        box.disabled=playerActionCost(hypothetical)>apl || playerActionConflicts(hypothetical).length>0;
+      });
+    }
+
     $('#eaPass')?.addEventListener('change',e=>{
       if(e.target.checked)actionIds.forEach(id=>{const box=$(`#${id}`);if(box)box.checked=false;});
+      updatePlayerActionAvailability();
     });
-    actionIds.forEach(id=>$(`#${id}`)?.addEventListener('change',e=>{if(e.target.checked)clearPass();}));
+    actionIds.forEach(id=>$(`#${id}`)?.addEventListener('change',e=>{
+      if(e.target.checked)clearPass();
+      updatePlayerActionAvailability();
+    }));
+    $('#playerApl')?.addEventListener('change',updatePlayerActionAvailability);
+    updatePlayerActionAvailability();
 
     $('#cancelPlayerActivation').onclick=()=>{closeModal();render();};
     $('#confirmPlayer').onclick=()=>{
       const finalStage=readPlayerActivationStage(stage);
+      const used=playerActionCost(finalStage);
+      const conflicts=playerActionConflicts(finalStage);
+      if(used>finalStage.apl || conflicts.length){
+        showToast(conflicts[0] || `This operative is limited to ${finalStage.apl} AP.`);
+        return;
+      }
       if(!finalStage.playerOperativeId){
         showToast('Select a Player operative first.');
         return;
@@ -467,6 +555,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const melee=Boolean($('#eaMelee')?.checked);
     return {
       playerOperativeId:Number($('#playerOperativeSelect')?.value||previous.playerOperativeId||0),
+      apl:Number($('#playerApl')?.value||previous.apl||3),
       move:Boolean($('#eaMove')?.checked),
       dash:Boolean($('#eaDash')?.checked),
       charge:Boolean($('#eaCharge')?.checked),
@@ -529,6 +618,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const attackRows=pending.map(p=>`<div class="summary-box"><strong>${p.attackType==='shoot'?'Shooting':'Melee'}:</strong> ${escapeHtml(p.targetName)} · ${p.before} → ${p.after} wounds (${p.damage} damage)</div>`).join('');
     showModal('Confirm Player Activation',`
       <p>Player operative ${stage.playerOperativeId} will be marked activated. NPO damage has not been applied yet.</p>
+      <div class="summary-box"><strong>AP used:</strong> ${playerActionCost(stage)} / ${stage.apl}</div>
       ${attackRows||'<div class="summary-box"><strong>No attacks to apply.</strong></div>'}
       <div class="summary-box"><strong>Actions:</strong> ${escapeHtml(playerActivationSummary(stage))}</div>
       <div class="wizard-actions"><button class="btn ghost" id="backToPlayerActivation">Go Back</button><button class="btn primary" id="commitPlayerActivation">Confirm Activation</button></div>`);

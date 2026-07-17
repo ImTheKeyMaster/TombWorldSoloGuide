@@ -213,3 +213,18 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 - Canceling an attack returns to the Player activation screen with no damage applied.
 - Going back from final confirmation allows actions to be changed or unchecked safely.
 - Activation tracker circles now reflect the exact Player operative numbers already activated.
+
+
+## v1.3.9e APL enforcement
+
+- Added an APL selector to each Player activation, defaulting to 3.
+- Added a live **AP used / APL** display.
+- Action costs are enforced:
+  - Move, Dash, Charge, Shoot, Melee, Operate Hatch, Breach, mission actions, and other damaging actions cost 1 AP.
+  - Fall Back costs 2 AP.
+- Unselected actions that would exceed the operative's remaining AP are disabled.
+- Invalid action combinations are blocked:
+  - Charge cannot be combined with Move, Dash, or Fall Back.
+  - Fall Back cannot be combined with Move or Charge.
+  - Pass cannot be combined with another action.
+- Shoot and Melee may both be selected when the combined AP cost is legal.
