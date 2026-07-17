@@ -304,3 +304,9 @@ v1.4.4: Correct initiative message grammar (wins vs win).
 - Fixed the HUD so it displays **THREAT LEVEL** with the current numeric Threat value beneath it.
 - Updated the Threat controls heading to **THREAT LEVEL: Dormant/Stirring/Awakened/Overrun**.
 - Corrected the threat-state names to Dormant, Stirring, Awakened, and Overrun.
+
+
+## v1.4.9
+
+- Fixed the Strategy Phase Guide so **GRADE LEVEL** updates live whenever Threat crosses a grade threshold.
+- The Strategy Phase Guide and HUD now both use the current `threatGrade()` value.
