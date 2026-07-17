@@ -326,3 +326,7 @@ v1.4.4: Correct initiative message grammar (wins vs win).
 - **Activation Complete** remains disabled until the NPO Attack Wizard is confirmed.
 - Canceling the attack wizard returns to the activation result with completion still disabled.
 - After confirming the attack result, the activation screen returns with **Activation Complete** enabled.
+
+
+## v1.5.2
+- Initiative roll now highlights only the winning die in green. Losing dice use the same gray styling as misses on Attack Rolls.
