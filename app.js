@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.2.8';
+  const APP_VERSION = '2.2.9';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -84,7 +84,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     setupChecks:[], roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
-    strategyStage:null, strategyData:null, activationNumber:0, playerActivated:0, npoActivated:0,
+    strategyStage:null, strategyData:null, activationNumber:0,totalActivationsThisTP:0, playerActivated:0, npoActivated:0,
     activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], reinforcementEntry:'Nearest valid entry point',
     gradeMilestone:null, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0,
     npoAttackTargetId:null,
@@ -593,7 +593,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     state.tpStartPlayerCasualties=(state.playerCasualtyIds||[]).length;
     state.gradeMilestone=null;
     state.playerReady=Math.max(0,state.playerCount-(state.playerCasualtyIds||[]).length);
-    state.playerActivated=0;state.npoActivated=0;state.activationNumber=0;state.activationHistory=[];state.playerActivatedIds=[];
+    state.playerActivated=0;state.npoActivated=0;state.activationNumber=0;
+      state.totalActivationsThisTP=state.playerReady+readyNpos().length;state.activationHistory=[];state.playerActivatedIds=[];
     const grade=threatGrade();
     activeNpos().forEach(n=>n.ready=true);
     const reinforcements=[];
@@ -1167,7 +1168,6 @@ function showPlayerActivation(stage={}){
     $('#rollPlayerSaves')?.addEventListener('click',()=>showNpoAttackWizard(n,dice,(summary)=>{
       state.npoAttackSummary=summary;
       save();
-      showToast('NPO attack result recorded.');
       renderNpoDecisionResult(n,decision,dice,answers,true,false,true,true);
     },()=>{
       state.npoAttackTargetId=null;

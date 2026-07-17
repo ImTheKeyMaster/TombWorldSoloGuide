@@ -476,3 +476,9 @@ Major player-roster update:
 - Removed the plus/minus buttons and editable fields for Defense Dice, Save, NPO AP, and Current Wounds.
 - Defense Dice is fixed at 3; Save and Wounds come from the selected Player operative; NPO AP comes from the attacking profile and defaults to 0.
 - Cover remains the only defense option the user selects before rolling Player saves.
+
+
+## v2.2.9
+- Removed normal success toast after NPO attack resolution.
+- Firefight header now shows ACTIVATION X OF Y.
+- Total activations are calculated at the start of each Turning Point.
