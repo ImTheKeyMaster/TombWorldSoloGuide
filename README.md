@@ -389,3 +389,12 @@ Major player-roster update:
 - When the manifest contains exactly one team, that team loads automatically and the selection screen is skipped.
 - Save data now stores `playerTeamId`; the manifest resolves the matching JSON filename.
 - Additional teams can be supported by adding a JSON file and manifest entry without changing application code.
+
+
+## v2.1.1
+
+- Fixed Turning Point 1 NPO readiness.
+- All active NPOs now begin every Turning Point as `READY`.
+- Beginning the Turning Point 1 Firefight Phase no longer marks the entire NPO force as activated.
+- Shifting Labyrinth still begins Turning Point 1 with the Player, but both forces remain ready and alternate normally.
+- Updated the Turning Point 1 guidance text to match the corrected behavior.
