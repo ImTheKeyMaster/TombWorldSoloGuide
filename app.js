@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.4.0d';
+  const APP_VERSION = '1.4.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -142,6 +142,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
     gameMenuBtn.hidden = state.screen !== 'game';
     if(state.screen==='home') renderHome();
+    else if(state.screen==='help') renderHowItWorks();
     else if(state.screen==='setup') renderSetup();
     else renderGame();
     bindCommon();
@@ -218,8 +219,39 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#newGameBtn').onclick=()=>{ state=initialState(); state.screen='setup'; state.setupStep=0; save(); render(); };
     $('#continueBtn').onclick=()=>{ const saved=load(); if(saved){state=saved;state.screen='game';render();} };
     $('#homeHelpBtn').onclick=()=>{
-      showModal('How Tomb World Solo Guide Works',`${guideInstructionsHtml(true)}<div class="wizard-actions"><button class="btn primary" data-close>Understood</button></div>`);
+      state.screen='help';
+      render();
+      window.scrollTo({top:0,left:0,behavior:'auto'});
     };
+  }
+
+
+  function renderHowItWorks(){
+    app.innerHTML=`<section class="how-it-works-screen">
+      <div class="screen-toolbar">
+        <button class="btn ghost compact" id="howItWorksBackBtn" type="button" aria-label="Return to Home">← Back</button>
+        <span class="screen-version">v${APP_VERSION}</span>
+      </div>
+      <header class="screen-heading">
+        <p class="eyebrow">TOMB WORLD SOLO GUIDE</p>
+        <h2>How It Works</h2>
+        <p>Use the Guide as a digital game master while you handle models, measuring, visibility, and operative-specific rules on the tabletop.</p>
+      </header>
+      <div class="how-it-works-content">
+        ${guideInstructionsHtml(true)}
+      </div>
+      <div class="wizard-actions how-it-works-footer">
+        <button class="btn primary" id="howItWorksDoneBtn" type="button">Back to Home</button>
+      </div>
+    </section>`;
+
+    const goHome=()=>{
+      state.screen='home';
+      render();
+      window.scrollTo({top:0,left:0,behavior:'auto'});
+    };
+    $('#howItWorksBackBtn').onclick=goHome;
+    $('#howItWorksDoneBtn').onclick=goHome;
   }
 
   const setupTitles=['Choose Mission','Build the Killzone','Generate NPO Roster','Deploy NPOs','Deploy Player Kill Team','Ready to Begin'];
@@ -1028,6 +1060,8 @@ function showPlayerActivation(stage={}){
   importInput.addEventListener('change',async()=>{const f=importInput.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!data.version)throw new Error();state=normalizeState(data);state.screen='game';save();render();showToast('Save imported.');}catch{showToast('That file is not a valid Tomb World Solo Guide save.');}finally{importInput.value='';}});
 
   function bindCommon(){
+    const versionBadge=$('.version');
+    if(versionBadge) versionBadge.textContent=`v${APP_VERSION}`;
     gameMenuBtn.onclick=showGameMenu;
   }
 

@@ -256,3 +256,13 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 - Removes the scroll lock whenever the dialog closes.
 
 v1.4.0d: Dialog scroll simplification.
+
+
+## v1.4.1
+
+- Replaced the Home **How It Works** dialog with a dedicated in-app screen.
+- Added Back and Back to Home controls.
+- Removed the long-content dependency on the native `<dialog>` element.
+- The screen now uses normal document scrolling, eliminating nested iOS scroll regions.
+- The visible version badge is set from the same `APP_VERSION` constant used by the build.
+- Gameplay logic is unchanged.
