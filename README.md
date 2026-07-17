@@ -408,3 +408,13 @@ Major player-roster update:
 - All six official missions specify Player initiative in Turning Point 1, as required by the common Joint Ops game sequence.
 - Both Player operatives and NPOs begin every Turning Point ready.
 - Future missions can be added by creating a mission JSON file and adding it to the mission manifest, without changing application code.
+
+
+## v2.2.1
+
+- Corrected `Enemy Save Dice` to `Player Save Dice`.
+- Added a required `Target Player Operative` selection to the NPO Attack Wizard.
+- The selector lists all rostered Player operatives that have not been eliminated.
+- Selecting an operative automatically loads its Save and starting Wounds values.
+- The selected target persists if the wizard is canceled and reopened.
+- Combat results and the journal now identify the targeted Player operative by name.
