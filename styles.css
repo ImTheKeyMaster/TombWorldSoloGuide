@@ -682,3 +682,61 @@ body.modal-open{
 .player-operative-row.casualty{opacity:.55;filter:grayscale(1);text-decoration:line-through}
 .player-operative-row.casualty>b{color:#dca4a4}
 @media(max-width:600px){.player-roster-grid{grid-template-columns:1fr}.player-roster-summary{align-items:flex-start;flex-direction:column}}
+
+/* v2.0.1 Unified activation tracker cards */
+.tracker-operative-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:7px;
+}
+.tracker-operative{
+  min-width:0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:9px 10px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:#07140f;
+  color:var(--text);
+  font:inherit;
+  font-size:.76rem;
+  text-align:left;
+}
+button.tracker-operative{
+  width:100%;
+  cursor:pointer;
+}
+button.tracker-operative:hover{
+  border-color:#3b7755;
+}
+.tracker-operative span{
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+.tracker-operative strong{
+  flex:0 0 auto;
+  color:var(--green);
+  font-size:.68rem;
+}
+.tracker-operative.activated{
+  border-color:var(--green);
+  background:rgba(92,245,157,.09);
+}
+.tracker-operative.spent,
+.tracker-operative.eliminated{
+  opacity:.55;
+}
+.tracker-operative.spent strong{
+  color:var(--muted);
+}
+.tracker-operative.eliminated{
+  text-decoration:line-through;
+}
+.tracker-operative.eliminated strong{
+  color:#dca4a4;
+}
+@media(max-width:600px){
+  .tracker-operative-grid{grid-template-columns:1fr}
+}

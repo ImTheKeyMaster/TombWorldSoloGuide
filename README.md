@@ -364,3 +364,11 @@ Major player-roster update:
 - Enforced the official roster rules: exactly five unique operatives and no more than one Gravis operative.
 - Player operative names now appear in setup, activation selection, activation history, casualty controls, and the activation tracker.
 - The data-loading structure supports adding more team JSON files to `Player_Operatives` later.
+
+
+## v2.0.1
+
+- Deathwatch operatives now use the same compact card grid and visual structure as NPO operatives.
+- Both sides display the operative name on the left and status on the right.
+- Removed the activation-state key/legend because status is now written directly on every operative card.
+- Player cards remain selectable for eliminating or restoring an operative.

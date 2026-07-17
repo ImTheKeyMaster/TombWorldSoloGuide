@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.0.0';
+  const APP_VERSION = '2.0.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -453,20 +453,29 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function activationTracker(){
     const activatedIds=new Set(state.playerActivatedIds||[]);
     const casualtyIds=new Set(state.playerCasualtyIds||[]);
-    const playerActivated=activatedIds.size;
-    const playerCasualties=casualtyIds.size;
-    const playerIndicators=(state.playerRoster||[]).map(operativeId=>{
+    const playerRows=(state.playerRoster||[]).map(operativeId=>{
       const operative=playerDefinition(operativeId);
       const casualty=casualtyIds.has(operativeId);
       const activated=activatedIds.has(operativeId);
-      const status=casualty?'Eliminated':activated?'Activated':'Remaining';
-      const cls=casualty?'casualty':activated?'activated':'remaining';
-      return `<button type="button" class="player-operative-row ${cls}" data-player-operative="${operativeId}" title="${escapeHtml(operative?.name||operativeId)}: ${status}">
-        <span><strong>${escapeHtml(operative?.name||operativeId)}</strong><small>${escapeHtml(operative?.role||'Deathwatch operative')}</small></span><b>${status.toUpperCase()}</b>
+      const status=casualty?'ELIMINATED':activated?'ACTIVATED':'READY';
+      const cls=casualty?'eliminated':activated?'activated':'ready';
+      return `<button type="button" class="tracker-operative player ${cls}" data-player-operative="${operativeId}" title="Select ${escapeHtml(operative?.name||operativeId)} to mark it eliminated or restore it">
+        <span>${escapeHtml(operative?.name||operativeId)}</span><strong>${status}</strong>
       </button>`;
     }).join('');
-    const npoRows=activeNpos().map(n=>`<div class="tracker-npo ${n.ready?'ready':'spent'}"><span>${escapeHtml(n.name)}</span><strong>${n.ready?'READY':'EXPENDED'}</strong></div>`).join('');
-    return `<section class="card activation-tracker"><div class="panel-title"><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div><div class="turn-badge">Next: ${state.nextSide==='npo'?'NPO':'Player'}</div></div><div class="tracker-section player-tracker-section"><div class="tracker-section-heading"><small>Deathwatch operatives</small><div class="activation-legend"><span><i class="legend-dot activated"></i>Activated (${playerActivated})</span><span><i class="legend-dot remaining"></i>Remaining (${playerOperativesRemaining()})</span><span><i class="legend-dot casualty"></i>Eliminated (${playerCasualties})</span></div></div><p class="muted compact-copy">Select an operative to mark it eliminated or restore it.</p><div class="player-operative-list">${playerIndicators}</div></div><div class="tracker-section"><small>NPOs</small><div class="tracker-npos">${npoRows||'<span class="muted">No active NPOs</span>'}</div></div></section>`;
+    const npoRows=activeNpos().map(n=>`<div class="tracker-operative npo ${n.ready?'ready':'spent'}"><span>${escapeHtml(n.name)}</span><strong>${n.ready?'READY':'EXPENDED'}</strong></div>`).join('');
+    return `<section class="card activation-tracker">
+      <div class="panel-title"><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div><div class="turn-badge">Next: ${state.nextSide==='npo'?'NPO':'Player'}</div></div>
+      <div class="tracker-section">
+        <small>Deathwatch operatives</small>
+        <p class="muted compact-copy">Select an operative to mark it eliminated or restore it.</p>
+        <div class="tracker-operative-grid">${playerRows||'<span class="muted">No Deathwatch operatives selected</span>'}</div>
+      </div>
+      <div class="tracker-section">
+        <small>NPOs</small>
+        <div class="tracker-operative-grid">${npoRows||'<span class="muted">No active NPOs</span>'}</div>
+      </div>
+    </section>`;
   }
 
   function showPlayerOperativeStatus(operativeId){
