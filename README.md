@@ -266,3 +266,6 @@ v1.4.0d: Dialog scroll simplification.
 - The screen now uses normal document scrolling, eliminating nested iOS scroll regions.
 - The visible version badge is set from the same `APP_VERSION` constant used by the build.
 - Gameplay logic is unchanged.
+
+
+v1.4.2: Expanded Strategy Phase guidance and renamed 'Turning Point 1 Prepared' to 'Complete the Strategy Phase'.
