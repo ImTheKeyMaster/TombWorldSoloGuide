@@ -372,3 +372,10 @@ Major player-roster update:
 - Both sides display the operative name on the left and status on the right.
 - Removed the activation-state key/legend because status is now written directly on every operative card.
 - Player cards remain selectable for eliminating or restoring an operative.
+
+
+## v2.0.2
+
+- Standardized activation terminology across both sides.
+- Player operatives and NPOs now both use `READY` before acting and `ACTIVATED` after acting.
+- Removed the visible `EXPENDED` status from the NPO activation tracker.
