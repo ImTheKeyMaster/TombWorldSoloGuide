@@ -269,3 +269,10 @@ v1.4.0d: Dialog scroll simplification.
 
 
 v1.4.2: Expanded Strategy Phase guidance and renamed 'Turning Point 1 Prepared' to 'Complete the Strategy Phase'.
+
+## v1.4.3
+
+- Updated the actual **Turning Point prepared** Strategy Phase screen.
+- Replaced the status-only heading with **Complete the Strategy Phase**.
+- Added clear instructions for CP, Strategic Ploys, Strategy Phase abilities, mission rules, and reviewing Guide results.
+- Renamed the action button to **Strategy Phase Complete · Continue to Initiative**.

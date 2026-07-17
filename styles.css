@@ -546,3 +546,30 @@ body.modal-open{
   .screen-toolbar{margin-bottom:14px}
   .screen-heading{margin-bottom:14px}
 }
+
+
+/* v1.4.3 Strategy Phase explanation */
+.strategy-intro{
+  margin:0 0 12px;
+  color:var(--muted);
+  line-height:1.5;
+}
+.strategy-phase-guide{
+  margin:0 0 18px;
+  padding:14px 16px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:rgba(255,255,255,.035);
+}
+.strategy-phase-guide ol{
+  margin:0 0 12px;
+  padding-left:1.3rem;
+}
+.strategy-phase-guide li{
+  margin:0 0 7px;
+  line-height:1.45;
+}
+.strategy-phase-guide p{
+  margin:0;
+  line-height:1.45;
+}
