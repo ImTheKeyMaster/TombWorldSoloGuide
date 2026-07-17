@@ -245,3 +245,12 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
 - Assigned the title and description to the full-width second column.
 - Made the numbered circle span both text rows.
 - Prevented the Game Flow description from collapsing into a one-word-wide column on mobile.
+
+
+## v1.4.0c iOS How It Works scrolling fix
+
+- Confirmed that iOS could scroll both the long dialog and the page behind it.
+- Locks background-page scrolling while **How It Works** is open.
+- Makes the dialog content the only vertical scrolling region.
+- Uses dynamic viewport height and safe-area spacing for iPhone.
+- Removes the scroll lock whenever the dialog closes.

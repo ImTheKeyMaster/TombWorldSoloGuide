@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.4.0b';
+  const APP_VERSION = '1.4.0c';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -51,7 +51,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   ];
 
   const initialState = () => ({
-    version:'1.4.0b', screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:'1.4.0c', screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:[], roster:[], playerCount:6, playerReady:6, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
@@ -217,7 +217,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     </section>`;
     $('#newGameBtn').onclick=()=>{ state=initialState(); state.screen='setup'; state.setupStep=0; save(); render(); };
     $('#continueBtn').onclick=()=>{ const saved=load(); if(saved){state=saved;state.screen='game';render();} };
-    $('#homeHelpBtn').onclick=()=>showModal('How Tomb World Solo Guide Works',`${guideInstructionsHtml(true)}<div class="wizard-actions"><button class="btn primary" data-close>Understood</button></div>`);
+    $('#homeHelpBtn').onclick=()=>{
+      showModal('How Tomb World Solo Guide Works',`${guideInstructionsHtml(true)}<div class="wizard-actions"><button class="btn primary" data-close>Understood</button></div>`);
+      modal.classList.add('help-modal');
+      document.body.classList.add('modal-open');
+    };
   }
 
   const setupTitles=['Choose Mission','Build the Killzone','Generate NPO Roster','Deploy NPOs','Deploy Player Kill Team','Ready to Begin'];
@@ -987,8 +991,16 @@ function showPlayerActivation(stage={}){
   function deleteNpo(id){state.roster=state.roster.filter(x=>x.id!==id);save();render();}
 
   function showModal(title,content,onClose){modalBody.innerHTML=`<div class="modal-inner"><h2>${title}</h2>${content}</div>`;if(!modal.open)modal.showModal();modal._onClose=onClose;$$('[data-close]',modal).forEach(b=>b.onclick=closeModal);}
-  function closeModal(){if(modal.open)modal.close();const cb=modal._onClose;modal._onClose=null;if(cb)cb();}
+  function closeModal(){
+    if(modal.open)modal.close();
+    modal.classList.remove('help-modal');
+    document.body.classList.remove('modal-open');
+    const cb=modal._onClose;
+    modal._onClose=null;
+    if(cb)cb();
+  }
   modal.addEventListener('cancel',e=>{e.preventDefault();closeModal();});
+  modal.addEventListener('close',()=>{modal.classList.remove('help-modal');document.body.classList.remove('modal-open');});
   function showToast(text){toast.textContent=text;toast.hidden=false;clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.hidden=true,6500);}
   function showGameMenu(){
     showModal('Game Menu',`<p>Open a reference screen without changing the guided play sequence, or begin a completely new game.</p>

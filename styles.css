@@ -434,3 +434,35 @@ button,.btn,input,select,label,summary,a{touch-action:manipulation;}
   .ai-step-grid,.quick-reference-grid{grid-template-columns:1fr}
   .help-section{padding:14px}
 }
+
+
+/* v1.4.0c: single-scroll How It Works dialog on iOS */
+body.modal-open{
+  overflow:hidden;
+  overscroll-behavior:none;
+}
+.modal.help-modal{
+  width:min(760px,calc(100% - 20px));
+  max-width:760px;
+  max-height:calc(100dvh - max(20px,env(safe-area-inset-top)) - max(20px,env(safe-area-inset-bottom)));
+  overflow:hidden;
+  padding:0;
+}
+.modal.help-modal .modal-inner{
+  width:100%;
+  max-height:inherit;
+  overflow-x:hidden;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom));
+}
+.modal.help-modal .wizard-actions{
+  position:static;
+}
+@supports not (height:100dvh){
+  .modal.help-modal{
+    max-height:calc(100vh - 40px);
+  }
+}
