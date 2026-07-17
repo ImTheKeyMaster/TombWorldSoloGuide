@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.2.9c';
+  const APP_VERSION = '2.2.9d';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -57,7 +57,23 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return data;
   }
   function playerDefinition(id){return playerTeamData?.operatives?.find(o=>o.id===id)||null;}
-  function selectedPlayerOperatives(){return (state.playerRoster||[]).map(playerDefinition).filter(Boolean);}
+  function playerCurrentWounds(id){
+    const definition=playerDefinition(id);
+    const stored=Number(state.playerWounds?.[id]);
+    return Number.isFinite(stored)?stored:Number(definition?.wounds||0);
+  }
+  function livePlayerOperative(id){
+    const definition=playerDefinition(id);
+    return definition?{...definition,wounds:playerCurrentWounds(id)}:null;
+  }
+  function initializePlayerWounds(){
+    state.playerWounds={};
+    (state.playerRoster||[]).forEach(id=>{
+      const definition=playerDefinition(id);
+      if(definition)state.playerWounds[id]=Number(definition.wounds||0);
+    });
+  }
+  function selectedPlayerOperatives(){return (state.playerRoster||[]).map(livePlayerOperative).filter(Boolean);}
   function playerName(id){return playerDefinition(id)?.name||String(id);}
 
   let missions=[];
@@ -85,7 +101,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
     strategyStage:null, strategyData:null, activationNumber:0,totalActivationsThisTP:0, playerActivated:0, npoActivated:0,
-    activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], reinforcementEntry:'Nearest valid entry point',
+    activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], playerWounds:{}, reinforcementEntry:'Nearest valid entry point',
     gradeMilestone:null, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0,
     npoAttackTargetId:null,
     npoAttackSummary:null
@@ -105,6 +121,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.activationHistory=Array.isArray(raw?.activationHistory)?raw.activationHistory:[];
     merged.playerActivatedIds=Array.isArray(raw?.playerActivatedIds)?raw.playerActivatedIds:[];
     merged.playerCasualtyIds=Array.isArray(raw?.playerCasualtyIds)?raw.playerCasualtyIds:[];
+    merged.playerWounds=raw?.playerWounds&&typeof raw.playerWounds==='object'?{...raw.playerWounds}:{};
     merged.playerRoster=Array.isArray(raw?.playerRoster)?raw.playerRoster:[];
     merged.playerTeamId=raw?.playerTeamId||'';
     merged.playerCount=merged.playerRoster.length;
@@ -147,7 +164,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return (state.playerRoster||[]).filter(id=>!casualties.has(id));
   }
   function selectedNpoAttackTarget(){
-    return playerDefinition(state.npoAttackTargetId);
+    return livePlayerOperative(state.npoAttackTargetId);
   }
 
   function setNextActivation(preferredSide){
@@ -348,6 +365,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         state.playerCount=0;
         state.playerReady=0;
         state.playerCasualtyIds=[];
+        state.playerWounds={};
         state.playerActivatedIds=[];
         state.playerDeployed=false;
         await loadPlayerTeamData(state.playerTeamId);
@@ -426,6 +444,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       state.playerCount=state.playerRoster.length;
       state.playerReady=state.playerCount;
       state.playerCasualtyIds=[];
+      initializePlayerWounds();
       state.playerActivatedIds=[];
       state.playerDeployed=false;
       save();render();
@@ -439,6 +458,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       state.nextSide='player';
       state.playerCount=(state.playerRoster||[]).length;
       state.playerReady=state.playerCount;
+      if(!state.playerWounds||Object.keys(state.playerWounds).length===0)initializePlayerWounds();
       state.roster.forEach(n=>n.ready=false);
       log(`Mission started: ${mission().name}.`);
       startTurningPoint();
@@ -563,11 +583,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       <div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn ${eliminated?'secondary':'danger'}" id="togglePlayerCasualty">${eliminated?'Restore Operative':'Mark Eliminated'}</button></div>`);
     $('#togglePlayerCasualty').onclick=()=>{
       const ids=new Set(state.playerCasualtyIds||[]);
+      state.playerWounds=state.playerWounds||{};
       if(ids.has(operativeId)){
         ids.delete(operativeId);
+        state.playerWounds[operativeId]=Number(playerDefinition(operativeId)?.wounds||0);
         log(`${operativeName} restored.`);
       }else{
         ids.add(operativeId);
+        state.playerWounds[operativeId]=0;
         if(!state.playerActivatedIds.includes(operativeId))state.playerActivatedIds.push(operativeId);
         log(`${operativeName} eliminated.`);
       }
@@ -1232,6 +1255,17 @@ function showPlayerActivation(stage={}){
           before,
           after
         };
+        state.playerWounds=state.playerWounds||{};
+        state.playerWounds[target.id]=after;
+        const casualties=new Set(state.playerCasualtyIds||[]);
+        if(after<=0){
+          casualties.add(target.id);
+          if(!state.playerActivatedIds.includes(target.id))state.playerActivatedIds.push(target.id);
+        }else{
+          casualties.delete(target.id);
+        }
+        state.playerCasualtyIds=[...casualties];
+        state.playerReady=playerOperativesRemaining();
         log(`${n.name} dealt ${result.damage} damage to ${target.name} (${before} → ${after} wounds).`);
         save();
         if(onDone)onDone(summary);

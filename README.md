@@ -497,3 +497,12 @@ Major player-roster update:
 - Corrected the activation total to equal the number of living operatives currently in the game.
 - The total is calculated as all Player operatives not listed as casualties plus all NPO operatives with wounds remaining.
 - Activated status and ready status no longer affect the denominator.
+
+
+## v2.2.9d
+
+- Added persistent live wound tracking for Player operatives.
+- The NPO Attack Wizard now loads the selected operative's current wounds rather than the starting wounds from the team JSON.
+- Applying damage writes the new wound value back to game state immediately.
+- Player operatives reduced to 0 wounds are automatically marked as casualties.
+- Restoring an operative restores its full starting wounds.
