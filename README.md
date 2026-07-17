@@ -330,3 +330,7 @@ v1.4.4: Correct initiative message grammar (wins vs win).
 
 ## v1.5.2
 - Initiative roll now highlights only the winning die in green. Losing dice use the same gray styling as misses on Attack Rolls.
+
+
+## v1.5.3
+- NPO attacks with zero hits or critical hits are automatically considered resolved. The app displays 'Attack missed. No saves or damage required.' and immediately enables Activation Complete without opening the attack wizard.

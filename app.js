@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.5.2';
+  const APP_VERSION = '1.5.3';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1011,12 +1011,12 @@ function showPlayerActivation(stage={}){
       },850);
     }
 
-    $('#resolveNpoAttack')?.addEventListener('click',()=>showNpoAttackWizard(
+    $('#resolveNpoAttack')?.addEventListener('click',()=>{ if($('#resolveNpoAttack').disabled)return; showNpoAttackWizard(
       n,
       dice,
       ()=>{showToast('NPO attack result recorded.');renderNpoDecisionResult(n,decision,dice,answers,true);},
       ()=>renderNpoDecisionResult(n,decision,dice,answers,attackResolved)
-    ));
+    );});
 
     $('#completeNpo').onclick=()=>{closeModal();render();};
   }
