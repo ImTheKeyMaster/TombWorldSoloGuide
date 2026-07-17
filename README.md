@@ -291,3 +291,9 @@ v1.4.4: Correct initiative message grammar (wins vs win).
 
 ## v1.4.6
 - Updated the Threat label to 'Threat Level: <Grade>' on the Strategy Phase and Activation Phase screens while leaving the +/- controls in their existing positions.
+
+
+## v1.4.7
+- Threat strip now displays 'Threat Level: <state>'.
+- HUD labels updated to THREAT LEVEL and GRADE LEVEL.
+- Removed numeric Threat value from HUD.
