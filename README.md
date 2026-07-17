@@ -456,3 +456,9 @@ Major player-roster update:
 - Landscape and desktop HUD headings remain on one line when space allows.
 - The Threat Level adjuster is hidden by default.
 - Tap the Threat Level HUD cell to show or hide the manual Threat controls.
+
+
+## v2.2.6
+
+- Removed sticky positioning from the HUD so it scrolls normally with the page.
+- Kept the title bar and Game Menu sticky at the top.
