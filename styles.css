@@ -401,3 +401,35 @@ button,.btn,input,select,label,summary,a{touch-action:manipulation;}
 @media(max-width:600px){
   .activation-apl-bar{grid-template-columns:1fr}
 }
+
+
+/* v1.4.0 onboarding and AI instructions */
+.help-section{
+  margin:0 0 16px;
+  padding:18px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:linear-gradient(145deg,#08150f,#0d2117);
+}
+.help-section h3{margin:0 0 10px;color:var(--green)}
+.help-section p{margin:0;color:var(--muted);line-height:1.55}
+.guide-flow-list{display:grid;gap:10px;margin:0;padding:0;list-style:none;counter-reset:guideflow}
+.guide-flow-list li{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start}
+.guide-flow-list li:before{counter-increment:guideflow;content:counter(guideflow);display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--green);border-radius:50%;color:var(--green);font-weight:900}
+.guide-flow-list strong,.guide-flow-list span{display:block}
+.guide-flow-list span{margin-top:3px;color:var(--muted);line-height:1.4}
+.ai-step-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ai-step-grid article{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:12px;border:1px solid var(--line);border-radius:13px;background:#07120d}
+.ai-step-grid article>span{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:#123d27;color:var(--green);font-weight:900}
+.ai-step-grid strong{display:block;margin-bottom:4px}
+.ai-step-grid p{font-size:.9rem}
+.golden-rule{display:grid;gap:4px;margin-top:12px;padding:12px;border-left:4px solid var(--green);border-radius:10px;background:#102a1c}
+.golden-rule strong{color:var(--green);text-transform:uppercase;letter-spacing:.08em;font-size:.78rem}
+.quick-reference-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.quick-reference-grid article{padding:12px;border:1px solid var(--line);border-radius:12px;background:#07120d}
+.quick-reference-grid h4{margin:0 0 5px;color:var(--text)}
+.quick-reference-grid p{font-size:.88rem}
+@media(max-width:700px){
+  .ai-step-grid,.quick-reference-grid{grid-template-columns:1fr}
+  .help-section{padding:14px}
+}

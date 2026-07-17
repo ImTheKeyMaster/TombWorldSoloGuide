@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '1.3.9e';
+  const APP_VERSION = '1.4.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -51,7 +51,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   ];
 
   const initialState = () => ({
-    version:'1.3.9e', screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:'1.4.0', screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:[], roster:[], playerCount:6, playerReady:6, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
@@ -155,6 +155,53 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
   }
 
+  function guideInstructionsHtml(full=false){
+    const overview=`<section class="help-section">
+      <h3>What the Guide does</h3>
+      <p>Tomb World Solo Guide walks you through setup, Turning Points, alternating Player and NPO activations, Threat, reinforcements, combat, and the battle record. You still move models, measure distances, determine line of sight, and apply any operative-specific rules on the tabletop.</p>
+    </section>`;
+
+    const flow=`<section class="help-section">
+      <h3>Game flow</h3>
+      <ol class="guide-flow-list">
+        <li><strong>Set up the mission</strong><span>Choose a mission, build the killzone, generate the starting NPO roster, and deploy both sides.</span></li>
+        <li><strong>Prepare the Turning Point</strong><span>The Guide readies operatives, evaluates Threat Grade, generates reinforcements, checks events, and resolves initiative.</span></li>
+        <li><strong>Alternate activations</strong><span>The side with initiative activates first. Player and NPO activations then alternate until one side runs out of ready operatives.</span></li>
+        <li><strong>End the Turning Point</strong><span>Score mission progress, resolve end-of-turn effects, and begin the next Turning Point.</span></li>
+      </ol>
+    </section>`;
+
+    const ai=`<section class="help-section ai-help-section">
+      <h3>How the NPO AI decides</h3>
+      <div class="ai-step-grid">
+        <article><span>1</span><div><strong>Queue the NPO</strong><p>The Guide identifies the next ready NPO. Every battlefield question applies only to that operative.</p></div></article>
+        <article><span>2</span><div><strong>Follow its behavior</strong><p><b>Brawler:</b> close distance, Charge, and Fight. <b>Marksman:</b> seek a legal shot and useful cover. <b>Sentinel:</b> engage nearby threats first, then act like a Marksman.</p></div></article>
+        <article><span>3</span><div><strong>Evaluate the battlefield</strong><p>Your answers tell the Guide whether the NPO can Fight, Charge, Shoot, contest an objective, pursue a wounded target, operate a hatch, or reposition.</p></div></article>
+        <article><span>4</span><div><strong>Choose the most dangerous legal option</strong><p>When several choices are legal, the AI favors damage, mission denial, and pressure against the Player.</p></div></article>
+        <article><span>5</span><div><strong>Break true ties</strong><p>If two options remain genuinely equal, choose the result most favorable to the Tomb World. Randomize only when they are still indistinguishable.</p></div></article>
+        <article><span>6</span><div><strong>Resolve it on the tabletop</strong><p>The Guide gives the action sequence, target priority, stance, and attack dice. You carry out movement, measuring, visibility, and special rules.</p></div></article>
+      </div>
+      <div class="golden-rule"><strong>Golden rule</strong><span>If the Guide cannot distinguish between two legal choices, use the option most favorable to the NPOs.</span></div>
+    </section>`;
+
+    const combat=`<section class="help-section">
+      <h3>Player activation and combat</h3>
+      <p>Select a remaining Player operative, set its APL, choose legal actions, and press <strong>Complete Activation</strong>. Selected Shooting or Melee attacks are then resolved. Damage remains pending until you confirm the entire activation, so canceling or going back does not alter NPO wounds.</p>
+    </section>`;
+
+    const quick=`<section class="help-section quick-reference-grid">
+      <article><h4>Player</h4><p>Your solo kill-team operatives.</p></article>
+      <article><h4>NPO</h4><p>A non-player operative controlled by the Guide.</p></article>
+      <article><h4>APL</h4><p>The number of action points an operative may spend during its activation.</p></article>
+      <article><h4>Threat</h4><p>A 0–15 alert meter. Higher grades generate more reinforcements and events.</p></article>
+      <article><h4>Ready</h4><p>The operative can still activate during this Turning Point.</p></article>
+      <article><h4>Expended</h4><p>The operative has activated or is otherwise unavailable.</p></article>
+    </section>`;
+
+    if(full) return overview+flow+ai+combat+quick;
+    return ai+quick;
+  }
+
   function renderHome(){
     const canContinue=Boolean(load()?.missionId && load()?.screen==='game');
     app.innerHTML=`<section class="hero-card">
@@ -170,7 +217,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     </section>`;
     $('#newGameBtn').onclick=()=>{ state=initialState(); state.screen='setup'; state.setupStep=0; save(); render(); };
     $('#continueBtn').onclick=()=>{ const saved=load(); if(saved){state=saved;state.screen='game';render();} };
-    $('#homeHelpBtn').onclick=()=>showModal('How Tomb World Solo Guide Works',`<p>The Guide presents one required action at a time. A new game walks through mission choice, board setup, roster generation, and deployment. During play it alternates Player and NPO activations, tracks Threat, generates reinforcements, and records the battle.</p><div class="wizard-actions"><button class="btn primary" data-close>Understood</button></div>`);
+    $('#homeHelpBtn').onclick=()=>showModal('How Tomb World Solo Guide Works',`${guideInstructionsHtml(true)}<div class="wizard-actions"><button class="btn primary" data-close>Understood</button></div>`);
   }
 
   const setupTitles=['Choose Mission','Build the Killzone','Generate NPO Roster','Deploy NPOs','Deploy Player Kill Team','Ready to Begin'];
@@ -899,16 +946,16 @@ function showPlayerActivation(stage={}){
   function renderRoster(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">NPO ROSTER</p><h2>${activeNpos().length} active NPOs</h2><p>Wounds and Ready status update the guided activation flow.</p></div><button class="btn secondary" id="addNpo">Add NPO</button></div><div class="roster-grid">${state.roster.length?state.roster.map(n=>operativeCard(n,true)).join(''):'<div class="card empty">No NPOs are currently on the battlefield.</div>'}</div>`;$('#addNpo').onclick=showAddNpo;$$('[data-player-attack]').forEach(b=>b.onclick=()=>showPlayerAttackWizard(b.dataset.playerAttack));$$('[data-wound]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.wound,-1));$$('[data-heal]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.heal,1));$$('[data-ready]').forEach(b=>b.onclick=()=>toggleReady(b.dataset.ready));$$('[data-delete]').forEach(b=>b.onclick=()=>deleteNpo(b.dataset.delete));}
   function operativeCard(n,controls){return `<article class="operative-card ${n.wounds<=0?'dead':''}"><h4>${escapeHtml(n.name)}</h4><p>${n.type} · ${n.behavior} · Save ${n.save}+</p><div class="wounds"><meter min="0" max="${n.maxWounds}" value="${n.wounds}"></meter><strong>${n.wounds}/${n.maxWounds}</strong></div><p>${n.ready&&n.wounds>0?'READY':'EXPENDED'}</p>${controls?`<div class="quick-actions"><button class="btn secondary" data-player-attack="${n.id}">Player Attack</button><button class="btn ghost" data-wound="${n.id}">− Wound</button><button class="btn ghost" data-heal="${n.id}">+ Heal</button><button class="btn secondary" data-ready="${n.id}">${n.ready?'Expend':'Ready'}</button><button class="btn danger" data-delete="${n.id}">Delete</button></div>`:''}</article>`;}
   function renderJournal(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">JOURNAL</p><h2>Battle Record</h2><p>Automatic game-state and Threat history.</p></div><button class="btn ghost" id="clearJournal">Clear</button></div><section class="card"><ol class="activity-log">${state.journal.length?state.journal.map(j=>`<li><time>${new Date(j.time).toLocaleString()}</time>${escapeHtml(j.text)}</li>`).join(''):'<li>No events recorded.</li>'}</ol></section>`;$('#clearJournal').onclick=()=>{state.journal=[];save();render();};}
-  function renderHelp(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">FIELD HELP</p><h2>Quick explanations</h2><p>Open an item without leaving the current game.</p></div></div><section class="card help-list">
-    <details><summary>What does Player mean?</summary><p>Your solo player-controlled Kill Team operatives. Prompts are written from an NPO’s perspective, so your models are the NPO’s enemies.</p></details>
+  function renderHelp(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">FIELD HELP</p><h2>Instructions & quick reference</h2><p>Review the NPO decision process and common gameplay terms without changing the current game.</p></div></div>${guideInstructionsHtml(false)}<section class="card help-list">
+    <details><summary>What does Player mean?</summary><p>Your solo player-controlled Kill Team operatives.</p></details>
     <details><summary>What is an NPO?</summary><p>A non-player operative controlled by the Guide’s decision tree.</p></details>
     <details><summary>What is Threat Level?</summary><p>A 0–15 alert meter that rises from loud or destructive actions. Higher Threat produces higher grades, more reinforcements, and eventually Tomb World events.</p></details>
     <details><summary>What is Threat Grade?</summary><p>Grade 0 at Threat 0, Grade 1 at 1–5, Grade 2 at 6–10, and Grade 3 at 11–15. Reinforcements normally equal the current grade after Turning Point 1.</p></details>
-    <details><summary>When do I start the next Turning Point?</summary><p>After every ready Player operative and NPO has activated, complete end-of-turn scoring and press Finish Turning Point. The Play tab will then offer Start Next Turning Point.</p></details>
-    <details><summary>What happens during the Strategy Phase?</summary><p>The Guide readies operatives, evaluates Threat Grade, generates reinforcements after Turning Point 1, checks for Tomb World events, and rolls initiative. You review each result before activations begin.</p></details>
-    <details><summary>How does activation tracking work?</summary><p>Each completed Player or NPO activation is recorded. Ready counts and the next side update automatically. When both sides have no ready operatives, the Guide advances to end-of-turn scoring.</p></details>
-    <details><summary>How are saves and damage handled?</summary><p>V1.3 includes guided Player and NPO attack wizards. Attack dice and save dice are rolled with visual pips, saves cancel hits, and damage is previewed before confirmation. Player attacks can update NPO wounds automatically.</p></details>
+    <details><summary>How does alternating activation work?</summary><p>The side with initiative activates first. The Guide then alternates Player and NPO activations whenever both sides still have ready operatives. If one side runs out, the other finishes its remaining activations.</p></details>
+    <details><summary>What happens during the Strategy Phase?</summary><p>The Guide readies operatives, evaluates Threat Grade, generates reinforcements after Turning Point 1, checks for Tomb World events, and resolves initiative.</p></details>
+    <details><summary>How are saves and damage handled?</summary><p>Attack dice and save dice are shown with visual pips. Saves cancel hits, and Player damage remains pending until the whole activation is confirmed.</p></details>
   </section>`;}
+
 
   function boardSvg(id){
     const currentMission=mission();

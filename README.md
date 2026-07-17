@@ -228,3 +228,12 @@ Do not rename files or flatten the `Assets/Maps` folder. The included `.nojekyll
   - Fall Back cannot be combined with Move or Charge.
   - Pass cannot be combined with another action.
 - Shoot and Melee may both be selected when the combined AP cost is legal.
+
+
+## v1.4.0 Initial documentation update
+
+- Expanded Home → How It Works into a full onboarding guide.
+- Added game flow, Player activation, APL, Threat, and terminology guidance.
+- Added a detailed NPO AI decision explanation based on the Solo Command logic.
+- Added the same AI guidance and quick-reference terminology to Game Menu → Help.
+- No gameplay logic changed in this initial v1.4.0 release.
