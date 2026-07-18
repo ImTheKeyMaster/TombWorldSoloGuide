@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.2.9g';
+  const APP_VERSION = '2.2.9h';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -469,6 +469,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(state.tab==='play') renderPlay();
     else if(state.tab==='mission') renderMission();
     else if(state.tab==='roster') renderRoster();
+    else if(state.tab==='player-roster') renderPlayerRoster();
     else if(state.tab==='journal') renderJournal();
     else renderHelp();
 
@@ -1308,6 +1309,21 @@ function showPlayerActivation(stage={}){
       <section class="card"><h3>Victory</h3><p><strong>Win:</strong> ${escapeHtml(m.victory?.win||'See mission rules.')}</p><p><strong>Lose:</strong> ${escapeHtml(m.victory?.lose||'See mission rules.')}</p></section>`;
   }
   function renderRoster(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">NPO ROSTER</p><h2>${activeNpos().length} active NPOs</h2><p>Wounds and Ready status update the guided activation flow.</p></div><button class="btn secondary" id="addNpo">Add NPO</button></div><div class="roster-grid">${state.roster.length?state.roster.map(n=>operativeCard(n,true)).join(''):'<div class="card empty">No NPOs are currently on the battlefield.</div>'}</div>`;$('#addNpo').onclick=showAddNpo;$$('[data-player-attack]').forEach(b=>b.onclick=()=>showPlayerAttackWizard(b.dataset.playerAttack));$$('[data-wound]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.wound,-1));$$('[data-heal]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.heal,1));$$('[data-ready]').forEach(b=>b.onclick=()=>toggleReady(b.dataset.ready));$$('[data-delete]').forEach(b=>b.onclick=()=>deleteNpo(b.dataset.delete));}
+  function renderPlayerRoster(){
+    const casualties=new Set(state.playerCasualtyIds||[]);
+    const activated=new Set(state.playerActivatedIds||[]);
+    const cards=(state.playerRoster||[]).map(id=>{
+      const operative=livePlayerOperative(id);
+      if(!operative)return '';
+      const eliminated=casualties.has(id);
+      const status=eliminated?'ELIMINATED':activated.has(id)?'ACTIVATED':'READY';
+      const weaponNames=(operative.weapons||[]).map(w=>escapeHtml(w.name)).join(' · ');
+      return `<article class="operative-card ${eliminated?'dead':''}"><div class="player-roster-card-heading"><div><h4>${escapeHtml(operative.name)}</h4><p>${escapeHtml(operative.role||'Operative')}</p></div><strong>${status}</strong></div><div class="stat-grid compact-stats"><div class="stat"><small>APL</small><strong>${operative.apl??'—'}</strong></div><div class="stat"><small>MOVE</small><strong>${operative.move??'—'}"</strong></div><div class="stat"><small>SAVE</small><strong>${operative.save??'—'}+</strong></div><div class="stat"><small>WOUNDS</small><strong>${playerCurrentWounds(id)}/${operative.wounds}</strong></div></div>${weaponNames?`<p class="player-roster-weapons"><strong>Weapons:</strong> ${weaponNames}</p>`:''}<button class="btn ${eliminated?'secondary':'ghost'}" data-player-roster-status="${id}">${eliminated?'Restore Operative':'Update Status'}</button></article>`;
+    }).join('');
+    const teamName=playerTeamData?.teamName||playerTeamEntry()?.name||'Player';
+    app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">PLAYER ROSTER</p><h2>${escapeHtml(teamName)}</h2><p>${livingPlayerCount()} active of ${(state.playerRoster||[]).length} selected operatives.</p></div></div><div class="roster-grid">${cards||'<div class="card empty">No Player operatives were selected for this game.</div>'}</div>`;
+    $$('[data-player-roster-status]').forEach(button=>button.onclick=()=>showPlayerOperativeStatus(button.dataset.playerRosterStatus));
+  }
   function operativeCard(n,controls){return `<article class="operative-card ${n.wounds<=0?'dead':''}"><h4>${escapeHtml(n.name)}</h4><p>${n.type} · ${n.behavior} · Save ${n.save}+</p><div class="wounds"><meter min="0" max="${n.maxWounds}" value="${n.wounds}"></meter><strong>${n.wounds}/${n.maxWounds}</strong></div><p>${n.ready&&n.wounds>0?'READY':'ACTIVATED'}</p>${controls?`<div class="quick-actions"><button class="btn secondary" data-player-attack="${n.id}">Player Attack</button><button class="btn ghost" data-wound="${n.id}">− Wound</button><button class="btn ghost" data-heal="${n.id}">+ Heal</button><button class="btn secondary" data-ready="${n.id}">${n.ready?'Expend':'Ready'}</button><button class="btn danger" data-delete="${n.id}">Delete</button></div>`:''}</article>`;}
   function renderJournal(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">JOURNAL</p><h2>Battle Record</h2><p>Automatic game-state and Threat history.</p></div><button class="btn ghost" id="clearJournal">Clear</button></div><section class="card"><ol class="activity-log">${state.journal.length?state.journal.map(j=>`<li><time>${new Date(j.time).toLocaleString()}</time>${escapeHtml(j.text)}</li>`).join(''):'<li>No events recorded.</li>'}</ol></section>`;$('#clearJournal').onclick=()=>{state.journal=[];save();render();};}
   function renderHelp(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">FIELD HELP</p><h2>Instructions & quick reference</h2><p>Review the NPO decision process and common gameplay terms without changing the current game.</p></div></div>${guideInstructionsHtml(false)}<section class="card help-list">
@@ -1366,6 +1382,7 @@ function showPlayerActivation(stage={}){
         <button class="btn primary" data-game-view="play">Return to Guided Play</button>
         <button class="btn secondary" data-game-view="mission">Mission & Map</button>
         <button class="btn secondary" data-game-view="roster">NPO Roster</button>
+        <button class="btn secondary" data-game-view="player-roster">Player Roster</button>
         <button class="btn secondary" data-game-view="journal">Battle Journal</button>
         <button class="btn secondary" data-game-view="help">Help</button>
       </div>

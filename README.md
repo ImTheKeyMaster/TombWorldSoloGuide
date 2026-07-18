@@ -526,3 +526,10 @@ Major player-roster update:
 
 - Fixed the Player operative dropdown on iPhone by removing the disabled fieldset overlay that could intercept taps when the activation dialog first opened.
 - Player activation controls remain visually inactive and non-interactive until an operative is selected.
+
+
+## v2.2.9h
+
+- Added a Player Roster reference screen to the Game Menu.
+- Shows each selected Player operative's role, APL, Move, Save, current wounds, activation status, and weapons.
+- Player status can be reviewed and updated directly from the roster screen.
