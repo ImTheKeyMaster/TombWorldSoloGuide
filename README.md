@@ -659,3 +659,12 @@ Major player-roster update:
 - The Player Kill Team step is automatically omitted when only one team is installed.
 - Setup progress and step totals are calculated dynamically.
 - Combined Player and NPO deployment into one setup step.
+
+
+## v3.0.1 — Deployment cleanup
+
+- Simplified the Deploy Kill Teams screen to two confirmations.
+- Player deployment remains a single checkbox.
+- Necron deployment is now also a single checkbox.
+- Removed individual NPO deployment rows and the Place All NPOs button.
+- Deployment Complete remains disabled until both sides are confirmed.
