@@ -451,7 +451,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const noStartingNpos=missionSetup(m)==='0';
       const rosterContent=state.roster.length
         ? `<div class="summary-box"><strong>${state.roster.length} NPOs generated automatically</strong><br>${rosterBreakdown()}</div><div class="player-roster-grid npo-setup-grid">${state.roster.map(n=>npoRosterCard(n,false)).join('')}</div>`
-        : `<div class="no-npo-message"><strong>No NPOs begin the battle deployed.</strong><span>The first NPOs will enter play through the mission's reinforcement rules.</span></div>`;
+        : `<div class="no-npo-message"><strong>The battle begins with no deployed NPOs.</strong><span>The first NPOs will enter play through the mission's reinforcement rules.</span></div>`;
       return `<h3>Mission starting roster</h3><p>${m.name} begins with <strong>${missionSetup(m)}</strong> NPOs.</p>${rosterContent}<div class="wizard-actions ${noStartingNpos?'two-actions':''}"><button class="btn ghost" id="setupBack">Back</button>${noStartingNpos?'':`<button class="btn secondary" id="generateBtn">Regenerate Roster</button>`}<button class="btn primary" id="setupNext" ${state.roster.length||noStartingNpos?'':'disabled'}>Continue</button></div>`;
     }
     if(stepId==='deploy'){
@@ -541,7 +541,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
     setNextActivation(state.nextSide || state.initiative || 'player');
     if(state.phase==='end'){save();return nextStepCard();}
-    if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>Player's Turn</h2><p>Activate one Player operative on the tabletop. After it completes, the Guide will alternate to an NPO if one is ready.</p><button class="btn primary big-action" id="playerActivation">Activate Operative</button></section>`;
+    if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>Player's Turn</h2><p>Activate one Player operative on the tabletop. After it completes, the Guide will alternate to an NPO if one is ready.</p><button class="btn primary big-action" id="playerActivation">Activate an Operative</button></section>`;
     if(state.nextSide==='npo' && readyNpos().length>0){const n=nextNpo();return `<section class="next-card"><span class="phase">NPO ACTIVATION · ${activationProgressLabel()}</span><h2>NPO's Turn: ${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.behavior)} · ${n.wounds}/${n.maxWounds} wounds</p><div class="summary-box"><strong>Next:</strong> Answer a few battlefield questions to determine this operative’s activation.</div><button class="btn primary big-action" id="npoActivation">Activate NPO</button></section>`;}
     setNextActivation(state.nextSide==='player'?'npo':'player');
     save();
@@ -800,7 +800,7 @@ function showPlayerActivation(stage={}){
     const shootPending=stage.pendingShoot||null;
     const meleePending=stage.pendingMelee||null;
 
-    showModal('Activate Operative',`
+    showModal('Activate an Operative',`
       <p>Choose the Player operative being activated. That operative cannot activate again during this Turning Point after the activation is confirmed.</p>
       <div class="field">
         <label>Player operative</label>
