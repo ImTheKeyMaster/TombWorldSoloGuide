@@ -592,3 +592,12 @@ Major player-roster update:
 - AP Used now provides the complete AP display, such as `0 / 3`.
 - The operative's APL is read directly from the Player roster and is no longer editable.
 - Removed the white fieldset border around the Player activation controls.
+
+
+## v2.3.6
+
+- Removed the redundant instructions `Confirm the target before rolling the NPO attack.` and `Complete the attack before finishing this activation.`
+- Confirm Target now opens the NPO Attack Wizard immediately.
+- The NPO attack roll no longer appears on the Recommended Activation screen.
+- NPO attack dice animate inside the NPO Attack Wizard.
+- Roll Player Saves becomes available after the attack-dice animation completes.

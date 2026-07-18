@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.3.5';
+  const APP_VERSION = '2.3.6';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1274,7 +1274,7 @@ function showPlayerActivation(stage={}){
       <div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)} · ${escapeHtml(n.behavior)}</p></div><span class="order-badge">${decision.stance}</span></div>
       <div class="activation-command"><small>ACTION SEQUENCE</small><strong>${escapeHtml(decision.action)}</strong></div>
       <div class="target-command"><small>TARGET PRIORITY</small><strong>${escapeHtml(decision.target)}</strong>${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Target Player Operative</label><select id="npoPriorityTarget" ${targetConfirmed||attackResolved?'disabled':''}><option value="">Select the operative matching this priority</option>${targetOptions}</select></div>`:''}</div>
-      ${attackRequired&&!targetConfirmed?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button><p class="validation-message">Confirm the target before rolling the NPO attack.</p>`:''}
+      ${attackRequired&&!targetConfirmed?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
       ${attackRequired&&targetConfirmed?`<h3>Attack Roll</h3><div class="dice-row ${attackResolved||!animateDice?'settled':'animated-roll'}" id="aiDice">${attackResolved||!animateDice?dice.map(dieHtml).join(''):dice.map(()=>rollingDieHtml()).join('')}</div><p id="aiDiceSummary" class="muted">${attackResolved?'Attack resolved.':animateDice?`Rolling ${dice.length} attack dice…`:initiativeSummary(dice)}</p>${!attackResolved?`<button class="btn secondary big-action" id="rollPlayerSaves">Roll Player Saves</button>`:''}`:''}
       ${attackResolved&&state.npoAttackSummary?`<section class="card npo-attack-summary">
         <p class="eyebrow">NPO ATTACK SUMMARY</p>
@@ -1287,8 +1287,7 @@ function showPlayerActivation(stage={}){
           <div><small>Player wounds</small><strong>${state.npoAttackSummary.before} → ${state.npoAttackSummary.after}</strong></div>
         </div>
       </section>`:''}
-      ${attackRequired&&!attackResolved?'<p class="validation-message">Complete the attack before finishing this activation.</p>':''}
-      <details class="decision-path"><summary>Why did the Guide choose this?</summary><p>${escapeHtml(decision.reason)}</p><ol>${decision.path.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ol></details>
+            <details class="decision-path"><summary>Why did the Guide choose this?</summary><p>${escapeHtml(decision.reason)}</p><ol>${decision.path.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ol></details>
       <div class="wizard-actions"><button class="btn primary" id="completeNpo" ${attackRequired&&!attackResolved?'disabled':''}>Complete Activation</button></div>
     </div>`;
     if(!modal.open)modal.showModal();
@@ -1302,26 +1301,26 @@ function showPlayerActivation(stage={}){
       if(history)history.target=playerName(state.npoAttackTargetId);
       log(`${npoName(n)} confirmed ${playerName(state.npoAttackTargetId)} as the attack target and rolled the attack dice.`);
       save();
-      renderNpoDecisionResult(n,decision,rolledDice,answers,false,true,true,true);
+      showNpoAttackWizard(n,rolledDice,(summary)=>{
+        state.npoAttackSummary=summary;
+        save();
+        renderNpoDecisionResult(n,decision,rolledDice,answers,true,false,true,true);
+      },()=>{
+        state.npoAttackTargetId=null;
+        state.npoAttackSummary=null;
+        save();
+        renderNpoDecisionResult(n,decision,[],answers,false,false,true,false);
+      },true);
     });
-    $('#rollPlayerSaves')?.addEventListener('click',()=>showNpoAttackWizard(n,dice,(summary)=>{
-      state.npoAttackSummary=summary;
-      save();
-      renderNpoDecisionResult(n,decision,dice,answers,true,false,true,true);
-    },()=>{
-      state.npoAttackTargetId=null;
-      state.npoAttackSummary=null;
-      save();
-      renderNpoDecisionResult(n,decision,[],answers,false,false,true,false);
-    }));
+
     $('#completeNpo').onclick=()=>{state.npoAttackTargetId=null;state.npoAttackSummary=null;save();closeModal();render();};
   }
 
-  function showNpoAttackWizard(n,attackDice,onDone,onCancel){
+  function showNpoAttackWizard(n,attackDice,onDone,onCancel,animateAttackDice=false){
     const target=selectedNpoAttackTarget();
     if(!target){showToast('Select the targeted Player operative first.');if(onCancel)onCancel();return;}
     showModal('NPO Attack Wizard',`<p>${escapeHtml(npoName(n))} is attacking <strong>${escapeHtml(target.name)}</strong>.</p>
-      <div class="combat-stage"><small>NPO ATTACK DICE</small><div class="dice-row">${attackDice.map(dieHtml).join('')}</div><p>${n.attack.normal}/${n.attack.crit} damage · Hit ${n.attack.hit}+</p></div>
+      <div class="combat-stage"><small>NPO ATTACK DICE</small><div class="dice-row ${animateAttackDice?'animated-roll':'settled'}" id="npoAttackDiceResult">${animateAttackDice?attackDice.map(()=>rollingDieHtml()).join(''):attackDice.map(dieHtml).join('')}</div><p id="npoAttackDiceSummary">${animateAttackDice?`Rolling ${attackDice.length} attack dice…`:initiativeSummary(attackDice)}</p><p>${n.attack.normal}/${n.attack.crit} damage · Hit ${n.attack.hit}+</p></div>
       <div class="combat-stage target-summary"><small>TARGET PLAYER OPERATIVE</small><strong>${escapeHtml(target.name)}</strong><p>${escapeHtml(target.type||target.role||'Player Operative')}</p></div>
       <section class="defense-profile" aria-label="Player defense profile">
         <p class="eyebrow">PLAYER DEFENSE PROFILE</p>
@@ -1335,6 +1334,21 @@ function showPlayerActivation(stage={}){
       <label class="check-row compact-check"><input type="checkbox" id="playerCover"><span><strong>Player retains one normal save for cover</strong></span></label>
       <div id="combatResults" class="combat-results"><p>Review the defense profile, then roll saves.</p></div>
       <div class="wizard-actions"><button class="btn ghost" id="cancelNpoAttack">Cancel</button><button class="btn primary" id="rollNpoSaves">Roll Player Saves</button></div>`);
+    const rollSavesButton=$('#rollNpoSaves');
+    if(animateAttackDice){
+      rollSavesButton.disabled=true;
+      setTimeout(()=>{
+        const diceBox=$('#npoAttackDiceResult');
+        if(diceBox){
+          diceBox.innerHTML=attackDice.map(dieHtml).join('');
+          diceBox.classList.remove('animated-roll');
+          diceBox.classList.add('settled');
+        }
+        const summary=$('#npoAttackDiceSummary');
+        if(summary)summary.textContent=initiativeSummary(attackDice);
+        rollSavesButton.disabled=false;
+      },850);
+    }
     $('#cancelNpoAttack').onclick=()=>{save();if(onCancel)onCancel();};
     $('#rollNpoSaves').onclick=()=>{
       const defenseDice=3;
