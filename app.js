@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.2.9h';
+  const APP_VERSION = '2.2.9j';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -418,7 +418,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         <div class="checklist"><label class="check-row"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${valid?'':'disabled'}><span><strong>${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} operatives deployed</strong><small>Confirm that the selected kill team has been placed in its drop zone.</small></span></label></div>
         <div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid&&state.playerDeployed?'':'disabled'}>Continue</button></div>`;
     }
-    return `<h3>Setup complete</h3><div class="summary-box"><strong>${mission().number} · ${mission().name}</strong><br>${state.roster.length} starting NPOs · ${state.playerCount} ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} operatives<br>${selectedPlayerOperatives().map(o=>escapeHtml(o.name)).join(' · ')}</div>${boardSvg(mission().id)}<p><strong>Mission objective:</strong> ${mission().objective}</p><p><strong>Special rule reminder:</strong> ${missionSpecial()}</p><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
+    return `<h3>Setup complete</h3><div class="summary-box"><strong>${mission().number} · ${mission().name}</strong><br>${state.roster.length} starting NPOs<br>${state.playerCount} ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} operatives:<br>${selectedPlayerOperatives().map(o=>escapeHtml(o.name)).join(' · ')}</div>${boardSvg(mission().id)}<p><strong>Mission objective:</strong> ${mission().objective}</p><p><strong>Special rule reminder:</strong> ${missionSpecial()}</p><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
   }
 
   function bindSetup(step){
