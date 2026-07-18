@@ -970,3 +970,19 @@ button.tracker-operative:hover{
   color:var(--muted);
   font-size:.92rem;
 }
+
+
+/* v2.4.0 roster consistency and contextual help */
+.npo-roster-card{cursor:default}
+.npo-roster-card:hover{border-color:var(--line)}
+.npo-status-badge{width:auto!important;min-width:62px;padding:5px 8px;border-radius:999px!important;font-size:.66rem;letter-spacing:.04em}
+.npo-status-badge.ready{background:rgba(50,170,100,.2)!important;color:var(--green)!important}
+.npo-status-badge.activated{background:rgba(140,155,146,.16)!important;color:var(--muted)!important}
+.npo-status-badge.eliminated{background:rgba(190,40,40,.22)!important;color:var(--danger,#ff7b7b)!important}
+.npo-roster-card.dead{opacity:.7}
+.npo-roster-card .quick-actions{margin-top:14px}
+.tooltip-stat{position:relative;cursor:help;outline:none}
+.info-dot{display:inline-grid;place-items:center;width:16px;height:16px;margin-left:4px;border:1px solid currentColor;border-radius:50%;font-size:.66rem;font-weight:900;text-transform:none}
+.tooltip-stat::after{content:attr(data-tooltip);position:absolute;z-index:20;left:50%;bottom:calc(100% + 9px);width:min(260px,70vw);padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#07140e;color:var(--text);font-size:.8rem;font-weight:400;line-height:1.35;box-shadow:0 10px 28px rgba(0,0,0,.35);opacity:0;pointer-events:none;transform:translate(-50%,5px);transition:.15s ease}
+.tooltip-stat:hover::after,.tooltip-stat:focus::after,.tooltip-stat:focus-within::after{opacity:1;transform:translate(-50%,0)}
+@media(max-width:600px){.strategy-stat-grid .tooltip-stat:nth-child(odd)::after{left:0;transform:translate(0,5px)}.strategy-stat-grid .tooltip-stat:nth-child(odd):hover::after,.strategy-stat-grid .tooltip-stat:nth-child(odd):focus::after{transform:translate(0,0)}.strategy-stat-grid .tooltip-stat:nth-child(even)::after{left:auto;right:0;transform:translate(0,5px)}.strategy-stat-grid .tooltip-stat:nth-child(even):hover::after,.strategy-stat-grid .tooltip-stat:nth-child(even):focus::after{transform:translate(0,0)}}

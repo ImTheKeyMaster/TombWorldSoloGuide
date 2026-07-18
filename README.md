@@ -627,3 +627,14 @@ Major player-roster update:
 - Replaced the fixed eight-question NPO activation sequence with an adaptive question flow.
 - Irrelevant NPO questions are skipped once the Guide already has enough information to choose the activation.
 - Adaptive NPO prompts retain Back navigation.
+
+
+## v2.4.0
+
+- Starting NPO rosters now generate automatically when the roster setup step opens; Regenerate Roster remains available.
+- NPO cards now use the same visual system as Player roster cards, with behavior, attack, hit, save, wounds, and status.
+- Added focusable/hoverable tooltips to Threat Level, Grade Level, NPOs Ready, and Reinforcements on the Strategy Phase screen.
+- Renamed the Strategy Phase completion button to Strategy Phase Complete.
+- The mission now ends after Turning Point 4 is completed.
+- Renamed the Player activation screen to Player's Turn and its button to Activate Operative.
+- NPO activation screens now use NPO's Turn: [name], remove the repeated operative type, and use Activate NPO.
