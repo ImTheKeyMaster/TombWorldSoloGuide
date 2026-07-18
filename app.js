@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.2.9e';
+  const APP_VERSION = '2.2.9f';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -980,13 +980,11 @@ function showPlayerActivation(stage={}){
     if(stage.hatch){
       const r=roll();
       if(r>=4)inc++;
-      showToast(`Operate Hatch rolled ${r}${r>=4?'... Threat +1':'... no Threat increase'}`);
     }
     if(stage.breach){
       inc++;
       const r=roll();
       if(r>=4)inc++;
-      showToast(`Breach rolled ${r}${r>=4?'... Threat +2 total':'... Threat +1 total'}`);
     }
     if(inc)setThreat(inc,'Player activation');
     const operativeId=String(stage.playerOperativeId);

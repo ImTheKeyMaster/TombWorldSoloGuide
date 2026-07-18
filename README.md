@@ -513,3 +513,10 @@ Major player-roster update:
 - Removed the redundant `No Player Operatives Ready` button.
 - The Guide now relies entirely on tracked Player readiness.
 - When no Player operatives remain ready, the activation flow automatically advances to an NPO, or to End Turning Point when neither side has operatives left to activate.
+
+
+## v2.2.9f
+
+- Removed the remaining routine gameplay toast notifications for Operate Hatch and Breach results.
+- Threat changes from those actions still apply normally and remain recorded in the Battle Journal.
+- Validation and error toasts remain available.
