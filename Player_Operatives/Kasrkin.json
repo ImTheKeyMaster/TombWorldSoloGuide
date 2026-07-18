@@ -1,0 +1,457 @@
+{
+  "schemaVersion": 1,
+  "teamId": "kasrkin",
+  "teamName": "Kasrkin",
+  "faction": "Imperium",
+  "keywords": [
+    "KASRKIN",
+    "IMPERIUM",
+    "ASTRA MILITARUM"
+  ],
+  "rosterSize": 10,
+  "selectionRules": {
+    "leader": {
+      "operativeId": "sergeant",
+      "count": 1
+    },
+    "otherOperatives": 9,
+    "uniqueOperativesExcept": [
+      "trooper"
+    ],
+    "maxGunners": 4
+  },
+  "source": {
+    "publisher": "Games Workshop",
+    "document": "Kasrkin Kill Team Rules",
+    "revision": "28 January 2026"
+  },
+  "operatives": [
+    {
+      "id": "combat-medic",
+      "name": "Combat Medic",
+      "officialName": "Kasrkin Combat Medic",
+      "role": "Medic",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        "Medic!",
+        "Medikit"
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot lasgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "demo-trooper",
+      "name": "Demo-Trooper",
+      "officialName": "Kasrkin Demo-Trooper",
+      "role": "Demolitions",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        "Melta Mine",
+        "Proximity Mine",
+        "Blast Padding"
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot laspistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "gunner",
+      "name": "Gunner",
+      "officialName": "Kasrkin Gunner",
+      "role": "Gunner",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [],
+      "weapons": [
+        {
+          "name": "Flamer",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "3/3",
+          "rules": [
+            "Range 8\"",
+            "Saturate",
+            "Torrent 2\""
+          ]
+        },
+        {
+          "name": "Grenade launcher (frag)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/4",
+          "rules": [
+            "Blast 2\""
+          ]
+        },
+        {
+          "name": "Grenade launcher (krak)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": [
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Hot-shot volley gun (focused)",
+          "type": "ranged",
+          "attacks": 5,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Piercing Crits 1"
+          ]
+        },
+        {
+          "name": "Hot-shot volley gun (sweeping)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Piercing Crits 1",
+            "Torrent 1\""
+          ]
+        },
+        {
+          "name": "Meltagun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "6/3",
+          "rules": [
+            "Range 6\"",
+            "Devastating 4",
+            "Piercing 2"
+          ]
+        },
+        {
+          "name": "Plasma gun (standard)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/6",
+          "rules": [
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Plasma gun (supercharge)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "5/6",
+          "rules": [
+            "Hot",
+            "Lethal 5+",
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "recon-trooper",
+      "name": "Recon-Trooper",
+      "officialName": "Kasrkin Recon-Trooper",
+      "role": "Recon",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        "Reconnoitre Killzone",
+        "Auspex Scan"
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot lasgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "sergeant",
+      "name": "Sergeant",
+      "officialName": "Kasrkin Sergeant",
+      "role": "Leader",
+      "apl": 3,
+      "move": 6,
+      "save": 4,
+      "wounds": 9,
+      "baseSize": 28,
+      "abilities": [
+        "Tactical Command",
+        "Veteran Leadership"
+      ],
+      "weapons": [
+        {
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "name": "Hot-shot lasgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Hot-shot laspistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "name": "Plasma pistol (standard)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/5",
+          "rules": [
+            "Range 8\"",
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Plasma pistol (supercharge)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": [
+            "Range 8\"",
+            "Hot",
+            "Lethal 5+",
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Chainsword",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": []
+        },
+        {
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": []
+        },
+        {
+          "name": "Power weapon",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/6",
+          "rules": [
+            "Lethal 5+"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sharpshooter",
+      "name": "Sharpshooter",
+      "officialName": "Kasrkin Sharpshooter",
+      "role": "Marksman",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        "Camo Cloak",
+        "Concealed Position"
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot marksman rifle (concealed)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "3/3",
+          "rules": [
+            "Devastating 3",
+            "Heavy",
+            "Silent",
+            "Concealed Position"
+          ]
+        },
+        {
+          "name": "Hot-shot marksman rifle (mobile)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Hot-shot marksman rifle (stationary)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "3/3",
+          "rules": [
+            "Devastating 3",
+            "Heavy"
+          ]
+        },
+        {
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "trooper",
+      "name": "Trooper",
+      "officialName": "Kasrkin Trooper",
+      "role": "Trooper",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        "Adaptive Equipment"
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot lasgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "vox-trooper",
+      "name": "Vox-Trooper",
+      "officialName": "Kasrkin Vox-Trooper",
+      "role": "Communications",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        "Battle Comms"
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot lasgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    }
+  ]
+}

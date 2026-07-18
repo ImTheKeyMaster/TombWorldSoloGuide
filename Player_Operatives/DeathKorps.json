@@ -1,0 +1,630 @@
+{
+  "schemaVersion": 1,
+  "teamId": "death-korps",
+  "teamName": "Death Korps",
+  "faction": "Imperium",
+  "keywords": [
+    "DEATH KORPS",
+    "IMPERIUM",
+    "ASTRA MILITARUM"
+  ],
+  "rosterSize": 14,
+  "selectionRules": {
+    "leader": {
+      "operativeId": "watchmaster",
+      "count": 1
+    },
+    "mandatoryTroopers": 4,
+    "additionalOperatives": 9,
+    "uniqueOperativesExcept": [
+      "trooper"
+    ],
+    "troopersMayBeExchangedForZeroCostPloys": 4
+  },
+  "source": {
+    "publisher": "Games Workshop",
+    "document": "Death Korps Kill Team Rules",
+    "revision": "28 January 2026"
+  },
+  "operatives": [
+    {
+      "id": "bruiser",
+      "name": "Bruiser",
+      "officialName": "Death Korps Bruiser",
+      "role": "Brawler",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 7,
+      "baseSize": 25,
+      "abilities": [
+        "Bruiser"
+      ],
+      "weapons": [
+        {
+          "name": "Lasgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        },
+        {
+          "name": "Trench club",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/3",
+          "rules": [
+            "Shock"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "confidant",
+      "name": "Confidant",
+      "officialName": "Death Korps Confidant",
+      "role": "Second-in-Command",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 7,
+      "baseSize": 25,
+      "abilities": [
+        "Second in Command",
+        "Directive"
+      ],
+      "weapons": [
+        {
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "name": "Boltgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Lasgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        },
+        {
+          "name": "Relic laspistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "2/4",
+          "rules": [
+            "Range 8\"",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "name": "Bayonet",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        },
+        {
+          "name": "Chainsword",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "4/5",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "gunner",
+      "name": "Gunner",
+      "officialName": "Death Korps Gunner",
+      "role": "Gunner",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 7,
+      "baseSize": 25,
+      "abilities": [],
+      "weapons": [
+        {
+          "name": "Flamer",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "3/3",
+          "rules": [
+            "Range 8\"",
+            "Saturate",
+            "Torrent 2\""
+          ]
+        },
+        {
+          "name": "Grenade launcher (frag)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "2/4",
+          "rules": [
+            "Blast 2\""
+          ]
+        },
+        {
+          "name": "Grenade launcher (krak)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "4/5",
+          "rules": [
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Meltagun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "6/3",
+          "rules": [
+            "Range 6\"",
+            "Devastating 4",
+            "Piercing 2"
+          ]
+        },
+        {
+          "name": "Plasma gun (standard)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "4/6",
+          "rules": [
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Plasma gun (supercharge)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "5/6",
+          "rules": [
+            "Hot",
+            "Lethal 5+",
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Bayonet",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "medic",
+      "name": "Medic",
+      "officialName": "Death Korps Medic",
+      "role": "Medic",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 7,
+      "baseSize": 25,
+      "abilities": [
+        "Medic!",
+        "Medikit"
+      ],
+      "weapons": [
+        {
+          "name": "Lasgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        },
+        {
+          "name": "Bayonet",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "sapper",
+      "name": "Sapper",
+      "officialName": "Death Korps Sapper",
+      "role": "Demolitions",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 7,
+      "baseSize": 25,
+      "abilities": [
+        "Mine Layer",
+        "Detonate"
+      ],
+      "weapons": [
+        {
+          "name": "Lasgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        },
+        {
+          "name": "Remote detonator",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "5/6",
+          "rules": [
+            "Heavy (Dash only)",
+            "Limited 1",
+            "Piercing 1",
+            "Silent",
+            "Detonate"
+          ]
+        },
+        {
+          "name": "Bayonet",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "sniper",
+      "name": "Sniper",
+      "officialName": "Death Korps Sniper",
+      "role": "Marksman",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 7,
+      "baseSize": 25,
+      "abilities": [
+        "Concealed Position"
+      ],
+      "weapons": [
+        {
+          "name": "Long-las (concealed)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "3/3",
+          "rules": [
+            "Devastating 3",
+            "Heavy",
+            "Silent",
+            "Concealed Position"
+          ]
+        },
+        {
+          "name": "Long-las (mobile)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Long-las (stationary)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "3/3",
+          "rules": [
+            "Devastating 3",
+            "Heavy"
+          ]
+        },
+        {
+          "name": "Bayonet",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "spotter",
+      "name": "Spotter",
+      "officialName": "Death Korps Spotter",
+      "role": "Spotter",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 7,
+      "baseSize": 25,
+      "abilities": [
+        "Spot"
+      ],
+      "weapons": [
+        {
+          "name": "Lasgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        },
+        {
+          "name": "Mortar barrage",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "3/5",
+          "rules": [
+            "Blast 2\"",
+            "Heavy (Dash only)",
+            "Silent"
+          ]
+        },
+        {
+          "name": "Bayonet",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "trooper",
+      "name": "Trooper",
+      "officialName": "Death Korps Trooper",
+      "role": "Trooper",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 7,
+      "baseSize": 25,
+      "abilities": [
+        "Group Activation"
+      ],
+      "weapons": [
+        {
+          "name": "Lasgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        },
+        {
+          "name": "Bayonet",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "veteran",
+      "name": "Veteran",
+      "officialName": "Death Korps Veteran",
+      "role": "Veteran",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 7,
+      "baseSize": 25,
+      "abilities": [
+        "Veteran Guardsman",
+        "Bionics"
+      ],
+      "weapons": [
+        {
+          "name": "Lasgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        },
+        {
+          "name": "Bionic arm",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "4/5",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "vox-operator",
+      "name": "Vox-Operator",
+      "officialName": "Death Korps Vox-Operator",
+      "role": "Communications",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 7,
+      "baseSize": 25,
+      "abilities": [
+        "Relay Orders",
+        "Signal"
+      ],
+      "weapons": [
+        {
+          "name": "Lasgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        },
+        {
+          "name": "Bayonet",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "watchmaster",
+      "name": "Watchmaster",
+      "officialName": "Death Korps Watchmaster",
+      "role": "Leader",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 25,
+      "abilities": [
+        "Adaptive Orders",
+        "Bring it Down!"
+      ],
+      "weapons": [
+        {
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "name": "Boltgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Plasma pistol (standard)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "3/5",
+          "rules": [
+            "Range 8\"",
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Plasma pistol (supercharge)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "4/5",
+          "rules": [
+            "Range 8\"",
+            "Hot",
+            "Lethal 5+",
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Relic laspistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/4",
+          "rules": [
+            "Range 8\"",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "name": "Bayonet",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": []
+        },
+        {
+          "name": "Chainsword",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": []
+        },
+        {
+          "name": "Power weapon",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/6",
+          "rules": [
+            "Lethal 5+"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "zealot",
+      "name": "Zealot",
+      "officialName": "Death Korps Zealot",
+      "role": "Zealot",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 7,
+      "baseSize": 25,
+      "abilities": [
+        "The Emperor Protects",
+        "Uplifting Primer"
+      ],
+      "weapons": [
+        {
+          "name": "Lasgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        },
+        {
+          "name": "Bayonet",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    }
+  ]
+}

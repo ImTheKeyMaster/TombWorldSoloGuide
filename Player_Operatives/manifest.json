@@ -2,11 +2,25 @@
   "schemaVersion": 1,
   "teams": [
     {
+      "id": "death-korps",
+      "name": "Death Korps",
+      "file": "DeathKorps.json",
+      "faction": "Imperium",
+      "description": "Veteran Guardsmen of the Death Korps of Krieg"
+    },
+    {
       "id": "deathwatch",
       "name": "Deathwatch",
       "file": "DeathWatch.json",
       "faction": "Imperium",
       "description": "Elite Adeptus Astartes xenos hunters"
+    },
+    {
+      "id": "kasrkin",
+      "name": "Kasrkin",
+      "file": "Kasrkin.json",
+      "faction": "Imperium",
+      "description": "Elite Astra Militarum storm troopers"
     }
   ]
 }
