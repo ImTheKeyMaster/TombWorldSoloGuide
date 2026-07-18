@@ -573,3 +573,14 @@ Major player-roster update:
 - Player team definitions, selected Player operatives, and the complete NPO roster are now alphabetized from their authoritative data arrays.
 - All screens inherit the same order automatically, including setup, deployment, selectors, Activation Tracker, Player Roster, NPO Roster, and attack target lists.
 - Duplicate NPO numbering remains consistent because it is assigned after the globally sorted NPO order is established.
+
+
+## v2.3.4
+
+- The Resolve Shooting Attack and Resolve Melee Attack dialogs now open scrolled to the top on mobile.
+- Target NPO selection now appears above weapon selection.
+- When an operative has only one eligible weapon, it is shown as a read-only value instead of an unnecessary dropdown.
+- NPO target options now use the label `Wounds` instead of `projected wounds`.
+- `NPO Defense Dice` and `NPO Save` were moved out of the Player Attack Profile into a separate `NPO DEFENSE PROFILE`.
+- Renamed `Target Save` to `NPO Save`.
+- The cover option is now grouped with the NPO Defense Profile.

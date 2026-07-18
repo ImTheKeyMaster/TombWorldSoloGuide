@@ -816,3 +816,23 @@ button.tracker-operative:hover{
 .attack-profile .defense-profile-grid>div:last-child:nth-child(odd){
   grid-column:1 / -1;
 }
+
+
+/* v2.3.4 attack dialog refinements */
+.readonly-select{
+  min-height:52px;
+  display:flex;
+  align-items:center;
+  padding:0 16px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(6,16,12,.5);
+  color:var(--text);
+  font-weight:700;
+}
+.npo-defense-profile{margin-top:12px}
+.defense-cover-row{
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid var(--line);
+}

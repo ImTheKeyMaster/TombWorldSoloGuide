@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.3.3';
+  const APP_VERSION = '2.3.4';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1082,26 +1082,44 @@ function showPlayerActivation(stage={}){
       return;
     }
 
+    const weaponControl=weapons.length===1
+      ? `<div class="field"><label>Weapon</label><div class="readonly-select" id="singleWeaponDisplay">${escapeHtml(weapons[0].name)}</div><input type="hidden" id="playerWeaponSelect" value="0"></div>`
+      : `<div class="field"><label>Weapon</label><select id="playerWeaponSelect">${weapons.map((w,i)=>`<option value="${i}">${escapeHtml(w.name)}</option>`).join('')}</select></div>`;
+
     showModal(`Resolve ${attackLabel} Attack`,`
-      <p>Select the weapon and target NPO. This attack remains pending until the entire Player activation is confirmed.</p>
-      <div class="field"><label>Weapon</label><select id="playerWeaponSelect">${weapons.map((w,i)=>`<option value="${i}">${escapeHtml(w.name)}</option>`).join('')}</select></div>
-      <div class="field"><label>Target NPO</label><select id="combatTarget"><option value="">Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}">${escapeHtml(npoName(n))} · ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} projected wounds · Save ${n.save}+</option>`).join('')}</select></div>
+      <p>Select the target NPO and weapon. This attack remains pending until the entire Player activation is confirmed.</p>
+      <div class="field"><label>Target NPO</label><select id="combatTarget"><option value="">Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}">${escapeHtml(npoName(n))} · Wounds ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} · Save ${n.save}+</option>`).join('')}</select></div>
+      ${weaponControl}
       <fieldset id="combatControls" class="combat-fieldset" disabled>
         <section class="defense-profile attack-profile" aria-label="Player attack profile">
           <p class="eyebrow">PLAYER ATTACK PROFILE</p>
           <div class="defense-profile-grid" id="playerAttackProfile"></div>
         </section>
-        <label class="check-row compact-check"><input type="checkbox" id="npoCover"><span><strong>NPO retains one normal save for cover</strong></span></label>
+        <section class="defense-profile npo-defense-profile" aria-label="NPO defense profile">
+          <p class="eyebrow">NPO DEFENSE PROFILE</p>
+          <div class="defense-profile-grid">
+            <div><small>NPO Defense Dice</small><strong>3</strong></div>
+            <div><small>NPO Save</small><strong id="npoSaveValue">—</strong></div>
+          </div>
+          <label class="check-row compact-check defense-cover-row"><input type="checkbox" id="npoCover"><span><strong>NPO retains one normal save for cover</strong></span></label>
+        </section>
         <div id="combatResults" class="combat-results"><p>Select a target NPO to begin.</p></div>
         <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button><button class="btn primary" id="rollPendingAttack">Roll Attack & Saves</button></div>
       </fieldset>`);
+
+    requestAnimationFrame(()=>{
+      modal.scrollTop=0;
+      modalBody.scrollTop=0;
+      const inner=$('.modal-inner',modal);
+      if(inner)inner.scrollIntoView({block:'start',behavior:'auto'});
+    });
 
     const targetSelect=$('#combatTarget');
     const weaponSelect=$('#playerWeaponSelect');
     const controls=$('#combatControls');
 
     const renderProfile=()=>{
-      const weapon=weapons[Number(weaponSelect.value)||0];
+      const weapon=weapons[Number(weaponSelect?.value)||0];
       const profile=playerWeaponProfile(weapon);
       const target=state.roster.find(x=>x.id===targetSelect.value);
       $('#playerAttackProfile').innerHTML=`
@@ -1109,19 +1127,19 @@ function showPlayerActivation(stage={}){
         <div><small>Hit On</small><strong>${profile.hit}+</strong></div>
         <div><small>Normal Damage</small><strong>${profile.normal}</strong></div>
         <div><small>Critical Damage</small><strong>${profile.crit}</strong></div>
-        <div><small>AP</small><strong>${profile.ap}</strong></div>
-        <div><small>NPO Defense Dice</small><strong>3</strong></div>
-        <div><small>Target Save</small><strong>${target?`${target.save}+`:'—'}</strong></div>`;
+        <div><small>AP</small><strong>${profile.ap}</strong></div>`;
+      const saveValue=$('#npoSaveValue');
+      if(saveValue)saveValue.textContent=target?`${target.save}+`:'—';
     };
 
     targetSelect.addEventListener('change',()=>{
       controls.disabled=!targetSelect.value;
       renderProfile();
-      if(targetSelect.value)$('#combatResults').innerHTML='<p>Review the profile, then roll the attack.</p>';
+      if(targetSelect.value)$('#combatResults').innerHTML='<p>Review the profiles, then roll the attack.</p>';
     });
-    weaponSelect.addEventListener('change',()=>{
+    weaponSelect?.addEventListener('change',()=>{
       renderProfile();
-      $('#combatResults').innerHTML=targetSelect.value?'<p>Review the profile, then roll the attack.</p>':'<p>Select a target NPO to begin.</p>';
+      $('#combatResults').innerHTML=targetSelect.value?'<p>Review the profiles, then roll the attack.</p>':'<p>Select a target NPO to begin.</p>';
     });
 
     renderProfile();
