@@ -487,6 +487,573 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     });
   }
 
+  function renderGame(){
+    if(state.tab==='play') renderPlay();
+    else if(state.tab==='mission') renderMission();
+    else if(state.tab==='roster') renderRoster();
+    else if(state.tab==='player-roster') renderPlayerRoster();
+    else if(state.tab==='journal') renderJournal();
+    else renderHelp();
+
+    if(state.tab!=='play'){
+      app.insertAdjacentHTML('afterbegin',`<div class="reference-return"><button class="btn primary" id="returnToGuide">Return to Guided Play</button><small>Reference screens do not change the current Turning Point or activation state.</small></div>`);
+      $('#returnToGuide').onclick=()=>{state.tab='play';save();render();};
+    }
+  }
+
+  function hud(){return `<div class="hud"><div><small>Turning<span class="portrait-break"><br></span> Point</small><strong>${state.turningPoint||'Setup'}</strong></div><button class="hud-cell hud-threat" id="threatHudToggle" type="button" aria-expanded="${threatAdjustOpen}" aria-controls="threatAdjuster"><small>Threat<span class="portrait-break"><br></span> Level</small><strong>${state.threat}</strong></button><div><small>Grade<span class="portrait-break"><br></span> Level</small><strong>${threatGrade()}</strong></div><div><small>Player<span class="portrait-break"><br></span> Ready</small><strong>${state.playerReady}</strong></div><div><small>NPO<span class="portrait-break"><br></span> Ready</small><strong>${readyNpos().length}</strong></div></div><div class="threat-strip ${threatAdjustOpen?'':'hidden'}" id="threatAdjuster"><div><strong>THREAT LEVEL: ${threatLabel()}</strong><small>${threatGrade()===3?'Maximum Grade':`Next Grade at Threat Level ${[1,6,11][threatGrade()]}`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
+
+  function renderPlay(){
+    const milestone=state.gradeMilestone?`<section class="grade-milestone"><div><small>THREAT ESCALATION</small><strong>Grade ${state.gradeMilestone.grade}: ${escapeHtml(state.gradeMilestone.label)}</strong><span>Threat has reached Level ${state.gradeMilestone.threat}.</span></div><button class="btn ghost compact" id="dismissGradeMilestone">Dismiss</button></section>`:'';
+    app.innerHTML=hud()+milestone+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${nextStepCard()}${state.phase==='firefight'?activationTracker():''}`;
+    bindPlay();
+  }
+
+  function nextStepCard(){
+    if(state.completed) return `<section class="next-card"><span class="phase">MISSION COMPLETE</span><h2>Record the outcome</h2><p>The mission has reached its conclusion. Review the Journal or begin a new game.</p><button class="btn primary big-action" id="newGameFromPlay">Start New Game</button></section>`;
+    if(state.phase==='between') return `<section class="next-card"><span class="phase">NEXT STEP</span><h2>Start Turning Point ${state.turningPoint+1}</h2><p>The Guide will ready operatives, determine the current Threat Grade, generate reinforcements, check Tomb World events, and resolve initiative.</p><button class="btn primary big-action" id="startTp">Start Next Turning Point</button></section>`;
+    if(state.phase==='strategy') return strategyCard();
+    if(state.phase==='end'){
+      const npoLosses=Math.max(0,destroyedNpoCount()-(state.tpStartDestroyedNpos||0));
+      const playerLosses=Math.max(0,(state.playerCasualtyIds||[]).length-(state.tpStartPlayerCasualties||0));
+      const threatChanged=state.threat!==(state.tpStartThreat??state.threat);
+      const gradeChanged=threatGrade()!==(state.tpStartGrade??threatGrade());
+      return `<section class="next-card"><span class="phase">TURNING POINT ${state.turningPoint} COMPLETE</span><h2>Battle summary</h2><div class="turn-summary-grid"><div><small>Threat</small><strong>${state.tpStartThreat??state.threat} → ${state.threat}</strong><span>${threatChanged?'Changed this Turning Point':'No change'}</span></div><div><small>Grade</small><strong>${state.tpStartGrade??threatGrade()} → ${threatGrade()}</strong><span>${gradeChanged?'Grade increased':'Grade unchanged'}</span></div><div><small>NPOs destroyed</small><strong>${npoLosses}</strong><span>This Turning Point</span></div><div><small>Player casualties</small><strong>${playerLosses}</strong><span>This Turning Point</span></div></div><h3>Score and clean up</h3><p>Score mission objectives, resolve end-of-turn effects, and confirm all temporary markers have been cleared.</p><div class="field"><label>Mission progress: ${missionTracker()}</label><input id="tracker" type="number" min="0" max="${missionTrackerMax()}" value="${state.tracker}"></div><div class="checklist"><label class="check-row"><input id="endChecked" type="checkbox"><span><strong>End-of-turn steps complete</strong><small>Objectives scored, temporary effects resolved, and physical tokens cleaned up.</small></span></label></div><button class="btn primary big-action" id="finishTp" disabled>Finish Turning Point</button></section>`;
+    }
+    setNextActivation(state.nextSide || state.initiative || 'player');
+    if(state.phase==='end'){save();return nextStepCard();}
+    if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>Player's Turn</h2><p>Activate one Player operative on the tabletop. After it completes, the Guide will alternate to an NPO if one is ready.</p><button class="btn primary big-action" id="playerActivation">Activate Operative</button></section>`;
+    if(state.nextSide==='npo' && readyNpos().length>0){const n=nextNpo();return `<section class="next-card"><span class="phase">NPO ACTIVATION · ${activationProgressLabel()}</span><h2>NPO's Turn: ${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.behavior)} · ${n.wounds}/${n.maxWounds} wounds</p><div class="summary-box"><strong>Next:</strong> Answer a few battlefield questions to determine this operative’s activation.</div><button class="btn primary big-action" id="npoActivation">Activate NPO</button></section>`;}
+    setNextActivation(state.nextSide==='player'?'npo':'player');
+    save();
+    return nextStepCard();
+  }
+
+  let initiativeRolling=false;
+
+  function initiativeDieKind(side){
+    const d=state.strategyData||{};
+    if(d.playerRoll===d.npoRoll)return 'hit';
+    return d.suggestedInitiative===side?'hit':'miss';
+  }
+
+  function strategyCard(){
+    const d=state.strategyData||{};
+    if(state.strategyStage==='summary'){
+      const rolls=(d.reinforcements||[]).map(r=>`<div class="reinforcement-result"><div class="dice-row compact">${r.rolls.map(v=>dieHtml({value:v,kind:'hit'})).join('')}</div><strong>${r.type}</strong></div>`).join('');
+      return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 1 OF 2</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol><p>When all Strategy Phase actions are complete, continue to initiative.</p></div><div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat" tabindex="0" data-tooltip="Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events."><small>THREAT LEVEL <span class="info-dot">i</span></small><strong>${state.threat}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Grade 0–3 is derived from Threat and determines reinforcement pressure and some events."><small>GRADE LEVEL <span class="info-dot">i</span></small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="The number of living NPOs that are Ready and may still activate during this Turning Point."><small>NPOs Ready <span class="info-dot">i</span></small><strong>${readyNpos().length}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Additional NPOs generated during this Strategy Phase. Battlefield limits may block some arrivals."><small>Reinforcements <span class="info-dot">i</span></small><strong>${(d.reinforcements||[]).length}</strong></div></div>${rolls?`<h3>Reinforcements generated</h3><div class="reinforcement-grid">${rolls}</div><div class="field"><label>Reinforcement entry point</label><select id="reinforcementEntry"><option>Nearest valid entry point</option><option>Entry Point A</option><option>Entry Point B</option><option>Entry Point C</option><option>Custom placement</option></select></div>`:'<div class="summary-box"><strong>No reinforcements arrive.</strong></div>'}${d.blocked?`<p class="warning-text">${d.blocked} reinforcement(s) were blocked by the 10-NPO battlefield limit.</p>`:''}${d.event?`<div class="summary-box"><strong>${d.event[0]}</strong><br>${d.event[1]}</div>`:'<p>No Tomb World event is required.</p>'}<button class="btn primary big-action" id="continueStrategy">Strategy Phase Complete</button></section>`;
+    }
+    const auto=state.turningPoint===1;
+    return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 2 OF 2</span><h2>${auto?`${missionFirstInitiative()==='npo'?'NPOs have':'The Player has'} initiative during Turning Point 1`:'Determine initiative'}</h2>${auto?`<p>During Turning Point 1, ${missionFirstInitiative()==='npo'?'NPOs have':'the Player has'} initiative. Both Player operatives and NPOs begin the Firefight Phase ready.</p>`:`<p>The Guide rolled once for each side. Use the result, reroll both dice, or override it if your tabletop rules require a different outcome.</p><div class="initiative-roll"><div><small>Player</small><div class="dice-row animated-roll" id="playerInitiativeDie">${initiativeRolling?rollingDieHtml():dieHtml({value:state.strategyData.playerRoll,kind:initiativeDieKind('player')})}</div></div><div><small>NPOs</small><div class="dice-row animated-roll" id="npoInitiativeDie">${initiativeRolling?rollingDieHtml():dieHtml({value:state.strategyData.npoRoll,kind:initiativeDieKind('npo')})}</div></div></div><div class="summary-box" id="initiativeResult" ${initiativeRolling?'hidden':''}><strong>${state.strategyData.suggestedInitiative==='npo'?'NPOs win':'The Player wins'} initiative${state.strategyData.playerRoll===state.strategyData.npoRoll?' after the tie-break':''}.</strong></div>`}<div class="quick-actions">${auto?'':`<button class="btn ghost" id="rerollInitiative" ${initiativeRolling?'disabled':''}>Reroll Both</button>`}<button class="btn ${(auto?missionFirstInitiative():d.suggestedInitiative)==='player'?'primary':'secondary'}" data-init="player" ${(auto&&missionFirstInitiative()!=='player')||initiativeRolling?'disabled':''}>Begin Player Activation</button><button class="btn ${(auto?missionFirstInitiative():d.suggestedInitiative)==='npo'?'primary':'secondary'}" data-init="npo" ${(auto&&missionFirstInitiative()!=='npo')||initiativeRolling?'disabled':''}>Begin with NPOs</button></div></section>`;
+  }
+
+  function animateInitiativeResult(){
+    if(state.turningPoint===1){state.strategyData.suggestedInitiative=missionFirstInitiative();initiativeRolling=false;return;}
+    setTimeout(()=>{
+      const player=$('#playerInitiativeDie');
+      if(player){
+        player.innerHTML=dieHtml({value:state.strategyData.playerRoll,kind:initiativeDieKind('player')});
+        player.classList.add('settled');
+      }
+      const npo=$('#npoInitiativeDie');
+      if(npo){
+        npo.innerHTML=dieHtml({value:state.strategyData.npoRoll,kind:initiativeDieKind('npo')});
+        npo.classList.add('settled');
+      }
+      const result=$('#initiativeResult');
+      if(result)result.hidden=false;
+      initiativeRolling=false;
+      $('#rerollInitiative')?.removeAttribute('disabled');
+      $$('[data-init]').forEach(button=>button.removeAttribute('disabled'));
+    },700);
+  }
+
+  function activationTracker(){
+    const activatedIds=new Set(state.playerActivatedIds||[]);
+    const casualtyIds=new Set(state.playerCasualtyIds||[]);
+    const playerRows=(state.playerRoster||[]).map(operativeId=>{
+      const operative=playerDefinition(operativeId);
+      const casualty=casualtyIds.has(operativeId);
+      const activated=activatedIds.has(operativeId);
+      const status=casualty?'ELIMINATED':activated?'ACTIVATED':'READY';
+      const cls=casualty?'eliminated':activated?'activated':'ready';
+      return `<button type="button" class="tracker-operative player ${cls}" data-player-operative="${operativeId}" title="Select ${escapeHtml(operative?.name||operativeId)} to mark it eliminated or restore it">
+        <span>${escapeHtml(operative?.name||operativeId)}</span><strong>${status}</strong>
+      </button>`;
+    }).join('');
+    const npoRows=state.roster.map(n=>{
+      const eliminated=n.wounds<=0;
+      const status=eliminated?'ELIMINATED':n.ready?'READY':'ACTIVATED';
+      const cls=eliminated?'eliminated':n.ready?'ready':'activated';
+      return `<div class="tracker-operative npo ${cls}"><span>${escapeHtml(npoName(n))}</span><strong>${status}</strong></div>`;
+    }).join('');
+    return `<section class="card activation-tracker">
+      <div class="panel-title"><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div><div class="turn-badge">Next: ${state.nextSide==='npo'?'NPO':'Player'}</div></div>
+      <div class="tracker-section">
+        <small>${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} operatives</small>
+        <p class="muted compact-copy">All selected operatives are listed, including eliminated operatives. Select a Player operative to mark it eliminated or restore it.</p>
+        <div class="tracker-operative-grid">${playerRows||'<span class="muted">No player operatives selected</span>'}</div>
+      </div>
+      <div class="tracker-section">
+        <small>NPOs</small>
+        <div class="tracker-operative-grid">${npoRows||'<span class="muted">No NPO operatives generated</span>'}</div>
+      </div>
+    </section>`;
+  }
+
+  function showPlayerOperativeStatus(operativeId){
+    const casualties=new Set(state.playerCasualtyIds||[]);
+    const eliminated=casualties.has(operativeId);
+    const operativeName=playerName(operativeId);
+    showModal(operativeName,`
+      <p>This status carries across Turning Points and is reflected in the activation tracker and Player Ready count.</p>
+      <div class="summary-box"><strong>Current status:</strong> ${eliminated?'Eliminated':'Active'}</div>
+      <div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn ${eliminated?'secondary':'danger'}" id="togglePlayerCasualty">${eliminated?'Restore Operative':'Mark Eliminated'}</button></div>`);
+    $('#togglePlayerCasualty').onclick=()=>{
+      const ids=new Set(state.playerCasualtyIds||[]);
+      state.playerWounds=state.playerWounds||{};
+      if(ids.has(operativeId)){
+        ids.delete(operativeId);
+        state.playerWounds[operativeId]=Number(playerDefinition(operativeId)?.wounds||0);
+        log(`${operativeName} restored.`);
+      }else{
+        ids.add(operativeId);
+        state.playerWounds[operativeId]=0;
+        if(!state.playerActivatedIds.includes(operativeId))state.playerActivatedIds.push(operativeId);
+        log(`${operativeName} eliminated.`);
+      }
+      state.playerCasualtyIds=[...ids];
+      state.playerReady=playerOperativesRemaining();
+      setNextActivation(state.nextSide||'npo');
+      closeModal();
+      save();
+      render();
+    };
+  }
+
+  function bindPlay(){
+    $('#dismissGradeMilestone')?.addEventListener('click',()=>{state.gradeMilestone=null;save();render();});
+    $$('[data-player-operative]').forEach(button=>button.addEventListener('click',()=>showPlayerOperativeStatus(button.dataset.playerOperative)));
+    $('#startTp')?.addEventListener('click',startTurningPoint);
+    $('#continueStrategy')?.addEventListener('click',()=>{state.reinforcementEntry=$('#reinforcementEntry')?.value||state.reinforcementEntry;state.strategyStage='initiative';initiativeRolling=state.turningPoint!==1;save();render();if(initiativeRolling)animateInitiativeResult();});
+    $('#rerollInitiative')?.addEventListener('click',()=>{rollInitiative();initiativeRolling=true;save();render();animateInitiativeResult();});
+    $$('[data-init]').forEach(b=>b.onclick=()=>beginFirefight(b.dataset.init));
+    $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
+    $('#npoActivation')?.addEventListener('click',showNpoWizard);
+    $('#tracker')?.addEventListener('change',e=>{state.tracker=Math.max(0,Math.min(missionTrackerMax(),Number(e.target.value)||0));save();});
+    $('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked;});
+    $('#finishTp')?.addEventListener('click',()=>{
+      log(`Turning Point ${state.turningPoint} completed.`);
+      state.strategyStage=null;
+      state.strategyData=null;
+      state.newIds=[];
+      if(state.turningPoint>=4){
+        state.completed=true;
+        state.phase='end';
+        log('Mission complete after Turning Point 4.');
+      }else{
+        state.phase='between';
+      }
+      save();render();
+    });
+    $('#newGameFromPlay')?.addEventListener('click',confirmNewGame);
+    $('#threatHudToggle')?.addEventListener('click',()=>{threatAdjustOpen=!threatAdjustOpen;render();});
+    $('#threatUp')?.addEventListener('click',()=>{setThreat(1,'Manual adjustment');save();render();});
+    $('#threatDown')?.addEventListener('click',()=>{setThreat(-1,'Manual adjustment');save();render();});
+  }
+
+  function startTurningPoint(){
+    state.turningPoint++;
+    state.tpStartThreat=state.threat;
+    state.tpStartGrade=threatGrade();
+    state.tpStartDestroyedNpos=destroyedNpoCount();
+    state.tpStartPlayerCasualties=(state.playerCasualtyIds||[]).length;
+    state.gradeMilestone=null;
+    state.playerReady=Math.max(0,state.playerCount-(state.playerCasualtyIds||[]).length);
+    state.playerActivated=0;state.npoActivated=0;state.activationNumber=0;state.activationHistory=[];state.playerActivatedIds=[];
+    const grade=threatGrade();
+    activeNpos().forEach(n=>n.ready=true);
+    const reinforcements=[];
+    let blocked=0;
+    if(state.turningPoint>1 && grade>0){
+      const requested=grade, slots=Math.max(0,MAX_NPOS-activeNpos().length), amount=Math.min(requested,slots); blocked=requested-amount;
+      for(let i=0;i<amount;i++){
+        const rr=randomReinforcement();const type=rr.type,p=profiles[type];
+        const n={id:uid(),name:`${type} R${state.turningPoint}-${i+1}`,type,behavior:p.behavior,maxWounds:p.wounds,wounds:p.wounds,save:p.save,attack:{...p.attack},ready:true,deployed:true};
+        state.roster.push(n);state.newIds.push(n.id);reinforcements.push(rr);
+      }
+    }
+    let event=null;
+    if(grade===3){event=events[roll(events.length)-1];applyStrategyEvent(event);}
+    state.strategyData={grade,reinforcements,blocked,event,playerRoll:null,npoRoll:null,suggestedInitiative:'player'};
+    rollInitiative();
+    state.phase='strategy';state.strategyStage='summary';state.nextSide='player';state.activeNpoId=null;
+    log(`Turning Point ${state.turningPoint} started. Grade ${grade}; ${reinforcements.length} reinforcement(s).`);
+    save();render();
+  }
+
+  function rollInitiative(){
+    if(!state.strategyData)state.strategyData={};
+    if(state.turningPoint===1){
+      state.strategyData.playerRoll=null;
+      state.strategyData.npoRoll=null;
+      state.strategyData.suggestedInitiative='player';
+      return;
+    }
+    const p=roll(),n=roll();
+    state.strategyData.playerRoll=p;
+    state.strategyData.npoRoll=n;
+    state.strategyData.suggestedInitiative=n>p?'npo':'player';
+  }
+
+  function beginFirefight(side){
+    state.initiative=side;
+    state.phase='firefight';
+    state.strategyStage=null;
+    setNextActivation(side);
+    log(`${side==='npo'?'NPOs':'Player'} begin the Firefight Phase with initiative.`);
+    save();
+    render();
+  }
+
+  function applyStrategyEvent(event){
+    if(!event)return;
+    if(event[0]==='Stirrings of Horror')setThreat(1,event[0]);
+    if(event[0]==='Living Metal Flux')activeNpos().forEach(n=>{if(n.wounds<n.maxWounds)n.wounds=Math.min(n.maxWounds,n.wounds+rollD3()+2);});
+    if(event[0]==='Awakened Warrior' && activeNpos().length<MAX_NPOS){const p=profiles['Necron Warrior'];state.roster.push({id:uid(),name:`Necron Warrior E${state.turningPoint}`,type:'Necron Warrior',behavior:p.behavior,maxWounds:p.wounds,wounds:p.wounds,save:p.save,attack:{...p.attack},ready:true,deployed:true});}
+  }
+
+  function randomReinforcement(){ const a=roll(),b=roll(),r=a+b; return {rolls:[a,b],total:r,type:r<=4?'Canoptek Scarab Swarm':r<=6?'Canoptek Macrocyte':r<=10?'Necron Warrior':'Canoptek Tomb Crawler'}; }
+  function nextNpo(){ let n=state.roster.find(x=>x.id===state.activeNpoId&&x.ready&&x.wounds>0); if(!n){n=readyNpos().sort((a,b)=>priority(b)-priority(a))[0];state.activeNpoId=n?.id||null;} return n; }
+  function priority(n){return ({Guardian:4,Marksman:3,Brawler:2,Sentinel:1}[n.behavior]||1)+(n.wounds/n.maxWounds<.5?-.5:0);}
+
+  function remainingPlayerOperatives(){
+    const used=new Set(state.playerActivatedIds||[]);
+    const casualties=new Set(state.playerCasualtyIds||[]);
+    return (state.playerRoster||[]).filter(id=>!used.has(id)&&!casualties.has(id));
+  }
+
+  
+  const PLAYER_ACTION_COSTS={
+    move:1,
+    dash:1,
+    charge:1,
+    fallBack:2,
+    shoot:1,
+    melee:1,
+    damage:1,
+    hatch:1,
+    breach:1,
+    objective:1,
+    pass:0
+  };
+
+  function playerActionCost(stage){
+    return Object.entries(PLAYER_ACTION_COSTS).reduce((total,[key,cost])=>total+(stage[key]?cost:0),0);
+  }
+
+  function playerActionConflicts(stage){
+    const conflicts=[];
+    if(stage.charge && (stage.move || stage.dash || stage.fallBack)){
+      conflicts.push('Charge cannot be combined with Move, Dash, or Fall Back.');
+    }
+    if(stage.fallBack && (stage.move || stage.charge)){
+      conflicts.push('Fall Back cannot be combined with Move or Charge.');
+    }
+    if(stage.pass && playerActionCost({...stage,pass:false})>0){
+      conflicts.push('Pass cannot be combined with another action.');
+    }
+    return conflicts;
+  }
+
+function showPlayerActivation(stage={}){
+    const remaining=remainingPlayerOperatives();
+    if(!remaining.length){
+      state.playerReady=0;
+      setNextActivation('npo');
+      save();
+      render();
+      return;
+    }
+
+    const checked=key=>stage[key]?'checked':'';
+    const selectedId=String(stage.playerOperativeId||'');
+    const shootPending=stage.pendingShoot||null;
+    const meleePending=stage.pendingMelee||null;
+
+    showModal('Activate Operative',`
+      <p>Choose the Player operative being activated. That operative cannot activate again during this Turning Point after the activation is confirmed.</p>
+      <div class="field">
+        <label>Player operative</label>
+        <select id="playerOperativeSelect">
+          <option value="">Select a Player operative...</option>
+          ${remaining.map(id=>`<option value="${id}" ${selectedId===id?'selected':''}>${escapeHtml(playerName(id))}</option>`).join('')}
+        </select>
+      </div>
+      <fieldset id="playerActivationControls" class="${selectedId?'':'inactive'}" aria-disabled="${selectedId?'false':'true'}">
+        <div class="activation-apl-bar ap-usage-only">
+          <div class="ap-usage" id="apUsage"><small>AP used</small><strong>0 / ${Number(stage.apl||playerDefinition(selectedId)?.apl||3)}</strong></div>
+        </div>
+        <div id="apWarning" class="warning-text hidden"></div>
+        <p class="muted">Select everything this operative will do. Shooting and Melee attacks are resolved only after you press Complete Activation.</p>
+        <div class="activation-groups">
+          <section class="activation-group">
+            <div class="activation-group-title"><span>↔</span><div><strong>Movement</strong><small>Position and control actions</small></div></div>
+            <div class="toggle-list player-action-list">
+              <label><input type="checkbox" id="eaMove" ${checked('move')}><span>Move <small>1 AP</small></span></label>
+              <label><input type="checkbox" id="eaDash" ${checked('dash')}><span>Dash <small>1 AP</small></span></label>
+              <label><input type="checkbox" id="eaCharge" ${checked('charge')}><span>Charge <small>1 AP</small></span></label>
+              <label><input type="checkbox" id="eaFallBack" ${checked('fallBack')}><span>Fall Back <small>2 AP</small></span></label>
+            </div>
+          </section>
+
+          <section class="activation-group">
+            <div class="activation-group-title"><span>⚔</span><div><strong>Combat</strong><small>Resolved after Complete Activation</small></div></div>
+            <div class="combat-action-card">
+              <label><input type="checkbox" id="eaShoot" ${checked('shoot')}><span><strong>Shoot</strong><small>1 AP · One Shooting action for this operative</small></span></label>
+              ${shootPending?`<div class="pending-attack-summary"><strong>Pending:</strong> ${escapeHtml(shootPending.targetName)} · ${shootPending.damage} damage</div>`:''}
+            </div>
+            <div class="combat-action-card">
+              <label><input type="checkbox" id="eaMelee" ${checked('melee')||checked('fight')}><span><strong>Melee</strong><small>1 AP · One Melee action for this operative</small></span></label>
+              ${meleePending?`<div class="pending-attack-summary"><strong>Pending:</strong> ${escapeHtml(meleePending.targetName)} · ${meleePending.damage} damage</div>`:''}
+            </div>
+            <div class="toggle-list player-action-list compact-actions">
+              <label><input type="checkbox" id="eaDamage" ${checked('damage')}><span>Damaged an NPO with another action <small>1 AP</small></span></label>
+            </div>
+          </section>
+
+          <section class="activation-group">
+            <div class="activation-group-title"><span>▣</span><div><strong>Battlefield</strong><small>Terrain and mission interactions</small></div></div>
+            <div class="toggle-list player-action-list">
+              <label><input type="checkbox" id="eaHatch" ${checked('hatch')}><span>Operate Hatch <small>1 AP</small></span></label>
+              <label><input type="checkbox" id="eaBreach" ${checked('breach')}><span>Breach <small>1 AP</small></span></label>
+              <label><input type="checkbox" id="eaObjective" ${checked('objective')}><span>Mission or objective action <small>1 AP</small></span></label>
+            </div>
+          </section>
+
+          <section class="activation-group pass-group">
+            <div class="toggle-list player-action-list">
+              <label><input type="checkbox" id="eaPass" ${checked('pass')}>Pass / no action recorded</label>
+            </div>
+          </section>
+        </div>
+        <div class="wizard-actions"><button class="btn ghost" id="cancelPlayerActivation">Cancel</button><button class="btn primary" id="confirmPlayer">Complete Activation</button></div>
+      </fieldset>`);
+
+    const operativeSelect=$('#playerOperativeSelect');
+    const controls=$('#playerActivationControls');
+
+    // iOS Safari can retain focus on the button that opened the dialog,
+    // which occasionally prevents the native select from opening on first tap.
+    requestAnimationFrame(()=>{
+      modal.scrollTop=0;
+      modalBody.scrollTop=0;
+      if(document.activeElement!==modal){
+        try{modal.focus({preventScroll:true});}catch{modal.focus();}
+      }
+      operativeSelect.style.pointerEvents='none';
+      requestAnimationFrame(()=>{operativeSelect.style.pointerEvents='';});
+    });
+    operativeSelect.addEventListener('change',()=>{
+      const selectedOperative=playerDefinition(operativeSelect.value);const updated={...stage,playerOperativeId:operativeSelect.value||'',apl:Number(selectedOperative?.apl||stage.apl||3)};
+      showPlayerActivation(updated);
+    });
+
+    const actionIds=['eaMove','eaDash','eaCharge','eaFallBack','eaShoot','eaMelee','eaDamage','eaHatch','eaBreach','eaObjective'];
+    const clearPass=()=>{if($('#eaPass'))$('#eaPass').checked=false;};
+
+    function updatePlayerActionAvailability(){
+      const current=readPlayerActivationStage(stage);
+      const apl=Number(playerDefinition(current.playerOperativeId)?.apl||current.apl||3);
+      current.apl=apl;
+      const used=playerActionCost(current);
+      const conflicts=playerActionConflicts(current);
+      const usage=$('#apUsage');
+      if(usage)usage.innerHTML=`<small>AP used</small><strong>${used} / ${apl}</strong>`;
+      const warning=$('#apWarning');
+      const messages=[...conflicts];
+      if(used>apl)messages.push(`This activation uses ${used} AP, but the operative only has ${apl} APL.`);
+      if(warning){
+        warning.textContent=messages.join(' ');
+        warning.classList.toggle('hidden',messages.length===0);
+      }
+      $('#confirmPlayer').disabled=used>apl || conflicts.length>0;
+
+      // Disable unchecked actions that would exceed APL if added.
+      const map={
+        eaMove:'move',eaDash:'dash',eaCharge:'charge',eaFallBack:'fallBack',
+        eaShoot:'shoot',eaMelee:'melee',eaDamage:'damage',eaHatch:'hatch',
+        eaBreach:'breach',eaObjective:'objective'
+      };
+      Object.entries(map).forEach(([id,key])=>{
+        const box=$(`#${id}`);
+        if(!box)return;
+        if(box.checked){box.disabled=false;return;}
+        const hypothetical={...current,[key]:true};
+        box.disabled=playerActionCost(hypothetical)>apl || playerActionConflicts(hypothetical).length>0;
+      });
+    }
+
+    $('#eaPass')?.addEventListener('change',e=>{
+      if(e.target.checked)actionIds.forEach(id=>{const box=$(`#${id}`);if(box)box.checked=false;});
+      updatePlayerActionAvailability();
+    });
+    actionIds.forEach(id=>$(`#${id}`)?.addEventListener('change',e=>{
+      if(e.target.checked)clearPass();
+      updatePlayerActionAvailability();
+    }));
+    updatePlayerActionAvailability();
+
+    $('#cancelPlayerActivation').onclick=()=>{closeModal();render();};
+    $('#confirmPlayer').onclick=()=>{
+      const finalStage=readPlayerActivationStage(stage);
+      const used=playerActionCost(finalStage);
+      const conflicts=playerActionConflicts(finalStage);
+      if(used>finalStage.apl || conflicts.length){
+        showToast(conflicts[0] || `This operative is limited to ${finalStage.apl} AP.`);
+        return;
+      }
+      if(!finalStage.playerOperativeId){
+        showToast('Select a Player operative first.');
+        return;
+      }
+      if(!playerActivationHasAction(finalStage)){
+        showModal('No actions selected',`<p>Mark ${escapeHtml(playerName(finalStage.playerOperativeId))} as activated without recording an action?</p><div class="wizard-actions"><button class="btn ghost" id="returnPlayerActivation">Go Back</button><button class="btn primary" id="confirmEmptyPlayerActivation">Continue</button></div>`);
+        $('#returnPlayerActivation').onclick=()=>showPlayerActivation(finalStage);
+        $('#confirmEmptyPlayerActivation').onclick=()=>resolvePendingPlayerAttacks(finalStage);
+        return;
+      }
+      resolvePendingPlayerAttacks(finalStage);
+    };
+  }
+
+  function readPlayerActivationStage(previous={}){
+    const shoot=Boolean($('#eaShoot')?.checked);
+    const melee=Boolean($('#eaMelee')?.checked);
+    return {
+      playerOperativeId:String($('#playerOperativeSelect')?.value||previous.playerOperativeId||''),
+      apl:Number(playerDefinition(previous.playerOperativeId)?.apl||previous.apl||3),
+      move:Boolean($('#eaMove')?.checked),
+      dash:Boolean($('#eaDash')?.checked),
+      charge:Boolean($('#eaCharge')?.checked),
+      fallBack:Boolean($('#eaFallBack')?.checked),
+      shoot,
+      melee,
+      damage:Boolean($('#eaDamage')?.checked),
+      hatch:Boolean($('#eaHatch')?.checked),
+      breach:Boolean($('#eaBreach')?.checked),
+      objective:Boolean($('#eaObjective')?.checked),
+      pass:Boolean($('#eaPass')?.checked),
+      pendingShoot:shoot?previous.pendingShoot||null:null,
+      pendingMelee:melee?previous.pendingMelee||null:null
+    };
+  }
+
+  function playerActivationHasAction(stage){
+    return Boolean(stage.move || stage.dash || stage.charge || stage.fallBack || stage.shoot || stage.melee ||
+      stage.damage || stage.hatch || stage.breach || stage.objective || stage.pass);
+  }
+
+  function playerActivationSummary(stage){
+    const actions=[];
+    if(stage.move)actions.push('Move');
+    if(stage.dash)actions.push('Dash');
+    if(stage.charge)actions.push('Charge');
+    if(stage.fallBack)actions.push('Fall Back');
+    if(stage.shoot)actions.push('Shooting attack resolved');
+    if(stage.melee)actions.push('Melee attack resolved');
+    if(stage.damage)actions.push('Damaging action');
+    if(stage.hatch)actions.push('Operate Hatch');
+    if(stage.breach)actions.push('Breach');
+    if(stage.objective)actions.push('Mission action');
+    if(stage.pass)actions.push('Pass / no action recorded');
+    return actions.length?actions.join(', '):'No actions recorded';
+  }
+
+  function projectedNpoWounds(npoId,stage){
+    let wounds=state.roster.find(n=>n.id===npoId)?.wounds||0;
+    for(const pending of [stage.pendingShoot,stage.pendingMelee]){
+      if(pending?.targetId===npoId)wounds=pending.after;
+    }
+    return wounds;
+  }
+
+  function resolvePendingPlayerAttacks(stage){
+    if(stage.shoot&&!stage.pendingShoot){
+      showPendingPlayerAttackWizard(
+        stage,
+        'shoot',
+        result=>resolvePendingPlayerAttacks({...stage,pendingShoot:result}),
+        ()=>showPlayerActivation(stage)
+      );
+      return;
+    }
+    if(stage.melee&&!stage.pendingMelee){
+      const remainingTargets=activeNpos().filter(n=>projectedNpoWounds(n.id,stage)>0);
+      if(!remainingTargets.length){
+        resolvePendingPlayerAttacks({...stage,melee:false,meleeSkipped:true});
+        return;
+      }
+      showPendingPlayerAttackWizard(
+        stage,
+        'melee',
+        result=>resolvePendingPlayerAttacks({...stage,pendingMelee:result}),
+        ()=>showPlayerActivation(stage),
+        ()=>resolvePendingPlayerAttacks({...stage,melee:false,meleeSkipped:true})
+      );
+      return;
+    }
+    showPlayerActivationConfirmation(stage);
+  }
+
+  function showPlayerActivationConfirmation(stage){
+    const pending=[stage.pendingShoot,stage.pendingMelee].filter(Boolean);
+    const eliminated=pending.filter(p=>Number(p.after)<=0);
+    const eliminationBanner=eliminated.length?`<section class="elimination-banner" aria-label="NPO eliminated">
+      <span class="elimination-icon" aria-hidden="true">☠</span>
+      <div><small>NPO ELIMINATED</small><strong>${eliminated.map(p=>escapeHtml(p.targetName)).join(', ')}</strong></div>
+    </section>`:'';
+    const attackRows=pending.map(p=>{
+      const lethal=Number(p.after)<=0;
+      return `<section class="attack-confirmation-card ${lethal?'eliminated':''}">
+        <div class="attack-confirmation-heading">
+          <small>${p.attackType==='shoot'?'SHOOTING':'MELEE'}</small>
+          ${lethal?'<span class="eliminated-badge">☠ ELIMINATED</span>':''}
+        </div>
+        <strong class="attack-confirmation-target">${escapeHtml(p.targetName)}</strong>
+        <div class="attack-confirmation-stats">
+          <div><small>Damage</small><strong>${p.damage}</strong></div>
+          <div><small>Wounds</small><strong>${p.before} → <span class="${lethal?'zero-wounds':''}">${p.after}</span></strong></div>
+        </div>
+      </section>`;
+    }).join('');
+    const eliminationAction=eliminated.length?` · Eliminated ${eliminated.map(p=>escapeHtml(p.targetName)).join(', ')}`:'';
+    showModal('Confirm Player Activation',`
+      <p>${escapeHtml(playerName(stage.playerOperativeId))} will be marked activated. NPO damage has not been applied yet.</p>
+      ${eliminationBanner}
+      <div class="summary-box"><strong>AP used:</strong> ${playerActionCost(stage)} / ${stage.apl}</div>
+      ${attackRows||'<div class="summary-box"><strong>No attacks to apply.</strong></div>'}
+      <div class="summary-box"><strong>Actions:</strong> ${escapeHtml(playerActivationSummary(stage))}${eliminationAction}</div>
+      <div class="wizard-actions"><button class="btn ghost" id="backToPlayerActivation">Go Back</button><button class="btn primary" id="commitPlayerActivation">Confirm Activation</button></div>`);
+    $('#backToPlayerActivation').onclick=()=>showPlayerActivation(stage);
+    $('#commitPlayerActivation').onclick=()=>{
+      applyPendingPlayerDamage(stage);
+      completePlayerActivation(stage);
+    };
+  }
+
+  function applyPendingPlayerDamage(stage){
+    for(const pending of [stage.pendingShoot,stage.pendingMelee]){
+      if(!pending)continue;
+      const n=state.roster.find(x=>x.id===pending.targetId);
+      if(!n)continue;
+      const before=n.wounds;
+      n.wounds=Math.max(0,pending.after);
+      if(n.wounds===0)n.ready=false;
+      log(`${playerName(stage.playerOperativeId)} ${pending.attackType==='shoot'?'shot':'made a Melee attack against'} ${npoName(n)} for ${pending.damage} damage (${before} → ${n.wounds} wounds).`);
+    }
+  }
+
   function completePlayerActivation(stage={}){
     let inc=0;
     if(stage.shoot)inc++;
