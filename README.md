@@ -668,3 +668,10 @@ Major player-roster update:
 - Necron deployment is now also a single checkbox.
 - Removed individual NPO deployment rows and the Place All NPOs button.
 - Deployment Complete remains disabled until both sides are confirmed.
+
+
+## v3.0.3
+
+- Removed the mission map from the Ready to Begin screen.
+- Corrected all displayed and runtime version numbers to v3.0.3.
+- Updated asset cache keys so browsers load the latest JavaScript and CSS.
