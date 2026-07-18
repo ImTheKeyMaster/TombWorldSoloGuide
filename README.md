@@ -609,3 +609,11 @@ Major player-roster update:
 - Modal launch now clears focus from the button that opened it.
 - The dialog container receives focus instead of Safari automatically focusing or trapping another control.
 - The Resolve Player Activation dialog is reset to the top before the Player Operative dropdown becomes interactive.
+
+
+## v2.3.8
+
+- Added a prominent NPO Eliminated banner to the Confirm Player Activation dialog when an attack reduces an NPO to 0 wounds.
+- Reworked attack results into structured cards showing attack type, target, damage, and wound change.
+- Added a red elimination badge, highlighted card, and emphasized 0-wound result for lethal attacks.
+- Added eliminated NPO names to the Actions summary.

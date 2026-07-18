@@ -861,3 +861,93 @@ button.tracker-operative:hover{
   -webkit-user-select:auto;
   user-select:auto;
 }
+
+
+/* v2.3.8: make NPO eliminations unmistakable on activation confirmation */
+.elimination-banner{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin:18px 0;
+  padding:16px 18px;
+  border:2px solid var(--danger,#ef6b6b);
+  border-radius:16px;
+  background:rgba(150,30,30,.22);
+}
+.elimination-banner .elimination-icon{
+  font-size:2rem;
+  line-height:1;
+}
+.elimination-banner small{
+  display:block;
+  font-weight:900;
+  letter-spacing:.08em;
+  color:var(--danger,#ff7b7b);
+}
+.elimination-banner strong{
+  display:block;
+  margin-top:3px;
+  font-size:1.12rem;
+  color:var(--text);
+}
+.attack-confirmation-card{
+  margin:14px 0;
+  padding:16px 18px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:rgba(16,51,34,.45);
+}
+.attack-confirmation-card.eliminated{
+  border:2px solid var(--danger,#ef6b6b);
+  background:rgba(125,25,25,.2);
+}
+.attack-confirmation-heading{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.attack-confirmation-heading>small{
+  font-weight:900;
+  letter-spacing:.08em;
+  color:var(--muted);
+}
+.eliminated-badge{
+  display:inline-flex;
+  align-items:center;
+  padding:5px 9px;
+  border-radius:999px;
+  background:rgba(190,40,40,.3);
+  color:var(--danger,#ff7b7b);
+  font-size:.78rem;
+  font-weight:900;
+  letter-spacing:.04em;
+}
+.attack-confirmation-target{
+  display:block;
+  margin-top:10px;
+  font-size:1.18rem;
+}
+.attack-confirmation-stats{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin-top:14px;
+}
+.attack-confirmation-stats>div{
+  padding:11px 12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+}
+.attack-confirmation-stats small{
+  display:block;
+  color:var(--muted);
+}
+.attack-confirmation-stats strong{
+  display:block;
+  margin-top:3px;
+}
+.zero-wounds{
+  color:var(--danger,#ff7b7b);
+  font-size:1.15em;
+}

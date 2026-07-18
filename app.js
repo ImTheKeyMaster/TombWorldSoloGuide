@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.3.7';
+  const APP_VERSION = '2.3.8';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -958,12 +958,32 @@ function showPlayerActivation(stage={}){
 
   function showPlayerActivationConfirmation(stage){
     const pending=[stage.pendingShoot,stage.pendingMelee].filter(Boolean);
-    const attackRows=pending.map(p=>`<div class="summary-box"><strong>${p.attackType==='shoot'?'Shooting':'Melee'}:</strong> ${escapeHtml(p.targetName)} · ${p.before} → ${p.after} wounds (${p.damage} damage)</div>`).join('');
+    const eliminated=pending.filter(p=>Number(p.after)<=0);
+    const eliminationBanner=eliminated.length?`<section class="elimination-banner" aria-label="NPO eliminated">
+      <span class="elimination-icon" aria-hidden="true">☠</span>
+      <div><small>NPO ELIMINATED</small><strong>${eliminated.map(p=>escapeHtml(p.targetName)).join(', ')}</strong></div>
+    </section>`:'';
+    const attackRows=pending.map(p=>{
+      const lethal=Number(p.after)<=0;
+      return `<section class="attack-confirmation-card ${lethal?'eliminated':''}">
+        <div class="attack-confirmation-heading">
+          <small>${p.attackType==='shoot'?'SHOOTING':'MELEE'}</small>
+          ${lethal?'<span class="eliminated-badge">☠ ELIMINATED</span>':''}
+        </div>
+        <strong class="attack-confirmation-target">${escapeHtml(p.targetName)}</strong>
+        <div class="attack-confirmation-stats">
+          <div><small>Damage</small><strong>${p.damage}</strong></div>
+          <div><small>Wounds</small><strong>${p.before} → <span class="${lethal?'zero-wounds':''}">${p.after}</span></strong></div>
+        </div>
+      </section>`;
+    }).join('');
+    const eliminationAction=eliminated.length?` · Eliminated ${eliminated.map(p=>escapeHtml(p.targetName)).join(', ')}`:'';
     showModal('Confirm Player Activation',`
       <p>${escapeHtml(playerName(stage.playerOperativeId))} will be marked activated. NPO damage has not been applied yet.</p>
+      ${eliminationBanner}
       <div class="summary-box"><strong>AP used:</strong> ${playerActionCost(stage)} / ${stage.apl}</div>
       ${attackRows||'<div class="summary-box"><strong>No attacks to apply.</strong></div>'}
-      <div class="summary-box"><strong>Actions:</strong> ${escapeHtml(playerActivationSummary(stage))}</div>
+      <div class="summary-box"><strong>Actions:</strong> ${escapeHtml(playerActivationSummary(stage))}${eliminationAction}</div>
       <div class="wizard-actions"><button class="btn ghost" id="backToPlayerActivation">Go Back</button><button class="btn primary" id="commitPlayerActivation">Confirm Activation</button></div>`);
     $('#backToPlayerActivation').onclick=()=>showPlayerActivation(stage);
     $('#commitPlayerActivation').onclick=()=>{
