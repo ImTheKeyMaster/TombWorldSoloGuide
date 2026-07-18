@@ -1577,7 +1577,7 @@ function showPlayerActivation(stage={}){
         <div><span>OFFICIAL MISSION MAP</span><strong>${escapeHtml(currentMission.number)} · ${escapeHtml(currentMission.name)}</strong></div>
         <small>Extracted from the included Games Workshop mission-pack PDF</small>
       </div>
-      <img class="official-map-image" src="${imagePath}" alt="Official board layout for ${escapeHtml(currentMission.name)}" loading="eager">
+      
       <figcaption>Only the map for this mission is shown. The complete official PDF is stored locally in <code>Assets/Tomb-World-Mission-Pack.pdf</code>.</figcaption>
     </figure>`;
   }
