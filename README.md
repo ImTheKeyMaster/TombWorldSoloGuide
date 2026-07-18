@@ -645,3 +645,8 @@ Major player-roster update:
 - Removed the internal labels “QUESTION”, “ADAPTIVE”, and “NPO PERSPECTIVE” from the NPO decision dialog.
 - Renamed the dialog’s Cancel button to “Exit Guide”.
 - Kept the Back button and adaptive decision flow unchanged.
+
+## v2.4.2
+- Removed redundant Player/NPO activation labels.
+- Retained a subtle “Activation X of Y” line.
+- Shortened the Player and NPO next-step instructions.
