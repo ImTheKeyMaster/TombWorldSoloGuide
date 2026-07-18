@@ -17,9 +17,13 @@
     "mandatoryTroopers": 4,
     "additionalOperatives": 9,
     "uniqueOperativesExcept": [
-      "trooper"
+      "trooper-1",
+      "trooper-2",
+      "trooper-3",
+      "trooper-4"
     ],
-    "troopersMayBeExchangedForZeroCostPloys": 4
+    "troopersMayBeExchangedForZeroCostPloys": 4,
+    "maxGunners": 4
   },
   "source": {
     "publisher": "Games Workshop",
@@ -132,8 +136,8 @@
       ]
     },
     {
-      "id": "gunner",
-      "name": "Gunner",
+      "id": "gunner-flamer",
+      "name": "Gunner (Flamer)",
       "officialName": "Death Korps Gunner",
       "role": "Gunner",
       "apl": 2,
@@ -156,6 +160,28 @@
           ]
         },
         {
+          "name": "Bayonet",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "gunner-grenade-launcher",
+      "name": "Gunner (Grenade Launcher)",
+      "officialName": "Death Korps Gunner",
+      "role": "Gunner",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 7,
+      "baseSize": 25,
+      "abilities": [],
+      "weapons": [
+        {
           "name": "Grenade launcher (frag)",
           "type": "ranged",
           "attacks": 4,
@@ -176,6 +202,28 @@
           ]
         },
         {
+          "name": "Bayonet",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "gunner-meltagun",
+      "name": "Gunner (Meltagun)",
+      "officialName": "Death Korps Gunner",
+      "role": "Gunner",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 7,
+      "baseSize": 25,
+      "abilities": [],
+      "weapons": [
+        {
           "name": "Meltagun",
           "type": "ranged",
           "attacks": 4,
@@ -187,6 +235,28 @@
             "Piercing 2"
           ]
         },
+        {
+          "name": "Bayonet",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "gunner-plasma-gun",
+      "name": "Gunner (Plasma Gun)",
+      "officialName": "Death Korps Gunner",
+      "role": "Gunner",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 7,
+      "baseSize": 25,
+      "abilities": [],
+      "weapons": [
         {
           "name": "Plasma gun (standard)",
           "type": "ranged",
@@ -400,7 +470,103 @@
       ]
     },
     {
-      "id": "trooper",
+      "id": "trooper-1",
+      "name": "Trooper",
+      "officialName": "Death Korps Trooper",
+      "role": "Trooper",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 7,
+      "baseSize": 25,
+      "abilities": [
+        "Group Activation"
+      ],
+      "weapons": [
+        {
+          "name": "Lasgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        },
+        {
+          "name": "Bayonet",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "trooper-2",
+      "name": "Trooper",
+      "officialName": "Death Korps Trooper",
+      "role": "Trooper",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 7,
+      "baseSize": 25,
+      "abilities": [
+        "Group Activation"
+      ],
+      "weapons": [
+        {
+          "name": "Lasgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        },
+        {
+          "name": "Bayonet",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "trooper-3",
+      "name": "Trooper",
+      "officialName": "Death Korps Trooper",
+      "role": "Trooper",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 7,
+      "baseSize": 25,
+      "abilities": [
+        "Group Activation"
+      ],
+      "weapons": [
+        {
+          "name": "Lasgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        },
+        {
+          "name": "Bayonet",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "trooper-4",
       "name": "Trooper",
       "officialName": "Death Korps Trooper",
       "role": "Trooper",
