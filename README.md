@@ -691,3 +691,12 @@ Major player-roster update:
 - Combined Mission, Objective, and Special Rules into one briefing card.
 - Displayed each mission special rule as its own scannable section.
 - Updated visible and internal version numbers to v3.0.5.
+
+
+## v3.0.6
+
+- Improved the Generate NPO Roster step for missions with zero starting NPOs.
+- Hidden the Regenerate Roster button when the mission starts with no deployed NPOs.
+- Replaced the low-emphasis empty state with a prominent deployment message.
+- Added reinforcement guidance explaining when the first NPOs enter play.
+- Updated visible, internal, and cache-busting version numbers to v3.0.6.

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.0.5';
+  const APP_VERSION = '3.0.6';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -437,7 +437,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
     if(stepId==='npoRoster'){
       const m=mission();
-      return `<h3>Mission starting roster</h3><p>${m.name} begins with <strong>${missionSetup(m)}</strong> NPOs.</p>${state.roster.length?`<div class="summary-box"><strong>${state.roster.length} NPOs generated automatically</strong><br>${rosterBreakdown()}</div><div class="player-roster-grid npo-setup-grid">${state.roster.map(n=>npoRosterCard(n,false)).join('')}</div>`:`<div class="empty">This mission starts with no deployed NPOs.</div>`}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn secondary" id="generateBtn">Regenerate Roster</button><button class="btn primary" id="setupNext" ${state.roster.length||missionSetup(m)==='0'?'':'disabled'}>Continue</button></div>`;
+      const noStartingNpos=missionSetup(m)==='0';
+      const rosterContent=state.roster.length
+        ? `<div class="summary-box"><strong>${state.roster.length} NPOs generated automatically</strong><br>${rosterBreakdown()}</div><div class="player-roster-grid npo-setup-grid">${state.roster.map(n=>npoRosterCard(n,false)).join('')}</div>`
+        : `<div class="no-npo-message"><strong>No NPOs begin the battle deployed.</strong><span>The first NPOs will enter play through the mission's reinforcement rules.</span></div>`;
+      return `<h3>Mission starting roster</h3><p>${m.name} begins with <strong>${missionSetup(m)}</strong> NPOs.</p>${rosterContent}<div class="wizard-actions ${noStartingNpos?'two-actions':''}"><button class="btn ghost" id="setupBack">Back</button>${noStartingNpos?'':`<button class="btn secondary" id="generateBtn">Regenerate Roster</button>`}<button class="btn primary" id="setupNext" ${state.roster.length||noStartingNpos?'':'disabled'}>Continue</button></div>`;
     }
     if(stepId==='deploy'){
       const allNposPlaced=state.roster.every(n=>n.deployed);
