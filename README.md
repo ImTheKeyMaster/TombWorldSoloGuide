@@ -636,8 +636,8 @@ Major player-roster update:
 - Added focusable/hoverable tooltips to Threat Level, Grade Level, NPOs Ready, and Reinforcements on the Strategy Phase screen.
 - Renamed the Strategy Phase completion button to Strategy Phase Complete.
 - The mission now ends after Turning Point 4 is completed.
-- Renamed the Player activation screen to Player's Turn and its button to Activate an Operative.
-- NPO activation screens now use NPO's Turn: [name], remove the repeated operative type, and use Activate NPO.
+- Renamed the Player activation screen to Player Activation and its button to Activate an Operative.
+- NPO activation screens now use NPO Activation: [name], remove the repeated operative type, and use Activate NPO.
 
 
 ## v2.4.1
