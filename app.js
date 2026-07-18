@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.2.9f';
+  const APP_VERSION = '2.2.9g';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -749,7 +749,7 @@ function showPlayerActivation(stage={}){
           ${remaining.map(id=>`<option value="${id}" ${selectedId===id?'selected':''}>${escapeHtml(playerName(id))}</option>`).join('')}
         </select>
       </div>
-      <fieldset id="playerActivationControls" ${selectedId?'':'disabled'}>
+      <fieldset id="playerActivationControls" class="${selectedId?'':'inactive'}" aria-disabled="${selectedId?'false':'true'}">
         <div class="activation-apl-bar">
           <div class="field apl-field">
             <label>APL</label>

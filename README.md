@@ -520,3 +520,9 @@ Major player-roster update:
 - Removed the remaining routine gameplay toast notifications for Operate Hatch and Breach results.
 - Threat changes from those actions still apply normally and remain recorded in the Battle Journal.
 - Validation and error toasts remain available.
+
+
+## v2.2.9g
+
+- Fixed the Player operative dropdown on iPhone by removing the disabled fieldset overlay that could intercept taps when the activation dialog first opened.
+- Player activation controls remain visually inactive and non-interactive until an operative is selected.
