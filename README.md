@@ -565,3 +565,11 @@ Major player-roster update:
 - Every screen now uses the same naming rule, including setup deployment, activation cards, attack screens, the Activation Tracker, the NPO Roster, summaries, logs, and battle history.
 - A number is shown only when more than one NPO of the same type exists.
 - Removed the need for localized NPO naming fixes in individual screens.
+
+
+## v2.3.3
+
+- Added one global operative-sorting function used before every render.
+- Player team definitions, selected Player operatives, and the complete NPO roster are now alphabetized from their authoritative data arrays.
+- All screens inherit the same order automatically, including setup, deployment, selectors, Activation Tracker, Player Roster, NPO Roster, and attack target lists.
+- Duplicate NPO numbering remains consistent because it is assigned after the globally sorted NPO order is established.

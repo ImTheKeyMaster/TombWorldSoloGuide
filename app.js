@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.3.2';
+  const APP_VERSION = '2.3.3';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -224,6 +224,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function render(){
+    sortOperativesGlobally();
     const currentStepKey = [
       state.screen,
       state.setupStep ?? '',
@@ -1013,6 +1014,26 @@ function showPlayerActivation(stage={}){
     if(sameType.length<=1)return n.type;
     const index=sameType.findIndex(x=>x.id===n.id);
     return `${n.type} ${index+1}`;
+  }
+
+  function sortOperativesGlobally(){
+    const compareText=(a,b)=>String(a||'').localeCompare(String(b||''),undefined,{sensitivity:'base',numeric:true});
+
+    // Sort the complete Player team definition so setup, selectors, and roster views agree.
+    if(Array.isArray(playerTeamData?.operatives)){
+      playerTeamData.operatives.sort((a,b)=>compareText(a.name,b.name)||compareText(a.id,b.id));
+    }
+
+    // Sort selected Player operatives by their roster names.
+    if(Array.isArray(state.playerRoster)){
+      state.playerRoster.sort((a,b)=>compareText(playerName(a),playerName(b))||compareText(a,b));
+    }
+
+    // Sort the authoritative NPO roster by type. The centralized npoName()
+    // function then assigns duplicate numbers consistently everywhere.
+    if(Array.isArray(state.roster)){
+      state.roster.sort((a,b)=>compareText(a.type,b.type)||compareText(a.id,b.id));
+    }
   }
 
   function playerAttackWeapons(operativeId,attackType){
