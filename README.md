@@ -533,3 +533,9 @@ Major player-roster update:
 - Added a Player Roster reference screen to the Game Menu.
 - Shows each selected Player operative's role, APL, Move, Save, current wounds, activation status, and weapons.
 - Player status can be reviewed and updated directly from the roster screen.
+
+
+## v2.2.9k
+
+- Corrected Player Roster wound display to show current wounds over the operative's original maximum wounds.
+- Example: a Headtaker reduced to 8 wounds now displays `8/13`, not `8/8`.
