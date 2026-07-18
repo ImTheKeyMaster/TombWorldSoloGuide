@@ -548,3 +548,20 @@ Major player-roster update:
 - Added a weapon selector because many operatives have more than one ranged or melee weapon.
 - NPO Defense Dice is fixed at 3, while the target Save comes from the selected NPO.
 - NPO names are numbered only when multiple operatives of the same type exist.
+
+
+## v2.3.1
+
+- Corrected NPO names in the Activation Tracker to use duplicate-only numbering.
+- Duplicate NPOs are now numbered sequentially by operative type, such as `Necron Warrior 1`, `Necron Warrior 2`, and `Necron Warrior 3`.
+- The Activation Tracker now lists eliminated NPOs instead of hiding them.
+- Eliminated Player operatives remain visible and are labeled `ELIMINATED`.
+- Eliminated NPOs are labeled `ELIMINATED`.
+
+
+## v2.3.2
+
+- Centralized all NPO display naming in one `npoName()` function.
+- Every screen now uses the same naming rule, including setup deployment, activation cards, attack screens, the Activation Tracker, the NPO Roster, summaries, logs, and battle history.
+- A number is shown only when more than one NPO of the same type exists.
+- Removed the need for localized NPO naming fixes in individual screens.

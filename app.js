@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.3.0';
+  const APP_VERSION = '2.3.2';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -397,7 +397,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(step===0) return `<h3>Which mission are you playing?</h3><p>You can review the objective before committing.</p><div class="mission-list">${missions.map(m=>`<button class="mission-choice ${state.missionId===m.id?'selected':''}" data-mission="${m.id}"><small>${m.number}</small><strong>${m.name}</strong><span>${m.brief}</span></button>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="setupHome">Back</button><button class="btn primary" id="setupNext" ${state.missionId?'':'disabled'}>Next</button></div>`;
     if(step===1){const m=mission();const checks=['Place walls and hatchways as shown','Place mission objective markers','Identify the Player drop zone','Identify NPO deployment areas'];const allChecked=checks.every((_,i)=>state.setupChecks[i]);return `<h3>${m.name} board setup</h3><p><strong>Objective:</strong> ${m.objective}</p>${boardSvg(m.id)}<div class="setup-bulk-row"><button class="btn secondary" id="checkAllSetup" ${allChecked?'disabled':''}>Check All</button></div><div class="checklist">${checks.map((c,i)=>`<label class="check-row"><input type="checkbox" data-check="${i}" ${state.setupChecks[i]?'checked':''}><span><strong>${c}</strong><small>${i===0?'Use the official mission map shown above to place the terrain and markers.':'Confirm this step on the physical board.'}</small></span></label>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${allChecked?'':'disabled'}>Board Ready</button></div>`;}
     if(step===2){const m=mission();return `<h3>Mission starting roster</h3><p>${m.name} begins with <strong>${missionSetup(m)}</strong> NPOs.</p>${state.roster.length?`<div class="summary-box"><strong>${state.roster.length} NPOs generated</strong><br>${rosterBreakdown()}</div><div class="roster-preview">${state.roster.map(n=>operativeCard(n,false)).join('')}</div>`:`<div class="empty">No roster generated yet.</div>`}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn secondary" id="generateBtn">${state.roster.length?'Regenerate':'Generate'} Roster</button><button class="btn primary" id="setupNext" ${state.roster.length||missionSetup(m)==='0'?'':'disabled'}>Continue</button></div>`;}
-    if(step===3){const allPlaced=state.roster.every(n=>n.deployed);return `<h3>Deploy the NPOs</h3><p>${missionSetup()==='0'?'This mission starts with no deployed NPOs. The Guide will add them as rooms awaken.':'Place each NPO on the physical board, then mark it deployed.'}</p>${state.roster.length?`<div class="setup-bulk-row"><button class="btn secondary" id="placeAllNpos" ${allPlaced?'disabled':''}>Place All</button></div>`:''}<div class="deployment-list">${state.roster.length?state.roster.map(n=>`<div class="deployment-item ${n.deployed?'done':''}"><span class="deployment-copy"><strong class="deployment-name">${escapeHtml(n.name)}</strong><small class="deployment-type">${escapeHtml(n.behavior)}</small></span><button class="btn ${n.deployed?'ghost':'secondary'} deployment-place-btn" data-deploy="${n.id}">${n.deployed?'Placed':'Mark Placed'}</button></div>`).join(''):'<div class="summary-box"><strong>No starting NPO deployment required.</strong></div>'}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${allPlaced?'':'disabled'}>NPOs Deployed</button></div>`;}
+    if(step===3){const allPlaced=state.roster.every(n=>n.deployed);return `<h3>Deploy the NPOs</h3><p>${missionSetup()==='0'?'This mission starts with no deployed NPOs. The Guide will add them as rooms awaken.':'Place each NPO on the physical board, then mark it deployed.'}</p>${state.roster.length?`<div class="setup-bulk-row"><button class="btn secondary" id="placeAllNpos" ${allPlaced?'disabled':''}>Place All</button></div>`:''}<div class="deployment-list">${state.roster.length?state.roster.map(n=>`<div class="deployment-item ${n.deployed?'done':''}"><span class="deployment-copy"><strong class="deployment-name">${escapeHtml(npoName(n))}</strong><small class="deployment-type">${escapeHtml(n.behavior)}</small></span><button class="btn ${n.deployed?'ghost':'secondary'} deployment-place-btn" data-deploy="${n.id}">${n.deployed?'Placed':'Mark Placed'}</button></div>`).join(''):'<div class="summary-box"><strong>No starting NPO deployment required.</strong></div>'}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${allPlaced?'':'disabled'}>NPOs Deployed</button></div>`;}
     if(step===4){
       const selected=new Set(state.playerRoster||[]);
       const selectedDefs=selectedPlayerOperatives();
@@ -501,7 +501,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     setNextActivation(state.nextSide || state.initiative || 'player');
     if(state.phase==='end'){save();return nextStepCard();}
     if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>Activate a Player operative</h2><p>Resolve one Player operative on the tabletop. After it completes, the Guide will alternate to an NPO if one is ready.</p><button class="btn primary big-action" id="playerActivation">Resolve Player Activation</button></section>`;
-    if(state.nextSide==='npo' && readyNpos().length>0){const n=nextNpo();return `<section class="next-card"><span class="phase">NPO ACTIVATION · ${activationProgressLabel()}</span><h2>${escapeHtml(n.name)}</h2><p>${n.type} · ${n.behavior} · ${n.wounds}/${n.maxWounds} wounds</p><div class="summary-box"><strong>Next step:</strong> answer a short set of battlefield questions from this NPO’s perspective. After it completes, the Guide will alternate to a Player operative if one remains.</div><button class="btn primary big-action" id="npoActivation">Guide This NPO</button></section>`;}
+    if(state.nextSide==='npo' && readyNpos().length>0){const n=nextNpo();return `<section class="next-card"><span class="phase">NPO ACTIVATION · ${activationProgressLabel()}</span><h2>${escapeHtml(npoName(n))}</h2><p>${n.type} · ${n.behavior} · ${n.wounds}/${n.maxWounds} wounds</p><div class="summary-box"><strong>Next step:</strong> answer a short set of battlefield questions from this NPO’s perspective. After it completes, the Guide will alternate to a Player operative if one remains.</div><button class="btn primary big-action" id="npoActivation">Guide This NPO</button></section>`;}
     setNextActivation(state.nextSide==='player'?'npo':'player');
     save();
     return nextStepCard();
@@ -559,17 +559,22 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         <span>${escapeHtml(operative?.name||operativeId)}</span><strong>${status}</strong>
       </button>`;
     }).join('');
-    const npoRows=activeNpos().map(n=>`<div class="tracker-operative npo ${n.ready?'ready':'activated'}"><span>${escapeHtml(n.name)}</span><strong>${n.ready?'READY':'ACTIVATED'}</strong></div>`).join('');
+    const npoRows=state.roster.map(n=>{
+      const eliminated=n.wounds<=0;
+      const status=eliminated?'ELIMINATED':n.ready?'READY':'ACTIVATED';
+      const cls=eliminated?'eliminated':n.ready?'ready':'activated';
+      return `<div class="tracker-operative npo ${cls}"><span>${escapeHtml(npoName(n))}</span><strong>${status}</strong></div>`;
+    }).join('');
     return `<section class="card activation-tracker">
       <div class="panel-title"><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div><div class="turn-badge">Next: ${state.nextSide==='npo'?'NPO':'Player'}</div></div>
       <div class="tracker-section">
         <small>${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} operatives</small>
-        <p class="muted compact-copy">Select an operative to mark it eliminated or restore it.</p>
+        <p class="muted compact-copy">All selected operatives are listed, including eliminated operatives. Select a Player operative to mark it eliminated or restore it.</p>
         <div class="tracker-operative-grid">${playerRows||'<span class="muted">No player operatives selected</span>'}</div>
       </div>
       <div class="tracker-section">
         <small>NPOs</small>
-        <div class="tracker-operative-grid">${npoRows||'<span class="muted">No active NPOs</span>'}</div>
+        <div class="tracker-operative-grid">${npoRows||'<span class="muted">No NPO operatives generated</span>'}</div>
       </div>
     </section>`;
   }
@@ -969,7 +974,7 @@ function showPlayerActivation(stage={}){
       const before=n.wounds;
       n.wounds=Math.max(0,pending.after);
       if(n.wounds===0)n.ready=false;
-      log(`${playerName(stage.playerOperativeId)} ${pending.attackType==='shoot'?'shot':'made a Melee attack against'} ${npoDisplayName(n)} for ${pending.damage} damage (${before} → ${n.wounds} wounds).`);
+      log(`${playerName(stage.playerOperativeId)} ${pending.attackType==='shoot'?'shot':'made a Melee attack against'} ${npoName(n)} for ${pending.damage} damage (${before} → ${n.wounds} wounds).`);
     }
   }
 
@@ -1002,7 +1007,8 @@ function showPlayerActivation(stage={}){
     render();
   }
 
-  function npoDisplayName(n){
+  function npoName(n){
+    if(!n)return 'NPO';
     const sameType=state.roster.filter(x=>x.type===n.type);
     if(sameType.length<=1)return n.type;
     const index=sameType.findIndex(x=>x.id===n.id);
@@ -1058,7 +1064,7 @@ function showPlayerActivation(stage={}){
     showModal(`Resolve ${attackLabel} Attack`,`
       <p>Select the weapon and target NPO. This attack remains pending until the entire Player activation is confirmed.</p>
       <div class="field"><label>Weapon</label><select id="playerWeaponSelect">${weapons.map((w,i)=>`<option value="${i}">${escapeHtml(w.name)}</option>`).join('')}</select></div>
-      <div class="field"><label>Target NPO</label><select id="combatTarget"><option value="">Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}">${escapeHtml(npoDisplayName(n))} · ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} projected wounds · Save ${n.save}+</option>`).join('')}</select></div>
+      <div class="field"><label>Target NPO</label><select id="combatTarget"><option value="">Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}">${escapeHtml(npoName(n))} · ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} projected wounds · Save ${n.save}+</option>`).join('')}</select></div>
       <fieldset id="combatControls" class="combat-fieldset" disabled>
         <section class="defense-profile attack-profile" aria-label="Player attack profile">
           <p class="eyebrow">PLAYER ATTACK PROFILE</p>
@@ -1112,7 +1118,7 @@ function showPlayerActivation(stage={}){
     const defense=resolveDefense(attackDice,3,n.save,profile.ap,$('#npoCover').checked,profile);
     const before=projectedNpoWounds(n.id,stage);
     const after=Math.max(0,before-defense.damage);
-    const result={attackType,targetId:n.id,targetName:npoDisplayName(n),weaponName:weapon.name,before,after,damage:defense.damage};
+    const result={attackType,targetId:n.id,targetName:npoName(n),weaponName:weapon.name,before,after,damage:defense.damage};
 
     $('#combatResults').innerHTML=`<div class="combat-stage"><small>PLAYER ATTACK DICE</small><div class="dice-row animated-roll" id="playerAttackDiceResult">${attackDice.map(()=>rollingDieHtml()).join('')}</div></div>
       <div class="combat-stage"><small>NPO SAVE DICE</small><div class="dice-row animated-roll" id="npoSaveDiceResult">${defense.saveDice.map(()=>rollingDieHtml()).join('')||'<span class="muted">No save dice rolled</span>'}</div>${defense.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':''}</div>
@@ -1149,7 +1155,7 @@ function showPlayerActivation(stage={}){
   function runNpoPrompt(n,index,answers){
     const q=npoQuestions[index];
     const progress=Math.round((index/npoQuestions.length)*100);
-    showModal(`Guide ${escapeHtml(n.name)}`,`<div class="ai-wizard">
+    showModal(`Guide ${escapeHtml(npoName(n))}`,`<div class="ai-wizard">
       <div class="ai-progress-head"><span>QUESTION ${index+1} OF ${npoQuestions.length}</span><strong>${progress}%</strong></div>
       <div class="ai-progress"><span style="width:${progress}%"></span></div>
       <p class="eyebrow">NPO PERSPECTIVE</p>
@@ -1209,12 +1215,12 @@ function showPlayerActivation(stage={}){
     const decision=chooseNpoDecision(n,c);
     const attacks=decision.action.includes('Fight')||decision.action.includes('Shoot');
     const dice=[];
-    if(decision.threat)setThreat(decision.threat,`${n.name} ${decision.action.includes('Fight')?'Fight':'Shoot'}`);
+    if(decision.threat)setThreat(decision.threat,`${npoName(n)} ${decision.action.includes('Fight')?'Fight':'Shoot'}`);
     n.ready=false;state.npoActivated++;state.activationNumber++;
-    state.activationHistory.unshift({side:'npo',label:n.name,action:decision.action,target:null});
+    state.activationHistory.unshift({side:'npo',label:npoName(n),action:decision.action,target:null});
     state.activeNpoId=null;advanceAfterActivation('npo');
-    state.lastActivation={name:n.name,...decision,dice,answers:c,attackRequired:attacks,targetConfirmed:false};
-    log(`${n.name}: ${decision.action}.`);save();
+    state.lastActivation={name:npoName(n),...decision,dice,answers:c,attackRequired:attacks,targetConfirmed:false};
+    log(`${npoName(n)}: ${decision.action}.`);save();
 
     renderNpoDecisionResult(n,decision,dice,c,false,false,attacks,false);
   }
@@ -1228,12 +1234,12 @@ function showPlayerActivation(stage={}){
   }
 
   function renderNpoDecisionResult(n,decision,dice,answers,attackResolved,animateDice=true,attackRequired=(decision.action.includes('Fight')||decision.action.includes('Shoot')),targetConfirmed=dice.length>0){
-    state.lastActivation={name:n.name,...decision,dice,answers,attackResolved,attackRequired,targetConfirmed};save();
+    state.lastActivation={name:npoName(n),...decision,dice,answers,attackResolved,attackRequired,targetConfirmed};save();
     const targetOptions=eligibleNpoAttackTargets().map(id=>`<option value="${escapeHtml(id)}" ${state.npoAttackTargetId===id?'selected':''}>${escapeHtml(playerName(id))}</option>`).join('');
     const targetName=state.npoAttackTargetId?playerName(state.npoAttackTargetId):'';
     modalBody.innerHTML=`<div class="modal-inner ai-result">
       <p class="eyebrow">RECOMMENDED ACTIVATION</p>
-      <div class="ai-result-title"><div><h2>${escapeHtml(n.name)}</h2><p>${escapeHtml(n.type)} · ${escapeHtml(n.behavior)}</p></div><span class="order-badge">${decision.stance}</span></div>
+      <div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)} · ${escapeHtml(n.behavior)}</p></div><span class="order-badge">${decision.stance}</span></div>
       <div class="activation-command"><small>ACTION SEQUENCE</small><strong>${escapeHtml(decision.action)}</strong></div>
       <div class="target-command"><small>TARGET PRIORITY</small><strong>${escapeHtml(decision.target)}</strong>${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Target Player Operative</label><select id="npoPriorityTarget" ${targetConfirmed||attackResolved?'disabled':''}><option value="">Select the operative matching this priority</option>${targetOptions}</select></div>`:''}</div>
       ${attackRequired&&!targetConfirmed?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button><p class="validation-message">Confirm the target before rolling the NPO attack.</p>`:''}
@@ -1260,9 +1266,9 @@ function showPlayerActivation(stage={}){
       if(!state.npoAttackTargetId)return;
       state.npoAttackSummary=null;
       const rolledDice=rollAttack(n.attack);
-      const history=state.activationHistory.find(x=>x.side==='npo'&&x.label===n.name&&!x.target);
+      const history=state.activationHistory.find(x=>x.side==='npo'&&x.label===npoName(n)&&!x.target);
       if(history)history.target=playerName(state.npoAttackTargetId);
-      log(`${n.name} confirmed ${playerName(state.npoAttackTargetId)} as the attack target and rolled the attack dice.`);
+      log(`${npoName(n)} confirmed ${playerName(state.npoAttackTargetId)} as the attack target and rolled the attack dice.`);
       save();
       renderNpoDecisionResult(n,decision,rolledDice,answers,false,true,true,true);
     });
@@ -1282,7 +1288,7 @@ function showPlayerActivation(stage={}){
   function showNpoAttackWizard(n,attackDice,onDone,onCancel){
     const target=selectedNpoAttackTarget();
     if(!target){showToast('Select the targeted Player operative first.');if(onCancel)onCancel();return;}
-    showModal('NPO Attack Wizard',`<p>${escapeHtml(n.name)} is attacking <strong>${escapeHtml(target.name)}</strong>.</p>
+    showModal('NPO Attack Wizard',`<p>${escapeHtml(npoName(n))} is attacking <strong>${escapeHtml(target.name)}</strong>.</p>
       <div class="combat-stage"><small>NPO ATTACK DICE</small><div class="dice-row">${attackDice.map(dieHtml).join('')}</div><p>${n.attack.normal}/${n.attack.crit} damage · Hit ${n.attack.hit}+</p></div>
       <div class="combat-stage target-summary"><small>TARGET PLAYER OPERATIVE</small><strong>${escapeHtml(target.name)}</strong><p>${escapeHtml(target.type||target.role||'Player Operative')}</p></div>
       <section class="defense-profile" aria-label="Player defense profile">
@@ -1331,7 +1337,7 @@ function showPlayerActivation(stage={}){
         }
         state.playerCasualtyIds=[...casualties];
         state.playerReady=playerOperativesRemaining();
-        log(`${n.name} dealt ${result.damage} damage to ${target.name} (${before} → ${after} wounds).`);
+        log(`${npoName(n)} dealt ${result.damage} damage to ${target.name} (${before} → ${after} wounds).`);
         save();
         if(onDone)onDone(summary);
       };
@@ -1391,7 +1397,7 @@ function showPlayerActivation(stage={}){
     app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">PLAYER ROSTER</p><h2>${escapeHtml(teamName)}</h2><p>${livingPlayerOperativeCount()} active of ${(state.playerRoster||[]).length} selected operatives.</p></div></div><div class="roster-grid">${cards||'<div class="card empty">No Player operatives were selected for this game.</div>'}</div>`;
     $$('[data-player-roster-status]').forEach(button=>button.onclick=()=>showPlayerOperativeStatus(button.dataset.playerRosterStatus));
   }
-  function operativeCard(n,controls){return `<article class="operative-card ${n.wounds<=0?'dead':''}"><h4>${escapeHtml(n.name)}</h4><p>${n.type} · ${n.behavior} · Save ${n.save}+</p><div class="wounds"><meter min="0" max="${n.maxWounds}" value="${n.wounds}"></meter><strong>${n.wounds}/${n.maxWounds}</strong></div><p>${n.ready&&n.wounds>0?'READY':'ACTIVATED'}</p>${controls?`<div class="quick-actions"><button class="btn secondary" data-player-attack="${n.id}">Player Attack</button><button class="btn ghost" data-wound="${n.id}">− Wound</button><button class="btn ghost" data-heal="${n.id}">+ Heal</button><button class="btn secondary" data-ready="${n.id}">${n.ready?'Expend':'Ready'}</button><button class="btn danger" data-delete="${n.id}">Delete</button></div>`:''}</article>`;}
+  function operativeCard(n,controls){return `<article class="operative-card ${n.wounds<=0?'dead':''}"><h4>${escapeHtml(npoName(n))}</h4><p>${n.type} · ${n.behavior} · Save ${n.save}+</p><div class="wounds"><meter min="0" max="${n.maxWounds}" value="${n.wounds}"></meter><strong>${n.wounds}/${n.maxWounds}</strong></div><p>${n.ready&&n.wounds>0?'READY':'ACTIVATED'}</p>${controls?`<div class="quick-actions"><button class="btn secondary" data-player-attack="${n.id}">Player Attack</button><button class="btn ghost" data-wound="${n.id}">− Wound</button><button class="btn ghost" data-heal="${n.id}">+ Heal</button><button class="btn secondary" data-ready="${n.id}">${n.ready?'Expend':'Ready'}</button><button class="btn danger" data-delete="${n.id}">Delete</button></div>`:''}</article>`;}
   function renderJournal(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">JOURNAL</p><h2>Battle Record</h2><p>Automatic game-state and Threat history.</p></div><button class="btn ghost" id="clearJournal">Clear</button></div><section class="card"><ol class="activity-log">${state.journal.length?state.journal.map(j=>`<li><time>${new Date(j.time).toLocaleString()}</time>${escapeHtml(j.text)}</li>`).join(''):'<li>No events recorded.</li>'}</ol></section>`;$('#clearJournal').onclick=()=>{state.journal=[];save();render();};}
   function renderHelp(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">FIELD HELP</p><h2>Instructions & quick reference</h2><p>Review the NPO decision process and common gameplay terms without changing the current game.</p></div></div>${guideInstructionsHtml(false)}<section class="card help-list">
     <details><summary>What does Player mean?</summary><p>Your solo player-controlled Kill Team operatives.</p></details>
