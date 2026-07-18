@@ -584,3 +584,11 @@ Major player-roster update:
 - `NPO Defense Dice` and `NPO Save` were moved out of the Player Attack Profile into a separate `NPO DEFENSE PROFILE`.
 - Renamed `Target Save` to `NPO Save`.
 - The cover option is now grouped with the NPO Defense Profile.
+
+
+## v2.3.5
+
+- Removed the separate APL field from the Resolve Player Activation dialog.
+- AP Used now provides the complete AP display, such as `0 / 3`.
+- The operative's APL is read directly from the Player roster and is no longer editable.
+- Removed the white fieldset border around the Player activation controls.

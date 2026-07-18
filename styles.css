@@ -836,3 +836,17 @@ button.tracker-operative:hover{
   padding-top:12px;
   border-top:1px solid var(--line);
 }
+
+
+/* v2.3.5: simplified Player activation AP display */
+#playerActivationControls{
+  border:0;
+  outline:0;
+  padding-inline:0;
+}
+.activation-apl-bar.ap-usage-only{
+  display:block;
+}
+.activation-apl-bar.ap-usage-only .ap-usage{
+  width:100%;
+}

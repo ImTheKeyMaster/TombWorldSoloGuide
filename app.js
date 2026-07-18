@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.3.4';
+  const APP_VERSION = '2.3.5';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -757,14 +757,8 @@ function showPlayerActivation(stage={}){
         </select>
       </div>
       <fieldset id="playerActivationControls" class="${selectedId?'':'inactive'}" aria-disabled="${selectedId?'false':'true'}">
-        <div class="activation-apl-bar">
-          <div class="field apl-field">
-            <label>APL</label>
-            <select id="playerApl">
-              ${[1,2,3,4,5].map(v=>`<option value="${v}" ${Number(stage.apl||playerDefinition(selectedId)?.apl||3)===v?'selected':''}>${v}</option>`).join('')}
-            </select>
-          </div>
-          <div class="ap-usage" id="apUsage"><small>AP used</small><strong>0 / ${Number(stage.apl||3)}</strong></div>
+        <div class="activation-apl-bar ap-usage-only">
+          <div class="ap-usage" id="apUsage"><small>AP used</small><strong>0 / ${Number(stage.apl||playerDefinition(selectedId)?.apl||3)}</strong></div>
         </div>
         <div id="apWarning" class="warning-text hidden"></div>
         <p class="muted">Select everything this operative will do. Shooting and Melee attacks are resolved only after you press Complete Activation.</p>
@@ -815,7 +809,7 @@ function showPlayerActivation(stage={}){
     const operativeSelect=$('#playerOperativeSelect');
     const controls=$('#playerActivationControls');
     operativeSelect.addEventListener('change',()=>{
-      const selectedOperative=playerDefinition(operativeSelect.value);const updated={...stage,playerOperativeId:operativeSelect.value||'',apl:Number(selectedOperative?.apl||$('#playerApl')?.value||stage.apl||3)};
+      const selectedOperative=playerDefinition(operativeSelect.value);const updated={...stage,playerOperativeId:operativeSelect.value||'',apl:Number(selectedOperative?.apl||stage.apl||3)};
       showPlayerActivation(updated);
     });
 
@@ -824,7 +818,7 @@ function showPlayerActivation(stage={}){
 
     function updatePlayerActionAvailability(){
       const current=readPlayerActivationStage(stage);
-      const apl=Number($('#playerApl')?.value||current.apl||3);
+      const apl=Number(playerDefinition(current.playerOperativeId)?.apl||current.apl||3);
       current.apl=apl;
       const used=playerActionCost(current);
       const conflicts=playerActionConflicts(current);
@@ -862,7 +856,6 @@ function showPlayerActivation(stage={}){
       if(e.target.checked)clearPass();
       updatePlayerActionAvailability();
     }));
-    $('#playerApl')?.addEventListener('change',updatePlayerActionAvailability);
     updatePlayerActionAvailability();
 
     $('#cancelPlayerActivation').onclick=()=>{closeModal();render();};
@@ -893,7 +886,7 @@ function showPlayerActivation(stage={}){
     const melee=Boolean($('#eaMelee')?.checked);
     return {
       playerOperativeId:String($('#playerOperativeSelect')?.value||previous.playerOperativeId||''),
-      apl:Number($('#playerApl')?.value||previous.apl||3),
+      apl:Number(playerDefinition(previous.playerOperativeId)?.apl||previous.apl||3),
       move:Boolean($('#eaMove')?.checked),
       dash:Boolean($('#eaDash')?.checked),
       charge:Boolean($('#eaCharge')?.checked),
