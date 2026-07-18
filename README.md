@@ -700,3 +700,16 @@ Major player-roster update:
 - Replaced the low-emphasis empty state with a prominent deployment message.
 - Added reinforcement guidance explaining when the first NPOs enter play.
 - Updated visible, internal, and cache-busting version numbers to v3.0.6.
+
+
+v3.0.7: Kasrkin roster choices updated.
+
+
+## v3.0.8
+
+- Rebuilt Kasrkin Gunner choices as five distinct selectable operatives with only their correct weapon profiles.
+- Gunner choices are displayed as Flamer, Grenade Launcher, Volley Gun, Meltagun, and Plasma Gun.
+- Added three independently selectable Kasrkin Trooper entries that all display simply as “Trooper” during roster selection.
+- Selected duplicate Troopers are automatically labeled Trooper 1, Trooper 2, and Trooper 3 during gameplay, wound tracking, activation, and targeting.
+- Enforced the Kasrkin maximum of four Gunners in the roster builder.
+- Updated visible, internal, and cache-busting versions to v3.0.8.
