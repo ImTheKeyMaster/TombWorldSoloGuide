@@ -670,8 +670,16 @@ Major player-roster update:
 - Deployment Complete remains disabled until both sides are confirmed.
 
 
-## v3.0.4
+## v3.0.3
 
 - Removed the mission map from the Ready to Begin screen.
-- Corrected all displayed and runtime version numbers to v3.0.4.
+- Corrected all displayed and runtime version numbers to v3.0.3.
 - Updated asset cache keys so browsers load the latest JavaScript and CSS.
+
+
+## v3.0.4
+
+- Simplified the Ready to Begin screen.
+- Removed Player and NPO operative summaries.
+- Retained only Mission, Objective, and Special Rules.
+- Corrected the displayed application version and cache-busting keys.
