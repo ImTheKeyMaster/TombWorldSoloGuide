@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.0.8';
+  const APP_VERSION = '3.1.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -435,16 +435,20 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const selectedDefs=selectedPlayerOperatives();
       const gravisCount=selectedDefs.filter(o=>o.gravis).length;
       const gunnerCount=selectedDefs.filter(o=>o.role==='Gunner').length;
+      const trooperCount=selectedDefs.filter(o=>o.role==='Trooper').length;
       const maxGunners=Number(playerTeamData?.selectionRules?.maxGunners||Infinity);
+      const mandatoryTroopers=Number(playerTeamData?.selectionRules?.mandatoryTroopers||0);
+      const requiredLeaderId=playerTeamData?.selectionRules?.leader?.operativeId||'';
+      const leaderSelected=!requiredLeaderId||selected.has(requiredLeaderId);
       const rosterSize=playerTeamData?.rosterSize||5;
-      const valid=selected.size===rosterSize&&gravisCount<=1&&gunnerCount<=maxGunners;
+      const valid=selected.size===rosterSize&&gravisCount<=1&&gunnerCount<=maxGunners&&trooperCount>=mandatoryTroopers&&leaderSelected;
       const cards=(playerTeamData?.operatives||[]).map(o=>{
         const chosen=selected.has(o.id);
         const gravisBlocked=!chosen&&o.gravis&&gravisCount>=1;
         const gunnerBlocked=!chosen&&o.role==='Gunner'&&gunnerCount>=maxGunners;
         return `<button type="button" class="player-roster-card ${chosen?'selected':''}" data-select-player="${o.id}" ${gravisBlocked||gunnerBlocked?'disabled':''}><div class="player-roster-card-head"><div><strong>${escapeHtml(o.name)}</strong><small>${escapeHtml(o.role)}${o.gravis?' · GRAVIS':''}</small></div><span>${chosen?'✓':'+'}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${o.apl}</b></span><span><small>MOVE</small><b>${o.move}"</b></span><span><small>SAVE</small><b>${o.save}+</b></span><span><small>WOUNDS</small><b>${o.wounds}</b></span></div></button>`;
       }).join('');
-      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>Select exactly <strong>${rosterSize}</strong> operatives.</p><div class="player-roster-summary"><strong>${selected.size} / ${rosterSize} selected</strong>${Number.isFinite(maxGunners)?`<span>${gunnerCount} / ${maxGunners} Gunners</span>`:''}${(playerTeamData?.operatives||[]).some(o=>o.gravis)?`<span>${gravisCount} / 1 Gravis</span>`:''}</div><div class="player-roster-grid">${cards}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
+      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>Select exactly <strong>${rosterSize}</strong> operatives.</p><div class="player-roster-summary"><strong>${selected.size} / ${rosterSize} selected</strong>${Number.isFinite(maxGunners)?`<span>${gunnerCount} / ${maxGunners} Gunners</span>`:''}${mandatoryTroopers?`<span>${trooperCount} / ${mandatoryTroopers} required Troopers</span>`:''}${requiredLeaderId?`<span>${leaderSelected?'Leader selected':'Leader required'}</span>`:''}${(playerTeamData?.operatives||[]).some(o=>o.gravis)?`<span>${gravisCount} / 1 Gravis</span>`:''}</div><div class="player-roster-grid">${cards}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
     }
     if(stepId==='npoRoster'){
       const m=mission();
