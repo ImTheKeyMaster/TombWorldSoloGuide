@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.1.2';
+  const APP_VERSION = '3.1.3';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -801,6 +801,11 @@ function showPlayerActivation(stage={}){
 
     const checked=key=>stage[key]?'checked':'';
     const selectedId=String(stage.playerOperativeId||'');
+    const selectedOperative=playerDefinition(selectedId);
+    const moveDistance=Number(selectedOperative?.move||6);
+    const chargeDistance=moveDistance+2;
+    const dashDistance=3;
+    const fallBackDistance=moveDistance;
     const shootPending=stage.pendingShoot||null;
     const meleePending=stage.pendingMelee||null;
 
@@ -823,10 +828,10 @@ function showPlayerActivation(stage={}){
           <section class="activation-group">
             <div class="activation-group-title"><span>↔</span><div><strong>Movement</strong><small>Position and control actions</small></div></div>
             <div class="toggle-list player-action-list">
-              <label><input type="checkbox" id="eaMove" ${checked('move')}><span>Move <small>1 AP</small></span></label>
-              <label><input type="checkbox" id="eaDash" ${checked('dash')}><span>Dash <small>1 AP</small></span></label>
-              <label><input type="checkbox" id="eaCharge" ${checked('charge')}><span>Charge <small>1 AP</small></span></label>
-              <label><input type="checkbox" id="eaFallBack" ${checked('fallBack')}><span>Fall Back <small>2 AP</small></span></label>
+              <label><input type="checkbox" id="eaMove" ${checked('move')}><span>Move <small>▲ ${moveDistance}&quot; · 1 AP</small></span></label>
+              <label><input type="checkbox" id="eaDash" ${checked('dash')}><span>Dash <small>▲ ${dashDistance}&quot; · 1 AP</small></span></label>
+              <label><input type="checkbox" id="eaCharge" ${checked('charge')}><span>Charge <small>▲ ${chargeDistance}&quot; · 1 AP</small></span></label>
+              <label><input type="checkbox" id="eaFallBack" ${checked('fallBack')}><span>Fall Back <small>▲ ${fallBackDistance}&quot; · 2 AP</small></span></label>
             </div>
           </section>
 
