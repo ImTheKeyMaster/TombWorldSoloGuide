@@ -951,3 +951,22 @@ button.tracker-operative:hover{
   color:var(--danger,#ff7b7b);
   font-size:1.15em;
 }
+
+
+/* v2.3.9: low-interruption combat flow */
+.compact-elimination-notice{
+  display:grid;
+  gap:4px;
+  margin:12px 0 16px;
+  padding:13px 15px;
+  border:1px solid var(--danger,#ef6b6b);
+  border-radius:14px;
+  background:rgba(125,25,25,.18);
+}
+.compact-elimination-notice strong{
+  color:var(--danger,#ff7b7b);
+}
+.compact-elimination-notice span{
+  color:var(--muted);
+  font-size:.92rem;
+}

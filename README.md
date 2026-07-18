@@ -617,3 +617,13 @@ Major player-roster update:
 - Reworked attack results into structured cards showing attack type, target, damage, and wound change.
 - Added a red elimination badge, highlighted card, and emphasized 0-wound result for lethal attacks.
 - Added eliminated NPO names to the Actions summary.
+
+
+## v2.3.9
+
+- Kept Player activations planned as a single low-interruption workflow rather than converting them to action-by-action entry.
+- When a Shoot attack eliminates an NPO before a selected Melee action, the Melee wizard now clearly asks for another target or offers Skip Melee.
+- If no NPO targets remain after Shooting, Melee is skipped automatically without another prompt or click.
+- Replaced the fixed eight-question NPO activation sequence with an adaptive question flow.
+- Irrelevant NPO questions are skipped once the Guide already has enough information to choose the activation.
+- Adaptive NPO prompts retain Back navigation.

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.3.8';
+  const APP_VERSION = '2.3.9';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -946,11 +946,27 @@ function showPlayerActivation(stage={}){
 
   function resolvePendingPlayerAttacks(stage){
     if(stage.shoot&&!stage.pendingShoot){
-      showPendingPlayerAttackWizard(stage,'shoot',result=>resolvePendingPlayerAttacks({...stage,pendingShoot:result}),()=>showPlayerActivation(stage));
+      showPendingPlayerAttackWizard(
+        stage,
+        'shoot',
+        result=>resolvePendingPlayerAttacks({...stage,pendingShoot:result}),
+        ()=>showPlayerActivation(stage)
+      );
       return;
     }
     if(stage.melee&&!stage.pendingMelee){
-      showPendingPlayerAttackWizard(stage,'melee',result=>resolvePendingPlayerAttacks({...stage,pendingMelee:result}),()=>showPlayerActivation(stage));
+      const remainingTargets=activeNpos().filter(n=>projectedNpoWounds(n.id,stage)>0);
+      if(!remainingTargets.length){
+        resolvePendingPlayerAttacks({...stage,melee:false,meleeSkipped:true});
+        return;
+      }
+      showPendingPlayerAttackWizard(
+        stage,
+        'melee',
+        result=>resolvePendingPlayerAttacks({...stage,pendingMelee:result}),
+        ()=>showPlayerActivation(stage),
+        ()=>resolvePendingPlayerAttacks({...stage,melee:false,meleeSkipped:true})
+      );
       return;
     }
     showPlayerActivationConfirmation(stage);
@@ -1091,7 +1107,7 @@ function showPlayerActivation(stage={}){
     };
   }
 
-  function showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel){
+  function showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel,onSkip=null){
     const targets=activeNpos().filter(n=>projectedNpoWounds(n.id,stage)>0);
     if(!targets.length){
       showToast('No active NPO is available as a target.');
@@ -1111,7 +1127,11 @@ function showPlayerActivation(stage={}){
       ? `<div class="field"><label>Weapon</label><div class="readonly-select" id="singleWeaponDisplay">${escapeHtml(weapons[0].name)}</div><input type="hidden" id="playerWeaponSelect" value="0"></div>`
       : `<div class="field"><label>Weapon</label><select id="playerWeaponSelect">${weapons.map((w,i)=>`<option value="${i}">${escapeHtml(w.name)}</option>`).join('')}</select></div>`;
 
+    const priorElimination=attackType==='melee'&&Number(stage.pendingShoot?.after)<=0
+      ? `<section class="compact-elimination-notice"><strong>☠ ${escapeHtml(stage.pendingShoot.targetName)} was eliminated by the Shoot attack.</strong><span>Choose another melee target or skip Melee.</span></section>`
+      : '';
     showModal(`Resolve ${attackLabel} Attack`,`
+      ${priorElimination}
       <p>Select the target NPO and weapon. This attack remains pending until the entire Player activation is confirmed.</p>
       <div class="field"><label>Target NPO</label><select id="combatTarget"><option value="">Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}">${escapeHtml(npoName(n))} · Wounds ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} · Save ${n.save}+</option>`).join('')}</select></div>
       ${weaponControl}
@@ -1129,7 +1149,7 @@ function showPlayerActivation(stage={}){
           <label class="check-row compact-check defense-cover-row"><input type="checkbox" id="npoCover"><span><strong>NPO retains one normal save for cover</strong></span></label>
         </section>
         <div id="combatResults" class="combat-results"><p>Select a target NPO to begin.</p></div>
-        <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button><button class="btn primary" id="rollPendingAttack">Roll Attack & Saves</button></div>
+        <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button>${attackType==='melee'&&onSkip?'<button class="btn secondary" id="skipPendingMelee">Skip Melee</button>':''}<button class="btn primary" id="rollPendingAttack">Roll Attack & Saves</button></div>
       </fieldset>`);
 
     requestAnimationFrame(()=>{
@@ -1169,6 +1189,7 @@ function showPlayerActivation(stage={}){
 
     renderProfile();
     $('#cancelPendingAttack').onclick=onCancel;
+    if($('#skipPendingMelee'))$('#skipPendingMelee').onclick=onSkip;
     $('#rollPendingAttack').onclick=()=>previewPendingPlayerAttack(stage,attackType,onResolved,onCancel);
   }
 
@@ -1213,15 +1234,31 @@ function showPlayerActivation(stage={}){
 
   function showNpoWizard(){
     const n=nextNpo(); if(!n)return;
-    runNpoPrompt(n,0,{});
+    runNpoPrompt(n,'engaged',{},[]);
   }
 
-  function runNpoPrompt(n,index,answers){
-    const q=npoQuestions[index];
-    const progress=Math.round((index/npoQuestions.length)*100);
+  function nextNpoQuestionKey(n,key,answers){
+    if(key==='engaged')return answers.engaged?'objective':'objective';
+    if(key==='objective')return answers.objective?'charge':'wounded';
+    if(key==='wounded')return answers.wounded?'charge':'clustered';
+    if(key==='clustered')return 'charge';
+    if(key==='charge'){
+      const decisiveCharge=answers.charge&&(n.behavior==='Brawler'||n.behavior==='Guardian'||answers.objective||answers.wounded);
+      if(answers.engaged||decisiveCharge)return null;
+      return 'shot';
+    }
+    if(key==='shot')return answers.shot?'cover':'hatch';
+    if(key==='hatch')return answers.hatch?null:'cover';
+    if(key==='cover')return null;
+    return null;
+  }
+
+  function runNpoPrompt(n,key,answers,history){
+    const q=npoQuestions.find(item=>item.key===key);
+    if(!q){resolveNpo(n,answers);return;}
+    const questionNumber=history.length+1;
     showModal(`Guide ${escapeHtml(npoName(n))}`,`<div class="ai-wizard">
-      <div class="ai-progress-head"><span>QUESTION ${index+1} OF ${npoQuestions.length}</span><strong>${progress}%</strong></div>
-      <div class="ai-progress"><span style="width:${progress}%"></span></div>
+      <div class="ai-progress-head"><span>QUESTION ${questionNumber}</span><strong>ADAPTIVE</strong></div>
       <p class="eyebrow">NPO PERSPECTIVE</p>
       <h3>${q.title}</h3>
       <p>${q.help}</p>
@@ -1231,15 +1268,19 @@ function showPlayerActivation(stage={}){
       </div>
       <div class="wizard-actions">
         <button class="btn ghost" data-close>Cancel</button>
-        <button class="btn ghost" id="aiBack" ${index===0?'disabled':''}>Back</button>
+        <button class="btn ghost" id="aiBack" ${history.length===0?'disabled':''}>Back</button>
       </div>
     </div>`);
     $$('[data-answer]',modal).forEach(btn=>btn.onclick=()=>{
-      const next={...answers,[q.key]:btn.dataset.answer==='yes'};
-      if(index<npoQuestions.length-1) runNpoPrompt(n,index+1,next);
-      else resolveNpo(n,next);
+      const nextAnswers={...answers,[q.key]:btn.dataset.answer==='yes'};
+      const nextKey=nextNpoQuestionKey(n,key,nextAnswers);
+      if(nextKey)runNpoPrompt(n,nextKey,nextAnswers,[...history,{key,answers}]);
+      else resolveNpo(n,nextAnswers);
     });
-    $('#aiBack')?.addEventListener('click',()=>runNpoPrompt(n,index-1,answers));
+    $('#aiBack')?.addEventListener('click',()=>{
+      const previous=history[history.length-1];
+      if(previous)runNpoPrompt(n,previous.key,previous.answers,history.slice(0,-1));
+    });
   }
 
   function chooseNpoDecision(n,c){
