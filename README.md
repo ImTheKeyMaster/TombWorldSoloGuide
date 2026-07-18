@@ -650,3 +650,12 @@ Major player-roster update:
 - Removed redundant Player/NPO activation labels.
 - Retained a subtle “Activation X of Y” line.
 - Shortened the Player and NPO next-step instructions.
+
+
+## v3.0.0 — Phase 1
+
+- Reordered New Game Setup to define the Player team and roster before generating NPOs.
+- New setup order: Mission, Killzone, Player Kill Team (when needed), Player Roster, NPO Roster, Deploy Kill Teams, Ready.
+- The Player Kill Team step is automatically omitted when only one team is installed.
+- Setup progress and step totals are calculated dynamically.
+- Combined Player and NPO deployment into one setup step.
