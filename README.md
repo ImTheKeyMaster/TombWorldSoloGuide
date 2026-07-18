@@ -683,3 +683,11 @@ Major player-roster update:
 - Removed Player and NPO operative summaries.
 - Retained only Mission, Objective, and Special Rules.
 - Corrected the displayed application version and cache-busting keys.
+
+
+## v3.0.5
+
+- Renamed the final setup panel to Mission Briefing.
+- Combined Mission, Objective, and Special Rules into one briefing card.
+- Displayed each mission special rule as its own scannable section.
+- Updated visible and internal version numbers to v3.0.5.
