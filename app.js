@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.4.0';
+  const APP_VERSION = '2.4.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1273,10 +1273,7 @@ function showPlayerActivation(stage={}){
   function runNpoPrompt(n,key,answers,history){
     const q=npoQuestions.find(item=>item.key===key);
     if(!q){resolveNpo(n,answers);return;}
-    const questionNumber=history.length+1;
     showModal(`NPO's Turn: ${escapeHtml(npoName(n))}`,`<div class="ai-wizard">
-      <div class="ai-progress-head"><span>QUESTION ${questionNumber}</span><strong>ADAPTIVE</strong></div>
-      <p class="eyebrow">NPO PERSPECTIVE</p>
       <h3>${q.title}</h3>
       <p>${q.help}</p>
       <div class="ai-choice-grid">
@@ -1284,7 +1281,7 @@ function showPlayerActivation(stage={}){
         <button class="ai-choice no" data-answer="no"><span>×</span><strong>No</strong></button>
       </div>
       <div class="wizard-actions">
-        <button class="btn ghost" data-close>Cancel</button>
+        <button class="btn ghost" data-close>Exit Guide</button>
         <button class="btn ghost" id="aiBack" ${history.length===0?'disabled':''}>Back</button>
       </div>
     </div>`);

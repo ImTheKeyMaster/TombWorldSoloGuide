@@ -638,3 +638,10 @@ Major player-roster update:
 - The mission now ends after Turning Point 4 is completed.
 - Renamed the Player activation screen to Player's Turn and its button to Activate Operative.
 - NPO activation screens now use NPO's Turn: [name], remove the repeated operative type, and use Activate NPO.
+
+
+## v2.4.1
+
+- Removed the internal labels “QUESTION”, “ADAPTIVE”, and “NPO PERSPECTIVE” from the NPO decision dialog.
+- Renamed the dialog’s Cancel button to “Exit Guide”.
+- Kept the Back button and adaptive decision flow unchanged.
