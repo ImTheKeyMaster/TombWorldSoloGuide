@@ -539,3 +539,12 @@ Major player-roster update:
 
 - Corrected Player Roster wound display to show current wounds over the operative's original maximum wounds.
 - Example: a Headtaker reduced to 8 wounds now displays `8/13`, not `8/8`.
+
+
+## v2.3.0
+
+- Removed the editable plus/minus controls from the Resolve Shooting Attack and Resolve Melee Attack screens.
+- Player attack values now come directly from the selected operative's roster weapon profile.
+- Added a weapon selector because many operatives have more than one ranged or melee weapon.
+- NPO Defense Dice is fixed at 3, while the target Save comes from the selected NPO.
+- NPO names are numbered only when multiple operatives of the same type exist.

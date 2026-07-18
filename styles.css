@@ -809,3 +809,10 @@ button.tracker-operative:hover{
 }
 .defense-profile-grid small{color:var(--muted)}
 .defense-profile-grid strong{font-size:1.2rem}
+
+
+/* v2.3.0: roster-driven Player attack profile */
+.attack-profile{margin-top:14px}
+.attack-profile .defense-profile-grid>div:last-child:nth-child(odd){
+  grid-column:1 / -1;
+}

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.2.9k';
+  const APP_VERSION = '2.3.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -969,7 +969,7 @@ function showPlayerActivation(stage={}){
       const before=n.wounds;
       n.wounds=Math.max(0,pending.after);
       if(n.wounds===0)n.ready=false;
-      log(`${playerName(stage.playerOperativeId)} ${pending.attackType==='shoot'?'shot':'made a Melee attack against'} ${n.name} for ${pending.damage} damage (${before} → ${n.wounds} wounds).`);
+      log(`${playerName(stage.playerOperativeId)} ${pending.attackType==='shoot'?'shot':'made a Melee attack against'} ${npoDisplayName(n)} for ${pending.damage} damage (${before} → ${n.wounds} wounds).`);
     }
   }
 
@@ -1002,6 +1002,43 @@ function showPlayerActivation(stage={}){
     render();
   }
 
+  function npoDisplayName(n){
+    const sameType=state.roster.filter(x=>x.type===n.type);
+    if(sameType.length<=1)return n.type;
+    const index=sameType.findIndex(x=>x.id===n.id);
+    return `${n.type} ${index+1}`;
+  }
+
+  function playerAttackWeapons(operativeId,attackType){
+    const operative=playerDefinition(operativeId);
+    const wantedType=attackType==='shoot'?'ranged':'melee';
+    return (operative?.weapons||[]).filter(w=>w.type===wantedType);
+  }
+
+  function parseWeaponDamage(damage){
+    const match=String(damage||'0/0').match(/(\d+)\s*\/\s*(\d+)/);
+    return {normal:Number(match?.[1]||0),crit:Number(match?.[2]||0)};
+  }
+
+  function weaponPiercingValue(weapon){
+    for(const rule of weapon?.rules||[]){
+      const match=String(rule).match(/(?:Piercing|AP)\s*(\d+)/i);
+      if(match)return Number(match[1]);
+    }
+    return 0;
+  }
+
+  function playerWeaponProfile(weapon){
+    const damage=parseWeaponDamage(weapon?.damage);
+    return {
+      dice:Number(weapon?.attacks||4),
+      hit:Number(weapon?.hit||3),
+      normal:damage.normal,
+      crit:damage.crit,
+      ap:weaponPiercingValue(weapon)
+    };
+  }
+
   function showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel){
     const targets=activeNpos().filter(n=>projectedNpoWounds(n.id,stage)>0);
     if(!targets.length){
@@ -1009,30 +1046,58 @@ function showPlayerActivation(stage={}){
       showPlayerActivation(stage);
       return;
     }
+
     const attackLabel=attackType==='shoot'?'Shooting':'Melee';
+    const weapons=playerAttackWeapons(stage.playerOperativeId,attackType);
+    if(!weapons.length){
+      showToast(`${playerName(stage.playerOperativeId)} has no ${attackType==='shoot'?'ranged':'melee'} weapon in its roster profile.`);
+      showPlayerActivation(stage);
+      return;
+    }
+
     showModal(`Resolve ${attackLabel} Attack`,`
-      <p>Select the target NPO. This attack remains pending until the entire Player activation is confirmed.</p>
-      <div class="field"><label>Target NPO</label><select id="combatTarget"><option value="">Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}">${escapeHtml(n.name)} · ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} projected wounds · Save ${n.save}+</option>`).join('')}</select></div>
+      <p>Select the weapon and target NPO. This attack remains pending until the entire Player activation is confirmed.</p>
+      <div class="field"><label>Weapon</label><select id="playerWeaponSelect">${weapons.map((w,i)=>`<option value="${i}">${escapeHtml(w.name)}</option>`).join('')}</select></div>
+      <div class="field"><label>Target NPO</label><select id="combatTarget"><option value="">Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}">${escapeHtml(npoDisplayName(n))} · ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} projected wounds · Save ${n.save}+</option>`).join('')}</select></div>
       <fieldset id="combatControls" class="combat-fieldset" disabled>
-        <div class="combat-grid">
-          ${spinnerField('playerAttackDice','Attack dice',4,1,12)}
-          ${spinnerField('playerHit','Hit on',3,2,6)}
-          ${spinnerField('playerNormalDamage','Normal damage',3,0,12)}
-          ${spinnerField('playerCritDamage','Critical damage',4,0,15)}
-          ${spinnerField('playerAp','AP',0,0,3)}
-          ${spinnerField('npoDefenseDice','NPO Defense Dice',3,0,6)}
-        </div>
+        <section class="defense-profile attack-profile" aria-label="Player attack profile">
+          <p class="eyebrow">PLAYER ATTACK PROFILE</p>
+          <div class="defense-profile-grid" id="playerAttackProfile"></div>
+        </section>
         <label class="check-row compact-check"><input type="checkbox" id="npoCover"><span><strong>NPO retains one normal save for cover</strong></span></label>
         <div id="combatResults" class="combat-results"><p>Select a target NPO to begin.</p></div>
         <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button><button class="btn primary" id="rollPendingAttack">Roll Attack & Saves</button></div>
       </fieldset>`);
-    bindSpinners(modal);
+
     const targetSelect=$('#combatTarget');
+    const weaponSelect=$('#playerWeaponSelect');
     const controls=$('#combatControls');
+
+    const renderProfile=()=>{
+      const weapon=weapons[Number(weaponSelect.value)||0];
+      const profile=playerWeaponProfile(weapon);
+      const target=state.roster.find(x=>x.id===targetSelect.value);
+      $('#playerAttackProfile').innerHTML=`
+        <div><small>Attack Dice</small><strong>${profile.dice}</strong></div>
+        <div><small>Hit On</small><strong>${profile.hit}+</strong></div>
+        <div><small>Normal Damage</small><strong>${profile.normal}</strong></div>
+        <div><small>Critical Damage</small><strong>${profile.crit}</strong></div>
+        <div><small>AP</small><strong>${profile.ap}</strong></div>
+        <div><small>NPO Defense Dice</small><strong>3</strong></div>
+        <div><small>Target Save</small><strong>${target?`${target.save}+`:'—'}</strong></div>`;
+    };
+
     targetSelect.addEventListener('change',()=>{
       controls.disabled=!targetSelect.value;
-      if(targetSelect.value)$('#combatResults').innerHTML='<p>Set the profile, then roll the attack.</p>';
+      renderProfile();
+      if(targetSelect.value)$('#combatResults').innerHTML='<p>Review the profile, then roll the attack.</p>';
     });
+    weaponSelect.addEventListener('change',()=>{
+      renderProfile();
+      $('#combatResults').innerHTML=targetSelect.value?'<p>Review the profile, then roll the attack.</p>':'<p>Select a target NPO to begin.</p>';
+    });
+
+    renderProfile();
     $('#cancelPendingAttack').onclick=onCancel;
     $('#rollPendingAttack').onclick=()=>previewPendingPlayerAttack(stage,attackType,onResolved,onCancel);
   }
@@ -1040,12 +1105,14 @@ function showPlayerActivation(stage={}){
   function previewPendingPlayerAttack(stage,attackType,onResolved,onCancel){
     const n=state.roster.find(x=>x.id===$('#combatTarget').value);
     if(!n)return;
-    const profile={dice:num('playerAttackDice'),hit:num('playerHit'),normal:num('playerNormalDamage'),crit:num('playerCritDamage')};
+    const weapons=playerAttackWeapons(stage.playerOperativeId,attackType);
+    const weapon=weapons[Number($('#playerWeaponSelect')?.value)||0];
+    const profile=playerWeaponProfile(weapon);
     const attackDice=rollAttack(profile);
-    const defense=resolveDefense(attackDice,num('npoDefenseDice'),n.save,num('playerAp'),$('#npoCover').checked,profile);
+    const defense=resolveDefense(attackDice,3,n.save,profile.ap,$('#npoCover').checked,profile);
     const before=projectedNpoWounds(n.id,stage);
     const after=Math.max(0,before-defense.damage);
-    const result={attackType,targetId:n.id,targetName:n.name,before,after,damage:defense.damage};
+    const result={attackType,targetId:n.id,targetName:npoDisplayName(n),weaponName:weapon.name,before,after,damage:defense.damage};
 
     $('#combatResults').innerHTML=`<div class="combat-stage"><small>PLAYER ATTACK DICE</small><div class="dice-row animated-roll" id="playerAttackDiceResult">${attackDice.map(()=>rollingDieHtml()).join('')}</div></div>
       <div class="combat-stage"><small>NPO SAVE DICE</small><div class="dice-row animated-roll" id="npoSaveDiceResult">${defense.saveDice.map(()=>rollingDieHtml()).join('')||'<span class="muted">No save dice rolled</span>'}</div>${defense.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':''}</div>
