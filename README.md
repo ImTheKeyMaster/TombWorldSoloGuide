@@ -715,11 +715,11 @@ v3.0.7: Kasrkin roster choices updated.
 - Updated visible, internal, and cache-busting versions to v3.0.8.
 
 
-## v3.1.0
+## v3.1.2
 
 - Expanded Death Korps roster choices to support a legal 14-operative roster.
 - Split the generic Gunner into Flamer, Grenade Launcher, Meltagun, and Plasma Gun choices.
 - Added four separately selectable Trooper positions, displayed simply as “Trooper” during roster selection.
 - Duplicate Troopers are numbered automatically during gameplay for activations, wounds, and targeting.
 - Added Death Korps validation for four required Troopers, the Watchmaster leader, and a maximum of four Gunners.
-- Updated visible, internal, and cache-busting versions to v3.1.0.
+- Updated visible, internal, and cache-busting versions to v3.1.2.
