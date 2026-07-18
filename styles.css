@@ -850,3 +850,14 @@ button.tracker-operative:hover{
 .activation-apl-bar.ap-usage-only .ap-usage{
   width:100%;
 }
+
+
+/* v2.3.7: iOS Safari modal/select focus reliability */
+.modal{
+  -webkit-overflow-scrolling:touch;
+}
+#playerOperativeSelect{
+  touch-action:manipulation;
+  -webkit-user-select:auto;
+  user-select:auto;
+}

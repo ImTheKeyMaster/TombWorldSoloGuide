@@ -601,3 +601,11 @@ Major player-roster update:
 - The NPO attack roll no longer appears on the Recommended Activation screen.
 - NPO attack dice animate inside the NPO Attack Wizard.
 - Roll Player Saves becomes available after the attack-dice animation completes.
+
+
+## v2.3.7
+
+- Fixed an intermittent iOS Safari issue where the Player Operative dropdown could not be opened immediately after selecting Resolve Player Activation.
+- Modal launch now clears focus from the button that opened it.
+- The dialog container receives focus instead of Safari automatically focusing or trapping another control.
+- The Resolve Player Activation dialog is reset to the top before the Player Operative dropdown becomes interactive.

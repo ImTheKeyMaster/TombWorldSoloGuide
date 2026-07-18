@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '2.3.6';
+  const APP_VERSION = '2.3.7';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -808,6 +808,18 @@ function showPlayerActivation(stage={}){
 
     const operativeSelect=$('#playerOperativeSelect');
     const controls=$('#playerActivationControls');
+
+    // iOS Safari can retain focus on the button that opened the dialog,
+    // which occasionally prevents the native select from opening on first tap.
+    requestAnimationFrame(()=>{
+      modal.scrollTop=0;
+      modalBody.scrollTop=0;
+      if(document.activeElement!==modal){
+        try{modal.focus({preventScroll:true});}catch{modal.focus();}
+      }
+      operativeSelect.style.pointerEvents='none';
+      requestAnimationFrame(()=>{operativeSelect.style.pointerEvents='';});
+    });
     operativeSelect.addEventListener('change',()=>{
       const selectedOperative=playerDefinition(operativeSelect.value);const updated={...stage,playerOperativeId:operativeSelect.value||'',apl:Number(selectedOperative?.apl||stage.apl||3)};
       showPlayerActivation(updated);
@@ -1485,7 +1497,22 @@ function showPlayerActivation(stage={}){
   function toggleReady(id){const n=state.roster.find(x=>x.id===id);if(n&&n.wounds>0)n.ready=!n.ready;save();render();}
   function deleteNpo(id){state.roster=state.roster.filter(x=>x.id!==id);save();render();}
 
-  function showModal(title,content,onClose){modalBody.innerHTML=`<div class="modal-inner"><h2>${title}</h2>${content}</div>`;if(!modal.open)modal.showModal();modal._onClose=onClose;$$('[data-close]',modal).forEach(b=>b.onclick=closeModal);}
+  function showModal(title,content,onClose){
+    const active=document.activeElement;
+    if(active&&typeof active.blur==='function')active.blur();
+
+    modalBody.innerHTML=`<div class="modal-inner"><h2>${title}</h2>${content}</div>`;
+    modal.setAttribute('tabindex','-1');
+    if(!modal.open)modal.showModal();
+    modal._onClose=onClose;
+    $$('[data-close]',modal).forEach(b=>b.onclick=closeModal);
+
+    requestAnimationFrame(()=>{
+      modal.scrollTop=0;
+      modalBody.scrollTop=0;
+      try{modal.focus({preventScroll:true});}catch{modal.focus();}
+    });
+  }
   function closeModal(){
     if(modal.open)modal.close();
     const cb=modal._onClose;
