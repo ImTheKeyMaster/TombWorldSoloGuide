@@ -9,6 +9,8 @@
     "ASTRA MILITARUM"
   ],
   "rosterSize": 14,
+  "minRoster": 11,
+  "maxRoster": 14,
   "selectionRules": {
     "leader": {
       "operativeId": "watchmaster",
