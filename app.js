@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.2.6';
+  const APP_VERSION = '3.3.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -461,16 +461,37 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const leaderSelected=!requiredLeaderId||selected.has(requiredLeaderId);
       const {minRoster,maxRoster}=playerRosterLimits();
       const valid=selected.size>=minRoster&&selected.size<=maxRoster&&gravisCount<=1&&gunnerCount<=maxGunners&&trooperCount>=mandatoryTroopers&&leaderSelected;
-      const cards=(playerTeamData?.operatives||[]).map(o=>{
-        const chosen=selected.has(o.id);
-        const rosterBlocked=!chosen&&selected.size>=maxRoster;
-        const gravisBlocked=!chosen&&o.gravis&&gravisCount>=1;
-        const gunnerBlocked=!chosen&&o.role==='Gunner'&&gunnerCount>=maxGunners;
-        return `<button type="button" class="player-roster-card ${chosen?'selected':''}" data-select-player="${o.id}" ${rosterBlocked||gravisBlocked||gunnerBlocked?'disabled':''}><div class="player-roster-card-head"><div><strong>${escapeHtml(o.name)}</strong><small>${escapeHtml(o.role)}${o.gravis?' · GRAVIS':''}</small></div><span>${chosen?'✓':'+'}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${o.apl}</b></span><span><small>MOVE</small><b>${o.move}"</b></span><span><small>SAVE</small><b>${o.save}+</b></span><span><small>WOUNDS</small><b>${o.wounds}</b></span></div></button>`;
+      const categoryMetadata=new Map((playerTeamData?.rosterCategories||[]).map(category=>[category.id,category]));
+      const categories=[];
+      (playerTeamData?.operatives||[]).forEach(operative=>{
+        const categoryId=operative.category;
+        let category=categories.find(entry=>entry.id===categoryId);
+        if(!category){
+          const metadata=categoryMetadata.get(categoryId)||{};
+          category={id:categoryId,label:metadata.label||categoryId,order:Number(metadata.order??categories.length),operatives:[]};
+          categories.push(category);
+        }
+        category.operatives.push(operative);
+      });
+      categories.sort((a,b)=>a.order-b.order);
+      const requiredOperativeIds=new Set(requiredLeaderId?[requiredLeaderId]:[]);
+      const hasInitiallyExpandedCategory=categories.some(category=>category.operatives.some(operative=>selected.has(operative.id)||requiredOperativeIds.has(operative.id)));
+      const sections=categories.map((category,index)=>{
+        const categorySelected=category.operatives.filter(operative=>selected.has(operative.id)).length;
+        const expanded=category.operatives.some(operative=>selected.has(operative.id)||requiredOperativeIds.has(operative.id))||(!hasInitiallyExpandedCategory&&index===0);
+        const panelId=`roster-category-${index}`;
+        const cards=category.operatives.map(o=>{
+          const chosen=selected.has(o.id);
+          const rosterBlocked=!chosen&&selected.size>=maxRoster;
+          const gravisBlocked=!chosen&&o.gravis&&gravisCount>=1;
+          const gunnerBlocked=!chosen&&o.role==='Gunner'&&gunnerCount>=maxGunners;
+          return `<button type="button" class="player-roster-card ${chosen?'selected':''}" data-select-player="${o.id}" ${rosterBlocked||gravisBlocked||gunnerBlocked?'disabled':''}><div class="player-roster-card-head"><div><strong>${escapeHtml(o.name)}</strong><small>${escapeHtml(o.role)}${o.gravis?' · GRAVIS':''}</small></div><span>${chosen?'✓':'+'}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${o.apl}</b></span><span><small>MOVE</small><b>${o.move}"</b></span><span><small>SAVE</small><b>${o.save}+</b></span><span><small>WOUNDS</small><b>${o.wounds}</b></span></div></button>`;
+        }).join('');
+        return `<section class="roster-category"><button type="button" class="roster-category-heading" data-roster-category-toggle aria-expanded="${expanded}" aria-controls="${panelId}"><span class="roster-category-title"><span class="roster-category-indicator" aria-hidden="true">›</span>${escapeHtml(category.label)}</span><span>${categorySelected} selected</span></button><div class="player-roster-grid roster-category-content" id="${panelId}" ${expanded?'':'hidden'}>${cards}</div></section>`;
       }).join('');
       const selectionPrompt=minRoster===maxRoster?`Select exactly ${maxRoster} operatives.`:`Select between ${minRoster} and ${maxRoster} operatives.`;
       const selectionCount=minRoster===maxRoster?`${selected.size} / ${maxRoster} selected`:`${selected.size} / ${maxRoster} selected · minimum ${minRoster}`;
-      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><div class="player-roster-summary"><strong>${selectionCount}</strong>${Number.isFinite(maxGunners)?`<span>${gunnerCount} / ${maxGunners} Gunners</span>`:''}${mandatoryTroopers?`<span>${trooperCount} / ${mandatoryTroopers} required Troopers</span>`:''}${requiredLeaderId?`<span>${leaderSelected?'Leader selected':'Leader required'}</span>`:''}${(playerTeamData?.operatives||[]).some(o=>o.gravis)?`<span>${gravisCount} / 1 Gravis</span>`:''}</div><div class="player-roster-grid">${cards}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
+      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><div class="player-roster-summary"><strong>${selectionCount}</strong>${Number.isFinite(maxGunners)?`<span>${gunnerCount} / ${maxGunners} Gunners</span>`:''}${mandatoryTroopers?`<span>${trooperCount} / ${mandatoryTroopers} required Troopers</span>`:''}${requiredLeaderId?`<span>${leaderSelected?'Leader selected':'Leader required'}</span>`:''}${(playerTeamData?.operatives||[]).some(o=>o.gravis)?`<span>${gravisCount} / 1 Gravis</span>`:''}</div><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
     }
     if(stepId==='npoRoster'){
       const m=mission();
@@ -510,6 +531,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#checkAllSetup')?.addEventListener('click',()=>{state.setupChecks=[true,true,true,true];save();render();});
     $('#generateBtn')?.addEventListener('click',()=>{generateRoster();save();render();});
     $('#npoDeployed')?.addEventListener('change',e=>{state.roster.forEach(n=>n.deployed=e.target.checked);save();render();});
+    $$('[data-roster-category-toggle]').forEach(button=>button.addEventListener('click',()=>{
+      const expanded=button.getAttribute('aria-expanded')==='true';
+      button.setAttribute('aria-expanded',String(!expanded));
+      const content=document.getElementById(button.getAttribute('aria-controls'));
+      if(content)content.hidden=expanded;
+    }));
     $$('[data-select-player]').forEach(button=>button.addEventListener('click',()=>{
       const id=button.dataset.selectPlayer;
       const selected=new Set(state.playerRoster||[]);

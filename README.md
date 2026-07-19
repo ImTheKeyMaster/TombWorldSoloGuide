@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v3.2.6
+# Tomb World Solo Guide v3.3.0
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -768,3 +768,11 @@ v3.0.7: Kasrkin roster choices updated.
 - Allowed Kill Teams to define minimum and maximum roster sizes while preserving exact-size behavior for existing team data.
 - Updated the Death Korps roster builder to accept between 11 and 14 operatives.
 - Updated visible, internal, and cache-busting versions to v3.2.6.
+
+
+## v3.3.0
+
+- Organized Player Roster Selection into data-driven, collapsible operative categories with selected counts.
+- Added roster category metadata and operative category membership to every supported Player Kill Team.
+- Preserved existing roster validation, duplicate operative naming, and setup navigation behavior.
+- Updated visible, internal, and cache-busting versions to v3.3.0.

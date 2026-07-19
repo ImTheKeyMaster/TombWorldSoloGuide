@@ -18,12 +18,30 @@
     "document": "Deathwatch Kill Team Rules",
     "revision": "28 January 2026"
   },
+  "rosterCategories": [
+    {
+      "id": "leader",
+      "label": "Leader",
+      "order": 1
+    },
+    {
+      "id": "specialists",
+      "label": "Specialists",
+      "order": 2
+    },
+    {
+      "id": "gravis",
+      "label": "Gravis",
+      "order": 3
+    }
+  ],
   "operatives": [
     {
       "id": "sergeant",
       "name": "Sergeant",
       "officialName": "Deathwatch Watch Sergeant",
       "role": "Leader",
+      "category": "leader",
       "apl": 3,
       "move": 6,
       "save": 3,
@@ -76,6 +94,7 @@
       "name": "Aegis",
       "officialName": "Deathwatch Aegis Veteran",
       "role": "Veteran",
+      "category": "specialists",
       "apl": 3,
       "move": 6,
       "save": 2,
@@ -114,6 +133,7 @@
       "name": "Breacher",
       "officialName": "Deathwatch Breacher Veteran",
       "role": "Gravis Veteran",
+      "category": "gravis",
       "apl": 3,
       "move": 5,
       "save": 3,
@@ -181,6 +201,7 @@
       "name": "Blademaster",
       "officialName": "Deathwatch Blademaster Veteran",
       "role": "Veteran",
+      "category": "specialists",
       "apl": 3,
       "move": 6,
       "save": 3,
@@ -233,6 +254,7 @@
       "name": "Marksman",
       "officialName": "Deathwatch Marksman Veteran",
       "role": "Veteran",
+      "category": "specialists",
       "apl": 3,
       "move": 6,
       "save": 3,
@@ -278,6 +300,7 @@
       "name": "Demolisher",
       "officialName": "Deathwatch Demolisher Veteran",
       "role": "Veteran",
+      "category": "specialists",
       "apl": 3,
       "move": 6,
       "save": 3,
@@ -317,6 +340,7 @@
       "name": "Horde-Slayer",
       "officialName": "Deathwatch Horde-Slayer Veteran",
       "role": "Gravis Veteran",
+      "category": "gravis",
       "apl": 3,
       "move": 5,
       "save": 3,
@@ -383,6 +407,7 @@
       "name": "Headtaker",
       "officialName": "Deathwatch Headtaker Veteran",
       "role": "Veteran",
+      "category": "specialists",
       "apl": 3,
       "move": 7,
       "save": 3,
@@ -420,6 +445,7 @@
       "name": "Gunner",
       "officialName": "Deathwatch Gunner Veteran",
       "role": "Veteran",
+      "category": "specialists",
       "apl": 3,
       "move": 6,
       "save": 3,
@@ -475,6 +501,7 @@
       "name": "Bombard",
       "officialName": "Deathwatch Bombard Veteran",
       "role": "Gravis Veteran",
+      "category": "gravis",
       "apl": 3,
       "move": 5,
       "save": 3,
@@ -528,6 +555,7 @@
       "name": "Disruptor",
       "officialName": "Deathwatch Disruptor Veteran",
       "role": "Veteran",
+      "category": "specialists",
       "apl": 3,
       "move": 7,
       "save": 3,

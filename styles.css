@@ -1027,3 +1027,15 @@ button.tracker-operative:hover{
 
 /* v3.2.3 game-end artwork */
 .game-end-image{display:block;width:100%;max-width:768px;height:auto;margin:0 auto 22px;border:1px solid var(--line);border-radius:16px}
+
+/* v3.3.0 categorized Player roster selection */
+.roster-categories{display:grid;gap:12px;margin:12px 0 18px}
+.roster-category{border:1px solid var(--line);border-radius:16px;background:#091912;overflow:hidden}
+.roster-category-heading{width:100%;min-height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;border:0;background:#10251a;color:var(--text);text-align:left;cursor:pointer;font-weight:850}
+.roster-category-heading>span:last-child{color:var(--muted);font-size:.85rem;white-space:nowrap}
+.roster-category-title{display:flex;align-items:center;gap:10px;min-width:0}
+.roster-category-indicator{color:var(--green);font-size:1.5rem;line-height:1;transform:rotate(0);transition:transform .2s}
+.roster-category-heading[aria-expanded="true"] .roster-category-indicator{transform:rotate(90deg)}
+.roster-category-content{padding:12px;margin:0;background:#07140f}
+.roster-category-content[hidden]{display:none}
+@media(max-width:600px){.roster-category-heading{padding:13px}.roster-category-content{padding:10px}}
