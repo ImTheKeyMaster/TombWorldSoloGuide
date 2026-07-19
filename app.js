@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.2.2';
+  const APP_VERSION = '3.2.3';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -433,7 +433,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     bindSetup(stepId);
   }
   function setupContent(stepId){
-    if(stepId==='mission') return `<h3>Which mission are you playing?</h3><p>You can review the objective before committing.</p><div class="mission-list">${missions.map(m=>`<button class="mission-choice ${state.missionId===m.id?'selected':''}" data-mission="${m.id}"><small>${m.number}</small><strong>${m.name}</strong><span>${m.brief}</span></button>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="setupHome">Back</button><button class="btn primary" id="setupNext" ${state.missionId?'':'disabled'}>Next</button></div>`;
+    if(stepId==='mission') return `<h3>Which mission are you playing?</h3><p>You can review the objective before committing.</p><div class="mission-list">${missions.map(m=>`<button class="mission-choice team-select-card ${state.missionId===m.id?'selected':''}" data-mission="${m.id}"><div class="team-select-card-head"><div><small>${m.number}</small><strong>${m.name}</strong></div>${state.missionId===m.id?'<span>✓</span>':''}</div><span>${m.brief}</span></button>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="setupHome">Back</button><button class="btn primary" id="setupNext" ${state.missionId?'':'disabled'}>Next</button></div>`;
     if(stepId==='killzone'){
       const m=mission();
       const checks=['Place walls and hatchways as shown','Place mission objective markers','Identify the Player drop zone','Identify NPO deployment areas'];
@@ -1214,6 +1214,9 @@ function showPlayerActivation(stage={}){
     const weaponControl=weapons.length===1
       ? `<div class="field"><label>Weapon</label><div class="readonly-select" id="singleWeaponDisplay">${escapeHtml(weapons[0].name)}</div><input type="hidden" id="playerWeaponSelect" value="0"></div>`
       : `<div class="field"><label>Weapon</label><select id="playerWeaponSelect">${weapons.map((w,i)=>`<option value="${i}">${escapeHtml(w.name)}</option>`).join('')}</select></div>`;
+    const targetControl=targets.length===1
+      ? `<div class="field"><label>Target NPO</label><div class="readonly-select">${escapeHtml(npoName(targets[0]))} · Wounds ${projectedNpoWounds(targets[0].id,stage)}/${targets[0].maxWounds} · Save ${targets[0].save}+</div><input type="hidden" id="combatTarget" value="${escapeHtml(targets[0].id)}"></div>`
+      : `<div class="field"><label>Target NPO</label><select id="combatTarget"><option value="">Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}">${escapeHtml(npoName(n))} · Wounds ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} · Save ${n.save}+</option>`).join('')}</select></div>`;
 
     const priorElimination=attackType==='melee'&&Number(stage.pendingShoot?.after)<=0
       ? `<section class="compact-elimination-notice"><strong>☠ ${escapeHtml(stage.pendingShoot.targetName)} was eliminated by the Shoot attack.</strong><span>Choose another melee target or skip Melee.</span></section>`
@@ -1221,7 +1224,7 @@ function showPlayerActivation(stage={}){
     showModal(`Resolve ${attackLabel} Attack`,`
       ${priorElimination}
       <p>Select the target NPO and weapon. This attack remains pending until the entire Player activation is confirmed.</p>
-      <div class="field"><label>Target NPO</label><select id="combatTarget"><option value="">Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}">${escapeHtml(npoName(n))} · Wounds ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} · Save ${n.save}+</option>`).join('')}</select></div>
+      ${targetControl}
       ${weaponControl}
       <fieldset id="combatControls" class="combat-fieldset" disabled>
         <section class="defense-profile attack-profile" aria-label="Player attack profile">
@@ -1250,6 +1253,7 @@ function showPlayerActivation(stage={}){
     const targetSelect=$('#combatTarget');
     const weaponSelect=$('#playerWeaponSelect');
     const controls=$('#combatControls');
+    controls.disabled=!targetSelect.value;
 
     const renderProfile=()=>{
       const weapon=weapons[Number(weaponSelect?.value)||0];
@@ -1425,13 +1429,21 @@ function showPlayerActivation(stage={}){
 
   function renderNpoDecisionResult(n,decision,dice,answers,attackResolved,animateDice=true,attackRequired=(decision.action.includes('Fight')||decision.action.includes('Shoot')),targetConfirmed=dice.length>0){
     state.lastActivation={name:npoName(n),...decision,dice,answers,attackResolved,attackRequired,targetConfirmed};save();
-    const targetOptions=eligibleNpoAttackTargets().map(id=>`<option value="${escapeHtml(id)}" ${state.npoAttackTargetId===id?'selected':''}>${escapeHtml(playerName(id))}</option>`).join('');
+    const eligibleTargets=eligibleNpoAttackTargets();
+    if(attackRequired&&!targetConfirmed&&eligibleTargets.length===1&&state.npoAttackTargetId!==eligibleTargets[0]){
+      state.npoAttackTargetId=eligibleTargets[0];
+      save();
+    }
+    const targetOptions=eligibleTargets.map(id=>`<option value="${escapeHtml(id)}" ${state.npoAttackTargetId===id?'selected':''}>${escapeHtml(playerName(id))}</option>`).join('');
+    const targetControl=eligibleTargets.length===1
+      ? `<div class="readonly-select">${escapeHtml(playerName(eligibleTargets[0]))}</div><input type="hidden" id="npoPriorityTarget" value="${escapeHtml(eligibleTargets[0])}">`
+      : `<select id="npoPriorityTarget" ${targetConfirmed||attackResolved?'disabled':''}><option value="">Select the operative matching this priority</option>${targetOptions}</select>`;
     const targetName=state.npoAttackTargetId?playerName(state.npoAttackTargetId):'';
     modalBody.innerHTML=`<div class="modal-inner ai-result">
       <p class="eyebrow">RECOMMENDED ACTIVATION</p>
       <div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)} · ${escapeHtml(n.behavior)}</p></div><span class="order-badge">${decision.stance}</span></div>
       <div class="activation-command"><small>ACTION SEQUENCE</small><strong>${escapeHtml(decision.action)}</strong></div>
-      <div class="target-command"><small>TARGET PRIORITY</small><strong>${escapeHtml(decision.target)}</strong>${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Target Player Operative</label><select id="npoPriorityTarget" ${targetConfirmed||attackResolved?'disabled':''}><option value="">Select the operative matching this priority</option>${targetOptions}</select></div>`:''}</div>
+      <div class="target-command"><small>TARGET PRIORITY</small><strong>${escapeHtml(decision.target)}</strong>${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Target Player Operative</label>${targetControl}</div>`:''}</div>
       ${attackRequired&&!targetConfirmed?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
       ${attackRequired&&targetConfirmed?`<h3>Attack Roll</h3><div class="dice-row ${attackResolved||!animateDice?'settled':'animated-roll'}" id="aiDice">${attackResolved||!animateDice?dice.map(dieHtml).join(''):dice.map(()=>rollingDieHtml()).join('')}</div><p id="aiDiceSummary" class="muted">${attackResolved?'Attack resolved.':animateDice?`Rolling ${dice.length} attack dice…`:initiativeSummary(dice)}</p>${!attackResolved?`<button class="btn secondary big-action" id="rollPlayerSaves">Roll Player Saves</button>`:''}`:''}
       ${attackResolved&&state.npoAttackSummary?`<section class="card npo-attack-summary">
