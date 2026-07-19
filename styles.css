@@ -656,9 +656,14 @@ body.modal-open{
 }
 
 /* v2.0.0 Player roster selection */
-.player-roster-summary{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 15px;margin:18px 0 12px;border:1px solid var(--line);border-radius:14px;background:#091912}
-.player-roster-summary strong{color:var(--green)}
-.player-roster-summary span{color:var(--muted);font-weight:800}
+.player-roster-summary{padding:13px 15px;margin:18px 0 12px;border:1px solid var(--line);border-radius:14px;background:#091912}
+.player-roster-summary h4{margin:0 0 8px;color:var(--green)}
+.player-roster-summary ul{list-style:none;padding:0;margin:0;display:grid;gap:5px}
+.player-roster-summary li{display:flex;align-items:center;gap:8px;color:var(--muted);font-weight:800}
+.player-roster-summary li.satisfied{color:var(--text)}
+.roster-requirement-indicator{width:1.1em;color:var(--muted);font-weight:900;text-align:center}
+.player-roster-summary li.satisfied .roster-requirement-indicator{color:var(--green)}
+.visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 .player-roster-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:12px 0 18px}
 .player-roster-card{appearance:none;text-align:left;color:var(--text);padding:15px;border:1px solid var(--line);border-radius:16px;background:#091912;cursor:pointer}
 .player-roster-card:hover:not(:disabled){border-color:#3b7755}
@@ -682,7 +687,7 @@ body.modal-open{
 .player-operative-row.activated>b{color:var(--green)}
 .player-operative-row.casualty{opacity:.55;filter:grayscale(1);text-decoration:line-through}
 .player-operative-row.casualty>b{color:#dca4a4}
-@media(max-width:600px){.player-roster-grid{grid-template-columns:1fr}.player-roster-summary{align-items:flex-start;flex-direction:column}}
+@media(max-width:600px){.player-roster-grid{grid-template-columns:1fr}}
 
 /* v2.0.1 Unified activation tracker cards */
 .tracker-operative-grid{
