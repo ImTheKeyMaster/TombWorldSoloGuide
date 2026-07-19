@@ -723,3 +723,11 @@ v3.0.7: Kasrkin roster choices updated.
 - Duplicate Troopers are numbered automatically during gameplay for activations, wounds, and targeting.
 - Added Death Korps validation for four required Troopers, the Watchmaster leader, and a maximum of four Gunners.
 - Updated visible, internal, and cache-busting versions to v3.1.3.
+
+
+## v3.2.0
+
+- Added an operative-style checkmark to the selected Kill Team.
+- Increased toast contrast so notifications stand out from game screens.
+- Moved activation tracker operative details into a collapsible section titled with the completed activation count.
+- Updated visible, internal, and cache-busting versions to v3.2.0.

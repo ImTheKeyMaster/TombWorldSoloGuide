@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.1.3';
+  const APP_VERSION = '3.2.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -104,7 +104,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   ];
 
   const initialState = () => ({
-    version:'1.4.0c', screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:APP_VERSION, screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:[], roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
@@ -363,8 +363,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function hasMultiplePlayerTeams(){return (playerManifest?.teams?.length||0)>1;}
   function renderTeamSelection(){
-    const cards=(playerManifest?.teams||[]).map(team=>`<button type="button" class="team-select-card" data-player-team="${escapeHtml(team.id)}">
-      <div><strong>${escapeHtml(team.name)}</strong><small>${escapeHtml(team.faction||'Kill Team')}</small></div>
+    const cards=(playerManifest?.teams||[]).map(team=>`<button type="button" class="team-select-card ${state.playerTeamId===team.id?'selected':''}" data-player-team="${escapeHtml(team.id)}">
+      <div class="team-select-card-head"><div><strong>${escapeHtml(team.name)}</strong><small>${escapeHtml(team.faction||'Kill Team')}</small></div><span>${state.playerTeamId===team.id?'✓':'+'}</span></div>
       <p>${escapeHtml(team.description||'')}</p>
     </button>`).join('');
     app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Choose Kill Team</h2><p>Select the player-controlled Kill Team for this battle.</p></div></div><section class="wizard-card"><div class="team-select-grid">${cards}</div><div class="wizard-actions"><button class="btn ghost" id="teamSelectHome">Back</button></div></section></div>`;
@@ -429,7 +429,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       return `<h3>${m.name} board setup</h3><p><strong>Objective:</strong> ${m.objective}</p>${boardSvg(m.id)}<div class="setup-bulk-row"><button class="btn secondary" id="checkAllSetup" ${allChecked?'disabled':''}>Check All</button></div><div class="checklist">${checks.map((c,i)=>`<label class="check-row"><input type="checkbox" data-check="${i}" ${state.setupChecks[i]?'checked':''}><span><strong>${c}</strong><small>${i===0?'Use the official mission map shown above to place the terrain and markers.':'Confirm this step on the physical board.'}</small></span></label>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${allChecked?'':'disabled'}>Board Ready</button></div>`;
     }
     if(stepId==='team'){
-      const cards=(playerManifest?.teams||[]).map(team=>`<button type="button" class="team-select-card ${state.playerTeamId===team.id?'selected':''}" data-player-team="${escapeHtml(team.id)}"><div><strong>${escapeHtml(team.name)}</strong><small>${escapeHtml(team.faction||'Kill Team')}</small></div><p>${escapeHtml(team.description||'')}</p></button>`).join('');
+      const cards=(playerManifest?.teams||[]).map(team=>`<button type="button" class="team-select-card ${state.playerTeamId===team.id?'selected':''}" data-player-team="${escapeHtml(team.id)}"><div class="team-select-card-head"><div><strong>${escapeHtml(team.name)}</strong><small>${escapeHtml(team.faction||'Kill Team')}</small></div><span>${state.playerTeamId===team.id?'✓':'+'}</span></div><p>${escapeHtml(team.description||'')}</p></button>`).join('');
       return `<h3>Which Kill Team are you playing?</h3><p>Your choice determines the operatives available on the next step.</p><div class="team-select-grid">${cards}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${state.playerTeamId?'':'disabled'}>Build Roster</button></div>`;
     }
     if(stepId==='playerRoster'){
@@ -612,8 +612,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const cls=eliminated?'eliminated':n.ready?'ready':'activated';
       return `<div class="tracker-operative npo ${cls}"><span>${escapeHtml(npoName(n))}</span><strong>${status}</strong></div>`;
     }).join('');
-    return `<section class="card activation-tracker">
-      <div class="panel-title"><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div><div class="turn-badge">Next: ${state.nextSide==='npo'?'NPO':'Player'}</div></div>
+    return `<section class="card activation-tracker"><details class="activation-details">
+      <summary><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div><div class="turn-badge">Next: ${state.nextSide==='npo'?'NPO':'Player'}</div></summary>
+      <div class="activation-details-content">
       <div class="tracker-section">
         <small>${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} operatives</small>
         <p class="muted compact-copy">All selected operatives are listed, including eliminated operatives. Select a Player operative to mark it eliminated or restore it.</p>
@@ -623,7 +624,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         <small>NPOs</small>
         <div class="tracker-operative-grid">${npoRows||'<span class="muted">No NPO operatives generated</span>'}</div>
       </div>
-    </section>`;
+      </div>
+    </details></section>`;
   }
 
   function showPlayerOperativeStatus(operativeId){
