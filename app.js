@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.2.2';
+  const APP_VERSION = '3.2.3';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -527,7 +527,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function renderGame(){
     if(state.gameEnd){
       const victory=state.gameEnd==='victory';
-      app.innerHTML=`<section class="hero-card"><p class="eyebrow">GAME OVER</p><h2>${victory?'Victory!':'Defeat'}</h2><p>${victory?'All NPO operatives have been eliminated.':'Your kill team has been eliminated.'}</p><div class="button-row"><button class="btn primary" id="gameEndNewGame">Start New Game</button></div></section>`;
+      app.innerHTML=`<section class="hero-card"><p class="eyebrow">GAME OVER</p><img class="game-end-image" src="Assets/Images/${victory?'victory':'defeat'}.png" alt="${victory?'Victory':'Defeat'}"><p>${victory?'All NPO operatives have been eliminated.':'Your kill team has been eliminated.'}</p><div class="button-row"><button class="btn primary" id="gameEndNewGame">Start New Game</button></div></section>`;
       $('#gameEndNewGame').onclick=confirmNewGame;
       return;
     }

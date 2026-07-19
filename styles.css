@@ -1024,3 +1024,6 @@ button.tracker-operative:hover{
 .mission-rule+.mission-rule{margin-top:18px}
 .mission-rule>strong{display:block;color:var(--green);margin-bottom:4px}
 .mission-rule small{display:block;color:var(--muted);line-height:1.4;margin-bottom:6px}
+
+/* v3.2.3 game-end artwork */
+.game-end-image{display:block;width:100%;max-width:768px;height:auto;margin:0 auto 22px;border:1px solid var(--line);border-radius:16px}
