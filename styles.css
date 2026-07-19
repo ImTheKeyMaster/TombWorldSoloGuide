@@ -869,6 +869,9 @@ button.tracker-operative:hover{
 .modal{
   -webkit-overflow-scrolling:touch;
 }
+.modal:focus{
+  outline:none;
+}
 #playerOperativeSelect{
   touch-action:manipulation;
   -webkit-user-select:auto;

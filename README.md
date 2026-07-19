@@ -731,3 +731,10 @@ v3.0.7: Kasrkin roster choices updated.
 - Increased toast contrast so notifications stand out from game screens.
 - Moved activation tracker operative details into a collapsible section titled with the completed activation count.
 - Updated visible, internal, and cache-busting versions to v3.2.0.
+
+
+## v3.2.1
+
+- Removed the iOS focus outline from open dialogs.
+- Removed plus signs only from unselected Kill Team cards while retaining plus signs on unselected operative cards and the selected checkmark on both card types.
+- Updated visible, internal, and cache-busting versions to v3.2.1.
