@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.2.1';
+  const APP_VERSION = '3.2.2';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -112,7 +112,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], playerWounds:{}, reinforcementEntry:'Nearest valid entry point',
     gradeMilestone:null, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0,
     npoAttackTargetId:null,
-    npoAttackSummary:null
+    npoAttackSummary:null, gameEnd:null
   });
 
   let state = normalizeState(load() || initialState());
@@ -134,6 +134,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.playerWounds=raw?.playerWounds&&typeof raw.playerWounds==='object'?{...raw.playerWounds}:{};
     merged.playerRoster=Array.isArray(raw?.playerRoster)?raw.playerRoster:[];
     merged.playerTeamId=raw?.playerTeamId||'';
+    merged.gameEnd=['victory','defeat'].includes(raw?.gameEnd)?raw.gameEnd:null;
     merged.playerCount=merged.playerRoster.length;
     return merged;
   }
@@ -152,6 +153,17 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function livingPlayerOperativeCount(){
     const casualties=new Set(state.playerCasualtyIds||[]);
     return (state.playerRoster||[]).filter(id=>!casualties.has(id)).length;
+  }
+
+  function checkGameEnd(){
+    const victory=state.roster.length>0&&activeNpos().length===0;
+    const defeat=(state.playerRoster||[]).length>0&&livingPlayerOperativeCount()===0;
+    if(!victory&&!defeat)return false;
+    state.gameEnd=victory?'victory':'defeat';
+    closeModal();
+    save();
+    render();
+    return true;
   }
 
   function totalLivingOperatives(){
@@ -247,7 +259,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const movedToNewStep = lastRenderedStepKey !== null && currentStepKey !== lastRenderedStepKey;
     lastRenderedStepKey = currentStepKey;
 
-    gameMenuBtn.hidden = state.screen !== 'game';
+    gameMenuBtn.hidden = state.screen !== 'game' || Boolean(state.gameEnd);
     if(state.screen==='home') renderHome();
     else if(state.screen==='help') renderHowItWorks();
     else if(state.screen==='setup') renderSetup();
@@ -513,6 +525,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function renderGame(){
+    if(state.gameEnd){
+      const victory=state.gameEnd==='victory';
+      app.innerHTML=`<section class="hero-card"><p class="eyebrow">GAME OVER</p><h2>${victory?'Victory!':'Defeat'}</h2><p>${victory?'All NPO operatives have been eliminated.':'Your kill team has been eliminated.'}</p><div class="button-row"><button class="btn primary" id="gameEndNewGame">Start New Game</button></div></section>`;
+      $('#gameEndNewGame').onclick=confirmNewGame;
+      return;
+    }
     if(state.tab==='play') renderPlay();
     else if(state.tab==='mission') renderMission();
     else if(state.tab==='roster') renderRoster();
@@ -651,6 +669,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       }
       state.playerCasualtyIds=[...ids];
       state.playerReady=playerOperativesRemaining();
+      if(checkGameEnd())return;
       setNextActivation(state.nextSide||'npo');
       closeModal();
       save();
@@ -1070,7 +1089,7 @@ function showPlayerActivation(stage={}){
       <div class="wizard-actions"><button class="btn ghost" id="backToPlayerActivation">Go Back</button><button class="btn primary" id="commitPlayerActivation">Confirm Activation</button></div>`);
     $('#backToPlayerActivation').onclick=()=>showPlayerActivation(stage);
     $('#commitPlayerActivation').onclick=()=>{
-      applyPendingPlayerDamage(stage);
+      if(applyPendingPlayerDamage(stage))return;
       completePlayerActivation(stage);
     };
   }
@@ -1084,7 +1103,9 @@ function showPlayerActivation(stage={}){
       n.wounds=Math.max(0,pending.after);
       if(n.wounds===0)n.ready=false;
       log(`${playerName(stage.playerOperativeId)} ${pending.attackType==='shoot'?'shot':'made a Melee attack against'} ${npoName(n)} for ${pending.damage} damage (${before} → ${n.wounds} wounds).`);
+      if(checkGameEnd())return true;
     }
+    return false;
   }
 
   function completePlayerActivation(stage={}){
@@ -1521,6 +1542,7 @@ function showPlayerActivation(stage={}){
         state.playerCasualtyIds=[...casualties];
         state.playerReady=playerOperativesRemaining();
         log(`${npoName(n)} dealt ${result.damage} damage to ${target.name} (${before} → ${after} wounds).`);
+        if(checkGameEnd())return;
         save();
         if(onDone)onDone(summary);
       };
@@ -1626,7 +1648,7 @@ function showPlayerActivation(stage={}){
   }
   function rosterBreakdown(){const counts={};state.roster.forEach(n=>counts[n.type]=(counts[n.type]||0)+1);return Object.entries(counts).map(([k,v])=>`${v} ${k}${v>1?'s':''}`).join(' · ')||'No starting NPOs';}
   function showAddNpo(){showModal('Add NPO',`<div class="field"><label>NPO type</label><select id="newNpoType">${Object.keys(profiles).map(x=>`<option>${x}</option>`).join('')}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmAdd">Add NPO</button></div>`);$('#confirmAdd').onclick=()=>{if(activeNpos().length>=MAX_NPOS){showToast(`Only ${MAX_NPOS} active NPOs can be on the battlefield.`);return;}const type=$('#newNpoType').value,p=profiles[type];state.roster.push({id:uid(),name:`${type} ${state.roster.length+1}`,type,behavior:p.behavior,maxWounds:p.wounds,wounds:p.wounds,save:p.save,attack:{...p.attack},ready:true,deployed:true});log(`${type} added to the battlefield.`);closeModal();save();render();};}
-  function adjustWounds(id,d){const n=state.roster.find(x=>x.id===id);if(!n)return;n.wounds=Math.max(0,Math.min(n.maxWounds,n.wounds+d));if(n.wounds===0)n.ready=false;save();render();}
+  function adjustWounds(id,d){const n=state.roster.find(x=>x.id===id);if(!n)return;n.wounds=Math.max(0,Math.min(n.maxWounds,n.wounds+d));if(n.wounds===0)n.ready=false;if(checkGameEnd())return;save();render();}
   function toggleReady(id){const n=state.roster.find(x=>x.id===id);if(n&&n.wounds>0)n.ready=!n.ready;save();render();}
   function deleteNpo(id){state.roster=state.roster.filter(x=>x.id!==id);save();render();}
 
