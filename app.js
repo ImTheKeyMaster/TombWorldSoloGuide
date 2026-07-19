@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.2.5';
+  const APP_VERSION = '3.2.6';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -74,6 +74,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     });
   }
   function selectedPlayerOperatives(){return (state.playerRoster||[]).map(livePlayerOperative).filter(Boolean);}
+  function playerRosterLimits(){
+    const maxRoster=Number(playerTeamData?.maxRoster??playerTeamData?.rosterSize??5);
+    const minRoster=Number(playerTeamData?.minRoster??maxRoster);
+    return {minRoster,maxRoster};
+  }
   function playerName(id){
     const definition=playerDefinition(id);
     if(!definition)return String(id);
@@ -454,15 +459,18 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const mandatoryTroopers=Number(playerTeamData?.selectionRules?.mandatoryTroopers||0);
       const requiredLeaderId=playerTeamData?.selectionRules?.leader?.operativeId||'';
       const leaderSelected=!requiredLeaderId||selected.has(requiredLeaderId);
-      const rosterSize=playerTeamData?.rosterSize||5;
-      const valid=selected.size===rosterSize&&gravisCount<=1&&gunnerCount<=maxGunners&&trooperCount>=mandatoryTroopers&&leaderSelected;
+      const {minRoster,maxRoster}=playerRosterLimits();
+      const valid=selected.size>=minRoster&&selected.size<=maxRoster&&gravisCount<=1&&gunnerCount<=maxGunners&&trooperCount>=mandatoryTroopers&&leaderSelected;
       const cards=(playerTeamData?.operatives||[]).map(o=>{
         const chosen=selected.has(o.id);
+        const rosterBlocked=!chosen&&selected.size>=maxRoster;
         const gravisBlocked=!chosen&&o.gravis&&gravisCount>=1;
         const gunnerBlocked=!chosen&&o.role==='Gunner'&&gunnerCount>=maxGunners;
-        return `<button type="button" class="player-roster-card ${chosen?'selected':''}" data-select-player="${o.id}" ${gravisBlocked||gunnerBlocked?'disabled':''}><div class="player-roster-card-head"><div><strong>${escapeHtml(o.name)}</strong><small>${escapeHtml(o.role)}${o.gravis?' · GRAVIS':''}</small></div><span>${chosen?'✓':'+'}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${o.apl}</b></span><span><small>MOVE</small><b>${o.move}"</b></span><span><small>SAVE</small><b>${o.save}+</b></span><span><small>WOUNDS</small><b>${o.wounds}</b></span></div></button>`;
+        return `<button type="button" class="player-roster-card ${chosen?'selected':''}" data-select-player="${o.id}" ${rosterBlocked||gravisBlocked||gunnerBlocked?'disabled':''}><div class="player-roster-card-head"><div><strong>${escapeHtml(o.name)}</strong><small>${escapeHtml(o.role)}${o.gravis?' · GRAVIS':''}</small></div><span>${chosen?'✓':'+'}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${o.apl}</b></span><span><small>MOVE</small><b>${o.move}"</b></span><span><small>SAVE</small><b>${o.save}+</b></span><span><small>WOUNDS</small><b>${o.wounds}</b></span></div></button>`;
       }).join('');
-      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>Select exactly <strong>${rosterSize}</strong> operatives.</p><div class="player-roster-summary"><strong>${selected.size} / ${rosterSize} selected</strong>${Number.isFinite(maxGunners)?`<span>${gunnerCount} / ${maxGunners} Gunners</span>`:''}${mandatoryTroopers?`<span>${trooperCount} / ${mandatoryTroopers} required Troopers</span>`:''}${requiredLeaderId?`<span>${leaderSelected?'Leader selected':'Leader required'}</span>`:''}${(playerTeamData?.operatives||[]).some(o=>o.gravis)?`<span>${gravisCount} / 1 Gravis</span>`:''}</div><div class="player-roster-grid">${cards}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
+      const selectionPrompt=minRoster===maxRoster?`Select exactly ${maxRoster} operatives.`:`Select between ${minRoster} and ${maxRoster} operatives.`;
+      const selectionCount=minRoster===maxRoster?`${selected.size} / ${maxRoster} selected`:`${selected.size} / ${maxRoster} selected · minimum ${minRoster}`;
+      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><div class="player-roster-summary"><strong>${selectionCount}</strong>${Number.isFinite(maxGunners)?`<span>${gunnerCount} / ${maxGunners} Gunners</span>`:''}${mandatoryTroopers?`<span>${trooperCount} / ${mandatoryTroopers} required Troopers</span>`:''}${requiredLeaderId?`<span>${leaderSelected?'Leader selected':'Leader required'}</span>`:''}${(playerTeamData?.operatives||[]).some(o=>o.gravis)?`<span>${gravisCount} / 1 Gravis</span>`:''}</div><div class="player-roster-grid">${cards}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
     }
     if(stepId==='npoRoster'){
       const m=mission();
@@ -474,7 +482,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
     if(stepId==='deploy'){
       const allNposPlaced=state.roster.every(n=>n.deployed);
-      const playerValid=(state.playerRoster||[]).length===(playerTeamData?.rosterSize||5);
+      const {minRoster,maxRoster}=playerRosterLimits();
+      const playerValid=(state.playerRoster||[]).length>=minRoster&&(state.playerRoster||[]).length<=maxRoster;
       return `<h3>Deploy Kill Teams</h3><p>Place both forces in their mission deployment zones, then confirm each side is ready.</p><div class="checklist"><label class="check-row"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${playerValid?'':'disabled'}><span><strong>${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} Kill Team deployed</strong><small>All selected Player operatives are on the battlefield.</small></span></label><label class="check-row"><input id="npoDeployed" type="checkbox" ${allNposPlaced?'checked':''}><span><strong>Necron Kill Team deployed</strong><small>${state.roster.length?'All starting NPO operatives are on the battlefield.':'No starting NPO deployment is required for this mission.'}</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${playerValid&&state.playerDeployed&&allNposPlaced?'':'disabled'}>Deployment Complete</button></div>`;
     }
     const m=mission();
@@ -505,7 +514,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const id=button.dataset.selectPlayer;
       const selected=new Set(state.playerRoster||[]);
       if(selected.has(id))selected.delete(id);
-      else if(selected.size<(playerTeamData?.rosterSize||5)){
+      else if(selected.size<playerRosterLimits().maxRoster){
         const candidate=playerDefinition(id);
         if(candidate?.gravis&&selectedPlayerOperatives().some(o=>o.gravis)){showToast('This Kill Team can include only one Gravis operative.');return;}
         const maxGunners=Number(playerTeamData?.selectionRules?.maxGunners||Infinity);
