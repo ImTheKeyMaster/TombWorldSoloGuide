@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.2.3';
+  const APP_VERSION = '3.2.4';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1214,6 +1214,10 @@ function showPlayerActivation(stage={}){
     const weaponControl=weapons.length===1
       ? `<div class="field"><label>Weapon</label><div class="readonly-select" id="singleWeaponDisplay">${escapeHtml(weapons[0].name)}</div><input type="hidden" id="playerWeaponSelect" value="0"></div>`
       : `<div class="field"><label>Weapon</label><select id="playerWeaponSelect">${weapons.map((w,i)=>`<option value="${i}">${escapeHtml(w.name)}</option>`).join('')}</select></div>`;
+    const singleTarget=targets.length===1?targets[0]:null;
+    const targetControl=singleTarget
+      ? `<div class="field"><label>Target NPO</label><div class="readonly-select">${escapeHtml(npoName(singleTarget))} · Wounds ${projectedNpoWounds(singleTarget.id,stage)}/${singleTarget.maxWounds} · Save ${singleTarget.save}+</div><input type="hidden" id="combatTarget" value="${singleTarget.id}"></div>`
+      : `<div class="field"><label>Target NPO</label><select id="combatTarget"><option value="">Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}">${escapeHtml(npoName(n))} · Wounds ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} · Save ${n.save}+</option>`).join('')}</select></div>`;
 
     const priorElimination=attackType==='melee'&&Number(stage.pendingShoot?.after)<=0
       ? `<section class="compact-elimination-notice"><strong>☠ ${escapeHtml(stage.pendingShoot.targetName)} was eliminated by the Shoot attack.</strong><span>Choose another melee target or skip Melee.</span></section>`
@@ -1221,9 +1225,9 @@ function showPlayerActivation(stage={}){
     showModal(`Resolve ${attackLabel} Attack`,`
       ${priorElimination}
       <p>Select the target NPO and weapon. This attack remains pending until the entire Player activation is confirmed.</p>
-      <div class="field"><label>Target NPO</label><select id="combatTarget"><option value="">Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}">${escapeHtml(npoName(n))} · Wounds ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} · Save ${n.save}+</option>`).join('')}</select></div>
+      ${targetControl}
       ${weaponControl}
-      <fieldset id="combatControls" class="combat-fieldset" disabled>
+      <fieldset id="combatControls" class="combat-fieldset"${singleTarget?'':' disabled'}>
         <section class="defense-profile attack-profile" aria-label="Player attack profile">
           <p class="eyebrow">PLAYER ATTACK PROFILE</p>
           <div class="defense-profile-grid" id="playerAttackProfile"></div>
@@ -1236,7 +1240,7 @@ function showPlayerActivation(stage={}){
           </div>
           <label class="check-row compact-check defense-cover-row"><input type="checkbox" id="npoCover"><span><strong>NPO retains one normal save for cover</strong></span></label>
         </section>
-        <div id="combatResults" class="combat-results"><p>Select a target NPO to begin.</p></div>
+        <div id="combatResults" class="combat-results"><p>${singleTarget?'Review the profiles, then roll the attack.':'Select a target NPO to begin.'}</p></div>
         <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button>${attackType==='melee'&&onSkip?'<button class="btn secondary" id="skipPendingMelee">Skip Melee</button>':''}<button class="btn primary" id="rollPendingAttack">Roll Attack & Saves</button></div>
       </fieldset>`);
 
