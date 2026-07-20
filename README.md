@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v3.8.2
+# Tomb World Solo Guide v3.8.4
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -952,3 +952,14 @@ v3.0.7: Kasrkin roster choices updated.
 - Indented and bulleted the contextual messages displayed below Tomb World event descriptions.
 - Hid the NPO Roster button when an event has no valid roster change available.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.2.
+
+## v3.8.3
+
+- Hid the reinforcement entry-point control when the battlefield NPO limit prevents adding more reinforcements.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.3.
+
+## v3.8.4
+
+- Kept the reinforcement entry-point control available when a successful reinforcement fills the final battlefield slot.
+- Continued hiding the control when no reinforcements arrive.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.4.
