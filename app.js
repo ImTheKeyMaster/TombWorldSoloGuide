@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '4.0.0';
+  const APP_VERSION = '4.0.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1601,7 +1601,7 @@ function showPlayerActivation(stage={}){
           </div>
           <label class="check-row compact-check defense-cover-row"><input type="checkbox" id="npoCover"><span><strong>NPO retains one normal save for cover</strong></span></label>
         </section>
-        <div id="combatResults" class="combat-results"><p>${singleTarget?'Review the profiles, then roll the attack.':'Select a target NPO to begin.'}</p></div>
+        <div id="combatResults" class="combat-results">${singleTarget?'':'<p>Select a target NPO to begin.</p>'}</div>
         <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button>${attackType==='melee'&&onSkip?'<button class="btn secondary" id="skipPendingMelee">Skip Melee</button>':''}<button class="btn primary" id="rollPendingAttack">Roll Attack & Saves</button></div>
       </fieldset>`);
 
@@ -1633,11 +1633,11 @@ function showPlayerActivation(stage={}){
     targetSelect.addEventListener('change',()=>{
       controls.disabled=!targetSelect.value;
       renderProfile();
-      if(targetSelect.value)$('#combatResults').innerHTML='<p>Review the profiles, then roll the attack.</p>';
+      if(targetSelect.value)$('#combatResults').innerHTML='';
     });
     weaponSelect?.addEventListener('change',()=>{
       renderProfile();
-      $('#combatResults').innerHTML=targetSelect.value?'<p>Review the profiles, then roll the attack.</p>':'<p>Select a target NPO to begin.</p>';
+      $('#combatResults').innerHTML=targetSelect.value?'':'<p>Select a target NPO to begin.</p>';
     });
 
     renderProfile();
