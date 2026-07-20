@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.8.7';
+  const APP_VERSION = '3.8.8';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1108,8 +1108,22 @@ function showPlayerActivation(stage={}){
       return;
     }
 
+    const selectOperative=(current,id)=>{
+      const selectedOperative=playerDefinition(id);
+      return {...current,playerOperativeId:id||'',apl:Number(selectedOperative?.apl||current.apl||3)};
+    };
+    const stagedId=String(stage.playerOperativeId||'');
+    if(stagedId && !remaining.includes(stagedId)){
+      showPlayerActivation(selectOperative(stage,''));
+      return;
+    }
+    if(remaining.length===1 && stagedId!==remaining[0]){
+      showPlayerActivation(selectOperative(stage,remaining[0]));
+      return;
+    }
+
     const checked=key=>stage[key]?'checked':'';
-    const selectedId=String(stage.playerOperativeId||'');
+    const selectedId=stagedId;
     const selectedOperative=playerDefinition(selectedId);
     const moveDistance=Number(selectedOperative?.move||6);
     const chargeDistance=moveDistance+2;
@@ -1122,10 +1136,12 @@ function showPlayerActivation(stage={}){
       <p>Choose the Player operative being activated. That operative cannot activate again during this Turning Point after the activation is confirmed.</p>
       <div class="field">
         <label>Player operative</label>
-        <select id="playerOperativeSelect">
+        ${remaining.length===1
+          ? `<div class="readonly-select">${escapeHtml(playerName(selectedId))}</div>`
+          : `<select id="playerOperativeSelect">
           <option value="">Select a Player operative...</option>
           ${remaining.map(id=>`<option value="${id}" ${selectedId===id?'selected':''}>${escapeHtml(playerName(id))}</option>`).join('')}
-        </select>
+        </select>`}
       </div>
       <fieldset id="playerActivationControls" class="${selectedId?'':'inactive'}" aria-disabled="${selectedId?'false':'true'}">
         <div class="activation-apl-bar ap-usage-only">
@@ -1188,13 +1204,12 @@ function showPlayerActivation(stage={}){
       if(document.activeElement!==modal){
         try{modal.focus({preventScroll:true});}catch{modal.focus();}
       }
-      operativeSelect.style.pointerEvents='none';
-      requestAnimationFrame(()=>{operativeSelect.style.pointerEvents='';});
+      if(operativeSelect){
+        operativeSelect.style.pointerEvents='none';
+        requestAnimationFrame(()=>{operativeSelect.style.pointerEvents='';});
+      }
     });
-    operativeSelect.addEventListener('change',()=>{
-      const selectedOperative=playerDefinition(operativeSelect.value);const updated={...stage,playerOperativeId:operativeSelect.value||'',apl:Number(selectedOperative?.apl||stage.apl||3)};
-      showPlayerActivation(updated);
-    });
+    operativeSelect?.addEventListener('change',()=>showPlayerActivation(selectOperative(stage,operativeSelect.value)));
 
     const actionIds=['eaMove','eaDash','eaCharge','eaFallBack','eaShoot','eaMelee','eaDamage','eaHatch','eaBreach','eaObjective'];
     const clearPass=()=>{if($('#eaPass'))$('#eaPass').checked=false;};
