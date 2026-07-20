@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '3.4.0';
+const APP_VERSION = '3.4.1';
 const CACHE_PREFIX = 'tomb-world-solo-guide-';
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 const APP_SHELL = './index.html';
@@ -42,11 +42,21 @@ async function networkFirst(request) {
   const cache = await caches.open(CACHE_NAME);
   try {
     const response = await fetch(request);
+    if (!response.ok) return cachedFallback(cache, request, response);
     if (canCache(response)) await cache.put(request, response.clone());
     return response;
   } catch {
-    return (await cache.match(request)) || (await cache.match(APP_SHELL));
+    return cachedFallback(cache, request);
   }
+}
+
+async function cachedFallback(cache, request, failedResponse) {
+  const cached = await cache.match(request);
+  if (cached) return cached;
+  if (request.mode === 'navigate' || new URL(request.url).pathname.endsWith('/index.html')) {
+    return (await cache.match(APP_SHELL)) || failedResponse || Response.error();
+  }
+  return failedResponse || Response.error();
 }
 
 async function cacheFirst(request) {

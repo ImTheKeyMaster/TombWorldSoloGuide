@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v3.4.0
+# Tomb World Solo Guide v3.4.1
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -850,3 +850,9 @@ v3.0.7: Kasrkin roster choices updated.
 - Added a non-blocking update notice; a waiting update activates and reloads only after **Update App** is pressed.
 - Added localhost service-worker and offline test instructions.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v3.4.0.
+
+## v3.4.1
+
+- Treated HTTP error responses as network failures so cached navigation and data remain available during transient server or captive-network errors.
+- Limited the app-shell fallback to navigation requests while preserving exact cached fallbacks for JavaScript, CSS, JSON, and manifest requests.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.4.1.
