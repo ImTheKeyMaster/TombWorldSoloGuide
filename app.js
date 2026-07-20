@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.7.0';
+  const APP_VERSION = '3.7.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -198,6 +198,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.playerWounds=raw?.playerWounds&&typeof raw.playerWounds==='object'?{...raw.playerWounds}:{};
     merged.playerRoster=Array.isArray(raw?.playerRoster)?raw.playerRoster:[];
     merged.playerTeamId=raw?.playerTeamId||'';
+    if(raw?.strategyData&&typeof raw.strategyData==='object'){
+      const legacyEvent=raw.strategyData.event;
+      const event=Array.isArray(legacyEvent)
+        ? events.find(candidate=>candidate.title===legacyEvent[0]&&candidate.description===legacyEvent[1])||legacyEvent
+        : legacyEvent;
+      merged.strategyData={...raw.strategyData,event};
+    }else merged.strategyData=null;
     merged.gameEnd=['victory','defeat'].includes(raw?.gameEnd)?raw.gameEnd:null;
     merged.playerCount=merged.playerRoster.length;
     return merged;
