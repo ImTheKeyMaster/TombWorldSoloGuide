@@ -152,9 +152,7 @@
 .ai-choice.yes span{background:rgba(118,245,168,.18);color:var(--green);border:1px solid rgba(118,245,168,.45)}
 .ai-choice.no span{background:rgba(255,127,131,.12);color:#ffb2b5;border:1px solid rgba(255,127,131,.32)}
 .ai-choice:hover,.ai-choice:focus-visible{border-color:var(--green);transform:translateY(-1px)}
-.ai-result-title{display:flex;align-items:flex-start;justify-content:space-between;gap:15px}
-.ai-result-title h2{margin-bottom:2px}.ai-result-title p{margin-top:0}
-.order-badge{padding:8px 12px;border-radius:999px;background:#173d29;border:1px solid #35724f;color:var(--green);font-size:.76rem;font-weight:900;text-transform:uppercase}
+.ai-result-title h2{margin:0 0 2px}.ai-result-title p{margin:0}
 .activation-command,.target-command{padding:16px 17px;margin:13px 0;border-radius:15px;border:1px solid var(--line);background:#07140f}
 .activation-command{border-color:rgba(118,245,168,.45);background:rgba(34,104,64,.17)}
 .activation-command small,.target-command small{display:block;color:var(--muted);font-size:.67rem;font-weight:900;letter-spacing:.12em;margin-bottom:6px}
@@ -166,10 +164,11 @@
 .animated-roll.settled .die{animation:dieSettle .28s ease-out}
 @keyframes dieTumble{0%{transform:rotate(-7deg) translateY(0)}50%{transform:rotate(8deg) translateY(-5px)}100%{transform:rotate(-7deg) translateY(0)}}
 @keyframes dieSettle{0%{transform:scale(.82) rotate(-8deg)}70%{transform:scale(1.08) rotate(2deg)}100%{transform:scale(1) rotate(0)}}
-@media(max-width:520px){.ai-choice-grid{gap:9px}.ai-choice{min-height:96px}.ai-result-title{align-items:flex-start}.order-badge{font-size:.66rem}}
+@media(max-width:520px){.ai-choice-grid{gap:9px}.ai-choice{min-height:96px}}
 
 /* v3.5.1 NPO activation question flow */
 .npo-question-flow{display:grid;gap:9px;margin:18px 0}.npo-question-icon{width:38px;height:38px;flex:0 0 auto;color:var(--green)}
+.ai-result .npo-question-flow{margin-bottom:10px}
 .npo-question-complete{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:10px;min-height:48px;padding:8px 11px;border:1px solid rgba(118,245,168,.18);border-radius:12px;background:#07140f;color:var(--muted);font-size:.84rem;line-height:1.35}
 .npo-question-complete .npo-question-icon{width:25px;height:25px}.npo-question-complete strong{color:var(--text);font-size:.8rem}
 .npo-question-active{padding:22px;border:1px solid rgba(118,245,168,.55);border-radius:18px;background:linear-gradient(145deg,rgba(29,82,51,.3),rgba(7,20,15,.98));box-shadow:0 12px 30px rgba(0,0,0,.25)}
