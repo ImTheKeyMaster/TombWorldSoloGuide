@@ -5,10 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#07140f">
   <meta name="description" content="A guided solo-play companion for Kill Team missions in a Necron tomb world.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Tomb World Guide">
   <title>Tomb World Solo Guide</title>
   <link rel="icon" href="Assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="Assets/icon.svg">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=3.3.7">
+  <link rel="stylesheet" href="styles.css?v=3.4.0">
 </head>
 <body>
   <div class="ambient-grid" aria-hidden="true"></div>
@@ -19,7 +24,7 @@
     </div>
     <div class="header-actions">
       <button class="header-menu-btn" id="gameMenuBtn" hidden>Game Menu</button>
-      <div class="version">V3.3.7</div>
+      <div class="version">V3.4.0</div>
     </div>
   </header>
 
@@ -28,7 +33,11 @@
 
   <dialog id="modal" class="modal"><div id="modalBody"></div></dialog>
   <div id="toast" class="toast" hidden></div>
+  <div id="updateNotice" class="update-notice" role="status" hidden>
+    <span>A new version is available.</span>
+    <button class="btn primary" id="updateAppBtn" type="button">Update App</button>
+  </div>
   <input id="importInput" type="file" accept="application/json" hidden>
-  <script src="app.js?v=3.3.7"></script>
+  <script src="app.js?v=3.4.0"></script>
 </body>
 </html>

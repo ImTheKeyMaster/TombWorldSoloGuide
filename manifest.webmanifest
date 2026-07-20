@@ -1,10 +1,14 @@
 {
   "name": "Tomb World Solo Guide",
-  "short_name": "Tomb Guide",
+  "short_name": "Tomb World Guide",
   "description": "A guided solo-play companion for Kill Team Tomb World missions.",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#07140f",
   "theme_color": "#07140f",
-  "icons": [{"src":"Assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "icons": [
+    {"src":"Assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}
+  ]
 }
