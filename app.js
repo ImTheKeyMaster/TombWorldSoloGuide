@@ -2,6 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
+  const APP_VERSION = '3.5.1';
   const APP_VERSION = '3.4.4';
 
 let lastTouchEnd=0;
@@ -1443,6 +1444,37 @@ function showPlayerActivation(stage={}){
     {key:'clustered',title:'Are multiple valid Player targets clustered together?',help:'This is used as a final target-priority tie breaker for pressure and board control.'}
   ];
 
+  const npoQuestionIcons = {
+    engaged:'blades',charge:'route',shot:'crosshair',objective:'objective',
+    wounded:'wounded',hatch:'hatch',cover:'shield',clustered:'group'
+  };
+
+  function npoIcon(type){
+    const paths={
+      blades:'<path d="M7 4l13 13M17 4l3 3L7 20l-3-3L17 4zM5 19l-2 2m16-2l2 2"/>',
+      route:'<path d="M4 18c4-8 8-1 13-9"/><path d="M13 6h5v5"/><circle cx="5" cy="18" r="2"/>',
+      crosshair:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>',
+      objective:'<path d="M6 21V4m0 1h11l-2 4 2 4H6"/><circle cx="6" cy="21" r="2"/>',
+      wounded:'<path d="M12 21s-7-4.4-7-10a4 4 0 017-2.7A4 4 0 0119 11c0 5.6-7 10-7 10z"/><path d="M9 12h2l1-3 2 6 1-3h2"/>',
+      hatch:'<path d="M5 21V3h14v18M8 21V6h8v15"/><circle cx="14" cy="13" r=".8"/><path d="M3 21h18"/>',
+      shield:'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6l7-3z"/><path d="M8 12h8"/>',
+      group:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-4 2-6 6-6s6 2 6 6m0-5c3 0 5 2 5 5"/>',
+      command:'<path d="M12 2l3 6 6 1-4.5 4.5 1 6.5-5.5-3-5.5 3 1-6.5L3 9l6-1 3-6z"/><circle cx="12" cy="12" r="2"/>'
+    };
+    return `<svg class="npo-question-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[type]||paths.command}</svg>`;
+  }
+
+  function renderCompletedNpoQuestions(history){
+    return history.map(item=>{const q=npoQuestions.find(question=>question.key===item.key);return q?`<div class="npo-question-complete">${npoIcon(npoQuestionIcons[q.key])}<span>${escapeHtml(q.title)}</span><strong>${item.answer?'Yes':'No'}</strong></div>`:'';}).join('');
+  }
+
+  function renderActiveNpoQuestion(q){
+    return `<section class="npo-question-active" aria-live="polite" aria-atomic="true">
+      ${npoIcon(npoQuestionIcons[q.key])}<h3>${escapeHtml(q.title)}</h3><p>${escapeHtml(q.help)}</p>
+      <div class="ai-choice-grid"><button class="ai-choice no" data-answer="no"><strong>No</strong></button><button class="ai-choice yes" data-answer="yes"><strong>Yes</strong></button></div>
+    </section>`;
+  }
+
   function showNpoWizard(){
     const n=nextNpo(); if(!n)return;
     runNpoPrompt(n,'engaged',{},[]);
@@ -1466,24 +1498,25 @@ function showPlayerActivation(stage={}){
 
   function runNpoPrompt(n,key,answers,history){
     const q=npoQuestions.find(item=>item.key===key);
-    if(!q){resolveNpo(n,answers);return;}
-    showModal(`NPO Activation: ${escapeHtml(npoName(n))}`,`<div class="ai-wizard">
-      <h3>${q.title}</h3>
-      <p>${q.help}</p>
-      <div class="ai-choice-grid">
-        <button class="ai-choice yes" data-answer="yes"><span>✓</span><strong>Yes</strong></button>
-        <button class="ai-choice no" data-answer="no"><span>×</span><strong>No</strong></button>
-      </div>
+    if(!q){resolveNpo(n,answers,history);return;}
+    const priorTop=$('.npo-question-active',modal)?.getBoundingClientRect().top;
+    modalBody.innerHTML=`<div class="modal-inner"><h2>NPO Activation: ${escapeHtml(npoName(n))}</h2><div class="ai-wizard">
+      <div class="npo-question-flow">${renderCompletedNpoQuestions(history)}${renderActiveNpoQuestion(q)}</div>
       <div class="wizard-actions">
         <button class="btn ghost" data-close>Exit Guide</button>
         <button class="btn ghost" id="aiBack" ${history.length===0?'disabled':''}>Back</button>
       </div>
-    </div>`);
+    </div></div>`;
+    if(!modal.open)modal.showModal();
+    $('[data-close]',modal).onclick=closeModal;
+    if(priorTop!==undefined)requestAnimationFrame(()=>{const active=$('.npo-question-active',modal);if(!active)return;const delta=active.getBoundingClientRect().top-priorTop;modal.scrollBy({top:delta,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});});
     $$('[data-answer]',modal).forEach(btn=>btn.onclick=()=>{
-      const nextAnswers={...answers,[q.key]:btn.dataset.answer==='yes'};
+      const answer=btn.dataset.answer==='yes';
+      const nextAnswers={...answers,[q.key]:answer};
       const nextKey=nextNpoQuestionKey(n,key,nextAnswers);
-      if(nextKey)runNpoPrompt(n,nextKey,nextAnswers,[...history,{key,answers}]);
-      else resolveNpo(n,nextAnswers);
+      const nextHistory=[...history,{key,answers,answer}];
+      if(nextKey)runNpoPrompt(n,nextKey,nextAnswers,nextHistory);
+      else resolveNpo(n,nextAnswers,nextHistory);
     });
     $('#aiBack')?.addEventListener('click',()=>{
       const previous=history[history.length-1];
@@ -1523,7 +1556,7 @@ function showPlayerActivation(stage={}){
     return {action,target,stance,threat,reason,path};
   }
 
-  function resolveNpo(n,c){
+  function resolveNpo(n,c,questionHistory=[]){
     state.npoAttackTargetId=null;
     const decision=chooseNpoDecision(n,c);
     const attacks=decision.action.includes('Fight')||decision.action.includes('Shoot');
@@ -1532,10 +1565,10 @@ function showPlayerActivation(stage={}){
     n.ready=false;state.npoActivated++;state.activationNumber++;
     state.activationHistory.unshift({side:'npo',label:npoName(n),action:decision.action,target:null});
     state.activeNpoId=null;advanceAfterActivation('npo');
-    state.lastActivation={name:npoName(n),...decision,dice,answers:c,attackRequired:attacks,targetConfirmed:false};
+    state.lastActivation={name:npoName(n),...decision,dice,answers:c,questionHistory,attackRequired:attacks,targetConfirmed:false};
     log(`${npoName(n)}: ${decision.action}.`);save();
 
-    renderNpoDecisionResult(n,decision,dice,c,false,false,attacks,false);
+    renderNpoDecisionResult(n,decision,dice,c,false,false,attacks,false,questionHistory);
   }
 
   function initiativeSummary(dice){
@@ -1546,19 +1579,20 @@ function showPlayerActivation(stage={}){
     return `${crits} critical · ${hits} normal · ${misses} miss`;
   }
 
-  function renderNpoDecisionResult(n,decision,dice,answers,attackResolved,animateDice=true,attackRequired=(decision.action.includes('Fight')||decision.action.includes('Shoot')),targetConfirmed=dice.length>0){
+  function renderNpoDecisionResult(n,decision,dice,answers,attackResolved,animateDice=true,attackRequired=(decision.action.includes('Fight')||decision.action.includes('Shoot')),targetConfirmed=dice.length>0,questionHistory=state.lastActivation?.questionHistory||[]){
     const eligibleTargetIds=eligibleNpoAttackTargets();
     if(!targetConfirmed&&eligibleTargetIds.length===1)state.npoAttackTargetId=eligibleTargetIds[0];
-    state.lastActivation={name:npoName(n),...decision,dice,answers,attackResolved,attackRequired,targetConfirmed};save();
+    state.lastActivation={name:npoName(n),...decision,dice,answers,questionHistory,attackResolved,attackRequired,targetConfirmed};save();
     const targetOptions=eligibleTargetIds.map(id=>`<option value="${escapeHtml(id)}" ${state.npoAttackTargetId===id?'selected':''}>${escapeHtml(playerName(id))}</option>`).join('');
     const targetName=state.npoAttackTargetId?playerName(state.npoAttackTargetId):'';
     const targetField=targetConfirmed||eligibleTargetIds.length===1
       ? `<input id="npoPriorityTarget" value="${escapeHtml(targetName)}" readonly>`
       : `<select id="npoPriorityTarget" ${attackResolved?'disabled':''}><option value="">Select the operative matching this priority</option>${targetOptions}</select>`;
     modalBody.innerHTML=`<div class="modal-inner ai-result">
+      <div class="npo-question-flow">${renderCompletedNpoQuestions(questionHistory)}</div>
       <p class="eyebrow">RECOMMENDED ACTIVATION</p>
       <div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)} · ${escapeHtml(n.behavior)}</p></div><span class="order-badge">${decision.stance}</span></div>
-      <div class="activation-command"><small>ACTION SEQUENCE</small><strong>${escapeHtml(decision.action)}</strong></div>
+      <div class="npo-result-card">${npoIcon('command')}<div><small>ACTION SEQUENCE</small><strong>${escapeHtml(decision.action)}</strong><p>${escapeHtml(decision.reason)}</p></div></div>
       <div class="target-command"><small>TARGET PRIORITY</small><strong>${escapeHtml(decision.target)}</strong>${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Target Player Operative</label>${targetField}</div>`:''}</div>
       ${attackRequired&&!targetConfirmed?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
       ${attackRequired&&targetConfirmed?`<h3>Attack Roll</h3><div class="dice-row ${attackResolved||!animateDice?'settled':'animated-roll'}" id="aiDice">${attackResolved||!animateDice?dice.map(dieHtml).join(''):dice.map(()=>rollingDieHtml()).join('')}</div><p id="aiDiceSummary" class="muted">${attackResolved?'Attack resolved.':animateDice?`Rolling ${dice.length} attack dice…`:initiativeSummary(dice)}</p>${!attackResolved?`<button class="btn secondary big-action" id="rollPlayerSaves">Roll Player Saves</button>`:''}`:''}
@@ -1573,7 +1607,6 @@ function showPlayerActivation(stage={}){
           <div><small>Player wounds</small><strong>${state.npoAttackSummary.before} → ${state.npoAttackSummary.after}</strong></div>
         </div>
       </section>`:''}
-            <details class="decision-path"><summary>Why did the Guide choose this?</summary><p>${escapeHtml(decision.reason)}</p><ol>${decision.path.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ol></details>
       <div class="wizard-actions"><button class="btn primary" id="completeNpo" ${attackRequired&&!attackResolved?'disabled':''}>Complete Activation</button></div>
     </div>`;
     if(!modal.open)modal.showModal();
