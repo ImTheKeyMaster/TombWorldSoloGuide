@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v3.8.4
+# Tomb World Solo Guide v3.8.5
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -963,3 +963,9 @@ v3.0.7: Kasrkin roster choices updated.
 - Kept the reinforcement entry-point control available when a successful reinforcement fills the final battlefield slot.
 - Continued hiding the control when no reinforcements arrive.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.4.
+
+## v3.8.5
+
+- Made the Strategy Phase reinforcement summary, generated results, entry-point controls, and placement count use the reinforcement total remaining after the battlefield limit is applied.
+- Kept the battlefield-limit explanation visible when some or all reinforcements are blocked.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.5.
