@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.5.4';
+  const APP_VERSION = '3.5.5';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1589,8 +1589,7 @@ function showPlayerActivation(stage={}){
       : `<select id="npoPriorityTarget" ${attackResolved?'disabled':''}><option value="">Select matching operative</option>${targetOptions}</select>`;
     modalBody.innerHTML=`<div class="modal-inner ai-result">
       <div class="npo-question-flow">${renderCompletedNpoQuestions(questionHistory)}</div>
-      <p class="eyebrow">RECOMMENDED ACTIVATION</p>
-      <div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)} · ${escapeHtml(n.behavior)}</p></div><span class="order-badge">${decision.stance}</span></div>
+      <div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)} · ${escapeHtml(n.behavior)}</p></div></div>
       <div class="npo-result-card">${npoIcon('command')}<div><small>ACTIVATION PLAN</small><strong>${escapeHtml(decision.action)}</strong><p>${escapeHtml(decision.reason)}</p><div class="npo-target-priority"><small>TARGET PRIORITY</small><strong>${escapeHtml(decision.target)}</strong>${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Target Player Operative</label>${targetField}</div>`:''}</div></div></div>
       ${attackRequired&&!targetConfirmed?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
       ${attackRequired&&targetConfirmed?`<h3>Attack Roll</h3><div class="dice-row ${attackResolved||!animateDice?'settled':'animated-roll'}" id="aiDice">${attackResolved||!animateDice?dice.map(dieHtml).join(''):dice.map(()=>rollingDieHtml()).join('')}</div><p id="aiDiceSummary" class="muted">${attackResolved?'Attack resolved.':animateDice?`Rolling ${dice.length} attack dice…`:initiativeSummary(dice)}</p>${!attackResolved?`<button class="btn secondary big-action" id="rollPlayerSaves">Roll Player Saves</button>`:''}`:''}

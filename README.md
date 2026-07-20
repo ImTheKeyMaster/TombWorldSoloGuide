@@ -891,3 +891,9 @@ v3.0.7: Kasrkin roster choices updated.
 - Simplified the NPO Activation heading and removed the redundant next-step information card.
 - Kept operative names readable on one line at iPhone portrait widths and tightened the spacing before the activation button.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v3.5.4.
+
+## v3.5.5
+
+- Removed the redundant Recommended Activation label and Engage status badge from the NPO Activation recommendation screen.
+- Tightened the operative heading spacing while preserving the Activation Plan, targeting, and activation workflow.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.5.5.
