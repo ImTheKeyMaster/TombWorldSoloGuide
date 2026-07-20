@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.5.2';
+  const APP_VERSION = '3.5.3';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1649,7 +1649,7 @@ function showPlayerActivation(stage={}){
         </div>
       </section>
       <label class="check-row compact-check"><input type="checkbox" id="playerCover"><span><strong>Player retains one normal save for cover</strong></span></label>
-      <div id="combatResults" class="combat-results"><p>Review the defense profile, then roll saves.</p></div>
+      <div id="combatResults" class="combat-results"></div>
       <div class="wizard-actions"><button class="btn ghost" id="cancelNpoAttack">Cancel</button><button class="btn primary" id="rollNpoSaves">Roll Player Saves</button></div>`);
     const rollSavesButton=$('#rollNpoSaves');
     if(animateAttackDice){
