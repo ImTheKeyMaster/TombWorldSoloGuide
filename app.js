@@ -2074,7 +2074,14 @@ function showPlayerActivation(stage={}){
       },true);
     });
 
-    $('#completeNpo').onclick=()=>{state.npoAttackTargetId=null;state.npoAttackSummary=null;save();closeModal();render();};
+    $('#completeNpo').onclick=()=>{
+      state.npoAttackTargetId=null;
+      state.npoAttackSummary=null;
+      if(checkGameEnd())return;
+      save();
+      closeModal();
+      render();
+    };
   }
 
   function showNpoAttackWizard(n,attackDice,onDone,onCancel,animateAttackDice=false){
@@ -2147,7 +2154,6 @@ function showPlayerActivation(stage={}){
         state.playerCasualtyIds=[...casualties];
         state.playerReady=playerOperativesRemaining();
         log(`${npoName(n)} dealt ${result.damage} damage to ${target.name} (${before} → ${after} wounds).`);
-        if(checkGameEnd())return;
         save();
         if(onDone)onDone(summary);
       };

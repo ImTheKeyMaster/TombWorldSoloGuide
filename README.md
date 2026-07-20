@@ -979,4 +979,5 @@ v3.0.7: Kasrkin roster choices updated.
 
 - Generalized the elimination banner and attack summary so newly eliminated Player and NPO operatives share the same presentation.
 - Added Player elimination feedback to completed NPO attacks, including the operative name, attack type, damage, wounds, eliminated badge, and action summary.
+- Kept the final Player casualty summary visible until the NPO activation is completed, then transitioned to the defeat screen.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.7.
