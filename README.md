@@ -2,6 +2,7 @@
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
+
 ## v1.1.6 additions
 
 - Mission maps now scroll horizontally on portrait phones without widening the page.
