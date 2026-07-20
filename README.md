@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v3.8.9
+# Tomb World Solo Guide v3.8.12
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -458,17 +458,18 @@ Major player-roster update:
 - The Player operative is selected in the Target Priority section and locked with `Confirm Target`.
 - Confirming the target immediately rolls the NPO attack dice and disables the target selector.
 - The next action is now `Roll Player Saves`.
-- After saves are rolled, the final action is `Apply Damage`.
-- Canceling the save workflow returns to Target Priority, unlocks the target, and discards the previous attack roll so a new target can be confirmed and rolled correctly.
+- After saves are rolled, the final action is `Apply Damage & Complete Activation`, or `Complete Activation` when no damage was inflicted.
+- Canceling the save workflow returns to the resolved NPO attack step without applying damage, completing the activation, or rerolling the original attack dice.
 - The obsolete `Review NPO Attack` action remains removed.
 
 
 ## v2.2.4
 
-- Added a permanent, non-collapsible `NPO Attack Summary` to the Recommended Activation screen after damage is applied.
+- The non-collapsible `NPO Attack Summary` remains available on the Recommended Activation screen for flows that have not completed through the final Player Save Roll action.
 - The summary shows the targeted Player operative, Player save roll, unsaved normal and critical hits, damage, and wounds before and after.
 - The Player save roll now appears immediately after the NPO attack roll.
-- The attack summary remains visible until the NPO activation is completed.
+- Resolving the final Player Save Roll applies any wounds and completes the NPO activation in one action instead of returning to the NPO Attack Summary screen.
+- Completing the final Player Save Roll advances directly to the next game-flow screen; it does not return to the attack summary solely to complete the activation.
 - Renamed `Activation Complete` to `Complete Activation`.
 
 
@@ -992,3 +993,20 @@ v3.0.7: Kasrkin roster choices updated.
 
 - Removed the iOS/WebKit tap highlight from custom decision and action buttons while preserving a visible keyboard focus indicator.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.9.
+
+## v3.8.10
+
+- Combined the final Player Save Roll action so it applies any damage and completes the NPO activation without returning to the NPO Attack Summary screen.
+- Preserved Player elimination feedback after the activation completes and retained the original NPO attack roll when the save wizard is cancelled.
+- Prevented repeated final-action taps from applying damage or completing the activation more than once.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.10.
+
+## v3.8.11
+
+- Restored the Roll Player Saves action after cancelling the NPO Attack Wizard while retaining the original target and attack dice.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.11.
+
+## v3.8.12
+
+- Preserved the Player elimination and wounds-before/after confirmation when an NPO attack eliminates the final living Player operative, before continuing to the defeat screen.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.12.

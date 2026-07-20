@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.8.9';
+  const APP_VERSION = '3.8.12';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -2068,7 +2068,15 @@ function showPlayerActivation(stage={}){
     </div>`;
     if(!modal.open)modal.showModal();
     if(attackRequired&&targetConfirmed&&!attackResolved&&animateDice){setTimeout(()=>{const box=$('#aiDice');if(!box)return;box.innerHTML=dice.map(dieHtml).join('');box.classList.add('settled');$('#aiDiceSummary').textContent=initiativeSummary(dice);},850);}
+    const openSaveWizard=(resolvedDice,animate=false)=>showNpoAttackWizard(n,resolvedDice,(summary)=>{
+      completeNpoActivation(summary);
+    },()=>{
+      state.npoAttackSummary=null;
+      save();
+      renderNpoDecisionResult(n,decision,resolvedDice,answers,false,false,true,true);
+    },animate);
     $('#npoPriorityTarget')?.addEventListener('change',()=>{state.npoAttackTargetId=$('#npoPriorityTarget').value||null;const b=$('#confirmNpoTarget');if(b)b.disabled=!state.npoAttackTargetId;save();});
+    $('#rollPlayerSaves')?.addEventListener('click',()=>openSaveWizard(dice));
     $('#confirmNpoTarget')?.addEventListener('click',()=>{
       if(!state.npoAttackTargetId)return;
       state.npoAttackSummary=null;
@@ -2077,26 +2085,49 @@ function showPlayerActivation(stage={}){
       if(history)history.target=playerName(state.npoAttackTargetId);
       log(`${npoName(n)} confirmed ${playerName(state.npoAttackTargetId)} as the attack target and rolled the attack dice.`);
       save();
-      showNpoAttackWizard(n,rolledDice,(summary)=>{
-        state.npoAttackSummary=summary;
-        save();
-        renderNpoDecisionResult(n,decision,rolledDice,answers,true,false,true,true);
-      },()=>{
-        state.npoAttackTargetId=null;
-        state.npoAttackSummary=null;
-        save();
-        renderNpoDecisionResult(n,decision,[],answers,false,false,true,false);
-      },true);
+      openSaveWizard(rolledDice,true);
     });
 
-    $('#completeNpo').onclick=()=>{
-      state.npoAttackTargetId=null;
-      state.npoAttackSummary=null;
-      if(checkGameEnd())return;
-      save();
+    $('#completeNpo').onclick=()=>completeNpoActivation();
+  }
+
+  function completeNpoActivation(attackSummary=null){
+    if(attackSummary){
+      state.lastActivation={...state.lastActivation,attackResolved:true,attackSummary};
+      const history=state.activationHistory.find(entry=>entry.side==='npo'&&entry.label===state.lastActivation?.name);
+      if(history)history.attackSummary=attackSummary;
+    }
+    state.npoAttackTargetId=null;
+    state.npoAttackSummary=null;
+    save();
+    const gameEnded=checkGameEnd();
+    if(!gameEnded){
       closeModal();
       render();
-    };
+    }
+    if(newlyEliminated(attackSummary))showNpoPlayerElimination(attackSummary);
+  }
+
+  function showNpoPlayerElimination(attackSummary){
+    showModal('Player Operative Eliminated',`
+      ${renderEliminationSummary(attackSummary)}
+      ${renderAttackSummary(attackSummary)}
+      <div class="wizard-actions"><button class="btn primary" data-close>Continue</button></div>`);
+  }
+
+  function applyNpoAttackDamage(n,target,summary){
+    state.playerWounds=state.playerWounds||{};
+    state.playerWounds[target.id]=summary.after;
+    const casualties=new Set(state.playerCasualtyIds||[]);
+    if(summary.after<=0){
+      casualties.add(target.id);
+      if(!state.playerActivatedIds.includes(target.id))state.playerActivatedIds.push(target.id);
+    }else{
+      casualties.delete(target.id);
+    }
+    state.playerCasualtyIds=[...casualties];
+    state.playerReady=playerOperativesRemaining();
+    log(`${npoName(n)} dealt ${summary.damage} damage to ${target.name} (${summary.before} → ${summary.after} wounds).`);
   }
 
   function showNpoAttackWizard(n,attackDice,onDone,onCancel,animateAttackDice=false){
@@ -2142,8 +2173,12 @@ function showPlayerActivation(stage={}){
       const after=Math.max(0,before-result.damage);
       $('#combatResults').innerHTML=`<div class="combat-stage"><small>PLAYER SAVE DICE</small><div class="dice-row animated-roll" id="playerSaveDiceResult">${result.saveDice.map(()=>rollingDieHtml()).join('')||'<span class="muted">No save dice rolled</span>'}</div>${result.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':''}</div><div class="damage-summary"><div><small>Target</small><strong>${escapeHtml(target.name)}</strong></div><div><small>Unsaved normal hits</small><strong>${result.normalRemaining}</strong></div><div><small>Unsaved critical hits</small><strong>${result.critRemaining}</strong></div><div><small>Damage</small><strong>${result.damage}</strong></div><div><small>Player wounds</small><strong>${before} → ${after}</strong></div></div><p class="muted">Apply this wound change to ${escapeHtml(target.name)} on the tabletop.</p>`;
       $('#playerCover').disabled=true;
-      $('#rollNpoSaves').textContent='Apply Damage';
+      $('#rollNpoSaves').textContent=result.damage>0?'Apply Damage & Complete Activation':'Complete Activation';
+      let resolutionCommitted=false;
       $('#rollNpoSaves').onclick=()=>{
+        if(resolutionCommitted)return;
+        resolutionCommitted=true;
+        $('#rollNpoSaves').disabled=true;
         const summary={
           side:'player',
           attackType:state.lastActivation?.action?.includes('Fight')?'melee':'shoot',
@@ -2157,19 +2192,7 @@ function showPlayerActivation(stage={}){
           before,
           after
         };
-        state.playerWounds=state.playerWounds||{};
-        state.playerWounds[target.id]=after;
-        const casualties=new Set(state.playerCasualtyIds||[]);
-        if(after<=0){
-          casualties.add(target.id);
-          if(!state.playerActivatedIds.includes(target.id))state.playerActivatedIds.push(target.id);
-        }else{
-          casualties.delete(target.id);
-        }
-        state.playerCasualtyIds=[...casualties];
-        state.playerReady=playerOperativesRemaining();
-        log(`${npoName(n)} dealt ${result.damage} damage to ${target.name} (${before} → ${after} wounds).`);
-        save();
+        applyNpoAttackDamage(n,target,summary);
         if(onDone)onDone(summary);
       };
       setTimeout(()=>{const d=$('#playerSaveDiceResult');if(d&&result.saveDice.length){d.innerHTML=result.saveDice.map(dieHtml).join('');d.classList.add('settled');}},700);
