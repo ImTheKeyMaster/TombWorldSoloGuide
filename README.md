@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v3.5.1
+# Tomb World Solo Guide v3.5.2
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -874,3 +874,9 @@ v3.0.7: Kasrkin roster choices updated.
 - Kept the active question in a consistent position with reduced-motion-aware modal scrolling and preserved Back behavior.
 - Presented the determined action in a distinct result card without exposing the underlying decision path.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v3.5.1.
+
+## v3.5.2
+
+- Combined the NPO action recommendation and target priority into one compact Activation Plan card.
+- Shortened the target-selection placeholder while preserving the existing selection and confirmation flow.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.5.2.
