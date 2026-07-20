@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.8.11';
+  const APP_VERSION = '3.8.12';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -2100,9 +2100,11 @@ function showPlayerActivation(stage={}){
     state.npoAttackTargetId=null;
     state.npoAttackSummary=null;
     save();
-    if(checkGameEnd())return;
-    closeModal();
-    render();
+    const gameEnded=checkGameEnd();
+    if(!gameEnded){
+      closeModal();
+      render();
+    }
     if(newlyEliminated(attackSummary))showNpoPlayerElimination(attackSummary);
   }
 
