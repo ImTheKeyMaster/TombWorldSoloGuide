@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v3.7.1
+# Tomb World Solo Guide v3.8.0
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -934,3 +934,9 @@ v3.0.7: Kasrkin roster choices updated.
 
 - Migrated legacy saved Strategy Phase event arrays to their stable event definitions so in-progress A Chittering Drone events expose the inline roster action after updating.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v3.7.1.
+
+## v3.8.0
+
+- Redesigned every Tomb World Event card with green hazard stripes, the anomaly icon, a permanent event header, and a clearer title-and-effect hierarchy.
+- Preserved inline event actions inside the redesigned card and added semantic event metadata without changing event generation or resolution behavior.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.0.

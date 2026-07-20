@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.7.1';
+  const APP_VERSION = '3.8.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -142,12 +142,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   };
 
   const events = [
-    {id:'awakened-warrior',title:'Awakened Warrior',description:'Add one ready Necron Warrior at a suitable tomb entry point.'},
-    {id:'chittering-drone',title:'A Chittering Drone',description:'Add a Scarab Swarm, or fully heal one if it is already active.',action:{type:'add-or-heal-npo',operativeType:'Canoptek Scarab Swarm',healAmount:'full',maxAdds:1}},
-    {id:'living-metal-flux',title:'Living Metal Flux',description:'Each wounded NPO regains D3+2 wounds.'},
-    {id:'maze-reforms',title:'The Maze Reforms',description:'Close one breach and up to D3 open hatchways where possible.'},
-    {id:'stirrings-of-horror',title:'Stirrings of Horror',description:'Increase Threat by 1.'},
-    {id:'countertemporal-shifting',title:'Countertemporal Shifting',description:'NPOs partially resist high-damage attacks this Turning Point.'}
+    {id:'awakened-warrior',type:'tomb-world-event',title:'Awakened Warrior',description:'Add one ready Necron Warrior at a suitable tomb entry point.'},
+    {id:'chittering-drone',type:'tomb-world-event',title:'A Chittering Drone',description:'Add a Scarab Swarm, or fully heal one if it is already active.',action:{type:'add-or-heal-npo',operativeType:'Canoptek Scarab Swarm',healAmount:'full',maxAdds:1}},
+    {id:'living-metal-flux',type:'tomb-world-event',title:'Living Metal Flux',description:'Each wounded NPO regains D3+2 wounds.'},
+    {id:'maze-reforms',type:'tomb-world-event',title:'The Maze Reforms',description:'Close one breach and up to D3 open hatchways where possible.'},
+    {id:'stirrings-of-horror',type:'tomb-world-event',title:'Stirrings of Horror',description:'Increase Threat by 1.'},
+    {id:'countertemporal-shifting',type:'tomb-world-event',title:'Countertemporal Shifting',description:'NPOs partially resist high-damage attacks this Turning Point.'}
   ];
 
   const initialState = () => ({
@@ -202,7 +202,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const legacyEvent=raw.strategyData.event;
       const event=Array.isArray(legacyEvent)
         ? events.find(candidate=>candidate.title===legacyEvent[0]&&candidate.description===legacyEvent[1])||legacyEvent
-        : legacyEvent;
+        : events.find(candidate=>candidate.id===legacyEvent?.id)||legacyEvent;
       merged.strategyData={...raw.strategyData,event};
     }else merged.strategyData=null;
     merged.gameEnd=['victory','defeat'].includes(raw?.gameEnd)?raw.gameEnd:null;
@@ -718,10 +718,105 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function strategyEventHtml(event){
     const title=event.title||event[0],description=event.description||event[1];
-    if(!event.action)return `<div class="summary-box"><strong>${escapeHtml(title)}</strong><br>${escapeHtml(description)}</div>`;
+    if(event.type!=='tomb-world-event')return `<div class="summary-box"><strong>${escapeHtml(title)}</strong><br>${escapeHtml(description)}</div>`;
+    const eventHeader=`<div class="tomb-world-event-header"><span class="tomb-world-event-icon" aria-hidden="true"><svg
+  class="tomb-world-event-anomaly-icon"
+  viewBox="0 0 32 32"
+  width="32"
+  height="32"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+  focusable="false"
+>
+  <!-- Outer broken energy ring -->
+  <path
+    d="M16 3.5A12.5 12.5 0 0 1 27.7 11.6"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+  />
+  <path
+    d="M28.3 16A12.3 12.3 0 0 1 20.8 27.3"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+  />
+  <path
+    d="M15.8 28.5A12.5 12.5 0 0 1 4.2 20.3"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+  />
+  <path
+    d="M3.7 15.8A12.2 12.2 0 0 1 11.2 4.6"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+  />
+  <!-- Inner anomaly core -->
+  <circle
+    cx="16"
+    cy="16"
+    r="4.25"
+    stroke="currentColor"
+    stroke-width="2"
+  />
+  <!-- Energy spokes -->
+  <path
+    d="M16 7.25V11.5"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+  />
+  <path
+    d="M16 20.5V24.75"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+  />
+  <path
+    d="M7.25 16H11.5"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+  />
+  <path
+    d="M20.5 16H24.75"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+  />
+  <!-- Necron-like floating shards -->
+  <path
+    d="M9.4 8.9L11.9 8.2L11.2 10.7L9.4 8.9Z"
+    fill="currentColor"
+  />
+  <path
+    d="M22.7 9.4L24.9 11.2L22.3 11.8L22.7 9.4Z"
+    fill="currentColor"
+  />
+  <path
+    d="M22.8 22.6L20.4 23.5L21.1 20.9L22.8 22.6Z"
+    fill="currentColor"
+  />
+  <path
+    d="M9.1 22.1L7.2 20.3L9.8 19.8L9.1 22.1Z"
+    fill="currentColor"
+  />
+  <!-- Center singularity -->
+  <circle
+    cx="16"
+    cy="16"
+    r="1.45"
+    fill="currentColor"
+  />
+</svg></span><span class="tomb-world-event-label">TOMB WORLD EVENT</span></div>`;
+    const eventDetails=`${eventHeader}<h3 class="tomb-world-event-title">${escapeHtml(title)}</h3><div class="tomb-world-event-effect"><div class="tomb-world-event-effect-label">Effect</div><p class="tomb-world-event-description">${escapeHtml(description)}</p></div>`;
+    if(!event.action)return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}</div>`;
     const resolution=state.strategyData?.eventAction;
-    if(resolution?.eventId===event.id&&resolution.result)return `<div class="summary-box strategy-event" aria-live="polite"><strong>${escapeHtml(title)}</strong><p>${escapeHtml(description)}</p><div class="event-resolution">Resolved: ${escapeHtml(resolution.result)}</div></div>`;
-    if(event.action.type!=='add-or-heal-npo')return `<div class="summary-box"><strong>${escapeHtml(title)}</strong><br>${escapeHtml(description)}</div>`;
+    if(resolution?.eventId===event.id&&resolution.result)return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite">${eventDetails}<div class="event-resolution">Resolved: ${escapeHtml(resolution.result)}</div></div>`;
+    if(event.action.type!=='add-or-heal-npo')return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}</div>`;
     const wounded=activeNpos().filter(n=>n.type===event.action.operativeType&&n.wounds<n.maxWounds);
     const canAdd=activeNpos().length<MAX_NPOS;
     const healControls=wounded.length===0
@@ -731,7 +826,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         : `<p>Choose a Scarab Swarm to fully heal.</p><div class="field"><label for="eventNpoSelect">Wounded Scarab Swarm</label><select id="eventNpoSelect"><option value="">Select a Scarab Swarm...</option>${wounded.map(n=>`<option value="${n.id}">${escapeHtml(npoName(n))} — ${n.wounds} of ${n.maxWounds} wounds</option>`).join('')}</select></div><button class="btn primary" id="healSelectedEventNpo" disabled>Fully Heal Selected Scarab</button>`;
     const limitText=canAdd?'':'<p class="event-helper">A new Scarab Swarm cannot be added because the battlefield NPO limit has been reached.</p>';
     const noChoice=!canAdd&&!wounded.length?'<p class="event-unavailable">No valid roster change is currently available for this event.</p>':'';
-    return `<div class="summary-box strategy-event"><strong>${escapeHtml(title)}</strong><p>${escapeHtml(description)}</p><div class="event-controls">${healControls}<button class="btn primary" id="addEventNpo" ${canAdd?'':'disabled'}>Add Scarab Swarm</button>${limitText}${noChoice}<button class="btn secondary" id="openEventRoster">Open NPO Roster</button></div></div>`;
+    return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}<div class="event-controls">${healControls}<button class="btn primary" id="addEventNpo" ${canAdd?'':'disabled'}>Add Scarab Swarm</button>${limitText}${noChoice}<button class="btn secondary" id="openEventRoster">Open NPO Roster</button></div></div>`;
   }
 
   function animateInitiativeResult(){
