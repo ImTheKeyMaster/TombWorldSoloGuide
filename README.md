@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v3.8.12
+# Tomb World Solo Guide v3.8.13
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -1010,3 +1010,9 @@ v3.0.7: Kasrkin roster choices updated.
 
 - Preserved the Player elimination and wounds-before/after confirmation when an NPO attack eliminates the final living Player operative, before continuing to the defeat screen.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.12.
+
+## v3.8.13
+
+- Suppressed custom decision and action button focus rings on coarse-pointer touch devices while retaining their existing pressed, active, disabled, and hover states.
+- Preserved the visible custom button focus indicator for keyboard navigation on fine-pointer devices without changing native form control focus treatment.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.13.
