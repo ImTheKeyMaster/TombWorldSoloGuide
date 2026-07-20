@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.8.6';
+  const APP_VERSION = '3.8.7';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1307,6 +1307,34 @@ function showPlayerActivation(stage={}){
     return actions.length?actions.join(', '):'No actions recorded';
   }
 
+  function newlyEliminated(attack){
+    return attack&&Number(attack.before)>0&&Number(attack.after)<=0;
+  }
+
+  function renderEliminationSummary(attack){
+    if(!newlyEliminated(attack))return '';
+    const side=attack.side==='player'?'PLAYER':'NPO';
+    return `<section class="elimination-banner" aria-label="${side} eliminated">
+      <span class="elimination-icon" aria-hidden="true">☠</span>
+      <div><small>${side} ELIMINATED</small><strong>${escapeHtml(attack.targetName)}</strong></div>
+    </section>`;
+  }
+
+  function renderAttackSummary(attack){
+    const lethal=newlyEliminated(attack);
+    return `<section class="attack-confirmation-card ${lethal?'eliminated':''}">
+      <div class="attack-confirmation-heading">
+        <small>${attack.attackType==='shoot'?'SHOOTING':'MELEE'}</small>
+        ${lethal?'<span class="eliminated-badge">☠ ELIMINATED</span>':''}
+      </div>
+      <strong class="attack-confirmation-target">${escapeHtml(attack.targetName)}</strong>
+      <div class="attack-confirmation-stats">
+        <div><small>Damage</small><strong>${attack.damage}</strong></div>
+        <div><small>Wounds</small><strong>${attack.before} → <span class="${lethal?'zero-wounds':''}">${attack.after}</span></strong></div>
+      </div>
+    </section>`;
+  }
+
   function projectedNpoWounds(npoId,stage){
     let wounds=state.roster.find(n=>n.id===npoId)?.wounds||0;
     for(const pending of [stage.pendingShoot,stage.pendingMelee]){
@@ -1344,26 +1372,10 @@ function showPlayerActivation(stage={}){
   }
 
   function showPlayerActivationConfirmation(stage){
-    const pending=[stage.pendingShoot,stage.pendingMelee].filter(Boolean);
-    const eliminated=pending.filter(p=>Number(p.after)<=0);
-    const eliminationBanner=eliminated.length?`<section class="elimination-banner" aria-label="NPO eliminated">
-      <span class="elimination-icon" aria-hidden="true">☠</span>
-      <div><small>NPO ELIMINATED</small><strong>${eliminated.map(p=>escapeHtml(p.targetName)).join(', ')}</strong></div>
-    </section>`:'';
-    const attackRows=pending.map(p=>{
-      const lethal=Number(p.after)<=0;
-      return `<section class="attack-confirmation-card ${lethal?'eliminated':''}">
-        <div class="attack-confirmation-heading">
-          <small>${p.attackType==='shoot'?'SHOOTING':'MELEE'}</small>
-          ${lethal?'<span class="eliminated-badge">☠ ELIMINATED</span>':''}
-        </div>
-        <strong class="attack-confirmation-target">${escapeHtml(p.targetName)}</strong>
-        <div class="attack-confirmation-stats">
-          <div><small>Damage</small><strong>${p.damage}</strong></div>
-          <div><small>Wounds</small><strong>${p.before} → <span class="${lethal?'zero-wounds':''}">${p.after}</span></strong></div>
-        </div>
-      </section>`;
-    }).join('');
+    const pending=[stage.pendingShoot,stage.pendingMelee].filter(Boolean).map(attack=>({...attack,side:'npo'}));
+    const eliminated=pending.filter(newlyEliminated);
+    const eliminationBanner=eliminated.length?renderEliminationSummary({...eliminated[0],targetName:eliminated.map(p=>p.targetName).join(', ')}):'';
+    const attackRows=pending.map(renderAttackSummary).join('');
     const eliminationAction=eliminated.length?` · Eliminated ${eliminated.map(p=>escapeHtml(p.targetName)).join(', ')}`:'';
     showModal('Confirm Player Activation',`
       <p>${escapeHtml(playerName(stage.playerOperativeId))} will be marked activated. NPO damage has not been applied yet.</p>
@@ -2016,23 +2028,27 @@ function showPlayerActivation(stage={}){
     const targetField=targetConfirmed||eligibleTargetIds.length===1
       ? `<input id="npoPriorityTarget" value="${escapeHtml(targetName)}" readonly>`
       : `<select id="npoPriorityTarget" ${attackResolved?'disabled':''}><option value="">Select matching operative</option>${targetOptions}</select>`;
+    const attackSummary=attackResolved&&state.npoAttackSummary?{
+      ...state.npoAttackSummary,
+      side:'player',
+      attackType:state.npoAttackSummary.attackType||(decision.action.includes('Fight')?'melee':'shoot')
+    }:null;
+    const eliminationAction=newlyEliminated(attackSummary)?` Eliminated ${escapeHtml(attackSummary.targetName)}.`:'';
     modalBody.innerHTML=`<div class="modal-inner ai-result">
       <div class="npo-question-flow">${renderCompletedNpoQuestions(questionHistory)}</div>
       <div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)} · ${escapeHtml(n.behavior)}</p></div></div>
       <div class="npo-result-card">${npoIcon('command')}<div><small>ACTIVATION PLAN</small><strong>${escapeHtml(decision.action)}</strong><p>${escapeHtml(decision.reason)}</p><div class="npo-target-priority"><small>TARGET PRIORITY</small><strong>${escapeHtml(decision.target)}</strong>${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Target Player Operative</label>${targetField}</div>`:''}</div></div></div>
       ${attackRequired&&!targetConfirmed?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
       ${attackRequired&&targetConfirmed?`<h3>Attack Roll</h3><div class="dice-row ${attackResolved||!animateDice?'settled':'animated-roll'}" id="aiDice">${attackResolved||!animateDice?dice.map(dieHtml).join(''):dice.map(()=>rollingDieHtml()).join('')}</div><p id="aiDiceSummary" class="muted">${attackResolved?'Attack resolved.':animateDice?`Rolling ${dice.length} attack dice…`:initiativeSummary(dice)}</p>${!attackResolved?`<button class="btn secondary big-action" id="rollPlayerSaves">Roll Player Saves</button>`:''}`:''}
-      ${attackResolved&&state.npoAttackSummary?`<section class="card npo-attack-summary">
+      ${attackSummary?`${renderEliminationSummary(attackSummary)}<section class="card npo-attack-summary">
         <p class="eyebrow">NPO ATTACK SUMMARY</p>
-        <div class="combat-stage target-summary"><small>TARGET</small><strong>${escapeHtml(state.npoAttackSummary.targetName)}</strong></div>
-        <div class="combat-stage"><small>PLAYER SAVE ROLL</small><div class="dice-row settled">${state.npoAttackSummary.saveDice.length?state.npoAttackSummary.saveDice.map(dieHtml).join(''):'<span class="muted">No save dice rolled</span>'}</div></div>
+        ${renderAttackSummary(attackSummary)}
+        <div class="combat-stage"><small>PLAYER SAVE ROLL</small><div class="dice-row settled">${attackSummary.saveDice.length?attackSummary.saveDice.map(dieHtml).join(''):'<span class="muted">No save dice rolled</span>'}</div></div>
         <div class="damage-summary">
-          <div><small>Unsaved normal hits</small><strong>${state.npoAttackSummary.normalRemaining}</strong></div>
-          <div><small>Unsaved critical hits</small><strong>${state.npoAttackSummary.critRemaining}</strong></div>
-          <div><small>Damage</small><strong>${state.npoAttackSummary.damage}</strong></div>
-          <div><small>Player wounds</small><strong>${state.npoAttackSummary.before} → ${state.npoAttackSummary.after}</strong></div>
+          <div><small>Unsaved normal hits</small><strong>${attackSummary.normalRemaining}</strong></div>
+          <div><small>Unsaved critical hits</small><strong>${attackSummary.critRemaining}</strong></div>
         </div>
-      </section>`:''}
+      </section><div class="summary-box"><strong>Actions:</strong> ${attackSummary.attackType==='shoot'?'Shooting':'Melee'} attack resolved.${eliminationAction}</div>`:''}
       <div class="wizard-actions"><button class="btn primary" id="completeNpo" ${attackRequired&&!attackResolved?'disabled':''}>Complete Activation</button></div>
     </div>`;
     if(!modal.open)modal.showModal();
@@ -2058,7 +2074,14 @@ function showPlayerActivation(stage={}){
       },true);
     });
 
-    $('#completeNpo').onclick=()=>{state.npoAttackTargetId=null;state.npoAttackSummary=null;save();closeModal();render();};
+    $('#completeNpo').onclick=()=>{
+      state.npoAttackTargetId=null;
+      state.npoAttackSummary=null;
+      if(checkGameEnd())return;
+      save();
+      closeModal();
+      render();
+    };
   }
 
   function showNpoAttackWizard(n,attackDice,onDone,onCancel,animateAttackDice=false){
@@ -2107,6 +2130,8 @@ function showPlayerActivation(stage={}){
       $('#rollNpoSaves').textContent='Apply Damage';
       $('#rollNpoSaves').onclick=()=>{
         const summary={
+          side:'player',
+          attackType:state.lastActivation?.action?.includes('Fight')?'melee':'shoot',
           targetId:state.npoAttackTargetId,
           targetName:target.name,
           attackDice:attackDice.map(d=>({...d})),
@@ -2129,7 +2154,6 @@ function showPlayerActivation(stage={}){
         state.playerCasualtyIds=[...casualties];
         state.playerReady=playerOperativesRemaining();
         log(`${npoName(n)} dealt ${result.damage} damage to ${target.name} (${before} → ${after} wounds).`);
-        if(checkGameEnd())return;
         save();
         if(onDone)onDone(summary);
       };
