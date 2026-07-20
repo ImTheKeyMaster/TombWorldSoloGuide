@@ -142,6 +142,9 @@
 .ai-progress-head{display:flex;justify-content:space-between;color:var(--muted);font-size:.68rem;font-weight:900;letter-spacing:.1em}
 .ai-progress-head strong{color:var(--green)}
 .ai-progress{height:6px;margin:8px 0 24px;border-radius:999px;background:#152b20;overflow:hidden}
+.npo-activation-title{font-size:clamp(1.45rem,6.4vw,3.2rem);white-space:nowrap}
+.npo-activation-meta{margin:0}
+.npo-activation-card .big-action{margin-top:8px}
 .ai-progress span{display:block;height:100%;background:var(--green);transition:width .25s ease}
 .ai-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0 8px}
 .ai-choice{min-height:112px;border:1px solid var(--line);border-radius:18px;background:#08170f;color:var(--text);cursor:pointer;display:grid;place-items:center;align-content:center;gap:6px;font-size:1.05rem;font-weight:900}
