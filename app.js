@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.8.10';
+  const APP_VERSION = '3.8.11';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -2068,7 +2068,15 @@ function showPlayerActivation(stage={}){
     </div>`;
     if(!modal.open)modal.showModal();
     if(attackRequired&&targetConfirmed&&!attackResolved&&animateDice){setTimeout(()=>{const box=$('#aiDice');if(!box)return;box.innerHTML=dice.map(dieHtml).join('');box.classList.add('settled');$('#aiDiceSummary').textContent=initiativeSummary(dice);},850);}
+    const openSaveWizard=(resolvedDice,animate=false)=>showNpoAttackWizard(n,resolvedDice,(summary)=>{
+      completeNpoActivation(summary);
+    },()=>{
+      state.npoAttackSummary=null;
+      save();
+      renderNpoDecisionResult(n,decision,resolvedDice,answers,false,false,true,true);
+    },animate);
     $('#npoPriorityTarget')?.addEventListener('change',()=>{state.npoAttackTargetId=$('#npoPriorityTarget').value||null;const b=$('#confirmNpoTarget');if(b)b.disabled=!state.npoAttackTargetId;save();});
+    $('#rollPlayerSaves')?.addEventListener('click',()=>openSaveWizard(dice));
     $('#confirmNpoTarget')?.addEventListener('click',()=>{
       if(!state.npoAttackTargetId)return;
       state.npoAttackSummary=null;
@@ -2077,13 +2085,7 @@ function showPlayerActivation(stage={}){
       if(history)history.target=playerName(state.npoAttackTargetId);
       log(`${npoName(n)} confirmed ${playerName(state.npoAttackTargetId)} as the attack target and rolled the attack dice.`);
       save();
-      showNpoAttackWizard(n,rolledDice,(summary)=>{
-        completeNpoActivation(summary);
-      },()=>{
-        state.npoAttackSummary=null;
-        save();
-        renderNpoDecisionResult(n,decision,rolledDice,answers,false,false,true,true);
-      },true);
+      openSaveWizard(rolledDice,true);
     });
 
     $('#completeNpo').onclick=()=>completeNpoActivation();
