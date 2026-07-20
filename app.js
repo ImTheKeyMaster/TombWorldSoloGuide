@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.3.1';
+  const APP_VERSION = '3.3.2';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -341,7 +341,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         <button class="btn ghost" id="homeHelpBtn">How It Works</button>
       </div>
     </section>`;
-    $('#newGameBtn').onclick=()=>{ state=initialState(); state.screen='setup'; state.setupStep=0; save(); render(); };
+    $('#newGameBtn').onclick=()=>{ state=initialState(); state.screen='setup'; state.setupStep=0; expandedRosterCategories=null; save(); render(); };
     $('#continueBtn').onclick=()=>{ const saved=load(); if(saved){state=normalizeState(saved);state.screen='game';render();} };
     $('#homeHelpBtn').onclick=()=>{
       state.screen='help';
@@ -439,7 +439,6 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     bindSetup(stepId);
   }
   function setupContent(stepId){
-    if(stepId!=='playerRoster')expandedRosterCategories=null;
     if(stepId==='mission') return `<h3>Which mission are you playing?</h3><p>You can review the objective before committing.</p><div class="mission-list">${missions.map(m=>`<button class="mission-choice ${state.missionId===m.id?'selected':''}" data-mission="${m.id}"><div class="team-select-card-head"><div><small>${m.number}</small><strong>${m.name}</strong></div>${state.missionId===m.id?'<span>✓</span>':''}</div><span>${m.brief}</span></button>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="setupHome">Back</button><button class="btn primary" id="setupNext" ${state.missionId?'':'disabled'}>Next</button></div>`;
     if(stepId==='killzone'){
       const m=mission();
@@ -458,11 +457,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const gunnerCount=selectedDefs.filter(o=>o.role==='Gunner').length;
       const trooperCount=selectedDefs.filter(o=>o.role==='Trooper').length;
       const maxGunners=Number(playerTeamData?.selectionRules?.maxGunners||Infinity);
+      const maxGravis=Number(playerTeamData?.selectionRules?.maxGravis||1);
       const mandatoryTroopers=Number(playerTeamData?.selectionRules?.mandatoryTroopers||0);
       const requiredLeaderId=playerTeamData?.selectionRules?.leader?.operativeId||'';
       const leaderSelected=!requiredLeaderId||selected.has(requiredLeaderId);
       const {minRoster,maxRoster}=playerRosterLimits();
-      const valid=selected.size>=minRoster&&selected.size<=maxRoster&&gravisCount<=1&&gunnerCount<=maxGunners&&trooperCount>=mandatoryTroopers&&leaderSelected;
       const categoryMetadata=new Map((playerTeamData?.rosterCategories||[]).map(category=>[category.id,category]));
       const categories=[];
       (playerTeamData?.operatives||[]).forEach(operative=>{
@@ -476,7 +475,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         category.operatives.push(operative);
       });
       categories.sort((a,b)=>a.order-b.order);
-      if(expandedRosterCategories===null)expandedRosterCategories=new Set(categories.map(category=>category.id));
+      if(expandedRosterCategories===null)expandedRosterCategories=new Set();
       const sections=categories.map((category,index)=>{
         const categorySelected=category.operatives.filter(operative=>selected.has(operative.id)).length;
         const expanded=expandedRosterCategories.has(category.id);
@@ -484,21 +483,23 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         const cards=category.operatives.map(o=>{
           const chosen=selected.has(o.id);
           const rosterBlocked=!chosen&&selected.size>=maxRoster;
-          const gravisBlocked=!chosen&&o.gravis&&gravisCount>=1;
+          const gravisBlocked=!chosen&&o.gravis&&gravisCount>=maxGravis;
           const gunnerBlocked=!chosen&&o.role==='Gunner'&&gunnerCount>=maxGunners;
           return `<button type="button" class="player-roster-card ${chosen?'selected':''}" data-select-player="${o.id}" ${rosterBlocked||gravisBlocked||gunnerBlocked?'disabled':''}><div class="player-roster-card-head"><div><strong>${escapeHtml(o.name)}</strong><small>${escapeHtml(o.role)}${o.gravis?' · GRAVIS':''}</small></div><span>${chosen?'✓':'+'}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${o.apl}</b></span><span><small>MOVE</small><b>${o.move}"</b></span><span><small>SAVE</small><b>${o.save}+</b></span><span><small>WOUNDS</small><b>${o.wounds}</b></span></div></button>`;
         }).join('');
         return `<section class="roster-category"><button type="button" class="roster-category-heading" data-roster-category-toggle="${escapeHtml(category.id)}" aria-expanded="${expanded}" aria-controls="${panelId}"><span class="roster-category-title"><span class="roster-category-indicator" aria-hidden="true">›</span>${escapeHtml(category.label)}</span><span>${categorySelected} selected</span></button><div class="player-roster-grid roster-category-content" id="${panelId}" ${expanded?'':'hidden'}>${cards}</div></section>`;
       }).join('');
       const selectionPrompt=minRoster===maxRoster?`Select exactly ${maxRoster} operatives.`:`Select between ${minRoster} and ${maxRoster} operatives.`;
-      const selectionCount=minRoster===maxRoster?`${selected.size} / ${maxRoster} selected`:`${selected.size} / ${maxRoster} selected · minimum ${minRoster}`;
+      const selectionCount=minRoster===maxRoster?`${selected.size} / ${maxRoster} Total Required`:`${selected.size} / ${maxRoster} Total Required · minimum ${minRoster}`;
+      const requirementComplete=({count,min=0,max=Infinity})=>count>=min&&count<=max;
       const requirements=[];
-      if(requiredLeaderId)requirements.push({satisfied:leaderSelected,label:leaderSelected?'Leader selected':'Leader required'});
-      if(Number.isFinite(maxGunners))requirements.push({satisfied:gunnerCount<=maxGunners,label:`${gunnerCount} / ${maxGunners} Gunners`});
-      if(mandatoryTroopers)requirements.push({satisfied:trooperCount>=mandatoryTroopers,label:`${trooperCount} / ${mandatoryTroopers} required Troopers`});
-      if((playerTeamData?.operatives||[]).some(o=>o.gravis))requirements.push({satisfied:gravisCount<=1,label:`${gravisCount} / 1 Gravis`});
-      requirements.push({satisfied:selected.size>=minRoster&&selected.size<=maxRoster,label:selectionCount});
-      const requirementItems=requirements.map(requirement=>`<li class="${requirement.satisfied?'satisfied':'incomplete'}"><span class="roster-requirement-indicator" aria-hidden="true">${requirement.satisfied?'✓':'○'}</span><span class="visually-hidden">${requirement.satisfied?'Satisfied:':'Not satisfied:'}</span>${escapeHtml(requirement.label)}</li>`).join('');
+      if(requiredLeaderId)requirements.push({count:leaderSelected?1:0,min:1,label:leaderSelected?'Leader selected':'Leader required'});
+      if(Number.isFinite(maxGunners))requirements.push({count:gunnerCount,max:maxGunners,label:`${gunnerCount} / ${maxGunners} Gunners`});
+      if(mandatoryTroopers)requirements.push({count:trooperCount,min:mandatoryTroopers,label:`${trooperCount} / ${mandatoryTroopers} required Troopers`});
+      if((playerTeamData?.operatives||[]).some(o=>o.gravis))requirements.push({count:gravisCount,min:1,max:maxGravis,label:`${gravisCount} / ${maxGravis} Gravis`});
+      requirements.push({count:selected.size,min:minRoster,max:maxRoster,label:selectionCount});
+      const valid=requirements.every(requirementComplete);
+      const requirementItems=requirements.map(requirement=>{const satisfied=requirementComplete(requirement);return `<li class="${satisfied?'satisfied':'incomplete'}"><span class="visually-hidden">${satisfied?'Satisfied:':'Not satisfied:'}</span>${escapeHtml(requirement.label)}</li>`;}).join('');
       return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
     }
     if(stepId==='npoRoster'){
@@ -1758,7 +1759,7 @@ function showPlayerActivation(stage={}){
     $('#menuNewGame').onclick=confirmNewGame;
   }
 
-  function confirmNewGame(){showModal('Start New Game?',`<p>This will replace the current mission, roster, Threat, Turning Point, and Journal.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmNewGame">Start New Game</button></div>`);$('#confirmNewGame').onclick=()=>{localStorage.removeItem(STORAGE_KEY);state=initialState();state.screen='setup';closeModal();save();render();};}
+  function confirmNewGame(){showModal('Start New Game?',`<p>This will replace the current mission, roster, Threat, Turning Point, and Journal.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmNewGame">Start New Game</button></div>`);$('#confirmNewGame').onclick=()=>{localStorage.removeItem(STORAGE_KEY);state=initialState();state.screen='setup';expandedRosterCategories=null;closeModal();save();render();};}
   function exportSave(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tomb-world-solo-guide-save.json';a.click();URL.revokeObjectURL(a.href);}
   importInput.addEventListener('change',async()=>{const f=importInput.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!data.version)throw new Error();state=normalizeState(data);state.screen='game';save();render();showToast('Save imported.');}catch{showToast('That file is not a valid Tomb World Solo Guide save.');}finally{importInput.value='';}});
 
