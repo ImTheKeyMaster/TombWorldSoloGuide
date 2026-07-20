@@ -151,10 +151,16 @@
 .ai-choice span{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;font-size:1.6rem}
 .ai-choice.yes span{background:rgba(118,245,168,.18);color:var(--green);border:1px solid rgba(118,245,168,.45)}
 .ai-choice.no span{background:rgba(255,127,131,.12);color:#ffb2b5;border:1px solid rgba(255,127,131,.32)}
-.ai-choice:hover,.ai-choice:focus-visible{border-color:var(--green);transform:translateY(-1px)}
+.ai-choice:hover{border-color:var(--green);transform:translateY(-1px)}
 .btn,.ai-choice{-webkit-tap-highlight-color:transparent}
 .btn:focus,.ai-choice:focus{outline:none}
-.btn:focus-visible,.ai-choice:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+@media (hover:none) and (pointer:coarse){
+  .btn:focus,.btn:focus-visible,.ai-choice:focus,.ai-choice:focus-visible{outline:none;box-shadow:none}
+}
+@media (hover:hover) and (pointer:fine){
+  .btn:focus-visible,.ai-choice:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+  .ai-choice:focus-visible{border-color:var(--green);transform:translateY(-1px)}
+}
 .ai-result-title h2{margin:0 0 2px}.ai-result-title p{margin:0}
 .activation-command,.target-command{padding:16px 17px;margin:13px 0;border-radius:15px;border:1px solid var(--line);background:#07140f}
 .activation-command{border-color:rgba(118,245,168,.45);background:rgba(34,104,64,.17)}
