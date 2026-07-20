@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.3.5';
+  const APP_VERSION = '3.3.6';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -491,12 +491,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         return `<section class="roster-category"><button type="button" class="roster-category-heading" data-roster-category-toggle="${escapeHtml(category.id)}" aria-expanded="${expanded}" aria-controls="${panelId}"><span class="roster-category-title"><span class="roster-category-indicator" aria-hidden="true">›</span>${escapeHtml(category.label)}</span><span>${categorySelected} selected</span></button><div class="player-roster-grid roster-category-content" id="${panelId}" ${expanded?'':'hidden'}>${cards}</div></section>`;
       }).join('');
       const selectionPrompt=minRoster===maxRoster?`Select exactly ${maxRoster} operatives.`:`Select between ${minRoster} and ${maxRoster} operatives.`;
-      const selectionCount=minRoster===maxRoster?`${selected.size} / ${maxRoster} Total Required`:`${selected.size} / ${maxRoster} Total Required · minimum ${minRoster}`;
+      const selectionCount=minRoster===maxRoster?`Total Operatives: ${selected.size} of ${maxRoster}`:`Total Operatives: ${selected.size} of ${maxRoster} (minimum ${minRoster})`;
       const requirements=[];
-      if(requiredLeaderId)requirements.push(leaderSelected?'Leader selected':'Leader required');
-      if(Number.isFinite(maxGunners))requirements.push(`${gunnerCount} / ${maxGunners} Gunners`);
-      if(mandatoryTroopers)requirements.push(`${trooperCount} / ${mandatoryTroopers} required Troopers`);
-      if(hasGravis)requirements.push(`${gravisCount} / ${maxGravis} Gravis`);
+      if(requiredLeaderId)requirements.push(`Leader: ${leaderSelected?'Selected':'Required'}`);
+      if(Number.isFinite(maxGunners))requirements.push(`Gunners: ${gunnerCount} of ${maxGunners} maximum`);
+      if(mandatoryTroopers)requirements.push(`Required Troopers: ${trooperCount} of ${mandatoryTroopers}`);
+      if(hasGravis)requirements.push(`Required Gravis: ${gravisCount} of 1`);
       requirements.push(selectionCount);
       const valid=leaderSelected&&gunnerCount<=maxGunners&&trooperCount>=mandatoryTroopers&&(!hasGravis||(gravisCount>=1&&gravisCount<=maxGravis))&&selected.size>=minRoster&&selected.size<=maxRoster;
       const requirementItems=requirements.map(requirement=>`<li>${escapeHtml(requirement)}</li>`).join('');
