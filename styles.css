@@ -664,7 +664,6 @@ body.modal-open{
 .player-roster-summary h4{margin:0 0 8px;color:var(--green)}
 .player-roster-summary ul{list-style:none;padding:0;margin:0;display:grid;gap:5px}
 .player-roster-summary li{color:var(--muted);font-weight:800}
-.player-roster-summary li.satisfied{color:var(--green)}
 .visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 .player-roster-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:12px 0 18px}
 .player-roster-card{appearance:none;text-align:left;color:var(--text);padding:15px;border:1px solid var(--line);border-radius:16px;background:#091912;cursor:pointer}
