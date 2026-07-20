@@ -31,7 +31,8 @@
     {
       "id": "leader",
       "label": "Leader",
-      "order": 1
+      "order": 1,
+      "requiredCount": 1
     },
     {
       "id": "specialists",

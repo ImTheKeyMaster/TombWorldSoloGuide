@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.3.6';
+  const APP_VERSION = '3.3.7';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -110,7 +110,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   const initialState = () => ({
     version:APP_VERSION, screen:'home', tab:'play', setupStep:0, missionId:null,
-    setupChecks:[], roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
+    setupChecks:[], roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerRosterInitializedForTeamId:'', playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
     strategyStage:null, strategyData:null, activationNumber:0,totalActivationsThisTP:0, playerActivated:0, npoActivated:0,
@@ -124,6 +124,22 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   let lastRenderedStepKey = null;
   let threatAdjustOpen = false;
   let expandedRosterCategories = null;
+  function autoSelectRequiredPlayerOperatives(){
+    if(!playerTeamData||state.playerRosterInitializedForTeamId===playerTeamData.teamId)return;
+    state.playerRosterInitializedForTeamId=playerTeamData.teamId;
+    const operatives=playerTeamData.operatives||[];
+    const requiredCategories=(playerTeamData.rosterCategories||[])
+      .map(category=>({count:Number(category.requiredCount||0),eligible:operatives.filter(operative=>operative.category===category.id)}))
+      .filter(category=>category.count>0);
+    const selected=new Set(state.playerRoster||[]);
+    requiredCategories.forEach(category=>{
+      if(category.eligible.length===category.count)category.eligible.forEach(operative=>selected.add(operative.id));
+    });
+    state.playerRoster=[...selected];
+    state.playerCount=state.playerRoster.length;
+    state.playerReady=state.playerCount;
+    initializePlayerWounds();
+  }
 
   function save(){ state.version=APP_VERSION; localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
   function load(){ try{return JSON.parse(localStorage.getItem(STORAGE_KEY));}catch{return null;} }
@@ -390,6 +406,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $$('[data-player-team]').forEach(button=>button.onclick=async()=>{
       try{
         state.playerTeamId=button.dataset.playerTeam;
+        state.playerRosterInitializedForTeamId='';
         state.playerRoster=[];
         state.playerCount=0;
         state.playerReady=0;
@@ -430,6 +447,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function renderSetup(){
     const steps=activeSetupSteps();
     const stepId=currentSetupStepId();
+    if(stepId==='playerRoster'){
+      autoSelectRequiredPlayerOperatives();
+      save();
+    }
     if(stepId==='npoRoster'&&!state.roster.length){
       generateRoster();
       save();
@@ -530,6 +551,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       try{
         if(state.playerTeamId!==button.dataset.playerTeam){
           state.playerTeamId=button.dataset.playerTeam;
+          state.playerRosterInitializedForTeamId='';
           state.playerRoster=[];state.playerCount=0;state.playerReady=0;state.playerCasualtyIds=[];state.playerWounds={};state.playerActivatedIds=[];state.playerDeployed=false;
           await loadPlayerTeamData(state.playerTeamId);
         }
