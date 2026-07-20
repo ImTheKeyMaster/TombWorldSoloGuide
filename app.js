@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.8.5';
+  const APP_VERSION = '3.8.6';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -719,7 +719,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function actualReinforcementCount(data=state.strategyData||{}){
     if(Number.isFinite(data.actualReinforcements))return Math.max(0,data.actualReinforcements);
-    return Math.max((data.reinforcements||[]).length-(Number(data.blocked)||0),0);
+    return (data.reinforcements||[]).length;
   }
 
   function strategyEventHtml(event){
