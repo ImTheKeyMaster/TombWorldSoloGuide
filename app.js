@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.5.7';
+  const APP_VERSION = '3.5.8';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1450,7 +1450,6 @@ function showPlayerActivation(stage={}){
 
   function npoIcon(type){
     const paths={
-      radar:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12V3a9 9 0 0 1 6.4 2.6z" fill="currentColor" stroke="none" opacity=".35"/><path d="M12 12l6.4-6.4"/><circle cx="8" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="13" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="17" r="1" fill="currentColor" stroke="none"/>',
       route:'<path d="M4 19c3-7 7-7 9-5 1.6 1.6 1.6-2.4 3.88-5.88"/><path d="M13 7.7l3.88.42-.58 3.88"/><circle cx="19" cy="6" r="3"/>',
       crosshair:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>',
       objective:'<path d="M6 21V4m0 1h11l-2 4 2 4H6"/><circle cx="6" cy="21" r="2"/>',
@@ -1459,6 +1458,110 @@ function showPlayerActivation(stage={}){
       group:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-4 2-6 6-6s6 2 6 6m0-5c3 0 5 2 5 5"/>',
       command:'<path d="M12 2l3 6 6 1-4.5 4.5 1 6.5-5.5-3-5.5 3 1-6.5L3 9l6-1 3-6z"/><circle cx="12" cy="12" r="2"/>'
     };
+    if(type==='radar')return `<svg
+  class="npo-question-icon npo-question-icon--radar"
+  viewBox="0 0 32 32"
+  width="32"
+  height="32"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+  focusable="false"
+>
+  <!-- Outer radar housing -->
+  <circle
+    cx="16"
+    cy="16"
+    r="13"
+    stroke="currentColor"
+    stroke-width="2"
+  />
+  <!-- Radar range rings -->
+  <circle
+    cx="16"
+    cy="16"
+    r="8.75"
+    stroke="currentColor"
+    stroke-width="1.25"
+    opacity="0.48"
+  />
+  <circle
+    cx="16"
+    cy="16"
+    r="4.5"
+    stroke="currentColor"
+    stroke-width="1.25"
+    opacity="0.38"
+  />
+  <!-- Partial scanning arcs -->
+  <path
+    d="M5.9 13.2A10.5 10.5 0 0 1 11.2 6.9"
+    stroke="currentColor"
+    stroke-width="1.35"
+    stroke-linecap="round"
+    opacity="0.85"
+  />
+  <path
+    d="M8.1 19.9A8.6 8.6 0 0 0 13 24"
+    stroke="currentColor"
+    stroke-width="1.2"
+    stroke-linecap="round"
+    opacity="0.55"
+  />
+  <!-- Radar sweep beam -->
+  <path
+    d="M16 16L20.8 3.95A13 13 0 0 1 27.4 8.95L16 16Z"
+    fill="currentColor"
+    opacity="0.92"
+  />
+  <!-- Sweep leading edge -->
+  <path
+    d="M16 16L24.1 5.85"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+  />
+  <!-- Center pivot -->
+  <circle
+    cx="16"
+    cy="16"
+    r="1.65"
+    fill="var(--radar-center-fill, currentColor)"
+    stroke="currentColor"
+    stroke-width="1.35"
+  />
+  <!-- Radar contacts -->
+  <circle
+    cx="9.3"
+    cy="8.7"
+    r="1.45"
+    fill="currentColor"
+  />
+  <circle
+    cx="14"
+    cy="6.6"
+    r="1.55"
+    fill="currentColor"
+  />
+  <circle
+    cx="23.3"
+    cy="14"
+    r="1.45"
+    fill="currentColor"
+  />
+  <circle
+    cx="21.3"
+    cy="21.6"
+    r="1.45"
+    fill="currentColor"
+  />
+  <circle
+    cx="10.2"
+    cy="21"
+    r="1.35"
+    fill="currentColor"
+  />
+</svg>`;
     if(type==='hatch')return `<svg
   class="npo-question-icon npo-question-icon--hatch"
   viewBox="0 0 32 32"
