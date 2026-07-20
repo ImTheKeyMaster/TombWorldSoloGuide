@@ -36,7 +36,8 @@
     {
       "id": "leader",
       "label": "Leader",
-      "order": 1
+      "order": 1,
+      "requiredCount": 1
     },
     {
       "id": "specialists",
@@ -51,7 +52,8 @@
     {
       "id": "troopers",
       "label": "Troopers",
-      "order": 4
+      "order": 4,
+      "requiredCount": 4
     }
   ],
   "operatives": [
