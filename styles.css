@@ -909,7 +909,7 @@ button.tracker-operative:hover{
 }
 
 
-/* v2.3.8: make NPO eliminations unmistakable on activation confirmation */
+/* Make eliminations unmistakable on activation confirmation. */
 .elimination-banner{
   display:flex;
   align-items:center;

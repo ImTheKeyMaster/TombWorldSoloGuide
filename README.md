@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v3.8.6
+# Tomb World Solo Guide v3.8.7
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -974,3 +974,9 @@ v3.0.7: Kasrkin roster choices updated.
 
 - Preserved successfully created reinforcements when loading legacy Strategy Phase saves that also recorded blocked arrivals.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.6.
+
+## v3.8.7
+
+- Generalized the elimination banner and attack summary so newly eliminated Player and NPO operatives share the same presentation.
+- Added Player elimination feedback to completed NPO attacks, including the operative name, attack type, damage, wounds, eliminated badge, and action summary.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.7.
