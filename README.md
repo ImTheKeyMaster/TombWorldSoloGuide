@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v3.6.0
+# Tomb World Solo Guide v3.7.0
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -923,3 +923,9 @@ v3.0.7: Kasrkin roster choices updated.
 
 - Replaced the NPO Activation Charge question icon with two operative markers and an edge-to-edge directional Charge arrow that remains clear in active and answered states.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v3.6.0.
+
+## v3.7.0
+
+- Added a persistent inline Strategy Phase action for A Chittering Drone, allowing one eligible Scarab Swarm to be fully healed or one new swarm to be added within the battlefield limit.
+- Added direct NPO Roster access without changing the current Strategy Phase results.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.7.0.
