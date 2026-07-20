@@ -1,4 +1,5 @@
 # Tomb World Solo Guide v3.5.1
+# Tomb World Solo Guide v3.4.4
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 

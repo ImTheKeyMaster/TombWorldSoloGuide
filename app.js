@@ -3,6 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
   const APP_VERSION = '3.5.1';
+  const APP_VERSION = '3.4.4';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -525,9 +526,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const requiredLeaderId=playerTeamData?.selectionRules?.leader?.operativeId||'';
       const leaderSelected=!requiredLeaderId||selected.has(requiredLeaderId);
       const requiredLeaderCategory=(playerTeamData?.rosterCategories||[]).find(category=>category.id==='leader'&&Number(category.requiredCount||0)>0);
+      const requiredLeaderCount=requiredLeaderId?Number(playerTeamData?.selectionRules?.leader?.count||1):Number(requiredLeaderCategory?.requiredCount||0);
+      const selectedLeaderCount=requiredLeaderId
+        ? (leaderSelected?1:0)
+        : (playerTeamData?.operatives||[]).filter(operative=>operative.category==='leader'&&selected.has(operative.id)).length;
       const requiredLeaderSelected=requiredLeaderId
         ? leaderSelected
-        : (playerTeamData?.operatives||[]).filter(operative=>operative.category==='leader'&&selected.has(operative.id)).length>=Number(requiredLeaderCategory?.requiredCount||0);
+        : selectedLeaderCount>=requiredLeaderCount;
       const hasGravis=(playerTeamData?.operatives||[]).some(o=>o.gravis);
       const {minRoster,maxRoster}=playerRosterLimits();
       const categoryMetadata=new Map((playerTeamData?.rosterCategories||[]).map(category=>[category.id,category]));
@@ -560,10 +565,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const selectionPrompt=minRoster===maxRoster?`Select exactly ${maxRoster} operatives.`:`Select between ${minRoster} and ${maxRoster} operatives.`;
       const selectionCount=minRoster===maxRoster?`Total Operatives: ${selected.size} of ${maxRoster}`:`Total Operatives: ${selected.size} of ${maxRoster} (minimum ${minRoster})`;
       const requirements=[];
-      if(requiredLeaderId||requiredLeaderCategory)requirements.push(`Required Leader: ${requiredLeaderSelected?'Selected':'Required'}`);
-      if(Number.isFinite(maxGunners))requirements.push(`Gunners: ${gunnerCount} of ${maxGunners} maximum`);
-      if(mandatoryTroopers)requirements.push(`Required Troopers: ${trooperCount} of ${mandatoryTroopers}`);
       if(hasGravis)requirements.push(`Required Gravis: ${gravisCount} of 1`);
+      if(Number.isFinite(maxGunners))requirements.push(`Maximum Gunners: ${gunnerCount} of ${maxGunners}`);
+      if(requiredLeaderId||requiredLeaderCategory)requirements.push(`Required Leader: ${selectedLeaderCount} of ${requiredLeaderCount}`);
+      if(mandatoryTroopers)requirements.push(`Required Troopers: ${trooperCount} of ${mandatoryTroopers}`);
       requirements.push(selectionCount);
       const valid=requiredLeaderSelected&&gunnerCount<=maxGunners&&trooperCount>=mandatoryTroopers&&(!hasGravis||(gravisCount>=1&&gravisCount<=maxGravis))&&selected.size>=minRoster&&selected.size<=maxRoster;
       const requirementItems=requirements.map(requirement=>`<li>${escapeHtml(requirement)}</li>`).join('');
