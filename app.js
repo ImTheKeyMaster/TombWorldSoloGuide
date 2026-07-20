@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.4.1';
+  const APP_VERSION = '3.4.2';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -524,6 +524,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const mandatoryTroopers=Number(playerTeamData?.selectionRules?.mandatoryTroopers||0);
       const requiredLeaderId=playerTeamData?.selectionRules?.leader?.operativeId||'';
       const leaderSelected=!requiredLeaderId||selected.has(requiredLeaderId);
+      const requiredLeaderCategory=(playerTeamData?.rosterCategories||[]).find(category=>category.id==='leader'&&Number(category.requiredCount||0)>0);
+      const requiredLeaderSelected=requiredLeaderId
+        ? leaderSelected
+        : (playerTeamData?.operatives||[]).filter(operative=>operative.category==='leader'&&selected.has(operative.id)).length>=Number(requiredLeaderCategory?.requiredCount||0);
       const hasGravis=(playerTeamData?.operatives||[]).some(o=>o.gravis);
       const {minRoster,maxRoster}=playerRosterLimits();
       const categoryMetadata=new Map((playerTeamData?.rosterCategories||[]).map(category=>[category.id,category]));
@@ -538,7 +542,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         }
         category.operatives.push(operative);
       });
-      categories.sort((a,b)=>a.order-b.order);
+      categories.sort((a,b)=>a.label.localeCompare(b.label));
       if(expandedRosterCategories===null)expandedRosterCategories=new Set();
       const sections=categories.map((category,index)=>{
         const categorySelected=category.operatives.filter(operative=>selected.has(operative.id)).length;
@@ -556,7 +560,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const selectionPrompt=minRoster===maxRoster?`Select exactly ${maxRoster} operatives.`:`Select between ${minRoster} and ${maxRoster} operatives.`;
       const selectionCount=minRoster===maxRoster?`Total Operatives: ${selected.size} of ${maxRoster}`:`Total Operatives: ${selected.size} of ${maxRoster} (minimum ${minRoster})`;
       const requirements=[];
-      if(requiredLeaderId)requirements.push(`Leader: ${leaderSelected?'Selected':'Required'}`);
+      if(requiredLeaderId||requiredLeaderCategory)requirements.push(`Required Leader: ${requiredLeaderSelected?'Selected':'Required'}`);
       if(Number.isFinite(maxGunners))requirements.push(`Gunners: ${gunnerCount} of ${maxGunners} maximum`);
       if(mandatoryTroopers)requirements.push(`Required Troopers: ${trooperCount} of ${mandatoryTroopers}`);
       if(hasGravis)requirements.push(`Required Gravis: ${gravisCount} of 1`);
