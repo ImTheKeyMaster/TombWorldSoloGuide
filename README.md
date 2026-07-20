@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v3.5.4
+# Tomb World Solo Guide v3.5.6
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -897,3 +897,9 @@ v3.0.7: Kasrkin roster choices updated.
 - Removed the redundant Recommended Activation label and Engage status badge from the NPO Activation recommendation screen.
 - Tightened the operative heading spacing while preserving the Activation Plan, targeting, and activation workflow.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v3.5.5.
+
+## v3.5.6
+
+- Swapped the NPO Activation wizard navigation so Back appears on the left and Exit Guide appears on the right.
+- Replaced the control-range icon with a radar sweep and refined the Charge icon's movement curve and target approach.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.5.6.
