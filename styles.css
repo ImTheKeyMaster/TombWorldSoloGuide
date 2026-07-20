@@ -1091,3 +1091,6 @@ button.tracker-operative:hover{
 @media(max-width:600px){.roster-category-heading{padding:13px}.roster-category-content{padding:10px}}
 
 .update-notice{position:fixed;z-index:55;top:calc(76px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:12px;width:min(430px,calc(100% - 30px));padding:10px 12px 10px 16px;border:1px solid var(--line);border-radius:15px;background:#102a1d;color:var(--text);box-shadow:var(--shadow);font-size:.88rem;font-weight:800}.update-notice[hidden]{display:none}.update-notice span{flex:1}.update-notice .btn{min-height:42px;padding:10px 13px;white-space:nowrap}
+
+/* v4.0.0 shared combat resolution */
+.combat-participants strong{overflow-wrap:anywhere}
