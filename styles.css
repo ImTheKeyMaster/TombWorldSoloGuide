@@ -1042,7 +1042,7 @@ button.tracker-operative:hover{
 .tomb-world-event-effect{padding-top:12px;border-top:1px solid var(--line)}
 .tomb-world-event-effect-label{margin-bottom:.35rem;font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted)}
 .strategy-event .tomb-world-event-description{margin:0;color:var(--muted);line-height:1.55}
-.event-controls{display:grid;gap:10px;margin-top:16px}.event-controls .btn{width:100%}.event-operative{display:grid;gap:3px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#07140f}.event-operative span,.event-helper{color:var(--muted)}.strategy-event .event-helper,.strategy-event .event-unavailable{margin:0;font-size:.9rem}.event-resolution{margin-top:16px;padding:11px 12px;border-radius:12px;background:#07140f;color:var(--text)}
+.event-controls{display:grid;gap:10px;margin-top:16px}.event-controls .btn{width:100%}.event-messages{display:grid;gap:10px;margin:0;padding-left:1.5rem;color:var(--muted);font-size:.9rem;line-height:1.5}.event-messages li{padding-left:.25rem}.event-operative{display:grid;gap:3px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#07140f}.event-operative span{color:var(--muted)}.event-resolution{margin-top:16px;padding:11px 12px;border-radius:12px;background:#07140f;color:var(--text)}
 
 /* v2.4.2 */
 .activation-meta{

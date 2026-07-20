@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.8.1';
+  const APP_VERSION = '3.8.2';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -819,15 +819,23 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(event.action.type!=='add-or-heal-npo')return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}</div>`;
     const wounded=activeNpos().filter(n=>n.type===event.action.operativeType&&n.wounds<n.maxWounds);
     const canAdd=activeNpos().length<MAX_NPOS;
-    const healControls=wounded.length===0
-      ? '<p>No wounded Scarab Swarms are currently active.</p>'
-      : wounded.length===1
-        ? `<div class="event-operative"><strong>${escapeHtml(npoName(wounded[0]))}</strong><span>Wounds: ${wounded[0].wounds} of ${wounded[0].maxWounds}</span></div><button class="btn primary" data-event-heal="${wounded[0].id}">Fully Heal Scarab Swarm</button>`
-        : `<p>Choose a Scarab Swarm to fully heal.</p><div class="field"><label for="eventNpoSelect">Wounded Scarab Swarm</label><select id="eventNpoSelect"><option value="">Select a Scarab Swarm...</option>${wounded.map(n=>`<option value="${n.id}">${escapeHtml(npoName(n))} — ${n.wounds} of ${n.maxWounds} wounds</option>`).join('')}</select></div><button class="btn primary" id="healSelectedEventNpo" disabled>Fully Heal Selected Scarab</button>`;
-    const limitText=canAdd?'':'<p class="event-helper">A new Scarab Swarm cannot be added because the battlefield NPO limit has been reached.</p>';
-    const noChoice=!canAdd&&!wounded.length?'<p class="event-unavailable">No valid roster change is currently available for this event.</p>':'';
+    const messages=[];
+    let healControls='';
+    if(wounded.length===0){
+      messages.push('No wounded Scarab Swarms are currently active.');
+    }else if(wounded.length===1){
+      healControls=`<div class="event-operative"><strong>${escapeHtml(npoName(wounded[0]))}</strong><span>Wounds: ${wounded[0].wounds} of ${wounded[0].maxWounds}</span></div><button class="btn primary" data-event-heal="${wounded[0].id}">Fully Heal Scarab Swarm</button>`;
+    }else{
+      messages.push('Choose a Scarab Swarm to fully heal.');
+      healControls=`<div class="field"><label for="eventNpoSelect">Wounded Scarab Swarm</label><select id="eventNpoSelect"><option value="">Select a Scarab Swarm...</option>${wounded.map(n=>`<option value="${n.id}">${escapeHtml(npoName(n))} — ${n.wounds} of ${n.maxWounds} wounds</option>`).join('')}</select></div><button class="btn primary" id="healSelectedEventNpo" disabled>Fully Heal Selected Scarab</button>`;
+    }
+    if(!canAdd)messages.push('A new Scarab Swarm cannot be added because the battlefield NPO limit has been reached.');
+    const hasRosterChange=canAdd||wounded.length>0;
+    if(!hasRosterChange)messages.push('No valid roster change is currently available for this event.');
+    const messageList=messages.length?`<ul class="event-messages">${messages.map(message=>`<li>${escapeHtml(message)}</li>`).join('')}</ul>`:'';
     const addControl=canAdd?'<button class="btn primary" id="addEventNpo">Add Scarab Swarm</button>':'';
-    return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}<div class="event-controls">${healControls}${addControl}${limitText}${noChoice}<button class="btn secondary" id="openEventRoster">Open NPO Roster</button></div></div>`;
+    const rosterControl=hasRosterChange?'<button class="btn secondary" id="openEventRoster">Open NPO Roster</button>':'';
+    return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}<div class="event-controls">${messageList}${healControls}${addControl}${rosterControl}</div></div>`;
   }
 
   function animateInitiativeResult(){

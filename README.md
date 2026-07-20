@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v3.8.1
+# Tomb World Solo Guide v3.8.2
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -946,3 +946,9 @@ v3.0.7: Kasrkin roster choices updated.
 - Hid the Add Scarab Swarm button when the battlefield NPO limit makes that event option unavailable.
 - Kept the existing explanation and NPO Roster access visible so players can understand or resolve the blocked event.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.1.
+
+## v3.8.2
+
+- Indented and bulleted the contextual messages displayed below Tomb World event descriptions.
+- Hid the NPO Roster button when an event has no valid roster change available.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.2.
