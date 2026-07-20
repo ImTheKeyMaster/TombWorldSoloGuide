@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v3.5.9
+# Tomb World Solo Guide v3.6.0
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -918,3 +918,8 @@ v3.0.7: Kasrkin roster choices updated.
 
 - Made every SVG icon inherit the muted question text color after its question is answered while keeping active-question icons green.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v3.5.9.
+
+## v3.6.0
+
+- Replaced the NPO Activation Charge question icon with two operative markers and an edge-to-edge directional Charge arrow that remains clear in active and answered states.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.6.0.
