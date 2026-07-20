@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v3.8.14
+# Tomb World Solo Guide v4.0.0
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -1022,3 +1022,12 @@ v3.0.7: Kasrkin roster choices updated.
 - Removed the redundant `Next: Player` / `Next: NPO` badge from the Activation Tracker because the primary activation card already identifies the current side.
 - Preserved the completed activation count, compact tracker header, and expand/collapse control.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v3.8.14.
+
+
+## v4.0.0
+
+- Unified Player Shoot, Player Melee, NPO Shoot, and NPO Melee resolution around one shared combat engine and summary layout.
+- Presented attack dice, save dice, retained saves, unsaved hits, damage, wounds, and elimination status together on one combat screen.
+- Removed the separate NPO save and post-attack summary steps so NPO combat now completes its activation directly from combat resolution.
+- Preserved selected targets and rolled combat dice when canceling and returning to combat.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v4.0.0.
