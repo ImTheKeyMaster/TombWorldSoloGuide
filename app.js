@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.5.6';
+  const APP_VERSION = '3.5.7';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1455,11 +1455,90 @@ function showPlayerActivation(stage={}){
       crosshair:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>',
       objective:'<path d="M6 21V4m0 1h11l-2 4 2 4H6"/><circle cx="6" cy="21" r="2"/>',
       wounded:'<path d="M12 21s-7-4.4-7-10a4 4 0 017-2.7A4 4 0 0119 11c0 5.6-7 10-7 10z"/><path d="M9 12h2l1-3 2 6 1-3h2"/>',
-      hatch:'<path d="M5 21V3h14v18M8 21V6h8v15"/><circle cx="14" cy="13" r=".8"/><path d="M3 21h18"/>',
       shield:'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6l7-3z"/><path d="M8 12h8"/>',
       group:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-4 2-6 6-6s6 2 6 6m0-5c3 0 5 2 5 5"/>',
       command:'<path d="M12 2l3 6 6 1-4.5 4.5 1 6.5-5.5-3-5.5 3 1-6.5L3 9l6-1 3-6z"/><circle cx="12" cy="12" r="2"/>'
     };
+    if(type==='hatch')return `<svg
+  class="npo-question-icon npo-question-icon--hatch"
+  viewBox="0 0 32 32"
+  width="32"
+  height="32"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+  focusable="false"
+>
+  <!-- Outer hatch frame -->
+  <rect
+    x="5"
+    y="3.5"
+    width="22"
+    height="25"
+    rx="3"
+    stroke="currentColor"
+    stroke-width="2"
+  />
+  <!-- Inner hatch door -->
+  <rect
+    x="8.5"
+    y="7"
+    width="15"
+    height="18"
+    rx="1.5"
+    stroke="currentColor"
+    stroke-width="2"
+  />
+  <!-- Reinforced upper and lower door panels -->
+  <path
+    d="M9 11H23"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+  />
+  <path
+    d="M9 21H23"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+  />
+  <!-- Central split between hatch doors -->
+  <path
+    d="M16 7.5V24.5"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+  />
+  <!-- Hatch locking wheel -->
+  <circle
+    cx="16"
+    cy="16"
+    r="3.25"
+    fill="var(--icon-surface, currentColor)"
+    stroke="currentColor"
+    stroke-width="2"
+  />
+  <!-- Locking wheel spokes -->
+  <path
+    d="M16 12.75V19.25"
+    stroke="var(--icon-detail, currentColor)"
+    stroke-width="1.5"
+    stroke-linecap="round"
+  />
+  <path
+    d="M12.75 16H19.25"
+    stroke="var(--icon-detail, currentColor)"
+    stroke-width="1.5"
+    stroke-linecap="round"
+  />
+  <!-- Floor threshold -->
+  <path
+    d="M3.5 28.5H28.5"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+  />
+</svg>`;
     return `<svg class="npo-question-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[type]||paths.command}</svg>`;
   }
 
