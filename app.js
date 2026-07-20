@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.5.3';
+  const APP_VERSION = '3.5.4';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -685,7 +685,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     setNextActivation(state.nextSide || state.initiative || 'player');
     if(state.phase==='end'){save();return nextStepCard();}
     if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>Player Activation</h2><p>Activate one Player operative on the tabletop. After it completes, the Guide will alternate to an NPO if one is ready.</p><button class="btn primary big-action" id="playerActivation">Activate an Operative</button></section>`;
-    if(state.nextSide==='npo' && readyNpos().length>0){const n=nextNpo();return `<section class="next-card"><span class="phase">NPO ACTIVATION · ${activationProgressLabel()}</span><h2>NPO Activation: ${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.behavior)} · ${n.wounds}/${n.maxWounds} wounds</p><div class="summary-box"><strong>Next:</strong> Answer a few battlefield questions to determine this operative’s activation.</div><button class="btn primary big-action" id="npoActivation">Activate NPO</button></section>`;}
+    if(state.nextSide==='npo' && readyNpos().length>0){const n=nextNpo();return `<section class="next-card npo-activation-card"><span class="phase">NPO ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">${escapeHtml(npoName(n))}</h2><p class="npo-activation-meta">${escapeHtml(n.behavior)} · ${n.wounds}/${n.maxWounds} wounds</p><button class="btn primary big-action" id="npoActivation">Activate NPO</button></section>`;}
     setNextActivation(state.nextSide==='player'?'npo':'player');
     save();
     return nextStepCard();
