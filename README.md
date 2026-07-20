@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v3.3.2
+# Tomb World Solo Guide v3.3.3
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -790,3 +790,9 @@ v3.0.7: Kasrkin roster choices updated.
 - Removed status icons from roster requirements and clarified the overall Total Required line.
 - Collapsed all roster categories by default while preserving independent expansion state during setup.
 - Updated visible, internal, and cache-busting versions to v3.3.2.
+
+## v3.3.3
+
+- Kept New Game Setup navigation visible in a safe-area-aware mobile footer while setup content scrolls.
+- Preserved the existing desktop setup layout and all setup button labels, states, and behavior.
+- Updated visible, internal, and cache-busting versions to v3.3.3.
