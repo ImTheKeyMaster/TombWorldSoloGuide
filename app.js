@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.5.5';
+  const APP_VERSION = '3.5.6';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1444,14 +1444,14 @@ function showPlayerActivation(stage={}){
   ];
 
   const npoQuestionIcons = {
-    engaged:'blades',charge:'route',shot:'crosshair',objective:'objective',
+    engaged:'radar',charge:'route',shot:'crosshair',objective:'objective',
     wounded:'wounded',hatch:'hatch',cover:'shield',clustered:'group'
   };
 
   function npoIcon(type){
     const paths={
-      blades:'<path d="M7 4l13 13M17 4l3 3L7 20l-3-3L17 4zM5 19l-2 2m16-2l2 2"/>',
-      route:'<path d="M4 18c4-8 8-1 13-9"/><path d="M13 6h5v5"/><circle cx="5" cy="18" r="2"/>',
+      radar:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12V3a9 9 0 0 1 6.4 2.6z" fill="currentColor" stroke="none" opacity=".35"/><path d="M12 12l6.4-6.4"/><circle cx="8" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="13" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="17" r="1" fill="currentColor" stroke="none"/>',
+      route:'<path d="M4 19c3-7 7-7 9-5 1.6 1.6 1.6-2.4 3.88-5.88"/><path d="M13 7.7l3.88.42-.58 3.88"/><circle cx="19" cy="6" r="3"/>',
       crosshair:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>',
       objective:'<path d="M6 21V4m0 1h11l-2 4 2 4H6"/><circle cx="6" cy="21" r="2"/>',
       wounded:'<path d="M12 21s-7-4.4-7-10a4 4 0 017-2.7A4 4 0 0119 11c0 5.6-7 10-7 10z"/><path d="M9 12h2l1-3 2 6 1-3h2"/>',
@@ -1502,8 +1502,8 @@ function showPlayerActivation(stage={}){
     modalBody.innerHTML=`<div class="modal-inner"><h2>NPO Activation: ${escapeHtml(npoName(n))}</h2><div class="ai-wizard">
       <div class="npo-question-flow">${renderCompletedNpoQuestions(history)}${renderActiveNpoQuestion(q)}</div>
       <div class="wizard-actions">
-        <button class="btn ghost" data-close>Exit Guide</button>
         <button class="btn ghost" id="aiBack" ${history.length===0?'disabled':''}>Back</button>
+        <button class="btn ghost" data-close>Exit Guide</button>
       </div>
     </div></div>`;
     if(!modal.open)modal.showModal();
