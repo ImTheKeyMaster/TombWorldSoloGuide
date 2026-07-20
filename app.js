@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '3.3.7';
+  const APP_VERSION = '3.4.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -15,6 +15,48 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const modalBody = $('#modalBody');
   const toast = $('#toast');
   const importInput = $('#importInput');
+  const updateNotice = $('#updateNotice');
+  const updateAppBtn = $('#updateAppBtn');
+
+  function registerServiceWorker(){
+    if(!('serviceWorker' in navigator))return;
+    let waitingWorker=null;
+    let updateRequested=false;
+    const showUpdate=worker=>{
+      waitingWorker=worker;
+      if(navigator.onLine)updateNotice.hidden=false;
+    };
+    window.addEventListener('online',()=>{
+      if(waitingWorker)updateNotice.hidden=false;
+    });
+    updateAppBtn.addEventListener('click',()=>{
+      if(!waitingWorker)return;
+      updateRequested=true;
+      updateAppBtn.disabled=true;
+      waitingWorker.postMessage({type:'SKIP_WAITING'});
+    });
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{
+      if(updateRequested)window.location.reload();
+    });
+    window.addEventListener('load',()=>{
+      navigator.serviceWorker.register('./service-worker.js',{scope:'./'})
+        .then(registration=>{
+          if(registration.waiting)showUpdate(registration.waiting);
+          registration.addEventListener('updatefound',()=>{
+            const installingWorker=registration.installing;
+            if(!installingWorker)return;
+            installingWorker.addEventListener('statechange',()=>{
+              if(installingWorker.state==='installed'&&navigator.serviceWorker.controller){
+                showUpdate(installingWorker);
+              }
+            });
+          });
+        })
+        .catch(()=>{});
+    });
+  }
+
+  registerServiceWorker();
 
   let missionManifest=null;
   async function loadMissionPack(){

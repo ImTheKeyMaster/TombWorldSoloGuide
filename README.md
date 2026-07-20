@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v3.3.7
+# Tomb World Solo Guide v3.4.1
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -44,6 +44,27 @@ A separate, mobile-first guided-play application for solo Kill Team missions in 
 
 No build step or server is required.
 
+## Local PWA testing
+
+Service workers do not run when `index.html` is opened directly with a `file://` URL. From the repository root, start a local HTTP server with either:
+
+```sh
+python -m http.server 8000
+```
+
+or on Windows:
+
+```sh
+py -m http.server 8000
+```
+
+Then open `http://localhost:8000`. Load the app once while online so its local gameplay resources can be cached. Browser developer tools can then be used to switch the network offline and reload the page to verify offline operation. Service workers are supported on localhost for development and on the production HTTPS GitHub Pages URL.
+
+### Installing the app
+
+- **iPhone or iPad:** Open the production site in Safari, tap **Share**, then **Add to Home Screen**.
+- **Android or supported desktop browser:** Open the browser's install prompt or menu and choose **Install app** or **Add to Home screen**.
+
 ## Important
 
 This is an unofficial play aid. Use the official Kill Team and Tomb World publications for authoritative rules, mission wording, terrain placement, and datacards.
@@ -71,7 +92,7 @@ The application includes the PDF locally and uses pre-rendered crops of pages 17
 
 Upload the **contents of this folder while preserving the folder structure**. In particular:
 
-- `index.html`, `app.js`, `styles.css`, and `manifest.webmanifest` must remain at the repository root.
+- `index.html`, `app.js`, `styles.css`, `service-worker.js`, and `manifest.webmanifest` must remain at the repository root.
 - `Assets/icon.svg` must remain inside `Assets`.
 - All six map files must remain inside `Assets/Maps`.
 - `Assets/Tomb-World-Mission-Pack.pdf` must remain inside `Assets`.
@@ -821,3 +842,17 @@ v3.0.7: Kasrkin roster choices updated.
 - Automatically selected required roster categories when their eligible operatives exactly match the required count.
 - Left maximum-only categories and required categories with multiple choices unselected.
 - Updated visible, internal, and cache-busting versions to v3.3.7.
+
+## v3.4.0
+
+- Added installable Progressive Web App metadata using the existing SVG icon.
+- Added versioned offline caching for the app shell, missions, Kill Teams, operatives, maps, images, and local reference PDF.
+- Added a non-blocking update notice; a waiting update activates and reloads only after **Update App** is pressed.
+- Added localhost service-worker and offline test instructions.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.4.0.
+
+## v3.4.1
+
+- Treated HTTP error responses as network failures so cached navigation and data remain available during transient server or captive-network errors.
+- Limited the app-shell fallback to navigation requests while preserving exact cached fallbacks for JavaScript, CSS, JSON, and manifest requests.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v3.4.1.
