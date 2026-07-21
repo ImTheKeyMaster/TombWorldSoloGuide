@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v4.0.1
+# Tomb World Solo Guide v4.0.3
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -1037,3 +1037,20 @@ v3.0.7: Kasrkin roster choices updated.
 - Removed the redundant pre-roll instruction from the Player attack dialog to reduce unnecessary vertical space.
 - Preserved the target-selection prompt when multiple NPO targets are available and none is selected.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v4.0.1.
+
+
+## v4.0.2
+
+- Added official mission-specific tabletop setup confirmations for all six missions, including deployment, marker, room-allocation, and starting Conceal-order requirements.
+- Clarified that complete kill-team roster legality and cooperative team splitting are outside the Guide’s validation scope.
+- Delegated the initial 2CP and up-to-four equipment choices to recorded tabletop play without adding resource engines.
+- Migrated setup confirmations to stable mission checklist IDs while preserving existing saved games and Turning Point 1 behavior.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v4.0.2.
+
+
+## v4.0.3
+
+- Kept map, terrain, marker, and deployment-area confirmations in the killzone step.
+- Moved operative placement, starting Conceal orders, and initial-resource confirmations after Player and NPO roster generation.
+- Reset placement confirmations whenever the starting NPO roster is regenerated.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v4.0.3.
