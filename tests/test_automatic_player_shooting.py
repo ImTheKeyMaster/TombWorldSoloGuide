@@ -28,7 +28,9 @@ class AutomaticPlayerShootingTests(unittest.TestCase):
         self.assertIn('resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,profile)', preview)
         self.assertIn("stage[`${attackType}CombatDraft`]=result", preview)
         self.assertIn("state.combatState={side:'player',stage:{...stage}}", preview)
-        self.assertIn('renderCombatResolution(result', display)
+        self.assertIn('displaySharedCombatResult(result', display)
+        shared_display = self.source('function displaySharedCombatResult', 'function settleCombatDice')
+        self.assertIn('renderCombatResolution(combat', shared_display)
 
     def test_saved_shooting_result_is_restored_without_reroll(self):
         wizard = self.source('function showPendingPlayerAttackWizard', 'function showPlayerCombatResolution')
@@ -45,10 +47,10 @@ class AutomaticPlayerShootingTests(unittest.TestCase):
         self.assertIn('if(n.wounds===0)n.ready=false', apply_damage)
 
     def test_continue_enables_only_after_visible_result_settles(self):
-        display = self.source('function displayPendingPlayerCombat', 'function npoBehavior')
+        display = self.source('function displaySharedCombatResult', 'function settleCombatDice')
         self.assertIn('let visualComplete=!animate', display)
-        self.assertIn('button.disabled=!visualComplete||', display)
-        self.assertIn('if(!visualComplete||', display)
+        self.assertIn('button.disabled=!visualComplete', display)
+        self.assertIn('if(visualComplete&&onContinue)', display)
         shared = self.source('function runAutomaticCombatRolls', 'function retainedDiceTotals')
         preview = self.source('function previewPendingPlayerAttack', 'function displayPendingPlayerCombat')
         self.assertLess(shared.index('timer=settleCombatDice'), shared.index('onComplete(attackDice,defenseDice)'))

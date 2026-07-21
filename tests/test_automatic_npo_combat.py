@@ -24,6 +24,8 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         self.assertIn("timer=settleCombatDice", shared)
         self.assertIn("rollingDieHtml()", shared)
         self.assertIn("animated-roll", shared)
+        self.assertIn("if(typeof timer==='function')timer()", shared)
+        self.assertIn("timer=null", shared)
 
     def test_successes_and_damage_are_calculated_without_editable_counters(self):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
@@ -49,8 +51,8 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         self.assertIn("state.lastActivation={...state.lastActivation,combatDraft:combat}", wizard)
         self.assertIn("save();", wizard)
         self.assertIn("const sameCombat=saved&&saved.targetId===target.id&&saved.attackType===attackType", wizard)
-        self.assertIn("const combat=saved", wizard)
-        self.assertIn("renderCombatResolution(combat", wizard)
+        self.assertIn("if(sameCombat)displayCombat(saved,animateCombat)", wizard)
+        self.assertIn("displaySharedCombatResult(combat", wizard)
         self.assertIn("const banishmentRequired=dimensionalBanishmentRequired(combat)", wizard)
         self.assertIn("applyDimensionalBanishment(combat,num('dimensionalBanishmentRoll'))", wizard)
 

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.4.1';
+  const APP_VERSION = '5.5.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -2050,17 +2050,17 @@ function showPlayerActivation(stage={}){
     </section>`;
   }
 
-  function renderCombatResolution(combat,{pending=false,animate=true}={}){
+  function renderCombatResolution(combat,{pending=false,animate=true,showParticipants=true}={}){
     const elimination=renderEliminationSummary({
       ...combat,side:combat.defenderSide,targetName:combat.defenderName
     });
     return `<section class="combat-resolution" aria-label="Combat resolution">
-      <div class="damage-summary combat-participants">
+      ${showParticipants?`<div class="damage-summary combat-participants">
         <div><small>Attacker</small><strong>${escapeHtml(combat.attackerName)}</strong></div>
         <div><small>Defender</small><strong>${escapeHtml(combat.defenderName)}</strong></div>
         <div><small>Attack type</small><strong>${combat.attackType==='shoot'?'Shooting':'Melee'}</strong></div>
         ${combat.recordedOutcome?'':`<div><small>Retained saves</small><strong>${combat.retainedSaves??(combat.coverRetained?1:0)}</strong></div>`}
-      </div>
+      </div>`:''}
       ${combat.recordedOutcome?'<div class="combat-stage"><small>TABLETOP RESOLUTION</small><p>Physical dice and retained successes resolved by the player.</p></div>':`<div class="combat-stage"><small>ATTACK DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div></div><div class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No defense dice rolled</span>'}</div>${combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':''}</div>`}
       ${elimination}
       ${combatAbilityReminder(combat)}
@@ -2071,6 +2071,45 @@ function showPlayerActivation(stage={}){
         <div><small>Wounds</small><strong>${combat.before} → ${combat.after}</strong></div>
       </div>
     </section>`;
+  }
+
+  function showSharedCombatResolutionScreen({title,attackerName,defenderName,attackType,weaponName,defenseLabel,cancelId,continueId,extraHtml='',detailsHtml=''}){
+    showModal(title,`
+      <section class="dedicated-combat-screen" aria-label="Combat resolution screen">
+        <div class="damage-summary combat-participants compact-combat-profile">
+          <div><small>Attacker</small><strong>${escapeHtml(attackerName)}</strong></div>
+          <div><small>Defender</small><strong>${escapeHtml(defenderName)}</strong></div>
+          <div><small>Attack type</small><strong>${attackType==='shoot'?'Shooting':'Melee'}</strong></div>
+          <div><small>Weapon</small><strong>${escapeHtml(weaponName)}</strong></div>
+          <div><small>Defense</small><strong>${escapeHtml(defenseLabel)}</strong></div>
+        </div>
+        ${extraHtml}
+        <div id="automaticCombat" class="combat-results combat-dice-area" aria-live="polite"></div>
+        <div id="combatResults" class="combat-results" aria-live="polite"></div>
+        <div id="combatDetails">${detailsHtml}</div>
+        <div class="wizard-actions combat-resolution-footer"><button class="btn ghost" id="${cancelId}">Cancel</button><button class="btn primary" id="${continueId}" disabled>Continue</button></div>
+      </section>`);
+    modal.classList.add('combat-resolution-modal');
+    window.scrollTo({top:0,left:0,behavior:'auto'});
+    modal.scrollTop=0;
+    modalBody.scrollTop=0;
+    return {dice:$('#automaticCombat'),results:$('#combatResults'),continueButton:$(`#${continueId}`)};
+  }
+
+  function displaySharedCombatResult(combat,{pending=false,animate=false,message='',onContinue,extraHtml=''}={}){
+    const results=$('#combatResults');
+    const dice=$('#automaticCombat');
+    const button=$('.combat-resolution-footer .btn.primary');
+    if(dice)dice.replaceChildren();
+    results.innerHTML=`${renderCombatResolution(combat,{pending,animate,showParticipants:false})}${extraHtml}${message?`<p class="muted">${escapeHtml(message)}</p>`:''}`;
+    let visualComplete=!animate;
+    button.textContent='Continue';
+    button.disabled=!visualComplete;
+    button.onclick=()=>{if(visualComplete&&onContinue)onContinue();};
+    if(animate)settleCombatDice(combat,()=>{
+      visualComplete=true;
+      if(button.isConnected)button.disabled=false;
+    },results);
   }
 
   function settleCombatDice(combat,onSettled=()=>{},root=document){
@@ -2301,7 +2340,11 @@ function showPlayerActivation(stage={}){
         if(container.isConnected)onComplete(attackDice,defenseDice);
       },container);
     },700);
-    return ()=>{if(timer)clearTimeout(timer);};
+    return ()=>{
+      if(typeof timer==='function')timer();
+      else if(timer)clearTimeout(timer);
+      timer=null;
+    };
   }
 
   function retainedDiceTotals(dice=[]){
@@ -2452,23 +2495,11 @@ function showPlayerActivation(stage={}){
     const attackLabel=attackType==='shoot'?'Shooting':'Melee';
     const profile=playerWeaponProfile(weapon);
     const attackerWithinTwo=Boolean($('#attackerWithinTwo')?.checked)||Boolean(result?.attackerWithinTwo);
-
-    showModal(`Resolve ${attackLabel} Attack`,`
-      <section class="dedicated-combat-screen" aria-label="Player combat resolution screen">
-        <div class="damage-summary combat-participants compact-combat-profile">
-          <div><small>Attacker</small><strong>${escapeHtml(playerName(stage.playerOperativeId))}</strong></div>
-          <div><small>Defender</small><strong>${escapeHtml(npoName(target))}</strong></div>
-          <div><small>Weapon</small><strong>${escapeHtml(weapon.name)}</strong></div>
-          <div><small>Defense</small><strong>${Math.max(0,3-profile.ap)} dice · ${target.save}+</strong></div>
-        </div>
-        <div id="automaticPlayerCombat" class="combat-results combat-dice-area" aria-live="polite"></div>
-        <div id="combatResults" class="combat-results" aria-live="polite"></div>
-        <div class="wizard-actions combat-resolution-footer"><button class="btn ghost" id="cancelPendingAttack">Cancel</button><button class="btn primary" id="continuePendingAttack" disabled>Continue</button></div>
-      </section>`);
-    modal.classList.add('combat-resolution-modal');
-    window.scrollTo({top:0,left:0,behavior:'auto'});
-    modal.scrollTop=0;
-    modalBody.scrollTop=0;
+    const screen=showSharedCombatResolutionScreen({
+      title:`Resolve ${attackLabel} Attack`,attackerName:playerName(stage.playerOperativeId),defenderName:npoName(target),
+      attackType,weaponName:weapon.name,defenseLabel:`${Math.max(0,3-profile.ap)} dice · ${target.save}+`,
+      cancelId:'cancelPendingAttack',continueId:'continuePendingAttack'
+    });
 
     $('#cancelPendingAttack').onclick=()=>{
       stage[`${attackType}CombatDraft`]=null;
@@ -2483,7 +2514,7 @@ function showPlayerActivation(stage={}){
     }
 
     const diceDraft={attackDice:[],defenseDice:[],attackerWithinTwo};
-    runAutomaticCombatRolls({container:$('#automaticPlayerCombat'),profile,defenseSave:target.save,onComplete:(attackDice,defenseDice)=>{
+    runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,onComplete:(attackDice,defenseDice)=>{
       diceDraft.attackDice=attackDice;
       diceDraft.defenseDice=defenseDice;
       previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft,{targetId,weaponIndex});
@@ -2545,22 +2576,12 @@ function showPlayerActivation(stage={}){
   }
 
   function displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,animate){
-    $('#automaticPlayerCombat')?.replaceChildren();
-    $('#combatResults').innerHTML=`${renderCombatResolution(result,{pending:true,animate})}<p class="muted">This result has been recorded. Wounds will be applied exactly once when you Continue.</p>`;
-
-    const button=$('#continuePendingAttack');
-    button.textContent='Continue';
-    let visualComplete=!animate;
-    button.disabled=!visualComplete||stage[`${attackType}CombatDraft`]!==result;
-    button.onclick=()=>{
-      if(!visualComplete||stage[`${attackType}CombatDraft`]!==result)return;
-      onResolved(result);
-    };
-    $$('.combat-outcome-fields input').forEach(input=>input.disabled=true);
-    $$('[data-retain-die]').forEach(die=>die.disabled=true);
-    if(animate)settleCombatDice(result,()=>{
-      visualComplete=true;
-      if(button.isConnected&&stage[`${attackType}CombatDraft`]===result)button.disabled=false;
+    displaySharedCombatResult(result,{
+      pending:true,animate,
+      message:'This result has been recorded. Wounds will be applied exactly once when you Continue.',
+      onContinue:()=>{
+        if(stage[`${attackType}CombatDraft`]===result)onResolved(result);
+      }
     });
   }
 
@@ -3020,107 +3041,83 @@ function showPlayerActivation(stage={}){
     if(!target){showToast('Select the targeted Player operative first.');if(onCancel)onCancel();return;}
     const attackType=state.lastActivation?.action?.includes('Fight')?'melee':'shoot';
     const availableProfiles=npoAttackProfiles(n,attackType);
-    const selectedProfile=canonicalAttackProfile(availableProfiles[0]);
-    const profileControl=availableProfiles.length>1?`<div class="field"><label>NPO Weapon Profile</label><select id="npoCombatProfile">${availableProfiles.map((profile,index)=>`<option value="${index}">${escapeHtml(canonicalAttackProfile(profile).name)}</option>`).join('')}</select></div>`:'';
     const saved=state.lastActivation?.combatDraft;
     const sameCombat=saved&&saved.targetId===target.id&&saved.attackType===attackType;
-    if(!sameCombat){
-      state.lastActivation={...state.lastActivation,dice:attackDice.map(d=>({...d})),targetConfirmed:true};
+    const initialProfile=sameCombat?saved.profile:canonicalAttackProfile(availableProfiles[0]);
+    const profileControl=!sameCombat&&availableProfiles.length>1
+      ? `<div class="field compact-combat-choice"><label>NPO Weapon Profile</label><select id="npoCombatProfile">${availableProfiles.map((profile,index)=>`<option value="${index}">${escapeHtml(canonicalAttackProfile(profile).name)}</option>`).join('')}</select></div>`
+      : '';
+    const screen=showSharedCombatResolutionScreen({
+      title:'Resolve Combat',attackerName:npoName(n),defenderName:target.name,attackType,
+      weaponName:initialProfile.name,defenseLabel:`3 dice · ${target.save||3}+`,
+      cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',extraHtml:profileControl,
+      detailsHtml:`${npoCombatGuidanceHtml(n)}<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`
+    });
+    const cancel=()=>{
+      if(combatTimer)combatTimer();
+      if(!sameCombat)state.lastActivation={...state.lastActivation,combatDraft:null};
       save();
-      showModal('Resolve Combat',`
-        <div class="damage-summary combat-participants">
-          <div><small>Attacker</small><strong>${escapeHtml(npoName(n))}</strong></div>
-          <div><small>Defender</small><strong>${escapeHtml(target.name)}</strong></div>
-          <div><small>Attack type</small><strong>${attackType==='shoot'?'Shooting':'Melee'}</strong></div>
-          <div><small>Save</small><strong>${target.save||3}+</strong></div>
-        </div>
-        ${npoCombatGuidanceHtml(n)}${profileControl}<section class="defense-profile attack-profile"><p class="eyebrow">NPO WEAPON PROFILE</p><div class="defense-profile-grid"><div><small>Weapon</small><strong id="npoProfileName">${escapeHtml(selectedProfile.name)}</strong></div><div><small>Attack Dice</small><strong id="npoProfileDice">${selectedProfile.dice}</strong></div><div><small>Hit On</small><strong id="npoProfileHit">${selectedProfile.hit}+</strong></div><div><small>Damage</small><strong id="npoProfileDamage">${selectedProfile.normal}/${selectedProfile.crit}</strong></div></div></section>
-        <div id="npoCombatRules">${weaponRulesHtml(selectedProfile)}</div>
-        <div id="npoAutomaticCombat" class="combat-results" aria-live="polite"></div>
-        <div class="wizard-actions"><button class="btn ghost" id="cancelNpoAttack">Cancel</button><button class="btn primary" id="completeNpoCombat" disabled>Rolling…</button></div>`);
-      let combatTimer=null;
-      let resolutionCommitted=false;
-      const finishAutomaticCombat=(profile,rolledAttackDice,rolledDefenseDice)=>{
-        const resolution=resolveRetainedCombat(rolledAttackDice,rolledDefenseDice,profile);
-        const combat={
-          ...recordedCombat({attackerName:npoName(n),defenderName:target.name,attackType,attackerSide:'npo',defenderSide:'player',profile,before:target.wounds||10,
-            normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical,damage:resolution.damage}),
-          attackDice:rolledAttackDice,saveDice:rolledDefenseDice,
-          retainedSaves:retainedDiceTotals(rolledDefenseDice).normal+retainedDiceTotals(rolledDefenseDice).critical,
-          recordedOutcome:false,targetId:target.id,targetName:target.name
-        };
-        state.lastActivation={...state.lastActivation,combatDraft:combat};
-        save();
-        const banishmentTriggered=dimensionalBanishmentRequired(combat);
-        $('#npoAutomaticCombat').innerHTML=`${renderCombatResolution(combat,{animate:false})}${banishmentTriggered?`<div id="dimensionalBanishmentField">${dimensionalBanishmentField(profile)}</div>`:''}`;
-        if(banishmentTriggered)bindSpinners($('#dimensionalBanishmentField'));
-        const complete=$('#completeNpoCombat');
-        complete.disabled=false;
-        complete.textContent=combat.damage>0?'Apply Damage & Complete Activation':'Complete Activation';
-        complete.onclick=()=>{
-          if(resolutionCommitted)return;
-          resolutionCommitted=true;
-          complete.disabled=true;
-          const resolvedCombat=banishmentTriggered?applyDimensionalBanishment(combat,num('dimensionalBanishmentRoll')):combat;
-          state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat};
-          save();
-          const summary={...resolvedCombat,side:'player'};
-          applyNpoAttackDamage(n,target,summary);
-          if(onDone)onDone(summary);
-        };
-      };
-      const startAutomaticCombat=()=>{
-        if(combatTimer)combatTimer();
-        const profile=canonicalAttackProfile(availableProfiles[Number($('#npoCombatProfile')?.value)||0]);
-        const result=$('#npoAutomaticCombat');
-        $('#completeNpoCombat').disabled=true;
-        $('#completeNpoCombat').textContent='Rolling…';
-        combatTimer=runAutomaticCombatRolls({container:result,profile,defenseSave:target.save,onComplete:(rolledAttackDice,rolledDefenseDice)=>{
-          combatTimer=null;
-          finishAutomaticCombat(profile,rolledAttackDice,rolledDefenseDice);
-        }});
-      };
-      $('#npoCombatProfile')?.addEventListener('change',()=>{
-        const profile=canonicalAttackProfile(availableProfiles[Number($('#npoCombatProfile').value)||0]);
-        $('#npoProfileName').textContent=profile.name;
-        $('#npoProfileDice').textContent=profile.dice;
-        $('#npoProfileHit').textContent=`${profile.hit}+`;
-        $('#npoProfileDamage').textContent=`${profile.normal}/${profile.crit}`;
-        $('#npoCombatRules').innerHTML=weaponRulesHtml(profile);
-        state.lastActivation.combatDraft=null;
-        startAutomaticCombat();
-      });
-      $('#cancelNpoAttack').onclick=()=>{
-        if(combatTimer)combatTimer();
-        state.lastActivation={...state.lastActivation,combatDraft:null};
-        save();
-        if(onCancel)onCancel();
-      };
-      startAutomaticCombat();
-      return;
-    }
-    const combat=saved;
-    const banishmentRequired=dimensionalBanishmentRequired(combat);
-    showModal('Resolve Combat',`
-      ${renderCombatResolution(combat,{animate:animateCombat})}
-      ${banishmentRequired?`<div id="dimensionalBanishmentField">${dimensionalBanishmentField(combat.profile)}</div>`:''}
-      <p class="muted">Damage is applied when this NPO activation is completed.</p>
-      <div class="wizard-actions"><button class="btn ghost" id="cancelNpoAttack">Cancel</button><button class="btn primary" id="completeNpoCombat">${combat.damage>0?'Apply Damage & Complete Activation':'Complete Activation'}</button></div>`);
-    if(banishmentRequired)bindSpinners($('#dimensionalBanishmentField'));
-    $('#cancelNpoAttack').onclick=()=>{save();if(onCancel)onCancel();};
+      if(onCancel)onCancel();
+    };
+    $('#cancelNpoAttack').onclick=cancel;
+
+    let combatTimer=null;
     let resolutionCommitted=false;
-    $('#completeNpoCombat').onclick=()=>{
+    const commitCombat=(combat)=>{
       if(resolutionCommitted)return;
       resolutionCommitted=true;
-      $('#completeNpoCombat').disabled=true;
-      const resolvedCombat=banishmentRequired?applyDimensionalBanishment(combat,num('dimensionalBanishmentRoll')):combat;
+      const complete=$('#completeNpoCombat');
+      complete.disabled=true;
+      const resolvedCombat=dimensionalBanishmentRequired(combat)?applyDimensionalBanishment(combat,num('dimensionalBanishmentRoll')):combat;
       state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat};
       save();
       const summary={...resolvedCombat,side:'player'};
       applyNpoAttackDamage(n,target,summary);
       if(onDone)onDone(summary);
     };
-    if(animateCombat)settleCombatDice(combat);
+    const displayCombat=(combat,animate=false)=>{
+      const banishmentRequired=dimensionalBanishmentRequired(combat);
+      displaySharedCombatResult(combat,{
+        animate,
+        message:'Damage is applied exactly once when you Continue.',
+        extraHtml:banishmentRequired?`<div id="dimensionalBanishmentField">${dimensionalBanishmentField(combat.profile)}</div>`:'',
+        onContinue:()=>commitCombat(combat)
+      });
+      if(banishmentRequired)bindSpinners($('#dimensionalBanishmentField'));
+    };
+    const finishAutomaticCombat=(profile,rolledAttackDice,rolledDefenseDice)=>{
+      const resolution=resolveRetainedCombat(rolledAttackDice,rolledDefenseDice,profile);
+      const combat={
+        ...recordedCombat({attackerName:npoName(n),defenderName:target.name,attackType,attackerSide:'npo',defenderSide:'player',profile,before:target.wounds||10,
+          normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical,damage:resolution.damage}),
+        attackDice:rolledAttackDice,saveDice:rolledDefenseDice,
+        retainedSaves:retainedDiceTotals(rolledDefenseDice).normal+retainedDiceTotals(rolledDefenseDice).critical,
+        recordedOutcome:false,targetId:target.id,targetName:target.name
+      };
+      state.lastActivation={...state.lastActivation,combatDraft:combat};
+      save();
+      displayCombat(combat,false);
+    };
+    const startAutomaticCombat=()=>{
+      if(combatTimer)combatTimer();
+      const profile=canonicalAttackProfile(availableProfiles[Number($('#npoCombatProfile')?.value)||0]);
+      const weapon=$('.compact-combat-profile div:nth-child(4) strong');
+      if(weapon)weapon.textContent=profile.name;
+      const rules=$('#npoCombatRules');
+      if(rules)rules.innerHTML=weaponRulesHtml(profile);
+      $('#combatResults').replaceChildren();
+      $('#completeNpoCombat').disabled=true;
+      $('#completeNpoCombat').textContent='Rolling…';
+      state.lastActivation={...state.lastActivation,dice:attackDice.map(d=>({...d})),targetConfirmed:true,combatDraft:null};
+      save();
+      combatTimer=runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,onComplete:(rolledAttackDice,rolledDefenseDice)=>{
+        combatTimer=null;
+        finishAutomaticCombat(profile,rolledAttackDice,rolledDefenseDice);
+      }});
+    };
+    $('#npoCombatProfile')?.addEventListener('change',startAutomaticCombat);
+    if(sameCombat)displayCombat(saved,animateCombat);
+    else startAutomaticCombat();
   }
 
   function spinnerField(id,label,value,min,max){return `<div class="field spinner-field"><label>${label}</label><div class="spinner"><input id="${id}" type="number" value="${value}" min="${min}" max="${max}" inputmode="numeric"><button type="button" data-spin="${id}" data-delta="-1" aria-label="Decrease ${label}">−</button><button type="button" data-spin="${id}" data-delta="1" aria-label="Increase ${label}">+</button></div></div>`;}
