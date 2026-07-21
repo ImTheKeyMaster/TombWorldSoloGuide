@@ -115,13 +115,13 @@ PDF page 5, “NPO Datacards,” 2D6 NPO table and “use the next row” substi
 `generateRoster()` in `app.js`, especially its 11-element `table`.
 
 **Review:**
-The conclusion that verification was impossible is obsolete: the official table is present. The app distinguishes four broad types but does not retain the PDF's required ranged-weapon variant for Warriors, Macrocytes, and Tomb Crawlers. The code's total-12 fallback to Warrior also does not model “next row” substitution when a required miniature is unavailable. Exact row probabilities should be transcribed from the table rather than inferred from type names alone.
+The conclusion that verification was impossible is obsolete: the official table is present. It assigns 2–3 to a Canoptek Scarab Swarm, 4–6 to a Canoptek Macrocyte with one ranged weapon, 7–9 to a Necron Warrior with one ranged weapon, 10–11 to a Canoptek Tomb Crawler with twin gauss reapers, and 12 to a Canoptek Tomb Crawler with a transdimensional isolator. `generateRoster()` instead returns a Warrior on totals 5, 6, and 12, so those are base-table NPO type errors; total 12 is not a fallback. The code also collapses the printed weapon variants. The PDF's separate “use the next row” instruction applies only when the required miniature is unavailable and does not excuse any of these base mappings.
 
 **Corrected conclusion:**
-The table is now verifiable and the app's generated result lacks required weapon-variant identity; this is a High compliance issue. The original “unverifiable” classification was too weak.
+The starting table is materially non-compliant: totals 5 and 6 generate a Warrior instead of a Macrocyte, total 12 generates a Warrior instead of a Tomb Crawler, and all weapon-option identity is lost. This is a High compliance issue that changes generated rosters.
 
 **Recommended action:**
-Encode every printed 2D6 row and its weapon option, plus the printed unavailable-miniature substitution.
+Correct the base 2D6 mapping to the five printed rows, retain each printed weapon option, and treat the unavailable-miniature “next row” substitution as a separate tabletop contingency.
 
 ### SET-06 — Mission setup precision and map geometry
 
@@ -989,10 +989,10 @@ PDF page 3, “NPO Reinforcements”; PDF page 5, shared NPO 2D6 table.
 `startTurningPoint()`, `randomReinforcement()`, and `generateRoster()` in `app.js`.
 
 **Review:**
-The pack directly confirms exactly Grade reinforcements after the first turning point, after events, and directs use of the same page-5 NPO table. Thus quantity is correct, but code order is wrong and `randomReinforcement()` cannot legitimately use a different mapping from setup. Both paths also lose printed weapon variants.
+The pack directly confirms exactly Grade reinforcements after the first turning point, after events, and directs use of the same page-5 NPO table. Quantity is correct, but code order is wrong. Against the printed rows, `randomReinforcement()` incorrectly returns a Scarab on total 4 instead of a Macrocyte and a Warrior on total 10 instead of a Tomb Crawler; it also loses every printed weapon option. Separately, `generateRoster()` is wrong on totals 5, 6, and 12 as detailed in SET-05. The two code mappings therefore disagree with each other and neither fully matches the official table.
 
 **Corrected conclusion:**
-High defect for order/table identity; original suspicion that Grade quantity itself was wrong is incorrect.
+High defect for event/reinforcement order and 2D6 result mapping; the Grade-based quantity itself is compliant.
 
 **Recommended action:**
 Use one authoritative page-5 result table for setup and reinforcements, preserving weapon variants, after event resolution.
@@ -1529,7 +1529,7 @@ Only Confirmed and Partially Confirmed compliance issues appear below. Incorrect
 - **High — ACT-03, premature activation commitment** — confirmed from the original audit.
 - **High — ACT-05 and NPO-01 through NPO-04, printed NPO selection/behavior/targets** — confirmed/corrected from the original audit using PDF pages 3–7.
 - **High — COM-02 and COM-04, printed NPO weapons/rules and distinct profiles** — confirmed/corrected from the original audit; player/Core portions are excluded.
-- **High — REI-01, one official generation table and event-before-reinforcement order** — corrected from the original audit; Grade quantity is not defective.
+- **High — SET-05 and REI-01, incorrect starting/reinforcement 2D6 rows and event-before-reinforcement order** — corrected from the original audit; fix starting totals 5, 6, and 12 and reinforcement totals 4 and 10 while preserving the compliant Grade quantity.
 - **High — REI-02, Mission 5 room generation** — confirmed from the original audit.
 - **High — MIS-03, mission-specific state rather than scalar tracking** — confirmed from the original audit.
 - **High — DAT-02 and DAT-03, incomplete official NPO/event datasets** — corrected from the original audit now that the PDF is available.
@@ -1540,7 +1540,7 @@ Only Confirmed and Partially Confirmed compliance issues appear below. Incorrect
 ### Priority 2: Medium
 
 - **Medium — SET-03, enforce supported solo roster legality** — corrected from the original audit; co-op scope is excluded.
-- **Medium — SET-05/SET-06, exact generation rows and setup prompts/maps** — corrected from the original audit now that the PDF is valid.
+- **Medium — SET-06, mission setup prompts/maps** — corrected from the original audit now that the PDF is valid; SET-05's outcome-changing table errors are Priority 1.
 - **Medium — STR-04, automatic player initiative at Threat 0** — corrected from the original audit; generic tie/reroll claims are excluded.
 - **Medium — STR-05 and newly identified initial 2CP/four equipment delegation** — corrected/newly discovered during this review.
 - **Medium — EVT-05/EVT-06, accurate summaries and draw-without-replacement lifecycle** — corrected from the original audit.
