@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.5.3';
+  const APP_VERSION = '5.6.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -299,11 +299,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], playerWounds:{}, reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blocked:0},
     gradeMilestone:null, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0,
     npoAttackTargetId:null,
-    npoAttackSummary:null, combatState:null, missionState:null, eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[]}, gameEnd:null
+    npoAttackSummary:null, combatState:null, missionState:null, startingNpoGeneration:null, eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[]}, gameEnd:null
   });
 
   let state = normalizeState(load() || initialState());
   let lastRenderedStepKey = null;
+  let startingNpoTimer = null;
   let threatAdjustOpen = false;
   let expandedRosterCategories = null;
   function autoSelectRequiredPlayerOperatives(){
@@ -424,6 +425,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       : null;
     merged.playerRoster=Array.isArray(raw?.playerRoster)?raw.playerRoster:[];
     merged.setupChecks=raw?.setupChecks&&!Array.isArray(raw.setupChecks)&&typeof raw.setupChecks==='object'?{...raw.setupChecks}:{};
+    merged.startingNpoGeneration=isRecord(raw?.startingNpoGeneration)
+      ? {...raw.startingNpoGeneration,dice:Array.isArray(raw.startingNpoGeneration.dice)?raw.startingNpoGeneration.dice.map(value=>boundedInteger(value,1,3,1)):[]}
+      : null;
     merged.playerTeamId=raw?.playerTeamId||'';
     if(isRecord(raw.strategyData)){
       const legacyEvent=raw.strategyData.event;
@@ -685,16 +689,42 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
   function escapeHtml(s){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 
-  function generateRoster(){
-    const m=mission(); let count=0, formula='0';
-    if(missionSetup(m)==='2D3+3'){ const a=rollD3(),b=rollD3(); count=a+b+3; formula=`${a} + ${b} + 3 = ${count}`; }
-    if(missionSetup(m)==='D3+6'){ const a=rollD3(); count=a+6; formula=`${a} + 6 = ${count}`; }
+  function startingNpoRoll(){
+    const formula=missionSetup(), dice=formula==='2D3+3'?[rollD3(),rollD3()]:formula==='D3+6'?[rollD3()]:[];
+    const missionRoll=formula==='2D3+3'?dice[0]+dice[1]+3:formula==='D3+6'?dice[0]+6:0;
+    const calculation=formula==='2D3+3'?`${dice[0]} + ${dice[1]} + 3 = ${missionRoll}`:formula==='D3+6'?`${dice[0]} + 6 = ${missionRoll}`:'0';
+    return {dice,missionRoll,deploymentCount:Math.min(missionRoll,MAX_NPOS),availableNpos:MAX_NPOS,calculation,animationShown:false,navigationComplete:false};
+  }
+
+  function restoredStartingNpoGeneration(){
+    const missionRoll=state.roster.length, formula=missionSetup();
+    const d3Total=missionRoll-3;
+    const dice=formula==='2D3+3'?[Math.max(1,d3Total-3),Math.min(3,d3Total-1)]:formula==='D3+6'?[Math.max(1,Math.min(3,missionRoll-6))]:[];
+    const calculation=formula==='2D3+3'?`${dice[0]} + ${dice[1]} + 3 = ${missionRoll}`:formula==='D3+6'?`${dice[0]} + 6 = ${missionRoll}`:'0';
+    return {dice,missionRoll,deploymentCount:Math.min(missionRoll,MAX_NPOS),availableNpos:MAX_NPOS,calculation,animationShown:true,navigationComplete:false};
+  }
+
+  function generateRoster(generation){
+    const m=mission(),count=generation.deploymentCount,formula=generation.calculation;
     state.roster=[];
     for(let i=0;i<count;i++){
       const result=rollNpo();
       state.roster.push(createNpo(result.type,`${result.type} ${i+1}`,{weaponId:result.weaponId,ready:false,deployed:false}));
     }
     state.newIds=[]; log(`${m.name}: generated ${count} starting NPOs (${formula}).`); return {count,formula};
+  }
+
+  function ensureStartingNpoGeneration(){
+    if(state.startingNpoGeneration)return false;
+    if(state.roster.length){
+      state.startingNpoGeneration=restoredStartingNpoGeneration();
+      save();
+      return false;
+    }
+    state.startingNpoGeneration=startingNpoRoll();
+    generateRoster(state.startingNpoGeneration);
+    save();
+    return true;
   }
 
   function render(){
@@ -859,7 +889,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     killzone:{title:'Build the Killzone',subtitle:'Follow the board checklist before deploying models.'},
     team:{title:'Choose Player Kill Team',subtitle:'Select the player-controlled Kill Team for this battle.'},
     playerRoster:{title:'Build Player Roster',subtitle:'Choose the operatives you will use in this battle.'},
-    npoRoster:{title:'Generate NPO Roster',subtitle:'The Guide uses the mission’s required starting formula.'},
+    npoRoster:{title:'Starting NPO Generation',subtitle:'Mission starting roll.'},
     deploy:{title:'Deploy Kill Teams',subtitle:'Place both forces on the battlefield and confirm deployment.'},
     ready:{title:'Ready to Begin',subtitle:'Review the mission, then begin Turning Point 1.'}
   };
@@ -881,10 +911,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       autoSelectRequiredPlayerOperatives();
       save();
     }
-    if(stepId==='npoRoster'&&!state.roster.length){
-      generateRoster();
-      save();
-    }
+    if(stepId==='npoRoster')ensureStartingNpoGeneration();
     const details=setupStepDefinitions[stepId];
     app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>${details.title}</h2><p>${details.subtitle}</p></div><div class="step-count">${state.setupStep+1} / ${steps.length}</div></div><div class="progress-bar"><span style="width:${((state.setupStep+1)/steps.length)*100}%"></span></div><section class="wizard-card">${setupContent(stepId)}</section></div>`;
     bindSetup(stepId);
@@ -975,12 +1002,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><p class="muted">Build a legal kill team using its current official rules. The Guide tracks selected operatives but does not validate every team-building restriction. Cooperative team splitting is not currently supported.</p><div class="setup-bulk-row"><button class="btn secondary" id="randomPlayerTeam">Random Team</button></div><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
     }
     if(stepId==='npoRoster'){
-      const m=mission();
-      const noStartingNpos=missionSetup(m)==='0';
-      const rosterContent=state.roster.length
-        ? `<div class="summary-box"><strong>${state.roster.length} NPOs generated automatically</strong><br>${rosterBreakdown()}</div><div class="player-roster-grid npo-setup-grid">${state.roster.map(n=>npoRosterCard(n,false)).join('')}</div>`
-        : `<div class="no-npo-message"><strong>The battle begins with no deployed NPOs.</strong><span>The first NPOs will enter play through the mission's reinforcement rules.</span></div>`;
-      return `<h3>Mission starting roster</h3><p>${m.name} begins with <strong>${missionSetup(m)}</strong> NPOs.</p>${rosterContent}<div class="wizard-actions ${noStartingNpos?'two-actions':''}"><button class="btn ghost" id="setupBack">Back</button>${noStartingNpos?'':`<button class="btn secondary" id="generateBtn">Regenerate Roster</button>`}<button class="btn primary" id="setupNext" ${state.roster.length||noStartingNpos?'':'disabled'}>Continue</button></div>`;
+      const generation=state.startingNpoGeneration;
+      const limited=generation.missionRoll>generation.availableNpos;
+      const dice=generation.dice.map(value=>dieHtml({value,kind:'hit'})).join('');
+      return `<div class="starting-npo-event" id="startingNpoEvent" tabindex="0" role="status" aria-live="polite"><small>MISSION ROLL</small><div class="dice-row ${generation.animationShown?'settled':'animated-roll'}" id="startingNpoDice">${generation.animationShown?dice:generation.dice.map(()=>rollingDieHtml()).join('')}</div><div class="starting-npo-result" id="startingNpoResult" ${generation.animationShown?'':'hidden'}><strong>${generation.missionRoll} Starting NPOs</strong><span>${generation.calculation} Starting NPOs</span>${limited?`<p>Only ${generation.availableNpos} NPOs are available.</p><b>Deploy all ${generation.deploymentCount} available NPOs.</b>`:`<b>Deploy ${generation.deploymentCount} NPOs.</b>`}</div></div>`;
     }
     if(stepId==='deploy'){
       const placementChecks=missionSetupChecks('deploy');
@@ -996,7 +1021,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function bindSetup(stepId){
-    $$('.mission-choice').forEach(b=>b.onclick=()=>{state.missionId=b.dataset.mission;state.missionState=freshMissionState(mission());state.tracker=0;state.setupChecks={};state.roster=[];save();render();});
+    $$('.mission-choice').forEach(b=>b.onclick=()=>{state.missionId=b.dataset.mission;state.missionState=freshMissionState(mission());state.tracker=0;state.setupChecks={};state.roster=[];state.startingNpoGeneration=null;save();render();});
     $('#setupHome')?.addEventListener('click',()=>{state.screen='home';save();render();});
     $('#setupBack')?.addEventListener('click',()=>{state.setupStep=Math.max(0,state.setupStep-1);save();render();});
     $('#setupNext')?.addEventListener('click',()=>{const steps=activeSetupSteps();state.setupStep=Math.min(steps.length-1,state.setupStep+1);save();render();});
@@ -1014,7 +1039,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $$('[data-check]').forEach(c=>c.onchange=()=>{state.setupChecks[c.dataset.check]=c.checked;save();render();});
     $('#checkAllSetup')?.addEventListener('click',()=>{missionSetupChecks('killzone').forEach(check=>{state.setupChecks[check.id]=true;});save();render();});
     $('#randomPlayerTeam')?.addEventListener('click',()=>{randomPlayerRoster();save();render();});
-    $('#generateBtn')?.addEventListener('click',()=>{generateRoster();clearMissionSetupChecks('deploy');save();render();});
+    if(stepId==='npoRoster')runStartingNpoGeneration();
     $('#npoDeployed')?.addEventListener('change',e=>{state.roster.forEach(n=>n.deployed=e.target.checked);save();render();});
     $('#checkAllDeployment')?.addEventListener('click',()=>{
       $$('.checklist input[type="checkbox"]:not(:disabled)').forEach(checkbox=>{
@@ -1048,6 +1073,45 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       state.screen='game';state.tab='play';state.turningPoint=0;state.phase='between';state.nextSide='player';state.playerCount=(state.playerRoster||[]).length;state.playerReady=state.playerCount;
       if(!state.playerWounds||Object.keys(state.playerWounds).length===0)initializePlayerWounds();
       state.roster.forEach(n=>n.ready=false);log(`Mission started: ${mission().name}.`);startTurningPoint();
+    });
+  }
+
+  function runStartingNpoGeneration(){
+    if(typeof startingNpoTimer==='function')startingNpoTimer();
+    else clearTimeout(startingNpoTimer);
+    startingNpoTimer=null;
+    const event=$('#startingNpoEvent'),generation=state.startingNpoGeneration;
+    if(!event||!generation||generation.navigationComplete)return;
+    const advance=()=>{
+      if(generation.navigationComplete||!event.isConnected)return;
+      generation.navigationComplete=true;
+      const steps=activeSetupSteps();
+      state.setupStep=Math.min(steps.length-1,state.setupStep+1);
+      save();
+      render();
+    };
+    const showResult=()=>{
+      const result=$('#startingNpoResult');
+      if(!result)return;
+      result.hidden=false;
+      event.onclick=advance;
+      event.onkeydown=input=>{if(input.key==='Enter'||input.key===' '){input.preventDefault();advance();}};
+      startingNpoTimer=setTimeout(advance,1400);
+    };
+    if(generation.animationShown){
+      event.onclick=advance;
+      event.onkeydown=input=>{if(input.key==='Enter'||input.key===' '){input.preventDefault();advance();}};
+      startingNpoTimer=setTimeout(advance,900);
+      return;
+    }
+    generation.animationShown=true;
+    save();
+    startingNpoTimer=settleAnimatedDice([{
+      row:$('#startingNpoDice'),
+      dice:generation.dice.map(value=>({value,kind:'hit'}))
+    }],()=>{
+      startingNpoTimer=null;
+      showResult();
     });
   }
 
