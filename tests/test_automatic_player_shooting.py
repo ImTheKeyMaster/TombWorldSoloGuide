@@ -18,7 +18,8 @@ class AutomaticPlayerShootingTests(unittest.TestCase):
         shared = self.source('function runAutomaticCombatRolls', 'function retainedDiceTotals')
         self.assertIn('runAutomaticCombatRolls', player)
         self.assertIn('runAutomaticCombatRolls', npo)
-        self.assertEqual(shared.count('timer=setTimeout'), 2)
+        self.assertEqual(shared.count('timer=setTimeout'), 1)
+        self.assertIn('timer=settleCombatDice', shared)
         self.assertLess(shared.index('ATTACK DICE'), shared.index('DEFENSE DICE'))
 
     def test_shooting_calculates_and_persists_one_read_only_result(self):
@@ -48,8 +49,10 @@ class AutomaticPlayerShootingTests(unittest.TestCase):
         self.assertIn('let visualComplete=!animate', display)
         self.assertIn('button.disabled=!visualComplete||', display)
         self.assertIn('if(!visualComplete||', display)
-        self.assertIn('if(animate)settleCombatDice(result,()=>', display)
-        self.assertLess(display.index('settleCombatDice(result,()=>'), display.index('button.disabled=false'))
+        shared = self.source('function runAutomaticCombatRolls', 'function retainedDiceTotals')
+        preview = self.source('function previewPendingPlayerAttack', 'function displayPendingPlayerCombat')
+        self.assertLess(shared.index('timer=settleCombatDice'), shared.index('onComplete(attackDice,defenseDice)'))
+        self.assertIn('displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,false)', preview)
 
 if __name__ == '__main__':
     unittest.main()

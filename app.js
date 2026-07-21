@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.4.0';
+  const APP_VERSION = '5.4.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -2073,14 +2073,18 @@ function showPlayerActivation(stage={}){
     </section>`;
   }
 
-  function settleCombatDice(combat,onSettled=()=>{}){
-    setTimeout(()=>{
-      const attack=$('[data-combat-attack-dice]');
+  function settleCombatDice(combat,onSettled=()=>{},root=document){
+    const timer=setTimeout(()=>{
+      const attack=$('[data-combat-attack-dice]',root);
       if(attack){attack.innerHTML=combat.attackDice.map(dieHtml).join('');attack.classList.replace('animated-roll','settled');}
-      const saves=$('[data-combat-save-dice]');
-      if(saves&&combat.saveDice.length){saves.innerHTML=combat.saveDice.map(dieHtml).join('');saves.classList.replace('animated-roll','settled');}
+      const saves=$('[data-combat-save-dice]',root);
+      if(saves){
+        if(combat.saveDice.length)saves.innerHTML=combat.saveDice.map(dieHtml).join('');
+        saves.classList.replace('animated-roll','settled');
+      }
       onSettled();
     },700);
+    return ()=>clearTimeout(timer);
   }
 
   function projectedNpoWounds(npoId,stage){
@@ -2291,11 +2295,11 @@ function showPlayerActivation(stage={}){
     timer=setTimeout(()=>{
       if(!container.isConnected)return;
       const defenseDice=retainSuccessfulDice(rolledCombatDice(Math.max(0,3-profile.ap),Number(defenseSave)||3));
-      container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row settled">${attackDice.map(dieHtml).join('')}</div></section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row animated-roll">${defenseDice.length?defenseDice.map(()=>rollingDieHtml()).join(''):'<span class="muted">No defense dice rolled</span>'}</div></section>`;
-      timer=setTimeout(()=>{
+      container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row settled" data-combat-attack-dice>${attackDice.map(dieHtml).join('')}</div></section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row animated-roll" data-combat-save-dice>${defenseDice.length?defenseDice.map(()=>rollingDieHtml()).join(''):'<span class="muted">No defense dice rolled</span>'}</div></section>`;
+      timer=settleCombatDice({attackDice,saveDice:defenseDice},()=>{
         timer=null;
         if(container.isConnected)onComplete(attackDice,defenseDice);
-      },700);
+      },container);
     },700);
     return ()=>{if(timer)clearTimeout(timer);};
   }
@@ -2537,7 +2541,7 @@ function showPlayerActivation(stage={}){
     stage[`${attackType}CombatDraft`]=result;
     state.combatState={side:'player',stage:{...stage}};
     save();
-    displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,true);
+    displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,false);
   }
 
   function displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,animate){
