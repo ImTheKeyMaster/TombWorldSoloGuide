@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v4.2.0
+# Tomb World Solo Guide v4.3.0
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -1075,3 +1075,13 @@ v3.0.7: Kasrkin roster choices updated.
 - Added persisted Dormant NPO state, Threat 0 Expended behavior, normal readiness restoration when Threat rises, and automatic Player initiative during Turning Point 1 and at Threat 0.
 - Clamped malformed imported Threat values and migrated legacy saves with the new Strategy and Dormant fields.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v4.2.0.
+
+
+## v4.3.0
+
+- Implemented Remediation Plan PR 4 with the official per-operative NPO behavior lists and first-legal-action question order.
+- Replaced heuristic activation and target selection with the Threat Principle and action-specific printed priorities while retaining manual tabletop geometry.
+- Staged NPO recommendations so exiting the guide consumes nothing; readiness, activation progress, history, and Threat commit only when the activation is completed.
+- Removed invented behavior labels from the NPO activation workflow and continued using the canonical NPO definitions introduced in v4.1.0.
+- Preserved the existing mobile activation dialogs and intentionally deferred combat, weapon, reinforcement, event, and mission-engine changes.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v4.3.0.

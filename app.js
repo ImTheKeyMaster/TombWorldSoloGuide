@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '4.2.0';
+  const APP_VERSION = '4.3.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -135,7 +135,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   let maps={};
 
   // Official NPO datacards, Tomb World Mission Pack pp. 6-7. Rules are data only;
-  // later remediation PRs will implement their behaviour and weapon effects.
+  // behavior below drives the activation guide; later remediation PRs implement weapon effects.
   const npoDefinitions = {
     'Canoptek Scarab Swarm': {
       name:'Canoptek Scarab Swarm',type:'Canoptek Scarab Swarm',move:6,apl:2,save:5,wounds:10,baseSize:40,
@@ -143,7 +143,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       rangedWeapons:[],
       meleeWeapons:[{id:'feeder-mandibles',name:'Feeder mandibles',type:'melee',attacks:5,hit:4,damage:{normal:1,critical:2},rules:[]}],
       abilities:[],
-      behavior:{summary:'Move towards the enemy to fight them, seeking cover on the way.',engageActions:['Fight','Charge'],actions:['Fight','Charge the closest player operative via the shortest possible route','Reposition towards the closest player operative, to cover if possible','Dash towards the closest player operative, to cover if possible'],operatesHatches:true}
+      behavior:{summary:'Move towards the enemy to fight them, seeking cover on the way.',actions:['Fight','Charge the closest player operative via the shortest possible route','Reposition towards the closest player operative, to cover if possible','Dash towards the closest player operative, to cover if possible'],operatesHatches:true}
     },
     'Necron Warrior': {
       name:'Necron Warrior',type:'Necron Warrior',move:5,apl:2,save:4,wounds:9,baseSize:32,
@@ -154,7 +154,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       ],
       meleeWeapons:[{id:'combat-attachment',name:'Combat attachment',type:'melee',attacks:3,hit:4,damage:{normal:3,critical:4},rules:[]}],
       abilities:[],
-      behavior:{summary:'Move to an ideal position to shoot the enemy, but fight if unable to do anything else.',engageActions:['Shoot','Fight'],actions:['Fall Back','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission','Fight'],operatesHatches:true}
+      behavior:{summary:'Move to an ideal position to shoot the enemy, but fight if unable to do anything else.',actions:['Fall Back','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission','Fight'],operatesHatches:true}
     },
     'Canoptek Tomb Crawler': {
       name:'Canoptek Tomb Crawler',type:'Canoptek Tomb Crawler',move:5,apl:2,save:3,wounds:21,baseSize:50,
@@ -172,7 +172,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         {id:'steadfast',name:'Steadfast',text:'When determining control of a marker, this operative can be treated as having APL 3. This takes precedence over all other APL changes.'},
         {id:'dimensional-banishment',name:'Dimensional Banishment',text:'After using this weapon, if damage was inflicted or any critical successes were retained and the target was not incapacitated, roll 2D6. If the result is higher than the target remaining wounds, it is incapacitated.'}
       ],
-      behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',engageActions:['Fight','Shoot'],actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use the sweeping twin gauss reapers profile when it would target more than one player operative.'}
+      behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use the sweeping twin gauss reapers profile when it would target more than one player operative.'}
     },
     'Canoptek Macrocyte': {
       name:'Canoptek Macrocyte',type:'Canoptek Macrocyte',move:7,apl:2,save:4,wounds:7,baseSize:28,
@@ -186,7 +186,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       ],
       meleeWeapons:[{id:'claws-and-tail',name:'Claws & tail',type:'melee',attacks:4,hit:4,damage:{normal:3,critical:4},rules:[]}],
       abilities:[{id:'aggressive-defence-construct',name:'Aggressive Defence Construct',text:'If incapacitated by a player operative within 2", roll one D3. On a 2+, inflict damage on that player operative equal to the result.'}],
-      behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',engageActions:['Fight','Shoot'],actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use the living lightning tesla caster profile when it would target more than one player operative and no NPOs.'}
+      behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use the living lightning tesla caster profile when it would target more than one player operative and no NPOs.'}
     }
   };
 
@@ -848,7 +848,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     setNextActivation(state.nextSide || state.initiative || 'player');
     if(state.phase==='end'){save();return nextStepCard();}
     if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>Player Activation</h2><p>Activate one Player operative on the tabletop. After it completes, the Guide will alternate to an NPO if one is ready.</p><button class="btn primary big-action" id="playerActivation">Activate an Operative</button></section>`;
-    if(state.nextSide==='npo' && readyNpos().length>0){const n=nextNpo();return `<section class="next-card npo-activation-card"><span class="phase">NPO ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">${escapeHtml(npoName(n))}</h2><p class="npo-activation-meta">${escapeHtml(n.behavior)} · ${n.wounds}/${n.maxWounds} wounds</p><button class="btn primary big-action" id="npoActivation">Activate NPO</button></section>`;}
+    if(state.nextSide==='npo' && readyNpos().length>0)return `<section class="next-card npo-activation-card"><span class="phase">NPO ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">NPO Activation</h2><p class="npo-activation-meta">Apply the Threat Principle to select the next ready NPO.</p><button class="btn primary big-action" id="npoActivation">Activate NPO</button></section>`;
     setNextActivation(state.nextSide==='player'?'npo':'player');
     save();
     return nextStepCard();
@@ -1107,7 +1107,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#rerollInitiative')?.addEventListener('click',()=>{rollInitiative();initiativeRolling=true;save();render();animateInitiativeResult();});
     $$('[data-init]').forEach(b=>b.onclick=()=>beginFirefight(b.dataset.init));
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
-    $('#npoActivation')?.addEventListener('click',showNpoWizard);
+    $('#npoActivation')?.addEventListener('click',showNpoSelection);
     $('#tracker')?.addEventListener('change',e=>{state.tracker=Math.max(0,Math.min(missionTrackerMax(),Number(e.target.value)||0));save();});
     $('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked;});
     $('#finishTp')?.addEventListener('click',()=>{
@@ -1276,8 +1276,16 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function randomReinforcement(){return rollNpo();}
-  function nextNpo(){ let n=state.roster.find(x=>x.id===state.activeNpoId&&x.ready&&x.wounds>0); if(!n){n=readyNpos().sort((a,b)=>priority(b)-priority(a))[0];state.activeNpoId=n?.id||null;} return n; }
-  function priority(n){return ({Guardian:4,Marksman:3,Brawler:2,Sentinel:1}[n.behavior]||1)+(n.wounds/n.maxWounds<.5?-.5:0);}
+  function nextNpo(){return state.roster.find(n=>n.id===state.activeNpoId&&n.ready&&n.wounds>0)||null;}
+
+  function showNpoSelection(){
+    const candidates=readyNpos();
+    if(candidates.length===1){state.activeNpoId=candidates[0].id;runNpoPrompt(candidates[0],0,{},[]);return;}
+    const options=candidates.map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(npoName(n))}</option>`).join('');
+    showModal('Select NPO to Activate',`<p>Use the Threat Principle in order. Select an NPO that:</p><ol><li>has an ability, or is a threat, to Shoot or Fight a Player operative;</li><li>is not in cover;</li><li>is closest to a Player operative.</li></ol><p class="muted">If more than one NPO is still tied, determine one at random on the tabletop.</p><div class="field"><label for="officialNpoSelection">Next ready NPO</label><select id="officialNpoSelection"><option value="">Select matching NPO</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Exit Guide</button><button class="btn primary" id="confirmNpoSelection" disabled>Continue</button></div>`);
+    $('#officialNpoSelection').onchange=()=>{$('#confirmNpoSelection').disabled=!$('#officialNpoSelection').value;};
+    $('#confirmNpoSelection').onclick=()=>{const n=candidates.find(item=>item.id===$('#officialNpoSelection').value);if(!n)return;state.activeNpoId=n.id;save();runNpoPrompt(n,0,{},[]);};
+  }
 
   function remainingPlayerOperatives(){
     const used=new Set(state.playerActivatedIds||[]);
@@ -1905,20 +1913,16 @@ function showPlayerActivation(stage={}){
     if(animate)settleCombatDice(result);
   }
 
-  const npoQuestions = [
-    {key:'engaged',title:'Is a Player operative in control range?',help:'Choose Yes when this NPO can immediately Fight a Player operative without moving.'},
-    {key:'charge',title:'Can this NPO complete a Charge?',help:'Choose Yes only when a legal Charge can finish within control range of a Player operative.'},
-    {key:'shot',title:'Does this NPO have a valid shooting target?',help:'The target must be valid for the NPO’s ranged weapon after any movement you expect it to make.'},
-    {key:'objective',title:'Is a Player operative controlling a mission objective?',help:'This gives mission denial priority over an otherwise equal target.'},
-    {key:'wounded',title:'Is a valid Player target wounded?',help:'A wounded target is below its starting wounds and can reasonably be attacked by this NPO.'},
-    {key:'hatch',title:'Does a closed hatch block the best route?',help:'Choose Yes when operating the hatch is the clearest way to advance toward a Player or objective.'},
-    {key:'cover',title:'Can the NPO remain in cover while acting?',help:'This affects whether the Guide recommends holding position, moving minimally, or advancing aggressively.'},
-    {key:'clustered',title:'Are multiple valid Player targets clustered together?',help:'This is used as a final target-priority tie breaker for pressure and board control.'}
-  ];
+  function npoBehavior(n){return npoDefinition(n.type)?.behavior;}
+
+  function npoActionQuestion(n,index){
+    const action=npoBehavior(n)?.actions[index];
+    if(!action)return null;
+    return {key:`action-${index}`,action,title:`Can this NPO ${action}?`,help:'Check movement, visibility, cover, control range, measurement, action points, order and all other tabletop restrictions. Choose Yes only if this printed action is legal now.'};
+  }
 
   const npoQuestionIcons = {
-    engaged:'radar',charge:'charge',shot:'crosshair',objective:'objective',
-    wounded:'wounded',hatch:'hatch',cover:'shield',clustered:'group'
+    Fight:'radar',Charge:'charge',Shoot:'crosshair','Fall Back':'charge',Reposition:'objective',Dash:'charge'
   };
 
   function npoIcon(type){
@@ -2200,39 +2204,18 @@ function showPlayerActivation(stage={}){
   }
 
   function renderCompletedNpoQuestions(history){
-    return history.map(item=>{const q=npoQuestions.find(question=>question.key===item.key);return q?`<div class="npo-question-complete npo-question-history">${npoIcon(npoQuestionIcons[q.key])}<span>${escapeHtml(q.title)}</span><strong>${item.answer?'Yes':'No'}</strong></div>`:'';}).join('');
+    return history.map(item=>`<div class="npo-question-complete npo-question-history">${npoIcon(npoQuestionIcons[item.action.split(' ')[0]])}<span>${escapeHtml(item.action)}</span><strong>${item.answer?'Yes':'No'}</strong></div>`).join('');
   }
 
   function renderActiveNpoQuestion(q){
     return `<section class="npo-question-active npo-question-card--active" aria-live="polite" aria-atomic="true">
-      ${npoIcon(npoQuestionIcons[q.key])}<h3>${escapeHtml(q.title)}</h3><p>${escapeHtml(q.help)}</p>
+      ${npoIcon(npoQuestionIcons[q.action.split(' ')[0]])}<h3>${escapeHtml(q.title)}</h3><p>${escapeHtml(q.help)}</p>
       <div class="ai-choice-grid"><button class="ai-choice no" data-answer="no"><strong>No</strong></button><button class="ai-choice yes" data-answer="yes"><strong>Yes</strong></button></div>
     </section>`;
   }
 
-  function showNpoWizard(){
-    const n=nextNpo(); if(!n)return;
-    runNpoPrompt(n,'engaged',{},[]);
-  }
-
-  function nextNpoQuestionKey(n,key,answers){
-    if(key==='engaged')return answers.engaged?'objective':'objective';
-    if(key==='objective')return answers.objective?'charge':'wounded';
-    if(key==='wounded')return answers.wounded?'charge':'clustered';
-    if(key==='clustered')return 'charge';
-    if(key==='charge'){
-      const decisiveCharge=answers.charge&&(n.behavior==='Brawler'||n.behavior==='Guardian'||answers.objective||answers.wounded);
-      if(answers.engaged||decisiveCharge)return null;
-      return 'shot';
-    }
-    if(key==='shot')return answers.shot?'cover':'hatch';
-    if(key==='hatch')return answers.hatch?null:'cover';
-    if(key==='cover')return null;
-    return null;
-  }
-
-  function runNpoPrompt(n,key,answers,history){
-    const q=npoQuestions.find(item=>item.key===key);
+  function runNpoPrompt(n,index,answers,history){
+    const q=npoActionQuestion(n,index);
     if(!q){resolveNpo(n,answers,history);return;}
     const priorTop=$('.npo-question-active',modal)?.getBoundingClientRect().top;
     modalBody.innerHTML=`<div class="modal-inner"><h2>NPO Activation: ${escapeHtml(npoName(n))}</h2><div class="ai-wizard">
@@ -2248,47 +2231,22 @@ function showPlayerActivation(stage={}){
     $$('[data-answer]',modal).forEach(btn=>btn.onclick=()=>{
       const answer=btn.dataset.answer==='yes';
       const nextAnswers={...answers,[q.key]:answer};
-      const nextKey=nextNpoQuestionKey(n,key,nextAnswers);
-      const nextHistory=[...history,{key,answers,answer}];
-      if(nextKey)runNpoPrompt(n,nextKey,nextAnswers,nextHistory);
-      else resolveNpo(n,nextAnswers,nextHistory);
+      const action=npoBehavior(n).actions[index];
+      const nextHistory=[...history,{index,answers,answer,action}];
+      if(answer)resolveNpo(n,{...nextAnswers,action},nextHistory);
+      else runNpoPrompt(n,index+1,nextAnswers,nextHistory);
     });
     $('#aiBack')?.addEventListener('click',()=>{
       const previous=history[history.length-1];
-      if(previous)runNpoPrompt(n,previous.key,previous.answers,history.slice(0,-1));
+      if(previous)runNpoPrompt(n,previous.index,previous.answers,history.slice(0,-1));
     });
   }
 
   function chooseNpoDecision(n,c){
-    const path=[];
-    let action,target='closest valid Player operative',stance='Engage',threat=0,reason='Advance pressure toward the nearest relevant target.';
-    if(c.objective){target='Player operative controlling the mission objective';path.push('Mission objective is threatened');}
-    else if(c.wounded){target='wounded valid Player operative';path.push('A wounded target can be finished');}
-    else if(c.clustered){target='the Player target in the largest cluster';path.push('Clustered targets offer the most board pressure');}
-    else path.push('Use the closest valid Player operative');
-
-    if(c.engaged){
-      action='Fight the selected target, then reposition toward cover or the mission objective';
-      reason='A Player is already in control range, so immediate melee takes priority.';threat=1;path.unshift('Player in control range → Fight');
-    } else if(c.charge && (n.behavior==='Brawler'||n.behavior==='Guardian'||c.objective||c.wounded)){
-      action='Charge the selected target, then Fight';
-      reason=`${n.behavior} behavior favors decisive melee when the target is tactically important.`;threat=1;path.unshift('Legal high-value Charge → Charge and Fight');
-    } else if(c.shot){
-      const movement=c.cover?'Remain in cover or move only enough to gain line of sight':'Move to the nearest legal firing position';
-      action=`${movement}, then Shoot the selected target`;
-      reason='A valid ranged attack is available and no higher-priority melee action applies.';threat=1;path.unshift('Valid shooting target → Shoot');
-    } else if(c.hatch){
-      action='Operate the blocking hatch, then move toward the selected target';
-      reason='The closed hatch prevents the best advance and no immediate attack is available.';path.unshift('Route blocked by hatch → Operate Hatch');
-    } else if(c.objective){
-      action='Move toward and contest the mission objective, retaining cover where possible';
-      reason='No attack is available, so denying mission progress becomes the priority.';path.unshift('No attack → Contest objective');
-    } else {
-      action='Move toward the selected target, retaining cover and avoiding unnecessary exposure';
-      reason='No immediate attack or mission interaction is available.';path.unshift('No attack available → Reposition');
-      stance=c.cover?'Conceal':'Engage';
-    }
-    return {action,target,stance,threat,reason,path};
+    const action=c.action||'Pass';
+    const attack=/^(Fight|Shoot)/.test(action);
+    const target=action.startsWith('Fight')?'Apply Fight target priority: most likely to incapacitate, greatest mission impact, then Ready; randomize any remaining tie':action.startsWith('Shoot')?'Apply Shoot target priority: most likely to incapacitate, greatest mission impact, not obscured, not in cover, closest, then Ready; randomize any remaining tie':'Follow the target and movement priority printed in this action';
+    return {action,target,stance:'Engage',threat:attack?1:0,reason:c.action?'This is the first legal action in this operative’s printed behavior list.':'No printed action is currently legal; this NPO passes.',path:[action]};
   }
 
   function resolveNpo(n,c,questionHistory=[]){
@@ -2296,12 +2254,8 @@ function showPlayerActivation(stage={}){
     const decision=chooseNpoDecision(n,c);
     const attacks=decision.action.includes('Fight')||decision.action.includes('Shoot');
     const dice=[];
-    if(decision.threat)setThreat(decision.threat,`${npoName(n)} ${decision.action.includes('Fight')?'Fight':'Shoot'}`);
-    n.ready=false;state.npoActivated++;state.activationNumber++;
-    state.activationHistory.unshift({side:'npo',label:npoName(n),action:decision.action,target:null});
-    state.activeNpoId=null;advanceAfterActivation('npo');
-    state.lastActivation={name:npoName(n),...decision,dice,answers:c,questionHistory,attackRequired:attacks,targetConfirmed:false};
-    log(`${npoName(n)}: ${decision.action}.`);save();
+    state.lastActivation={npoId:n.id,name:npoName(n),...decision,dice,answers:c,questionHistory,attackRequired:attacks,targetConfirmed:false,committed:false};
+    save();
 
     renderNpoDecisionResult(n,decision,dice,c,false,false,attacks,false,questionHistory);
   }
@@ -2331,7 +2285,7 @@ function showPlayerActivation(stage={}){
     const eliminationAction=newlyEliminated(attackSummary)?` Eliminated ${escapeHtml(attackSummary.targetName)}.`:'';
     modalBody.innerHTML=`<div class="modal-inner ai-result">
       <div class="npo-question-flow">${renderCompletedNpoQuestions(questionHistory)}</div>
-      <div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)} · ${escapeHtml(n.behavior)}</p></div></div>
+      <div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div>
       <div class="npo-result-card">${npoIcon('command')}<div><small>ACTIVATION PLAN</small><strong>${escapeHtml(decision.action)}</strong><p>${escapeHtml(decision.reason)}</p><div class="npo-target-priority"><small>TARGET PRIORITY</small><strong>${escapeHtml(decision.target)}</strong>${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Target Player Operative</label>${targetField}</div>`:''}</div></div></div>
       ${attackRequired&&!targetConfirmed?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
       ${attackRequired&&targetConfirmed&&!attackResolved?`<button class="btn secondary big-action" id="rollPlayerSaves">Resolve Combat</button>`:''}
@@ -2370,11 +2324,20 @@ function showPlayerActivation(stage={}){
   }
 
   function completeNpoActivation(attackSummary=null){
+    if(state.lastActivation?.committed)return;
+    const n=state.roster.find(item=>item.id===state.lastActivation?.npoId);
+    if(!n||!n.ready)return;
     if(attackSummary){
       state.lastActivation={...state.lastActivation,attackResolved:true,attackSummary};
       const history=state.activationHistory.find(entry=>entry.side==='npo'&&entry.label===state.lastActivation?.name);
       if(history)history.attackSummary=attackSummary;
     }
+    if(state.lastActivation.threat)setThreat(state.lastActivation.threat,`${npoName(n)} ${state.lastActivation.action.includes('Fight')?'Fight':'Shoot'}`);
+    n.ready=false;state.npoActivated++;state.activationNumber++;
+    state.activationHistory.unshift({side:'npo',label:npoName(n),action:state.lastActivation.action,target:state.npoAttackTargetId?playerName(state.npoAttackTargetId):null,attackSummary});
+    state.lastActivation.committed=true;
+    state.activeNpoId=null;advanceAfterActivation('npo');
+    log(`${npoName(n)}: ${state.lastActivation.action}.`);
     state.npoAttackTargetId=null;
     state.npoAttackSummary=null;
     save();
@@ -2506,7 +2469,7 @@ function showPlayerActivation(stage={}){
   function npoRosterCard(n,controls){
     const status=n.wounds<=0?'ELIMINATED':n.dormant?'DORMANT':n.ready?'READY':'ACTIVATED';
     return `<article class="player-roster-card npo-roster-card ${n.wounds<=0?'dead':''}">
-      <div class="player-roster-card-head"><div><strong>${escapeHtml(npoName(n))}</strong><small>${escapeHtml(n.behavior)}</small></div><span class="npo-status-badge ${status.toLowerCase()}">${status}</span></div>
+      <div class="player-roster-card-head"><div><strong>${escapeHtml(npoName(n))}</strong></div><span class="npo-status-badge ${status.toLowerCase()}">${status}</span></div>
       <div class="operative-stat-line"><span><small>ATTACK</small><b>${n.attack?.dice??'—'}</b></span><span><small>HIT</small><b>${n.attack?.hit??'—'}+</b></span><span><small>SAVE</small><b>${n.save}+</b></span><span><small>WOUNDS</small><b>${n.wounds}/${n.maxWounds}</b></span></div>
       ${controls?`<div class="quick-actions"><button class="btn secondary" data-player-attack="${n.id}">Player Attack</button><button class="btn ghost" data-wound="${n.id}">− Wound</button><button class="btn ghost" data-heal="${n.id}">+ Heal</button><button class="btn secondary" data-ready="${n.id}" ${n.dormant?'disabled':''}>${n.ready?'Expend':n.dormant?'Dormant':'Ready'}</button><button class="btn danger" data-delete="${n.id}">Delete</button></div>`:''}
     </article>`;
