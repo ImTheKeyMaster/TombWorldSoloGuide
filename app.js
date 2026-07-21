@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.3.0';
+  const APP_VERSION = '5.3.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -2533,7 +2533,7 @@ function showPlayerActivation(stage={}){
     renderProfile();
     $('#rollPendingAttack').disabled=true;
     $('#cancelPendingAttack').onclick=()=>{stopDiceAnimation();stopAutomaticRolls();cancelPendingPlayerCombat(stage,attackType,onCancel);};
-    if($('#skipPendingMelee'))$('#skipPendingMelee').onclick=()=>{stopDiceAnimation();onSkip();};
+    if($('#skipPendingMelee'))$('#skipPendingMelee').onclick=()=>{stopDiceAnimation();stopAutomaticRolls();onSkip();};
     $('#rollPendingAttack').onclick=()=>previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft);
     const draft=stage[`${attackType}CombatDraft`];
     if(draft){
@@ -2609,8 +2609,12 @@ function showPlayerActivation(stage={}){
 
     const button=$('#rollPendingAttack');
     button.textContent='Continue';
-    button.disabled=animate||stage[`${attackType}CombatDraft`]!==result;
-    button.onclick=()=>onResolved(result);
+    let visualComplete=!animate;
+    button.disabled=!visualComplete||stage[`${attackType}CombatDraft`]!==result;
+    button.onclick=()=>{
+      if(!visualComplete||stage[`${attackType}CombatDraft`]!==result)return;
+      onResolved(result);
+    };
     $('#cancelPendingAttack').onclick=()=>cancelPendingPlayerCombat(stage,attackType,onCancel);
     $$('.combat-outcome-fields input').forEach(input=>input.disabled=true);
     $('#combatTarget').disabled=true;
@@ -2619,6 +2623,7 @@ function showPlayerActivation(stage={}){
     if($('#rollPlayerDefenseDice'))$('#rollPlayerDefenseDice').disabled=true;
     $$('[data-retain-die]').forEach(die=>die.disabled=true);
     if(animate)settleCombatDice(result,()=>{
+      visualComplete=true;
       if(button.isConnected&&stage[`${attackType}CombatDraft`]===result)button.disabled=false;
     });
   }

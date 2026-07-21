@@ -35,7 +35,9 @@ class UnifiedPlayerCombatTests(unittest.TestCase):
         display = self.source('function displayPendingPlayerCombat', 'function npoBehavior')
         self.assertIn("classList.replace('animated-roll','settled')", settle)
         self.assertLess(settle.index("classList.replace('animated-roll','settled')"), settle.index('onSettled()'))
-        self.assertIn('button.disabled=animate||', display)
+        self.assertIn('let visualComplete=!animate', display)
+        self.assertIn('button.disabled=!visualComplete||', display)
+        self.assertIn('if(!visualComplete||', display)
         self.assertLess(display.index('settleCombatDice(result,()=>'), display.index('button.disabled=false'))
 
     def test_restored_results_enable_continue_without_settle_delay(self):
@@ -43,8 +45,12 @@ class UnifiedPlayerCombatTests(unittest.TestCase):
         restore = wizard.split('if(draft){', 1)[1]
         display = self.source('function displayPendingPlayerCombat', 'function npoBehavior')
         self.assertIn('displayPendingPlayerCombat(stage,attackType,draft,onResolved,onCancel,false)', restore)
-        self.assertIn('button.disabled=animate||', display)
+        self.assertIn('let visualComplete=!animate', display)
         self.assertIn('if(animate)settleCombatDice', display)
+
+    def test_skipping_melee_cancels_the_shared_animation_timer(self):
+        wizard = self.source('function showPendingPlayerAttackWizard', 'function previewPendingPlayerAttack')
+        self.assertIn("if($('#skipPendingMelee'))$('#skipPendingMelee').onclick=()=>{stopDiceAnimation();stopAutomaticRolls();onSkip();}", wizard)
 
     def test_damage_remains_transactional_and_single_application(self):
         apply_damage = self.source('function applyPendingPlayerDamage', 'function completePlayerActivation')
