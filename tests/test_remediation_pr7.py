@@ -35,10 +35,10 @@ class RemediationPr7CombatTests(unittest.TestCase):
 
     def test_weapon_rules_and_critical_successes_are_recorded(self):
         self.assertIn("rules:[...(profile?.rules||[])]", self.app)
-        recorded = self.source('recordedCombat', 'combatOutcomeFields')
+        recorded = self.source('recordedCombat', 'applyDimensionalBanishment')
         self.assertIn('criticalSuccesses', recorded)
         self.assertIn('critRemaining:', recorded)
-        self.assertIn("spinnerField('retainedCritical'", self.app)
+        self.assertIn('normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical', self.app)
         for rule in ('Piercing 1', 'Punishing', 'Torrent 1"', 'Brutal', 'Blast 2"'):
             self.assertIn(rule, self.app)
 
@@ -106,7 +106,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertNotIn('postGame', self.app)
 
     def test_versions_are_synchronized(self):
-        expected = '5.0.1'
+        expected = '5.1.0'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"styles.css?v={expected}", (ROOT / 'index.html').read_text())
         self.assertIn(f"app.js?v={expected}", (ROOT / 'index.html').read_text())

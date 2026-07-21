@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.0.1';
+  const APP_VERSION = '5.1.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -482,9 +482,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return weapons.flatMap(weaponProfiles);
   }
   function canonicalAttackProfile(profile){
+    const piercing=(profile?.rules||[]).map(String).map(rule=>rule.match(/(?:Piercing|AP)\s*(\d+)/i)).find(Boolean);
     return {
       dice:Number(profile?.attacks||0),hit:Number(profile?.hit||0),
       normal:Number(profile?.damage?.normal||0),crit:Number(profile?.damage?.critical||0),
+      ap:Number(piercing?.[1]||0),
       rules:[...(profile?.rules||[])],weaponId:profile?.weaponId||'',profileId:profile?.id||'',
       name:profile?.weaponName===profile?.name?profile?.name:`${profile?.weaponName}: ${profile?.name}`
     };
@@ -2059,7 +2061,7 @@ function showPlayerActivation(stage={}){
         <div><small>Attack type</small><strong>${combat.attackType==='shoot'?'Shooting':'Melee'}</strong></div>
         ${combat.recordedOutcome?'':`<div><small>Retained saves</small><strong>${combat.retainedSaves??(combat.coverRetained?1:0)}</strong></div>`}
       </div>
-      ${combat.recordedOutcome?'<div class="combat-stage"><small>TABLETOP RESOLUTION</small><p>Physical dice and retained successes resolved by the player.</p></div>':`<div class="combat-stage"><small>ATTACK DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div></div><div class="combat-stage"><small>SAVE DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No save dice rolled</span>'}</div>${combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':''}</div>`}
+      ${combat.recordedOutcome?'<div class="combat-stage"><small>TABLETOP RESOLUTION</small><p>Physical dice and retained successes resolved by the player.</p></div>':`<div class="combat-stage"><small>ATTACK DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div></div><div class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No defense dice rolled</span>'}</div>${combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':''}</div>`}
       ${elimination}
       ${combatAbilityReminder(combat)}
       <div class="damage-summary">
@@ -2256,15 +2258,16 @@ function showPlayerActivation(stage={}){
       targetIncapacitated&&attackerWithinTwo
   };
 
-  function attackSequenceSteps(attackType){
+  function attackSequenceSteps(attackType,automatic=false){
+    if(automatic)return ['Confirm the selected target and weapon.','The Guide rolls attack dice, then defense dice.','The Guide retains successes, resolves saves, and calculates damage.','Review the final result before completing the activation.'];
     return attackType==='shoot'
       ? ['Select a valid target and weapon.','Roll the weapon’s attack dice and choose which successes to retain.','Roll the defender’s defense dice and choose which successes to retain.','Resolve retained successes, weapon rules and damage on the tabletop.','Record damage and incapacitation in the Guide.']
       : ['Select a valid target and melee weapon.','Roll attack dice, then defense dice, and choose which successes to retain.','Resolve retained successes using the Core Fight sequence on the tabletop.','Resolve weapon rules and damage.','Record damage and incapacitation in the Guide.'];
   }
 
-  function combatRulesHtml(profile,attackType){
+  function combatRulesHtml(profile,attackType,automatic=false){
     const rules=(profile?.rules||[]).map(rule=>`<li>${escapeHtml(rule)}</li>`).join('');
-    return `<section class="summary-box combat-sequence"><strong>${attackType==='shoot'?'SHOOTING':'FIGHT'} SEQUENCE</strong><ol>${attackSequenceSteps(attackType).map(step=>`<li>${escapeHtml(step)}</li>`).join('')}</ol>${rules?`<strong>Weapon rules to resolve</strong><ul>${rules}</ul>`:''}<p class="muted">The mission pack delegates Core combat mechanics and these weapon-rule definitions to the Core rules. Resolve them on the tabletop; the Guide records the outcome without inventing or simulating those rules.</p></section>`;
+    return `<section class="summary-box combat-sequence"><strong>${attackType==='shoot'?'SHOOTING':'FIGHT'} SEQUENCE</strong><ol>${attackSequenceSteps(attackType,automatic).map(step=>`<li>${escapeHtml(step)}</li>`).join('')}</ol>${rules?`<strong>Weapon rules to resolve</strong><ul>${rules}</ul>`:''}<p class="muted">${automatic?'The Guide performs routine dice bookkeeping; continue to resolve any listed weapon rules in the existing workflow.':'The mission pack delegates Core combat mechanics and these weapon-rule definitions to the Core rules. Resolve them on the tabletop; the Guide records the outcome without inventing or simulating those rules.'}</p></section>`;
   }
 
   function npoCombatGuidanceHtml(npo){
@@ -2289,12 +2292,10 @@ function showPlayerActivation(stage={}){
       after:triggered&&total>combat.after?0:combat.after};
   }
 
-  function combatOutcomeFields(){
-    return `<div class="defense-profile-grid combat-outcome-fields">
-      ${spinnerField('retainedNormal','Retained normal successes',0,0,20)}
-      ${spinnerField('retainedCritical','Retained critical successes',0,0,20)}
-      ${spinnerField('resolvedDamage','Damage inflicted',0,0,99)}
-    </div>`;
+  function dimensionalBanishmentRequired(combat){
+    return combat.profile?.weaponId==='transdimensional-isolator'
+      &&!Number.isInteger(combat.dimensionalBanishmentRoll)
+      &&combatAbilityHandlers['dimensional-banishment']({criticalSuccesses:combat.critRemaining,damage:combat.damage,targetIncapacitated:combat.after<=0});
   }
 
   function playerCombatDiceFields(){
@@ -2323,6 +2324,10 @@ function showPlayerActivation(stage={}){
       const value=roll();
       return {value,kind:value>=critThreshold?'crit':value>=threshold?'hit':'miss',retained:false};
     });
+  }
+
+  function retainSuccessfulDice(dice=[]){
+    return dice.map(die=>({...die,retained:die.kind==='hit'||die.kind==='crit'}));
   }
 
   function retainedDiceTotals(dice=[]){
@@ -2382,8 +2387,8 @@ function showPlayerActivation(stage={}){
     return `<section class="combat-stage" id="aggressiveDefenseRoll" aria-label="Aggressive Defense Construct roll">
       <small>AGGRESSIVE DEFENSE CONSTRUCT</small>
       <p>This incapacitated Macrocyte was within 2&quot; of the attacker.</p>
-      <div class="dice-row" id="aggressiveDefenseDie"><span class="muted">Not rolled</span></div>
-      <button class="btn secondary" type="button" id="rollAggressiveDefense">Roll D3</button>
+      <div class="dice-row animated-roll" id="aggressiveDefenseDie">${rollingDieHtml()}</div>
+      <p class="muted">Rolling automatically…</p>
     </section>`;
   }
 
@@ -2622,13 +2627,10 @@ function showPlayerActivation(stage={}){
       $('#attackerWithinTwo').disabled=true;
       $$('.combat-outcome-fields input').forEach(input=>input.disabled=true);
       $$('[data-retain-die]').forEach(die=>die.disabled=true);
-      $('#rollAggressiveDefense').onclick=()=>{
-        const rolledValue=Math.ceil(roll()/2);
-        const row=$('#aggressiveDefenseDie');
-        row.className='dice-row animated-roll';
-        row.innerHTML=rollingDieHtml();
-        $('#rollAggressiveDefense').disabled=true;
-        diceAnimationTimer=setTimeout(()=>{
+      const rolledValue=Math.ceil(roll()/2);
+      const row=$('#aggressiveDefenseDie');
+      row.innerHTML=rollingDieHtml();
+      diceAnimationTimer=setTimeout(()=>{
           diceAnimationTimer=null;
           if(!$('#aggressiveDefenseDie'))return;
           result.aggressiveDefenseRoll=rolledValue;
@@ -2643,8 +2645,7 @@ function showPlayerActivation(stage={}){
           state.combatState={side:'player',stage:{...stage}};
           save();
           displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,false);
-        },700);
-      };
+      },700);
       return;
     }
     result.aggressiveDefenseDamage=0;
@@ -3141,48 +3142,95 @@ function showPlayerActivation(stage={}){
           <div><small>Save</small><strong>${target.save||3}+</strong></div>
         </div>
         ${npoCombatGuidanceHtml(n)}${profileControl}<section class="defense-profile attack-profile"><p class="eyebrow">NPO WEAPON PROFILE</p><div class="defense-profile-grid"><div><small>Weapon</small><strong id="npoProfileName">${escapeHtml(selectedProfile.name)}</strong></div><div><small>Attack Dice</small><strong id="npoProfileDice">${selectedProfile.dice}</strong></div><div><small>Hit On</small><strong id="npoProfileHit">${selectedProfile.hit}+</strong></div><div><small>Damage</small><strong id="npoProfileDamage">${selectedProfile.normal}/${selectedProfile.crit}</strong></div></div></section>
-        <div id="npoCombatRules">${combatRulesHtml(selectedProfile,attackType)}</div>
-        ${combatOutcomeFields()}
-        <div id="dimensionalBanishmentField">${dimensionalBanishmentField(selectedProfile)}</div>
-        <div class="wizard-actions"><button class="btn ghost" id="cancelNpoAttack">Cancel</button><button class="btn primary" id="rollNpoCombat">Record Combat Outcome</button></div>`);
-      bindSpinners(modalBody);
+        <div id="npoCombatRules">${combatRulesHtml(selectedProfile,attackType,true)}</div>
+        <div id="npoAutomaticCombat" class="combat-results" aria-live="polite"></div>
+        <div class="wizard-actions"><button class="btn ghost" id="cancelNpoAttack">Cancel</button><button class="btn primary" id="completeNpoCombat" disabled>Rolling…</button></div>`);
+      let combatTimer=null;
+      let resolutionCommitted=false;
+      const finishAutomaticCombat=(profile,rolledAttackDice,rolledDefenseDice)=>{
+        const resolution=resolveRetainedCombat(rolledAttackDice,rolledDefenseDice,profile);
+        const combat={
+          ...recordedCombat({attackerName:npoName(n),defenderName:target.name,attackType,attackerSide:'npo',defenderSide:'player',profile,before:target.wounds||10,
+            normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical,damage:resolution.damage}),
+          attackDice:rolledAttackDice,saveDice:rolledDefenseDice,
+          retainedSaves:retainedDiceTotals(rolledDefenseDice).normal+retainedDiceTotals(rolledDefenseDice).critical,
+          recordedOutcome:false,targetId:target.id,targetName:target.name
+        };
+        state.lastActivation={...state.lastActivation,combatDraft:combat};
+        save();
+        const banishmentTriggered=dimensionalBanishmentRequired(combat);
+        $('#npoAutomaticCombat').innerHTML=`${renderCombatResolution(combat,{animate:false})}${banishmentTriggered?`<div id="dimensionalBanishmentField">${dimensionalBanishmentField(profile)}</div>`:''}`;
+        if(banishmentTriggered)bindSpinners($('#dimensionalBanishmentField'));
+        const complete=$('#completeNpoCombat');
+        complete.disabled=false;
+        complete.textContent=combat.damage>0?'Apply Damage & Complete Activation':'Complete Activation';
+        complete.onclick=()=>{
+          if(resolutionCommitted)return;
+          resolutionCommitted=true;
+          complete.disabled=true;
+          const resolvedCombat=banishmentTriggered?applyDimensionalBanishment(combat,num('dimensionalBanishmentRoll')):combat;
+          state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat};
+          save();
+          const summary={...resolvedCombat,side:'player'};
+          applyNpoAttackDamage(n,target,summary);
+          if(onDone)onDone(summary);
+        };
+      };
+      const startAutomaticCombat=()=>{
+        if(combatTimer)clearTimeout(combatTimer);
+        const profile=canonicalAttackProfile(availableProfiles[Number($('#npoCombatProfile')?.value)||0]);
+        const rolledAttackDice=retainSuccessfulDice(rolledCombatDice(profile.dice,profile.hit));
+        const result=$('#npoAutomaticCombat');
+        $('#completeNpoCombat').disabled=true;
+        $('#completeNpoCombat').textContent='Rolling…';
+        result.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row animated-roll">${rolledAttackDice.map(()=>rollingDieHtml()).join('')}</div></section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row"><span class="muted">Rolling after the attack…</span></div></section>`;
+        combatTimer=setTimeout(()=>{
+          if(!$('#npoAutomaticCombat'))return;
+          const rolledDefenseDice=retainSuccessfulDice(rolledCombatDice(Math.max(0,3-profile.ap),Number(target.save)||3));
+          result.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row settled">${rolledAttackDice.map(dieHtml).join('')}</div></section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row animated-roll">${rolledDefenseDice.map(()=>rollingDieHtml()).join('')}</div></section>`;
+          combatTimer=setTimeout(()=>{
+            combatTimer=null;
+            if($('#npoAutomaticCombat'))finishAutomaticCombat(profile,rolledAttackDice,rolledDefenseDice);
+          },700);
+        },700);
+      };
       $('#npoCombatProfile')?.addEventListener('change',()=>{
         const profile=canonicalAttackProfile(availableProfiles[Number($('#npoCombatProfile').value)||0]);
         $('#npoProfileName').textContent=profile.name;
         $('#npoProfileDice').textContent=profile.dice;
         $('#npoProfileHit').textContent=`${profile.hit}+`;
         $('#npoProfileDamage').textContent=`${profile.normal}/${profile.crit}`;
-        $('#npoCombatRules').innerHTML=combatRulesHtml(profile,attackType);
-        $('#dimensionalBanishmentField').innerHTML=dimensionalBanishmentField(profile);
-        bindSpinners($('#dimensionalBanishmentField'));
+        $('#npoCombatRules').innerHTML=combatRulesHtml(profile,attackType,true);
+        state.lastActivation.combatDraft=null;
+        startAutomaticCombat();
       });
-      $('#cancelNpoAttack').onclick=()=>{save();if(onCancel)onCancel();};
-      $('#rollNpoCombat').onclick=()=>{
-        const resolvedProfile=canonicalAttackProfile(availableProfiles[Number($('#npoCombatProfile')?.value)||0]);
-        let combat={
-          ...recordedCombat({attackerName:npoName(n),defenderName:target.name,attackType,attackerSide:'npo',defenderSide:'player',profile:resolvedProfile,before:target.wounds||10,
-            normalSuccesses:num('retainedNormal'),criticalSuccesses:num('retainedCritical'),damage:num('resolvedDamage')}),
-          targetId:target.id,targetName:target.name
-        };
-        if(resolvedProfile.weaponId==='transdimensional-isolator')combat=applyDimensionalBanishment(combat,num('dimensionalBanishmentRoll'));
-        state.lastActivation={...state.lastActivation,combatDraft:combat};
+      $('#cancelNpoAttack').onclick=()=>{
+        if(combatTimer)clearTimeout(combatTimer);
+        state.lastActivation={...state.lastActivation,combatDraft:null};
         save();
-        showNpoAttackWizard(n,attackDice,onDone,onCancel,true);
+        if(onCancel)onCancel();
       };
+      startAutomaticCombat();
       return;
     }
     const combat=saved;
+    const banishmentRequired=dimensionalBanishmentRequired(combat);
     showModal('Resolve Combat',`
       ${renderCombatResolution(combat,{animate:animateCombat})}
+      ${banishmentRequired?`<div id="dimensionalBanishmentField">${dimensionalBanishmentField(combat.profile)}</div>`:''}
       <p class="muted">Damage is applied when this NPO activation is completed.</p>
       <div class="wizard-actions"><button class="btn ghost" id="cancelNpoAttack">Cancel</button><button class="btn primary" id="completeNpoCombat">${combat.damage>0?'Apply Damage & Complete Activation':'Complete Activation'}</button></div>`);
+    if(banishmentRequired)bindSpinners($('#dimensionalBanishmentField'));
     $('#cancelNpoAttack').onclick=()=>{save();if(onCancel)onCancel();};
     let resolutionCommitted=false;
     $('#completeNpoCombat').onclick=()=>{
       if(resolutionCommitted)return;
       resolutionCommitted=true;
       $('#completeNpoCombat').disabled=true;
-      const summary={...combat,side:'player'};
+      const resolvedCombat=banishmentRequired?applyDimensionalBanishment(combat,num('dimensionalBanishmentRoll')):combat;
+      state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat};
+      save();
+      const summary={...resolvedCombat,side:'player'};
       applyNpoAttackDamage(n,target,summary);
       if(onDone)onDone(summary);
     };
