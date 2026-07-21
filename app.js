@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.3.1';
+  const APP_VERSION = '5.3.2';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -2104,15 +2104,14 @@ function showPlayerActivation(stage={}){
     if(stage.melee&&!stage.pendingMelee){
       const remainingTargets=activeNpos().filter(n=>projectedNpoWounds(n.id,stage)>0);
       if(!remainingTargets.length){
-        resolvePendingPlayerAttacks({...stage,melee:false,meleeSkipped:true});
+        resolvePendingPlayerAttacks({...stage,melee:false});
         return;
       }
       showPendingPlayerAttackWizard(
         stage,
         'melee',
         result=>resolvePendingPlayerAttacks({...stage,pendingMelee:result}),
-        ()=>showPlayerActivation(stage),
-        ()=>resolvePendingPlayerAttacks({...stage,melee:false,meleeSkipped:true})
+        ()=>showPlayerActivation(stage)
       );
       return;
     }
@@ -2409,7 +2408,7 @@ function showPlayerActivation(stage={}){
     onCancel();
   }
 
-  function showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel,onSkip=null){
+  function showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel){
     const targets=activeNpos().filter(n=>projectedNpoWounds(n.id,stage)>0);
     if(!targets.length){
       showToast('No active NPO is available as a target.');
@@ -2434,7 +2433,7 @@ function showPlayerActivation(stage={}){
       : `<div class="field"><label>Target NPO</label><select id="combatTarget"><option value="">Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}">${escapeHtml(npoName(n))} · Wounds ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} · Save ${n.save}+</option>`).join('')}</select></div>`;
 
     const priorElimination=attackType==='melee'&&Number(stage.pendingShoot?.after)<=0
-      ? `<section class="compact-elimination-notice"><strong>☠ ${escapeHtml(stage.pendingShoot.targetName)} was eliminated by the Shoot attack.</strong><span>Choose another melee target or skip Melee.</span></section>`
+      ? `<section class="compact-elimination-notice"><strong>☠ ${escapeHtml(stage.pendingShoot.targetName)} was eliminated by the Shoot attack.</strong><span>Choose another melee target, or Cancel to revise the activation.</span></section>`
       : '';
     showModal(`Resolve ${attackLabel} Attack`,`
       ${priorElimination}
@@ -2457,7 +2456,7 @@ function showPlayerActivation(stage={}){
         <div id="automaticPlayerCombat" class="combat-results" aria-live="polite"></div>
         <div id="aggressiveDefenseFields"></div>
         <div id="combatResults" class="combat-results">${singleTarget?'':'<p>Select a target NPO to begin.</p>'}</div>
-        <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button>${attackType==='melee'&&onSkip?'<button class="btn secondary" id="skipPendingMelee">Skip Melee</button>':''}<button class="btn primary" id="rollPendingAttack">Rolling…</button></div>
+        <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button><button class="btn primary" id="rollPendingAttack">Rolling…</button></div>
       </fieldset>`);
 
     requestAnimationFrame(()=>{
@@ -2533,7 +2532,6 @@ function showPlayerActivation(stage={}){
     renderProfile();
     $('#rollPendingAttack').disabled=true;
     $('#cancelPendingAttack').onclick=()=>{stopDiceAnimation();stopAutomaticRolls();cancelPendingPlayerCombat(stage,attackType,onCancel);};
-    if($('#skipPendingMelee'))$('#skipPendingMelee').onclick=()=>{stopDiceAnimation();stopAutomaticRolls();onSkip();};
     $('#rollPendingAttack').onclick=()=>previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft);
     const draft=stage[`${attackType}CombatDraft`];
     if(draft){

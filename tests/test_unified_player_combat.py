@@ -48,9 +48,14 @@ class UnifiedPlayerCombatTests(unittest.TestCase):
         self.assertIn('let visualComplete=!animate', display)
         self.assertIn('if(animate)settleCombatDice', display)
 
-    def test_skipping_melee_cancels_the_shared_animation_timer(self):
+    def test_melee_footer_only_offers_cancel_and_continue(self):
         wizard = self.source('function showPendingPlayerAttackWizard', 'function previewPendingPlayerAttack')
-        self.assertIn("if($('#skipPendingMelee'))$('#skipPendingMelee').onclick=()=>{stopDiceAnimation();stopAutomaticRolls();onSkip();}", wizard)
+        footer = wizard.split('<div class="wizard-actions">', 1)[1].split('</div>', 1)[0]
+        self.assertIn('id="cancelPendingAttack">Cancel</button>', footer)
+        self.assertIn('id="rollPendingAttack">Rolling…</button>', footer)
+        self.assertEqual(footer.count('<button'), 2)
+        self.assertNotIn('skipPendingMelee', wizard)
+        self.assertNotIn('onSkip', wizard)
 
     def test_damage_remains_transactional_and_single_application(self):
         apply_damage = self.source('function applyPendingPlayerDamage', 'function completePlayerActivation')
