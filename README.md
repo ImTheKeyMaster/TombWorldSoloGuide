@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v4.5.0
+# Tomb World Solo Guide v4.5.1
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -1115,3 +1115,10 @@ v3.0.7: Kasrkin roster choices updated.
 - Preserved the supported 10-NPO limit and clearly reports reinforcements that cannot be set up.
 - Migrated legacy saves with default reinforcement state without invalidating existing games.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v4.5.0.
+
+
+## v4.5.1
+
+- Recalculated the current Grade after Tomb World events so reinforcement quantity uses the resulting Threat level.
+- Invalidated placement confirmation whenever its recorded random hatchway changes and rejected confirmation without a hatchway.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v4.5.1.

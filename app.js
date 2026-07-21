@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '4.5.0';
+  const APP_VERSION = '4.5.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1139,7 +1139,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       startTurningPoint();
     });
     $$('[data-reinforcement-placement]').forEach(input=>input.addEventListener('change',()=>confirmReinforcementPlacement(input.dataset.reinforcementPlacement,input.checked)));
-    $$('[data-reinforcement-hatchway]').forEach(input=>input.addEventListener('input',()=>recordReinforcementHatchway(input.dataset.reinforcementHatchway,input.value)));
+    $$('[data-reinforcement-hatchway]').forEach(input=>input.addEventListener('change',()=>recordReinforcementHatchway(input.dataset.reinforcementHatchway,input.value)));
     $('#eventNpoSelect')?.addEventListener('change',e=>{$('#resolveStrategyEvent').disabled=!e.target.value;});
     $('#resolveStrategyEvent')?.addEventListener('click',resolveStrategyEvent);
     $('#redrawStrategyEvent')?.addEventListener('click',()=>{redrawCurrentEvent('No breach or open hatchway could be changed.');save();render();});
@@ -1334,6 +1334,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const d=state.strategyData,reinforcements=[];
     let blocked=0;
     state.reinforcementState={turningPoint:state.turningPoint,status:'idle',operativeIds:[],blocked:0};
+    d.grade=threatGrade();
     if(reinforcementTriggered(d)){
       const requested=d.grade,slots=Math.max(0,MAX_NPOS-activeNpos().length),actual=Math.min(requested,slots);
       blocked=requested-actual;
@@ -1360,8 +1361,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function confirmReinforcementPlacement(id,confirmed){
     const npo=state.roster.find(item=>item.id===id&&state.reinforcementState.operativeIds.includes(item.id));
     if(!npo?.reinforcement)return;
-    npo.reinforcement.placementConfirmed=confirmed;
-    npo.deployed=confirmed;
+    const placementConfirmed=Boolean(confirmed&&npo.reinforcement.hatchway);
+    npo.reinforcement.placementConfirmed=placementConfirmed;
+    npo.deployed=placementConfirmed;
     const complete=state.reinforcementState.operativeIds.every(operativeId=>state.roster.find(item=>item.id===operativeId)?.reinforcement?.placementConfirmed);
     state.reinforcementState.status=complete?'complete':'placement';
     save();render();
@@ -1370,10 +1372,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function recordReinforcementHatchway(id,hatchway){
     const npo=state.roster.find(item=>item.id===id&&state.reinforcementState.operativeIds.includes(item.id));
     if(!npo?.reinforcement)return;
-    npo.reinforcement.hatchway=hatchway.trim();
-    const placement=$(`[data-reinforcement-placement="${id}"]`);
-    if(placement)placement.disabled=!npo.reinforcement.hatchway;
-    save();
+    const recordedHatchway=hatchway.trim();
+    if(recordedHatchway===npo.reinforcement.hatchway)return;
+    npo.reinforcement.hatchway=recordedHatchway;
+    npo.reinforcement.placementConfirmed=false;
+    npo.deployed=false;
+    state.reinforcementState.status='placement';
+    save();render();
   }
 
   function rollInitiative(){

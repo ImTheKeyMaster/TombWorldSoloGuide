@@ -34,6 +34,7 @@ class RemediationPr6Tests(unittest.TestCase):
 
     def test_official_quantity_and_ten_npo_limit(self):
         source = self.function_source("processReinforcementStage", "reinforcementTriggered")
+        self.assertLess(source.index("d.grade=threatGrade()"), source.index("requested=d.grade"))
         self.assertIn("requested=d.grade", source)
         self.assertIn("MAX_NPOS-activeNpos().length", source)
         self.assertIn("actual=Math.min(requested,slots)", source)
@@ -46,12 +47,16 @@ class RemediationPr6Tests(unittest.TestCase):
         self.assertIn("printed placement requirements", card)
         self.assertIn("placementPending?'disabled'", card)
         placement = self.function_source("confirmReinforcementPlacement", "recordReinforcementHatchway")
-        self.assertIn("npo.deployed=confirmed", placement)
+        self.assertIn("Boolean(confirmed&&npo.reinforcement.hatchway)", placement)
+        self.assertIn("npo.deployed=placementConfirmed", placement)
         self.assertIn("placementConfirmed", placement)
         self.assertNotIn("coordinates", placement)
         hatchway = self.function_source("recordReinforcementHatchway", "rollInitiative")
-        self.assertIn("npo.reinforcement.hatchway=hatchway.trim()", hatchway)
-        self.assertIn("save();", hatchway)
+        self.assertIn("recordedHatchway=hatchway.trim()", hatchway)
+        self.assertIn("npo.reinforcement.placementConfirmed=false", hatchway)
+        self.assertIn("npo.deployed=false", hatchway)
+        self.assertIn("state.reinforcementState.status='placement'", hatchway)
+        self.assertIn("save();render();", hatchway)
 
     def test_reinforcement_state_and_metadata_are_normalized(self):
         initial = self.app.split("const initialState = () => ({", 1)[1].split("\n  });", 1)[0]
