@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '4.6.1';
+  const APP_VERSION = '4.7.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1950,9 +1950,11 @@ function showPlayerActivation(stage={}){
 
   function playerWeaponProfile(weapon){
     const damage=parseWeaponDamage(weapon?.damage);
+    const lethalRule=(weapon?.rules||[]).map(String).map(rule=>rule.match(/Lethal\s*(\d)\+/i)).find(Boolean);
     return {
       dice:Number(weapon?.attacks||4),
       hit:Number(weapon?.hit||3),
+      critThreshold:Number(lethalRule?.[1]||6),
       normal:damage.normal,
       crit:damage.crit,
       ap:weaponPiercingValue(weapon)
@@ -1968,8 +1970,8 @@ function showPlayerActivation(stage={}){
 
   function attackSequenceSteps(attackType){
     return attackType==='shoot'
-      ? ['Select a valid target and weapon.','Roll the weapon’s attack dice physically and retain successes.','Defender rolls defence dice and retains successes.','Resolve retained successes, weapon rules and damage on the tabletop.','Record damage and incapacitation in the Guide.']
-      : ['Select a valid target and melee weapon.','Both operatives roll attack dice physically and retain successes.','Resolve retained successes using the Core Fight sequence on the tabletop.','Resolve weapon rules and damage.','Record damage and incapacitation in the Guide.'];
+      ? ['Select a valid target and weapon.','Roll the weapon’s attack dice and choose which successes to retain.','Roll the defender’s defence dice and choose which successes to retain.','Resolve retained successes, weapon rules and damage on the tabletop.','Record damage and incapacitation in the Guide.']
+      : ['Select a valid target and melee weapon.','Roll attack dice, then defense dice, and choose which successes to retain.','Resolve retained successes using the Core Fight sequence on the tabletop.','Resolve weapon rules and damage.','Record damage and incapacitation in the Guide.'];
   }
 
   function combatRulesHtml(profile,attackType){
@@ -2005,6 +2007,54 @@ function showPlayerActivation(stage={}){
       ${spinnerField('retainedCritical','Retained critical successes',0,0,20)}
       ${spinnerField('resolvedDamage','Damage inflicted',0,0,99)}
     </div>`;
+  }
+
+  function playerCombatDiceFields(){
+    return `<section class="combat-dice-roller" aria-label="Combat dice roller">
+      <div class="combat-stage">
+        <small>1 · ATTACK DICE</small>
+        <p>Roll, then tap each successful die you choose to retain.</p>
+        <div class="dice-row" id="playerAttackDice"><span class="muted">Not rolled</span></div>
+        <button class="btn secondary" type="button" id="rollPlayerAttackDice">Roll Attack Dice</button>
+        <div class="damage-summary retained-totals" id="attackRetainedTotals"></div>
+      </div>
+      <div class="combat-stage">
+        <small>2 · DEFENSE DICE</small>
+        <p>After retaining attack dice, roll defense dice and tap each successful die you choose to retain.</p>
+        <div class="dice-row" id="playerDefenseDice"><span class="muted">Roll attack dice first</span></div>
+        <button class="btn secondary" type="button" id="rollPlayerDefenseDice" disabled>Roll Defense Dice</button>
+        <div class="damage-summary retained-totals" id="defenseRetainedTotals"></div>
+      </div>
+      <p class="muted">The Guide identifies normal and critical successes from the printed profiles. You decide which successes to retain and resolve them using the Core Rules.</p>
+    </section>
+    <div class="defense-profile-grid combat-outcome-fields">
+      ${spinnerField('resolvedDamage','Damage inflicted',0,0,99)}
+    </div>`;
+  }
+
+  function rolledCombatDice(count,threshold,critThreshold=6){
+    return Array.from({length:Math.max(0,count)},()=>{
+      const value=roll();
+      return {value,kind:value>=critThreshold?'crit':value>=threshold?'hit':'miss',retained:false};
+    });
+  }
+
+  function retainedDiceTotals(dice=[]){
+    return dice.reduce((totals,die)=>{
+      if(die.retained&&die.kind==='crit')totals.critical++;
+      if(die.retained&&die.kind==='hit')totals.normal++;
+      return totals;
+    },{normal:0,critical:0});
+  }
+
+  function retainedTotalsHtml(dice=[]){
+    const totals=retainedDiceTotals(dice);
+    return `<div><small>Retained normal successes</small><strong>${totals.normal}</strong></div><div><small>Retained critical successes</small><strong>${totals.critical}</strong></div>`;
+  }
+
+  function selectableDieHtml(die,index,pool){
+    const disabled=die.kind==='miss'?'disabled':'';
+    return `<button type="button" class="die ${die.kind} selectable ${die.retained?'retained':''}" data-retain-die="${pool}" data-die-index="${index}" aria-pressed="${die.retained}" aria-label="${die.value} ${die.kind}${die.retained?', retained':''}" ${disabled}>${pipPositions[die.value].map(p=>`<span class="pip" style="grid-area:${Math.ceil(p/3)}/${((p-1)%3)+1}"></span>`).join('')}</button>`;
   }
 
   function dimensionalBanishmentField(profile){
@@ -2087,7 +2137,7 @@ function showPlayerActivation(stage={}){
           </div>
         </section>
         <div id="combatRules"></div>
-        ${combatOutcomeFields()}
+        ${playerCombatDiceFields()}
         <div id="aggressiveDefenceFields"></div>
         <div id="combatResults" class="combat-results">${singleTarget?'':'<p>Select a target NPO to begin.</p>'}</div>
         <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button>${attackType==='melee'&&onSkip?'<button class="btn secondary" id="skipPendingMelee">Skip Melee</button>':''}<button class="btn primary" id="rollPendingAttack">Record Combat Outcome</button></div>
@@ -2103,6 +2153,52 @@ function showPlayerActivation(stage={}){
     const targetSelect=$('#combatTarget');
     const weaponSelect=$('#playerWeaponSelect');
     const controls=$('#combatControls');
+    const diceDraft={attackDice:[],defenseDice:[],rolling:null};
+    let diceAnimationTimer=null;
+
+    const stopDiceAnimation=()=>{
+      if(diceAnimationTimer)clearTimeout(diceAnimationTimer);
+      diceAnimationTimer=null;
+      diceDraft.rolling=null;
+    };
+
+    const renderDicePool=(pool)=>{
+      const dice=pool==='attack'?diceDraft.attackDice:diceDraft.defenseDice;
+      const row=$(pool==='attack'?'#playerAttackDice':'#playerDefenseDice');
+      const totals=$(pool==='attack'?'#attackRetainedTotals':'#defenseRetainedTotals');
+      row.innerHTML=dice.map((die,index)=>selectableDieHtml(die,index,pool)).join('');
+      row.className='dice-row settled';
+      totals.innerHTML=retainedTotalsHtml(dice);
+      $$(`[data-retain-die="${pool}"]`).forEach(button=>button.onclick=()=>{
+        const die=dice[Number(button.dataset.dieIndex)];
+        if(!die||die.kind==='miss')return;
+        die.retained=!die.retained;
+        renderDicePool(pool);
+      });
+    };
+
+    const animateDicePool=(pool,dice)=>{
+      const row=$(pool==='attack'?'#playerAttackDice':'#playerDefenseDice');
+      diceDraft.rolling=pool;
+      row.className='dice-row animated-roll';
+      row.innerHTML=dice.map(()=>rollingDieHtml()).join('');
+      $('#rollPlayerAttackDice').disabled=true;
+      $('#rollPlayerDefenseDice').disabled=true;
+      $('#rollPendingAttack').disabled=true;
+      targetSelect.disabled=true;
+      weaponSelect.disabled=true;
+      diceAnimationTimer=setTimeout(()=>{
+        diceAnimationTimer=null;
+        diceDraft.rolling=null;
+        if(!$('#rollPlayerAttackDice')||!$('#rollPlayerDefenseDice')||!$('#rollPendingAttack'))return;
+        renderDicePool(pool);
+        $('#rollPlayerAttackDice').disabled=false;
+        $('#rollPlayerDefenseDice').disabled=!diceDraft.attackDice.length;
+        $('#rollPendingAttack').disabled=!diceDraft.defenseDice.length;
+        targetSelect.disabled=false;
+        weaponSelect.disabled=false;
+      },700);
+    };
 
     const renderProfile=()=>{
       const weapon=weapons[Number(weaponSelect?.value)||0];
@@ -2119,6 +2215,16 @@ function showPlayerActivation(stage={}){
       if(saveValue)saveValue.textContent=target?`${target.save}+`:'—';
       $('#aggressiveDefenceFields').innerHTML=aggressiveDefenceFields(target);
       bindSpinners($('#aggressiveDefenceFields'));
+      if(diceDraft.attackDice.length||diceDraft.defenseDice.length){
+        diceDraft.attackDice=[];
+        diceDraft.defenseDice=[];
+        $('#playerAttackDice').innerHTML='<span class="muted">Not rolled</span>';
+        $('#playerDefenseDice').innerHTML='<span class="muted">Roll attack dice first</span>';
+        $('#attackRetainedTotals').innerHTML='';
+        $('#defenseRetainedTotals').innerHTML='';
+        $('#rollPlayerDefenseDice').disabled=true;
+        $('#rollPendingAttack').disabled=true;
+      }
     };
 
     targetSelect.addEventListener('change',()=>{
@@ -2133,15 +2239,29 @@ function showPlayerActivation(stage={}){
 
     renderProfile();
     bindSpinners(modalBody);
-    $('#cancelPendingAttack').onclick=()=>cancelPendingPlayerCombat(stage,attackType,onCancel);
-    if($('#skipPendingMelee'))$('#skipPendingMelee').onclick=onSkip;
-    $('#rollPendingAttack').onclick=()=>previewPendingPlayerAttack(stage,attackType,onResolved,onCancel);
+    $('#rollPendingAttack').disabled=true;
+    $('#rollPlayerAttackDice').onclick=()=>{
+      const weapon=weapons[Number(weaponSelect?.value)||0];
+      const profile=playerWeaponProfile(weapon);
+      diceDraft.attackDice=rolledCombatDice(profile.dice,profile.hit,profile.critThreshold);
+      diceDraft.defenseDice=[];
+      $('#playerDefenseDice').innerHTML='<span class="muted">Roll attack dice first</span>';
+      $('#defenseRetainedTotals').innerHTML='';
+      animateDicePool('attack',diceDraft.attackDice);
+    };
+    $('#rollPlayerDefenseDice').onclick=()=>{
+      const target=state.roster.find(x=>x.id===targetSelect.value);
+      if(!target)return;
+      diceDraft.defenseDice=rolledCombatDice(3,Number(target.save)||3);
+      animateDicePool('defense',diceDraft.defenseDice);
+    };
+    $('#cancelPendingAttack').onclick=()=>{stopDiceAnimation();cancelPendingPlayerCombat(stage,attackType,onCancel);};
+    if($('#skipPendingMelee'))$('#skipPendingMelee').onclick=()=>{stopDiceAnimation();onSkip();};
+    $('#rollPendingAttack').onclick=()=>previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft);
     const draft=stage[`${attackType}CombatDraft`];
     if(draft){
       targetSelect.value=draft.targetId;
       weaponSelect.value=String(draft.weaponIndex);
-      $('#retainedNormal').value=draft.normalRemaining||0;
-      $('#retainedCritical').value=draft.critRemaining||0;
       $('#resolvedDamage').value=draft.damage||0;
       controls.disabled=false;
       renderProfile();
@@ -2149,7 +2269,7 @@ function showPlayerActivation(stage={}){
     }
   }
 
-  function previewPendingPlayerAttack(stage,attackType,onResolved,onCancel){
+  function previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft){
     const n=state.roster.find(x=>x.id===$('#combatTarget').value);
     if(!n)return;
     const weapons=playerAttackWeapons(stage.playerOperativeId,attackType);
@@ -2159,9 +2279,11 @@ function showPlayerActivation(stage={}){
     const weaponIndex=Number($('#playerWeaponSelect')?.value)||0;
     const result={
       ...recordedCombat({attackerName:playerName(stage.playerOperativeId),defenderName:npoName(n),attackType,attackerSide:'player',defenderSide:'npo',profile:{...profile,rules:weapon.rules||[]},before,
-        normalSuccesses:num('retainedNormal'),criticalSuccesses:num('retainedCritical'),damage:num('resolvedDamage')}),
+        normalSuccesses:retainedDiceTotals(diceDraft.attackDice).normal,criticalSuccesses:retainedDiceTotals(diceDraft.attackDice).critical,damage:num('resolvedDamage')}),
       targetId:n.id,targetName:npoName(n),weaponName:weapon.name,weaponIndex
     };
+    result.rolledAttackDice=diceDraft.attackDice.map(die=>({...die}));
+    result.rolledDefenseDice=diceDraft.defenseDice.map(die=>({...die}));
     const retaliationApplies=combatAbilityHandlers['aggressive-defence-construct']({targetIncapacitated:result.after<=0,attackerWithinTwo:Boolean($('#attackerWithinTwo')?.checked)});
     result.aggressiveDefenceDamage=retaliationApplies&&num('aggressiveDefenceRoll')>=2?num('aggressiveDefenceRoll'):0;
     stage[`${attackType}CombatDraft`]=result;
@@ -2180,6 +2302,9 @@ function showPlayerActivation(stage={}){
     $$('.combat-outcome-fields input').forEach(input=>input.disabled=true);
     $('#combatTarget').disabled=true;
     $('#playerWeaponSelect').disabled=true;
+    $('#rollPlayerAttackDice').disabled=true;
+    $('#rollPlayerDefenseDice').disabled=true;
+    $$('[data-retain-die]').forEach(die=>die.disabled=true);
     if(animate)settleCombatDice(result);
   }
 
