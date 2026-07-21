@@ -57,5 +57,23 @@ class AutomaticPlayerShootingTests(unittest.TestCase):
         self.assertNotIn("spinnerField('retainedNormal'", wizard)
         self.assertNotIn("spinnerField('retainedCritical'", wizard)
 
+    def test_continue_enables_only_after_recorded_automatic_result(self):
+        wizard = self.source('function showPendingPlayerAttackWizard', 'function previewPendingPlayerAttack')
+        preview = self.source('function previewPendingPlayerAttack', 'function displayPendingPlayerCombat')
+        display = self.source('function displayPendingPlayerCombat', 'function npoBehavior')
+
+        self.assertIn("button.disabled=true;\n      button.textContent='Rolling…'", wizard)
+        self.assertIn('onComplete:(attackDice,defenseDice)=>', wizard)
+        self.assertIn('previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft)', wizard)
+        self.assertLess(preview.index("stage[`${attackType}CombatDraft`]=result"), preview.index('displayPendingPlayerCombat'))
+        self.assertIn("button.disabled=stage[`${attackType}CombatDraft`]!==result", display)
+        self.assertIn('button.onclick=()=>onResolved(result)', display)
+        self.assertNotIn('previewPendingPlayerAttack', display)
+        self.assertNotIn('applyPendingPlayerDamage', display)
+
+        restore = wizard.split('if(draft){', 1)[1]
+        self.assertIn('displayPendingPlayerCombat(stage,attackType,draft,onResolved,onCancel,false)', restore)
+        self.assertIn("$('#cancelPendingAttack').onclick=()=>cancelPendingPlayerCombat", display)
+
 if __name__ == '__main__':
     unittest.main()

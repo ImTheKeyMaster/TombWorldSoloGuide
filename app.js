@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.2.0';
+  const APP_VERSION = '5.2.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -2705,6 +2705,7 @@ function showPlayerActivation(stage={}){
 
     const button=$('#rollPendingAttack');
     button.textContent=attackType==='shoot'?'Continue':'Use This Result';
+    button.disabled=stage[`${attackType}CombatDraft`]!==result;
     button.onclick=()=>onResolved(result);
     $('#cancelPendingAttack').onclick=()=>cancelPendingPlayerCombat(stage,attackType,onCancel);
     $$('.combat-outcome-fields input').forEach(input=>input.disabled=true);
