@@ -35,6 +35,7 @@ class AutomaticPlayerShootingTests(unittest.TestCase):
         wizard = self.source('function showPendingPlayerAttackWizard', 'function previewPendingPlayerAttack')
         restore = wizard.split('if(draft){', 1)[1]
         self.assertIn('displayPendingPlayerCombat', restore)
+        self.assertIn("if($('#resolvedDamage'))", restore)
         self.assertIn("else if(attackType==='shoot'&&singleTarget)startAutomaticPlayerShooting()", restore)
         self.assertLess(restore.index('displayPendingPlayerCombat'), restore.index('startAutomaticPlayerShooting'))
 
@@ -50,6 +51,9 @@ class AutomaticPlayerShootingTests(unittest.TestCase):
         shooting_markup = wizard.split("attackType==='shoot'", 1)[1]
         self.assertIn('automaticPlayerCombat', shooting_markup)
         self.assertNotIn('Record Combat Outcome', wizard)
+        display = self.source('function displayPendingPlayerCombat', 'function npoBehavior')
+        self.assertIn("attackType==='shoot'?'Continue'", display)
+        self.assertNotIn("button.textContent='Use This Result'", display)
         self.assertNotIn("spinnerField('retainedNormal'", wizard)
         self.assertNotIn("spinnerField('retainedCritical'", wizard)
 

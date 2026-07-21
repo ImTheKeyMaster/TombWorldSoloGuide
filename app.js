@@ -2633,7 +2633,7 @@ function showPlayerActivation(stage={}){
     if(draft){
       targetSelect.value=draft.targetId;
       weaponSelect.value=String(draft.weaponIndex);
-      $('#resolvedDamage').value=draft.damage||0;
+      if($('#resolvedDamage'))$('#resolvedDamage').value=draft.damage||0;
       controls.disabled=false;
       renderProfile();
       displayPendingPlayerCombat(stage,attackType,draft,onResolved,onCancel,false);
@@ -2700,10 +2700,11 @@ function showPlayerActivation(stage={}){
   }
 
   function displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,animate){
-    $('#combatResults').innerHTML=`${renderCombatResolution(result,{pending:true,animate})}<p class="muted">No wounds have been changed. Use This Result stores the attack until the Player activation is confirmed.</p>`;
+    $('#automaticPlayerCombat')?.replaceChildren();
+    $('#combatResults').innerHTML=`${renderCombatResolution(result,{pending:true,animate})}<p class="muted">This result has been recorded. Wounds will be applied once when the Player activation is confirmed.</p>`;
 
     const button=$('#rollPendingAttack');
-    button.textContent='Use This Result';
+    button.textContent=attackType==='shoot'?'Continue':'Use This Result';
     button.onclick=()=>onResolved(result);
     $('#cancelPendingAttack').onclick=()=>cancelPendingPlayerCombat(stage,attackType,onCancel);
     $$('.combat-outcome-fields input').forEach(input=>input.disabled=true);
