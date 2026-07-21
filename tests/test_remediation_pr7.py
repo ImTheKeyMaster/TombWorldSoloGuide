@@ -102,11 +102,11 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertIn('shootCombatDraft', self.app)
 
     def test_mission_end_logic_was_not_added_by_combat_release(self):
-        self.assertNotIn('missionState:', self.app)
+        self.assertIn('missionState:', self.app)
         self.assertNotIn('postGame', self.app)
 
     def test_versions_are_synchronized(self):
-        expected = '4.7.1'
+        expected = '4.8.0'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"styles.css?v={expected}", (ROOT / 'index.html').read_text())
         self.assertIn(f"app.js?v={expected}", (ROOT / 'index.html').read_text())

@@ -147,5 +147,13 @@
       "label": "Start with 2CP total and select up to four equipment options, recording and managing both for tabletop play; the Guide does not track or validate their effects.",
       "stage": "deploy"
     }
-  ]
+  ],
+  "missionEngine": {
+    "type": "escape",
+    "timing": "immediate",
+    "features": [],
+    "progressLabel": "Operatives escaped",
+    "success": "At least half of the player operatives escaped after every operative has left the killzone.",
+    "failure": "Fewer than half of the player operatives escaped after every operative has left the killzone."
+  }
 }

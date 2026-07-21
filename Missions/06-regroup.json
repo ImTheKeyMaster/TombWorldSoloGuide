@@ -144,5 +144,12 @@
       "label": "Start with 2CP total and select up to four equipment options, recording and managing both for tabletop play; the Guide does not track or validate their effects.",
       "stage": "deploy"
     }
-  ]
+  ],
+  "missionEngine": {
+    "type": "regroup",
+    "timing": "end-turning-point",
+    "progressLabel": "Surviving operatives regrouped",
+    "success": "At the end of a Turning Point, every surviving player operative was wholly within Player B’s drop zone, outside NPO control range, and within 3 inches of another player operative.",
+    "failure": "Every player operative was incapacitated."
+  }
 }

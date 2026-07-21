@@ -45,7 +45,7 @@ class RemediationPr3Tests(unittest.TestCase):
         self.assertIn("state.missionId==='destroy-sarcophagus'", source)
         self.assertIn("normalizeSarcophagusControllers(state.missionReadyContext.sarcophagusControllers)", source)
         self.assertIn("repairRoll-controllers", source)
-        self.assertIn("state.tracker-=repaired", source)
+        self.assertIn("state.missionState.destruction-=repaired", source)
         self.assertIn("id:'nanoscarab-repair'", source)
         self.assertIn("during the Ready step", source)
 
@@ -100,7 +100,7 @@ class RemediationPr3Tests(unittest.TestCase):
         self.assertIn("merged.strategyPipeline", normalize)
 
     def test_versions_are_synchronized(self):
-        expected = "4.7.1"
+        expected = "4.8.0"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()

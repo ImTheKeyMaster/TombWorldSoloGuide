@@ -158,5 +158,35 @@
       "label": "Start with 2CP total and select up to four equipment options, recording and managing both for tabletop play; the Guide does not track or validate their effects.",
       "stage": "deploy"
     }
-  ]
+  ],
+  "missionEngine": {
+    "type": "scout",
+    "timing": "immediate",
+    "required": 3,
+    "rooms": [
+      {
+        "id": "room-1",
+        "label": "Eligible room 1"
+      },
+      {
+        "id": "room-2",
+        "label": "Eligible room 2"
+      },
+      {
+        "id": "room-3",
+        "label": "Eligible room 3"
+      },
+      {
+        "id": "room-4",
+        "label": "Eligible room 4"
+      },
+      {
+        "id": "room-5",
+        "label": "Eligible room 5"
+      }
+    ],
+    "progressLabel": "Rooms scouted",
+    "success": "Three eligible rooms were scouted.",
+    "failure": "Every player operative was incapacitated."
+  }
 }
