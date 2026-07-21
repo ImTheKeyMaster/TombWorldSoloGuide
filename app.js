@@ -1918,7 +1918,7 @@ function showPlayerActivation(stage={}){
   function npoActionQuestion(n,index){
     const action=npoBehavior(n)?.actions[index];
     if(!action)return null;
-    return {key:`action-${index}`,title:`Can this NPO ${action}?`,help:'Check movement, visibility, cover, control range, measurement, action points, order and all other tabletop restrictions. Choose Yes only if this printed action is legal now.'};
+    return {key:`action-${index}`,action,title:`Can this NPO ${action}?`,help:'Check movement, visibility, cover, control range, measurement, action points, order and all other tabletop restrictions. Choose Yes only if this printed action is legal now.'};
   }
 
   const npoQuestionIcons = {
@@ -2209,7 +2209,7 @@ function showPlayerActivation(stage={}){
 
   function renderActiveNpoQuestion(q){
     return `<section class="npo-question-active npo-question-card--active" aria-live="polite" aria-atomic="true">
-      ${npoIcon(npoQuestionIcons[q.key])}<h3>${escapeHtml(q.title)}</h3><p>${escapeHtml(q.help)}</p>
+      ${npoIcon(npoQuestionIcons[q.action.split(' ')[0]])}<h3>${escapeHtml(q.title)}</h3><p>${escapeHtml(q.help)}</p>
       <div class="ai-choice-grid"><button class="ai-choice no" data-answer="no"><strong>No</strong></button><button class="ai-choice yes" data-answer="yes"><strong>Yes</strong></button></div>
     </section>`;
   }
