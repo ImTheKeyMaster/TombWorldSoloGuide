@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v4.3.0
+# Tomb World Solo Guide v4.4.0
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -1085,3 +1085,13 @@ v3.0.7: Kasrkin roster choices updated.
 - Removed invented behavior labels from the NPO activation workflow and continued using the canonical NPO definitions introduced in v4.1.0.
 - Preserved the existing mobile activation dialogs and intentionally deferred combat, weapon, reinforcement, event, and mission-engine changes.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v4.3.0.
+
+
+## v4.4.0
+
+- Implemented Remediation PR 5 with the complete physical Tomb World Event deck, duplicate card weighting, official draw timing, and draw-without-replacement lifecycle.
+- Integrated queued event execution into the existing Strategy pipeline before reinforcements, including tabletop confirmations and printed redraw conditions.
+- Persisted the event deck, used cards, active effects, duration, and resolution metadata with backward-compatible save normalization.
+- Added focused event-engine regression coverage and preserved the existing mobile-first inline event-card workflow.
+- Intentionally deferred reinforcements, combat changes, and mission objective logic to later remediation PRs.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v4.4.0.

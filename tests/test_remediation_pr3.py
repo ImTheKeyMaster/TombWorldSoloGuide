@@ -22,17 +22,20 @@ class RemediationPr3Tests(unittest.TestCase):
     def test_interactive_event_blocks_reinforcements_until_resolved(self):
         start = self.function_source("startTurningPoint", "completeStrategyStage")
         self.assertIn("if(!state.strategyData.eventPending)processReinforcementStage();", start)
-        event_stage = self.function_source("processEventStage", "eventNeedsResolution")
-        self.assertIn("d.eventPending=eventNeedsResolution(d.event)", event_stage)
-        self.assertIn("if(d.eventPending)return", event_stage)
-        resolution = self.function_source("resolveStrategyNpoEvent", "randomReinforcement")
-        self.assertLess(resolution.index("d.eventPending=false"), resolution.index("processReinforcementStage();"))
+        event_stage = self.function_source("processEventStage", "eventRecord")
+        self.assertIn("if(d.event){beginCurrentEvent();return;}", event_stage)
+        current = self.function_source("beginCurrentEvent", "completeCurrentEvent")
+        self.assertIn("d.eventPending=true", current)
+        resolution = self.function_source("completeCurrentEvent", "redrawCurrentEvent")
+        self.assertIn("d.eventPending=false", resolution)
+        self.assertIn("beginCurrentEvent();", resolution)
         reinforcement = self.function_source("processReinforcementStage", "rollInitiative")
         self.assertIn("completed.includes('reinforcement')", reinforcement)
 
     def test_event_capacity_is_evaluated_before_reinforcements(self):
-        event_gate = self.function_source("eventNeedsResolution", "processReinforcementStage")
-        self.assertIn("activeNpos().length<MAX_NPOS||hasWoundedTarget", event_gate)
+        event_gate = self.function_source("beginCurrentEvent", "completeCurrentEvent")
+        self.assertIn("activeNpos().length>=MAX_NPOS", event_gate)
+        self.assertIn("redrawCurrentEvent", event_gate)
         strategy_card = self.function_source("strategyCard", "actualReinforcementCount")
         self.assertIn("Resolve the Tomb World event before generating reinforcements", strategy_card)
         self.assertIn("reinforcementPending?'disabled'", strategy_card)
@@ -97,7 +100,7 @@ class RemediationPr3Tests(unittest.TestCase):
         self.assertIn("merged.strategyPipeline", normalize)
 
     def test_versions_are_synchronized(self):
-        expected = "4.3.0"
+        expected = "4.4.0"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()
