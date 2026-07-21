@@ -2154,6 +2154,13 @@ function showPlayerActivation(stage={}){
     const weaponSelect=$('#playerWeaponSelect');
     const controls=$('#combatControls');
     const diceDraft={attackDice:[],defenseDice:[],rolling:null};
+    let diceAnimationTimer=null;
+
+    const stopDiceAnimation=()=>{
+      if(diceAnimationTimer)clearTimeout(diceAnimationTimer);
+      diceAnimationTimer=null;
+      diceDraft.rolling=null;
+    };
 
     const renderDicePool=(pool)=>{
       const dice=pool==='attack'?diceDraft.attackDice:diceDraft.defenseDice;
@@ -2178,12 +2185,18 @@ function showPlayerActivation(stage={}){
       $('#rollPlayerAttackDice').disabled=true;
       $('#rollPlayerDefenseDice').disabled=true;
       $('#rollPendingAttack').disabled=true;
-      setTimeout(()=>{
+      targetSelect.disabled=true;
+      weaponSelect.disabled=true;
+      diceAnimationTimer=setTimeout(()=>{
+        diceAnimationTimer=null;
         diceDraft.rolling=null;
+        if(!$('#rollPlayerAttackDice')||!$('#rollPlayerDefenseDice')||!$('#rollPendingAttack'))return;
         renderDicePool(pool);
         $('#rollPlayerAttackDice').disabled=false;
         $('#rollPlayerDefenseDice').disabled=!diceDraft.attackDice.length;
         $('#rollPendingAttack').disabled=!diceDraft.defenseDice.length;
+        targetSelect.disabled=false;
+        weaponSelect.disabled=false;
       },700);
     };
 
@@ -2242,9 +2255,9 @@ function showPlayerActivation(stage={}){
       diceDraft.defenseDice=rolledCombatDice(3,Number(target.save)||3);
       animateDicePool('defense',diceDraft.defenseDice);
     };
-    $('#cancelPendingAttack').onclick=()=>cancelPendingPlayerCombat(stage,attackType,onCancel);
-    if($('#skipPendingMelee'))$('#skipPendingMelee').onclick=onSkip;
-    $('#rollPendingAttack').onclick=()=>previewPendingPlayerAttack(stage,attackType,onResolved,onCancel);
+    $('#cancelPendingAttack').onclick=()=>{stopDiceAnimation();cancelPendingPlayerCombat(stage,attackType,onCancel);};
+    if($('#skipPendingMelee'))$('#skipPendingMelee').onclick=()=>{stopDiceAnimation();onSkip();};
+    $('#rollPendingAttack').onclick=()=>previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft);
     const draft=stage[`${attackType}CombatDraft`];
     if(draft){
       targetSelect.value=draft.targetId;
@@ -2256,7 +2269,7 @@ function showPlayerActivation(stage={}){
     }
   }
 
-  function previewPendingPlayerAttack(stage,attackType,onResolved,onCancel){
+  function previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft){
     const n=state.roster.find(x=>x.id===$('#combatTarget').value);
     if(!n)return;
     const weapons=playerAttackWeapons(stage.playerOperativeId,attackType);
@@ -2289,6 +2302,9 @@ function showPlayerActivation(stage={}){
     $$('.combat-outcome-fields input').forEach(input=>input.disabled=true);
     $('#combatTarget').disabled=true;
     $('#playerWeaponSelect').disabled=true;
+    $('#rollPlayerAttackDice').disabled=true;
+    $('#rollPlayerDefenseDice').disabled=true;
+    $$('[data-retain-die]').forEach(die=>die.disabled=true);
     if(animate)settleCombatDice(result);
   }
 

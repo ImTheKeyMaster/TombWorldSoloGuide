@@ -54,6 +54,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertIn("animateDicePool('defense'", wizard)
         self.assertIn('die.retained=!die.retained', wizard)
         preview = self.source('previewPendingPlayerAttack', 'displayPendingPlayerCombat')
+        self.assertIn('onCancel,diceDraft', preview)
         self.assertIn('retainedDiceTotals(diceDraft.attackDice)', preview)
 
     def test_pack_defined_combat_abilities_have_follow_up_handlers(self):
