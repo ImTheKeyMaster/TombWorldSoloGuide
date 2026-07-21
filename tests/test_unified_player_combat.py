@@ -4,64 +4,58 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-
 class UnifiedPlayerCombatTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.app = (ROOT / 'app.js').read_text()
+        cls.css = (ROOT / 'styles.css').read_text()
 
     def source(self, start, end):
         return self.app.split(start, 1)[1].split(end, 1)[0]
 
-    def test_shooting_and_melee_share_automatic_layout_and_sequence(self):
-        wizard = self.source('function showPendingPlayerAttackWizard', 'function previewPendingPlayerAttack')
-        self.assertIn('<div id="automaticPlayerCombat"', wizard)
-        self.assertNotIn("attackType==='shoot'?'<div id=", wizard)
-        self.assertIn('startAutomaticPlayerCombat()', wizard)
-        self.assertNotIn('playerCombatDiceFields()', wizard)
-        self.assertNotIn("spinnerField('resolvedDamage'", wizard)
+    def test_shooting_and_melee_share_dedicated_resolution_screen(self):
+        wizard = self.source('function showPendingPlayerAttackWizard', 'function showPlayerCombatResolution')
+        resolution = self.source('function showPlayerCombatResolution', 'function previewPendingPlayerAttack')
+        self.assertIn('showPlayerCombatResolution(stage,attackType', wizard)
+        self.assertIn('dedicated-combat-screen', resolution)
+        self.assertIn("attackType==='shoot'?'Shooting':'Melee'", resolution)
+        self.assertEqual(self.app.count('function showPlayerCombatResolution'), 1)
 
-    def test_both_combat_types_use_automatic_retention_and_damage(self):
-        preview = self.source('function previewPendingPlayerAttack', 'function displayPendingPlayerCombat')
-        self.assertIn('resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,profile)', preview)
-        self.assertIn('damage:resolution.damage', preview)
-        self.assertIn('result.attackDice=result.rolledAttackDice', preview)
-        self.assertIn('result.saveDice=result.rolledDefenseDice', preview)
-        self.assertIn('result.recordedOutcome=false', preview)
-        self.assertNotIn("if(attackType==='shoot')", preview)
+    def test_resolution_opens_at_top_and_starts_attack_then_defense(self):
+        resolution = self.source('function showPlayerCombatResolution', 'function previewPendingPlayerAttack')
+        shared = self.source('function runAutomaticCombatRolls', 'function retainedDiceTotals')
+        self.assertIn("window.scrollTo({top:0,left:0,behavior:'auto'})", resolution)
+        self.assertIn('modal.scrollTop=0', resolution)
+        self.assertIn('runAutomaticCombatRolls', resolution)
+        self.assertLess(shared.index('ATTACK DICE'), shared.index('DEFENSE DICE'))
 
-    def test_animated_continue_waits_for_visual_settlement(self):
-        settle = self.source('function settleCombatDice', 'function projectedNpoWounds')
+    def test_animated_and_restored_continue_timing(self):
         display = self.source('function displayPendingPlayerCombat', 'function npoBehavior')
-        self.assertIn("classList.replace('animated-roll','settled')", settle)
-        self.assertLess(settle.index("classList.replace('animated-roll','settled')"), settle.index('onSettled()'))
-        self.assertIn('let visualComplete=!animate', display)
-        self.assertIn('button.disabled=!visualComplete||', display)
-        self.assertIn('if(!visualComplete||', display)
-        self.assertLess(display.index('settleCombatDice(result,()=>'), display.index('button.disabled=false'))
-
-    def test_restored_results_enable_continue_without_settle_delay(self):
-        wizard = self.source('function showPendingPlayerAttackWizard', 'function previewPendingPlayerAttack')
-        restore = wizard.split('if(draft){', 1)[1]
-        display = self.source('function displayPendingPlayerCombat', 'function npoBehavior')
-        self.assertIn('displayPendingPlayerCombat(stage,attackType,draft,onResolved,onCancel,false)', restore)
         self.assertIn('let visualComplete=!animate', display)
         self.assertIn('if(animate)settleCombatDice', display)
+        self.assertIn('button.disabled=false', display)
+        wizard = self.source('function showPendingPlayerAttackWizard', 'function showPlayerCombatResolution')
+        self.assertIn('{result:draft,animate:false}', wizard)
 
-    def test_melee_footer_only_offers_cancel_and_continue(self):
-        wizard = self.source('function showPendingPlayerAttackWizard', 'function previewPendingPlayerAttack')
-        footer = wizard.split('<div class="wizard-actions">', 1)[1].split('</div>', 1)[0]
-        self.assertIn('id="cancelPendingAttack">Cancel</button>', footer)
-        self.assertIn('id="rollPendingAttack">Rolling…</button>', footer)
-        self.assertEqual(footer.count('<button'), 2)
-        self.assertNotIn('skipPendingMelee', wizard)
-        self.assertNotIn('onSkip', wizard)
+    def test_removed_ui_and_summary(self):
+        for text in ('SHOOTING SEQUENCE','FIGHT SEQUENCE','Skip Melee','Confirm Player Activation'):
+            self.assertNotIn(text, self.app)
+        resolver = self.source('function resolvePendingPlayerAttacks', 'function applyPendingPlayerDamage')
+        self.assertIn('applyPendingPlayerDamage(stage)', resolver)
+        self.assertNotIn('showPlayerActivationConfirmation', self.app)
 
-    def test_damage_remains_transactional_and_single_application(self):
+    def test_footer_and_transactional_damage(self):
+        resolution = self.source('function showPlayerCombatResolution', 'function previewPendingPlayerAttack')
+        self.assertIn('id="cancelPendingAttack">Cancel</button>', resolution)
+        self.assertIn('id="continuePendingAttack" disabled>Continue</button>', resolution)
         apply_damage = self.source('function applyPendingPlayerDamage', 'function completePlayerActivation')
         self.assertIn('if(!pending||pending.committed)continue', apply_damage)
         self.assertIn('pending.committed=true', apply_damage)
 
+    def test_responsive_layout_has_no_fixed_content_height(self):
+        self.assertIn('.dedicated-combat-screen', self.css)
+        self.assertIn('@media(max-width:600px)', self.css)
+        self.assertNotIn('.dedicated-combat-screen{height:', self.css)
 
 if __name__ == '__main__':
     unittest.main()
