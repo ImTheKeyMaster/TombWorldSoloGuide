@@ -1,6 +1,16 @@
-# Tomb World Solo Guide v5.5.1
+# Tomb World Solo Guide v5.5.2
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
+
+
+## v5.5.2
+
+**Version 5.5.2 - Direct Initiative Activation**
+
+- Removed the redundant automatic-initiative confirmation screen and its begin-side controls.
+- Strategy completion now routes directly to the side selected by the resolved initiative result.
+- Added a lightweight initiative status message to activation screens, including the Turning Point 1 Dormant NPO reminder.
+- Preserved existing initiative rolls, Strategy processing, Tomb World events, reinforcements, activation alternation, and save compatibility.
 
 
 ## v1.1.6 additions
