@@ -42,32 +42,19 @@ class RemediationPr7CombatTests(unittest.TestCase):
         for rule in ('Piercing 1', 'Punishing', 'Torrent 1"', 'Brutal', 'Blast 2"'):
             self.assertIn(rule, self.app)
 
-    def test_player_combat_uses_sequential_selectable_dice(self):
-        fields = self.source('playerCombatDiceFields', 'rolledCombatDice')
-        self.assertIn('Roll Attack Dice', fields)
-        self.assertIn('Roll Defense Dice', fields)
-        self.assertIn('id="rollPlayerDefenseDice" disabled', fields)
-        self.assertNotIn("spinnerField('retainedNormal'", fields)
-        self.assertNotIn("spinnerField('retainedCritical'", fields)
+    def test_player_shooting_uses_shared_automatic_combat(self):
         wizard = self.source('showPendingPlayerAttackWizard', 'previewPendingPlayerAttack')
-        self.assertIn("animateDicePool('attack'", wizard)
-        self.assertIn("animateDicePool('defense'", wizard)
-        self.assertIn('die.retained=!die.retained', wizard)
-        self.assertIn('rolledCombatDice(Math.max(0,3-profile.ap)', wizard)
-        self.assertIn("defenseDiceValue.textContent=Math.max(0,3-profile.ap)", wizard)
+        shared = self.source('runAutomaticCombatRolls', 'retainedDiceTotals')
         preview = self.source('previewPendingPlayerAttack', 'displayPendingPlayerCombat')
-        self.assertIn('onCancel,diceDraft', preview)
-        self.assertIn('resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,profile)', preview)
-
-        resolver = self.source('resolveRetainedCombat', 'selectableDieHtml')
-        self.assertIn('criticalCancellations', resolver)
-        self.assertIn('criticalVsNormal', resolver)
-        self.assertIn('Math.floor(defense.normal/2)', resolver)
-        self.assertIn('profile.normal', resolver)
-        self.assertIn('profile.crit', resolver)
-        self.assertNotIn('attackRetainedTotals', self.app)
-        self.assertNotIn('defenseRetainedTotals', self.app)
-        self.assertNotIn('retainedTotalsHtml', self.app)
+        self.assertIn("attackType==='shoot'?'<div id=\"automaticPlayerCombat\"", wizard)
+        self.assertIn('runAutomaticCombatRolls', wizard)
+        self.assertIn('previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft)', wizard)
+        self.assertIn('retainSuccessfulDice', shared)
+        self.assertIn('resolution.damage', preview)
+        self.assertIn('result.attackDice=result.rolledAttackDice', preview)
+        self.assertNotIn('Record Combat Outcome', wizard)
+        self.assertNotIn("spinnerField('retainedNormal'", wizard)
+        self.assertNotIn("spinnerField('retainedCritical'", wizard)
 
     def test_pack_defined_combat_abilities_have_follow_up_handlers(self):
         handlers = self.app.split('const combatAbilityHandlers = {', 1)[1].split('\n  };', 1)[0]
@@ -106,7 +93,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertNotIn('postGame', self.app)
 
     def test_versions_are_synchronized(self):
-        expected = '5.1.0'
+        expected = '5.2.0'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"styles.css?v={expected}", (ROOT / 'index.html').read_text())
         self.assertIn(f"app.js?v={expected}", (ROOT / 'index.html').read_text())

@@ -15,17 +15,19 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         return self.app.split(start, 1)[1].split(end, 1)[0]
 
     def test_attack_then_defense_rolls_are_automatic_and_animated(self):
+        shared = self.source("function runAutomaticCombatRolls", "function retainedDiceTotals")
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
-        self.assertIn("startAutomaticCombat();", wizard)
-        self.assertIn("rolledCombatDice(profile.dice,profile.hit)", wizard)
-        self.assertIn("rolledCombatDice(Math.max(0,3-profile.ap),Number(target.save)||3)", wizard)
-        self.assertGreaterEqual(wizard.count("combatTimer=setTimeout"), 2)
-        self.assertIn("rollingDieHtml()", wizard)
-        self.assertIn("animated-roll", wizard)
+        self.assertIn("runAutomaticCombatRolls", wizard)
+        self.assertIn("rolledCombatDice(profile.dice,profile.hit,profile.critThreshold)", shared)
+        self.assertIn("rolledCombatDice(Math.max(0,3-profile.ap),Number(defenseSave)||3)", shared)
+        self.assertEqual(shared.count("timer=setTimeout"), 2)
+        self.assertIn("rollingDieHtml()", shared)
+        self.assertIn("animated-roll", shared)
 
     def test_successes_and_damage_are_calculated_without_editable_counters(self):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
-        self.assertIn("retainSuccessfulDice", wizard)
+        shared = self.source("function runAutomaticCombatRolls", "function retainedDiceTotals")
+        self.assertIn("retainSuccessfulDice", shared)
         self.assertIn("resolveRetainedCombat(rolledAttackDice,rolledDefenseDice,profile)", wizard)
         self.assertIn("damage:resolution.damage", wizard)
         self.assertNotIn("combatOutcomeFields()", wizard)
@@ -55,7 +57,7 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
         fresh_flow = wizard.split("const combat=saved", 1)[0]
         self.assertIn("combatDraft:null", fresh_flow)
-        self.assertIn("if(combatTimer)clearTimeout(combatTimer)", fresh_flow)
+        self.assertIn("if(combatTimer)combatTimer()", fresh_flow)
 
     def test_aggressive_defense_rolls_without_a_manual_button(self):
         preview = self.source("function previewPendingPlayerAttack", "function displayPendingPlayerCombat")

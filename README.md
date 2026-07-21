@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v5.1.0
+# Tomb World Solo Guide v5.2.0
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -1189,6 +1189,15 @@ v3.0.7: Kasrkin roster choices updated.
 - Expanded focused regression coverage and documented the dependency-free test command.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v4.9.0.
 
+
+## v5.2.0
+
+**Version 5.2.0 - Automatic Player Shooting Resolution**
+
+- Player shooting now uses the shared automatic attack-then-defense dice animation and combat resolution path used by NPO attacks.
+- Shooting rolls, retained successes, damage, wounds, and incapacitation are persisted as one result and restored without rerolling or duplicate application.
+- Removed manual Player shooting dice and outcome bookkeeping while preserving the existing Player melee workflow.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v5.2.0.
 
 ## v5.1.0
 
