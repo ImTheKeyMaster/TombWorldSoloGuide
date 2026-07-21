@@ -76,7 +76,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
         reminder = self.source('combatAbilityReminder', 'showPendingPlayerAttackWizard')
         self.assertIn('criticalSuccesses:combat.critRemaining', reminder)
         self.assertIn('remaining wounds', reminder)
-        self.assertIn('aggressiveDefenceDamage', reminder)
+        self.assertIn('aggressiveDefenseDamage', reminder)
         self.assertIn('applyDimensionalBanishment', self.app)
         self.assertIn("total>combat.after?0:combat.after", self.app)
 

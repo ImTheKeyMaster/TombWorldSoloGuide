@@ -37,12 +37,19 @@ class AggressiveDefenseD3Tests(unittest.TestCase):
         self.assertIn("rollingDieHtml()", preview)
         self.assertIn("dieHtml({value:rolledValue,kind:'hit'})", preview)
         self.assertIn("showToast(message)", preview)
-        self.assertIn("aggressiveDefenceDamage=aggressiveDefenseDamage(rolledValue)", preview)
+        self.assertIn("aggressiveDefenseRoll=rolledValue", preview)
+        self.assertIn("aggressiveDefenseDamage=aggressiveDefenseDamage(rolledValue)", preview)
+        self.assertIn("diceAnimationTimer=setTimeout", preview)
 
     def test_existing_transactional_damage_application_is_preserved(self):
         apply_damage = self.source("function applyPendingPlayerDamage", "function completePlayerActivation")
-        self.assertIn("playerBefore-pending.aggressiveDefenceDamage", apply_damage)
+        self.assertIn("playerBefore-aggressiveDamage", apply_damage)
         self.assertIn("state.playerWounds[stage.playerOperativeId]=playerAfter", apply_damage)
+
+    def test_result_message_includes_roll_and_only_appears_after_a_roll(self):
+        reminder = self.source("function combatAbilityReminder", "function cancelPendingPlayerCombat")
+        self.assertIn("Number.isInteger(combat.aggressiveDefenseRoll)", reminder)
+        self.assertIn("D3 result ${combat.aggressiveDefenseRoll}", reminder)
 
 
 if __name__ == "__main__":
