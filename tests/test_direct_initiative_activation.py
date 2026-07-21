@@ -23,7 +23,7 @@ class DirectInitiativeActivationTests(unittest.TestCase):
 
     def test_strategy_completion_uses_resolved_side_without_reroll(self):
         binding = self.function_source("bindPlay", "startTurningPoint")
-        direct_route = "beginFirefight(state.strategyData.suggestedInitiative)"
+        direct_route = "beginFirefight(state.strategyData?.suggestedInitiative==='npo'?'npo':'player')"
         self.assertIn(direct_route, binding)
         self.assertNotIn("rollInitiative()", binding)
         self.assertNotIn("rerollInitiative", self.app)
@@ -38,12 +38,14 @@ class DirectInitiativeActivationTests(unittest.TestCase):
             self.assertNotIn(obsolete, self.app)
 
     def test_legacy_confirmation_save_restores_directly(self):
+        normalization = self.function_source("normalizeState", "npoDefinition")
+        self.assertIn("merged.phase==='strategy'&&merged.strategyStage==='initiative'", normalization)
+        self.assertIn("merged.strategyData?.suggestedInitiative==='npo'?'npo':'player'", normalization)
+        self.assertIn("merged.phase='firefight'", normalization)
+        self.assertIn("merged.strategyStage=null", normalization)
+        self.assertIn("merged.nextSide=resolvedSide", normalization)
         rendering = self.function_source("renderPlay", "activeEventEffectsHtml")
-        self.assertIn("state.phase==='strategy'&&state.strategyStage==='initiative'", rendering)
-        self.assertIn("state.strategyData?.suggestedInitiative||state.initiative||'player'", rendering)
-        begin = self.function_source("beginFirefight", "resolveStrategyEvent")
-        self.assertIn("state.initiative=side", begin)
-        self.assertIn("setNextActivation(side)", begin)
+        self.assertNotIn("beginFirefight", rendering)
 
     def test_strategy_pipeline_still_precedes_activation(self):
         start = self.function_source("startTurningPoint", "completeStrategyStage")
@@ -57,7 +59,7 @@ class DirectInitiativeActivationTests(unittest.TestCase):
         self.assertEqual(expected, sorted(expected, key=start.index))
         binding = self.function_source("bindPlay", "startTurningPoint")
         self.assertIn("reinforcementPending||placementPending||missionPending?'disabled'", self.function_source("strategyCard", "actualReinforcementCount"))
-        self.assertIn("beginFirefight(state.strategyData.suggestedInitiative)", binding)
+        self.assertIn("beginFirefight(state.strategyData?.suggestedInitiative==='npo'?'npo':'player')", binding)
 
 
 if __name__ == "__main__":

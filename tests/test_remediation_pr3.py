@@ -80,10 +80,10 @@ class RemediationPr3Tests(unittest.TestCase):
 
     def test_resolved_initiative_routes_directly_to_firefight(self):
         bind_play = self.function_source("bindPlay", "startTurningPoint")
-        self.assertIn("beginFirefight(state.strategyData.suggestedInitiative)", bind_play)
-        render_play = self.function_source("renderPlay", "activeEventEffectsHtml")
-        self.assertIn("state.strategyStage==='initiative'", render_play)
-        self.assertIn("state.strategyData?.suggestedInitiative||state.initiative||'player'", render_play)
+        self.assertIn("beginFirefight(state.strategyData?.suggestedInitiative==='npo'?'npo':'player')", bind_play)
+        normalize = self.function_source("normalizeState", "npoDefinition")
+        self.assertIn("merged.phase==='strategy'&&merged.strategyStage==='initiative'", normalize)
+        self.assertIn("merged.nextSide=resolvedSide", normalize)
         self.assertNotIn("Begin Player Activation", self.app)
         self.assertNotIn("Begin with NPOs", self.app)
         self.assertNotIn("data-init", self.app)

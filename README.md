@@ -3,6 +3,16 @@
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
 
+## v5.5.2
+
+**Version 5.5.2 - Direct Initiative Activation**
+
+- Removed the redundant automatic-initiative confirmation screen and its begin-side controls.
+- Strategy completion now routes directly to the side selected by the resolved initiative result.
+- Added a lightweight initiative status message to activation screens, including the Turning Point 1 Dormant NPO reminder.
+- Preserved existing initiative rolls, Strategy processing, Tomb World events, reinforcements, activation alternation, and save compatibility.
+
+
 ## v1.1.6 additions
 
 - Mission maps now scroll horizontally on portrait phones without widening the page.
@@ -1296,13 +1306,3 @@ v3.0.7: Kasrkin roster choices updated.
 - Added Check All to streamline Kill Team deployment confirmation.
 - Preserved the gameplay and official-rules behavior completed during remediation.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v5.0.0.
-
-
-## v5.5.2
-
-**Version 5.5.2 - Direct Initiative Activation**
-
-- Removed the redundant automatic-initiative confirmation screen and its begin-side controls.
-- Strategy completion now routes directly to the side selected by the resolved initiative result.
-- Added a lightweight initiative status message to activation screens, including the Turning Point 1 Dormant NPO reminder.
-- Preserved existing initiative rolls, Strategy processing, Tomb World events, reinforcements, activation alternation, and save compatibility.

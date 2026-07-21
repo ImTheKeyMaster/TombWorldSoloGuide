@@ -463,6 +463,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.missionState=normalizeMissionState(raw?.missionState,savedMission,raw?.tracker);
     merged.completed=Boolean(merged.gameEnd);
     merged.playerCount=merged.playerRoster.length;
+    if(merged.phase==='strategy'&&merged.strategyStage==='initiative'){
+      const resolvedSide=merged.strategyData?.suggestedInitiative==='npo'?'npo':'player';
+      merged.initiative=resolvedSide;
+      merged.phase='firefight';
+      merged.strategyStage=null;
+      merged.nextSide=resolvedSide;
+    }
     return merged;
   }
   function npoDefinition(type){return npoDefinitions[type]||null;}
@@ -1168,10 +1175,6 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function renderPlay(){
-    if(state.phase==='strategy'&&state.strategyStage==='initiative'){
-      beginFirefight(state.strategyData?.suggestedInitiative||state.initiative||'player');
-      return;
-    }
     const milestone=state.gradeMilestone?`<section class="grade-milestone"><div><small>THREAT ESCALATION</small><strong>Grade ${state.gradeMilestone.grade}: ${escapeHtml(state.gradeMilestone.label)}</strong><span>Threat has reached Level ${state.gradeMilestone.threat}.</span></div><button class="btn ghost compact" id="dismissGradeMilestone">Dismiss</button></section>`:'';
     app.innerHTML=hud()+milestone+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${state.phase!=='strategy'?activeEventEffectsHtml():''}${nextStepCard()}${state.phase==='firefight'?activationTracker():''}`;
     bindPlay();
@@ -1432,7 +1435,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#eventNpoSelect')?.addEventListener('change',e=>{$('#resolveStrategyEvent').disabled=!e.target.value;});
     $('#resolveStrategyEvent')?.addEventListener('click',resolveStrategyEvent);
     $('#redrawStrategyEvent')?.addEventListener('click',()=>{redrawCurrentEvent('No breach or open hatchway could be changed.');save();render();});
-    $('#continueStrategy')?.addEventListener('click',()=>beginFirefight(state.strategyData.suggestedInitiative));
+    $('#continueStrategy')?.addEventListener('click',()=>beginFirefight(state.strategyData?.suggestedInitiative==='npo'?'npo':'player'));
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
     $('#npoActivation')?.addEventListener('click',showNpoSelection);
     bindMissionProgressControls();
