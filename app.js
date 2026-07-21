@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '4.1.0';
+  const APP_VERSION = '4.1.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -195,8 +195,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const npoGenerationTable = [
     {min:2,max:3,type:'Canoptek Scarab Swarm',weaponIds:['feeder-mandibles']},
     {min:4,max:6,type:'Canoptek Macrocyte',weaponIds:['gauss-scalpel','tesla-caster']},
-    {min:7,max:9,type:'Necron Warrior',weaponIds:['gauss-flayer','gauss-reaper']},
-    {min:10,max:11,type:'Canoptek Tomb Crawler',weaponIds:['twin-gauss-reapers']},
+    {min:7,max:10,type:'Necron Warrior',weaponIds:['gauss-flayer','gauss-reaper']},
+    {min:11,max:11,type:'Canoptek Tomb Crawler',weaponIds:['twin-gauss-reapers']},
     {min:12,max:12,type:'Canoptek Tomb Crawler',weaponIds:['transdimensional-isolator']}
   ];
 

@@ -22,8 +22,8 @@ class RemediationPr2Tests(unittest.TestCase):
         expected_types = {
             2: "Canoptek Scarab Swarm", 3: "Canoptek Scarab Swarm",
             4: "Canoptek Macrocyte", 5: "Canoptek Macrocyte", 6: "Canoptek Macrocyte",
-            7: "Necron Warrior", 8: "Necron Warrior", 9: "Necron Warrior",
-            10: "Canoptek Tomb Crawler", 11: "Canoptek Tomb Crawler", 12: "Canoptek Tomb Crawler",
+            7: "Necron Warrior", 8: "Necron Warrior", 9: "Necron Warrior", 10: "Necron Warrior",
+            11: "Canoptek Tomb Crawler", 12: "Canoptek Tomb Crawler",
         }
         actual = {}
         for minimum, maximum, operative, _ in rows:
