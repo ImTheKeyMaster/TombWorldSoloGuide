@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.5.0';
+  const APP_VERSION = '5.5.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -2050,17 +2050,17 @@ function showPlayerActivation(stage={}){
     </section>`;
   }
 
-  function renderCombatResolution(combat,{pending=false,animate=true}={}){
+  function renderCombatResolution(combat,{pending=false,animate=true,showParticipants=true}={}){
     const elimination=renderEliminationSummary({
       ...combat,side:combat.defenderSide,targetName:combat.defenderName
     });
     return `<section class="combat-resolution" aria-label="Combat resolution">
-      <div class="damage-summary combat-participants">
+      ${showParticipants?`<div class="damage-summary combat-participants">
         <div><small>Attacker</small><strong>${escapeHtml(combat.attackerName)}</strong></div>
         <div><small>Defender</small><strong>${escapeHtml(combat.defenderName)}</strong></div>
         <div><small>Attack type</small><strong>${combat.attackType==='shoot'?'Shooting':'Melee'}</strong></div>
         ${combat.recordedOutcome?'':`<div><small>Retained saves</small><strong>${combat.retainedSaves??(combat.coverRetained?1:0)}</strong></div>`}
-      </div>
+      </div>`:''}
       ${combat.recordedOutcome?'<div class="combat-stage"><small>TABLETOP RESOLUTION</small><p>Physical dice and retained successes resolved by the player.</p></div>':`<div class="combat-stage"><small>ATTACK DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div></div><div class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No defense dice rolled</span>'}</div>${combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':''}</div>`}
       ${elimination}
       ${combatAbilityReminder(combat)}
@@ -2101,7 +2101,7 @@ function showPlayerActivation(stage={}){
     const dice=$('#automaticCombat');
     const button=$('.combat-resolution-footer .btn.primary');
     if(dice)dice.replaceChildren();
-    results.innerHTML=`${renderCombatResolution(combat,{pending,animate})}${extraHtml}${message?`<p class="muted">${escapeHtml(message)}</p>`:''}`;
+    results.innerHTML=`${renderCombatResolution(combat,{pending,animate,showParticipants:false})}${extraHtml}${message?`<p class="muted">${escapeHtml(message)}</p>`:''}`;
     let visualComplete=!animate;
     button.textContent='Continue';
     button.disabled=!visualComplete;
@@ -2340,7 +2340,11 @@ function showPlayerActivation(stage={}){
         if(container.isConnected)onComplete(attackDice,defenseDice);
       },container);
     },700);
-    return ()=>{if(timer)clearTimeout(timer);};
+    return ()=>{
+      if(typeof timer==='function')timer();
+      else if(timer)clearTimeout(timer);
+      timer=null;
+    };
   }
 
   function retainedDiceTotals(dice=[]){

@@ -1108,7 +1108,7 @@ button.tracker-operative:hover{
 .mission-outcome .mission-objective-card{width:100%;text-align:left}.mission-outcome .game-end-image{max-width:min(100%,360px)}
 @media(max-width:520px){.mission-objective-row{align-items:flex-start;flex-direction:column}.mission-objective-actions{width:100%;justify-content:stretch}.mission-objective-actions .btn{flex:1;min-height:44px}.mission-objective-grid{grid-template-columns:1fr}.mission-outcome{padding-inline:16px}}
 
-/* v5.5.0 shared combat resolution */
+/* v5.5.1 shared combat resolution */
 .weapon-rules{margin:14px 0;padding:12px 14px;border:1px solid var(--line);border-radius:13px;background:#08150f}
 .weapon-rules strong{color:var(--green)}
 .weapon-rules ul{margin:8px 0 0;padding-left:20px;color:var(--muted)}

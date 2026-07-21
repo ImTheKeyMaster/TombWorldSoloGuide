@@ -22,6 +22,8 @@ class UnifiedPlayerCombatTests(unittest.TestCase):
         self.assertIn('dedicated-combat-screen', shared_screen)
         self.assertIn("attackType==='shoot'?'Shooting':'Melee'", shared_screen)
         self.assertEqual(self.app.count('function showPlayerCombatResolution'), 1)
+        shared_result = self.source('function displaySharedCombatResult', 'function settleCombatDice')
+        self.assertIn('showParticipants:false', shared_result)
 
     def test_resolution_opens_at_top_and_starts_attack_then_defense(self):
         resolution = self.source('function showPlayerCombatResolution', 'function previewPendingPlayerAttack')
