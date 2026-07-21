@@ -16,6 +16,7 @@ class AutomaticPlayerShootingTests(unittest.TestCase):
         player = self.source('function showPendingPlayerAttackWizard', 'function previewPendingPlayerAttack')
         npo = self.source('function showNpoAttackWizard', 'function spinnerField')
         shared = self.source('function runAutomaticCombatRolls', 'function retainedDiceTotals')
+        self.assertIn('startAutomaticPlayerCombat', player)
         self.assertIn('runAutomaticCombatRolls', player)
         self.assertIn('runAutomaticCombatRolls', npo)
         self.assertEqual(shared.count('timer=setTimeout'), 2)
@@ -25,7 +26,7 @@ class AutomaticPlayerShootingTests(unittest.TestCase):
         preview = self.source('function previewPendingPlayerAttack', 'function displayPendingPlayerCombat')
         display = self.source('function displayPendingPlayerCombat', 'function npoBehavior')
         self.assertIn('resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,profile)', preview)
-        self.assertIn("damage:attackType==='shoot'?resolution.damage", preview)
+        self.assertIn('damage:resolution.damage', preview)
         self.assertIn("stage[`${attackType}CombatDraft`]=result", preview)
         self.assertIn("state.combatState={side:'player',stage:{...stage}}", preview)
         self.assertIn('save();', preview)
@@ -36,8 +37,8 @@ class AutomaticPlayerShootingTests(unittest.TestCase):
         restore = wizard.split('if(draft){', 1)[1]
         self.assertIn('displayPendingPlayerCombat', restore)
         self.assertIn("if($('#resolvedDamage'))", restore)
-        self.assertIn("else if(attackType==='shoot'&&singleTarget)startAutomaticPlayerShooting()", restore)
-        self.assertLess(restore.index('displayPendingPlayerCombat'), restore.index('startAutomaticPlayerShooting'))
+        self.assertIn('else if(singleTarget)startAutomaticPlayerCombat()', restore)
+        self.assertLess(restore.index('displayPendingPlayerCombat'), restore.index('startAutomaticPlayerCombat'))
 
     def test_damage_and_incapacitation_are_applied_exactly_once(self):
         apply_damage = self.source('function applyPendingPlayerDamage', 'function completePlayerActivation')
@@ -52,8 +53,7 @@ class AutomaticPlayerShootingTests(unittest.TestCase):
         self.assertIn('automaticPlayerCombat', shooting_markup)
         self.assertNotIn('Record Combat Outcome', wizard)
         display = self.source('function displayPendingPlayerCombat', 'function npoBehavior')
-        self.assertIn("attackType==='shoot'?'Continue'", display)
-        self.assertNotIn("button.textContent='Use This Result'", display)
+        self.assertIn("button.textContent='Continue'", display)
         self.assertNotIn("spinnerField('retainedNormal'", wizard)
         self.assertNotIn("spinnerField('retainedCritical'", wizard)
 
@@ -66,8 +66,12 @@ class AutomaticPlayerShootingTests(unittest.TestCase):
         self.assertIn('onComplete:(attackDice,defenseDice)=>', wizard)
         self.assertIn('previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft)', wizard)
         self.assertLess(preview.index("stage[`${attackType}CombatDraft`]=result"), preview.index('displayPendingPlayerCombat'))
-        self.assertIn("button.disabled=stage[`${attackType}CombatDraft`]!==result", display)
-        self.assertIn('button.onclick=()=>onResolved(result)', display)
+        self.assertIn("button.disabled=!visualComplete||stage[`${attackType}CombatDraft`]!==result", display)
+        self.assertIn("if(!visualComplete||stage[`${attackType}CombatDraft`]!==result)return", display)
+        self.assertIn('settleCombatDice(result,()=>', display)
+        self.assertIn('button.disabled=false', display)
+        self.assertIn('button.onclick=()=>{', display)
+        self.assertIn('onResolved(result)', display)
         self.assertNotIn('previewPendingPlayerAttack', display)
         self.assertNotIn('applyPendingPlayerDamage', display)
 

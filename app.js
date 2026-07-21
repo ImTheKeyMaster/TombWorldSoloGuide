@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.2.1';
+  const APP_VERSION = '5.3.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -2073,12 +2073,13 @@ function showPlayerActivation(stage={}){
     </section>`;
   }
 
-  function settleCombatDice(combat){
+  function settleCombatDice(combat,onSettled=()=>{}){
     setTimeout(()=>{
       const attack=$('[data-combat-attack-dice]');
       if(attack){attack.innerHTML=combat.attackDice.map(dieHtml).join('');attack.classList.replace('animated-roll','settled');}
       const saves=$('[data-combat-save-dice]');
       if(saves&&combat.saveDice.length){saves.innerHTML=combat.saveDice.map(dieHtml).join('');saves.classList.replace('animated-roll','settled');}
+      onSettled();
     },700);
   }
 
@@ -2299,27 +2300,6 @@ function showPlayerActivation(stage={}){
       &&combatAbilityHandlers['dimensional-banishment']({criticalSuccesses:combat.critRemaining,damage:combat.damage,targetIncapacitated:combat.after<=0});
   }
 
-  function playerCombatDiceFields(){
-    return `<section class="combat-dice-roller" aria-label="Combat dice roller">
-      <div class="combat-stage">
-        <small>1 · ATTACK DICE</small>
-        <p>Roll, then tap each successful die you choose to retain.</p>
-        <div class="dice-row" id="playerAttackDice"><span class="muted">Not rolled</span></div>
-        <button class="btn secondary" type="button" id="rollPlayerAttackDice">Roll Attack Dice</button>
-      </div>
-      <div class="combat-stage">
-        <small>2 · DEFENSE DICE</small>
-        <p>After retaining attack dice, roll defense dice and tap each successful die you choose to retain.</p>
-        <div class="dice-row" id="playerDefenseDice"><span class="muted">Roll attack dice first</span></div>
-        <button class="btn secondary" type="button" id="rollPlayerDefenseDice" disabled>Roll Defense Dice</button>
-      </div>
-      <p class="muted">The Guide identifies retained successes, cancels attack and defense dice, and calculates damage automatically. Use the Damage Inflicted controls to adjust for special rules.</p>
-    </section>
-    <div class="defense-profile-grid combat-outcome-fields">
-      ${spinnerField('resolvedDamage','Damage inflicted',0,0,99)}
-    </div>`;
-  }
-
   function rolledCombatDice(count,threshold,critThreshold=6){
     return Array.from({length:Math.max(0,count)},()=>{
       const value=roll();
@@ -2372,11 +2352,6 @@ function showPlayerActivation(stage={}){
       critical:attack.critical,
       damage:attack.normal*Number(profile.normal||0)+attack.critical*Number(profile.crit||0)
     };
-  }
-
-  function selectableDieHtml(die,index,pool){
-    const disabled=die.kind==='miss'?'disabled':'';
-    return `<button type="button" class="die ${die.kind} selectable ${die.retained?'retained':''}" data-retain-die="${pool}" data-die-index="${index}" aria-pressed="${die.retained}" aria-label="${die.value} ${die.kind}${die.retained?', retained':''}" ${disabled}>${pipPositions[die.value].map(p=>`<span class="pip" style="grid-area:${Math.ceil(p/3)}/${((p-1)%3)+1}"></span>`).join('')}</button>`;
   }
 
   function dimensionalBanishmentField(profile){
@@ -2479,10 +2454,10 @@ function showPlayerActivation(stage={}){
           </div>
         </section>
         <div id="combatRules"></div>
-        ${attackType==='shoot'?'<div id="automaticPlayerCombat" class="combat-results" aria-live="polite"></div>':playerCombatDiceFields()}
+        <div id="automaticPlayerCombat" class="combat-results" aria-live="polite"></div>
         <div id="aggressiveDefenseFields"></div>
         <div id="combatResults" class="combat-results">${singleTarget?'':'<p>Select a target NPO to begin.</p>'}</div>
-        <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button>${attackType==='melee'&&onSkip?'<button class="btn secondary" id="skipPendingMelee">Skip Melee</button>':''}<button class="btn primary" id="rollPendingAttack">${attackType==='shoot'?'Rolling…':'Use Combat Outcome'}</button></div>
+        <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button>${attackType==='melee'&&onSkip?'<button class="btn secondary" id="skipPendingMelee">Skip Melee</button>':''}<button class="btn primary" id="rollPendingAttack">Rolling…</button></div>
       </fieldset>`);
 
     requestAnimationFrame(()=>{
@@ -2505,50 +2480,6 @@ function showPlayerActivation(stage={}){
       diceDraft.rolling=null;
     };
 
-    const recalculateDamage=()=>{
-      const weapon=weapons[Number(weaponSelect?.value)||0];
-      const resolution=resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,playerWeaponProfile(weapon));
-      const damageInput=$('#resolvedDamage');
-      if(damageInput)damageInput.value=resolution.damage;
-    };
-
-    const renderDicePool=(pool)=>{
-      const dice=pool==='attack'?diceDraft.attackDice:diceDraft.defenseDice;
-      const row=$(pool==='attack'?'#playerAttackDice':'#playerDefenseDice');
-      row.innerHTML=dice.map((die,index)=>selectableDieHtml(die,index,pool)).join('');
-      row.className='dice-row settled';
-      recalculateDamage();
-      $$(`[data-retain-die="${pool}"]`).forEach(button=>button.onclick=()=>{
-        const die=dice[Number(button.dataset.dieIndex)];
-        if(!die||die.kind==='miss')return;
-        die.retained=!die.retained;
-        renderDicePool(pool);
-      });
-    };
-
-    const animateDicePool=(pool,dice)=>{
-      const row=$(pool==='attack'?'#playerAttackDice':'#playerDefenseDice');
-      diceDraft.rolling=pool;
-      row.className='dice-row animated-roll';
-      row.innerHTML=dice.map(()=>rollingDieHtml()).join('');
-      $('#rollPlayerAttackDice').disabled=true;
-      $('#rollPlayerDefenseDice').disabled=true;
-      $('#rollPendingAttack').disabled=true;
-      targetSelect.disabled=true;
-      weaponSelect.disabled=true;
-      diceAnimationTimer=setTimeout(()=>{
-        diceAnimationTimer=null;
-        diceDraft.rolling=null;
-        if(!$('#rollPlayerAttackDice')||!$('#rollPlayerDefenseDice')||!$('#rollPendingAttack'))return;
-        renderDicePool(pool);
-        $('#rollPlayerAttackDice').disabled=false;
-        $('#rollPlayerDefenseDice').disabled=!diceDraft.attackDice.length;
-        $('#rollPendingAttack').disabled=!diceDraft.defenseDice.length;
-        targetSelect.disabled=false;
-        weaponSelect.disabled=false;
-      },700);
-    };
-
     const renderProfile=()=>{
       const weapon=weapons[Number(weaponSelect?.value)||0];
       const profile=playerWeaponProfile(weapon);
@@ -2559,25 +2490,18 @@ function showPlayerActivation(stage={}){
         <div><small>Normal Damage</small><strong>${profile.normal}</strong></div>
         <div><small>Critical Damage</small><strong>${profile.crit}</strong></div>
         <div><small>AP</small><strong>${profile.ap}</strong></div>`;
-      $('#combatRules').innerHTML=combatRulesHtml({...profile,rules:weapon?.rules||[]},attackType);
+      $('#combatRules').innerHTML=combatRulesHtml({...profile,rules:weapon?.rules||[]},attackType,true);
       const saveValue=$('#npoSaveValue');
       if(saveValue)saveValue.textContent=target?`${target.save}+`:'—';
       const defenseDiceValue=$('#npoDefenseDiceValue');
       if(defenseDiceValue)defenseDiceValue.textContent=Math.max(0,3-profile.ap);
       $('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target);
-      if(diceDraft.attackDice.length||diceDraft.defenseDice.length){
-        diceDraft.attackDice=[];
-        diceDraft.defenseDice=[];
-        $('#playerAttackDice').innerHTML='<span class="muted">Not rolled</span>';
-        $('#playerDefenseDice').innerHTML='<span class="muted">Roll attack dice first</span>';
-        recalculateDamage();
-        $('#rollPlayerDefenseDice').disabled=true;
-        $('#rollPendingAttack').disabled=true;
-      }
+      diceDraft.attackDice=[];
+      diceDraft.defenseDice=[];
     };
 
-    const startAutomaticPlayerShooting=()=>{
-      if(attackType!=='shoot'||!targetSelect.value)return;
+    const startAutomaticPlayerCombat=()=>{
+      if(!targetSelect.value)return;
       const target=state.roster.find(x=>x.id===targetSelect.value);
       const weapon=weapons[Number(weaponSelect?.value)||0];
       if(!target||!weapon)return;
@@ -2598,36 +2522,18 @@ function showPlayerActivation(stage={}){
       controls.disabled=!targetSelect.value;
       renderProfile();
       if(targetSelect.value)$('#combatResults').innerHTML='';
-      if(attackType==='shoot')startAutomaticPlayerShooting();
+      startAutomaticPlayerCombat();
     });
     weaponSelect?.addEventListener('change',()=>{
       renderProfile();
       $('#combatResults').innerHTML=targetSelect.value?'':'<p>Select a target NPO to begin.</p>';
-      if(attackType==='shoot'&&targetSelect.value)startAutomaticPlayerShooting();
+      if(targetSelect.value)startAutomaticPlayerCombat();
     });
 
     renderProfile();
-    if(attackType!=='shoot')bindSpinners(modalBody);
     $('#rollPendingAttack').disabled=true;
-    if(attackType!=='shoot')$('#rollPlayerAttackDice').onclick=()=>{
-      const weapon=weapons[Number(weaponSelect?.value)||0];
-      const profile=playerWeaponProfile(weapon);
-      diceDraft.attackDice=rolledCombatDice(profile.dice,profile.hit,profile.critThreshold);
-      diceDraft.defenseDice=[];
-      $('#playerDefenseDice').innerHTML='<span class="muted">Roll attack dice first</span>';
-      recalculateDamage();
-      animateDicePool('attack',diceDraft.attackDice);
-    };
-    if(attackType!=='shoot')$('#rollPlayerDefenseDice').onclick=()=>{
-      const target=state.roster.find(x=>x.id===targetSelect.value);
-      if(!target)return;
-      const weapon=weapons[Number(weaponSelect?.value)||0];
-      const profile=playerWeaponProfile(weapon);
-      diceDraft.defenseDice=rolledCombatDice(Math.max(0,3-profile.ap),Number(target.save)||3);
-      animateDicePool('defense',diceDraft.defenseDice);
-    };
     $('#cancelPendingAttack').onclick=()=>{stopDiceAnimation();stopAutomaticRolls();cancelPendingPlayerCombat(stage,attackType,onCancel);};
-    if($('#skipPendingMelee'))$('#skipPendingMelee').onclick=()=>{stopDiceAnimation();onSkip();};
+    if($('#skipPendingMelee'))$('#skipPendingMelee').onclick=()=>{stopDiceAnimation();stopAutomaticRolls();onSkip();};
     $('#rollPendingAttack').onclick=()=>previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft);
     const draft=stage[`${attackType}CombatDraft`];
     if(draft){
@@ -2637,7 +2543,7 @@ function showPlayerActivation(stage={}){
       controls.disabled=false;
       renderProfile();
       displayPendingPlayerCombat(stage,attackType,draft,onResolved,onCancel,false);
-    }else if(attackType==='shoot'&&singleTarget)startAutomaticPlayerShooting();
+    }else if(singleTarget)startAutomaticPlayerCombat();
   }
 
   function previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft){
@@ -2651,17 +2557,15 @@ function showPlayerActivation(stage={}){
     const resolution=resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,profile);
     const result={
       ...recordedCombat({attackerName:playerName(stage.playerOperativeId),defenderName:npoName(n),attackType,attackerSide:'player',defenderSide:'npo',profile:{...profile,rules:weapon.rules||[]},before,
-        normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical,damage:attackType==='shoot'?resolution.damage:num('resolvedDamage')}),
+        normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical,damage:resolution.damage}),
       targetId:n.id,targetName:npoName(n),weaponName:weapon.name,weaponIndex
     };
     result.rolledAttackDice=diceDraft.attackDice.map(die=>({...die}));
     result.rolledDefenseDice=diceDraft.defenseDice.map(die=>({...die}));
-    if(attackType==='shoot'){
-      result.attackDice=result.rolledAttackDice;
-      result.saveDice=result.rolledDefenseDice;
-      result.retainedSaves=retainedDiceTotals(result.saveDice).normal+retainedDiceTotals(result.saveDice).critical;
-      result.recordedOutcome=false;
-    }
+    result.attackDice=result.rolledAttackDice;
+    result.saveDice=result.rolledDefenseDice;
+    result.retainedSaves=retainedDiceTotals(result.saveDice).normal+retainedDiceTotals(result.saveDice).critical;
+    result.recordedOutcome=false;
     const retaliationApplies=combatAbilityHandlers['aggressive-defence-construct']({targetIncapacitated:result.after<=0,attackerWithinTwo:Boolean($('#attackerWithinTwo')?.checked)});
     if(retaliationApplies){
       $('#combatResults').innerHTML=aggressiveDefenseRollHtml();
@@ -2704,9 +2608,13 @@ function showPlayerActivation(stage={}){
     $('#combatResults').innerHTML=`${renderCombatResolution(result,{pending:true,animate})}<p class="muted">This result has been recorded. Wounds will be applied once when the Player activation is confirmed.</p>`;
 
     const button=$('#rollPendingAttack');
-    button.textContent=attackType==='shoot'?'Continue':'Use This Result';
-    button.disabled=stage[`${attackType}CombatDraft`]!==result;
-    button.onclick=()=>onResolved(result);
+    button.textContent='Continue';
+    let visualComplete=!animate;
+    button.disabled=!visualComplete||stage[`${attackType}CombatDraft`]!==result;
+    button.onclick=()=>{
+      if(!visualComplete||stage[`${attackType}CombatDraft`]!==result)return;
+      onResolved(result);
+    };
     $('#cancelPendingAttack').onclick=()=>cancelPendingPlayerCombat(stage,attackType,onCancel);
     $$('.combat-outcome-fields input').forEach(input=>input.disabled=true);
     $('#combatTarget').disabled=true;
@@ -2714,7 +2622,10 @@ function showPlayerActivation(stage={}){
     if($('#rollPlayerAttackDice'))$('#rollPlayerAttackDice').disabled=true;
     if($('#rollPlayerDefenseDice'))$('#rollPlayerDefenseDice').disabled=true;
     $$('[data-retain-die]').forEach(die=>die.disabled=true);
-    if(animate)settleCombatDice(result);
+    if(animate)settleCombatDice(result,()=>{
+      visualComplete=true;
+      if(button.isConnected&&stage[`${attackType}CombatDraft`]===result)button.disabled=false;
+    });
   }
 
   function npoBehavior(n){return npoDefinition(n.type)?.behavior;}

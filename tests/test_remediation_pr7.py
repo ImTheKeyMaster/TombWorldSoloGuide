@@ -46,7 +46,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
         wizard = self.source('showPendingPlayerAttackWizard', 'previewPendingPlayerAttack')
         shared = self.source('runAutomaticCombatRolls', 'retainedDiceTotals')
         preview = self.source('previewPendingPlayerAttack', 'displayPendingPlayerCombat')
-        self.assertIn("attackType==='shoot'?'<div id=\"automaticPlayerCombat\"", wizard)
+        self.assertIn('<div id="automaticPlayerCombat"', wizard)
         self.assertIn('runAutomaticCombatRolls', wizard)
         self.assertIn('previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft)', wizard)
         self.assertIn('retainSuccessfulDice', shared)
@@ -93,7 +93,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertNotIn('postGame', self.app)
 
     def test_versions_are_synchronized(self):
-        expected = '5.2.1'
+        expected = '5.3.1'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"styles.css?v={expected}", (ROOT / 'index.html').read_text())
         self.assertIn(f"app.js?v={expected}", (ROOT / 'index.html').read_text())
