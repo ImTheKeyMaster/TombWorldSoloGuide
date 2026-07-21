@@ -1035,13 +1035,13 @@ PDF pages 3 and 5, “NPO Limit,” state a recommendation to limit NPOs to ten 
 `MAX_NPOS`, `startTurningPoint()`, `reinforcementEntry`, and `deployed:true` in `app.js`.
 
 **Review:**
-The cap is supported but expressly framed as a recommendation/difficulty choice, not an immutable universal law. The code enforces it globally, while failing to model each random hatchway and placement constraint.
+The pack recommends a ten-NPO limit and immediately instructs players not to set up NPOs that would exceed it, so enforcing that default is not a compliance defect. The confirmed problem is that each reinforcement is marked `deployed:true` before its random hatchway and printed placement constraint have been determined and confirmed.
 
 **Corrected conclusion:**
-Medium defect: placement is incomplete and the recommended cap is presented/enforced as mandatory without a difficulty option.
+Medium defect limited to incomplete reinforcement placement; the enforced ten-NPO default is supported by the official pack.
 
 **Recommended action:**
-Make the cap a default configurable difficulty rule and confirm each random hatchway/placement before deployment.
+Preserve the ten-NPO limit and confirm each random hatchway and printed placement constraint before marking a reinforcement deployed.
 
 ### REI-04 — Standard reinforcement order/readiness
 
@@ -1081,13 +1081,13 @@ PDF pages 3 and 5 call ten a recommendation; event cards on pages 21–22 use in
 `MAX_NPOS=10` applies to reinforcements, events, and manual additions.
 
 **Review:**
-Ten is the pack's recommended limit, but the Difficulty section permits changing setup/reinforcement quantities and the wording does not make the cap compulsory. Event “cannot set up” handling must redraw where stated.
+The pack's recommendation is followed immediately by an instruction not to set up NPOs above ten, so the app's enforced default is supported. The compliance defect is card-specific: event cards such as Awakened Warrior and A Chittering Drone require another card to be drawn when their NPO cannot be set up or their alternative effect cannot resolve, while the app can silently stop at the limit.
 
 **Corrected conclusion:**
-The numeric default is supported; universal hard enforcement and silent event blocking are only partially compliant. Medium severity.
+The ten-NPO cap is compliant; silent event blocking instead of the printed redraw is a Medium card-resolution defect already related to EVT-04.
 
 **Recommended action:**
-Expose the recommendation as a difficulty setting and honor card-specific redraws.
+Preserve the ten-NPO limit and implement each event card's printed redraw instruction when its effect cannot resolve.
 
 ### MIS-01 — Universal all-NPOs-dead victory
 
@@ -1544,7 +1544,7 @@ Only Confirmed and Partially Confirmed compliance issues appear below. Incorrect
 - **Medium — STR-04, automatic player initiative at Threat 0** — corrected from the original audit; generic tie/reroll claims are excluded.
 - **Medium — STR-05 and newly identified initial 2CP/four equipment delegation** — corrected/newly discovered during this review.
 - **Medium — EVT-05/EVT-06, accurate summaries and draw-without-replacement lifecycle** — corrected from the original audit.
-- **Medium — REI-03 through REI-05, printed placement/Conceal and recommended-cap semantics** — corrected from the original audit; unsupported readiness claims are excluded.
+- **Medium — REI-03 through REI-05, printed reinforcement placement/Conceal and card-specific redraws** — corrected from the original audit; preserve the supported ten-NPO limit and exclude unsupported readiness claims.
 - **Medium — Mission briefing omissions that alter tabletop decisions** — corrected from MIS-04 in the original audit.
 
 ### Priority 3: Low and Informational
