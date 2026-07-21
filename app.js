@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.0.0';
+  const APP_VERSION = '5.0.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -185,7 +185,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         ]}
       ],
       meleeWeapons:[{id:'claws-and-tail',name:'Claws & tail',type:'melee',attacks:4,hit:4,damage:{normal:3,critical:4},rules:[]}],
-      abilities:[{id:'aggressive-defence-construct',name:'Aggressive Defence Construct',text:'If incapacitated by a player operative within 2", roll one D3. On a 2+, inflict damage on that player operative equal to the result.'}],
+      abilities:[{id:'aggressive-defence-construct',name:'Aggressive Defense Construct',text:'If incapacitated by a player operative within 2", roll one D3. On a 2+, inflict damage on that player operative equal to the result.'}],
       behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use the living lightning tesla caster profile when it would target more than one player operative and no NPOs.'}
     }
   };
@@ -2151,7 +2151,7 @@ function showPlayerActivation(stage={}){
         const playerAfter=Math.max(0,playerBefore-pending.aggressiveDefenceDamage);
         state.playerWounds[stage.playerOperativeId]=playerAfter;
         if(playerAfter<=0&&!state.playerCasualtyIds.includes(stage.playerOperativeId))state.playerCasualtyIds.push(stage.playerOperativeId);
-        log(`Aggressive Defence Construct dealt ${pending.aggressiveDefenceDamage} damage to ${playerName(stage.playerOperativeId)} (${playerBefore} → ${playerAfter} wounds).`);
+        log(`Aggressive Defense Construct dealt ${pending.aggressiveDefenceDamage} damage to ${playerName(stage.playerOperativeId)} (${playerBefore} → ${playerAfter} wounds).`);
       }
       if(checkGameEnd())return true;
     }
@@ -2257,7 +2257,7 @@ function showPlayerActivation(stage={}){
 
   function attackSequenceSteps(attackType){
     return attackType==='shoot'
-      ? ['Select a valid target and weapon.','Roll the weapon’s attack dice and choose which successes to retain.','Roll the defender’s defence dice and choose which successes to retain.','Resolve retained successes, weapon rules and damage on the tabletop.','Record damage and incapacitation in the Guide.']
+      ? ['Select a valid target and weapon.','Roll the weapon’s attack dice and choose which successes to retain.','Roll the defender’s defense dice and choose which successes to retain.','Resolve retained successes, weapon rules and damage on the tabletop.','Record damage and incapacitation in the Guide.']
       : ['Select a valid target and melee weapon.','Roll attack dice, then defense dice, and choose which successes to retain.','Resolve retained successes using the Core Fight sequence on the tabletop.','Resolve weapon rules and damage.','Record damage and incapacitation in the Guide.'];
   }
 
@@ -2362,10 +2362,24 @@ function showPlayerActivation(stage={}){
       : '';
   }
 
-  function aggressiveDefenceFields(npo){
+  function aggressiveDefenseFields(npo){
     return npo?.type==='Canoptek Macrocyte'
-      ? `<label class="check-row compact-check"><input type="checkbox" id="attackerWithinTwo"><span><strong>Attacker is within 2&quot; of this Macrocyte</strong></span></label>${spinnerField('aggressiveDefenceRoll','Aggressive Defence Construct D3 result',1,1,3)}`
+      ? '<label class="check-row compact-check"><input type="checkbox" id="attackerWithinTwo"><span><strong>Attacker is within 2&quot; of this Macrocyte</strong></span></label>'
       : '';
+  }
+
+  function aggressiveDefenseDamage(rollResult){
+    const result=Math.max(1,Math.min(3,Math.round(Number(rollResult)||1)));
+    return result>=2?result:0;
+  }
+
+  function aggressiveDefenseRollHtml(){
+    return `<section class="combat-stage" id="aggressiveDefenseRoll" aria-label="Aggressive Defense Construct roll">
+      <small>AGGRESSIVE DEFENSE CONSTRUCT</small>
+      <p>This incapacitated Macrocyte was within 2&quot; of the attacker.</p>
+      <div class="dice-row" id="aggressiveDefenseDie"><span class="muted">Not rolled</span></div>
+      <button class="btn secondary" type="button" id="rollAggressiveDefense">Roll D3</button>
+    </section>`;
   }
 
   function combatAbilityReminder(combat){
@@ -2378,8 +2392,8 @@ function showPlayerActivation(stage={}){
     }
     if(combat.defenderSide==='npo'&&combat.after<=0&&combat.defenderName.includes('Canoptek Macrocyte')){
       return combat.aggressiveDefenceDamage>0
-        ? `<div class="summary-box"><strong>Aggressive Defence Construct:</strong> ${combat.aggressiveDefenceDamage} damage will be inflicted on the attacking operative when this activation is confirmed.</div>`
-        : '<div class="summary-box"><strong>Aggressive Defence Construct:</strong> No retaliatory damage was recorded.</div>';
+        ? `<div class="summary-box"><strong>Aggressive Defense Construct:</strong> ${combat.aggressiveDefenceDamage} damage will be inflicted on the attacking operative when this activation is confirmed.</div>`
+        : '<div class="summary-box"><strong>Aggressive Defense Construct:</strong> Does not inflict damage.</div>';
     }
     return '';
   }
@@ -2437,7 +2451,7 @@ function showPlayerActivation(stage={}){
         </section>
         <div id="combatRules"></div>
         ${playerCombatDiceFields()}
-        <div id="aggressiveDefenceFields"></div>
+        <div id="aggressiveDefenseFields"></div>
         <div id="combatResults" class="combat-results">${singleTarget?'':'<p>Select a target NPO to begin.</p>'}</div>
         <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button>${attackType==='melee'&&onSkip?'<button class="btn secondary" id="skipPendingMelee">Skip Melee</button>':''}<button class="btn primary" id="rollPendingAttack">Record Combat Outcome</button></div>
       </fieldset>`);
@@ -2520,8 +2534,7 @@ function showPlayerActivation(stage={}){
       if(saveValue)saveValue.textContent=target?`${target.save}+`:'—';
       const defenseDiceValue=$('#npoDefenseDiceValue');
       if(defenseDiceValue)defenseDiceValue.textContent=Math.max(0,3-profile.ap);
-      $('#aggressiveDefenceFields').innerHTML=aggressiveDefenceFields(target);
-      bindSpinners($('#aggressiveDefenceFields'));
+      $('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target);
       if(diceDraft.attackDice.length||diceDraft.defenseDice.length){
         diceDraft.attackDice=[];
         diceDraft.defenseDice=[];
@@ -2594,7 +2607,33 @@ function showPlayerActivation(stage={}){
     result.rolledAttackDice=diceDraft.attackDice.map(die=>({...die}));
     result.rolledDefenseDice=diceDraft.defenseDice.map(die=>({...die}));
     const retaliationApplies=combatAbilityHandlers['aggressive-defence-construct']({targetIncapacitated:result.after<=0,attackerWithinTwo:Boolean($('#attackerWithinTwo')?.checked)});
-    result.aggressiveDefenceDamage=retaliationApplies&&num('aggressiveDefenceRoll')>=2?num('aggressiveDefenceRoll'):0;
+    if(retaliationApplies){
+      $('#combatResults').innerHTML=aggressiveDefenseRollHtml();
+      $('#rollPendingAttack').disabled=true;
+      $('#rollAggressiveDefense').onclick=()=>{
+        const rolledValue=Math.ceil(roll()/2);
+        const row=$('#aggressiveDefenseDie');
+        row.className='dice-row animated-roll';
+        row.innerHTML=rollingDieHtml();
+        $('#rollAggressiveDefense').disabled=true;
+        setTimeout(()=>{
+          if(!$('#aggressiveDefenseDie'))return;
+          result.aggressiveDefenceDamage=aggressiveDefenseDamage(rolledValue);
+          row.className='dice-row animated-roll settled';
+          row.innerHTML=dieHtml({value:rolledValue,kind:'hit'});
+          const message=result.aggressiveDefenceDamage
+            ? `Aggressive Defense Construct inflicts ${result.aggressiveDefenceDamage} damage on the attacking Player operative.`
+            : 'Aggressive Defense Construct does not inflict damage.';
+          showToast(message);
+          stage[`${attackType}CombatDraft`]=result;
+          state.combatState={side:'player',stage:{...stage}};
+          save();
+          displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,false);
+        },700);
+      };
+      return;
+    }
+    result.aggressiveDefenceDamage=0;
     stage[`${attackType}CombatDraft`]=result;
     state.combatState={side:'player',stage:{...stage}};
     save();

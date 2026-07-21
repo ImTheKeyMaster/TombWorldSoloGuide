@@ -17,7 +17,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
     def test_shooting_and_fight_sequences_remain_distinct_and_player_directed(self):
         sequence = self.source('attackSequenceSteps', 'combatRulesHtml')
         self.assertIn("attackType==='shoot'", sequence)
-        self.assertIn("Roll the defender’s defence dice", sequence)
+        self.assertIn("Roll the defender’s defense dice", sequence)
         self.assertIn("choose which successes to retain", sequence)
         self.assertIn("Core Fight sequence", sequence)
         self.assertNotIn('resolveDefense', self.app)
@@ -106,7 +106,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertNotIn('postGame', self.app)
 
     def test_versions_are_synchronized(self):
-        expected = '5.0.0'
+        expected = '5.0.1'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"styles.css?v={expected}", (ROOT / 'index.html').read_text())
         self.assertIn(f"app.js?v={expected}", (ROOT / 'index.html').read_text())
