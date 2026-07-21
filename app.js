@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '4.7.0';
+  const APP_VERSION = '4.7.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -2016,16 +2016,14 @@ function showPlayerActivation(stage={}){
         <p>Roll, then tap each successful die you choose to retain.</p>
         <div class="dice-row" id="playerAttackDice"><span class="muted">Not rolled</span></div>
         <button class="btn secondary" type="button" id="rollPlayerAttackDice">Roll Attack Dice</button>
-        <div class="damage-summary retained-totals" id="attackRetainedTotals"></div>
       </div>
       <div class="combat-stage">
         <small>2 · DEFENSE DICE</small>
         <p>After retaining attack dice, roll defense dice and tap each successful die you choose to retain.</p>
         <div class="dice-row" id="playerDefenseDice"><span class="muted">Roll attack dice first</span></div>
         <button class="btn secondary" type="button" id="rollPlayerDefenseDice" disabled>Roll Defense Dice</button>
-        <div class="damage-summary retained-totals" id="defenseRetainedTotals"></div>
       </div>
-      <p class="muted">The Guide identifies normal and critical successes from the printed profiles. You decide which successes to retain and resolve them using the Core Rules.</p>
+      <p class="muted">The Guide identifies retained successes, cancels attack and defense dice, and calculates damage automatically. Use the Damage Inflicted controls to adjust for special rules.</p>
     </section>
     <div class="defense-profile-grid combat-outcome-fields">
       ${spinnerField('resolvedDamage','Damage inflicted',0,0,99)}
@@ -2047,9 +2045,23 @@ function showPlayerActivation(stage={}){
     },{normal:0,critical:0});
   }
 
-  function retainedTotalsHtml(dice=[]){
-    const totals=retainedDiceTotals(dice);
-    return `<div><small>Retained normal successes</small><strong>${totals.normal}</strong></div><div><small>Retained critical successes</small><strong>${totals.critical}</strong></div>`;
+  function resolveRetainedCombat(attackDice=[],defenseDice=[],profile={}){
+    const attack=retainedDiceTotals(attackDice);
+    const defense=retainedDiceTotals(defenseDice);
+    const criticalCancellations=Math.min(attack.critical,defense.critical);
+    attack.critical-=criticalCancellations;
+    defense.critical-=criticalCancellations;
+    const criticalVsNormal=Math.min(attack.normal,defense.critical);
+    attack.normal-=criticalVsNormal;
+    const normalCancellations=Math.min(attack.normal,defense.normal);
+    attack.normal-=normalCancellations;
+    defense.normal-=normalCancellations;
+    attack.critical-=Math.min(attack.critical,Math.floor(defense.normal/2));
+    return {
+      normal:attack.normal,
+      critical:attack.critical,
+      damage:attack.normal*Number(profile.normal||0)+attack.critical*Number(profile.crit||0)
+    };
   }
 
   function selectableDieHtml(die,index,pool){
@@ -2132,7 +2144,7 @@ function showPlayerActivation(stage={}){
         <section class="defense-profile npo-defense-profile" aria-label="NPO defense profile">
           <p class="eyebrow">NPO DEFENSE PROFILE</p>
           <div class="defense-profile-grid">
-            <div><small>NPO Defense Dice</small><strong>3</strong></div>
+            <div><small>NPO Defense Dice</small><strong id="npoDefenseDiceValue">3</strong></div>
             <div><small>NPO Save</small><strong id="npoSaveValue">—</strong></div>
           </div>
         </section>
@@ -2162,13 +2174,19 @@ function showPlayerActivation(stage={}){
       diceDraft.rolling=null;
     };
 
+    const recalculateDamage=()=>{
+      const weapon=weapons[Number(weaponSelect?.value)||0];
+      const resolution=resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,playerWeaponProfile(weapon));
+      const damageInput=$('#resolvedDamage');
+      if(damageInput)damageInput.value=resolution.damage;
+    };
+
     const renderDicePool=(pool)=>{
       const dice=pool==='attack'?diceDraft.attackDice:diceDraft.defenseDice;
       const row=$(pool==='attack'?'#playerAttackDice':'#playerDefenseDice');
-      const totals=$(pool==='attack'?'#attackRetainedTotals':'#defenseRetainedTotals');
       row.innerHTML=dice.map((die,index)=>selectableDieHtml(die,index,pool)).join('');
       row.className='dice-row settled';
-      totals.innerHTML=retainedTotalsHtml(dice);
+      recalculateDamage();
       $$(`[data-retain-die="${pool}"]`).forEach(button=>button.onclick=()=>{
         const die=dice[Number(button.dataset.dieIndex)];
         if(!die||die.kind==='miss')return;
@@ -2213,6 +2231,8 @@ function showPlayerActivation(stage={}){
       $('#combatRules').innerHTML=combatRulesHtml({...profile,rules:weapon?.rules||[]},attackType);
       const saveValue=$('#npoSaveValue');
       if(saveValue)saveValue.textContent=target?`${target.save}+`:'—';
+      const defenseDiceValue=$('#npoDefenseDiceValue');
+      if(defenseDiceValue)defenseDiceValue.textContent=Math.max(0,3-profile.ap);
       $('#aggressiveDefenceFields').innerHTML=aggressiveDefenceFields(target);
       bindSpinners($('#aggressiveDefenceFields'));
       if(diceDraft.attackDice.length||diceDraft.defenseDice.length){
@@ -2220,8 +2240,7 @@ function showPlayerActivation(stage={}){
         diceDraft.defenseDice=[];
         $('#playerAttackDice').innerHTML='<span class="muted">Not rolled</span>';
         $('#playerDefenseDice').innerHTML='<span class="muted">Roll attack dice first</span>';
-        $('#attackRetainedTotals').innerHTML='';
-        $('#defenseRetainedTotals').innerHTML='';
+        recalculateDamage();
         $('#rollPlayerDefenseDice').disabled=true;
         $('#rollPendingAttack').disabled=true;
       }
@@ -2246,13 +2265,15 @@ function showPlayerActivation(stage={}){
       diceDraft.attackDice=rolledCombatDice(profile.dice,profile.hit,profile.critThreshold);
       diceDraft.defenseDice=[];
       $('#playerDefenseDice').innerHTML='<span class="muted">Roll attack dice first</span>';
-      $('#defenseRetainedTotals').innerHTML='';
+      recalculateDamage();
       animateDicePool('attack',diceDraft.attackDice);
     };
     $('#rollPlayerDefenseDice').onclick=()=>{
       const target=state.roster.find(x=>x.id===targetSelect.value);
       if(!target)return;
-      diceDraft.defenseDice=rolledCombatDice(3,Number(target.save)||3);
+      const weapon=weapons[Number(weaponSelect?.value)||0];
+      const profile=playerWeaponProfile(weapon);
+      diceDraft.defenseDice=rolledCombatDice(Math.max(0,3-profile.ap),Number(target.save)||3);
       animateDicePool('defense',diceDraft.defenseDice);
     };
     $('#cancelPendingAttack').onclick=()=>{stopDiceAnimation();cancelPendingPlayerCombat(stage,attackType,onCancel);};
@@ -2277,9 +2298,10 @@ function showPlayerActivation(stage={}){
     const profile=playerWeaponProfile(weapon);
     const before=projectedNpoWounds(n.id,stage);
     const weaponIndex=Number($('#playerWeaponSelect')?.value)||0;
+    const resolution=resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,profile);
     const result={
       ...recordedCombat({attackerName:playerName(stage.playerOperativeId),defenderName:npoName(n),attackType,attackerSide:'player',defenderSide:'npo',profile:{...profile,rules:weapon.rules||[]},before,
-        normalSuccesses:retainedDiceTotals(diceDraft.attackDice).normal,criticalSuccesses:retainedDiceTotals(diceDraft.attackDice).critical,damage:num('resolvedDamage')}),
+        normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical,damage:num('resolvedDamage')}),
       targetId:n.id,targetName:npoName(n),weaponName:weapon.name,weaponIndex
     };
     result.rolledAttackDice=diceDraft.attackDice.map(die=>({...die}));
