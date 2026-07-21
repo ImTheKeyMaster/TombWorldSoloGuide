@@ -336,6 +336,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       return isRecord(parsed)?parsed:null;
     }catch{return null;}
   }
+  function recoverInvalidMission(){
+    if(!state.missionId||missionDefinition(state.missionId))return false;
+    state.missionId=null;
+    state.missionState=null;
+    state.screen='setup';
+    showToast('The saved mission is unavailable. Select a mission to continue.');
+    return true;
+  }
   function normalizeState(raw){
     raw=isRecord(raw)?raw:{};
     const base=initialState(), merged={...base,...raw};
@@ -3216,7 +3224,7 @@ function showPlayerActivation(stage={}){
 
   function confirmNewGame(){showModal('Start New Game?',`<p>This will replace the current mission, roster, Threat, Turning Point, and Journal.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmNewGame">Start New Game</button></div>`);$('#confirmNewGame').onclick=()=>{localStorage.removeItem(STORAGE_KEY);state=initialState();state.screen='setup';expandedRosterCategories=null;closeModal();save();render();};}
   function exportSave(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tomb-world-solo-guide-save.json';a.click();URL.revokeObjectURL(a.href);}
-  importInput.addEventListener('change',async()=>{const f=importInput.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!isRecord(data))throw new Error();state=normalizeState(data);state.screen='game';save();render();showToast('Save imported.');}catch{showToast('That file is not a valid Tomb World Solo Guide save.');}finally{importInput.value='';}});
+  importInput.addEventListener('change',async()=>{const f=importInput.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!isRecord(data))throw new Error();state=normalizeState(data);state.screen='game';const missionRecovered=recoverInvalidMission();save();render();if(!missionRecovered)showToast('Save imported.');}catch{showToast('That file is not a valid Tomb World Solo Guide save.');}finally{importInput.value='';}});
 
   function bindCommon(){
     const versionBadge=$('.version');
@@ -3226,12 +3234,7 @@ function showPlayerActivation(stage={}){
 
   Promise.all([loadMissionPack(),loadPlayerManifest()])
     .then(async ([,manifest])=>{
-      if(state.missionId&&!missionDefinition(state.missionId)){
-        state.missionId=null;
-        state.missionState=null;
-        state.screen='setup';
-        showToast('The saved mission is unavailable. Select a mission to continue.');
-      }
+      recoverInvalidMission();
       const teams=manifest.teams||[];
       if(teams.length===1){
         state.playerTeamId=teams[0].id;

@@ -54,8 +54,11 @@ class RemediationPr9StabilizationTests(unittest.TestCase):
         self.assertNotIn("if(!data.version)", self.app)
 
     def test_invalid_saved_mission_recovers_to_setup(self):
-        self.assertIn("if(state.missionId&&!missionDefinition(state.missionId))", self.app)
-        self.assertIn("The saved mission is unavailable. Select a mission to continue.", self.app)
+        recovery = self.source("function recoverInvalidMission()", "function normalizeState")
+        self.assertIn("if(!state.missionId||missionDefinition(state.missionId))return false", recovery)
+        self.assertIn("The saved mission is unavailable. Select a mission to continue.", recovery)
+        self.assertEqual(self.app.count("recoverInvalidMission();"), 2)
+        self.assertIn("missionRecovered=recoverInvalidMission()", self.app)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
         expected = "4.9.0"
