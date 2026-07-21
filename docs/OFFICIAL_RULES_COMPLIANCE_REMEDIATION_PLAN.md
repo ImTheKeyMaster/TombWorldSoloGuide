@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document turns the independently reviewed compliance findings into a staged implementation plan. It plans corrections only for findings classified **Confirmed** or **Partially Confirmed** in `docs/OFFICIAL_RULES_COMPLIANCE_AUDIT_REVIEW.md`, using the official mission pack as rules authority. It makes no application change. Findings classified Incorrect are excluded; Unable to Verify items are isolated under Human Decisions Required and are not approved implementation work.
+This document turns the independently reviewed compliance findings into a staged implementation plan. It plans corrections for findings classified **Confirmed** or **Partially Confirmed** in `docs/OFFICIAL_RULES_COMPLIANCE_AUDIT_REVIEW.md`, using the official mission pack as rules authority. It also retains SET-06's explicitly corrected setup-precision scope: the review classified the original invalid-PDF claim as Incorrect but established a Medium gap after examining the valid source. It makes no application change. Other Incorrect findings are excluded; Unable to Verify items are isolated under Human Decisions Required and are not approved implementation work.
 
 ## Authoritative Sources
 
@@ -42,11 +42,11 @@ Future implementation PRs must:
 ### PR 1 — Mission setup, roster scope, and delegated resources
 
 - **Purpose:** Establish accurate solo setup guidance and explicit automation boundaries without changing game-engine architecture.
-- **Findings addressed:** SET-01, SET-02, SET-03, STR-05, plus the review's additional initial-resource issue.
+- **Findings addressed:** SET-01, SET-02, SET-03, SET-06's corrected setup-precision scope, STR-05, plus the review's additional initial-resource issue.
 - **Likely files changed:** `app.js`, `Missions/*.json`, and only if needed existing setup markup/styles in `index.html`/`styles.css`; supported-team JSON only after external team-rule verification.
-- **Implementation order:** preserve six-mission/TP1 baselines; decide roster-legality scope; add or explicitly delegate four equipment options and 2CP; update setup confirmation.
-- **Acceptance criteria:** six missions still load; TP1 begins with player initiative; UI cannot imply unverified full roster legality; 2CP/equipment responsibility is visible or stored; existing saves normalize safely.
-- **Regression tests:** all six setup flows, every supported team, cancellation/reload, and 390px setup/dialog checks.
+- **Implementation order:** preserve six-mission/TP1 baselines; compare all mission map images and setup summaries to PDF pages 9–14 and 17–19; replace the generic setup confirmation with mission-specific placement prompts; decide roster-legality scope; add or explicitly delegate four equipment options and 2CP.
+- **Acceptance criteria:** six missions still load; each map/summary matches the official pages; setup explicitly confirms even distribution, room-specific placement, starting Conceal orders, Mission 3 objective placement, and every other mission-specific placement condition; TP1 begins with player initiative; UI cannot imply unverified full roster legality; 2CP/equipment responsibility is visible or stored; existing saves normalize safely.
+- **Regression tests:** map/summary comparison and mission-specific checklist assertions for all six missions, including even-distribution, room, Conceal, and Mission 3 objective cases; every supported team; cancellation/reload; and 390px setup/dialog checks.
 - **Dependencies on earlier PRs:** None. External team rules and product decision are required before enforcement beyond current verified data.
 
 ### PR 2 — Official NPO data and shared generation table
@@ -270,6 +270,41 @@ Add a deterministic test or reproducible harness scenario for SET-05's corrected
 
 **Recommended pull request:**
 PR 2.
+
+### SET-06 — Mission setup precision and map geometry (corrected scope)
+
+**Audit status:**
+Partially Confirmed
+
+**Severity:**
+Medium
+
+**Official rule reference:**
+PDF pages 9–14, each mission's “Mission Rules — NPOs/Objectives”; PDF pages 17–19, mission maps.
+
+**Current application behavior:**
+The official PDF is valid, so the original inability-to-verify premise is disproved. The mission JSON summaries contain broad setup quantities and `app.js` renders the selected map, but the four generic `checks` in setup rendering only ask users to place terrain/markers and identify deployment areas. They do not explicitly confirm even NPO distribution, mission-specific room placement, starting Conceal orders, or Mission 3's objective-marker placement. Verified locations: `Missions/01-shifting-labyrinth.json` through `Missions/06-regroup.json`, their `startingNpos`, `rules`, and `map` objects; `app.js` `loadMissionPack()`, setup rendering and `setupChecks` handlers, `officialMapHtml()`, and `boardSvg()`; and `Assets/Maps/mission-*.png`.
+
+**Required behavior:**
+Each displayed map and concise setup summary must match PDF pages 9–14 and 17–19. The setup flow must explicitly prompt every condition needed for correct tabletop placement, including even distribution, required room allocation, starting Conceal orders, and Mission 3 objective locations, rather than treating one generic confirmation as sufficient.
+
+**Likely implementation locations:**
+`Missions/01-shifting-labyrinth.json` through `Missions/06-regroup.json` (`startingNpos`, `rules`, and `map`); `app.js` setup rendering near the `checks` array, `setupChecks` state/handlers, `officialMapHtml()`, and `boardSvg()`; `Assets/Maps/mission-*.png` only if direct comparison proves an image inaccurate.
+
+**Implementation approach:**
+First compare each existing map image, structured map, deployment summary, objective summary, and order against the cited PDF pages. Preserve correct assets/data. Add the smallest mission-specific checklist data needed to render explicit confirmations through the existing setup checklist UI; do not build geometric enforcement or redesign setup.
+
+**Dependencies:**
+Coordinate with SET-01's six-mission/map baseline and SET-05/starting-order data. Complete this in PR 1 before later mission-state automation relies on setup identities or locations.
+
+**Regression risks:**
+Do not replace valid map assets, alter mission geometry without a documented PDF comparison, remove the existing setup gate, reset `setupChecks` unexpectedly, or make the 390px setup flow overflow or hide actions.
+
+**Required tests:**
+For each mission, compare the displayed map and setup summary to the cited PDF pages and assert that every mission-specific placement condition is presented. Include explicit cases for even NPO distribution, Mission 3 objective locations and room distribution, Mission 4 half-in-sarcophagus allocation, all starting Conceal orders, setup cancellation/reload, and 390px scrolling/touch targets.
+
+**Recommended pull request:**
+PR 1.
 
 ### STR-02 — Ordered Strategy phase and mission hooks
 
@@ -1885,7 +1920,7 @@ PR 1.
 
 Every implementation PR must provide a traceability table from finding ID to official page, changed function/data, and passing test. At minimum, the combined suite must cover:
 
-- **Static/data checks:** every page-5 total; every NPO/weapon/rule on pages 5–7; all physical event instances on pages 20–22; all six missions and maps.
+- **Static/data checks:** every page-5 total; every NPO/weapon/rule on pages 5–7; all physical event instances on pages 20–22; all six mission maps and setup summaries compared to pages 9–14 and 17–19.
 - **State-machine checks:** Strategy stage order, cancel/reload at each stage, Ready/initiative/event/reinforcement ordering, initiative-dependent event draw count, end-of-turn expiry, and next-Ready recycling.
 - **Threat checks:** 0–15 bounds, all grades, dormancy transitions, exact default triggers/exceptions, Mission 5 rules, event changes, and malformed imports.
 - **Activation/behavior checks:** alternation, official selection priority, each operative behavior branch/fallback, required manual predicates, target ties, and no premature expenditure.
@@ -1894,14 +1929,14 @@ Every implementation PR must provide a traceability table from finding ID to off
 - **Mission checks:** at least one win, one continuing state, and every printed loss/boundary for each mission; verify an empty NPO roster never wins by itself.
 - **Persistence checks:** fixtures from the current state shape plus new event/mission states; no localStorage clearing; no duplicate effect/action after reload.
 - **UI checks:** approximately 390px and desktop; no horizontal scrolling, clipped dialogs, hidden actions, overlap, or unusable touch targets; internal scrolling for long event/behavior flows.
-- **Application checks:** JavaScript syntax, no browser-console errors, setup/dialog/event handlers, static GitHub Pages loading, and full setup-to-completion smoke runs.
+- **Application checks:** JavaScript syntax, no browser-console errors, mission-specific setup/dialog/event handlers, static GitHub Pages loading, and full setup-to-completion smoke runs.
 
 ## Final Compliance Verification
 
 After PR 9, a reviewer must independently:
 
-1. Re-enumerate the audit review and confirm every Confirmed finding and every corrected Partially Confirmed scope has a matrix entry and test result.
-2. Confirm all Incorrect findings remain excluded: SET-06, STR-01, STR-06, EVT-05, NPO-05, NPO-06, MIS-05, DAT-03, and PER-03 are not independent approved changes even where their narrative overlaps a separately approved finding.
+1. Re-enumerate the audit review and confirm every Confirmed finding, every corrected Partially Confirmed scope, and SET-06's retained corrected setup-precision scope has a matrix entry and test result.
+2. Confirm the disproved SET-06 invalid-PDF premise remains excluded while its reviewed Medium map/summary and mission-specific placement scope is implemented. Other Incorrect findings remain excluded: STR-01, STR-06, EVT-05, NPO-05, NPO-06, MIS-05, DAT-03, and PER-03 are not independent approved changes even where their narrative overlaps a separately approved finding.
 3. Confirm all Unable to Verify findings remain unimplemented unless separately authorized: ACT-02, COM-01/03/05/06/07, DAT-01, HR-01, plus unresolved portions of STR-04, ACT-04, REI-04, and PER-02.
 4. Compare each implemented change directly to its cited PDF page, including exact timing, prerequisites, exceptions, card multiplicity, redraw, placement, and mission end conditions; specifically verify that initiative is final before event draw count and that all event effects precede reinforcements.
 5. Trace each rule to one authoritative calculation/data source; reject duplicate tables or screen-local versions.
