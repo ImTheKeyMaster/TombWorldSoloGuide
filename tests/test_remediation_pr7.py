@@ -55,7 +55,17 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertIn('die.retained=!die.retained', wizard)
         preview = self.source('previewPendingPlayerAttack', 'displayPendingPlayerCombat')
         self.assertIn('onCancel,diceDraft', preview)
-        self.assertIn('retainedDiceTotals(diceDraft.attackDice)', preview)
+        self.assertIn('resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,profile)', preview)
+
+        resolver = self.source('resolveRetainedCombat', 'selectableDieHtml')
+        self.assertIn('criticalCancellations', resolver)
+        self.assertIn('criticalVsNormal', resolver)
+        self.assertIn('Math.floor(defense.normal/2)', resolver)
+        self.assertIn('profile.normal', resolver)
+        self.assertIn('profile.crit', resolver)
+        self.assertNotIn('attackRetainedTotals', self.app)
+        self.assertNotIn('defenseRetainedTotals', self.app)
+        self.assertNotIn('retainedTotalsHtml', self.app)
 
     def test_pack_defined_combat_abilities_have_follow_up_handlers(self):
         handlers = self.app.split('const combatAbilityHandlers = {', 1)[1].split('\n  };', 1)[0]
@@ -94,7 +104,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertNotIn('postGame', self.app)
 
     def test_versions_are_synchronized(self):
-        expected = '4.7.0'
+        expected = '4.7.1'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"styles.css?v={expected}", (ROOT / 'index.html').read_text())
         self.assertIn(f"app.js?v={expected}", (ROOT / 'index.html').read_text())
