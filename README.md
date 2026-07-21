@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v4.5.1
+# Tomb World Solo Guide v4.6.0
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -1122,3 +1122,12 @@ v3.0.7: Kasrkin roster choices updated.
 - Recalculated the current Grade after Tomb World events so reinforcement quantity uses the resulting Threat level.
 - Invalidated placement confirmation whenever its recorded random hatchway changes and rejected confirmation without a hatchway.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v4.5.1.
+
+
+## v4.6.0
+
+- Implemented the combat remediation release as a tabletop-first rules assistant: players physically roll and resolve retained successes, then record damage and incapacitation.
+- Reused canonical NPO weapon definitions for ranged and melee profile selection, including multi-profile weapons and printed profile guidance.
+- Added ordered Shooting and Fight guidance, printed weapon-rule reminders, Dimensional Banishment and Aggressive Defence Construct follow-up prompts, and persisted combat drafts with legacy-save normalization.
+- Preserved the existing combat dialogs, transactional activation workflow, mobile-first layout, and intentionally deferred mission victory, post-game, and campaign logic.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v4.6.0.
