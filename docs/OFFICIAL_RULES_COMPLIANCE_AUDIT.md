@@ -36,8 +36,8 @@ The NPO “AI” is a generic seven-question heuristic, not per-operative offici
 
 ### Finding totals
 
-* Severity: **P0 2**, **P1 23**, **P2 25**, **P3 1** (51 severity-rated findings; the seven compliant findings do not receive severity).
-* Classification: **COMPLIANT 7**, **PARTIAL 16**, **NON-COMPLIANT 14**, **MISSING 7**, **UNVERIFIABLE 14**, **INTENTIONAL ABSTRACTION 4**, **HOUSE RULE 2** (64 total audited findings).
+* Severity: **P0 2**, **P1 23**, **P2 24**, **P3 1** (50 severity-rated findings; the seven compliant findings do not receive severity).
+* Classification: **COMPLIANT 7**, **PARTIAL 15**, **NON-COMPLIANT 14**, **MISSING 7**, **UNVERIFIABLE 14**, **INTENTIONAL ABSTRACTION 4**, **HOUSE RULE 2** (63 total audited findings).
 * The scorecard does not report a percentage: current official source unavailability prevents a closed, exhaustive denominator for event cards, NPO tables, errata and team datacards.
 
 ## Compliance scorecard
@@ -46,7 +46,7 @@ Counts below include only the five requested scorecard classes; abstraction/hous
 
 | Category | Compliant | Partial | Non-compliant | Missing | Unverifiable |
 |---|---:|---:|---:|---:|---:|
-| Game setup | 2 | 2 | 0 | 0 | 2 |
+| Game setup | 2 | 1 | 0 | 0 | 2 |
 | Strategy Phase | 1 | 2 | 2 | 0 | 1 |
 | Tomb World Events | 0 | 2 | 1 | 1 | 2 |
 | Threat and Grade | 2 | 1 | 2 | 1 | 0 |
@@ -57,9 +57,9 @@ Counts below include only the five requested scorecard classes; abstraction/hous
 | Missions and scoring | 0 | 1 | 2 | 1 | 1 |
 | Data completeness | 0 | 0 | 0 | 0 | 3 |
 | Persistence and caching | 0 | 3 | 0 | 0 | 0 |
-| **Total** | **7** | **16** | **14** | **7** | **14** |
+| **Total** | **7** | **15** | **14** | **7** | **14** |
 
-> The scorecard counts each of the 58 atomic compliance findings once in its primary category. The five critical rows repeat findings expanded in later sections and are not counted twice. The four intentional abstractions and two house rules are outside the five scorecard columns. No percentage is calculated because authoritative-source gaps prevent claiming that the 58 findings are an exhaustive rules denominator.
+> The scorecard counts each of the 57 atomic compliance findings once in its primary category. The five critical rows repeat findings expanded in later sections and are not counted twice. The four intentional abstractions and two house rules are outside the five scorecard columns. No percentage is calculated because authoritative-source gaps prevent claiming that the 57 findings are an exhaustive rules denominator.
 
 ## Critical findings
 
@@ -78,14 +78,12 @@ Counts below include only the five requested scorecard classes; abstraction/hous
 | SET-01 | — | COMPLIANT | Select one of the six Tomb World missions and use its killzone layout. | Manifest loads exactly six sorted mission definitions and setup requires map checklist confirmation. | `app.js:61–74` (`loadMissionPack`); `app.js:512–519`; `Missions/manifest.json:1–39` | TW, **Missions 1–6**, map layouts pp. 17–19 association | None. |
 | SET-02 | — | COMPLIANT | Begin at Turning Point 1 after setup. | Setup stores TP 0, then `startTurningPoint()` increments to 1. | `app.js:647–650`; `app.js:972–973` | CORE, **Battle Sequence / Turning Points**; JO, **Set Up the Battle** | None. |
 | SET-03 | P1 | PARTIAL | Build a legal Player kill team under the current selected team’s operative-selection rules and any Joint Ops player-count adjustment. | UI enforces roster bounds, one Gravis and max gunners, but many `selectionRules` fields are display/data only and Joint Ops team-size adjustment is not an explicit engine rule. | `app.js:119–123`; `app.js:169–184`; `app.js:499–582`; Player JSON `selectionRules` | JO, **Select Kill Team(s)**; DK/DW/KAS, **Operative Selection** | Validate every selection-rule field in code and encode Joint Ops solo/co-op adjustments. |
-| SET-04 | P2 | PARTIAL | Starting NPO quantity, table, order and deployment must match the selected mission and battlefield maximum. | Formula and prose deployment are present, but generation can exceed the global ten-model limit and setup does not enforce Conceal orders in state. | `app.js:306–316`; `app.js:583–595`; mission JSON `startingNpos` | TW, **Determine NPOs / NPO Generation Table** and each mission **Setup** | Cap/resolve overflow exactly as printed and model orders, after verifying the table. |
 | SET-05 | P2 | UNVERIFIABLE | Starting NPO type probabilities must use the official generation table. | A hard-coded 11-entry lookup indexed by 2D6 implements outcomes 2–12, but no official table is available to confirm every cell. | `app.js:310–314` (`table`) | TW, **NPO Generation Table**; page unavailable | Verify all 11 results against a first-party copy; move table to structured sourced data. |
 | SET-06 | P2 | UNVERIFIABLE | Every mission’s precise placement, territory, marker, drop-zone and battlefield-limit instructions must match the pack. | JSON provides summaries/maps, but the tracked “PDF” cannot validate wording or geometry; setup uses four generic checks only. | `Missions/01…06`; `app.js:513–519`; `Assets/Tomb-World-Mission-Pack.pdf:1–42` (SVG markup) | TW, **Missions 1–6 Setup**, maps pp. 17–19 association | Replace invalid source asset only in a separately licensed/content PR; validate each map and instruction. |
 
 ### P1/P2 setup scenarios
 
 * **SET-03 — integration test.** **Given** each supported team and every illegal selection described by its official Operative Selection rule, **when** setup attempts to continue, **then** continuation is blocked and the precise unmet rule is shown.
-* **SET-04 — integration/manual mobile test.** **Given** a starting roll above the applicable battlefield allowance, **when** the NPO roster is generated at 390 px, **then** the official partial/blocked procedure is followed, all deployed NPOs have the correct order, and controls remain visible.
 * **SET-05 — automated unit test.** **Given** each 2D6 result from 2 through 12, **when** the generation table is evaluated, **then** the official NPO type is returned.
 * **SET-06 — manual tabletop test.** **Given** each official mission diagram, **when** the app setup map/checklist is followed, **then** every wall, hatch, marker, territory and drop zone matches.
 
@@ -211,7 +209,7 @@ Counts below include only the five requested scorecard classes; abstraction/hous
 | REI-02 | P1 | MISSING | Scout Sub-Crypt room awakening immediately generates D3 + Grade (max 5) NPOs when a room first opens/enters. | Rule is prose only; no room state or spawn action exists. | `Missions/05-scout-sub-crypt.json:18–30`; no mission dispatch in `app.js:972–2231` | TW, Mission 5 **Awaken Rooms** | Add room IDs, first-entry tracking, constrained generation and placement workflow. |
 | REI-03 | P2 | PARTIAL | Battlefield maximum, partial arrivals, fully blocked arrivals and placement must follow the pack. | Global max 10 and partial/block counts exist. NPO objects are nevertheless `deployed:true` before the user selects/physically confirms an entry point; one shared string represents all entries. | `app.js:9`; `app.js:714`; `app.js:984–992`; `app.js:1009–1013` | TW, **Battlefield Limit / Reinforcement Entry Points** | Create pending arrivals and confirm each placement; preserve partial/full block messages. |
 | REI-04 | P2 | UNVERIFIABLE | Standard reinforcement arrival order/readiness is as printed. | Arrivals are always Ready and have no order field. | `app.js:988` | TW, **Reinforcements**; page unavailable | Verify and store order/readiness. |
-| REI-05 | P2 | UNVERIFIABLE | The battlefield maximum is ten in all supported situations or exceptions are applied. | `MAX_NPOS=10` is global for setup, standard and events (except starting generation does not enforce it). | `app.js:9`; `app.js:984–990`; `app.js:1029`; `app.js:2331` | TW, **Maximum NPOs on the battlefield**; page unavailable | Verify scope/exceptions, then centralize one capacity function. |
+| REI-05 | P2 | UNVERIFIABLE | The battlefield maximum is ten in all supported situations or exceptions are applied. | `MAX_NPOS=10` is applied to standard reinforcements, event-generated NPOs and manual additions. | `app.js:9`; `app.js:984–990`; `app.js:1029`; `app.js:2331` | TW, **Maximum NPOs on the battlefield**; page unavailable | Verify scope/exceptions, then centralize one capacity function. |
 
 ### P1/P2 reinforcement scenarios
 
@@ -411,7 +409,7 @@ Because the official event page was unavailable and the local `.pdf` is invalid,
 | Save/restore | `app.js` | `initialState`, `save`, `load`, `normalizeState`; import/export handlers | Single legacy storage key; shallow normalization; mission/effect schemas absent. |
 | Setup/team selection | `app.js`, `Player_Operatives/*.json` | `playerRosterLimits`, `autoSelectRequiredPlayerOperatives`, `renderSetup`, `bindSetup` | Some structured selection rules are not enforced. |
 | Mission setup/data | `Missions/*.json`, `app.js` | `mission`, `missionSetup`, `missionTracker`, `missionSpecial`, `generateRoster` | Mission rules mostly display-only. |
-| Starting NPO generation | `app.js` | `profiles`, `generateRoster`, local `table` | 2D6 lookup; no setup cap/order state. |
+| Starting NPO generation | `app.js` | `profiles`, `generateRoster`, local `table` | 2D6 lookup; generated operatives do not store order state. |
 | Threat/Grade | `app.js` | `threatGrade`, `threatLabel`, `setThreat`, action Threat UI | Shared HUD/engine derivation; incomplete/wrong triggers. |
 | Turning Point/Strategy | `app.js` | `startTurningPoint`, `strategyCard`, `bindStrategyCard` | Mutates reinforcement/event before checklist; no mission hooks. |
 | Events | `app.js` | `events`, `strategyEventHtml`, `applyStrategyEvent`, `resolveStrategyEventAction` | Six hard-coded objects; partial automation; no eligibility/duration. |
