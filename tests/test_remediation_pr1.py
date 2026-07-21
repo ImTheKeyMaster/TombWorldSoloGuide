@@ -77,12 +77,12 @@ class RemediationPr1Tests(unittest.TestCase):
         self.assertIn("Cooperative team splitting is not currently supported", self.app)
         self.assertIn("state.turningPoint=0", self.app)
         self.assertIn("state.turningPoint++;", self.app)
-        self.assertIn("if(state.turningPoint===1)", self.app)
+        self.assertIn("if(state.turningPoint===1||state.threat===0)", self.app)
         self.assertTrue(all(m["firstTurningPointInitiative"] == "player" for m in self.missions.values()))
         self.assertIn("const STORAGE_KEY = 'tombWorldSoloGuide.v1';", self.app)
 
     def test_version_and_cache_busters_match(self):
-        expected = "4.1.1"
+        expected = "4.2.0"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()
