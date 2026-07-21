@@ -55,11 +55,11 @@ class UiUxPhase1Tests(unittest.TestCase):
             self.assertIsNone(re.search(r"\bPlayer [AB]\b", content), path)
 
     def test_release_versions_and_description_are_synchronized(self):
-        version = "5.2.1"
+        version = "5.3.0"
         self.assertIn(f"const APP_VERSION = '{version}'", self.app)
         self.assertIn(f"V{version}", (ROOT / "index.html").read_text())
         self.assertIn(f"const APP_VERSION = '{version}'", (ROOT / "service-worker.js").read_text())
-        self.assertIn("Version 5.2.1 - Player Combat Continue Fix", (ROOT / "README.md").read_text())
+        self.assertIn("Version 5.3.0 - Unified Player Combat Resolution", (ROOT / "README.md").read_text())
 
 
 if __name__ == "__main__":
