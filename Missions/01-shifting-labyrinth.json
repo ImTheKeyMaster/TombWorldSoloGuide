@@ -7,7 +7,7 @@
   "firstTurningPointInitiative": "player",
   "startingNpos": {
     "formula": "2D3+3",
-    "deployment": "Wholly within Player B territory, spread evenly with intervening terrain in control range when viewed from Player A's drop zone.",
+    "deployment": "Wholly within NPO territory, spread evenly with intervening terrain in control range when viewed from Player's drop zone.",
     "order": "Conceal"
   },
   "tracker": {
@@ -18,7 +18,7 @@
   "rules": [
     {
       "name": "Escape",
-      "summary": "Place an Escape marker at the centre of Player B's killzone edge. Player operatives within 1 inch can move over that edge and escape."
+      "summary": "Place an Escape marker at the centre of NPO's killzone edge. Player operatives within 1 inch can move over that edge and escape."
     },
     {
       "name": "Auspex Calibration",
@@ -124,17 +124,17 @@
   "setupChecks": [
     {
       "id": "map-and-deployment",
-      "label": "Arrange the killzone as shown on the Mission 1 map and identify the Player A drop zone and Player B territory.",
+      "label": "Arrange the killzone as shown on the Mission 1 map and identify the Player drop zone and NPO territory.",
       "stage": "killzone"
     },
     {
       "id": "escape-marker",
-      "label": "Place the Escape marker at the centre of Player B’s killzone edge.",
+      "label": "Place the Escape marker at the centre of NPO’s killzone edge.",
       "stage": "killzone"
     },
     {
       "id": "starting-npos",
-      "label": "Generate 2D3+3 starting NPOs and set each up wholly within Player B territory, spread evenly, with intervening terrain within its control range when viewed from Player A’s drop zone.",
+      "label": "Generate 2D3+3 starting NPOs and set each up wholly within NPO territory, spread evenly, with intervening terrain within its control range when viewed from Player’s drop zone.",
       "stage": "deploy"
     },
     {

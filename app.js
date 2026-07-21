@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '4.9.0';
+  const APP_VERSION = '5.0.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -321,6 +321,53 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     state.playerCount=state.playerRoster.length;
     state.playerReady=state.playerCount;
     initializePlayerWounds();
+  }
+
+  function applyPlayerRoster(operativeIds){
+    state.playerRoster=[...operativeIds];
+    state.playerCount=state.playerRoster.length;
+    state.playerReady=state.playerCount;
+    state.playerCasualtyIds=[];
+    initializePlayerWounds();
+    state.playerActivatedIds=[];
+    state.playerDeployed=false;
+  }
+
+  function randomPlayerRoster(){
+    const operatives=playerTeamData?.operatives||[];
+    const rules=playerTeamData?.selectionRules||{};
+    const {maxRoster}=playerRosterLimits();
+    const selected=new Set();
+    const shuffled=items=>{
+      const result=[...items];
+      for(let index=result.length-1;index>0;index--){
+        const swapIndex=Math.floor(Math.random()*(index+1));
+        [result[index],result[swapIndex]]=[result[swapIndex],result[index]];
+      }
+      return result;
+    };
+    const addRandom=(items,count)=>shuffled(items.filter(operative=>!selected.has(operative.id))).slice(0,count).forEach(operative=>selected.add(operative.id));
+
+    if(rules.leader?.operativeId)selected.add(rules.leader.operativeId);
+    (playerTeamData?.rosterCategories||[]).forEach(category=>{
+      const required=Number(category.requiredCount||0);
+      const current=operatives.filter(operative=>operative.category===category.id&&selected.has(operative.id)).length;
+      addRandom(operatives.filter(operative=>operative.category===category.id),Math.max(0,required-current));
+    });
+    const troopersRequired=Number(rules.mandatoryTroopers||0);
+    const troopersSelected=operatives.filter(operative=>operative.role==='Trooper'&&selected.has(operative.id)).length;
+    addRandom(operatives.filter(operative=>operative.role==='Trooper'),Math.max(0,troopersRequired-troopersSelected));
+
+    for(const operative of shuffled(operatives)){
+      if(selected.size>=maxRoster)break;
+      if(selected.has(operative.id))continue;
+      const maxGunners=Number(rules.maxGunners||Infinity);
+      if(operative.role==='Gunner'&&operatives.filter(candidate=>candidate.role==='Gunner'&&selected.has(candidate.id)).length>=maxGunners)continue;
+      const maxGravis=Number(rules.maxGravis||1);
+      if(operative.gravis&&operatives.filter(candidate=>candidate.gravis&&selected.has(candidate.id)).length>=maxGravis)continue;
+      selected.add(operative.id);
+    }
+    applyPlayerRoster(selected);
   }
 
   function save(){
@@ -916,7 +963,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       requirements.push(selectionCount);
       const valid=requiredLeaderSelected&&gunnerCount<=maxGunners&&trooperCount>=mandatoryTroopers&&(!hasGravis||(gravisCount>=1&&gravisCount<=maxGravis))&&selected.size>=minRoster&&selected.size<=maxRoster;
       const requirementItems=requirements.map(requirement=>`<li>${escapeHtml(requirement)}</li>`).join('');
-      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><p class="muted">Build a legal kill team using its current official rules. The Guide tracks selected operatives but does not validate every team-building restriction. Cooperative team splitting is not currently supported.</p><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
+      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><p class="muted">Build a legal kill team using its current official rules. The Guide tracks selected operatives but does not validate every team-building restriction. Cooperative team splitting is not currently supported.</p><div class="setup-bulk-row"><button class="btn secondary" id="randomPlayerTeam">Random Team</button></div><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
     }
     if(stepId==='npoRoster'){
       const m=mission();
@@ -932,7 +979,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const allNposPlaced=state.roster.every(n=>n.deployed);
       const {minRoster,maxRoster}=playerRosterLimits();
       const playerValid=(state.playerRoster||[]).length>=minRoster&&(state.playerRoster||[]).length<=maxRoster;
-      return `<h3>Deploy Kill Teams</h3><p>Use the generated rosters to place both forces, then confirm every mission requirement and resource choice.</p><div class="checklist">${setupChecklistHtml(placementChecks)}<label class="check-row"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${playerValid?'':'disabled'}><span><strong>${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} Kill Team deployed</strong><small>All selected Player operatives are on the battlefield.</small></span></label><label class="check-row"><input id="npoDeployed" type="checkbox" ${allNposPlaced?'checked':''}><span><strong>Necron Kill Team deployed</strong><small>${state.roster.length?'All generated starting NPO operatives are on the battlefield.':'No starting NPO deployment is required for this mission.'}</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'':'disabled'}>Deployment Complete</button></div>`;
+      return `<h3>Deploy Kill Teams</h3><p>Use the generated rosters to place both forces, then confirm every mission requirement and resource choice.</p><div class="setup-bulk-row"><button class="btn secondary" id="checkAllDeployment" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'disabled':''}>Check All</button></div><div class="checklist">${setupChecklistHtml(placementChecks)}<label class="check-row"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${playerValid?'':'disabled'}><span><strong>${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} Kill Team deployed</strong><small>All selected Player operatives are on the battlefield.</small></span></label><label class="check-row"><input id="npoDeployed" type="checkbox" ${allNposPlaced?'checked':''}><span><strong>Necron Kill Team deployed</strong><small>${state.roster.length?'All generated starting NPO operatives are on the battlefield.':'No starting NPO deployment is required for this mission.'}</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'':'disabled'}>Deployment Complete</button></div>`;
     }
     const m=mission();
     const rules=(m.rules||[]).map(rule=>`<div class="mission-rule"><strong>${escapeHtml(rule.name||'Special Rule')}</strong>${rule.timing?`<small>${escapeHtml(rule.timing)}</small>`:''}<p>${escapeHtml(rule.summary||'')}</p></div>`).join('');
@@ -957,8 +1004,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     });
     $$('[data-check]').forEach(c=>c.onchange=()=>{state.setupChecks[c.dataset.check]=c.checked;save();render();});
     $('#checkAllSetup')?.addEventListener('click',()=>{missionSetupChecks('killzone').forEach(check=>{state.setupChecks[check.id]=true;});save();render();});
+    $('#randomPlayerTeam')?.addEventListener('click',()=>{randomPlayerRoster();save();render();});
     $('#generateBtn')?.addEventListener('click',()=>{generateRoster();clearMissionSetupChecks('deploy');save();render();});
     $('#npoDeployed')?.addEventListener('change',e=>{state.roster.forEach(n=>n.deployed=e.target.checked);save();render();});
+    $('#checkAllDeployment')?.addEventListener('click',()=>{
+      $$('.checklist input[type="checkbox"]:not(:disabled)').forEach(checkbox=>{
+        if(!checkbox.checked){checkbox.checked=true;checkbox.dispatchEvent(new Event('change',{bubbles:true}));}
+      });
+    });
     $$('[data-roster-category-toggle]').forEach(button=>button.addEventListener('click',()=>{
       const expanded=button.getAttribute('aria-expanded')==='true';
       if(expanded)expandedRosterCategories.delete(button.dataset.rosterCategoryToggle);
@@ -978,8 +1031,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         if(candidate?.role==='Gunner'&&selectedPlayerOperatives().filter(o=>o.role==='Gunner').length>=maxGunners){showToast(`This Kill Team can include only ${maxGunners} Gunners.`);return;}
         selected.add(id);
       }
-      state.playerRoster=[...selected];
-      state.playerCount=state.playerRoster.length;state.playerReady=state.playerCount;state.playerCasualtyIds=[];initializePlayerWounds();state.playerActivatedIds=[];state.playerDeployed=false;
+      applyPlayerRoster(selected);
       save();render();
     }));
     $('#playerDeployed')?.addEventListener('change',e=>{state.playerDeployed=e.target.checked;save();render();});
@@ -1041,7 +1093,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     },
     regroup:(engine,progress)=>{
       const survivors=(state.playerRoster||[]).filter(id=>!state.playerCasualtyIds.includes(id));
-      const rows=survivors.map(id=>{const check=progress.operativeChecks[id]||{};return `<div class="mission-regroup-row"><strong>${escapeHtml(playerName(id))}</strong><label><input type="checkbox" data-regroup-check="inDropZone" data-operative-id="${id}" ${check.inDropZone?'checked':''}> Wholly in Player B drop zone</label><label><input type="checkbox" data-regroup-check="outsideNpoControl" data-operative-id="${id}" ${check.outsideNpoControl?'checked':''}> Outside NPO control range</label><label><input type="checkbox" data-regroup-check="nearPlayer" data-operative-id="${id}" ${check.nearPlayer?'checked':''}> Within 3 inches of another Player operative</label></div>`;}).join('');
+      const rows=survivors.map(id=>{const check=progress.operativeChecks[id]||{};return `<div class="mission-regroup-row"><strong>${escapeHtml(playerName(id))}</strong><label><input type="checkbox" data-regroup-check="inDropZone" data-operative-id="${id}" ${check.inDropZone?'checked':''}> Wholly in NPO drop zone</label><label><input type="checkbox" data-regroup-check="outsideNpoControl" data-operative-id="${id}" ${check.outsideNpoControl?'checked':''}> Outside NPO control range</label><label><input type="checkbox" data-regroup-check="nearPlayer" data-operative-id="${id}" ${check.nearPlayer?'checked':''}> Within 3 inches of another Player operative</label></div>`;}).join('');
       return `<p>Record the position of every surviving operative. Victory is evaluated only when the Turning Point is finished.</p><div class="mission-objective-list">${rows}</div>`;
     }
   };

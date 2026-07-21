@@ -18,7 +18,7 @@
   "rules": [
     {
       "name": "Awaken Rooms",
-      "summary": "Excluding Player A's drop-zone rooms, the first time each room is opened or entered, set up D3 plus current Threat Grade NPOs, maximum 5, ready with Conceal orders."
+      "summary": "Excluding Player's drop-zone rooms, the first time each room is opened or entered, set up D3 plus current Threat Grade NPOs, maximum 5, ready with Conceal orders."
     },
     {
       "name": "Dormant",
@@ -140,7 +140,7 @@
   "setupChecks": [
     {
       "id": "map-and-deployment",
-      "label": "Arrange the killzone as shown on the Mission 5 map and identify the Player A drop-zone rooms.",
+      "label": "Arrange the killzone as shown on the Mission 5 map and identify the Player drop-zone rooms.",
       "stage": "killzone"
     },
     {
@@ -150,7 +150,7 @@
     },
     {
       "id": "eligible-rooms",
-      "label": "Identify the rooms outside the Player A drop zone that can awaken when first opened or entered.",
+      "label": "Identify the rooms outside the Player drop zone that can awaken when first opened or entered.",
       "stage": "killzone"
     },
     {

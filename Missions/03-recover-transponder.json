@@ -3,11 +3,11 @@
   "number": "03",
   "name": "Recover Transponder",
   "brief": "Search several locations for a hidden device and carry it back to safety.",
-  "objective": "Locate the true transponder and escape over Player A's killzone edge while carrying it.",
+  "objective": "Locate the true transponder and escape over Player's killzone edge while carrying it.",
   "firstTurningPointInitiative": "player",
   "startingNpos": {
     "formula": "2D3+3",
-    "deployment": "Wholly within Player B territory, spread evenly across rooms containing objective markers, with intervening terrain in control range when viewed from Player A's drop zone.",
+    "deployment": "Wholly within NPO territory, spread evenly across rooms containing objective markers, with intervening terrain in control range when viewed from Player's drop zone.",
     "order": "Conceal"
   },
   "tracker": {
@@ -26,7 +26,7 @@
     },
     {
       "name": "Escape",
-      "summary": "Player operatives can leave over Player A's killzone edge."
+      "summary": "Player operatives can leave over Player's killzone edge."
     }
   ],
   "victory": {
@@ -119,7 +119,7 @@
   "setupChecks": [
     {
       "id": "map-and-deployment",
-      "label": "Arrange the killzone as shown on the Mission 3 map and identify the Player A drop zone and Player B territory.",
+      "label": "Arrange the killzone as shown on the Mission 3 map and identify the Player drop zone and NPO territory.",
       "stage": "killzone"
     },
     {
@@ -129,7 +129,7 @@
     },
     {
       "id": "starting-npos",
-      "label": "Generate 2D3+3 starting NPOs and set each up wholly within Player B territory, spread evenly across the rooms containing objective markers, with intervening terrain within its control range when viewed from Player A’s drop zone.",
+      "label": "Generate 2D3+3 starting NPOs and set each up wholly within NPO territory, spread evenly across the rooms containing objective markers, with intervening terrain within its control range when viewed from Player’s drop zone.",
       "stage": "deploy"
     },
     {
@@ -161,7 +161,7 @@
       }
     ],
     "progressLabel": "Transponder search",
-    "success": "A player operative escaped over Player A’s killzone edge while carrying the transponder.",
+    "success": "A player operative escaped over Player’s killzone edge while carrying the transponder.",
     "failure": "Every player operative was incapacitated."
   }
 }
