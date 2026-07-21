@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v4.6.0
+# Tomb World Solo Guide v4.6.1
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -1131,3 +1131,10 @@ v3.0.7: Kasrkin roster choices updated.
 - Added ordered Shooting and Fight guidance, printed weapon-rule reminders, Dimensional Banishment and Aggressive Defence Construct follow-up prompts, and persisted combat drafts with legacy-save normalization.
 - Preserved the existing combat dialogs, transactional activation workflow, mobile-first layout, and intentionally deferred mission victory, post-game, and campaign logic.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v4.6.0.
+
+
+## v4.6.1
+
+- Validated imported combat drafts, cleared canceled Player combat transactions, and corrected recorded-success labels.
+- Resolved Dimensional Banishment from a recorded physical 2D6 result and applied Aggressive Defence Construct damage transactionally from its recorded D3 result.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v4.6.1.

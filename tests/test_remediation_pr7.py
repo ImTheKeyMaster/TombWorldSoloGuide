@@ -49,7 +49,9 @@ class RemediationPr7CombatTests(unittest.TestCase):
         reminder = self.source('combatAbilityReminder', 'showPendingPlayerAttackWizard')
         self.assertIn('criticalSuccesses:combat.critRemaining', reminder)
         self.assertIn('remaining wounds', reminder)
-        self.assertIn('within 2&quot;', reminder)
+        self.assertIn('aggressiveDefenceDamage', reminder)
+        self.assertIn('applyDimensionalBanishment', self.app)
+        self.assertIn("total>combat.after?0:combat.after", self.app)
 
     def test_damage_and_incapacitation_use_one_recorded_outcome(self):
         recorded = self.source('recordedCombat', 'combatOutcomeFields')
@@ -67,7 +69,9 @@ class RemediationPr7CombatTests(unittest.TestCase):
         normalize = self.source('normalizeState', 'npoDefinition')
         self.assertIn('raw?.combatState', normalize)
         self.assertIn('raw?.roster', normalize)
+        self.assertIn("raw?.combatState?.side==='player'", normalize)
         self.assertIn('combatDraft', self.app)
+        self.assertIn('state.combatState=null', self.app)
         self.assertIn('shootCombatDraft', self.app)
 
     def test_mission_end_logic_was_not_added_by_combat_release(self):
@@ -75,7 +79,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertNotIn('postGame', self.app)
 
     def test_versions_are_synchronized(self):
-        expected = '4.6.0'
+        expected = '4.6.1'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"styles.css?v={expected}", (ROOT / 'index.html').read_text())
         self.assertIn(f"app.js?v={expected}", (ROOT / 'index.html').read_text())
