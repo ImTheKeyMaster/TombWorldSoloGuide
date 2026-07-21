@@ -1,7 +1,16 @@
-# Tomb World Solo Guide v5.5.3
+# Tomb World Solo Guide v5.6.0
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
+
+## v5.6.0
+
+**Version 5.6.0 - Starting NPO Generation Animation**
+
+- Presents the mission's starting NPO count as a shared animated dice roll.
+- Shows the original mission calculation and caps deployment to the available NPO pool.
+- Automatically continues to deployment while persisting the roll and one-time transition state.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v5.6.0.
 
 ## v5.5.3
 
