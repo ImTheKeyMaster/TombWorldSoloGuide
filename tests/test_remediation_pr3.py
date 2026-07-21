@@ -78,14 +78,22 @@ class RemediationPr3Tests(unittest.TestCase):
         pipeline = self.function_source("startTurningPoint", "completeStrategyStage")
         self.assertLess(pipeline.index("determineInitiative();"), pipeline.index("processEventStage();"))
 
-    def test_initiative_screen_uses_persisted_result_mode(self):
-        strategy_card = self.function_source("strategyCard", "actualReinforcementCount")
-        self.assertIn("d.initiativeMode==='automatic'", strategy_card)
+    def test_resolved_initiative_routes_directly_to_firefight(self):
         bind_play = self.function_source("bindPlay", "startTurningPoint")
-        self.assertIn("initiativeRolling=state.strategyData.initiativeMode==='rolled'", bind_play)
-        animation = self.function_source("animateInitiativeResult", "activationTracker")
-        self.assertIn("state.strategyData?.initiativeMode==='automatic'", animation)
-        self.assertNotIn("state.threat===0", animation)
+        self.assertIn("beginFirefight(state.strategyData.suggestedInitiative)", bind_play)
+        render_play = self.function_source("renderPlay", "activeEventEffectsHtml")
+        self.assertIn("state.strategyStage==='initiative'", render_play)
+        self.assertIn("state.strategyData?.suggestedInitiative||state.initiative||'player'", render_play)
+        self.assertNotIn("Begin Player Activation", self.app)
+        self.assertNotIn("Begin with NPOs", self.app)
+        self.assertNotIn("data-init", self.app)
+
+    def test_activation_screen_preserves_initiative_message(self):
+        next_step = self.function_source("nextStepCard", "initiativeStatusHtml")
+        self.assertIn("initiativeStatusHtml()", next_step)
+        status = self.function_source("initiativeStatusHtml", "missionStrategyPending")
+        self.assertIn("state.initiative==='npo'", status)
+        self.assertIn("Dormant NPOs cannot activate during Turning Point 1", status)
 
     def test_legacy_null_rolls_migrate_as_automatic_initiative(self):
         normalize = self.function_source("normalizeState", "npoDefinition")
@@ -99,7 +107,7 @@ class RemediationPr3Tests(unittest.TestCase):
         self.assertIn("merged.strategyPipeline", normalize)
 
     def test_versions_are_synchronized(self):
-        expected = "5.5.1"
+        expected = "5.5.2"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()

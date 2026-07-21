@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.5.1';
+  const APP_VERSION = '5.5.2';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1168,6 +1168,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function renderPlay(){
+    if(state.phase==='strategy'&&state.strategyStage==='initiative'){
+      beginFirefight(state.strategyData?.suggestedInitiative||state.initiative||'player');
+      return;
+    }
     const milestone=state.gradeMilestone?`<section class="grade-milestone"><div><small>THREAT ESCALATION</small><strong>Grade ${state.gradeMilestone.grade}: ${escapeHtml(state.gradeMilestone.label)}</strong><span>Threat has reached Level ${state.gradeMilestone.threat}.</span></div><button class="btn ghost compact" id="dismissGradeMilestone">Dismiss</button></section>`:'';
     app.innerHTML=hud()+milestone+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${state.phase!=='strategy'?activeEventEffectsHtml():''}${nextStepCard()}${state.phase==='firefight'?activationTracker():''}`;
     bindPlay();
@@ -1195,19 +1199,17 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
     setNextActivation(state.nextSide || state.initiative || 'player');
     if(state.phase==='end'){save();return nextStepCard();}
-    if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>Player Activation</h2><p>Activate one Player operative on the tabletop. After it completes, the Guide will alternate to an NPO if one is ready.</p><button class="btn primary big-action" id="playerActivation">Activate an Operative</button></section>`;
-    if(state.nextSide==='npo' && readyNpos().length>0)return `<section class="next-card npo-activation-card"><span class="phase">NPO ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">NPO Activation</h2><p class="npo-activation-meta">Apply the Threat Principle to select the next ready NPO.</p><button class="btn primary big-action" id="npoActivation">Activate NPO</button></section>`;
+    if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>Player Activation</h2>${initiativeStatusHtml()}<p>Activate one Player operative on the tabletop. After it completes, the Guide will alternate to an NPO if one is ready.</p><button class="btn primary big-action" id="playerActivation">Activate an Operative</button></section>`;
+    if(state.nextSide==='npo' && readyNpos().length>0)return `<section class="next-card npo-activation-card"><span class="phase">NPO ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">NPO Activation</h2>${initiativeStatusHtml()}<p class="npo-activation-meta">Apply the Threat Principle to select the next ready NPO.</p><button class="btn primary big-action" id="npoActivation">Activate NPO</button></section>`;
     setNextActivation(state.nextSide==='player'?'npo':'player');
     save();
     return nextStepCard();
   }
 
-  let initiativeRolling=false;
-
-  function initiativeDieKind(side){
-    const d=state.strategyData||{};
-    if(d.playerRoll===d.npoRoll)return 'hit';
-    return d.suggestedInitiative===side?'hit':'miss';
+  function initiativeStatusHtml(){
+    const side=state.initiative==='npo'?'NPOs':'Player';
+    const dormantNote=state.turningPoint===1?' Dormant NPOs cannot activate during Turning Point 1.':'';
+    return `<div class="summary-box"><strong>${side} ${side==='NPOs'?'have':'has'} initiative.</strong>${dormantNote}</div>`;
   }
 
   function missionStrategyPending(){
@@ -1233,9 +1235,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const activeEvents=(state.eventState.active||[]).map(event=>`<div class="summary-box"><strong>${escapeHtml(event.title)}</strong><br>${escapeHtml(event.text)}</div>`).join('');
       return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 1 OF 2</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol><p>When all Strategy Phase actions are complete, continue to initiative.</p></div>${missionStrategyPromptHtml()}<div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat" tabindex="0" data-tooltip="Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events."><small>THREAT LEVEL <span class="info-dot">i</span></small><strong>${state.threat}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Grade 0–3 is derived from Threat and determines reinforcement pressure and some events."><small>GRADE LEVEL <span class="info-dot">i</span></small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="The number of living NPOs that are Ready and may still activate during this Turning Point."><small>NPOs Ready <span class="info-dot">i</span></small><strong>${readyNpos().length}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Additional NPOs generated during this Strategy Phase. Battlefield limits may block some arrivals."><small>Reinforcements <span class="info-dot">i</span></small><strong>${reinforcementPending?'—':reinforcementCount}</strong></div></div>${reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':rolls?`<h3>Reinforcements generated</h3><div class="reinforcement-grid">${rolls}</div><div class="checklist">${placements}</div>`:'<div class="summary-box"><strong>No reinforcements arrive.</strong></div>'}${d.blocked?`<p class="warning-text">${d.blocked} reinforcement(s) cannot be set up because doing so would exceed the 10-NPO limit.</p>`:''}${resolvedEvents}${d.event?.status==='drawn'?strategyEventHtml(d.event):''}${activeEvents?`<h3>Active event effects</h3>${activeEvents}`:''}${!d.events?.length?'<p>No Tomb World event is required.</p>':''}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending||placementPending||missionPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':placementPending?'Confirm Reinforcement Placement':missionPending?'Resolve Mission Rule to Continue':'Strategy Phase Complete'}</button></section>`;
     }
-    const auto=d.initiativeMode==='automatic';
-    const autoReason=d.initiativeReason||'the automatic initiative rule applied';
-    return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 2 OF 2</span><h2>${auto?'The Player has automatic initiative':'Determine initiative'}</h2>${auto?`<p>The Player automatically has initiative because ${autoReason}. ${state.threat===0?'Dormant NPOs remain Expended and cannot activate.':'NPOs are no longer Dormant, but the resolved initiative result does not change.'}</p>`:`<p>The Guide rolled once for each side. Use the result, reroll both dice, or make a manual correction if your tabletop rules require a different outcome.</p><div class="initiative-roll"><div><small>Player</small><div class="dice-row animated-roll" id="playerInitiativeDie">${initiativeRolling?rollingDieHtml():dieHtml({value:state.strategyData.playerRoll,kind:initiativeDieKind('player')})}</div></div><div><small>NPOs</small><div class="dice-row animated-roll" id="npoInitiativeDie">${initiativeRolling?rollingDieHtml():dieHtml({value:state.strategyData.npoRoll,kind:initiativeDieKind('npo')})}</div></div></div><div class="summary-box" id="initiativeResult" ${initiativeRolling?'hidden':''}><strong>${state.strategyData.suggestedInitiative==='npo'?'NPOs win':'The Player wins'} initiative${state.strategyData.playerRoll===state.strategyData.npoRoll?' after the tie-break':''}.</strong></div>`}<div class="quick-actions">${auto?'':`<button class="btn ghost" id="rerollInitiative" ${initiativeRolling?'disabled':''}>Reroll Both</button>`}<button class="btn ${(auto?'player':d.suggestedInitiative)==='player'?'primary':'secondary'}" data-init="player" ${initiativeRolling?'disabled':''}>Begin Player Activation</button><button class="btn ${(auto?'player':d.suggestedInitiative)==='npo'?'primary':'secondary'}" data-init="npo" ${auto||initiativeRolling?'disabled':''}>Begin with NPOs</button></div></section>`;
+    return '';
   }
 
   function actualReinforcementCount(data=state.strategyData||{}){
@@ -1353,27 +1353,6 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}<div class="event-controls">${scarabChoices}<button class="btn primary" id="resolveStrategyEvent" ${scarabChoices?'disabled':''}>${labels[event.definitionId]||labels[event.execution.type]||'Resolve Event'}</button>${impossibleControl}</div></div>`;
   }
 
-  function animateInitiativeResult(){
-    if(state.strategyData?.initiativeMode==='automatic'){initiativeRolling=false;return;}
-    setTimeout(()=>{
-      const player=$('#playerInitiativeDie');
-      if(player){
-        player.innerHTML=dieHtml({value:state.strategyData.playerRoll,kind:initiativeDieKind('player')});
-        player.classList.add('settled');
-      }
-      const npo=$('#npoInitiativeDie');
-      if(npo){
-        npo.innerHTML=dieHtml({value:state.strategyData.npoRoll,kind:initiativeDieKind('npo')});
-        npo.classList.add('settled');
-      }
-      const result=$('#initiativeResult');
-      if(result)result.hidden=false;
-      initiativeRolling=false;
-      $('#rerollInitiative')?.removeAttribute('disabled');
-      $$('[data-init]').forEach(button=>button.removeAttribute('disabled'));
-    },700);
-  }
-
   function activationTracker(){
     const activatedIds=new Set(state.playerActivatedIds||[]);
     const casualtyIds=new Set(state.playerCasualtyIds||[]);
@@ -1453,9 +1432,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#eventNpoSelect')?.addEventListener('change',e=>{$('#resolveStrategyEvent').disabled=!e.target.value;});
     $('#resolveStrategyEvent')?.addEventListener('click',resolveStrategyEvent);
     $('#redrawStrategyEvent')?.addEventListener('click',()=>{redrawCurrentEvent('No breach or open hatchway could be changed.');save();render();});
-    $('#continueStrategy')?.addEventListener('click',()=>{state.strategyStage='initiative';initiativeRolling=state.strategyData.initiativeMode==='rolled';save();render();if(initiativeRolling)animateInitiativeResult();});
-    $('#rerollInitiative')?.addEventListener('click',()=>{rollInitiative();initiativeRolling=true;save();render();animateInitiativeResult();});
-    $$('[data-init]').forEach(b=>b.onclick=()=>beginFirefight(b.dataset.init));
+    $('#continueStrategy')?.addEventListener('click',()=>beginFirefight(state.strategyData.suggestedInitiative));
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
     $('#npoActivation')?.addEventListener('click',showNpoSelection);
     bindMissionProgressControls();
