@@ -47,7 +47,8 @@ class RemediationPr1Tests(unittest.TestCase):
         self.assertIn("const placementChecks=missionSetupChecks('deploy')", self.app)
         self.assertIn("allNposPlaced&&allPlacementChecked", self.app)
         self.assertIn("generateRoster(state.startingNpoGeneration)", self.app)
-        self.assertLess(self.app.index("if(stepId==='npoRoster')"), self.app.index("if(stepId==='deploy')"))
+        self.assertNotIn("if(stepId==='npoRoster')", self.app)
+        self.assertIn("if(stepId==='deploy')ensureStartingNpoGeneration()", self.app)
 
     def test_official_mission_specific_conditions_are_explicit(self):
         text = lambda mission_id: " ".join(c["label"] for c in self.missions[mission_id]["setupChecks"]).lower()
@@ -82,7 +83,7 @@ class RemediationPr1Tests(unittest.TestCase):
         self.assertIn("const STORAGE_KEY = 'tombWorldSoloGuide.v1';", self.app)
 
     def test_version_and_cache_busters_match(self):
-        expected = "5.6.0"
+        expected = "5.6.1"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()
