@@ -45,6 +45,7 @@ class AggressiveDefenseD3Tests(unittest.TestCase):
         self.assertIn("aggressiveDefenseAnimating:true", preview)
         self.assertIn("onResolved,onCancel,false,true", preview)
         self.assertIn("displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,false)", preview)
+        self.assertIn("if(aggressiveDefenseDie?.isConnected)", preview)
         self.assertRegex(preview, r"if\(retaliationApplies\)\{[\s\S]+?return;\s*\}\s*result\.aggressiveDefenseDamage=0")
 
     def test_roll_is_persisted_before_animation_and_restored_without_replay(self):

@@ -2087,8 +2087,8 @@ function showPlayerActivation(stage={}){
     button.disabled=!visualComplete;
     button.onclick=()=>{if(visualComplete&&onContinue)onContinue();};
     if(animate)settleCombatDice(combat,()=>{
-      visualComplete=true;
-      if(button.isConnected)button.disabled=false;
+      visualComplete=!waiting;
+      if(button.isConnected)button.disabled=waiting;
     },results);
   }
 
@@ -2538,8 +2538,9 @@ function showPlayerActivation(stage={}){
       state.combatState={side:'player',stage:{...stage}};
       save();
       displayPendingPlayerCombat(stage,attackType,{...result,aggressiveDefenseAnimating:true},onResolved,onCancel,false,true);
-      settleAnimatedDice([{row:$('#aggressiveDefenseDie'),dice:[{value:rolledValue,kind:'hit'}]}],()=>{
-        if($('#aggressiveDefenseDie'))displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,false);
+      const aggressiveDefenseDie=$('#aggressiveDefenseDie');
+      settleAnimatedDice([{row:aggressiveDefenseDie,dice:[{value:rolledValue,kind:'hit'}]}],()=>{
+        if(aggressiveDefenseDie?.isConnected)displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,false);
       });
       return;
     }
