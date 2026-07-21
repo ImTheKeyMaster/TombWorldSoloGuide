@@ -94,9 +94,9 @@ class RemediationPr7CombatTests(unittest.TestCase):
         initial = self.app.split('const initialState = () => ({', 1)[1].split('\n  });', 1)[0]
         self.assertIn('combatState:null', initial)
         normalize = self.source('normalizeState', 'npoDefinition')
-        self.assertIn('raw?.combatState', normalize)
-        self.assertIn('raw?.roster', normalize)
-        self.assertIn("raw?.combatState?.side==='player'", normalize)
+        self.assertIn('isRecord(raw.combatState)', normalize)
+        self.assertIn('raw.roster', normalize)
+        self.assertIn("raw.combatState.side==='player'", normalize)
         self.assertIn('combatDraft', self.app)
         self.assertIn('state.combatState=null', self.app)
         self.assertIn('shootCombatDraft', self.app)
@@ -106,7 +106,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertNotIn('postGame', self.app)
 
     def test_versions_are_synchronized(self):
-        expected = '4.8.1'
+        expected = '4.9.0'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"styles.css?v={expected}", (ROOT / 'index.html').read_text())
         self.assertIn(f"app.js?v={expected}", (ROOT / 'index.html').read_text())

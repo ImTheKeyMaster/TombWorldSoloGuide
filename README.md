@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v4.8.1
+# Tomb World Solo Guide v4.9.0
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -59,6 +59,16 @@ py -m http.server 8000
 ```
 
 Then open `http://localhost:8000`. Load the app once while online so its local gameplay resources can be cached. Browser developer tools can then be used to switch the network offline and reload the page to verify offline operation. Service workers are supported on localhost for development and on the production HTTPS GitHub Pages URL.
+
+## Automated testing
+
+Run the focused rules-engine, mission, combat, event, reinforcement, and save-compatibility regression suite from the repository root:
+
+```sh
+python3 -m unittest discover -s tests -v
+```
+
+The Guide preserves the existing `tombWorldSoloGuide.v1` browser-storage key. Current, legacy, and partially upgraded saves are normalized on load; malformed optional fields fall back to safe defaults without clearing the stored game.
 
 ### Installing the app
 
@@ -1169,3 +1179,12 @@ v3.0.7: Kasrkin roster choices updated.
 - Corrected mission progression boundaries for Escape, Transponder carriage, Scout Sub-Crypt awakening, and Regroup end-of-Turning-Point checks.
 - Required Auspex Calibration before Strategy progression when applicable and suppressed Mission 5 Operate Hatch Threat increases.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v4.8.1.
+
+
+## v4.9.0
+
+- Consolidated save validation around shared record, integer, and identifier-list normalizers.
+- Hardened current, legacy, partially upgraded, and malformed saves without changing the existing storage key or clearing browser data.
+- Added defensive recovery for invalid Turning Point, Threat, NPO, event, reinforcement, combat, and mission state.
+- Expanded focused regression coverage and documented the dependency-free test command.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v4.9.0.

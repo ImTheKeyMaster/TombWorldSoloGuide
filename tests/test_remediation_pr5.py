@@ -53,9 +53,9 @@ class RemediationPr5Tests(unittest.TestCase):
 
     def test_legacy_saves_are_normalized(self):
         normalize = self.function_source('normalizeState', 'npoDefinition')
-        self.assertIn('raw?.eventState', normalize)
+        self.assertIn('isRecord(raw.eventState)', normalize)
         self.assertIn('validInstances', normalize)
-        self.assertIn('eventDefinitions[event?.definitionId]', normalize)
+        self.assertIn('eventDefinitions[event.definitionId]', normalize)
         self.assertIn('events:Array.isArray(raw.strategyData.events)', normalize)
 
     def test_conditional_event_choices_and_active_presentation(self):

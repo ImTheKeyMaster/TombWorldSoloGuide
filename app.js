@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '4.8.1';
+  const APP_VERSION = '4.9.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -239,6 +239,17 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     regroup:()=>({operativeChecks:{},lastCheckedTurningPoint:0})
   };
 
+  const isRecord = value => Boolean(value)&&typeof value==='object'&&!Array.isArray(value);
+  const boundedInteger = (value,min,max,fallback=min) => {
+    const number=Number(value);
+    return Number.isFinite(number)?Math.max(min,Math.min(max,Math.round(number))):fallback;
+  };
+  const normalizeIdList = (value,allowedIds=null) => {
+    if(!Array.isArray(value))return [];
+    const allowed=allowedIds?new Set(allowedIds):null;
+    return [...new Set(value.filter(id=>typeof id==='string'&&id&&(allowed?.has(id)??true)))];
+  };
+
   function missionDefinition(missionId=state?.missionId){return missions.find(item=>item.id===missionId)||null;}
   function missionEngine(m=mission()){return m?.missionEngine||null;}
   function freshMissionState(m=mission()){
@@ -246,28 +257,35 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return factory?factory():{};
   }
   function normalizeMissionState(rawMissionState,m,legacyTracker=0){
+    // Mission JSON loads after localStorage. Preserve saved progress until its
+    // mission definition is available, then normalize it against that schema.
+    if(!m)return isRecord(rawMissionState)?{...rawMissionState}:null;
     const engine=missionEngine(m), base=freshMissionState(m);
     if(!engine)return base;
-    const raw=rawMissionState&&typeof rawMissionState==='object'?rawMissionState:{};
+    const raw=isRecord(rawMissionState)?rawMissionState:{};
     const normalized={...base,...raw};
     if(engine.type==='escape'){
-      normalized.escapedIds=Array.isArray(raw.escapedIds)?raw.escapedIds:[];
-      normalized.auspexCalibrations=raw.auspexCalibrations&&typeof raw.auspexCalibrations==='object'?{...raw.auspexCalibrations}:{};
+      normalized.escapedIds=normalizeIdList(raw.escapedIds);
+      normalized.auspexCalibrations=isRecord(raw.auspexCalibrations)?{...raw.auspexCalibrations}:{};
     }else if(engine.type==='sabotage'){
-      normalized.completedFeatureIds=Array.isArray(raw.completedFeatureIds)?raw.completedFeatureIds:engine.features.slice(0,Math.max(0,Number(legacyTracker)||0)).map(feature=>feature.id);
+      normalized.completedFeatureIds=Array.isArray(raw.completedFeatureIds)
+        ? normalizeIdList(raw.completedFeatureIds,engine.features.map(feature=>feature.id))
+        : engine.features.slice(0,boundedInteger(legacyTracker,0,engine.features.length)).map(feature=>feature.id);
     }else if(engine.type==='transponder'){
-      normalized.sites=raw.sites&&typeof raw.sites==='object'?{...raw.sites}:{};
-      normalized.carrierId=raw.carrierId||null;
+      normalized.sites=isRecord(raw.sites)?Object.fromEntries(Object.entries(raw.sites).filter(([,value])=>['found','empty'].includes(value))):{};
+      normalized.carrierId=typeof raw.carrierId==='string'&&raw.carrierId?raw.carrierId:null;
       normalized.escaped=Boolean(raw.escaped);
-      normalized.lastRoll=raw.lastRoll&&typeof raw.lastRoll==='object'?{...raw.lastRoll}:null;
+      normalized.lastRoll=isRecord(raw.lastRoll)?{...raw.lastRoll}:null;
     }else if(engine.type==='destruction'){
       normalized.destruction=Math.max(0,Number.isFinite(Number(raw.destruction))?Number(raw.destruction):Number(legacyTracker)||0);
     }else if(engine.type==='scout'){
-      normalized.awakenedRooms=raw.awakenedRooms&&typeof raw.awakenedRooms==='object'?{...raw.awakenedRooms}:{};
-      normalized.scoutedRoomIds=Array.isArray(raw.scoutedRoomIds)?raw.scoutedRoomIds:engine.rooms.slice(0,Math.max(0,Number(legacyTracker)||0)).map(room=>room.id);
+      normalized.awakenedRooms=isRecord(raw.awakenedRooms)?{...raw.awakenedRooms}:{};
+      normalized.scoutedRoomIds=Array.isArray(raw.scoutedRoomIds)
+        ? normalizeIdList(raw.scoutedRoomIds,engine.rooms.map(room=>room.id))
+        : engine.rooms.slice(0,boundedInteger(legacyTracker,0,engine.rooms.length)).map(room=>room.id);
     }else if(engine.type==='regroup'){
-      normalized.operativeChecks=raw.operativeChecks&&typeof raw.operativeChecks==='object'?{...raw.operativeChecks}:{};
-      normalized.lastCheckedTurningPoint=Math.max(0,Number(raw.lastCheckedTurningPoint)||0);
+      normalized.operativeChecks=isRecord(raw.operativeChecks)?{...raw.operativeChecks}:{};
+      normalized.lastCheckedTurningPoint=boundedInteger(raw.lastCheckedTurningPoint,0,999);
     }
     return normalized;
   }
@@ -305,40 +323,54 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     initializePlayerWounds();
   }
 
-  function save(){ state.version=APP_VERSION; localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-  function load(){ try{return JSON.parse(localStorage.getItem(STORAGE_KEY));}catch{return null;} }
+  function save(){
+    state.version=APP_VERSION;
+    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));return true;}
+    catch{showToast('The game could not be saved. Check available browser storage.');return false;}
+  }
+  function load(){
+    try{
+      const saved=localStorage.getItem(STORAGE_KEY);
+      if(!saved)return null;
+      const parsed=JSON.parse(saved);
+      return isRecord(parsed)?parsed:null;
+    }catch{return null;}
+  }
   function normalizeState(raw){
+    raw=isRecord(raw)?raw:{};
     const base=initialState(), merged={...base,...raw};
     if(!['home','help','setup','game'].includes(merged.screen))merged.screen='home';
     if(!['play','mission','roster','player-roster','journal','help'].includes(merged.tab))merged.tab='play';
-    const importedThreat=Number(raw?.threat);
-    merged.threat=Number.isFinite(importedThreat)?Math.max(0,Math.min(15,Math.round(importedThreat))):0;
-    merged.roster=Array.isArray(raw?.roster)?raw.roster.map(normalizeNpo):[];
+    merged.turningPoint=boundedInteger(raw.turningPoint,0,999);
+    merged.threat=boundedInteger(raw.threat,0,15);
+    merged.roster=Array.isArray(raw.roster)?raw.roster.map(normalizeNpo).filter(Boolean):[];
     merged.roster.forEach(npo=>{
       if(!npo||npo.wounds<=0)return;
       npo.dormant=merged.threat===0;
       if(npo.dormant)npo.ready=false;
     });
-    merged.journal=Array.isArray(raw?.journal)?raw.journal:[];
-    merged.newIds=Array.isArray(raw?.newIds)?raw.newIds:[];
-    const importedReinforcements=raw?.reinforcementState&&typeof raw.reinforcementState==='object'?raw.reinforcementState:{};
+    merged.journal=Array.isArray(raw.journal)?raw.journal.filter(isRecord):[];
+    merged.newIds=normalizeIdList(raw.newIds,merged.roster.map(npo=>npo.id));
+    const importedReinforcements=isRecord(raw.reinforcementState)?raw.reinforcementState:{};
+    const reinforcementIds=normalizeIdList(importedReinforcements.operativeIds,merged.roster.map(npo=>npo.id));
+    const reinforcementStatus=['idle','placement','complete','blocked'].includes(importedReinforcements.status)?importedReinforcements.status:'idle';
     merged.reinforcementState={
-      turningPoint:Number(importedReinforcements.turningPoint)||0,
-      status:['idle','placement','complete','blocked'].includes(importedReinforcements.status)?importedReinforcements.status:'idle',
-      operativeIds:Array.isArray(importedReinforcements.operativeIds)?importedReinforcements.operativeIds.filter(id=>merged.roster.some(npo=>npo?.id===id)):[],
-      blocked:Math.max(0,Math.round(Number(importedReinforcements.blocked)||0))
+      turningPoint:boundedInteger(importedReinforcements.turningPoint,0,merged.turningPoint),
+      status:reinforcementStatus==='placement'&&!reinforcementIds.length?'idle':reinforcementStatus,
+      operativeIds:reinforcementIds,
+      blocked:boundedInteger(importedReinforcements.blocked,0,MAX_NPOS)
     };
     merged.activationHistory=Array.isArray(raw?.activationHistory)?raw.activationHistory:[];
     merged.playerActivatedIds=Array.isArray(raw?.playerActivatedIds)?raw.playerActivatedIds:[];
     merged.playerCasualtyIds=Array.isArray(raw?.playerCasualtyIds)?raw.playerCasualtyIds:[];
     merged.playerWounds=raw?.playerWounds&&typeof raw.playerWounds==='object'?{...raw.playerWounds}:{};
-    merged.combatState=raw?.combatState?.side==='player'&&raw.combatState.stage&&typeof raw.combatState.stage==='object'
+    merged.combatState=isRecord(raw.combatState)&&raw.combatState.side==='player'&&isRecord(raw.combatState.stage)
       ? {side:'player',stage:{...raw.combatState.stage}}
       : null;
     merged.playerRoster=Array.isArray(raw?.playerRoster)?raw.playerRoster:[];
     merged.setupChecks=raw?.setupChecks&&!Array.isArray(raw.setupChecks)&&typeof raw.setupChecks==='object'?{...raw.setupChecks}:{};
     merged.playerTeamId=raw?.playerTeamId||'';
-    if(raw?.strategyData&&typeof raw.strategyData==='object'){
+    if(isRecord(raw.strategyData)){
       const legacyEvent=raw.strategyData.event;
       const legacyTitle=Array.isArray(legacyEvent)?legacyEvent[0]:legacyEvent?.title;
       const legacyDefinitionId=Object.keys(eventDefinitions).find(id=>eventDefinitions[id].title===legacyTitle);
@@ -355,20 +387,20 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         initiativeReason:raw.strategyData.initiativeReason||(raw?.turningPoint===1?'Turning Point 1':'Threat was 0 when initiative was determined')
       };
     }else merged.strategyData=null;
-    const importedEvents=raw?.eventState&&typeof raw.eventState==='object'?raw.eventState:{};
+    const importedEvents=isRecord(raw.eventState)?raw.eventState:{};
     const validInstances=new Set(eventDeck.map(card=>card.instanceId));
-    const available=Array.isArray(importedEvents.available)?importedEvents.available.filter(id=>validInstances.has(id)):eventDeck.map(card=>card.instanceId);
-    const used=Array.isArray(importedEvents.used)?importedEvents.used.filter(id=>validInstances.has(id)&&!available.includes(id)):[];
+    const available=Array.isArray(importedEvents.available)?normalizeIdList(importedEvents.available,validInstances):eventDeck.map(card=>card.instanceId);
+    const used=normalizeIdList(importedEvents.used,validInstances).filter(id=>!available.includes(id));
     merged.eventState={
       available,
       used,
-      active:Array.isArray(importedEvents.active)?importedEvents.active.filter(event=>eventDefinitions[event?.definitionId]).map(event=>({...event})):[]
+      active:Array.isArray(importedEvents.active)?importedEvents.active.filter(event=>isRecord(event)&&eventDefinitions[event.definitionId]).map(event=>({...event})):[]
     };
     const livingImportedPlayers=merged.playerRoster.filter(id=>!merged.playerCasualtyIds.includes(id)).length;
     merged.missionReadyContext=raw?.missionReadyContext&&typeof raw.missionReadyContext==='object'
       ? {sarcophagusControllers:normalizeSarcophagusControllers(raw.missionReadyContext.sarcophagusControllers,livingImportedPlayers)}
       : {sarcophagusControllers:0};
-    merged.strategyPipeline=raw?.strategyPipeline&&typeof raw.strategyPipeline==='object'
+    merged.strategyPipeline=isRecord(raw.strategyPipeline)
       ? {...raw.strategyPipeline,completed:Array.isArray(raw.strategyPipeline.completed)?raw.strategyPipeline.completed:[]}
       : null;
     merged.gameEnd=['victory','defeat'].includes(raw?.gameEnd)?raw.gameEnd:null;
@@ -407,9 +439,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return Object.keys(npoDefinitions).find(type=>String(npo?.name||'').startsWith(type))||npo?.type;
   }
   function normalizeNpo(npo){
-    if(!npo||typeof npo!=='object')return npo;
+    if(!isRecord(npo))return null;
     const type=legacyNpoType(npo),definition=npoDefinition(type);
-    if(!definition)return {...npo,order:npo.order||'Conceal'};
+    if(!definition)return null;
     const weaponId=npoWeapon(definition,npo.weaponId)?.id||definition.defaultWeaponId;
     return {
       ...npo,
@@ -574,7 +606,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function setThreat(amount,reason){
     const before=state.threat;
     const beforeGrade=threatGrade();
-    state.threat=Math.max(0,Math.min(15,state.threat+amount));
+    state.threat=boundedInteger(state.threat+amount,0,15,state.threat);
     if(before===0&&state.threat>0){
       activeNpos().filter(npo=>npo.dormant).forEach(npo=>{npo.dormant=false;npo.ready=true;});
     }else if(state.threat===0){
@@ -3184,7 +3216,7 @@ function showPlayerActivation(stage={}){
 
   function confirmNewGame(){showModal('Start New Game?',`<p>This will replace the current mission, roster, Threat, Turning Point, and Journal.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmNewGame">Start New Game</button></div>`);$('#confirmNewGame').onclick=()=>{localStorage.removeItem(STORAGE_KEY);state=initialState();state.screen='setup';expandedRosterCategories=null;closeModal();save();render();};}
   function exportSave(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tomb-world-solo-guide-save.json';a.click();URL.revokeObjectURL(a.href);}
-  importInput.addEventListener('change',async()=>{const f=importInput.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!data.version)throw new Error();state=normalizeState(data);state.screen='game';save();render();showToast('Save imported.');}catch{showToast('That file is not a valid Tomb World Solo Guide save.');}finally{importInput.value='';}});
+  importInput.addEventListener('change',async()=>{const f=importInput.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!isRecord(data))throw new Error();state=normalizeState(data);state.screen='game';save();render();showToast('Save imported.');}catch{showToast('That file is not a valid Tomb World Solo Guide save.');}finally{importInput.value='';}});
 
   function bindCommon(){
     const versionBadge=$('.version');
@@ -3194,6 +3226,12 @@ function showPlayerActivation(stage={}){
 
   Promise.all([loadMissionPack(),loadPlayerManifest()])
     .then(async ([,manifest])=>{
+      if(state.missionId&&!missionDefinition(state.missionId)){
+        state.missionId=null;
+        state.missionState=null;
+        state.screen='setup';
+        showToast('The saved mission is unavailable. Select a mission to continue.');
+      }
       const teams=manifest.teams||[];
       if(teams.length===1){
         state.playerTeamId=teams[0].id;
