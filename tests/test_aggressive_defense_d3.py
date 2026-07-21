@@ -24,7 +24,8 @@ class AggressiveDefenseD3Tests(unittest.TestCase):
     def test_roll_is_only_offered_when_the_ability_applies(self):
         preview = self.source("function previewPendingPlayerAttack", "function displayPendingPlayerCombat")
         self.assertIn("if(retaliationApplies)", preview)
-        self.assertIn("aggressiveDefenseRollHtml()", preview)
+        self.assertIn("aggressiveDefenseAnimating:true", preview)
+        self.assertIn("n.type==='Canoptek Macrocyte'", preview)
         self.assertIn("targetIncapacitated:result.after<=0", preview)
         self.assertIn("attackerWithinTwo:Boolean(diceDraft.attackerWithinTwo)", preview)
 
@@ -34,12 +35,34 @@ class AggressiveDefenseD3Tests(unittest.TestCase):
         self.assertEqual([0 if value == 1 else value for value in (1, 2, 3)], [0, 2, 3])
         preview = self.source("function previewPendingPlayerAttack", "function displayPendingPlayerCombat")
         self.assertIn("Math.ceil(roll()/2)", preview)
-        self.assertIn("rollingDieHtml()", preview)
-        self.assertIn("dieHtml({value:rolledValue,kind:'hit'})", preview)
-        self.assertIn("showToast(message)", preview)
+        self.assertIn("rollingDieHtml()", self.source("function aggressiveDefenseRollHtml", "function combatAbilityReminder"))
+        self.assertIn("settleAnimatedDice", preview)
         self.assertIn("aggressiveDefenseRoll=rolledValue", preview)
         self.assertIn("aggressiveDefenseDamage=aggressiveDefenseDamage(rolledValue)", preview)
-        self.assertIn("setTimeout", preview)
+
+    def test_continue_waits_for_d3_and_non_triggered_combat_does_not_wait(self):
+        preview = self.source("function previewPendingPlayerAttack", "function displayPendingPlayerCombat")
+        self.assertIn("aggressiveDefenseAnimating:true", preview)
+        self.assertIn("onResolved,onCancel,false,true", preview)
+        self.assertIn("displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,false)", preview)
+        self.assertRegex(preview, r"if\(retaliationApplies\)\{[\s\S]+?return;\s*\}\s*result\.aggressiveDefenseDamage=0")
+
+    def test_roll_is_persisted_before_animation_and_restored_without_replay(self):
+        preview = self.source("function previewPendingPlayerAttack", "function displayPendingPlayerCombat")
+        persisted = preview.index("save();")
+        animated = preview.index("settleAnimatedDice")
+        self.assertLess(persisted, animated)
+        wizard = self.source("function showPendingPlayerAttackWizard", "function showPlayerCombatResolution")
+        self.assertIn("if(draft)", wizard)
+        self.assertIn("{result:draft,animate:false}", wizard)
+
+    def test_result_card_is_concise_and_precedes_damage_summary(self):
+        reminder = self.source("function combatAbilityReminder", "function cancelPendingPlayerCombat")
+        self.assertIn("D3 Roll: ${combat.aggressiveDefenseRoll}", reminder)
+        self.assertIn("No damage inflicted.", reminder)
+        self.assertIn("The attacking operative suffers ${aggressiveDamage} damage.", reminder)
+        renderer = self.source("function renderCombatResolution", "function showSharedCombatResolutionScreen")
+        self.assertLess(renderer.index("${combatAbilityReminder(combat)}"), renderer.index('<div class="damage-summary">'))
 
     def test_existing_transactional_damage_application_is_preserved(self):
         apply_damage = self.source("function applyPendingPlayerDamage", "function completePlayerActivation")
@@ -49,7 +72,7 @@ class AggressiveDefenseD3Tests(unittest.TestCase):
     def test_result_message_includes_roll_and_only_appears_after_a_roll(self):
         reminder = self.source("function combatAbilityReminder", "function cancelPendingPlayerCombat")
         self.assertIn("Number.isInteger(combat.aggressiveDefenseRoll)", reminder)
-        self.assertIn("D3 result ${combat.aggressiveDefenseRoll}", reminder)
+        self.assertIn("D3 Roll: ${combat.aggressiveDefenseRoll}", reminder)
 
 
 if __name__ == "__main__":

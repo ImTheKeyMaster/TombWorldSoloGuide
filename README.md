@@ -1,7 +1,16 @@
-# Tomb World Solo Guide v5.5.2
+# Tomb World Solo Guide v5.5.3
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
+
+## v5.5.3
+
+**Version 5.5.3 - Aggressive Defense Construct Animation**
+
+- Integrated the Macrocyte's D3 retaliation into the shared combat dice sequence.
+- Stored the D3 outcome before animation so restored combat displays it without rerolling or replaying.
+- Kept Continue disabled until the retaliation result settles and renders.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v5.5.3.
 
 ## v5.5.2
 

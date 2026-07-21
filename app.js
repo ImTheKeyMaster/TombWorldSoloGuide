@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.5.2';
+  const APP_VERSION = '5.5.3';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -2076,13 +2076,13 @@ function showPlayerActivation(stage={}){
     return {dice:$('#automaticCombat'),results:$('#combatResults'),continueButton:$(`#${continueId}`)};
   }
 
-  function displaySharedCombatResult(combat,{pending=false,animate=false,message='',onContinue,extraHtml=''}={}){
+  function displaySharedCombatResult(combat,{pending=false,animate=false,waiting=false,message='',onContinue,extraHtml=''}={}){
     const results=$('#combatResults');
     const dice=$('#automaticCombat');
     const button=$('.combat-resolution-footer .btn.primary');
     if(dice)dice.replaceChildren();
     results.innerHTML=`${renderCombatResolution(combat,{pending,animate,showParticipants:false})}${extraHtml}${message?`<p class="muted">${escapeHtml(message)}</p>`:''}`;
-    let visualComplete=!animate;
+    let visualComplete=!animate&&!waiting;
     button.textContent='Continue';
     button.disabled=!visualComplete;
     button.onclick=()=>{if(visualComplete&&onContinue)onContinue();};
@@ -2093,14 +2093,19 @@ function showPlayerActivation(stage={}){
   }
 
   function settleCombatDice(combat,onSettled=()=>{},root=document){
+    return settleAnimatedDice([
+      {row:$('[data-combat-attack-dice]',root),dice:combat.attackDice},
+      {row:$('[data-combat-save-dice]',root),dice:combat.saveDice}
+    ],onSettled);
+  }
+
+  function settleAnimatedDice(rows,onSettled=()=>{}){
     const timer=setTimeout(()=>{
-      const attack=$('[data-combat-attack-dice]',root);
-      if(attack){attack.innerHTML=combat.attackDice.map(dieHtml).join('');attack.classList.replace('animated-roll','settled');}
-      const saves=$('[data-combat-save-dice]',root);
-      if(saves){
-        if(combat.saveDice.length)saves.innerHTML=combat.saveDice.map(dieHtml).join('');
-        saves.classList.replace('animated-roll','settled');
-      }
+      rows.forEach(({row,dice})=>{
+        if(!row)return;
+        if(dice.length)row.innerHTML=dice.map(dieHtml).join('');
+        row.classList.replace('animated-roll','settled');
+      });
       onSettled();
     },700);
     return ()=>clearTimeout(timer);
@@ -2378,9 +2383,8 @@ function showPlayerActivation(stage={}){
   function aggressiveDefenseRollHtml(){
     return `<section class="combat-stage" id="aggressiveDefenseRoll" aria-label="Aggressive Defense Construct roll">
       <small>AGGRESSIVE DEFENSE CONSTRUCT</small>
-      <p>This incapacitated Macrocyte was within 2&quot; of the attacker.</p>
+      <p>The destroyed Macrocyte retaliates.</p>
       <div class="dice-row animated-roll" id="aggressiveDefenseDie">${rollingDieHtml()}</div>
-      <p class="muted">Rolling automatically…</p>
     </section>`;
   }
 
@@ -2392,12 +2396,14 @@ function showPlayerActivation(stage={}){
     if(combat.profile?.weaponId==='transdimensional-isolator'&&combatAbilityHandlers['dimensional-banishment']({criticalSuccesses:combat.critRemaining,damage:combat.damage,targetIncapacitated:combat.after<=0})){
       return '<div class="summary-box"><strong>Dimensional Banishment:</strong> The target survived after damage was inflicted or a critical success was retained. Roll 2D6 physically; if the result is higher than its remaining wounds, record it as incapacitated.</div>';
     }
+    if(combat.aggressiveDefenseAnimating)return aggressiveDefenseRollHtml();
     const aggressiveDamage=aggressiveDefenseDamageValue(combat);
     if(Number.isInteger(combat.aggressiveDefenseRoll)||aggressiveDamage>0){
-      const rollText=Number.isInteger(combat.aggressiveDefenseRoll)?`D3 result ${combat.aggressiveDefenseRoll}; `:'';
-      return aggressiveDamage>0
-        ? `<div class="summary-box"><strong>Aggressive Defense Construct:</strong> ${rollText}${aggressiveDamage} damage will be inflicted on the attacking operative when this activation is confirmed.</div>`
-        : `<div class="summary-box"><strong>Aggressive Defense Construct:</strong> ${rollText}does not inflict damage.</div>`;
+      return `<section class="combat-stage aggressive-defense-result" aria-label="Aggressive Defense Construct result">
+        <small>AGGRESSIVE DEFENSE CONSTRUCT</small>
+        <strong>D3 Roll: ${combat.aggressiveDefenseRoll}</strong>
+        <p>${aggressiveDamage>0?`The attacking operative suffers ${aggressiveDamage} damage.`:'No damage inflicted.'}</p>
+      </section>`;
     }
     return '';
   }
@@ -2522,30 +2528,19 @@ function showPlayerActivation(stage={}){
     result.retainedSaves=retainedDiceTotals(result.saveDice).normal+retainedDiceTotals(result.saveDice).critical;
     result.recordedOutcome=false;
     result.attackerWithinTwo=Boolean(diceDraft.attackerWithinTwo);
-    const retaliationApplies=combatAbilityHandlers['aggressive-defence-construct']({targetIncapacitated:result.after<=0,attackerWithinTwo:Boolean(diceDraft.attackerWithinTwo)});
+    const retaliationApplies=n.type==='Canoptek Macrocyte'
+      &&combatAbilityHandlers['aggressive-defence-construct']({targetIncapacitated:result.after<=0,attackerWithinTwo:Boolean(diceDraft.attackerWithinTwo)});
     if(retaliationApplies){
-      $('#combatResults').innerHTML=aggressiveDefenseRollHtml();
-      $('#continuePendingAttack').disabled=true;
-      $$('.combat-outcome-fields input').forEach(input=>input.disabled=true);
-      $$('[data-retain-die]').forEach(die=>die.disabled=true);
       const rolledValue=Math.ceil(roll()/2);
-      const row=$('#aggressiveDefenseDie');
-      row.innerHTML=rollingDieHtml();
-      setTimeout(()=>{
-          if(!$('#aggressiveDefenseDie'))return;
-          result.aggressiveDefenseRoll=rolledValue;
-          result.aggressiveDefenseDamage=aggressiveDefenseDamage(rolledValue);
-          row.className='dice-row animated-roll settled';
-          row.innerHTML=dieHtml({value:rolledValue,kind:'hit'});
-          const message=result.aggressiveDefenseDamage
-            ? `Aggressive Defense Construct inflicts ${result.aggressiveDefenseDamage} damage on the attacking Player operative.`
-            : 'Aggressive Defense Construct does not inflict damage.';
-          showToast(message);
-          stage[`${attackType}CombatDraft`]=result;
-          state.combatState={side:'player',stage:{...stage}};
-          save();
-          displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,false);
-      },700);
+      result.aggressiveDefenseRoll=rolledValue;
+      result.aggressiveDefenseDamage=aggressiveDefenseDamage(rolledValue);
+      stage[`${attackType}CombatDraft`]=result;
+      state.combatState={side:'player',stage:{...stage}};
+      save();
+      displayPendingPlayerCombat(stage,attackType,{...result,aggressiveDefenseAnimating:true},onResolved,onCancel,false,true);
+      settleAnimatedDice([{row:$('#aggressiveDefenseDie'),dice:[{value:rolledValue,kind:'hit'}]}],()=>{
+        if($('#aggressiveDefenseDie'))displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,false);
+      });
       return;
     }
     result.aggressiveDefenseDamage=0;
@@ -2555,9 +2550,9 @@ function showPlayerActivation(stage={}){
     displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,false);
   }
 
-  function displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,animate){
+  function displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,animate,waiting=false){
     displaySharedCombatResult(result,{
-      pending:true,animate,
+      pending:true,animate,waiting,
       message:'This result has been recorded. Wounds will be applied exactly once when you Continue.',
       onContinue:()=>{
         if(stage[`${attackType}CombatDraft`]===result)onResolved(result);
