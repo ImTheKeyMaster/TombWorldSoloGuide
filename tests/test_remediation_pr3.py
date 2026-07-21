@@ -41,8 +41,24 @@ class RemediationPr3Tests(unittest.TestCase):
         initiative = self.function_source("rollInitiative", "beginFirefight")
         self.assertIn("state.turningPoint===1||state.threat===0", initiative)
         self.assertIn("suggestedInitiative='player'", initiative)
+        self.assertIn("initiativeMode='automatic'", initiative)
+        self.assertIn("initiativeMode='rolled'", initiative)
         pipeline = self.function_source("startTurningPoint", "completeStrategyStage")
         self.assertLess(pipeline.index("determineInitiative();"), pipeline.index("processEventStage();"))
+
+    def test_initiative_screen_uses_persisted_result_mode(self):
+        strategy_card = self.function_source("strategyCard", "actualReinforcementCount")
+        self.assertIn("d.initiativeMode==='automatic'", strategy_card)
+        bind_play = self.function_source("bindPlay", "startTurningPoint")
+        self.assertIn("initiativeRolling=state.strategyData.initiativeMode==='rolled'", bind_play)
+        animation = self.function_source("animateInitiativeResult", "activationTracker")
+        self.assertIn("state.strategyData?.initiativeMode==='automatic'", animation)
+        self.assertNotIn("state.threat===0", animation)
+
+    def test_legacy_null_rolls_migrate_as_automatic_initiative(self):
+        normalize = self.function_source("normalizeState", "npoDefinition")
+        self.assertIn("hasRolledInitiative?'rolled':'automatic'", normalize)
+        self.assertIn("Threat was 0 when initiative was determined", normalize)
 
     def test_import_normalizes_threat_and_new_state(self):
         normalize = self.function_source("normalizeState", "npoDefinition")
