@@ -280,8 +280,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         initiativeReason:raw.strategyData.initiativeReason||(raw?.turningPoint===1?'Turning Point 1':'Threat was 0 when initiative was determined')
       };
     }else merged.strategyData=null;
+    const livingImportedPlayers=merged.playerRoster.filter(id=>!merged.playerCasualtyIds.includes(id)).length;
     merged.missionReadyContext=raw?.missionReadyContext&&typeof raw.missionReadyContext==='object'
-      ? {sarcophagusControllers:Math.max(0,Number(raw.missionReadyContext.sarcophagusControllers)||0)}
+      ? {sarcophagusControllers:normalizeSarcophagusControllers(raw.missionReadyContext.sarcophagusControllers,livingImportedPlayers)}
       : {sarcophagusControllers:0};
     merged.strategyPipeline=raw?.strategyPipeline&&typeof raw.strategyPipeline==='object'
       ? {...raw.strategyPipeline,completed:Array.isArray(raw.strategyPipeline.completed)?raw.strategyPipeline.completed:[]}
@@ -352,6 +353,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function livingPlayerOperativeCount(){
     const casualties=new Set(state.playerCasualtyIds||[]);
     return (state.playerRoster||[]).filter(id=>!casualties.has(id)).length;
+  }
+
+  function normalizeSarcophagusControllers(value,max=livingPlayerOperativeCount()){
+    const limit=Math.max(0,Math.round(Number(max)||0));
+    return Math.max(0,Math.min(limit,Math.round(Number(value)||0)));
   }
 
   function checkGameEnd(){
@@ -1088,7 +1094,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $$('[data-player-operative]').forEach(button=>button.addEventListener('click',()=>showPlayerOperativeStatus(button.dataset.playerOperative)));
     $('#startTp')?.addEventListener('click',()=>{
       const controllers=$('#sarcophagusControllers');
-      if(controllers)state.missionReadyContext.sarcophagusControllers=Math.max(0,Number(controllers.value)||0);
+      if(controllers)state.missionReadyContext.sarcophagusControllers=normalizeSarcophagusControllers(controllers.value);
       startTurningPoint();
     });
     $('#reinforcementEntry')?.addEventListener('change',e=>{state.reinforcementEntry=e.target.value;save();});
@@ -1160,7 +1166,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function applyMissionReadyHooks(){
     if(state.missionId==='destroy-sarcophagus'&&state.tracker>0){
       const repairRoll=roll();
-      const controllers=Math.max(0,Number(state.missionReadyContext.sarcophagusControllers)||0);
+      const controllers=normalizeSarcophagusControllers(state.missionReadyContext.sarcophagusControllers);
+      state.missionReadyContext.sarcophagusControllers=controllers;
       const repairAmount=Math.max(0,repairRoll-controllers);
       const repaired=Math.min(state.tracker,repairAmount);
       state.tracker-=repaired;

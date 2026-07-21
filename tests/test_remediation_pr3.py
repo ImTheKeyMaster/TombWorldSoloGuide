@@ -40,10 +40,21 @@ class RemediationPr3Tests(unittest.TestCase):
     def test_mission_four_repair_is_a_ready_hook(self):
         source = self.function_source("applyMissionReadyHooks", "determineInitiative")
         self.assertIn("state.missionId==='destroy-sarcophagus'", source)
+        self.assertIn("normalizeSarcophagusControllers(state.missionReadyContext.sarcophagusControllers)", source)
         self.assertIn("repairRoll-controllers", source)
         self.assertIn("state.tracker-=repaired", source)
         self.assertIn("id:'nanoscarab-repair'", source)
         self.assertIn("during the Ready step", source)
+
+    def test_sarcophagus_controller_count_is_integer_and_roster_bounded(self):
+        helper = self.function_source("normalizeSarcophagusControllers", "checkGameEnd")
+        self.assertIn("Math.round(Number(value)||0)", helper)
+        self.assertIn("Math.min(limit", helper)
+        bind_play = self.function_source("bindPlay", "startTurningPoint")
+        self.assertIn("normalizeSarcophagusControllers(controllers.value)", bind_play)
+        normalize = self.function_source("normalizeState", "npoDefinition")
+        self.assertIn("livingImportedPlayers", normalize)
+        self.assertIn("normalizeSarcophagusControllers(raw.missionReadyContext.sarcophagusControllers,livingImportedPlayers)", normalize)
 
     def test_dormant_npos_cannot_ready_at_threat_zero(self):
         ready = self.function_source("processReadyStep", "applyMissionReadyHooks")
