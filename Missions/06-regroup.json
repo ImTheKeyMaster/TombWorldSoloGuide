@@ -3,11 +3,11 @@
   "number": "06",
   "name": "Regroup",
   "brief": "Navigate unstable phasing routes and reunite the scattered Player team.",
-  "objective": "End a Turning Point with all surviving player operatives regrouped in Player B's drop zone.",
+  "objective": "End a Turning Point with all surviving player operatives regrouped in NPO's drop zone.",
   "firstTurningPointInitiative": "player",
   "startingNpos": {
     "formula": "2D3+3",
-    "deployment": "Wholly within Player B territory, spread evenly with intervening terrain in control range when viewed from Player A's drop zone.",
+    "deployment": "Wholly within NPO territory, spread evenly with intervening terrain in control range when viewed from Player's drop zone.",
     "order": "Conceal"
   },
   "tracker": {
@@ -18,7 +18,7 @@
   "rules": [
     {
       "name": "Access Denied",
-      "summary": "Player operatives cannot set up outside Player A's drop zone before battle or be removed and set up in a different room."
+      "summary": "Player operatives cannot set up outside Player's drop zone before battle or be removed and set up in a different room."
     },
     {
       "name": "Phasing Points",
@@ -26,7 +26,7 @@
     }
   ],
   "victory": {
-    "win": "At the end of a Turning Point, every surviving player operative is wholly within Player B's drop zone, outside NPO control range, and within 3 inches of another player operative.",
+    "win": "At the end of a Turning Point, every surviving player operative is wholly within NPO's drop zone, outside NPO control range, and within 3 inches of another player operative.",
     "lose": "Every player operative is incapacitated."
   },
   "map": {
@@ -121,12 +121,12 @@
   "setupChecks": [
     {
       "id": "map-and-deployment",
-      "label": "Arrange the killzone as shown on the Mission 6 map and identify the Player A drop zone and Player B drop zone and territory.",
+      "label": "Arrange the killzone as shown on the Mission 6 map and identify the Player drop zone and NPO drop zone and territory.",
       "stage": "killzone"
     },
     {
       "id": "starting-npos",
-      "label": "Generate 2D3+3 starting NPOs and set each up wholly within Player B territory, spread evenly, with intervening terrain within its control range when viewed from Player A’s drop zone.",
+      "label": "Generate 2D3+3 starting NPOs and set each up wholly within NPO territory, spread evenly, with intervening terrain within its control range when viewed from Player’s drop zone.",
       "stage": "deploy"
     },
     {
@@ -136,7 +136,7 @@
     },
     {
       "id": "player-setup",
-      "label": "Set up every Player operative wholly within the Player A drop zone; none can be set up elsewhere before the battle.",
+      "label": "Set up every Player operative wholly within the Player drop zone; none can be set up elsewhere before the battle.",
       "stage": "deploy"
     },
     {
@@ -149,7 +149,7 @@
     "type": "regroup",
     "timing": "end-turning-point",
     "progressLabel": "Surviving operatives regrouped",
-    "success": "At the end of a Turning Point, every surviving player operative was wholly within Player B’s drop zone, outside NPO control range, and within 3 inches of another player operative.",
+    "success": "At the end of a Turning Point, every surviving player operative was wholly within NPO’s drop zone, outside NPO control range, and within 3 inches of another player operative.",
     "failure": "Every player operative was incapacitated."
   }
 }

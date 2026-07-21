@@ -7,7 +7,7 @@
   "firstTurningPointInitiative": "player",
   "startingNpos": {
     "formula": "2D3+3",
-    "deployment": "Wholly within Player B territory, spread evenly with intervening terrain in control range when viewed from Player A's drop zone.",
+    "deployment": "Wholly within NPO territory, spread evenly with intervening terrain in control range when viewed from Player's drop zone.",
     "order": "Conceal"
   },
   "tracker": {
@@ -133,7 +133,7 @@
   "setupChecks": [
     {
       "id": "map-and-deployment",
-      "label": "Arrange the killzone as shown on the Mission 2 map and identify the Player A drop zone and Player B territory.",
+      "label": "Arrange the killzone as shown on the Mission 2 map and identify the Player drop zone and NPO territory.",
       "stage": "killzone"
     },
     {
@@ -143,7 +143,7 @@
     },
     {
       "id": "starting-npos",
-      "label": "Generate 2D3+3 starting NPOs and set each up wholly within Player B territory, spread evenly, with intervening terrain within its control range when viewed from Player A’s drop zone.",
+      "label": "Generate 2D3+3 starting NPOs and set each up wholly within NPO territory, spread evenly, with intervening terrain within its control range when viewed from Player’s drop zone.",
       "stage": "deploy"
     },
     {

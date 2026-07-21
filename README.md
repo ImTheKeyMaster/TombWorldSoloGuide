@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v4.9.0
+# Tomb World Solo Guide v5.0.0
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -1188,3 +1188,14 @@ v3.0.7: Kasrkin roster choices updated.
 - Added defensive recovery for invalid Turning Point, Threat, NPO, event, reinforcement, combat, and mission state.
 - Expanded focused regression coverage and documented the dependency-free test command.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v4.9.0.
+
+
+## v5.0.0
+
+**Version 5.0.0 - Official Rules Compliant Release**
+
+- Updated application UI terminology from Player A and Player B to Player and NPO.
+- Added Random Team generation for legal, editable Player rosters.
+- Added Check All to streamline Kill Team deployment confirmation.
+- Preserved the gameplay and official-rules behavior completed during remediation.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v5.0.0.

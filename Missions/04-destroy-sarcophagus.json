@@ -7,7 +7,7 @@
   "firstTurningPointInitiative": "player",
   "startingNpos": {
     "formula": "D3+6",
-    "deployment": "Wholly within Player B territory. Put half, rounding down, in the sarcophagus room and spread the remainder across the other rooms.",
+    "deployment": "Wholly within NPO territory. Put half, rounding down, in the sarcophagus room and spread the remainder across the other rooms.",
     "order": "Conceal"
   },
   "tracker": {
@@ -112,7 +112,7 @@
   "setupChecks": [
     {
       "id": "map-and-deployment",
-      "label": "Arrange the killzone as shown on the Mission 4 map and identify the Player A drop zone and Player B territory.",
+      "label": "Arrange the killzone as shown on the Mission 4 map and identify the Player drop zone and NPO territory.",
       "stage": "killzone"
     },
     {
@@ -122,7 +122,7 @@
     },
     {
       "id": "starting-npos",
-      "label": "Generate D3+6 starting NPOs and set each up wholly within Player B territory: place half, rounding down, in the sarcophagus room and spread the remainder across the other rooms.",
+      "label": "Generate D3+6 starting NPOs and set each up wholly within NPO territory: place half, rounding down, in the sarcophagus room and spread the remainder across the other rooms.",
       "stage": "deploy"
     },
     {
