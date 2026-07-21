@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v4.4.0
+# Tomb World Solo Guide v4.4.1
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -1095,3 +1095,13 @@ v3.0.7: Kasrkin roster choices updated.
 - Added focused event-engine regression coverage and preserved the existing mobile-first inline event-card workflow.
 - Intentionally deferred reinforcements, combat changes, and mission objective logic to later remediation PRs.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v4.4.0.
+
+
+## v4.4.1
+
+- Kept ongoing Tomb World event effects visible throughout the remainder of their Turning Point.
+- Corrected impossible-event redraw ordering so replacement cards resolve before later pre-drawn cards.
+- Added the printed D3 result and impossible-effect redraw control for The Maze Reforms.
+- Required selection when A Chittering Drone finds multiple wounded Scarab Swarms, while preserving its mandatory heal branch.
+- Normalized legacy in-progress event queues without invalidating existing saves.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v4.4.1.

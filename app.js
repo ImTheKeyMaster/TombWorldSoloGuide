@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '4.4.0';
+  const APP_VERSION = '4.4.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -295,6 +295,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       merged.strategyData={
         ...raw.strategyData,
         event,
+        events:Array.isArray(raw.strategyData.events)?raw.strategyData.events:(event?[{...event,status:raw.strategyData.eventPending?'drawn':'resolved'}]:[]),
+        eventIndex:Number.isInteger(raw.strategyData.eventIndex)?raw.strategyData.eventIndex:0,
         initiativeMode:raw.strategyData.initiativeMode==='rolled'||raw.strategyData.initiativeMode==='automatic'
           ? raw.strategyData.initiativeMode
           : hasRolledInitiative?'rolled':'automatic',
@@ -857,8 +859,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function renderPlay(){
     const milestone=state.gradeMilestone?`<section class="grade-milestone"><div><small>THREAT ESCALATION</small><strong>Grade ${state.gradeMilestone.grade}: ${escapeHtml(state.gradeMilestone.label)}</strong><span>Threat has reached Level ${state.gradeMilestone.threat}.</span></div><button class="btn ghost compact" id="dismissGradeMilestone">Dismiss</button></section>`:'';
-    app.innerHTML=hud()+milestone+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${nextStepCard()}${state.phase==='firefight'?activationTracker():''}`;
+    app.innerHTML=hud()+milestone+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${state.phase!=='strategy'?activeEventEffectsHtml():''}${nextStepCard()}${state.phase==='firefight'?activationTracker():''}`;
     bindPlay();
+  }
+
+  function activeEventEffectsHtml(){
+    const active=state.eventState.active||[];
+    if(!active.length)return '';
+    return `<section class="card"><p class="eyebrow">ACTIVE TOMB WORLD ${active.length===1?'EVENT':'EVENTS'}</p>${active.map(event=>`<div class="summary-box"><strong>${escapeHtml(event.title)}</strong><br>${escapeHtml(event.text)}</div>`).join('')}</section>`;
   }
 
   function nextStepCard(){
@@ -1016,7 +1024,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       'maze-reforms':'Confirm Terrain Changes',
       'tabletop-confirm':'Confirm Tabletop Resolution'
     };
-    return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}<div class="event-controls"><button class="btn primary" id="resolveStrategyEvent">${labels[event.definitionId]||labels[event.execution.type]||'Resolve Event'}</button></div></div>`;
+    const scarabChoices=event.execution.type==='chittering-drone'&&Array.isArray(event.eligibleNpoIds)&&event.eligibleNpoIds.length>1
+      ? `<div class="field"><label for="eventNpoSelect">Wounded Scarab Swarm</label><select id="eventNpoSelect"><option value="">Select a Scarab Swarm...</option>${event.eligibleNpoIds.map(id=>{const n=activeNpos().find(item=>item.id===id);return n?`<option value="${escapeHtml(id)}">${escapeHtml(npoName(n))} — ${n.wounds} of ${n.maxWounds} wounds</option>`:'';}).join('')}</select></div>`:'';
+    const impossibleControl=event.execution.type==='maze-reforms'?'<button class="btn secondary" id="redrawStrategyEvent">No Valid Changes · Draw Again</button>':'';
+    return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}<div class="event-controls">${scarabChoices}<button class="btn primary" id="resolveStrategyEvent" ${scarabChoices?'disabled':''}>${labels[event.definitionId]||labels[event.execution.type]||'Resolve Event'}</button>${impossibleControl}</div></div>`;
   }
 
   function animateInitiativeResult(){
@@ -1115,7 +1126,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       startTurningPoint();
     });
     $('#reinforcementEntry')?.addEventListener('change',e=>{state.reinforcementEntry=e.target.value;save();});
+    $('#eventNpoSelect')?.addEventListener('change',e=>{$('#resolveStrategyEvent').disabled=!e.target.value;});
     $('#resolveStrategyEvent')?.addEventListener('click',resolveStrategyEvent);
+    $('#redrawStrategyEvent')?.addEventListener('click',()=>{redrawCurrentEvent('No breach or open hatchway could be changed.');save();render();});
     $('#continueStrategy')?.addEventListener('click',()=>{state.reinforcementEntry=$('#reinforcementEntry')?.value||state.reinforcementEntry;state.strategyStage='initiative';initiativeRolling=state.strategyData.initiativeMode==='rolled';save();render();if(initiativeRolling)animateInitiativeResult();});
     $('#rerollInitiative')?.addEventListener('click',()=>{rollInitiative();initiativeRolling=true;save();render();animateInitiativeResult();});
     $$('[data-init]').forEach(b=>b.onclick=()=>beginFirefight(b.dataset.init));
@@ -1222,7 +1235,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     state.eventState.used=[];
   }
 
-  function drawEvent(){
+  function drawEvent(insertAt=null){
     if(!state.eventState.available.length)return null;
     const index=roll(state.eventState.available.length)-1;
     const instanceId=state.eventState.available.splice(index,1)[0];
@@ -1230,7 +1243,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(!card)return null;
     state.eventState.used.push(instanceId);
     const event=eventRecord(card);
-    state.strategyData.events.push(event);
+    if(Number.isInteger(insertAt))state.strategyData.events.splice(insertAt,0,event);
+    else state.strategyData.events.push(event);
     return event;
   }
 
@@ -1268,9 +1282,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       return;
     }
     if(type==='chittering-drone'){
-      const wounded=activeNpos().find(npo=>npo.type==='Canoptek Scarab Swarm'&&npo.wounds<npo.maxWounds);
-      if(wounded){wounded.wounds=wounded.maxWounds;completeCurrentEvent(`${npoName(wounded)} regained all lost wounds.`);return;}
+      const wounded=activeNpos().filter(npo=>npo.type==='Canoptek Scarab Swarm'&&npo.wounds<npo.maxWounds);
+      if(wounded.length===1){wounded[0].wounds=wounded[0].maxWounds;completeCurrentEvent(`${npoName(wounded[0])} regained all lost wounds.`);return;}
+      if(wounded.length>1){event.eligibleNpoIds=wounded.map(npo=>npo.id);d.eventPending=true;return;}
       if(activeNpos().length>=MAX_NPOS){redrawCurrentEvent('No Scarab Swarm could be set up.');return;}
+    }
+    if(type==='maze-reforms'){
+      event.openHatchwayLimit=rollD3();
+      event.text=`Close one breach and up to ${event.openHatchwayLimit} open hatchway${event.openHatchwayLimit===1?'':'s'}. If this cannot be resolved, draw another event card.`;
     }
     if(type==='awakened-warrior'&&activeNpos().length>=MAX_NPOS){redrawCurrentEvent('No Necron Warrior could be set up.');return;}
     d.eventPending=true;
@@ -1290,7 +1309,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function redrawCurrentEvent(reason){
     const event=currentEvent();
     event.status='redrawn';event.result=reason;
-    drawEvent();
+    drawEvent(state.strategyData.eventIndex+1);
     state.strategyData.eventIndex++;
     log(`${event.title}: ${reason} Another event card was drawn.`);
     beginCurrentEvent();
@@ -1348,7 +1367,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const event=currentEvent();
     if(state.phase!=='strategy'||state.strategyStage!=='summary'||!event||!state.strategyData.eventPending)return;
     let result='Tabletop effect confirmed.';
-    if(event.execution.type==='chittering-drone'||event.execution.type==='awakened-warrior'){
+    if(event.execution.type==='chittering-drone'&&event.eligibleNpoIds?.length){
+      const operativeId=$('#eventNpoSelect')?.value;
+      const n=activeNpos().find(item=>item.id===operativeId&&event.eligibleNpoIds.includes(item.id)&&item.wounds<item.maxWounds);
+      if(!n)return;
+      n.wounds=n.maxWounds;
+      result=`${npoName(n)} regained all lost wounds.`;
+    }else if(event.execution.type==='chittering-drone'||event.execution.type==='awakened-warrior'){
       const type=event.execution.type==='chittering-drone'?'Canoptek Scarab Swarm':'Necron Warrior';
       if(activeNpos().length>=MAX_NPOS){redrawCurrentEvent(`${type} could not be set up.`);save();render();return;}
       const n=createNpo(type,`${type} E${state.turningPoint}`,{order:'Conceal'});

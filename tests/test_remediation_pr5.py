@@ -37,6 +37,12 @@ class RemediationPr5Tests(unittest.TestCase):
         ready = self.function_source('processReadyStep', 'applyMissionReadyHooks')
         self.assertIn('recycleUsedEvents();', ready)
 
+    def test_redraw_is_resolved_before_later_pre_drawn_cards(self):
+        redraw = self.function_source('redrawCurrentEvent', 'processReinforcementStage')
+        self.assertIn('drawEvent(state.strategyData.eventIndex+1)', redraw)
+        draw = self.function_source('drawEvent', 'currentEvent')
+        self.assertIn('state.strategyData.events.splice(insertAt,0,event)', draw)
+
     def test_active_effects_persist_and_expire(self):
         initial = self.app.split('const initialState = () => ({', 1)[1].split('\n  });', 1)[0]
         self.assertIn('eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[]}', initial)
@@ -50,6 +56,16 @@ class RemediationPr5Tests(unittest.TestCase):
         self.assertIn('raw?.eventState', normalize)
         self.assertIn('validInstances', normalize)
         self.assertIn('eventDefinitions[event?.definitionId]', normalize)
+        self.assertIn('events:Array.isArray(raw.strategyData.events)', normalize)
+
+    def test_conditional_event_choices_and_active_presentation(self):
+        execution = self.function_source('beginCurrentEvent', 'completeCurrentEvent')
+        self.assertIn('event.eligibleNpoIds=wounded.map', execution)
+        self.assertIn('event.openHatchwayLimit=rollD3()', execution)
+        resolution = self.function_source('resolveStrategyEvent', 'randomReinforcement')
+        self.assertIn("$('#eventNpoSelect')?.value", resolution)
+        presentation = self.function_source('activeEventEffectsHtml', 'nextStepCard')
+        self.assertIn('state.eventState.active', presentation)
 
     def test_manual_geometry_blocks_reinforcements_until_confirmed(self):
         execution = self.function_source('beginCurrentEvent', 'completeCurrentEvent')
