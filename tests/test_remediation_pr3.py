@@ -19,6 +19,24 @@ class RemediationPr3Tests(unittest.TestCase):
         self.assertEqual(sorted(calls, key=source.index), calls)
         self.assertIn("strategyPipeline={current:'ready',completed:[]}", source)
 
+    def test_interactive_event_blocks_reinforcements_until_resolved(self):
+        start = self.function_source("startTurningPoint", "completeStrategyStage")
+        self.assertIn("if(!state.strategyData.eventPending)processReinforcementStage();", start)
+        event_stage = self.function_source("processEventStage", "eventNeedsResolution")
+        self.assertIn("d.eventPending=eventNeedsResolution(d.event)", event_stage)
+        self.assertIn("if(d.eventPending)return", event_stage)
+        resolution = self.function_source("resolveStrategyNpoEvent", "randomReinforcement")
+        self.assertLess(resolution.index("d.eventPending=false"), resolution.index("processReinforcementStage();"))
+        reinforcement = self.function_source("processReinforcementStage", "rollInitiative")
+        self.assertIn("completed.includes('reinforcement')", reinforcement)
+
+    def test_event_capacity_is_evaluated_before_reinforcements(self):
+        event_gate = self.function_source("eventNeedsResolution", "processReinforcementStage")
+        self.assertIn("activeNpos().length<MAX_NPOS||hasWoundedTarget", event_gate)
+        strategy_card = self.function_source("strategyCard", "actualReinforcementCount")
+        self.assertIn("Resolve the Tomb World event before generating reinforcements", strategy_card)
+        self.assertIn("reinforcementPending?'disabled'", strategy_card)
+
     def test_mission_four_repair_is_a_ready_hook(self):
         source = self.function_source("applyMissionReadyHooks", "determineInitiative")
         self.assertIn("state.missionId==='destroy-sarcophagus'", source)

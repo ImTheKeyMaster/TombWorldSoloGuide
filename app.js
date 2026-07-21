@@ -859,9 +859,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function strategyCard(){
     const d=state.strategyData||{};
     if(state.strategyStage==='summary'){
+      const reinforcementPending=Boolean(d.eventPending);
       const reinforcementCount=actualReinforcementCount(d);
       const rolls=(d.reinforcements||[]).slice(0,reinforcementCount).map(r=>`<div class="reinforcement-result"><div class="dice-row compact">${r.rolls.map(v=>dieHtml({value:v,kind:'hit'})).join('')}</div><strong>${r.type}</strong></div>`).join('');
-      return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 1 OF 2</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol><p>When all Strategy Phase actions are complete, continue to initiative.</p></div><div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat" tabindex="0" data-tooltip="Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events."><small>THREAT LEVEL <span class="info-dot">i</span></small><strong>${state.threat}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Grade 0–3 is derived from Threat and determines reinforcement pressure and some events."><small>GRADE LEVEL <span class="info-dot">i</span></small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="The number of living NPOs that are Ready and may still activate during this Turning Point."><small>NPOs Ready <span class="info-dot">i</span></small><strong>${readyNpos().length}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Additional NPOs generated during this Strategy Phase. Battlefield limits may block some arrivals."><small>Reinforcements <span class="info-dot">i</span></small><strong>${reinforcementCount}</strong></div></div>${rolls?`<h3>Reinforcements generated</h3><div class="reinforcement-grid">${rolls}</div><div class="field"><label>Reinforcement entry point</label><select id="reinforcementEntry"><option ${state.reinforcementEntry==='Nearest valid entry point'?'selected':''}>Nearest valid entry point</option><option ${state.reinforcementEntry==='Entry Point A'?'selected':''}>Entry Point A</option><option ${state.reinforcementEntry==='Entry Point B'?'selected':''}>Entry Point B</option><option ${state.reinforcementEntry==='Entry Point C'?'selected':''}>Entry Point C</option><option ${state.reinforcementEntry==='Custom placement'?'selected':''}>Custom placement</option></select></div>`:'<div class="summary-box"><strong>No reinforcements arrive.</strong></div>'}${d.blocked?`<p class="warning-text">${d.blocked} reinforcement(s) were blocked by the 10-NPO battlefield limit.</p>`:''}${d.event?strategyEventHtml(d.event):'<p>No Tomb World event is required.</p>'}<button class="btn primary big-action" id="continueStrategy">Strategy Phase Complete</button></section>`;
+      return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 1 OF 2</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol><p>When all Strategy Phase actions are complete, continue to initiative.</p></div><div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat" tabindex="0" data-tooltip="Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events."><small>THREAT LEVEL <span class="info-dot">i</span></small><strong>${state.threat}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Grade 0–3 is derived from Threat and determines reinforcement pressure and some events."><small>GRADE LEVEL <span class="info-dot">i</span></small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="The number of living NPOs that are Ready and may still activate during this Turning Point."><small>NPOs Ready <span class="info-dot">i</span></small><strong>${readyNpos().length}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Additional NPOs generated during this Strategy Phase. Battlefield limits may block some arrivals."><small>Reinforcements <span class="info-dot">i</span></small><strong>${reinforcementPending?'—':reinforcementCount}</strong></div></div>${reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':rolls?`<h3>Reinforcements generated</h3><div class="reinforcement-grid">${rolls}</div><div class="field"><label>Reinforcement entry point</label><select id="reinforcementEntry"><option ${state.reinforcementEntry==='Nearest valid entry point'?'selected':''}>Nearest valid entry point</option><option ${state.reinforcementEntry==='Entry Point A'?'selected':''}>Entry Point A</option><option ${state.reinforcementEntry==='Entry Point B'?'selected':''}>Entry Point B</option><option ${state.reinforcementEntry==='Entry Point C'?'selected':''}>Entry Point C</option><option ${state.reinforcementEntry==='Custom placement'?'selected':''}>Custom placement</option></select></div>`:'<div class="summary-box"><strong>No reinforcements arrive.</strong></div>'}${d.blocked?`<p class="warning-text">${d.blocked} reinforcement(s) were blocked by the 10-NPO battlefield limit.</p>`:''}${d.event?strategyEventHtml(d.event):'<p>No Tomb World event is required.</p>'}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':'Strategy Phase Complete'}</button></section>`;
     }
     const auto=d.initiativeMode==='automatic';
     const autoReason=d.initiativeReason||'the automatic initiative rule applied';
@@ -1138,11 +1139,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     applyMissionReadyHooks();
     determineInitiative();
     processEventStage();
-    processReinforcementStage();
-    state.strategyPipeline.current='complete';
+    if(!state.strategyData.eventPending)processReinforcementStage();
     const {grade,reinforcements}=state.strategyData;
     state.phase='strategy';state.strategyStage='summary';state.nextSide='player';state.activeNpoId=null;
-    log(`Turning Point ${state.turningPoint} started. Grade ${grade}; ${reinforcements.length} reinforcement(s).`);
+    log(`Turning Point ${state.turningPoint} started. Grade ${grade}; ${state.strategyData.eventPending?'reinforcements await event resolution':`${reinforcements.length} reinforcement(s)`}.`);
     save();render();
   }
 
@@ -1178,10 +1178,19 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function processEventStage(){
     const d=state.strategyData;
     if(d.grade===3){d.event=events[roll(events.length)-1];applyStrategyEvent(d.event);}
+    d.eventPending=eventNeedsResolution(d.event);
+    if(d.eventPending)return;
     completeStrategyStage('event','reinforcement');
   }
 
+  function eventNeedsResolution(event){
+    if(event?.action?.type!=='add-or-heal-npo')return false;
+    const hasWoundedTarget=activeNpos().some(npo=>npo.type===event.action.operativeType&&npo.wounds<npo.maxWounds);
+    return activeNpos().length<MAX_NPOS||hasWoundedTarget;
+  }
+
   function processReinforcementStage(){
+    if(state.strategyPipeline.completed.includes('reinforcement'))return;
     const d=state.strategyData,reinforcements=[];
     let blocked=0;
     if(state.turningPoint>1&&d.grade>0){
@@ -1197,6 +1206,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     d.actualReinforcements=reinforcements.length;
     d.blocked=blocked;
     completeStrategyStage('reinforcement','complete');
+    state.strategyPipeline.current='complete';
   }
 
   function rollInitiative(){
@@ -1251,6 +1261,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       result=`${npoName(n)} was added to the NPO roster.`;
     }else return;
     d.eventAction={eventId:event.id,outcome,result};
+    d.eventPending=false;
+    if(state.strategyPipeline.current==='event')completeStrategyStage('event','reinforcement');
+    processReinforcementStage();
     log(`${event.title}: ${result}`);
     save();render();
   }
