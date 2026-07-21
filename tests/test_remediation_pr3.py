@@ -94,13 +94,12 @@ class RemediationPr3Tests(unittest.TestCase):
 
     def test_import_normalizes_threat_and_new_state(self):
         normalize = self.function_source("normalizeState", "npoDefinition")
-        self.assertIn("Number(raw?.threat)", normalize)
-        self.assertIn("Math.max(0,Math.min(15,Math.round(importedThreat)))", normalize)
+        self.assertIn("boundedInteger(raw.threat,0,15)", normalize)
         self.assertIn("npo.dormant=merged.threat===0", normalize)
         self.assertIn("merged.strategyPipeline", normalize)
 
     def test_versions_are_synchronized(self):
-        expected = "4.8.1"
+        expected = "4.9.0"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()

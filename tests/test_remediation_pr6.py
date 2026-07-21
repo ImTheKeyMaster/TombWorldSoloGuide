@@ -62,8 +62,8 @@ class RemediationPr6Tests(unittest.TestCase):
         initial = self.app.split("const initialState = () => ({", 1)[1].split("\n  });", 1)[0]
         self.assertIn("reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blocked:0}", initial)
         normalize = self.function_source("normalizeState", "npoDefinition")
-        self.assertIn("raw?.reinforcementState", normalize)
-        self.assertIn("operativeIds.filter", normalize)
+        self.assertIn("isRecord(raw.reinforcementState)", normalize)
+        self.assertIn("normalizeIdList(importedReinforcements.operativeIds", normalize)
         npo = self.function_source("normalizeNpo", "mission")
         self.assertIn("placementConfirmed:Boolean", npo)
 
