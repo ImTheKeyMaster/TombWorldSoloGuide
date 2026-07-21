@@ -36,7 +36,7 @@ class AutomaticNpoCombatTests(unittest.TestCase):
     def test_combat_summary_contains_dice_and_final_damage(self):
         summary = self.source("function renderCombatResolution", "function settleCombatDice")
         self.assertIn("ATTACK DICE", summary)
-        self.assertIn("SAVE DICE", summary)
+        self.assertIn("DEFENSE DICE", summary)
         self.assertIn("Total damage", summary)
         self.assertIn("combat.attackDice.map", summary)
         self.assertIn("combat.saveDice.map", summary)
@@ -48,6 +48,14 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         self.assertIn("const sameCombat=saved&&saved.targetId===target.id&&saved.attackType===attackType", wizard)
         self.assertIn("const combat=saved", wizard)
         self.assertIn("renderCombatResolution(combat", wizard)
+        self.assertIn("const banishmentRequired=dimensionalBanishmentRequired(combat)", wizard)
+        self.assertIn("applyDimensionalBanishment(combat,num('dimensionalBanishmentRoll'))", wizard)
+
+    def test_cancel_discards_a_new_automatic_result(self):
+        wizard = self.source("function showNpoAttackWizard", "function spinnerField")
+        fresh_flow = wizard.split("const combat=saved", 1)[0]
+        self.assertIn("combatDraft:null", fresh_flow)
+        self.assertIn("if(combatTimer)clearTimeout(combatTimer)", fresh_flow)
 
     def test_aggressive_defense_rolls_without_a_manual_button(self):
         preview = self.source("function previewPendingPlayerAttack", "function displayPendingPlayerCombat")
