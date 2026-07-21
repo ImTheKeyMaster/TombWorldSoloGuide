@@ -520,22 +520,22 @@ Suppress the default Operate Hatch Threat roll in Mission 5.
 Official Threat changes, including Scout Room reduction, are missing or only manually delegated.
 
 **Review status:**
-Confirmed
+Partially Confirmed
 
 **Official rule reference:**
 PDF page 2, complete default Threat triggers; PDF page 13, Mission 5 “Scout Room.”
 
 **Application evidence:**
-Generic manual Threat controls, action handlers, and Mission 5 JSON in `app.js`/`Missions/05-scout-sub-crypt.json`.
+`completePlayerActivation()` in `app.js` rolls the default 4+ Operate Hatch increase and applies both the automatic and 4+ Breach increases. The same function increments Threat for every recorded Shoot and Fight without checking the printed exceptions. Mission 5's Scout Room rule remains prose in `Missions/05-scout-sub-crypt.json`.
 
 **Review:**
-The app does not implement the default 4+ Hatch roll, extra 4+ Breach increase, Silent exception, conditional player Fight exception, or Scout Room reduction to the highest level of the grade below.
+The original finding overstates the gap. The app already implements the default 4+ Operate Hatch roll and both Breach increases. It does not implement the Silent exception for Shoot, the conditional exception when a player Fight incapacitates its NPO without the player operative remaining visible to another enemy, or Scout Room's reduction to the highest Threat level of the grade below. THR-04 separately covers suppressing the otherwise-correct Hatch roll in Mission 5.
 
 **Corrected conclusion:**
-Confirmed High issue, broader than the original example.
+Partially confirmed High issue: the default Hatch and Breach triggers are implemented, while the Shoot/Fight exceptions and Scout Room reduction remain missing.
 
 **Recommended action:**
-Implement enumerated triggers and mission exceptions; keep manual adjustment only as a labeled correction.
+Preserve the existing Hatch and Breach logic; add the Silent and conditional Fight exceptions plus the Mission 5 Scout Room reduction. Keep manual adjustment only as a labeled correction.
 
 ### THR-06 — Threat import normalization
 
@@ -1525,7 +1525,7 @@ Only Confirmed and Partially Confirmed compliance issues appear below. Incorrect
 - **High — STR-01/additional dormant-state issue** — newly discovered during this review; the original compliant conclusion is reversed.
 - **High — STR-02 and STR-06, exact Strategy order and mission Ready hooks** — confirmed/corrected from the original audit; event-before-reinforcement is now directly verified.
 - **High — STR-03, EVT-01, EVT-02, EVT-03, and EVT-04, event timing/deck/effects/placement** — confirmed and corrected from the original audit with exact card inventory and rules.
-- **High — THR-03, THR-04, and THR-05, Threat triggers and Mission 5 exceptions** — confirmed from the original audit, with additional missing default triggers identified.
+- **High — THR-03, THR-04, and THR-05, Threat timing plus Shoot/Fight and Mission 5 exceptions** — corrected from the original audit; preserve the implemented default Hatch and Breach increases while adding only the missing exceptions and Scout Room reduction.
 - **High — ACT-03, premature activation commitment** — confirmed from the original audit.
 - **High — ACT-05 and NPO-01 through NPO-04, printed NPO selection/behavior/targets** — confirmed/corrected from the original audit using PDF pages 3–7.
 - **High — COM-02 and COM-04, printed NPO weapons/rules and distinct profiles** — confirmed/corrected from the original audit; player/Core portions are excluded.
