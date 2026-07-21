@@ -32,7 +32,7 @@ No community sources were used. Brief requirement summaries below avoid reproduc
 
 The app is a useful tabletop workflow aid, but it is **not currently demonstrable as an official-rules implementation**. The most consequential confirmed executable defect is that melee uses the shooting defence/save-cancellation algorithm. Mission completion is also globally replaced by “all NPOs dead = victory”, while every mission JSON describes a different objective. Several mission rules exist only as prose and are never executed. Events are drawn automatically whenever Grade is 3, with replacement, and only four of six listed event effects alter state; event duration/cleanup is not modelled.
 
-The NPO “AI” is a generic seven-question heuristic, not per-operative official decision tables. It raises Threat on every selected Fight/Shoot recommendation before combat occurs. Reinforcement quantity is fixed to current Grade and type is selected from the starting 2D6 table, but current authoritative tables/timing could not be recovered, so those exact numbers are not certified. Persistence captures much state, including pending combat drafts, but temporary event state is absent and data/code versions can be mixed because JSON is network-first while images/PDF are cache-first and the purported PDF is not a PDF.
+The NPO “AI” is a generic seven-question heuristic, not per-operative official decision tables. It raises Threat on every selected Fight/Shoot recommendation before combat occurs. Reinforcement quantity is fixed to current Grade, and `randomReinforcement()` uses a different 2D6 type mapping from the local lookup in `generateRoster()`; current authoritative tables/timing could not be recovered, so neither mapping is certified. Persistence captures much state, including pending combat drafts, but temporary event state is absent and data/code versions can be mixed because JSON is network-first while images/PDF are cache-first and the purported PDF is not a PDF.
 
 ### Finding totals
 
@@ -205,7 +205,7 @@ Counts below include only the five requested scorecard classes; abstraction/hous
 
 | ID | Severity | Classification | Official requirement | Current app behavior | Evidence in repository | Official source | Recommended correction |
 |---|---|---|---|---|---|---|---|
-| REI-01 | P1 | NON-COMPLIANT | Reinforcements follow the printed timing/table/quantity and mission/event exceptions. | Every TP after first at Grade >0 requests exactly `grade` NPOs, each rolled on the same 2D6 type table. No Threat subrange/mission eligibility exists. | `app.js:972–993`; `app.js:306–316` | TW, **Reinforcements / NPO Generation Table** | Encode verified eligibility and quantity/table separately. |
+| REI-01 | P1 | NON-COMPLIANT | Reinforcements follow the printed timing, reinforcement table, quantity, and mission/event exceptions; the starting-roster table must not be substituted unless the pack explicitly says they are identical. | Every TP after the first at Grade >0 requests exactly `grade` NPOs. Reinforcement types come from `randomReinforcement()`, not the starting lookup in `generateRoster()`, and the mappings differ: total 4 is a Scarab reinforcement but a Macrocyte starter; total 12 is a Tomb Crawler reinforcement but a Warrior starter (totals 5, 6, and 10 also differ). No Threat-subrange or mission eligibility exists. Which mapping, if either, matches its respective official table is unverifiable from the available source. | `app.js:306–316` (`generateRoster` local table); `app.js:984–990` (reinforcement call); `app.js:1058` (`randomReinforcement`) | TW, **Starting NPO Generation Table** and **Reinforcement Table**; page unavailable | Verify and encode the starting and reinforcement mappings independently, then apply the verified reinforcement timing, eligibility and quantity without sharing or silently reconciling the two datasets. |
 | REI-02 | P1 | MISSING | Scout Sub-Crypt room awakening immediately generates D3 + Grade (max 5) NPOs when a room first opens/enters. | Rule is prose only; no room state or spawn action exists. | `Missions/05-scout-sub-crypt.json:18–30`; no mission dispatch in `app.js:972–2231` | TW, Mission 5 **Awaken Rooms** | Add room IDs, first-entry tracking, constrained generation and placement workflow. |
 | REI-03 | P2 | PARTIAL | Battlefield maximum, partial arrivals, fully blocked arrivals and placement must follow the pack. | Global max 10 and partial/block counts exist. NPO objects are nevertheless `deployed:true` before the user selects/physically confirms an entry point; one shared string represents all entries. | `app.js:9`; `app.js:714`; `app.js:984–992`; `app.js:1009–1013` | TW, **Battlefield Limit / Reinforcement Entry Points** | Create pending arrivals and confirm each placement; preserve partial/full block messages. |
 | REI-04 | P2 | UNVERIFIABLE | Standard reinforcement arrival order/readiness is as printed. | Arrivals are always Ready and have no order field. | `app.js:988` | TW, **Reinforcements**; page unavailable | Verify and store order/readiness. |
@@ -213,7 +213,7 @@ Counts below include only the five requested scorecard classes; abstraction/hous
 
 ### P1/P2 reinforcement scenarios
 
-* **REI-01 — table-driven integration test.** **Given** every TP/Threat/Grade/mission boundary, **when** reinforcement processing occurs, **then** eligibility, number and type rolls equal the official table.
+* **REI-01 — table-driven integration test.** **Given** every 2D6 total from 2–12 and every TP/Threat/Grade/mission boundary, **when** starting generation and reinforcement processing are evaluated independently, **then** each path returns the result from its own verified official table (including explicit fixtures for totals 4, 5, 6, 10 and 12), and reinforcement eligibility and quantity match the official timing rules.
 * **REI-02 — integration/manual tabletop test.** **Given** each eligible room unopened at every Grade, **when** it is first opened or entered, **then** exactly D3+Grade up to five legal NPOs are prompted once and constrained by limits.
 * **REI-03 — integration/mobile test.** **Given** 8, 9 and 10 active NPOs and multiple rolled arrivals, **when** reinforcement placement occurs at 390 px, **then** partial/full blocking and every entry placement are correct and no NPO is marked deployed prematurely.
 * **REI-04 — integration test.** **Given** a new reinforcement, **when** Firefight begins, **then** order and Ready status match the printed arrival rule.
@@ -252,7 +252,7 @@ Counts below include only the five requested scorecard classes; abstraction/hous
 * **NPOs:** Necron Warrior, Canoptek Scarab Swarm, Canoptek Macrocyte, Canoptek Tomb Crawler (`profiles`). Only Wounds, Save, one attack and behaviour are stored.
 * **Missions:** the six rows in Appendix B.
 * **Events:** the six candidate rows in Appendix A.
-* **Hard-coded rules data:** `profiles`, `events`, starting/reinforcement 2D6 `table`, `MAX_NPOS`, Grade thresholds, Threat bounds and generic action costs in `app.js`.
+* **Hard-coded rules data:** `profiles`, `events`, the starting-roster 2D6 lookup in `generateRoster`, the distinct reinforcement mapping in `randomReinforcement`, `MAX_NPOS`, Grade thresholds, Threat bounds and generic action costs in `app.js`.
 
 ### P1/P2 data scenarios
 
@@ -409,7 +409,7 @@ Because the official event page was unavailable and the local `.pdf` is invalid,
 | Save/restore | `app.js` | `initialState`, `save`, `load`, `normalizeState`; import/export handlers | Single legacy storage key; shallow normalization; mission/effect schemas absent. |
 | Setup/team selection | `app.js`, `Player_Operatives/*.json` | `playerRosterLimits`, `autoSelectRequiredPlayerOperatives`, `renderSetup`, `bindSetup` | Some structured selection rules are not enforced. |
 | Mission setup/data | `Missions/*.json`, `app.js` | `mission`, `missionSetup`, `missionTracker`, `missionSpecial`, `generateRoster` | Mission rules mostly display-only. |
-| Starting NPO generation | `app.js` | `profiles`, `generateRoster`, local `table` | 2D6 lookup; generated operatives do not store order state. |
+| Starting NPO generation | `app.js` | `profiles`, `generateRoster`, local `table` | Starter mapping: 2–3 Scarab, 4 Macrocyte, 5–9 Warrior, 10–11 Tomb Crawler, 12 Warrior; generated operatives do not store order state. |
 | Threat/Grade | `app.js` | `threatGrade`, `threatLabel`, `setThreat`, action Threat UI | Shared HUD/engine derivation; incomplete/wrong triggers. |
 | Turning Point/Strategy | `app.js` | `startTurningPoint`, `strategyCard`, `bindStrategyCard` | Mutates reinforcement/event before checklist; no mission hooks. |
 | Events | `app.js` | `events`, `strategyEventHtml`, `applyStrategyEvent`, `resolveStrategyEventAction` | Six hard-coded objects; partial automation; no eligibility/duration. |
@@ -424,5 +424,5 @@ Because the official event page was unavailable and the local `.pdf` is invalid,
 | NPO→Player damage | `app.js` | `renderNpoDecisionResult`, `showNpoAttackWizard`, `applyNpoAttackDamage`, `completeNpoActivation` | Draft persisted, but activation already consumed. |
 | Wounds/elimination | `app.js` | `activeNpos`, `livingPlayerOperativeCount`, `adjustWounds`, `applyNpoAttackDamage`, status toggles | Persistent wounds/casualties; manual restoration possible. |
 | Mission scoring/end | `app.js`, mission JSON | `tracker`, `missionTrackerMax`, `checkGameEnd`, end card | Generic free-number tracker; universal NPO-clear win. |
-| Reinforcements | `app.js` | `startTurningPoint`, `actualReinforcementCount`, `reinforcementEntry`, `MAX_NPOS` | Grade count; immediately deployed/ready; one entry string. |
+| Reinforcements | `app.js` | `startTurningPoint`, `randomReinforcement`, `actualReinforcementCount`, `reinforcementEntry`, `MAX_NPOS` | Distinct mapping: 2–4 Scarab, 5–6 Macrocyte, 7–10 Warrior, 11–12 Tomb Crawler; differs from starter results at 4, 5, 6, 10 and 12; Grade count, immediately deployed/ready, one entry string. |
 | Cache/update | `service-worker.js`, `app.js` | `CACHE_NAME`, `PRECACHE_ASSETS`, `networkFirst`, `cacheFirst`, SW registration | Old named caches deleted; mixed-version window remains; invalid PDF cached. |
