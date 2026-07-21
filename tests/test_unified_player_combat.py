@@ -17,20 +17,23 @@ class UnifiedPlayerCombatTests(unittest.TestCase):
         wizard = self.source('function showPendingPlayerAttackWizard', 'function showPlayerCombatResolution')
         resolution = self.source('function showPlayerCombatResolution', 'function previewPendingPlayerAttack')
         self.assertIn('showPlayerCombatResolution(stage,attackType', wizard)
-        self.assertIn('dedicated-combat-screen', resolution)
-        self.assertIn("attackType==='shoot'?'Shooting':'Melee'", resolution)
+        self.assertIn('showSharedCombatResolutionScreen', resolution)
+        shared_screen = self.source('function showSharedCombatResolutionScreen', 'function displaySharedCombatResult')
+        self.assertIn('dedicated-combat-screen', shared_screen)
+        self.assertIn("attackType==='shoot'?'Shooting':'Melee'", shared_screen)
         self.assertEqual(self.app.count('function showPlayerCombatResolution'), 1)
 
     def test_resolution_opens_at_top_and_starts_attack_then_defense(self):
         resolution = self.source('function showPlayerCombatResolution', 'function previewPendingPlayerAttack')
         shared = self.source('function runAutomaticCombatRolls', 'function retainedDiceTotals')
-        self.assertIn("window.scrollTo({top:0,left:0,behavior:'auto'})", resolution)
-        self.assertIn('modal.scrollTop=0', resolution)
+        shared_screen = self.source('function showSharedCombatResolutionScreen', 'function displaySharedCombatResult')
+        self.assertIn("window.scrollTo({top:0,left:0,behavior:'auto'})", shared_screen)
+        self.assertIn('modal.scrollTop=0', shared_screen)
         self.assertIn('runAutomaticCombatRolls', resolution)
         self.assertLess(shared.index('ATTACK DICE'), shared.index('DEFENSE DICE'))
 
     def test_animated_and_restored_continue_timing(self):
-        display = self.source('function displayPendingPlayerCombat', 'function npoBehavior')
+        display = self.source('function displaySharedCombatResult', 'function settleCombatDice')
         self.assertIn('let visualComplete=!animate', display)
         self.assertIn('if(animate)settleCombatDice', display)
         self.assertIn('button.disabled=false', display)
@@ -46,8 +49,10 @@ class UnifiedPlayerCombatTests(unittest.TestCase):
 
     def test_footer_and_transactional_damage(self):
         resolution = self.source('function showPlayerCombatResolution', 'function previewPendingPlayerAttack')
-        self.assertIn('id="cancelPendingAttack">Cancel</button>', resolution)
-        self.assertIn('id="continuePendingAttack" disabled>Continue</button>', resolution)
+        shared_screen = self.source('function showSharedCombatResolutionScreen', 'function displaySharedCombatResult')
+        self.assertIn("cancelId:'cancelPendingAttack'", resolution)
+        self.assertIn("continueId:'continuePendingAttack'", resolution)
+        self.assertIn('id="${cancelId}">Cancel</button>', shared_screen)
         apply_damage = self.source('function applyPendingPlayerDamage', 'function completePlayerActivation')
         self.assertIn('if(!pending||pending.committed)continue', apply_damage)
         self.assertIn('pending.committed=true', apply_damage)

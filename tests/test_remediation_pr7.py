@@ -43,7 +43,9 @@ class RemediationPr7CombatTests(unittest.TestCase):
         resolution = self.source('showPlayerCombatResolution', 'previewPendingPlayerAttack')
         preview = self.source('previewPendingPlayerAttack', 'displayPendingPlayerCombat')
         self.assertIn('runAutomaticCombatRolls', resolution)
-        self.assertIn('dedicated-combat-screen', resolution)
+        self.assertIn('showSharedCombatResolutionScreen', resolution)
+        shared_screen = self.source('showSharedCombatResolutionScreen', 'displaySharedCombatResult')
+        self.assertIn('dedicated-combat-screen', shared_screen)
         self.assertIn('previewPendingPlayerAttack(stage,attackType', resolution)
         self.assertIn('resolution.damage', preview)
         self.assertNotIn('Record Combat Outcome', self.app)
@@ -85,7 +87,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertNotIn('postGame', self.app)
 
     def test_versions_are_synchronized(self):
-        expected = '5.4.1'
+        expected = '5.5.0'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"styles.css?v={expected}", (ROOT / 'index.html').read_text())
         self.assertIn(f"app.js?v={expected}", (ROOT / 'index.html').read_text())

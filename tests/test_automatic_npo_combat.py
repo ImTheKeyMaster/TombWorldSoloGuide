@@ -49,8 +49,8 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         self.assertIn("state.lastActivation={...state.lastActivation,combatDraft:combat}", wizard)
         self.assertIn("save();", wizard)
         self.assertIn("const sameCombat=saved&&saved.targetId===target.id&&saved.attackType===attackType", wizard)
-        self.assertIn("const combat=saved", wizard)
-        self.assertIn("renderCombatResolution(combat", wizard)
+        self.assertIn("if(sameCombat)displayCombat(saved,animateCombat)", wizard)
+        self.assertIn("displaySharedCombatResult(combat", wizard)
         self.assertIn("const banishmentRequired=dimensionalBanishmentRequired(combat)", wizard)
         self.assertIn("applyDimensionalBanishment(combat,num('dimensionalBanishmentRoll'))", wizard)
 

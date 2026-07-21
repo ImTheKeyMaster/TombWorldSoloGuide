@@ -1108,7 +1108,7 @@ button.tracker-operative:hover{
 .mission-outcome .mission-objective-card{width:100%;text-align:left}.mission-outcome .game-end-image{max-width:min(100%,360px)}
 @media(max-width:520px){.mission-objective-row{align-items:flex-start;flex-direction:column}.mission-objective-actions{width:100%;justify-content:stretch}.mission-objective-actions .btn{flex:1;min-height:44px}.mission-objective-grid{grid-template-columns:1fr}.mission-outcome{padding-inline:16px}}
 
-/* v5.4.0 dedicated Player combat resolution */
+/* v5.5.0 shared combat resolution */
 .weapon-rules{margin:14px 0;padding:12px 14px;border:1px solid var(--line);border-radius:13px;background:#08150f}
 .weapon-rules strong{color:var(--green)}
 .weapon-rules ul{margin:8px 0 0;padding-left:20px;color:var(--muted)}
@@ -1118,7 +1118,7 @@ button.tracker-operative:hover{
 .dedicated-combat-screen .combat-results{margin-top:0}
 .dedicated-combat-screen .combat-stage{margin-bottom:8px;padding:10px}
 .dedicated-combat-screen .dice-row{margin:9px 0 3px}
-.compact-combat-profile{margin:0;grid-template-columns:repeat(4,minmax(0,1fr))}
+.compact-combat-profile{margin:0;grid-template-columns:repeat(5,minmax(0,1fr))}
 .combat-resolution-footer{margin-top:4px;padding-bottom:env(safe-area-inset-bottom)}
 @media(max-width:600px){
   .combat-resolution-modal{width:calc(100% - 16px);max-height:calc(100dvh - 12px)}
