@@ -37,6 +37,18 @@ class RemediationPr1Tests(unittest.TestCase):
             all_id_sets.append(tuple(ids))
         self.assertGreater(len(set(all_id_sets)), 1)
 
+    def test_placement_checks_follow_roster_generation(self):
+        placement_ids = {"starting-npos", "starting-conceal", "player-setup", "initial-resources"}
+        for mission in self.missions.values():
+            by_id = {check["id"]: check for check in mission["setupChecks"]}
+            self.assertTrue(all(check["stage"] in {"killzone", "deploy"} for check in mission["setupChecks"]))
+            self.assertTrue(all(by_id[check_id]["stage"] == "deploy" for check_id in placement_ids & by_id.keys()))
+            self.assertEqual(by_id["map-and-deployment"]["stage"], "killzone")
+        self.assertIn("const placementChecks=missionSetupChecks('deploy')", self.app)
+        self.assertIn("allNposPlaced&&allPlacementChecked", self.app)
+        self.assertIn("generateRoster();clearMissionSetupChecks('deploy')", self.app)
+        self.assertLess(self.app.index("if(stepId==='npoRoster')"), self.app.index("if(stepId==='deploy')"))
+
     def test_official_mission_specific_conditions_are_explicit(self):
         text = lambda mission_id: " ".join(c["label"] for c in self.missions[mission_id]["setupChecks"]).lower()
         for mission_id, mission in self.missions.items():
@@ -70,7 +82,7 @@ class RemediationPr1Tests(unittest.TestCase):
         self.assertIn("const STORAGE_KEY = 'tombWorldSoloGuide.v1';", self.app)
 
     def test_version_and_cache_busters_match(self):
-        expected = "4.0.2"
+        expected = "4.0.3"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()

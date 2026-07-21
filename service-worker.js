@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '4.0.2';
+const APP_VERSION = '4.0.3';
 const CACHE_PREFIX = 'tomb-world-solo-guide-';
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 const APP_SHELL = './index.html';

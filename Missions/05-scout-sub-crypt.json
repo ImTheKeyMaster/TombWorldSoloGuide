@@ -140,19 +140,23 @@
   "setupChecks": [
     {
       "id": "map-and-deployment",
-      "label": "Arrange the killzone as shown on the Mission 5 map and identify the Player A drop-zone rooms."
+      "label": "Arrange the killzone as shown on the Mission 5 map and identify the Player A drop-zone rooms.",
+      "stage": "killzone"
     },
     {
       "id": "starting-npos",
-      "label": "Confirm that no NPOs are set up before the battle, so there are no starting NPOs to place or give Conceal orders."
+      "label": "Confirm that no NPOs are set up before the battle, so there are no starting NPOs to place or give Conceal orders.",
+      "stage": "deploy"
     },
     {
       "id": "eligible-rooms",
-      "label": "Identify the rooms outside the Player A drop zone that can awaken when first opened or entered."
+      "label": "Identify the rooms outside the Player A drop zone that can awaken when first opened or entered.",
+      "stage": "killzone"
     },
     {
       "id": "initial-resources",
-      "label": "Start with 2CP total and select up to four equipment options, recording and managing both for tabletop play; the Guide does not track or validate their effects."
+      "label": "Start with 2CP total and select up to four equipment options, recording and managing both for tabletop play; the Guide does not track or validate their effects.",
+      "stage": "deploy"
     }
   ]
 }

@@ -112,23 +112,28 @@
   "setupChecks": [
     {
       "id": "map-and-deployment",
-      "label": "Arrange the killzone as shown on the Mission 4 map and identify the Player A drop zone and Player B territory."
+      "label": "Arrange the killzone as shown on the Mission 4 map and identify the Player A drop zone and Player B territory.",
+      "stage": "killzone"
     },
     {
       "id": "sarcophagus",
-      "label": "Identify the C1 sarcophagus shown on the mission map as the mission objective marker."
+      "label": "Identify the C1 sarcophagus shown on the mission map as the mission objective marker.",
+      "stage": "killzone"
     },
     {
       "id": "starting-npos",
-      "label": "Generate D3+6 starting NPOs and set each up wholly within Player B territory: place half, rounding down, in the sarcophagus room and spread the remainder across the other rooms."
+      "label": "Generate D3+6 starting NPOs and set each up wholly within Player B territory: place half, rounding down, in the sarcophagus room and spread the remainder across the other rooms.",
+      "stage": "deploy"
     },
     {
       "id": "starting-conceal",
-      "label": "Give every starting NPO a Conceal order."
+      "label": "Give every starting NPO a Conceal order.",
+      "stage": "deploy"
     },
     {
       "id": "initial-resources",
-      "label": "Start with 2CP total and select up to four equipment options, recording and managing both for tabletop play; the Guide does not track or validate their effects."
+      "label": "Start with 2CP total and select up to four equipment options, recording and managing both for tabletop play; the Guide does not track or validate their effects.",
+      "stage": "deploy"
     }
   ]
 }
