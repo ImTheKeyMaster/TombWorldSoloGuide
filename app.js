@@ -2144,7 +2144,7 @@ function showPlayerActivation(stage={}){
         <section class="defense-profile npo-defense-profile" aria-label="NPO defense profile">
           <p class="eyebrow">NPO DEFENSE PROFILE</p>
           <div class="defense-profile-grid">
-            <div><small>NPO Defense Dice</small><strong>3</strong></div>
+            <div><small>NPO Defense Dice</small><strong id="npoDefenseDiceValue">3</strong></div>
             <div><small>NPO Save</small><strong id="npoSaveValue">—</strong></div>
           </div>
         </section>
@@ -2174,6 +2174,13 @@ function showPlayerActivation(stage={}){
       diceDraft.rolling=null;
     };
 
+    const recalculateDamage=()=>{
+      const weapon=weapons[Number(weaponSelect?.value)||0];
+      const resolution=resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,playerWeaponProfile(weapon));
+      const damageInput=$('#resolvedDamage');
+      if(damageInput)damageInput.value=resolution.damage;
+    };
+
     const renderDicePool=(pool)=>{
       const dice=pool==='attack'?diceDraft.attackDice:diceDraft.defenseDice;
       const row=$(pool==='attack'?'#playerAttackDice':'#playerDefenseDice');
@@ -2186,13 +2193,6 @@ function showPlayerActivation(stage={}){
         die.retained=!die.retained;
         renderDicePool(pool);
       });
-    };
-
-    const recalculateDamage=()=>{
-      const weapon=weapons[Number(weaponSelect?.value)||0];
-      const resolution=resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,playerWeaponProfile(weapon));
-      const damageInput=$('#resolvedDamage');
-      if(damageInput)damageInput.value=resolution.damage;
     };
 
     const animateDicePool=(pool,dice)=>{
@@ -2231,6 +2231,8 @@ function showPlayerActivation(stage={}){
       $('#combatRules').innerHTML=combatRulesHtml({...profile,rules:weapon?.rules||[]},attackType);
       const saveValue=$('#npoSaveValue');
       if(saveValue)saveValue.textContent=target?`${target.save}+`:'—';
+      const defenseDiceValue=$('#npoDefenseDiceValue');
+      if(defenseDiceValue)defenseDiceValue.textContent=Math.max(0,3-profile.ap);
       $('#aggressiveDefenceFields').innerHTML=aggressiveDefenceFields(target);
       bindSpinners($('#aggressiveDefenceFields'));
       if(diceDraft.attackDice.length||diceDraft.defenseDice.length){
@@ -2269,7 +2271,9 @@ function showPlayerActivation(stage={}){
     $('#rollPlayerDefenseDice').onclick=()=>{
       const target=state.roster.find(x=>x.id===targetSelect.value);
       if(!target)return;
-      diceDraft.defenseDice=rolledCombatDice(3,Number(target.save)||3);
+      const weapon=weapons[Number(weaponSelect?.value)||0];
+      const profile=playerWeaponProfile(weapon);
+      diceDraft.defenseDice=rolledCombatDice(Math.max(0,3-profile.ap),Number(target.save)||3);
       animateDicePool('defense',diceDraft.defenseDice);
     };
     $('#cancelPendingAttack').onclick=()=>{stopDiceAnimation();cancelPendingPlayerCombat(stage,attackType,onCancel);};

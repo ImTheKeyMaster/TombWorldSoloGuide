@@ -53,6 +53,8 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertIn("animateDicePool('attack'", wizard)
         self.assertIn("animateDicePool('defense'", wizard)
         self.assertIn('die.retained=!die.retained', wizard)
+        self.assertIn('rolledCombatDice(Math.max(0,3-profile.ap)', wizard)
+        self.assertIn("defenseDiceValue.textContent=Math.max(0,3-profile.ap)", wizard)
         preview = self.source('previewPendingPlayerAttack', 'displayPendingPlayerCombat')
         self.assertIn('onCancel,diceDraft', preview)
         self.assertIn('resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,profile)', preview)
