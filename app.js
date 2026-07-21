@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '4.3.0';
+  const APP_VERSION = '4.4.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -200,13 +200,34 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     {min:12,max:12,type:'Canoptek Tomb Crawler',weaponIds:['transdimensional-isolator']}
   ];
 
-  const events = [
-    {id:'awakened-warrior',type:'tomb-world-event',title:'Awakened Warrior',description:'Add one ready Necron Warrior at a suitable tomb entry point.'},
-    {id:'chittering-drone',type:'tomb-world-event',title:'A Chittering Drone',description:'Add a Scarab Swarm, or fully heal one if it is already active.',action:{type:'add-or-heal-npo',operativeType:'Canoptek Scarab Swarm',healAmount:'full',maxAdds:1}},
-    {id:'living-metal-flux',type:'tomb-world-event',title:'Living Metal Flux',description:'Each wounded NPO regains D3+2 wounds.'},
-    {id:'maze-reforms',type:'tomb-world-event',title:'The Maze Reforms',description:'Close one breach and up to D3 open hatchways where possible.'},
-    {id:'stirrings-of-horror',type:'tomb-world-event',title:'Stirrings of Horror',description:'Increase Threat by 1.'},
-    {id:'countertemporal-shifting',type:'tomb-world-event',title:'Countertemporal Shifting',description:'NPOs partially resist high-damage attacks this Turning Point.'}
+  // Physical Tomb World Event deck, Tomb World Mission Pack pp. 20-22.
+  // Card-instance IDs preserve the printed duplicate weighting.
+  const eventDefinitions = {
+    'subjugation-glyphs':{title:'Subjugation Glyphs',text:'Until the end of the turning point, subtract 1 from the APL stat of player operatives while they are within 2" of an objective marker.',execution:{type:'activate'},duration:'turning-point'},
+    'transdimensional-relocation':{title:'Transdimensional Relocation',text:'Relocate the player operative that is closest to an NPO. Follow the placement restrictions on the event card.',execution:{type:'tabletop-confirm'},duration:'immediate'},
+    'my-will-be-done':{title:'My Will Be Done',text:'Until the end of the turning point, improve the Hit stat of NPO weapons by 1.',execution:{type:'activate'},duration:'turning-point'},
+    'reanimation-protocols':{title:'Reanimation Protocols',text:'Until the end of the turning point, resolve Reanimation Protocols whenever an NPO is incapacitated, as described on the event card.',execution:{type:'activate'},duration:'turning-point'},
+    'dark-of-the-tomb':{title:'Dark of the Tomb',text:'Until the end of the turning point, apply the Dark of the Tomb effect and its required re-rolls as described on the event card.',execution:{type:'activate'},duration:'turning-point'},
+    'countertemporal-shifting':{title:'Countertemporal Shifting',text:'Until the end of the turning point, when an NPO would lose wounds, roll one D6 for each point of damage inflicted: for each 5+, that point of damage is ignored.',execution:{type:'activate'},duration:'turning-point'},
+    'living-metal-flux':{title:'Living Metal Flux',text:'Each NPO that has lost any wounds regains D3+2 wounds.',execution:{type:'living-metal-flux'},duration:'immediate'},
+    'maze-reforms':{title:'The Maze Reforms',text:'Close one breach and up to D3 open hatchways. If this cannot be resolved, draw another event card.',execution:{type:'maze-reforms'},duration:'immediate',redrawIfImpossible:true},
+    'stirrings-of-horror':{title:'Stirrings of Horror',text:'Increase the Threat level by 1. If the Threat level is already 15, draw another event card instead.',execution:{type:'stirrings'},duration:'immediate',redrawIfImpossible:true},
+    'chittering-drone':{title:'A Chittering Drone',text:'If a Canoptek Scarab Swarm has lost any wounds, it regains all lost wounds. Otherwise, set up one ready Canoptek Scarab Swarm with a Conceal order as described on the event card. If neither effect is possible, draw another event card.',execution:{type:'chittering-drone'},duration:'immediate',redrawIfImpossible:true},
+    'awakened-warrior':{title:'Awakened Warrior',text:'Set up one ready Necron Warrior with a Conceal order as described on the event card. If this is not possible, draw another event card.',execution:{type:'awakened-warrior'},duration:'immediate',redrawIfImpossible:true}
+  };
+  const eventDeck = [
+    {instanceId:'subjugation-glyphs-1',definitionId:'subjugation-glyphs'},
+    {instanceId:'transdimensional-relocation-1',definitionId:'transdimensional-relocation'},
+    {instanceId:'my-will-be-done-1',definitionId:'my-will-be-done'},
+    {instanceId:'reanimation-protocols-1',definitionId:'reanimation-protocols'},
+    {instanceId:'dark-of-the-tomb-1',definitionId:'dark-of-the-tomb'},
+    {instanceId:'countertemporal-shifting-1',definitionId:'countertemporal-shifting'},
+    {instanceId:'living-metal-flux-1',definitionId:'living-metal-flux'},
+    {instanceId:'maze-reforms-1',definitionId:'maze-reforms'},
+    {instanceId:'stirrings-of-horror-1',definitionId:'stirrings-of-horror'},
+    {instanceId:'chittering-drone-1',definitionId:'chittering-drone'},
+    {instanceId:'awakened-warrior-1',definitionId:'awakened-warrior'},
+    {instanceId:'awakened-warrior-2',definitionId:'awakened-warrior'}
   ];
 
   const initialState = () => ({
@@ -218,7 +239,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], playerWounds:{}, reinforcementEntry:'Nearest valid entry point',
     gradeMilestone:null, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0,
     npoAttackTargetId:null,
-    npoAttackSummary:null, gameEnd:null
+    npoAttackSummary:null, eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[]}, gameEnd:null
   });
 
   let state = normalizeState(load() || initialState());
@@ -267,19 +288,30 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.playerTeamId=raw?.playerTeamId||'';
     if(raw?.strategyData&&typeof raw.strategyData==='object'){
       const legacyEvent=raw.strategyData.event;
-      const event=Array.isArray(legacyEvent)
-        ? events.find(candidate=>candidate.title===legacyEvent[0]&&candidate.description===legacyEvent[1])||legacyEvent
-        : events.find(candidate=>candidate.id===legacyEvent?.id)||legacyEvent;
+      const legacyTitle=Array.isArray(legacyEvent)?legacyEvent[0]:legacyEvent?.title;
+      const legacyDefinitionId=Object.keys(eventDefinitions).find(id=>eventDefinitions[id].title===legacyTitle);
+      const event=legacyDefinitionId?eventRecord({instanceId:`legacy-${legacyDefinitionId}`,definitionId:legacyDefinitionId}):legacyEvent;
       const hasRolledInitiative=Number.isFinite(raw.strategyData.playerRoll)&&Number.isFinite(raw.strategyData.npoRoll);
       merged.strategyData={
         ...raw.strategyData,
         event,
+        events:Array.isArray(raw.strategyData.events)?raw.strategyData.events:(event?[{...event,status:raw.strategyData.eventPending?'drawn':'resolved'}]:[]),
+        eventIndex:Number.isInteger(raw.strategyData.eventIndex)?raw.strategyData.eventIndex:0,
         initiativeMode:raw.strategyData.initiativeMode==='rolled'||raw.strategyData.initiativeMode==='automatic'
           ? raw.strategyData.initiativeMode
           : hasRolledInitiative?'rolled':'automatic',
         initiativeReason:raw.strategyData.initiativeReason||(raw?.turningPoint===1?'Turning Point 1':'Threat was 0 when initiative was determined')
       };
     }else merged.strategyData=null;
+    const importedEvents=raw?.eventState&&typeof raw.eventState==='object'?raw.eventState:{};
+    const validInstances=new Set(eventDeck.map(card=>card.instanceId));
+    const available=Array.isArray(importedEvents.available)?importedEvents.available.filter(id=>validInstances.has(id)):eventDeck.map(card=>card.instanceId);
+    const used=Array.isArray(importedEvents.used)?importedEvents.used.filter(id=>validInstances.has(id)&&!available.includes(id)):[];
+    merged.eventState={
+      available,
+      used,
+      active:Array.isArray(importedEvents.active)?importedEvents.active.filter(event=>eventDefinitions[event?.definitionId]).map(event=>({...event})):[]
+    };
     const livingImportedPlayers=merged.playerRoster.filter(id=>!merged.playerCasualtyIds.includes(id)).length;
     merged.missionReadyContext=raw?.missionReadyContext&&typeof raw.missionReadyContext==='object'
       ? {sarcophagusControllers:normalizeSarcophagusControllers(raw.missionReadyContext.sarcophagusControllers,livingImportedPlayers)}
@@ -827,8 +859,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function renderPlay(){
     const milestone=state.gradeMilestone?`<section class="grade-milestone"><div><small>THREAT ESCALATION</small><strong>Grade ${state.gradeMilestone.grade}: ${escapeHtml(state.gradeMilestone.label)}</strong><span>Threat has reached Level ${state.gradeMilestone.threat}.</span></div><button class="btn ghost compact" id="dismissGradeMilestone">Dismiss</button></section>`:'';
-    app.innerHTML=hud()+milestone+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${nextStepCard()}${state.phase==='firefight'?activationTracker():''}`;
+    app.innerHTML=hud()+milestone+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${state.phase!=='strategy'?activeEventEffectsHtml():''}${nextStepCard()}${state.phase==='firefight'?activationTracker():''}`;
     bindPlay();
+  }
+
+  function activeEventEffectsHtml(){
+    const active=state.eventState.active||[];
+    if(!active.length)return '';
+    return `<section class="card"><p class="eyebrow">ACTIVE TOMB WORLD ${active.length===1?'EVENT':'EVENTS'}</p>${active.map(event=>`<div class="summary-box"><strong>${escapeHtml(event.title)}</strong><br>${escapeHtml(event.text)}</div>`).join('')}</section>`;
   }
 
   function nextStepCard(){
@@ -868,7 +906,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const reinforcementPending=Boolean(d.eventPending);
       const reinforcementCount=actualReinforcementCount(d);
       const rolls=(d.reinforcements||[]).slice(0,reinforcementCount).map(r=>`<div class="reinforcement-result"><div class="dice-row compact">${r.rolls.map(v=>dieHtml({value:v,kind:'hit'})).join('')}</div><strong>${r.type}</strong></div>`).join('');
-      return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 1 OF 2</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol><p>When all Strategy Phase actions are complete, continue to initiative.</p></div><div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat" tabindex="0" data-tooltip="Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events."><small>THREAT LEVEL <span class="info-dot">i</span></small><strong>${state.threat}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Grade 0–3 is derived from Threat and determines reinforcement pressure and some events."><small>GRADE LEVEL <span class="info-dot">i</span></small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="The number of living NPOs that are Ready and may still activate during this Turning Point."><small>NPOs Ready <span class="info-dot">i</span></small><strong>${readyNpos().length}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Additional NPOs generated during this Strategy Phase. Battlefield limits may block some arrivals."><small>Reinforcements <span class="info-dot">i</span></small><strong>${reinforcementPending?'—':reinforcementCount}</strong></div></div>${reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':rolls?`<h3>Reinforcements generated</h3><div class="reinforcement-grid">${rolls}</div><div class="field"><label>Reinforcement entry point</label><select id="reinforcementEntry"><option ${state.reinforcementEntry==='Nearest valid entry point'?'selected':''}>Nearest valid entry point</option><option ${state.reinforcementEntry==='Entry Point A'?'selected':''}>Entry Point A</option><option ${state.reinforcementEntry==='Entry Point B'?'selected':''}>Entry Point B</option><option ${state.reinforcementEntry==='Entry Point C'?'selected':''}>Entry Point C</option><option ${state.reinforcementEntry==='Custom placement'?'selected':''}>Custom placement</option></select></div>`:'<div class="summary-box"><strong>No reinforcements arrive.</strong></div>'}${d.blocked?`<p class="warning-text">${d.blocked} reinforcement(s) were blocked by the 10-NPO battlefield limit.</p>`:''}${d.event?strategyEventHtml(d.event):'<p>No Tomb World event is required.</p>'}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':'Strategy Phase Complete'}</button></section>`;
+      const resolvedEvents=(d.events||[]).filter(event=>event!==d.event&&event.status!=='drawn').map(strategyEventHtml).join('');
+      const activeEvents=(state.eventState.active||[]).map(event=>`<div class="summary-box"><strong>${escapeHtml(event.title)}</strong><br>${escapeHtml(event.text)}</div>`).join('');
+      return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 1 OF 2</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol><p>When all Strategy Phase actions are complete, continue to initiative.</p></div><div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat" tabindex="0" data-tooltip="Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events."><small>THREAT LEVEL <span class="info-dot">i</span></small><strong>${state.threat}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Grade 0–3 is derived from Threat and determines reinforcement pressure and some events."><small>GRADE LEVEL <span class="info-dot">i</span></small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="The number of living NPOs that are Ready and may still activate during this Turning Point."><small>NPOs Ready <span class="info-dot">i</span></small><strong>${readyNpos().length}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Additional NPOs generated during this Strategy Phase. Battlefield limits may block some arrivals."><small>Reinforcements <span class="info-dot">i</span></small><strong>${reinforcementPending?'—':reinforcementCount}</strong></div></div>${reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':rolls?`<h3>Reinforcements generated</h3><div class="reinforcement-grid">${rolls}</div><div class="field"><label>Reinforcement entry point</label><select id="reinforcementEntry"><option ${state.reinforcementEntry==='Nearest valid entry point'?'selected':''}>Nearest valid entry point</option><option ${state.reinforcementEntry==='Entry Point A'?'selected':''}>Entry Point A</option><option ${state.reinforcementEntry==='Entry Point B'?'selected':''}>Entry Point B</option><option ${state.reinforcementEntry==='Entry Point C'?'selected':''}>Entry Point C</option><option ${state.reinforcementEntry==='Custom placement'?'selected':''}>Custom placement</option></select></div>`:'<div class="summary-box"><strong>No reinforcements arrive.</strong></div>'}${d.blocked?`<p class="warning-text">${d.blocked} reinforcement(s) were blocked by the 10-NPO battlefield limit.</p>`:''}${resolvedEvents}${d.event?.status==='drawn'?strategyEventHtml(d.event):''}${activeEvents?`<h3>Active event effects</h3>${activeEvents}`:''}${!d.events?.length?'<p>No Tomb World event is required.</p>':''}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':'Strategy Phase Complete'}</button></section>`;
     }
     const auto=d.initiativeMode==='automatic';
     const autoReason=d.initiativeReason||'the automatic initiative rule applied';
@@ -881,7 +921,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function strategyEventHtml(event){
-    const title=event.title||event[0],description=event.description||event[1];
+    const title=event.title||event[0],description=event.text||event.description||event[1];
     if(event.type!=='tomb-world-event')return `<div class="summary-box"><strong>${escapeHtml(title)}</strong><br>${escapeHtml(description)}</div>`;
     const eventHeader=`<div class="tomb-world-event-header"><span class="tomb-world-event-icon" aria-hidden="true"><svg
   class="tomb-world-event-anomaly-icon"
@@ -977,29 +1017,17 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   />
 </svg></span><span class="tomb-world-event-label">TOMB WORLD EVENT</span></div>`;
     const eventDetails=`${eventHeader}<h3 class="tomb-world-event-title">${escapeHtml(title)}</h3><div class="tomb-world-event-effect"><div class="tomb-world-event-effect-label">Effect</div><p class="tomb-world-event-description">${escapeHtml(description)}</p></div>`;
-    if(!event.action)return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}</div>`;
-    const resolution=state.strategyData?.eventAction;
-    if(resolution?.eventId===event.id&&resolution.result)return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite">${eventDetails}<div class="event-resolution">Resolved: ${escapeHtml(resolution.result)}</div></div>`;
-    if(event.action.type!=='add-or-heal-npo')return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}</div>`;
-    const wounded=activeNpos().filter(n=>n.type===event.action.operativeType&&n.wounds<n.maxWounds);
-    const canAdd=activeNpos().length<MAX_NPOS;
-    const messages=[];
-    let healControls='';
-    if(wounded.length===0){
-      messages.push('No wounded Scarab Swarms are currently active.');
-    }else if(wounded.length===1){
-      healControls=`<div class="event-operative"><strong>${escapeHtml(npoName(wounded[0]))}</strong><span>Wounds: ${wounded[0].wounds} of ${wounded[0].maxWounds}</span></div><button class="btn primary" data-event-heal="${wounded[0].id}">Fully Heal Scarab Swarm</button>`;
-    }else{
-      messages.push('Choose a Scarab Swarm to fully heal.');
-      healControls=`<div class="field"><label for="eventNpoSelect">Wounded Scarab Swarm</label><select id="eventNpoSelect"><option value="">Select a Scarab Swarm...</option>${wounded.map(n=>`<option value="${n.id}">${escapeHtml(npoName(n))} — ${n.wounds} of ${n.maxWounds} wounds</option>`).join('')}</select></div><button class="btn primary" id="healSelectedEventNpo" disabled>Fully Heal Selected Scarab</button>`;
-    }
-    if(!canAdd)messages.push('A new Scarab Swarm cannot be added because the battlefield NPO limit has been reached.');
-    const hasRosterChange=canAdd||wounded.length>0;
-    if(!hasRosterChange)messages.push('No valid roster change is currently available for this event.');
-    const messageList=messages.length?`<ul class="event-messages">${messages.map(message=>`<li>${escapeHtml(message)}</li>`).join('')}</ul>`:'';
-    const addControl=canAdd?'<button class="btn primary" id="addEventNpo">Add Scarab Swarm</button>':'';
-    const rosterControl=hasRosterChange?'<button class="btn secondary" id="openEventRoster">Open NPO Roster</button>':'';
-    return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}<div class="event-controls">${messageList}${healControls}${addControl}${rosterControl}</div></div>`;
+    if(event.status!=='drawn')return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite">${eventDetails}<div class="event-resolution">${event.status==='redrawn'?'Redraw required':'Resolved'}: ${escapeHtml(event.result||'Complete')}</div></div>`;
+    const labels={
+      'awakened-warrior':'Confirm Warrior Placement',
+      'chittering-drone':'Confirm Scarab Placement',
+      'maze-reforms':'Confirm Terrain Changes',
+      'tabletop-confirm':'Confirm Tabletop Resolution'
+    };
+    const scarabChoices=event.execution.type==='chittering-drone'&&Array.isArray(event.eligibleNpoIds)&&event.eligibleNpoIds.length>1
+      ? `<div class="field"><label for="eventNpoSelect">Wounded Scarab Swarm</label><select id="eventNpoSelect"><option value="">Select a Scarab Swarm...</option>${event.eligibleNpoIds.map(id=>{const n=activeNpos().find(item=>item.id===id);return n?`<option value="${escapeHtml(id)}">${escapeHtml(npoName(n))} — ${n.wounds} of ${n.maxWounds} wounds</option>`:'';}).join('')}</select></div>`:'';
+    const impossibleControl=event.execution.type==='maze-reforms'?'<button class="btn secondary" id="redrawStrategyEvent">No Valid Changes · Draw Again</button>':'';
+    return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}<div class="event-controls">${scarabChoices}<button class="btn primary" id="resolveStrategyEvent" ${scarabChoices?'disabled':''}>${labels[event.definitionId]||labels[event.execution.type]||'Resolve Event'}</button>${impossibleControl}</div></div>`;
   }
 
   function animateInitiativeResult(){
@@ -1098,11 +1126,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       startTurningPoint();
     });
     $('#reinforcementEntry')?.addEventListener('change',e=>{state.reinforcementEntry=e.target.value;save();});
-    $('#eventNpoSelect')?.addEventListener('change',e=>{$('#healSelectedEventNpo').disabled=!e.target.value;});
-    $('#healSelectedEventNpo')?.addEventListener('click',()=>resolveStrategyNpoEvent('heal',$('#eventNpoSelect').value));
-    $$('[data-event-heal]').forEach(button=>button.addEventListener('click',()=>resolveStrategyNpoEvent('heal',button.dataset.eventHeal)));
-    $('#addEventNpo')?.addEventListener('click',()=>resolveStrategyNpoEvent('add'));
-    $('#openEventRoster')?.addEventListener('click',()=>{state.tab='roster';save();render();});
+    $('#eventNpoSelect')?.addEventListener('change',e=>{$('#resolveStrategyEvent').disabled=!e.target.value;});
+    $('#resolveStrategyEvent')?.addEventListener('click',resolveStrategyEvent);
+    $('#redrawStrategyEvent')?.addEventListener('click',()=>{redrawCurrentEvent('No breach or open hatchway could be changed.');save();render();});
     $('#continueStrategy')?.addEventListener('click',()=>{state.reinforcementEntry=$('#reinforcementEntry')?.value||state.reinforcementEntry;state.strategyStage='initiative';initiativeRolling=state.strategyData.initiativeMode==='rolled';save();render();if(initiativeRolling)animateInitiativeResult();});
     $('#rerollInitiative')?.addEventListener('click',()=>{rollInitiative();initiativeRolling=true;save();render();animateInitiativeResult();});
     $$('[data-init]').forEach(b=>b.onclick=()=>beginFirefight(b.dataset.init));
@@ -1112,6 +1138,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked;});
     $('#finishTp')?.addEventListener('click',()=>{
       log(`Turning Point ${state.turningPoint} completed.`);
+      state.eventState.active=state.eventState.active.filter(event=>event.expiresAfterTurningPoint!==state.turningPoint);
       state.strategyStage=null;
       state.strategyData=null;
       state.newIds=[];
@@ -1158,6 +1185,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function processReadyStep(){
+    recycleUsedEvents();
     const dormant=state.threat===0;
     activeNpos().forEach(npo=>{npo.dormant=dormant;npo.ready=!dormant;});
     completeStrategyStage('ready','mission-ready-hooks');
@@ -1184,16 +1212,107 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function processEventStage(){
     const d=state.strategyData;
-    if(d.grade===3){d.event=events[roll(events.length)-1];applyStrategyEvent(d.event);}
-    d.eventPending=eventNeedsResolution(d.event);
-    if(d.eventPending)return;
+    d.events=[];
+    d.eventIndex=0;
+    if(state.turningPoint>1&&d.grade===3){
+      const drawCount=d.suggestedInitiative==='npo'||state.threat===15?2:1;
+      for(let i=0;i<drawCount;i++)drawEvent();
+    }
+    d.event=d.events[0]||null;
+    if(d.event){beginCurrentEvent();return;}
     completeStrategyStage('event','reinforcement');
   }
 
-  function eventNeedsResolution(event){
-    if(event?.action?.type!=='add-or-heal-npo')return false;
-    const hasWoundedTarget=activeNpos().some(npo=>npo.type===event.action.operativeType&&npo.wounds<npo.maxWounds);
-    return activeNpos().length<MAX_NPOS||hasWoundedTarget;
+  function eventRecord(card){
+    const definition=eventDefinitions[card.definitionId];
+    return {...card,type:'tomb-world-event',title:definition.title,text:definition.text,execution:{...definition.execution},duration:definition.duration,status:'drawn'};
+  }
+
+  function recycleUsedEvents(){
+    const used=state.eventState.used||[];
+    if(!used.length)return;
+    state.eventState.available=[...new Set([...(state.eventState.available||[]),...used])];
+    state.eventState.used=[];
+  }
+
+  function drawEvent(insertAt=null){
+    if(!state.eventState.available.length)return null;
+    const index=roll(state.eventState.available.length)-1;
+    const instanceId=state.eventState.available.splice(index,1)[0];
+    const card=eventDeck.find(candidate=>candidate.instanceId===instanceId);
+    if(!card)return null;
+    state.eventState.used.push(instanceId);
+    const event=eventRecord(card);
+    if(Number.isInteger(insertAt))state.strategyData.events.splice(insertAt,0,event);
+    else state.strategyData.events.push(event);
+    return event;
+  }
+
+  function currentEvent(){return state.strategyData?.events?.[state.strategyData.eventIndex||0]||null;}
+
+  function beginCurrentEvent(){
+    const d=state.strategyData,event=currentEvent();
+    d.event=event;
+    if(!event){
+      d.eventPending=false;
+      completeStrategyStage('event','reinforcement');
+      processReinforcementStage();
+      return;
+    }
+    const type=event.execution.type;
+    if(type==='living-metal-flux'){
+      const restored=[];
+      activeNpos().filter(npo=>npo.wounds<npo.maxWounds).forEach(npo=>{
+        const amount=rollD3()+2,before=npo.wounds;
+        npo.wounds=Math.min(npo.maxWounds,npo.wounds+amount);
+        restored.push(`${npoName(npo)} ${before}→${npo.wounds}`);
+      });
+      completeCurrentEvent(restored.length?restored.join('; '):'No wounded NPOs.');
+      return;
+    }
+    if(type==='stirrings'){
+      if(state.threat===15){redrawCurrentEvent('Threat was already 15.');return;}
+      setThreat(1,event.title);
+      completeCurrentEvent(`Threat increased to ${state.threat}.`);
+      return;
+    }
+    if(type==='activate'){
+      state.eventState.active.push({...event,startedTurningPoint:state.turningPoint,expiresAfterTurningPoint:state.turningPoint,status:'active'});
+      completeCurrentEvent('Effect active until the end of this Turning Point.');
+      return;
+    }
+    if(type==='chittering-drone'){
+      const wounded=activeNpos().filter(npo=>npo.type==='Canoptek Scarab Swarm'&&npo.wounds<npo.maxWounds);
+      if(wounded.length===1){wounded[0].wounds=wounded[0].maxWounds;completeCurrentEvent(`${npoName(wounded[0])} regained all lost wounds.`);return;}
+      if(wounded.length>1){event.eligibleNpoIds=wounded.map(npo=>npo.id);d.eventPending=true;return;}
+      if(activeNpos().length>=MAX_NPOS){redrawCurrentEvent('No Scarab Swarm could be set up.');return;}
+    }
+    if(type==='maze-reforms'){
+      event.openHatchwayLimit=rollD3();
+      event.text=`Close one breach and up to ${event.openHatchwayLimit} open hatchway${event.openHatchwayLimit===1?'':'s'}. If this cannot be resolved, draw another event card.`;
+    }
+    if(type==='awakened-warrior'&&activeNpos().length>=MAX_NPOS){redrawCurrentEvent('No Necron Warrior could be set up.');return;}
+    d.eventPending=true;
+  }
+
+  function completeCurrentEvent(result){
+    const d=state.strategyData,event=currentEvent();
+    if(!event)return;
+    event.status='resolved';event.result=result;
+    d.eventAction={eventId:event.instanceId,result};
+    d.eventIndex=(d.eventIndex||0)+1;
+    d.eventPending=false;
+    log(`${event.title}: ${result}`);
+    beginCurrentEvent();
+  }
+
+  function redrawCurrentEvent(reason){
+    const event=currentEvent();
+    event.status='redrawn';event.result=reason;
+    drawEvent(state.strategyData.eventIndex+1);
+    state.strategyData.eventIndex++;
+    log(`${event.title}: ${reason} Another event card was drawn.`);
+    beginCurrentEvent();
   }
 
   function processReinforcementStage(){
@@ -1244,34 +1363,26 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     render();
   }
 
-  function applyStrategyEvent(event){
-    if(!event)return;
-    if(event.id==='stirrings-of-horror')setThreat(1,event.title);
-    if(event.id==='living-metal-flux')activeNpos().forEach(n=>{if(n.wounds<n.maxWounds)n.wounds=Math.min(n.maxWounds,n.wounds+rollD3()+2);});
-    if(event.id==='awakened-warrior' && activeNpos().length<MAX_NPOS)state.roster.push(createNpo('Necron Warrior',`Necron Warrior E${state.turningPoint}`));
-  }
-
-  function resolveStrategyNpoEvent(outcome,operativeId){
-    const d=state.strategyData,event=d?.event;
-    if(state.phase!=='strategy'||state.strategyStage!=='summary'||!event?.action||d.eventAction?.result)return;
-    const action=event.action;
-    let result='';
-    if(outcome==='heal'){
-      const n=activeNpos().find(item=>item.id===operativeId&&item.type===action.operativeType&&item.wounds<item.maxWounds);
+  function resolveStrategyEvent(){
+    const event=currentEvent();
+    if(state.phase!=='strategy'||state.strategyStage!=='summary'||!event||!state.strategyData.eventPending)return;
+    let result='Tabletop effect confirmed.';
+    if(event.execution.type==='chittering-drone'&&event.eligibleNpoIds?.length){
+      const operativeId=$('#eventNpoSelect')?.value;
+      const n=activeNpos().find(item=>item.id===operativeId&&event.eligibleNpoIds.includes(item.id)&&item.wounds<item.maxWounds);
       if(!n)return;
       n.wounds=n.maxWounds;
-      result=`${npoName(n)} was restored to ${n.maxWounds} wounds.`;
-    }else if(outcome==='add'){
-      if(action.maxAdds<1||activeNpos().length>=MAX_NPOS)return;
-      const n=createNpo(action.operativeType);
-      state.roster.push(n);
-      result=`${npoName(n)} was added to the NPO roster.`;
-    }else return;
-    d.eventAction={eventId:event.id,outcome,result};
-    d.eventPending=false;
-    if(state.strategyPipeline.current==='event')completeStrategyStage('event','reinforcement');
-    processReinforcementStage();
-    log(`${event.title}: ${result}`);
+      result=`${npoName(n)} regained all lost wounds.`;
+    }else if(event.execution.type==='chittering-drone'||event.execution.type==='awakened-warrior'){
+      const type=event.execution.type==='chittering-drone'?'Canoptek Scarab Swarm':'Necron Warrior';
+      if(activeNpos().length>=MAX_NPOS){redrawCurrentEvent(`${type} could not be set up.`);save();render();return;}
+      const n=createNpo(type,`${type} E${state.turningPoint}`,{order:'Conceal'});
+      n.ready=true;n.dormant=false;
+      state.roster.push(n);state.newIds.push(n.id);
+      result=`${npoName(n)} was set up Ready with a Conceal order; printed placement confirmed.`;
+    }
+    if(event.execution.type==='maze-reforms')result='Breach and hatchway changes completed on the tabletop.';
+    completeCurrentEvent(result);
     save();render();
   }
 
