@@ -696,6 +696,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return {dice,missionRoll,deploymentCount:Math.min(missionRoll,MAX_NPOS),availableNpos:MAX_NPOS,calculation,animationShown:false,navigationComplete:false};
   }
 
+  function restoredStartingNpoGeneration(){
+    const missionRoll=state.roster.length, formula=missionSetup();
+    const d3Total=missionRoll-3;
+    const dice=formula==='2D3+3'?[Math.max(1,d3Total-3),Math.min(3,d3Total-1)]:formula==='D3+6'?[Math.max(1,Math.min(3,missionRoll-6))]:[];
+    const calculation=formula==='2D3+3'?`${dice[0]} + ${dice[1]} + 3 = ${missionRoll}`:formula==='D3+6'?`${dice[0]} + 6 = ${missionRoll}`:'0';
+    return {dice,missionRoll,deploymentCount:Math.min(missionRoll,MAX_NPOS),availableNpos:MAX_NPOS,calculation,animationShown:true,navigationComplete:false};
+  }
+
   function generateRoster(generation){
     const m=mission(),count=generation.deploymentCount,formula=generation.calculation;
     state.roster=[];
@@ -708,6 +716,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function ensureStartingNpoGeneration(){
     if(state.startingNpoGeneration)return false;
+    if(state.roster.length){
+      state.startingNpoGeneration=restoredStartingNpoGeneration();
+      save();
+      return false;
+    }
     state.startingNpoGeneration=startingNpoRoll();
     generateRoster(state.startingNpoGeneration);
     save();
@@ -1064,7 +1077,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function runStartingNpoGeneration(){
-    clearTimeout(startingNpoTimer);
+    if(typeof startingNpoTimer==='function')startingNpoTimer();
+    else clearTimeout(startingNpoTimer);
+    startingNpoTimer=null;
     const event=$('#startingNpoEvent'),generation=state.startingNpoGeneration;
     if(!event||!generation||generation.navigationComplete)return;
     const advance=()=>{
@@ -1076,10 +1091,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       render();
     };
     const showResult=()=>{
-      const dice=$('#startingNpoDice'),result=$('#startingNpoResult');
-      if(!dice||!result)return;
-      dice.innerHTML=generation.dice.map(value=>dieHtml({value,kind:'hit'})).join('');
-      dice.classList.replace('animated-roll','settled');
+      const result=$('#startingNpoResult');
+      if(!result)return;
       result.hidden=false;
       event.onclick=advance;
       event.onkeydown=input=>{if(input.key==='Enter'||input.key===' '){input.preventDefault();advance();}};
@@ -1093,7 +1106,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
     generation.animationShown=true;
     save();
-    startingNpoTimer=setTimeout(showResult,700);
+    startingNpoTimer=settleAnimatedDice([{
+      row:$('#startingNpoDice'),
+      dice:generation.dice.map(value=>({value,kind:'hit'}))
+    }],()=>{
+      startingNpoTimer=null;
+      showResult();
+    });
   }
 
   function renderGame(){

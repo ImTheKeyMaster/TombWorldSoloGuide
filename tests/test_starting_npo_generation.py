@@ -29,9 +29,8 @@ class StartingNpoGenerationTests(unittest.TestCase):
         self.assertIn("animated-roll", presentation)
         self.assertIn("startingNpoResult", presentation)
         flow = self.source("function runStartingNpoGeneration()", "function renderGame()")
-        self.assertIn("dieHtml({value,kind:'hit'})", flow)
-        self.assertIn("classList.replace('animated-roll','settled')", flow)
-        self.assertIn("setTimeout(showResult,700)", flow)
+        self.assertIn("settleAnimatedDice", flow)
+        self.assertIn("dice:generation.dice.map(value=>({value,kind:'hit'}))", flow)
         self.assertIn("setTimeout(advance,1400)", flow)
         self.assertIn("state.setupStep=Math.min", flow)
 
@@ -56,6 +55,15 @@ class StartingNpoGenerationTests(unittest.TestCase):
         self.assertIn("generation.animationShown=true", flow)
         self.assertIn("if(generation.animationShown)", flow)
         self.assertLess(flow.index("generation.navigationComplete=true"), flow.index("state.setupStep=Math.min"))
+
+    def test_legacy_setup_save_uses_existing_roster_without_rerolling(self):
+        restored = self.source("function restoredStartingNpoGeneration()", "function generateRoster")
+        self.assertIn("missionRoll=state.roster.length", restored)
+        self.assertIn("animationShown:true", restored)
+        ensure = self.source("function ensureStartingNpoGeneration()", "function render()")
+        self.assertIn("if(state.roster.length)", ensure)
+        self.assertIn("restoredStartingNpoGeneration()", ensure)
+        self.assertLess(ensure.index("if(state.roster.length)"), ensure.index("startingNpoRoll()"))
 
     def test_generation_tables_and_reinforcements_are_unchanged(self):
         self.assertRegex(self.app, r"function rollNpo\(\)\{")
