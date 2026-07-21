@@ -66,7 +66,7 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         preview = self.source("function previewPendingPlayerAttack", "function displayPendingPlayerCombat")
         roll_ui = self.source("function aggressiveDefenseRollHtml", "function combatAbilityReminder")
         self.assertIn("Math.ceil(roll()/2)", preview)
-        self.assertIn("setTimeout", preview)
+        self.assertIn("settleAnimatedDice", preview)
         self.assertIn("aggressiveDefenseDamage(rolledValue)", preview)
         self.assertNotIn("rollAggressiveDefense", preview + roll_ui)
         self.assertNotIn("Roll D3", roll_ui)

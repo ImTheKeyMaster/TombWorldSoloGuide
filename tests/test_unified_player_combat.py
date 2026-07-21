@@ -36,9 +36,9 @@ class UnifiedPlayerCombatTests(unittest.TestCase):
 
     def test_animated_and_restored_continue_timing(self):
         display = self.source('function displaySharedCombatResult', 'function settleCombatDice')
-        self.assertIn('let visualComplete=!animate', display)
+        self.assertIn('let visualComplete=!animate&&!waiting', display)
         self.assertIn('if(animate)settleCombatDice', display)
-        self.assertIn('button.disabled=false', display)
+        self.assertIn('button.disabled=waiting', display)
         wizard = self.source('function showPendingPlayerAttackWizard', 'function showPlayerCombatResolution')
         self.assertIn('{result:draft,animate:false}', wizard)
 
