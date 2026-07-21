@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '4.8.0';
+  const APP_VERSION = '4.8.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -231,7 +231,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   ];
 
   const missionStateFactories = {
-    escape:()=>({escapedIds:[],failedExitIds:[],auspexCalibrations:{}}),
+    escape:()=>({escapedIds:[],auspexCalibrations:{}}),
     sabotage:()=>({completedFeatureIds:[]}),
     transponder:()=>({sites:{},carrierId:null,escaped:false,lastRoll:null}),
     destruction:()=>({destruction:0}),
@@ -252,7 +252,6 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const normalized={...base,...raw};
     if(engine.type==='escape'){
       normalized.escapedIds=Array.isArray(raw.escapedIds)?raw.escapedIds:[];
-      normalized.failedExitIds=Array.isArray(raw.failedExitIds)?raw.failedExitIds:[];
       normalized.auspexCalibrations=raw.auspexCalibrations&&typeof raw.auspexCalibrations==='object'?{...raw.auspexCalibrations}:{};
     }else if(engine.type==='sabotage'){
       normalized.completedFeatureIds=Array.isArray(raw.completedFeatureIds)?raw.completedFeatureIds:engine.features.slice(0,Math.max(0,Number(legacyTracker)||0)).map(feature=>feature.id);
@@ -474,7 +473,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   const missionOutcomeEvaluators = {
     escape:(engine,progress)=>{
-      const total=state.playerRoster.length, departed=new Set([...progress.escapedIds,...progress.failedExitIds,...state.playerCasualtyIds]);
+      const total=state.playerRoster.length, departed=new Set([...progress.escapedIds,...state.playerCasualtyIds]);
       if(!total||departed.size<total)return null;
       return progress.escapedIds.length>=Math.ceil(total/2)?'victory':'defeat';
     },
@@ -980,8 +979,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   const missionProgressRenderers = {
     escape:(engine,progress)=>{
-      const escaped=new Set(progress.escapedIds), failed=new Set(progress.failedExitIds);
-      const rows=(state.playerRoster||[]).map(id=>`<div class="mission-objective-row"><span><strong>${escapeHtml(playerName(id))}</strong><small>${escaped.has(id)?'Escaped':failed.has(id)?'Left elsewhere / did not escape':'Still in the killzone'}</small></span><div class="mission-objective-actions"><button class="btn compact ${escaped.has(id)?'primary':'ghost'}" data-mission-exit="escaped" data-operative-id="${escapeHtml(id)}">Escaped</button><button class="btn compact ${failed.has(id)?'danger':'ghost'}" data-mission-exit="failed" data-operative-id="${escapeHtml(id)}">Other Exit</button></div></div>`).join('');
+      const escaped=new Set(progress.escapedIds);
+      const rows=(state.playerRoster||[]).map(id=>{const incapacitated=state.playerCasualtyIds.includes(id);return `<div class="mission-objective-row"><span><strong>${escapeHtml(playerName(id))}</strong><small>${escaped.has(id)?'Escaped via the Escape marker':incapacitated?'Incapacitated':'Still in the killzone'}</small></span>${incapacitated?'':`<button class="btn compact ${escaped.has(id)?'primary':'ghost'}" data-mission-escaped="${escapeHtml(id)}">${escaped.has(id)?'Escaped':'Confirm Escape'}</button>`}</div>`;}).join('');
       return `<p>${escaped.size} of ${state.playerRoster.length} operatives escaped. Resolve the mission only after every operative has left the killzone.</p><div class="mission-objective-list">${rows}</div>`;
     },
     sabotage:(engine,progress)=>{
@@ -989,9 +988,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       return `<p>${completed.size} of ${engine.required} required features have been permanently opened by Breach.</p><div class="mission-objective-grid">${engine.features.map(feature=>`<label class="mission-objective-check"><input type="checkbox" data-mission-feature="${feature.id}" ${completed.has(feature.id)?'checked':''}><span>${escapeHtml(feature.label)}</span></label>`).join('')}</div>`;
     },
     transponder:(engine,progress)=>{
-      const sites=engine.sites.map(site=>{const result=progress.sites[site.id];return `<div class="mission-objective-row"><span><strong>${escapeHtml(site.label)}</strong><small>${result==='found'?'Transponder found':result==='empty'?'Removed — no transponder':'Unresolved'}</small></span>${result?'' : `<button class="btn secondary compact" data-search-site="${site.id}">Pick Up & Resolve</button>`}</div>`;}).join('');
+      const transponderFound=Object.values(progress.sites).includes('found');
+      const sites=engine.sites.map(site=>{const result=progress.sites[site.id];return `<div class="mission-objective-row"><span><strong>${escapeHtml(site.label)}</strong><small>${result==='found'?'Transponder found':result==='empty'?'Removed — no transponder':'Unresolved'}</small></span>${result||transponderFound?'' : `<button class="btn secondary compact" data-search-site="${site.id}">Pick Up & Resolve</button>`}</div>`;}).join('');
       const carrier=progress.carrierId?playerName(progress.carrierId):'None';
-      return `<p>Pick up an unresolved marker, then roll D3. The transponder is found only if the result is higher than the number of other unresolved markers.</p>${progress.lastRoll?`<div class="summary-box"><strong>Last search:</strong> rolled ${progress.lastRoll.roll}; ${escapeHtml(progress.lastRoll.result)}.</div>`:''}<div class="field"><label for="transponderOperative">Operative resolving the marker</label><select id="transponderOperative"><option value="">Select operative…</option>${livingPlayerOptions(progress.carrierId)}</select></div><div class="mission-objective-list">${sites}</div><div class="summary-box"><strong>Carrier:</strong> ${escapeHtml(carrier)}</div><button class="btn primary" id="transponderEscape" ${progress.carrierId&&!progress.escaped?'':'disabled'}>Confirm Carrier Escaped</button>`;
+      return `<p>Pick up an unresolved marker, then roll D3. The transponder is found only if the result is higher than the number of other unresolved markers.</p>${progress.lastRoll?`<div class="summary-box"><strong>Last search:</strong> rolled ${progress.lastRoll.roll}; ${escapeHtml(progress.lastRoll.result)}.</div>`:''}${transponderFound?`<div class="field"><label for="transponderCarrier">Current carrier</label><select id="transponderCarrier"><option value="">Marker is not being carried…</option>${livingPlayerOptions(progress.carrierId)}</select></div>`:`<div class="field"><label for="transponderOperative">Operative resolving the marker</label><select id="transponderOperative"><option value="">Select operative…</option>${livingPlayerOptions()}</select></div>`}<div class="mission-objective-list">${sites}</div><div class="summary-box"><strong>Carrier:</strong> ${escapeHtml(carrier)}</div><button class="btn primary" id="transponderEscape" ${progress.carrierId&&!state.playerCasualtyIds.includes(progress.carrierId)&&!progress.escaped?'':'disabled'}>Confirm Carrier Escaped</button>`;
     },
     destruction:(engine,progress)=>`<p>${progress.destruction} of ${engine.required} Destruction points. Each Breach performed within control range of the sarcophagus adds 2D6; the Ready-step repair can reduce this total.</p><button class="btn primary" id="resolveSarcophagusBreach">Resolve Sarcophagus Breach (2D6)</button>`,
     scout:(engine,progress)=>{
@@ -1020,12 +1020,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function bindMissionProgressControls(){
-    $$('[data-mission-exit]').forEach(button=>button.onclick=()=>{
-      const id=button.dataset.operativeId, progress=state.missionState;
-      progress.escapedIds=progress.escapedIds.filter(item=>item!==id);
-      progress.failedExitIds=progress.failedExitIds.filter(item=>item!==id);
-      (button.dataset.missionExit==='escaped'?progress.escapedIds:progress.failedExitIds).push(id);
-      updateMissionProgress(`${playerName(id)} left the killzone${button.dataset.missionExit==='escaped'?' via the Escape marker':''}.`);
+    $$('[data-mission-escaped]').forEach(button=>button.onclick=()=>{
+      const id=button.dataset.missionEscaped, ids=new Set(state.missionState.escapedIds);
+      ids.has(id)?ids.delete(id):ids.add(id);
+      state.missionState.escapedIds=[...ids];
+      updateMissionProgress(`${playerName(id)} ${ids.has(id)?'escaped via the Escape marker':'escape status was corrected'}.`);
     });
     $$('[data-mission-feature]').forEach(input=>input.onchange=()=>{
       const ids=new Set(state.missionState.completedFeatureIds);
@@ -1044,12 +1043,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       progress.lastRoll={siteId:button.dataset.searchSite,roll:result,result:found?'transponder found':'marker removed'};
       updateMissionProgress(`searched ${button.dataset.searchSite}, rolled ${result}, and ${found?'found the transponder':'removed the marker'}.`);
     });
+    $('#transponderCarrier')?.addEventListener('change',event=>{state.missionState.carrierId=event.target.value||null;save();render();});
     $('#transponderEscape')?.addEventListener('click',()=>{state.missionState.escaped=true;updateMissionProgress(`${playerName(state.missionState.carrierId)} escaped carrying the transponder.`);});
     $('#resolveSarcophagusBreach')?.addEventListener('click',()=>{const amount=roll()+roll();state.missionState.destruction+=amount;updateMissionProgress(`Breach added ${amount} Destruction points.`);});
     $$('[data-awaken-room]').forEach(button=>button.onclick=()=>{
       const count=Math.min(5,rollD3()+threatGrade()), ids=[];
       for(let i=0;i<count&&activeNpos().length<MAX_NPOS;i++){
-        const result=rollNpo(), n=createNpo(result.type,`${result.type} ${button.dataset.awakenRoom}`,{weaponId:result.weaponId,ready:true,deployed:false,order:'Conceal'});
+        const result=rollNpo(), n=createNpo(result.type,`${result.type} ${button.dataset.awakenRoom}`,{weaponId:result.weaponId,ready:true,dormant:false,deployed:false,order:'Conceal'});
         n.missionRoom=button.dataset.awakenRoom;state.roster.push(n);ids.push(n.id);
       }
       state.missionState.awakenedRooms[button.dataset.awakenRoom]={count:ids.length,operativeIds:ids,placementConfirmed:false};
@@ -1116,6 +1116,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return d.suggestedInitiative===side?'hit':'miss';
   }
 
+  function missionStrategyPending(){
+    return missionEngine()?.type==='escape'&&state.turningPoint>1&&!state.missionState.escapedIds.length&&!state.missionState.auspexCalibrations[state.turningPoint];
+  }
+
   function missionStrategyPromptHtml(){
     if(missionEngine()?.type!=='escape'||state.turningPoint<=1||state.missionState.escapedIds.length)return '';
     const calibration=state.missionState.auspexCalibrations[state.turningPoint];
@@ -1129,11 +1133,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const reinforcementPending=Boolean(d.eventPending);
       const reinforcementCount=actualReinforcementCount(d);
       const rolls=(d.reinforcements||[]).slice(0,reinforcementCount).map(r=>`<div class="reinforcement-result"><div class="dice-row compact">${r.rolls.map(v=>dieHtml({value:v,kind:'hit'})).join('')}</div><strong>${r.type}</strong></div>`).join('');
-      const placementPending=state.reinforcementState.status==='placement';
+      const placementPending=state.reinforcementState.status==='placement', missionPending=missionStrategyPending();
       const placements=(state.reinforcementState.operativeIds||[]).map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean).map(npo=>`<div class="check-row"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''} ${npo.reinforcement?.hatchway?'':'disabled'}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong><small>Randomly determine an open hatchway, set up this operative with a Conceal order using the printed placement requirements, then confirm.</small><input type="text" data-reinforcement-hatchway="${escapeHtml(npo.id)}" value="${escapeHtml(npo.reinforcement?.hatchway||'')}" placeholder="Random hatchway" aria-label="Random hatchway for ${escapeHtml(npoName(npo))}"></span></div>`).join('');
       const resolvedEvents=(d.events||[]).filter(event=>event!==d.event&&event.status!=='drawn').map(strategyEventHtml).join('');
       const activeEvents=(state.eventState.active||[]).map(event=>`<div class="summary-box"><strong>${escapeHtml(event.title)}</strong><br>${escapeHtml(event.text)}</div>`).join('');
-      return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 1 OF 2</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol><p>When all Strategy Phase actions are complete, continue to initiative.</p></div>${missionStrategyPromptHtml()}<div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat" tabindex="0" data-tooltip="Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events."><small>THREAT LEVEL <span class="info-dot">i</span></small><strong>${state.threat}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Grade 0–3 is derived from Threat and determines reinforcement pressure and some events."><small>GRADE LEVEL <span class="info-dot">i</span></small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="The number of living NPOs that are Ready and may still activate during this Turning Point."><small>NPOs Ready <span class="info-dot">i</span></small><strong>${readyNpos().length}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Additional NPOs generated during this Strategy Phase. Battlefield limits may block some arrivals."><small>Reinforcements <span class="info-dot">i</span></small><strong>${reinforcementPending?'—':reinforcementCount}</strong></div></div>${reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':rolls?`<h3>Reinforcements generated</h3><div class="reinforcement-grid">${rolls}</div><div class="checklist">${placements}</div>`:'<div class="summary-box"><strong>No reinforcements arrive.</strong></div>'}${d.blocked?`<p class="warning-text">${d.blocked} reinforcement(s) cannot be set up because doing so would exceed the 10-NPO limit.</p>`:''}${resolvedEvents}${d.event?.status==='drawn'?strategyEventHtml(d.event):''}${activeEvents?`<h3>Active event effects</h3>${activeEvents}`:''}${!d.events?.length?'<p>No Tomb World event is required.</p>':''}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending||placementPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':placementPending?'Confirm Reinforcement Placement':'Strategy Phase Complete'}</button></section>`;
+      return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 1 OF 2</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol><p>When all Strategy Phase actions are complete, continue to initiative.</p></div>${missionStrategyPromptHtml()}<div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat" tabindex="0" data-tooltip="Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events."><small>THREAT LEVEL <span class="info-dot">i</span></small><strong>${state.threat}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Grade 0–3 is derived from Threat and determines reinforcement pressure and some events."><small>GRADE LEVEL <span class="info-dot">i</span></small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="The number of living NPOs that are Ready and may still activate during this Turning Point."><small>NPOs Ready <span class="info-dot">i</span></small><strong>${readyNpos().length}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Additional NPOs generated during this Strategy Phase. Battlefield limits may block some arrivals."><small>Reinforcements <span class="info-dot">i</span></small><strong>${reinforcementPending?'—':reinforcementCount}</strong></div></div>${reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':rolls?`<h3>Reinforcements generated</h3><div class="reinforcement-grid">${rolls}</div><div class="checklist">${placements}</div>`:'<div class="summary-box"><strong>No reinforcements arrive.</strong></div>'}${d.blocked?`<p class="warning-text">${d.blocked} reinforcement(s) cannot be set up because doing so would exceed the 10-NPO limit.</p>`:''}${resolvedEvents}${d.event?.status==='drawn'?strategyEventHtml(d.event):''}${activeEvents?`<h3>Active event effects</h3>${activeEvents}`:''}${!d.events?.length?'<p>No Tomb World event is required.</p>':''}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending||placementPending||missionPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':placementPending?'Confirm Reinforcement Placement':missionPending?'Resolve Mission Rule to Continue':'Strategy Phase Complete'}</button></section>`;
     }
     const auto=d.initiativeMode==='automatic';
     const autoReason=d.initiativeReason||'the automatic initiative rule applied';
@@ -1386,6 +1390,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function startTurningPoint(){
     state.turningPoint++;
+    if(missionEngine()?.type==='regroup')state.missionState={operativeChecks:{},lastCheckedTurningPoint:state.turningPoint};
     state.tpStartThreat=state.threat;
     state.tpStartGrade=threatGrade();
     state.tpStartDestroyedNpos=destroyedNpoCount();
@@ -2067,7 +2072,7 @@ function showPlayerActivation(stage={}){
     if(stage.shoot)inc++;
     if(stage.melee)inc++;
     if(stage.damage)inc++;
-    if(stage.hatch){
+    if(stage.hatch&&state.missionId!=='scout-sub-crypt'){
       const r=roll();
       if(r>=4)inc++;
     }

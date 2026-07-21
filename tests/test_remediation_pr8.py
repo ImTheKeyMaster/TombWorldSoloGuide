@@ -29,6 +29,10 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertIn("departed.size<total", evaluator)
         self.assertIn("Math.ceil(total/2)", evaluator)
         self.assertNotIn("activeNpos", evaluator)
+        self.assertNotIn("failedExitIds", self.app)
+        self.assertNotIn("Other Exit", self.app)
+        self.assertIn("missionStrategyPending", self.app)
+        self.assertIn("reinforcementPending||placementPending||missionPending", self.app)
 
     def test_mission_two_tracks_individual_permanently_open_features(self):
         engine = self.by_type["sabotage"]["missionEngine"]
@@ -42,6 +46,9 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertIn("progress.carrierId=carrier", handler)
         evaluator = self.source("transponder:(engine,progress)", "destruction:(engine,progress)")
         self.assertIn("progress.escaped?'victory'", evaluator)
+        self.assertIn("const transponderFound=Object.values(progress.sites).includes('found')", self.app)
+        self.assertIn("id=\"transponderCarrier\"", self.app)
+        self.assertIn("!state.playerCasualtyIds.includes(progress.carrierId)", self.app)
 
     def test_mission_four_progresses_by_2d6_and_repairs_during_ready_step(self):
         self.assertIn("const amount=roll()+roll();state.missionState.destruction+=amount", self.app)
@@ -57,6 +64,8 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertIn("Math.min(5,rollD3()+threatGrade())", handler)
         self.assertIn("order:'Conceal'", handler)
         self.assertIn("setThreat(gradeFloor-state.threat,'Scout Room')", handler)
+        self.assertIn("ready:true,dormant:false", handler)
+        self.assertIn("stage.hatch&&state.missionId!=='scout-sub-crypt'", self.app)
 
     def test_mission_six_victory_is_only_evaluated_at_end_of_turning_point(self):
         evaluator = self.source("regroup:(engine,progress,timing)=>{", "  };\n\n  function missionOutcome")
@@ -64,6 +73,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
         for predicate in ("inDropZone", "outsideNpoControl", "nearPlayer"):
             self.assertIn(predicate, evaluator)
         self.assertIn("checkGameEnd('end-turning-point')", self.app)
+        self.assertIn("if(missionEngine()?.type==='regroup')state.missionState={operativeChecks:{},lastCheckedTurningPoint:state.turningPoint}", self.app)
 
     def test_defeat_is_player_elimination_not_npo_elimination(self):
         outcome = self.source("function missionOutcome(timing='immediate')", "function completeMission(outcome)")
@@ -87,7 +97,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertIn("Assets/Images/${victory?'victory':'defeat'}.png", self.app)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = "4.8.0"
+        expected = "4.8.1"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         index = (ROOT / "index.html").read_text()
         self.assertIn(f"styles.css?v={expected}", index)
