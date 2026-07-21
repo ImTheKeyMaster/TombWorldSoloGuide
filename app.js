@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '4.0.1';
+  const APP_VERSION = '4.0.2';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -152,7 +152,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   const initialState = () => ({
     version:APP_VERSION, screen:'home', tab:'play', setupStep:0, missionId:null,
-    setupChecks:[], roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerRosterInitializedForTeamId:'', playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
+    setupChecks:{}, roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerRosterInitializedForTeamId:'', playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
     strategyStage:null, strategyData:null, activationNumber:0,totalActivationsThisTP:0, playerActivated:0, npoActivated:0,
@@ -197,6 +197,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.playerCasualtyIds=Array.isArray(raw?.playerCasualtyIds)?raw.playerCasualtyIds:[];
     merged.playerWounds=raw?.playerWounds&&typeof raw.playerWounds==='object'?{...raw.playerWounds}:{};
     merged.playerRoster=Array.isArray(raw?.playerRoster)?raw.playerRoster:[];
+    merged.setupChecks=raw?.setupChecks&&!Array.isArray(raw.setupChecks)&&typeof raw.setupChecks==='object'?{...raw.setupChecks}:{};
     merged.playerTeamId=raw?.playerTeamId||'';
     if(raw?.strategyData&&typeof raw.strategyData==='object'){
       const legacyEvent=raw.strategyData.event;
@@ -512,9 +513,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(stepId==='mission') return `<h3>Which mission are you playing?</h3><p>You can review the objective before committing.</p><div class="mission-list">${missions.map(m=>`<button class="mission-choice ${state.missionId===m.id?'selected':''}" data-mission="${m.id}"><div class="team-select-card-head"><div><small>${m.number}</small><strong>${m.name}</strong></div>${state.missionId===m.id?'<span>✓</span>':''}</div><span>${m.brief}</span></button>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="setupHome">Back</button><button class="btn primary" id="setupNext" ${state.missionId?'':'disabled'}>Next</button></div>`;
     if(stepId==='killzone'){
       const m=mission();
-      const checks=['Place walls and hatchways as shown','Place mission objective markers','Identify the Player drop zone','Identify NPO deployment areas'];
-      const allChecked=checks.every((_,i)=>state.setupChecks[i]);
-      return `<h3>${m.name} board setup</h3><p><strong>Objective:</strong> ${m.objective}</p>${boardSvg(m.id)}<div class="setup-bulk-row"><button class="btn secondary" id="checkAllSetup" ${allChecked?'disabled':''}>Check All</button></div><div class="checklist">${checks.map((c,i)=>`<label class="check-row"><input type="checkbox" data-check="${i}" ${state.setupChecks[i]?'checked':''}><span><strong>${c}</strong><small>${i===0?'Use the official mission map shown above to place the terrain and markers.':'Confirm this step on the physical board.'}</small></span></label>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${allChecked?'':'disabled'}>Board Ready</button></div>`;
+      const checks=Array.isArray(m.setupChecks)?m.setupChecks:[];
+      const currentIds=new Set(checks.map(check=>check.id));
+      state.setupChecks=Object.fromEntries(Object.entries(state.setupChecks||{}).filter(([id])=>currentIds.has(id)));
+      checks.forEach(check=>{if(typeof state.setupChecks[check.id]!=='boolean')state.setupChecks[check.id]=false;});
+      const allChecked=checks.length>0&&checks.every(check=>state.setupChecks[check.id]);
+      return `<h3>${m.name} board setup</h3><p><strong>Objective:</strong> ${escapeHtml(m.objective)}</p>${boardSvg(m.id)}<div class="setup-bulk-row"><button class="btn secondary" id="checkAllSetup" ${allChecked?'disabled':''}>Check All</button></div><div class="checklist">${checks.map(check=>`<label class="check-row"><input type="checkbox" data-check="${escapeHtml(check.id)}" ${state.setupChecks[check.id]?'checked':''}><span><strong>${escapeHtml(check.label)}</strong><small>Confirm this step on the physical board.</small></span></label>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${allChecked?'':'disabled'}>Board Ready</button></div>`;
     }
     if(stepId==='team'){
       const cards=(playerManifest?.teams||[]).map(team=>`<button type="button" class="team-select-card ${state.playerTeamId===team.id?'selected':''}" data-player-team="${escapeHtml(team.id)}"><div class="team-select-card-head"><div><strong>${escapeHtml(team.name)}</strong><small>${escapeHtml(team.faction||'Kill Team')}</small></div>${state.playerTeamId===team.id?'<span>✓</span>':''}</div><p>${escapeHtml(team.description||'')}</p></button>`).join('');
@@ -578,7 +582,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       requirements.push(selectionCount);
       const valid=requiredLeaderSelected&&gunnerCount<=maxGunners&&trooperCount>=mandatoryTroopers&&(!hasGravis||(gravisCount>=1&&gravisCount<=maxGravis))&&selected.size>=minRoster&&selected.size<=maxRoster;
       const requirementItems=requirements.map(requirement=>`<li>${escapeHtml(requirement)}</li>`).join('');
-      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
+      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><p class="muted">Build a legal kill team using its current official rules. The Guide tracks selected operatives but does not validate every team-building restriction. Cooperative team splitting is not currently supported.</p><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
     }
     if(stepId==='npoRoster'){
       const m=mission();
@@ -600,7 +604,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function bindSetup(stepId){
-    $$('.mission-choice').forEach(b=>b.onclick=()=>{state.missionId=b.dataset.mission;state.setupChecks=[];state.roster=[];save();render();});
+    $$('.mission-choice').forEach(b=>b.onclick=()=>{state.missionId=b.dataset.mission;state.setupChecks={};state.roster=[];save();render();});
     $('#setupHome')?.addEventListener('click',()=>{state.screen='home';save();render();});
     $('#setupBack')?.addEventListener('click',()=>{state.setupStep=Math.max(0,state.setupStep-1);save();render();});
     $('#setupNext')?.addEventListener('click',()=>{const steps=activeSetupSteps();state.setupStep=Math.min(steps.length-1,state.setupStep+1);save();render();});
@@ -615,8 +619,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         save();render();
       }catch(error){console.error(error);showToast(error.message);}
     });
-    $$('[data-check]').forEach(c=>c.onchange=()=>{state.setupChecks[Number(c.dataset.check)]=c.checked;save();render();});
-    $('#checkAllSetup')?.addEventListener('click',()=>{state.setupChecks=[true,true,true,true];save();render();});
+    $$('[data-check]').forEach(c=>c.onchange=()=>{state.setupChecks[c.dataset.check]=c.checked;save();render();});
+    $('#checkAllSetup')?.addEventListener('click',()=>{state.setupChecks=Object.fromEntries((mission().setupChecks||[]).map(check=>[check.id,true]));save();render();});
     $('#generateBtn')?.addEventListener('click',()=>{generateRoster();save();render();});
     $('#npoDeployed')?.addEventListener('change',e=>{state.roster.forEach(n=>n.deployed=e.target.checked);save();render();});
     $$('[data-roster-category-toggle]').forEach(button=>button.addEventListener('click',()=>{

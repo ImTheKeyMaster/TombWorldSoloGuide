@@ -115,5 +115,27 @@
         "3"
       ]
     ]
-  }
+  },
+  "setupChecks": [
+    {
+      "id": "map-and-deployment",
+      "label": "Arrange the killzone as shown on the Mission 3 map and identify the Player A drop zone and Player B territory."
+    },
+    {
+      "id": "objective-markers",
+      "label": "Place one objective marker at each of the three locations shown on the Mission 3 map."
+    },
+    {
+      "id": "starting-npos",
+      "label": "Generate 2D3+3 starting NPOs and set each up wholly within Player B territory, spread evenly across the rooms containing objective markers, with intervening terrain within its control range when viewed from Player A’s drop zone."
+    },
+    {
+      "id": "starting-conceal",
+      "label": "Give every starting NPO a Conceal order."
+    },
+    {
+      "id": "initial-resources",
+      "label": "Start with 2CP total and select up to four equipment options, recording and managing both for tabletop play; the Guide does not track or validate their effects."
+    }
+  ]
 }
