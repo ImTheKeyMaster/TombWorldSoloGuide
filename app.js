@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '4.4.1';
+  const APP_VERSION = '4.5.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -236,7 +236,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
     strategyStage:null, strategyData:null, strategyPipeline:null, missionReadyContext:{sarcophagusControllers:0}, activationNumber:0,totalActivationsThisTP:0, playerActivated:0, npoActivated:0,
-    activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], playerWounds:{}, reinforcementEntry:'Nearest valid entry point',
+    activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], playerWounds:{}, reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blocked:0},
     gradeMilestone:null, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0,
     npoAttackTargetId:null,
     npoAttackSummary:null, eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[]}, gameEnd:null
@@ -279,6 +279,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     });
     merged.journal=Array.isArray(raw?.journal)?raw.journal:[];
     merged.newIds=Array.isArray(raw?.newIds)?raw.newIds:[];
+    const importedReinforcements=raw?.reinforcementState&&typeof raw.reinforcementState==='object'?raw.reinforcementState:{};
+    merged.reinforcementState={
+      turningPoint:Number(importedReinforcements.turningPoint)||0,
+      status:['idle','placement','complete','blocked'].includes(importedReinforcements.status)?importedReinforcements.status:'idle',
+      operativeIds:Array.isArray(importedReinforcements.operativeIds)?importedReinforcements.operativeIds.filter(id=>merged.roster.some(npo=>npo?.id===id)):[],
+      blocked:Math.max(0,Math.round(Number(importedReinforcements.blocked)||0))
+    };
     merged.activationHistory=Array.isArray(raw?.activationHistory)?raw.activationHistory:[];
     merged.playerActivatedIds=Array.isArray(raw?.playerActivatedIds)?raw.playerActivatedIds:[];
     merged.playerCasualtyIds=Array.isArray(raw?.playerCasualtyIds)?raw.playerCasualtyIds:[];
@@ -350,7 +357,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       attack:npo.attack&&typeof npo.attack==='object'?{...npo.attack}:{...definition.compatibilityAttack},
       weaponId,
       order:npo.order||'Conceal',
-      dormant:Boolean(npo.dormant)
+      dormant:Boolean(npo.dormant),
+      reinforcement:npo.reinforcement&&typeof npo.reinforcement==='object'
+        ? {...npo.reinforcement,hatchway:String(npo.reinforcement.hatchway||''),placementConfirmed:Boolean(npo.reinforcement.placementConfirmed)}
+        : null
     };
   }
   function mission(){ return missions.find(m => m.id === state.missionId) || missions[0]; }
@@ -373,7 +383,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       id:uid(),name,type,move:definition.move,apl:definition.apl,save:definition.save,
       maxWounds:definition.wounds,wounds:definition.wounds,baseSize:definition.baseSize,
       behavior:definition.compatibilityBehavior,attack:{...definition.compatibilityAttack},weaponId,order:'Conceal',
-      ready:options.ready??state.threat!==0,dormant:options.dormant??state.threat===0,deployed:options.deployed??true
+      ready:options.ready??state.threat!==0,dormant:options.dormant??state.threat===0,deployed:options.deployed??true,
+      reinforcement:options.reinforcement||null
     };
   }
   function rollNpo(){
@@ -906,9 +917,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const reinforcementPending=Boolean(d.eventPending);
       const reinforcementCount=actualReinforcementCount(d);
       const rolls=(d.reinforcements||[]).slice(0,reinforcementCount).map(r=>`<div class="reinforcement-result"><div class="dice-row compact">${r.rolls.map(v=>dieHtml({value:v,kind:'hit'})).join('')}</div><strong>${r.type}</strong></div>`).join('');
+      const placementPending=state.reinforcementState.status==='placement';
+      const placements=(state.reinforcementState.operativeIds||[]).map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean).map(npo=>`<div class="check-row"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''} ${npo.reinforcement?.hatchway?'':'disabled'}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong><small>Randomly determine an open hatchway, set up this operative with a Conceal order using the printed placement requirements, then confirm.</small><input type="text" data-reinforcement-hatchway="${escapeHtml(npo.id)}" value="${escapeHtml(npo.reinforcement?.hatchway||'')}" placeholder="Random hatchway" aria-label="Random hatchway for ${escapeHtml(npoName(npo))}"></span></div>`).join('');
       const resolvedEvents=(d.events||[]).filter(event=>event!==d.event&&event.status!=='drawn').map(strategyEventHtml).join('');
       const activeEvents=(state.eventState.active||[]).map(event=>`<div class="summary-box"><strong>${escapeHtml(event.title)}</strong><br>${escapeHtml(event.text)}</div>`).join('');
-      return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 1 OF 2</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol><p>When all Strategy Phase actions are complete, continue to initiative.</p></div><div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat" tabindex="0" data-tooltip="Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events."><small>THREAT LEVEL <span class="info-dot">i</span></small><strong>${state.threat}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Grade 0–3 is derived from Threat and determines reinforcement pressure and some events."><small>GRADE LEVEL <span class="info-dot">i</span></small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="The number of living NPOs that are Ready and may still activate during this Turning Point."><small>NPOs Ready <span class="info-dot">i</span></small><strong>${readyNpos().length}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Additional NPOs generated during this Strategy Phase. Battlefield limits may block some arrivals."><small>Reinforcements <span class="info-dot">i</span></small><strong>${reinforcementPending?'—':reinforcementCount}</strong></div></div>${reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':rolls?`<h3>Reinforcements generated</h3><div class="reinforcement-grid">${rolls}</div><div class="field"><label>Reinforcement entry point</label><select id="reinforcementEntry"><option ${state.reinforcementEntry==='Nearest valid entry point'?'selected':''}>Nearest valid entry point</option><option ${state.reinforcementEntry==='Entry Point A'?'selected':''}>Entry Point A</option><option ${state.reinforcementEntry==='Entry Point B'?'selected':''}>Entry Point B</option><option ${state.reinforcementEntry==='Entry Point C'?'selected':''}>Entry Point C</option><option ${state.reinforcementEntry==='Custom placement'?'selected':''}>Custom placement</option></select></div>`:'<div class="summary-box"><strong>No reinforcements arrive.</strong></div>'}${d.blocked?`<p class="warning-text">${d.blocked} reinforcement(s) were blocked by the 10-NPO battlefield limit.</p>`:''}${resolvedEvents}${d.event?.status==='drawn'?strategyEventHtml(d.event):''}${activeEvents?`<h3>Active event effects</h3>${activeEvents}`:''}${!d.events?.length?'<p>No Tomb World event is required.</p>':''}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':'Strategy Phase Complete'}</button></section>`;
+      return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 1 OF 2</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol><p>When all Strategy Phase actions are complete, continue to initiative.</p></div><div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat" tabindex="0" data-tooltip="Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events."><small>THREAT LEVEL <span class="info-dot">i</span></small><strong>${state.threat}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Grade 0–3 is derived from Threat and determines reinforcement pressure and some events."><small>GRADE LEVEL <span class="info-dot">i</span></small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="The number of living NPOs that are Ready and may still activate during this Turning Point."><small>NPOs Ready <span class="info-dot">i</span></small><strong>${readyNpos().length}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Additional NPOs generated during this Strategy Phase. Battlefield limits may block some arrivals."><small>Reinforcements <span class="info-dot">i</span></small><strong>${reinforcementPending?'—':reinforcementCount}</strong></div></div>${reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':rolls?`<h3>Reinforcements generated</h3><div class="reinforcement-grid">${rolls}</div><div class="checklist">${placements}</div>`:'<div class="summary-box"><strong>No reinforcements arrive.</strong></div>'}${d.blocked?`<p class="warning-text">${d.blocked} reinforcement(s) cannot be set up because doing so would exceed the 10-NPO limit.</p>`:''}${resolvedEvents}${d.event?.status==='drawn'?strategyEventHtml(d.event):''}${activeEvents?`<h3>Active event effects</h3>${activeEvents}`:''}${!d.events?.length?'<p>No Tomb World event is required.</p>':''}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending||placementPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':placementPending?'Confirm Reinforcement Placement':'Strategy Phase Complete'}</button></section>`;
     }
     const auto=d.initiativeMode==='automatic';
     const autoReason=d.initiativeReason||'the automatic initiative rule applied';
@@ -1125,11 +1138,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       if(controllers)state.missionReadyContext.sarcophagusControllers=normalizeSarcophagusControllers(controllers.value);
       startTurningPoint();
     });
-    $('#reinforcementEntry')?.addEventListener('change',e=>{state.reinforcementEntry=e.target.value;save();});
+    $$('[data-reinforcement-placement]').forEach(input=>input.addEventListener('change',()=>confirmReinforcementPlacement(input.dataset.reinforcementPlacement,input.checked)));
+    $$('[data-reinforcement-hatchway]').forEach(input=>input.addEventListener('change',()=>recordReinforcementHatchway(input.dataset.reinforcementHatchway,input.value)));
     $('#eventNpoSelect')?.addEventListener('change',e=>{$('#resolveStrategyEvent').disabled=!e.target.value;});
     $('#resolveStrategyEvent')?.addEventListener('click',resolveStrategyEvent);
     $('#redrawStrategyEvent')?.addEventListener('click',()=>{redrawCurrentEvent('No breach or open hatchway could be changed.');save();render();});
-    $('#continueStrategy')?.addEventListener('click',()=>{state.reinforcementEntry=$('#reinforcementEntry')?.value||state.reinforcementEntry;state.strategyStage='initiative';initiativeRolling=state.strategyData.initiativeMode==='rolled';save();render();if(initiativeRolling)animateInitiativeResult();});
+    $('#continueStrategy')?.addEventListener('click',()=>{state.strategyStage='initiative';initiativeRolling=state.strategyData.initiativeMode==='rolled';save();render();if(initiativeRolling)animateInitiativeResult();});
     $('#rerollInitiative')?.addEventListener('click',()=>{rollInitiative();initiativeRolling=true;save();render();animateInitiativeResult();});
     $$('[data-init]').forEach(b=>b.onclick=()=>beginFirefight(b.dataset.init));
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
@@ -1319,20 +1333,52 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(state.strategyPipeline.completed.includes('reinforcement'))return;
     const d=state.strategyData,reinforcements=[];
     let blocked=0;
-    if(state.turningPoint>1&&d.grade>0){
+    state.reinforcementState={turningPoint:state.turningPoint,status:'idle',operativeIds:[],blocked:0};
+    d.grade=threatGrade();
+    if(reinforcementTriggered(d)){
       const requested=d.grade,slots=Math.max(0,MAX_NPOS-activeNpos().length),actual=Math.min(requested,slots);
       blocked=requested-actual;
       for(let i=0;i<actual;i++){
         const rr=randomReinforcement(),type=rr.type;
-        const n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId});
+        const n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId,deployed:false,reinforcement:{turningPoint:state.turningPoint,hatchway:'',placementConfirmed:false}});
         state.roster.push(n);state.newIds.push(n.id);reinforcements.push(rr);
+        state.reinforcementState.operativeIds.push(n.id);
       }
     }
     d.reinforcements=reinforcements;
     d.actualReinforcements=reinforcements.length;
     d.blocked=blocked;
+    state.reinforcementState.blocked=blocked;
+    state.reinforcementState.status=reinforcements.length?'placement':blocked?'blocked':'complete';
     completeStrategyStage('reinforcement','complete');
     state.strategyPipeline.current='complete';
+  }
+
+  function reinforcementTriggered(data=state.strategyData||{}){
+    return state.strategyPipeline?.current==='reinforcement'&&state.turningPoint>1&&Number(data.grade)>0;
+  }
+
+  function confirmReinforcementPlacement(id,confirmed){
+    const npo=state.roster.find(item=>item.id===id&&state.reinforcementState.operativeIds.includes(item.id));
+    if(!npo?.reinforcement)return;
+    const placementConfirmed=Boolean(confirmed&&npo.reinforcement.hatchway);
+    npo.reinforcement.placementConfirmed=placementConfirmed;
+    npo.deployed=placementConfirmed;
+    const complete=state.reinforcementState.operativeIds.every(operativeId=>state.roster.find(item=>item.id===operativeId)?.reinforcement?.placementConfirmed);
+    state.reinforcementState.status=complete?'complete':'placement';
+    save();render();
+  }
+
+  function recordReinforcementHatchway(id,hatchway){
+    const npo=state.roster.find(item=>item.id===id&&state.reinforcementState.operativeIds.includes(item.id));
+    if(!npo?.reinforcement)return;
+    const recordedHatchway=hatchway.trim();
+    if(recordedHatchway===npo.reinforcement.hatchway)return;
+    npo.reinforcement.hatchway=recordedHatchway;
+    npo.reinforcement.placementConfirmed=false;
+    npo.deployed=false;
+    state.reinforcementState.status='placement';
+    save();render();
   }
 
   function rollInitiative(){
