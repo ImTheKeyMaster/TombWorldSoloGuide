@@ -55,7 +55,7 @@ class UiUxPhase1Tests(unittest.TestCase):
             self.assertIsNone(re.search(r"\bPlayer [AB]\b", content), path)
 
     def test_release_versions_and_description_are_synchronized(self):
-        version = "5.3.2"
+        version = "5.4.1"
         self.assertIn(f"const APP_VERSION = '{version}'", self.app)
         self.assertIn(f"V{version}", (ROOT / "index.html").read_text())
         self.assertIn(f"const APP_VERSION = '{version}'", (ROOT / "service-worker.js").read_text())

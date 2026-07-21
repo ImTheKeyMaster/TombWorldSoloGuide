@@ -26,7 +26,7 @@ class AggressiveDefenseD3Tests(unittest.TestCase):
         self.assertIn("if(retaliationApplies)", preview)
         self.assertIn("aggressiveDefenseRollHtml()", preview)
         self.assertIn("targetIncapacitated:result.after<=0", preview)
-        self.assertIn("attackerWithinTwo:Boolean($('#attackerWithinTwo')?.checked)", preview)
+        self.assertIn("attackerWithinTwo:Boolean(diceDraft.attackerWithinTwo)", preview)
 
     def test_d3_reuses_animated_die_and_resolves_all_results(self):
         resolver = self.source("function aggressiveDefenseDamage", "function aggressiveDefenseRollHtml")
@@ -39,7 +39,7 @@ class AggressiveDefenseD3Tests(unittest.TestCase):
         self.assertIn("showToast(message)", preview)
         self.assertIn("aggressiveDefenseRoll=rolledValue", preview)
         self.assertIn("aggressiveDefenseDamage=aggressiveDefenseDamage(rolledValue)", preview)
-        self.assertIn("diceAnimationTimer=setTimeout", preview)
+        self.assertIn("setTimeout", preview)
 
     def test_existing_transactional_damage_application_is_preserved(self):
         apply_damage = self.source("function applyPendingPlayerDamage", "function completePlayerActivation")

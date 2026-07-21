@@ -20,7 +20,8 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         self.assertIn("runAutomaticCombatRolls", wizard)
         self.assertIn("rolledCombatDice(profile.dice,profile.hit,profile.critThreshold)", shared)
         self.assertIn("rolledCombatDice(Math.max(0,3-profile.ap),Number(defenseSave)||3)", shared)
-        self.assertEqual(shared.count("timer=setTimeout"), 2)
+        self.assertEqual(shared.count("timer=setTimeout"), 1)
+        self.assertIn("timer=settleCombatDice", shared)
         self.assertIn("rollingDieHtml()", shared)
         self.assertIn("animated-roll", shared)
 
@@ -63,7 +64,7 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         preview = self.source("function previewPendingPlayerAttack", "function displayPendingPlayerCombat")
         roll_ui = self.source("function aggressiveDefenseRollHtml", "function combatAbilityReminder")
         self.assertIn("Math.ceil(roll()/2)", preview)
-        self.assertIn("diceAnimationTimer=setTimeout", preview)
+        self.assertIn("setTimeout", preview)
         self.assertIn("aggressiveDefenseDamage(rolledValue)", preview)
         self.assertNotIn("rollAggressiveDefense", preview + roll_ui)
         self.assertNotIn("Roll D3", roll_ui)

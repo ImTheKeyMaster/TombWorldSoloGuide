@@ -14,14 +14,11 @@ class RemediationPr7CombatTests(unittest.TestCase):
     def source(self, name, next_name):
         return self.app.split(f'function {name}(', 1)[1].split(f'function {next_name}(', 1)[0]
 
-    def test_shooting_and_fight_sequences_remain_distinct_and_player_directed(self):
-        sequence = self.source('attackSequenceSteps', 'combatRulesHtml')
-        self.assertIn("attackType==='shoot'", sequence)
-        self.assertIn("Roll the defender’s defense dice", sequence)
-        self.assertIn("choose which successes to retain", sequence)
-        self.assertIn("Core Fight sequence", sequence)
-        self.assertNotIn('resolveDefense', self.app)
-        self.assertNotIn('function rollAttack(', self.app)
+    def test_obsolete_sequence_panels_are_removed(self):
+        self.assertNotIn('SHOOTING SEQUENCE', self.app)
+        self.assertNotIn('FIGHT SEQUENCE', self.app)
+        self.assertNotIn('attackSequenceSteps', self.app)
+        self.assertIn('function weaponRulesHtml', self.app)
 
     def test_canonical_npo_profiles_are_consumed_for_each_action(self):
         profiles = self.source('npoAttackProfiles', 'canonicalAttackProfile')
@@ -43,18 +40,13 @@ class RemediationPr7CombatTests(unittest.TestCase):
             self.assertIn(rule, self.app)
 
     def test_player_shooting_uses_shared_automatic_combat(self):
-        wizard = self.source('showPendingPlayerAttackWizard', 'previewPendingPlayerAttack')
-        shared = self.source('runAutomaticCombatRolls', 'retainedDiceTotals')
+        resolution = self.source('showPlayerCombatResolution', 'previewPendingPlayerAttack')
         preview = self.source('previewPendingPlayerAttack', 'displayPendingPlayerCombat')
-        self.assertIn('<div id="automaticPlayerCombat"', wizard)
-        self.assertIn('runAutomaticCombatRolls', wizard)
-        self.assertIn('previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft)', wizard)
-        self.assertIn('retainSuccessfulDice', shared)
+        self.assertIn('runAutomaticCombatRolls', resolution)
+        self.assertIn('dedicated-combat-screen', resolution)
+        self.assertIn('previewPendingPlayerAttack(stage,attackType', resolution)
         self.assertIn('resolution.damage', preview)
-        self.assertIn('result.attackDice=result.rolledAttackDice', preview)
-        self.assertNotIn('Record Combat Outcome', wizard)
-        self.assertNotIn("spinnerField('retainedNormal'", wizard)
-        self.assertNotIn("spinnerField('retainedCritical'", wizard)
+        self.assertNotIn('Record Combat Outcome', self.app)
 
     def test_pack_defined_combat_abilities_have_follow_up_handlers(self):
         handlers = self.app.split('const combatAbilityHandlers = {', 1)[1].split('\n  };', 1)[0]
@@ -93,7 +85,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertNotIn('postGame', self.app)
 
     def test_versions_are_synchronized(self):
-        expected = '5.3.2'
+        expected = '5.4.1'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"styles.css?v={expected}", (ROOT / 'index.html').read_text())
         self.assertIn(f"app.js?v={expected}", (ROOT / 'index.html').read_text())
