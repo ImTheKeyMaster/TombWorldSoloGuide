@@ -1095,3 +1095,15 @@ button.tracker-operative:hover{
 
 /* v4.0.0 shared combat resolution */
 .combat-participants strong{overflow-wrap:anywhere}
+
+/* v4.8.0 mission-specific objective progress */
+.mission-objective-card{overflow:hidden}
+.mission-objective-list{display:grid;gap:9px;margin:14px 0}
+.mission-objective-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;padding:11px;border:1px solid var(--line);border-radius:12px;background:#07140f}
+.mission-objective-row>span{min-width:0}.mission-objective-row strong,.mission-objective-row small{display:block;overflow-wrap:anywhere}.mission-objective-row small{margin-top:3px;color:var(--muted)}
+.mission-objective-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px}
+.mission-objective-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin:14px 0}
+.mission-objective-check{display:flex;align-items:center;gap:9px;min-height:48px;padding:10px;border:1px solid var(--line);border-radius:11px;background:#07140f}
+.mission-regroup-row{display:grid;gap:8px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#07140f}.mission-regroup-row label{display:flex;align-items:flex-start;gap:8px;line-height:1.35}
+.mission-outcome .mission-objective-card{width:100%;text-align:left}.mission-outcome .game-end-image{max-width:min(100%,360px)}
+@media(max-width:520px){.mission-objective-row{align-items:flex-start;flex-direction:column}.mission-objective-actions{width:100%;justify-content:stretch}.mission-objective-actions .btn{flex:1;min-height:44px}.mission-objective-grid{grid-template-columns:1fr}.mission-outcome{padding-inline:16px}}

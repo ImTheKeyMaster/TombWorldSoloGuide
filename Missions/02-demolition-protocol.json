@@ -156,5 +156,59 @@
       "label": "Start with 2CP total and select up to four equipment options, recording and managing both for tabletop play; the Guide does not track or validate their effects.",
       "stage": "deploy"
     }
-  ]
+  ],
+  "missionEngine": {
+    "type": "sabotage",
+    "timing": "immediate",
+    "required": 7,
+    "features": [
+      {
+        "id": "breach-1",
+        "label": "Breach point 1"
+      },
+      {
+        "id": "breach-2",
+        "label": "Breach point 2"
+      },
+      {
+        "id": "hatchway-1",
+        "label": "Hatchway 1"
+      },
+      {
+        "id": "hatchway-2",
+        "label": "Hatchway 2"
+      },
+      {
+        "id": "hatchway-3",
+        "label": "Hatchway 3"
+      },
+      {
+        "id": "hatchway-4",
+        "label": "Hatchway 4"
+      },
+      {
+        "id": "hatchway-5",
+        "label": "Hatchway 5"
+      },
+      {
+        "id": "hatchway-6",
+        "label": "Hatchway 6"
+      },
+      {
+        "id": "hatchway-7",
+        "label": "Hatchway 7"
+      },
+      {
+        "id": "hatchway-8",
+        "label": "Hatchway 8"
+      },
+      {
+        "id": "hatchway-9",
+        "label": "Hatchway 9"
+      }
+    ],
+    "progressLabel": "Sabotaged open features",
+    "success": "At least seven breach points or hatchways are open after Breach was performed on each of them.",
+    "failure": "Every player operative was incapacitated."
+  }
 }

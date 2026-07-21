@@ -45,7 +45,7 @@ class RemediationPr6Tests(unittest.TestCase):
         card = self.function_source("strategyCard", "actualReinforcementCount")
         self.assertIn("Randomly determine an open hatchway", card)
         self.assertIn("printed placement requirements", card)
-        self.assertIn("placementPending?'disabled'", card)
+        self.assertIn("placementPending||missionPending?'disabled'", card)
         placement = self.function_source("confirmReinforcementPlacement", "recordReinforcementHatchway")
         self.assertIn("Boolean(confirmed&&npo.reinforcement.hatchway)", placement)
         self.assertIn("npo.deployed=placementConfirmed", placement)

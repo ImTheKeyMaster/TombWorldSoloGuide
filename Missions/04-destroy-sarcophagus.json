@@ -135,5 +135,13 @@
       "label": "Start with 2CP total and select up to four equipment options, recording and managing both for tabletop play; the Guide does not track or validate their effects.",
       "stage": "deploy"
     }
-  ]
+  ],
+  "missionEngine": {
+    "type": "destruction",
+    "timing": "immediate",
+    "required": 20,
+    "progressLabel": "Sarcophagus Destruction",
+    "success": "The sarcophagus reached 20 Destruction points.",
+    "failure": "Every player operative was incapacitated."
+  }
 }

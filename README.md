@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v4.7.1
+# Tomb World Solo Guide v4.8.1
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -1154,3 +1154,18 @@ v3.0.7: Kasrkin roster choices updated.
 - Automatically derives retained successes from selected dice, applies defense cancellations, and recalculates weapon damage while preserving manual damage adjustment.
 - Preserved weapon profile rules, selectable dice, pending combat transactions, and the existing mobile-first resolver flow.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v4.7.1.
+
+
+## v4.8.0
+
+- Replaced the generic mission tracker with persisted, mission-specific objective state and guided tabletop prompts for all six Tomb World missions.
+- Implemented each mission’s official progression timing and binary victory or defeat conditions, including end-of-Turning-Point evaluation for Regroup.
+- Preserved completed mission state and the existing Victory/Defeat artwork so outcomes can be reviewed without an automatic reset.
+- Added legacy tracker migration and synchronized visible, internal, cache-busting, and service-worker cache versions to v4.8.0.
+
+
+## v4.8.1
+
+- Corrected mission progression boundaries for Escape, Transponder carriage, Scout Sub-Crypt awakening, and Regroup end-of-Turning-Point checks.
+- Required Auspex Calibration before Strategy progression when applicable and suppressed Mission 5 Operate Hatch Threat increases.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v4.8.1.

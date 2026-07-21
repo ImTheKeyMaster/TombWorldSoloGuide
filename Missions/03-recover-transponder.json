@@ -142,5 +142,26 @@
       "label": "Start with 2CP total and select up to four equipment options, recording and managing both for tabletop play; the Guide does not track or validate their effects.",
       "stage": "deploy"
     }
-  ]
+  ],
+  "missionEngine": {
+    "type": "transponder",
+    "timing": "immediate",
+    "sites": [
+      {
+        "id": "site-1",
+        "label": "Objective marker 1"
+      },
+      {
+        "id": "site-2",
+        "label": "Objective marker 2"
+      },
+      {
+        "id": "site-3",
+        "label": "Objective marker 3"
+      }
+    ],
+    "progressLabel": "Transponder search",
+    "success": "A player operative escaped over Player A’s killzone edge while carrying the transponder.",
+    "failure": "Every player operative was incapacitated."
+  }
 }

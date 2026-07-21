@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '4.7.1';
+  const APP_VERSION = '4.8.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -230,6 +230,48 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     {instanceId:'awakened-warrior-2',definitionId:'awakened-warrior'}
   ];
 
+  const missionStateFactories = {
+    escape:()=>({escapedIds:[],auspexCalibrations:{}}),
+    sabotage:()=>({completedFeatureIds:[]}),
+    transponder:()=>({sites:{},carrierId:null,escaped:false,lastRoll:null}),
+    destruction:()=>({destruction:0}),
+    scout:()=>({awakenedRooms:{},scoutedRoomIds:[]}),
+    regroup:()=>({operativeChecks:{},lastCheckedTurningPoint:0})
+  };
+
+  function missionDefinition(missionId=state?.missionId){return missions.find(item=>item.id===missionId)||null;}
+  function missionEngine(m=mission()){return m?.missionEngine||null;}
+  function freshMissionState(m=mission()){
+    const factory=missionStateFactories[missionEngine(m)?.type];
+    return factory?factory():{};
+  }
+  function normalizeMissionState(rawMissionState,m,legacyTracker=0){
+    const engine=missionEngine(m), base=freshMissionState(m);
+    if(!engine)return base;
+    const raw=rawMissionState&&typeof rawMissionState==='object'?rawMissionState:{};
+    const normalized={...base,...raw};
+    if(engine.type==='escape'){
+      normalized.escapedIds=Array.isArray(raw.escapedIds)?raw.escapedIds:[];
+      normalized.auspexCalibrations=raw.auspexCalibrations&&typeof raw.auspexCalibrations==='object'?{...raw.auspexCalibrations}:{};
+    }else if(engine.type==='sabotage'){
+      normalized.completedFeatureIds=Array.isArray(raw.completedFeatureIds)?raw.completedFeatureIds:engine.features.slice(0,Math.max(0,Number(legacyTracker)||0)).map(feature=>feature.id);
+    }else if(engine.type==='transponder'){
+      normalized.sites=raw.sites&&typeof raw.sites==='object'?{...raw.sites}:{};
+      normalized.carrierId=raw.carrierId||null;
+      normalized.escaped=Boolean(raw.escaped);
+      normalized.lastRoll=raw.lastRoll&&typeof raw.lastRoll==='object'?{...raw.lastRoll}:null;
+    }else if(engine.type==='destruction'){
+      normalized.destruction=Math.max(0,Number.isFinite(Number(raw.destruction))?Number(raw.destruction):Number(legacyTracker)||0);
+    }else if(engine.type==='scout'){
+      normalized.awakenedRooms=raw.awakenedRooms&&typeof raw.awakenedRooms==='object'?{...raw.awakenedRooms}:{};
+      normalized.scoutedRoomIds=Array.isArray(raw.scoutedRoomIds)?raw.scoutedRoomIds:engine.rooms.slice(0,Math.max(0,Number(legacyTracker)||0)).map(room=>room.id);
+    }else if(engine.type==='regroup'){
+      normalized.operativeChecks=raw.operativeChecks&&typeof raw.operativeChecks==='object'?{...raw.operativeChecks}:{};
+      normalized.lastCheckedTurningPoint=Math.max(0,Number(raw.lastCheckedTurningPoint)||0);
+    }
+    return normalized;
+  }
+
   const initialState = () => ({
     version:APP_VERSION, screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:{}, roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerRosterInitializedForTeamId:'', playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
@@ -239,7 +281,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], playerWounds:{}, reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blocked:0},
     gradeMilestone:null, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0,
     npoAttackTargetId:null,
-    npoAttackSummary:null, combatState:null, eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[]}, gameEnd:null
+    npoAttackSummary:null, combatState:null, missionState:null, eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[]}, gameEnd:null
   });
 
   let state = normalizeState(load() || initialState());
@@ -330,6 +372,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       ? {...raw.strategyPipeline,completed:Array.isArray(raw.strategyPipeline.completed)?raw.strategyPipeline.completed:[]}
       : null;
     merged.gameEnd=['victory','defeat'].includes(raw?.gameEnd)?raw.gameEnd:null;
+    const savedMission=missionDefinition(merged.missionId);
+    merged.missionState=normalizeMissionState(raw?.missionState,savedMission,raw?.tracker);
+    merged.completed=Boolean(merged.gameEnd);
     merged.playerCount=merged.playerRoster.length;
     return merged;
   }
@@ -426,15 +471,51 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return Math.max(0,Math.min(limit,Math.round(Number(value)||0)));
   }
 
-  function checkGameEnd(){
-    const victory=state.roster.length>0&&activeNpos().length===0;
+  const missionOutcomeEvaluators = {
+    escape:(engine,progress)=>{
+      const total=state.playerRoster.length, departed=new Set([...progress.escapedIds,...state.playerCasualtyIds]);
+      if(!total||departed.size<total)return null;
+      return progress.escapedIds.length>=Math.ceil(total/2)?'victory':'defeat';
+    },
+    sabotage:(engine,progress)=>progress.completedFeatureIds.length>=engine.required?'victory':null,
+    transponder:(engine,progress)=>progress.escaped?'victory':null,
+    destruction:(engine,progress)=>progress.destruction>=engine.required?'victory':null,
+    scout:(engine,progress)=>progress.scoutedRoomIds.length>=engine.required?'victory':null,
+    regroup:(engine,progress,timing)=>{
+      if(timing!=='end-turning-point')return null;
+      const survivors=(state.playerRoster||[]).filter(id=>!state.playerCasualtyIds.includes(id));
+      if(!survivors.length)return null;
+      return survivors.every(id=>{
+        const check=progress.operativeChecks[id]||{};
+        return check.inDropZone&&check.outsideNpoControl&&check.nearPlayer;
+      })?'victory':null;
+    }
+  };
+
+  function missionOutcome(timing='immediate'){
+    const engine=missionEngine(), progress=state.missionState||freshMissionState();
     const defeat=(state.playerRoster||[]).length>0&&livingPlayerOperativeCount()===0;
-    if(!victory&&!defeat)return false;
-    state.gameEnd=victory?'victory':'defeat';
+    if(defeat&&engine?.type!=='escape')return 'defeat';
+    const evaluator=missionOutcomeEvaluators[engine?.type];
+    return evaluator?evaluator(engine,progress,timing):null;
+  }
+
+  function completeMission(outcome){
+    if(!['victory','defeat'].includes(outcome)||state.gameEnd)return false;
+    state.gameEnd=outcome;
+    state.completed=true;
+    state.phase='end';
+    const engine=missionEngine();
+    log(`${mission().name}: ${outcome}. ${outcome==='victory'?engine?.success:engine?.failure}`);
     closeModal();
     save();
     render();
     return true;
+  }
+
+  function checkGameEnd(timing='immediate'){
+    const outcome=missionOutcome(timing);
+    return outcome?completeMission(outcome):false;
   }
 
   function totalLivingOperatives(){
@@ -819,7 +900,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function bindSetup(stepId){
-    $$('.mission-choice').forEach(b=>b.onclick=()=>{state.missionId=b.dataset.mission;state.setupChecks={};state.roster=[];save();render();});
+    $$('.mission-choice').forEach(b=>b.onclick=()=>{state.missionId=b.dataset.mission;state.missionState=freshMissionState(mission());state.tracker=0;state.setupChecks={};state.roster=[];save();render();});
     $('#setupHome')?.addEventListener('click',()=>{state.screen='home';save();render();});
     $('#setupBack')?.addEventListener('click',()=>{state.setupStep=Math.max(0,state.setupStep-1);save();render();});
     $('#setupNext')?.addEventListener('click',()=>{const steps=activeSetupSteps();state.setupStep=Math.min(steps.length-1,state.setupStep+1);save();render();});
@@ -872,12 +953,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function renderGame(){
     if(state.gameEnd){
       const victory=state.gameEnd==='victory';
-      app.innerHTML=`<section class="hero-card"><p class="eyebrow">GAME OVER</p><img class="game-end-image" src="Assets/Images/${victory?'victory':'defeat'}.png" alt="${victory?'Victory':'Defeat'}"><p>${victory?'All NPO operatives have been eliminated.':'Your kill team has been eliminated.'}</p><div class="button-row"><button class="btn primary" id="gameEndNewGame">Start New Game</button></div></section>`;
+      app.innerHTML=`<section class="hero-card mission-outcome"><p class="eyebrow">MISSION COMPLETE</p><img class="game-end-image" src="Assets/Images/${victory?'victory':'defeat'}.png" alt="${victory?'Victory':'Defeat'}"><h2>${victory?'Victory':'Defeat'}</h2><p>${escapeHtml(victory?missionEngine()?.success:missionEngine()?.failure)}</p>${missionProgressHtml(true)}<div class="button-row"><button class="btn secondary" id="reviewCompletedMission">Review Mission</button><button class="btn primary" id="gameEndNewGame">Start New Game</button></div></section>`;
+      $('#reviewCompletedMission').onclick=()=>showModal(`${mission().number} · ${mission().name}`,`<p><strong>Objective:</strong> ${escapeHtml(mission().objective)}</p><p><strong>Outcome:</strong> ${escapeHtml(victory?missionEngine()?.success:missionEngine()?.failure)}</p><div class="wizard-actions"><button class="btn primary" data-close>Done</button></div>`);
       $('#gameEndNewGame').onclick=confirmNewGame;
       return;
     }
     if(state.tab==='play') renderPlay();
-    else if(state.tab==='mission') renderMission();
+    else if(state.tab==='mission'){renderMission();bindMissionProgressControls();}
     else if(state.tab==='roster') renderRoster();
     else if(state.tab==='player-roster') renderPlayerRoster();
     else if(state.tab==='journal') renderJournal();
@@ -890,6 +972,106 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function hud(){return `<div class="hud"><div><small>Turning<span class="portrait-break"><br></span> Point</small><strong>${state.turningPoint||'Setup'}</strong></div><button class="hud-cell hud-threat" id="threatHudToggle" type="button" aria-expanded="${threatAdjustOpen}" aria-controls="threatAdjuster"><small>Threat<span class="portrait-break"><br></span> Level</small><strong>${state.threat}</strong></button><div><small>Grade<span class="portrait-break"><br></span> Level</small><strong>${threatGrade()}</strong></div><div><small>Player<span class="portrait-break"><br></span> Ready</small><strong>${state.playerReady}</strong></div><div><small>NPO<span class="portrait-break"><br></span> Ready</small><strong>${readyNpos().length}</strong></div></div><div class="threat-strip ${threatAdjustOpen?'':'hidden'}" id="threatAdjuster"><div><strong>THREAT LEVEL: ${threatLabel()}</strong><small>${threatGrade()===3?'Maximum Grade':`Next Grade at Threat Level ${[1,6,11][threatGrade()]}`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
+
+  function livingPlayerOptions(selected=''){
+    return (state.playerRoster||[]).filter(id=>!state.playerCasualtyIds.includes(id)).map(id=>`<option value="${escapeHtml(id)}" ${id===selected?'selected':''}>${escapeHtml(playerName(id))}</option>`).join('');
+  }
+
+  const missionProgressRenderers = {
+    escape:(engine,progress)=>{
+      const escaped=new Set(progress.escapedIds);
+      const rows=(state.playerRoster||[]).map(id=>{const incapacitated=state.playerCasualtyIds.includes(id);return `<div class="mission-objective-row"><span><strong>${escapeHtml(playerName(id))}</strong><small>${escaped.has(id)?'Escaped via the Escape marker':incapacitated?'Incapacitated':'Still in the killzone'}</small></span>${incapacitated?'':`<button class="btn compact ${escaped.has(id)?'primary':'ghost'}" data-mission-escaped="${escapeHtml(id)}">${escaped.has(id)?'Escaped':'Confirm Escape'}</button>`}</div>`;}).join('');
+      return `<p>${escaped.size} of ${state.playerRoster.length} operatives escaped. Resolve the mission only after every operative has left the killzone.</p><div class="mission-objective-list">${rows}</div>`;
+    },
+    sabotage:(engine,progress)=>{
+      const completed=new Set(progress.completedFeatureIds);
+      return `<p>${completed.size} of ${engine.required} required features have been permanently opened by Breach.</p><div class="mission-objective-grid">${engine.features.map(feature=>`<label class="mission-objective-check"><input type="checkbox" data-mission-feature="${feature.id}" ${completed.has(feature.id)?'checked':''}><span>${escapeHtml(feature.label)}</span></label>`).join('')}</div>`;
+    },
+    transponder:(engine,progress)=>{
+      const transponderFound=Object.values(progress.sites).includes('found');
+      const sites=engine.sites.map(site=>{const result=progress.sites[site.id];return `<div class="mission-objective-row"><span><strong>${escapeHtml(site.label)}</strong><small>${result==='found'?'Transponder found':result==='empty'?'Removed — no transponder':'Unresolved'}</small></span>${result||transponderFound?'' : `<button class="btn secondary compact" data-search-site="${site.id}">Pick Up & Resolve</button>`}</div>`;}).join('');
+      const carrier=progress.carrierId?playerName(progress.carrierId):'None';
+      return `<p>Pick up an unresolved marker, then roll D3. The transponder is found only if the result is higher than the number of other unresolved markers.</p>${progress.lastRoll?`<div class="summary-box"><strong>Last search:</strong> rolled ${progress.lastRoll.roll}; ${escapeHtml(progress.lastRoll.result)}.</div>`:''}${transponderFound?`<div class="field"><label for="transponderCarrier">Current carrier</label><select id="transponderCarrier"><option value="">Marker is not being carried…</option>${livingPlayerOptions(progress.carrierId)}</select></div>`:`<div class="field"><label for="transponderOperative">Operative resolving the marker</label><select id="transponderOperative"><option value="">Select operative…</option>${livingPlayerOptions()}</select></div>`}<div class="mission-objective-list">${sites}</div><div class="summary-box"><strong>Carrier:</strong> ${escapeHtml(carrier)}</div><button class="btn primary" id="transponderEscape" ${progress.carrierId&&!state.playerCasualtyIds.includes(progress.carrierId)&&!progress.escaped?'':'disabled'}>Confirm Carrier Escaped</button>`;
+    },
+    destruction:(engine,progress)=>`<p>${progress.destruction} of ${engine.required} Destruction points. Each Breach performed within control range of the sarcophagus adds 2D6; the Ready-step repair can reduce this total.</p><button class="btn primary" id="resolveSarcophagusBreach">Resolve Sarcophagus Breach (2D6)</button>`,
+    scout:(engine,progress)=>{
+      const scouted=new Set(progress.scoutedRoomIds);
+      const rooms=engine.rooms.map(room=>{const awakening=progress.awakenedRooms[room.id];return `<div class="mission-objective-row"><span><strong>${escapeHtml(room.label)}</strong><small>${scouted.has(room.id)?'Scouted':awakening?`${awakening.count} NPOs generated${awakening.placementConfirmed?' and placed':' — placement required'}`:'Unopened / unentered'}</small></span><div class="mission-objective-actions">${awakening?'':`<button class="btn secondary compact" data-awaken-room="${room.id}">First Open / Entry</button>`}${awakening&&!awakening.placementConfirmed?`<button class="btn secondary compact" data-confirm-room-placement="${room.id}">Confirm Placement</button>`:''}${awakening?.placementConfirmed&&!scouted.has(room.id)?`<button class="btn primary compact" data-scout-room="${room.id}">Confirm Cleared & Scout</button>`:''}</div></div>`;}).join('');
+      return `<p>${scouted.size} of ${engine.required} rooms scouted. Confirm that an eligible room is cleared on the tabletop before resolving the 1AP Scout Room action.</p><div class="mission-objective-list">${rooms}</div>`;
+    },
+    regroup:(engine,progress)=>{
+      const survivors=(state.playerRoster||[]).filter(id=>!state.playerCasualtyIds.includes(id));
+      const rows=survivors.map(id=>{const check=progress.operativeChecks[id]||{};return `<div class="mission-regroup-row"><strong>${escapeHtml(playerName(id))}</strong><label><input type="checkbox" data-regroup-check="inDropZone" data-operative-id="${id}" ${check.inDropZone?'checked':''}> Wholly in Player B drop zone</label><label><input type="checkbox" data-regroup-check="outsideNpoControl" data-operative-id="${id}" ${check.outsideNpoControl?'checked':''}> Outside NPO control range</label><label><input type="checkbox" data-regroup-check="nearPlayer" data-operative-id="${id}" ${check.nearPlayer?'checked':''}> Within 3 inches of another Player operative</label></div>`;}).join('');
+      return `<p>Record the position of every surviving operative. Victory is evaluated only when the Turning Point is finished.</p><div class="mission-objective-list">${rows}</div>`;
+    }
+  };
+
+  function missionProgressHtml(readOnly=false){
+    const engine=missionEngine(), progress=state.missionState||freshMissionState();
+    const renderer=missionProgressRenderers[engine?.type];
+    if(!renderer)return '';
+    return `<section class="card mission-objective-card"><p class="eyebrow">MISSION OBJECTIVE</p><h3>${escapeHtml(engine.progressLabel)}</h3><div ${readOnly?'inert':''}>${renderer(engine,progress)}</div>${readOnly?'<p class="muted">Completed mission state is preserved for review.</p>':''}</section>`;
+  }
+
+  function updateMissionProgress(message){
+    if(message)log(`${mission().name}: ${message}`);
+    if(checkGameEnd())return;
+    save();render();
+  }
+
+  function bindMissionProgressControls(){
+    $$('[data-mission-escaped]').forEach(button=>button.onclick=()=>{
+      const id=button.dataset.missionEscaped, ids=new Set(state.missionState.escapedIds);
+      ids.has(id)?ids.delete(id):ids.add(id);
+      state.missionState.escapedIds=[...ids];
+      updateMissionProgress(`${playerName(id)} ${ids.has(id)?'escaped via the Escape marker':'escape status was corrected'}.`);
+    });
+    $$('[data-mission-feature]').forEach(input=>input.onchange=()=>{
+      const ids=new Set(state.missionState.completedFeatureIds);
+      input.checked?ids.add(input.dataset.missionFeature):ids.delete(input.dataset.missionFeature);
+      state.missionState.completedFeatureIds=[...ids];
+      updateMissionProgress(`${input.checked?'completed Breach on':'corrected'} ${input.dataset.missionFeature}.`);
+    });
+    $$('[data-search-site]').forEach(button=>button.onclick=()=>{
+      const carrier=$('#transponderOperative')?.value;
+      if(!carrier){showToast('Select the operative picking up this marker.');return;}
+      const progress=state.missionState;
+      const otherRemaining=missionEngine().sites.filter(site=>site.id!==button.dataset.searchSite&&!progress.sites[site.id]).length;
+      const result=rollD3(), found=result>otherRemaining;
+      progress.sites[button.dataset.searchSite]=found?'found':'empty';
+      if(found)progress.carrierId=carrier;
+      progress.lastRoll={siteId:button.dataset.searchSite,roll:result,result:found?'transponder found':'marker removed'};
+      updateMissionProgress(`searched ${button.dataset.searchSite}, rolled ${result}, and ${found?'found the transponder':'removed the marker'}.`);
+    });
+    $('#transponderCarrier')?.addEventListener('change',event=>{state.missionState.carrierId=event.target.value||null;save();render();});
+    $('#transponderEscape')?.addEventListener('click',()=>{state.missionState.escaped=true;updateMissionProgress(`${playerName(state.missionState.carrierId)} escaped carrying the transponder.`);});
+    $('#resolveSarcophagusBreach')?.addEventListener('click',()=>{const amount=roll()+roll();state.missionState.destruction+=amount;updateMissionProgress(`Breach added ${amount} Destruction points.`);});
+    $$('[data-awaken-room]').forEach(button=>button.onclick=()=>{
+      const count=Math.min(5,rollD3()+threatGrade()), ids=[];
+      for(let i=0;i<count&&activeNpos().length<MAX_NPOS;i++){
+        const result=rollNpo(), n=createNpo(result.type,`${result.type} ${button.dataset.awakenRoom}`,{weaponId:result.weaponId,ready:true,dormant:false,deployed:false,order:'Conceal'});
+        n.missionRoom=button.dataset.awakenRoom;state.roster.push(n);ids.push(n.id);
+      }
+      state.missionState.awakenedRooms[button.dataset.awakenRoom]={count:ids.length,operativeIds:ids,placementConfirmed:false};
+      updateMissionProgress(`${button.dataset.awakenRoom} awakened; generated ${ids.length} ready NPO(s) with Conceal orders for tabletop placement.`);
+    });
+    $$('[data-confirm-room-placement]').forEach(button=>button.onclick=()=>{
+      const awakening=state.missionState.awakenedRooms[button.dataset.confirmRoomPlacement];awakening.placementConfirmed=true;
+      state.roster.filter(npo=>awakening.operativeIds.includes(npo.id)).forEach(npo=>{npo.deployed=true;});
+      updateMissionProgress(`confirmed NPO placement in ${button.dataset.confirmRoomPlacement}.`);
+    });
+    $$('[data-scout-room]').forEach(button=>button.onclick=()=>{
+      const ids=new Set(state.missionState.scoutedRoomIds);ids.add(button.dataset.scoutRoom);state.missionState.scoutedRoomIds=[...ids];
+      const grade=threatGrade(), gradeFloor=[0,0,5,10][grade];
+      if(state.threat>gradeFloor)setThreat(gradeFloor-state.threat,'Scout Room');
+      updateMissionProgress(`scouted ${button.dataset.scoutRoom}.`);
+    });
+    $$('[data-regroup-check]').forEach(input=>input.onchange=()=>{
+      const id=input.dataset.operativeId;
+      state.missionState.operativeChecks[id]={...(state.missionState.operativeChecks[id]||{}),[input.dataset.regroupCheck]:input.checked};
+      state.missionState.lastCheckedTurningPoint=state.turningPoint;save();
+    });
+  }
 
   function renderPlay(){
     const milestone=state.gradeMilestone?`<section class="grade-milestone"><div><small>THREAT ESCALATION</small><strong>Grade ${state.gradeMilestone.grade}: ${escapeHtml(state.gradeMilestone.label)}</strong><span>Threat has reached Level ${state.gradeMilestone.threat}.</span></div><button class="btn ghost compact" id="dismissGradeMilestone">Dismiss</button></section>`:'';
@@ -915,7 +1097,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const playerLosses=Math.max(0,(state.playerCasualtyIds||[]).length-(state.tpStartPlayerCasualties||0));
       const threatChanged=state.threat!==(state.tpStartThreat??state.threat);
       const gradeChanged=threatGrade()!==(state.tpStartGrade??threatGrade());
-      return `<section class="next-card"><span class="phase">TURNING POINT ${state.turningPoint} COMPLETE</span><h2>Battle summary</h2><div class="turn-summary-grid"><div><small>Threat</small><strong>${state.tpStartThreat??state.threat} → ${state.threat}</strong><span>${threatChanged?'Changed this Turning Point':'No change'}</span></div><div><small>Grade</small><strong>${state.tpStartGrade??threatGrade()} → ${threatGrade()}</strong><span>${gradeChanged?'Grade increased':'Grade unchanged'}</span></div><div><small>NPOs destroyed</small><strong>${npoLosses}</strong><span>This Turning Point</span></div><div><small>Player casualties</small><strong>${playerLosses}</strong><span>This Turning Point</span></div></div><h3>Score and clean up</h3><p>Score mission objectives, resolve end-of-turn effects, and confirm all temporary markers have been cleared.</p><div class="field"><label>Mission progress: ${missionTracker()}</label><input id="tracker" type="number" min="0" max="${missionTrackerMax()}" value="${state.tracker}"></div><div class="checklist"><label class="check-row"><input id="endChecked" type="checkbox"><span><strong>End-of-turn steps complete</strong><small>Objectives scored, temporary effects resolved, and physical tokens cleaned up.</small></span></label></div><button class="btn primary big-action" id="finishTp" disabled>Finish Turning Point</button></section>`;
+      return `<section class="next-card"><span class="phase">TURNING POINT ${state.turningPoint} COMPLETE</span><h2>Battle summary</h2><div class="turn-summary-grid"><div><small>Threat</small><strong>${state.tpStartThreat??state.threat} → ${state.threat}</strong><span>${threatChanged?'Changed this Turning Point':'No change'}</span></div><div><small>Grade</small><strong>${state.tpStartGrade??threatGrade()} → ${threatGrade()}</strong><span>${gradeChanged?'Grade increased':'Grade unchanged'}</span></div><div><small>NPOs destroyed</small><strong>${npoLosses}</strong><span>This Turning Point</span></div><div><small>Player casualties</small><strong>${playerLosses}</strong><span>This Turning Point</span></div></div><h3>Score and clean up</h3><p>Score mission objectives, resolve end-of-turn effects, and confirm all temporary markers have been cleared.</p>${missionProgressHtml()}<div class="checklist"><label class="check-row"><input id="endChecked" type="checkbox"><span><strong>End-of-turn steps complete</strong><small>Objectives scored, temporary effects resolved, and physical tokens cleaned up.</small></span></label></div><button class="btn primary big-action" id="finishTp" disabled>Finish Turning Point</button></section>`;
     }
     setNextActivation(state.nextSide || state.initiative || 'player');
     if(state.phase==='end'){save();return nextStepCard();}
@@ -934,17 +1116,28 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return d.suggestedInitiative===side?'hit':'miss';
   }
 
+  function missionStrategyPending(){
+    return missionEngine()?.type==='escape'&&state.turningPoint>1&&!state.missionState.escapedIds.length&&!state.missionState.auspexCalibrations[state.turningPoint];
+  }
+
+  function missionStrategyPromptHtml(){
+    if(missionEngine()?.type!=='escape'||state.turningPoint<=1||state.missionState.escapedIds.length)return '';
+    const calibration=state.missionState.auspexCalibrations[state.turningPoint];
+    if(calibration)return `<div class="summary-box"><strong>Auspex Calibration:</strong> ${escapeHtml(calibration.instruction)}</div>`;
+    return `<div class="summary-box"><strong>Auspex Calibration required.</strong><br>No operatives have escaped. Resolve the mission’s Strategic Gambit before continuing.<div class="event-controls"><button class="btn secondary" id="resolveAuspexCalibration">Roll Auspex Calibration</button></div></div>`;
+  }
+
   function strategyCard(){
     const d=state.strategyData||{};
     if(state.strategyStage==='summary'){
       const reinforcementPending=Boolean(d.eventPending);
       const reinforcementCount=actualReinforcementCount(d);
       const rolls=(d.reinforcements||[]).slice(0,reinforcementCount).map(r=>`<div class="reinforcement-result"><div class="dice-row compact">${r.rolls.map(v=>dieHtml({value:v,kind:'hit'})).join('')}</div><strong>${r.type}</strong></div>`).join('');
-      const placementPending=state.reinforcementState.status==='placement';
+      const placementPending=state.reinforcementState.status==='placement', missionPending=missionStrategyPending();
       const placements=(state.reinforcementState.operativeIds||[]).map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean).map(npo=>`<div class="check-row"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''} ${npo.reinforcement?.hatchway?'':'disabled'}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong><small>Randomly determine an open hatchway, set up this operative with a Conceal order using the printed placement requirements, then confirm.</small><input type="text" data-reinforcement-hatchway="${escapeHtml(npo.id)}" value="${escapeHtml(npo.reinforcement?.hatchway||'')}" placeholder="Random hatchway" aria-label="Random hatchway for ${escapeHtml(npoName(npo))}"></span></div>`).join('');
       const resolvedEvents=(d.events||[]).filter(event=>event!==d.event&&event.status!=='drawn').map(strategyEventHtml).join('');
       const activeEvents=(state.eventState.active||[]).map(event=>`<div class="summary-box"><strong>${escapeHtml(event.title)}</strong><br>${escapeHtml(event.text)}</div>`).join('');
-      return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 1 OF 2</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol><p>When all Strategy Phase actions are complete, continue to initiative.</p></div><div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat" tabindex="0" data-tooltip="Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events."><small>THREAT LEVEL <span class="info-dot">i</span></small><strong>${state.threat}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Grade 0–3 is derived from Threat and determines reinforcement pressure and some events."><small>GRADE LEVEL <span class="info-dot">i</span></small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="The number of living NPOs that are Ready and may still activate during this Turning Point."><small>NPOs Ready <span class="info-dot">i</span></small><strong>${readyNpos().length}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Additional NPOs generated during this Strategy Phase. Battlefield limits may block some arrivals."><small>Reinforcements <span class="info-dot">i</span></small><strong>${reinforcementPending?'—':reinforcementCount}</strong></div></div>${reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':rolls?`<h3>Reinforcements generated</h3><div class="reinforcement-grid">${rolls}</div><div class="checklist">${placements}</div>`:'<div class="summary-box"><strong>No reinforcements arrive.</strong></div>'}${d.blocked?`<p class="warning-text">${d.blocked} reinforcement(s) cannot be set up because doing so would exceed the 10-NPO limit.</p>`:''}${resolvedEvents}${d.event?.status==='drawn'?strategyEventHtml(d.event):''}${activeEvents?`<h3>Active event effects</h3>${activeEvents}`:''}${!d.events?.length?'<p>No Tomb World event is required.</p>':''}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending||placementPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':placementPending?'Confirm Reinforcement Placement':'Strategy Phase Complete'}</button></section>`;
+      return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 1 OF 2</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol><p>When all Strategy Phase actions are complete, continue to initiative.</p></div>${missionStrategyPromptHtml()}<div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat" tabindex="0" data-tooltip="Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events."><small>THREAT LEVEL <span class="info-dot">i</span></small><strong>${state.threat}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Grade 0–3 is derived from Threat and determines reinforcement pressure and some events."><small>GRADE LEVEL <span class="info-dot">i</span></small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="The number of living NPOs that are Ready and may still activate during this Turning Point."><small>NPOs Ready <span class="info-dot">i</span></small><strong>${readyNpos().length}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Additional NPOs generated during this Strategy Phase. Battlefield limits may block some arrivals."><small>Reinforcements <span class="info-dot">i</span></small><strong>${reinforcementPending?'—':reinforcementCount}</strong></div></div>${reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':rolls?`<h3>Reinforcements generated</h3><div class="reinforcement-grid">${rolls}</div><div class="checklist">${placements}</div>`:'<div class="summary-box"><strong>No reinforcements arrive.</strong></div>'}${d.blocked?`<p class="warning-text">${d.blocked} reinforcement(s) cannot be set up because doing so would exceed the 10-NPO limit.</p>`:''}${resolvedEvents}${d.event?.status==='drawn'?strategyEventHtml(d.event):''}${activeEvents?`<h3>Active event effects</h3>${activeEvents}`:''}${!d.events?.length?'<p>No Tomb World event is required.</p>':''}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending||placementPending||missionPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':placementPending?'Confirm Reinforcement Placement':missionPending?'Resolve Mission Rule to Continue':'Strategy Phase Complete'}</button></section>`;
     }
     const auto=d.initiativeMode==='automatic';
     const autoReason=d.initiativeReason||'the automatic initiative rule applied';
@@ -1171,7 +1364,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $$('[data-init]').forEach(b=>b.onclick=()=>beginFirefight(b.dataset.init));
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
     $('#npoActivation')?.addEventListener('click',showNpoSelection);
-    $('#tracker')?.addEventListener('change',e=>{state.tracker=Math.max(0,Math.min(missionTrackerMax(),Number(e.target.value)||0));save();});
+    bindMissionProgressControls();
+    $('#resolveAuspexCalibration')?.addEventListener('click',()=>{
+      const directionRoll=rollD3(),distance=rollD3()+3;
+      const instruction=directionRoll===1?`Move the Escape marker ${distance} inches left.`:directionRoll===2?'Do not move the Escape marker.':`Move the Escape marker ${distance} inches right.`;
+      state.missionState.auspexCalibrations[state.turningPoint]={directionRoll,distance,instruction};
+      log(`Auspex Calibration: ${instruction}`);save();render();
+    });
     $('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked;});
     $('#finishTp')?.addEventListener('click',()=>{
       log(`Turning Point ${state.turningPoint} completed.`);
@@ -1179,13 +1378,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       state.strategyStage=null;
       state.strategyData=null;
       state.newIds=[];
-      if(state.turningPoint>=4){
-        state.completed=true;
-        state.phase='end';
-        log('Mission complete after Turning Point 4.');
-      }else{
-        state.phase='between';
-      }
+      if(checkGameEnd('end-turning-point'))return;
+      state.phase='between';
       save();render();
     });
     $('#newGameFromPlay')?.addEventListener('click',confirmNewGame);
@@ -1196,6 +1390,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function startTurningPoint(){
     state.turningPoint++;
+    if(missionEngine()?.type==='regroup')state.missionState={operativeChecks:{},lastCheckedTurningPoint:state.turningPoint};
     state.tpStartThreat=state.threat;
     state.tpStartGrade=threatGrade();
     state.tpStartDestroyedNpos=destroyedNpoCount();
@@ -1229,13 +1424,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function applyMissionReadyHooks(){
-    if(state.missionId==='destroy-sarcophagus'&&state.tracker>0){
+    if(state.missionId==='destroy-sarcophagus'&&state.missionState.destruction>0){
       const repairRoll=roll();
       const controllers=normalizeSarcophagusControllers(state.missionReadyContext.sarcophagusControllers);
       state.missionReadyContext.sarcophagusControllers=controllers;
       const repairAmount=Math.max(0,repairRoll-controllers);
-      const repaired=Math.min(state.tracker,repairAmount);
-      state.tracker-=repaired;
+      const repaired=Math.min(state.missionState.destruction,repairAmount);
+      state.missionState.destruction-=repaired;
       state.strategyData.missionReadyHooks.push({id:'nanoscarab-repair',roll:repairRoll,controllers,repaired});
       log(`Nanoscarab Repair removed ${repaired} Destruction point(s) during the Ready step (D6: ${repairRoll}; ${controllers} controlling operative(s)).`);
     }
@@ -1877,7 +2072,7 @@ function showPlayerActivation(stage={}){
     if(stage.shoot)inc++;
     if(stage.melee)inc++;
     if(stage.damage)inc++;
-    if(stage.hatch){
+    if(stage.hatch&&state.missionId!=='scout-sub-crypt'){
       const r=roll();
       if(r>=4)inc++;
     }
@@ -2865,10 +3060,10 @@ function showPlayerActivation(stage={}){
     const m=mission();
     const rules=(m.rules||[]).map(rule=>`<div class="mission-rule"><strong>${escapeHtml(rule.name)}</strong>${rule.timing?`<small>${escapeHtml(rule.timing)}</small>`:''}<p>${escapeHtml(rule.summary)}</p></div>`).join('');
     app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">MISSION</p><h2>${m.number} · ${m.name}</h2><p>${m.brief}</p></div></div>
-      <section class="card"><h3>Objective</h3><p>${m.objective}</p><div class="stat-grid"><div class="stat"><small>Starting NPOs</small><strong>${missionSetup(m)}</strong></div><div class="stat"><small>TP1 Initiative</small><strong>${missionFirstInitiative(m)==='npo'?'NPOs':'Player'}</strong></div><div class="stat"><small>${missionTracker(m)}</small><strong>${state.tracker} / ${missionTrackerMax(m)}</strong></div></div><p><strong>NPO deployment:</strong> ${escapeHtml(m.startingNpos?.deployment||'Use the mission rules.')}</p></section>
+      <section class="card"><h3>Objective</h3><p>${m.objective}</p><div class="stat-grid"><div class="stat"><small>Starting NPOs</small><strong>${missionSetup(m)}</strong></div><div class="stat"><small>TP1 Initiative</small><strong>${missionFirstInitiative(m)==='npo'?'NPOs':'Player'}</strong></div><div class="stat"><small>Objective</small><strong>${escapeHtml(m.missionEngine?.progressLabel||missionTracker(m))}</strong></div></div><p><strong>NPO deployment:</strong> ${escapeHtml(m.startingNpos?.deployment||'Use the mission rules.')}</p></section>
       ${boardSvg(m.id)}
       <section class="card"><h3>Mission rules</h3><div class="mission-rules">${rules}</div></section>
-      <section class="card"><h3>Victory</h3><p><strong>Win:</strong> ${escapeHtml(m.victory?.win||'See mission rules.')}</p><p><strong>Lose:</strong> ${escapeHtml(m.victory?.lose||'See mission rules.')}</p></section>`;
+      <section class="card"><h3>Victory</h3><p><strong>Win:</strong> ${escapeHtml(m.victory?.win||'See mission rules.')}</p><p><strong>Lose:</strong> ${escapeHtml(m.victory?.lose||'See mission rules.')}</p></section>${missionProgressHtml()}`;
   }
   function renderRoster(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">NPO ROSTER</p><h2>${activeNpos().length} active NPOs</h2><p>Wounds and Ready status update the guided activation flow.</p></div><button class="btn secondary" id="addNpo">Add NPO</button></div><div class="player-roster-grid npo-roster-grid">${state.roster.length?state.roster.map(n=>npoRosterCard(n,true)).join(''):'<div class="card empty">No NPOs are currently on the battlefield.</div>'}</div>`;$('#addNpo').onclick=showAddNpo;$$('[data-player-attack]').forEach(b=>b.onclick=()=>showPlayerAttackWizard(b.dataset.playerAttack));$$('[data-wound]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.wound,-1));$$('[data-heal]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.heal,1));$$('[data-ready]').forEach(b=>b.onclick=()=>toggleReady(b.dataset.ready));$$('[data-delete]').forEach(b=>b.onclick=()=>deleteNpo(b.dataset.delete));}
   function renderPlayerRoster(){
@@ -3010,6 +3205,7 @@ function showPlayerActivation(stage={}){
         state.playerTeamFile='';
         playerTeamData=null;
       }
+      state.missionState=normalizeMissionState(state.missionState,missionDefinition(state.missionId),state.tracker);
       render();
     })
     .catch(error=>{
