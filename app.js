@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '4.1.1';
+  const APP_VERSION = '4.2.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -214,7 +214,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     setupChecks:{}, roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerRosterInitializedForTeamId:'', playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
-    strategyStage:null, strategyData:null, activationNumber:0,totalActivationsThisTP:0, playerActivated:0, npoActivated:0,
+    strategyStage:null, strategyData:null, strategyPipeline:null, missionReadyContext:{sarcophagusControllers:0}, activationNumber:0,totalActivationsThisTP:0, playerActivated:0, npoActivated:0,
     activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], playerWounds:{}, reinforcementEntry:'Nearest valid entry point',
     gradeMilestone:null, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0,
     npoAttackTargetId:null,
@@ -248,7 +248,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const base=initialState(), merged={...base,...raw};
     if(!['home','help','setup','game'].includes(merged.screen))merged.screen='home';
     if(!['play','mission','roster','player-roster','journal','help'].includes(merged.tab))merged.tab='play';
+    const importedThreat=Number(raw?.threat);
+    merged.threat=Number.isFinite(importedThreat)?Math.max(0,Math.min(15,Math.round(importedThreat))):0;
     merged.roster=Array.isArray(raw?.roster)?raw.roster.map(normalizeNpo):[];
+    merged.roster.forEach(npo=>{
+      if(!npo||npo.wounds<=0)return;
+      npo.dormant=merged.threat===0;
+      if(npo.dormant)npo.ready=false;
+    });
     merged.journal=Array.isArray(raw?.journal)?raw.journal:[];
     merged.newIds=Array.isArray(raw?.newIds)?raw.newIds:[];
     merged.activationHistory=Array.isArray(raw?.activationHistory)?raw.activationHistory:[];
@@ -265,6 +272,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         : events.find(candidate=>candidate.id===legacyEvent?.id)||legacyEvent;
       merged.strategyData={...raw.strategyData,event};
     }else merged.strategyData=null;
+    merged.missionReadyContext=raw?.missionReadyContext&&typeof raw.missionReadyContext==='object'
+      ? {sarcophagusControllers:Math.max(0,Number(raw.missionReadyContext.sarcophagusControllers)||0)}
+      : {sarcophagusControllers:0};
+    merged.strategyPipeline=raw?.strategyPipeline&&typeof raw.strategyPipeline==='object'
+      ? {...raw.strategyPipeline,completed:Array.isArray(raw.strategyPipeline.completed)?raw.strategyPipeline.completed:[]}
+      : null;
     merged.gameEnd=['victory','defeat'].includes(raw?.gameEnd)?raw.gameEnd:null;
     merged.playerCount=merged.playerRoster.length;
     return merged;
@@ -295,7 +308,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       behavior:npo.behavior||definition.compatibilityBehavior,
       attack:npo.attack&&typeof npo.attack==='object'?{...npo.attack}:{...definition.compatibilityAttack},
       weaponId,
-      order:npo.order||'Conceal'
+      order:npo.order||'Conceal',
+      dormant:Boolean(npo.dormant)
     };
   }
   function mission(){ return missions.find(m => m.id === state.missionId) || missions[0]; }
@@ -318,7 +332,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       id:uid(),name,type,move:definition.move,apl:definition.apl,save:definition.save,
       maxWounds:definition.wounds,wounds:definition.wounds,baseSize:definition.baseSize,
       behavior:definition.compatibilityBehavior,attack:{...definition.compatibilityAttack},weaponId,order:'Conceal',
-      ready:options.ready??true,deployed:options.deployed??true
+      ready:options.ready??state.threat!==0,dormant:options.dormant??state.threat===0,deployed:options.deployed??true
     };
   }
   function rollNpo(){
@@ -400,6 +414,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const before=state.threat;
     const beforeGrade=threatGrade();
     state.threat=Math.max(0,Math.min(15,state.threat+amount));
+    if(before===0&&state.threat>0){
+      activeNpos().filter(npo=>npo.dormant).forEach(npo=>{npo.dormant=false;npo.ready=true;});
+    }else if(state.threat===0){
+      activeNpos().forEach(npo=>{npo.dormant=true;npo.ready=false;});
+    }
     const afterGrade=threatGrade();
     if(state.threat!==before) log(`Threat ${before} → ${state.threat}: ${reason}`);
     if(afterGrade>beforeGrade){
@@ -461,7 +480,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       <h3>Game flow</h3>
       <ol class="guide-flow-list">
         <li><strong>Set up the mission</strong><span>Choose a mission, build the killzone, generate the starting NPO roster, and deploy both sides.</span></li>
-        <li><strong>Prepare the Turning Point</strong><span>The Guide readies operatives, evaluates Threat Grade, generates reinforcements, checks events, and resolves initiative.</span></li>
+        <li><strong>Prepare the Turning Point</strong><span>The Guide readies operatives, applies mission Ready rules, determines initiative, then processes events and reinforcements.</span></li>
         <li><strong>Alternate activations</strong><span>The side with initiative activates first. Player and NPO activations then alternate until one side runs out of ready operatives.</span></li>
         <li><strong>End the Turning Point</strong><span>Score mission progress, resolve end-of-turn effects, and begin the next Turning Point.</span></li>
       </ol>
@@ -800,7 +819,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function nextStepCard(){
     if(state.completed) return `<section class="next-card"><span class="phase">MISSION COMPLETE</span><h2>Record the outcome</h2><p>The mission has reached its conclusion. Review the Journal or begin a new game.</p><button class="btn primary big-action" id="newGameFromPlay">Start New Game</button></section>`;
-    if(state.phase==='between') return `<section class="next-card"><span class="phase">NEXT STEP</span><h2>Start Turning Point ${state.turningPoint+1}</h2><p>The Guide will ready operatives, determine the current Threat Grade, generate reinforcements, check Tomb World events, and resolve initiative.</p><button class="btn primary big-action" id="startTp">Start Next Turning Point</button></section>`;
+    if(state.phase==='between'){
+      const missionReadyInput=state.missionId==='destroy-sarcophagus'?`<div class="field"><label for="sarcophagusControllers">Player operatives controlling the sarcophagus</label><input id="sarcophagusControllers" type="number" min="0" max="${livingPlayerOperativeCount()}" value="${state.missionReadyContext.sarcophagusControllers}"></div>`:'';
+      return `<section class="next-card"><span class="phase">NEXT STEP</span><h2>Start Turning Point ${state.turningPoint+1}</h2><p>The Guide will ready operatives, apply mission Ready rules, determine initiative, then process current events and reinforcements.</p>${missionReadyInput}<button class="btn primary big-action" id="startTp">Start Next Turning Point</button></section>`;
+    }
     if(state.phase==='strategy') return strategyCard();
     if(state.phase==='end'){
       const npoLosses=Math.max(0,destroyedNpoCount()-(state.tpStartDestroyedNpos||0));
@@ -833,8 +855,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const rolls=(d.reinforcements||[]).slice(0,reinforcementCount).map(r=>`<div class="reinforcement-result"><div class="dice-row compact">${r.rolls.map(v=>dieHtml({value:v,kind:'hit'})).join('')}</div><strong>${r.type}</strong></div>`).join('');
       return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 1 OF 2</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol><p>When all Strategy Phase actions are complete, continue to initiative.</p></div><div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat" tabindex="0" data-tooltip="Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events."><small>THREAT LEVEL <span class="info-dot">i</span></small><strong>${state.threat}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Grade 0–3 is derived from Threat and determines reinforcement pressure and some events."><small>GRADE LEVEL <span class="info-dot">i</span></small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="The number of living NPOs that are Ready and may still activate during this Turning Point."><small>NPOs Ready <span class="info-dot">i</span></small><strong>${readyNpos().length}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Additional NPOs generated during this Strategy Phase. Battlefield limits may block some arrivals."><small>Reinforcements <span class="info-dot">i</span></small><strong>${reinforcementCount}</strong></div></div>${rolls?`<h3>Reinforcements generated</h3><div class="reinforcement-grid">${rolls}</div><div class="field"><label>Reinforcement entry point</label><select id="reinforcementEntry"><option ${state.reinforcementEntry==='Nearest valid entry point'?'selected':''}>Nearest valid entry point</option><option ${state.reinforcementEntry==='Entry Point A'?'selected':''}>Entry Point A</option><option ${state.reinforcementEntry==='Entry Point B'?'selected':''}>Entry Point B</option><option ${state.reinforcementEntry==='Entry Point C'?'selected':''}>Entry Point C</option><option ${state.reinforcementEntry==='Custom placement'?'selected':''}>Custom placement</option></select></div>`:'<div class="summary-box"><strong>No reinforcements arrive.</strong></div>'}${d.blocked?`<p class="warning-text">${d.blocked} reinforcement(s) were blocked by the 10-NPO battlefield limit.</p>`:''}${d.event?strategyEventHtml(d.event):'<p>No Tomb World event is required.</p>'}<button class="btn primary big-action" id="continueStrategy">Strategy Phase Complete</button></section>`;
     }
-    const auto=state.turningPoint===1;
-    return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 2 OF 2</span><h2>${auto?`${missionFirstInitiative()==='npo'?'NPOs have':'The Player has'} initiative during Turning Point 1`:'Determine initiative'}</h2>${auto?`<p>During Turning Point 1, ${missionFirstInitiative()==='npo'?'NPOs have':'the Player has'} initiative. Both Player operatives and NPOs begin the Firefight Phase ready.</p>`:`<p>The Guide rolled once for each side. Use the result, reroll both dice, or override it if your tabletop rules require a different outcome.</p><div class="initiative-roll"><div><small>Player</small><div class="dice-row animated-roll" id="playerInitiativeDie">${initiativeRolling?rollingDieHtml():dieHtml({value:state.strategyData.playerRoll,kind:initiativeDieKind('player')})}</div></div><div><small>NPOs</small><div class="dice-row animated-roll" id="npoInitiativeDie">${initiativeRolling?rollingDieHtml():dieHtml({value:state.strategyData.npoRoll,kind:initiativeDieKind('npo')})}</div></div></div><div class="summary-box" id="initiativeResult" ${initiativeRolling?'hidden':''}><strong>${state.strategyData.suggestedInitiative==='npo'?'NPOs win':'The Player wins'} initiative${state.strategyData.playerRoll===state.strategyData.npoRoll?' after the tie-break':''}.</strong></div>`}<div class="quick-actions">${auto?'':`<button class="btn ghost" id="rerollInitiative" ${initiativeRolling?'disabled':''}>Reroll Both</button>`}<button class="btn ${(auto?missionFirstInitiative():d.suggestedInitiative)==='player'?'primary':'secondary'}" data-init="player" ${(auto&&missionFirstInitiative()!=='player')||initiativeRolling?'disabled':''}>Begin Player Activation</button><button class="btn ${(auto?missionFirstInitiative():d.suggestedInitiative)==='npo'?'primary':'secondary'}" data-init="npo" ${(auto&&missionFirstInitiative()!=='npo')||initiativeRolling?'disabled':''}>Begin with NPOs</button></div></section>`;
+    const auto=state.turningPoint===1||state.threat===0;
+    const autoReason=state.turningPoint===1?'Turning Point 1':'Threat is 0';
+    return `<section class="next-card"><span class="phase">STRATEGY PHASE · STEP 2 OF 2</span><h2>${auto?`The Player has initiative while ${autoReason}`:'Determine initiative'}</h2>${auto?`<p>The Player automatically has initiative because ${autoReason}. ${state.threat===0?'Dormant NPOs remain Expended and cannot activate.':'Operatives begin the Firefight Phase ready.'}</p>`:`<p>The Guide rolled once for each side. Use the result, reroll both dice, or make a manual correction if your tabletop rules require a different outcome.</p><div class="initiative-roll"><div><small>Player</small><div class="dice-row animated-roll" id="playerInitiativeDie">${initiativeRolling?rollingDieHtml():dieHtml({value:state.strategyData.playerRoll,kind:initiativeDieKind('player')})}</div></div><div><small>NPOs</small><div class="dice-row animated-roll" id="npoInitiativeDie">${initiativeRolling?rollingDieHtml():dieHtml({value:state.strategyData.npoRoll,kind:initiativeDieKind('npo')})}</div></div></div><div class="summary-box" id="initiativeResult" ${initiativeRolling?'hidden':''}><strong>${state.strategyData.suggestedInitiative==='npo'?'NPOs win':'The Player wins'} initiative${state.strategyData.playerRoll===state.strategyData.npoRoll?' after the tie-break':''}.</strong></div>`}<div class="quick-actions">${auto?'':`<button class="btn ghost" id="rerollInitiative" ${initiativeRolling?'disabled':''}>Reroll Both</button>`}<button class="btn ${(auto?'player':d.suggestedInitiative)==='player'?'primary':'secondary'}" data-init="player" ${initiativeRolling?'disabled':''}>Begin Player Activation</button><button class="btn ${(auto?'player':d.suggestedInitiative)==='npo'?'primary':'secondary'}" data-init="npo" ${auto||initiativeRolling?'disabled':''}>Begin with NPOs</button></div></section>`;
   }
 
   function actualReinforcementCount(data=state.strategyData||{}){
@@ -965,7 +988,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function animateInitiativeResult(){
-    if(state.turningPoint===1){state.strategyData.suggestedInitiative=missionFirstInitiative();initiativeRolling=false;return;}
+    if(state.turningPoint===1||state.threat===0){state.strategyData.suggestedInitiative='player';initiativeRolling=false;return;}
     setTimeout(()=>{
       const player=$('#playerInitiativeDie');
       if(player){
@@ -1000,7 +1023,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }).join('');
     const npoRows=state.roster.map(n=>{
       const eliminated=n.wounds<=0;
-      const status=eliminated?'ELIMINATED':n.ready?'READY':'ACTIVATED';
+      const status=eliminated?'ELIMINATED':n.dormant?'DORMANT':n.ready?'READY':'ACTIVATED';
       const cls=eliminated?'eliminated':n.ready?'ready':'activated';
       return `<div class="tracker-operative npo ${cls}"><span>${escapeHtml(npoName(n))}</span><strong>${status}</strong></div>`;
     }).join('');
@@ -1054,14 +1077,18 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function bindPlay(){
     $('#dismissGradeMilestone')?.addEventListener('click',()=>{state.gradeMilestone=null;save();render();});
     $$('[data-player-operative]').forEach(button=>button.addEventListener('click',()=>showPlayerOperativeStatus(button.dataset.playerOperative)));
-    $('#startTp')?.addEventListener('click',startTurningPoint);
+    $('#startTp')?.addEventListener('click',()=>{
+      const controllers=$('#sarcophagusControllers');
+      if(controllers)state.missionReadyContext.sarcophagusControllers=Math.max(0,Number(controllers.value)||0);
+      startTurningPoint();
+    });
     $('#reinforcementEntry')?.addEventListener('change',e=>{state.reinforcementEntry=e.target.value;save();});
     $('#eventNpoSelect')?.addEventListener('change',e=>{$('#healSelectedEventNpo').disabled=!e.target.value;});
     $('#healSelectedEventNpo')?.addEventListener('click',()=>resolveStrategyNpoEvent('heal',$('#eventNpoSelect').value));
     $$('[data-event-heal]').forEach(button=>button.addEventListener('click',()=>resolveStrategyNpoEvent('heal',button.dataset.eventHeal)));
     $('#addEventNpo')?.addEventListener('click',()=>resolveStrategyNpoEvent('add'));
     $('#openEventRoster')?.addEventListener('click',()=>{state.tab='roster';save();render();});
-    $('#continueStrategy')?.addEventListener('click',()=>{state.reinforcementEntry=$('#reinforcementEntry')?.value||state.reinforcementEntry;state.strategyStage='initiative';initiativeRolling=state.turningPoint!==1;save();render();if(initiativeRolling)animateInitiativeResult();});
+    $('#continueStrategy')?.addEventListener('click',()=>{state.reinforcementEntry=$('#reinforcementEntry')?.value||state.reinforcementEntry;state.strategyStage='initiative';initiativeRolling=state.turningPoint!==1&&state.threat!==0;save();render();if(initiativeRolling)animateInitiativeResult();});
     $('#rerollInitiative')?.addEventListener('click',()=>{rollInitiative();initiativeRolling=true;save();render();animateInitiativeResult();});
     $$('[data-init]').forEach(b=>b.onclick=()=>beginFirefight(b.dataset.init));
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
@@ -1097,33 +1124,79 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     state.gradeMilestone=null;
     state.playerReady=Math.max(0,state.playerCount-(state.playerCasualtyIds||[]).length);
     state.playerActivated=0;state.npoActivated=0;state.activationNumber=0;state.activationHistory=[];state.playerActivatedIds=[];
-    const grade=threatGrade();
-    activeNpos().forEach(n=>n.ready=true);
-    const reinforcements=[];
-    let blocked=0;
-    if(state.turningPoint>1 && grade>0){
-      const requested=grade, slots=Math.max(0,MAX_NPOS-activeNpos().length), actualReinforcements=Math.min(requested,slots); blocked=requested-actualReinforcements;
-      for(let i=0;i<actualReinforcements;i++){
-        const rr=randomReinforcement(),type=rr.type;
-        const n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId});
-        state.roster.push(n);state.newIds.push(n.id);reinforcements.push(rr);
-      }
-    }
-    let event=null;
-    if(grade===3){event=events[roll(events.length)-1];applyStrategyEvent(event);}
-    state.strategyData={grade,reinforcements,actualReinforcements:reinforcements.length,blocked,event,playerRoll:null,npoRoll:null,suggestedInitiative:'player'};
-    rollInitiative();
+    state.strategyData={grade:threatGrade(),reinforcements:[],actualReinforcements:0,blocked:0,event:null,playerRoll:null,npoRoll:null,suggestedInitiative:'player',missionReadyHooks:[]};
+    state.strategyPipeline={current:'ready',completed:[]};
+    processReadyStep();
+    applyMissionReadyHooks();
+    determineInitiative();
+    processEventStage();
+    processReinforcementStage();
+    state.strategyPipeline.current='complete';
+    const {grade,reinforcements}=state.strategyData;
     state.phase='strategy';state.strategyStage='summary';state.nextSide='player';state.activeNpoId=null;
     log(`Turning Point ${state.turningPoint} started. Grade ${grade}; ${reinforcements.length} reinforcement(s).`);
     save();render();
   }
 
+  function completeStrategyStage(stage,next){
+    state.strategyPipeline.completed.push(stage);
+    state.strategyPipeline.current=next;
+  }
+
+  function processReadyStep(){
+    const dormant=state.threat===0;
+    activeNpos().forEach(npo=>{npo.dormant=dormant;npo.ready=!dormant;});
+    completeStrategyStage('ready','mission-ready-hooks');
+  }
+
+  function applyMissionReadyHooks(){
+    if(state.missionId==='destroy-sarcophagus'&&state.tracker>0){
+      const repairRoll=roll();
+      const controllers=Math.max(0,Number(state.missionReadyContext.sarcophagusControllers)||0);
+      const repairAmount=Math.max(0,repairRoll-controllers);
+      const repaired=Math.min(state.tracker,repairAmount);
+      state.tracker-=repaired;
+      state.strategyData.missionReadyHooks.push({id:'nanoscarab-repair',roll:repairRoll,controllers,repaired});
+      log(`Nanoscarab Repair removed ${repaired} Destruction point(s) during the Ready step (D6: ${repairRoll}; ${controllers} controlling operative(s)).`);
+    }
+    completeStrategyStage('mission-ready-hooks','initiative');
+  }
+
+  function determineInitiative(){
+    rollInitiative();
+    completeStrategyStage('initiative','event');
+  }
+
+  function processEventStage(){
+    const d=state.strategyData;
+    if(d.grade===3){d.event=events[roll(events.length)-1];applyStrategyEvent(d.event);}
+    completeStrategyStage('event','reinforcement');
+  }
+
+  function processReinforcementStage(){
+    const d=state.strategyData,reinforcements=[];
+    let blocked=0;
+    if(state.turningPoint>1&&d.grade>0){
+      const requested=d.grade,slots=Math.max(0,MAX_NPOS-activeNpos().length),actual=Math.min(requested,slots);
+      blocked=requested-actual;
+      for(let i=0;i<actual;i++){
+        const rr=randomReinforcement(),type=rr.type;
+        const n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId});
+        state.roster.push(n);state.newIds.push(n.id);reinforcements.push(rr);
+      }
+    }
+    d.reinforcements=reinforcements;
+    d.actualReinforcements=reinforcements.length;
+    d.blocked=blocked;
+    completeStrategyStage('reinforcement','complete');
+  }
+
   function rollInitiative(){
     if(!state.strategyData)state.strategyData={};
-    if(state.turningPoint===1){
+    if(state.turningPoint===1||state.threat===0){
       state.strategyData.playerRoll=null;
       state.strategyData.npoRoll=null;
-      state.strategyData.suggestedInitiative=missionFirstInitiative();
+      state.strategyData.suggestedInitiative='player';
       return;
     }
     const p=roll(),n=roll();
@@ -2399,11 +2472,11 @@ function showPlayerActivation(stage={}){
     $$('[data-player-roster-status]').forEach(button=>button.onclick=()=>showPlayerOperativeStatus(button.dataset.playerRosterStatus));
   }
   function npoRosterCard(n,controls){
-    const status=n.wounds<=0?'ELIMINATED':n.ready?'READY':'ACTIVATED';
+    const status=n.wounds<=0?'ELIMINATED':n.dormant?'DORMANT':n.ready?'READY':'ACTIVATED';
     return `<article class="player-roster-card npo-roster-card ${n.wounds<=0?'dead':''}">
       <div class="player-roster-card-head"><div><strong>${escapeHtml(npoName(n))}</strong><small>${escapeHtml(n.behavior)}</small></div><span class="npo-status-badge ${status.toLowerCase()}">${status}</span></div>
       <div class="operative-stat-line"><span><small>ATTACK</small><b>${n.attack?.dice??'—'}</b></span><span><small>HIT</small><b>${n.attack?.hit??'—'}+</b></span><span><small>SAVE</small><b>${n.save}+</b></span><span><small>WOUNDS</small><b>${n.wounds}/${n.maxWounds}</b></span></div>
-      ${controls?`<div class="quick-actions"><button class="btn secondary" data-player-attack="${n.id}">Player Attack</button><button class="btn ghost" data-wound="${n.id}">− Wound</button><button class="btn ghost" data-heal="${n.id}">+ Heal</button><button class="btn secondary" data-ready="${n.id}">${n.ready?'Expend':'Ready'}</button><button class="btn danger" data-delete="${n.id}">Delete</button></div>`:''}
+      ${controls?`<div class="quick-actions"><button class="btn secondary" data-player-attack="${n.id}">Player Attack</button><button class="btn ghost" data-wound="${n.id}">− Wound</button><button class="btn ghost" data-heal="${n.id}">+ Heal</button><button class="btn secondary" data-ready="${n.id}" ${n.dormant?'disabled':''}>${n.ready?'Expend':n.dormant?'Dormant':'Ready'}</button><button class="btn danger" data-delete="${n.id}">Delete</button></div>`:''}
     </article>`;
   }
   function operativeCard(n,controls){return npoRosterCard(n,controls);}
@@ -2414,7 +2487,7 @@ function showPlayerActivation(stage={}){
     <details><summary>What is Threat Level?</summary><p>A 0–15 alert meter that rises from loud or destructive actions. Higher Threat produces higher grades, more reinforcements, and eventually Tomb World events.</p></details>
     <details><summary>What is Threat Grade?</summary><p>Grade 0 at Threat 0, Grade 1 at 1–5, Grade 2 at 6–10, and Grade 3 at 11–15. Reinforcements normally equal the current grade after Turning Point 1.</p></details>
     <details><summary>How does alternating activation work?</summary><p>The side with initiative activates first. The Guide then alternates Player and NPO activations whenever both sides still have ready operatives. If one side runs out, the other finishes its remaining activations.</p></details>
-    <details><summary>What happens during the Strategy Phase?</summary><p>The Guide readies operatives, evaluates Threat Grade, generates reinforcements after Turning Point 1, checks for Tomb World events, and resolves initiative.</p></details>
+    <details><summary>What happens during the Strategy Phase?</summary><p>The Guide readies operatives, applies mission Ready rules, determines initiative, then processes Tomb World events and reinforcements.</p></details>
     <details><summary>How are saves and damage handled?</summary><p>Attack dice and save dice are shown with visual pips. Saves cancel hits, and Player damage remains pending until the whole activation is confirmed.</p></details>
   </section>`;}
 
@@ -2445,7 +2518,7 @@ function showPlayerActivation(stage={}){
   function rosterBreakdown(){const counts={};state.roster.forEach(n=>counts[n.type]=(counts[n.type]||0)+1);return Object.entries(counts).map(([k,v])=>`${v} ${k}${v>1?'s':''}`).join(' · ')||'No starting NPOs';}
   function showAddNpo(){showModal('Add NPO',`<div class="field"><label>NPO type</label><select id="newNpoType">${Object.keys(npoDefinitions).map(x=>`<option>${x}</option>`).join('')}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmAdd">Add NPO</button></div>`);$('#confirmAdd').onclick=()=>{if(activeNpos().length>=MAX_NPOS){showToast(`Only ${MAX_NPOS} active NPOs can be on the battlefield.`);return;}const type=$('#newNpoType').value;state.roster.push(createNpo(type));log(`${type} added to the battlefield.`);closeModal();save();render();};}
   function adjustWounds(id,d){const n=state.roster.find(x=>x.id===id);if(!n)return;n.wounds=Math.max(0,Math.min(n.maxWounds,n.wounds+d));if(n.wounds===0)n.ready=false;if(checkGameEnd())return;save();render();}
-  function toggleReady(id){const n=state.roster.find(x=>x.id===id);if(n&&n.wounds>0)n.ready=!n.ready;save();render();}
+  function toggleReady(id){const n=state.roster.find(x=>x.id===id);if(n&&n.wounds>0&&!n.dormant)n.ready=!n.ready;save();render();}
   function deleteNpo(id){state.roster=state.roster.filter(x=>x.id!==id);save();render();}
 
   function showModal(title,content,onClose){

@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v4.1.1
+# Tomb World Solo Guide v4.2.0
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -1066,3 +1066,12 @@ v3.0.7: Kasrkin roster choices updated.
 
 - Corrected the official NPO generation boundary so a 2D6 total of 10 generates a Necron Warrior and only total 11 generates a twin-gauss Tomb Crawler.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v4.1.1.
+
+
+## v4.2.0
+
+- Refactored Strategy processing into ordered Ready, mission hook, initiative, event, and reinforcement stages while preserving the existing two-step Strategy UI.
+- Moved Mission 4 Nanoscarab Repair into the Ready step and recorded its result in persisted Strategy data.
+- Added persisted Dormant NPO state, Threat 0 Expended behavior, normal readiness restoration when Threat rises, and automatic Player initiative during Turning Point 1 and at Threat 0.
+- Clamped malformed imported Threat values and migrated legacy saves with the new Strategy and Dormant fields.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v4.2.0.
