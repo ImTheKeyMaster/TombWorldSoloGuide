@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v4.0.3
+# Tomb World Solo Guide v4.1.1
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
@@ -1054,3 +1054,15 @@ v3.0.7: Kasrkin roster choices updated.
 - Moved operative placement, starting Conceal orders, and initial-resource confirmations after Player and NPO roster generation.
 - Reset placement confirmations whenever the starting NPO roster is regenerated.
 - Updated visible, internal, cache-busting, and service-worker cache versions to v4.0.3.
+
+## v4.1.0
+
+- Added one canonical source for all official Tomb World NPO characteristics, weapons, abilities, and printed behavior data.
+- Corrected setup and reinforcement generation to consume the same official 2D6 table, including total 12 and printed weapon variants.
+- Stored generated NPO weapon identities and starting Conceal orders, with automatic normalization for legacy saved rosters.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v4.1.0.
+
+## v4.1.1
+
+- Corrected the official NPO generation boundary so a 2D6 total of 10 generates a Necron Warrior and only total 11 generates a twin-gauss Tomb Crawler.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v4.1.1.

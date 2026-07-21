@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '4.0.3';
+  const APP_VERSION = '4.1.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -134,12 +134,71 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   let missions=[];
   let maps={};
 
-  const profiles = {
-    'Necron Warrior': {behavior:'Marksman',wounds:10,save:3,attack:{dice:4,hit:4,normal:3,crit:4}},
-    'Canoptek Scarab Swarm': {behavior:'Brawler',wounds:8,save:4,attack:{dice:5,hit:4,normal:2,crit:3}},
-    'Canoptek Macrocyte': {behavior:'Sentinel',wounds:9,save:4,attack:{dice:4,hit:3,normal:3,crit:4}},
-    'Canoptek Tomb Crawler': {behavior:'Guardian',wounds:12,save:3,attack:{dice:4,hit:3,normal:4,crit:5}}
+  // Official NPO datacards, Tomb World Mission Pack pp. 6-7. Rules are data only;
+  // later remediation PRs will implement their behaviour and weapon effects.
+  const npoDefinitions = {
+    'Canoptek Scarab Swarm': {
+      name:'Canoptek Scarab Swarm',type:'Canoptek Scarab Swarm',move:6,apl:2,save:5,wounds:10,baseSize:40,
+      compatibilityBehavior:'Brawler',compatibilityAttack:{dice:5,hit:4,normal:2,crit:3},defaultWeaponId:'feeder-mandibles',
+      rangedWeapons:[],
+      meleeWeapons:[{id:'feeder-mandibles',name:'Feeder mandibles',type:'melee',attacks:5,hit:4,damage:{normal:1,critical:2},rules:[]}],
+      abilities:[],
+      behavior:{summary:'Move towards the enemy to fight them, seeking cover on the way.',engageActions:['Fight','Charge'],actions:['Fight','Charge the closest player operative via the shortest possible route','Reposition towards the closest player operative, to cover if possible','Dash towards the closest player operative, to cover if possible'],operatesHatches:true}
+    },
+    'Necron Warrior': {
+      name:'Necron Warrior',type:'Necron Warrior',move:5,apl:2,save:4,wounds:9,baseSize:32,
+      compatibilityBehavior:'Marksman',compatibilityAttack:{dice:4,hit:4,normal:3,crit:4},defaultWeaponId:'gauss-flayer',
+      rangedWeapons:[
+        {id:'gauss-flayer',name:'Gauss flayer',type:'ranged',attacks:4,hit:4,damage:{normal:3,critical:4},rules:['Piercing 1']},
+        {id:'gauss-reaper',name:'Gauss reaper',type:'ranged',attacks:4,hit:3,damage:{normal:3,critical:4},rules:['Range 8"','Piercing 1']}
+      ],
+      meleeWeapons:[{id:'combat-attachment',name:'Combat attachment',type:'melee',attacks:3,hit:4,damage:{normal:3,critical:4},rules:[]}],
+      abilities:[],
+      behavior:{summary:'Move to an ideal position to shoot the enemy, but fight if unable to do anything else.',engageActions:['Shoot','Fight'],actions:['Fall Back','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission','Fight'],operatesHatches:true}
+    },
+    'Canoptek Tomb Crawler': {
+      name:'Canoptek Tomb Crawler',type:'Canoptek Tomb Crawler',move:5,apl:2,save:3,wounds:21,baseSize:50,
+      compatibilityBehavior:'Guardian',compatibilityAttack:{dice:4,hit:3,normal:4,crit:5},defaultWeaponId:'twin-gauss-reapers',
+      rangedWeapons:[
+        {id:'twin-gauss-reapers',name:'Twin gauss reapers',type:'ranged',profiles:[
+          {id:'focused',name:'Focused',attacks:5,hit:4,damage:{normal:4,critical:5},rules:['Piercing 1','Punishing']},
+          {id:'sweeping',name:'Sweeping',attacks:4,hit:4,damage:{normal:4,critical:5},rules:['Piercing 1','Punishing','Torrent 1"']}
+        ]},
+        {id:'transdimensional-isolator',name:'Transdimensional isolator',type:'ranged',attacks:5,hit:4,damage:{normal:5,critical:6},rules:['Dimensional Banishment']}
+      ],
+      meleeWeapons:[{id:'claws',name:'Claws',type:'melee',attacks:4,hit:4,damage:{normal:4,critical:4},rules:['Brutal']}],
+      abilities:[
+        {id:'weapon-sentinel',name:'Weapon Sentinel',text:'When selecting a valid target, if this operative has a Conceal order, it cannot use Light terrain for cover. This can allow it to be targeted but does not remove its cover save.'},
+        {id:'steadfast',name:'Steadfast',text:'When determining control of a marker, this operative can be treated as having APL 3. This takes precedence over all other APL changes.'},
+        {id:'dimensional-banishment',name:'Dimensional Banishment',text:'After using this weapon, if damage was inflicted or any critical successes were retained and the target was not incapacitated, roll 2D6. If the result is higher than the target remaining wounds, it is incapacitated.'}
+      ],
+      behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',engageActions:['Fight','Shoot'],actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use the sweeping twin gauss reapers profile when it would target more than one player operative.'}
+    },
+    'Canoptek Macrocyte': {
+      name:'Canoptek Macrocyte',type:'Canoptek Macrocyte',move:7,apl:2,save:4,wounds:7,baseSize:28,
+      compatibilityBehavior:'Sentinel',compatibilityAttack:{dice:4,hit:3,normal:3,crit:4},defaultWeaponId:'gauss-scalpel',
+      rangedWeapons:[
+        {id:'gauss-scalpel',name:'Gauss scalpel',type:'ranged',attacks:4,hit:4,damage:{normal:3,critical:4},rules:['Piercing 1']},
+        {id:'tesla-caster',name:'Tesla caster',type:'ranged',profiles:[
+          {id:'focused',name:'Focused',attacks:5,hit:4,damage:{normal:2,critical:3},rules:[]},
+          {id:'living-lightning',name:'Living lightning',attacks:5,hit:4,damage:{normal:2,critical:3},rules:['Blast 2"']}
+        ]}
+      ],
+      meleeWeapons:[{id:'claws-and-tail',name:'Claws & tail',type:'melee',attacks:4,hit:4,damage:{normal:3,critical:4},rules:[]}],
+      abilities:[{id:'aggressive-defence-construct',name:'Aggressive Defence Construct',text:'If incapacitated by a player operative within 2", roll one D3. On a 2+, inflict damage on that player operative equal to the result.'}],
+      behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',engageActions:['Fight','Shoot'],actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use the living lightning tesla caster profile when it would target more than one player operative and no NPOs.'}
+    }
   };
+
+  // Official 2D6 table, Tomb World Mission Pack p. 5. The unavailable-model
+  // instruction to use the next row is a tabletop contingency, not a fallback.
+  const npoGenerationTable = [
+    {min:2,max:3,type:'Canoptek Scarab Swarm',weaponIds:['feeder-mandibles']},
+    {min:4,max:6,type:'Canoptek Macrocyte',weaponIds:['gauss-scalpel','tesla-caster']},
+    {min:7,max:10,type:'Necron Warrior',weaponIds:['gauss-flayer','gauss-reaper']},
+    {min:11,max:11,type:'Canoptek Tomb Crawler',weaponIds:['twin-gauss-reapers']},
+    {min:12,max:12,type:'Canoptek Tomb Crawler',weaponIds:['transdimensional-isolator']}
+  ];
 
   const events = [
     {id:'awakened-warrior',type:'tomb-world-event',title:'Awakened Warrior',description:'Add one ready Necron Warrior at a suitable tomb entry point.'},
@@ -189,7 +248,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const base=initialState(), merged={...base,...raw};
     if(!['home','help','setup','game'].includes(merged.screen))merged.screen='home';
     if(!['play','mission','roster','player-roster','journal','help'].includes(merged.tab))merged.tab='play';
-    merged.roster=Array.isArray(raw?.roster)?raw.roster:[];
+    merged.roster=Array.isArray(raw?.roster)?raw.roster.map(normalizeNpo):[];
     merged.journal=Array.isArray(raw?.journal)?raw.journal:[];
     merged.newIds=Array.isArray(raw?.newIds)?raw.newIds:[];
     merged.activationHistory=Array.isArray(raw?.activationHistory)?raw.activationHistory:[];
@@ -210,6 +269,35 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.playerCount=merged.playerRoster.length;
     return merged;
   }
+  function npoDefinition(type){return npoDefinitions[type]||null;}
+  function npoWeapon(definition,weaponId){
+    return [...(definition?.rangedWeapons||[]),...(definition?.meleeWeapons||[])].find(weapon=>weapon.id===weaponId)||null;
+  }
+  function legacyNpoType(npo){
+    if(npoDefinitions[npo?.type])return npo.type;
+    return Object.keys(npoDefinitions).find(type=>String(npo?.name||'').startsWith(type))||npo?.type;
+  }
+  function normalizeNpo(npo){
+    if(!npo||typeof npo!=='object')return npo;
+    const type=legacyNpoType(npo),definition=npoDefinition(type);
+    if(!definition)return {...npo,order:npo.order||'Conceal'};
+    const weaponId=npoWeapon(definition,npo.weaponId)?.id||definition.defaultWeaponId;
+    return {
+      ...npo,
+      type,
+      name:npo.name||definition.name,
+      move:Number.isFinite(Number(npo.move))?Number(npo.move):definition.move,
+      apl:Number.isFinite(Number(npo.apl))?Number(npo.apl):definition.apl,
+      save:Number.isFinite(Number(npo.save))?Number(npo.save):definition.save,
+      maxWounds:Number.isFinite(Number(npo.maxWounds))?Number(npo.maxWounds):definition.wounds,
+      wounds:Number.isFinite(Number(npo.wounds))?Number(npo.wounds):definition.wounds,
+      baseSize:Number.isFinite(Number(npo.baseSize))?Number(npo.baseSize):definition.baseSize,
+      behavior:npo.behavior||definition.compatibilityBehavior,
+      attack:npo.attack&&typeof npo.attack==='object'?{...npo.attack}:{...definition.compatibilityAttack},
+      weaponId,
+      order:npo.order||'Conceal'
+    };
+  }
   function mission(){ return missions.find(m => m.id === state.missionId) || missions[0]; }
   function missionSetup(m=mission()){return m?.startingNpos?.formula||'0';}
   function missionTracker(m=mission()){return m?.tracker?.label||'Mission progress';}
@@ -220,6 +308,23 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function roll(sides=6){ return Math.floor(Math.random()*sides)+1; }
   function rollD3(){ return roll(3); }
   function uid(){ return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`; }
+  function generationResult(total){return npoGenerationTable.find(row=>total>=row.min&&total<=row.max)||null;}
+  function generatedWeaponId(result){return result.weaponIds[roll(result.weaponIds.length)-1];}
+  function createNpo(type,name=`${type} ${state.roster.length+1}`,options={}){
+    const definition=npoDefinition(type);
+    if(!definition)throw new Error(`Unknown NPO type: ${type}`);
+    const weaponId=npoWeapon(definition,options.weaponId)?.id||definition.defaultWeaponId;
+    return {
+      id:uid(),name,type,move:definition.move,apl:definition.apl,save:definition.save,
+      maxWounds:definition.wounds,wounds:definition.wounds,baseSize:definition.baseSize,
+      behavior:definition.compatibilityBehavior,attack:{...definition.compatibilityAttack},weaponId,order:'Conceal',
+      ready:options.ready??true,deployed:options.deployed??true
+    };
+  }
+  function rollNpo(){
+    const rolls=[roll(6),roll(6)],total=rolls[0]+rolls[1],result=generationResult(total);
+    return {...result,rolls,total,weaponId:generatedWeaponId(result)};
+  }
   function activeNpos(){ return state.roster.filter(n => n.wounds > 0); }
   function readyNpos(){ return activeNpos().filter(n => n.ready); }
   function livingPlayerOperativeCount(){
@@ -308,11 +413,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const m=mission(); let count=0, formula='0';
     if(missionSetup(m)==='2D3+3'){ const a=rollD3(),b=rollD3(); count=a+b+3; formula=`${a} + ${b} + 3 = ${count}`; }
     if(missionSetup(m)==='D3+6'){ const a=rollD3(); count=a+6; formula=`${a} + 6 = ${count}`; }
-    const table=['Canoptek Scarab Swarm','Canoptek Scarab Swarm','Canoptek Macrocyte','Necron Warrior','Necron Warrior','Necron Warrior','Necron Warrior','Necron Warrior','Canoptek Tomb Crawler','Canoptek Tomb Crawler','Necron Warrior'];
     state.roster=[];
     for(let i=0;i<count;i++){
-      const type=table[Math.min(table.length-1,Math.max(0,roll(6)+roll(6)-2))];
-      const p=profiles[type]; state.roster.push({id:uid(),name:`${type} ${i+1}`,type,behavior:p.behavior,maxWounds:p.wounds,wounds:p.wounds,save:p.save,attack:{...p.attack},ready:false,deployed:false});
+      const result=rollNpo();
+      state.roster.push(createNpo(result.type,`${result.type} ${i+1}`,{weaponId:result.weaponId,ready:false,deployed:false}));
     }
     state.newIds=[]; log(`${m.name}: generated ${count} starting NPOs (${formula}).`); return {count,formula};
   }
@@ -1000,8 +1104,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(state.turningPoint>1 && grade>0){
       const requested=grade, slots=Math.max(0,MAX_NPOS-activeNpos().length), actualReinforcements=Math.min(requested,slots); blocked=requested-actualReinforcements;
       for(let i=0;i<actualReinforcements;i++){
-        const rr=randomReinforcement();const type=rr.type,p=profiles[type];
-        const n={id:uid(),name:`${type} R${state.turningPoint}-${i+1}`,type,behavior:p.behavior,maxWounds:p.wounds,wounds:p.wounds,save:p.save,attack:{...p.attack},ready:true,deployed:true};
+        const rr=randomReinforcement(),type=rr.type;
+        const n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId});
         state.roster.push(n);state.newIds.push(n.id);reinforcements.push(rr);
       }
     }
@@ -1045,11 +1149,6 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(event.id==='awakened-warrior' && activeNpos().length<MAX_NPOS)state.roster.push(createNpo('Necron Warrior',`Necron Warrior E${state.turningPoint}`));
   }
 
-  function createNpo(type,name=`${type} ${state.roster.length+1}`){
-    const p=profiles[type];
-    return {id:uid(),name,type,behavior:p.behavior,maxWounds:p.wounds,wounds:p.wounds,save:p.save,attack:{...p.attack},ready:true,deployed:true};
-  }
-
   function resolveStrategyNpoEvent(outcome,operativeId){
     const d=state.strategyData,event=d?.event;
     if(state.phase!=='strategy'||state.strategyStage!=='summary'||!event?.action||d.eventAction?.result)return;
@@ -1071,7 +1170,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     save();render();
   }
 
-  function randomReinforcement(){ const a=roll(),b=roll(),r=a+b; return {rolls:[a,b],total:r,type:r<=4?'Canoptek Scarab Swarm':r<=6?'Canoptek Macrocyte':r<=10?'Necron Warrior':'Canoptek Tomb Crawler'}; }
+  function randomReinforcement(){return rollNpo();}
   function nextNpo(){ let n=state.roster.find(x=>x.id===state.activeNpoId&&x.ready&&x.wounds>0); if(!n){n=readyNpos().sort((a,b)=>priority(b)-priority(a))[0];state.activeNpoId=n?.id||null;} return n; }
   function priority(n){return ({Guardian:4,Marksman:3,Brawler:2,Sentinel:1}[n.behavior]||1)+(n.wounds/n.maxWounds<.5?-.5:0);}
 
@@ -2344,7 +2443,7 @@ function showPlayerActivation(stage={}){
     return `<g class="guide-map-marker guide-map-objective" transform="translate(${x} ${y})"><path d="M0-18 18 0 0 18-18 0Z"/><text y="5" text-anchor="middle">${label}</text></g>`;
   }
   function rosterBreakdown(){const counts={};state.roster.forEach(n=>counts[n.type]=(counts[n.type]||0)+1);return Object.entries(counts).map(([k,v])=>`${v} ${k}${v>1?'s':''}`).join(' · ')||'No starting NPOs';}
-  function showAddNpo(){showModal('Add NPO',`<div class="field"><label>NPO type</label><select id="newNpoType">${Object.keys(profiles).map(x=>`<option>${x}</option>`).join('')}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmAdd">Add NPO</button></div>`);$('#confirmAdd').onclick=()=>{if(activeNpos().length>=MAX_NPOS){showToast(`Only ${MAX_NPOS} active NPOs can be on the battlefield.`);return;}const type=$('#newNpoType').value;state.roster.push(createNpo(type));log(`${type} added to the battlefield.`);closeModal();save();render();};}
+  function showAddNpo(){showModal('Add NPO',`<div class="field"><label>NPO type</label><select id="newNpoType">${Object.keys(npoDefinitions).map(x=>`<option>${x}</option>`).join('')}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmAdd">Add NPO</button></div>`);$('#confirmAdd').onclick=()=>{if(activeNpos().length>=MAX_NPOS){showToast(`Only ${MAX_NPOS} active NPOs can be on the battlefield.`);return;}const type=$('#newNpoType').value;state.roster.push(createNpo(type));log(`${type} added to the battlefield.`);closeModal();save();render();};}
   function adjustWounds(id,d){const n=state.roster.find(x=>x.id===id);if(!n)return;n.wounds=Math.max(0,Math.min(n.maxWounds,n.wounds+d));if(n.wounds===0)n.ready=false;if(checkGameEnd())return;save();render();}
   function toggleReady(id){const n=state.roster.find(x=>x.id===id);if(n&&n.wounds>0)n.ready=!n.ready;save();render();}
   function deleteNpo(id){state.roster=state.roster.filter(x=>x.id!==id);save();render();}
