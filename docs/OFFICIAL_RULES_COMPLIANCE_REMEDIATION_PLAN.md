@@ -29,7 +29,7 @@ Future implementation PRs must:
 ## Dependency Analysis
 
 - **Rules data is foundational.** Complete NPO datacards, weapon variants, event instances, and the single page-5 roll table must exist before behavior, combat, or reinforcement consumers can be reliable.
-- **Strategy timing owns cross-system order.** Ready hooks, event lifecycle, reinforcements, dormancy, and initiative must expose staged transitions rather than mutate all results in `startTurningPoint()`.
+- **Strategy timing owns cross-system order.** Ready hooks and dormancy resolve first, initiative is determined before event eligibility/count is resolved, and event effects resolve before reinforcements. These transitions must be staged rather than mutating all results in `startTurningPoint()`.
 - **Threat is transaction-sensitive.** Shoot/Fight changes belong at confirmed action completion, not recommendation; mission/event exceptions must call the same `setThreat()` path.
 - **Activation selection and decision behavior are one dependency cluster.** `nextNpo()`, `priority()`, `npoQuestions`, `nextNpoQuestionKey()`, `chooseNpoDecision()`, and `resolveNpo()` must use the same printed priorities and delay expenditure until confirmation.
 - **Mission state is the authority for mission completion.** Typed state/evaluators must replace `state.tracker` and universal elimination in `checkGameEnd()`, while `renderMission()` and end-turn UI become views of that state.
@@ -64,9 +64,9 @@ Future implementation PRs must:
 - **Purpose:** Turn Strategy into explicit rules-ordered stages and implement Threat-0 dormancy/initiative without yet adding the full event deck.
 - **Findings addressed:** STR-02, STR-04, THR-01/02/06, ABS-04, and additional Dormant NPO state.
 - **Likely files changed:** `app.js`; `Missions/04-destroy-sarcophagus.json` only if typed timing metadata is required.
-- **Implementation order:** normalize Threat; add derived dormancy and zero/nonzero transitions; stage Ready and Mission 4 repair; preserve an event hook before reinforcement; derive first-turn/Threat-0 initiative; label manual override as correction.
-- **Acceptance criteria:** Threat 0 NPOs remain expended and cannot ready; leaving Threat 0 readies them; player automatically has initiative at Threat 0 and TP1; repair occurs in Ready; later stages cannot mutate before confirmation.
-- **Regression tests:** Threat transitions 0↔1, TP1 and later initiative, malformed imports, cancel/reload at every Strategy stage, and existing Grade boundaries.
+- **Implementation order:** normalize Threat; add derived dormancy and zero/nonzero transitions; stage Ready and Mission 4 repair; derive first-turn/Threat-0/rolled initiative; expose the resolved initiative to a later event hook; preserve event-before-reinforcement ordering; label manual override as correction.
+- **Acceptance criteria:** Threat 0 NPOs remain expended and cannot ready; leaving Threat 0 readies them; player automatically has initiative at Threat 0 and TP1; repair occurs in Ready; initiative is final before event draw count is evaluated; later stages cannot mutate before confirmation.
+- **Regression tests:** Threat transitions 0↔1, TP1 and later initiative, event eligibility inputs after initiative, malformed imports, cancel/reload at every Strategy stage, and existing Grade boundaries.
 - **Dependencies on earlier PRs:** PR 2 for normalized NPO state.
 
 ### PR 4 — Activation selection and official NPO decision behavior
@@ -94,9 +94,9 @@ Future implementation PRs must:
 - **Purpose:** Implement the physical deck, correct draw count/timing, exact effect branches, placement, persistence, expiry, and redraws.
 - **Findings addressed:** STR-03, EVT-01/02/03/04/06, REI-05, PER-02, and the omitted-card/duplicate-weighting issue.
 - **Likely files changed:** `app.js`; `styles.css` only for existing event-card/dialog patterns.
-- **Implementation order:** encode each physical instance; deck/used/active state; eligibility/count; draw without replacement; exact effects and placement confirmation; impossible-effect redraw; end-TP expiry/next-Ready recycling.
-- **Acceptance criteria:** no TP1 draw; Grade-3 TP2+ draw; exactly one extra card when either qualifying condition applies; duplicates have printed weight; effects resolve in draw order before reinforcement; duration and reload behavior are correct.
-- **Regression tests:** deterministic deck exhaustion/duplicate weighting, both second-draw conditions together/separately, Threat 15 branches, cap/impossible redraws, every card effect, end/Ready lifecycle, old saves, and 390px scrolling.
+- **Implementation order:** encode each physical instance; deck/used/active state; consume the initiative finalized by PR 3 when evaluating eligibility/count; draw without replacement; resolve exact effects and placement confirmation; handle impossible-effect redraws; then allow reinforcement resolution; expire effects at end TP and recycle used cards in the next Ready step.
+- **Acceptance criteria:** no TP1 draw; Grade-3 TP2+ draw; initiative is determined before event draw count; exactly one extra card is drawn when the NPOs lack initiative, Threat is 15, or both; duplicates have printed weight; effects resolve in draw order before reinforcement; duration and reload behavior are correct.
+- **Regression tests:** deterministic deck exhaustion/duplicate weighting; Player-initiative and NPO-initiative cases at Threat 11–14; both second-draw conditions together/separately; Threat 15 branches; cap/impossible redraws; every card effect; end/Ready lifecycle; old saves; and 390px scrolling.
 - **Dependencies on earlier PRs:** PR 2 data, PR 3 staged Strategy, PR 4 behavior state, and PR 5 combat hooks.
 
 ### PR 7 — Mission-specific state, actions, objectives, and completion
@@ -286,13 +286,13 @@ PDF page 2, “Tomb World Event Cards”; PDF page 3, “NPO Reinforcements”; 
 The pack directly sequences event-card gambits before reinforcement gambits and places repair in the Ready step. The app immediately generates reinforcements, applies an event afterward, and has no repair dispatch. Verified locations: `startTurningPoint()` in `app.js`; Mission 4 JSON `Nanoscarab Repair` prose.
 
 **Required behavior:**
-Confirmed High issue; the exact code order is the reverse of the printed event/reinforcement order, in addition to missing mission timing. Required correction: Stage Ready, event gambit(s), reinforcements, and initiative-facing UI in printed order, with Mission 4 repair at Ready.
+Confirmed High issue; the exact code order is the reverse of the printed event/reinforcement order, in addition to missing mission timing. Required correction: Stage Ready (including Mission 4 repair), determine initiative, resolve the required event draw or draws using that initiative result, and then resolve reinforcements.
 
 **Likely implementation locations:**
 `startTurningPoint()` in `app.js`; Mission 4 JSON `Nanoscarab Repair` prose. The owning shared flow is identified in PR 3; state additions must pass through `initialState()`, `normalizeState()`, `save()`, and `load()` when persistence is relevant.
 
 **Implementation approach:**
-Make the smallest correction in the existing flow: Stage Ready, event gambit(s), reinforcements, and initiative-facing UI in printed order, with Mission 4 repair at Ready.
+Make the smallest correction in the existing flow: split `startTurningPoint()` into confirmable stages ordered Ready and mission hooks → initiative → event draw/effects → reinforcements. Do not calculate the event draw count until initiative is final.
 
 **Dependencies:**
 PR 2 typed data where events/NPOs are involved; preserve the staged Strategy flow.
@@ -426,13 +426,13 @@ PDF page 2, “Tomb World Event Cards.” Directly: only after the first turning
 The original issue is real. It should have stated the exact rule: the app can draw on Turning Point 1, never draws twice, and draws before initiative is chosen while failing to use the relevant initiative state. Verified locations: `events` and `startTurningPoint()` (`if (grade===3)` one selection) in `app.js`.
 
 **Required behavior:**
-Confirmed High issue with broader exact scope than originally stated. Required correction: Gate to Turning Point 2+, implement the two independent second-draw conditions as a single additional draw, and sequence against initiative as the pack requires.
+Confirmed High issue with broader exact scope than originally stated. Required correction: Gate to Turning Point 2+, determine initiative before evaluating event count, and draw one additional card when the NPOs lack initiative, Threat is 15, or both.
 
 **Likely implementation locations:**
 `events` and `startTurningPoint()` (`if (grade===3)` one selection) in `app.js`. The owning shared flow is identified in PR 6; state additions must pass through `initialState()`, `normalizeState()`, `save()`, and `load()` when persistence is relevant.
 
 **Implementation approach:**
-Make the smallest correction in the existing flow: Gate to Turning Point 2+, implement the two independent second-draw conditions as a single additional draw, and sequence against initiative as the pack requires.
+Make the smallest correction in the existing flow: Gate to Turning Point 2+, consume the finalized initiative result, and implement the two second-draw conditions as a single additional draw before reinforcements.
 
 **Dependencies:**
 PR 3 Strategy sequencing and PR 2 typed NPO/card data.
@@ -1886,7 +1886,7 @@ PR 1.
 Every implementation PR must provide a traceability table from finding ID to official page, changed function/data, and passing test. At minimum, the combined suite must cover:
 
 - **Static/data checks:** every page-5 total; every NPO/weapon/rule on pages 5–7; all physical event instances on pages 20–22; all six missions and maps.
-- **State-machine checks:** Strategy stage order, cancel/reload at each stage, Ready/event/reinforcement/initiative ordering, end-of-turn expiry, and next-Ready recycling.
+- **State-machine checks:** Strategy stage order, cancel/reload at each stage, Ready/initiative/event/reinforcement ordering, initiative-dependent event draw count, end-of-turn expiry, and next-Ready recycling.
 - **Threat checks:** 0–15 bounds, all grades, dormancy transitions, exact default triggers/exceptions, Mission 5 rules, event changes, and malformed imports.
 - **Activation/behavior checks:** alternation, official selection priority, each operative behavior branch/fallback, required manual predicates, target ties, and no premature expenditure.
 - **Combat checks:** every NPO ranged/melee profile and mission-pack weapon rule, with canceled/committed action boundaries. Do not treat Core Fight/cover/save claims as certified.
@@ -1903,7 +1903,7 @@ After PR 9, a reviewer must independently:
 1. Re-enumerate the audit review and confirm every Confirmed finding and every corrected Partially Confirmed scope has a matrix entry and test result.
 2. Confirm all Incorrect findings remain excluded: SET-06, STR-01, STR-06, EVT-05, NPO-05, NPO-06, MIS-05, DAT-03, and PER-03 are not independent approved changes even where their narrative overlaps a separately approved finding.
 3. Confirm all Unable to Verify findings remain unimplemented unless separately authorized: ACT-02, COM-01/03/05/06/07, DAT-01, HR-01, plus unresolved portions of STR-04, ACT-04, REI-04, and PER-02.
-4. Compare each implemented change directly to its cited PDF page, including exact timing, prerequisites, exceptions, card multiplicity, redraw, placement, and mission end conditions.
+4. Compare each implemented change directly to its cited PDF page, including exact timing, prerequisites, exceptions, card multiplicity, redraw, placement, and mission end conditions; specifically verify that initiative is final before event draw count and that all event effects precede reinforcements.
 5. Trace each rule to one authoritative calculation/data source; reject duplicate tables or screen-local versions.
 6. Exercise all acceptance and regression tests above, inspect browser console output, and perform complete runs of all six missions.
 7. Load pre-remediation saves and verify compatibility without silent data loss.
