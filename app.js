@@ -3491,11 +3491,13 @@ function showPlayerActivation(stage={}){
     return [...actions,...hooks].flatMap(event=>event.operations||[]).find(operation=>operation.id===operationId)||null;
   }
 
+  function missionDetailsContentFallback(){
+    const selected=mission();
+    return `<div class="mission-details"><h3>${escapeHtml(selected?.name||'Selected Mission')}</h3><section><h4>Objective</h4><p>${escapeHtml(selected?.objective||'Review the mission rules and track progress on the tabletop.')}</p></section><p class="muted">Automated mission progress is not available for this mission.</p></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
+  }
+
   function missionDetailsContent(){
-    if(!objectiveEngine){
-      const selected=mission();
-      return `<div class="mission-details"><h3>${escapeHtml(selected?.name||'Selected Mission')}</h3><section><h4>Objective</h4><p>${escapeHtml(selected?.objective||'Review the mission rules and track progress on the tabletop.')}</p></section><p class="muted">Automated mission progress is not available for this mission.</p></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
-    }
+    if(!objectiveEngine)return missionDetailsContentFallback();
     const model=objectiveEngine.getMissionDetailsModel();
     const objective=model.objectives[0];
     const history=model.history.slice(0,objectiveDefinition.presentation.historyDisplayCount||5);
@@ -3507,8 +3509,10 @@ function showPlayerActivation(stage={}){
 
   function showMissionDetails(){
     let completed=false;
-    try{completed=Boolean(objectiveEngine?.getMissionHudModel().completed);}catch(error){console.warn('[MissionEngine] Mission details unavailable.',error);}
-    showModal(completed?'MISSION STATUS':'MISSION DETAILS',missionDetailsContent());
+    let content;
+    try{completed=Boolean(objectiveEngine?.getMissionHudModel().completed);content=missionDetailsContent();}
+    catch(error){console.warn('[MissionEngine] Mission details unavailable.',error);content=missionDetailsContentFallback();}
+    showModal(completed?'MISSION STATUS':'MISSION DETAILS',content);
   }
 
   function showMissionResult(title,outcome){

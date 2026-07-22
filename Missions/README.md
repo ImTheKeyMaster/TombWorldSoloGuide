@@ -23,7 +23,7 @@ Save migration first preserves and normalizes the whole game state. The engine t
 3. Add its path to the `definitions` array in `manifest.json`. The registry rejects duplicate IDs after loading all registered definitions.
 4. Describe objectives, actions, hooks, and presentation using data only. Executable JavaScript, HTML, `eval`, and function bodies are prohibited.
 5. Validate the JSON syntax and contract against `mission.schema.json`, then run `python -m unittest discover -s tests -p 'test_*.py'`.
-6. Confirm every referenced objective, dialog, input and result exists earlier in its event, and keep event IDs unique across actions and hooks.
+6. Confirm every referenced objective, dialog, input and result exists earlier in its event; keep action IDs unique among actions and lifecycle-event IDs unique across hooks.
 7. Verify keyboard/dialog behavior, a 390px viewport, save/resume, lifecycle idempotency, and that objective completion continues the battle.
 
 The initial engine supports counter and boolean objectives; safe `all`, `any`, and `not` conditions; comparisons; the `add`, `subtract`, `multiply`, `min`, and `max` expressions; and these operations:

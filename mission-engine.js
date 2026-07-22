@@ -83,10 +83,11 @@
     }
   }
 
-  function validateEvent(event,path,objectiveIds,eventIds){
+  function validateEvent(event,path,objectiveIds,eventIds=null){
     requireRecord(event,path);requireString(event.id,`${path}.id`);
-    if(eventIds.has(event.id))fail('DUPLICATE_EVENT_ID',`${path}.id`,'must be unique across actions and hooks',event.id);
-    eventIds.add(event.id);
+    if(eventIds?.has(event.id))fail('DUPLICATE_EVENT_ID',`${path}.id`,'must be unique across lifecycle events',event.id);
+    eventIds?.add(event.id);
+    if(event.oncePer&&!['game','turningPoint','activation','unlimited','manual'].includes(event.oncePer))fail('INVALID_DEFINITION',`${path}.oncePer`,'has an unsupported idempotency scope',event.oncePer);
     if(event.availability)validateCondition(event.availability,`${path}.availability`);
     if(!Array.isArray(event.operations))fail('INVALID_DEFINITION',`${path}.operations`,'must be an array',event.operations);
     const references=new Set();
@@ -125,7 +126,7 @@
     definition.actions.forEach((action,index)=>{
       const path=`${sourcePath}.actions[${index}]`;requireRecord(action,path);requireString(action.id,`${path}.id`);requireString(action.label,`${path}.label`);
       if(actionIds.has(action.id))fail('DUPLICATE_ACTION_ID',`${path}.id`,'must be unique',action.id);actionIds.add(action.id);
-      validateEvent(action,path,objectiveIds,eventIds);
+      validateEvent(action,path,objectiveIds);
     });
     if(!isRecord(definition.hooks))fail('INVALID_DEFINITION',`${sourcePath}.hooks`,'must be an object',definition.hooks);
     Object.entries(definition.hooks).forEach(([hookName,events])=>{
@@ -143,12 +144,13 @@
 
   async function createMissionRegistry(entries,fetchJson){
     if(!Array.isArray(entries))throw new MissionEngineError('INVALID_REGISTRY','Mission definition registry must be an array.');
+    if(typeof fetchJson!=='function')throw new MissionEngineError('INVALID_REGISTRY','Mission definition registry requires a fetch callback.');
     const loaded=[];const ids=new Set();
     for(const entry of entries){
       const path=typeof entry==='string'?entry:entry?.file;
       requireString(path,'mission definition path');
       let data;
-      try{data=await fetchJson(path);}catch(error){throw new MissionEngineError('DEFINITION_LOAD_FAILED',`Unable to load ${path}: ${error.message}`,{path,cause:error,causeCode:error.code});}
+      try{data=await fetchJson(path);}catch(error){if(error instanceof MissionEngineError)throw error;throw new MissionEngineError('DEFINITION_LOAD_FAILED',`Unable to load ${path}: ${error.message}`,{path,cause:error,causeCode:error.code});}
       const definition=validateMissionDefinition(data,path);
       if(ids.has(definition.id))throw new MissionEngineError('DUPLICATE_MISSION_ID',`Duplicate mission definition ID "${definition.id}".`,{path,missionId:definition.id});
       ids.add(definition.id);loaded.push({path,definition});
@@ -158,6 +160,7 @@
 
   async function loadMissionDefinition(missionId,options={}){
     requireString(missionId,'missionId');
+    if(!isRecord(options))throw new MissionEngineError('INVALID_OPTIONS','Mission definition loader options must be an object.');
     const fetchImpl=options.fetch||global.fetch;
     if(typeof fetchImpl!=='function')throw new MissionEngineError('FETCH_UNAVAILABLE','Mission definitions require the Fetch API.');
     const base=options.basePath||'Missions/';
@@ -168,6 +171,7 @@
       try{return await response.json();}catch(error){throw new MissionEngineError('MALFORMED_JSON',`${path} contains malformed JSON.`,{path,cause:error});}
     };
     const manifest=options.manifest||await fetchJson(`${base}manifest.json`);
+    if(!isRecord(manifest))throw new MissionEngineError('INVALID_REGISTRY','Missions/manifest.json must contain an object.');
     const entries=options.entries||manifest.definitions;
     if(!Array.isArray(entries))throw new MissionEngineError('INVALID_REGISTRY','Missions/manifest.json has no definitions registry.');
     const registry=await createMissionRegistry(entries.map(entry=>typeof entry==='string'?`${base}${entry}`:`${base}${entry.file}`),fetchJson);
@@ -205,20 +209,23 @@
     const contextFor=context=>({mission:runtime,gameplay:isRecord(context?.gameplay)?context.gameplay:{},results:isRecord(context?.results)?context.results:{},inputs:isRecord(context?.inputs)?context.inputs:{}});
     const evaluateCompletion=(objective,state,context={})=>objective.type==='boolean'?Boolean(state.value):evaluateCondition({path:'value',...(objective.completion||{operator:'>=',value:objective.target})},{value:state.value,gameplay:context.gameplay||{}});
     function initializeMissionRuntime(nextDefinition,context={}){
+      context=isRecord(context)?context:{};
       definition=validateMissionDefinition(nextDefinition);
       const timestamp=now(context);runtime={schemaVersion:RUNTIME_SCHEMA_VERSION,missionId:definition.id,initialized:true,objectives:{},flags:{},eventExecutions:{},history:[],lastUpdatedAt:timestamp};
       definition.objectives.forEach(objective=>{runtime.objectives[objective.id]={value:objective.initial,completed:false,completedAt:null,completedTurningPoint:null};runtime.objectives[objective.id].completed=evaluateCompletion(objective,runtime.objectives[objective.id],context);if(runtime.objectives[objective.id].completed){runtime.objectives[objective.id].completedAt=timestamp;runtime.objectives[objective.id].completedTurningPoint=context.turningPoint??null;}});
       return runtime;
     }
     function restoreMissionRuntime(nextDefinition,savedRuntime,context={}){
+      context=isRecord(context)?context:{};
       initializeMissionRuntime(nextDefinition,context);
       if(!isRecord(savedRuntime)||savedRuntime.missionId!==definition.id)return runtime;
       const restored=clone(savedRuntime);
       definition.objectives.forEach(objective=>{
         const saved=restored.objectives?.[objective.id];
         if(!isRecord(saved))return;
-        try{setObjectiveValue(objective.id,saved.value,context);}catch(error){console.warn('[MissionEngine] Ignored invalid saved objective value.',{missionId:definition.id,objectiveId:objective.id,reason:error.message});}
-        if(saved.completed){runtime.objectives[objective.id].completed=true;runtime.objectives[objective.id].completedAt=saved.completedAt||runtime.objectives[objective.id].completedAt||now(context);runtime.objectives[objective.id].completedTurningPoint=saved.completedTurningPoint??runtime.objectives[objective.id].completedTurningPoint;}
+        let valueRestored=true;
+        try{setObjectiveValue(objective.id,saved.value,context);}catch(error){valueRestored=false;console.warn('[MissionEngine] Ignored invalid saved objective value.',{missionId:definition.id,objectiveId:objective.id,reason:error.message});}
+        if(valueRestored&&saved.completed){runtime.objectives[objective.id].completed=true;runtime.objectives[objective.id].completedAt=saved.completedAt||runtime.objectives[objective.id].completedAt||now(context);runtime.objectives[objective.id].completedTurningPoint=saved.completedTurningPoint??runtime.objectives[objective.id].completedTurningPoint;}
       });
       runtime.flags=isRecord(restored.flags)?restored.flags:{};
       runtime.eventExecutions=isRecord(restored.eventExecutions)?restored.eventExecutions:{};
@@ -227,6 +234,7 @@
       return runtime;
     }
     function setObjectiveValue(objectiveId,value,metadata={}){
+      metadata=isRecord(metadata)?metadata:{};
       requireRuntime();const objective=objectiveDefinition(objectiveId),state=runtime.objectives[objectiveId];
       if(!objective||!state)throw new MissionEngineError('UNKNOWN_OBJECTIVE',`Unknown mission objective "${objectiveId}".`);
       if(objective.lockOnComplete&&state.completed)return state.value;
@@ -237,7 +245,7 @@
     }
     function adjustObjectiveValue(objectiveId,delta,metadata={}){if(typeof delta!=='number'||!Number.isFinite(delta))throw new MissionEngineError('INVALID_COUNTER_VALUE','Counter adjustment requires a finite number.');return setObjectiveValue(objectiveId,getObjectiveValue(objectiveId)+delta,metadata);}
     function getObjectiveValue(objectiveId){requireRuntime();if(!runtime.objectives[objectiveId])throw new MissionEngineError('UNKNOWN_OBJECTIVE',`Unknown mission objective "${objectiveId}".`);return runtime.objectives[objectiveId].value;}
-    function recordMissionHistory(entry,context={}){requireRuntime();if(!isRecord(entry))throw new MissionEngineError('INVALID_HISTORY_ENTRY','Mission history entry must be an object.');const timestamp=now(context);runtime.history.push({id:entry.id||`mission-${Date.now()}-${runtime.history.length}`,timestamp,...clone(entry)});runtime.history=runtime.history.slice(-HISTORY_LIMIT);runtime.lastUpdatedAt=timestamp;return runtime.history.at(-1);}
+    function recordMissionHistory(entry,context={}){requireRuntime();if(!isRecord(entry))throw new MissionEngineError('INVALID_HISTORY_ENTRY','Mission history entry must be an object.');context=isRecord(context)?context:{};const timestamp=now(context);runtime.history.push({id:entry.id||`mission-${Date.now()}-${runtime.history.length}`,timestamp,...clone(entry)});runtime.history=runtime.history.slice(-HISTORY_LIMIT);runtime.lastUpdatedAt=timestamp;return runtime.history.at(-1);}
     const operationValue=(operation,eventContext)=>Object.prototype.hasOwnProperty.call(operation,'value')?operation.value:operation.valueFrom?safePath(eventContext,operation.valueFrom):evaluateExpression(operation.valueExpression,eventContext);
     async function executeEvent(event,context={}){
       requireRuntime();if(!isRecord(event)||!Array.isArray(event.operations))throw new MissionEngineError('INVALID_EVENT','Mission event must contain an operations array.');
@@ -284,9 +292,9 @@
       }
     }
     async function executeMissionAction(actionId,context={}){requireRuntime();requireString(actionId,'actionId');const action=definition.actions.find(item=>item.id===actionId);if(!action)throw new MissionEngineError('UNKNOWN_ACTION',`Unknown mission action "${actionId}".`);return executeEvent(action,isRecord(context)?context:{});}
-    async function executeMissionHook(hookName,context={}){requireRuntime();if(!HOOK_NAMES.has(hookName))throw new MissionEngineError('UNKNOWN_HOOK',`Unknown mission hook "${hookName}".`);const outcomes=[];for(const event of definition.hooks[hookName]||[])outcomes.push(await executeEvent(event,context));return outcomes;}
+    async function executeMissionHook(hookName,context={}){requireRuntime();if(!HOOK_NAMES.has(hookName))throw new MissionEngineError('UNKNOWN_HOOK',`Unknown mission hook "${hookName}".`);context=isRecord(context)?context:{};const outcomes=[];for(const event of definition.hooks[hookName]||[])outcomes.push(await executeEvent(event,context));return outcomes;}
     function evaluateMissionConditions(trigger,context={}){requireRuntime();return trigger?evaluateCondition(trigger,contextFor(context)):true;}
-    function evaluateObjectiveCompletion(context={}){requireRuntime();definition.objectives.forEach(objective=>setObjectiveValue(objective.id,runtime.objectives[objective.id].value,context));return Object.fromEntries(Object.entries(runtime.objectives).map(([id,state])=>[id,state.completed]));}
+    function evaluateObjectiveCompletion(context={}){requireRuntime();context=isRecord(context)?context:{};definition.objectives.forEach(objective=>setObjectiveValue(objective.id,runtime.objectives[objective.id].value,context));return Object.fromEntries(Object.entries(runtime.objectives).map(([id,state])=>[id,state.completed]));}
     function getMissionHudModel(){requireRuntime();const objective=definition.objectives[0],state=objective?runtime.objectives[objective.id]:null;return {missionId:definition.id,name:definition.name,label:definition.hud.label||'MISSION',objectiveId:objective?.id||null,value:state?.value??null,target:objective?.target??null,completed:Boolean(state?.completed),visible:definition.presentation.showHud!==false};}
     function getMissionDetailsModel(){requireRuntime();return {missionId:definition.id,name:definition.name,briefing:definition.briefing,objectiveSummary:definition.objectiveSummary,objectives:definition.objectives.map(objective=>({...clone(objective),...clone(runtime.objectives[objective.id])})),history:clone(runtime.history).reverse(),completion:clone(definition.completion)};}
     return {initializeMissionRuntime,restoreMissionRuntime,getMissionRuntime:()=>runtime,getMissionDefinition:()=>definition,getObjectiveValue,setObjectiveValue,adjustObjectiveValue,evaluateMissionConditions,executeMissionAction,executeMissionHook,evaluateObjectiveCompletion,recordMissionHistory,getMissionHudModel,getMissionDetailsModel};

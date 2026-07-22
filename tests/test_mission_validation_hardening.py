@@ -22,13 +22,15 @@ const api=globalThis.TombWorldMissionEngine;
 const original=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarcophagus.json'));
 const copy=()=>JSON.parse(JSON.stringify(original));
 const fails=(mutate,code)=>{const value=copy();mutate(value);assert.throws(()=>api.validateMissionDefinition(value,'fixture.json'),error=>error.code===code&&error.details.path.startsWith('fixture.json'));};
-fails(value=>value.hooks.onBattleEnded=[{id:'breachSarcophagus',operations:[]}],'DUPLICATE_EVENT_ID');
+fails(value=>{value.hooks.onBattleEnded=[{id:'duplicateEvent',operations:[]}];value.hooks.onTurningPointEnded=[{id:'duplicateEvent',operations:[]}]},'DUPLICATE_EVENT_ID');
 fails(value=>value.completion.objectiveId='missing','INVALID_OBJECTIVE_REFERENCE');
 fails(value=>value.completion.dialogId='missing','INVALID_DIALOG_REFERENCE');
 fails(value=>value.actions[0].operations[1].valueFrom='results.missing.total','INVALID_EVENT_REFERENCE');
 fails(value=>value.hooks.notAHook=[],'UNKNOWN_HOOK');
 fails(value=>value.schemaVersion=2,'UNSUPPORTED_SCHEMA_VERSION');
 fails(value=>value.dialogs=null,'INVALID_DEFINITION');
+fails(value=>value.actions[0].oncePer='week','INVALID_DEFINITION');
+const sharedId=copy();sharedId.hooks.onBattleEnded=[{id:sharedId.actions[0].id,operations:[]}];assert.equal(api.validateMissionDefinition(sharedId).id,'04');
 const empty=copy();empty.objectives=[];empty.actions=[];empty.hooks={};empty.completion={endsBattle:false};empty.dialogs={};empty.futureMetadata={safe:true};
 assert.equal(api.validateMissionDefinition(empty).futureMetadata.safe,true);
 """
@@ -42,10 +44,13 @@ vm.runInThisContext(fs.readFileSync('mission-engine.js','utf8'));
 const api=globalThis.TombWorldMissionEngine;
 const definition=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarcophagus.json'));
 assert.throws(()=>api.createMissionEngine(null),error=>error.code==='INVALID_SERVICES');
-const engine=api.createMissionEngine();
+(async()=>{const engine=api.createMissionEngine();
 assert.throws(()=>engine.getMissionHudModel(),error=>error.code==='MISSION_NOT_INITIALIZED');
-engine.restoreMissionRuntime(definition,{missionId:'04',objectives:{destructionPoints:{value:'invalid'}},history:null,eventExecutions:null});
+engine.restoreMissionRuntime(definition,{missionId:'04',objectives:{destructionPoints:{value:'invalid',completed:true}},history:null,eventExecutions:null},null);
 assert.equal(engine.getObjectiveValue('destructionPoints'),0);
+assert.equal(engine.getMissionRuntime().objectives.destructionPoints.completed,false);
+assert.deepEqual(engine.evaluateObjectiveCompletion(null),{destructionPoints:false});
+assert.deepEqual(await engine.executeMissionHook('onBattleEnded',null),[]);
 engine.setObjectiveValue('destructionPoints',20,{turningPoint:2,now:()=> 'first'});
 const first=engine.getMissionRuntime().objectives.destructionPoints;
 engine.setObjectiveValue('destructionPoints',20,{turningPoint:3,now:()=> 'second'});
@@ -54,6 +59,7 @@ assert.equal(repeated.completedAt,'first');assert.equal(repeated.completedTurnin
 assert.throws(()=>engine.adjustObjectiveValue('missing',1),error=>error.code==='UNKNOWN_OBJECTIVE');
 assert.throws(()=>engine.adjustObjectiveValue('destructionPoints',NaN),error=>error.code==='INVALID_COUNTER_VALUE');
 assert.throws(()=>engine.recordMissionHistory(null),error=>error.code==='INVALID_HISTORY_ENTRY');
+})().catch(error=>{console.error(error);process.exit(1)});
 """
         )
 
@@ -67,8 +73,10 @@ const definition=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarc
 (async()=>{
   await assert.rejects(()=>api.createMissionRegistry(['a.json','b.json'],async()=>definition),error=>error.code==='DUPLICATE_MISSION_ID');
   const fetch=async path=>({ok:true,json:async()=>{if(path.endsWith('manifest.json'))return {definitions:[{file:'bad.json'}]};throw new SyntaxError('bad json');}});
-  await assert.rejects(()=>api.loadMissionDefinition('04',{fetch}),error=>error.code==='DEFINITION_LOAD_FAILED'&&error.details.causeCode==='MALFORMED_JSON');
+  await assert.rejects(()=>api.loadMissionDefinition('04',{fetch}),error=>error.code==='MALFORMED_JSON');
   await assert.rejects(()=>api.loadMissionDefinition('',{fetch}),error=>error.code==='INVALID_DEFINITION');
+  await assert.rejects(()=>api.loadMissionDefinition('04',null),error=>error.code==='INVALID_OPTIONS');
+  await assert.rejects(()=>api.createMissionRegistry([],null),error=>error.code==='INVALID_REGISTRY');
 })().catch(error=>{console.error(error);process.exit(1)});
 """
         )
