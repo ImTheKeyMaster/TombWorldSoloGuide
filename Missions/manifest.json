@@ -9,6 +9,10 @@
   },
   "definitions": [
     {
+      "id": "01",
+      "file": "definition-01-shifting-labyrinth.json"
+    },
+    {
       "id": "04",
       "file": "definition-04-destroy-sarcophagus.json"
     }

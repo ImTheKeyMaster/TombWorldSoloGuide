@@ -45,16 +45,16 @@
       "oneOf": [
         { "type": "number" },
         { "type": "object", "required": ["path"], "properties": { "path": { "type": "string", "minLength": 1 } }, "additionalProperties": false },
-        { "type": "object", "required": ["operation", "arguments"], "properties": { "operation": { "enum": ["add", "subtract", "multiply", "min", "max"] }, "arguments": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/expression" } } }, "additionalProperties": false }
+        { "type": "object", "required": ["operation", "arguments"], "properties": { "operation": { "enum": ["add", "subtract", "multiply", "divide", "ceil", "min", "max"] }, "arguments": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/expression" } } }, "additionalProperties": false }
       ]
     },
     "objective": {
       "oneOf": [
-        { "type": "object", "required": ["id", "type", "label", "initial", "minimum", "maximum", "target", "completion"], "properties": { "id": { "$ref": "#/$defs/id" }, "type": { "const": "counter" }, "label": { "$ref": "#/$defs/text" }, "initial": { "type": "number" }, "minimum": { "type": "number" }, "maximum": { "type": "number" }, "target": { "type": "number" }, "lockOnComplete": { "type": "boolean" }, "completion": { "type": "object", "required": ["operator", "value"], "properties": { "operator": { "$ref": "#/$defs/operator" }, "value": { "type": "number" } }, "additionalProperties": false } }, "additionalProperties": false },
+        { "type": "object", "required": ["id", "type", "label", "initial", "minimum", "maximum", "target", "completion"], "properties": { "id": { "$ref": "#/$defs/id" }, "type": { "const": "counter" }, "label": { "$ref": "#/$defs/text" }, "initial": { "type": "number" }, "minimum": { "type": "number" }, "maximum": { "type": "number" }, "target": { "type": "number" }, "targetExpression": { "$ref": "#/$defs/expression" }, "lockOnComplete": { "type": "boolean" }, "completion": { "type": "object", "required": ["operator", "value"], "properties": { "operator": { "$ref": "#/$defs/operator" }, "value": { "type": "number" } }, "additionalProperties": false } }, "additionalProperties": false },
         { "type": "object", "required": ["id", "type", "label", "initial"], "properties": { "id": { "$ref": "#/$defs/id" }, "type": { "const": "boolean" }, "label": { "$ref": "#/$defs/text" }, "initial": { "type": "boolean" }, "lockOnComplete": { "type": "boolean" } }, "additionalProperties": false }
       ]
     },
-    "dice": { "type": "object", "required": ["count", "sides"], "properties": { "count": { "type": "integer", "minimum": 1 }, "sides": { "const": 6 } }, "additionalProperties": false },
+    "dice": { "type": "object", "required": ["count", "sides"], "properties": { "count": { "type": "integer", "minimum": 1 }, "sides": { "enum": [3, 6] } }, "additionalProperties": false },
     "operation": {
       "type": "object",
       "required": ["type"],

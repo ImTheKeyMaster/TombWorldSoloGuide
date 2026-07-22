@@ -26,13 +26,15 @@ Save migration first preserves and normalizes the whole game state. The engine t
 6. Confirm every referenced objective, dialog, input and result exists earlier in its event; keep action IDs unique among actions and lifecycle-event IDs unique across hooks.
 7. Verify keyboard/dialog behavior, a 390px viewport, save/resume, lifecycle idempotency, and that objective completion continues the battle.
 
-The initial engine supports counter and boolean objectives; safe `all`, `any`, and `not` conditions; comparisons; the `add`, `subtract`, `multiply`, `min`, and `max` expressions; and these operations:
+The engine supports counter and boolean objectives; safe `all`, `any`, and `not` conditions; comparisons; the `add`, `subtract`, `multiply`, `divide`, `ceil`, `min`, and `max` expressions; and these operations:
 
 - `setCounter`, `addCounter`, `subtractCounter`
 - `setFlag`, `clearFlag`, `completeObjective`, `appendHistory`
 - `requestDiceRoll`, `requestNumericInput`, `showDialog`
 
-D6 is the only supported die. The application must supply UI services for request operations when later lifecycle packages integrate a definition. Add an engine capability before authoring content that needs another objective type, hook, expression, die, or operation. Do not encode unsupported behavior in display text or create mission-specific JavaScript.
+D3 and D6 are supported through the shared animated dice service. Counter targets can use a safe `targetExpression`; the only currently approved target variable is `gameplay.playerOperativeCount`, and expressions cannot traverse globals or arbitrary properties. Expression names and arity are allowlisted, unsafe path segments are rejected, operands and resolved targets must be finite, and division by zero fails with a controlled error. This generic capability is required by Mission 01 because its target is `ceil(playerOperativeCount / 2)`, with a safe minimum of one.
+
+The resolved target is stored in runtime state and therefore serialized by the normal save flow. On restoration it is deliberately recalculated from the normalized saved roster rather than trusting the serialized target, making the selected roster authoritative and malformed target data harmless. `refreshMissionContext` performs the same generic recalculation explicitly after roster selection; ordinary gameplay does not call it. Objectives with `lockOnComplete: true` retain their completed value, as Mission 04 does. Unlocked objectives can be corrected below their target and return to incomplete. Add an engine capability before authoring content that needs another objective type, hook, expression, die, or operation. Do not encode unsupported behavior in display text or create mission-specific JavaScript.
 
 `fixtures/future-mission.json` is test-only proof that another mission using existing operations requires no engine change. It is intentionally absent from the production definition registry and mission selection.
 

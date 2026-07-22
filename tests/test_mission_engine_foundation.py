@@ -99,7 +99,10 @@ const mission=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarcoph
         manifest = json.loads((ROOT / "Missions/manifest.json").read_text())
         self.assertEqual(
             manifest["definitions"],
-            [{"id": "04", "file": "definition-04-destroy-sarcophagus.json"}],
+            [
+                {"id": "01", "file": "definition-01-shifting-labyrinth.json"},
+                {"id": "04", "file": "definition-04-destroy-sarcophagus.json"},
+            ],
         )
         for relative in (
             "Missions/mission.schema.json",

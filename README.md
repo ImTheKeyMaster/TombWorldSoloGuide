@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v6.0.0
+# Tomb World Solo Guide v6.1.0
+
+## v6.1.0
+
+**Version 6.1.0 - Shifting Labyrinth Mission Engine**
+
+- Implemented Mission 01, Shifting Labyrinth, with JSON-driven escape progress, dynamic roster-based targets, animated Auspex Calibration D3 rolls, Mission HUD, Mission Details, history, and save/load support.
+- Extended the generic Mission Engine with safe dynamic target expressions and D3 dice while preserving Mission 04 behavior.
+- Added Mission 01 automated acceptance and Mission 04 regression coverage.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v6.1.0.
 
 ## v6.0.0
 

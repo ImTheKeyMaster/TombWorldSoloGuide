@@ -7,7 +7,8 @@
   const OPERATION_TYPES=new Set(['setCounter','addCounter','subtractCounter','setFlag','clearFlag','completeObjective','appendHistory','requestDiceRoll','requestNumericInput','showDialog']);
   const HOOK_NAMES=new Set(['onMissionInitialized','onStrategyPhaseReadyStep','onPlayerActivationStarted','onPlayerActivationCompleted','onNpoActivationStarted','onNpoActivationCompleted','onTurningPointEnded','onBattleEnded']);
   const CONDITION_OPERATORS=new Set(['==','!=','>','>=','<','<=','in','notIn','truthy','falsy']);
-  const EXPRESSION_OPERATIONS=new Set(['add','subtract','multiply','min','max']);
+  const EXPRESSION_OPERATIONS=new Set(['add','subtract','multiply','divide','ceil','min','max']);
+  const TARGET_EXPRESSION_PATHS=new Set(['gameplay.playerOperativeCount']);
 
   class MissionEngineError extends Error{
     constructor(code,message,details={}){super(message);this.name='MissionEngineError';this.code=code;this.details=details;}
@@ -37,12 +38,17 @@
     if(!['truthy','falsy'].includes(condition.operator)&&!Object.prototype.hasOwnProperty.call(condition,'value'))fail('INVALID_CONDITION',`${path}.value`,'is required',undefined);
   }
 
-  function validateExpression(expression,path='expression'){
+  function validateExpression(expression,path='expression',allowedPaths=null){
     if(typeof expression==='number'){if(!Number.isFinite(expression))fail('INVALID_EXPRESSION',path,'must be finite',expression);return;}
-    if(isRecord(expression)&&typeof expression.path==='string'&&Object.keys(expression).length===1)return;
+    if(isRecord(expression)&&typeof expression.path==='string'&&Object.keys(expression).length===1){
+      if(allowedPaths&&!allowedPaths.has(expression.path))fail('INVALID_EXPRESSION_PATH',`${path}.path`,'is not an approved expression variable',expression.path);
+      return;
+    }
     if(!isRecord(expression)||!EXPRESSION_OPERATIONS.has(expression.operation))fail('INVALID_EXPRESSION',path,'has an unsupported expression operation',expression?.operation);
     if(!Array.isArray(expression.arguments)||!expression.arguments.length)fail('INVALID_EXPRESSION',`${path}.arguments`,'must be a non-empty array',expression.arguments);
-    expression.arguments.forEach((argument,index)=>validateExpression(argument,`${path}.arguments[${index}]`));
+    if(expression.operation==='divide'&&expression.arguments.length!==2)fail('INVALID_EXPRESSION',`${path}.arguments`,'divide requires exactly two arguments',expression.arguments);
+    if(expression.operation==='ceil'&&expression.arguments.length!==1)fail('INVALID_EXPRESSION',`${path}.arguments`,'ceil requires exactly one argument',expression.arguments);
+    expression.arguments.forEach((argument,index)=>validateExpression(argument,`${path}.arguments[${index}]`,allowedPaths));
   }
 
   function expressionPaths(expression){
@@ -74,7 +80,7 @@
     if(operation.type==='requestDiceRoll'){
       if(!isRecord(operation.dice))fail('INVALID_DEFINITION',`${path}.dice`,'must be an object',operation.dice);
       if(!Number.isInteger(operation.dice.count)||operation.dice.count<1)fail('INVALID_DEFINITION',`${path}.dice.count`,'must be a positive integer',operation.dice.count);
-      if(operation.dice.sides!==6)fail('INVALID_DEFINITION',`${path}.dice.sides`,'only D6 dice are supported',operation.dice.sides);
+      if(![3,6].includes(operation.dice.sides))fail('INVALID_DEFINITION',`${path}.dice.sides`,'only D3 and D6 dice are supported',operation.dice.sides);
     }
     if(operation.type==='requestNumericInput'){
       if(Object.prototype.hasOwnProperty.call(operation,'minimum'))requireFinite(operation.minimum,`${path}.minimum`);
@@ -121,6 +127,7 @@
       if(objective.type==='counter'){
         ['initial','minimum','maximum','target'].forEach(field=>requireFinite(objective[field],`${path}.${field}`));
         if(objective.minimum>objective.maximum||objective.initial<objective.minimum||objective.initial>objective.maximum||objective.target<objective.minimum||objective.target>objective.maximum)fail('INVALID_DEFINITION',path,'counter bounds are inconsistent',objective);
+        if(objective.targetExpression)validateExpression(objective.targetExpression,`${path}.targetExpression`,TARGET_EXPRESSION_PATHS);
         validateCondition({path:'value',...(objective.completion||{})},`${path}.completion`);
       }else if(typeof objective.initial!=='boolean')fail('INVALID_DEFINITION',`${path}.initial`,'must be boolean',objective.initial);
     });
@@ -201,7 +208,7 @@
     if(expression.path)return safePath(context,expression.path);
     const values=expression.arguments.map(argument=>evaluateExpression(argument,context));
     if(values.some(value=>typeof value!=='number'||!Number.isFinite(value)))throw new MissionEngineError('INVALID_EXPRESSION_VALUE','Mission expression operands must resolve to finite numbers.');
-    switch(expression.operation){case 'add':return values.reduce((sum,value)=>sum+value,0);case 'subtract':return values.slice(1).reduce((result,value)=>result-value,values[0]);case 'multiply':return values.reduce((result,value)=>result*value,1);case 'min':return Math.min(...values);case 'max':return Math.max(...values);default:return 0;}
+    switch(expression.operation){case 'add':return values.reduce((sum,value)=>sum+value,0);case 'subtract':return values.slice(1).reduce((result,value)=>result-value,values[0]);case 'multiply':return values.reduce((result,value)=>result*value,1);case 'divide':if(values.length!==2||values[1]===0)throw new MissionEngineError('INVALID_EXPRESSION_VALUE','Mission division requires two operands and a non-zero divisor.');return values[0]/values[1];case 'ceil':if(values.length!==1)throw new MissionEngineError('INVALID_EXPRESSION_VALUE','Mission ceiling requires one operand.');return Math.ceil(values[0]);case 'min':return Math.min(...values);case 'max':return Math.max(...values);default:return 0;}
   }
 
   function createMissionEngine(services={}){
@@ -210,12 +217,17 @@
     const objectiveDefinition=id=>definition?.objectives.find(objective=>objective.id===id)||null;
     const requireRuntime=()=>{if(!runtime||!definition)throw new MissionEngineError('MISSION_NOT_INITIALIZED','Mission runtime has not been initialized.');};
     const contextFor=context=>({mission:runtime,gameplay:isRecord(context?.gameplay)?context.gameplay:{},results:isRecord(context?.results)?context.results:{},inputs:isRecord(context?.inputs)?context.inputs:{}});
-    const evaluateCompletion=(objective,state,context={})=>objective.type==='boolean'?Boolean(state.value):evaluateCondition({path:'value',...(objective.completion||{operator:'>=',value:objective.target})},{value:state.value,gameplay:context.gameplay||{}});
+    const resolvedTarget=(objective,context={})=>{
+      const target=objective.targetExpression?evaluateExpression(objective.targetExpression,contextFor(context)):objective.target;
+      if(typeof target!=='number'||!Number.isFinite(target))throw new MissionEngineError('INVALID_TARGET_VALUE',`Counter "${objective.id}" target must resolve to a finite number.`);
+      return Math.max(objective.minimum,Math.min(objective.maximum,target));
+    };
+    const evaluateCompletion=(objective,state,context={})=>objective.type==='boolean'?Boolean(state.value):evaluateCondition({path:'value',operator:objective.completion?.operator||'>=',value:objective.targetExpression?state.target:(objective.completion?.value??state.target)},{value:state.value,gameplay:context.gameplay||{}});
     function initializeMissionRuntime(nextDefinition,context={}){
       context=isRecord(context)?context:{};
       definition=validateMissionDefinition(nextDefinition);
       const timestamp=now(context);runtime={schemaVersion:RUNTIME_SCHEMA_VERSION,missionId:definition.id,initialized:true,objectives:{},flags:{},eventExecutions:{},history:[],lastUpdatedAt:timestamp};
-      definition.objectives.forEach(objective=>{runtime.objectives[objective.id]={value:objective.initial,completed:false,completedAt:null,completedTurningPoint:null};runtime.objectives[objective.id].completed=evaluateCompletion(objective,runtime.objectives[objective.id],context);if(runtime.objectives[objective.id].completed){runtime.objectives[objective.id].completedAt=timestamp;runtime.objectives[objective.id].completedTurningPoint=context.turningPoint??null;}});
+      definition.objectives.forEach(objective=>{runtime.objectives[objective.id]={value:objective.initial,target:objective.type==='counter'?resolvedTarget(objective,context):null,completed:false,completedAt:null,completedTurningPoint:null};runtime.objectives[objective.id].completed=evaluateCompletion(objective,runtime.objectives[objective.id],context);if(runtime.objectives[objective.id].completed){runtime.objectives[objective.id].completedAt=timestamp;runtime.objectives[objective.id].completedTurningPoint=context.turningPoint??null;}});
       return runtime;
     }
     function restoreMissionRuntime(nextDefinition,savedRuntime,context={}){
@@ -244,9 +256,10 @@
       if(objective.type==='counter'&&(typeof value!=='number'||!Number.isFinite(value)))throw new MissionEngineError('INVALID_COUNTER_VALUE',`Counter "${objectiveId}" requires a finite number.`);
       if(objective.type==='boolean'&&typeof value!=='boolean')throw new MissionEngineError('INVALID_OBJECTIVE_VALUE',`Boolean objective "${objectiveId}" requires a boolean.`);
       state.value=objective.type==='counter'?Math.max(objective.minimum,Math.min(objective.maximum,value)):value;
-      const completed=evaluateCompletion(objective,state,metadata);if(completed&&!state.completed){state.completed=true;state.completedAt=now(metadata);state.completedTurningPoint=metadata.turningPoint??null;}runtime.lastUpdatedAt=now(metadata);return state.value;
+      const completed=evaluateCompletion(objective,state,metadata);if(completed&&!state.completed){state.completed=true;state.completedAt=now(metadata);state.completedTurningPoint=metadata.turningPoint??null;}else if(!completed&&state.completed&&!objective.lockOnComplete){state.completed=false;state.completedAt=null;state.completedTurningPoint=null;}runtime.lastUpdatedAt=now(metadata);return state.value;
     }
     function adjustObjectiveValue(objectiveId,delta,metadata={}){if(typeof delta!=='number'||!Number.isFinite(delta))throw new MissionEngineError('INVALID_COUNTER_VALUE','Counter adjustment requires a finite number.');return setObjectiveValue(objectiveId,getObjectiveValue(objectiveId)+delta,metadata);}
+    function refreshMissionContext(context={}){requireRuntime();context=isRecord(context)?context:{};definition.objectives.forEach(objective=>{if(objective.type==='counter'){runtime.objectives[objective.id].target=resolvedTarget(objective,context);setObjectiveValue(objective.id,runtime.objectives[objective.id].value,context);}});return runtime;}
     function getObjectiveValue(objectiveId){requireRuntime();if(!runtime.objectives[objectiveId])throw new MissionEngineError('UNKNOWN_OBJECTIVE',`Unknown mission objective "${objectiveId}".`);return runtime.objectives[objectiveId].value;}
     function recordMissionHistory(entry,context={}){requireRuntime();if(!isRecord(entry))throw new MissionEngineError('INVALID_HISTORY_ENTRY','Mission history entry must be an object.');context=isRecord(context)?context:{};const timestamp=now(context);runtime.history.push({id:entry.id||`mission-${Date.now()}-${runtime.history.length}`,timestamp,...clone(entry)});runtime.history=runtime.history.slice(-HISTORY_LIMIT);runtime.lastUpdatedAt=timestamp;return runtime.history.at(-1);}
     const operationValue=(operation,eventContext)=>Object.prototype.hasOwnProperty.call(operation,'value')?operation.value:operation.valueFrom?safePath(eventContext,operation.valueFrom):evaluateExpression(operation.valueExpression,eventContext);
@@ -271,7 +284,7 @@
             case 'requestDiceRoll':{
               if(typeof services.requestDiceRoll!=='function')throw new MissionEngineError('SERVICE_UNAVAILABLE','Dice roll service is unavailable.');
               const result=await services.requestDiceRoll(clone(operation),context);
-              if(!isRecord(result)||typeof result.total!=='number'||!Number.isFinite(result.total)||!Array.isArray(result.dice)||result.dice.length!==operation.dice.count)throw new MissionEngineError('INVALID_DICE_RESULT','Dice service returned an invalid result.');
+              if(!isRecord(result)||typeof result.total!=='number'||!Number.isFinite(result.total)||!Array.isArray(result.dice)||result.dice.length!==operation.dice.count||result.dice.some(value=>!Number.isInteger(value)||value<1||value>operation.dice.sides)||result.dice.reduce((sum,value)=>sum+value,0)!==result.total)throw new MissionEngineError('INVALID_DICE_RESULT','Dice service returned an invalid result.');
               eventContext.results[operation.id]=clone(result);break;
             }
             case 'requestNumericInput':{
@@ -298,9 +311,9 @@
     async function executeMissionHook(hookName,context={}){requireRuntime();if(!HOOK_NAMES.has(hookName))throw new MissionEngineError('UNKNOWN_HOOK',`Unknown mission hook "${hookName}".`);context=isRecord(context)?context:{};const outcomes=[];for(const event of definition.hooks[hookName]||[])outcomes.push(await executeEvent(event,context));return outcomes;}
     function evaluateMissionConditions(trigger,context={}){requireRuntime();return trigger?evaluateCondition(trigger,contextFor(context)):true;}
     function evaluateObjectiveCompletion(context={}){requireRuntime();context=isRecord(context)?context:{};definition.objectives.forEach(objective=>setObjectiveValue(objective.id,runtime.objectives[objective.id].value,context));return Object.fromEntries(Object.entries(runtime.objectives).map(([id,state])=>[id,state.completed]));}
-    function getMissionHudModel(){requireRuntime();const objective=definition.objectives[0],state=objective?runtime.objectives[objective.id]:null;return {missionId:definition.id,name:definition.name,label:definition.hud.label||'MISSION',objectiveId:objective?.id||null,value:state?.value??null,target:objective?.target??null,completed:Boolean(state?.completed),visible:definition.presentation.showHud!==false};}
+    function getMissionHudModel(){requireRuntime();const objective=definition.objectives[0],state=objective?runtime.objectives[objective.id]:null;return {missionId:definition.id,name:definition.name,label:definition.hud.label||'MISSION',objectiveId:objective?.id||null,value:state?.value??null,target:state?.target??objective?.target??null,completed:Boolean(state?.completed),visible:definition.presentation.showHud!==false};}
     function getMissionDetailsModel(){requireRuntime();return {missionId:definition.id,name:definition.name,briefing:definition.briefing,objectiveSummary:definition.objectiveSummary,objectives:definition.objectives.map(objective=>({...clone(objective),...clone(runtime.objectives[objective.id])})),history:clone(runtime.history).reverse(),completion:clone(definition.completion)};}
-    return {initializeMissionRuntime,restoreMissionRuntime,getMissionRuntime:()=>runtime,getMissionDefinition:()=>definition,getObjectiveValue,setObjectiveValue,adjustObjectiveValue,evaluateMissionConditions,executeMissionAction,executeMissionHook,evaluateObjectiveCompletion,recordMissionHistory,getMissionHudModel,getMissionDetailsModel};
+    return {initializeMissionRuntime,restoreMissionRuntime,refreshMissionContext,getMissionRuntime:()=>runtime,getMissionDefinition:()=>definition,getObjectiveValue,setObjectiveValue,adjustObjectiveValue,evaluateMissionConditions,executeMissionAction,executeMissionHook,evaluateObjectiveCompletion,recordMissionHistory,getMissionHudModel,getMissionDetailsModel};
   }
 
   global.TombWorldMissionEngine={MissionEngineError,validateMissionDefinition,createMissionRegistry,loadMissionDefinition,evaluateCondition,evaluateExpression,createMissionEngine,constants:{DEFINITION_SCHEMA_VERSION,RUNTIME_SCHEMA_VERSION,HISTORY_LIMIT}};
