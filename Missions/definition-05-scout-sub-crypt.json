@@ -1,0 +1,66 @@
+{
+  "$schema": "./mission.schema.json",
+  "schemaVersion": 1,
+  "id": "05",
+  "slug": "scout-sub-crypt",
+  "name": "Scout Sub-Crypt",
+  "briefing": "Awaken each eligible room the first time it is opened or entered. Once its NPOs have been cleared, a Player operative can perform Scout Room for 1AP. Scout three rooms to complete the mission.",
+  "objectiveSummary": "Scout three eligible rooms after clearing their awakened NPOs.",
+  "objectives": [
+    {
+      "id": "scoutedRooms",
+      "type": "counter",
+      "label": "Rooms Scouted",
+      "initial": 0,
+      "minimum": 0,
+      "maximum": 5,
+      "target": 3,
+      "lockOnComplete": false,
+      "completion": { "operator": ">=", "value": 3 }
+    }
+  ],
+  "actions": [
+    {
+      "id": "awakenRoom",
+      "label": "Awaken Room",
+      "description": "Roll D3. Add the current Threat Grade and set up that many NPOs, to a maximum of 5.",
+      "operations": [
+        { "type": "requestDiceRoll", "id": "awakenRoll", "dice": { "count": 1, "sides": 3 }, "label": "Awaken Room" }
+      ]
+    },
+    {
+      "id": "recordScout",
+      "label": "Scout Room",
+      "operations": [
+        { "type": "addCounter", "objectiveId": "scoutedRooms", "value": 1 }
+      ]
+    },
+    {
+      "id": "correctScout",
+      "label": "Correct Scout Room",
+      "operations": [
+        { "type": "subtractCounter", "objectiveId": "scoutedRooms", "value": 1 }
+      ]
+    }
+  ],
+  "hooks": {},
+  "completion": {
+    "objectiveId": "scoutedRooms",
+    "operator": ">=",
+    "value": 3,
+    "endsBattle": true,
+    "dialogId": "objectiveComplete"
+  },
+  "hud": {
+    "label": "MISSION",
+    "inProgress": { "format": "{value} / {target}" },
+    "complete": { "format": "✓ COMPLETE" }
+  },
+  "dialogs": {
+    "objectiveComplete": {
+      "title": "SCOUT SUB-CRYPT COMPLETE",
+      "message": "Three eligible rooms have been scouted."
+    }
+  },
+  "presentation": { "historyDisplayCount": 5, "showHud": true }
+}

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '6.3.0';
+  const APP_VERSION = '6.4.0';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -91,6 +91,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       state.missionRuntime=objectiveEngine.restoreMissionRuntime(objectiveDefinition,state.missionRuntime,missionLifecycleContext());
       if(missionEngine(selectedMission)?.type==='sabotage')objectiveEngine.setObjectiveValue('sabotagedFeatures',state.missionState?.completedFeatureIds?.length||0,missionLifecycleContext());
       if(missionEngine(selectedMission)?.type==='transponder')objectiveEngine.setObjectiveValue('transponderRecovered',state.missionState?.escaped?1:0,missionLifecycleContext());
+      if(missionEngine(selectedMission)?.type==='scout')objectiveEngine.setObjectiveValue('scoutedRooms',state.missionState?.scoutedRoomIds?.length||0,missionLifecycleContext());
       if(!restoringRuntime)await executeMissionLifecycleHook('onMissionInitialized');
     }catch(error){
       console.error('[MissionEngine] Mission automation unavailable.',{code:error.code||'LOAD_FAILED',missionId:selectedMission?.number,path:error.details?.path,reason:error.message});
@@ -1338,8 +1339,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     },
     scout:(engine,progress)=>{
       const scouted=new Set(progress.scoutedRoomIds);
-      const rooms=engine.rooms.map(room=>{const awakening=progress.awakenedRooms[room.id];return `<div class="mission-objective-row"><span><strong>${escapeHtml(room.label)}</strong><small>${scouted.has(room.id)?'Scouted':awakening?`${awakening.count} NPOs generated${awakening.placementConfirmed?' and placed':' — placement required'}`:'Unopened / unentered'}</small></span><div class="mission-objective-actions">${awakening?'':`<button class="btn secondary compact" data-awaken-room="${room.id}">First Open / Entry</button>`}${awakening&&!awakening.placementConfirmed?`<button class="btn secondary compact" data-confirm-room-placement="${room.id}">Confirm Placement</button>`:''}${awakening?.placementConfirmed&&!scouted.has(room.id)?`<button class="btn primary compact" data-scout-room="${room.id}">Confirm Cleared & Scout</button>`:''}</div></div>`;}).join('');
-      return `<p>${scouted.size} of ${engine.required} rooms scouted. Confirm that an eligible room is cleared on the tabletop before resolving the 1AP Scout Room action.</p><div class="mission-objective-list">${rooms}</div>`;
+      const rooms=engine.rooms.map(room=>{const awakening=progress.awakenedRooms[room.id];return `<div class="mission-objective-row"><span><strong>${escapeHtml(room.label)}</strong><small>${scouted.has(room.id)?'Scouted':awakening?`${awakening.count} NPOs generated${awakening.placementConfirmed?' and placed':' — placement required'}`:'Unopened / unentered'}</small></span><div class="mission-objective-actions">${awakening?'':`<button class="btn secondary compact" data-awaken-room="${room.id}">First Open / Entry</button>`}${awakening&&!awakening.placementConfirmed?`<button class="btn secondary compact" data-confirm-room-placement="${room.id}">Confirm Placement</button>`:''}${awakening?.placementConfirmed&&!scouted.has(room.id)?`<button class="btn primary compact" data-scout-room="${room.id}">Confirm Cleared & Scout (1AP)</button>`:''}${scouted.has(room.id)?`<button class="btn ghost compact" data-correct-scout-room="${room.id}">Correct</button>`:''}</div></div>`;}).join('');
+      return `<p>${objectiveEngine?.getMissionHudModel().value??scouted.size} of ${objectiveEngine?.getMissionHudModel().target??engine.required} rooms scouted. Confirm that an eligible room is cleared on the tabletop before resolving the 1AP Scout Room action.</p><div class="mission-objective-list">${rooms}</div>`;
     },
     regroup:(engine,progress)=>{
       const survivors=inPlayLivingPlayerOperativeIds();
@@ -1408,8 +1409,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       updateMissionProgress(`${playerName(carrierId)} escaped carrying the transponder.`);
     });
     $('#resolveMissionAction')?.addEventListener('click',confirmMissionAction);
-    $$('[data-awaken-room]').forEach(button=>button.onclick=()=>{
-      const count=Math.min(5,rollD3()+threatGrade()), ids=[];
+    $$('[data-awaken-room]').forEach(button=>button.onclick=async()=>{
+      const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('awakenRoom',missionLifecycleContext())):null;
+      if(objectiveEngine&&!outcome)return;
+      const count=Math.min(5,(outcome?.results?.awakenRoll?.total??rollD3())+threatGrade()), ids=[];
       for(let i=0;i<count&&activeNpos().length<MAX_NPOS;i++){
         const result=rollNpo(), n=createNpo(result.type,`${result.type} ${button.dataset.awakenRoom}`,{weaponId:result.weaponId,ready:true,dormant:false,deployed:false,order:'Conceal'});
         n.missionRoom=button.dataset.awakenRoom;state.roster.push(n);ids.push(n.id);
@@ -1422,11 +1425,19 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       state.roster.filter(npo=>awakening.operativeIds.includes(npo.id)).forEach(npo=>{npo.deployed=true;npo.battlefieldState='deployed';});
       updateMissionProgress(`confirmed NPO placement in ${button.dataset.confirmRoomPlacement}.`);
     });
-    $$('[data-scout-room]').forEach(button=>button.onclick=()=>{
+    $$('[data-scout-room]').forEach(button=>button.onclick=async()=>{
+      const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('recordScout',missionLifecycleContext())):null;
+      if(objectiveEngine&&!outcome)return;
       const ids=new Set(state.missionState.scoutedRoomIds);ids.add(button.dataset.scoutRoom);state.missionState.scoutedRoomIds=[...ids];
       const grade=threatGrade(), gradeFloor=[0,0,5,10][grade];
       if(state.threat>gradeFloor)setThreat(gradeFloor-state.threat,'Scout Room');
       updateMissionProgress(`scouted ${button.dataset.scoutRoom}.`);
+    });
+    $$('[data-correct-scout-room]').forEach(button=>button.onclick=async()=>{
+      const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('correctScout',missionLifecycleContext())):null;
+      if(objectiveEngine&&!outcome)return;
+      const ids=new Set(state.missionState.scoutedRoomIds);ids.delete(button.dataset.correctScoutRoom);state.missionState.scoutedRoomIds=[...ids];
+      updateMissionProgress(`corrected the Scout Room record for ${button.dataset.correctScoutRoom}.`);
     });
     $$('[data-regroup-check]').forEach(input=>input.onchange=()=>{
       const id=input.dataset.operativeId;

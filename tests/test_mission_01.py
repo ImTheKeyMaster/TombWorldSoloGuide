@@ -89,6 +89,7 @@ for(const expression of [
             {'id':'02','file':'definition-02-demolition-protocol.json'},
             {'id':'03','file':'definition-03-recover-transponder.json'},
             {'id':'04','file':'definition-04-destroy-sarcophagus.json'},
+            {'id':'05','file':'definition-05-scout-sub-crypt.json'},
         ])
         app=(ROOT/'app.js').read_text(); worker=(ROOT/'service-worker.js').read_text()
         self.assertIn("executeMissionAction(wasEscaped?'correctEscape':'recordEscape'", app)

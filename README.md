@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v6.3.0
+# Tomb World Solo Guide v6.4.0
+
+## v6.4.0
+
+**Version 6.4.0 - Scout Sub-Crypt Mission Engine**
+
+- Registered Mission 05 with the data-driven Mission Engine, including animated D3 room awakening, authoritative room-scout progress, correction, HUD/details history, completion, and restoration.
+- Preserved the official no-starting-NPO setup, first-entry awakening, Conceal/Ready placement flow, Operate Hatch Threat exception, Scout Room Threat reduction, and immediate three-room victory.
+- Added offline caching, validation, and regression coverage for the Mission 05 definition and synchronized all release versions to v6.4.0.
+- Engine Enhancements: None.
 
 ## v6.3.0
 

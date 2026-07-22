@@ -65,11 +65,11 @@ const definition=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarc
         worker = (ROOT / "service-worker.js").read_text()
         manifest = json.loads((ROOT / "Missions/manifest.json").read_text())
 
-        self.assertIn("const APP_VERSION = '6.3.0'", app)
-        self.assertIn("const APP_VERSION = '6.3.0'", worker)
-        self.assertIn("V6.3.0", index)
+        self.assertIn("const APP_VERSION = '6.4.0'", app)
+        self.assertIn("const APP_VERSION = '6.4.0'", worker)
+        self.assertIn("V6.4.0", index)
         for asset in ("app.js", "mission-engine.js", "persistence.js", "styles.css"):
-            self.assertIn(f"{asset}?v=6.3.0", index)
+            self.assertIn(f"{asset}?v=6.4.0", index)
         for asset in (
             "Missions/manifest.json",
             "Missions/mission.schema.json",
@@ -77,6 +77,7 @@ const definition=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarc
             "Missions/definition-02-demolition-protocol.json",
             "Missions/definition-03-recover-transponder.json",
             "Missions/definition-04-destroy-sarcophagus.json",
+            "Missions/definition-05-scout-sub-crypt.json",
         ):
             self.assertIn(f"'./{asset}'", worker)
         self.assertEqual(
@@ -86,10 +87,11 @@ const definition=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarc
                 {"id": "02", "file": "definition-02-demolition-protocol.json"},
                 {"id": "03", "file": "definition-03-recover-transponder.json"},
                 {"id": "04", "file": "definition-04-destroy-sarcophagus.json"},
+                {"id": "05", "file": "definition-05-scout-sub-crypt.json"},
             ],
         )
         self.assertEqual(
-            len(re.findall(r"definition-[^'\"]+\.json", worker)), 4
+            len(re.findall(r"definition-[^'\"]+\.json", worker)), 5
         )
 
 
