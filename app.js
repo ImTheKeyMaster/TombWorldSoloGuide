@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.7.8';
+  const APP_VERSION = '5.7.9';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -2555,10 +2555,14 @@ function showPlayerActivation(stage={}){
     if(combat.aggressiveDefenseAnimating)return aggressiveDefenseRollHtml();
     const aggressiveDamage=aggressiveDefenseDamageValue(combat);
     if(Number.isInteger(combat.aggressiveDefenseRoll)||aggressiveDamage>0){
+      const attackerName=String(combat.attackerName||'').trim();
+      const retaliatoryDamageMessage=aggressiveDamage>0
+        ? `${attackerName?`${escapeHtml(attackerName)} suffers`:'The attacking operative suffers'} ${aggressiveDamage} retaliatory damage.`
+        : `No retaliatory damage inflicted${attackerName?` on ${escapeHtml(attackerName)}`:''}.`;
       return `<section class="combat-stage aggressive-defense-result" aria-label="Aggressive Defense Construct result">
         <small>AGGRESSIVE DEFENSE CONSTRUCT</small>
         <strong>D3 Roll: ${combat.aggressiveDefenseRoll}</strong>
-        <p>${aggressiveDamage>0?`The attacking operative suffers ${aggressiveDamage} damage.`:'No damage inflicted.'}</p>
+        <p>${retaliatoryDamageMessage}</p>
       </section>`;
     }
     return '';
