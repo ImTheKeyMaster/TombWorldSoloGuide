@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.7.9';
+  const APP_VERSION = '5.7.10';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -1410,7 +1410,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const blockedNpos=(state.reinforcementState.blockedOperativeIds||[]).map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean);
       const reinforcementCard=deployingNpos.length||d.blocked
         ? `<section class="card reinforcement-card"><p class="eyebrow">REINFORCEMENTS</p>${deployingNpos.length?`<h3>Deploy ${deployingNpos.length} NPO${deployingNpos.length===1?'':'s'}</h3><ul class="reinforcement-list">${deployingNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul><p>Deploy ${deployingNpos.length===1?'this NPO':'these NPOs'} onto the battlefield using the Tomb World reinforcement rules.</p>`:''}${d.blocked?`<div class="reinforcement-blocked"><h3>Unable to Deploy</h3>${blockedNpos.length?`<ul class="reinforcement-list">${blockedNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul>`:`<p>${d.blocked} reinforcement${d.blocked===1?'':'s'}</p>`}<p>Battlefield NPO limit reached.</p></div>`:''}</section>`:'';
-      const placements=(state.reinforcementState.operativeIds||[]).map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean).map(npo=>`<div class="check-row"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong><small>Randomly determine an open hatchway, set up this operative with a Conceal order using the printed placement requirements, then confirm.</small><input type="text" data-reinforcement-hatchway="${escapeHtml(npo.id)}" value="${escapeHtml(npo.reinforcement?.hatchway||'')}" placeholder="Random hatchway" aria-label="Random hatchway for ${escapeHtml(npoName(npo))}"></span></div>`).join('');
+      const placements=(state.reinforcementState.operativeIds||[]).map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean).map(npo=>`<label class="check-row"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong><small>Randomly determine an open hatchway, set up this operative with a Conceal order using the printed placement requirements, then confirm.</small></span></label>`).join('');
       const resolvedEvents=(d.events||[]).filter(event=>event!==d.event&&event.status!=='drawn').map(strategyEventHtml).join('');
       const activeEvents=(state.eventState.active||[]).map(event=>`<div class="summary-box"><strong>${escapeHtml(event.title)}</strong><br>${escapeHtml(event.text)}</div>`).join('');
       const showStatTooltips=!window.matchMedia('(max-width:600px)').matches;
@@ -1602,7 +1602,6 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $$('[data-player-operative]').forEach(button=>button.addEventListener('click',()=>showPlayerOperativeStatus(button.dataset.playerOperative)));
     $('#startTp')?.addEventListener('click',startTurningPoint);
     $$('[data-reinforcement-placement]').forEach(input=>input.addEventListener('change',()=>confirmReinforcementPlacement(input.dataset.reinforcementPlacement,input.checked)));
-    $$('[data-reinforcement-hatchway]').forEach(input=>input.addEventListener('change',()=>recordReinforcementHatchway(input.dataset.reinforcementHatchway,input.value)));
     $('#eventNpoSelect')?.addEventListener('change',e=>{$('#resolveStrategyEvent').disabled=!e.target.value;});
     $('#resolveStrategyEvent')?.addEventListener('click',resolveStrategyEvent);
     $('#redrawStrategyEvent')?.addEventListener('click',()=>{redrawCurrentEvent('No breach or open hatchway could be changed.');save();render();});
@@ -1824,10 +1823,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
           continue;
         }
         if(n){
-          n.reinforcement={turningPoint:state.turningPoint,hatchway:'',placementConfirmed:false};
+          n.reinforcement={turningPoint:state.turningPoint,placementConfirmed:false};
           n.battlefieldState='deployed';n.deployed=true;n.dormant=state.threat===0;n.ready=!n.dormant;
         }else{
-          n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId,deployed:true,reinforcement:{turningPoint:state.turningPoint,hatchway:'',placementConfirmed:false}});
+          n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId,deployed:true,reinforcement:{turningPoint:state.turningPoint,placementConfirmed:false}});
           state.roster.push(n);state.newIds.push(n.id);
         }
         if(state.startingNpoGeneration)state.startingNpoGeneration.reserveNpoIds=(state.startingNpoGeneration.reserveNpoIds||[]).filter(id=>id!==n.id);
@@ -1851,27 +1850,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function confirmReinforcementPlacement(id,confirmed){
     const npo=state.roster.find(item=>item.id===id&&state.reinforcementState.operativeIds.includes(item.id));
     if(!npo?.reinforcement)return;
-    const placementConfirmed=Boolean(confirmed&&npo.reinforcement.hatchway);
-    npo.reinforcement.placementConfirmed=placementConfirmed;
+    npo.reinforcement.placementConfirmed=Boolean(confirmed);
     npo.deployed=true;
     npo.battlefieldState='deployed';
     const complete=state.reinforcementState.operativeIds.every(operativeId=>state.roster.find(item=>item.id===operativeId)?.reinforcement?.placementConfirmed);
     state.reinforcementState.status=complete?'complete':'placement';
     save();render();
-  }
-
-  function recordReinforcementHatchway(id,hatchway){
-    const npo=state.roster.find(item=>item.id===id&&state.reinforcementState.operativeIds.includes(item.id));
-    if(!npo?.reinforcement)return;
-    const recordedHatchway=hatchway.trim();
-    if(recordedHatchway===npo.reinforcement.hatchway)return;
-    npo.reinforcement.hatchway=recordedHatchway;
-    npo.reinforcement.placementConfirmed=false;
-    npo.deployed=true;
-    npo.battlefieldState='deployed';
-    state.reinforcementState.status='placement';
-    save();
-    setTimeout(render,0);
   }
 
   function rollInitiative(){
