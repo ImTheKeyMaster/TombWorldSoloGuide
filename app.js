@@ -2402,12 +2402,12 @@ function showPlayerActivation(stage={}){
     state.activationNumber++;
     const summary=playerActivationSummary(stage);
     state.activationHistory.unshift({side:'player',label:playerName(operativeId),summary});
-    await executeMissionLifecycleHook('onPlayerActivationCompleted',{activationId,operativeId});
     advanceAfterActivation('player');
     log(`${playerName(operativeId)} completed activation: ${summary}.`);
     closeModal();
     save();
     render();
+    await executeMissionLifecycleHook('onPlayerActivationCompleted',{activationId,operativeId});
   }
 
   function npoName(n){
@@ -3199,17 +3199,15 @@ function showPlayerActivation(stage={}){
     n.ready=false;state.npoActivated++;state.activationNumber++;
     state.activationHistory.unshift({side:'npo',label:npoName(n),action:state.lastActivation.action,target:state.npoAttackTargetId?playerName(state.npoAttackTargetId):null,attackSummary});
     state.lastActivation.committed=true;
-    await executeMissionLifecycleHook('onNpoActivationCompleted',{activationId,operativeId:n.id});
     state.activeNpoId=null;advanceAfterActivation('npo');
     log(`${npoName(n)}: ${state.lastActivation.action}.`);
     state.npoAttackTargetId=null;
     state.npoAttackSummary=null;
     save();
+    closeModal();
+    await executeMissionLifecycleHook('onNpoActivationCompleted',{activationId,operativeId:n.id});
     const gameEnded=checkGameEnd();
-    if(!gameEnded){
-      closeModal();
-      render();
-    }
+    if(!gameEnded)render();
   }
 
 
@@ -3631,7 +3629,7 @@ function showPlayerActivation(stage={}){
     $('#menuNewGame').onclick=confirmNewGame;
   }
 
-  function confirmNewGame(){showModal('Start New Game?',`<p>This will replace the current mission, roster, Threat, Turning Point, and Journal.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmNewGame">Start New Game</button></div>`);$('#confirmNewGame').onclick=()=>{localStorage.removeItem(STORAGE_KEY);state=initialState();state.screen='setup';objectiveEngine=null;objectiveDefinition=null;expandedRosterCategories=null;closeModal();save();render();};}
+  function confirmNewGame(){showModal('Start New Game?',`<p>This will replace the current mission, roster, Threat, Turning Point, and Journal.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmNewGame">Start New Game</button></div>`);$('#confirmNewGame').onclick=()=>{localStorage.removeItem(STORAGE_KEY);state=initialState();state.screen='setup';objectiveEngine=null;objectiveDefinition=null;missionActivationStarts.clear();expandedRosterCategories=null;closeModal();save();render();};}
   function exportSave(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tomb-world-solo-guide-save.json';a.click();URL.revokeObjectURL(a.href);}
   importInput.addEventListener('change',async()=>{const f=importInput.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!isRecord(data))throw new Error();state=normalizeState(data);state.screen='game';const missionRecovered=recoverInvalidMission();await loadObjectiveMission();save();render();if(!missionRecovered)showToast('Save imported.');}catch{showToast('That file is not a valid Tomb World Solo Guide save.');}finally{importInput.value='';}});
 

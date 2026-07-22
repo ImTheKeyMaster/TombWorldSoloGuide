@@ -37,6 +37,13 @@ class MissionLifecycleIntegrationTests(unittest.TestCase):
         self.assertIn("turningPoint:state.turningPoint", self.app)
         self.assertIn("activationId:overrides.activationId??null", self.app)
         self.assertIn("if(missionActivationStarts.has(activationId))return", self.app)
+        self.assertIn("missionActivationStarts.clear()", self.app)
+
+    def test_activation_modals_close_before_completion_result_dialogs_open(self):
+        player = self.app[self.app.index("async function completePlayerActivation"):self.app.index("function npoName")]
+        npo = self.app[self.app.index("async function completeNpoActivation"):self.app.index("function applyNpoAttackDamage")]
+        self.assertLess(player.index("closeModal()"), player.index("onPlayerActivationCompleted"))
+        self.assertLess(npo.index("closeModal()"), npo.index("onNpoActivationCompleted"))
 
     def test_lifecycle_outcomes_use_existing_save_history_and_result_ui(self):
         self.assertIn("objectiveEngine.executeMissionHook(hookName,missionLifecycleContext(overrides))", self.app)
