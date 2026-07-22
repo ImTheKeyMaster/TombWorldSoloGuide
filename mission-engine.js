@@ -4,7 +4,7 @@
   const DEFINITION_SCHEMA_VERSION=1;
   const RUNTIME_SCHEMA_VERSION=1;
   const HISTORY_LIMIT=50;
-  const OPERATION_TYPES=new Set(['setCounter','addCounter','subtractCounter','setFlag','clearFlag','completeObjective','appendHistory','requestDiceRoll','requestNumericInput','showDialog']);
+  const OPERATION_TYPES=new Set(['setCounter','addCounter','subtractCounter','setFlag','clearFlag','completeObjective','appendHistory','requestDiceRoll','requestNumericInput','showDialog','setOperativeInPlay']);
   const HOOK_NAMES=new Set(['onMissionInitialized','onStrategyPhaseReadyStep','onPlayerActivationStarted','onPlayerActivationCompleted','onNpoActivationStarted','onNpoActivationCompleted','onTurningPointEnded','onBattleEnded']);
   const CONDITION_OPERATORS=new Set(['==','!=','>','>=','<','<=','in','notIn','truthy','falsy']);
   const EXPRESSION_OPERATIONS=new Set(['add','subtract','multiply','divide','ceil','min','max']);
@@ -73,6 +73,12 @@
       if(sources[0]==='valueExpression')validateExpression(operation.valueExpression,`${path}.valueExpression`);
     }
     if(['setFlag','clearFlag'].includes(operation.type))requireString(operation.flag,`${path}.flag`);
+    if(operation.type==='setOperativeInPlay'){
+      requireString(operation.side,`${path}.side`);
+      requireString(operation.operativeIdFrom,`${path}.operativeIdFrom`);
+      if(typeof operation.inPlay!=='boolean')fail('INVALID_DEFINITION',`${path}.inPlay`,'must be a boolean',operation.inPlay);
+      if(Object.prototype.hasOwnProperty.call(operation,'reason'))requireString(operation.reason,`${path}.reason`);
+    }
     if(['requestDiceRoll','requestNumericInput'].includes(operation.type))requireString(operation.id,`${path}.id`);
     for(const reference of [operation.valueFrom,...expressionPaths(operation.valueExpression)]){
       if(reference&&/^(results|inputs)\./.test(reference)&&!availableReferences.has(reference))fail('INVALID_EVENT_REFERENCE',path,'references an unavailable event result',reference);
@@ -216,7 +222,7 @@
     let definition=null,runtime=null;
     const objectiveDefinition=id=>definition?.objectives.find(objective=>objective.id===id)||null;
     const requireRuntime=()=>{if(!runtime||!definition)throw new MissionEngineError('MISSION_NOT_INITIALIZED','Mission runtime has not been initialized.');};
-    const contextFor=context=>({mission:runtime,gameplay:isRecord(context?.gameplay)?context.gameplay:{},results:isRecord(context?.results)?context.results:{},inputs:isRecord(context?.inputs)?context.inputs:{}});
+    const contextFor=context=>({mission:runtime,gameplay:isRecord(context?.gameplay)?context.gameplay:{},operativeId:context?.operativeId,results:isRecord(context?.results)?context.results:{},inputs:isRecord(context?.inputs)?context.inputs:{}});
     const resolvedTarget=(objective,context={})=>{
       const target=objective.targetExpression?evaluateExpression(objective.targetExpression,contextFor(context)):objective.target;
       if(typeof target!=='number'||!Number.isFinite(target))throw new MissionEngineError('INVALID_TARGET_VALUE',`Counter "${objective.id}" target must resolve to a finite number.`);
@@ -279,6 +285,14 @@
             case 'subtractCounter':{const before=getObjectiveValue(operation.objectiveId);adjustObjectiveValue(operation.objectiveId,-operationValue(operation,eventContext),context);changes.push({objectiveId:operation.objectiveId,before,after:getObjectiveValue(operation.objectiveId)});break;}
             case 'setFlag':runtime.flags[operation.flag]=Object.prototype.hasOwnProperty.call(operation,'value')?clone(operation.value):true;break;
             case 'clearFlag':delete runtime.flags[operation.flag];break;
+            case 'setOperativeInPlay':{
+              if(typeof services.setOperativeInPlay!=='function')throw new MissionEngineError('SERVICE_UNAVAILABLE','Operative battlefield-state service is unavailable.');
+              const operativeId=safePath(eventContext,operation.operativeIdFrom);
+              if(typeof operativeId!=='string'||!operativeId)throw new MissionEngineError('INVALID_OPERATIVE_ID','Operative battlefield-state operation requires an operative identifier.');
+              const changed=await services.setOperativeInPlay({side:operation.side,operativeId,inPlay:operation.inPlay,reason:operation.reason||null},context);
+              if(changed===false)throw new MissionEngineError('OPERATIVE_STATE_CONFLICT',`The battlefield state for operative "${operativeId}" could not be changed.`);
+              break;
+            }
             case 'completeObjective':{const objective=runtime.objectives[operation.objectiveId];if(!objective.completed){objective.completed=true;objective.completedAt=now(context);objective.completedTurningPoint=context.turningPoint??null;}break;}
             case 'appendHistory':pendingHistory.push(operation.entry||{title:event.label||event.id,summary:operation.summary||''});break;
             case 'requestDiceRoll':{
@@ -298,7 +312,8 @@
         }
         if(executionKey)runtime.eventExecutions[executionKey]={completed:true,completedAt:now(context)};
         const completedObjectiveIds=Object.keys(runtime.objectives).filter(id=>runtime.objectives[id].completed&&!snapshot.objectives[id]?.completed);
-        const history=pendingHistory.length?pendingHistory:[{eventId:event.id,title:event.label||event.id,summary:event.history?.summary||`${event.label||event.id} completed.`}];
+        const operativeSummary=eventContext.operativeId?`${event.label||event.id}: ${eventContext.operativeId}.`:null;
+        const history=pendingHistory.length?pendingHistory:[{eventId:event.id,title:event.label||event.id,summary:event.history?.summary||operativeSummary||`${event.label||event.id} completed.`,operativeId:eventContext.operativeId||null}];
         history.forEach(entry=>recordMissionHistory({...entry,eventId:entry.eventId||event.id,turningPoint:context.turningPoint??null,phase:context.phase||null,results:clone(eventContext.results),inputs:clone(eventContext.inputs),changes:clone(changes),completedObjectiveIds},context));
         return {status:'completed',executionKey,results:eventContext.results,inputs:eventContext.inputs,changes};
       }catch(error){
