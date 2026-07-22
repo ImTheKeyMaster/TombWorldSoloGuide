@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.7.7';
+  const APP_VERSION = '5.7.8';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -2203,6 +2203,10 @@ function showPlayerActivation(stage={}){
     </section>`;
   }
 
+  function combatAttackLabel(profile){
+    return `${profile.dice} dice · ${profile.hit}+`;
+  }
+
   function showSharedCombatResolutionScreen({title,attackerName,defenderName,attackType,weaponName,attackLabel='',defenseLabel,cancelId,continueId,extraHtml='',detailsHtml=''}){
     showModal(title,`
       <section class="dedicated-combat-screen" aria-label="Combat resolution screen">
@@ -2635,7 +2639,7 @@ function showPlayerActivation(stage={}){
     const attackerWithinTwo=Boolean($('#attackerWithinTwo')?.checked)||Boolean(result?.attackerWithinTwo);
     const screen=showSharedCombatResolutionScreen({
       title:`Resolve ${attackLabel} Attack`,attackerName:playerName(stage.playerOperativeId),defenderName:npoName(target),
-      attackType,weaponName:weapon.name,attackLabel:attackType==='shoot'?`${profile.dice} dice · ${profile.hit}+`:'',
+      attackType,weaponName:weapon.name,attackLabel:attackType==='shoot'?combatAttackLabel(profile):'',
       defenseLabel:`${Math.max(0,3-profile.ap)} dice · ${target.save}+`,
       cancelId:'cancelPendingAttack',continueId:'continuePendingAttack'
     });
@@ -3178,7 +3182,7 @@ function showPlayerActivation(stage={}){
       : '';
     const screen=showSharedCombatResolutionScreen({
       title:'Resolve Combat',attackerName:npoName(n),defenderName:target.name,attackType,
-      weaponName:initialProfile.name,defenseLabel:`3 dice · ${target.save||3}+`,
+      weaponName:initialProfile.name,attackLabel:combatAttackLabel(initialProfile),defenseLabel:`3 dice · ${target.save||3}+`,
       cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',extraHtml:profileControl,
       detailsHtml:`${npoCombatGuidanceHtml(n)}<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`
     });
@@ -3232,6 +3236,8 @@ function showPlayerActivation(stage={}){
       const profile=canonicalAttackProfile(availableProfiles[Number($('#npoCombatProfile')?.value)||0]);
       const weapon=$('.compact-combat-profile div:nth-child(4) strong');
       if(weapon)weapon.textContent=profile.name;
+      const attack=$('.compact-combat-profile div:nth-child(5) strong');
+      if(attack)attack.textContent=combatAttackLabel(profile);
       const rules=$('#npoCombatRules');
       if(rules)rules.innerHTML=weaponRulesHtml(profile);
       $('#combatResults').replaceChildren();
