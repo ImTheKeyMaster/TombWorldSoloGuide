@@ -15,6 +15,13 @@ REINFORCEMENTS = APP.split("function processReinforcementStage()", 1)[1].split("
 
 
 class StrategyPhaseUiTests(unittest.TestCase):
+    def test_strategy_stat_tooltips_are_hidden_on_mobile(self):
+        self.assertIn(
+            "@media(max-width:600px){.strategy-stat-grid .tooltip-stat{cursor:default}"
+            ".strategy-stat-grid .tooltip-stat::after,.strategy-stat-grid .info-dot{display:none}}",
+            STYLES,
+        )
+
     def test_reinforcement_results_render_in_normal_card_flow(self):
         self.assertIn('class="card reinforcement-card"', STRATEGY_CARD)
         self.assertIn(".reinforcement-card{margin:18px 0", STYLES)
