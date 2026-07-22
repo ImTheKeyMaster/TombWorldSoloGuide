@@ -1,7 +1,16 @@
-# Tomb World Solo Guide v5.6.1
+# Tomb World Solo Guide v5.7.0
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
+
+## v5.7.0
+
+**Version 5.7.0 - Battlefield NPO States**
+
+- Automatically selects and persists the specific starting NPOs deployed from the available roster.
+- Tracks reserve, deployed, and out-of-action NPOs and filters battlefield activation and Player targeting accordingly.
+- Uses matching reserve NPOs for reinforcements before generating new roster entries.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v5.7.0.
 
 ## v5.6.1
 
