@@ -42,10 +42,11 @@ class RemediationPr3Tests(unittest.TestCase):
 
     def test_mission_four_repair_is_a_ready_hook(self):
         source = self.function_source("applyMissionReadyHooks", "determineInitiative")
-        self.assertIn("executeMissionHook('onStrategyPhaseReadyStep'", source)
-        self.assertIn("turningPoint:state.turningPoint", source)
-        self.assertIn("id:'nanoscarabRepair'", source)
-        self.assertIn("progress changed from", source)
+        self.assertIn("executeMissionLifecycleHook('onStrategyPhaseReadyStep'", source)
+        self.assertIn("phase:'strategy-ready'", source)
+        self.assertIn("turningPoint:state.turningPoint", self.app)
+        self.assertIn("outcomes.filter(outcome=>outcome.status==='completed')", source)
+        self.assertIn("progress changed from", self.app)
 
     def test_sarcophagus_controller_count_is_integer_and_roster_bounded(self):
         helper = self.function_source("normalizeSarcophagusControllers", "checkGameEnd")

@@ -53,7 +53,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
     def test_mission_four_progresses_by_2d6_and_repairs_during_ready_step(self):
         self.assertIn("executeMissionAction(action.id", self.app)
         hook = self.source("async function applyMissionReadyHooks()", "function determineInitiative()")
-        self.assertIn("executeMissionHook('onStrategyPhaseReadyStep'", hook)
+        self.assertIn("executeMissionLifecycleHook('onStrategyPhaseReadyStep'", hook)
         definition = json.loads((ROOT / "Missions/definition-04-destroy-sarcophagus.json").read_text())
         self.assertEqual(definition["actions"][0]["operations"][0]["dice"], {"count": 2, "sides": 6})
         self.assertEqual(definition["hooks"]["onStrategyPhaseReadyStep"][0]["oncePer"], "turningPoint")
