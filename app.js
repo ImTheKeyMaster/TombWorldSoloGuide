@@ -347,6 +347,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     state.playerCount=state.playerRoster.length;
     state.playerReady=state.playerCount;
     initializePlayerWounds();
+    objectiveEngine?.refreshMissionContext(missionLifecycleContext());
   }
 
   function applyPlayerRoster(operativeIds){
@@ -357,6 +358,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     initializePlayerWounds();
     state.playerActivatedIds=[];
     state.playerDeployed=false;
+    objectiveEngine?.refreshMissionContext(missionLifecycleContext());
   }
 
   function randomPlayerRoster(){
