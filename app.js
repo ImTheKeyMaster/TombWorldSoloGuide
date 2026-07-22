@@ -63,6 +63,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   let objectiveDefinition=null;
   let missionOperationResolving=false;
   let missionDialogLocked=false;
+  const missionActivationStarts=new Set();
   async function loadMissionPack(){
     const manifestResponse=await fetch('Missions/manifest.json',{cache:'no-store'});
     if(!manifestResponse.ok)throw new Error(`Unable to load Missions/manifest.json (${manifestResponse.status})`);
@@ -83,9 +84,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const registered=missionManifest?.definitions?.some(entry=>entry.id===selectedMission?.number);
     if(!registered)return;
     try{
+      const restoringRuntime=state.missionRuntime?.missionId===selectedMission.number;
       objectiveDefinition=await TombWorldMissionEngine.loadMissionDefinition(selectedMission.number);
       objectiveEngine=TombWorldMissionEngine.createMissionEngine({requestDiceRoll:animateMissionDice,requestNumericInput:requestMissionNumber});
       state.missionRuntime=objectiveEngine.restoreMissionRuntime(objectiveDefinition,state.missionRuntime);
+      if(!restoringRuntime)await executeMissionLifecycleHook('onMissionInitialized');
     }catch(error){
       console.error('[MissionEngine]',error);
       showToast('Mission automation could not be loaded. Track this mission manually.');
@@ -677,6 +680,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     state.gameEnd=outcome;
     state.completed=true;
     state.phase='end';
+    executeMissionLifecycleHook('onBattleEnded',{outcome});
     const engine=missionEngine();
     log(`${mission().name}: ${outcome}. ${outcome==='victory'?engine?.success:engine?.failure}`);
     closeModal();
@@ -1398,6 +1402,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function strategyCard(){
     const d=state.strategyData||{};
+    if(state.strategyStage==='mission-ready')return `<section class="next-card"><span class="phase">STRATEGY PHASE · READY STEP</span><h2>Mission event pending</h2><p>Complete the mission Ready-step event before initiative is determined.</p><button class="btn primary big-action" id="retryMissionReady">Continue Mission Event</button></section>`;
     if(state.strategyStage==='summary'){
       const reinforcementPending=Boolean(d.eventPending);
       const placementPending=state.reinforcementState.status==='placement', missionPending=missionStrategyPending();
@@ -1602,6 +1607,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#resolveStrategyEvent')?.addEventListener('click',resolveStrategyEvent);
     $('#redrawStrategyEvent')?.addEventListener('click',()=>{redrawCurrentEvent('No breach or open hatchway could be changed.');save();render();});
     $('#continueStrategy')?.addEventListener('click',()=>beginFirefight(state.strategyData?.suggestedInitiative==='npo'?'npo':'player'));
+    $('#retryMissionReady')?.addEventListener('click',continueTurningPointStart);
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
     $('#npoActivation')?.addEventListener('click',showNpoSelection);
     $('#missionHud')?.addEventListener('click',showMissionDetails);
@@ -1613,7 +1619,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       log(`Auspex Calibration: ${instruction}`);save();render();
     });
     $('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked;});
-    $('#finishTp')?.addEventListener('click',()=>{
+    $('#finishTp')?.addEventListener('click',async()=>{
+      if(await executeMissionLifecycleHook('onTurningPointEnded')===null)return;
       log(`Turning Point ${state.turningPoint} completed.`);
       state.eventState.active=state.eventState.active.filter(event=>event.expiresAfterTurningPoint!==state.turningPoint);
       state.strategyStage=null;
@@ -1642,7 +1649,20 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     state.strategyData={grade:threatGrade(),reinforcements:[],actualReinforcements:0,blocked:0,event:null,playerRoll:null,npoRoll:null,suggestedInitiative:'player',missionReadyHooks:[]};
     state.strategyPipeline={current:'ready',completed:[]};
     processReadyStep();
-    await applyMissionReadyHooks();
+    const missionReadyCompleted=await applyMissionReadyHooks();
+    if(!missionReadyCompleted){
+      state.phase='strategy';state.strategyStage='mission-ready';state.nextSide='player';state.activeNpoId=null;
+      save();render();return;
+    }
+    finishTurningPointStart();
+  }
+
+  async function continueTurningPointStart(){
+    if(!await applyMissionReadyHooks())return;
+    finishTurningPointStart();
+  }
+
+  function finishTurningPointStart(){
     determineInitiative();
     processEventStage();
     if(!state.strategyData.eventPending)processReinforcementStage();
@@ -1665,18 +1685,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   async function applyMissionReadyHooks(){
-    if(objectiveEngine){
-      const outcomes=await runMissionEvent(()=>objectiveEngine.executeMissionHook('onStrategyPhaseReadyStep',{turningPoint:state.turningPoint,phase:'strategy-ready'}));
-      const outcome=outcomes?.find(item=>item.status==='completed');
-      if(outcome){
-        const change=outcome.changes[0];
-        state.strategyData.missionReadyHooks.push({id:'nanoscarabRepair',...outcome});
-        save();
-        log(`Nanoscarab Repair: progress changed from ${change.before} to ${change.after}.`);
-        showMissionResult('NANOSCARAB REPAIR',outcome);
-      }
-    }
+    const outcomes=await executeMissionLifecycleHook('onStrategyPhaseReadyStep',{phase:'strategy-ready'});
+    if(outcomes===null)return false;
+    if(outcomes)state.strategyData.missionReadyHooks.push(...outcomes.filter(outcome=>outcome.status==='completed'));
     completeStrategyStage('mission-ready-hooks','initiative');
+    return true;
   }
 
   function determineInitiative(){
@@ -1916,11 +1929,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function showNpoSelection(){
     const candidates=readyNpos();
-    if(candidates.length===1){state.activeNpoId=candidates[0].id;runNpoPrompt(candidates[0],0,{},[]);return;}
+    if(candidates.length===1){state.activeNpoId=candidates[0].id;notifyMissionActivationStarted('npo',candidates[0].id);runNpoPrompt(candidates[0],0,{},[]);return;}
     const options=candidates.map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(npoName(n))}</option>`).join('');
     showModal('Select NPO to Activate',`<p>Use the Threat Principle in order. Select an NPO that:</p><ol><li>has an ability, or is a threat, to Shoot or Fight a Player operative;</li><li>is not in cover;</li><li>is closest to a Player operative.</li></ol><p class="muted">If more than one NPO is still tied, determine one at random on the tabletop.</p><div class="field"><label for="officialNpoSelection">Next ready NPO</label><select id="officialNpoSelection"><option value="">Select matching NPO</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Exit Guide</button><button class="btn primary" id="confirmNpoSelection" disabled>Continue</button></div>`);
     $('#officialNpoSelection').onchange=()=>{$('#confirmNpoSelection').disabled=!$('#officialNpoSelection').value;};
-    $('#confirmNpoSelection').onclick=()=>{const n=candidates.find(item=>item.id===$('#officialNpoSelection').value);if(!n)return;state.activeNpoId=n.id;save();runNpoPrompt(n,0,{},[]);};
+    $('#confirmNpoSelection').onclick=()=>{const n=candidates.find(item=>item.id===$('#officialNpoSelection').value);if(!n)return;state.activeNpoId=n.id;notifyMissionActivationStarted('npo',n.id);save();runNpoPrompt(n,0,{},[]);};
   }
 
   function remainingPlayerOperatives(){
@@ -1989,6 +2002,7 @@ function showPlayerActivation(stage={}){
 
     const checked=key=>stage[key]?'checked':'';
     const selectedId=stagedId;
+    if(selectedId)notifyMissionActivationStarted('player',selectedId);
     const selectedOperative=playerDefinition(selectedId);
     const moveDistance=Number(selectedOperative?.move||6);
     const chargeDistance=moveDistance+2;
@@ -2364,7 +2378,7 @@ function showPlayerActivation(stage={}){
     return false;
   }
 
-  function completePlayerActivation(stage={}){
+  async function completePlayerActivation(stage={}){
     state.combatState=null;
     let inc=0;
     if(stage.shoot)inc++;
@@ -2381,12 +2395,14 @@ function showPlayerActivation(stage={}){
     }
     if(inc)setThreat(inc,'Player activation');
     const operativeId=String(stage.playerOperativeId);
+    const activationId=missionActivationId('player',operativeId);
     if(!state.playerActivatedIds.includes(operativeId))state.playerActivatedIds.push(operativeId);
     state.playerReady=playerOperativesRemaining();
     state.playerActivated=state.playerActivatedIds.length;
     state.activationNumber++;
     const summary=playerActivationSummary(stage);
     state.activationHistory.unshift({side:'player',label:playerName(operativeId),summary});
+    await executeMissionLifecycleHook('onPlayerActivationCompleted',{activationId,operativeId});
     advanceAfterActivation('player');
     log(`${playerName(operativeId)} completed activation: ${summary}.`);
     closeModal();
@@ -3169,7 +3185,7 @@ function showPlayerActivation(stage={}){
     $('#completeNpo').onclick=()=>completeNpoActivation();
   }
 
-  function completeNpoActivation(attackSummary=null){
+  async function completeNpoActivation(attackSummary=null){
     if(state.lastActivation?.committed)return;
     const n=state.roster.find(item=>item.id===state.lastActivation?.npoId);
     if(!n||!n.ready)return;
@@ -3179,9 +3195,11 @@ function showPlayerActivation(stage={}){
       if(history)history.attackSummary=attackSummary;
     }
     if(state.lastActivation.threat)setThreat(state.lastActivation.threat,`${npoName(n)} ${state.lastActivation.action.includes('Fight')?'Fight':'Shoot'}`);
+    const activationId=missionActivationId('npo',n.id);
     n.ready=false;state.npoActivated++;state.activationNumber++;
     state.activationHistory.unshift({side:'npo',label:npoName(n),action:state.lastActivation.action,target:state.npoAttackTargetId?playerName(state.npoAttackTargetId):null,attackSummary});
     state.lastActivation.committed=true;
+    await executeMissionLifecycleHook('onNpoActivationCompleted',{activationId,operativeId:n.id});
     state.activeNpoId=null;advanceAfterActivation('npo');
     log(`${npoName(n)}: ${state.lastActivation.action}.`);
     state.npoAttackTargetId=null;
@@ -3435,6 +3453,50 @@ function showPlayerActivation(stage={}){
       if(!['INPUT_CANCELLED','DICE_CANCELLED'].includes(error.code)){console.error('[MissionEngine]',error);showToast('The mission action could not be completed. Please try again.');}
       return null;
     }finally{missionOperationResolving=false;}
+  }
+
+  function missionLifecycleContext(overrides={}){
+    return {
+      turningPoint:state.turningPoint,
+      phase:state.phase,
+      activationId:overrides.activationId??null,
+      gameplay:{
+        turningPoint:state.turningPoint,
+        phase:state.phase,
+        activationNumber:state.activationNumber,
+        activeSide:state.nextSide
+      },
+      ...overrides
+    };
+  }
+
+  function missionActivationId(side,operativeId){
+    return `${state.turningPoint}:${state.activationNumber+1}:${side}:${operativeId}`;
+  }
+
+  function notifyMissionActivationStarted(side,operativeId){
+    const activationId=missionActivationId(side,operativeId);
+    if(missionActivationStarts.has(activationId))return;
+    missionActivationStarts.add(activationId);
+    const hookName=side==='player'?'onPlayerActivationStarted':'onNpoActivationStarted';
+    void executeMissionLifecycleHook(hookName,{activationId,operativeId});
+  }
+
+  async function executeMissionLifecycleHook(hookName,overrides={}){
+    if(!objectiveEngine)return [];
+    const events=objectiveDefinition?.hooks?.[hookName]||[];
+    const outcomes=await runMissionEvent(()=>objectiveEngine.executeMissionHook(hookName,missionLifecycleContext(overrides)));
+    if(!outcomes)return null;
+    for(let index=0;index<outcomes.length;index++){
+      const outcome=outcomes[index];
+      if(outcome.status!=='completed')continue;
+      const event=events[index]||{};
+      const change=outcome.changes?.[0];
+      if(change)log(`${event.label||event.id||'Mission event'}: progress changed from ${change.before} to ${change.after}.`);
+      save();
+      if(change)showMissionResult(String(event.label||event.id||'Mission event').toUpperCase(),outcome);
+    }
+    return outcomes;
   }
 
   function missionHistoryText(entry){
