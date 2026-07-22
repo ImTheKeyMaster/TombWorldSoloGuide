@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "mission.schema.json",
+  "title": "Tomb World Mission Objective Definition",
+  "type": "object",
+  "required": ["schemaVersion", "id", "slug", "name", "briefing", "objectiveSummary", "objectives", "actions", "hooks", "completion", "hud", "dialogs", "presentation"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "name": { "$ref": "#/$defs/text" },
+    "briefing": { "$ref": "#/$defs/text" },
+    "objectiveSummary": { "$ref": "#/$defs/text" },
+    "objectives": { "type": "array", "items": { "$ref": "#/$defs/objective" } },
+    "actions": { "type": "array", "items": { "$ref": "#/$defs/action" } },
+    "hooks": {
+      "type": "object",
+      "propertyNames": { "enum": ["onMissionInitialized", "onStrategyPhaseReadyStep", "onPlayerActivationStarted", "onPlayerActivationCompleted", "onNpoActivationStarted", "onNpoActivationCompleted", "onTurningPointEnded", "onBattleEnded"] },
+      "additionalProperties": { "type": "array", "items": { "$ref": "#/$defs/event" } }
+    },
+    "completion": {
+      "type": "object",
+      "properties": { "objectiveId": { "$ref": "#/$defs/id" }, "operator": { "$ref": "#/$defs/operator" }, "value": {}, "endsBattle": { "type": "boolean", "default": false }, "dialogId": { "$ref": "#/$defs/id" } },
+      "additionalProperties": false
+    },
+    "hud": { "type": "object" },
+    "dialogs": { "type": "object" },
+    "presentation": { "type": "object", "properties": { "icon": { "type": "string" }, "historyDisplayCount": { "type": "integer", "minimum": 0, "maximum": 50 }, "showHud": { "type": "boolean" } }, "additionalProperties": false }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*$" },
+    "text": { "type": "string", "minLength": 1 },
+    "operator": { "enum": ["==", "!=", ">", ">=", "<", "<=", "in", "notIn", "truthy", "falsy"] },
+    "condition": {
+      "oneOf": [
+        { "type": "object", "required": ["all"], "properties": { "all": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/condition" } } }, "additionalProperties": false },
+        { "type": "object", "required": ["any"], "properties": { "any": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/condition" } } }, "additionalProperties": false },
+        { "type": "object", "required": ["not"], "properties": { "not": { "$ref": "#/$defs/condition" } }, "additionalProperties": false },
+        { "type": "object", "required": ["path", "operator"], "properties": { "path": { "type": "string", "minLength": 1 }, "operator": { "$ref": "#/$defs/operator" }, "value": {} }, "additionalProperties": false }
+      ]
+    },
+    "expression": {
+      "oneOf": [
+        { "type": "number" },
+        { "type": "object", "required": ["path"], "properties": { "path": { "type": "string", "minLength": 1 } }, "additionalProperties": false },
+        { "type": "object", "required": ["operation", "arguments"], "properties": { "operation": { "enum": ["add", "subtract", "multiply", "min", "max"] }, "arguments": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/expression" } } }, "additionalProperties": false }
+      ]
+    },
+    "objective": {
+      "oneOf": [
+        { "type": "object", "required": ["id", "type", "label", "initial", "minimum", "maximum", "target", "completion"], "properties": { "id": { "$ref": "#/$defs/id" }, "type": { "const": "counter" }, "label": { "$ref": "#/$defs/text" }, "initial": { "type": "number" }, "minimum": { "type": "number" }, "maximum": { "type": "number" }, "target": { "type": "number" }, "lockOnComplete": { "type": "boolean" }, "completion": { "type": "object", "required": ["operator", "value"], "properties": { "operator": { "$ref": "#/$defs/operator" }, "value": { "type": "number" } }, "additionalProperties": false } }, "additionalProperties": false },
+        { "type": "object", "required": ["id", "type", "label", "initial"], "properties": { "id": { "$ref": "#/$defs/id" }, "type": { "const": "boolean" }, "label": { "$ref": "#/$defs/text" }, "initial": { "type": "boolean" }, "lockOnComplete": { "type": "boolean" } }, "additionalProperties": false }
+      ]
+    },
+    "dice": { "type": "object", "required": ["count", "sides"], "properties": { "count": { "type": "integer", "minimum": 1 }, "sides": { "const": 6 } }, "additionalProperties": false },
+    "operation": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["setCounter", "addCounter", "subtractCounter", "setFlag", "clearFlag", "completeObjective", "appendHistory", "requestDiceRoll", "requestNumericInput", "showDialog"] },
+        "id": { "$ref": "#/$defs/id" }, "objectiveId": { "$ref": "#/$defs/id" }, "flag": { "$ref": "#/$defs/id" }, "value": {}, "valueFrom": { "type": "string" }, "valueExpression": { "$ref": "#/$defs/expression" }, "label": { "type": "string" }, "dice": { "$ref": "#/$defs/dice" }, "minimum": { "type": "number" }, "maximum": { "type": "number" }, "default": { "type": "number" }, "integer": { "type": "boolean" }, "summary": { "type": "string" }, "entry": { "type": "object" }, "title": { "type": "string" }, "message": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "event": {
+      "type": "object", "required": ["id", "operations"],
+      "properties": { "id": { "$ref": "#/$defs/id" }, "label": { "$ref": "#/$defs/text" }, "availability": { "$ref": "#/$defs/condition" }, "oncePer": { "enum": ["game", "turningPoint", "activation", "unlimited", "manual"] }, "executionKey": { "$ref": "#/$defs/id" }, "operations": { "type": "array", "items": { "$ref": "#/$defs/operation" } }, "history": { "type": "object" }, "resultDialog": { "type": "object" } },
+      "additionalProperties": false
+    },
+    "action": {
+      "type": "object",
+      "required": ["id", "label", "operations"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "$ref": "#/$defs/text" },
+        "description": { "type": "string" },
+        "availability": { "$ref": "#/$defs/condition" },
+        "confirmation": { "type": "object", "properties": { "required": { "type": "boolean" }, "title": { "type": "string" }, "message": { "type": "string" } }, "additionalProperties": false },
+        "oncePer": { "enum": ["game", "turningPoint", "activation", "unlimited", "manual"] },
+        "executionKey": { "$ref": "#/$defs/id" },
+        "operations": { "type": "array", "items": { "$ref": "#/$defs/operation" } },
+        "history": { "type": "object" },
+        "resultDialog": { "type": "object" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

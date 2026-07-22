@@ -1,0 +1,16 @@
+{
+  "$schema": "./mission.schema.json",
+  "schemaVersion": 1,
+  "id": "XX",
+  "slug": "mission-slug",
+  "name": "Mission Name",
+  "briefing": "Mission briefing.",
+  "objectiveSummary": "Short objective.",
+  "objectives": [],
+  "actions": [],
+  "hooks": {},
+  "completion": { "endsBattle": false },
+  "hud": { "label": "MISSION" },
+  "dialogs": {},
+  "presentation": { "historyDisplayCount": 5, "showHud": true }
+}
