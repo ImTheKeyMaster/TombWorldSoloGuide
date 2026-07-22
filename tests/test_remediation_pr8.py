@@ -89,7 +89,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
         for field in ("escapedIds", "completedFeatureIds", "sites", "destruction", "scoutedRoomIds", "operativeChecks"):
             self.assertIn(field, normalize)
         self.assertIn("normalizeMissionState(raw?.missionState,savedMission,raw?.tracker)", self.app)
-        self.assertIn("localStorage.setItem(STORAGE_KEY,JSON.stringify(state))", self.app)
+        self.assertIn("localStorage.setItem(STORAGE_KEY,JSON.stringify(createPersistedSave(state)))", self.app)
 
     def test_completed_outcome_is_preserved_for_review(self):
         complete = self.source("function completeMission(outcome)", "function checkGameEnd")
@@ -99,7 +99,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertIn("Assets/Images/${victory?'victory':'defeat'}.png", self.app)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = "5.7.10"
+        expected = "5.8.0"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         index = (ROOT / "index.html").read_text()
         self.assertIn(f"styles.css?v={expected}", index)

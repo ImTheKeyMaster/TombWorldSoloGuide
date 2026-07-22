@@ -83,7 +83,7 @@ class RemediationPr1Tests(unittest.TestCase):
         self.assertIn("const STORAGE_KEY = 'tombWorldSoloGuide.v1';", self.app)
 
     def test_version_and_cache_busters_match(self):
-        expected = "5.7.10"
+        expected = "5.8.0"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()

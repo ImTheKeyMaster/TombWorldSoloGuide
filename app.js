@@ -2,7 +2,8 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.7.10';
+  const APP_VERSION = '5.8.0';
+  const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -313,7 +314,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   const initialState = () => ({
-    version:APP_VERSION, screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:APP_VERSION, saveVersion:currentSaveVersion(), screen:'home', tab:'play', setupStep:0, missionId:null,
     setupChecks:{}, roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerRosterInitializedForTeamId:'', playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
@@ -398,7 +399,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function save(){
     if(objectiveEngine)state.missionRuntime=objectiveEngine.getMissionRuntime();
     state.version=APP_VERSION;
-    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));return true;}
+    state.saveVersion=currentSaveVersion();
+    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(createPersistedSave(state)));return true;}
     catch{showToast('The game could not be saved. Check available browser storage.');return false;}
   }
   function load(){
@@ -406,8 +408,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const saved=localStorage.getItem(STORAGE_KEY);
       if(!saved)return null;
       const parsed=JSON.parse(saved);
-      return isRecord(parsed)?parsed:null;
-    }catch{return null;}
+      return migrateSave(parsed);
+    }catch(error){
+      console.warn('[Persistence] Saved game could not be loaded; the original save was left unchanged.',error);
+      return null;
+    }
   }
   function recoverInvalidMission(){
     if(!state.missionId||missionDefinition(state.missionId))return false;
@@ -3615,8 +3620,8 @@ function showPlayerActivation(stage={}){
   }
 
   function confirmNewGame(){showModal('Start New Game?',`<p>This will replace the current mission, roster, Threat, Turning Point, and Journal.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmNewGame">Start New Game</button></div>`);$('#confirmNewGame').onclick=()=>{localStorage.removeItem(STORAGE_KEY);state=initialState();state.screen='setup';objectiveEngine=null;objectiveDefinition=null;missionActivationStarts.clear();expandedRosterCategories=null;closeModal();save();render();};}
-  function exportSave(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tomb-world-solo-guide-save.json';a.click();URL.revokeObjectURL(a.href);}
-  importInput.addEventListener('change',async()=>{const f=importInput.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!isRecord(data))throw new Error();state=normalizeState(data);state.screen='game';const missionRecovered=recoverInvalidMission();await loadObjectiveMission();save();render();if(!missionRecovered)showToast('Save imported.');}catch{showToast('That file is not a valid Tomb World Solo Guide save.');}finally{importInput.value='';}});
+  function exportSave(){const blob=new Blob([JSON.stringify(createPersistedSave(state),null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tomb-world-solo-guide-save.json';a.click();URL.revokeObjectURL(a.href);}
+  importInput.addEventListener('change',async()=>{const f=importInput.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());state=normalizeState(migrateSave(data));state.screen='game';const missionRecovered=recoverInvalidMission();await loadObjectiveMission();save();render();if(!missionRecovered)showToast('Save imported.');}catch(error){console.warn('[Persistence] Imported save could not be migrated; browser progress was left unchanged.',error);showToast('That file is not a valid Tomb World Solo Guide save.');}finally{importInput.value='';}});
 
   function bindCommon(){
     const versionBadge=$('.version');
