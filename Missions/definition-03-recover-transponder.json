@@ -1,0 +1,69 @@
+{
+  "$schema": "./mission.schema.json",
+  "schemaVersion": 1,
+  "id": "03",
+  "slug": "recover-transponder",
+  "name": "Recover Transponder",
+  "briefing": "Search the three objective markers for the transponder, then escape over the Player killzone edge while carrying it.",
+  "objectiveSummary": "Find the transponder and have its carrier escape over the Player killzone edge.",
+  "objectives": [
+    {
+      "id": "transponderRecovered",
+      "type": "counter",
+      "label": "Transponder Recovered",
+      "initial": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "target": 1,
+      "lockOnComplete": true,
+      "completion": { "operator": ">=", "value": 1 }
+    }
+  ],
+  "actions": [
+    {
+      "id": "searchTransponder",
+      "label": "Locate Item",
+      "description": "Roll D3 after an operative picks up an unresolved objective marker.",
+      "availability": {
+        "all": [
+          { "path": "mission.objectives.transponderRecovered.completed", "operator": "==", "value": false }
+        ]
+      },
+      "operations": [
+        { "type": "requestDiceRoll", "id": "searchRoll", "dice": { "count": 1, "sides": 3 }, "label": "Locate Item" }
+      ]
+    },
+    {
+      "id": "recordTransponderEscape",
+      "label": "Recover Transponder",
+      "availability": {
+        "all": [
+          { "path": "mission.objectives.transponderRecovered.completed", "operator": "==", "value": false }
+        ]
+      },
+      "operations": [
+        { "type": "setCounter", "objectiveId": "transponderRecovered", "value": 1 }
+      ]
+    }
+  ],
+  "hooks": {},
+  "completion": {
+    "objectiveId": "transponderRecovered",
+    "operator": ">=",
+    "value": 1,
+    "endsBattle": true,
+    "dialogId": "objectiveComplete"
+  },
+  "hud": {
+    "label": "MISSION",
+    "inProgress": { "format": "0 / 1" },
+    "complete": { "format": "✓ COMPLETE" }
+  },
+  "dialogs": {
+    "objectiveComplete": {
+      "title": "TRANSPONDER RECOVERED",
+      "message": "The carrier escaped over the Player killzone edge with the transponder."
+    }
+  },
+  "presentation": { "historyDisplayCount": 5, "showHud": true }
+}

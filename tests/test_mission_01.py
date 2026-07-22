@@ -87,6 +87,7 @@ for(const expression of [
         self.assertEqual(manifest['definitions'], [
             {'id':'01','file':'definition-01-shifting-labyrinth.json'},
             {'id':'02','file':'definition-02-demolition-protocol.json'},
+            {'id':'03','file':'definition-03-recover-transponder.json'},
             {'id':'04','file':'definition-04-destroy-sarcophagus.json'},
         ])
         app=(ROOT/'app.js').read_text(); worker=(ROOT/'service-worker.js').read_text()

@@ -1,6 +1,6 @@
 # Mission content
 
-The existing numbered mission files contain the mission-pack content used by the current application. Generic Mission Objective Engine definitions use the `definition-*.json` prefix and are listed in the `definitions` array in `manifest.json`. Missions 01, 02, and 04 are production engine definitions; Mission 02 uses the existing counter operations to keep its named access-feature checklist synchronized with the HUD, details, history, and saved runtime.
+The existing numbered mission files contain the mission-pack content used by the current application. Generic Mission Objective Engine definitions use the `definition-*.json` prefix and are listed in the `definitions` array in `manifest.json`. Missions 01 through 04 are production engine definitions. Mission 03 uses the shared D3 dice operation for each Locate Item roll and the existing counter operation to synchronize its escaped-carrier completion with the HUD, details, history, and saved runtime.
 
 ## Architecture and lifecycle
 

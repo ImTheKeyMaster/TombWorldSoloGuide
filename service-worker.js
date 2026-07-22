@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '6.2.0';
+const APP_VERSION = '6.3.0';
 const CACHE_PREFIX = 'tomb-world-solo-guide-';
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 const APP_SHELL = './index.html';
@@ -11,7 +11,7 @@ const PRECACHE_ASSETS = [
   './Assets/Maps/mission-01.png', './Assets/Maps/mission-02.png', './Assets/Maps/mission-03.png',
   './Assets/Maps/mission-04.png', './Assets/Maps/mission-05.png', './Assets/Maps/mission-06.png',
   './Assets/Tomb-World-Mission-Pack.pdf', './Missions/manifest.json',
-  './Missions/mission.schema.json', './Missions/definition-01-shifting-labyrinth.json', './Missions/definition-02-demolition-protocol.json', './Missions/definition-04-destroy-sarcophagus.json',
+  './Missions/mission.schema.json', './Missions/definition-01-shifting-labyrinth.json', './Missions/definition-02-demolition-protocol.json', './Missions/definition-03-recover-transponder.json', './Missions/definition-04-destroy-sarcophagus.json',
   './Missions/01-shifting-labyrinth.json', './Missions/02-demolition-protocol.json',
   './Missions/03-recover-transponder.json', './Missions/04-destroy-sarcophagus.json',
   './Missions/05-scout-sub-crypt.json', './Missions/06-regroup.json',
