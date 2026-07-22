@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.6.1';
+  const APP_VERSION = '5.7.0';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -402,6 +402,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.turningPoint=boundedInteger(raw.turningPoint,0,999);
     merged.threat=boundedInteger(raw.threat,0,15);
     merged.roster=Array.isArray(raw.roster)?raw.roster.map(normalizeNpo).filter(Boolean):[];
+    if(Number(raw.turningPoint)>0){
+      const importedRoster=Array.isArray(raw.roster)?raw.roster:[];
+      const explicitStates=new Set(importedRoster.filter(isRecord).filter(npo=>['reserve','deployed','out-of-action'].includes(npo.battlefieldState)).map(npo=>npo.id));
+      merged.roster.filter(npo=>npo.wounds>0&&!explicitStates.has(npo.id)).forEach(npo=>{npo.battlefieldState='deployed';npo.deployed=true;});
+    }
     merged.roster.forEach(npo=>{
       if(!npo||npo.wounds<=0)return;
       npo.dormant=merged.threat===0;
@@ -430,6 +435,21 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.startingNpoGeneration=isRecord(raw?.startingNpoGeneration)
       ? {...raw.startingNpoGeneration,dice:Array.isArray(raw.startingNpoGeneration.dice)?raw.startingNpoGeneration.dice.map(value=>boundedInteger(value,1,3,1)):[]}
       : null;
+    if(merged.startingNpoGeneration){
+      const rosterIds=merged.roster.map(npo=>npo.id);
+      merged.startingNpoGeneration.deployedNpoIds=normalizeIdList(merged.startingNpoGeneration.deployedNpoIds,rosterIds);
+      const deployedIds=new Set(merged.startingNpoGeneration.deployedNpoIds);
+      merged.startingNpoGeneration.reserveNpoIds=normalizeIdList(merged.startingNpoGeneration.reserveNpoIds,rosterIds).filter(id=>!deployedIds.has(id));
+      if(!merged.startingNpoGeneration.deployedNpoIds.length&&!merged.startingNpoGeneration.reserveNpoIds.length){
+        // Legacy starting rosters contained only the mission-roll quantity, so
+        // preserving prior gameplay means treating every surviving entry as deployed.
+        merged.roster.filter(npo=>npo.battlefieldState!=='out-of-action').forEach(npo=>{npo.battlefieldState='deployed';npo.deployed=true;});
+        merged.startingNpoGeneration.deployedNpoIds=merged.roster.filter(npo=>npo.battlefieldState==='deployed').map(npo=>npo.id);
+        merged.startingNpoGeneration.reserveNpoIds=[];
+        merged.startingNpoGeneration.availableNpos=merged.startingNpoGeneration.deployedNpoIds.length;
+        merged.startingNpoGeneration.deploymentCount=Math.min(merged.startingNpoGeneration.missionRoll,merged.startingNpoGeneration.availableNpos);
+      }
+    }
     if(raw.version==='5.6.0'&&merged.screen==='setup'&&merged.startingNpoGeneration?.navigationComplete){
       merged.setupStep=Math.max(0,Number(merged.setupStep||0)-1);
       merged.version=APP_VERSION;
@@ -517,6 +537,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const type=legacyNpoType(npo),definition=npoDefinition(type);
     if(!definition)return null;
     const weaponId=npoWeapon(definition,npo.weaponId)?.id||definition.defaultWeaponId;
+    const battlefieldState=['reserve','deployed','out-of-action'].includes(npo.battlefieldState)
+      ? npo.battlefieldState
+      : Number(npo.wounds)<=0?'out-of-action'
+        : npo.deployed||npo.ready?'deployed':'reserve';
     return {
       ...npo,
       type,
@@ -531,6 +555,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       attack:canonicalAttackProfile(npoAttackProfiles({...npo,type,weaponId},'shoot')[0]||npoAttackProfiles({...npo,type,weaponId},'melee')[0]) || {...definition.compatibilityAttack},
       weaponId,
       order:npo.order||'Conceal',
+      battlefieldState,
+      deployed:battlefieldState==='deployed',
       dormant:Boolean(npo.dormant),
       reinforcement:npo.reinforcement&&typeof npo.reinforcement==='object'
         ? {...npo.reinforcement,hatchway:String(npo.reinforcement.hatchway||''),placementConfirmed:Boolean(npo.reinforcement.placementConfirmed)}
@@ -557,7 +583,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       id:uid(),name,type,move:definition.move,apl:definition.apl,save:definition.save,
       maxWounds:definition.wounds,wounds:definition.wounds,baseSize:definition.baseSize,
       behavior:definition.compatibilityBehavior,attack:canonicalAttackProfile(npoAttackProfiles({type,weaponId},'shoot')[0]||npoAttackProfiles({type,weaponId},'melee')[0]),weaponId,order:'Conceal',
-      ready:options.ready??state.threat!==0,dormant:options.dormant??state.threat===0,deployed:options.deployed??true,
+      ready:options.ready??state.threat!==0,dormant:options.dormant??state.threat===0,
+      battlefieldState:options.battlefieldState||(options.deployed===false?'reserve':'deployed'),deployed:options.deployed??true,
       reinforcement:options.reinforcement||null
     };
   }
@@ -565,7 +592,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const rolls=[roll(6),roll(6)],total=rolls[0]+rolls[1],result=generationResult(total);
     return {...result,rolls,total,weaponId:generatedWeaponId(result)};
   }
-  function activeNpos(){ return state.roster.filter(n => n.wounds > 0); }
+  function activeNpos(){ return state.roster.filter(n => n.battlefieldState==='deployed'&&n.wounds > 0); }
+  function reserveNpos(){ return state.roster.filter(n => n.battlefieldState==='reserve'&&n.wounds > 0); }
   function readyNpos(){ return activeNpos().filter(n => n.ready); }
   function livingPlayerOperativeCount(){
     const casualties=new Set(state.playerCasualtyIds||[]);
@@ -699,7 +727,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const formula=missionSetup(), dice=formula==='2D3+3'?[rollD3(),rollD3()]:formula==='D3+6'?[rollD3()]:[];
     const missionRoll=formula==='2D3+3'?dice[0]+dice[1]+3:formula==='D3+6'?dice[0]+6:0;
     const calculation=formula==='2D3+3'?`${dice[0]} + ${dice[1]} + 3 = ${missionRoll}`:formula==='D3+6'?`${dice[0]} + 6 = ${missionRoll}`:'0';
-    return {dice,missionRoll,deploymentCount:Math.min(missionRoll,MAX_NPOS),availableNpos:MAX_NPOS,calculation,animationShown:false,navigationComplete:false};
+    return {dice,missionRoll,deploymentCount:Math.min(missionRoll,MAX_NPOS),availableNpos:MAX_NPOS,calculation,deployedNpoIds:[],reserveNpoIds:[],animationShown:false,navigationComplete:false};
   }
 
   function restoredStartingNpoGeneration(){
@@ -707,23 +735,46 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const d3Total=missionRoll-3;
     const dice=formula==='2D3+3'?[Math.max(1,d3Total-3),Math.min(3,d3Total-1)]:formula==='D3+6'?[Math.max(1,Math.min(3,missionRoll-6))]:[];
     const calculation=formula==='2D3+3'?`${dice[0]} + ${dice[1]} + 3 = ${missionRoll}`:formula==='D3+6'?`${dice[0]} + 6 = ${missionRoll}`:'0';
-    return {dice,missionRoll,deploymentCount:Math.min(missionRoll,MAX_NPOS),availableNpos:MAX_NPOS,calculation,animationShown:true,navigationComplete:false};
+    return {dice,missionRoll,deploymentCount:Math.min(missionRoll,state.roster.length),availableNpos:state.roster.length,calculation,deployedNpoIds:[],reserveNpoIds:[],animationShown:true,navigationComplete:false};
+  }
+
+  function selectStartingNpos(generation){
+    const available=state.roster.filter(npo=>npo.wounds>0),shuffled=[...available];
+    const assignedIds=new Set([...(generation.deployedNpoIds||[]),...(generation.reserveNpoIds||[])]);
+    if(assignedIds.size===available.length&&available.every(npo=>assignedIds.has(npo.id)))return false;
+    generation.availableNpos=available.length;
+    generation.deploymentCount=Math.min(generation.missionRoll,available.length);
+    for(let index=shuffled.length-1;index>0;index--){
+      const swapIndex=Math.floor(Math.random()*(index+1));
+      [shuffled[index],shuffled[swapIndex]]=[shuffled[swapIndex],shuffled[index]];
+    }
+    generation.deployedNpoIds=shuffled.slice(0,generation.deploymentCount).map(npo=>npo.id);
+    generation.reserveNpoIds=shuffled.slice(generation.deploymentCount).map(npo=>npo.id);
+    const deployedIds=new Set(generation.deployedNpoIds);
+    available.forEach(npo=>{
+      npo.battlefieldState=deployedIds.has(npo.id)?'deployed':'reserve';
+      npo.deployed=npo.battlefieldState==='deployed';
+      npo.ready=false;
+    });
+    return true;
   }
 
   function generateRoster(generation){
-    const m=mission(),count=generation.deploymentCount,formula=generation.calculation;
+    const m=mission(),count=MAX_NPOS,formula=generation.calculation;
     state.roster=[];
     for(let i=0;i<count;i++){
       const result=rollNpo();
       state.roster.push(createNpo(result.type,`${result.type} ${i+1}`,{weaponId:result.weaponId,ready:false,deployed:false}));
     }
-    state.newIds=[]; log(`${m.name}: generated ${count} starting NPOs (${formula}).`); return {count,formula};
+    selectStartingNpos(generation);
+    state.newIds=[]; log(`${m.name}: selected ${generation.deploymentCount} of ${count} starting NPOs (${formula}).`); return {count,formula};
   }
 
   function ensureStartingNpoGeneration(){
     if(state.startingNpoGeneration)return false;
     if(state.roster.length){
       state.startingNpoGeneration=restoredStartingNpoGeneration();
+      selectStartingNpos(state.startingNpoGeneration);
       save();
       return false;
     }
@@ -1008,21 +1059,21 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
     if(stepId==='deploy'){
       const generation=state.startingNpoGeneration;
-      const limited=generation.missionRoll>generation.availableNpos;
       const dice=generation.dice.map(value=>dieHtml({value,kind:'hit'})).join('');
       const missionRoll=`<div class="starting-npo-event" id="startingNpoEvent" role="status" aria-live="polite"><small>MISSION ROLL</small><div class="dice-row ${generation.animationShown?'settled':'animated-roll'}" id="startingNpoDice">${generation.animationShown?dice:generation.dice.map(()=>rollingDieHtml()).join('')}</div><div class="starting-npo-result" id="startingNpoResult" ${generation.animationShown?'':'hidden'}><strong>${generation.missionRoll} Starting NPOs</strong><span>${generation.calculation}</span></div></div>`;
       const placementChecks=missionSetupChecks('deploy');
       const deploymentCheck=placementChecks.find(check=>check.id==='starting-npos');
       const otherPlacementChecks=placementChecks.filter(check=>check.id!=='starting-npos');
-      const deploymentInstruction=limited?`Deploy ${generation.deploymentCount} of ${generation.availableNpos} available NPOs.`:`Deploy ${generation.deploymentCount} NPOs.`;
-      const cappedRoll=limited?`<small>(Mission roll: ${generation.missionRoll})</small>`:'';
+      const deploymentInstruction=`Deploy the ${generation.deploymentCount} selected starting NPOs.`;
+      const deploymentResult=`<div class="starting-npo-rosters"><p><strong>Deploy ${generation.deploymentCount} of ${generation.availableNpos} available NPOs.</strong><small>(Mission roll: ${generation.missionRoll})</small></p><section><h4>Starting NPOs</h4><ul>${generation.deployedNpoIds.map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean).map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul></section>${generation.reserveNpoIds.length?`<details><summary>Reserve · ${generation.reserveNpoIds.length}</summary><ul>${generation.reserveNpoIds.map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean).map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul></details>`:''}</div>`;
       const deploymentDetails=mission().startingNpos?.deployment||'Use the mission deployment rules.';
-      const deploymentRow=deploymentCheck?`<label class="check-row"><input type="checkbox" data-check="${escapeHtml(deploymentCheck.id)}" ${state.setupChecks[deploymentCheck.id]?'checked':''}><span><strong>${deploymentInstruction}</strong>${cappedRoll}<small>${escapeHtml(deploymentDetails)}</small></span></label>`:'';
+      const deploymentRow=deploymentCheck?`<label class="check-row"><input type="checkbox" data-check="${escapeHtml(deploymentCheck.id)}" ${state.setupChecks[deploymentCheck.id]?'checked':''}><span><strong>${deploymentInstruction}</strong><small>${escapeHtml(deploymentDetails)}</small></span></label>`:'';
       const allPlacementChecked=placementChecks.length>0&&placementChecks.every(check=>state.setupChecks[check.id]);
-      const allNposPlaced=state.roster.every(n=>n.deployed);
+      const selectionComplete=generation.deployedNpoIds.length===generation.deploymentCount&&generation.deployedNpoIds.length+generation.reserveNpoIds.length===generation.availableNpos;
+      const allNposPlaced=selectionComplete&&generation.deployedNpoIds.every(id=>state.roster.find(npo=>npo.id===id)?.deployed);
       const {minRoster,maxRoster}=playerRosterLimits();
       const playerValid=(state.playerRoster||[]).length>=minRoster&&(state.playerRoster||[]).length<=maxRoster;
-      return `<h3>Deploy Kill Teams</h3><p>Use the generated rosters to place both forces, then confirm every mission requirement and resource choice.</p>${missionRoll}<div class="setup-bulk-row"><button class="btn secondary" id="checkAllDeployment" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'disabled':''}>Check All</button></div><div class="checklist">${deploymentRow}${setupChecklistHtml(otherPlacementChecks)}<label class="check-row"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${playerValid?'':'disabled'}><span><strong>${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} Kill Team deployed</strong><small>All selected Player operatives are on the battlefield.</small></span></label><label class="check-row"><input id="npoDeployed" type="checkbox" ${allNposPlaced?'checked':''}><span><strong>Necron Kill Team deployed</strong><small>${state.roster.length?'All generated starting NPO operatives are on the battlefield.':'No starting NPO deployment is required for this mission.'}</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'':'disabled'}>Deployment Complete</button></div>`;
+      return `<h3>Deploy Kill Teams</h3><p>Use the generated rosters to place both forces, then confirm every mission requirement and resource choice.</p>${missionRoll}${deploymentResult}<div class="setup-bulk-row"><button class="btn secondary" id="checkAllDeployment" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'disabled':''}>Check All</button></div><div class="checklist">${deploymentRow}${setupChecklistHtml(otherPlacementChecks)}<label class="check-row"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${playerValid?'':'disabled'}><span><strong>${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} Kill Team deployed</strong><small>All selected Player operatives are on the battlefield.</small></span></label><label class="check-row"><input id="npoDeployed" type="checkbox" ${allNposPlaced?'checked':''}><span><strong>Necron Kill Team deployed</strong><small>${generation.deploymentCount?'All selected starting NPO operatives are on the battlefield.':'No starting NPO deployment is required for this mission.'}</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'':'disabled'}>Deployment Complete</button></div>`;
     }
     const m=mission();
     const rules=(m.rules||[]).map(rule=>`<div class="mission-rule"><strong>${escapeHtml(rule.name||'Special Rule')}</strong>${rule.timing?`<small>${escapeHtml(rule.timing)}</small>`:''}<p>${escapeHtml(rule.summary||'')}</p></div>`).join('');
@@ -1049,7 +1100,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#checkAllSetup')?.addEventListener('click',()=>{missionSetupChecks('killzone').forEach(check=>{state.setupChecks[check.id]=true;});save();render();});
     $('#randomPlayerTeam')?.addEventListener('click',()=>{randomPlayerRoster();save();render();});
     if(stepId==='deploy')runStartingNpoGeneration();
-    $('#npoDeployed')?.addEventListener('change',e=>{state.roster.forEach(n=>n.deployed=e.target.checked);save();render();});
+    $('#npoDeployed')?.addEventListener('change',e=>{const selected=new Set(state.startingNpoGeneration?.deployedNpoIds||[]);state.roster.filter(n=>selected.has(n.id)).forEach(n=>n.deployed=e.target.checked);save();render();});
     $('#checkAllDeployment')?.addEventListener('click',()=>{
       $$('.checklist input[type="checkbox"]:not(:disabled)').forEach(checkbox=>{
         if(!checkbox.checked){checkbox.checked=true;checkbox.dispatchEvent(new Event('change',{bubbles:true}));}
@@ -1215,7 +1266,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     });
     $$('[data-confirm-room-placement]').forEach(button=>button.onclick=()=>{
       const awakening=state.missionState.awakenedRooms[button.dataset.confirmRoomPlacement];awakening.placementConfirmed=true;
-      state.roster.filter(npo=>awakening.operativeIds.includes(npo.id)).forEach(npo=>{npo.deployed=true;});
+      state.roster.filter(npo=>awakening.operativeIds.includes(npo.id)).forEach(npo=>{npo.deployed=true;npo.battlefieldState='deployed';});
       updateMissionProgress(`confirmed NPO placement in ${button.dataset.confirmRoomPlacement}.`);
     });
     $$('[data-scout-room]').forEach(button=>button.onclick=()=>{
@@ -1689,8 +1740,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       blocked=requested-actual;
       for(let i=0;i<actual;i++){
         const rr=randomReinforcement(),type=rr.type;
-        const n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId,deployed:false,reinforcement:{turningPoint:state.turningPoint,hatchway:'',placementConfirmed:false}});
-        state.roster.push(n);state.newIds.push(n.id);reinforcements.push(rr);
+        let n=reserveNpos().find(candidate=>candidate.type===type&&!state.reinforcementState.operativeIds.includes(candidate.id));
+        if(n){
+          n.reinforcement={turningPoint:state.turningPoint,hatchway:'',placementConfirmed:false};
+        }else{
+          n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId,deployed:false,reinforcement:{turningPoint:state.turningPoint,hatchway:'',placementConfirmed:false}});
+          state.roster.push(n);state.newIds.push(n.id);
+        }
+        reinforcements.push(rr);
         state.reinforcementState.operativeIds.push(n.id);
       }
     }
@@ -1713,6 +1770,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const placementConfirmed=Boolean(confirmed&&npo.reinforcement.hatchway);
     npo.reinforcement.placementConfirmed=placementConfirmed;
     npo.deployed=placementConfirmed;
+    npo.battlefieldState=placementConfirmed?'deployed':'reserve';
+    if(state.startingNpoGeneration){
+      const reserveIds=new Set(state.startingNpoGeneration.reserveNpoIds||[]);
+      placementConfirmed?reserveIds.delete(npo.id):reserveIds.add(npo.id);
+      state.startingNpoGeneration.reserveNpoIds=[...reserveIds];
+    }
     const complete=state.reinforcementState.operativeIds.every(operativeId=>state.roster.find(item=>item.id===operativeId)?.reinforcement?.placementConfirmed);
     state.reinforcementState.status=complete?'complete':'placement';
     save();render();
@@ -1726,6 +1789,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     npo.reinforcement.hatchway=recordedHatchway;
     npo.reinforcement.placementConfirmed=false;
     npo.deployed=false;
+    npo.battlefieldState='reserve';
+    if(state.startingNpoGeneration&&!state.startingNpoGeneration.reserveNpoIds.includes(npo.id))state.startingNpoGeneration.reserveNpoIds.push(npo.id);
     state.reinforcementState.status='placement';
     save();render();
   }
@@ -1782,7 +1847,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function randomReinforcement(){return rollNpo();}
-  function nextNpo(){return state.roster.find(n=>n.id===state.activeNpoId&&n.ready&&n.wounds>0)||null;}
+  function nextNpo(){return activeNpos().find(n=>n.id===state.activeNpoId&&n.ready)||null;}
 
   function showNpoSelection(){
     const candidates=readyNpos();
@@ -2214,6 +2279,7 @@ function showPlayerActivation(stage={}){
       n.wounds=Math.max(0,pending.after);
       pending.committed=true;
       if(n.wounds===0)n.ready=false;
+      if(n.wounds===0){n.deployed=false;n.battlefieldState='out-of-action';}
       log(`${playerName(stage.playerOperativeId)} ${pending.attackType==='shoot'?'shot':'made a Melee attack against'} ${npoName(n)} for ${pending.damage} damage (${before} → ${n.wounds} wounds).`);
       const aggressiveDamage=aggressiveDefenseDamageValue(pending);
       if(aggressiveDamage>0){
@@ -2517,7 +2583,7 @@ function showPlayerActivation(stage={}){
     const targetSelect=$('#combatTarget');
     const weaponSelect=$('#playerWeaponSelect');
     const renderChoices=()=>{
-      const target=state.roster.find(n=>n.id===targetSelect.value);
+      const target=activeNpos().find(n=>n.id===targetSelect.value);
       const weapon=weapons[Number(weaponSelect.value)||0];
       $('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target);
       $('#weaponRules').innerHTML=weaponRulesHtml(weapon);
@@ -2532,7 +2598,7 @@ function showPlayerActivation(stage={}){
   }
 
   function showPlayerCombatResolution(stage,attackType,targetId,weaponIndex,onResolved,onCancel,{result=null,animate=true}={}){
-    const target=state.roster.find(n=>n.id===targetId);
+    const target=activeNpos().find(n=>n.id===targetId);
     const weapon=playerAttackWeapons(stage.playerOperativeId,attackType)[weaponIndex];
     if(!target||!weapon){showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel);return;}
     const attackLabel=attackType==='shoot'?'Shooting':'Melee';
@@ -3174,7 +3240,7 @@ function showPlayerActivation(stage={}){
       <section class="card"><h3>Mission rules</h3><div class="mission-rules">${rules}</div></section>
       <section class="card"><h3>Victory</h3><p><strong>Win:</strong> ${escapeHtml(m.victory?.win||'See mission rules.')}</p><p><strong>Lose:</strong> ${escapeHtml(m.victory?.lose||'See mission rules.')}</p></section>${missionProgressHtml()}`;
   }
-  function renderRoster(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">NPO ROSTER</p><h2>${activeNpos().length} active NPOs</h2><p>Wounds and Ready status update the guided activation flow.</p></div><button class="btn secondary" id="addNpo">Add NPO</button></div><div class="player-roster-grid npo-roster-grid">${state.roster.length?state.roster.map(n=>npoRosterCard(n,true)).join(''):'<div class="card empty">No NPOs are currently on the battlefield.</div>'}</div>`;$('#addNpo').onclick=showAddNpo;$$('[data-player-attack]').forEach(b=>b.onclick=()=>showPlayerAttackWizard(b.dataset.playerAttack));$$('[data-wound]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.wound,-1));$$('[data-heal]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.heal,1));$$('[data-ready]').forEach(b=>b.onclick=()=>toggleReady(b.dataset.ready));$$('[data-delete]').forEach(b=>b.onclick=()=>deleteNpo(b.dataset.delete));}
+  function renderRoster(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">NPO ROSTER</p><h2>${activeNpos().length} active NPOs</h2><p>Wounds and Ready status update the guided activation flow.</p></div><button class="btn secondary" id="addNpo">Add NPO</button></div><div class="player-roster-grid npo-roster-grid">${state.roster.length?state.roster.map(n=>npoRosterCard(n,n.battlefieldState==='deployed')).join(''):'<div class="card empty">No NPOs are currently on the battlefield.</div>'}</div>`;$('#addNpo').onclick=showAddNpo;$$('[data-player-attack]').forEach(b=>b.onclick=()=>showPlayerAttackWizard(b.dataset.playerAttack));$$('[data-wound]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.wound,-1));$$('[data-heal]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.heal,1));$$('[data-ready]').forEach(b=>b.onclick=()=>toggleReady(b.dataset.ready));$$('[data-delete]').forEach(b=>b.onclick=()=>deleteNpo(b.dataset.delete));}
   function renderPlayerRoster(){
     const casualties=new Set(state.playerCasualtyIds||[]);
     const activated=new Set(state.playerActivatedIds||[]);
@@ -3191,7 +3257,7 @@ function showPlayerActivation(stage={}){
     $$('[data-player-roster-status]').forEach(button=>button.onclick=()=>showPlayerOperativeStatus(button.dataset.playerRosterStatus));
   }
   function npoRosterCard(n,controls){
-    const status=n.wounds<=0?'ELIMINATED':n.dormant?'DORMANT':n.ready?'READY':'ACTIVATED';
+    const status=n.battlefieldState==='reserve'?'RESERVE':n.wounds<=0?'ELIMINATED':n.dormant?'DORMANT':n.ready?'READY':'ACTIVATED';
     return `<article class="player-roster-card npo-roster-card ${n.wounds<=0?'dead':''}">
       <div class="player-roster-card-head"><div><strong>${escapeHtml(npoName(n))}</strong></div><span class="npo-status-badge ${status.toLowerCase()}">${status}</span></div>
       <div class="operative-stat-line"><span><small>ATTACK</small><b>${n.attack?.dice??'—'}</b></span><span><small>HIT</small><b>${n.attack?.hit??'—'}+</b></span><span><small>SAVE</small><b>${n.save}+</b></span><span><small>WOUNDS</small><b>${n.wounds}/${n.maxWounds}</b></span></div>
@@ -3236,7 +3302,7 @@ function showPlayerActivation(stage={}){
   }
   function rosterBreakdown(){const counts={};state.roster.forEach(n=>counts[n.type]=(counts[n.type]||0)+1);return Object.entries(counts).map(([k,v])=>`${v} ${k}${v>1?'s':''}`).join(' · ')||'No starting NPOs';}
   function showAddNpo(){showModal('Add NPO',`<div class="field"><label>NPO type</label><select id="newNpoType">${Object.keys(npoDefinitions).map(x=>`<option>${x}</option>`).join('')}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmAdd">Add NPO</button></div>`);$('#confirmAdd').onclick=()=>{if(activeNpos().length>=MAX_NPOS){showToast(`Only ${MAX_NPOS} active NPOs can be on the battlefield.`);return;}const type=$('#newNpoType').value;state.roster.push(createNpo(type));log(`${type} added to the battlefield.`);closeModal();save();render();};}
-  function adjustWounds(id,d){const n=state.roster.find(x=>x.id===id);if(!n)return;n.wounds=Math.max(0,Math.min(n.maxWounds,n.wounds+d));if(n.wounds===0)n.ready=false;if(checkGameEnd())return;save();render();}
+  function adjustWounds(id,d){const n=state.roster.find(x=>x.id===id);if(!n)return;const wasOut=n.battlefieldState==='out-of-action';n.wounds=Math.max(0,Math.min(n.maxWounds,n.wounds+d));if(n.wounds===0){n.ready=false;n.deployed=false;n.battlefieldState='out-of-action';}else if(wasOut){n.deployed=true;n.battlefieldState='deployed';}if(checkGameEnd())return;save();render();}
   function toggleReady(id){const n=state.roster.find(x=>x.id===id);if(n&&n.wounds>0&&!n.dormant)n.ready=!n.ready;save();render();}
   function deleteNpo(id){state.roster=state.roster.filter(x=>x.id!==id);save();render();}
 

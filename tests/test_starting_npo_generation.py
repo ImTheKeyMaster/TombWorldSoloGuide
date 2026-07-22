@@ -45,12 +45,12 @@ class StartingNpoGenerationTests(unittest.TestCase):
         roll = self.source("function startingNpoRoll()", "function generateRoster")
         self.assertIn("deploymentCount:Math.min(missionRoll,MAX_NPOS)", roll)
         roster = self.source("function generateRoster(generation)", "function ensureStartingNpoGeneration")
-        self.assertIn("count=generation.deploymentCount", roster)
+        self.assertIn("count=MAX_NPOS", roster)
+        self.assertIn("selectStartingNpos(generation)", roster)
         presentation = self.source("if(stepId==='deploy'){", "const m=mission()")
-        self.assertIn("generation.missionRoll>generation.availableNpos", presentation)
         self.assertIn("Deploy ${generation.deploymentCount} of ${generation.availableNpos} available NPOs.", presentation)
         self.assertIn("(Mission roll: ${generation.missionRoll})", presentation)
-        self.assertIn("Deploy ${generation.deploymentCount} NPOs.", presentation)
+        self.assertIn("Deploy the ${generation.deploymentCount} selected starting NPOs.", presentation)
         self.assertIn("placementChecks.filter(check=>check.id!=='starting-npos')", presentation)
         self.assertNotIn("error", presentation.lower())
 
@@ -85,6 +85,51 @@ class StartingNpoGenerationTests(unittest.TestCase):
         self.assertRegex(self.app, r"function rollNpo\(\)\{")
         self.assertRegex(self.app, r"function randomReinforcement\(\)\{return rollNpo\(\);\}")
         self.assertEqual(self.app.count("function rollNpo()"), 1)
+
+    def test_selection_partitions_every_available_npo_once(self):
+        selection = self.source("function selectStartingNpos(generation)", "function generateRoster")
+        self.assertIn("assignedIds.size===available.length", selection)
+        self.assertIn("return false", selection)
+        self.assertIn("Math.min(generation.missionRoll,available.length)", selection)
+        self.assertIn("slice(0,generation.deploymentCount)", selection)
+        self.assertIn("slice(generation.deploymentCount)", selection)
+        self.assertIn("battlefieldState=deployedIds.has(npo.id)?'deployed':'reserve'", selection)
+
+    def test_battlefield_eligibility_excludes_reserve_and_out_of_action(self):
+        active = self.source("function activeNpos()", "function reserveNpos()")
+        self.assertIn("n.battlefieldState==='deployed'", active)
+        self.assertIn("n.wounds > 0", active)
+        self.assertGreaterEqual(self.app.count("activeNpos().filter"), 5)
+
+    def test_reinforcements_reuse_reserve_without_duplication(self):
+        reinforcement = self.source("function processReinforcementStage()", "function reinforcementTriggered")
+        self.assertIn("reserveNpos().find", reinforcement)
+        self.assertIn("if(n)", reinforcement)
+        self.assertIn("else{", reinforcement)
+        placement = self.source("function confirmReinforcementPlacement", "function recordReinforcementHatchway")
+        self.assertIn("battlefieldState=placementConfirmed?'deployed':'reserve'", placement)
+        self.assertIn("placementConfirmed?reserveIds.delete(npo.id):reserveIds.add(npo.id)", placement)
+        hatchway = self.source("function recordReinforcementHatchway", "function rollInitiative")
+        self.assertIn("reserveNpoIds.push(npo.id)", hatchway)
+
+    def test_saved_identifiers_and_legacy_states_are_normalized(self):
+        normalized = self.source("function normalizeState(raw)", "function npoDefinition")
+        self.assertIn("deployedNpoIds=normalizeIdList", normalized)
+        self.assertIn("reserveNpoIds=normalizeIdList", normalized)
+        npo = self.source("function normalizeNpo(npo)", "function mission()")
+        self.assertIn("['reserve','deployed','out-of-action']", npo)
+        self.assertIn("Number(npo.wounds)<=0?'out-of-action'", npo)
+
+    def test_legacy_in_progress_games_preserve_prior_active_roster_behavior(self):
+        normalized = self.source("function normalizeState(raw)", "function npoDefinition")
+        self.assertIn("if(Number(raw.turningPoint)>0)", normalized)
+        self.assertIn("!explicitStates.has(npo.id)", normalized)
+        self.assertIn("npo.battlefieldState='deployed'", normalized)
+
+    def test_combat_resolution_revalidates_deployed_target(self):
+        combat = self.source("function showPlayerCombatResolution", "function previewPendingPlayerAttack")
+        self.assertIn("activeNpos().find(n=>n.id===targetId)", combat)
+        self.assertNotIn("state.roster.find(n=>n.id===targetId)", combat)
 
 
 if __name__ == "__main__":
