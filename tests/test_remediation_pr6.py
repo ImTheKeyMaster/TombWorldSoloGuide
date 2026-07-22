@@ -56,7 +56,8 @@ class RemediationPr6Tests(unittest.TestCase):
         self.assertIn("npo.reinforcement.placementConfirmed=false", hatchway)
         self.assertIn("npo.deployed=true", hatchway)
         self.assertIn("state.reinforcementState.status='placement'", hatchway)
-        self.assertIn("save();render();", hatchway)
+        self.assertIn("save();", hatchway)
+        self.assertNotIn("render();", hatchway)
 
     def test_reinforcement_state_and_metadata_are_normalized(self):
         initial = self.app.split("const initialState = () => ({", 1)[1].split("\n  });", 1)[0]
