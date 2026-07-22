@@ -53,13 +53,18 @@ assert.deepEqual(references.playerCasualtyIds,[]);
 assert.deepEqual(references.reinforcementState.operativeIds,['valid']);
 assert.deepEqual(references.reinforcementState.blockedOperativeIds,[]);
 
-const future=migrateSave({saveVersion:2,roster:[],playerRoster:[],futureFeature:{enabled:true}});
-assert.equal(future.saveVersion,2);
-assert.deepEqual(future.futureFeature,{enabled:true});
+assert.throws(
+  ()=>migrateSave({saveVersion:2,roster:[],playerRoster:[],futureFeature:{enabled:true}}),
+  /newer than supported/
+);
 
-const once=migrateSave({saveVersion:0,roster:[],playerRoster:[],unknown:{kept:true}});
+const once=migrateSave({saveVersion:0,roster:[],playerRoster:[],unknownFutureField:{kept:true}});
 assert.deepStrictEqual(migrateSave(once),once);
-assert.deepStrictEqual(createPersistedSave({roster:[]}),{roster:[],saveVersion:1});
+assert.deepStrictEqual(once.unknownFutureField,{kept:true});
+assert.deepStrictEqual(
+  createPersistedSave({roster:[],temporaryUiState:{open:true},cachedHtml:'<p>cache</p>',domReferences:{node:'app'}}),
+  {roster:[],saveVersion:1}
+);
 assert.throws(()=>migrateSave(null),/must be an object/);
 assert.throws(()=>migrateSave({saveVersion:'one'}),/invalid saveVersion/);
 """
@@ -75,6 +80,7 @@ assert.throws(()=>migrateSave({saveVersion:'one'}),/invalid saveVersion/);
         self.assertIn("saveVersion:currentSaveVersion()", app)
         self.assertIn("return migrateSave(parsed)", app)
         self.assertIn("JSON.stringify(createPersistedSave(state))", app)
+        self.assertIn("state.missionRuntime=objectiveEngine.getMissionRuntime()", app)
         self.assertIn("the original save was left unchanged", app)
 
 

@@ -2,6 +2,7 @@
   'use strict';
 
   const SAVE_VERSION = 1;
+  const NON_PERSISTED_FIELDS = new Set(['temporaryUiState','cachedHtml','domReferences']);
   const isRecord = value => Boolean(value)&&typeof value==='object'&&!Array.isArray(value);
   const clone = value => JSON.parse(JSON.stringify(value));
   const integer = (value,fallback=0) => Number.isFinite(Number(value))?Math.max(0,Math.round(Number(value))):fallback;
@@ -51,8 +52,7 @@
     let version=migrated.saveVersion===undefined?0:migrated.saveVersion;
     if(!Number.isInteger(version)||version<0)throw new TypeError('Saved game has an invalid saveVersion.');
     if(version>currentSaveVersion()){
-      console.warn(`[Persistence] Save schema ${version} is newer than supported schema ${currentSaveVersion()}; preserving unknown fields.`);
-      return normalizeSave(migrated);
+      throw new Error(`Save schema ${version} is newer than supported schema ${currentSaveVersion()}.`);
     }
     while(version<currentSaveVersion()){
       const migration=migrations[version];
@@ -67,7 +67,8 @@
 
   function createPersistedSave(state){
     if(!isRecord(state))throw new TypeError('Game state must be an object.');
-    return {...clone(state),saveVersion:currentSaveVersion()};
+    const gameplayState=Object.fromEntries(Object.entries(state).filter(([field])=>!NON_PERSISTED_FIELDS.has(field)));
+    return {...clone(gameplayState),saveVersion:currentSaveVersion()};
   }
 
   const api={currentSaveVersion,migrateSave,createPersistedSave,migrations};
