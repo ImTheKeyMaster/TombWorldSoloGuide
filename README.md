@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v5.7.3
+# Tomb World Solo Guide v5.7.4
+
+## v5.7.4
+
+**Version 5.7.4 - Mobile Strategy Phase Tooltips**
+
+- Removed Strategy Phase stat tooltips and their info indicators on mobile while preserving desktop tooltip behavior.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v5.7.4.
 
 ## v5.7.3
 
