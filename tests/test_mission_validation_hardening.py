@@ -63,6 +63,27 @@ assert.throws(()=>engine.recordMissionHistory(null),error=>error.code==='INVALID
 """
         )
 
+    def test_prior_individual_dice_results_validate_and_execute(self):
+        self.run_node(
+            r"""
+const fs=require('fs'),vm=require('vm'),assert=require('assert').strict;
+vm.runInThisContext(fs.readFileSync('mission-engine.js','utf8'));
+const api=globalThis.TombWorldMissionEngine;
+const definition=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarcophagus.json'));
+definition.actions[0].operations[1].valueFrom='results.breachRoll.dice.0';
+assert.equal(api.validateMissionDefinition(definition).id,'04');
+const invalid=JSON.parse(JSON.stringify(definition));
+invalid.actions[0].operations[1].valueFrom='results.breachRoll.dice.2';
+assert.throws(()=>api.validateMissionDefinition(invalid),error=>error.code==='INVALID_EVENT_REFERENCE');
+(async()=>{
+  const engine=api.createMissionEngine({requestDiceRoll:async()=>({dice:[4,2],total:6})});
+  engine.initializeMissionRuntime(definition);
+  await engine.executeMissionAction('breachSarcophagus');
+  assert.equal(engine.getObjectiveValue('destructionPoints'),4);
+})().catch(error=>{console.error(error);process.exit(1)});
+"""
+        )
+
     def test_loader_reports_malformed_json_and_duplicate_missions(self):
         self.run_node(
             r"""

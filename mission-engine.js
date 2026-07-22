@@ -93,7 +93,10 @@
     const references=new Set();
     event.operations.forEach((operation,index)=>{
       validateOperation(operation,`${path}.operations[${index}]`,objectiveIds,references);
-      if(operation?.type==='requestDiceRoll')references.add(`results.${operation.id}.total`);
+      if(operation?.type==='requestDiceRoll'){
+        references.add(`results.${operation.id}.total`);
+        for(let dieIndex=0;dieIndex<operation.dice.count;dieIndex++)references.add(`results.${operation.id}.dice.${dieIndex}`);
+      }
       if(operation?.type==='requestNumericInput')references.add(`inputs.${operation.id}`);
     });
   }
