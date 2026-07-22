@@ -46,19 +46,13 @@ class RemediationPr6Tests(unittest.TestCase):
         self.assertIn("Randomly determine an open hatchway", card)
         self.assertIn("printed placement requirements", card)
         self.assertIn("placementPending||missionPending?'disabled'", card)
-        placement = self.function_source("confirmReinforcementPlacement", "recordReinforcementHatchway")
-        self.assertIn("Boolean(confirmed&&npo.reinforcement.hatchway)", placement)
+        placement = self.function_source("confirmReinforcementPlacement", "rollInitiative")
+        self.assertIn("Boolean(confirmed)", placement)
         self.assertIn("npo.deployed=true", placement)
         self.assertIn("placementConfirmed", placement)
         self.assertNotIn("coordinates", placement)
-        hatchway = self.function_source("recordReinforcementHatchway", "rollInitiative")
-        self.assertIn("recordedHatchway=hatchway.trim()", hatchway)
-        self.assertIn("npo.reinforcement.placementConfirmed=false", hatchway)
-        self.assertIn("npo.deployed=true", hatchway)
-        self.assertIn("state.reinforcementState.status='placement'", hatchway)
-        self.assertIn("save();", hatchway)
-        self.assertNotIn("save();render();", hatchway)
-        self.assertIn("setTimeout(render,0);", hatchway)
+        self.assertNotIn("data-reinforcement-hatchway", card)
+        self.assertNotIn("recordReinforcementHatchway", self.app)
 
     def test_reinforcement_state_and_metadata_are_normalized(self):
         initial = self.app.split("const initialState = () => ({", 1)[1].split("\n  });", 1)[0]

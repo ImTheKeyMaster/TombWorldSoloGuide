@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v5.7.9
+# Tomb World Solo Guide v5.7.10
+
+## v5.7.10
+
+**Version 5.7.10 - Reinforcement Placement Confirmation**
+
+- Removed the unnecessary hatchway text fields from reinforcement placement cards.
+- Reinforcement placement checkboxes now directly record confirmation and control Strategy Phase completion.
+- Preserved legacy hatchway values when normalizing existing saved games.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v5.7.10.
 
 ## v5.7.9
 
