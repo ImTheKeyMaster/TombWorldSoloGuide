@@ -3306,7 +3306,7 @@ function showPlayerActivation(stage={}){
   }
 
   const pipPositions={1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};
-  function dieHtml(d){return `<div class="die ${d.kind}" aria-label="${d.value} ${d.kind}">${pipPositions[d.value].map(p=>`<span class="pip" style="grid-area:${Math.ceil(p/3)}/${((p-1)%3)+1}"></span>`).join('')}</div>`;}
+  function dieHtml(d){const kind=d.kind||'';return `<div class="die ${kind}" aria-label="${d.value}${kind?` ${kind}`:''}">${pipPositions[d.value].map(p=>`<span class="pip" style="grid-area:${Math.ceil(p/3)}/${((p-1)%3)+1}"></span>`).join('')}</div>`;}
 
   function renderMission(){
     const m=mission();
@@ -3403,9 +3403,11 @@ function showPlayerActivation(stage={}){
   function requestMissionNumber(operation){
     return new Promise((resolve,reject)=>{
       let submitted=false;
-      const maximum=Math.min(operation.maximum??20,livingPlayerOperativeCount());
       const minimum=operation.minimum??0;
-      showModal(operation.label||'Mission Input',`<p>${escapeHtml(operation.label||'Enter the required mission value.')}</p><div class="field"><label for="missionNumericInput">Number of operatives</label><input id="missionNumericInput" type="number" inputmode="numeric" step="1" min="${minimum}" max="${maximum}" value="${Math.min(operation.default??0,maximum)}" aria-describedby="missionNumericError"><small class="field-error" id="missionNumericError" aria-live="polite"></small></div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmMissionNumber">Continue</button></div>`,()=>{if(!submitted)reject(new TombWorldMissionEngine.MissionEngineError('INPUT_CANCELLED','Mission input was cancelled.'));});
+      const maximum=Math.min(operation.maximum??20,Math.max(minimum,livingPlayerOperativeCount()));
+      const label=operation.label||'Mission value';
+      const initial=Math.max(minimum,Math.min(operation.default??minimum,maximum));
+      showModal(operation.title||'Mission Input',`<div class="field"><label for="missionNumericInput">${escapeHtml(label)}</label><input id="missionNumericInput" type="number" inputmode="numeric" step="1" min="${minimum}" max="${maximum}" value="${initial}" aria-describedby="missionNumericError"><small class="field-error" id="missionNumericError" aria-live="polite"></small></div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmMissionNumber">Continue</button></div>`,()=>{if(!submitted)reject(new TombWorldMissionEngine.MissionEngineError('INPUT_CANCELLED','Mission input was cancelled.'));});
       const input=$('#missionNumericInput'),confirm=$('#confirmMissionNumber'),error=$('#missionNumericError');
       const validate=()=>{
         const value=Number(input.value),valid=input.value.trim()!==''&&Number.isInteger(value)&&value>=minimum&&value<=maximum;
@@ -3442,6 +3444,12 @@ function showPlayerActivation(stage={}){
     return `${entry.title||'Mission activity'}: ${delta>0?'+':''}${delta}`;
   }
 
+  function missionOperation(operationId){
+    const actions=objectiveDefinition?.actions||[];
+    const hooks=Object.values(objectiveDefinition?.hooks||{}).flat();
+    return [...actions,...hooks].flatMap(event=>event.operations||[]).find(operation=>operation.id===operationId)||null;
+  }
+
   function missionDetailsContent(){
     if(!objectiveEngine){
       const selected=mission();
@@ -3450,6 +3458,7 @@ function showPlayerActivation(stage={}){
     const model=objectiveEngine.getMissionDetailsModel();
     const objective=model.objectives[0];
     const history=model.history.slice(0,objectiveDefinition.presentation.historyDisplayCount||5);
+    if(!objective)return `<div class="mission-details"><h3>${escapeHtml(model.name)}</h3><section><h4>Objective</h4><p>${escapeHtml(model.objectiveSummary)}</p></section><section><h4>Recent Activity</h4>${history.length?`<ul class="mission-history">${history.map(entry=>`<li><span>${escapeHtml(missionHistoryText(entry))}</span></li>`).join('')}</ul>`:'<p class="muted mission-history-empty">No mission activity yet.</p>'}</section></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
     const completedDuring=objective.completedTurningPoint?`<section><h4>Completed during</h4><p>Turning Point ${objective.completedTurningPoint}</p></section>`:'';
     const activity=history.length?`<ul class="mission-history">${history.map(entry=>`<li><span>${escapeHtml(missionHistoryText(entry))}</span>${entry.turningPoint?`<small>Turning Point ${entry.turningPoint}</small>`:''}</li>`).join('')}</ul>`:'<p class="muted mission-history-empty">No mission activity yet.</p>';
     return `<div class="mission-details"><h3>${escapeHtml(model.name)}</h3>${objective.completed?'<p class="mission-complete-status">✓ Objective Complete</p>':`<section><h4>Objective</h4><p>${escapeHtml(model.objectiveSummary)}</p></section>`}${completedDuring}<section><h4>${objective.completed?'Final Progress':'Progress'}</h4><p class="mission-progress">${objective.value} / ${objective.target}</p></section><section><h4>Recent Activity</h4>${activity}</section></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
@@ -3461,16 +3470,18 @@ function showPlayerActivation(stage={}){
   }
 
   function showMissionResult(title,outcome){
-    const change=outcome.changes[0],dice=Object.values(outcome.results)[0]?.dice||[],model=objectiveEngine.getMissionHudModel();
-    const objective=objectiveDefinition.objectives.find(item=>item.id===change.objectiveId);
-    const delta=Math.abs(change.after-change.before);
-    const repair=change.after<=change.before;
-    const detail=repair?(delta?`${objective.label} repaired: ${delta}`:`No ${objective.label} repaired.`):`${objective.label} added: ${delta}`;
-    const completed=model.completed;
+    const change=outcome.changes?.[0],dice=Object.values(outcome.results||{})[0]?.dice||[],model=objectiveEngine.getMissionHudModel();
+    const objective=objectiveDefinition.objectives.find(item=>item.id===change?.objectiveId);
+    const delta=change?Math.abs(change.after-change.before):0;
+    const decreased=change&&change.after<=change.before;
+    const detail=objective?(decreased?(delta?`${objective.label} repaired: ${delta}`:`No ${objective.label} repaired.`):`${objective.label} added: ${delta}`):'Mission result recorded.';
+    const completed=Boolean(model.completed&&change&&change.before<model.target);
     const completionDialog=objectiveDefinition.dialogs[objectiveDefinition.completion.dialogId]||{};
     const total=dice.reduce((sum,value)=>sum+value,0);
-    const inputs=Object.entries(outcome.inputs||{}).map(([id,value])=>{const operation=objectiveDefinition.hooks.onStrategyPhaseReadyStep?.flatMap(event=>event.operations).find(item=>item.id===id);return `<p>${escapeHtml(operation?.label||id)}: <strong>${value}</strong></p>`;}).join('');
-    showModal(completed?(completionDialog.title||'MISSION OBJECTIVE COMPLETE'):title,`<div class="mission-roll-result">${completed?`<h3>${escapeHtml(objectiveDefinition.name)}</h3><p class="mission-complete-status">✓ ${escapeHtml(objective.label)}</p>`:''}<div class="dice-row settled">${dice.map(value=>dieHtml({value})).join('')}</div><p>Dice: ${dice.join(' + ')}${dice.length>1?` · Total: ${total}`:''}</p>${inputs}<p>${detail}</p><div class="summary-box"><strong>Progress: ${model.value} / ${model.target} ${escapeHtml(objective.label)}</strong></div>${completed?`<p>${escapeHtml(completionDialog.message||'Continue the battle.')}</p>`:''}</div><div class="wizard-actions"><button class="btn primary" data-close>${completed?'Continue the battle':'Continue'}</button></div>`);
+    const inputs=Object.entries(outcome.inputs||{}).map(([id,value])=>`<p>${escapeHtml(missionOperation(id)?.label||id)}: <strong>${value}</strong></p>`).join('');
+    const diceResult=dice.length?`<div class="dice-row settled">${dice.map(value=>dieHtml({value})).join('')}</div><p>Dice: ${dice.join(' + ')}${dice.length>1?` · Total: ${total}`:''}</p>`:'';
+    const progress=objective?`<div class="summary-box"><strong>Progress: ${model.value} / ${model.target} ${escapeHtml(objective.label)}</strong></div>`:'';
+    showModal(completed?(completionDialog.title||'MISSION OBJECTIVE COMPLETE'):title,`<div class="mission-roll-result">${completed?`<h3>${escapeHtml(objectiveDefinition.name)}</h3><p class="mission-complete-status">✓ ${escapeHtml(objective.label)}</p>`:''}${diceResult}${inputs}<p>${detail}</p>${progress}${completed?`<p>${escapeHtml(completionDialog.message||'Continue the battle.')}</p>`:''}</div><div class="wizard-actions"><button class="btn primary" data-close>${completed?'Continue the battle':'Continue'}</button></div>`);
   }
 
   function showMissionConfirmation(options,onConfirm){

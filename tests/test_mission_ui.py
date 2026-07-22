@@ -31,7 +31,11 @@ class MissionUiTests(unittest.TestCase):
         self.assertIn("function showMissionConfirmation(options,onConfirm)", self.app)
         self.assertIn("missionNumericError", self.app)
         self.assertIn("confirm.disabled=!valid", self.app)
+        self.assertIn("livingPlayerOperativeCount()", self.app)
         self.assertIn("dice.map(value=>dieHtml({value}))", self.app)
+        self.assertIn("function missionOperation(operationId)", self.app)
+        self.assertNotIn("objectiveDefinition.hooks.onStrategyPhaseReadyStep?.flatMap", self.app)
+        self.assertIn("change.before<model.target", self.app)
         self.assertIn("MISSION OBJECTIVE COMPLETE", self.app)
         self.assertIn("Continue the battle", self.app)
         self.assertNotIn("objectiveEngine.getMissionHudModel().completed)&&checkGameEnd", self.app)
@@ -44,6 +48,7 @@ class MissionUiTests(unittest.TestCase):
         self.assertIn("if(!missionDialogLocked)closeModal()", self.app)
         self.assertIn("overflow-x:hidden", self.styles)
         self.assertIn("overflow-wrap:anywhere", self.styles)
+        self.assertIn(".hud .mission-hud{min-height:44px}", self.styles)
 
     def test_later_work_package_integration_remains_deferred(self):
         self.assertNotIn("onPlayerActivationStarted", self.app)
