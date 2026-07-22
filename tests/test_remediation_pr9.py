@@ -34,6 +34,8 @@ class RemediationPr9StabilizationTests(unittest.TestCase):
         self.assertIn("normalizeIdList(importedEvents.available,validInstances)", normalize)
         self.assertIn("normalizeIdList(importedEvents.used,validInstances)", normalize)
         self.assertIn("reinforcementStatus==='placement'&&!reinforcementIds.length?'idle'", normalize)
+        self.assertIn("!reinforcementIds.includes(id)", normalize)
+        self.assertIn("npo.battlefieldState==='reserve'", normalize)
         self.assertIn("boundedInteger(importedReinforcements.blocked,0,MAX_NPOS)", normalize)
 
     def test_all_mission_state_variants_have_defensive_defaults(self):
@@ -61,7 +63,7 @@ class RemediationPr9StabilizationTests(unittest.TestCase):
         self.assertIn("missionRecovered=recoverInvalidMission()", self.app)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = "5.7.2"
+        expected = "5.7.3"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         index = (ROOT / "index.html").read_text()
         self.assertIn(f"styles.css?v={expected}", index)
