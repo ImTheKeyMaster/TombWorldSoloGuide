@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v5.7.5
+# Tomb World Solo Guide v5.7.6
+
+## v5.7.6
+
+**Version 5.7.6 - Simplified NPO Activation Screen**
+
+- Removed redundant initiative messaging from the NPO Activation screen.
+- Updated the instruction to focus on identifying the next ready NPO using the Threat Principle.
+- Preserved the existing NPO activation workflow and gameplay logic.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v5.7.6.
 
 ## v5.7.5
 
