@@ -91,7 +91,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       state.missionRuntime=objectiveEngine.restoreMissionRuntime(objectiveDefinition,state.missionRuntime);
       if(!restoringRuntime)await executeMissionLifecycleHook('onMissionInitialized');
     }catch(error){
-      console.error('[MissionEngine]',error);
+      console.error('[MissionEngine] Mission automation unavailable.',{code:error.code||'LOAD_FAILED',missionId:selectedMission?.number,path:error.details?.path,reason:error.message});
       showToast('Mission automation could not be loaded. Track this mission manually.');
     }
   }
@@ -3491,11 +3491,13 @@ function showPlayerActivation(stage={}){
     return [...actions,...hooks].flatMap(event=>event.operations||[]).find(operation=>operation.id===operationId)||null;
   }
 
+  function missionDetailsContentFallback(){
+    const selected=mission();
+    return `<div class="mission-details"><h3>${escapeHtml(selected?.name||'Selected Mission')}</h3><section><h4>Objective</h4><p>${escapeHtml(selected?.objective||'Review the mission rules and track progress on the tabletop.')}</p></section><p class="muted">Automated mission progress is not available for this mission.</p></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
+  }
+
   function missionDetailsContent(){
-    if(!objectiveEngine){
-      const selected=mission();
-      return `<div class="mission-details"><h3>${escapeHtml(selected?.name||'Selected Mission')}</h3><section><h4>Objective</h4><p>${escapeHtml(selected?.objective||'Review the mission rules and track progress on the tabletop.')}</p></section><p class="muted">Automated mission progress is not available for this mission.</p></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
-    }
+    if(!objectiveEngine)return missionDetailsContentFallback();
     const model=objectiveEngine.getMissionDetailsModel();
     const objective=model.objectives[0];
     const history=model.history.slice(0,objectiveDefinition.presentation.historyDisplayCount||5);
@@ -3506,18 +3508,22 @@ function showPlayerActivation(stage={}){
   }
 
   function showMissionDetails(){
-    const completed=Boolean(objectiveEngine?.getMissionHudModel().completed);
-    showModal(completed?'MISSION STATUS':'MISSION DETAILS',missionDetailsContent());
+    let completed=false;
+    let content;
+    try{completed=Boolean(objectiveEngine?.getMissionHudModel().completed);content=missionDetailsContent();}
+    catch(error){console.warn('[MissionEngine] Mission details unavailable.',error);content=missionDetailsContentFallback();}
+    showModal(completed?'MISSION STATUS':'MISSION DETAILS',content);
   }
 
   function showMissionResult(title,outcome){
+    if(!objectiveEngine||!objectiveDefinition||!outcome){console.warn('[MissionEngine] Mission result dialog skipped because result data is unavailable.');return;}
     const change=outcome.changes?.[0],dice=Object.values(outcome.results||{})[0]?.dice||[],model=objectiveEngine.getMissionHudModel();
     const objective=objectiveDefinition.objectives.find(item=>item.id===change?.objectiveId);
     const delta=change?Math.abs(change.after-change.before):0;
     const decreased=change&&change.after<=change.before;
     const detail=objective?(decreased?(delta?`${objective.label} repaired: ${delta}`:`No ${objective.label} repaired.`):`${objective.label} added: ${delta}`):'Mission result recorded.';
     const completed=Boolean(model.completed&&change&&change.before<model.target);
-    const completionDialog=objectiveDefinition.dialogs[objectiveDefinition.completion.dialogId]||{};
+    const completionDialog=objectiveDefinition.dialogs?.[objectiveDefinition.completion?.dialogId]||{};
     const total=dice.reduce((sum,value)=>sum+value,0);
     const inputs=Object.entries(outcome.inputs||{}).map(([id,value])=>`<p>${escapeHtml(missionOperation(id)?.label||id)}: <strong>${value}</strong></p>`).join('');
     const diceResult=dice.length?`<div class="dice-row settled">${dice.map(value=>dieHtml({value})).join('')}</div><p>Dice: ${dice.join(' + ')}${dice.length>1?` · Total: ${total}`:''}</p>`:'';
@@ -3526,12 +3532,14 @@ function showPlayerActivation(stage={}){
   }
 
   function showMissionConfirmation(options,onConfirm){
+    options=options&&typeof options==='object'?options:{};
     showModal(options.title||'Confirm Mission Action',`<p>${escapeHtml(options.description||'')}</p><p>${escapeHtml(options.message||'')}</p><div class="wizard-actions"><button class="btn ghost" data-close>${escapeHtml(options.cancelLabel||'Cancel')}</button><button class="btn primary" id="confirmMissionDialog">${escapeHtml(options.confirmLabel||'Confirm')}</button></div>`);
-    $('#confirmMissionDialog').onclick=onConfirm;
+    $('#confirmMissionDialog').onclick=typeof onConfirm==='function'?onConfirm:closeModal;
   }
 
   function confirmMissionAction(){
-    const action=objectiveDefinition.actions[0];
+    const action=objectiveDefinition?.actions?.[0];
+    if(!action){console.warn('[MissionEngine] No mission action is available.');return;}
     const dice=action.operations.find(operation=>operation.type==='requestDiceRoll')?.dice;
     const diceLabel=dice?`${dice.count}D${dice.sides}`:'Dice';
     showMissionConfirmation({...action.confirmation,description:action.description,confirmLabel:`Roll ${diceLabel}`},async()=>{

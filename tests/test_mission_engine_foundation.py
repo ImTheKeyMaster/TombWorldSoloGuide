@@ -83,7 +83,7 @@ const mission=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarcoph
   const loaded=await api.loadMissionDefinition('destroy-sarcophagus',{fetch:async path=>response(files[path])});
   assert.equal(loaded.id,'04');assert.equal(loaded.completion.endsBattle,false);
   await assert.rejects(()=>api.loadMissionDefinition('missing',{fetch:async path=>response(files[path])}),error=>error.code==='UNKNOWN_MISSION_ID');
-  await assert.rejects(()=>api.loadMissionDefinition('04',{fetch:async path=>path.endsWith('manifest.json')?response(files[path]):({ok:true,status:200,json:async()=>{throw new SyntaxError('bad json')}})}),error=>error.code==='DEFINITION_LOAD_FAILED'&&error.details.cause.code==='MALFORMED_JSON');
+  await assert.rejects(()=>api.loadMissionDefinition('04',{fetch:async path=>path.endsWith('manifest.json')?response(files[path]):({ok:true,status:200,json:async()=>{throw new SyntaxError('bad json')}})}),error=>error.code==='MALFORMED_JSON');
   await assert.rejects(()=>api.createMissionRegistry(['a','b'],async()=>mission),error=>error.code==='DUPLICATE_MISSION_ID');
   const missing={...mission};delete missing.name;assert.throws(()=>api.validateMissionDefinition(missing),error=>error.code==='INVALID_DEFINITION');
   const badHook={...mission,hooks:{onMadeUp:[]}};assert.throws(()=>api.validateMissionDefinition(badHook),error=>error.code==='UNKNOWN_HOOK');
