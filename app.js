@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.6.0';
+  const APP_VERSION = '5.6.1';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -302,7 +302,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     npoAttackSummary:null, combatState:null, missionState:null, startingNpoGeneration:null, eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[]}, gameEnd:null
   });
 
-  let state = normalizeState(load() || initialState());
+  const loadedState = load();
+  let state = normalizeState(loadedState || initialState());
+  if(loadedState?.version==='5.6.0'&&state.version===APP_VERSION)save();
   let lastRenderedStepKey = null;
   let startingNpoTimer = null;
   let threatAdjustOpen = false;
@@ -428,6 +430,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.startingNpoGeneration=isRecord(raw?.startingNpoGeneration)
       ? {...raw.startingNpoGeneration,dice:Array.isArray(raw.startingNpoGeneration.dice)?raw.startingNpoGeneration.dice.map(value=>boundedInteger(value,1,3,1)):[]}
       : null;
+    if(raw.version==='5.6.0'&&merged.screen==='setup'&&merged.startingNpoGeneration?.navigationComplete){
+      merged.setupStep=Math.max(0,Number(merged.setupStep||0)-1);
+      merged.version=APP_VERSION;
+    }
     merged.playerTeamId=raw?.playerTeamId||'';
     if(isRecord(raw.strategyData)){
       const legacyEvent=raw.strategyData.event;
@@ -889,14 +895,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     killzone:{title:'Build the Killzone',subtitle:'Follow the board checklist before deploying models.'},
     team:{title:'Choose Player Kill Team',subtitle:'Select the player-controlled Kill Team for this battle.'},
     playerRoster:{title:'Build Player Roster',subtitle:'Choose the operatives you will use in this battle.'},
-    npoRoster:{title:'Starting NPO Generation',subtitle:'Mission starting roll.'},
     deploy:{title:'Deploy Kill Teams',subtitle:'Place both forces on the battlefield and confirm deployment.'},
     ready:{title:'Ready to Begin',subtitle:'Review the mission, then begin Turning Point 1.'}
   };
   function activeSetupSteps(){
     const steps=['mission','killzone'];
     if(hasMultiplePlayerTeams())steps.push('team');
-    steps.push('playerRoster','npoRoster','deploy','ready');
+    steps.push('playerRoster','deploy','ready');
     return steps;
   }
   function currentSetupStepId(){
@@ -911,7 +916,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       autoSelectRequiredPlayerOperatives();
       save();
     }
-    if(stepId==='npoRoster')ensureStartingNpoGeneration();
+    if(stepId==='deploy')ensureStartingNpoGeneration();
     const details=setupStepDefinitions[stepId];
     app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>${details.title}</h2><p>${details.subtitle}</p></div><div class="step-count">${state.setupStep+1} / ${steps.length}</div></div><div class="progress-bar"><span style="width:${((state.setupStep+1)/steps.length)*100}%"></span></div><section class="wizard-card">${setupContent(stepId)}</section></div>`;
     bindSetup(stepId);
@@ -1001,19 +1006,23 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const requirementItems=requirements.map(requirement=>`<li>${escapeHtml(requirement)}</li>`).join('');
       return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><p class="muted">Build a legal kill team using its current official rules. The Guide tracks selected operatives but does not validate every team-building restriction. Cooperative team splitting is not currently supported.</p><div class="setup-bulk-row"><button class="btn secondary" id="randomPlayerTeam">Random Team</button></div><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
     }
-    if(stepId==='npoRoster'){
+    if(stepId==='deploy'){
       const generation=state.startingNpoGeneration;
       const limited=generation.missionRoll>generation.availableNpos;
       const dice=generation.dice.map(value=>dieHtml({value,kind:'hit'})).join('');
-      return `<div class="starting-npo-event" id="startingNpoEvent" tabindex="0" role="status" aria-live="polite"><small>MISSION ROLL</small><div class="dice-row ${generation.animationShown?'settled':'animated-roll'}" id="startingNpoDice">${generation.animationShown?dice:generation.dice.map(()=>rollingDieHtml()).join('')}</div><div class="starting-npo-result" id="startingNpoResult" ${generation.animationShown?'':'hidden'}><strong>${generation.missionRoll} Starting NPOs</strong><span>${generation.calculation} Starting NPOs</span>${limited?`<p>Only ${generation.availableNpos} NPOs are available.</p><b>Deploy all ${generation.deploymentCount} available NPOs.</b>`:`<b>Deploy ${generation.deploymentCount} NPOs.</b>`}</div></div>`;
-    }
-    if(stepId==='deploy'){
+      const missionRoll=`<div class="starting-npo-event" id="startingNpoEvent" role="status" aria-live="polite"><small>MISSION ROLL</small><div class="dice-row ${generation.animationShown?'settled':'animated-roll'}" id="startingNpoDice">${generation.animationShown?dice:generation.dice.map(()=>rollingDieHtml()).join('')}</div><div class="starting-npo-result" id="startingNpoResult" ${generation.animationShown?'':'hidden'}><strong>${generation.missionRoll} Starting NPOs</strong><span>${generation.calculation}</span></div></div>`;
       const placementChecks=missionSetupChecks('deploy');
+      const deploymentCheck=placementChecks.find(check=>check.id==='starting-npos');
+      const otherPlacementChecks=placementChecks.filter(check=>check.id!=='starting-npos');
+      const deploymentInstruction=limited?`Deploy ${generation.deploymentCount} of ${generation.availableNpos} available NPOs.`:`Deploy ${generation.deploymentCount} NPOs.`;
+      const cappedRoll=limited?`<small>(Mission roll: ${generation.missionRoll})</small>`:'';
+      const deploymentDetails=mission().startingNpos?.deployment||'Use the mission deployment rules.';
+      const deploymentRow=deploymentCheck?`<label class="check-row"><input type="checkbox" data-check="${escapeHtml(deploymentCheck.id)}" ${state.setupChecks[deploymentCheck.id]?'checked':''}><span><strong>${deploymentInstruction}</strong>${cappedRoll}<small>${escapeHtml(deploymentDetails)}</small></span></label>`:'';
       const allPlacementChecked=placementChecks.length>0&&placementChecks.every(check=>state.setupChecks[check.id]);
       const allNposPlaced=state.roster.every(n=>n.deployed);
       const {minRoster,maxRoster}=playerRosterLimits();
       const playerValid=(state.playerRoster||[]).length>=minRoster&&(state.playerRoster||[]).length<=maxRoster;
-      return `<h3>Deploy Kill Teams</h3><p>Use the generated rosters to place both forces, then confirm every mission requirement and resource choice.</p><div class="setup-bulk-row"><button class="btn secondary" id="checkAllDeployment" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'disabled':''}>Check All</button></div><div class="checklist">${setupChecklistHtml(placementChecks)}<label class="check-row"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${playerValid?'':'disabled'}><span><strong>${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} Kill Team deployed</strong><small>All selected Player operatives are on the battlefield.</small></span></label><label class="check-row"><input id="npoDeployed" type="checkbox" ${allNposPlaced?'checked':''}><span><strong>Necron Kill Team deployed</strong><small>${state.roster.length?'All generated starting NPO operatives are on the battlefield.':'No starting NPO deployment is required for this mission.'}</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'':'disabled'}>Deployment Complete</button></div>`;
+      return `<h3>Deploy Kill Teams</h3><p>Use the generated rosters to place both forces, then confirm every mission requirement and resource choice.</p>${missionRoll}<div class="setup-bulk-row"><button class="btn secondary" id="checkAllDeployment" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'disabled':''}>Check All</button></div><div class="checklist">${deploymentRow}${setupChecklistHtml(otherPlacementChecks)}<label class="check-row"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${playerValid?'':'disabled'}><span><strong>${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} Kill Team deployed</strong><small>All selected Player operatives are on the battlefield.</small></span></label><label class="check-row"><input id="npoDeployed" type="checkbox" ${allNposPlaced?'checked':''}><span><strong>Necron Kill Team deployed</strong><small>${state.roster.length?'All generated starting NPO operatives are on the battlefield.':'No starting NPO deployment is required for this mission.'}</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'':'disabled'}>Deployment Complete</button></div>`;
     }
     const m=mission();
     const rules=(m.rules||[]).map(rule=>`<div class="mission-rule"><strong>${escapeHtml(rule.name||'Special Rule')}</strong>${rule.timing?`<small>${escapeHtml(rule.timing)}</small>`:''}<p>${escapeHtml(rule.summary||'')}</p></div>`).join('');
@@ -1039,7 +1048,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $$('[data-check]').forEach(c=>c.onchange=()=>{state.setupChecks[c.dataset.check]=c.checked;save();render();});
     $('#checkAllSetup')?.addEventListener('click',()=>{missionSetupChecks('killzone').forEach(check=>{state.setupChecks[check.id]=true;});save();render();});
     $('#randomPlayerTeam')?.addEventListener('click',()=>{randomPlayerRoster();save();render();});
-    if(stepId==='npoRoster')runStartingNpoGeneration();
+    if(stepId==='deploy')runStartingNpoGeneration();
     $('#npoDeployed')?.addEventListener('change',e=>{state.roster.forEach(n=>n.deployed=e.target.checked);save();render();});
     $('#checkAllDeployment')?.addEventListener('click',()=>{
       $$('.checklist input[type="checkbox"]:not(:disabled)').forEach(checkbox=>{
@@ -1081,29 +1090,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     else clearTimeout(startingNpoTimer);
     startingNpoTimer=null;
     const event=$('#startingNpoEvent'),generation=state.startingNpoGeneration;
-    if(!event||!generation||generation.navigationComplete)return;
-    const advance=()=>{
-      if(generation.navigationComplete||!event.isConnected)return;
-      generation.navigationComplete=true;
-      const steps=activeSetupSteps();
-      state.setupStep=Math.min(steps.length-1,state.setupStep+1);
-      save();
-      render();
-    };
+    if(!event||!generation)return;
     const showResult=()=>{
       const result=$('#startingNpoResult');
       if(!result)return;
       result.hidden=false;
-      event.onclick=advance;
-      event.onkeydown=input=>{if(input.key==='Enter'||input.key===' '){input.preventDefault();advance();}};
-      startingNpoTimer=setTimeout(advance,1400);
     };
-    if(generation.animationShown){
-      event.onclick=advance;
-      event.onkeydown=input=>{if(input.key==='Enter'||input.key===' '){input.preventDefault();advance();}};
-      startingNpoTimer=setTimeout(advance,900);
-      return;
-    }
+    if(generation.animationShown)return;
     generation.animationShown=true;
     save();
     startingNpoTimer=settleAnimatedDice([{

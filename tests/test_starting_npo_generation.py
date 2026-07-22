@@ -23,38 +23,54 @@ class StartingNpoGenerationTests(unittest.TestCase):
         self.assertIn("if(state.startingNpoGeneration)return false", ensure)
         self.assertIn("save()", ensure)
 
-    def test_shared_dice_animation_settles_and_transitions_automatically(self):
-        presentation = self.source("if(stepId==='npoRoster'){", "if(stepId==='deploy')")
+    def test_shared_dice_animation_settles_on_deployment_screen(self):
+        presentation = self.source("if(stepId==='deploy'){", "const m=mission()")
         self.assertIn("rollingDieHtml()", presentation)
         self.assertIn("animated-roll", presentation)
         self.assertIn("startingNpoResult", presentation)
         flow = self.source("function runStartingNpoGeneration()", "function renderGame()")
         self.assertIn("settleAnimatedDice", flow)
         self.assertIn("dice:generation.dice.map(value=>({value,kind:'hit'}))", flow)
-        self.assertIn("setTimeout(advance,1400)", flow)
-        self.assertIn("state.setupStep=Math.min", flow)
+        self.assertNotIn("state.setupStep", flow)
+        self.assertIn("if(generation.animationShown)return", flow)
+
+    def test_redundant_generation_step_is_removed_from_setup_progress(self):
+        steps = self.source("function activeSetupSteps()", "function currentSetupStepId()")
+        self.assertNotIn("'npoRoster'", steps)
+        self.assertIn("'playerRoster','deploy','ready'", steps)
+        render = self.source("function renderSetup()", "function missionSetupChecks")
+        self.assertIn("if(stepId==='deploy')ensureStartingNpoGeneration()", render)
 
     def test_deployment_is_capped_without_changing_mission_roll(self):
         roll = self.source("function startingNpoRoll()", "function generateRoster")
         self.assertIn("deploymentCount:Math.min(missionRoll,MAX_NPOS)", roll)
         roster = self.source("function generateRoster(generation)", "function ensureStartingNpoGeneration")
         self.assertIn("count=generation.deploymentCount", roster)
-        presentation = self.source("if(stepId==='npoRoster'){", "if(stepId==='deploy')")
+        presentation = self.source("if(stepId==='deploy'){", "const m=mission()")
         self.assertIn("generation.missionRoll>generation.availableNpos", presentation)
-        self.assertIn("Only ${generation.availableNpos} NPOs are available.", presentation)
-        self.assertIn("Deploy all ${generation.deploymentCount} available NPOs.", presentation)
+        self.assertIn("Deploy ${generation.deploymentCount} of ${generation.availableNpos} available NPOs.", presentation)
+        self.assertIn("(Mission roll: ${generation.missionRoll})", presentation)
+        self.assertIn("Deploy ${generation.deploymentCount} NPOs.", presentation)
+        self.assertIn("placementChecks.filter(check=>check.id!=='starting-npos')", presentation)
         self.assertNotIn("error", presentation.lower())
 
-    def test_persistence_prevents_reroll_and_duplicate_navigation(self):
+    def test_persistence_prevents_reroll_on_rerender(self):
         initial = self.source("const initialState", "let state")
         self.assertIn("startingNpoGeneration:null", initial)
         normalized = self.source("function normalizeState(raw)", "function npoDefinition")
         self.assertIn("raw?.startingNpoGeneration", normalized)
         flow = self.source("function runStartingNpoGeneration()", "function renderGame()")
-        self.assertIn("generation.navigationComplete", flow)
         self.assertIn("generation.animationShown=true", flow)
-        self.assertIn("if(generation.animationShown)", flow)
-        self.assertLess(flow.index("generation.navigationComplete=true"), flow.index("state.setupStep=Math.min"))
+        self.assertIn("if(generation.animationShown)return", flow)
+        self.assertNotIn("startingNpoRoll()", flow)
+
+    def test_legacy_setup_step_migration_is_persisted_once(self):
+        initialization = self.source("const loadedState = load()", "let lastRenderedStepKey")
+        self.assertIn("state.version===APP_VERSION)save()", initialization)
+        normalized = self.source("function normalizeState(raw)", "function npoDefinition")
+        migration = normalized.split("if(raw.version==='5.6.0'", 1)[1].split("merged.playerTeamId", 1)[0]
+        self.assertIn("merged.setupStep=Math.max(0,Number(merged.setupStep||0)-1)", migration)
+        self.assertIn("merged.version=APP_VERSION", migration)
 
     def test_legacy_setup_save_uses_existing_roster_without_rerolling(self):
         restored = self.source("function restoredStartingNpoGeneration()", "function generateRoster")
