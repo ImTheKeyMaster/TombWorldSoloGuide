@@ -27,7 +27,7 @@ class RemediationPr6Tests(unittest.TestCase):
         reinforcement = self.function_source("processReinforcementStage", "reinforcementTriggered")
         self.assertIn("randomReinforcement()", reinforcement)
         self.assertIn("weaponId:rr.weaponId", reinforcement)
-        self.assertIn("deployed:false", reinforcement)
+        self.assertIn("deployed:true", reinforcement)
         self.assertIn("function randomReinforcement(){return rollNpo();}", self.app)
         create = self.function_source("createNpo", "rollNpo")
         self.assertIn("weaponId,order:'Conceal'", create)
@@ -39,7 +39,7 @@ class RemediationPr6Tests(unittest.TestCase):
         self.assertIn("MAX_NPOS-activeNpos().length", source)
         self.assertIn("actual=Math.min(requested,slots)", source)
         self.assertIn("blocked=requested-actual", source)
-        self.assertIn("cannot be set up because doing so would exceed the 10-NPO limit", self.app)
+        self.assertIn("Battlefield NPO limit reached.", self.app)
 
     def test_placement_is_manual_and_blocks_progress_until_confirmed(self):
         card = self.function_source("strategyCard", "actualReinforcementCount")
@@ -48,19 +48,19 @@ class RemediationPr6Tests(unittest.TestCase):
         self.assertIn("placementPending||missionPending?'disabled'", card)
         placement = self.function_source("confirmReinforcementPlacement", "recordReinforcementHatchway")
         self.assertIn("Boolean(confirmed&&npo.reinforcement.hatchway)", placement)
-        self.assertIn("npo.deployed=placementConfirmed", placement)
+        self.assertIn("npo.deployed=true", placement)
         self.assertIn("placementConfirmed", placement)
         self.assertNotIn("coordinates", placement)
         hatchway = self.function_source("recordReinforcementHatchway", "rollInitiative")
         self.assertIn("recordedHatchway=hatchway.trim()", hatchway)
         self.assertIn("npo.reinforcement.placementConfirmed=false", hatchway)
-        self.assertIn("npo.deployed=false", hatchway)
+        self.assertIn("npo.deployed=true", hatchway)
         self.assertIn("state.reinforcementState.status='placement'", hatchway)
         self.assertIn("save();render();", hatchway)
 
     def test_reinforcement_state_and_metadata_are_normalized(self):
         initial = self.app.split("const initialState = () => ({", 1)[1].split("\n  });", 1)[0]
-        self.assertIn("reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blocked:0}", initial)
+        self.assertIn("reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0}", initial)
         normalize = self.function_source("normalizeState", "npoDefinition")
         self.assertIn("isRecord(raw.reinforcementState)", normalize)
         self.assertIn("normalizeIdList(importedReinforcements.operativeIds", normalize)

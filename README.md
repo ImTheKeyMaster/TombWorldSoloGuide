@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v5.7.2
+# Tomb World Solo Guide v5.7.3
+
+## v5.7.3
+
+**Version 5.7.3 - Strategy Phase Reinforcement Reporting**
+
+- Lists the exact Reserve NPOs entering play and marks them Deployed when reinforcements are generated.
+- Reports battlefield-limit blocks separately while leaving those NPOs in Reserve.
+- Replaces the floating reinforcement tooltip with a compact, in-flow card that is hidden when empty.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v5.7.3.
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
