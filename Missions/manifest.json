@@ -17,6 +17,10 @@
       "file": "definition-02-demolition-protocol.json"
     },
     {
+      "id": "03",
+      "file": "definition-03-recover-transponder.json"
+    },
+    {
       "id": "04",
       "file": "definition-04-destroy-sarcophagus.json"
     }

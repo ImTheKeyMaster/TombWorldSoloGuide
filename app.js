@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '6.2.0';
+  const APP_VERSION = '6.3.0';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -90,6 +90,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       objectiveEngine=TombWorldMissionEngine.createMissionEngine({requestDiceRoll:animateMissionDice,requestNumericInput:requestMissionNumber,setOperativeInPlay});
       state.missionRuntime=objectiveEngine.restoreMissionRuntime(objectiveDefinition,state.missionRuntime,missionLifecycleContext());
       if(missionEngine(selectedMission)?.type==='sabotage')objectiveEngine.setObjectiveValue('sabotagedFeatures',state.missionState?.completedFeatureIds?.length||0,missionLifecycleContext());
+      if(missionEngine(selectedMission)?.type==='transponder')objectiveEngine.setObjectiveValue('transponderRecovered',state.missionState?.escaped?1:0,missionLifecycleContext());
       if(!restoringRuntime)await executeMissionLifecycleHook('onMissionInitialized');
     }catch(error){
       console.error('[MissionEngine] Mission automation unavailable.',{code:error.code||'LOAD_FAILED',missionId:selectedMission?.number,path:error.details?.path,reason:error.message});
@@ -1385,19 +1386,27 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       state.missionState.completedFeatureIds=[...ids];
       updateMissionProgress(`${input.checked?'completed Breach on':'corrected'} ${input.dataset.missionFeature}.`);
     });
-    $$('[data-search-site]').forEach(button=>button.onclick=()=>{
+    $$('[data-search-site]').forEach(button=>button.onclick=async()=>{
       const carrier=$('#transponderOperative')?.value;
       if(!carrier){showToast('Select the operative picking up this marker.');return;}
       const progress=state.missionState;
       const otherRemaining=missionEngine().sites.filter(site=>site.id!==button.dataset.searchSite&&!progress.sites[site.id]).length;
-      const result=rollD3(), found=result>otherRemaining;
+      const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('searchTransponder',{...missionLifecycleContext(),operativeId:carrier})):null;
+      if(objectiveEngine&&!outcome)return;
+      const result=outcome?.results?.searchRoll?.total??rollD3(), found=result>otherRemaining;
       progress.sites[button.dataset.searchSite]=found?'found':'empty';
       if(found)progress.carrierId=carrier;
       progress.lastRoll={siteId:button.dataset.searchSite,roll:result,result:found?'transponder found':'marker removed'};
       updateMissionProgress(`searched ${button.dataset.searchSite}, rolled ${result}, and ${found?'found the transponder':'removed the marker'}.`);
     });
     $('#transponderCarrier')?.addEventListener('change',event=>{state.missionState.carrierId=event.target.value||null;save();render();});
-    $('#transponderEscape')?.addEventListener('click',()=>{state.missionState.escaped=true;updateMissionProgress(`${playerName(state.missionState.carrierId)} escaped carrying the transponder.`);});
+    $('#transponderEscape')?.addEventListener('click',async()=>{
+      const carrierId=state.missionState.carrierId;
+      const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('recordTransponderEscape',{...missionLifecycleContext(),operativeId:carrierId})):null;
+      if(objectiveEngine&&!outcome)return;
+      state.missionState.escaped=true;
+      updateMissionProgress(`${playerName(carrierId)} escaped carrying the transponder.`);
+    });
     $('#resolveMissionAction')?.addEventListener('click',confirmMissionAction);
     $$('[data-awaken-room]').forEach(button=>button.onclick=()=>{
       const count=Math.min(5,rollD3()+threatGrade()), ids=[];

@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v6.2.0
+# Tomb World Solo Guide v6.3.0
+
+## v6.3.0
+
+**Version 6.3.0 - Recover Transponder Mission Engine**
+
+- Implemented Mission 03, Recover Transponder, with JSON-driven D3 search rolls, escaped-carrier completion, Mission HUD, Mission Details, history, and save/load support.
+- Registered and cached the Mission 03 definition for online and offline play while retaining the existing focused transponder site and carrier workflow.
+- Added Mission 03 automated acceptance plus Mission 01, Mission 02, and Mission 04 regression coverage.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v6.3.0.
 
 ## v6.2.0
 
