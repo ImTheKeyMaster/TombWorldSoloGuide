@@ -63,7 +63,7 @@ class RemediationPr9StabilizationTests(unittest.TestCase):
         self.assertIn("missionRecovered=recoverInvalidMission()", self.app)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = "5.7.4"
+        expected = "5.7.5"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         index = (ROOT / "index.html").read_text()
         self.assertIn(f"styles.css?v={expected}", index)

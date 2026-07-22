@@ -93,7 +93,8 @@ class RemediationPr3Tests(unittest.TestCase):
         self.assertIn("initiativeStatusHtml()", next_step)
         status = self.function_source("initiativeStatusHtml", "missionStrategyPending")
         self.assertIn("state.initiative==='npo'", status)
-        self.assertIn("Dormant NPOs cannot activate during Turning Point 1", status)
+        self.assertIn("All deployed NPOs are currently dormant. No NPO activation occurs.", status)
+        self.assertIn("deployed.every(npo=>npo.dormant)", status)
 
     def test_legacy_null_rolls_migrate_as_automatic_initiative(self):
         normalize = self.function_source("normalizeState", "npoDefinition")
@@ -103,11 +104,12 @@ class RemediationPr3Tests(unittest.TestCase):
     def test_import_normalizes_threat_and_new_state(self):
         normalize = self.function_source("normalizeState", "npoDefinition")
         self.assertIn("boundedInteger(raw.threat,0,15)", normalize)
-        self.assertIn("npo.dormant=merged.threat===0", normalize)
+        self.assertIn("typeof savedNpo?.dormant==='boolean'", normalize)
+        self.assertIn("npo.battlefieldState!=='deployed'", normalize)
         self.assertIn("merged.strategyPipeline", normalize)
 
     def test_versions_are_synchronized(self):
-        expected = "5.7.4"
+        expected = "5.7.5"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()

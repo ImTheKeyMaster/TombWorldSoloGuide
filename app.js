@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.7.4';
+  const APP_VERSION = '5.7.5';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -407,9 +407,15 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const explicitStates=new Set(importedRoster.filter(isRecord).filter(npo=>['reserve','deployed','out-of-action'].includes(npo.battlefieldState)).map(npo=>npo.id));
       merged.roster.filter(npo=>npo.wounds>0&&!explicitStates.has(npo.id)).forEach(npo=>{npo.battlefieldState='deployed';npo.deployed=true;});
     }
-    merged.roster.forEach(npo=>{
+    merged.roster.forEach((npo,index)=>{
       if(!npo||npo.wounds<=0)return;
-      npo.dormant=merged.threat===0;
+      if(npo.battlefieldState!=='deployed'){
+        npo.dormant=false;
+        if(npo.battlefieldState==='out-of-action')npo.ready=false;
+        return;
+      }
+      const savedNpo=Array.isArray(raw.roster)?raw.roster[index]:null;
+      npo.dormant=typeof savedNpo?.dormant==='boolean'?savedNpo.dormant:merged.threat===0;
       if(npo.dormant)npo.ready=false;
     });
     merged.journal=Array.isArray(raw.journal)?raw.journal.filter(isRecord):[];
@@ -582,12 +588,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const definition=npoDefinition(type);
     if(!definition)throw new Error(`Unknown NPO type: ${type}`);
     const weaponId=npoWeapon(definition,options.weaponId)?.id||definition.defaultWeaponId;
+    const battlefieldState=options.battlefieldState||(options.deployed===false?'reserve':'deployed');
+    const dormant=battlefieldState==='deployed'&&(options.dormant??state.threat===0);
     return {
       id:uid(),name,type,move:definition.move,apl:definition.apl,save:definition.save,
       maxWounds:definition.wounds,wounds:definition.wounds,baseSize:definition.baseSize,
       behavior:definition.compatibilityBehavior,attack:canonicalAttackProfile(npoAttackProfiles({type,weaponId},'shoot')[0]||npoAttackProfiles({type,weaponId},'melee')[0]),weaponId,order:'Conceal',
-      ready:options.ready??state.threat!==0,dormant:options.dormant??state.threat===0,
-      battlefieldState:options.battlefieldState||(options.deployed===false?'reserve':'deployed'),deployed:options.deployed??true,
+      ready:options.ready??(battlefieldState==='deployed'&&!dormant),dormant,
+      battlefieldState,deployed:battlefieldState==='deployed',
       reinforcement:options.reinforcement||null
     };
   }
@@ -597,7 +605,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
   function activeNpos(){ return state.roster.filter(n => n.battlefieldState==='deployed'&&n.wounds > 0); }
   function reserveNpos(){ return state.roster.filter(n => n.battlefieldState==='reserve'&&n.wounds > 0); }
-  function readyNpos(){ return activeNpos().filter(n => n.ready); }
+  function readyNpos(){ return activeNpos().filter(n => n.ready&&!n.dormant); }
   function livingPlayerOperativeCount(){
     const casualties=new Set(state.playerCasualtyIds||[]);
     return (state.playerRoster||[]).filter(id=>!casualties.has(id)).length;
@@ -757,6 +765,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     available.forEach(npo=>{
       npo.battlefieldState=deployedIds.has(npo.id)?'deployed':'reserve';
       npo.deployed=npo.battlefieldState==='deployed';
+      npo.dormant=npo.deployed&&state.threat===0;
       npo.ready=false;
     });
     return true;
@@ -1323,7 +1332,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function initiativeStatusHtml(){
     const side=state.initiative==='npo'?'NPOs':'Player';
-    const dormantNote=state.turningPoint===1?' Dormant NPOs cannot activate during Turning Point 1.':'';
+    const deployed=activeNpos();
+    const dormantNote=deployed.length&&deployed.every(npo=>npo.dormant)
+      ? ' All deployed NPOs are currently dormant. No NPO activation occurs.'
+      : '';
     return `<div class="summary-box"><strong>${side} ${side==='NPOs'?'have':'has'} initiative.</strong>${dormantNote}</div>`;
   }
 
@@ -1856,7 +1868,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function randomReinforcement(){return rollNpo();}
-  function nextNpo(){return activeNpos().find(n=>n.id===state.activeNpoId&&n.ready)||null;}
+  function nextNpo(){return readyNpos().find(n=>n.id===state.activeNpoId)||null;}
 
   function showNpoSelection(){
     const candidates=readyNpos();
