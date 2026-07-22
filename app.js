@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.8.0';
+  const APP_VERSION = '5.8.1';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -1378,20 +1378,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
     setNextActivation(state.nextSide || state.initiative || 'player');
     if(state.phase==='end'){save();return nextStepCard();}
-    if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>Player Activation</h2>${initiativeStatusHtml()}<p>Activate one Player operative on the tabletop. After it completes, the Guide will alternate to an NPO if one is ready.</p><button class="btn primary big-action" id="playerActivation">Activate an Operative</button></section>`;
+    if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>Player Activation</h2><p>Activate one Player operative on the tabletop. After it completes, the Guide will alternate to an NPO if one is ready.</p><button class="btn primary big-action" id="playerActivation">Activate an Operative</button></section>`;
     if(state.nextSide==='npo' && readyNpos().length>0)return `<section class="next-card npo-activation-card"><span class="phase">NPO ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">NPO Activation</h2><p class="npo-activation-meta">Identify the next ready NPO using the Threat Principle.</p><button class="btn primary big-action" id="npoActivation">Activate NPO</button></section>`;
     setNextActivation(state.nextSide==='player'?'npo':'player');
     save();
     return nextStepCard();
-  }
-
-  function initiativeStatusHtml(){
-    const side=state.initiative==='npo'?'NPOs':'Player';
-    const deployed=activeNpos();
-    const dormantNote=deployed.length&&deployed.every(npo=>npo.dormant)
-      ? ' All deployed NPOs are currently dormant. No NPO activation occurs.'
-      : '';
-    return `<div class="summary-box"><strong>${side} ${side==='NPOs'?'have':'has'} initiative.</strong>${dormantNote}</div>`;
   }
 
   function missionStrategyPending(){

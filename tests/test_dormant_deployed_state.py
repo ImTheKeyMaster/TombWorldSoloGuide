@@ -21,17 +21,14 @@ class DormantDeployedStateTests(unittest.TestCase):
         self.assertIn("n.ready&&!n.dormant", ready)
         self.assertIn("readyNpos().find", self.source("function nextNpo()", "function showNpoSelection"))
 
-    def test_all_deployed_dormant_message_has_no_activation_button(self):
-        status = self.source("function initiativeStatusHtml()", "function missionStrategyPending")
-        self.assertIn("deployed.every(npo=>npo.dormant)", status)
-        self.assertIn("All deployed NPOs are currently dormant. No NPO activation occurs.", status)
-        activation = self.source("function nextStepCard()", "function initiativeStatusHtml")
+    def test_all_deployed_dormant_npos_have_no_activation_button(self):
+        activation = self.source("function nextStepCard()", "function missionStrategyPending")
         self.assertIn("readyNpos().length>0", activation)
         self.assertEqual(activation.count("Activate NPO"), 1)
 
     def test_awakened_battlefield_uses_normal_activation_without_banner(self):
-        activation = self.source("function nextStepCard()", "function initiativeStatusHtml")
-        npo_activation = activation.split("if(state.nextSide==='npo'", 1)[1]
+        activation = self.source("function nextStepCard()", "function missionStrategyPending")
+        npo_activation = activation.split("if(state.nextSide==='npo'", 1)[1].split("function missionStrategyPending", 1)[0]
         self.assertNotIn("initiativeStatusHtml()", npo_activation)
         self.assertNotIn("summary-box", npo_activation)
 

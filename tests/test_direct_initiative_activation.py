@@ -37,6 +37,15 @@ class DirectInitiativeActivationTests(unittest.TestCase):
         ):
             self.assertNotIn(obsolete, self.app)
 
+    def test_firefight_activation_cards_do_not_repeat_initiative(self):
+        card = self.function_source("nextStepCard", "missionStrategyPending")
+        self.assertNotIn("initiativeStatusHtml", card)
+        self.assertNotIn("has initiative", card)
+        self.assertNotIn("have initiative", card)
+        self.assertIn("<h2>Player Activation</h2>", card)
+        self.assertIn(">NPO Activation</h2>", card)
+        self.assertIn("activationProgressLabel()", card)
+
     def test_legacy_confirmation_save_restores_directly(self):
         normalization = self.function_source("normalizeState", "npoDefinition")
         self.assertIn("merged.phase==='strategy'&&merged.strategyStage==='initiative'", normalization)

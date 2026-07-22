@@ -88,18 +88,16 @@ class RemediationPr3Tests(unittest.TestCase):
         self.assertNotIn("Begin with NPOs", self.app)
         self.assertNotIn("data-init", self.app)
 
-    def test_npo_activation_screen_omits_initiative_message(self):
-        next_step = self.function_source("nextStepCard", "initiativeStatusHtml")
+    def test_firefight_activation_screens_omit_initiative_message(self):
+        next_step = self.function_source("nextStepCard", "missionStrategyPending")
         player_activation, npo_activation = next_step.split("if(state.nextSide==='npo'", 1)
-        self.assertIn("initiativeStatusHtml()", player_activation)
+        self.assertNotIn("initiativeStatusHtml()", player_activation)
         self.assertNotIn("initiativeStatusHtml()", npo_activation)
+        self.assertNotIn("has initiative", next_step)
+        self.assertNotIn("have initiative", next_step)
         self.assertIn("Identify the next ready NPO using the Threat Principle.", npo_activation)
         self.assertNotIn("Apply the Threat Principle to select the next ready NPO.", npo_activation)
         self.assertIn('id="npoActivation">Activate NPO</button>', npo_activation)
-        status = self.function_source("initiativeStatusHtml", "missionStrategyPending")
-        self.assertIn("state.initiative==='npo'", status)
-        self.assertIn("All deployed NPOs are currently dormant. No NPO activation occurs.", status)
-        self.assertIn("deployed.every(npo=>npo.dormant)", status)
 
     def test_legacy_null_rolls_migrate_as_automatic_initiative(self):
         normalize = self.function_source("normalizeState", "npoDefinition")
@@ -114,7 +112,7 @@ class RemediationPr3Tests(unittest.TestCase):
         self.assertIn("merged.strategyPipeline", normalize)
 
     def test_versions_are_synchronized(self):
-        expected = "5.8.0"
+        expected = "5.8.1"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()
