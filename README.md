@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v5.8.0
+# Tomb World Solo Guide v5.8.1
+
+## v5.8.1
+
+**Version 5.8.1 - Simplified Firefight Activation Card**
+
+- Removed the repeated initiative status banner from Firefight activation cards.
+- Preserved activation titles, progress counters, instructions, and alternating activation behavior.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v5.8.1.
 
 ## v5.8.0
 
