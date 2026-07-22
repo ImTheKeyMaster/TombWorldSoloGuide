@@ -1135,4 +1135,4 @@ button.tracker-operative:hover{
   .compact-combat-profile{grid-template-columns:repeat(4,minmax(0,1fr))}
   .compact-combat-profile div{padding:7px}
 }
-.starting-npo-rosters{display:grid;gap:10px;margin:12px 0 18px}.starting-npo-rosters p,.starting-npo-rosters section,.starting-npo-rosters details{margin:0;padding:13px 15px;border:1px solid var(--line);border-radius:14px;background:#091912}.starting-npo-rosters p{display:grid;gap:3px}.starting-npo-rosters p strong{color:var(--green);font-size:1.05rem}.starting-npo-rosters p small,.starting-npo-rosters summary{color:var(--muted)}.starting-npo-rosters h4{margin:0 0 7px;color:var(--green)}.starting-npo-rosters ul{margin:0;padding-left:20px;line-height:1.55}.starting-npo-rosters details{font-size:.9rem}.starting-npo-rosters summary{cursor:pointer;font-weight:850}.starting-npo-rosters details ul{margin-top:8px}
+.deployment-checklist{gap:8px;margin-top:10px}.deployment-check{padding-block:11px}.deployment-check>span{display:grid;gap:3px}.deployment-roster{display:block;color:var(--text);font-size:.88rem;line-height:1.35}

@@ -1,7 +1,15 @@
-# Tomb World Solo Guide v5.7.0
+# Tomb World Solo Guide v5.7.1
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
+
+## v5.7.1
+
+**Version 5.7.1 - Compact Deployment Rosters**
+
+- Consolidated each selected roster into its corresponding deployment confirmation card.
+- Removed redundant deployment summary and confirmation cards and tightened deployment spacing.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v5.7.1.
 
 ## v5.7.0
 
