@@ -104,6 +104,7 @@ const mission=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarcoph
                 {"id": "02", "file": "definition-02-demolition-protocol.json"},
                 {"id": "03", "file": "definition-03-recover-transponder.json"},
                 {"id": "04", "file": "definition-04-destroy-sarcophagus.json"},
+                {"id": "05", "file": "definition-05-scout-sub-crypt.json"},
             ],
         )
         for relative in (

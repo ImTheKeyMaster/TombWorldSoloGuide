@@ -63,7 +63,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertIn("First Open / Entry", renderer)
         self.assertIn("awakening?.placementConfirmed", renderer)
         handler = self.source("$$('[data-awaken-room]')", "$$('[data-regroup-check]')")
-        self.assertIn("Math.min(5,rollD3()+threatGrade())", handler)
+        self.assertIn("Math.min(5,(outcome?.results?.awakenRoll?.total??rollD3())+threatGrade())", handler)
         self.assertIn("order:'Conceal'", handler)
         self.assertIn("setThreat(gradeFloor-state.threat,'Scout Room')", handler)
         self.assertIn("ready:true,dormant:false", handler)
@@ -99,7 +99,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertIn("Assets/Images/${victory?'victory':'defeat'}.png", self.app)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = "6.3.0"
+        expected = "6.4.0"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         index = (ROOT / "index.html").read_text()
         self.assertIn(f"styles.css?v={expected}", index)

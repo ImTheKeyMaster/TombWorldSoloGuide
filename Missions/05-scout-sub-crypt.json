@@ -163,6 +163,13 @@
     "type": "scout",
     "timing": "immediate",
     "required": 3,
+    "objectiveId": "scoutedRooms",
+    "progressIdsField": "scoutedRoomIds",
+    "actions": {
+      "awakenRoom": "awakenRoom",
+      "recordScout": "recordScout",
+      "correctScout": "correctScout"
+    },
     "rooms": [
       {
         "id": "room-1",
