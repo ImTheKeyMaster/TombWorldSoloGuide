@@ -45,11 +45,11 @@ const definition=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarc
         result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
 
-    def test_work_packages_04_through_08_are_deferred(self):
+    def test_work_package_04_is_present_and_05_through_08_are_deferred(self):
         app=(ROOT/'app.js').read_text()
         styles=(ROOT/'styles.css').read_text()
-        self.assertNotIn('Mission Details', app)
-        self.assertNotIn('mission-engine-hud', styles)
+        self.assertIn('Mission Details', app)
+        self.assertIn('mission-hud', styles)
         self.assertNotIn('onPlayerActivationStarted', app)
         self.assertNotIn('MISSION AUTOMATION UNAVAILABLE', app)
 

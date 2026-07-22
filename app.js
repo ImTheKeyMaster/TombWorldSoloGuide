@@ -62,6 +62,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   let objectiveEngine=null;
   let objectiveDefinition=null;
   let missionOperationResolving=false;
+  let missionDialogLocked=false;
   async function loadMissionPack(){
     const manifestResponse=await fetch('Missions/manifest.json',{cache:'no-store'});
     if(!manifestResponse.ok)throw new Error(`Unable to load Missions/manifest.json (${manifestResponse.status})`);
@@ -1219,7 +1220,18 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
   }
 
-  function hud(){return `<div class="hud"><div><small>Turning<span class="portrait-break"><br></span> Point</small><strong>${state.turningPoint||'Setup'}</strong></div><button class="hud-cell hud-threat" id="threatHudToggle" type="button" aria-expanded="${threatAdjustOpen}" aria-controls="threatAdjuster"><small>Threat<span class="portrait-break"><br></span> Level</small><strong>${state.threat}</strong></button><div><small>Grade<span class="portrait-break"><br></span> Level</small><strong>${threatGrade()}</strong></div><div><small>Player<span class="portrait-break"><br></span> Ready</small><strong>${state.playerReady}</strong></div><div><small>NPO<span class="portrait-break"><br></span> Ready</small><strong>${readyNpos().length}</strong></div></div><div class="threat-strip ${threatAdjustOpen?'':'hidden'}" id="threatAdjuster"><div><strong>THREAT LEVEL: ${threatLabel()}</strong><small>${threatGrade()===3?'Maximum Grade':`Next Grade at Threat Level ${[1,6,11][threatGrade()]}`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
+  function missionHudHtml(){
+    const model=objectiveEngine?.getMissionHudModel();
+    const visible=model?.visible!==false;
+    if(!visible)return '';
+    const label=model?.label||'MISSION';
+    const value=model?(model.completed?'✓ COMPLETE':`${model.value} / ${model.target}`):'DETAILS';
+    const status=model?`${model.value} of ${model.target}${model.completed?', objective complete':''}`:'details';
+    const name=model?.name||mission()?.name||'selected mission';
+    return `<button class="hud-cell mission-hud" id="missionHud" type="button" aria-label="Mission details, ${escapeHtml(name)}, ${escapeHtml(status)}"><small>${escapeHtml(label)}</small><strong>${escapeHtml(value)}</strong></button>`;
+  }
+
+  function hud(){return `<div class="hud"><div><small>Turning<span class="portrait-break"><br></span> Point</small><strong>${state.turningPoint||'Setup'}</strong></div><button class="hud-cell hud-threat" id="threatHudToggle" type="button" aria-expanded="${threatAdjustOpen}" aria-controls="threatAdjuster"><small>Threat<span class="portrait-break"><br></span> Level</small><strong>${state.threat}</strong></button><div><small>Grade<span class="portrait-break"><br></span> Level</small><strong>${threatGrade()}</strong></div><div><small>Player<span class="portrait-break"><br></span> Ready</small><strong>${state.playerReady}</strong></div><div><small>NPO<span class="portrait-break"><br></span> Ready</small><strong>${readyNpos().length}</strong></div>${missionHudHtml()}</div><div class="threat-strip ${threatAdjustOpen?'':'hidden'}" id="threatAdjuster"><div><strong>THREAT LEVEL: ${threatLabel()}</strong><small>${threatGrade()===3?'Maximum Grade':`Next Grade at Threat Level ${[1,6,11][threatGrade()]}`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
 
   function livingPlayerOptions(selected=''){
     return (state.playerRoster||[]).filter(id=>!state.playerCasualtyIds.includes(id)).map(id=>`<option value="${escapeHtml(id)}" ${id===selected?'selected':''}>${escapeHtml(playerName(id))}</option>`).join('');
@@ -1592,6 +1604,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#continueStrategy')?.addEventListener('click',()=>beginFirefight(state.strategyData?.suggestedInitiative==='npo'?'npo':'player'));
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
     $('#npoActivation')?.addEventListener('click',showNpoSelection);
+    $('#missionHud')?.addEventListener('click',showMissionDetails);
     bindMissionProgressControls();
     $('#resolveAuspexCalibration')?.addEventListener('click',()=>{
       const directionRoll=rollD3(),distance=rollD3()+3;
@@ -3375,13 +3388,14 @@ function showPlayerActivation(stage={}){
       const dice=Array.from({length:operation.dice.count},()=>roll(operation.dice.sides));
       let settled=false;
       showModal(operation.label||'Mission Roll',`<div class="dice-row animated-roll" id="missionDiceRoll">${dice.map(()=>rollingDieHtml()).join('')}</div><p>Rolling ${operation.dice.count}D${operation.dice.sides}…</p>`,()=>{if(!settled)reject(new TombWorldMissionEngine.MissionEngineError('DICE_CANCELLED','Mission dice roll was cancelled.'));});
+      missionDialogLocked=true;
       setTimeout(()=>{
         if(!modal.open)return;
         settled=true;
         $('#missionDiceRoll').className='dice-row settled';
         $('#missionDiceRoll').innerHTML=dice.map(value=>dieHtml({value})).join('');
         modalBody.querySelector('p').textContent=`Dice: ${dice.join(' + ')} · Total: ${dice.reduce((sum,value)=>sum+value,0)}`;
-        setTimeout(()=>{closeModal();resolve({dice,total:dice.reduce((sum,value)=>sum+value,0)});},450);
+        setTimeout(()=>{missionDialogLocked=false;closeModal();resolve({dice,total:dice.reduce((sum,value)=>sum+value,0)});},450);
       },700);
     });
   }
@@ -3390,12 +3404,24 @@ function showPlayerActivation(stage={}){
     return new Promise((resolve,reject)=>{
       let submitted=false;
       const maximum=Math.min(operation.maximum??20,livingPlayerOperativeCount());
-      showModal(operation.label||'Mission Input',`<p>${escapeHtml(operation.label||'Enter the required mission value.')}</p><div class="field"><label for="missionNumericInput">Number of operatives</label><input id="missionNumericInput" type="number" inputmode="numeric" step="1" min="${operation.minimum??0}" max="${maximum}" value="${Math.min(operation.default??0,maximum)}"></div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmMissionNumber">Continue</button></div>`,()=>{if(!submitted)reject(new TombWorldMissionEngine.MissionEngineError('INPUT_CANCELLED','Mission input was cancelled.'));});
-      $('#confirmMissionNumber').onclick=()=>{
-        const input=$('#missionNumericInput'),value=Number(input.value);
-        if(!Number.isInteger(value)||value<(operation.minimum??0)||value>maximum){showToast(`Enter a whole number from ${operation.minimum??0} to ${maximum}.`);return;}
+      const minimum=operation.minimum??0;
+      showModal(operation.label||'Mission Input',`<p>${escapeHtml(operation.label||'Enter the required mission value.')}</p><div class="field"><label for="missionNumericInput">Number of operatives</label><input id="missionNumericInput" type="number" inputmode="numeric" step="1" min="${minimum}" max="${maximum}" value="${Math.min(operation.default??0,maximum)}" aria-describedby="missionNumericError"><small class="field-error" id="missionNumericError" aria-live="polite"></small></div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmMissionNumber">Continue</button></div>`,()=>{if(!submitted)reject(new TombWorldMissionEngine.MissionEngineError('INPUT_CANCELLED','Mission input was cancelled.'));});
+      const input=$('#missionNumericInput'),confirm=$('#confirmMissionNumber'),error=$('#missionNumericError');
+      const validate=()=>{
+        const value=Number(input.value),valid=input.value.trim()!==''&&Number.isInteger(value)&&value>=minimum&&value<=maximum;
+        error.textContent=valid?'':`Enter a whole number from ${minimum} to ${maximum}.`;
+        confirm.disabled=!valid;
+        input.setAttribute('aria-invalid',String(!valid));
+        return valid;
+      };
+      input.addEventListener('input',validate);
+      input.addEventListener('keydown',event=>{if(event.key==='Enter'&&!confirm.disabled){event.preventDefault();confirm.click();}});
+      confirm.onclick=()=>{
+        if(!validate())return;
+        const value=Number(input.value);
         submitted=true;closeModal();resolve(value);
       };
+      validate();
     });
   }
 
@@ -3409,6 +3435,31 @@ function showPlayerActivation(stage={}){
     }finally{missionOperationResolving=false;}
   }
 
+  function missionHistoryText(entry){
+    const change=entry.changes?.[0];
+    if(!change)return entry.summary||entry.title||'Mission activity recorded.';
+    const delta=change.after-change.before;
+    return `${entry.title||'Mission activity'}: ${delta>0?'+':''}${delta}`;
+  }
+
+  function missionDetailsContent(){
+    if(!objectiveEngine){
+      const selected=mission();
+      return `<div class="mission-details"><h3>${escapeHtml(selected?.name||'Selected Mission')}</h3><section><h4>Objective</h4><p>${escapeHtml(selected?.objective||'Review the mission rules and track progress on the tabletop.')}</p></section><p class="muted">Automated mission progress is not available for this mission.</p></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
+    }
+    const model=objectiveEngine.getMissionDetailsModel();
+    const objective=model.objectives[0];
+    const history=model.history.slice(0,objectiveDefinition.presentation.historyDisplayCount||5);
+    const completedDuring=objective.completedTurningPoint?`<section><h4>Completed during</h4><p>Turning Point ${objective.completedTurningPoint}</p></section>`:'';
+    const activity=history.length?`<ul class="mission-history">${history.map(entry=>`<li><span>${escapeHtml(missionHistoryText(entry))}</span>${entry.turningPoint?`<small>Turning Point ${entry.turningPoint}</small>`:''}</li>`).join('')}</ul>`:'<p class="muted mission-history-empty">No mission activity yet.</p>';
+    return `<div class="mission-details"><h3>${escapeHtml(model.name)}</h3>${objective.completed?'<p class="mission-complete-status">✓ Objective Complete</p>':`<section><h4>Objective</h4><p>${escapeHtml(model.objectiveSummary)}</p></section>`}${completedDuring}<section><h4>${objective.completed?'Final Progress':'Progress'}</h4><p class="mission-progress">${objective.value} / ${objective.target}</p></section><section><h4>Recent Activity</h4>${activity}</section></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
+  }
+
+  function showMissionDetails(){
+    const completed=Boolean(objectiveEngine?.getMissionHudModel().completed);
+    showModal(completed?'MISSION STATUS':'MISSION DETAILS',missionDetailsContent());
+  }
+
   function showMissionResult(title,outcome){
     const change=outcome.changes[0],dice=Object.values(outcome.results)[0]?.dice||[],model=objectiveEngine.getMissionHudModel();
     const objective=objectiveDefinition.objectives.find(item=>item.id===change.objectiveId);
@@ -3417,28 +3468,35 @@ function showPlayerActivation(stage={}){
     const detail=repair?(delta?`${objective.label} repaired: ${delta}`:`No ${objective.label} repaired.`):`${objective.label} added: ${delta}`;
     const completed=model.completed;
     const completionDialog=objectiveDefinition.dialogs[objectiveDefinition.completion.dialogId]||{};
-    showModal(completed?(completionDialog.title||'MISSION OBJECTIVE COMPLETE'):title,`${completed?`<h3>${escapeHtml(objectiveDefinition.name)}</h3>`:''}<p>Dice: ${dice.join(' + ')}</p><p>${detail}</p><div class="summary-box"><strong>Progress: ${model.value} / ${model.target} ${escapeHtml(objective.label)}</strong></div>${completed&&completionDialog.message?`<p>${escapeHtml(completionDialog.message)}</p>`:''}<div class="wizard-actions"><button class="btn primary" data-close>Continue the battle</button></div>`);
+    const total=dice.reduce((sum,value)=>sum+value,0);
+    const inputs=Object.entries(outcome.inputs||{}).map(([id,value])=>{const operation=objectiveDefinition.hooks.onStrategyPhaseReadyStep?.flatMap(event=>event.operations).find(item=>item.id===id);return `<p>${escapeHtml(operation?.label||id)}: <strong>${value}</strong></p>`;}).join('');
+    showModal(completed?(completionDialog.title||'MISSION OBJECTIVE COMPLETE'):title,`<div class="mission-roll-result">${completed?`<h3>${escapeHtml(objectiveDefinition.name)}</h3><p class="mission-complete-status">✓ ${escapeHtml(objective.label)}</p>`:''}<div class="dice-row settled">${dice.map(value=>dieHtml({value})).join('')}</div><p>Dice: ${dice.join(' + ')}${dice.length>1?` · Total: ${total}`:''}</p>${inputs}<p>${detail}</p><div class="summary-box"><strong>Progress: ${model.value} / ${model.target} ${escapeHtml(objective.label)}</strong></div>${completed?`<p>${escapeHtml(completionDialog.message||'Continue the battle.')}</p>`:''}</div><div class="wizard-actions"><button class="btn primary" data-close>${completed?'Continue the battle':'Continue'}</button></div>`);
+  }
+
+  function showMissionConfirmation(options,onConfirm){
+    showModal(options.title||'Confirm Mission Action',`<p>${escapeHtml(options.description||'')}</p><p>${escapeHtml(options.message||'')}</p><div class="wizard-actions"><button class="btn ghost" data-close>${escapeHtml(options.cancelLabel||'Cancel')}</button><button class="btn primary" id="confirmMissionDialog">${escapeHtml(options.confirmLabel||'Confirm')}</button></div>`);
+    $('#confirmMissionDialog').onclick=onConfirm;
   }
 
   function confirmMissionAction(){
     const action=objectiveDefinition.actions[0];
     const dice=action.operations.find(operation=>operation.type==='requestDiceRoll')?.dice;
     const diceLabel=dice?`${dice.count}D${dice.sides}`:'Dice';
-    showModal(action.confirmation.title,`<p>${escapeHtml(action.description)}</p><p>${escapeHtml(action.confirmation.message)}</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmMissionAction">Roll ${diceLabel}</button></div>`);
-    $('#confirmMissionAction').onclick=async()=>{
+    showMissionConfirmation({...action.confirmation,description:action.description,confirmLabel:`Roll ${diceLabel}`},async()=>{
       closeModal();
       const outcome=await runMissionEvent(()=>objectiveEngine.executeMissionAction(action.id,{turningPoint:state.turningPoint,phase:state.phase}));
       if(!outcome)return;
       save();log(`${action.label}: progress changed from ${outcome.changes[0].before} to ${outcome.changes[0].after}.`);render();showMissionResult(action.label.toUpperCase(),outcome);
-    };
+    });
   }
 
   function showModal(title,content,onClose){
     const active=document.activeElement;
-    if(active&&typeof active.blur==='function')active.blur();
+    if(active&&!modal.contains(active))modal._returnFocus=active;
 
     modal.classList.remove('combat-resolution-modal');
-    modalBody.innerHTML=`<div class="modal-inner"><h2>${title}</h2>${content}</div>`;
+    modalBody.innerHTML=`<div class="modal-inner"><h2 id="modalTitle" tabindex="-1">${escapeHtml(title)}</h2>${content}</div>`;
+    modal.setAttribute('aria-labelledby','modalTitle');
     modal.setAttribute('tabindex','-1');
     if(!modal.open)modal.showModal();
     modal._onClose=onClose;
@@ -3447,22 +3505,36 @@ function showPlayerActivation(stage={}){
     requestAnimationFrame(()=>{
       modal.scrollTop=0;
       modalBody.scrollTop=0;
-      try{modal.focus({preventScroll:true});}catch{modal.focus();}
+      const target=$('#modalTitle',modal)||modal;
+      try{target.focus({preventScroll:true});}catch{target.focus();}
     });
   }
   function closeModal(){
+    missionDialogLocked=false;
     if(modal.open)modal.close();
     const cb=modal._onClose;
+    const returnFocus=modal._returnFocus;
     modal._onClose=null;
+    modal._returnFocus=null;
     if(cb)cb();
+    if(returnFocus?.isConnected)requestAnimationFrame(()=>returnFocus.focus({preventScroll:true}));
   }
-  modal.addEventListener('cancel',e=>{e.preventDefault();closeModal();});
+  modal.addEventListener('cancel',e=>{e.preventDefault();if(!missionDialogLocked)closeModal();});
+  modal.addEventListener('keydown',event=>{
+    if(event.key!=='Tab')return;
+    const controls=$$('button:not([disabled]),input:not([disabled]),select:not([disabled]),[href],[tabindex]:not([tabindex="-1"])',modal).filter(element=>!element.hidden);
+    if(!controls.length){event.preventDefault();modal.focus();return;}
+    const first=controls[0],last=controls.at(-1);
+    if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+  });
 
   function showToast(text){toast.textContent=text;toast.hidden=false;clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.hidden=true,6500);}
   function showGameMenu(){
     showModal('Game Menu',`<p>Open a reference screen without changing the guided play sequence, or begin a completely new game.</p>
       <div class="game-menu-grid">
         <button class="btn primary" data-game-view="play">Return to Guided Play</button>
+        <button class="btn secondary" id="menuMissionDetails">Mission Details</button>
         <button class="btn secondary" data-game-view="mission">Mission & Map</button>
         <button class="btn secondary" data-game-view="roster">NPO Roster</button>
         <button class="btn secondary" data-game-view="player-roster">Player Roster</button>
@@ -3480,6 +3552,7 @@ function showPlayerActivation(stage={}){
       save();
       render();
     });
+    $('#menuMissionDetails').onclick=showMissionDetails;
     $('#menuExportSave').onclick=exportSave;
     $('#menuImportSave').onclick=()=>importInput.click();
     $('#menuNewGame').onclick=confirmNewGame;
