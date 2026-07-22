@@ -44,7 +44,16 @@ class ShootingAttackProfileCardTests(unittest.TestCase):
 
     def test_mobile_grid_preserves_attack_then_defense_without_horizontal_overflow(self):
         self.assertIn(".compact-combat-profile.has-attack-profile{grid-template-columns:repeat(6,minmax(0,1fr))}", self.css)
-        self.assertIn(".compact-combat-profile{grid-template-columns:repeat(2,minmax(0,1fr))}", self.css)
+        self.assertIn(
+            ".compact-combat-profile,.compact-combat-profile.has-attack-profile"
+            "{grid-template-columns:repeat(2,minmax(0,1fr))}",
+            self.css,
+        )
+        self.assertIn(
+            ".compact-combat-profile,.compact-combat-profile.has-attack-profile"
+            "{grid-template-columns:repeat(4,minmax(0,1fr))}",
+            self.css,
+        )
         self.assertIn("width:calc(100% - 16px)", self.css)
 
     def test_combat_resolution_logic_remains_unchanged(self):

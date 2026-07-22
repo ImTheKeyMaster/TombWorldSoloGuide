@@ -1128,12 +1128,12 @@ button.tracker-operative:hover{
 @media(max-width:600px){
   .combat-resolution-modal{width:calc(100% - 16px);max-height:calc(100dvh - 12px)}
   .combat-resolution-modal .modal-inner{padding:14px}
-  .compact-combat-profile{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .compact-combat-profile,.compact-combat-profile.has-attack-profile{grid-template-columns:repeat(2,minmax(0,1fr))}
   .dedicated-combat-screen .damage-summary{margin:6px 0}
 }
 @media(max-height:520px) and (orientation:landscape){
   .combat-resolution-modal .modal-inner{padding:10px 14px}
-  .compact-combat-profile{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .compact-combat-profile,.compact-combat-profile.has-attack-profile{grid-template-columns:repeat(4,minmax(0,1fr))}
   .compact-combat-profile div{padding:7px}
 }
 .deployment-checklist{gap:8px;margin-top:10px}.deployment-check{padding-block:11px}.deployment-check>span{display:grid;gap:3px}.deployment-roster{display:block;color:var(--text);font-size:.88rem;line-height:1.35}
