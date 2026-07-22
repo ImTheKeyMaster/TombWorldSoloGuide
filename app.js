@@ -402,6 +402,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.turningPoint=boundedInteger(raw.turningPoint,0,999);
     merged.threat=boundedInteger(raw.threat,0,15);
     merged.roster=Array.isArray(raw.roster)?raw.roster.map(normalizeNpo).filter(Boolean):[];
+    if(Number(raw.turningPoint)>0){
+      const importedRoster=Array.isArray(raw.roster)?raw.roster:[];
+      const explicitStates=new Set(importedRoster.filter(isRecord).filter(npo=>['reserve','deployed','out-of-action'].includes(npo.battlefieldState)).map(npo=>npo.id));
+      merged.roster.filter(npo=>npo.wounds>0&&!explicitStates.has(npo.id)).forEach(npo=>{npo.battlefieldState='deployed';npo.deployed=true;});
+    }
     merged.roster.forEach(npo=>{
       if(!npo||npo.wounds<=0)return;
       npo.dormant=merged.threat===0;
@@ -433,7 +438,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(merged.startingNpoGeneration){
       const rosterIds=merged.roster.map(npo=>npo.id);
       merged.startingNpoGeneration.deployedNpoIds=normalizeIdList(merged.startingNpoGeneration.deployedNpoIds,rosterIds);
-      merged.startingNpoGeneration.reserveNpoIds=normalizeIdList(merged.startingNpoGeneration.reserveNpoIds,rosterIds);
+      const deployedIds=new Set(merged.startingNpoGeneration.deployedNpoIds);
+      merged.startingNpoGeneration.reserveNpoIds=normalizeIdList(merged.startingNpoGeneration.reserveNpoIds,rosterIds).filter(id=>!deployedIds.has(id));
       if(!merged.startingNpoGeneration.deployedNpoIds.length&&!merged.startingNpoGeneration.reserveNpoIds.length){
         // Legacy starting rosters contained only the mission-roll quantity, so
         // preserving prior gameplay means treating every surviving entry as deployed.
@@ -734,6 +740,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function selectStartingNpos(generation){
     const available=state.roster.filter(npo=>npo.wounds>0),shuffled=[...available];
+    const assignedIds=new Set([...(generation.deployedNpoIds||[]),...(generation.reserveNpoIds||[])]);
+    if(assignedIds.size===available.length&&available.every(npo=>assignedIds.has(npo.id)))return false;
     generation.availableNpos=available.length;
     generation.deploymentCount=Math.min(generation.missionRoll,available.length);
     for(let index=shuffled.length-1;index>0;index--){
@@ -748,6 +756,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       npo.deployed=npo.battlefieldState==='deployed';
       npo.ready=false;
     });
+    return true;
   }
 
   function generateRoster(generation){
@@ -1734,7 +1743,6 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         let n=reserveNpos().find(candidate=>candidate.type===type&&!state.reinforcementState.operativeIds.includes(candidate.id));
         if(n){
           n.reinforcement={turningPoint:state.turningPoint,hatchway:'',placementConfirmed:false};
-          if(state.startingNpoGeneration)state.startingNpoGeneration.reserveNpoIds=state.startingNpoGeneration.reserveNpoIds.filter(id=>id!==n.id);
         }else{
           n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId,deployed:false,reinforcement:{turningPoint:state.turningPoint,hatchway:'',placementConfirmed:false}});
           state.roster.push(n);state.newIds.push(n.id);
@@ -1763,6 +1771,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     npo.reinforcement.placementConfirmed=placementConfirmed;
     npo.deployed=placementConfirmed;
     npo.battlefieldState=placementConfirmed?'deployed':'reserve';
+    if(state.startingNpoGeneration){
+      const reserveIds=new Set(state.startingNpoGeneration.reserveNpoIds||[]);
+      placementConfirmed?reserveIds.delete(npo.id):reserveIds.add(npo.id);
+      state.startingNpoGeneration.reserveNpoIds=[...reserveIds];
+    }
     const complete=state.reinforcementState.operativeIds.every(operativeId=>state.roster.find(item=>item.id===operativeId)?.reinforcement?.placementConfirmed);
     state.reinforcementState.status=complete?'complete':'placement';
     save();render();
@@ -1777,6 +1790,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     npo.reinforcement.placementConfirmed=false;
     npo.deployed=false;
     npo.battlefieldState='reserve';
+    if(state.startingNpoGeneration&&!state.startingNpoGeneration.reserveNpoIds.includes(npo.id))state.startingNpoGeneration.reserveNpoIds.push(npo.id);
     state.reinforcementState.status='placement';
     save();render();
   }
@@ -2569,7 +2583,7 @@ function showPlayerActivation(stage={}){
     const targetSelect=$('#combatTarget');
     const weaponSelect=$('#playerWeaponSelect');
     const renderChoices=()=>{
-      const target=state.roster.find(n=>n.id===targetSelect.value);
+      const target=activeNpos().find(n=>n.id===targetSelect.value);
       const weapon=weapons[Number(weaponSelect.value)||0];
       $('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target);
       $('#weaponRules').innerHTML=weaponRulesHtml(weapon);
@@ -2584,7 +2598,7 @@ function showPlayerActivation(stage={}){
   }
 
   function showPlayerCombatResolution(stage,attackType,targetId,weaponIndex,onResolved,onCancel,{result=null,animate=true}={}){
-    const target=state.roster.find(n=>n.id===targetId);
+    const target=activeNpos().find(n=>n.id===targetId);
     const weapon=playerAttackWeapons(stage.playerOperativeId,attackType)[weaponIndex];
     if(!target||!weapon){showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel);return;}
     const attackLabel=attackType==='shoot'?'Shooting':'Melee';

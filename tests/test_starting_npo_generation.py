@@ -88,6 +88,8 @@ class StartingNpoGenerationTests(unittest.TestCase):
 
     def test_selection_partitions_every_available_npo_once(self):
         selection = self.source("function selectStartingNpos(generation)", "function generateRoster")
+        self.assertIn("assignedIds.size===available.length", selection)
+        self.assertIn("return false", selection)
         self.assertIn("Math.min(generation.missionRoll,available.length)", selection)
         self.assertIn("slice(0,generation.deploymentCount)", selection)
         self.assertIn("slice(generation.deploymentCount)", selection)
@@ -106,6 +108,9 @@ class StartingNpoGenerationTests(unittest.TestCase):
         self.assertIn("else{", reinforcement)
         placement = self.source("function confirmReinforcementPlacement", "function recordReinforcementHatchway")
         self.assertIn("battlefieldState=placementConfirmed?'deployed':'reserve'", placement)
+        self.assertIn("placementConfirmed?reserveIds.delete(npo.id):reserveIds.add(npo.id)", placement)
+        hatchway = self.source("function recordReinforcementHatchway", "function rollInitiative")
+        self.assertIn("reserveNpoIds.push(npo.id)", hatchway)
 
     def test_saved_identifiers_and_legacy_states_are_normalized(self):
         normalized = self.source("function normalizeState(raw)", "function npoDefinition")
@@ -114,6 +119,17 @@ class StartingNpoGenerationTests(unittest.TestCase):
         npo = self.source("function normalizeNpo(npo)", "function mission()")
         self.assertIn("['reserve','deployed','out-of-action']", npo)
         self.assertIn("Number(npo.wounds)<=0?'out-of-action'", npo)
+
+    def test_legacy_in_progress_games_preserve_prior_active_roster_behavior(self):
+        normalized = self.source("function normalizeState(raw)", "function npoDefinition")
+        self.assertIn("if(Number(raw.turningPoint)>0)", normalized)
+        self.assertIn("!explicitStates.has(npo.id)", normalized)
+        self.assertIn("npo.battlefieldState='deployed'", normalized)
+
+    def test_combat_resolution_revalidates_deployed_target(self):
+        combat = self.source("function showPlayerCombatResolution", "function previewPendingPlayerAttack")
+        self.assertIn("activeNpos().find(n=>n.id===targetId)", combat)
+        self.assertNotIn("state.roster.find(n=>n.id===targetId)", combat)
 
 
 if __name__ == "__main__":
