@@ -63,9 +63,20 @@ assert.equal(engine.getMissionRuntime().history.length,0);assert.equal(engine.ge
         self.assertEqual(mission['startingNpos']['formula'],'0')
         self.assertEqual(mission['missionEngine']['required'],3)
         self.assertEqual(len(mission['missionEngine']['rooms']),5)
+        self.assertEqual(mission['missionEngine']['objectiveId'],'scoutedRooms')
+        self.assertEqual(mission['missionEngine']['progressIdsField'],'scoutedRoomIds')
+        self.assertEqual(mission['missionEngine']['actions'],{
+            'awakenRoom':'awakenRoom','recordScout':'recordScout','correctScout':'correctScout'
+        })
         app=(ROOT/'app.js').read_text();worker=(ROOT/'service-worker.js').read_text();index=(ROOT/'index.html').read_text()
         for action in ('awakenRoom','recordScout','correctScout'):
-            self.assertIn(f"executeMissionAction('{action}'",app)
+            self.assertIn(f"missionEngine().actions?.{action}",app)
+        self.assertIn('data-scout-operative',app)
+        self.assertIn("inPlayLivingPlayerOperativeIds().includes(operativeId)",app)
+        self.assertIn('state.missionState.scoutedByRoom[button.dataset.scoutRoom]=operativeId',app)
+        self.assertIn('delete state.missionState.scoutedByRoom[button.dataset.correctScoutRoom]',app)
+        self.assertIn('normalized.scoutedByRoom=',app)
+        self.assertLess(app.index('state.missionState=normalizeMissionState(state.missionState,selectedMission,state.tracker)'),app.index('objectiveDefinition=await TombWorldMissionEngine.loadMissionDefinition'))
         self.assertIn("Math.min(5,(outcome?.results?.awakenRoll?.total??rollD3())+threatGrade())",app)
         self.assertIn("setThreat(gradeFloor-state.threat,'Scout Room')",app)
         self.assertIn("stage.hatch&&state.missionId!=='scout-sub-crypt'",app)
