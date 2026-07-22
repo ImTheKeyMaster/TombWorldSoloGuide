@@ -302,7 +302,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     npoAttackSummary:null, combatState:null, missionState:null, startingNpoGeneration:null, eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[]}, gameEnd:null
   });
 
-  let state = normalizeState(load() || initialState());
+  const loadedState = load();
+  let state = normalizeState(loadedState || initialState());
+  if(loadedState?.version==='5.6.0'&&state.version===APP_VERSION)save();
   let lastRenderedStepKey = null;
   let startingNpoTimer = null;
   let threatAdjustOpen = false;
@@ -430,6 +432,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       : null;
     if(raw.version==='5.6.0'&&merged.screen==='setup'&&merged.startingNpoGeneration?.navigationComplete){
       merged.setupStep=Math.max(0,Number(merged.setupStep||0)-1);
+      merged.version=APP_VERSION;
     }
     merged.playerTeamId=raw?.playerTeamId||'';
     if(isRecord(raw.strategyData)){

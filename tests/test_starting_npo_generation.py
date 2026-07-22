@@ -64,6 +64,14 @@ class StartingNpoGenerationTests(unittest.TestCase):
         self.assertIn("if(generation.animationShown)return", flow)
         self.assertNotIn("startingNpoRoll()", flow)
 
+    def test_legacy_setup_step_migration_is_persisted_once(self):
+        initialization = self.source("const loadedState = load()", "let lastRenderedStepKey")
+        self.assertIn("state.version===APP_VERSION)save()", initialization)
+        normalized = self.source("function normalizeState(raw)", "function npoDefinition")
+        migration = normalized.split("if(raw.version==='5.6.0'", 1)[1].split("merged.playerTeamId", 1)[0]
+        self.assertIn("merged.setupStep=Math.max(0,Number(merged.setupStep||0)-1)", migration)
+        self.assertIn("merged.version=APP_VERSION", migration)
+
     def test_legacy_setup_save_uses_existing_roster_without_rerolling(self):
         restored = self.source("function restoredStartingNpoGeneration()", "function generateRoster")
         self.assertIn("missionRoll=state.roster.length", restored)
