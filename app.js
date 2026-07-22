@@ -59,6 +59,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   registerServiceWorker();
 
   let missionManifest=null;
+  let objectiveEngine=null;
+  let objectiveDefinition=null;
+  let missionOperationResolving=false;
   async function loadMissionPack(){
     const manifestResponse=await fetch('Missions/manifest.json',{cache:'no-store'});
     if(!manifestResponse.ok)throw new Error(`Unable to load Missions/manifest.json (${manifestResponse.status})`);
@@ -71,6 +74,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }));
     missions=loaded.sort((a,b)=>String(a.number).localeCompare(String(b.number)));
     maps=Object.fromEntries(missions.map(m=>[m.id,m.map||{walls:[],hatches:[],markers:[]}]));
+  }
+
+  async function loadObjectiveMission(){
+    objectiveEngine=null;objectiveDefinition=null;
+    if(state.missionId!=='destroy-sarcophagus')return;
+    objectiveDefinition=await TombWorldMissionEngine.loadMissionDefinition(state.missionId);
+    objectiveEngine=TombWorldMissionEngine.createMissionEngine({requestDiceRoll:animateMissionDice,requestNumericInput:requestMissionNumber});
+    state.missionRuntime=objectiveEngine.restoreMissionRuntime(objectiveDefinition,state.missionRuntime);
   }
 
   let playerManifest=null;
@@ -299,7 +310,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], playerWounds:{}, reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0},
     gradeMilestone:null, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0,
     npoAttackTargetId:null,
-    npoAttackSummary:null, combatState:null, missionState:null, startingNpoGeneration:null, eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[]}, gameEnd:null
+    npoAttackSummary:null, combatState:null, missionState:null, missionRuntime:null, startingNpoGeneration:null, eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[]}, gameEnd:null
   });
 
   const loadedState = load();
@@ -374,6 +385,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function save(){
+    if(objectiveEngine)state.missionRuntime=objectiveEngine.getMissionRuntime();
     state.version=APP_VERSION;
     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));return true;}
     catch{showToast('The game could not be saved. Check available browser storage.');return false;}
@@ -631,7 +643,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     },
     sabotage:(engine,progress)=>progress.completedFeatureIds.length>=engine.required?'victory':null,
     transponder:(engine,progress)=>progress.escaped?'victory':null,
-    destruction:(engine,progress)=>progress.destruction>=engine.required?'victory':null,
+    destruction:()=>null,
     scout:(engine,progress)=>progress.scoutedRoomIds.length>=engine.required?'victory':null,
     regroup:(engine,progress,timing)=>{
       if(timing!=='end-turning-point')return null;
@@ -1101,7 +1113,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function bindSetup(stepId){
-    $$('.mission-choice').forEach(b=>b.onclick=()=>{state.missionId=b.dataset.mission;state.missionState=freshMissionState(mission());state.tracker=0;state.setupChecks={};state.roster=[];state.startingNpoGeneration=null;save();render();});
+    $$('.mission-choice').forEach(b=>b.onclick=async()=>{state.missionId=b.dataset.mission;state.missionState=freshMissionState(mission());state.missionRuntime=null;await loadObjectiveMission();state.tracker=0;state.setupChecks={};state.roster=[];state.startingNpoGeneration=null;save();render();});
     $('#setupHome')?.addEventListener('click',()=>{state.screen='home';save();render();});
     $('#setupBack')?.addEventListener('click',()=>{state.setupStep=Math.max(0,state.setupStep-1);save();render();});
     $('#setupNext')?.addEventListener('click',()=>{const steps=activeSetupSteps();state.setupStep=Math.min(steps.length-1,state.setupStep+1);save();render();});
@@ -1222,7 +1234,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const carrier=progress.carrierId?playerName(progress.carrierId):'None';
       return `<p>Pick up an unresolved marker, then roll D3. The transponder is found only if the result is higher than the number of other unresolved markers.</p>${progress.lastRoll?`<div class="summary-box"><strong>Last search:</strong> rolled ${progress.lastRoll.roll}; ${escapeHtml(progress.lastRoll.result)}.</div>`:''}${transponderFound?`<div class="field"><label for="transponderCarrier">Current carrier</label><select id="transponderCarrier"><option value="">Marker is not being carried…</option>${livingPlayerOptions(progress.carrierId)}</select></div>`:`<div class="field"><label for="transponderOperative">Operative resolving the marker</label><select id="transponderOperative"><option value="">Select operative…</option>${livingPlayerOptions()}</select></div>`}<div class="mission-objective-list">${sites}</div><div class="summary-box"><strong>Carrier:</strong> ${escapeHtml(carrier)}</div><button class="btn primary" id="transponderEscape" ${progress.carrierId&&!state.playerCasualtyIds.includes(progress.carrierId)&&!progress.escaped?'':'disabled'}>Confirm Carrier Escaped</button>`;
     },
-    destruction:(engine,progress)=>`<p>${progress.destruction} of ${engine.required} Destruction points. Each Breach performed within control range of the sarcophagus adds 2D6; the Ready-step repair can reduce this total.</p><button class="btn primary" id="resolveSarcophagusBreach">Resolve Sarcophagus Breach (2D6)</button>`,
+    destruction:()=>{
+      if(!objectiveEngine)return '<p class="muted">Mission automation is unavailable.</p>';
+      const model=objectiveEngine.getMissionHudModel();
+      const action=objectiveDefinition.actions.find(item=>item.id==='breachSarcophagus');
+      const available=objectiveEngine.evaluateMissionConditions(action.availability);
+      return `<p>${model.value} of ${model.target} Destruction Points. Each Breach performed within control range of the sarcophagus adds 2D6; the Ready-step repair can reduce this total.</p>${available?`<button class="btn primary" id="resolveSarcophagusBreach" ${missionOperationResolving?'disabled':''}>${escapeHtml(action.label)} (2D6)</button>`:'<div class="summary-box"><strong>✓ COMPLETE</strong><br>20 / 20 Destruction Points</div>'}`;
+    },
     scout:(engine,progress)=>{
       const scouted=new Set(progress.scoutedRoomIds);
       const rooms=engine.rooms.map(room=>{const awakening=progress.awakenedRooms[room.id];return `<div class="mission-objective-row"><span><strong>${escapeHtml(room.label)}</strong><small>${scouted.has(room.id)?'Scouted':awakening?`${awakening.count} NPOs generated${awakening.placementConfirmed?' and placed':' — placement required'}`:'Unopened / unentered'}</small></span><div class="mission-objective-actions">${awakening?'':`<button class="btn secondary compact" data-awaken-room="${room.id}">First Open / Entry</button>`}${awakening&&!awakening.placementConfirmed?`<button class="btn secondary compact" data-confirm-room-placement="${room.id}">Confirm Placement</button>`:''}${awakening?.placementConfirmed&&!scouted.has(room.id)?`<button class="btn primary compact" data-scout-room="${room.id}">Confirm Cleared & Scout</button>`:''}</div></div>`;}).join('');
@@ -1274,7 +1292,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     });
     $('#transponderCarrier')?.addEventListener('change',event=>{state.missionState.carrierId=event.target.value||null;save();render();});
     $('#transponderEscape')?.addEventListener('click',()=>{state.missionState.escaped=true;updateMissionProgress(`${playerName(state.missionState.carrierId)} escaped carrying the transponder.`);});
-    $('#resolveSarcophagusBreach')?.addEventListener('click',()=>{const amount=roll()+roll();state.missionState.destruction+=amount;updateMissionProgress(`Breach added ${amount} Destruction points.`);});
+    $('#resolveSarcophagusBreach')?.addEventListener('click',confirmBreachSarcophagus);
     $$('[data-awaken-room]').forEach(button=>button.onclick=()=>{
       const count=Math.min(5,rollD3()+threatGrade()), ids=[];
       for(let i=0;i<count&&activeNpos().length<MAX_NPOS;i++){
@@ -1317,8 +1335,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function nextStepCard(){
     if(state.completed) return `<section class="next-card"><span class="phase">MISSION COMPLETE</span><h2>Record the outcome</h2><p>The mission has reached its conclusion. Review the Journal or begin a new game.</p><button class="btn primary big-action" id="newGameFromPlay">Start New Game</button></section>`;
     if(state.phase==='between'){
-      const missionReadyInput=state.missionId==='destroy-sarcophagus'?`<div class="field"><label for="sarcophagusControllers">Player operatives controlling the sarcophagus</label><input id="sarcophagusControllers" type="number" min="0" max="${livingPlayerOperativeCount()}" value="${state.missionReadyContext.sarcophagusControllers}"></div>`:'';
-      return `<section class="next-card"><span class="phase">NEXT STEP</span><h2>Start Turning Point ${state.turningPoint+1}</h2><p>The Guide will ready operatives, apply mission Ready rules, determine initiative, then process current events and reinforcements.</p>${missionReadyInput}<button class="btn primary big-action" id="startTp">Start Next Turning Point</button></section>`;
+      return `<section class="next-card"><span class="phase">NEXT STEP</span><h2>Start Turning Point ${state.turningPoint+1}</h2><p>The Guide will ready operatives, apply mission Ready rules, determine initiative, then process current events and reinforcements.</p><button class="btn primary big-action" id="startTp">Start Next Turning Point</button></section>`;
     }
     if(state.phase==='strategy') return strategyCard();
     if(state.phase==='end'){
@@ -1556,11 +1573,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function bindPlay(){
     $('#dismissGradeMilestone')?.addEventListener('click',()=>{state.gradeMilestone=null;save();render();});
     $$('[data-player-operative]').forEach(button=>button.addEventListener('click',()=>showPlayerOperativeStatus(button.dataset.playerOperative)));
-    $('#startTp')?.addEventListener('click',()=>{
-      const controllers=$('#sarcophagusControllers');
-      if(controllers)state.missionReadyContext.sarcophagusControllers=normalizeSarcophagusControllers(controllers.value);
-      startTurningPoint();
-    });
+    $('#startTp')?.addEventListener('click',startTurningPoint);
     $$('[data-reinforcement-placement]').forEach(input=>input.addEventListener('change',()=>confirmReinforcementPlacement(input.dataset.reinforcementPlacement,input.checked)));
     $$('[data-reinforcement-hatchway]').forEach(input=>input.addEventListener('change',()=>recordReinforcementHatchway(input.dataset.reinforcementHatchway,input.value)));
     $('#eventNpoSelect')?.addEventListener('change',e=>{$('#resolveStrategyEvent').disabled=!e.target.value;});
@@ -1593,7 +1606,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#threatDown')?.addEventListener('click',()=>{setThreat(-1,'Manual adjustment');save();render();});
   }
 
-  function startTurningPoint(){
+  async function startTurningPoint(){
     state.turningPoint++;
     if(missionEngine()?.type==='regroup')state.missionState={operativeChecks:{},lastCheckedTurningPoint:state.turningPoint};
     state.tpStartThreat=state.threat;
@@ -1606,7 +1619,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     state.strategyData={grade:threatGrade(),reinforcements:[],actualReinforcements:0,blocked:0,event:null,playerRoll:null,npoRoll:null,suggestedInitiative:'player',missionReadyHooks:[]};
     state.strategyPipeline={current:'ready',completed:[]};
     processReadyStep();
-    applyMissionReadyHooks();
+    await applyMissionReadyHooks();
     determineInitiative();
     processEventStage();
     if(!state.strategyData.eventPending)processReinforcementStage();
@@ -1628,16 +1641,17 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     completeStrategyStage('ready','mission-ready-hooks');
   }
 
-  function applyMissionReadyHooks(){
-    if(state.missionId==='destroy-sarcophagus'&&state.missionState.destruction>0){
-      const repairRoll=roll();
-      const controllers=normalizeSarcophagusControllers(state.missionReadyContext.sarcophagusControllers);
-      state.missionReadyContext.sarcophagusControllers=controllers;
-      const repairAmount=Math.max(0,repairRoll-controllers);
-      const repaired=Math.min(state.missionState.destruction,repairAmount);
-      state.missionState.destruction-=repaired;
-      state.strategyData.missionReadyHooks.push({id:'nanoscarab-repair',roll:repairRoll,controllers,repaired});
-      log(`Nanoscarab Repair removed ${repaired} Destruction point(s) during the Ready step (D6: ${repairRoll}; ${controllers} controlling operative(s)).`);
+  async function applyMissionReadyHooks(){
+    if(objectiveEngine){
+      const outcomes=await runMissionEvent(()=>objectiveEngine.executeMissionHook('onStrategyPhaseReadyStep',{turningPoint:state.turningPoint,phase:'strategy-ready'}));
+      const outcome=outcomes?.find(item=>item.status==='completed');
+      if(outcome){
+        const change=outcome.changes[0];
+        state.strategyData.missionReadyHooks.push({id:'nanoscarabRepair',...outcome});
+        save();
+        log(`Nanoscarab Repair: progress changed from ${change.before} to ${change.after}.`);
+        showMissionResult('NANOSCARAB REPAIR',outcome);
+      }
     }
     completeStrategyStage('mission-ready-hooks','initiative');
   }
@@ -3346,6 +3360,65 @@ function showPlayerActivation(stage={}){
   function toggleReady(id){const n=state.roster.find(x=>x.id===id);if(n&&n.wounds>0&&!n.dormant)n.ready=!n.ready;save();render();}
   function deleteNpo(id){state.roster=state.roster.filter(x=>x.id!==id);save();render();}
 
+  function animateMissionDice(operation){
+    return new Promise((resolve,reject)=>{
+      const dice=Array.from({length:operation.dice.count},()=>roll(operation.dice.sides));
+      let settled=false;
+      showModal(operation.label||'Mission Roll',`<div class="dice-row animated-roll" id="missionDiceRoll">${dice.map(()=>rollingDieHtml()).join('')}</div><p>Rolling ${operation.dice.count}D${operation.dice.sides}…</p>`,()=>{if(!settled)reject(new TombWorldMissionEngine.MissionEngineError('DICE_CANCELLED','Mission dice roll was cancelled.'));});
+      setTimeout(()=>{
+        if(!modal.open)return;
+        settled=true;
+        $('#missionDiceRoll').className='dice-row settled';
+        $('#missionDiceRoll').innerHTML=dice.map(value=>dieHtml({value})).join('');
+        modalBody.querySelector('p').textContent=`Dice: ${dice.join(' + ')} · Total: ${dice.reduce((sum,value)=>sum+value,0)}`;
+        setTimeout(()=>{closeModal();resolve({dice,total:dice.reduce((sum,value)=>sum+value,0)});},450);
+      },700);
+    });
+  }
+
+  function requestMissionNumber(operation){
+    return new Promise((resolve,reject)=>{
+      let submitted=false;
+      const maximum=Math.min(operation.maximum??20,livingPlayerOperativeCount());
+      showModal(operation.label||'Mission Input',`<p>How many Player operatives currently control the Sarcophagus?</p><div class="field"><label for="missionNumericInput">Controlling Player operatives</label><input id="missionNumericInput" type="number" inputmode="numeric" step="1" min="${operation.minimum??0}" max="${maximum}" value="${Math.min(operation.default??0,maximum)}"></div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmMissionNumber">Continue</button></div>`,()=>{if(!submitted)reject(new TombWorldMissionEngine.MissionEngineError('INPUT_CANCELLED','Mission input was cancelled.'));});
+      $('#confirmMissionNumber').onclick=()=>{
+        const input=$('#missionNumericInput'),value=Number(input.value);
+        if(!Number.isInteger(value)||value<(operation.minimum??0)||value>maximum){showToast(`Enter a whole number from ${operation.minimum??0} to ${maximum}.`);return;}
+        submitted=true;closeModal();resolve(value);
+      };
+    });
+  }
+
+  async function runMissionEvent(execute){
+    if(missionOperationResolving||!objectiveEngine)return null;
+    missionOperationResolving=true;
+    try{return await execute();}
+    catch(error){
+      if(!['INPUT_CANCELLED','DICE_CANCELLED'].includes(error.code)){console.error('[MissionEngine]',error);showToast('The mission action could not be completed. Please try again.');}
+      return null;
+    }finally{missionOperationResolving=false;}
+  }
+
+  function showMissionResult(title,outcome){
+    const change=outcome.changes[0],dice=Object.values(outcome.results)[0]?.dice||[],model=objectiveEngine.getMissionHudModel();
+    const delta=Math.abs(change.after-change.before);
+    const repair=change.after<=change.before;
+    const detail=repair?(delta?`Destruction Points repaired: ${delta}`:'No Destruction Points repaired.'):`Destruction Points added: ${delta}`;
+    const completed=model.completed;
+    showModal(completed?'MISSION OBJECTIVE COMPLETE':title,`${completed?'<h3>Destroy Sarcophagus</h3>':''}<p>Dice: ${dice.join(' + ')}</p><p>${detail}</p><div class="summary-box"><strong>Progress: ${model.value} / ${model.target}</strong></div><div class="wizard-actions"><button class="btn primary" data-close>Continue the battle</button></div>`);
+  }
+
+  function confirmBreachSarcophagus(){
+    const action=objectiveDefinition.actions.find(item=>item.id==='breachSarcophagus');
+    showModal(action.confirmation.title,`<p>${escapeHtml(action.description)}</p><p>${escapeHtml(action.confirmation.message)}</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmMissionAction">Roll 2D6</button></div>`);
+    $('#confirmMissionAction').onclick=async()=>{
+      closeModal();
+      const outcome=await runMissionEvent(()=>objectiveEngine.executeMissionAction(action.id,{turningPoint:state.turningPoint,phase:state.phase}));
+      if(!outcome)return;
+      save();log(`${action.label}: progress changed from ${outcome.changes[0].before} to ${outcome.changes[0].after}.`);render();showMissionResult(action.label.toUpperCase(),outcome);
+    };
+  }
+
   function showModal(title,content,onClose){
     const active=document.activeElement;
     if(active&&typeof active.blur==='function')active.blur();
@@ -3398,9 +3471,9 @@ function showPlayerActivation(stage={}){
     $('#menuNewGame').onclick=confirmNewGame;
   }
 
-  function confirmNewGame(){showModal('Start New Game?',`<p>This will replace the current mission, roster, Threat, Turning Point, and Journal.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmNewGame">Start New Game</button></div>`);$('#confirmNewGame').onclick=()=>{localStorage.removeItem(STORAGE_KEY);state=initialState();state.screen='setup';expandedRosterCategories=null;closeModal();save();render();};}
+  function confirmNewGame(){showModal('Start New Game?',`<p>This will replace the current mission, roster, Threat, Turning Point, and Journal.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmNewGame">Start New Game</button></div>`);$('#confirmNewGame').onclick=()=>{localStorage.removeItem(STORAGE_KEY);state=initialState();state.screen='setup';objectiveEngine=null;objectiveDefinition=null;expandedRosterCategories=null;closeModal();save();render();};}
   function exportSave(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tomb-world-solo-guide-save.json';a.click();URL.revokeObjectURL(a.href);}
-  importInput.addEventListener('change',async()=>{const f=importInput.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!isRecord(data))throw new Error();state=normalizeState(data);state.screen='game';const missionRecovered=recoverInvalidMission();save();render();if(!missionRecovered)showToast('Save imported.');}catch{showToast('That file is not a valid Tomb World Solo Guide save.');}finally{importInput.value='';}});
+  importInput.addEventListener('change',async()=>{const f=importInput.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());if(!isRecord(data))throw new Error();state=normalizeState(data);state.screen='game';const missionRecovered=recoverInvalidMission();await loadObjectiveMission();save();render();if(!missionRecovered)showToast('Save imported.');}catch{showToast('That file is not a valid Tomb World Solo Guide save.');}finally{importInput.value='';}});
 
   function bindCommon(){
     const versionBadge=$('.version');
@@ -3410,6 +3483,7 @@ function showPlayerActivation(stage={}){
 
   Promise.all([loadMissionPack(),loadPlayerManifest()])
     .then(async ([,manifest])=>{
+      await loadObjectiveMission();
       recoverInvalidMission();
       const teams=manifest.teams||[];
       if(teams.length===1){

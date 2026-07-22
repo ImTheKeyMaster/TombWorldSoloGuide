@@ -109,8 +109,8 @@ const mission=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarcoph
         ):
             json.loads((ROOT / relative).read_text())
         app = (ROOT / "app.js").read_text()
-        self.assertNotIn("TombWorldMissionEngine", app)
-        self.assertNotIn("missionRuntime", app)
+        self.assertIn("TombWorldMissionEngine", app)
+        self.assertIn("missionRuntime", app)
         self.assertNotIn("Mission Details", app)
         self.assertNotIn("mission-engine-hud", (ROOT / "styles.css").read_text())
         index = (ROOT / "index.html").read_text()
