@@ -22,13 +22,14 @@ class ReinforcementCheckboxInteractionTests(unittest.TestCase):
         )
         self.assertLess(APP.index("app.innerHTML=hud()"), APP.index("bindPlay();", APP.index("app.innerHTML=hud()")))
 
-    def test_hatchway_change_does_not_replace_checkbox_before_click(self):
+    def test_hatchway_change_defers_rerender_until_after_checkbox_click(self):
         hatchway = self.function_source(
             "recordReinforcementHatchway(id,hatchway)", "rollInitiative()"
         )
         self.assertIn("npo.reinforcement.hatchway=recordedHatchway", hatchway)
         self.assertIn("save();", hatchway)
-        self.assertNotIn("render();", hatchway)
+        self.assertNotIn("save();render();", hatchway)
+        self.assertIn("setTimeout(render,0);", hatchway)
 
     def test_all_confirmed_placements_enable_strategy_confirmation(self):
         confirmation = self.function_source(

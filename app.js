@@ -1871,6 +1871,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     npo.battlefieldState='deployed';
     state.reinforcementState.status='placement';
     save();
+    setTimeout(render,0);
   }
 
   function rollInitiative(){
