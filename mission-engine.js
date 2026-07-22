@@ -186,7 +186,23 @@
     function initializeMissionRuntime(nextDefinition,context={}){
       definition=validateMissionDefinition(nextDefinition);
       const timestamp=now(context);runtime={schemaVersion:RUNTIME_SCHEMA_VERSION,missionId:definition.id,initialized:true,objectives:{},flags:{},eventExecutions:{},history:[],lastUpdatedAt:timestamp};
-      definition.objectives.forEach(objective=>{runtime.objectives[objective.id]={value:objective.initial,completed:false,completedAt:null};runtime.objectives[objective.id].completed=evaluateCompletion(objective,runtime.objectives[objective.id],context);if(runtime.objectives[objective.id].completed)runtime.objectives[objective.id].completedAt=timestamp;});
+      definition.objectives.forEach(objective=>{runtime.objectives[objective.id]={value:objective.initial,completed:false,completedAt:null,completedTurningPoint:null};runtime.objectives[objective.id].completed=evaluateCompletion(objective,runtime.objectives[objective.id],context);if(runtime.objectives[objective.id].completed){runtime.objectives[objective.id].completedAt=timestamp;runtime.objectives[objective.id].completedTurningPoint=context.turningPoint??null;}});
+      return runtime;
+    }
+    function restoreMissionRuntime(nextDefinition,savedRuntime,context={}){
+      initializeMissionRuntime(nextDefinition,context);
+      if(!isRecord(savedRuntime)||savedRuntime.missionId!==definition.id)return runtime;
+      const restored=clone(savedRuntime);
+      definition.objectives.forEach(objective=>{
+        const saved=restored.objectives?.[objective.id];
+        if(!isRecord(saved))return;
+        setObjectiveValue(objective.id,saved.value,context);
+        if(saved.completed){runtime.objectives[objective.id].completed=true;runtime.objectives[objective.id].completedAt=saved.completedAt||runtime.objectives[objective.id].completedAt||now(context);runtime.objectives[objective.id].completedTurningPoint=saved.completedTurningPoint??runtime.objectives[objective.id].completedTurningPoint;}
+      });
+      runtime.flags=isRecord(restored.flags)?restored.flags:{};
+      runtime.eventExecutions=isRecord(restored.eventExecutions)?restored.eventExecutions:{};
+      runtime.history=Array.isArray(restored.history)?restored.history.filter(isRecord).slice(-HISTORY_LIMIT):[];
+      runtime.lastUpdatedAt=typeof restored.lastUpdatedAt==='string'?restored.lastUpdatedAt:runtime.lastUpdatedAt;
       return runtime;
     }
     function setObjectiveValue(objectiveId,value,metadata={}){
@@ -196,7 +212,7 @@
       if(objective.type==='counter'&&(typeof value!=='number'||!Number.isFinite(value)))throw new MissionEngineError('INVALID_COUNTER_VALUE',`Counter "${objectiveId}" requires a finite number.`);
       if(objective.type==='boolean'&&typeof value!=='boolean')throw new MissionEngineError('INVALID_OBJECTIVE_VALUE',`Boolean objective "${objectiveId}" requires a boolean.`);
       state.value=objective.type==='counter'?Math.max(objective.minimum,Math.min(objective.maximum,value)):value;
-      const completed=evaluateCompletion(objective,state,metadata);if(completed&&!state.completed){state.completed=true;state.completedAt=now(metadata);}runtime.lastUpdatedAt=now(metadata);return state.value;
+      const completed=evaluateCompletion(objective,state,metadata);if(completed&&!state.completed){state.completed=true;state.completedAt=now(metadata);state.completedTurningPoint=metadata.turningPoint??null;}runtime.lastUpdatedAt=now(metadata);return state.value;
     }
     function adjustObjectiveValue(objectiveId,delta,metadata={}){if(typeof delta!=='number'||!Number.isFinite(delta))throw new MissionEngineError('INVALID_COUNTER_VALUE','Counter adjustment requires a finite number.');return setObjectiveValue(objectiveId,getObjectiveValue(objectiveId)+delta,metadata);}
     function getObjectiveValue(objectiveId){requireRuntime();if(!runtime.objectives[objectiveId])throw new MissionEngineError('UNKNOWN_OBJECTIVE',`Unknown mission objective "${objectiveId}".`);return runtime.objectives[objectiveId].value;}
@@ -209,13 +225,13 @@
       if(!['unlimited','manual'].includes(scope)&&scopeValue==null)throw new MissionEngineError('MISSING_IDEMPOTENCY_CONTEXT',`Event "${event.id}" requires ${scope} context.`);
       const executionKey=!['unlimited','manual'].includes(scope)?`${event.executionKey||event.id}:${scope}:${scopeValue}`:null;
       if(executionKey&&runtime.eventExecutions[executionKey])return {status:'already-executed',executionKey};
-      const snapshot=clone(runtime),eventContext=contextFor(context),pendingHistory=[];
+      const snapshot=clone(runtime),eventContext=contextFor(context),pendingHistory=[],changes=[];
       try{
         for(const operation of event.operations){
           switch(operation.type){
-            case 'setCounter':setObjectiveValue(operation.objectiveId,operationValue(operation,eventContext),context);break;
-            case 'addCounter':adjustObjectiveValue(operation.objectiveId,operationValue(operation,eventContext),context);break;
-            case 'subtractCounter':adjustObjectiveValue(operation.objectiveId,-operationValue(operation,eventContext),context);break;
+            case 'setCounter':{const before=getObjectiveValue(operation.objectiveId);setObjectiveValue(operation.objectiveId,operationValue(operation,eventContext),context);changes.push({objectiveId:operation.objectiveId,before,after:getObjectiveValue(operation.objectiveId)});break;}
+            case 'addCounter':{const before=getObjectiveValue(operation.objectiveId);adjustObjectiveValue(operation.objectiveId,operationValue(operation,eventContext),context);changes.push({objectiveId:operation.objectiveId,before,after:getObjectiveValue(operation.objectiveId)});break;}
+            case 'subtractCounter':{const before=getObjectiveValue(operation.objectiveId);adjustObjectiveValue(operation.objectiveId,-operationValue(operation,eventContext),context);changes.push({objectiveId:operation.objectiveId,before,after:getObjectiveValue(operation.objectiveId)});break;}
             case 'setFlag':runtime.flags[operation.flag]=Object.prototype.hasOwnProperty.call(operation,'value')?clone(operation.value):true;break;
             case 'clearFlag':delete runtime.flags[operation.flag];break;
             case 'completeObjective':{const objective=runtime.objectives[operation.objectiveId];objective.completed=true;objective.completedAt=now(context);break;}
@@ -236,9 +252,10 @@
           }
         }
         if(executionKey)runtime.eventExecutions[executionKey]={completed:true,completedAt:now(context)};
+        const completedObjectiveIds=Object.keys(runtime.objectives).filter(id=>runtime.objectives[id].completed&&!snapshot.objectives[id]?.completed);
         const history=pendingHistory.length?pendingHistory:[{eventId:event.id,title:event.label||event.id,summary:event.history?.summary||`${event.label||event.id} completed.`}];
-        history.forEach(entry=>recordMissionHistory({...entry,eventId:entry.eventId||event.id,turningPoint:context.turningPoint??null,phase:context.phase||null},context));
-        return {status:'completed',executionKey,results:eventContext.results,inputs:eventContext.inputs};
+        history.forEach(entry=>recordMissionHistory({...entry,eventId:entry.eventId||event.id,turningPoint:context.turningPoint??null,phase:context.phase||null,results:clone(eventContext.results),inputs:clone(eventContext.inputs),changes:clone(changes),completedObjectiveIds},context));
+        return {status:'completed',executionKey,results:eventContext.results,inputs:eventContext.inputs,changes};
       }catch(error){
         Object.keys(runtime).forEach(key=>delete runtime[key]);
         Object.assign(runtime,snapshot);
@@ -251,7 +268,7 @@
     function evaluateObjectiveCompletion(context={}){requireRuntime();definition.objectives.forEach(objective=>setObjectiveValue(objective.id,runtime.objectives[objective.id].value,context));return Object.fromEntries(Object.entries(runtime.objectives).map(([id,state])=>[id,state.completed]));}
     function getMissionHudModel(){requireRuntime();const objective=definition.objectives[0],state=objective?runtime.objectives[objective.id]:null;return {missionId:definition.id,name:definition.name,label:definition.hud.label||'MISSION',objectiveId:objective?.id||null,value:state?.value??null,target:objective?.target??null,completed:Boolean(state?.completed),visible:definition.presentation.showHud!==false};}
     function getMissionDetailsModel(){requireRuntime();return {missionId:definition.id,name:definition.name,briefing:definition.briefing,objectiveSummary:definition.objectiveSummary,objectives:definition.objectives.map(objective=>({...clone(objective),...clone(runtime.objectives[objective.id])})),history:clone(runtime.history).reverse(),completion:clone(definition.completion)};}
-    return {initializeMissionRuntime,getMissionRuntime:()=>runtime,getMissionDefinition:()=>definition,getObjectiveValue,setObjectiveValue,adjustObjectiveValue,evaluateMissionConditions,executeMissionAction,executeMissionHook,evaluateObjectiveCompletion,recordMissionHistory,getMissionHudModel,getMissionDetailsModel};
+    return {initializeMissionRuntime,restoreMissionRuntime,getMissionRuntime:()=>runtime,getMissionDefinition:()=>definition,getObjectiveValue,setObjectiveValue,adjustObjectiveValue,evaluateMissionConditions,executeMissionAction,executeMissionHook,evaluateObjectiveCompletion,recordMissionHistory,getMissionHudModel,getMissionDetailsModel};
   }
 
   global.TombWorldMissionEngine={MissionEngineError,validateMissionDefinition,createMissionRegistry,loadMissionDefinition,evaluateCondition,evaluateExpression,createMissionEngine,constants:{DEFINITION_SCHEMA_VERSION,RUNTIME_SCHEMA_VERSION,HISTORY_LIMIT}};
