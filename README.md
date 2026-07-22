@@ -1,7 +1,15 @@
-# Tomb World Solo Guide v5.7.1
+# Tomb World Solo Guide v5.7.2
 
 A separate, mobile-first guided-play application for solo Kill Team missions in a Necron tomb world. This project does not replace Tomb World Solo Command.
 
+
+## v5.7.2
+
+**Version 5.7.2 - Simplified Strategy Phase**
+
+- Removed the obsolete Strategy Phase step indicator and closing instruction.
+- Hidden empty reinforcement and Tomb World Event result sections.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v5.7.2.
 
 ## v5.7.1
 
