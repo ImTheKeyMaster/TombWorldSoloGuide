@@ -50,7 +50,7 @@ class MissionUiTests(unittest.TestCase):
         self.assertIn("overflow-wrap:anywhere", self.styles)
         self.assertIn(".hud .mission-hud{min-height:44px}", self.styles)
 
-    def test_work_package_05_is_integrated_but_later_packages_remain_deferred(self):
+    def test_lifecycle_integration_uses_the_existing_runtime_shape(self):
         self.assertIn("onPlayerActivationStarted", self.app)
         self.assertIn("onPlayerActivationCompleted", self.app)
         self.assertNotIn("MISSION AUTOMATION UNAVAILABLE", self.app)
