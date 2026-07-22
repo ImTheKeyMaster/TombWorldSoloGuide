@@ -78,10 +78,17 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   async function loadObjectiveMission(){
     objectiveEngine=null;objectiveDefinition=null;
-    if(state.missionId!=='destroy-sarcophagus')return;
-    objectiveDefinition=await TombWorldMissionEngine.loadMissionDefinition(state.missionId);
-    objectiveEngine=TombWorldMissionEngine.createMissionEngine({requestDiceRoll:animateMissionDice,requestNumericInput:requestMissionNumber});
-    state.missionRuntime=objectiveEngine.restoreMissionRuntime(objectiveDefinition,state.missionRuntime);
+    const selectedMission=missionDefinition(state.missionId);
+    const registered=missionManifest?.definitions?.some(entry=>entry.id===selectedMission?.number);
+    if(!registered)return;
+    try{
+      objectiveDefinition=await TombWorldMissionEngine.loadMissionDefinition(selectedMission.number);
+      objectiveEngine=TombWorldMissionEngine.createMissionEngine({requestDiceRoll:animateMissionDice,requestNumericInput:requestMissionNumber});
+      state.missionRuntime=objectiveEngine.restoreMissionRuntime(objectiveDefinition,state.missionRuntime);
+    }catch(error){
+      console.error('[MissionEngine]',error);
+      showToast('Mission automation could not be loaded. Track this mission manually.');
+    }
   }
 
   let playerManifest=null;
@@ -1237,9 +1244,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     destruction:()=>{
       if(!objectiveEngine)return '<p class="muted">Mission automation is unavailable.</p>';
       const model=objectiveEngine.getMissionHudModel();
-      const action=objectiveDefinition.actions.find(item=>item.id==='breachSarcophagus');
+      const action=objectiveDefinition.actions[0];
+      const objective=objectiveDefinition.objectives.find(item=>item.id===model.objectiveId);
+      const dice=action.operations.find(operation=>operation.type==='requestDiceRoll')?.dice;
       const available=objectiveEngine.evaluateMissionConditions(action.availability);
-      return `<p>${model.value} of ${model.target} Destruction Points. Each Breach performed within control range of the sarcophagus adds 2D6; the Ready-step repair can reduce this total.</p>${available?`<button class="btn primary" id="resolveSarcophagusBreach" ${missionOperationResolving?'disabled':''}>${escapeHtml(action.label)} (2D6)</button>`:'<div class="summary-box"><strong>✓ COMPLETE</strong><br>20 / 20 Destruction Points</div>'}`;
+      const diceLabel=dice?`${dice.count}D${dice.sides}`:'';
+      return `<p>${escapeHtml(objectiveDefinition.briefing)}</p><p><strong>${model.value} / ${model.target} ${escapeHtml(objective.label)}</strong></p>${available?`<button class="btn primary" id="resolveMissionAction" ${missionOperationResolving?'disabled':''}>${escapeHtml(action.label)}${diceLabel?` (${diceLabel})`:''}</button>`:`<div class="summary-box"><strong>✓ COMPLETE</strong><br>${model.value} / ${model.target} ${escapeHtml(objective.label)}</div>`}`;
     },
     scout:(engine,progress)=>{
       const scouted=new Set(progress.scoutedRoomIds);
@@ -1292,7 +1302,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     });
     $('#transponderCarrier')?.addEventListener('change',event=>{state.missionState.carrierId=event.target.value||null;save();render();});
     $('#transponderEscape')?.addEventListener('click',()=>{state.missionState.escaped=true;updateMissionProgress(`${playerName(state.missionState.carrierId)} escaped carrying the transponder.`);});
-    $('#resolveSarcophagusBreach')?.addEventListener('click',confirmBreachSarcophagus);
+    $('#resolveMissionAction')?.addEventListener('click',confirmMissionAction);
     $$('[data-awaken-room]').forEach(button=>button.onclick=()=>{
       const count=Math.min(5,rollD3()+threatGrade()), ids=[];
       for(let i=0;i<count&&activeNpos().length<MAX_NPOS;i++){
@@ -3380,7 +3390,7 @@ function showPlayerActivation(stage={}){
     return new Promise((resolve,reject)=>{
       let submitted=false;
       const maximum=Math.min(operation.maximum??20,livingPlayerOperativeCount());
-      showModal(operation.label||'Mission Input',`<p>How many Player operatives currently control the Sarcophagus?</p><div class="field"><label for="missionNumericInput">Controlling Player operatives</label><input id="missionNumericInput" type="number" inputmode="numeric" step="1" min="${operation.minimum??0}" max="${maximum}" value="${Math.min(operation.default??0,maximum)}"></div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmMissionNumber">Continue</button></div>`,()=>{if(!submitted)reject(new TombWorldMissionEngine.MissionEngineError('INPUT_CANCELLED','Mission input was cancelled.'));});
+      showModal(operation.label||'Mission Input',`<p>${escapeHtml(operation.label||'Enter the required mission value.')}</p><div class="field"><label for="missionNumericInput">Number of operatives</label><input id="missionNumericInput" type="number" inputmode="numeric" step="1" min="${operation.minimum??0}" max="${maximum}" value="${Math.min(operation.default??0,maximum)}"></div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmMissionNumber">Continue</button></div>`,()=>{if(!submitted)reject(new TombWorldMissionEngine.MissionEngineError('INPUT_CANCELLED','Mission input was cancelled.'));});
       $('#confirmMissionNumber').onclick=()=>{
         const input=$('#missionNumericInput'),value=Number(input.value);
         if(!Number.isInteger(value)||value<(operation.minimum??0)||value>maximum){showToast(`Enter a whole number from ${operation.minimum??0} to ${maximum}.`);return;}
@@ -3401,16 +3411,20 @@ function showPlayerActivation(stage={}){
 
   function showMissionResult(title,outcome){
     const change=outcome.changes[0],dice=Object.values(outcome.results)[0]?.dice||[],model=objectiveEngine.getMissionHudModel();
+    const objective=objectiveDefinition.objectives.find(item=>item.id===change.objectiveId);
     const delta=Math.abs(change.after-change.before);
     const repair=change.after<=change.before;
-    const detail=repair?(delta?`Destruction Points repaired: ${delta}`:'No Destruction Points repaired.'):`Destruction Points added: ${delta}`;
+    const detail=repair?(delta?`${objective.label} repaired: ${delta}`:`No ${objective.label} repaired.`):`${objective.label} added: ${delta}`;
     const completed=model.completed;
-    showModal(completed?'MISSION OBJECTIVE COMPLETE':title,`${completed?'<h3>Destroy Sarcophagus</h3>':''}<p>Dice: ${dice.join(' + ')}</p><p>${detail}</p><div class="summary-box"><strong>Progress: ${model.value} / ${model.target}</strong></div><div class="wizard-actions"><button class="btn primary" data-close>Continue the battle</button></div>`);
+    const completionDialog=objectiveDefinition.dialogs[objectiveDefinition.completion.dialogId]||{};
+    showModal(completed?(completionDialog.title||'MISSION OBJECTIVE COMPLETE'):title,`${completed?`<h3>${escapeHtml(objectiveDefinition.name)}</h3>`:''}<p>Dice: ${dice.join(' + ')}</p><p>${detail}</p><div class="summary-box"><strong>Progress: ${model.value} / ${model.target} ${escapeHtml(objective.label)}</strong></div>${completed&&completionDialog.message?`<p>${escapeHtml(completionDialog.message)}</p>`:''}<div class="wizard-actions"><button class="btn primary" data-close>Continue the battle</button></div>`);
   }
 
-  function confirmBreachSarcophagus(){
-    const action=objectiveDefinition.actions.find(item=>item.id==='breachSarcophagus');
-    showModal(action.confirmation.title,`<p>${escapeHtml(action.description)}</p><p>${escapeHtml(action.confirmation.message)}</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmMissionAction">Roll 2D6</button></div>`);
+  function confirmMissionAction(){
+    const action=objectiveDefinition.actions[0];
+    const dice=action.operations.find(operation=>operation.type==='requestDiceRoll')?.dice;
+    const diceLabel=dice?`${dice.count}D${dice.sides}`:'Dice';
+    showModal(action.confirmation.title,`<p>${escapeHtml(action.description)}</p><p>${escapeHtml(action.confirmation.message)}</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmMissionAction">Roll ${diceLabel}</button></div>`);
     $('#confirmMissionAction').onclick=async()=>{
       closeModal();
       const outcome=await runMissionEvent(()=>objectiveEngine.executeMissionAction(action.id,{turningPoint:state.turningPoint,phase:state.phase}));

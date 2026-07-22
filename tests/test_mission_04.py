@@ -28,11 +28,11 @@ const definition=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarc
   await engine.executeMissionAction('breachSarcophagus',{turningPoint:3});
   const completion=await engine.executeMissionAction('breachSarcophagus',{turningPoint:3});
   assert.equal(engine.getObjectiveValue('destructionPoints'),20);assert.equal(completion.changes[0].after,20);
-  assert.equal(runtime.objectives.destructionPoints.completed,true);assert.equal(definition.completion.endsBattle,false);assert.equal(victory,false);
+  assert.equal(runtime.objectives.destructionPoints.completed,true);assert.equal(runtime.objectives.destructionPoints.completedTurningPoint,3);assert.equal(definition.completion.endsBattle,false);assert.equal(victory,false);
   assert.equal(engine.evaluateMissionConditions(definition.actions[0].availability),false);
   assert.equal((await engine.executeMissionHook('onStrategyPhaseReadyStep',{turningPoint:4}))[0].status,'unavailable');
   assert.equal(engine.getObjectiveValue('destructionPoints'),20);
-  assert.ok(runtime.history.every(entry=>Array.isArray(entry.changes)));
+  assert.ok(runtime.history.every(entry=>Array.isArray(entry.changes)));assert.deepEqual(runtime.history.at(-1).completedObjectiveIds,['destructionPoints']);
   const restored=api.createMissionEngine();restored.restoreMissionRuntime(definition,JSON.parse(JSON.stringify(runtime)));
   assert.equal(restored.getObjectiveValue('destructionPoints'),20);assert.equal(restored.getMissionRuntime().objectives.destructionPoints.completed,true);
   assert.ok(restored.getMissionRuntime().eventExecutions['nanoscarabRepair:turningPoint:2']);

@@ -186,7 +186,7 @@
     function initializeMissionRuntime(nextDefinition,context={}){
       definition=validateMissionDefinition(nextDefinition);
       const timestamp=now(context);runtime={schemaVersion:RUNTIME_SCHEMA_VERSION,missionId:definition.id,initialized:true,objectives:{},flags:{},eventExecutions:{},history:[],lastUpdatedAt:timestamp};
-      definition.objectives.forEach(objective=>{runtime.objectives[objective.id]={value:objective.initial,completed:false,completedAt:null};runtime.objectives[objective.id].completed=evaluateCompletion(objective,runtime.objectives[objective.id],context);if(runtime.objectives[objective.id].completed)runtime.objectives[objective.id].completedAt=timestamp;});
+      definition.objectives.forEach(objective=>{runtime.objectives[objective.id]={value:objective.initial,completed:false,completedAt:null,completedTurningPoint:null};runtime.objectives[objective.id].completed=evaluateCompletion(objective,runtime.objectives[objective.id],context);if(runtime.objectives[objective.id].completed){runtime.objectives[objective.id].completedAt=timestamp;runtime.objectives[objective.id].completedTurningPoint=context.turningPoint??null;}});
       return runtime;
     }
     function restoreMissionRuntime(nextDefinition,savedRuntime,context={}){
@@ -197,7 +197,7 @@
         const saved=restored.objectives?.[objective.id];
         if(!isRecord(saved))return;
         setObjectiveValue(objective.id,saved.value,context);
-        if(saved.completed){runtime.objectives[objective.id].completed=true;runtime.objectives[objective.id].completedAt=saved.completedAt||runtime.objectives[objective.id].completedAt||now(context);}
+        if(saved.completed){runtime.objectives[objective.id].completed=true;runtime.objectives[objective.id].completedAt=saved.completedAt||runtime.objectives[objective.id].completedAt||now(context);runtime.objectives[objective.id].completedTurningPoint=saved.completedTurningPoint??runtime.objectives[objective.id].completedTurningPoint;}
       });
       runtime.flags=isRecord(restored.flags)?restored.flags:{};
       runtime.eventExecutions=isRecord(restored.eventExecutions)?restored.eventExecutions:{};
@@ -212,7 +212,7 @@
       if(objective.type==='counter'&&(typeof value!=='number'||!Number.isFinite(value)))throw new MissionEngineError('INVALID_COUNTER_VALUE',`Counter "${objectiveId}" requires a finite number.`);
       if(objective.type==='boolean'&&typeof value!=='boolean')throw new MissionEngineError('INVALID_OBJECTIVE_VALUE',`Boolean objective "${objectiveId}" requires a boolean.`);
       state.value=objective.type==='counter'?Math.max(objective.minimum,Math.min(objective.maximum,value)):value;
-      const completed=evaluateCompletion(objective,state,metadata);if(completed&&!state.completed){state.completed=true;state.completedAt=now(metadata);}runtime.lastUpdatedAt=now(metadata);return state.value;
+      const completed=evaluateCompletion(objective,state,metadata);if(completed&&!state.completed){state.completed=true;state.completedAt=now(metadata);state.completedTurningPoint=metadata.turningPoint??null;}runtime.lastUpdatedAt=now(metadata);return state.value;
     }
     function adjustObjectiveValue(objectiveId,delta,metadata={}){if(typeof delta!=='number'||!Number.isFinite(delta))throw new MissionEngineError('INVALID_COUNTER_VALUE','Counter adjustment requires a finite number.');return setObjectiveValue(objectiveId,getObjectiveValue(objectiveId)+delta,metadata);}
     function getObjectiveValue(objectiveId){requireRuntime();if(!runtime.objectives[objectiveId])throw new MissionEngineError('UNKNOWN_OBJECTIVE',`Unknown mission objective "${objectiveId}".`);return runtime.objectives[objectiveId].value;}
@@ -252,8 +252,9 @@
           }
         }
         if(executionKey)runtime.eventExecutions[executionKey]={completed:true,completedAt:now(context)};
+        const completedObjectiveIds=Object.keys(runtime.objectives).filter(id=>runtime.objectives[id].completed&&!snapshot.objectives[id]?.completed);
         const history=pendingHistory.length?pendingHistory:[{eventId:event.id,title:event.label||event.id,summary:event.history?.summary||`${event.label||event.id} completed.`}];
-        history.forEach(entry=>recordMissionHistory({...entry,eventId:entry.eventId||event.id,turningPoint:context.turningPoint??null,phase:context.phase||null,results:clone(eventContext.results),inputs:clone(eventContext.inputs),changes:clone(changes)},context));
+        history.forEach(entry=>recordMissionHistory({...entry,eventId:entry.eventId||event.id,turningPoint:context.turningPoint??null,phase:context.phase||null,results:clone(eventContext.results),inputs:clone(eventContext.inputs),changes:clone(changes),completedObjectiveIds},context));
         return {status:'completed',executionKey,results:eventContext.results,inputs:eventContext.inputs,changes};
       }catch(error){
         Object.keys(runtime).forEach(key=>delete runtime[key]);
