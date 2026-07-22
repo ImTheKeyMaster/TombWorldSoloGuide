@@ -16,6 +16,9 @@ REINFORCEMENTS = APP.split("function processReinforcementStage()", 1)[1].split("
 
 class StrategyPhaseUiTests(unittest.TestCase):
     def test_strategy_stat_tooltips_are_hidden_on_mobile(self):
+        self.assertIn("showStatTooltips=!window.matchMedia('(max-width:600px)').matches", STRATEGY_CARD)
+        self.assertIn("tooltipAttrs=text=>showStatTooltips?", STRATEGY_CARD)
+        self.assertIn("infoDot=showStatTooltips?", STRATEGY_CARD)
         self.assertIn(
             "@media(max-width:600px){.strategy-stat-grid .tooltip-stat{cursor:default}"
             ".strategy-stat-grid .tooltip-stat::after,.strategy-stat-grid .info-dot{display:none}}",
