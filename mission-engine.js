@@ -239,7 +239,11 @@
         const history=pendingHistory.length?pendingHistory:[{eventId:event.id,title:event.label||event.id,summary:event.history?.summary||`${event.label||event.id} completed.`}];
         history.forEach(entry=>recordMissionHistory({...entry,eventId:entry.eventId||event.id,turningPoint:context.turningPoint??null,phase:context.phase||null},context));
         return {status:'completed',executionKey,results:eventContext.results,inputs:eventContext.inputs};
-      }catch(error){runtime=snapshot;throw error;}
+      }catch(error){
+        Object.keys(runtime).forEach(key=>delete runtime[key]);
+        Object.assign(runtime,snapshot);
+        throw error;
+      }
     }
     async function executeMissionAction(actionId,context={}){requireRuntime();const action=definition.actions.find(item=>item.id===actionId);if(!action)throw new MissionEngineError('UNKNOWN_ACTION',`Unknown mission action "${actionId}".`);return executeEvent(action,context);}
     async function executeMissionHook(hookName,context={}){requireRuntime();if(!HOOK_NAMES.has(hookName))throw new MissionEngineError('UNKNOWN_HOOK',`Unknown mission hook "${hookName}".`);const outcomes=[];for(const event of definition.hooks[hookName]||[])outcomes.push(await executeEvent(event,context));return outcomes;}

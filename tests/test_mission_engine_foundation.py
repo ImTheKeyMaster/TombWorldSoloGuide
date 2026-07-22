@@ -50,9 +50,11 @@ const definition=JSON.parse(fs.readFileSync('Missions/fixtures/future-mission.js
     {type:'showDialog',title:'Fail'}
   ]}];
   const rollbackEngine=api.createMissionEngine({showDialog:async()=>{throw new Error('dialog failed')}});
-  rollbackEngine.initializeMissionRuntime(rollbackDefinition);
+  const exposedRuntime=rollbackEngine.initializeMissionRuntime(rollbackDefinition);
   await assert.rejects(()=>rollbackEngine.executeMissionAction('rollback'),/dialog failed/);
+  assert.strictEqual(rollbackEngine.getMissionRuntime(),exposedRuntime);
   assert.equal(rollbackEngine.getObjectiveValue('sabotagePoints'),0);
+  assert.equal(exposedRuntime.objectives.sabotagePoints.value,0);
   assert.equal(rollbackEngine.getMissionRuntime().history.length,0);
 
   const onceDefinition=JSON.parse(JSON.stringify(definition));
