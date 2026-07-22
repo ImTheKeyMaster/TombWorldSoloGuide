@@ -13,7 +13,9 @@ class MissionUiTests(unittest.TestCase):
 
     def test_compact_hud_is_semantic_and_has_active_complete_and_neutral_states(self):
         self.assertIn('id="missionHud" type="button"', self.app)
-        self.assertIn("model.completed?'✓ COMPLETE':`${model.value} / ${model.target}`", self.app)
+        self.assertIn("model.completed?'COMPLETE':`${model.value} / ${model.target}`", self.app)
+        self.assertIn('class="mission-complete-mark" aria-hidden="true">✓ </span>', self.app)
+        self.assertIn('.mission-complete-mark{display:none}', self.styles)
         self.assertIn("model?(model.completed", self.app)
         self.assertIn(":'DETAILS'", self.app)
         self.assertIn("$('#missionHud')?.addEventListener('click',showMissionDetails)", self.app)
