@@ -1,0 +1,49 @@
+{
+  "$schema": "./mission.schema.json",
+  "schemaVersion": 1,
+  "id": "01",
+  "slug": "shifting-labyrinth",
+  "name": "Shifting Labyrinth",
+  "briefing": "Escape through the marker on the NPO killzone edge. From Turning Point 2 onward, calibrate the Auspex during the Strategy Phase if no operatives have escaped.",
+  "objectiveSummary": "Get at least half of the player operatives to escape.",
+  "objectives": [
+    {
+      "id": "escapedOperatives",
+      "type": "counter",
+      "label": "Operatives Escaped",
+      "initial": 0,
+      "minimum": 0,
+      "maximum": 12,
+      "target": 1,
+      "targetExpression": {
+        "operation": "max",
+        "arguments": [1, { "operation": "ceil", "arguments": [{ "operation": "divide", "arguments": [{ "path": "gameplay.playerOperativeCount" }, 2] }] }]
+      },
+      "lockOnComplete": false,
+      "completion": { "operator": ">=", "value": 1 }
+    }
+  ],
+  "actions": [
+    { "id": "recordEscape", "label": "Record Escape", "operations": [{ "type": "addCounter", "objectiveId": "escapedOperatives", "value": 1 }] },
+    { "id": "correctEscape", "label": "Correct Escape", "operations": [{ "type": "subtractCounter", "objectiveId": "escapedOperatives", "value": 1 }] },
+    {
+      "id": "auspexCalibration",
+      "label": "Auspex Calibration",
+      "availability": {
+        "all": [
+          { "path": "gameplay.turningPoint", "operator": ">", "value": 1 },
+          { "path": "gameplay.escapedOperativeCount", "operator": "==", "value": 0 }
+        ]
+      },
+      "operations": [
+        { "type": "requestDiceRoll", "id": "directionRoll", "dice": { "count": 1, "sides": 3 }, "label": "Escape marker direction" },
+        { "type": "requestDiceRoll", "id": "distanceRoll", "dice": { "count": 1, "sides": 3 }, "label": "Escape marker distance" }
+      ]
+    }
+  ],
+  "hooks": {},
+  "completion": { "objectiveId": "escapedOperatives", "operator": ">=", "value": 1, "endsBattle": false, "dialogId": "objectiveComplete" },
+  "hud": { "label": "MISSION", "inProgress": { "format": "{value} / {target}" }, "complete": { "format": "✓ TARGET MET" } },
+  "dialogs": { "objectiveComplete": { "title": "ESCAPE TARGET MET", "message": "Continue until every operative has left the killzone." } },
+  "presentation": { "historyDisplayCount": 5, "showHud": true }
+}

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '6.0.0';
+  const APP_VERSION = '6.1.0';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -88,7 +88,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const restoringRuntime=state.missionRuntime?.missionId===selectedMission.number;
       objectiveDefinition=await TombWorldMissionEngine.loadMissionDefinition(selectedMission.number);
       objectiveEngine=TombWorldMissionEngine.createMissionEngine({requestDiceRoll:animateMissionDice,requestNumericInput:requestMissionNumber});
-      state.missionRuntime=objectiveEngine.restoreMissionRuntime(objectiveDefinition,state.missionRuntime);
+      state.missionRuntime=objectiveEngine.restoreMissionRuntime(objectiveDefinition,state.missionRuntime,missionLifecycleContext());
       if(!restoringRuntime)await executeMissionLifecycleHook('onMissionInitialized');
     }catch(error){
       console.error('[MissionEngine] Mission automation unavailable.',{code:error.code||'LOAD_FAILED',missionId:selectedMission?.number,path:error.details?.path,reason:error.message});
@@ -1180,6 +1180,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#playerDeployed')?.addEventListener('change',e=>{state.playerDeployed=e.target.checked;save();render();});
     $('#beginGame')?.addEventListener('click',()=>{
       state.screen='game';state.tab='play';state.turningPoint=0;state.phase='between';state.nextSide='player';state.playerCount=(state.playerRoster||[]).length;state.playerReady=state.playerCount;
+      objectiveEngine?.refreshMissionContext(missionLifecycleContext());
       if(!state.playerWounds||Object.keys(state.playerWounds).length===0)initializePlayerWounds();
       state.roster.forEach(n=>n.ready=false);log(`Mission started: ${mission().name}.`);startTurningPoint();
     });
@@ -1298,10 +1299,15 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function bindMissionProgressControls(){
-    $$('[data-mission-escaped]').forEach(button=>button.onclick=()=>{
+    $$('[data-mission-escaped]').forEach(button=>button.onclick=async()=>{
       const id=button.dataset.missionEscaped, ids=new Set(state.missionState.escapedIds);
-      ids.has(id)?ids.delete(id):ids.add(id);
+      const wasEscaped=ids.has(id);
+      const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction(wasEscaped?'correctEscape':'recordEscape',missionLifecycleContext())):null;
+      if(objectiveEngine&&!outcome)return;
+      wasEscaped?ids.delete(id):ids.add(id);
       state.missionState.escapedIds=[...ids];
+      const model=objectiveEngine?.getMissionHudModel();
+      if(outcome&&model?.completed&&outcome.changes?.[0]?.before<model.target)showMissionResult('ESCAPE RECORDED',outcome);
       updateMissionProgress(`${playerName(id)} ${ids.has(id)?'escaped via the Escape marker':'escape status was corrected'}.`);
     });
     $$('[data-mission-feature]').forEach(input=>input.onchange=()=>{
@@ -1607,8 +1613,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#npoActivation')?.addEventListener('click',showNpoSelection);
     $('#missionHud')?.addEventListener('click',showMissionDetails);
     bindMissionProgressControls();
-    $('#resolveAuspexCalibration')?.addEventListener('click',()=>{
-      const directionRoll=rollD3(),distance=rollD3()+3;
+    $('#resolveAuspexCalibration')?.addEventListener('click',async()=>{
+      const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('auspexCalibration',missionLifecycleContext())):null;
+      if(objectiveEngine&&!outcome)return;
+      const directionRoll=outcome?.results?.directionRoll?.total||rollD3(),distance=(outcome?.results?.distanceRoll?.total||rollD3())+3;
       const instruction=directionRoll===1?`Move the Escape marker ${distance} inches left.`:directionRoll===2?'Do not move the Escape marker.':`Move the Escape marker ${distance} inches right.`;
       state.missionState.auspexCalibrations[state.turningPoint]={directionRoll,distance,instruction};
       log(`Auspex Calibration: ${instruction}`);save();render();
@@ -3443,7 +3451,9 @@ function showPlayerActivation(stage={}){
         turningPoint:state.turningPoint,
         phase:state.phase,
         activationNumber:state.activationNumber,
-        activeSide:state.nextSide
+        activeSide:state.nextSide,
+        playerOperativeCount:Array.isArray(state.playerRoster)?state.playerRoster.length:0,
+        escapedOperativeCount:state.missionState?.escapedIds?.length||0
       },
       ...overrides
     };
