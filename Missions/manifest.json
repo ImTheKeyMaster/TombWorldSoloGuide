@@ -7,6 +7,12 @@
     "document": "Joint Ops: Tomb World Mission Pack",
     "revision": "19 November 2025"
   },
+  "definitions": [
+    {
+      "id": "04",
+      "file": "definition-04-destroy-sarcophagus.json"
+    }
+  ],
   "missions": [
     {
       "id": "shifting-labyrinth",

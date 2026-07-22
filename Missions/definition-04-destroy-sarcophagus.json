@@ -1,0 +1,120 @@
+{
+  "$schema": "./mission.schema.json",
+  "schemaVersion": 1,
+  "id": "04",
+  "slug": "destroy-sarcophagus",
+  "name": "Destroy Sarcophagus",
+  "briefing": "Accumulate 20 Destruction Points. Nanoscarab Repair may reduce progress during the Ready step.",
+  "objectiveSummary": "Accumulate 20 Destruction Points.",
+  "objectives": [
+    {
+      "id": "destructionPoints",
+      "type": "counter",
+      "label": "Destruction Points",
+      "initial": 0,
+      "minimum": 0,
+      "maximum": 20,
+      "target": 20,
+      "lockOnComplete": true,
+      "completion": { "operator": ">=", "value": 20 }
+    }
+  ],
+  "actions": [
+    {
+      "id": "breachSarcophagus",
+      "label": "Breach Sarcophagus",
+      "description": "Confirm that the operative can perform this mission action, then roll 2D6.",
+      "availability": {
+        "all": [
+          { "path": "mission.objectives.destructionPoints.completed", "operator": "==", "value": false }
+        ]
+      },
+      "confirmation": {
+        "required": true,
+        "title": "Breach Sarcophagus?",
+        "message": "Confirm that the operative can perform this mission action."
+      },
+      "operations": [
+        {
+          "type": "requestDiceRoll",
+          "id": "breachRoll",
+          "dice": { "count": 2, "sides": 6 },
+          "label": "Breach Sarcophagus"
+        },
+        {
+          "type": "addCounter",
+          "objectiveId": "destructionPoints",
+          "valueFrom": "results.breachRoll.total"
+        }
+      ]
+    }
+  ],
+  "hooks": {
+    "onStrategyPhaseReadyStep": [
+      {
+        "id": "nanoscarabRepair",
+        "label": "Nanoscarab Repair",
+        "oncePer": "turningPoint",
+        "availability": {
+          "all": [
+            { "path": "mission.objectives.destructionPoints.value", "operator": ">", "value": 0 },
+            { "path": "mission.objectives.destructionPoints.completed", "operator": "==", "value": false }
+          ]
+        },
+        "operations": [
+          {
+            "type": "requestNumericInput",
+            "id": "controllingPlayerOperatives",
+            "label": "Player operatives controlling the Sarcophagus",
+            "minimum": 0,
+            "maximum": 20,
+            "default": 0,
+            "integer": true
+          },
+          {
+            "type": "requestDiceRoll",
+            "id": "repairRoll",
+            "dice": { "count": 1, "sides": 6 },
+            "label": "Nanoscarab Repair"
+          },
+          {
+            "type": "subtractCounter",
+            "objectiveId": "destructionPoints",
+            "valueExpression": {
+              "operation": "max",
+              "arguments": [
+                0,
+                {
+                  "operation": "subtract",
+                  "arguments": [
+                    { "path": "results.repairRoll.total" },
+                    { "path": "inputs.controllingPlayerOperatives" }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "completion": {
+    "objectiveId": "destructionPoints",
+    "operator": ">=",
+    "value": 20,
+    "endsBattle": false,
+    "dialogId": "objectiveComplete"
+  },
+  "hud": {
+    "label": "MISSION",
+    "inProgress": { "format": "{value} / {target}" },
+    "complete": { "format": "✓ COMPLETE" }
+  },
+  "dialogs": {
+    "objectiveComplete": {
+      "title": "MISSION OBJECTIVE COMPLETE",
+      "message": "Continue the battle."
+    }
+  },
+  "presentation": { "historyDisplayCount": 5, "showHud": true }
+}

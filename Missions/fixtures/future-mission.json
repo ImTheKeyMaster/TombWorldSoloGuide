@@ -1,0 +1,37 @@
+{
+  "$schema": "../mission.schema.json",
+  "schemaVersion": 1,
+  "id": "TEST-01",
+  "slug": "test-destroy-generators",
+  "name": "Destroy Generators",
+  "briefing": "Test fixture proving a future counter mission loads without engine changes.",
+  "objectiveSummary": "Accumulate 6 sabotage points.",
+  "objectives": [
+    {
+      "id": "sabotagePoints",
+      "type": "counter",
+      "label": "Sabotage Points",
+      "initial": 0,
+      "minimum": 0,
+      "maximum": 6,
+      "target": 6,
+      "lockOnComplete": true,
+      "completion": { "operator": ">=", "value": 6 }
+    }
+  ],
+  "actions": [
+    {
+      "id": "sabotageGenerator",
+      "label": "Sabotage Generator",
+      "operations": [
+        { "type": "requestDiceRoll", "id": "sabotageRoll", "dice": { "count": 1, "sides": 6 } },
+        { "type": "addCounter", "objectiveId": "sabotagePoints", "valueFrom": "results.sabotageRoll.total" }
+      ]
+    }
+  ],
+  "hooks": {},
+  "completion": { "objectiveId": "sabotagePoints", "operator": ">=", "value": 6, "endsBattle": false },
+  "hud": { "label": "MISSION", "inProgress": { "format": "{value} / {target}" }, "complete": { "format": "✓ COMPLETE" } },
+  "dialogs": {},
+  "presentation": { "historyDisplayCount": 5, "showHud": true }
+}
