@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v6.1.0
+# Tomb World Solo Guide v6.1.1
+
+## v6.1.1
+
+**Version 6.1.1 - Mobile Mission Status HUD**
+
+- Hid the completed Mission HUD checkmark on phone-sized portrait and landscape viewports so the full `COMPLETE` label remains visible and centered.
+- Preserved the checkmark on tablet and desktop layouts, along with the existing completed state, green styling, text size, and HUD tile sizing.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v6.1.1.
 
 ## v6.1.0
 

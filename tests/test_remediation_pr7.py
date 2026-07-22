@@ -87,7 +87,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertNotIn('postGame', self.app)
 
     def test_versions_are_synchronized(self):
-        expected = '6.1.0'
+        expected = '6.1.1'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"styles.css?v={expected}", (ROOT / 'index.html').read_text())
         self.assertIn(f"app.js?v={expected}", (ROOT / 'index.html').read_text())

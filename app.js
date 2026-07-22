@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '6.1.0';
+  const APP_VERSION = '6.1.1';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -1293,10 +1293,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const visible=model?.visible!==false;
     if(!visible)return '';
     const label=model?.label||'MISSION';
-    const value=model?(model.completed?'✓ COMPLETE':`${model.value} / ${model.target}`):'DETAILS';
+    const value=model?(model.completed?'COMPLETE':`${model.value} / ${model.target}`):'DETAILS';
+    const completeMark=model?.completed?'<span class="mission-complete-mark" aria-hidden="true">✓ </span>':'';
     const status=model?`${model.value} of ${model.target}${model.completed?', objective complete':''}`:'details';
     const name=model?.name||mission()?.name||'selected mission';
-    return `<button class="hud-cell mission-hud" id="missionHud" type="button" aria-label="Mission details, ${escapeHtml(name)}, ${escapeHtml(status)}"><small>${escapeHtml(label)}</small><strong>${escapeHtml(value)}</strong></button>`;
+    return `<button class="hud-cell mission-hud" id="missionHud" type="button" aria-label="Mission details, ${escapeHtml(name)}, ${escapeHtml(status)}"><small>${escapeHtml(label)}</small><strong>${completeMark}${escapeHtml(value)}</strong></button>`;
   }
 
   function hud(){return `<div class="hud"><div><small>Turning<span class="portrait-break"><br></span> Point</small><strong>${state.turningPoint||'Setup'}</strong></div><button class="hud-cell hud-threat" id="threatHudToggle" type="button" aria-expanded="${threatAdjustOpen}" aria-controls="threatAdjuster"><small>Threat<span class="portrait-break"><br></span> Level</small><strong>${state.threat}</strong></button><div><small>Grade<span class="portrait-break"><br></span> Level</small><strong>${threatGrade()}</strong></div><div><small>Player<span class="portrait-break"><br></span> Ready</small><strong>${state.playerReady}</strong></div><div><small>NPO<span class="portrait-break"><br></span> Ready</small><strong>${readyNpos().length}</strong></div>${missionHudHtml()}</div><div class="threat-strip ${threatAdjustOpen?'':'hidden'}" id="threatAdjuster"><div><strong>THREAT LEVEL: ${threatLabel()}</strong><small>${threatGrade()===3?'Maximum Grade':`Next Grade at Threat Level ${[1,6,11][threatGrade()]}`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
