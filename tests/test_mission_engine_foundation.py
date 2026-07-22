@@ -101,6 +101,7 @@ const mission=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarcoph
             manifest["definitions"],
             [
                 {"id": "01", "file": "definition-01-shifting-labyrinth.json"},
+                {"id": "02", "file": "definition-02-demolition-protocol.json"},
                 {"id": "04", "file": "definition-04-destroy-sarcophagus.json"},
             ],
         )

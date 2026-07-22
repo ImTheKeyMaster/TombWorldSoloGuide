@@ -1,0 +1,58 @@
+{
+  "$schema": "./mission.schema.json",
+  "schemaVersion": 1,
+  "id": "02",
+  "slug": "demolition-protocol",
+  "name": "Demolition Protocol",
+  "briefing": "Perform Breach on hatchway access points or breach points. Each sabotaged feature is opened permanently.",
+  "objectiveSummary": "Open at least seven breach points or hatchways by performing Breach on each one.",
+  "objectives": [
+    {
+      "id": "sabotagedFeatures",
+      "type": "counter",
+      "label": "Sabotaged Open Features",
+      "initial": 0,
+      "minimum": 0,
+      "maximum": 11,
+      "target": 7,
+      "lockOnComplete": false,
+      "completion": { "operator": ">=", "value": 7 }
+    }
+  ],
+  "actions": [
+    {
+      "id": "recordBreach",
+      "label": "Record Breach",
+      "operations": [
+        { "type": "addCounter", "objectiveId": "sabotagedFeatures", "value": 1 }
+      ]
+    },
+    {
+      "id": "correctBreach",
+      "label": "Correct Breach",
+      "operations": [
+        { "type": "subtractCounter", "objectiveId": "sabotagedFeatures", "value": 1 }
+      ]
+    }
+  ],
+  "hooks": {},
+  "completion": {
+    "objectiveId": "sabotagedFeatures",
+    "operator": ">=",
+    "value": 7,
+    "endsBattle": true,
+    "dialogId": "objectiveComplete"
+  },
+  "hud": {
+    "label": "MISSION",
+    "inProgress": { "format": "{value} / {target}" },
+    "complete": { "format": "✓ COMPLETE" }
+  },
+  "dialogs": {
+    "objectiveComplete": {
+      "title": "DEMOLITION PROTOCOL COMPLETE",
+      "message": "Seven access features have been sabotaged and left open."
+    }
+  },
+  "presentation": { "historyDisplayCount": 5, "showHud": true }
+}
