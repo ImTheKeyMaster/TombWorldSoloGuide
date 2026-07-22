@@ -21,6 +21,11 @@
     const normalized={...save};
     normalized.roster=records(save.roster);
     normalized.playerRoster=strings(save.playerRoster);
+    const importedPlayerStates=isRecord(save.playerOperativeStates)?save.playerOperativeStates:{};
+    normalized.playerOperativeStates=Object.fromEntries(normalized.playerRoster.map(id=>{
+      const value=isRecord(importedPlayerStates[id])?importedPlayerStates[id]:{};
+      return [id,{inPlay:value.inPlay!==false,...(typeof value.offBoardReason==='string'&&value.offBoardReason?{offBoardReason:value.offBoardReason}:{})}];
+    }));
     normalized.journal=records(save.journal);
     normalized.activationHistory=Array.isArray(save.activationHistory)?save.activationHistory:[];
     normalized.playerActivatedIds=strings(save.playerActivatedIds).filter(id=>normalized.playerRoster.includes(id));

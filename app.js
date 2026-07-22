@@ -87,7 +87,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     try{
       const restoringRuntime=state.missionRuntime?.missionId===selectedMission.number;
       objectiveDefinition=await TombWorldMissionEngine.loadMissionDefinition(selectedMission.number);
-      objectiveEngine=TombWorldMissionEngine.createMissionEngine({requestDiceRoll:animateMissionDice,requestNumericInput:requestMissionNumber});
+      objectiveEngine=TombWorldMissionEngine.createMissionEngine({requestDiceRoll:animateMissionDice,requestNumericInput:requestMissionNumber,setOperativeInPlay});
       state.missionRuntime=objectiveEngine.restoreMissionRuntime(objectiveDefinition,state.missionRuntime,missionLifecycleContext());
       if(!restoringRuntime)await executeMissionLifecycleHook('onMissionInitialized');
     }catch(error){
@@ -139,6 +139,43 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     });
   }
   function selectedPlayerOperatives(){return (state.playerRoster||[]).map(livePlayerOperative).filter(Boolean);}
+  function playerOperativeState(id){return state.playerOperativeStates?.[id]||{inPlay:true};}
+  function isPlayerOperativeInPlay(id){return playerOperativeState(id).inPlay!==false;}
+  function inPlayPlayerOperativeIds(){return (state.playerRoster||[]).filter(isPlayerOperativeInPlay);}
+  function livingPlayerOperativeIds(){
+    const casualties=new Set(state.playerCasualtyIds||[]);
+    return (state.playerRoster||[]).filter(id=>!casualties.has(id));
+  }
+  function inPlayLivingPlayerOperativeIds(){return livingPlayerOperativeIds().filter(isPlayerOperativeInPlay);}
+  function setOperativeInPlay(operation){
+    if(operation.side==='npo'){
+      const operative=state.roster.find(item=>item.id===operation.operativeId);
+      if(!operative)return false;
+      const currentlyInPlay=operative.battlefieldState==='deployed'&&operative.wounds>0;
+      if(operation.inPlay===currentlyInPlay)return false;
+      if(operation.inPlay){
+        if(operative.wounds<=0||operative.offBoardReason!==operation.reason)return false;
+        operative.battlefieldState='deployed';operative.deployed=true;delete operative.offBoardReason;
+      }else{
+        operative.battlefieldState='reserve';operative.deployed=false;operative.ready=false;
+        if(operation.reason)operative.offBoardReason=operation.reason;
+      }
+      return true;
+    }
+    if(operation.side!=='player'||!(state.playerRoster||[]).includes(operation.operativeId))return false;
+    const current=playerOperativeState(operation.operativeId);
+    if(operation.inPlay===isPlayerOperativeInPlay(operation.operativeId))return false;
+    if(operation.inPlay&&current.offBoardReason!==operation.reason)return false;
+    state.playerOperativeStates[operation.operativeId]=operation.inPlay
+      ? {inPlay:true}
+      : {inPlay:false,...(operation.reason?{offBoardReason:operation.reason}:{})};
+    if(!operation.inPlay){
+      state.combatState=null;
+      if(state.npoAttackTargetId===operation.operativeId)state.npoAttackTargetId=null;
+    }
+    state.playerReady=playerOperativesRemaining();
+    return true;
+  }
   function playerRosterLimits(){
     const maxRoster=Number(playerTeamData?.maxRoster??playerTeamData?.rosterSize??5);
     const minRoster=Number(playerTeamData?.minRoster??maxRoster);
@@ -319,7 +356,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
     strategyStage:null, strategyData:null, strategyPipeline:null, missionReadyContext:{sarcophagusControllers:0}, activationNumber:0,totalActivationsThisTP:0, playerActivated:0, npoActivated:0,
-    activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], playerWounds:{}, reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0},
+    activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], playerWounds:{}, playerOperativeStates:{}, reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0},
     gradeMilestone:null, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0,
     npoAttackTargetId:null,
     npoAttackSummary:null, combatState:null, missionState:null, missionRuntime:null, startingNpoGeneration:null, eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[]}, gameEnd:null
@@ -355,6 +392,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     state.playerCount=state.playerRoster.length;
     state.playerReady=state.playerCount;
     state.playerCasualtyIds=[];
+    state.playerOperativeStates=Object.fromEntries(state.playerRoster.map(id=>[id,{inPlay:true}]));
     initializePlayerWounds();
     state.playerActivatedIds=[];
     state.playerDeployed=false;
@@ -476,6 +514,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       ? {side:'player',stage:{...raw.combatState.stage}}
       : null;
     merged.playerRoster=Array.isArray(raw?.playerRoster)?raw.playerRoster:[];
+    const importedPlayerStates=isRecord(raw?.playerOperativeStates)?raw.playerOperativeStates:{};
+    merged.playerOperativeStates=Object.fromEntries(merged.playerRoster.map(id=>{
+      const imported=isRecord(importedPlayerStates[id])?importedPlayerStates[id]:null;
+      return [id,imported?.inPlay===false
+        ? {inPlay:false,...(typeof imported.offBoardReason==='string'&&imported.offBoardReason?{offBoardReason:imported.offBoardReason}:{})}
+        : {inPlay:true}];
+    }));
     merged.setupChecks=raw?.setupChecks&&!Array.isArray(raw.setupChecks)&&typeof raw.setupChecks==='object'?{...raw.setupChecks}:{};
     merged.startingNpoGeneration=isRecord(raw?.startingNpoGeneration)
       ? {...raw.startingNpoGeneration,dice:Array.isArray(raw.startingNpoGeneration.dice)?raw.startingNpoGeneration.dice.map(value=>boundedInteger(value,1,3,1)):[]}
@@ -526,7 +571,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       used,
       active:Array.isArray(importedEvents.active)?importedEvents.active.filter(event=>isRecord(event)&&eventDefinitions[event.definitionId]).map(event=>({...event})):[]
     };
-    const livingImportedPlayers=merged.playerRoster.filter(id=>!merged.playerCasualtyIds.includes(id)).length;
+    const livingImportedPlayers=merged.playerRoster.filter(id=>merged.playerOperativeStates[id]?.inPlay!==false&&!merged.playerCasualtyIds.includes(id)).length;
     merged.missionReadyContext=raw?.missionReadyContext&&typeof raw.missionReadyContext==='object'
       ? {sarcophagusControllers:normalizeSarcophagusControllers(raw.missionReadyContext.sarcophagusControllers,livingImportedPlayers)}
       : {sarcophagusControllers:0};
@@ -536,6 +581,17 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.gameEnd=['victory','defeat'].includes(raw?.gameEnd)?raw.gameEnd:null;
     const savedMission=missionDefinition(merged.missionId);
     merged.missionState=normalizeMissionState(raw?.missionState,savedMission,raw?.tracker);
+    for(const id of merged.missionState?.escapedIds||[]){
+      if(merged.playerRoster.includes(id))merged.playerOperativeStates[id]={inPlay:false,offBoardReason:'escaped'};
+    }
+    const legacyEscapeCount=Number(raw?.missionRuntime?.missionId)==1&&!merged.missionState?.escapedIds?.length
+      ? boundedInteger(raw?.missionRuntime?.objectives?.escapedOperatives?.value,0,merged.playerRoster.length)
+      : 0;
+    if(legacyEscapeCount)merged.missionState.legacyEscapedCount=legacyEscapeCount;
+    if(merged.turningPoint>0){
+      const unavailable=new Set([...merged.playerActivatedIds,...merged.playerCasualtyIds]);
+      merged.playerReady=merged.playerRoster.filter(id=>merged.playerOperativeStates[id]?.inPlay!==false&&!unavailable.has(id)).length;
+    }
     merged.completed=Boolean(merged.gameEnd);
     merged.playerCount=merged.playerRoster.length;
     if(merged.phase==='strategy'&&merged.strategyStage==='initiative'){
@@ -603,6 +659,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       order:npo.order||'Conceal',
       battlefieldState,
       deployed:battlefieldState==='deployed',
+      ...(typeof npo.offBoardReason==='string'&&npo.offBoardReason?{offBoardReason:npo.offBoardReason}:{}),
       dormant:Boolean(npo.dormant),
       reinforcement:npo.reinforcement&&typeof npo.reinforcement==='object'
         ? {...npo.reinforcement,hatchway:String(npo.reinforcement.hatchway||''),placementConfirmed:Boolean(npo.reinforcement.placementConfirmed)}
@@ -644,9 +701,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function reserveNpos(){ return state.roster.filter(n => n.battlefieldState==='reserve'&&n.wounds > 0); }
   function readyNpos(){ return activeNpos().filter(n => n.ready&&!n.dormant); }
   function livingPlayerOperativeCount(){
-    const casualties=new Set(state.playerCasualtyIds||[]);
-    return (state.playerRoster||[]).filter(id=>!casualties.has(id)).length;
+    return livingPlayerOperativeIds().length;
   }
+  function inPlayLivingPlayerOperativeCount(){return inPlayLivingPlayerOperativeIds().length;}
 
   function normalizeSarcophagusControllers(value,max=livingPlayerOperativeCount()){
     const limit=Math.max(0,Math.round(Number(max)||0));
@@ -665,7 +722,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     scout:(engine,progress)=>progress.scoutedRoomIds.length>=engine.required?'victory':null,
     regroup:(engine,progress,timing)=>{
       if(timing!=='end-turning-point')return null;
-      const survivors=(state.playerRoster||[]).filter(id=>!state.playerCasualtyIds.includes(id));
+      const survivors=inPlayLivingPlayerOperativeIds();
       if(!survivors.length)return null;
       return survivors.every(id=>{
         const check=progress.operativeChecks[id]||{};
@@ -702,7 +759,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function totalLivingOperatives(){
-    return livingPlayerOperativeCount()+activeNpos().length;
+    return inPlayLivingPlayerOperativeCount()+activeNpos().length;
   }
 
   function activationProgressLabel(){
@@ -713,15 +770,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function playerOperativesRemaining(){
     const casualties=new Set(state.playerCasualtyIds||[]);
     const activated=new Set(state.playerActivatedIds||[]);
-    return (state.playerRoster||[]).filter(id=>!casualties.has(id)&&!activated.has(id)).length;
+    return inPlayPlayerOperativeIds().filter(id=>!casualties.has(id)&&!activated.has(id)).length;
   }
   function destroyedNpoCount(){ return state.roster.filter(n=>n.wounds<=0).length; }
   function eligibleNpoAttackTargets(){
-    const casualties=new Set(state.playerCasualtyIds||[]);
-    return (state.playerRoster||[]).filter(id=>!casualties.has(id));
+    return inPlayLivingPlayerOperativeIds();
   }
   function selectedNpoAttackTarget(){
-    return livePlayerOperative(state.npoAttackTargetId);
+    return isPlayerOperativeInPlay(state.npoAttackTargetId)?livePlayerOperative(state.npoAttackTargetId):null;
   }
 
   function setNextActivation(preferredSide){
@@ -1246,14 +1302,15 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function hud(){return `<div class="hud"><div><small>Turning<span class="portrait-break"><br></span> Point</small><strong>${state.turningPoint||'Setup'}</strong></div><button class="hud-cell hud-threat" id="threatHudToggle" type="button" aria-expanded="${threatAdjustOpen}" aria-controls="threatAdjuster"><small>Threat<span class="portrait-break"><br></span> Level</small><strong>${state.threat}</strong></button><div><small>Grade<span class="portrait-break"><br></span> Level</small><strong>${threatGrade()}</strong></div><div><small>Player<span class="portrait-break"><br></span> Ready</small><strong>${state.playerReady}</strong></div><div><small>NPO<span class="portrait-break"><br></span> Ready</small><strong>${readyNpos().length}</strong></div>${missionHudHtml()}</div><div class="threat-strip ${threatAdjustOpen?'':'hidden'}" id="threatAdjuster"><div><strong>THREAT LEVEL: ${threatLabel()}</strong><small>${threatGrade()===3?'Maximum Grade':`Next Grade at Threat Level ${[1,6,11][threatGrade()]}`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
 
   function livingPlayerOptions(selected=''){
-    return (state.playerRoster||[]).filter(id=>!state.playerCasualtyIds.includes(id)).map(id=>`<option value="${escapeHtml(id)}" ${id===selected?'selected':''}>${escapeHtml(playerName(id))}</option>`).join('');
+    return inPlayPlayerOperativeIds().filter(id=>!state.playerCasualtyIds.includes(id)).map(id=>`<option value="${escapeHtml(id)}" ${id===selected?'selected':''}>${escapeHtml(playerName(id))}</option>`).join('');
   }
 
   const missionProgressRenderers = {
     escape:(engine,progress)=>{
       const escaped=new Set(progress.escapedIds);
-      const rows=(state.playerRoster||[]).map(id=>{const incapacitated=state.playerCasualtyIds.includes(id);return `<div class="mission-objective-row"><span><strong>${escapeHtml(playerName(id))}</strong><small>${escaped.has(id)?'Escaped via the Escape marker':incapacitated?'Incapacitated':'Still in the killzone'}</small></span>${incapacitated?'':`<button class="btn compact ${escaped.has(id)?'primary':'ghost'}" data-mission-escaped="${escapeHtml(id)}">${escaped.has(id)?'Escaped':'Confirm Escape'}</button>`}</div>`;}).join('');
-      return `<p>${escaped.size} of ${state.playerRoster.length} operatives escaped. Resolve the mission only after every operative has left the killzone.</p><div class="mission-objective-list">${rows}</div>`;
+      const rows=(state.playerRoster||[]).map(id=>{const incapacitated=state.playerCasualtyIds.includes(id), operativeState=playerOperativeState(id), escapedHere=escaped.has(id)&&operativeState.offBoardReason==='escaped', unavailable=operativeState.inPlay===false&&!escapedHere;return `<div class="mission-objective-row"><span><strong>${escapeHtml(playerName(id))}</strong><small>${escapedHere?'Escaped · Off Board':unavailable?`Off Board${operativeState.offBoardReason?` · ${escapeHtml(operativeState.offBoardReason)}`:''}`:incapacitated?'Incapacitated':'Still in the killzone'}</small></span>${incapacitated||unavailable?'':`<button class="btn compact ${escapedHere?'secondary':'ghost'}" data-mission-escaped="${escapeHtml(id)}">${escapedHere?'Undo Escape':'Confirm Escape'}</button>`}</div>`;}).join('');
+      const migrationWarning=progress.legacyEscapedCount&&!escaped.size?`<div class="summary-box"><strong>Legacy escape progress needs confirmation.</strong><br>This save recorded ${progress.legacyEscapedCount} escaped operative${progress.legacyEscapedCount===1?'':'s'} without names. No identity was guessed; confirm a named operative to replace the aggregate progress safely.</div>`:'';
+      return `${migrationWarning}<p>${escaped.size} of ${state.playerRoster.length} operatives escaped. Resolve the mission only after every operative has left the killzone.</p><div class="mission-objective-list">${rows}</div>`;
     },
     sabotage:(engine,progress)=>{
       const completed=new Set(progress.completedFeatureIds);
@@ -1263,7 +1320,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const transponderFound=Object.values(progress.sites).includes('found');
       const sites=engine.sites.map(site=>{const result=progress.sites[site.id];return `<div class="mission-objective-row"><span><strong>${escapeHtml(site.label)}</strong><small>${result==='found'?'Transponder found':result==='empty'?'Removed — no transponder':'Unresolved'}</small></span>${result||transponderFound?'' : `<button class="btn secondary compact" data-search-site="${site.id}">Pick Up & Resolve</button>`}</div>`;}).join('');
       const carrier=progress.carrierId?playerName(progress.carrierId):'None';
-      return `<p>Pick up an unresolved marker, then roll D3. The transponder is found only if the result is higher than the number of other unresolved markers.</p>${progress.lastRoll?`<div class="summary-box"><strong>Last search:</strong> rolled ${progress.lastRoll.roll}; ${escapeHtml(progress.lastRoll.result)}.</div>`:''}${transponderFound?`<div class="field"><label for="transponderCarrier">Current carrier</label><select id="transponderCarrier"><option value="">Marker is not being carried…</option>${livingPlayerOptions(progress.carrierId)}</select></div>`:`<div class="field"><label for="transponderOperative">Operative resolving the marker</label><select id="transponderOperative"><option value="">Select operative…</option>${livingPlayerOptions()}</select></div>`}<div class="mission-objective-list">${sites}</div><div class="summary-box"><strong>Carrier:</strong> ${escapeHtml(carrier)}</div><button class="btn primary" id="transponderEscape" ${progress.carrierId&&!state.playerCasualtyIds.includes(progress.carrierId)&&!progress.escaped?'':'disabled'}>Confirm Carrier Escaped</button>`;
+      return `<p>Pick up an unresolved marker, then roll D3. The transponder is found only if the result is higher than the number of other unresolved markers.</p>${progress.lastRoll?`<div class="summary-box"><strong>Last search:</strong> rolled ${progress.lastRoll.roll}; ${escapeHtml(progress.lastRoll.result)}.</div>`:''}${transponderFound?`<div class="field"><label for="transponderCarrier">Current carrier</label><select id="transponderCarrier"><option value="">Marker is not being carried…</option>${livingPlayerOptions(progress.carrierId)}</select></div>`:`<div class="field"><label for="transponderOperative">Operative resolving the marker</label><select id="transponderOperative"><option value="">Select operative…</option>${livingPlayerOptions()}</select></div>`}<div class="mission-objective-list">${sites}</div><div class="summary-box"><strong>Carrier:</strong> ${escapeHtml(carrier)}</div><button class="btn primary" id="transponderEscape" ${progress.carrierId&&isPlayerOperativeInPlay(progress.carrierId)&&!state.playerCasualtyIds.includes(progress.carrierId)&&!progress.escaped?'':'disabled'}>Confirm Carrier Escaped</button>`;
     },
     destruction:()=>{
       if(!objectiveEngine)return '<p class="muted">Mission automation is unavailable.</p>';
@@ -1281,7 +1338,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       return `<p>${scouted.size} of ${engine.required} rooms scouted. Confirm that an eligible room is cleared on the tabletop before resolving the 1AP Scout Room action.</p><div class="mission-objective-list">${rooms}</div>`;
     },
     regroup:(engine,progress)=>{
-      const survivors=(state.playerRoster||[]).filter(id=>!state.playerCasualtyIds.includes(id));
+      const survivors=inPlayLivingPlayerOperativeIds();
       const rows=survivors.map(id=>{const check=progress.operativeChecks[id]||{};return `<div class="mission-regroup-row"><strong>${escapeHtml(playerName(id))}</strong><label><input type="checkbox" data-regroup-check="inDropZone" data-operative-id="${id}" ${check.inDropZone?'checked':''}> Wholly in NPO drop zone</label><label><input type="checkbox" data-regroup-check="outsideNpoControl" data-operative-id="${id}" ${check.outsideNpoControl?'checked':''}> Outside NPO control range</label><label><input type="checkbox" data-regroup-check="nearPlayer" data-operative-id="${id}" ${check.nearPlayer?'checked':''}> Within 3 inches of another Player operative</label></div>`;}).join('');
       return `<p>Record the position of every surviving operative. Victory is evaluated only when the Turning Point is finished.</p><div class="mission-objective-list">${rows}</div>`;
     }
@@ -1304,10 +1361,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $$('[data-mission-escaped]').forEach(button=>button.onclick=async()=>{
       const id=button.dataset.missionEscaped, ids=new Set(state.missionState.escapedIds);
       const wasEscaped=ids.has(id);
-      const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction(wasEscaped?'correctEscape':'recordEscape',missionLifecycleContext())):null;
+      if(!wasEscaped&&!isPlayerOperativeInPlay(id)){showToast(`${playerName(id)} is already off the battlefield.`);return;}
+      const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction(wasEscaped?'correctEscape':'recordEscape',{...missionLifecycleContext(),operativeId:id,gameplay:{...missionLifecycleContext().gameplay,escapedOperativeCount:ids.size+(wasEscaped?-1:1)}})):null;
       if(objectiveEngine&&!outcome)return;
       wasEscaped?ids.delete(id):ids.add(id);
       state.missionState.escapedIds=[...ids];
+      delete state.missionState.legacyEscapedCount;
+      if(objectiveEngine)objectiveEngine.setObjectiveValue('escapedOperatives',state.missionState.escapedIds.length,missionLifecycleContext());
       const model=objectiveEngine?.getMissionHudModel();
       if(outcome&&model?.completed&&outcome.changes?.[0]?.before<model.target)showMissionResult('ESCAPE RECORDED',outcome);
       updateMissionProgress(`${playerName(id)} ${ids.has(id)?'escaped via the Escape marker':'escape status was corrected'}.`);
@@ -1542,8 +1602,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const operative=playerDefinition(operativeId);
       const casualty=casualtyIds.has(operativeId);
       const activated=activatedIds.has(operativeId);
-      const status=casualty?'ELIMINATED':activated?'ACTIVATED':'READY';
-      const cls=casualty?'eliminated':activated?'activated':'ready';
+      const operativeState=playerOperativeState(operativeId);
+      const status=operativeState.inPlay===false?(operativeState.offBoardReason==='escaped'?'ESCAPED':'OFF BOARD'):casualty?'ELIMINATED':activated?'ACTIVATED':'READY';
+      const cls=operativeState.inPlay===false?'activated':casualty?'eliminated':activated?'activated':'ready';
       return `<button type="button" class="tracker-operative player ${cls}" data-player-operative="${operativeId}" title="Select ${escapeHtml(operative?.name||operativeId)} to mark it eliminated or restore it">
         <span>${escapeHtml(operative?.name||operativeId)}</span><strong>${status}</strong>
       </button>`;
@@ -1571,6 +1632,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function showPlayerOperativeStatus(operativeId){
+    const battlefieldState=playerOperativeState(operativeId);
+    if(battlefieldState.inPlay===false){showToast(`${playerName(operativeId)} is off the battlefield.`);return;}
     const casualties=new Set(state.playerCasualtyIds||[]);
     const eliminated=casualties.has(operativeId);
     const operativeName=playerName(operativeId);
@@ -1930,7 +1993,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function remainingPlayerOperatives(){
     const used=new Set(state.playerActivatedIds||[]);
     const casualties=new Set(state.playerCasualtyIds||[]);
-    return (state.playerRoster||[]).filter(id=>!used.has(id)&&!casualties.has(id));
+    return inPlayPlayerOperativeIds().filter(id=>!used.has(id)&&!casualties.has(id));
   }
 
   
@@ -2370,6 +2433,15 @@ function showPlayerActivation(stage={}){
   }
 
   async function completePlayerActivation(stage={}){
+    const operativeId=String(stage.playerOperativeId||'');
+    if(!remainingPlayerOperatives().includes(operativeId)){
+      state.combatState=null;
+      showToast('That operative is no longer available to activate.');
+      closeModal();
+      setNextActivation('player');
+      save();render();
+      return;
+    }
     state.combatState=null;
     let inc=0;
     if(stage.shoot)inc++;
@@ -2385,7 +2457,6 @@ function showPlayerActivation(stage={}){
       if(r>=4)inc++;
     }
     if(inc)setThreat(inc,'Player activation');
-    const operativeId=String(stage.playerOperativeId);
     const activationId=missionActivationId('player',operativeId);
     if(!state.playerActivatedIds.includes(operativeId))state.playerActivatedIds.push(operativeId);
     state.playerReady=playerOperativesRemaining();
@@ -3332,12 +3403,13 @@ function showPlayerActivation(stage={}){
       const operative=livePlayerOperative(id);
       if(!operative)return '';
       const eliminated=casualties.has(id);
-      const status=eliminated?'ELIMINATED':activated.has(id)?'ACTIVATED':'READY';
+      const operativeState=playerOperativeState(id);
+      const status=operativeState.inPlay===false?(operativeState.offBoardReason==='escaped'?'ESCAPED':'OFF BOARD'):eliminated?'ELIMINATED':activated.has(id)?'ACTIVATED':'READY';
       const weaponNames=(operative.weapons||[]).map(w=>escapeHtml(w.name)).join(' · ');
-      return `<article class="operative-card ${eliminated?'dead':''}"><div class="player-roster-card-heading"><div><h4>${escapeHtml(operative.name)}</h4><p>${escapeHtml(operative.role||'Operative')}</p></div><strong>${status}</strong></div><div class="stat-grid compact-stats"><div class="stat"><small>APL</small><strong>${operative.apl??'—'}</strong></div><div class="stat"><small>MOVE</small><strong>${operative.move??'—'}"</strong></div><div class="stat"><small>SAVE</small><strong>${operative.save??'—'}+</strong></div><div class="stat"><small>WOUNDS</small><strong>${playerCurrentWounds(id)}/${playerDefinition(id)?.wounds??operative.wounds}</strong></div></div>${weaponNames?`<p class="player-roster-weapons"><strong>Weapons:</strong> ${weaponNames}</p>`:''}<button class="btn ${eliminated?'secondary':'ghost'}" data-player-roster-status="${id}">${eliminated?'Restore Operative':'Update Status'}</button></article>`;
+      return `<article class="operative-card ${eliminated?'dead':''}"><div class="player-roster-card-heading"><div><h4>${escapeHtml(operative.name)}</h4><p>${escapeHtml(operative.role||'Operative')}</p></div><strong>${status}</strong></div><div class="stat-grid compact-stats"><div class="stat"><small>APL</small><strong>${operative.apl??'—'}</strong></div><div class="stat"><small>MOVE</small><strong>${operative.move??'—'}"</strong></div><div class="stat"><small>SAVE</small><strong>${operative.save??'—'}+</strong></div><div class="stat"><small>WOUNDS</small><strong>${playerCurrentWounds(id)}/${playerDefinition(id)?.wounds??operative.wounds}</strong></div></div>${weaponNames?`<p class="player-roster-weapons"><strong>Weapons:</strong> ${weaponNames}</p>`:''}<button class="btn ${eliminated?'secondary':'ghost'}" data-player-roster-status="${id}" ${operativeState.inPlay===false?'disabled':''}>${operativeState.inPlay===false?'Off Battlefield':eliminated?'Restore Operative':'Update Status'}</button></article>`;
     }).join('');
     const teamName=playerTeamData?.teamName||playerTeamEntry()?.name||'Player';
-    app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">PLAYER ROSTER</p><h2>${escapeHtml(teamName)}</h2><p>${livingPlayerOperativeCount()} active of ${(state.playerRoster||[]).length} selected operatives.</p></div></div><div class="roster-grid">${cards||'<div class="card empty">No Player operatives were selected for this game.</div>'}</div>`;
+    app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">PLAYER ROSTER</p><h2>${escapeHtml(teamName)}</h2><p>${inPlayPlayerOperativeIds().filter(id=>!casualties.has(id)).length} active on the battlefield of ${(state.playerRoster||[]).length} selected operatives.</p></div></div><div class="roster-grid">${cards||'<div class="card empty">No Player operatives were selected for this game.</div>'}</div>`;
     $$('[data-player-roster-status]').forEach(button=>button.onclick=()=>showPlayerOperativeStatus(button.dataset.playerRosterStatus));
   }
   function npoRosterCard(n,controls){
@@ -3411,7 +3483,7 @@ function showPlayerActivation(stage={}){
     return new Promise((resolve,reject)=>{
       let submitted=false;
       const minimum=operation.minimum??0;
-      const maximum=Math.min(operation.maximum??20,Math.max(minimum,livingPlayerOperativeCount()));
+      const maximum=Math.min(operation.maximum??20,Math.max(minimum,inPlayLivingPlayerOperativeCount()));
       const label=operation.label||'Mission value';
       const initial=Math.max(minimum,Math.min(operation.default??minimum,maximum));
       showModal(operation.title||'Mission Input',`<div class="field"><label for="missionNumericInput">${escapeHtml(label)}</label><input id="missionNumericInput" type="number" inputmode="numeric" step="1" min="${minimum}" max="${maximum}" value="${initial}" aria-describedby="missionNumericError"><small class="field-error" id="missionNumericError" aria-live="polite"></small></div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmMissionNumber">Continue</button></div>`,()=>{if(!submitted)reject(new TombWorldMissionEngine.MissionEngineError('INPUT_CANCELLED','Mission input was cancelled.'));});
@@ -3492,6 +3564,7 @@ function showPlayerActivation(stage={}){
 
   function missionHistoryText(entry){
     const change=entry.changes?.[0];
+    if(entry.operativeId)return `${entry.title||'Mission activity'}: ${playerName(entry.operativeId)}`;
     if(!change)return entry.summary||entry.title||'Mission activity recorded.';
     const delta=change.after-change.before;
     return `${entry.title||'Mission activity'}: ${delta>0?'+':''}${delta}`;

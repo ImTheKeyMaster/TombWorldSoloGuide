@@ -24,8 +24,8 @@
     }
   ],
   "actions": [
-    { "id": "recordEscape", "label": "Record Escape", "operations": [{ "type": "addCounter", "objectiveId": "escapedOperatives", "value": 1 }] },
-    { "id": "correctEscape", "label": "Correct Escape", "operations": [{ "type": "subtractCounter", "objectiveId": "escapedOperatives", "value": 1 }] },
+    { "id": "recordEscape", "label": "Record Escape", "operations": [{ "type": "setOperativeInPlay", "side": "player", "operativeIdFrom": "operativeId", "inPlay": false, "reason": "escaped" }, { "type": "setCounter", "objectiveId": "escapedOperatives", "valueFrom": "gameplay.escapedOperativeCount" }] },
+    { "id": "correctEscape", "label": "Correct Escape", "operations": [{ "type": "setOperativeInPlay", "side": "player", "operativeIdFrom": "operativeId", "inPlay": true, "reason": "escaped" }, { "type": "setCounter", "objectiveId": "escapedOperatives", "valueFrom": "gameplay.escapedOperativeCount" }] },
     {
       "id": "auspexCalibration",
       "label": "Auspex Calibration",

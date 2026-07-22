@@ -59,8 +59,8 @@
       "type": "object",
       "required": ["type"],
       "properties": {
-        "type": { "enum": ["setCounter", "addCounter", "subtractCounter", "setFlag", "clearFlag", "completeObjective", "appendHistory", "requestDiceRoll", "requestNumericInput", "showDialog"] },
-        "id": { "$ref": "#/$defs/id" }, "objectiveId": { "$ref": "#/$defs/id" }, "flag": { "$ref": "#/$defs/id" }, "value": {}, "valueFrom": { "type": "string" }, "valueExpression": { "$ref": "#/$defs/expression" }, "label": { "type": "string" }, "dice": { "$ref": "#/$defs/dice" }, "minimum": { "type": "number" }, "maximum": { "type": "number" }, "default": { "type": "number" }, "integer": { "type": "boolean" }, "summary": { "type": "string" }, "entry": { "type": "object" }, "title": { "type": "string" }, "message": { "type": "string" }
+        "type": { "enum": ["setCounter", "addCounter", "subtractCounter", "setFlag", "clearFlag", "completeObjective", "appendHistory", "requestDiceRoll", "requestNumericInput", "showDialog", "setOperativeInPlay"] },
+        "id": { "$ref": "#/$defs/id" }, "objectiveId": { "$ref": "#/$defs/id" }, "flag": { "$ref": "#/$defs/id" }, "value": {}, "valueFrom": { "type": "string" }, "valueExpression": { "$ref": "#/$defs/expression" }, "label": { "type": "string" }, "dice": { "$ref": "#/$defs/dice" }, "minimum": { "type": "number" }, "maximum": { "type": "number" }, "default": { "type": "number" }, "integer": { "type": "boolean" }, "summary": { "type": "string" }, "entry": { "type": "object" }, "title": { "type": "string" }, "message": { "type": "string" }, "side": { "enum": ["player", "npo"] }, "operativeIdFrom": { "type": "string" }, "inPlay": { "type": "boolean" }, "reason": { "type": "string" }
       },
       "additionalProperties": false
     },

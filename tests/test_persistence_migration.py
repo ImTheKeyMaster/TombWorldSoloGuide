@@ -50,6 +50,11 @@ const references=migrateSave({
 assert.deepEqual(references.newIds,['valid']);
 assert.deepEqual(references.playerActivatedIds,['marine']);
 assert.deepEqual(references.playerCasualtyIds,[]);
+assert.deepEqual(references.playerOperativeStates,{marine:{inPlay:true}});
+
+const offBoard=migrateSave({saveVersion:1,roster:[],playerRoster:['marine'],playerOperativeStates:{marine:{inPlay:false,offBoardReason:'escaped'}}});
+assert.deepEqual(offBoard.playerOperativeStates,{marine:{inPlay:false,offBoardReason:'escaped'}});
+assert.deepEqual(createPersistedSave(offBoard).playerOperativeStates,offBoard.playerOperativeStates);
 assert.deepEqual(references.reinforcementState.operativeIds,['valid']);
 assert.deepEqual(references.reinforcementState.blockedOperativeIds,[]);
 
