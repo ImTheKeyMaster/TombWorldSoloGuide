@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v5.7.10
+# Tomb World Solo Guide v5.8.0
+
+## v5.8.0
+
+**Version 5.8.0 - Persistence, Migration, and Versioning**
+
+- Added an explicit integer save schema version and a sequential migration pipeline for legacy saves.
+- Added defensive save validation, gameplay-state defaults, and safe removal of invalid roster references.
+- Preserved unknown gameplay fields, rejected newer incompatible schemas without overwriting them, and left the original browser save untouched when loading or migration fails.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v5.8.0.
 
 ## v5.7.10
 

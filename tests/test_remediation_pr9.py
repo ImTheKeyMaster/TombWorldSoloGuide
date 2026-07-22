@@ -49,10 +49,10 @@ class RemediationPr9StabilizationTests(unittest.TestCase):
     def test_persistence_keeps_the_legacy_key_and_handles_storage_failures(self):
         self.assertIn("const STORAGE_KEY = 'tombWorldSoloGuide.v1'", self.app)
         save = self.source("function save()", "function load()")
-        self.assertIn("localStorage.setItem(STORAGE_KEY,JSON.stringify(state))", save)
+        self.assertIn("localStorage.setItem(STORAGE_KEY,JSON.stringify(createPersistedSave(state)))", save)
         self.assertIn("The game could not be saved", save)
         load = self.source("function load()", "function normalizeState")
-        self.assertIn("return isRecord(parsed)?parsed:null", load)
+        self.assertIn("return migrateSave(parsed)", load)
         self.assertNotIn("if(!data.version)", self.app)
 
     def test_invalid_saved_mission_recovers_to_setup(self):
@@ -63,7 +63,7 @@ class RemediationPr9StabilizationTests(unittest.TestCase):
         self.assertIn("missionRecovered=recoverInvalidMission()", self.app)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = "5.7.10"
+        expected = "5.8.0"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         index = (ROOT / "index.html").read_text()
         self.assertIn(f"styles.css?v={expected}", index)
