@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 APP = (ROOT / "app.js").read_text()
 STYLES = (ROOT / "styles.css").read_text()
 STRATEGY_CARD = re.search(
-    r"function strategyCard\(\)\{(?P<body>.*?)\n  \}\n\n  function actualReinforcementCount",
+    r"function strategyCard\(\)\{(?P<body>.*?)\n  \}\n\n  function strategyEventHtml",
     APP,
     re.S,
 ).group("body")
@@ -37,7 +37,8 @@ class StrategyPhaseUiTests(unittest.TestCase):
         self.assertIn("n.battlefieldState='deployed';n.deployed=true;n.dormant=state.threat===0;n.ready=!n.dormant", REINFORCEMENTS)
         self.assertIn("function activeNpos(){ return state.roster.filter(n => n.battlefieldState==='deployed'", APP)
         self.assertIn("filter(id=>id!==n.id)", REINFORCEMENTS)
-        self.assertLess(REINFORCEMENTS.index("if(n){"), REINFORCEMENTS.index("createNpo(type"))
+        deploy_branch = REINFORCEMENTS.split("continue;", 1)[1]
+        self.assertLess(deploy_branch.index("if(n){"), deploy_branch.index("createNpo(type"))
 
     def test_blocked_npos_are_named_and_remain_in_reserve(self):
         self.assertIn("blockedOperativeIds.push(n.id)", REINFORCEMENTS)
@@ -47,6 +48,11 @@ class StrategyPhaseUiTests(unittest.TestCase):
         self.assertIn("if(!n){", blocked_branch)
         self.assertIn("blockedNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`)", STRATEGY_CARD)
         self.assertIn("Battlefield NPO limit reached.", STRATEGY_CARD)
+
+    def test_loaded_blocked_ids_cannot_overlap_deployed_reinforcements(self):
+        normalization = APP.split("function normalizeState(raw)", 1)[1].split("function npoDefinition", 1)[0]
+        self.assertIn("!reinforcementIds.includes(id)", normalization)
+        self.assertIn("npo.battlefieldState==='reserve'", normalization)
 
     def test_tomb_world_event_placeholder_is_removed(self):
         self.assertNotIn("No Tomb World event is required.", APP)

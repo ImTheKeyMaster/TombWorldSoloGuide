@@ -36,7 +36,7 @@ class RemediationPr3Tests(unittest.TestCase):
         event_gate = self.function_source("beginCurrentEvent", "completeCurrentEvent")
         self.assertIn("activeNpos().length>=MAX_NPOS", event_gate)
         self.assertIn("redrawCurrentEvent", event_gate)
-        strategy_card = self.function_source("strategyCard", "actualReinforcementCount")
+        strategy_card = self.function_source("strategyCard", "strategyEventHtml")
         self.assertIn("Resolve the Tomb World event before generating reinforcements", strategy_card)
         self.assertIn("reinforcementPending||placementPending||missionPending?'disabled'", strategy_card)
 

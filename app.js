@@ -416,12 +416,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.newIds=normalizeIdList(raw.newIds,merged.roster.map(npo=>npo.id));
     const importedReinforcements=isRecord(raw.reinforcementState)?raw.reinforcementState:{};
     const reinforcementIds=normalizeIdList(importedReinforcements.operativeIds,merged.roster.map(npo=>npo.id));
+    const blockedReinforcementIds=normalizeIdList(importedReinforcements.blockedOperativeIds,merged.roster.map(npo=>npo.id))
+      .filter(id=>!reinforcementIds.includes(id)&&merged.roster.some(npo=>npo.id===id&&npo.battlefieldState==='reserve'));
     const reinforcementStatus=['idle','placement','complete','blocked'].includes(importedReinforcements.status)?importedReinforcements.status:'idle';
     merged.reinforcementState={
       turningPoint:boundedInteger(importedReinforcements.turningPoint,0,merged.turningPoint),
       status:reinforcementStatus==='placement'&&!reinforcementIds.length?'idle':reinforcementStatus,
       operativeIds:reinforcementIds,
-      blockedOperativeIds:normalizeIdList(importedReinforcements.blockedOperativeIds,merged.roster.map(npo=>npo.id)),
+      blockedOperativeIds:blockedReinforcementIds,
       blocked:boundedInteger(importedReinforcements.blocked,0,MAX_NPOS)
     };
     merged.activationHistory=Array.isArray(raw?.activationHistory)?raw.activationHistory:[];
@@ -1351,11 +1353,6 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       return `<section class="next-card"><span class="phase">STRATEGY PHASE</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol></div>${missionStrategyPromptHtml()}<div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat" tabindex="0" data-tooltip="Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events."><small>THREAT LEVEL <span class="info-dot">i</span></small><strong>${state.threat}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="Grade 0–3 is derived from Threat and determines reinforcement pressure and some events."><small>GRADE LEVEL <span class="info-dot">i</span></small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat" tabindex="0" data-tooltip="The number of living NPOs that are Ready and may still activate during this Turning Point."><small>NPOs Ready <span class="info-dot">i</span></small><strong>${readyNpos().length}</strong></div></div>${reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':`${reinforcementCard}${deployingNpos.length?`<div class="checklist">${placements}</div>`:''}`}${resolvedEvents}${d.event?.status==='drawn'?strategyEventHtml(d.event):''}${activeEvents?`<h3>Active event effects</h3>${activeEvents}`:''}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending||placementPending||missionPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':placementPending?'Confirm Reinforcement Placement':missionPending?'Resolve Mission Rule to Continue':'Strategy Phase Complete'}</button></section>`;
     }
     return '';
-  }
-
-  function actualReinforcementCount(data=state.strategyData||{}){
-    if(Number.isFinite(data.actualReinforcements))return Math.max(0,data.actualReinforcements);
-    return (data.reinforcements||[]).length;
   }
 
   function strategyEventHtml(event){

@@ -42,7 +42,7 @@ class RemediationPr6Tests(unittest.TestCase):
         self.assertIn("Battlefield NPO limit reached.", self.app)
 
     def test_placement_is_manual_and_blocks_progress_until_confirmed(self):
-        card = self.function_source("strategyCard", "actualReinforcementCount")
+        card = self.function_source("strategyCard", "strategyEventHtml")
         self.assertIn("Randomly determine an open hatchway", card)
         self.assertIn("printed placement requirements", card)
         self.assertIn("placementPending||missionPending?'disabled'", card)
