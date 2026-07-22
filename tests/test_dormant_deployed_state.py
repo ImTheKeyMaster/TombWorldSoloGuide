@@ -30,9 +30,10 @@ class DormantDeployedStateTests(unittest.TestCase):
         self.assertEqual(activation.count("Activate NPO"), 1)
 
     def test_awakened_battlefield_uses_normal_activation_without_banner(self):
-        status = self.source("function initiativeStatusHtml()", "function missionStrategyPending")
-        self.assertNotIn("Turning Point 1", status)
-        self.assertIn(": '';", status)
+        activation = self.source("function nextStepCard()", "function initiativeStatusHtml")
+        npo_activation = activation.split("if(state.nextSide==='npo'", 1)[1]
+        self.assertNotIn("initiativeStatusHtml()", npo_activation)
+        self.assertNotIn("summary-box", npo_activation)
 
     def test_reserve_is_never_dormant_or_eligible(self):
         create = self.source("function createNpo(", "function rollNpo")
