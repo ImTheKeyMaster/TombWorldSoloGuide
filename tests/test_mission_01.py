@@ -84,8 +84,9 @@ for(const expression of [
 
     def test_registry_offline_assets_and_app_lifecycle_integration(self):
         manifest=json.loads((ROOT/'Missions/manifest.json').read_text())
-        self.assertEqual(manifest['definitions'][:2], [
+        self.assertEqual(manifest['definitions'], [
             {'id':'01','file':'definition-01-shifting-labyrinth.json'},
+            {'id':'02','file':'definition-02-demolition-protocol.json'},
             {'id':'04','file':'definition-04-destroy-sarcophagus.json'},
         ])
         app=(ROOT/'app.js').read_text(); worker=(ROOT/'service-worker.js').read_text()

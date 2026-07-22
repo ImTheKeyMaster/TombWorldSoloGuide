@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '6.1.1';
+  const APP_VERSION = '6.2.0';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -89,6 +89,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       objectiveDefinition=await TombWorldMissionEngine.loadMissionDefinition(selectedMission.number);
       objectiveEngine=TombWorldMissionEngine.createMissionEngine({requestDiceRoll:animateMissionDice,requestNumericInput:requestMissionNumber,setOperativeInPlay});
       state.missionRuntime=objectiveEngine.restoreMissionRuntime(objectiveDefinition,state.missionRuntime,missionLifecycleContext());
+      if(!restoringRuntime&&missionEngine(selectedMission)?.type==='sabotage')objectiveEngine.setObjectiveValue('sabotagedFeatures',state.missionState?.completedFeatureIds?.length||0,missionLifecycleContext());
       if(!restoringRuntime)await executeMissionLifecycleHook('onMissionInitialized');
     }catch(error){
       console.error('[MissionEngine] Mission automation unavailable.',{code:error.code||'LOAD_FAILED',missionId:selectedMission?.number,path:error.details?.path,reason:error.message});
@@ -1315,7 +1316,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     },
     sabotage:(engine,progress)=>{
       const completed=new Set(progress.completedFeatureIds);
-      return `<p>${completed.size} of ${engine.required} required features have been permanently opened by Breach.</p><div class="mission-objective-grid">${engine.features.map(feature=>`<label class="mission-objective-check"><input type="checkbox" data-mission-feature="${feature.id}" ${completed.has(feature.id)?'checked':''}><span>${escapeHtml(feature.label)}</span></label>`).join('')}</div>`;
+      const model=objectiveEngine?.getMissionHudModel();
+      return `<p>${model?.value??completed.size} of ${model?.target??engine.required} required features have been permanently opened by Breach.</p><div class="mission-objective-grid">${engine.features.map(feature=>`<label class="mission-objective-check"><input type="checkbox" data-mission-feature="${feature.id}" ${completed.has(feature.id)?'checked':''} ${missionOperationResolving?'disabled':''}><span>${escapeHtml(feature.label)}</span></label>`).join('')}</div>`;
     },
     transponder:(engine,progress)=>{
       const transponderFound=Object.values(progress.sites).includes('found');
@@ -1373,8 +1375,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       if(outcome&&model?.completed&&outcome.changes?.[0]?.before<model.target)showMissionResult('ESCAPE RECORDED',outcome);
       updateMissionProgress(`${playerName(id)} ${ids.has(id)?'escaped via the Escape marker':'escape status was corrected'}.`);
     });
-    $$('[data-mission-feature]').forEach(input=>input.onchange=()=>{
+    $$('[data-mission-feature]').forEach(input=>input.onchange=async()=>{
       const ids=new Set(state.missionState.completedFeatureIds);
+      const actionId=input.checked?'recordBreach':'correctBreach';
+      const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction(actionId,missionLifecycleContext())):null;
+      if(objectiveEngine&&!outcome){input.checked=!input.checked;return;}
       input.checked?ids.add(input.dataset.missionFeature):ids.delete(input.dataset.missionFeature);
       state.missionState.completedFeatureIds=[...ids];
       updateMissionProgress(`${input.checked?'completed Breach on':'corrected'} ${input.dataset.missionFeature}.`);

@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v6.1.1
+# Tomb World Solo Guide v6.2.0
+
+## v6.2.0
+
+**Version 6.2.0 - Demolition Protocol Mission Engine**
+
+- Implemented Mission 02, Demolition Protocol, with JSON-driven sabotage progress, the existing feature checklist, Mission HUD, Mission Details, history, and save/load support.
+- Registered and cached the Mission 02 definition for online and offline play without adding Mission-02-specific behavior to the generic Mission Engine.
+- Added Mission 02 automated acceptance plus Mission 01 and Mission 04 regression coverage.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v6.2.0.
 
 ## v6.1.1
 
@@ -21,7 +30,7 @@
 
 **Version 6.0.0 - Mission Objective Engine**
 
-- Released the data-driven Mission Objective Engine with Mission 04, Destroy Sarcophagus, as its only automated reference mission.
+- Released the data-driven Mission Objective Engine with Mission 04, Destroy Sarcophagus, as its original automated reference mission.
 - Added compact Mission HUD and Mission Details interfaces, lifecycle-driven Ready-step repair, and objective progress that remains independent from battle victory.
 - Added versioned mission-runtime persistence, legacy-save recovery, definition validation, accessible mission dialogs, and offline caching for the Mission 04 definition.
 - Completed the Work Package 08 automated acceptance and release-readiness review; see `docs/mission_engine/FINAL_ACCEPTANCE.md` for the traceable results and known limitations.
