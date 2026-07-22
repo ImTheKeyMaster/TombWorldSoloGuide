@@ -121,7 +121,7 @@ class StartingNpoGenerationTests(unittest.TestCase):
         self.assertIn("reserveNpoIds=normalizeIdList", normalized)
         npo = self.source("function normalizeNpo(npo)", "function mission()")
         self.assertIn("['reserve','deployed','out-of-action']", npo)
-        self.assertIn("Number(npo.wounds)<=0?'out-of-action'", npo)
+        self.assertRegex(npo, r"Number\(npo\.wounds\)<=0\s*\? 'out-of-action'")
 
     def test_legacy_in_progress_games_preserve_prior_active_roster_behavior(self):
         normalized = self.source("function normalizeState(raw)", "function npoDefinition")

@@ -76,8 +76,8 @@ class RemediationPr2Tests(unittest.TestCase):
     def test_new_npos_store_conceal_separately_from_readiness(self):
         create_source = self.app.split("function createNpo(", 1)[1].split("\n  }", 1)[0]
         self.assertIn("weaponId,order:'Conceal'", create_source)
-        self.assertIn("ready:options.ready??state.threat!==0", create_source)
-        self.assertIn("dormant:options.dormant??state.threat===0", create_source)
+        self.assertIn("ready:options.ready??(battlefieldState==='deployed'&&!dormant)", create_source)
+        self.assertIn("const dormant=battlefieldState==='deployed'", create_source)
         self.assertIn("ready:false,deployed:false", self.app)
 
 

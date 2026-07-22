@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v5.7.4
+# Tomb World Solo Guide v5.7.5
+
+## v5.7.5
+
+**Version 5.7.5 - Dormant and Deployed NPO State**
+
+- Separates battlefield presence from dormancy when creating, loading, and deploying NPOs.
+- Limits NPO activation to deployed, Ready, awakened operatives and removes contradictory dormancy prompts.
+- Keeps Reserve NPOs non-dormant and applies the current Threat state when reinforcements deploy.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v5.7.5.
 
 ## v5.7.4
 
