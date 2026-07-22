@@ -104,8 +104,8 @@ class RemediationPr3Tests(unittest.TestCase):
     def test_import_normalizes_threat_and_new_state(self):
         normalize = self.function_source("normalizeState", "npoDefinition")
         self.assertIn("boundedInteger(raw.threat,0,15)", normalize)
-        self.assertIn("typeof savedNpo?.dormant==='boolean'", normalize)
-        self.assertIn("npo.battlefieldState!=='deployed'", normalize)
+        self.assertIn("importedDormancy.has(npo.id)", normalize)
+        self.assertIn("npo.battlefieldState==='reserve'", normalize)
         self.assertIn("merged.strategyPipeline", normalize)
 
     def test_versions_are_synchronized(self):

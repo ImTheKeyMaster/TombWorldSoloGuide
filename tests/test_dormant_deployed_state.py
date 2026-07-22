@@ -38,7 +38,7 @@ class DormantDeployedStateTests(unittest.TestCase):
         create = self.source("function createNpo(", "function rollNpo")
         self.assertIn("battlefieldState==='deployed'", create)
         normalize = self.source("function normalizeState(raw)", "function npoDefinition")
-        self.assertIn("npo.battlefieldState!=='deployed'", normalize)
+        self.assertIn("npo.battlefieldState==='reserve'", normalize)
         self.assertIn("npo.dormant=false", normalize)
         self.assertIn("npo.battlefieldState==='out-of-action'", normalize)
         self.assertNotIn("RESERVE':n.dormant", self.app)
@@ -60,10 +60,18 @@ class DormantDeployedStateTests(unittest.TestCase):
 
     def test_save_load_preserves_independent_states(self):
         normalize = self.source("function normalizeState(raw)", "function npoDefinition")
-        self.assertIn("typeof savedNpo?.dormant==='boolean'?savedNpo.dormant", normalize)
+        self.assertIn("importedDormancy.has(npo.id)?importedDormancy.get(npo.id)", normalize)
         npo = self.source("function normalizeNpo(npo)", "function mission()")
         self.assertIn("['reserve','deployed','out-of-action']", npo)
         self.assertIn("dormant:Boolean(npo.dormant)", npo)
+
+    def test_zero_wound_npo_is_always_normalized_out_of_action(self):
+        npo = self.source("function normalizeNpo(npo)", "function mission()")
+        self.assertLess(npo.index("Number(npo.wounds)<=0"), npo.index("['reserve','deployed','out-of-action']"))
+        normalize = self.source("function normalizeState(raw)", "function npoDefinition")
+        out_of_action = normalize.split("npo.battlefieldState==='out-of-action'", 1)[1].split("return;", 1)[0]
+        self.assertIn("npo.dormant=false", out_of_action)
+        self.assertIn("npo.ready=false", out_of_action)
 
 
 if __name__ == "__main__":

@@ -407,15 +407,21 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const explicitStates=new Set(importedRoster.filter(isRecord).filter(npo=>['reserve','deployed','out-of-action'].includes(npo.battlefieldState)).map(npo=>npo.id));
       merged.roster.filter(npo=>npo.wounds>0&&!explicitStates.has(npo.id)).forEach(npo=>{npo.battlefieldState='deployed';npo.deployed=true;});
     }
-    merged.roster.forEach((npo,index)=>{
-      if(!npo||npo.wounds<=0)return;
-      if(npo.battlefieldState!=='deployed'){
+    const importedDormancy=new Map((Array.isArray(raw.roster)?raw.roster:[])
+      .filter(npo=>isRecord(npo)&&typeof npo.id==='string'&&typeof npo.dormant==='boolean')
+      .map(npo=>[npo.id,npo.dormant]));
+    merged.roster.forEach(npo=>{
+      if(!npo)return;
+      if(npo.battlefieldState==='out-of-action'||npo.wounds<=0){
         npo.dormant=false;
-        if(npo.battlefieldState==='out-of-action')npo.ready=false;
+        npo.ready=false;
         return;
       }
-      const savedNpo=Array.isArray(raw.roster)?raw.roster[index]:null;
-      npo.dormant=typeof savedNpo?.dormant==='boolean'?savedNpo.dormant:merged.threat===0;
+      if(npo.battlefieldState==='reserve'){
+        npo.dormant=false;
+        return;
+      }
+      npo.dormant=importedDormancy.has(npo.id)?importedDormancy.get(npo.id):merged.threat===0;
       if(npo.dormant)npo.ready=false;
     });
     merged.journal=Array.isArray(raw.journal)?raw.journal.filter(isRecord):[];
@@ -546,9 +552,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const type=legacyNpoType(npo),definition=npoDefinition(type);
     if(!definition)return null;
     const weaponId=npoWeapon(definition,npo.weaponId)?.id||definition.defaultWeaponId;
-    const battlefieldState=['reserve','deployed','out-of-action'].includes(npo.battlefieldState)
-      ? npo.battlefieldState
-      : Number(npo.wounds)<=0?'out-of-action'
+    const battlefieldState=Number(npo.wounds)<=0
+      ? 'out-of-action'
+      : ['reserve','deployed','out-of-action'].includes(npo.battlefieldState)
+        ? npo.battlefieldState
         : npo.deployed||npo.ready?'deployed':'reserve';
     return {
       ...npo,
