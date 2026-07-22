@@ -89,7 +89,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       objectiveDefinition=await TombWorldMissionEngine.loadMissionDefinition(selectedMission.number);
       objectiveEngine=TombWorldMissionEngine.createMissionEngine({requestDiceRoll:animateMissionDice,requestNumericInput:requestMissionNumber,setOperativeInPlay});
       state.missionRuntime=objectiveEngine.restoreMissionRuntime(objectiveDefinition,state.missionRuntime,missionLifecycleContext());
-      if(!restoringRuntime&&missionEngine(selectedMission)?.type==='sabotage')objectiveEngine.setObjectiveValue('sabotagedFeatures',state.missionState?.completedFeatureIds?.length||0,missionLifecycleContext());
+      if(missionEngine(selectedMission)?.type==='sabotage')objectiveEngine.setObjectiveValue('sabotagedFeatures',state.missionState?.completedFeatureIds?.length||0,missionLifecycleContext());
       if(!restoringRuntime)await executeMissionLifecycleHook('onMissionInitialized');
     }catch(error){
       console.error('[MissionEngine] Mission automation unavailable.',{code:error.code||'LOAD_FAILED',missionId:selectedMission?.number,path:error.details?.path,reason:error.message});
@@ -1378,8 +1378,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $$('[data-mission-feature]').forEach(input=>input.onchange=async()=>{
       const ids=new Set(state.missionState.completedFeatureIds);
       const actionId=input.checked?'recordBreach':'correctBreach';
+      $$('[data-mission-feature]').forEach(control=>{control.disabled=true;});
       const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction(actionId,missionLifecycleContext())):null;
-      if(objectiveEngine&&!outcome){input.checked=!input.checked;return;}
+      if(objectiveEngine&&!outcome){input.checked=!input.checked;$$('[data-mission-feature]').forEach(control=>{control.disabled=false;});return;}
       input.checked?ids.add(input.dataset.missionFeature):ids.delete(input.dataset.missionFeature);
       state.missionState.completedFeatureIds=[...ids];
       updateMissionProgress(`${input.checked?'completed Breach on':'corrected'} ${input.dataset.missionFeature}.`);
