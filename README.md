@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v5.7.6
+# Tomb World Solo Guide v5.7.7
+
+## v5.7.7
+
+**Version 5.7.7 - Shooting Attack Profile Summary**
+
+- Added an Attack card to the Resolve Shooting Attack screen using the selected weapon's attack dice and hit characteristics.
+- Positioned the Attack card immediately before Defense while preserving the existing responsive combat profile layout.
+- Preserved all combat resolution, damage, wound, and saved-game behavior.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v5.7.7.
 
 ## v5.7.6
 

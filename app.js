@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '5.7.6';
+  const APP_VERSION = '5.7.7';
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -2203,14 +2203,15 @@ function showPlayerActivation(stage={}){
     </section>`;
   }
 
-  function showSharedCombatResolutionScreen({title,attackerName,defenderName,attackType,weaponName,defenseLabel,cancelId,continueId,extraHtml='',detailsHtml=''}){
+  function showSharedCombatResolutionScreen({title,attackerName,defenderName,attackType,weaponName,attackLabel='',defenseLabel,cancelId,continueId,extraHtml='',detailsHtml=''}){
     showModal(title,`
       <section class="dedicated-combat-screen" aria-label="Combat resolution screen">
-        <div class="damage-summary combat-participants compact-combat-profile">
+        <div class="damage-summary combat-participants compact-combat-profile${attackLabel?' has-attack-profile':''}">
           <div><small>Attacker</small><strong>${escapeHtml(attackerName)}</strong></div>
           <div><small>Defender</small><strong>${escapeHtml(defenderName)}</strong></div>
           <div><small>Attack type</small><strong>${attackType==='shoot'?'Shooting':'Melee'}</strong></div>
           <div><small>Weapon</small><strong>${escapeHtml(weaponName)}</strong></div>
+          ${attackLabel?`<div><small>Attack</small><strong>${escapeHtml(attackLabel)}</strong></div>`:''}
           <div><small>Defense</small><strong>${escapeHtml(defenseLabel)}</strong></div>
         </div>
         ${extraHtml}
@@ -2634,7 +2635,8 @@ function showPlayerActivation(stage={}){
     const attackerWithinTwo=Boolean($('#attackerWithinTwo')?.checked)||Boolean(result?.attackerWithinTwo);
     const screen=showSharedCombatResolutionScreen({
       title:`Resolve ${attackLabel} Attack`,attackerName:playerName(stage.playerOperativeId),defenderName:npoName(target),
-      attackType,weaponName:weapon.name,defenseLabel:`${Math.max(0,3-profile.ap)} dice · ${target.save}+`,
+      attackType,weaponName:weapon.name,attackLabel:attackType==='shoot'?`${profile.dice} dice · ${profile.hit}+`:'',
+      defenseLabel:`${Math.max(0,3-profile.ap)} dice · ${target.save}+`,
       cancelId:'cancelPendingAttack',continueId:'continuePendingAttack'
     });
 

@@ -1120,6 +1120,7 @@ button.tracker-operative:hover{
 .dedicated-combat-screen .combat-stage{margin-bottom:8px;padding:10px}
 .dedicated-combat-screen .dice-row{margin:9px 0 3px}
 .compact-combat-profile{margin:0;grid-template-columns:repeat(5,minmax(0,1fr))}
+.compact-combat-profile.has-attack-profile{grid-template-columns:repeat(6,minmax(0,1fr))}
 .combat-resolution-footer{margin-top:4px;padding-bottom:env(safe-area-inset-bottom)}
 .aggressive-defense-result{display:grid;gap:4px}
 .aggressive-defense-result strong{color:var(--green)}
