@@ -54,7 +54,7 @@ class RemediationPr3Tests(unittest.TestCase):
         self.assertIn("Math.min(limit", helper)
         numeric_input = self.function_source("requestMissionNumber", "runMissionEvent")
         self.assertIn("Number.isInteger(value)", numeric_input)
-        self.assertIn("livingPlayerOperativeCount()", numeric_input)
+        self.assertIn("inPlayLivingPlayerOperativeCount()", numeric_input)
         normalize = self.function_source("normalizeState", "npoDefinition")
         self.assertIn("livingImportedPlayers", normalize)
         self.assertIn("normalizeSarcophagusControllers(raw.missionReadyContext.sarcophagusControllers,livingImportedPlayers)", normalize)

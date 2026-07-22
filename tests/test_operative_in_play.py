@@ -12,10 +12,13 @@ class OperativeInPlayTests(unittest.TestCase):
         self.assertIn("function inPlayPlayerOperativeIds()", app)
         self.assertIn("return inPlayPlayerOperativeIds().filter(id=>!used.has(id)&&!casualties.has(id));", app)
         self.assertIn("if(!remainingPlayerOperatives().includes(operativeId))", app)
-        self.assertIn("return inPlayPlayerOperativeIds().filter(id=>!casualties.has(id));", app)
+        self.assertIn("function inPlayLivingPlayerOperativeIds()", app)
+        self.assertIn("return inPlayLivingPlayerOperativeIds();", app)
+        self.assertIn("inPlayLivingPlayerOperativeCount()", app)
         self.assertIn("playerOperativeCount:Array.isArray(state.playerRoster)?state.playerRoster.length:0", app)
         self.assertNotIn("state.missionId==='01'", app)
         self.assertNotIn("state.missionId===\"01\"", app)
+        self.assertIn("Legacy escape progress needs confirmation.", app)
 
     def test_mission_01_uses_generic_definition_operation(self):
         definition = json.loads((ROOT / "Missions/definition-01-shifting-labyrinth.json").read_text())
