@@ -27,7 +27,7 @@ class ShootingAttackProfileCardTests(unittest.TestCase):
         resolution = self.source("function showPlayerCombatResolution", "function previewPendingPlayerAttack")
         self.assertIn("const weapon=playerAttackWeapons(stage.playerOperativeId,attackType)[weaponIndex]", resolution)
         self.assertIn("const profile=playerWeaponProfile(weapon)", resolution)
-        self.assertIn("attackLabel:attackType==='shoot'?`${profile.dice} dice · ${profile.hit}+`:''", resolution)
+        self.assertIn("attackLabel:attackType==='shoot'?combatAttackLabel(profile):''", resolution)
         self.assertNotRegex(resolution, r"attackLabel:.*`4 dice · 3\+`")
         self.assertIn("defenseLabel:`${Math.max(0,3-profile.ap)} dice · ${target.save}+`", resolution)
 
@@ -55,6 +55,7 @@ class ShootingAttackProfileCardTests(unittest.TestCase):
             self.css,
         )
         self.assertIn("width:calc(100% - 16px)", self.css)
+        self.assertIn(".compact-combat-profile,.compact-combat-profile.has-attack-profile{grid-template-columns:1fr}", self.css)
 
     def test_combat_resolution_logic_remains_unchanged(self):
         preview = self.source("function previewPendingPlayerAttack", "function displayPendingPlayerCombat")

@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v5.7.7
+# Tomb World Solo Guide v5.7.8
+
+## v5.7.8
+
+**Version 5.7.8 - NPO Attack Profile Summaries**
+
+- Added the shared Attack profile card to NPO shooting and melee combat resolution screens.
+- Kept the displayed dice and hit requirement synchronized with the selected NPO weapon profile used to roll the attack.
+- Preserved existing defense summaries and all combat resolution, damage, wound, and saved-game behavior.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v5.7.8.
 
 ## v5.7.7
 
