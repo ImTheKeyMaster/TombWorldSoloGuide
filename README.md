@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v5.7.8
+# Tomb World Solo Guide v5.7.9
+
+## v5.7.9
+
+**Version 5.7.9 - Aggressive Defense Construct Messaging**
+
+- Clarified that Aggressive Defense Construct inflicts retaliatory damage on the attacking operative.
+- Included the attacking operative's name in both successful and no-damage results when available.
+- Preserved the existing elimination banner and all combat rules, timing, damage, and wound behavior.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v5.7.9.
 
 ## v5.7.8
 
