@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 import re
 import unittest
 from pathlib import Path
@@ -56,6 +57,30 @@ class StartingNpoGenerationTests(unittest.TestCase):
         self.assertNotIn("Necron Kill Team deployed", presentation)
         self.assertIn("placementChecks.filter(check=>check.id!=='starting-npos')", presentation)
         self.assertNotIn("error", presentation.lower())
+
+    def test_deployment_checklist_is_preserved_for_non_empty_starting_rosters(self):
+        presentation = self.source("if(stepId==='deploy'){", "const m=mission()")
+        self.assertIn("hasStartingNpos=generation.deploymentCount>0", presentation)
+        self.assertIn("hasStartingNpos&&deploymentCheck", presentation)
+        self.assertIn("hasStartingNpos?placementChecks:otherPlacementChecks", presentation)
+        self.assertIn("hasStartingNpos?`<div class=\"setup-bulk-row\"", presentation)
+        for mission_file in (
+            "01-shifting-labyrinth.json", "02-demolition-protocol.json",
+            "03-recover-transponder.json", "04-destroy-sarcophagus.json",
+        ):
+            mission = json.loads((ROOT / "Missions" / mission_file).read_text())
+            self.assertNotEqual(mission["startingNpos"]["formula"], "0")
+            self.assertIn("starting-npos", [check["id"] for check in mission["setupChecks"] if check["stage"] == "deploy"])
+
+    def test_zero_starting_roster_has_explanation_without_npo_confirmation(self):
+        presentation = self.source("if(stepId==='deploy'){", "const m=mission()")
+        self.assertIn('<strong>None</strong>', presentation)
+        self.assertIn('This mission begins with no NPOs deployed.', presentation)
+        self.assertIn('Enemy operatives will enter play later according to the mission rules.', presentation)
+        self.assertIn("const deploymentRow=hasStartingNpos&&deploymentCheck", presentation)
+        self.assertIn("requiredPlacementChecks.every(check=>state.setupChecks[check.id])", presentation)
+        mission = json.loads((ROOT / "Missions" / "05-scout-sub-crypt.json").read_text())
+        self.assertEqual(mission["startingNpos"]["formula"], "0")
 
     def test_persistence_prevents_reroll_on_rerender(self):
         initial = self.source("const initialState", "let state")

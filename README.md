@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v6.4.0
+# Tomb World Solo Guide v6.4.1
+
+## v6.4.1
+
+**Version 6.4.1 - Zero-NPO Deployment Guidance**
+
+- Treats missions with no starting NPOs as a valid deployment state, explains when enemies enter later, and removes the unnecessary zero-operative confirmation.
+- Preserves the existing deployment checklist for missions that begin with one or more NPOs.
 
 ## v6.4.0
 
