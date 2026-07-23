@@ -2142,7 +2142,7 @@ function showPlayerActivation(stage={}){
               ${meleePending?`<div class="pending-attack-summary"><strong>Pending:</strong> ${escapeHtml(meleePending.targetName)} · ${meleePending.damage} damage</div>`:''}
             </div>
             <div class="toggle-list player-action-list compact-actions">
-              <label><input type="checkbox" id="eaDamage" ${checked('damage')}><span>Damaged an NPO with another action <small>1 AP</small></span></label>
+              <label><input type="checkbox" id="eaDamage" ${checked('damage')}><span>Other damage (ability, terrain, mission, etc.) <small>1 AP</small></span></label>
             </div>
           </section>
 
@@ -2151,7 +2151,7 @@ function showPlayerActivation(stage={}){
             <div class="toggle-list player-action-list">
               <label><input type="checkbox" id="eaHatch" ${checked('hatch')}><span>Operate Hatch <small>1 AP</small></span></label>
               <label><input type="checkbox" id="eaBreach" ${checked('breach')}><span>Breach <small>1 AP</small></span></label>
-              <label><input type="checkbox" id="eaObjective" ${checked('objective')}><span>Mission or objective action <small>1 AP</small></span></label>
+              <label><input type="checkbox" id="eaObjective" ${checked('objective')}><span>Mission-specific action <small>1 AP</small></span></label>
             </div>
           </section>
 
