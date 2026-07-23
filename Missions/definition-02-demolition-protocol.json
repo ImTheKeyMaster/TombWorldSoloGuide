@@ -5,7 +5,7 @@
   "slug": "demolition-protocol",
   "name": "Demolition Protocol",
   "briefing": "Perform Breach on hatchway access points or breach points. Each sabotaged feature is opened permanently.",
-  "objectiveSummary": "Open at least seven breach points or hatchways by performing Breach on each one.",
+  "objectiveSummary": "Open at least seven hatchways or breach points using the Breach action. Once opened, they remain open for the rest of the battle.",
   "objectives": [
     {
       "id": "sabotagedFeatures",
