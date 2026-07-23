@@ -1081,6 +1081,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       save();
     }
     if(stepId==='deploy')ensureStartingNpoGeneration();
+    if(stepId==='deploy')satisfyEmptyStartingNpoDeployment();
     const details=setupStepDefinitions[stepId];
     app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>${details.title}</h2><p>${details.subtitle}</p></div><div class="step-count">${state.setupStep+1} / ${steps.length}</div></div><div class="progress-bar"><span style="width:${((state.setupStep+1)/steps.length)*100}%"></span></div><section class="wizard-card">${setupContent(stepId)}</section></div>`;
     bindSetup(stepId);
@@ -1094,6 +1095,15 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
   function clearMissionSetupChecks(stage){
     missionSetupChecks(stage).forEach(check=>{state.setupChecks[check.id]=false;});
+  }
+  function satisfyEmptyStartingNpoDeployment(){
+    const generation=state.startingNpoGeneration;
+    if(!generation||generation.deployedNpoIds.length)return;
+    const deploymentCheck=missionSetupChecks('deploy').find(check=>check.id==='starting-npos');
+    if(deploymentCheck&&!state.setupChecks[deploymentCheck.id]){
+      state.setupChecks[deploymentCheck.id]=true;
+      save();
+    }
   }
   function setupChecklistHtml(checks){
     return checks.map(check=>`<label class="check-row"><input type="checkbox" data-check="${escapeHtml(check.id)}" ${state.setupChecks[check.id]?'checked':''}><span><strong>${escapeHtml(check.label)}</strong><small>Confirm this step on the physical board.</small></span></label>`).join('');
@@ -1172,7 +1182,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
     if(stepId==='deploy'){
       const generation=state.startingNpoGeneration;
-      const hasStartingNpos=generation.deploymentCount>0;
+      const hasStartingNpos=generation.deployedNpoIds.length>0;
       const dice=generation.dice.map(value=>dieHtml({value,kind:'hit'})).join('');
       const missionRoll=hasStartingNpos
         ? `<div class="starting-npo-event" id="startingNpoEvent" role="status" aria-live="polite"><small>MISSION ROLL</small><div class="dice-row ${generation.animationShown?'settled':'animated-roll'}" id="startingNpoDice">${generation.animationShown?dice:generation.dice.map(()=>rollingDieHtml()).join('')}</div><div class="starting-npo-result" id="startingNpoResult" ${generation.animationShown?'':'hidden'}><strong>${generation.missionRoll} Starting NPOs</strong><span>${generation.calculation}</span></div></div>`

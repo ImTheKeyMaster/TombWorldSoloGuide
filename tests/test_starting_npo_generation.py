@@ -15,6 +15,10 @@ class StartingNpoGenerationTests(unittest.TestCase):
     def source(self, start, end):
         return self.app.split(start, 1)[1].split(end, 1)[0]
 
+    def deployment_source(self):
+        setup_content = self.app.split("function setupContent(stepId)", 1)[1]
+        return setup_content.split("if(stepId==='deploy'){", 1)[1].split("\n    const m=mission();", 1)[0]
+
     def test_two_d3_roll_is_stored_once_with_official_calculation(self):
         roll = self.source("function startingNpoRoll()", "function generateRoster")
         self.assertIn("[rollD3(),rollD3()]", roll)
@@ -25,7 +29,7 @@ class StartingNpoGenerationTests(unittest.TestCase):
         self.assertIn("save()", ensure)
 
     def test_shared_dice_animation_settles_on_deployment_screen(self):
-        presentation = self.source("if(stepId==='deploy'){", "const m=mission()")
+        presentation = self.deployment_source()
         self.assertIn("rollingDieHtml()", presentation)
         self.assertIn("animated-roll", presentation)
         self.assertIn("startingNpoResult", presentation)
@@ -48,7 +52,7 @@ class StartingNpoGenerationTests(unittest.TestCase):
         roster = self.source("function generateRoster(generation)", "function ensureStartingNpoGeneration")
         self.assertIn("count=MAX_NPOS", roster)
         self.assertIn("selectStartingNpos(generation)", roster)
-        presentation = self.source("if(stepId==='deploy'){", "const m=mission()")
+        presentation = self.deployment_source()
         self.assertIn("Deploy the ${generation.deploymentCount} selected starting NPOs.", presentation)
         self.assertNotIn("available NPOs", presentation)
         self.assertIn("${generation.missionRoll} Starting NPOs", presentation)
@@ -59,8 +63,8 @@ class StartingNpoGenerationTests(unittest.TestCase):
         self.assertNotIn("error", presentation.lower())
 
     def test_deployment_checklist_is_preserved_for_non_empty_starting_rosters(self):
-        presentation = self.source("if(stepId==='deploy'){", "const m=mission()")
-        self.assertIn("hasStartingNpos=generation.deploymentCount>0", presentation)
+        presentation = self.deployment_source()
+        self.assertIn("hasStartingNpos=generation.deployedNpoIds.length>0", presentation)
         self.assertIn("hasStartingNpos&&deploymentCheck", presentation)
         self.assertIn("hasStartingNpos?placementChecks:otherPlacementChecks", presentation)
         self.assertIn("hasStartingNpos?`<div class=\"setup-bulk-row\"", presentation)
@@ -73,7 +77,7 @@ class StartingNpoGenerationTests(unittest.TestCase):
             self.assertIn("starting-npos", [check["id"] for check in mission["setupChecks"] if check["stage"] == "deploy"])
 
     def test_zero_starting_roster_has_explanation_without_npo_confirmation(self):
-        presentation = self.source("if(stepId==='deploy'){", "const m=mission()")
+        presentation = self.deployment_source()
         self.assertIn('<strong>None</strong>', presentation)
         self.assertIn('This mission begins with no NPOs deployed.', presentation)
         self.assertIn('Enemy operatives will enter play later according to the mission rules.', presentation)
@@ -81,6 +85,15 @@ class StartingNpoGenerationTests(unittest.TestCase):
         self.assertIn("requiredPlacementChecks.every(check=>state.setupChecks[check.id])", presentation)
         mission = json.loads((ROOT / "Missions" / "05-scout-sub-crypt.json").read_text())
         self.assertEqual(mission["startingNpos"]["formula"], "0")
+
+    def test_empty_starting_roster_automatically_satisfies_deployment_requirement(self):
+        render_setup = self.source("function renderSetup()", "function missionSetupChecks")
+        self.assertIn("satisfyEmptyStartingNpoDeployment()", render_setup)
+        satisfaction = self.source("function satisfyEmptyStartingNpoDeployment()", "function setupChecklistHtml")
+        self.assertIn("generation.deployedNpoIds.length", satisfaction)
+        self.assertIn("check.id==='starting-npos'", satisfaction)
+        self.assertIn("state.setupChecks[deploymentCheck.id]=true", satisfaction)
+        self.assertIn("save()", satisfaction)
 
     def test_persistence_prevents_reroll_on_rerender(self):
         initial = self.source("const initialState", "let state")
