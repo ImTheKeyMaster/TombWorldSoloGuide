@@ -3,7 +3,7 @@
   "number": "02",
   "name": "Demolition Protocol",
   "brief": "Open a route by operating hatchways and breaching sealed access points.",
-  "objective": "Perform Breach on at least seven breach points or hatchways and leave at least seven open.",
+  "objective": "Open at least seven hatchways or breach points using the Breach action. Once opened, they remain open for the rest of the battle.",
   "firstTurningPointInitiative": "player",
   "startingNpos": {
     "formula": "2D3+3",
