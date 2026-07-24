@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v6.4.7
+# Tomb World Solo Guide v6.4.8
+
+## v6.4.8
+
+**Version 6.4.8 - Read-Only NPO Activation Status**
+
+- Removed the manual Ready and Expend controls from NPO roster cards.
+- Kept automatic activation tracking and status indicators unchanged while preserving wound and roster management controls.
+- Updated the NPO roster guidance and simplified the remaining card actions.
 
 ## v6.4.7
 

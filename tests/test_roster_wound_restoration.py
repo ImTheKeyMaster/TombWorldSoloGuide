@@ -22,14 +22,14 @@ class RosterWoundRestorationTests(unittest.TestCase):
         self.assertIn("if(!state.playerActivatedIds.includes(id))state.playerActivatedIds.push(id)", adjustment)
 
     def test_out_of_action_npo_cannot_restore_above_active_limit(self):
-        adjustment = self.source("function adjustWounds", "function toggleReady")
+        adjustment = self.source("function adjustWounds", "function deleteNpo")
 
         self.assertIn("wasOut&&wounds>0&&activeNpos().length>=MAX_NPOS", adjustment)
         self.assertIn("Only ${MAX_NPOS} active NPOs can be on the battlefield.", adjustment)
         self.assertLess(adjustment.index("activeNpos().length>=MAX_NPOS"), adjustment.index("n.wounds=wounds"))
 
     def test_valid_npo_restoration_is_deployed_dormant_and_not_ready(self):
-        adjustment = self.source("function adjustWounds", "function toggleReady")
+        adjustment = self.source("function adjustWounds", "function deleteNpo")
         restoration = adjustment.split("else if(wasOut){", 1)[1]
 
         self.assertIn("n.deployed=true", restoration)
