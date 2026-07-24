@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '6.4.1';
+  const APP_VERSION = '6.4.2';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -2596,11 +2596,51 @@ function showPlayerActivation(stage={}){
     return rules?`<section class="weapon-rules"><strong>Weapon rules</strong><ul>${rules}</ul></section>`:'';
   }
 
-  function npoCombatGuidanceHtml(npo){
+  function normalizedGuidanceMatchText(value){
+    return String(value||'').toLowerCase().replace(/&/g,' and ').replace(/[^a-z0-9\s]/g,' ').trim().replace(/\s+/g,' ');
+  }
+
+  function inferWeaponGuidanceContext(definition,guidanceText){
+    const guidance=` ${normalizedGuidanceMatchText(guidanceText)} `;
+    if(!guidance.trim())return null;
+    const matches=[];
+    for(const [attackType,weapons] of [['shoot',definition?.rangedWeapons||[]],['melee',definition?.meleeWeapons||[]]]){
+      for(const weapon of weapons){
+        const weaponName=normalizedGuidanceMatchText(weapon.name);
+        const candidates=[{name:weaponName,context:{attackType,weaponId:weapon.id}}];
+        for(const profile of weapon.profiles||[]){
+          const profileName=normalizedGuidanceMatchText(profile.name);
+          const context={attackType,weaponId:weapon.id,profileId:profile.id};
+          candidates.push(
+            {name:`${profileName} ${weaponName}`,context},
+            {name:`${weaponName} ${profileName}`,context},
+            {name:profileName,context}
+          );
+        }
+        for(const candidate of candidates){
+          if(candidate.name&&guidance.includes(` ${candidate.name} `))matches.push(candidate);
+        }
+      }
+    }
+    if(!matches.length)return null;
+    matches.sort((a,b)=>b.name.length-a.name.length||Number(Boolean(b.context.profileId))-Number(Boolean(a.context.profileId)));
+    const mostSpecific=matches.filter(match=>match.name.length===matches[0].name.length);
+    const contexts=new Map(mostSpecific.map(match=>[`${match.context.attackType}|${match.context.weaponId}|${match.context.profileId||''}`,match.context]));
+    return contexts.size===1?[...contexts.values()][0]:null;
+  }
+
+  function npoCombatGuidanceHtml(npo,{attackType,profile}={}){
     const definition=npoDefinition(npo?.type);
     const weaponSentinel=(definition?.abilities||[]).find(ability=>ability.id==='weapon-sentinel');
-    const items=[definition?.behavior?.weaponGuidance,weaponSentinel&&`${weaponSentinel.name}: ${weaponSentinel.text}`].filter(Boolean);
-    return items.length?`<div class="summary-box"><strong>NPO combat guidance</strong><ul>${items.map(item=>`<li>${escapeHtml(item)}</li>`).join('')}</ul></div>`:'';
+    const rawGuidance=definition?.behavior?.weaponGuidance;
+    const guidance=typeof rawGuidance==='string'
+      ? {text:rawGuidance,...inferWeaponGuidanceContext(definition,rawGuidance)}
+      : rawGuidance&&typeof rawGuidance==='object'
+        ? {...(inferWeaponGuidanceContext(definition,rawGuidance.text)||{}),...rawGuidance}
+        : null;
+    const items=[guidance,weaponSentinel&&{text:`${weaponSentinel.name}: ${weaponSentinel.text}`,attackType:'shoot'}]
+      .filter(item=>item?.text&&item.attackType===attackType&&(!item.weaponId||item.weaponId===profile?.weaponId));
+    return items.length?`<div class="summary-box"><strong>NPO combat guidance</strong><ul>${items.map(item=>`<li>${escapeHtml(item.text)}</li>`).join('')}</ul></div>`:'';
   }
 
   function recordedCombat({attackerName,defenderName,attackType,attackerSide,defenderSide,profile,before,normalSuccesses=0,criticalSuccesses=0,damage=0}){
@@ -3355,7 +3395,7 @@ function showPlayerActivation(stage={}){
       title:'Resolve Combat',attackerName:npoName(n),defenderName:target.name,attackType,
       weaponName:initialProfile.name,attackLabel:combatAttackLabel(initialProfile),defenseLabel:`3 dice · ${target.save||3}+`,
       cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',extraHtml:profileControl,
-      detailsHtml:`${npoCombatGuidanceHtml(n)}<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`
+      detailsHtml:`<div id="npoCombatGuidance">${npoCombatGuidanceHtml(n,{attackType,profile:initialProfile})}</div><div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`
     });
     const cancel=()=>{
       if(combatTimer)combatTimer();
@@ -3411,6 +3451,8 @@ function showPlayerActivation(stage={}){
       if(attack)attack.textContent=combatAttackLabel(profile);
       const rules=$('#npoCombatRules');
       if(rules)rules.innerHTML=weaponRulesHtml(profile);
+      const guidance=$('#npoCombatGuidance');
+      if(guidance)guidance.innerHTML=npoCombatGuidanceHtml(n,{attackType,profile});
       $('#combatResults').replaceChildren();
       $('#completeNpoCombat').disabled=true;
       $('#completeNpoCombat').textContent='Rolling…';

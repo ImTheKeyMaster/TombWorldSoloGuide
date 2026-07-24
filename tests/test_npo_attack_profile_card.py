@@ -43,9 +43,20 @@ class NpoAttackProfileCardTests(unittest.TestCase):
     def test_weapon_changes_refresh_attack_and_rules_without_changing_resolution(self):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
         self.assertIn("$('#npoCombatProfile')?.addEventListener('change',startAutomaticCombat)", wizard)
+        self.assertIn("guidance.innerHTML=npoCombatGuidanceHtml(n,{attackType,profile})", wizard)
         self.assertIn("resolveRetainedCombat(rolledAttackDice,rolledDefenseDice,profile)", wizard)
         self.assertIn("applyNpoAttackDamage(n,target,summary)", wizard)
         self.assertIn("if(resolutionCommitted)return", wizard)
+
+    def test_npo_guidance_is_scoped_to_attack_type_and_weapon(self):
+        guidance = self.source("function normalizedGuidanceMatchText", "function recordedCombat")
+        self.assertIn("function inferWeaponGuidanceContext(definition,guidanceText)", guidance)
+        self.assertIn("definition?.rangedWeapons||[]", guidance)
+        self.assertIn("definition?.meleeWeapons||[]", guidance)
+        self.assertIn("profileId:profile.id", guidance)
+        self.assertIn("item.attackType===attackType", guidance)
+        self.assertIn("item.weaponId===profile?.weaponId", guidance)
+        self.assertIn("attackType:'shoot'", guidance)
 
     def test_profile_grid_is_responsive_without_empty_cells(self):
         self.assertIn(".compact-combat-profile.has-attack-profile{grid-template-columns:repeat(6,minmax(0,1fr))}", self.css)
