@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '6.4.6';
+  const APP_VERSION = '6.4.7';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -3622,7 +3622,29 @@ function showPlayerActivation(stage={}){
     setNextActivation(state.nextSide||'npo');
     save();render();
   }
-  function adjustWounds(id,d){const n=state.roster.find(x=>x.id===id);if(!n)return;const wasOut=n.battlefieldState==='out-of-action';n.wounds=Math.max(0,Math.min(n.maxWounds,n.wounds+d));if(n.wounds===0){n.ready=false;n.deployed=false;n.battlefieldState='out-of-action';}else if(wasOut){n.deployed=true;n.battlefieldState='deployed';n.dormant=true;n.ready=false;}if(checkGameEnd())return;save();render();}
+  function adjustWounds(id,d){
+    const n=state.roster.find(x=>x.id===id);
+    if(!n)return;
+    const wasOut=n.battlefieldState==='out-of-action';
+    const wounds=Math.max(0,Math.min(n.maxWounds,n.wounds+d));
+    if(wasOut&&wounds>0&&activeNpos().length>=MAX_NPOS){
+      showToast(`Only ${MAX_NPOS} active NPOs can be on the battlefield.`);
+      return;
+    }
+    n.wounds=wounds;
+    if(n.wounds===0){
+      n.ready=false;
+      n.deployed=false;
+      n.battlefieldState='out-of-action';
+    }else if(wasOut){
+      n.deployed=true;
+      n.battlefieldState='deployed';
+      n.dormant=true;
+      n.ready=false;
+    }
+    if(checkGameEnd())return;
+    save();render();
+  }
   function toggleReady(id){const n=state.roster.find(x=>x.id===id);if(n&&n.wounds>0&&!n.dormant)n.ready=!n.ready;save();render();}
   function deleteNpo(id){state.roster=state.roster.filter(x=>x.id!==id);save();render();}
 

@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v6.4.6
+# Tomb World Solo Guide v6.4.7
+
+## v6.4.7
+
+**Version 6.4.7 - Roster Restoration Safeguards**
+
+- Prevented an out-of-action NPO from being restored when the maximum active NPO limit is already reached.
+- Preserved Player activation history when healing an eliminated operative, preventing healing from granting another activation.
+- Added focused regression coverage for Player and NPO wound restoration behavior.
 
 ## v6.4.6
 
