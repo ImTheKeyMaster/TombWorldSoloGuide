@@ -81,6 +81,13 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         self.assertIn("else if(selectingCombat){", ending)
         self.assertNotIn("else startAutomaticCombat()", ending)
 
+    def test_pending_weapon_summary_is_distinct_from_dropdown_placeholder(self):
+        wizard = self.source("function showNpoAttackWizard", "function spinnerField")
+        self.assertIn("disabled>Select a weapon...</option>", wizard)
+        self.assertIn("weaponName:initialProfile?.name||'—'", wizard)
+        self.assertIn("if(weapon)weapon.textContent=profile.name", wizard)
+        self.assertIn("screen.continueButton.disabled=false", wizard)
+
     def test_aggressive_defense_rolls_without_a_manual_button(self):
         preview = self.source("function previewPendingPlayerAttack", "function displayPendingPlayerCombat")
         roll_ui = self.source("function aggressiveDefenseRollHtml", "function combatAbilityReminder")
