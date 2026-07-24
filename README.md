@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v6.4.1
+# Tomb World Solo Guide v6.4.2
+
+## v6.4.2
+
+**Version 6.4.2 - Contextual NPO Combat Guidance**
+
+- Shows weapon guidance only for the matching attack type and weapon, while keeping profile recommendations visible across profiles of that weapon.
+- Limits Weapon Sentinel guidance to shooting resolution and refreshes guidance when the selected NPO weapon profile changes.
 
 ## v6.4.1
 
