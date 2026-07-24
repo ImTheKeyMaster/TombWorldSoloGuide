@@ -25,6 +25,18 @@ class NpoRosterReadOnlyActivationTests(unittest.TestCase):
         self.assertIn("n.ready=false", self.app)
         self.assertNotIn("function toggleReady", self.app)
 
+    def test_every_npo_roster_status_exposes_the_same_removal_action(self):
+        roster = self.function_source("function renderRoster()", "function renderPlayerRoster()")
+        card = self.function_source("function npoRosterCard", "function operativeCard")
+
+        self.assertIn("npoRosterCard(n,n.battlefieldState==='deployed'||n.wounds<=0)", roster)
+        self.assertIn('data-delete="${n.id}">Remove NPO</button>', card)
+        self.assertNotIn(">Delete</button>", card)
+
+        wound_controls, removal_control = card.split('</div>`:\'\'}', 1)
+        self.assertIn("controls?", wound_controls)
+        self.assertNotIn("controls?", removal_control)
+
 
 if __name__ == "__main__":
     unittest.main()

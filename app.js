@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '6.4.8';
+  const APP_VERSION = '6.4.9';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -3562,7 +3562,7 @@ function showPlayerActivation(stage={}){
     return `<article class="player-roster-card npo-roster-card ${n.wounds<=0?'dead':''}">
       <div class="operative-card-header"><div class="operative-identity"><strong>${escapeHtml(npoName(n))}</strong><small>${escapeHtml(n.type)}</small></div><span class="operative-status-badge ${status.toLowerCase()}">${status}</span></div>
       <div class="operative-stat-line"><span><small>ATTACK</small><b>${n.attack?.dice??'—'}</b></span><span><small>HIT</small><b>${n.attack?.hit??'—'}+</b></span><span><small>SAVE</small><b>${n.save}+</b></span><span><small>WOUNDS</small><b class="${n.wounds===0?'zero-wounds':''}">${n.wounds}/${n.maxWounds}</b></span></div>
-      ${controls?`<div class="wound-controls"><button class="btn ghost" data-wound="${n.id}" ${n.wounds<=0?'disabled':''}>− Wound</button><button class="btn ghost" data-heal="${n.id}" ${n.wounds>=n.maxWounds?'disabled':''}>+ Heal</button></div><div class="quick-actions"><button class="btn danger" data-delete="${n.id}">Delete</button></div>`:''}
+      ${controls?`<div class="wound-controls"><button class="btn ghost" data-wound="${n.id}" ${n.wounds<=0?'disabled':''}>− Wound</button><button class="btn ghost" data-heal="${n.id}" ${n.wounds>=n.maxWounds?'disabled':''}>+ Heal</button></div>`:''}<div class="quick-actions"><button class="btn danger" data-delete="${n.id}">Remove NPO</button></div>
     </article>`;
   }
   function operativeCard(n,controls){return npoRosterCard(n,controls);}
