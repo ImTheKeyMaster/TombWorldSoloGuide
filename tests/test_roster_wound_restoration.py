@@ -9,6 +9,7 @@ class RosterWoundRestorationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.app = (ROOT / "app.js").read_text()
+        cls.styles = (ROOT / "styles.css").read_text()
 
     def source(self, start, end):
         return self.app.split(start, 1)[1].split(end, 1)[0]
@@ -36,6 +37,18 @@ class RosterWoundRestorationTests(unittest.TestCase):
         self.assertIn("n.battlefieldState='deployed'", restoration)
         self.assertIn("n.dormant=true", restoration)
         self.assertIn("n.ready=false", restoration)
+
+    def test_player_roster_actions_are_bottom_anchored_without_placeholders(self):
+        roster = self.source("function renderPlayerRoster", "function npoRosterCard")
+
+        self.assertIn("roster-operative-card", roster)
+        self.assertIn("wound-controls", roster)
+        self.assertIn(".roster-operative-card{display:flex;flex-direction:column}", self.styles)
+        self.assertIn(
+            ".roster-operative-card .wound-controls{margin-top:auto;padding-top:14px}",
+            self.styles,
+        )
+        self.assertNotIn("placeholder", roster.lower())
 
 
 if __name__ == "__main__":

@@ -1060,9 +1060,11 @@ button.tracker-operative:hover{
 .operative-status-badge.ready{background:rgba(50,170,100,.2);color:var(--green)}
 .operative-status-badge.activated,.operative-status-badge.dormant,.operative-status-badge.reserve,.operative-status-badge.off-board,.operative-status-badge.escaped{background:rgba(140,155,146,.16);color:var(--muted)}
 .operative-status-badge.eliminated{background:rgba(190,40,40,.22);color:var(--danger,#ff7b7b)}
+.roster-operative-card{display:flex;flex-direction:column}
 .roster-operative-card .operative-stat-line{margin-top:13px}
 .player-roster-weapons{margin-top:13px!important;line-height:1.4}
 .wound-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.roster-operative-card .wound-controls{margin-top:auto;padding-top:14px}
 .wound-controls .btn{width:100%;padding:11px 10px}
 .npo-roster-card.dead{opacity:.7}
 .npo-roster-card .quick-actions{margin-top:auto;padding-top:10px}

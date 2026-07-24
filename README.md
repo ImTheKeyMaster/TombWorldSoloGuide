@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v6.4.10
+# Tomb World Solo Guide v6.4.11
+
+## v6.4.11
+
+**Version 6.4.11 - Aligned Player Roster Actions**
+
+- Anchored Player operative Wound and Heal controls to the bottom of each card so action rows align despite different weapon-list lengths or operative statuses.
+- Preserved the responsive roster grid, existing card styling, eliminated state, and all roster behavior.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v6.4.11.
 
 ## v6.4.10
 
