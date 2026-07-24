@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v6.4.2
+# Tomb World Solo Guide v6.4.3
+
+## v6.4.3
+
+**Version 6.4.3 - Multi-Weapon Combat Selection Fix**
+
+- Synchronized NPO weapon dropdown choices with the authoritative combat draft, header profile, and Continue action.
+- Preserved valid weapon selections across dialog rerenders while keeping the placeholder disabled and the single-weapon automatic flow unchanged.
+- Added regression coverage for selection, rerendering, header updates, Continue enablement, and attack-roll startup.
 
 ## v6.4.2
 

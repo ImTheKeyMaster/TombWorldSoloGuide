@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '6.4.2';
+  const APP_VERSION = '6.4.3';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -3388,7 +3388,8 @@ function showPlayerActivation(stage={}){
     const saved=state.lastActivation?.combatDraft;
     const savedCombat=saved&&saved.targetId===target.id&&saved.attackType===attackType;
     const rollingCombat=savedCombat&&saved.rolling===true;
-    const sameCombat=savedCombat&&!rollingCombat;
+    const selectingCombat=savedCombat&&saved.selecting===true;
+    const sameCombat=savedCombat&&!rollingCombat&&!selectingCombat;
     if(!availableProfiles.length){
       const weaponType=attackType==='shoot'?'shooting':'melee';
       showModal('Unable to Resolve Combat',`<div class="modal-inner"><div class="summary-box"><strong>No valid ${weaponType} weapon available</strong><p>${escapeHtml(npoName(n))} has no weapon or profile valid for this ${weaponType} attack.</p></div><div class="wizard-actions"><button class="btn ghost" id="cancelNpoAttack">Back</button></div></div>`);
@@ -3396,8 +3397,12 @@ function showPlayerActivation(stage={}){
       return;
     }
     const initialProfile=savedCombat?saved.profile:availableProfiles.length===1?canonicalAttackProfile(availableProfiles[0]):null;
-    const profileControl=!savedCombat&&availableProfiles.length>1
-      ? `<div class="field compact-combat-choice"><label for="npoCombatProfile">NPO Weapon Profile</label><select id="npoCombatProfile"><option value="" selected disabled>Select a weapon...</option>${availableProfiles.map((profile,index)=>`<option value="${index}">${escapeHtml(canonicalAttackProfile(profile).name)}</option>`).join('')}</select></div>`
+    let selectedProfileIndex=initialProfile?availableProfiles.findIndex(profile=>{
+      const candidate=canonicalAttackProfile(profile);
+      return candidate.weaponId===initialProfile.weaponId&&candidate.profileId===initialProfile.profileId;
+    }):-1;
+    const profileControl=availableProfiles.length>1&&!sameCombat&&!rollingCombat
+      ? `<div class="field compact-combat-choice"><label for="npoCombatProfile">NPO Weapon Profile</label><select id="npoCombatProfile"><option value="" ${selectedProfileIndex<0?'selected ':''}disabled>Select a weapon...</option>${availableProfiles.map((profile,index)=>`<option value="${index}" ${index===selectedProfileIndex?'selected':''}>${escapeHtml(canonicalAttackProfile(profile).name)}</option>`).join('')}</select></div>`
       : '';
     const guidance=npoCombatGuidanceHtml(n,{attackType,profile:initialProfile});
     const screen=showSharedCombatResolutionScreen({
@@ -3454,11 +3459,10 @@ function showPlayerActivation(stage={}){
     let rollStarted=false;
     const startAutomaticCombat=(restoredRoll=null)=>{
       if(rollStarted)return;
-      const selectedValue=restoredRoll?null:$('#npoCombatProfile')?.value;
       const profileIndex=restoredRoll
         ? availableProfiles.findIndex(profile=>canonicalAttackProfile(profile).weaponId===restoredRoll.profile.weaponId&&canonicalAttackProfile(profile).profileId===restoredRoll.profile.profileId)
-        : availableProfiles.length===1?0:Number(selectedValue);
-      if(profileIndex<0||!Number.isInteger(profileIndex)||(!restoredRoll&&availableProfiles.length>1&&selectedValue===''))return;
+        : availableProfiles.length===1?0:selectedProfileIndex;
+      if(profileIndex<0||!Number.isInteger(profileIndex))return;
       rollStarted=true;
       if(combatTimer)combatTimer();
       const profile=canonicalAttackProfile(availableProfiles[profileIndex]);
@@ -3486,10 +3490,31 @@ function showPlayerActivation(stage={}){
         finishAutomaticCombat(profile,completedAttackDice,completedDefenseDice);
       }});
     };
-    $('#npoCombatProfile')?.addEventListener('change',startAutomaticCombat);
+    $('#npoCombatProfile')?.addEventListener('change',event=>{
+      const profileIndex=Number(event.currentTarget.value);
+      if(event.currentTarget.value===''||!Number.isInteger(profileIndex)||!availableProfiles[profileIndex])return;
+      const profile=canonicalAttackProfile(availableProfiles[profileIndex]);
+      selectedProfileIndex=profileIndex;
+      state.lastActivation={...state.lastActivation,combatDraft:{selecting:true,attackType,targetId:target.id,targetName:target.name,profile}};
+      save();
+      const weapon=$('.compact-combat-profile div:nth-child(4) strong');
+      if(weapon)weapon.textContent=profile.name;
+      const attack=$('.compact-combat-profile div:nth-child(5) strong');
+      if(attack)attack.textContent=combatAttackLabel(profile);
+      const rules=$('#npoCombatRules');
+      if(rules)rules.innerHTML=weaponRulesHtml(profile);
+      const guidance=$('#npoCombatGuidance');
+      if(guidance)guidance.innerHTML=npoCombatGuidanceHtml(n,{attackType,profile});
+      screen.continueButton.disabled=false;
+      screen.continueButton.onclick=()=>startAutomaticCombat();
+    });
     if(sameCombat)displayCombat(saved,animateCombat);
     else if(rollingCombat)startAutomaticCombat(saved);
     else if(availableProfiles.length===1)startAutomaticCombat();
+    else if(selectingCombat){
+      screen.continueButton.disabled=false;
+      screen.continueButton.onclick=()=>startAutomaticCombat();
+    }
   }
 
   function spinnerField(id,label,value,min,max){return `<div class="field spinner-field"><label>${label}</label><div class="spinner"><input id="${id}" type="number" value="${value}" min="${min}" max="${max}" inputmode="numeric"><button type="button" data-spin="${id}" data-delta="-1" aria-label="Decrease ${label}">−</button><button type="button" data-spin="${id}" data-delta="1" aria-label="Increase ${label}">+</button></div></div>`;}
