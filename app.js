@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '6.4.5';
+  const APP_VERSION = '6.4.6';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -3538,7 +3538,7 @@ function showPlayerActivation(stage={}){
       <section class="card"><h3>Mission rules</h3><div class="mission-rules">${rules}</div></section>
       <section class="card"><h3>Victory</h3><p><strong>Win:</strong> ${escapeHtml(m.victory?.win||'See mission rules.')}</p><p><strong>Lose:</strong> ${escapeHtml(m.victory?.lose||'See mission rules.')}</p></section>${missionProgressHtml()}`;
   }
-  function renderRoster(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">NPO ROSTER</p><h2>${activeNpos().length} active NPOs</h2><p>Wounds and Ready status update the guided activation flow.</p></div><button class="btn secondary" id="addNpo">Add NPO</button></div><div class="player-roster-grid npo-roster-grid">${state.roster.length?state.roster.map(n=>npoRosterCard(n,n.battlefieldState==='deployed')).join(''):'<div class="card empty">No NPOs are currently on the battlefield.</div>'}</div>`;$('#addNpo').onclick=showAddNpo;$$('[data-player-attack]').forEach(b=>b.onclick=()=>showPlayerAttackWizard(b.dataset.playerAttack));$$('[data-wound]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.wound,-1));$$('[data-heal]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.heal,1));$$('[data-ready]').forEach(b=>b.onclick=()=>toggleReady(b.dataset.ready));$$('[data-delete]').forEach(b=>b.onclick=()=>deleteNpo(b.dataset.delete));}
+  function renderRoster(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">NPO ROSTER</p><h2>${activeNpos().length} active NPOs</h2><p>Wounds and Ready status update the guided activation flow.</p></div><button class="btn secondary" id="addNpo">Add NPO</button></div><div class="player-roster-grid npo-roster-grid">${state.roster.length?state.roster.map(n=>npoRosterCard(n,n.battlefieldState==='deployed'||n.wounds<=0)).join(''):'<div class="card empty">No NPOs are currently on the battlefield.</div>'}</div>`;$('#addNpo').onclick=showAddNpo;$$('[data-wound]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.wound,-1));$$('[data-heal]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.heal,1));$$('[data-ready]').forEach(b=>b.onclick=()=>toggleReady(b.dataset.ready));$$('[data-delete]').forEach(b=>b.onclick=()=>deleteNpo(b.dataset.delete));}
   function renderPlayerRoster(){
     const casualties=new Set(state.playerCasualtyIds||[]);
     const activated=new Set(state.playerActivatedIds||[]);
@@ -3549,18 +3549,20 @@ function showPlayerActivation(stage={}){
       const operativeState=playerOperativeState(id);
       const status=operativeState.inPlay===false?(operativeState.offBoardReason==='escaped'?'ESCAPED':'OFF BOARD'):eliminated?'ELIMINATED':activated.has(id)?'ACTIVATED':'READY';
       const weaponNames=(operative.weapons||[]).map(w=>escapeHtml(w.name)).join(' · ');
-      return `<article class="operative-card ${eliminated?'dead':''}"><div class="player-roster-card-heading"><div><h4>${escapeHtml(operative.name)}</h4><p>${escapeHtml(operative.role||'Operative')}</p></div><strong>${status}</strong></div><div class="stat-grid compact-stats"><div class="stat"><small>APL</small><strong>${operative.apl??'—'}</strong></div><div class="stat"><small>MOVE</small><strong>${operative.move??'—'}"</strong></div><div class="stat"><small>SAVE</small><strong>${operative.save??'—'}+</strong></div><div class="stat"><small>WOUNDS</small><strong>${playerCurrentWounds(id)}/${playerDefinition(id)?.wounds??operative.wounds}</strong></div></div>${weaponNames?`<p class="player-roster-weapons"><strong>Weapons:</strong> ${weaponNames}</p>`:''}<button class="btn ${eliminated?'secondary':'ghost'}" data-player-roster-status="${id}" ${operativeState.inPlay===false?'disabled':''}>${operativeState.inPlay===false?'Off Battlefield':eliminated?'Restore Operative':'Update Status'}</button></article>`;
+      const wounds=playerCurrentWounds(id), maxWounds=Number(playerDefinition(id)?.wounds??operative.wounds);
+      return `<article class="operative-card roster-operative-card ${eliminated?'dead':''}"><div class="operative-card-header"><div class="operative-identity"><h4>${escapeHtml(operative.name)}</h4><p>${escapeHtml(operative.role||'Operative')}</p></div><span class="operative-status-badge ${status.toLowerCase().replace(' ','-')}">${status}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${operative.apl??'—'}</b></span><span><small>MOVE</small><b>${operative.move??'—'}"</b></span><span><small>SAVE</small><b>${operative.save??'—'}+</b></span><span><small>WOUNDS</small><b class="${wounds===0?'zero-wounds':''}">${wounds}/${maxWounds}</b></span></div>${weaponNames?`<p class="player-roster-weapons"><strong>Weapons:</strong> ${weaponNames}</p>`:''}<div class="wound-controls"><button class="btn ghost" data-player-wound="${id}" ${wounds<=0||operativeState.inPlay===false?'disabled':''}>− Wound</button><button class="btn ghost" data-player-heal="${id}" ${wounds>=maxWounds||operativeState.inPlay===false?'disabled':''}>+ Heal</button></div></article>`;
     }).join('');
     const teamName=playerTeamData?.teamName||playerTeamEntry()?.name||'Player';
     app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">PLAYER ROSTER</p><h2>${escapeHtml(teamName)}</h2><p>${inPlayPlayerOperativeIds().filter(id=>!casualties.has(id)).length} active on the battlefield of ${(state.playerRoster||[]).length} selected operatives.</p></div></div><div class="roster-grid">${cards||'<div class="card empty">No Player operatives were selected for this game.</div>'}</div>`;
-    $$('[data-player-roster-status]').forEach(button=>button.onclick=()=>showPlayerOperativeStatus(button.dataset.playerRosterStatus));
+    $$('[data-player-wound]').forEach(button=>button.onclick=()=>adjustPlayerWounds(button.dataset.playerWound,-1));
+    $$('[data-player-heal]').forEach(button=>button.onclick=()=>adjustPlayerWounds(button.dataset.playerHeal,1));
   }
   function npoRosterCard(n,controls){
     const status=n.battlefieldState==='reserve'?'RESERVE':n.wounds<=0?'ELIMINATED':n.dormant?'DORMANT':n.ready?'READY':'ACTIVATED';
     return `<article class="player-roster-card npo-roster-card ${n.wounds<=0?'dead':''}">
-      <div class="player-roster-card-head"><div><strong>${escapeHtml(npoName(n))}</strong></div><span class="npo-status-badge ${status.toLowerCase()}">${status}</span></div>
-      <div class="operative-stat-line"><span><small>ATTACK</small><b>${n.attack?.dice??'—'}</b></span><span><small>HIT</small><b>${n.attack?.hit??'—'}+</b></span><span><small>SAVE</small><b>${n.save}+</b></span><span><small>WOUNDS</small><b>${n.wounds}/${n.maxWounds}</b></span></div>
-      ${controls?`<div class="quick-actions"><button class="btn secondary" data-player-attack="${n.id}">Player Attack</button><button class="btn ghost" data-wound="${n.id}">− Wound</button><button class="btn ghost" data-heal="${n.id}">+ Heal</button><button class="btn secondary" data-ready="${n.id}" ${n.dormant?'disabled':''}>${n.ready?'Expend':n.dormant?'Dormant':'Ready'}</button><button class="btn danger" data-delete="${n.id}">Delete</button></div>`:''}
+      <div class="operative-card-header"><div class="operative-identity"><strong>${escapeHtml(npoName(n))}</strong><small>${escapeHtml(n.type)}</small></div><span class="operative-status-badge ${status.toLowerCase()}">${status}</span></div>
+      <div class="operative-stat-line"><span><small>ATTACK</small><b>${n.attack?.dice??'—'}</b></span><span><small>HIT</small><b>${n.attack?.hit??'—'}+</b></span><span><small>SAVE</small><b>${n.save}+</b></span><span><small>WOUNDS</small><b class="${n.wounds===0?'zero-wounds':''}">${n.wounds}/${n.maxWounds}</b></span></div>
+      ${controls?`<div class="wound-controls"><button class="btn ghost" data-wound="${n.id}" ${n.wounds<=0?'disabled':''}>− Wound</button><button class="btn ghost" data-heal="${n.id}" ${n.wounds>=n.maxWounds?'disabled':''}>+ Heal</button></div><div class="quick-actions roster-management-actions"><button class="btn secondary" data-ready="${n.id}" ${n.dormant||n.wounds<=0?'disabled':''}>${n.ready?'Expend':n.dormant?'Dormant':'Ready'}</button><button class="btn danger" data-delete="${n.id}">Delete</button></div>`:''}
     </article>`;
   }
   function operativeCard(n,controls){return npoRosterCard(n,controls);}
@@ -3601,7 +3603,26 @@ function showPlayerActivation(stage={}){
   }
   function rosterBreakdown(){const counts={};state.roster.forEach(n=>counts[n.type]=(counts[n.type]||0)+1);return Object.entries(counts).map(([k,v])=>`${v} ${k}${v>1?'s':''}`).join(' · ')||'No starting NPOs';}
   function showAddNpo(){showModal('Add NPO',`<div class="field"><label>NPO type</label><select id="newNpoType">${Object.keys(npoDefinitions).map(x=>`<option>${x}</option>`).join('')}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmAdd">Add NPO</button></div>`);$('#confirmAdd').onclick=()=>{if(activeNpos().length>=MAX_NPOS){showToast(`Only ${MAX_NPOS} active NPOs can be on the battlefield.`);return;}const type=$('#newNpoType').value;state.roster.push(createNpo(type));log(`${type} added to the battlefield.`);closeModal();save();render();};}
-  function adjustWounds(id,d){const n=state.roster.find(x=>x.id===id);if(!n)return;const wasOut=n.battlefieldState==='out-of-action';n.wounds=Math.max(0,Math.min(n.maxWounds,n.wounds+d));if(n.wounds===0){n.ready=false;n.deployed=false;n.battlefieldState='out-of-action';}else if(wasOut){n.deployed=true;n.battlefieldState='deployed';}if(checkGameEnd())return;save();render();}
+  function adjustPlayerWounds(id,d){
+    const definition=playerDefinition(id);
+    if(!definition||!isPlayerOperativeInPlay(id))return;
+    const maxWounds=Number(definition.wounds||0), before=playerCurrentWounds(id);
+    const wounds=Math.max(0,Math.min(maxWounds,before+d));
+    if(wounds===before)return;
+    state.playerWounds=state.playerWounds||{};
+    state.playerWounds[id]=wounds;
+    const casualties=new Set(state.playerCasualtyIds||[]);
+    if(wounds===0){
+      casualties.add(id);
+      if(!state.playerActivatedIds.includes(id))state.playerActivatedIds.push(id);
+    }else if(before===0)casualties.delete(id);
+    state.playerCasualtyIds=[...casualties];
+    state.playerReady=playerOperativesRemaining();
+    if(checkGameEnd())return;
+    setNextActivation(state.nextSide||'npo');
+    save();render();
+  }
+  function adjustWounds(id,d){const n=state.roster.find(x=>x.id===id);if(!n)return;const wasOut=n.battlefieldState==='out-of-action';n.wounds=Math.max(0,Math.min(n.maxWounds,n.wounds+d));if(n.wounds===0){n.ready=false;n.deployed=false;n.battlefieldState='out-of-action';}else if(wasOut){n.deployed=true;n.battlefieldState='deployed';n.dormant=true;n.ready=false;}if(checkGameEnd())return;save();render();}
   function toggleReady(id){const n=state.roster.find(x=>x.id===id);if(n&&n.wounds>0&&!n.dormant)n.ready=!n.ready;save();render();}
   function deleteNpo(id){state.roster=state.roster.filter(x=>x.id!==id);save();render();}
 
