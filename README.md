@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v6.4.5
+# Tomb World Solo Guide v6.4.6
+
+## v6.4.6
+
+**Version 6.4.6 - Roster Card Consistency and Wound Controls**
+
+- Unified Player and NPO roster card headers, status badges, compact statistics, wound displays, and wound controls.
+- Added persistent Player roster wound/heal controls and conservative one-wound restoration without granting another activation.
+- Removed roster-only Player status editing, Restore Operative, and Player Attack controls while preserving guided-play flows.
 
 ## v6.4.5
 
