@@ -67,7 +67,7 @@ class RemediationPr3Tests(unittest.TestCase):
         self.assertIn("before===0&&state.threat>0", transition)
         self.assertIn("npo.dormant=false;npo.ready=true", transition)
         self.assertIn("npo.dormant=true;npo.ready=false", transition)
-        self.assertIn("!n.dormant)n.ready=!n.ready", self.app)
+        self.assertIn("filter(n => n.ready&&!n.dormant)", self.app)
 
     def test_initiative_automatic_cases_precede_event(self):
         initiative = self.function_source("rollInitiative", "beginFirefight")
@@ -112,7 +112,7 @@ class RemediationPr3Tests(unittest.TestCase):
         self.assertIn("merged.strategyPipeline", normalize)
 
     def test_versions_are_synchronized(self):
-        expected = "6.4.7"
+        expected = "6.4.8"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()

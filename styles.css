@@ -1066,7 +1066,6 @@ button.tracker-operative:hover{
 .wound-controls .btn{width:100%;padding:11px 10px}
 .npo-roster-card.dead{opacity:.7}
 .npo-roster-card .quick-actions{margin-top:10px}
-.roster-management-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
 .tooltip-stat{position:relative;cursor:help;outline:none}
 .info-dot{display:inline-grid;place-items:center;width:16px;height:16px;margin-left:4px;border:1px solid currentColor;border-radius:50%;font-size:.66rem;font-weight:900;text-transform:none}
 .tooltip-stat::after{content:attr(data-tooltip);position:absolute;z-index:20;left:50%;bottom:calc(100% + 9px);width:min(260px,70vw);padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#07140e;color:var(--text);font-size:.8rem;font-weight:400;line-height:1.35;box-shadow:0 10px 28px rgba(0,0,0,.35);opacity:0;pointer-events:none;transform:translate(-50%,5px);transition:.15s ease}
