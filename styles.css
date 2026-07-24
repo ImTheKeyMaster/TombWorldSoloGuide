@@ -732,6 +732,7 @@ body.modal-open{
   gap:7px;
 }
 .tracker-operative{
+  container-type:inline-size;
   min-width:0;
   display:flex;
   justify-content:space-between;
@@ -753,9 +754,17 @@ button.tracker-operative{
 button.tracker-operative:hover{
   border-color:#3b7755;
 }
-.tracker-operative span{
+.tracker-operative>span:first-child{
+  flex:1 1 auto;
   min-width:0;
   overflow-wrap:anywhere;
+}
+.tracker-operative-status{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  white-space:nowrap;
 }
 .tracker-operative strong{
   flex:0 0 auto;
@@ -766,21 +775,32 @@ button.tracker-operative:hover{
   border-color:var(--green);
   background:rgba(92,245,157,.09);
 }
-.tracker-operative.spent,
-.tracker-operative.eliminated{
+.tracker-operative.spent{
   opacity:.55;
 }
 .tracker-operative.spent strong{
   color:var(--muted);
 }
 .tracker-operative.eliminated{
+  border:2px solid var(--danger);
+  background:rgba(125,25,25,.2);
+  color:var(--danger);
   text-decoration:line-through;
 }
 .tracker-operative.eliminated strong{
-  color:#dca4a4;
+  color:var(--danger);
+}
+.tracker-elimination-icon{
+  flex:0 0 auto;
+  color:var(--danger);
+  font-size:.9rem;
+  line-height:1;
 }
 @media(max-width:600px){
   .tracker-operative-grid{grid-template-columns:1fr}
+}
+@container(max-width:280px){
+  .tracker-elimination-icon{display:none}
 }
 
 /* v2.1.0 manifest-driven Kill Team selection */
