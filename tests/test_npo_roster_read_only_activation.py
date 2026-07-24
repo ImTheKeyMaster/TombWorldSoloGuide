@@ -6,6 +6,7 @@ class NpoRosterReadOnlyActivationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.app = pathlib.Path("app.js").read_text()
+        cls.styles = pathlib.Path("styles.css").read_text()
 
     def function_source(self, start, end):
         return self.app[self.app.index(start):self.app.index(end)]
@@ -36,6 +37,16 @@ class NpoRosterReadOnlyActivationTests(unittest.TestCase):
         wound_controls, removal_control = card.split('</div>`:\'\'}', 1)
         self.assertIn("controls?", wound_controls)
         self.assertNotIn("controls?", removal_control)
+
+    def test_removal_action_is_anchored_without_placeholder_controls(self):
+        self.assertIn(
+            ".npo-roster-card{display:flex;flex-direction:column;cursor:default}",
+            self.styles,
+        )
+        self.assertIn(
+            ".npo-roster-card .quick-actions{margin-top:auto;padding-top:10px}",
+            self.styles,
+        )
 
 
 if __name__ == "__main__":

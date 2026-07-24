@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v6.4.9
+# Tomb World Solo Guide v6.4.10
+
+## v6.4.10
+
+**Version 6.4.10 - Aligned NPO Roster Actions**
+
+- Anchored each Remove NPO action to the bottom of its card so statuses with and without wound controls align in the responsive roster grid.
+- Preserved the existing card dimensions, button styling, roster behavior, and mobile-first layout.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v6.4.10.
 
 ## v6.4.9
 

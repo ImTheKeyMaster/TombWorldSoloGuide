@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '6.4.9';
+  const APP_VERSION = '6.4.10';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
