@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v6.4.8
+# Tomb World Solo Guide v6.4.9
+
+## v6.4.9
+
+**Version 6.4.9 - Consistent NPO Roster Removal**
+
+- Added the existing roster removal action to Reserve NPO cards after verifying that Reserve entries are not protected mission or reinforcement state.
+- Renamed NPO roster removal buttons to **Remove NPO** so they pair consistently with **Add NPO**.
+- Preserved the existing removal handler and all reinforcement, activation, mission, and persistence behavior.
 
 ## v6.4.8
 
