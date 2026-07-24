@@ -732,6 +732,7 @@ body.modal-open{
   gap:7px;
 }
 .tracker-operative{
+  container-type:inline-size;
   min-width:0;
   display:flex;
   justify-content:space-between;
@@ -774,8 +775,7 @@ button.tracker-operative:hover{
   border-color:var(--green);
   background:rgba(92,245,157,.09);
 }
-.tracker-operative.spent,
-.tracker-operative.eliminated{
+.tracker-operative.spent{
   opacity:.55;
 }
 .tracker-operative.spent strong{
@@ -799,7 +799,7 @@ button.tracker-operative:hover{
 @media(max-width:600px){
   .tracker-operative-grid{grid-template-columns:1fr}
 }
-@media(max-width:360px){
+@container(max-width:280px){
   .tracker-elimination-icon{display:none}
 }
 

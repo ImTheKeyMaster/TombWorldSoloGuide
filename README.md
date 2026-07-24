@@ -5,7 +5,7 @@
 **Version 6.4.5 - Activation Tracker Eliminated-State Styling**
 
 - Updated eliminated Player operative and NPO tracker rows to use the Guide's red eliminated-state border, background, and text treatment.
-- Added the existing skull symbol to eliminated tracker rows with narrow-screen fallback behavior that preserves name and status readability.
+- Added the existing skull symbol to eliminated tracker rows with narrow-row fallback behavior that preserves name and status readability.
 - Preserved activation state behavior, restoration controls, and READY/ACTIVATED presentation.
 
 ---
