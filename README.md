@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v6.4.3
+# Tomb World Solo Guide v6.4.4
+
+## v6.4.4
+
+**Version 6.4.4 - Resolve Combat Weapon Summary Clarity**
+
+- Shows an em dash in the Resolve Combat Weapon summary while a required multi-weapon selection is pending.
+- Keeps the weapon dropdown placeholder and existing selection, Continue, and single-weapon automatic behaviors unchanged.
 
 ## v6.4.3
 
