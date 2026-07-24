@@ -50,7 +50,7 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
         self.assertIn("state.lastActivation={...state.lastActivation,combatDraft:combat}", wizard)
         self.assertIn("save();", wizard)
-        self.assertIn("const sameCombat=saved&&saved.targetId===target.id&&saved.attackType===attackType", wizard)
+        self.assertIn("const savedCombat=saved&&saved.targetId===target.id&&saved.attackType===attackType", wizard)
         self.assertIn("if(sameCombat)displayCombat(saved,animateCombat)", wizard)
         self.assertIn("displaySharedCombatResult(combat", wizard)
         self.assertIn("const banishmentRequired=dimensionalBanishmentRequired(combat)", wizard)
@@ -58,9 +58,28 @@ class AutomaticNpoCombatTests(unittest.TestCase):
 
     def test_cancel_discards_a_new_automatic_result(self):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
-        fresh_flow = wizard.split("const combat=saved", 1)[0]
-        self.assertIn("combatDraft:null", fresh_flow)
-        self.assertIn("if(combatTimer)combatTimer()", fresh_flow)
+        self.assertIn("if(!sameCombat)state.lastActivation={...state.lastActivation,combatDraft:null}", wizard)
+        self.assertIn("if(combatTimer)combatTimer()", wizard)
+
+    def test_profile_change_starts_only_one_roll_and_rerender_restores_it(self):
+        wizard = self.source("function showNpoAttackWizard", "function spinnerField")
+        shared = self.source("function runAutomaticCombatRolls", "function retainedDiceTotals")
+        self.assertIn("let rollStarted=false", wizard)
+        self.assertIn("if(rollStarted)return", wizard)
+        self.assertIn("profileSelect.disabled=true", wizard)
+        self.assertIn("rolling:true,attackType,targetId:target.id", wizard)
+        self.assertIn("else if(rollingCombat)startAutomaticCombat(saved)", wizard)
+        self.assertIn("rolledAttackDice=restoredRoll?.attackDice||", wizard)
+        self.assertIn("rolledDefenseDice=restoredRoll?.saveDice||", wizard)
+        self.assertIn("rolledAttackDice||retainSuccessfulDice", shared)
+        self.assertIn("rolledDefenseDice||retainSuccessfulDice", shared)
+
+    def test_unselected_multiple_profile_attack_restores_without_rolling(self):
+        wizard = self.source("function showNpoAttackWizard", "function spinnerField")
+        ending = wizard.split("$('#npoCombatProfile')?.addEventListener('change',startAutomaticCombat);", 1)[1]
+        self.assertIn("if(sameCombat)displayCombat(saved,animateCombat)", ending)
+        self.assertIn("else if(availableProfiles.length===1)startAutomaticCombat()", ending)
+        self.assertNotIn("else startAutomaticCombat()", ending)
 
     def test_aggressive_defense_rolls_without_a_manual_button(self):
         preview = self.source("function previewPendingPlayerAttack", "function displayPendingPlayerCombat")

@@ -25,8 +25,8 @@ class NpoAttackProfileCardTests(unittest.TestCase):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
         self.assertIn("const attackType=state.lastActivation?.action?.includes('Fight')?'melee':'shoot'", wizard)
         self.assertIn("const availableProfiles=npoAttackProfiles(n,attackType)", wizard)
-        self.assertIn("attackLabel:combatAttackLabel(initialProfile)", wizard)
-        self.assertIn("profile=canonicalAttackProfile(availableProfiles[Number($('#npoCombatProfile')?.value)||0])", wizard)
+        self.assertIn("initialProfile?combatAttackLabel(initialProfile):'—'", wizard)
+        self.assertIn("profile=canonicalAttackProfile(availableProfiles[profileIndex])", wizard)
         self.assertIn("attack.textContent=combatAttackLabel(profile)", wizard)
         self.assertNotRegex(wizard, r"attackLabel:`[0-9]+ dice")
 
@@ -48,6 +48,30 @@ class NpoAttackProfileCardTests(unittest.TestCase):
         self.assertIn("applyNpoAttackDamage(n,target,summary)", wizard)
         self.assertIn("if(resolutionCommitted)return", wizard)
 
+    def test_multiple_profiles_require_a_deliberate_selection_before_rolling(self):
+        wizard = self.source("function showNpoAttackWizard", "function spinnerField")
+        placeholder = '<option value="" selected disabled>Select a weapon...</option>'
+        self.assertIn(placeholder, wizard)
+        self.assertIn("else if(availableProfiles.length===1)startAutomaticCombat()", wizard)
+        self.assertIn("if(profileIndex<0||!Number.isInteger(profileIndex)||(!restoredRoll&&availableProfiles.length>1&&selectedValue===''))return", wizard)
+        self.assertIn("$('#npoCombatProfile')?.addEventListener('change',startAutomaticCombat)", wizard)
+        self.assertLess(wizard.index('id="npoCombatGuidance"'), wizard.index("${profileControl}"))
+
+    def test_single_profiles_auto_select_for_shooting_and_melee(self):
+        profiles = self.source("function npoAttackProfiles", "function canonicalAttackProfile")
+        wizard = self.source("function showNpoAttackWizard", "function spinnerField")
+        self.assertIn("definition.rangedWeapons||[]", profiles)
+        self.assertIn("definition.meleeWeapons||[]", profiles)
+        self.assertIn("availableProfiles.length===1?canonicalAttackProfile(availableProfiles[0]):null", wizard)
+        self.assertIn("availableProfiles.length===1?0:Number(selectedValue)", wizard)
+
+    def test_no_valid_profile_fails_safely_with_back_action(self):
+        wizard = self.source("function showNpoAttackWizard", "function spinnerField")
+        no_weapon = wizard.split("if(!availableProfiles.length){", 1)[1].split("const initialProfile", 1)[0]
+        self.assertIn("No valid ${weaponType} weapon available", no_weapon)
+        self.assertIn('id="cancelNpoAttack">Back</button>', no_weapon)
+        self.assertNotIn("runAutomaticCombatRolls", no_weapon)
+
     def test_npo_guidance_is_scoped_to_attack_type_and_weapon(self):
         guidance = self.source("function normalizedGuidanceMatchText", "function recordedCombat")
         self.assertIn("function inferWeaponGuidanceContext(definition,guidanceText)", guidance)
@@ -55,7 +79,7 @@ class NpoAttackProfileCardTests(unittest.TestCase):
         self.assertIn("definition?.meleeWeapons||[]", guidance)
         self.assertIn("profileId:profile.id", guidance)
         self.assertIn("item.attackType===attackType", guidance)
-        self.assertIn("item.weaponId===profile?.weaponId", guidance)
+        self.assertIn("!profile||!item.weaponId||item.weaponId===profile.weaponId", guidance)
         self.assertIn("attackType:'shoot'", guidance)
 
     def test_profile_grid_is_responsive_without_empty_cells(self):
