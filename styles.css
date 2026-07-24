@@ -785,7 +785,6 @@ button.tracker-operative:hover{
   border:2px solid var(--danger);
   background:rgba(125,25,25,.2);
   color:var(--danger);
-  text-decoration:line-through;
 }
 .tracker-operative.eliminated strong{
   color:var(--danger);
