@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '6.4.4';
+  const APP_VERSION = '6.4.5';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -1658,14 +1658,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const status=operativeState.inPlay===false?(operativeState.offBoardReason==='escaped'?'ESCAPED':'OFF BOARD'):casualty?'ELIMINATED':activated?'ACTIVATED':'READY';
       const cls=operativeState.inPlay===false?'activated':casualty?'eliminated':activated?'activated':'ready';
       return `<button type="button" class="tracker-operative player ${cls}" data-player-operative="${operativeId}" title="Select ${escapeHtml(operative?.name||operativeId)} to mark it eliminated or restore it">
-        <span>${escapeHtml(operative?.name||operativeId)}</span><strong>${status}</strong>
+        <span>${escapeHtml(operative?.name||operativeId)}</span><span class="tracker-operative-status">${casualty?'<span class="tracker-elimination-icon" aria-hidden="true">☠</span>':''}<strong>${status}</strong></span>
       </button>`;
     }).join('');
     const npoRows=state.roster.map(n=>{
       const eliminated=n.wounds<=0;
       const status=eliminated?'ELIMINATED':n.dormant?'DORMANT':n.ready?'READY':'ACTIVATED';
       const cls=eliminated?'eliminated':n.ready?'ready':'activated';
-      return `<div class="tracker-operative npo ${cls}"><span>${escapeHtml(npoName(n))}</span><strong>${status}</strong></div>`;
+      return `<div class="tracker-operative npo ${cls}"><span>${escapeHtml(npoName(n))}</span><span class="tracker-operative-status">${eliminated?'<span class="tracker-elimination-icon" aria-hidden="true">☠</span>':''}<strong>${status}</strong></span></div>`;
     }).join('');
     return `<section class="card activation-tracker"><details class="activation-details">
       <summary><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div></summary>

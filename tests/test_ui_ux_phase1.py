@@ -48,6 +48,15 @@ class UiUxPhase1Tests(unittest.TestCase):
         self.assertIn("dispatchEvent(new Event('change'", handler)
         self.assertIn("id=\"checkAllDeployment\"", self.app)
 
+    def test_activation_tracker_reuses_eliminated_state_for_players_and_npos(self):
+        styles = (ROOT / "styles.css").read_text()
+        tracker = self.source("function activationTracker()", "function showPlayerOperativeStatus")
+        self.assertEqual(tracker.count('class="tracker-elimination-icon"'), 2)
+        self.assertIn("border:2px solid var(--danger)", styles)
+        self.assertIn("color:var(--danger)", styles)
+        self.assertIn(".tracker-elimination-icon{display:none}", styles)
+        self.assertIn("data-player-operative=", tracker)
+
     def test_application_ui_uses_solo_terminology(self):
         ui_files = [ROOT / "index.html", ROOT / "app.js", *(ROOT / "Missions").glob("*.json")]
         for path in ui_files:
@@ -55,7 +64,7 @@ class UiUxPhase1Tests(unittest.TestCase):
             self.assertIsNone(re.search(r"\bPlayer [AB]\b", content), path)
 
     def test_release_versions_and_description_are_synchronized(self):
-        version = "6.4.4"
+        version = "6.4.5"
         self.assertIn(f"const APP_VERSION = '{version}'", self.app)
         self.assertIn(f"V{version}", (ROOT / "index.html").read_text())
         self.assertIn(f"const APP_VERSION = '{version}'", (ROOT / "service-worker.js").read_text())
