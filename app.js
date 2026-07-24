@@ -2639,7 +2639,7 @@ function showPlayerActivation(stage={}){
         ? {...(inferWeaponGuidanceContext(definition,rawGuidance.text)||{}),...rawGuidance}
         : null;
     const items=[guidance,weaponSentinel&&{text:`${weaponSentinel.name}: ${weaponSentinel.text}`,attackType:'shoot'}]
-      .filter(item=>item?.text&&item.attackType===attackType&&(!item.weaponId||item.weaponId===profile?.weaponId));
+      .filter(item=>item?.text&&item.attackType===attackType&&(!profile||!item.weaponId||item.weaponId===profile.weaponId));
     return items.length?`<div class="summary-box"><strong>NPO combat guidance</strong><ul>${items.map(item=>`<li>${escapeHtml(item.text)}</li>`).join('')}</ul></div>`:'';
   }
 
@@ -2675,13 +2675,13 @@ function showPlayerActivation(stage={}){
     return dice.map(die=>({...die,retained:die.kind==='hit'||die.kind==='crit'}));
   }
 
-  function runAutomaticCombatRolls({container,profile,defenseSave,onComplete}){
+  function runAutomaticCombatRolls({container,profile,defenseSave,rolledAttackDice=null,rolledDefenseDice=null,onComplete}){
     let timer=null;
-    const attackDice=retainSuccessfulDice(rolledCombatDice(profile.dice,profile.hit,profile.critThreshold));
+    const attackDice=rolledAttackDice||retainSuccessfulDice(rolledCombatDice(profile.dice,profile.hit,profile.critThreshold));
     container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row animated-roll">${attackDice.map(()=>rollingDieHtml()).join('')}</div></section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row"><span class="muted">Rolling after the attack…</span></div></section>`;
     timer=setTimeout(()=>{
       if(!container.isConnected)return;
-      const defenseDice=retainSuccessfulDice(rolledCombatDice(Math.max(0,3-profile.ap),Number(defenseSave)||3));
+      const defenseDice=rolledDefenseDice||retainSuccessfulDice(rolledCombatDice(Math.max(0,3-profile.ap),Number(defenseSave)||3));
       container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row settled" data-combat-attack-dice>${attackDice.map(dieHtml).join('')}</div></section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row animated-roll" data-combat-save-dice>${defenseDice.length?defenseDice.map(()=>rollingDieHtml()).join(''):'<span class="muted">No defense dice rolled</span>'}</div></section>`;
       timer=settleCombatDice({attackDice,saveDice:defenseDice},()=>{
         timer=null;
@@ -3386,16 +3386,25 @@ function showPlayerActivation(stage={}){
     const attackType=state.lastActivation?.action?.includes('Fight')?'melee':'shoot';
     const availableProfiles=npoAttackProfiles(n,attackType);
     const saved=state.lastActivation?.combatDraft;
-    const sameCombat=saved&&saved.targetId===target.id&&saved.attackType===attackType;
-    const initialProfile=sameCombat?saved.profile:canonicalAttackProfile(availableProfiles[0]);
-    const profileControl=!sameCombat&&availableProfiles.length>1
-      ? `<div class="field compact-combat-choice"><label>NPO Weapon Profile</label><select id="npoCombatProfile">${availableProfiles.map((profile,index)=>`<option value="${index}">${escapeHtml(canonicalAttackProfile(profile).name)}</option>`).join('')}</select></div>`
+    const savedCombat=saved&&saved.targetId===target.id&&saved.attackType===attackType;
+    const rollingCombat=savedCombat&&saved.rolling===true;
+    const sameCombat=savedCombat&&!rollingCombat;
+    if(!availableProfiles.length){
+      const weaponType=attackType==='shoot'?'shooting':'melee';
+      showModal('Unable to Resolve Combat',`<div class="modal-inner"><div class="summary-box"><strong>No valid ${weaponType} weapon available</strong><p>${escapeHtml(npoName(n))} has no weapon or profile valid for this ${weaponType} attack.</p></div><div class="wizard-actions"><button class="btn ghost" id="cancelNpoAttack">Back</button></div></div>`);
+      $('#cancelNpoAttack').onclick=()=>{if(onCancel)onCancel();};
+      return;
+    }
+    const initialProfile=savedCombat?saved.profile:availableProfiles.length===1?canonicalAttackProfile(availableProfiles[0]):null;
+    const profileControl=!savedCombat&&availableProfiles.length>1
+      ? `<div class="field compact-combat-choice"><label for="npoCombatProfile">NPO Weapon Profile</label><select id="npoCombatProfile"><option value="" selected disabled>Select a weapon...</option>${availableProfiles.map((profile,index)=>`<option value="${index}">${escapeHtml(canonicalAttackProfile(profile).name)}</option>`).join('')}</select></div>`
       : '';
+    const guidance=npoCombatGuidanceHtml(n,{attackType,profile:initialProfile});
     const screen=showSharedCombatResolutionScreen({
       title:'Resolve Combat',attackerName:npoName(n),defenderName:target.name,attackType,
-      weaponName:initialProfile.name,attackLabel:combatAttackLabel(initialProfile),defenseLabel:`3 dice · ${target.save||3}+`,
-      cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',extraHtml:profileControl,
-      detailsHtml:`<div id="npoCombatGuidance">${npoCombatGuidanceHtml(n,{attackType,profile:initialProfile})}</div><div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`
+      weaponName:initialProfile?.name||'Select a weapon...',attackLabel:initialProfile?combatAttackLabel(initialProfile):'—',defenseLabel:`3 dice · ${target.save||3}+`,
+      cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',extraHtml:`<div id="npoCombatGuidance">${guidance}</div>${profileControl}`,
+      detailsHtml:`<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`
     });
     const cancel=()=>{
       if(combatTimer)combatTimer();
@@ -3442,9 +3451,19 @@ function showPlayerActivation(stage={}){
       save();
       displayCombat(combat,false);
     };
-    const startAutomaticCombat=()=>{
+    let rollStarted=false;
+    const startAutomaticCombat=(restoredRoll=null)=>{
+      if(rollStarted)return;
+      const selectedValue=restoredRoll?null:$('#npoCombatProfile')?.value;
+      const profileIndex=restoredRoll
+        ? availableProfiles.findIndex(profile=>canonicalAttackProfile(profile).weaponId===restoredRoll.profile.weaponId&&canonicalAttackProfile(profile).profileId===restoredRoll.profile.profileId)
+        : availableProfiles.length===1?0:Number(selectedValue);
+      if(profileIndex<0||!Number.isInteger(profileIndex)||(!restoredRoll&&availableProfiles.length>1&&selectedValue===''))return;
+      rollStarted=true;
       if(combatTimer)combatTimer();
-      const profile=canonicalAttackProfile(availableProfiles[Number($('#npoCombatProfile')?.value)||0]);
+      const profile=canonicalAttackProfile(availableProfiles[profileIndex]);
+      const profileSelect=$('#npoCombatProfile');
+      if(profileSelect)profileSelect.disabled=true;
       const weapon=$('.compact-combat-profile div:nth-child(4) strong');
       if(weapon)weapon.textContent=profile.name;
       const attack=$('.compact-combat-profile div:nth-child(5) strong');
@@ -3456,16 +3475,21 @@ function showPlayerActivation(stage={}){
       $('#combatResults').replaceChildren();
       $('#completeNpoCombat').disabled=true;
       $('#completeNpoCombat').textContent='Rolling…';
-      state.lastActivation={...state.lastActivation,dice:attackDice.map(d=>({...d})),targetConfirmed:true,combatDraft:null};
+      const rolledAttackDice=restoredRoll?.attackDice||retainSuccessfulDice(rolledCombatDice(profile.dice,profile.hit,profile.critThreshold));
+      const rolledDefenseDice=restoredRoll?.saveDice||retainSuccessfulDice(rolledCombatDice(Math.max(0,3-profile.ap),Number(target.save)||3));
+      state.lastActivation={...state.lastActivation,dice:attackDice.map(d=>({...d})),targetConfirmed:true,combatDraft:{
+        rolling:true,attackType,targetId:target.id,targetName:target.name,profile,attackDice:rolledAttackDice,saveDice:rolledDefenseDice
+      }};
       save();
-      combatTimer=runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,onComplete:(rolledAttackDice,rolledDefenseDice)=>{
+      combatTimer=runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,rolledAttackDice,rolledDefenseDice,onComplete:(completedAttackDice,completedDefenseDice)=>{
         combatTimer=null;
-        finishAutomaticCombat(profile,rolledAttackDice,rolledDefenseDice);
+        finishAutomaticCombat(profile,completedAttackDice,completedDefenseDice);
       }});
     };
     $('#npoCombatProfile')?.addEventListener('change',startAutomaticCombat);
     if(sameCombat)displayCombat(saved,animateCombat);
-    else startAutomaticCombat();
+    else if(rollingCombat)startAutomaticCombat(saved);
+    else if(availableProfiles.length===1)startAutomaticCombat();
   }
 
   function spinnerField(id,label,value,min,max){return `<div class="field spinner-field"><label>${label}</label><div class="spinner"><input id="${id}" type="number" value="${value}" min="${min}" max="${max}" inputmode="numeric"><button type="button" data-spin="${id}" data-delta="-1" aria-label="Decrease ${label}">−</button><button type="button" data-spin="${id}" data-delta="1" aria-label="Increase ${label}">+</button></div></div>`;}
