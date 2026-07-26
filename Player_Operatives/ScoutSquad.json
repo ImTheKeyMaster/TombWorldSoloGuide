@@ -1,0 +1,2059 @@
+{
+  "schemaVersion": 2,
+  "teamId": "scout-squad",
+  "teamName": "Scout Squad",
+  "faction": "Imperium",
+  "keywords": [
+    "SCOUT SQUAD",
+    "IMPERIUM",
+    "ADEPTUS ASTARTES"
+  ],
+  "rosterSize": 9,
+  "selectionRules": {
+    "uniqueOperatives": true,
+    "selectionGroupMax": 1
+  },
+  "source": {
+    "publisher": "Games Workshop",
+    "documents": [
+      "Scout Squad - Datacards",
+      "Scout Squad - Faction Rules",
+      "Scout Squad - Operative Selection"
+    ]
+  },
+  "rosterCategories": [
+    {
+      "id": "leader",
+      "label": "Scout Sergeant",
+      "order": 1,
+      "requiredCount": 1,
+      "maxCount": 1
+    },
+    {
+      "id": "specialists",
+      "label": "Specialists",
+      "order": 2,
+      "requiredCount": 0,
+      "maxCount": 4
+    },
+    {
+      "id": "warriors",
+      "label": "Warriors",
+      "order": 3,
+      "requiredCount": 0,
+      "maxCount": 8
+    }
+  ],
+  "factionRules": [
+    {
+      "id": "forward-scouting",
+      "name": "Forward Scouting",
+      "timing": "End of Set Up Operatives",
+      "automation": "manual-tabletop-guidance",
+      "selectionCount": 6,
+      "text": "Select and resolve up to six Forward Scouting options: Redeploy, Reposition, Trip Alarm, Booby Trap, Tactical Manoeuvre, Diversion, Devise Plan, Designate Target, or Spy. Each option\u2019s limit is shown in its guidance. If both players have this rule, alternate resolving selections, starting with the player with initiative."
+    },
+    {
+      "id": "redeploy",
+      "name": "Redeploy (maximum 1)",
+      "timing": "Forward Scouting",
+      "automation": "manual-tabletop-guidance",
+      "selectionLimit": 1,
+      "text": "Change the set up of one third of your operatives, rounding up.",
+      "forwardScoutingOption": true
+    },
+    {
+      "id": "reposition",
+      "name": "Reposition (maximum 2)",
+      "timing": "Forward Scouting",
+      "automation": "manual-tabletop-guidance",
+      "selectionLimit": 2,
+      "text": "Perform a free Reposition action with one friendly operative wholly within your drop zone. It must end wholly within 3\" of your drop zone.",
+      "forwardScoutingOption": true
+    },
+    {
+      "id": "trip-alarm",
+      "name": "Trip Alarm (maximum 2)",
+      "timing": "Forward Scouting; remove in the Ready step of Turning Point 3",
+      "automation": "lifecycle-reminder",
+      "selectionLimit": 2,
+      "text": "Place a Trip Alarm marker more than 6\" from the opponent\u2019s drop zone. During Turning Points 1 and 2, friendly Scout Squad ranged weapons have Seek when shooting an enemy within 2\" of it. Remove it in the Ready step of the third Strategy phase.",
+      "forwardScoutingOption": true
+    },
+    {
+      "id": "booby-trap",
+      "name": "Booby Trap (maximum 1)",
+      "timing": "Forward Scouting; first enemy enters its control range",
+      "automation": "manual-tabletop-guidance",
+      "selectionLimit": 1,
+      "text": "Place a Booby Trap marker more than 6\" from the opponent\u2019s drop zone and more than 2\" from other markers, access points and Accessible terrain. The first time it is within enemy control range, remove it, inflict 2D3 damage, and end the operative\u2019s action if it survives. If it cannot be placed, move it the minimum amount to do so. Record wounds or elimination in the NPO Roster.",
+      "forwardScoutingOption": true
+    },
+    {
+      "id": "devise-plan",
+      "name": "Devise Plan (maximum 1)",
+      "timing": "Forward Scouting",
+      "automation": "manual-tabletop-guidance",
+      "selectionLimit": 1,
+      "text": "Gain 1CP.",
+      "forwardScoutingOption": true
+    },
+    {
+      "id": "designate-target",
+      "name": "Designate Target (maximum 1)",
+      "timing": "Forward Scouting and attacks against the designated target",
+      "automation": "manual-tabletop-guidance",
+      "selectionLimit": 1,
+      "text": "Give one enemy operative a Target token. When a friendly Scout Squad operative shoots, fights, or retaliates against it, you can re-roll one attack die.",
+      "forwardScoutingOption": true
+    },
+    {
+      "id": "spy",
+      "name": "Spy (maximum 1)",
+      "timing": "Forward Scouting; Approved Ops only",
+      "automation": "manual-tabletop-guidance",
+      "selectionLimit": 1,
+      "text": "The opponent must reveal their selected tac op.",
+      "forwardScoutingOption": true
+    }
+  ],
+  "strategicGambits": [
+    {
+      "id": "tactical-manoeuvre",
+      "name": "Tactical Manoeuvre",
+      "timing": "Forward Scouting selection; Strategy Phase use",
+      "automation": "manual-tabletop-guidance",
+      "usageLimit": {
+        "count": 2,
+        "period": "battle"
+      },
+      "text": "Twice per battle, select one friendly operative. Until the end of its next activation, add 1 to its APL stat.",
+      "forwardScoutingOption": true,
+      "selectionLimit": 1
+    },
+    {
+      "id": "diversion",
+      "name": "Diversion",
+      "timing": "Forward Scouting selection; Strategy Phase use",
+      "automation": "manual-tabletop-guidance",
+      "usageLimit": {
+        "count": 1,
+        "period": "battle"
+      },
+      "text": "Once per battle, select one enemy operative within 6\" of a killzone edge. Until the end of its next activation, subtract 1 from its APL stat.",
+      "forwardScoutingOption": true,
+      "selectionLimit": 1
+    }
+  ],
+  "operatives": [
+    {
+      "id": "sergeant-shotgun",
+      "name": "Scout Sergeant \u2014 Astartes Shotgun",
+      "officialName": "Scout Sergeant",
+      "role": "Leader",
+      "category": "leader",
+      "apl": 3,
+      "move": 6,
+      "save": 4,
+      "wounds": 11,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "LEADER",
+        "SERGEANT"
+      ],
+      "abilities": [
+        {
+          "id": "guidance-and-experience",
+          "name": "Guidance and Experience",
+          "text": "Once during each activation, select one other friendly Scout Squad operative in the killzone. Until the end of that operative\u2019s next activation, add 1 to its APL stat.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "activation"
+          },
+          "kind": "passive-ability"
+        },
+        {
+          "id": "astartes",
+          "name": "Astartes",
+          "text": "During this operative\u2019s activation, it can perform either two Shoot actions or two Fight actions. If it performs two Shoot actions, an Astartes shotgun, bolt pistol or boltgun must be selected for at least one of them. It can counteract regardless of its order.",
+          "automation": "manual-guidance",
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "astartes-shotgun",
+          "name": "Astartes shotgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "4/4",
+          "rules": [
+            "Range 6\""
+          ]
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "sergeant"
+    },
+    {
+      "id": "sergeant-boltgun",
+      "name": "Scout Sergeant \u2014 Boltgun",
+      "officialName": "Scout Sergeant",
+      "role": "Leader",
+      "category": "leader",
+      "apl": 3,
+      "move": 6,
+      "save": 4,
+      "wounds": 11,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "LEADER",
+        "SERGEANT"
+      ],
+      "abilities": [
+        {
+          "id": "guidance-and-experience",
+          "name": "Guidance and Experience",
+          "text": "Once during each activation, select one other friendly Scout Squad operative in the killzone. Until the end of that operative\u2019s next activation, add 1 to its APL stat.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "activation"
+          },
+          "kind": "passive-ability"
+        },
+        {
+          "id": "astartes",
+          "name": "Astartes",
+          "text": "During this operative\u2019s activation, it can perform either two Shoot actions or two Fight actions. If it performs two Shoot actions, an Astartes shotgun, bolt pistol or boltgun must be selected for at least one of them. It can counteract regardless of its order.",
+          "automation": "manual-guidance",
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "boltgun",
+          "name": "Boltgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "sergeant"
+    },
+    {
+      "id": "sergeant-pistol-chainsword",
+      "name": "Scout Sergeant \u2014 Bolt Pistol & Chainsword",
+      "officialName": "Scout Sergeant",
+      "role": "Leader",
+      "category": "leader",
+      "apl": 3,
+      "move": 6,
+      "save": 4,
+      "wounds": 11,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "LEADER",
+        "SERGEANT"
+      ],
+      "abilities": [
+        {
+          "id": "guidance-and-experience",
+          "name": "Guidance and Experience",
+          "text": "Once during each activation, select one other friendly Scout Squad operative in the killzone. Until the end of that operative\u2019s next activation, add 1 to its APL stat.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "activation"
+          },
+          "kind": "passive-ability"
+        },
+        {
+          "id": "astartes",
+          "name": "Astartes",
+          "text": "During this operative\u2019s activation, it can perform either two Shoot actions or two Fight actions. If it performs two Shoot actions, an Astartes shotgun, bolt pistol or boltgun must be selected for at least one of them. It can counteract regardless of its order.",
+          "automation": "manual-guidance",
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "bolt-pistol",
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "id": "chainsword",
+          "name": "Chainsword",
+          "type": "melee",
+          "attacks": 5,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "sergeant"
+    },
+    {
+      "id": "heavy-gunner-heavy-bolter",
+      "name": "Scout Heavy Gunner \u2014 Heavy Bolter",
+      "officialName": "Scout Heavy Gunner",
+      "role": "Heavy Gunner",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "HEAVY GUNNER"
+      ],
+      "abilities": [
+        {
+          "id": "heavy-weapon-bipod",
+          "name": "Heavy Weapon Bipod",
+          "text": "Whenever this operative is shooting with a datacard weapon, if it has not moved during the activation or is counteracting, that weapon has Ceaseless; if it already has Ceaseless, it has Relentless instead. This does not prevent movement after shooting.",
+          "automation": "manual-guidance",
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "bolt-pistol",
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "id": "heavy-bolter-focused",
+          "name": "Heavy bolter (focused)",
+          "type": "ranged",
+          "attacks": 5,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": [
+            "Heavy (Dash only)",
+            "Piercing Crits 1"
+          ]
+        },
+        {
+          "id": "heavy-bolter-sweeping",
+          "name": "Heavy bolter (sweeping)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": [
+            "Heavy (Dash only)",
+            "Piercing Crits 1",
+            "Torrent 1\""
+          ],
+          "manualResolution": "Resolve Blast or Torrent against all eligible targets on the tabletop. Record wounds or elimination for every affected operative in the Player or NPO Roster, then resume the activation."
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "heavy-gunner"
+    },
+    {
+      "id": "heavy-gunner-missile-launcher",
+      "name": "Scout Heavy Gunner \u2014 Missile Launcher",
+      "officialName": "Scout Heavy Gunner",
+      "role": "Heavy Gunner",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "HEAVY GUNNER"
+      ],
+      "abilities": [
+        {
+          "id": "heavy-weapon-bipod",
+          "name": "Heavy Weapon Bipod",
+          "text": "Whenever this operative is shooting with a datacard weapon, if it has not moved during the activation or is counteracting, that weapon has Ceaseless; if it already has Ceaseless, it has Relentless instead. This does not prevent movement after shooting.",
+          "automation": "manual-guidance",
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "bolt-pistol",
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "id": "missile-launcher-frag",
+          "name": "Missile launcher (frag)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/5",
+          "rules": [
+            "Blast 2\"",
+            "Heavy (Dash only)"
+          ],
+          "manualResolution": "Resolve Blast or Torrent against all eligible targets on the tabletop. Record wounds or elimination for every affected operative in the Player or NPO Roster, then resume the activation."
+        },
+        {
+          "id": "missile-launcher-krak",
+          "name": "Missile launcher (krak)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "5/7",
+          "rules": [
+            "Heavy (Dash only)",
+            "Piercing 1"
+          ]
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "heavy-gunner"
+    },
+    {
+      "id": "hunter",
+      "name": "Scout Hunter",
+      "officialName": "Scout Hunter",
+      "role": "Hunter",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "HUNTER"
+      ],
+      "abilities": [
+        {
+          "id": "grapnel-launcher",
+          "name": "Grapnel Launcher",
+          "text": "Whenever this operative is climbing up, treat the vertical distance as 2\" regardless of the actual vertical movement.",
+          "automation": "manual-guidance",
+          "kind": "passive-ability"
+        },
+        {
+          "id": "grapnel-assault",
+          "name": "Grapnel Assault",
+          "text": "After this operative performs Charge during its activation, if it climbed, dropped, jumped, or its base moved underneath Vantage terrain during that action, its melee weapons have Lethal 3+ until the end of that activation.",
+          "automation": "manual-guidance",
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "bolt-pistol",
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "id": "combat-blade",
+          "name": "Combat blade",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "sniper",
+      "name": "Scout Sniper",
+      "officialName": "Scout Sniper",
+      "role": "Sniper",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "SNIPER"
+      ],
+      "abilities": [
+        {
+          "id": "camo-cloak",
+          "name": "Camo Cloak",
+          "text": "When an operative shoots this operative, ignore Saturate. If any cover saves can be retained, retain one additional cover save or one cover save as a critical success instead; this is not cumulative with improved cover saves from Vantage terrain.",
+          "automation": "manual-guidance",
+          "kind": "passive-ability"
+        },
+        {
+          "id": "optics",
+          "name": "Optics (1AP)",
+          "text": "Until the start of this operative\u2019s next activation, enemy operatives cannot be obscured when it shoots. It cannot perform this action within enemy control range.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "action"
+          },
+          "kind": "unique-action",
+          "apCost": 1
+        }
+      ],
+      "weapons": [
+        {
+          "id": "bolt-pistol",
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "id": "sniper-rifle-mobile",
+          "name": "Sniper rifle (mobile)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "id": "sniper-rifle-stationary",
+          "name": "Sniper rifle (stationary)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "3/3",
+          "rules": [
+            "Devastating 3",
+            "Heavy (Dash only)",
+            "Silent"
+          ]
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "tracker",
+      "name": "Scout Tracker",
+      "officialName": "Scout Tracker",
+      "role": "Tracker",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "TRACKER"
+      ],
+      "abilities": [
+        {
+          "id": "track-enemy",
+          "name": "Track Enemy (1AP)",
+          "text": "Select one enemy operative within 8\". Until the end of the turning point, friendly Scout Squad operatives\u2019 ranged weapons have Seek Light when shooting it. This action cannot be performed within enemy control range.",
+          "automation": "manual-guidance",
+          "kind": "unique-action",
+          "apCost": 1
+        },
+        {
+          "id": "auspex-scan",
+          "name": "Auspex Scan (1AP)",
+          "text": "Until the start of this operative\u2019s next activation or until it is incapacitated, when a friendly Scout Squad operative shoots an enemy within 8\" of this operative, that enemy cannot be obscured. If the shooter is a Sniper benefiting from Optics, its ranged weapons also have Seek Light. This action cannot be performed within enemy control range.",
+          "automation": "manual-guidance",
+          "kind": "unique-action",
+          "apCost": 1
+        }
+      ],
+      "weapons": [
+        {
+          "id": "boltgun",
+          "name": "Boltgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "warrior-1-shotgun",
+      "name": "Scout Warrior 1 \u2014 Astartes Shotgun",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "astartes-shotgun",
+          "name": "Astartes shotgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "4/4",
+          "rules": [
+            "Range 6\""
+          ]
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-1"
+    },
+    {
+      "id": "warrior-1-boltgun",
+      "name": "Scout Warrior 1 \u2014 Boltgun",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "boltgun",
+          "name": "Boltgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-1"
+    },
+    {
+      "id": "warrior-1-pistol-blade",
+      "name": "Scout Warrior 1 \u2014 Bolt Pistol & Combat Blade",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "bolt-pistol",
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "id": "combat-blade",
+          "name": "Combat blade",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-1"
+    },
+    {
+      "id": "warrior-2-shotgun",
+      "name": "Scout Warrior 2 \u2014 Astartes Shotgun",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "astartes-shotgun",
+          "name": "Astartes shotgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "4/4",
+          "rules": [
+            "Range 6\""
+          ]
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-2"
+    },
+    {
+      "id": "warrior-2-boltgun",
+      "name": "Scout Warrior 2 \u2014 Boltgun",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "boltgun",
+          "name": "Boltgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-2"
+    },
+    {
+      "id": "warrior-2-pistol-blade",
+      "name": "Scout Warrior 2 \u2014 Bolt Pistol & Combat Blade",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "bolt-pistol",
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "id": "combat-blade",
+          "name": "Combat blade",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-2"
+    },
+    {
+      "id": "warrior-3-shotgun",
+      "name": "Scout Warrior 3 \u2014 Astartes Shotgun",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "astartes-shotgun",
+          "name": "Astartes shotgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "4/4",
+          "rules": [
+            "Range 6\""
+          ]
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-3"
+    },
+    {
+      "id": "warrior-3-boltgun",
+      "name": "Scout Warrior 3 \u2014 Boltgun",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "boltgun",
+          "name": "Boltgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-3"
+    },
+    {
+      "id": "warrior-3-pistol-blade",
+      "name": "Scout Warrior 3 \u2014 Bolt Pistol & Combat Blade",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "bolt-pistol",
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "id": "combat-blade",
+          "name": "Combat blade",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-3"
+    },
+    {
+      "id": "warrior-4-shotgun",
+      "name": "Scout Warrior 4 \u2014 Astartes Shotgun",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "astartes-shotgun",
+          "name": "Astartes shotgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "4/4",
+          "rules": [
+            "Range 6\""
+          ]
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-4"
+    },
+    {
+      "id": "warrior-4-boltgun",
+      "name": "Scout Warrior 4 \u2014 Boltgun",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "boltgun",
+          "name": "Boltgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-4"
+    },
+    {
+      "id": "warrior-4-pistol-blade",
+      "name": "Scout Warrior 4 \u2014 Bolt Pistol & Combat Blade",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "bolt-pistol",
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "id": "combat-blade",
+          "name": "Combat blade",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-4"
+    },
+    {
+      "id": "warrior-5-shotgun",
+      "name": "Scout Warrior 5 \u2014 Astartes Shotgun",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "astartes-shotgun",
+          "name": "Astartes shotgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "4/4",
+          "rules": [
+            "Range 6\""
+          ]
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-5"
+    },
+    {
+      "id": "warrior-5-boltgun",
+      "name": "Scout Warrior 5 \u2014 Boltgun",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "boltgun",
+          "name": "Boltgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-5"
+    },
+    {
+      "id": "warrior-5-pistol-blade",
+      "name": "Scout Warrior 5 \u2014 Bolt Pistol & Combat Blade",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "bolt-pistol",
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "id": "combat-blade",
+          "name": "Combat blade",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-5"
+    },
+    {
+      "id": "warrior-6-shotgun",
+      "name": "Scout Warrior 6 \u2014 Astartes Shotgun",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "astartes-shotgun",
+          "name": "Astartes shotgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "4/4",
+          "rules": [
+            "Range 6\""
+          ]
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-6"
+    },
+    {
+      "id": "warrior-6-boltgun",
+      "name": "Scout Warrior 6 \u2014 Boltgun",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "boltgun",
+          "name": "Boltgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-6"
+    },
+    {
+      "id": "warrior-6-pistol-blade",
+      "name": "Scout Warrior 6 \u2014 Bolt Pistol & Combat Blade",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "bolt-pistol",
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "id": "combat-blade",
+          "name": "Combat blade",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-6"
+    },
+    {
+      "id": "warrior-7-shotgun",
+      "name": "Scout Warrior 7 \u2014 Astartes Shotgun",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "astartes-shotgun",
+          "name": "Astartes shotgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "4/4",
+          "rules": [
+            "Range 6\""
+          ]
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-7"
+    },
+    {
+      "id": "warrior-7-boltgun",
+      "name": "Scout Warrior 7 \u2014 Boltgun",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "boltgun",
+          "name": "Boltgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-7"
+    },
+    {
+      "id": "warrior-7-pistol-blade",
+      "name": "Scout Warrior 7 \u2014 Bolt Pistol & Combat Blade",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "bolt-pistol",
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "id": "combat-blade",
+          "name": "Combat blade",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-7"
+    },
+    {
+      "id": "warrior-8-shotgun",
+      "name": "Scout Warrior 8 \u2014 Astartes Shotgun",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "astartes-shotgun",
+          "name": "Astartes shotgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "4/4",
+          "rules": [
+            "Range 6\""
+          ]
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-8"
+    },
+    {
+      "id": "warrior-8-boltgun",
+      "name": "Scout Warrior 8 \u2014 Boltgun",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "boltgun",
+          "name": "Boltgun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-8"
+    },
+    {
+      "id": "warrior-8-pistol-blade",
+      "name": "Scout Warrior 8 \u2014 Bolt Pistol & Combat Blade",
+      "officialName": "Scout Warrior",
+      "role": "Warrior",
+      "category": "warriors",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 10,
+      "baseSize": 28,
+      "keywords": [
+        "SCOUT SQUAD",
+        "IMPERIUM",
+        "ADEPTUS ASTARTES",
+        "WARRIOR"
+      ],
+      "abilities": [
+        {
+          "id": "adaptive-equipment",
+          "name": "Adaptive Equipment",
+          "text": "Once per turning point each, one friendly Scout Squad Warrior can perform Smoke Grenade and one can perform Stun Grenade. Uses granted by this rule do not count toward those universal equipment action limits.",
+          "automation": "manual-guidance",
+          "usageLimit": {
+            "count": 1,
+            "period": "turning-point",
+            "perAction": [
+              "smoke-grenade",
+              "stun-grenade"
+            ]
+          },
+          "kind": "passive-ability"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "bolt-pistol",
+          "name": "Bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "id": "combat-blade",
+          "name": "Combat blade",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "warrior-8"
+    }
+  ],
+  "validation": {
+    "requireStableIds": true
+  }
+}
