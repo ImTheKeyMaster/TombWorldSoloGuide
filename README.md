@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v6.7.1
+# Tomb World Solo Guide v6.7.2
+
+## v6.7.2
+
+**Version 6.7.2 - Damaged Necron Skull Overlay**
+
+- Replaced the eliminated NPO roster overlay with the supplied damaged Necron skull artwork while retaining the Player Operative skull-and-crossbones.
+- Reused the existing elimination overlay dimensions, centering, dimming, and responsive positioning.
+- Synchronized visible, internal, cache-busting, and service-worker cache versions to v6.7.2.
 
 ## v6.7.1
 

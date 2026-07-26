@@ -40,13 +40,21 @@ class NpoRosterReadOnlyActivationTests(unittest.TestCase):
 
     def test_removal_action_is_anchored_without_placeholder_controls(self):
         self.assertIn(
-            ".npo-roster-card{display:flex;flex-direction:column;cursor:default}",
+            ".npo-roster-card{position:relative;display:flex;flex-direction:column;overflow:hidden;cursor:default}",
             self.styles,
         )
         self.assertIn(
             ".npo-roster-card .quick-actions{margin-top:auto;padding-top:10px}",
             self.styles,
         )
+
+    def test_eliminated_npo_uses_themed_overlay_without_changing_player_overlay(self):
+        self.assertIn('.operative-card.dead:after{content:"☠"', self.styles)
+        self.assertIn(
+            '.npo-roster-card.dead:after{content:"";background:url("Assets/Images/eliminated-necron-skull.png") center/auto 6rem no-repeat;opacity:.16}',
+            self.styles,
+        )
+        self.assertIn(".npo-roster-card>*{position:relative;z-index:1}", self.styles)
 
 
 if __name__ == "__main__":
