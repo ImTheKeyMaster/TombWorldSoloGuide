@@ -28,6 +28,13 @@
       "file": "TempestusAquilons.json",
       "faction": "Imperium",
       "description": "Airborne Tempestus Scions with flexible drop deployment"
+    },
+    {
+      "id": "spectre-squad",
+      "name": "Spectre Squad",
+      "file": "SpectreSquad.json",
+      "faction": "Imperium",
+      "description": "Veteran Astra Militarum scouts specializing in reactive fieldcraft"
     }
   ]
 }

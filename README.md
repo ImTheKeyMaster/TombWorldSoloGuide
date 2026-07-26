@@ -1,4 +1,22 @@
-# Tomb World Solo Guide v6.5.1
+# Tomb World Solo Guide v6.6.1
+
+## v6.6.1
+
+**Version 6.6.1 - Spectre Squad Review Corrections**
+
+- Completed opt-in stable-ID validation for Spectre operative weapons, abilities, faction rules, and gambits.
+- Added generic manual tabletop weapon-resolution guidance for Blast and Torrent profiles, including explicit affected-roster updates.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v6.6.1.
+
+## v6.6.0
+
+**Version 6.6.0 - Spectre Squad Player Kill Team**
+
+- Added Spectre Squad as a selectable 11-operative Player Kill Team with mandatory operatives, unique specialists, repeatable Troopers, and mutually exclusive loadouts.
+- Added all supplied datacard weapon profiles, operative guidance, Elite Fieldcraft and Camo Cloaks tabletop reminders, offline registration, and save-compatible stable IDs.
+- Generalized mutually exclusive roster selection groups, Player team definition validation, and the multi-weapon selection placeholder without team-name branches.
+- Added Spectre Squad coverage plus Deathwatch and Tempestus Aquilons regression checks.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v6.6.0.
 
 ## v6.5.1
 

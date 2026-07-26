@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '6.5.1';
+const APP_VERSION = '6.6.1';
 const CACHE_PREFIX = 'tomb-world-solo-guide-';
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 const APP_SHELL = './index.html';
@@ -16,7 +16,7 @@ const PRECACHE_ASSETS = [
   './Missions/03-recover-transponder.json', './Missions/04-destroy-sarcophagus.json',
   './Missions/05-scout-sub-crypt.json', './Missions/06-regroup.json',
   './Player_Operatives/manifest.json', './Player_Operatives/DeathKorps.json',
-  './Player_Operatives/DeathWatch.json', './Player_Operatives/Kasrkin.json', './Player_Operatives/TempestusAquilons.json'
+  './Player_Operatives/DeathWatch.json', './Player_Operatives/Kasrkin.json', './Player_Operatives/TempestusAquilons.json', './Player_Operatives/SpectreSquad.json'
 ];
 
 const canCache = response => response && response.ok && response.type === 'basic';

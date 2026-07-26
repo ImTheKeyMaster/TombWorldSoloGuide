@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '6.5.1';
+  const APP_VERSION = '6.6.1';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -120,11 +120,37 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const response=await fetch(`Player_Operatives/${entry.file}`,{cache:'no-store'});
     if(!response.ok)throw new Error(`Unable to load ${entry.file} (${response.status})`);
     const data=await response.json();
-    if(!Array.isArray(data.operatives)||!data.operatives.length)throw new Error(`${entry.file} has no operatives.`);
+    validatePlayerTeamData(data,entry.file);
     playerTeamData=data;
     state.playerTeamId=entry.id;
     state.playerTeamFile=entry.file;
     return data;
+  }
+  function validatePlayerTeamData(data,fileName){
+    if(!data||!Array.isArray(data.operatives)||!data.operatives.length)throw new Error(`${fileName} has no operatives.`);
+    const operativeIds=new Set(),categoryIds=new Set((data.rosterCategories||[]).map(category=>category.id));
+    const requireStableIds=data.validation?.requireStableIds===true;
+    const factionRuleIds=new Set();
+    for(const rule of [...(data.factionRules||[]),...(data.strategicGambits||[])]){
+      if(requireStableIds&&(!rule.id||factionRuleIds.has(rule.id)))throw new Error(`${fileName} has an invalid or duplicate faction rule ID.`);
+      if(rule.id)factionRuleIds.add(rule.id);
+    }
+    for(const operative of data.operatives){
+      if(!operative.id||operativeIds.has(operative.id))throw new Error(`${fileName} has an invalid or duplicate operative ID.`);
+      operativeIds.add(operative.id);
+      if(categoryIds.size&&!categoryIds.has(operative.category))throw new Error(`${fileName} references an unknown roster category.`);
+      const weaponIds=new Set(),abilityIds=new Set();
+      for(const weapon of operative.weapons||[]){
+        if(!['ranged','melee'].includes(weapon.type))throw new Error(`${fileName} has an invalid weapon type.`);
+        if(requireStableIds&&!weapon.id)throw new Error(`${fileName} has a weapon without a stable ID for ${operative.id}.`);
+        if(weapon.id&&(weaponIds.has(weapon.id)))throw new Error(`${fileName} has a duplicate weapon ID for ${operative.id}.`);
+        if(weapon.id)weaponIds.add(weapon.id);
+      }
+      for(const ability of operative.abilities||[]){
+        if(requireStableIds&&(!ability.id||abilityIds.has(ability.id)))throw new Error(`${fileName} has an invalid or duplicate ability ID for ${operative.id}.`);
+        if(ability.id)abilityIds.add(ability.id);
+      }
+    }
   }
   function playerDefinition(id){return playerTeamData?.operatives?.find(o=>o.id===id)||null;}
   function playerCurrentWounds(id){
@@ -215,6 +241,16 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const mandatoryTroopers=Number(rules.mandatoryTroopers||0);
     const trooperCount=selected.filter(operative=>operative.role==='Trooper').length;
     if(mandatoryTroopers){requirements.push(`Required Troopers: ${trooperCount} of ${mandatoryTroopers}`);valid=valid&&trooperCount>=mandatoryTroopers;}
+    const selectionGroupMaximum=Number(rules.selectionGroupMax??Infinity);
+    if(Number.isFinite(selectionGroupMaximum)){
+      const groupCounts=new Map();
+      selected.filter(operative=>operative.selectionGroup).forEach(operative=>groupCounts.set(operative.selectionGroup,(groupCounts.get(operative.selectionGroup)||0)+1));
+      const conflictingGroups=[...groupCounts].filter(([,count])=>count>selectionGroupMaximum);
+      requirements.push(conflictingGroups.length
+        ? `Loadout choices: choose only one option for ${conflictingGroups.map(([group])=>group).join(', ')}`
+        : 'Loadout choices: no mutually exclusive options selected');
+      valid=valid&&!conflictingGroups.length;
+    }
     requirements.push(minRoster===maxRoster?`Total Operatives: ${selected.length} of ${maxRoster}`:`Total Operatives: ${selected.length} of ${maxRoster} (minimum ${minRoster})`);
     return {valid,requirements};
   }
@@ -480,6 +516,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       if(operative.role==='Gunner'&&operatives.filter(candidate=>candidate.role==='Gunner'&&selected.has(candidate.id)).length>=maxGunners)continue;
       const maxGravis=Number(rules.maxGravis||1);
       if(operative.gravis&&operatives.filter(candidate=>candidate.gravis&&selected.has(candidate.id)).length>=maxGravis)continue;
+      const selectionGroupMaximum=Number(rules.selectionGroupMax??Infinity);
+      if(operative.selectionGroup&&Number.isFinite(selectionGroupMaximum)&&operatives.filter(candidate=>candidate.selectionGroup===operative.selectionGroup&&selected.has(candidate.id)).length>=selectionGroupMaximum)continue;
       selected.add(operative.id);
     }
     applyPlayerRoster(selected);
@@ -1208,7 +1246,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
           const gunnerBlocked=!chosen&&o.role==='Gunner'&&gunnerCount>=maxGunners;
           const categoryMaximum=Number(categoryMetadata.get(o.category)?.maxCount??Infinity);
           const categoryBlocked=!chosen&&Number.isFinite(categoryMaximum)&&categorySelected>=categoryMaximum;
-          return `<button type="button" class="player-roster-card ${chosen?'selected':''}" data-select-player="${o.id}" ${rosterBlocked||gravisBlocked||gunnerBlocked||categoryBlocked?'disabled':''}><div class="player-roster-card-head"><div><strong>${escapeHtml(o.name)}</strong><small>${escapeHtml(o.role)}${o.gravis?' · GRAVIS':''}</small></div><span>${chosen?'✓':'+'}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${o.apl}</b></span><span><small>MOVE</small><b>${o.move}"</b></span><span><small>SAVE</small><b>${o.save}+</b></span><span><small>WOUNDS</small><b>${o.wounds}</b></span></div></button>`;
+          const selectionGroupMaximum=Number(playerTeamData?.selectionRules?.selectionGroupMax??Infinity);
+          const selectionGroupBlocked=!chosen&&o.selectionGroup&&Number.isFinite(selectionGroupMaximum)&&selectedDefs.filter(candidate=>candidate.selectionGroup===o.selectionGroup).length>=selectionGroupMaximum;
+          return `<button type="button" class="player-roster-card ${chosen?'selected':''}" data-select-player="${o.id}" ${rosterBlocked||gravisBlocked||gunnerBlocked||categoryBlocked||selectionGroupBlocked?'disabled':''}><div class="player-roster-card-head"><div><strong>${escapeHtml(o.name)}</strong><small>${escapeHtml(o.role)}${o.gravis?' · GRAVIS':''}</small></div><span>${chosen?'✓':'+'}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${o.apl}</b></span><span><small>MOVE</small><b>${o.move}"</b></span><span><small>SAVE</small><b>${o.save}+</b></span><span><small>WOUNDS</small><b>${o.wounds}</b></span></div></button>`;
         }).join('');
         return `<section class="roster-category"><button type="button" class="roster-category-heading" data-roster-category-toggle="${escapeHtml(category.id)}" aria-expanded="${expanded}" aria-controls="${panelId}"><span class="roster-category-title"><span class="roster-category-indicator" aria-hidden="true">›</span>${escapeHtml(category.label)}</span><span>${categorySelected} selected</span></button><div class="player-roster-grid roster-category-content" id="${panelId}" ${expanded?'':'hidden'}>${cards}</div></section>`;
       }).join('');
@@ -1297,6 +1337,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         if(candidate?.gravis&&selectedPlayerOperatives().some(o=>o.gravis)){showToast('This Kill Team can include only one Gravis operative.');return;}
         const maxGunners=Number(playerTeamData?.selectionRules?.maxGunners??Infinity);
         if(candidate?.role==='Gunner'&&selectedPlayerOperatives().filter(o=>o.role==='Gunner').length>=maxGunners){showToast(`This Kill Team can include only ${maxGunners} Gunners.`);return;}
+        const selectionGroupMaximum=Number(playerTeamData?.selectionRules?.selectionGroupMax??Infinity);
+        if(candidate?.selectionGroup&&Number.isFinite(selectionGroupMaximum)&&selectedPlayerOperatives().filter(o=>o.selectionGroup===candidate.selectionGroup).length>=selectionGroupMaximum){showToast('Choose only one loadout for each operative.');return;}
         selected.add(id);
       }
       applyPlayerRoster(selected);
@@ -2639,7 +2681,10 @@ function showPlayerActivation(stage={}){
 
   function weaponRulesHtml(profile){
     const rules=(profile?.rules||[]).map(rule=>`<li>${escapeHtml(rule)}</li>`).join('');
-    return rules?`<section class="weapon-rules"><strong>Weapon rules</strong><ul>${rules}</ul></section>`:'';
+    const manualResolution=profile?.manualResolution
+      ? `<div class="summary-box"><strong>Manual tabletop resolution</strong><p>${escapeHtml(profile.manualResolution)}</p></div>`
+      : '';
+    return `${rules?`<section class="weapon-rules"><strong>Weapon rules</strong><ul>${rules}</ul></section>`:''}${manualResolution}`;
   }
 
   function normalizedGuidanceMatchText(value){
@@ -2856,7 +2901,7 @@ function showPlayerActivation(stage={}){
       : `<div class="field"><label>Target NPO</label><select id="combatTarget"><option value="">Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}">${escapeHtml(npoName(n))} · Wounds ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} · Save ${n.save}+</option>`).join('')}</select></div>`;
     const weaponControl=weapons.length===1
       ? `<div class="field"><label>Weapon</label><div class="readonly-select">${escapeHtml(weapons[0].name)}</div><input type="hidden" id="playerWeaponSelect" value="0"></div>`
-      : `<div class="field"><label>Weapon</label><select id="playerWeaponSelect">${weapons.map((weapon,index)=>`<option value="${index}">${escapeHtml(weapon.name)}</option>`).join('')}</select></div>`;
+      : `<div class="field"><label>Weapon</label><select id="playerWeaponSelect"><option value="">Select a weapon...</option>${weapons.map((weapon,index)=>`<option value="${index}">${escapeHtml(weapon.name)}</option>`).join('')}</select></div>`;
     const priorElimination=attackType==='melee'&&Number(stage.pendingShoot?.after)<=0
       ? `<section class="compact-elimination-notice"><strong>☠ ${escapeHtml(stage.pendingShoot.targetName)} was eliminated by the Shoot attack.</strong><span>Choose another melee target, or Cancel to revise the activation.</span></section>`
       : '';
@@ -2866,6 +2911,7 @@ function showPlayerActivation(stage={}){
       <p>Select the target and attack profile before rolling.</p>
       ${targetControl}
       ${weaponControl}
+      <div class="summary-box" id="playerWeaponSummary"><strong>Weapon:</strong> —</div>
       <div id="aggressiveDefenseFields"></div>
       <div id="weaponRules"></div>
       <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button><button class="btn primary" id="openCombatResolution">Continue</button></div>`);
@@ -2874,7 +2920,10 @@ function showPlayerActivation(stage={}){
     const weaponSelect=$('#playerWeaponSelect');
     const renderChoices=()=>{
       const target=activeNpos().find(n=>n.id===targetSelect.value);
-      const weapon=weapons[Number(weaponSelect.value)||0];
+      const weapon=weaponSelect.value===''?null:weapons[Number(weaponSelect.value)];
+      $('#playerWeaponSummary').innerHTML=weapon
+        ? `<strong>Weapon:</strong> ${escapeHtml(weapon.name)} · ${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}`
+        : '<strong>Weapon:</strong> —';
       $('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target);
       $('#weaponRules').innerHTML=weaponRulesHtml(weapon);
       $('#openCombatResolution').disabled=!target||!weapon;
@@ -2882,7 +2931,7 @@ function showPlayerActivation(stage={}){
     targetSelect.addEventListener('change',renderChoices);
     weaponSelect.addEventListener('change',renderChoices);
     $('#cancelPendingAttack').onclick=()=>cancelPendingPlayerCombat(stage,attackType,onCancel);
-    $('#openCombatResolution').onclick=()=>showPlayerCombatResolution(stage,attackType,targetSelect.value,Number(weaponSelect.value)||0,onResolved,onCancel);
+    $('#openCombatResolution').onclick=()=>showPlayerCombatResolution(stage,attackType,targetSelect.value,Number(weaponSelect.value),onResolved,onCancel);
     renderChoices();
     if(singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte')showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
   }
@@ -3601,7 +3650,7 @@ function showPlayerActivation(stage={}){
       return `<article class="operative-card roster-operative-card ${eliminated?'dead':''}"><div class="operative-card-header"><div class="operative-identity"><h4>${escapeHtml(operative.name)}</h4><p>${escapeHtml(operative.role||'Operative')}</p></div><span class="operative-status-badge ${status.toLowerCase().replace(' ','-')}">${status}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${operative.apl??'—'}</b></span><span><small>MOVE</small><b>${operative.move??'—'}"</b></span><span><small>SAVE</small><b>${operative.save??'—'}+</b></span><span><small>WOUNDS</small><b class="${wounds===0?'zero-wounds':''}">${wounds}/${maxWounds}</b></span></div>${weaponNames?`<p class="player-roster-weapons"><strong>Weapons:</strong> ${weaponNames}</p>`:''}${abilityGuidance}<div class="wound-controls"><button class="btn ghost" data-player-wound="${id}" ${wounds<=0||operativeState.inPlay===false?'disabled':''}>− Wound</button><button class="btn ghost" data-player-heal="${id}" ${wounds>=maxWounds||operativeState.inPlay===false?'disabled':''}>+ Heal</button></div></article>`;
     }).join('');
     const teamName=playerTeamData?.teamName||playerTeamEntry()?.name||'Player';
-    app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">PLAYER ROSTER</p><h2>${escapeHtml(teamName)}</h2><p>${inPlayPlayerOperativeIds().filter(id=>!casualties.has(id)).length} active on the battlefield of ${(state.playerRoster||[]).length} selected operatives.</p></div></div><div class="roster-grid">${cards||'<div class="card empty">No Player operatives were selected for this game.</div>'}</div>`;
+    app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">PLAYER ROSTER</p><h2>${escapeHtml(teamName)}</h2><p>${inPlayPlayerOperativeIds().filter(id=>!casualties.has(id)).length} active on the battlefield of ${(state.playerRoster||[]).length} selected operatives.</p></div></div>${factionGuidanceHtml()}<div class="roster-grid">${cards||'<div class="card empty">No Player operatives were selected for this game.</div>'}</div>`;
     $$('[data-player-wound]').forEach(button=>button.onclick=()=>adjustPlayerWounds(button.dataset.playerWound,-1));
     $$('[data-player-heal]').forEach(button=>button.onclick=()=>adjustPlayerWounds(button.dataset.playerHeal,1));
   }
