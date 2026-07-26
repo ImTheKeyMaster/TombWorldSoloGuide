@@ -51,6 +51,10 @@ class NpoRosterReadOnlyActivationTests(unittest.TestCase):
     def test_eliminated_npo_uses_themed_overlay_without_changing_player_overlay(self):
         self.assertIn('.operative-card.dead:after{content:"☠"', self.styles)
         self.assertIn(
+            ".operative-card.dead:after,.npo-roster-card.dead:after{position:absolute;z-index:2",
+            self.styles,
+        )
+        self.assertIn(
             '.npo-roster-card.dead:after{content:"";background:url("Assets/Images/eliminated-necron-skull.png") center/auto 6rem no-repeat;opacity:.16}',
             self.styles,
         )
