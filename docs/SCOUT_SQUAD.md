@@ -12,9 +12,9 @@ Distinct datacard profiles remain distinct weapon entries. Heavy bolter focused/
 
 ## Faction rules and operative guidance
 
-Forward Scouting and each option are definition metadata with official selection maxima and timing. Tactical Manoeuvre and Diversion appear as Strategy Phase reminders with twice-per-battle and once-per-battle usage metadata. Trip Alarm includes its Turning Point 3 removal reminder. Position-, range-, terrain-, visibility-, control-range-, marker-, enemy-, and CP-dependent decisions remain manual tabletop guidance because the Guide does not know those battlefield facts.
+Forward Scouting and each option are definition metadata with official selection maxima and timing. Tactical Manoeuvre and Diversion are explicitly marked as Forward Scouting options and also appear as Strategy Phase reminders with twice-per-battle and once-per-battle usage metadata. Trip Alarm includes its Turning Point 3 removal reminder. Position-, range-, terrain-, visibility-, control-range-, marker-, enemy-, and CP-dependent decisions remain manual tabletop guidance because the Guide does not know those battlefield facts.
 
-Every operative ability and unique action is shown on its Player Roster card. Guidance and Experience, Adaptive Equipment, Tactical Manoeuvre, and Diversion retain their usage-limit metadata. The app does not add interactive action controls because it does not track Player AP, orders, CP, exact positions, targets, terrain, universal equipment, or marker placement; a checkbox would imply enforcement the engine cannot reliably provide.
+Every operative ability and unique action is shown on its Player Roster card. Optics, Track Enemy, and Auspex Scan are explicitly modeled as 1AP unique actions; the remaining datacard entries are explicitly modeled as passive abilities. Guidance and Experience, Adaptive Equipment, Tactical Manoeuvre, and Diversion retain their usage-limit metadata. The app does not add interactive action controls because it does not track Player AP, orders, CP, exact positions, targets, terrain, universal equipment, or marker placement; a checkbox would imply enforcement the engine cannot reliably provide.
 
 ## Save and restoration
 

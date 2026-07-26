@@ -118,9 +118,15 @@ class ScoutSquadTests(unittest.TestCase):
         self.assertEqual({key: rules[key]["selectionLimit"] for key in ["redeploy", "reposition", "trip-alarm", "booby-trap", "devise-plan", "designate-target", "spy"]}, {"redeploy": 1, "reposition": 2, "trip-alarm": 2, "booby-trap": 1, "devise-plan": 1, "designate-target": 1, "spy": 1})
         self.assertEqual(gambits["tactical-manoeuvre"]["usageLimit"], {"count": 2, "period": "battle"})
         self.assertEqual(gambits["diversion"]["usageLimit"], {"count": 1, "period": "battle"})
+        self.assertTrue(all(item["forwardScoutingOption"] for item in list(rules.values())[1:] + list(gambits.values())))
+        self.assertTrue(all(item["selectionLimit"] == 1 for item in gambits.values()))
         self.assertEqual(rules["trip-alarm"]["automation"], "lifecycle-reminder")
         self.assertTrue(all(item["automation"] in {"manual-tabletop-guidance", "lifecycle-reminder"} for item in rules.values()))
         self.assertTrue(all(a["automation"] == "manual-guidance" for op in self.ops.values() for a in op["abilities"]))
+        actions = {a["id"]: a for op in self.ops.values() for a in op["abilities"] if a["id"] in {"optics", "track-enemy", "auspex-scan"}}
+        self.assertEqual(set(actions), {"optics", "track-enemy", "auspex-scan"})
+        self.assertTrue(all(action["kind"] == "unique-action" and action["apCost"] == 1 for action in actions.values()))
+        self.assertTrue(all(a["kind"] == "passive-ability" for op in self.ops.values() for a in op["abilities"] if a["id"] not in actions))
 
     def test_save_refresh_combat_wounds_elimination_activation_and_off_board(self):
         script = r'''const p=require('./persistence.js');
@@ -141,7 +147,7 @@ if(restored.playerTeamId!=='scout-squad'||restored.playerWounds.sniper!==4||rest
         self.assertNotRegex(self.app, r"playerTeamId\s*={2,3}\s*['\"]scout-squad")
 
     def test_version_consistency(self):
-        expected = "6.7.0"
+        expected = "6.7.1"
         self.assertIn(f"const APP_VERSION = '{expected}'", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}'", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()

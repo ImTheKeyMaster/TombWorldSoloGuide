@@ -51,7 +51,7 @@
       "timing": "End of Set Up Operatives",
       "automation": "manual-tabletop-guidance",
       "selectionCount": 6,
-      "text": "Select and resolve up to six Forward Scouting options. Each option\u2019s limit is shown below. If both players have this rule, alternate resolving selections, starting with the player with initiative."
+      "text": "Select and resolve up to six Forward Scouting options: Redeploy, Reposition, Trip Alarm, Booby Trap, Tactical Manoeuvre, Diversion, Devise Plan, Designate Target, or Spy. Each option\u2019s limit is shown in its guidance. If both players have this rule, alternate resolving selections, starting with the player with initiative."
     },
     {
       "id": "redeploy",
@@ -59,7 +59,8 @@
       "timing": "Forward Scouting",
       "automation": "manual-tabletop-guidance",
       "selectionLimit": 1,
-      "text": "Change the set up of one third of your operatives, rounding up."
+      "text": "Change the set up of one third of your operatives, rounding up.",
+      "forwardScoutingOption": true
     },
     {
       "id": "reposition",
@@ -67,7 +68,8 @@
       "timing": "Forward Scouting",
       "automation": "manual-tabletop-guidance",
       "selectionLimit": 2,
-      "text": "Perform a free Reposition action with one friendly operative wholly within your drop zone. It must end wholly within 3\" of your drop zone."
+      "text": "Perform a free Reposition action with one friendly operative wholly within your drop zone. It must end wholly within 3\" of your drop zone.",
+      "forwardScoutingOption": true
     },
     {
       "id": "trip-alarm",
@@ -75,7 +77,8 @@
       "timing": "Forward Scouting; remove in the Ready step of Turning Point 3",
       "automation": "lifecycle-reminder",
       "selectionLimit": 2,
-      "text": "Place a Trip Alarm marker more than 6\" from the opponent\u2019s drop zone. During Turning Points 1 and 2, friendly Scout Squad ranged weapons have Seek when shooting an enemy within 2\" of it. Remove it in the Ready step of the third Strategy phase."
+      "text": "Place a Trip Alarm marker more than 6\" from the opponent\u2019s drop zone. During Turning Points 1 and 2, friendly Scout Squad ranged weapons have Seek when shooting an enemy within 2\" of it. Remove it in the Ready step of the third Strategy phase.",
+      "forwardScoutingOption": true
     },
     {
       "id": "booby-trap",
@@ -83,7 +86,8 @@
       "timing": "Forward Scouting; first enemy enters its control range",
       "automation": "manual-tabletop-guidance",
       "selectionLimit": 1,
-      "text": "Place a Booby Trap marker more than 6\" from the opponent\u2019s drop zone and more than 2\" from other markers, access points and Accessible terrain. The first time it is within enemy control range, remove it, inflict 2D3 damage, and end the operative\u2019s action if it survives. If it cannot be placed, move it the minimum amount to do so. Record wounds or elimination in the NPO Roster."
+      "text": "Place a Booby Trap marker more than 6\" from the opponent\u2019s drop zone and more than 2\" from other markers, access points and Accessible terrain. The first time it is within enemy control range, remove it, inflict 2D3 damage, and end the operative\u2019s action if it survives. If it cannot be placed, move it the minimum amount to do so. Record wounds or elimination in the NPO Roster.",
+      "forwardScoutingOption": true
     },
     {
       "id": "devise-plan",
@@ -91,7 +95,8 @@
       "timing": "Forward Scouting",
       "automation": "manual-tabletop-guidance",
       "selectionLimit": 1,
-      "text": "Gain 1CP."
+      "text": "Gain 1CP.",
+      "forwardScoutingOption": true
     },
     {
       "id": "designate-target",
@@ -99,7 +104,8 @@
       "timing": "Forward Scouting and attacks against the designated target",
       "automation": "manual-tabletop-guidance",
       "selectionLimit": 1,
-      "text": "Give one enemy operative a Target token. When a friendly Scout Squad operative shoots, fights, or retaliates against it, you can re-roll one attack die."
+      "text": "Give one enemy operative a Target token. When a friendly Scout Squad operative shoots, fights, or retaliates against it, you can re-roll one attack die.",
+      "forwardScoutingOption": true
     },
     {
       "id": "spy",
@@ -107,31 +113,36 @@
       "timing": "Forward Scouting; Approved Ops only",
       "automation": "manual-tabletop-guidance",
       "selectionLimit": 1,
-      "text": "The opponent must reveal their selected tac op."
+      "text": "The opponent must reveal their selected tac op.",
+      "forwardScoutingOption": true
     }
   ],
   "strategicGambits": [
     {
       "id": "tactical-manoeuvre",
       "name": "Tactical Manoeuvre",
-      "timing": "Strategy Phase",
+      "timing": "Forward Scouting selection; Strategy Phase use",
       "automation": "manual-tabletop-guidance",
       "usageLimit": {
         "count": 2,
         "period": "battle"
       },
-      "text": "Twice per battle, select one friendly operative. Until the end of its next activation, add 1 to its APL stat."
+      "text": "Twice per battle, select one friendly operative. Until the end of its next activation, add 1 to its APL stat.",
+      "forwardScoutingOption": true,
+      "selectionLimit": 1
     },
     {
       "id": "diversion",
       "name": "Diversion",
-      "timing": "Strategy Phase",
+      "timing": "Forward Scouting selection; Strategy Phase use",
       "automation": "manual-tabletop-guidance",
       "usageLimit": {
         "count": 1,
         "period": "battle"
       },
-      "text": "Once per battle, select one enemy operative within 6\" of a killzone edge. Until the end of its next activation, subtract 1 from its APL stat."
+      "text": "Once per battle, select one enemy operative within 6\" of a killzone edge. Until the end of its next activation, subtract 1 from its APL stat.",
+      "forwardScoutingOption": true,
+      "selectionLimit": 1
     }
   ],
   "operatives": [
@@ -162,13 +173,15 @@
           "usageLimit": {
             "count": 1,
             "period": "activation"
-          }
+          },
+          "kind": "passive-ability"
         },
         {
           "id": "astartes",
           "name": "Astartes",
           "text": "During this operative\u2019s activation, it can perform either two Shoot actions or two Fight actions. If it performs two Shoot actions, an Astartes shotgun, bolt pistol or boltgun must be selected for at least one of them. It can counteract regardless of its order.",
-          "automation": "manual-guidance"
+          "automation": "manual-guidance",
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -222,13 +235,15 @@
           "usageLimit": {
             "count": 1,
             "period": "activation"
-          }
+          },
+          "kind": "passive-ability"
         },
         {
           "id": "astartes",
           "name": "Astartes",
           "text": "During this operative\u2019s activation, it can perform either two Shoot actions or two Fight actions. If it performs two Shoot actions, an Astartes shotgun, bolt pistol or boltgun must be selected for at least one of them. It can counteract regardless of its order.",
-          "automation": "manual-guidance"
+          "automation": "manual-guidance",
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -280,13 +295,15 @@
           "usageLimit": {
             "count": 1,
             "period": "activation"
-          }
+          },
+          "kind": "passive-ability"
         },
         {
           "id": "astartes",
           "name": "Astartes",
           "text": "During this operative\u2019s activation, it can perform either two Shoot actions or two Fight actions. If it performs two Shoot actions, an Astartes shotgun, bolt pistol or boltgun must be selected for at least one of them. It can counteract regardless of its order.",
-          "automation": "manual-guidance"
+          "automation": "manual-guidance",
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -335,7 +352,8 @@
           "id": "heavy-weapon-bipod",
           "name": "Heavy Weapon Bipod",
           "text": "Whenever this operative is shooting with a datacard weapon, if it has not moved during the activation or is counteracting, that weapon has Ceaseless; if it already has Ceaseless, it has Relentless instead. This does not prevent movement after shooting.",
-          "automation": "manual-guidance"
+          "automation": "manual-guidance",
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -410,7 +428,8 @@
           "id": "heavy-weapon-bipod",
           "name": "Heavy Weapon Bipod",
           "text": "Whenever this operative is shooting with a datacard weapon, if it has not moved during the activation or is counteracting, that weapon has Ceaseless; if it already has Ceaseless, it has Relentless instead. This does not prevent movement after shooting.",
-          "automation": "manual-guidance"
+          "automation": "manual-guidance",
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -484,13 +503,15 @@
           "id": "grapnel-launcher",
           "name": "Grapnel Launcher",
           "text": "Whenever this operative is climbing up, treat the vertical distance as 2\" regardless of the actual vertical movement.",
-          "automation": "manual-guidance"
+          "automation": "manual-guidance",
+          "kind": "passive-ability"
         },
         {
           "id": "grapnel-assault",
           "name": "Grapnel Assault",
           "text": "After this operative performs Charge during its activation, if it climbed, dropped, jumped, or its base moved underneath Vantage terrain during that action, its melee weapons have Lethal 3+ until the end of that activation.",
-          "automation": "manual-guidance"
+          "automation": "manual-guidance",
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -538,7 +559,8 @@
           "id": "camo-cloak",
           "name": "Camo Cloak",
           "text": "When an operative shoots this operative, ignore Saturate. If any cover saves can be retained, retain one additional cover save or one cover save as a critical success instead; this is not cumulative with improved cover saves from Vantage terrain.",
-          "automation": "manual-guidance"
+          "automation": "manual-guidance",
+          "kind": "passive-ability"
         },
         {
           "id": "optics",
@@ -548,7 +570,9 @@
           "usageLimit": {
             "count": 1,
             "period": "action"
-          }
+          },
+          "kind": "unique-action",
+          "apCost": 1
         }
       ],
       "weapons": [
@@ -618,13 +642,17 @@
           "id": "track-enemy",
           "name": "Track Enemy (1AP)",
           "text": "Select one enemy operative within 8\". Until the end of the turning point, friendly Scout Squad operatives\u2019 ranged weapons have Seek Light when shooting it. This action cannot be performed within enemy control range.",
-          "automation": "manual-guidance"
+          "automation": "manual-guidance",
+          "kind": "unique-action",
+          "apCost": 1
         },
         {
           "id": "auspex-scan",
           "name": "Auspex Scan (1AP)",
           "text": "Until the start of this operative\u2019s next activation or until it is incapacitated, when a friendly Scout Squad operative shoots an enemy within 8\" of this operative, that enemy cannot be obscured. If the shooter is a Sniper benefiting from Optics, its ranged weapons also have Seek Light. This action cannot be performed within enemy control range.",
-          "automation": "manual-guidance"
+          "automation": "manual-guidance",
+          "kind": "unique-action",
+          "apCost": 1
         }
       ],
       "weapons": [
@@ -678,7 +706,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -735,7 +764,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -790,7 +820,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -847,7 +878,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -904,7 +936,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -959,7 +992,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1016,7 +1050,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1073,7 +1108,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1128,7 +1164,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1185,7 +1222,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1242,7 +1280,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1297,7 +1336,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1354,7 +1394,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1411,7 +1452,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1466,7 +1508,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1523,7 +1566,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1580,7 +1624,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1635,7 +1680,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1692,7 +1738,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1749,7 +1796,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1804,7 +1852,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1861,7 +1910,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1918,7 +1968,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [
@@ -1973,7 +2024,8 @@
               "smoke-grenade",
               "stun-grenade"
             ]
-          }
+          },
+          "kind": "passive-ability"
         }
       ],
       "weapons": [

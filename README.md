@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v6.7.0
+# Tomb World Solo Guide v6.7.1
+
+## v6.7.1
+
+**Version 6.7.1 - Scout Squad Review Corrections**
+
+- Explicitly classified Scout operative datacard entries as passive abilities or 1AP unique actions without adding team-specific gameplay branches.
+- Marked Tactical Manoeuvre and Diversion as Forward Scouting options while preserving their contextual Strategy Phase guidance and usage limits.
+- Strengthened Scout Squad tests and synchronized visible, internal, cache-busting, and service-worker cache versions to v6.7.1.
 
 ## v6.7.0
 
