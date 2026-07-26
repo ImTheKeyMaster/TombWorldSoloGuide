@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v6.7.2
+# Tomb World Solo Guide v6.7.3
+
+## v6.7.3
+
+**Version 6.7.3 - Eliminated NPO Overlay Layering**
+
+- Ensured the shared eliminated-card skull overlay layer renders above every Player Operative and NPO card child without changing its appearance or placement.
+- Added regression coverage for the shared overlay z-index and synchronized visible, internal, cache-busting, and service-worker cache versions to v6.7.3.
 
 ## v6.7.2
 
