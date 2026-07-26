@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '6.4.11';
+  const APP_VERSION = '6.5.0';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -185,6 +185,34 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const maxRoster=Number(playerTeamData?.maxRoster??playerTeamData?.rosterSize??5);
     const minRoster=Number(playerTeamData?.minRoster??maxRoster);
     return {minRoster,maxRoster};
+  }
+  function playerRosterValidation(operativeIds=state.playerRoster||[]){
+    const selected=operativeIds.map(playerDefinition).filter(Boolean);
+    const rules=playerTeamData?.selectionRules||{};
+    const {minRoster,maxRoster}=playerRosterLimits();
+    const requirements=[];
+    let valid=selected.length>=minRoster&&selected.length<=maxRoster;
+    for(const category of playerTeamData?.rosterCategories||[]){
+      const count=selected.filter(operative=>operative.category===category.id).length;
+      const minimum=Number(category.requiredCount||0);
+      const maximum=Number(category.maxCount??Infinity);
+      if(minimum){requirements.push(`${category.label||category.id}: ${count} of ${minimum} required`);valid=valid&&count>=minimum;}
+      if(Number.isFinite(maximum)){requirements.push(`${category.label||category.id}: ${count} of ${maximum} maximum`);valid=valid&&count<=maximum;}
+    }
+    const maxGunners=Number(rules.maxGunners??Infinity);
+    const gunnerCount=selected.filter(operative=>operative.role==='Gunner').length;
+    if(Number.isFinite(maxGunners)){requirements.push(`Maximum Gunners: ${gunnerCount} of ${maxGunners}`);valid=valid&&gunnerCount<=maxGunners;}
+    const mandatoryTroopers=Number(rules.mandatoryTroopers||0);
+    const trooperCount=selected.filter(operative=>operative.role==='Trooper').length;
+    if(mandatoryTroopers){requirements.push(`Required Troopers: ${trooperCount} of ${mandatoryTroopers}`);valid=valid&&trooperCount>=mandatoryTroopers;}
+    requirements.push(minRoster===maxRoster?`Total Operatives: ${selected.length} of ${maxRoster}`:`Total Operatives: ${selected.length} of ${maxRoster} (minimum ${minRoster})`);
+    return {valid,requirements};
+  }
+  function factionGuidanceHtml(kind='rules'){
+    const entries=kind==='gambits'?(playerTeamData?.strategicGambits||[]):(playerTeamData?.factionRules||[]);
+    if(!entries.length)return '';
+    const title=kind==='gambits'?'Faction Strategic Gambits':'Faction Rules Guidance';
+    return `<section class="card faction-guidance"><h3>${title}</h3>${entries.map(entry=>`<div class="mission-rule"><strong>${escapeHtml(entry.name)}</strong>${entry.timing?`<small>${escapeHtml(entry.timing)}</small>`:''}<p>${escapeHtml(entry.text)}</p></div>`).join('')}<p class="muted">Resolve these rules on the tabletop; the Guide presents reminders without simulating positioning.</p></section>`;
   }
   function playerName(id){
     const definition=playerDefinition(id);
@@ -434,6 +462,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     for(const operative of shuffled(operatives)){
       if(selected.size>=maxRoster)break;
       if(selected.has(operative.id))continue;
+      const category=(playerTeamData?.rosterCategories||[]).find(candidate=>candidate.id===operative.category);
+      const categoryMaximum=Number(category?.maxCount??Infinity);
+      if(Number.isFinite(categoryMaximum)&&operatives.filter(candidate=>candidate.category===operative.category&&selected.has(candidate.id)).length>=categoryMaximum)continue;
       const maxGunners=Number(rules.maxGunners||Infinity);
       if(operative.role==='Gunner'&&operatives.filter(candidate=>candidate.role==='Gunner'&&selected.has(candidate.id)).length>=maxGunners)continue;
       const maxGravis=Number(rules.maxGravis||1);
@@ -1126,7 +1157,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const gravisCount=selectedDefs.filter(o=>o.gravis).length;
       const gunnerCount=selectedDefs.filter(o=>o.role==='Gunner').length;
       const trooperCount=selectedDefs.filter(o=>o.role==='Trooper').length;
-      const maxGunners=Number(playerTeamData?.selectionRules?.maxGunners||Infinity);
+      const maxGunners=Number(playerTeamData?.selectionRules?.maxGunners??Infinity);
       const maxGravis=Number(playerTeamData?.selectionRules?.maxGravis||1);
       const mandatoryTroopers=Number(playerTeamData?.selectionRules?.mandatoryTroopers||0);
       const requiredLeaderId=playerTeamData?.selectionRules?.leader?.operativeId||'';
@@ -1164,7 +1195,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
           const rosterBlocked=!chosen&&selected.size>=maxRoster;
           const gravisBlocked=!chosen&&o.gravis&&gravisCount>=maxGravis;
           const gunnerBlocked=!chosen&&o.role==='Gunner'&&gunnerCount>=maxGunners;
-          return `<button type="button" class="player-roster-card ${chosen?'selected':''}" data-select-player="${o.id}" ${rosterBlocked||gravisBlocked||gunnerBlocked?'disabled':''}><div class="player-roster-card-head"><div><strong>${escapeHtml(o.name)}</strong><small>${escapeHtml(o.role)}${o.gravis?' · GRAVIS':''}</small></div><span>${chosen?'✓':'+'}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${o.apl}</b></span><span><small>MOVE</small><b>${o.move}"</b></span><span><small>SAVE</small><b>${o.save}+</b></span><span><small>WOUNDS</small><b>${o.wounds}</b></span></div></button>`;
+          const categoryMaximum=Number(categoryMetadata.get(o.category)?.maxCount??Infinity);
+          const categoryBlocked=!chosen&&Number.isFinite(categoryMaximum)&&categorySelected>=categoryMaximum;
+          return `<button type="button" class="player-roster-card ${chosen?'selected':''}" data-select-player="${o.id}" ${rosterBlocked||gravisBlocked||gunnerBlocked||categoryBlocked?'disabled':''}><div class="player-roster-card-head"><div><strong>${escapeHtml(o.name)}</strong><small>${escapeHtml(o.role)}${o.gravis?' · GRAVIS':''}</small></div><span>${chosen?'✓':'+'}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${o.apl}</b></span><span><small>MOVE</small><b>${o.move}"</b></span><span><small>SAVE</small><b>${o.save}+</b></span><span><small>WOUNDS</small><b>${o.wounds}</b></span></div></button>`;
         }).join('');
         return `<section class="roster-category"><button type="button" class="roster-category-heading" data-roster-category-toggle="${escapeHtml(category.id)}" aria-expanded="${expanded}" aria-controls="${panelId}"><span class="roster-category-title"><span class="roster-category-indicator" aria-hidden="true">›</span>${escapeHtml(category.label)}</span><span>${categorySelected} selected</span></button><div class="player-roster-grid roster-category-content" id="${panelId}" ${expanded?'':'hidden'}>${cards}</div></section>`;
       }).join('');
@@ -1176,7 +1209,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       if(requiredLeaderId||requiredLeaderCategory)requirements.push(`Required Leader: ${selectedLeaderCount} of ${requiredLeaderCount}`);
       if(mandatoryTroopers)requirements.push(`Required Troopers: ${trooperCount} of ${mandatoryTroopers}`);
       requirements.push(selectionCount);
-      const valid=requiredLeaderSelected&&gunnerCount<=maxGunners&&trooperCount>=mandatoryTroopers&&(!hasGravis||(gravisCount>=1&&gravisCount<=maxGravis))&&selected.size>=minRoster&&selected.size<=maxRoster;
+      const validation=playerRosterValidation([...selected]);
+      if((playerTeamData?.rosterCategories||[]).some(category=>category.id!=='leader'&&(category.requiredCount||category.maxCount)))requirements.splice(0,requirements.length,...validation.requirements);
+      const valid=validation.valid&&requiredLeaderSelected&&(!hasGravis||(gravisCount>=1&&gravisCount<=maxGravis));
       const requirementItems=requirements.map(requirement=>`<li>${escapeHtml(requirement)}</li>`).join('');
       return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><p class="muted">Build a legal kill team using its current official rules. The Guide tracks selected operatives but does not validate every team-building restriction. Cooperative team splitting is not currently supported.</p><div class="setup-bulk-row"><button class="btn secondary" id="randomPlayerTeam">Random Team</button></div><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
     }
@@ -1200,8 +1235,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const requiredPlacementChecks=hasStartingNpos?placementChecks:otherPlacementChecks;
       const allPlacementChecked=requiredPlacementChecks.every(check=>state.setupChecks[check.id]);
       const {minRoster,maxRoster}=playerRosterLimits();
-      const playerValid=(state.playerRoster||[]).length>=minRoster&&(state.playerRoster||[]).length<=maxRoster;
-      return `<h3>Deploy Kill Teams</h3><p>Use the generated rosters to place both forces, then confirm every mission requirement and resource choice.</p>${missionRoll}${hasStartingNpos?`<div class="setup-bulk-row"><button class="btn secondary" id="checkAllDeployment" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'disabled':''}>Check All</button></div>`:''}<div class="checklist deployment-checklist">${deploymentRow}${setupChecklistHtml(otherPlacementChecks)}<label class="check-row deployment-check"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${playerValid?'':'disabled'}><span><strong>Deploy ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} Kill Team</strong><span class="deployment-roster">• ${playerRoster}</span><small>All selected Player operatives are on the battlefield.</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'':'disabled'}>Deployment Complete</button></div>`;
+      const playerValid=playerRosterValidation().valid;
+      return `<h3>Deploy Kill Teams</h3><p>Use the generated rosters to place both forces, then confirm every mission requirement and resource choice.</p>${missionRoll}${factionGuidanceHtml()}${hasStartingNpos?`<div class="setup-bulk-row"><button class="btn secondary" id="checkAllDeployment" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'disabled':''}>Check All</button></div>`:''}<div class="checklist deployment-checklist">${deploymentRow}${setupChecklistHtml(otherPlacementChecks)}<label class="check-row deployment-check"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${playerValid?'':'disabled'}><span><strong>Deploy ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} Kill Team</strong><span class="deployment-roster">• ${playerRoster}</span><small>All selected Player operatives are on the battlefield.</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'':'disabled'}>Deployment Complete</button></div>`;
     }
     const m=mission();
     const rules=(m.rules||[]).map(rule=>`<div class="mission-rule"><strong>${escapeHtml(rule.name||'Special Rule')}</strong>${rule.timing?`<small>${escapeHtml(rule.timing)}</small>`:''}<p>${escapeHtml(rule.summary||'')}</p></div>`).join('');
@@ -1249,7 +1284,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       else if(selected.size<playerRosterLimits().maxRoster){
         const candidate=playerDefinition(id);
         if(candidate?.gravis&&selectedPlayerOperatives().some(o=>o.gravis)){showToast('This Kill Team can include only one Gravis operative.');return;}
-        const maxGunners=Number(playerTeamData?.selectionRules?.maxGunners||Infinity);
+        const maxGunners=Number(playerTeamData?.selectionRules?.maxGunners??Infinity);
         if(candidate?.role==='Gunner'&&selectedPlayerOperatives().filter(o=>o.role==='Gunner').length>=maxGunners){showToast(`This Kill Team can include only ${maxGunners} Gunners.`);return;}
         selected.add(id);
       }
@@ -1532,7 +1567,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const showStatTooltips=!window.matchMedia('(max-width:600px)').matches;
       const tooltipAttrs=text=>showStatTooltips?` tabindex="0" data-tooltip="${text}"`:'';
       const infoDot=showStatTooltips?'<span class="info-dot">i</span>':'';
-      return `<section class="next-card"><span class="phase">STRATEGY PHASE</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol></div>${missionStrategyPromptHtml()}<div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat"${tooltipAttrs('Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events.')}><small>THREAT LEVEL ${infoDot}</small><strong>${state.threat}</strong></div><div class="stat tooltip-stat"${tooltipAttrs('Grade 0–3 is derived from Threat and determines reinforcement pressure and some events.')}><small>GRADE LEVEL ${infoDot}</small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat"${tooltipAttrs('The number of living NPOs that are Ready and may still activate during this Turning Point.')}><small>NPOs Ready ${infoDot}</small><strong>${readyNpos().length}</strong></div></div>${reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':`${reinforcementCard}${deployingNpos.length?`<div class="checklist">${placements}</div>`:''}`}${resolvedEvents}${d.event?.status==='drawn'?strategyEventHtml(d.event):''}${activeEvents?`<h3>Active event effects</h3>${activeEvents}`:''}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending||placementPending||missionPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':placementPending?'Confirm Reinforcement Placement':missionPending?'Resolve Mission Rule to Continue':'Strategy Phase Complete'}</button></section>`;
+      return `<section class="next-card"><span class="phase">STRATEGY PHASE</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol></div>${factionGuidanceHtml('gambits')}${missionStrategyPromptHtml()}<div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat"${tooltipAttrs('Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events.')}><small>THREAT LEVEL ${infoDot}</small><strong>${state.threat}</strong></div><div class="stat tooltip-stat"${tooltipAttrs('Grade 0–3 is derived from Threat and determines reinforcement pressure and some events.')}><small>GRADE LEVEL ${infoDot}</small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat"${tooltipAttrs('The number of living NPOs that are Ready and may still activate during this Turning Point.')}><small>NPOs Ready ${infoDot}</small><strong>${readyNpos().length}</strong></div></div>${reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':`${reinforcementCard}${deployingNpos.length?`<div class="checklist">${placements}</div>`:''}`}${resolvedEvents}${d.event?.status==='drawn'?strategyEventHtml(d.event):''}${activeEvents?`<h3>Active event effects</h3>${activeEvents}`:''}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending||placementPending||missionPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':placementPending?'Confirm Reinforcement Placement':missionPending?'Resolve Mission Rule to Continue':'Strategy Phase Complete'}</button></section>`;
     }
     return '';
   }
@@ -3549,8 +3584,10 @@ function showPlayerActivation(stage={}){
       const operativeState=playerOperativeState(id);
       const status=operativeState.inPlay===false?(operativeState.offBoardReason==='escaped'?'ESCAPED':'OFF BOARD'):eliminated?'ELIMINATED':activated.has(id)?'ACTIVATED':'READY';
       const weaponNames=(operative.weapons||[]).map(w=>escapeHtml(w.name)).join(' · ');
+      const abilities=(operative.abilities||[]).map(ability=>typeof ability==='string'?{name:ability,text:''}:ability);
+      const abilityGuidance=abilities.length?`<details class="operative-guidance"><summary>Operative abilities (${abilities.length})</summary>${abilities.map(ability=>`<div><strong>${escapeHtml(ability.name)}</strong>${ability.text?`<p>${escapeHtml(ability.text)}</p>`:''}</div>`).join('')}<small>Resolve these abilities on the tabletop unless the Guide explicitly prompts you.</small></details>`:'';
       const wounds=playerCurrentWounds(id), maxWounds=Number(playerDefinition(id)?.wounds??operative.wounds);
-      return `<article class="operative-card roster-operative-card ${eliminated?'dead':''}"><div class="operative-card-header"><div class="operative-identity"><h4>${escapeHtml(operative.name)}</h4><p>${escapeHtml(operative.role||'Operative')}</p></div><span class="operative-status-badge ${status.toLowerCase().replace(' ','-')}">${status}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${operative.apl??'—'}</b></span><span><small>MOVE</small><b>${operative.move??'—'}"</b></span><span><small>SAVE</small><b>${operative.save??'—'}+</b></span><span><small>WOUNDS</small><b class="${wounds===0?'zero-wounds':''}">${wounds}/${maxWounds}</b></span></div>${weaponNames?`<p class="player-roster-weapons"><strong>Weapons:</strong> ${weaponNames}</p>`:''}<div class="wound-controls"><button class="btn ghost" data-player-wound="${id}" ${wounds<=0||operativeState.inPlay===false?'disabled':''}>− Wound</button><button class="btn ghost" data-player-heal="${id}" ${wounds>=maxWounds||operativeState.inPlay===false?'disabled':''}>+ Heal</button></div></article>`;
+      return `<article class="operative-card roster-operative-card ${eliminated?'dead':''}"><div class="operative-card-header"><div class="operative-identity"><h4>${escapeHtml(operative.name)}</h4><p>${escapeHtml(operative.role||'Operative')}</p></div><span class="operative-status-badge ${status.toLowerCase().replace(' ','-')}">${status}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${operative.apl??'—'}</b></span><span><small>MOVE</small><b>${operative.move??'—'}"</b></span><span><small>SAVE</small><b>${operative.save??'—'}+</b></span><span><small>WOUNDS</small><b class="${wounds===0?'zero-wounds':''}">${wounds}/${maxWounds}</b></span></div>${weaponNames?`<p class="player-roster-weapons"><strong>Weapons:</strong> ${weaponNames}</p>`:''}${abilityGuidance}<div class="wound-controls"><button class="btn ghost" data-player-wound="${id}" ${wounds<=0||operativeState.inPlay===false?'disabled':''}>− Wound</button><button class="btn ghost" data-player-heal="${id}" ${wounds>=maxWounds||operativeState.inPlay===false?'disabled':''}>+ Heal</button></div></article>`;
     }).join('');
     const teamName=playerTeamData?.teamName||playerTeamEntry()?.name||'Player';
     app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">PLAYER ROSTER</p><h2>${escapeHtml(teamName)}</h2><p>${inPlayPlayerOperativeIds().filter(id=>!casualties.has(id)).length} active on the battlefield of ${(state.playerRoster||[]).length} selected operatives.</p></div></div><div class="roster-grid">${cards||'<div class="card empty">No Player operatives were selected for this game.</div>'}</div>`;

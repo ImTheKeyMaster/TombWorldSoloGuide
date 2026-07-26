@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v6.4.11
+# Tomb World Solo Guide v6.5.0
+
+## v6.5.0
+
+**Version 6.5.0 - Tempestus Aquilons Player Kill Team**
+
+- Added the Tempestus Aquilons as a selectable 11-operative Player Kill Team with official datacards, loadout choices, multiple weapon profiles, and tabletop faction-rule guidance.
+- Generalized roster category requirements and limits so future Player Kill Teams can declare legal selection constraints in data.
+- Added regression coverage for roster legality, profiles, state tracking, save compatibility, and the existing Deathwatch team.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v6.5.0.
 
 ## v6.4.11
 

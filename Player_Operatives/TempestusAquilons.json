@@ -1,0 +1,992 @@
+{
+  "schemaVersion": 2,
+  "teamId": "tempestus-aquilons",
+  "teamName": "Tempestus Aquilons",
+  "faction": "Imperium",
+  "keywords": [
+    "TEMPESTUS AQUILON",
+    "IMPERIUM"
+  ],
+  "rosterSize": 11,
+  "selectionRules": {
+    "uniqueOperatives": true,
+    "mandatoryTroopers": 3
+  },
+  "source": {
+    "publisher": "Games Workshop",
+    "documents": [
+      "Tempestus Aquilons - Datacards",
+      "Tempestus Aquilons - Faction Rules",
+      "Tempestus Aquilons - Operative Selection"
+    ]
+  },
+  "rosterCategories": [
+    {
+      "id": "tempestor",
+      "label": "Tempestor",
+      "order": 1,
+      "requiredCount": 1,
+      "maxCount": 1
+    },
+    {
+      "id": "servo-sentry",
+      "label": "Servo-Sentry",
+      "order": 2,
+      "requiredCount": 1,
+      "maxCount": 1
+    },
+    {
+      "id": "specialists",
+      "label": "Specialists",
+      "order": 3
+    },
+    {
+      "id": "troopers",
+      "label": "Troopers",
+      "order": 4
+    }
+  ],
+  "factionRules": [
+    {
+      "name": "Drop Insertion",
+      "timing": "Setup, deployment and first/second turning points",
+      "text": "Set up the first third of the kill team normally. Each later whole third can be set up above with a Drop marker in your drop zone. As a Strategic Gambit in turning points 1 and 2, move Drop markers up to 4\" horizontally (through Wall terrain in close quarters). Above operatives activate normally and may expend or land; follow the official placement, order and timing restrictions. Less than half can remain above at the end of turning point 1. Remove a Drop marker when readying in turning points 2 and 3; operatives still above at the end of turning point 2 are incapacitated.",
+      "automation": "tabletop-guidance"
+    },
+    {
+      "name": "Grav-chute",
+      "timing": "Whenever a friendly operative is dropping",
+      "text": "Ignore vertical distance.",
+      "automation": "tabletop-guidance"
+    }
+  ],
+  "strategicGambits": [
+    {
+      "name": "Move Drop Markers",
+      "turningPoints": [
+        1,
+        2
+      ],
+      "text": "You can move Drop markers up to 4\" horizontally; in Tomb World close quarters this can be measured and moved through Wall terrain."
+    },
+    {
+      "name": "Rapid Insertion",
+      "turningPoints": [
+        1
+      ],
+      "text": "Each friendly Trooper wholly within your drop zone can immediately perform a free Reposition, ending wholly within 3\" of your drop zone."
+    }
+  ],
+  "operatives": [
+    {
+      "id": "tempestor-power",
+      "name": "Tempestor — Power weapon",
+      "officialName": "Aquilon Tempestor",
+      "role": "Leader",
+      "category": "tempestor",
+      "apl": 3,
+      "move": 6,
+      "save": 4,
+      "wounds": 9,
+      "baseSize": 28,
+      "abilities": [
+        {
+          "name": "Tempestus Veteran",
+          "text": "Once per battle, use a Firefight ploy for 0CP if this is the specified Tempestus Aquilon operative, or use Command Re-roll for 0CP if this operative’s attack or defence dice was rolled for."
+        },
+        {
+          "name": "Command (1AP)",
+          "text": "Select one other friendly Tempestus Aquilon operative (excluding Servo-Sentry) visible to and within 6\". Until the end of its next activation, add 1 to its APL. Cannot be performed within control range of an enemy operative."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot laspistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "name": "Power weapon",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/6",
+          "rules": [
+            "Lethal 5+"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tempestor-relic",
+      "name": "Tempestor — Relic bolt pistol",
+      "officialName": "Aquilon Tempestor",
+      "role": "Leader",
+      "category": "tempestor",
+      "apl": 3,
+      "move": 6,
+      "save": 4,
+      "wounds": 9,
+      "baseSize": 28,
+      "abilities": [
+        {
+          "name": "Tempestus Veteran",
+          "text": "Once per battle, use a Firefight ploy for 0CP if this is the specified Tempestus Aquilon operative, or use Command Re-roll for 0CP if this operative’s attack or defence dice was rolled for."
+        },
+        {
+          "name": "Command (1AP)",
+          "text": "Select one other friendly Tempestus Aquilon operative (excluding Servo-Sentry) visible to and within 6\". Until the end of its next activation, add 1 to its APL. Cannot be performed within control range of an enemy operative."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Relic bolt pistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/5",
+          "rules": [
+            "Range 8\"",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "name": "Chainsword",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/5",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "tempestor-carbine",
+      "name": "Tempestor — Lascarbine",
+      "officialName": "Aquilon Tempestor",
+      "role": "Leader",
+      "category": "tempestor",
+      "apl": 3,
+      "move": 6,
+      "save": 4,
+      "wounds": 9,
+      "baseSize": 28,
+      "abilities": [
+        {
+          "name": "Tempestus Veteran",
+          "text": "Once per battle, use a Firefight ploy for 0CP if this is the specified Tempestus Aquilon operative, or use Command Re-roll for 0CP if this operative’s attack or defence dice was rolled for."
+        },
+        {
+          "name": "Command (1AP)",
+          "text": "Select one other friendly Tempestus Aquilon operative (excluding Servo-Sentry) visible to and within 6\". Until the end of its next activation, add 1 to its APL. Cannot be performed within control range of an enemy operative."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "grenadier",
+      "name": "Grenadier",
+      "officialName": "Aquilon Grenadier",
+      "role": "Grenadier",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        {
+          "name": "Grenadier",
+          "text": "Can use frag, krak, smoke and stun grenades without counting towards limited uses selected as equipment. Improve the Hit stat of this operative’s frag or krak grenade by 1."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot laspistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "name": "Melta bomb",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "5/3",
+          "rules": [
+            "Range 3\"",
+            "Devastating 3",
+            "Heavy (Reposition only)",
+            "Limited 1",
+            "Piercing 2"
+          ]
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "gunfighter",
+      "name": "Gunfighter",
+      "officialName": "Aquilon Gunfighter",
+      "role": "Gunfighter",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        {
+          "name": "Salvo",
+          "text": "Select up to two different valid targets that are not within control range of friendly operatives. Shoot this weapon against both, resolving each sequence separately."
+        },
+        {
+          "name": "Gunfight",
+          "text": "After an enemy within 8\" shoots this operative, it can make a free Shoot action against that enemy with focused hot-shot laspistols. Roll discarded enemy attack dice plus one, to a maximum of four; it may change to Engage."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot laspistols (focused)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\"",
+            "Ceaseless",
+            "Rending"
+          ]
+        },
+        {
+          "name": "Hot-shot laspistols (salvo)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\"",
+            "Salvo"
+          ]
+        },
+        {
+          "name": "Hot-shot laspistols (point-blank)",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Ceaseless"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gunner-melta",
+      "name": "Gunner (Melta)",
+      "officialName": "Aquilon Gunner (Melta)",
+      "role": "Gunner",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [],
+      "weapons": [
+        {
+          "name": "Melta carbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "6/3",
+          "rules": [
+            "Range 6\"",
+            "Devastating 4",
+            "Piercing 2"
+          ]
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "gunner-plasma",
+      "name": "Gunner (Plasma)",
+      "officialName": "Aquilon Gunner (Plasma)",
+      "role": "Gunner",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [],
+      "weapons": [
+        {
+          "name": "Plasma carbine (standard)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/6",
+          "rules": [
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Plasma carbine (supercharge)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "5/6",
+          "rules": [
+            "Hot",
+            "Lethal 5+",
+            "Piercing 1"
+          ]
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "marksman",
+      "name": "Marksman",
+      "officialName": "Aquilon Marksman",
+      "role": "Marksman",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        {
+          "name": "Sniper’s Vantage",
+          "text": "While on Vantage terrain and shooting an Engage-order operative at least 2\" lower, all hot-shot long-las profiles have Severe."
+        },
+        {
+          "name": "Concealed Position",
+          "text": "The concealed profile can only be used the first time this operative performs Shoot during the battle."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot long-las (concealed)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "3/3",
+          "rules": [
+            "Devastating 3",
+            "Heavy",
+            "Silent",
+            "Concealed Position"
+          ]
+        },
+        {
+          "name": "Hot-shot long-las (mobile)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Hot-shot long-las (stationary)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "3/3",
+          "rules": [
+            "Devastating 3",
+            "Heavy"
+          ]
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "precursor",
+      "name": "Precursor",
+      "officialName": "Aquilon Precursor",
+      "role": "Precursor",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        {
+          "name": "Vicious Knife Fighter",
+          "text": "When fighting, after resolving your first attack die, immediately resolve another before your opponent."
+        },
+        {
+          "name": "Dynamic",
+          "text": "After Shoot or Fight, perform a free Dash. This is allowed after Charge, using only remaining Charge move distance, to a maximum of 3\"."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot laspistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "name": "Tempestus dagger",
+          "type": "melee",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Ceaseless",
+            "Lethal 5+"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "servo-flamer",
+      "name": "Servo-Sentry — Flamer",
+      "officialName": "Aquilon Servo-Sentry",
+      "role": "Servo-Sentry",
+      "category": "servo-sentry",
+      "apl": 2,
+      "move": 4,
+      "save": 3,
+      "wounds": 10,
+      "baseSize": 40,
+      "abilities": [
+        {
+          "name": "Machine",
+          "text": "Can only Dash, Fall Back, Reposition and Shoot. Cannot retaliate, assist in a fight, or use weapons not on its datacard."
+        },
+        {
+          "name": "Turret",
+          "text": "Can perform two Shoot actions during its activation."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Flamer",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "3/3",
+          "rules": [
+            "Range 8\"",
+            "Saturate",
+            "Torrent 2\""
+          ]
+        }
+      ]
+    },
+    {
+      "id": "servo-grenade",
+      "name": "Servo-Sentry — Grenade launcher",
+      "officialName": "Aquilon Servo-Sentry",
+      "role": "Servo-Sentry",
+      "category": "servo-sentry",
+      "apl": 2,
+      "move": 4,
+      "save": 3,
+      "wounds": 10,
+      "baseSize": 40,
+      "abilities": [
+        {
+          "name": "Machine",
+          "text": "Can only Dash, Fall Back, Reposition and Shoot. Cannot retaliate, assist in a fight, or use weapons not on its datacard."
+        },
+        {
+          "name": "Turret",
+          "text": "Can perform two Shoot actions during its activation."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Grenade launcher (frag)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "2/4",
+          "rules": [
+            "Blast 2\""
+          ]
+        },
+        {
+          "name": "Grenade launcher (krak)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "4/5",
+          "rules": [
+            "Piercing 1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "servo-volley",
+      "name": "Servo-Sentry — Hot-shot volley gun",
+      "officialName": "Aquilon Servo-Sentry",
+      "role": "Servo-Sentry",
+      "category": "servo-sentry",
+      "apl": 2,
+      "move": 4,
+      "save": 3,
+      "wounds": 10,
+      "baseSize": 40,
+      "abilities": [
+        {
+          "name": "Machine",
+          "text": "Can only Dash, Fall Back, Reposition and Shoot. Cannot retaliate, assist in a fight, or use weapons not on its datacard."
+        },
+        {
+          "name": "Turret",
+          "text": "Can perform two Shoot actions during its activation."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot volley gun (focused)",
+          "type": "ranged",
+          "attacks": 5,
+          "hit": 4,
+          "damage": "3/4",
+          "rules": [
+            "Piercing Crits 1"
+          ]
+        },
+        {
+          "name": "Hot-shot volley gun (sweeping)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 4,
+          "damage": "3/4",
+          "rules": [
+            "Piercing Crits 1",
+            "Torrent 1\""
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trooper-1",
+      "name": "Trooper",
+      "officialName": "Aquilon Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        {
+          "name": "Rapid Insertion",
+          "text": "Strategic Gambit in the first turning point: each friendly Trooper wholly within your drop zone can immediately Reposition, ending wholly within 3\" of your drop zone."
+        },
+        {
+          "name": "Swift Landing",
+          "text": "When this operative lands, it can be set up within 4\" horizontally of a Drop marker instead of the normal distance."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "trooper-2",
+      "name": "Trooper",
+      "officialName": "Aquilon Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        {
+          "name": "Rapid Insertion",
+          "text": "Strategic Gambit in the first turning point: each friendly Trooper wholly within your drop zone can immediately Reposition, ending wholly within 3\" of your drop zone."
+        },
+        {
+          "name": "Swift Landing",
+          "text": "When this operative lands, it can be set up within 4\" horizontally of a Drop marker instead of the normal distance."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "trooper-3",
+      "name": "Trooper",
+      "officialName": "Aquilon Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        {
+          "name": "Rapid Insertion",
+          "text": "Strategic Gambit in the first turning point: each friendly Trooper wholly within your drop zone can immediately Reposition, ending wholly within 3\" of your drop zone."
+        },
+        {
+          "name": "Swift Landing",
+          "text": "When this operative lands, it can be set up within 4\" horizontally of a Drop marker instead of the normal distance."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "trooper-4",
+      "name": "Trooper",
+      "officialName": "Aquilon Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        {
+          "name": "Rapid Insertion",
+          "text": "Strategic Gambit in the first turning point: each friendly Trooper wholly within your drop zone can immediately Reposition, ending wholly within 3\" of your drop zone."
+        },
+        {
+          "name": "Swift Landing",
+          "text": "When this operative lands, it can be set up within 4\" horizontally of a Drop marker instead of the normal distance."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "trooper-5",
+      "name": "Trooper",
+      "officialName": "Aquilon Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        {
+          "name": "Rapid Insertion",
+          "text": "Strategic Gambit in the first turning point: each friendly Trooper wholly within your drop zone can immediately Reposition, ending wholly within 3\" of your drop zone."
+        },
+        {
+          "name": "Swift Landing",
+          "text": "When this operative lands, it can be set up within 4\" horizontally of a Drop marker instead of the normal distance."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "trooper-6",
+      "name": "Trooper",
+      "officialName": "Aquilon Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        {
+          "name": "Rapid Insertion",
+          "text": "Strategic Gambit in the first turning point: each friendly Trooper wholly within your drop zone can immediately Reposition, ending wholly within 3\" of your drop zone."
+        },
+        {
+          "name": "Swift Landing",
+          "text": "When this operative lands, it can be set up within 4\" horizontally of a Drop marker instead of the normal distance."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "trooper-7",
+      "name": "Trooper",
+      "officialName": "Aquilon Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        {
+          "name": "Rapid Insertion",
+          "text": "Strategic Gambit in the first turning point: each friendly Trooper wholly within your drop zone can immediately Reposition, ending wholly within 3\" of your drop zone."
+        },
+        {
+          "name": "Swift Landing",
+          "text": "When this operative lands, it can be set up within 4\" horizontally of a Drop marker instead of the normal distance."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "trooper-8",
+      "name": "Trooper",
+      "officialName": "Aquilon Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        {
+          "name": "Rapid Insertion",
+          "text": "Strategic Gambit in the first turning point: each friendly Trooper wholly within your drop zone can immediately Reposition, ending wholly within 3\" of your drop zone."
+        },
+        {
+          "name": "Swift Landing",
+          "text": "When this operative lands, it can be set up within 4\" horizontally of a Drop marker instead of the normal distance."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "trooper-9",
+      "name": "Trooper",
+      "officialName": "Aquilon Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 4,
+      "wounds": 8,
+      "baseSize": 28,
+      "abilities": [
+        {
+          "name": "Rapid Insertion",
+          "text": "Strategic Gambit in the first turning point: each friendly Trooper wholly within your drop zone can immediately Reposition, ending wholly within 3\" of your drop zone."
+        },
+        {
+          "name": "Swift Landing",
+          "text": "When this operative lands, it can be set up within 4\" horizontally of a Drop marker instead of the normal distance."
+        }
+      ],
+      "weapons": [
+        {
+          "name": "Hot-shot lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    }
+  ]
+}
