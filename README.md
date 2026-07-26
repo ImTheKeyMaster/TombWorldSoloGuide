@@ -1,4 +1,15 @@
-# Tomb World Solo Guide v6.6.1
+# Tomb World Solo Guide v6.7.0
+
+## v6.7.0
+
+**Version 6.7.0 - Scout Squad Player Kill Team**
+
+- Added Scout Squad as a selectable 9-operative Player Kill Team with one required Sergeant, unique specialist limits, repeatable Warriors, and mutually exclusive Sergeant, Heavy Gunner, and Warrior loadouts.
+- Added all supplied datacard weapon profiles, operative abilities, Forward Scouting options, Strategic Gambit guidance, stable IDs, offline registration, and save-compatible team data.
+- Added Scout Squad validation, roster, profile, combat-path, persistence, offline, version, and existing-team regression coverage.
+- Engine Enhancements: None. The established definition-driven roster, combat, guidance, and persistence architecture supports Scout Squad without team-specific gameplay branches.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v6.7.0.
+
 
 ## v6.6.1
 

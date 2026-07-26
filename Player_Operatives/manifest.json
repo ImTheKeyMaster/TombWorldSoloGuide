@@ -35,6 +35,13 @@
       "file": "SpectreSquad.json",
       "faction": "Imperium",
       "description": "Veteran Astra Militarum scouts specializing in reactive fieldcraft"
+    },
+    {
+      "id": "scout-squad",
+      "name": "Scout Squad",
+      "file": "ScoutSquad.json",
+      "faction": "Imperium",
+      "description": "Forward-deployed Space Marine Scouts with flexible specialists and Warrior loadouts"
     }
   ]
 }
