@@ -1,0 +1,1937 @@
+{
+  "schemaVersion": 2,
+  "teamId": "spectre-squad",
+  "teamName": "Spectre Squad",
+  "faction": "Imperium",
+  "keywords": [
+    "SPECTRE SQUAD",
+    "IMPERIUM",
+    "ASTRA MILITARUM"
+  ],
+  "rosterSize": 11,
+  "selectionRules": {
+    "uniqueOperatives": true,
+    "selectionGroupMax": 1
+  },
+  "source": {
+    "publisher": "Games Workshop",
+    "documents": [
+      "Spectre Squad - Datacards",
+      "Spectre Squad - Faction Rules",
+      "Spectre Squad - Operative Selection"
+    ]
+  },
+  "rosterCategories": [
+    {
+      "id": "leader",
+      "label": "Veteran Sergeant",
+      "order": 1,
+      "requiredCount": 1,
+      "maxCount": 1
+    },
+    {
+      "id": "support",
+      "label": "Vox-Relay Beacon",
+      "order": 2,
+      "requiredCount": 1,
+      "maxCount": 1
+    },
+    {
+      "id": "specialists",
+      "label": "Specialists",
+      "order": 3,
+      "requiredCount": 0,
+      "maxCount": 9
+    },
+    {
+      "id": "troopers",
+      "label": "Troopers",
+      "order": 4,
+      "requiredCount": 0,
+      "maxCount": 9
+    }
+  ],
+  "factionRules": [
+    {
+      "id": "elite-fieldcraft",
+      "name": "Elite Fieldcraft",
+      "timing": "Ready Step and enemy operative activations",
+      "automation": "lifecycle-reminder",
+      "text": "In each Ready Step, gain 1 Fieldcraft point, or 2 if a friendly Spectre Squad Vox-Operator is in the killzone and outside enemy control range. Discard all Fieldcraft points at the end of the turning point. After an Engage-order enemy performs an action during its activation, spend 1 point to interrupt once with a ready friendly operative outside all other enemy control ranges; it can perform a free Shoot (not Guard), Dash, or Reposition. Each friendly operative can gain only one such free action per turning point. Apply all target, order, point-blank shot, movement, drop-zone, Wall, and teleport restrictions from the faction rule on the tabletop."
+    },
+    {
+      "id": "camo-cloaks",
+      "name": "Camo Cloaks",
+      "timing": "When an enemy shoots a friendly operative",
+      "automation": "manual-tabletop-guidance",
+      "text": "When retaining cover saves for a friendly Spectre Squad operative other than the Vox-Relay Beacon, retain one additional cover save or retain one cover save as a critical success. This is not cumulative with improved cover saves from Vantage terrain."
+    }
+  ],
+  "operatives": [
+    {
+      "id": "veteran-sergeant",
+      "name": "Veteran Sergeant",
+      "officialName": "Spectre Veteran Sergeant",
+      "role": "Leader",
+      "category": "leader",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 9,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "LEADER"
+      ],
+      "abilities": [
+        {
+          "id": "issue-mission",
+          "name": "Issue Mission (0AP)",
+          "text": "Select one eligible expended friendly Spectre Squad operative visible to the Veteran Sergeant that has not used Elite Fieldcraft to interrupt this turning point. It can interrupt despite being expended, but then cannot counteract this turning point or Reposition if it already did so. The Sergeant cannot perform this action within enemy control range.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "scoped-lascarbine",
+          "name": "Scoped lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Lethal 5+",
+            "Rending"
+          ]
+        },
+        {
+          "id": "bionic-arm",
+          "name": "Bionic arm",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "vox-relay-beacon",
+      "name": "Vox-Relay Beacon",
+      "officialName": "Spectre Vox-Relay Beacon",
+      "role": "Support",
+      "category": "support",
+      "apl": 1,
+      "move": 0,
+      "save": 5,
+      "wounds": 3,
+      "baseSize": 25,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "SUPPORT"
+      ],
+      "abilities": [
+        {
+          "id": "pre-deploy",
+          "name": "Pre-Deploy",
+          "text": "During Set Up Operatives, this operative can be set up outside the drop zone, wholly within your territory and more than 2\" from markers and equipment terrain features.",
+          "automation": "manual-guidance"
+        },
+        {
+          "id": "expendable",
+          "name": "Expendable",
+          "text": "Can only perform Signal; cannot counteract, retaliate, assist, contest, or count for the specified kill, escape, survival, incapacitation, victory, or VP conditions. Operatives can move through it and the opponent can ignore its control range; apply the full datacard guidance.",
+          "automation": "manual-guidance"
+        },
+        {
+          "id": "signal",
+          "name": "Signal (1AP)",
+          "text": "Select one other friendly Spectre Squad operative within 6\". Until the end of its next activation, add 1 to its APL. Cannot be performed within enemy control range.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": []
+    },
+    {
+      "id": "field-medicae-lascarbine",
+      "name": "Field Medicae — Lascarbine",
+      "officialName": "Spectre Field Medicae",
+      "role": "Field Medicae",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "FIELD-MEDICAE"
+      ],
+      "abilities": [
+        {
+          "id": "medic",
+          "name": "Medic!",
+          "text": "Once per turning point, when another eligible visible friendly operative within 3\" would be incapacitated, it can remain on 1 wound and Dash into the medic’s control range; apply the APL penalties, activation ending, targeting, and control-range restrictions on the tabletop.",
+          "automation": "manual-guidance"
+        },
+        {
+          "id": "medikit",
+          "name": "Medikit (0AP)",
+          "text": "An eligible friendly operative in control range regains up to 2D3 lost wounds. It cannot be an operative Medic! was used on this turning point. Cannot be performed within enemy control range.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lascarbine",
+          "name": "Lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Rending"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "field-medicae"
+    },
+    {
+      "id": "field-medicae-lasrifle",
+      "name": "Field Medicae — Lasrifle",
+      "officialName": "Spectre Field Medicae",
+      "role": "Field Medicae",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "FIELD-MEDICAE"
+      ],
+      "abilities": [
+        {
+          "id": "medic",
+          "name": "Medic!",
+          "text": "Once per turning point, when another eligible visible friendly operative within 3\" would be incapacitated, it can remain on 1 wound and Dash into the medic’s control range; apply the APL penalties, activation ending, targeting, and control-range restrictions on the tabletop.",
+          "automation": "manual-guidance"
+        },
+        {
+          "id": "medikit",
+          "name": "Medikit (0AP)",
+          "text": "An eligible friendly operative in control range regains up to 2D3 lost wounds. It cannot be an operative Medic! was used on this turning point. Cannot be performed within enemy control range.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lasrifle",
+          "name": "Lasrifle",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Heavy (Reposition only)",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "field-medicae"
+    },
+    {
+      "id": "grenadier-lascarbine",
+      "name": "Grenadier — Lascarbine",
+      "officialName": "Spectre Grenadier",
+      "role": "Grenadier",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "GRENADIER"
+      ],
+      "abilities": [
+        {
+          "id": "grenadier",
+          "name": "Grenadier",
+          "text": "Can use frag, krak and smoke grenades without counting toward equipment limited uses. Improve Hit by 1 with frag or krak grenades.",
+          "automation": "manual-guidance"
+        },
+        {
+          "id": "melta-mine",
+          "name": "Melta Mine",
+          "text": "Carries the Melta Mine marker; can Pick Up Marker and can Dash free after Place Marker, subject to the placement restrictions.",
+          "automation": "manual-guidance"
+        },
+        {
+          "id": "proximity-mine",
+          "name": "Proximity Mine",
+          "text": "When the Melta Mine marker first enters another operative’s control range, remove it and inflict 2D6+3 damage; end that operative’s action if it survives. Resolve placement and damage manually.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lascarbine",
+          "name": "Lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Rending"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "grenadier"
+    },
+    {
+      "id": "grenadier-lasrifle",
+      "name": "Grenadier — Lasrifle",
+      "officialName": "Spectre Grenadier",
+      "role": "Grenadier",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "GRENADIER"
+      ],
+      "abilities": [
+        {
+          "id": "grenadier",
+          "name": "Grenadier",
+          "text": "Can use frag, krak and smoke grenades without counting toward equipment limited uses. Improve Hit by 1 with frag or krak grenades.",
+          "automation": "manual-guidance"
+        },
+        {
+          "id": "melta-mine",
+          "name": "Melta Mine",
+          "text": "Carries the Melta Mine marker; can Pick Up Marker and can Dash free after Place Marker, subject to the placement restrictions.",
+          "automation": "manual-guidance"
+        },
+        {
+          "id": "proximity-mine",
+          "name": "Proximity Mine",
+          "text": "When the Melta Mine marker first enters another operative’s control range, remove it and inflict 2D6+3 damage; end that operative’s action if it survives. Resolve placement and damage manually.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lasrifle",
+          "name": "Lasrifle",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Heavy (Reposition only)",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "grenadier"
+    },
+    {
+      "id": "guide-lascarbine",
+      "name": "Guide — Lascarbine",
+      "officialName": "Spectre Guide",
+      "role": "Guide",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "GUIDE"
+      ],
+      "abilities": [
+        {
+          "id": "prepared-killzone",
+          "name": "Prepared Killzone",
+          "text": "Select one additional equipment option; it must be an Ammo Cache or equipment terrain feature.",
+          "automation": "manual-guidance"
+        },
+        {
+          "id": "scout-terrain",
+          "name": "Scout Terrain",
+          "text": "Terrain in your territory or within 3\" of the Guide is scouted. Once per activation, friendly operatives can ignore the first 2\" vertical distance of one climb on scouted terrain, or reduce Operate Hatch by 1AP for a scouted access point.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lascarbine",
+          "name": "Lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Rending"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "guide"
+    },
+    {
+      "id": "guide-lasrifle",
+      "name": "Guide — Lasrifle",
+      "officialName": "Spectre Guide",
+      "role": "Guide",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "GUIDE"
+      ],
+      "abilities": [
+        {
+          "id": "prepared-killzone",
+          "name": "Prepared Killzone",
+          "text": "Select one additional equipment option; it must be an Ammo Cache or equipment terrain feature.",
+          "automation": "manual-guidance"
+        },
+        {
+          "id": "scout-terrain",
+          "name": "Scout Terrain",
+          "text": "Terrain in your territory or within 3\" of the Guide is scouted. Once per activation, friendly operatives can ignore the first 2\" vertical distance of one climb on scouted terrain, or reduce Operate Hatch by 1AP for a scouted access point.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lasrifle",
+          "name": "Lasrifle",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Heavy (Reposition only)",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "guide"
+    },
+    {
+      "id": "loader-lascarbine",
+      "name": "Loader — Lascarbine",
+      "officialName": "Spectre Loader",
+      "role": "Loader",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "LOADER"
+      ],
+      "abilities": [
+        {
+          "id": "weapon-assist",
+          "name": "Weapon Assist",
+          "text": "When another friendly operative in the Loader’s control range shoots, re-roll one attack die.",
+          "automation": "manual-guidance"
+        },
+        {
+          "id": "load-weapon",
+          "name": "Load Weapon (1AP)",
+          "text": "Select an eligible friendly operative in control range and more than 3\" from enemies to immediately Shoot free, with the datacard order and action restrictions.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lascarbine",
+          "name": "Lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Rending"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "loader"
+    },
+    {
+      "id": "loader-lasrifle",
+      "name": "Loader — Lasrifle",
+      "officialName": "Spectre Loader",
+      "role": "Loader",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "LOADER"
+      ],
+      "abilities": [
+        {
+          "id": "weapon-assist",
+          "name": "Weapon Assist",
+          "text": "When another friendly operative in the Loader’s control range shoots, re-roll one attack die.",
+          "automation": "manual-guidance"
+        },
+        {
+          "id": "load-weapon",
+          "name": "Load Weapon (1AP)",
+          "text": "Select an eligible friendly operative in control range and more than 3\" from enemies to immediately Shoot free, with the datacard order and action restrictions.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lasrifle",
+          "name": "Lasrifle",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Heavy (Reposition only)",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "loader"
+    },
+    {
+      "id": "vox-operator-lascarbine",
+      "name": "Vox-Operator — Lascarbine",
+      "officialName": "Spectre Vox-Operator",
+      "role": "Vox-Operator",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "VOX-OPERATOR"
+      ],
+      "abilities": [
+        {
+          "id": "signal",
+          "name": "Signal (1AP)",
+          "text": "Select one other friendly Spectre Squad operative within 6\". Until the end of its next activation, add 1 to its APL. Cannot be performed within enemy control range.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lascarbine",
+          "name": "Lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Rending"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "vox-operator"
+    },
+    {
+      "id": "vox-operator-lasrifle",
+      "name": "Vox-Operator — Lasrifle",
+      "officialName": "Spectre Vox-Operator",
+      "role": "Vox-Operator",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "VOX-OPERATOR"
+      ],
+      "abilities": [
+        {
+          "id": "signal",
+          "name": "Signal (1AP)",
+          "text": "Select one other friendly Spectre Squad operative within 6\". Until the end of its next activation, add 1 to its APL. Cannot be performed within enemy control range.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lasrifle",
+          "name": "Lasrifle",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Heavy (Reposition only)",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "vox-operator"
+    },
+    {
+      "id": "gunner-meltagun",
+      "name": "Gunner — Meltagun",
+      "officialName": "Spectre Gunner",
+      "role": "Gunner",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "GUNNER"
+      ],
+      "abilities": [],
+      "weapons": [
+        {
+          "id": "meltagun",
+          "name": "Meltagun",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "6/3",
+          "rules": [
+            "Range 6\"",
+            "Devastating 4",
+            "Piercing 2"
+          ]
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "gunner"
+    },
+    {
+      "id": "gunner-plasma",
+      "name": "Gunner — Plasma gun",
+      "officialName": "Spectre Gunner",
+      "role": "Gunner",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "GUNNER"
+      ],
+      "abilities": [],
+      "weapons": [
+        {
+          "id": "plasma-standard",
+          "name": "Plasma gun (standard)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "4/6",
+          "rules": [
+            "Piercing 1"
+          ]
+        },
+        {
+          "id": "plasma-supercharge",
+          "name": "Plasma gun (supercharge)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "5/6",
+          "rules": [
+            "Hot",
+            "Lethal 5+",
+            "Piercing 1"
+          ]
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "gunner"
+    },
+    {
+      "id": "heavy-gunner",
+      "name": "Heavy Gunner",
+      "officialName": "Spectre Heavy Gunner",
+      "role": "Heavy Gunner",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "HEAVY-GUNNER"
+      ],
+      "abilities": [
+        {
+          "id": "weapons-team",
+          "name": "Weapons Team",
+          "text": "When activated within control range of a friendly Loader, both missile launcher profiles have Heavy (Dash only) instead of Heavy until activation ends.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "laspistol",
+          "name": "Laspistol",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Range 8\""
+          ]
+        },
+        {
+          "id": "missile-frag",
+          "name": "Missile launcher (frag)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/5",
+          "rules": [
+            "Blast 2\"",
+            "Heavy"
+          ]
+        },
+        {
+          "id": "missile-krak",
+          "name": "Missile launcher (krak)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "5/7",
+          "rules": [
+            "Heavy",
+            "Piercing 1"
+          ]
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "sharpshooter",
+      "name": "Sharpshooter",
+      "officialName": "Spectre Sharpshooter",
+      "role": "Sharpshooter",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "SHARPSHOOTER"
+      ],
+      "abilities": [
+        {
+          "id": "concealed-position",
+          "name": "Concealed Position",
+          "text": "The concealed Long-las profile can only be used for this operative’s first Shoot action of the battle.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "long-las-concealed",
+          "name": "Long-las (concealed)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "3/3",
+          "rules": [
+            "Devastating 3",
+            "Heavy",
+            "Silent",
+            "Concealed Position"
+          ]
+        },
+        {
+          "id": "long-las-mobile",
+          "name": "Long-las (mobile)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": []
+        },
+        {
+          "id": "long-las-stationary",
+          "name": "Long-las (stationary)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 2,
+          "damage": "3/3",
+          "rules": [
+            "Devastating 3",
+            "Heavy"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "stub-gunner",
+      "name": "Stub-Gunner",
+      "officialName": "Spectre Stub-Gunner",
+      "role": "Stub-Gunner",
+      "category": "specialists",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "STUB-GUNNER"
+      ],
+      "abilities": [
+        {
+          "id": "suppressive-fire",
+          "name": "Suppressive Fire",
+          "text": "Eligible visible enemy operatives within 3\" subtract 1 from weapon Atk (minimum 1) while this operative has Engage and meets the control-range and Charge restrictions.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "autostubber-focused",
+          "name": "Autostubber (focused)",
+          "type": "ranged",
+          "attacks": 5,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Heavy (Dash only)"
+          ]
+        },
+        {
+          "id": "autostubber-suppressive",
+          "name": "Autostubber (suppressive)",
+          "type": "ranged",
+          "attacks": 5,
+          "hit": 5,
+          "damage": "0/0",
+          "rules": [
+            "Heavy",
+            "Lethal 5+",
+            "Seek Light",
+            "Stun",
+            "Torrent 1\""
+          ]
+        },
+        {
+          "id": "autostubber-sweeping",
+          "name": "Autostubber (sweeping)",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "3/4",
+          "rules": [
+            "Heavy (Dash only)",
+            "Torrent 1\""
+          ]
+        },
+        {
+          "id": "fists",
+          "name": "Fists",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ]
+    },
+    {
+      "id": "trooper-1-lascarbine",
+      "name": "Trooper 1 — Lascarbine",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lascarbine",
+          "name": "Lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Rending"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-1"
+    },
+    {
+      "id": "trooper-1-lasrifle",
+      "name": "Trooper 1 — Lasrifle",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lasrifle",
+          "name": "Lasrifle",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Heavy (Reposition only)",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-1"
+    },
+    {
+      "id": "trooper-2-lascarbine",
+      "name": "Trooper 2 — Lascarbine",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lascarbine",
+          "name": "Lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Rending"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-2"
+    },
+    {
+      "id": "trooper-2-lasrifle",
+      "name": "Trooper 2 — Lasrifle",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lasrifle",
+          "name": "Lasrifle",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Heavy (Reposition only)",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-2"
+    },
+    {
+      "id": "trooper-3-lascarbine",
+      "name": "Trooper 3 — Lascarbine",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lascarbine",
+          "name": "Lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Rending"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-3"
+    },
+    {
+      "id": "trooper-3-lasrifle",
+      "name": "Trooper 3 — Lasrifle",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lasrifle",
+          "name": "Lasrifle",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Heavy (Reposition only)",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-3"
+    },
+    {
+      "id": "trooper-4-lascarbine",
+      "name": "Trooper 4 — Lascarbine",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lascarbine",
+          "name": "Lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Rending"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-4"
+    },
+    {
+      "id": "trooper-4-lasrifle",
+      "name": "Trooper 4 — Lasrifle",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lasrifle",
+          "name": "Lasrifle",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Heavy (Reposition only)",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-4"
+    },
+    {
+      "id": "trooper-5-lascarbine",
+      "name": "Trooper 5 — Lascarbine",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lascarbine",
+          "name": "Lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Rending"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-5"
+    },
+    {
+      "id": "trooper-5-lasrifle",
+      "name": "Trooper 5 — Lasrifle",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lasrifle",
+          "name": "Lasrifle",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Heavy (Reposition only)",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-5"
+    },
+    {
+      "id": "trooper-6-lascarbine",
+      "name": "Trooper 6 — Lascarbine",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lascarbine",
+          "name": "Lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Rending"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-6"
+    },
+    {
+      "id": "trooper-6-lasrifle",
+      "name": "Trooper 6 — Lasrifle",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lasrifle",
+          "name": "Lasrifle",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Heavy (Reposition only)",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-6"
+    },
+    {
+      "id": "trooper-7-lascarbine",
+      "name": "Trooper 7 — Lascarbine",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lascarbine",
+          "name": "Lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Rending"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-7"
+    },
+    {
+      "id": "trooper-7-lasrifle",
+      "name": "Trooper 7 — Lasrifle",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lasrifle",
+          "name": "Lasrifle",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Heavy (Reposition only)",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-7"
+    },
+    {
+      "id": "trooper-8-lascarbine",
+      "name": "Trooper 8 — Lascarbine",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lascarbine",
+          "name": "Lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Rending"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-8"
+    },
+    {
+      "id": "trooper-8-lasrifle",
+      "name": "Trooper 8 — Lasrifle",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lasrifle",
+          "name": "Lasrifle",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Heavy (Reposition only)",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-8"
+    },
+    {
+      "id": "trooper-9-lascarbine",
+      "name": "Trooper 9 — Lascarbine",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lascarbine",
+          "name": "Lascarbine",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Rending"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-9"
+    },
+    {
+      "id": "trooper-9-lasrifle",
+      "name": "Trooper 9 — Lasrifle",
+      "officialName": "Spectre Trooper",
+      "role": "Trooper",
+      "category": "troopers",
+      "apl": 2,
+      "move": 6,
+      "save": 5,
+      "wounds": 8,
+      "baseSize": 28,
+      "keywords": [
+        "SPECTRE SQUAD",
+        "IMPERIUM",
+        "ASTRA MILITARUM",
+        "TROOPER"
+      ],
+      "abilities": [
+        {
+          "id": "cool-headed",
+          "name": "Cool-Headed",
+          "text": "Once per turning point, one friendly operative with this rule can use Elite Fieldcraft for 0 Fieldcraft points.",
+          "automation": "manual-guidance"
+        }
+      ],
+      "weapons": [
+        {
+          "id": "lasrifle",
+          "name": "Lasrifle",
+          "type": "ranged",
+          "attacks": 4,
+          "hit": 3,
+          "damage": "2/3",
+          "rules": [
+            "Heavy (Reposition only)",
+            "Lethal 5+"
+          ]
+        },
+        {
+          "id": "gun-butt",
+          "name": "Gun butt",
+          "type": "melee",
+          "attacks": 3,
+          "hit": 4,
+          "damage": "2/3",
+          "rules": []
+        }
+      ],
+      "selectionGroup": "trooper-9"
+    }
+  ],
+  "strategicGambits": [
+    {
+      "id": "elite-fieldcraft-ready-step",
+      "name": "Elite Fieldcraft — Ready Step",
+      "turningPoints": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "text": "Gain 1 Fieldcraft point, or 2 if an eligible Vox-Operator is in the killzone and outside enemy control range. Track points at the table and discard them at the end of this turning point."
+    }
+  ]
+}
