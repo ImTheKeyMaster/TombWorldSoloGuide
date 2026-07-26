@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v6.7.3
+# Tomb World Solo Guide v6.7.4
+
+## v6.7.4
+
+**Version 6.7.4 - Prominent Eliminated NPO Overlay**
+
+- Unified Player Operative and NPO eliminated-card opacity, overlay scale, centering, and stacking while preserving their distinct artwork.
+- Increased the Necron emblem's brightness and contrast and added a subtle white outer glow so it remains crisp and immediately visible over card contents.
+- Added focused regression coverage and synchronized visible, internal, cache-busting, and service-worker cache versions to v6.7.4.
 
 ## v6.7.3
 
