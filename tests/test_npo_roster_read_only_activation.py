@@ -48,14 +48,22 @@ class NpoRosterReadOnlyActivationTests(unittest.TestCase):
             self.styles,
         )
 
-    def test_eliminated_npo_uses_themed_overlay_without_changing_player_overlay(self):
+    def test_eliminated_cards_share_prominent_overlay_styling(self):
         self.assertIn('.operative-card.dead:after{content:"☠"', self.styles)
         self.assertIn(
-            ".operative-card.dead:after,.npo-roster-card.dead:after{position:absolute;z-index:2",
+            ".operative-card.dead,.npo-roster-card.dead{opacity:.5}",
             self.styles,
         )
         self.assertIn(
-            '.npo-roster-card.dead:after{content:"";background:url("Assets/Images/eliminated-necron-skull.png") center/auto 6rem no-repeat;opacity:.16}',
+            ".operative-card.dead:after,.npo-roster-card.dead:after{--elimination-overlay-size:6rem;position:absolute;z-index:2",
+            self.styles,
+        )
+        self.assertIn(
+            'font-size:var(--elimination-overlay-size);opacity:1;pointer-events:none',
+            self.styles,
+        )
+        self.assertIn(
+            '.npo-roster-card.dead:after{content:"";background:url("Assets/Images/eliminated-necron-skull.png") center/auto var(--elimination-overlay-size) no-repeat;filter:brightness(1.4) contrast(1.2) drop-shadow(0 0 2px rgba(255,255,255,.55))}',
             self.styles,
         )
         self.assertIn(".npo-roster-card>*{position:relative;z-index:1}", self.styles)
