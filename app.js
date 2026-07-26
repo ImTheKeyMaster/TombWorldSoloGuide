@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '6.5.0';
+  const APP_VERSION = '6.5.1';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -202,6 +202,16 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const maxGunners=Number(rules.maxGunners??Infinity);
     const gunnerCount=selected.filter(operative=>operative.role==='Gunner').length;
     if(Number.isFinite(maxGunners)){requirements.push(`Maximum Gunners: ${gunnerCount} of ${maxGunners}`);valid=valid&&gunnerCount<=maxGunners;}
+    const maxGravis=Number(rules.maxGravis??Infinity);
+    const gravisCount=selected.filter(operative=>operative.gravis).length;
+    if(Number.isFinite(maxGravis)){requirements.push(`Maximum Gravis: ${gravisCount} of ${maxGravis}`);valid=valid&&gravisCount<=maxGravis;}
+    const requiredLeaderId=rules.leader?.operativeId;
+    if(requiredLeaderId){
+      const leaderCount=operativeIds.filter(id=>id===requiredLeaderId).length;
+      const requiredLeaderCount=Number(rules.leader.count||1);
+      requirements.push(`Required Leader: ${leaderCount} of ${requiredLeaderCount}`);
+      valid=valid&&leaderCount===requiredLeaderCount;
+    }
     const mandatoryTroopers=Number(rules.mandatoryTroopers||0);
     const trooperCount=selected.filter(operative=>operative.role==='Trooper').length;
     if(mandatoryTroopers){requirements.push(`Required Troopers: ${trooperCount} of ${mandatoryTroopers}`);valid=valid&&trooperCount>=mandatoryTroopers;}
@@ -209,7 +219,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return {valid,requirements};
   }
   function factionGuidanceHtml(kind='rules'){
-    const entries=kind==='gambits'?(playerTeamData?.strategicGambits||[]):(playerTeamData?.factionRules||[]);
+    const entries=(kind==='gambits'?(playerTeamData?.strategicGambits||[]):(playerTeamData?.factionRules||[]))
+      .filter(entry=>kind!=='gambits'||!Array.isArray(entry.turningPoints)||entry.turningPoints.includes(state.turningPoint));
     if(!entries.length)return '';
     const title=kind==='gambits'?'Faction Strategic Gambits':'Faction Rules Guidance';
     return `<section class="card faction-guidance"><h3>${title}</h3>${entries.map(entry=>`<div class="mission-rule"><strong>${escapeHtml(entry.name)}</strong>${entry.timing?`<small>${escapeHtml(entry.timing)}</small>`:''}<p>${escapeHtml(entry.text)}</p></div>`).join('')}<p class="muted">Resolve these rules on the tabletop; the Guide presents reminders without simulating positioning.</p></section>`;
@@ -1213,7 +1224,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       if((playerTeamData?.rosterCategories||[]).some(category=>category.id!=='leader'&&(category.requiredCount||category.maxCount)))requirements.splice(0,requirements.length,...validation.requirements);
       const valid=validation.valid&&requiredLeaderSelected&&(!hasGravis||(gravisCount>=1&&gravisCount<=maxGravis));
       const requirementItems=requirements.map(requirement=>`<li>${escapeHtml(requirement)}</li>`).join('');
-      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><p class="muted">Build a legal kill team using its current official rules. The Guide tracks selected operatives but does not validate every team-building restriction. Cooperative team splitting is not currently supported.</p><div class="setup-bulk-row"><button class="btn secondary" id="randomPlayerTeam">Random Team</button></div><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
+      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><p class="muted">Build a legal kill team using its current official rules. Cooperative team splitting is not currently supported.</p><div class="setup-bulk-row"><button class="btn secondary" id="randomPlayerTeam">Random Team</button></div><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
     }
     if(stepId==='deploy'){
       const generation=state.startingNpoGeneration;

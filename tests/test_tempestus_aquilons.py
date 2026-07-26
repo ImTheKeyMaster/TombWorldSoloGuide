@@ -81,6 +81,9 @@ class TempestusAquilonsTests(unittest.TestCase):
         self.assertIn("state.playerActivatedIds", app)
         self.assertIn("playerAttackWeapons(stage.playerOperativeId,attackType)", app)
         self.assertNotIn("state.playerTeamId==='tempestus-aquilons'", app)
+        self.assertIn("valid=valid&&gravisCount<=maxGravis", app)
+        self.assertIn("valid=valid&&leaderCount===requiredLeaderCount", app)
+        self.assertIn("entry.turningPoints.includes(state.turningPoint)", app)
         script = """
 const p=require('./persistence.js');
 const save={saveVersion:1,playerTeamId:'tempestus-aquilons',playerRoster:['trooper-1'],playerWounds:{'trooper-1':3},playerActivatedIds:['trooper-1'],playerCasualtyIds:[],playerOperativeStates:{'trooper-1':{inPlay:true}},roster:[]};
