@@ -58,7 +58,11 @@ class SpectreSquadTests(unittest.TestCase):
                 self.assertTrue(ability["id"])
                 ability_ids.add(ability["id"])
         self.assertTrue({"issue-mission", "medic", "concealed-position", "signal", "cool-headed"}.issubset(ability_ids))
+        self.assertTrue(self.team["validation"]["requireStableIds"])
         self.assertIn("function validatePlayerTeamData", self.app)
+        self.assertIn("invalid or duplicate faction rule ID", self.app)
+        self.assertIn("invalid or duplicate ability ID", self.app)
+        self.assertIn("weapon without a stable ID", self.app)
 
     def test_roster_size_mandatory_operatives_and_legal_default(self):
         self.assertEqual(self.team["rosterSize"], 11)
@@ -112,6 +116,8 @@ class SpectreSquadTests(unittest.TestCase):
             self.assertEqual((weapon["attacks"], weapon["hit"], weapon["damage"], weapon["rules"]), stats)
         self.assertEqual(self.weapon("field-medicae-lascarbine", "lascarbine")["type"], "ranged")
         self.assertEqual(self.weapon("field-medicae-lascarbine", "gun-butt")["type"], "melee")
+        for operative_id, weapon_id in [("heavy-gunner", "missile-frag"), ("stub-gunner", "autostubber-suppressive"), ("stub-gunner", "autostubber-sweeping")]:
+            self.assertIn("Record wounds or elimination", self.weapon(operative_id, weapon_id)["manualResolution"])
 
     def test_combat_filter_and_single_multi_weapon_behaviour(self):
         self.assertIn("filter(w=>w.type===wantedType)", self.app)
@@ -122,6 +128,8 @@ class SpectreSquadTests(unittest.TestCase):
         self.assertIn("if(singleTarget&&weapons.length===1", self.app)
         self.assertIn("runAutomaticCombatRolls", self.app)
         self.assertIn("if(draft)", self.app)
+        self.assertIn("Manual tabletop resolution", self.app)
+        self.assertIn("profile?.manualResolution", self.app)
 
     def test_faction_and_manual_ability_classification(self):
         rules = {rule["id"]: rule for rule in self.team["factionRules"]}
@@ -151,7 +159,7 @@ if(restored.playerTeamId!=='spectre-squad'||restored.playerWounds.sharpshooter!=
         self.assertNotIn("state.playerTeamId==='spectre-squad'", self.app)
 
     def test_version_consistency(self):
-        expected = "6.6.0"
+        expected = "6.6.1"
         self.assertIn(f"const APP_VERSION = '{expected}'", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}'", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '6.6.0';
+  const APP_VERSION = '6.6.1';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -129,15 +129,26 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function validatePlayerTeamData(data,fileName){
     if(!data||!Array.isArray(data.operatives)||!data.operatives.length)throw new Error(`${fileName} has no operatives.`);
     const operativeIds=new Set(),categoryIds=new Set((data.rosterCategories||[]).map(category=>category.id));
+    const requireStableIds=data.validation?.requireStableIds===true;
+    const factionRuleIds=new Set();
+    for(const rule of [...(data.factionRules||[]),...(data.strategicGambits||[])]){
+      if(requireStableIds&&(!rule.id||factionRuleIds.has(rule.id)))throw new Error(`${fileName} has an invalid or duplicate faction rule ID.`);
+      if(rule.id)factionRuleIds.add(rule.id);
+    }
     for(const operative of data.operatives){
       if(!operative.id||operativeIds.has(operative.id))throw new Error(`${fileName} has an invalid or duplicate operative ID.`);
       operativeIds.add(operative.id);
       if(categoryIds.size&&!categoryIds.has(operative.category))throw new Error(`${fileName} references an unknown roster category.`);
-      const weaponIds=new Set();
+      const weaponIds=new Set(),abilityIds=new Set();
       for(const weapon of operative.weapons||[]){
         if(!['ranged','melee'].includes(weapon.type))throw new Error(`${fileName} has an invalid weapon type.`);
+        if(requireStableIds&&!weapon.id)throw new Error(`${fileName} has a weapon without a stable ID for ${operative.id}.`);
         if(weapon.id&&(weaponIds.has(weapon.id)))throw new Error(`${fileName} has a duplicate weapon ID for ${operative.id}.`);
         if(weapon.id)weaponIds.add(weapon.id);
+      }
+      for(const ability of operative.abilities||[]){
+        if(requireStableIds&&(!ability.id||abilityIds.has(ability.id)))throw new Error(`${fileName} has an invalid or duplicate ability ID for ${operative.id}.`);
+        if(ability.id)abilityIds.add(ability.id);
       }
     }
   }
@@ -2670,7 +2681,10 @@ function showPlayerActivation(stage={}){
 
   function weaponRulesHtml(profile){
     const rules=(profile?.rules||[]).map(rule=>`<li>${escapeHtml(rule)}</li>`).join('');
-    return rules?`<section class="weapon-rules"><strong>Weapon rules</strong><ul>${rules}</ul></section>`:'';
+    const manualResolution=profile?.manualResolution
+      ? `<div class="summary-box"><strong>Manual tabletop resolution</strong><p>${escapeHtml(profile.manualResolution)}</p></div>`
+      : '';
+    return `${rules?`<section class="weapon-rules"><strong>Weapon rules</strong><ul>${rules}</ul></section>`:''}${manualResolution}`;
   }
 
   function normalizedGuidanceMatchText(value){

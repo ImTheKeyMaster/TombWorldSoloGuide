@@ -300,7 +300,7 @@
         {
           "id": "proximity-mine",
           "name": "Proximity Mine",
-          "text": "When the Melta Mine marker first enters another operative’s control range, remove it and inflict 2D6+3 damage; end that operative’s action if it survives. Resolve placement and damage manually.",
+          "text": "When the Melta Mine marker first enters another operative’s control range, remove it and inflict 2D6+3 damage; end that operative’s action if it survives. Resolve placement and damage manually. Record wounds or elimination for every affected operative in the Player or NPO Roster, then resume the activation.",
           "automation": "manual-guidance"
         }
       ],
@@ -361,7 +361,7 @@
         {
           "id": "proximity-mine",
           "name": "Proximity Mine",
-          "text": "When the Melta Mine marker first enters another operative’s control range, remove it and inflict 2D6+3 damage; end that operative’s action if it survives. Resolve placement and damage manually.",
+          "text": "When the Melta Mine marker first enters another operative’s control range, remove it and inflict 2D6+3 damage; end that operative’s action if it survives. Resolve placement and damage manually. Record wounds or elimination for every affected operative in the Player or NPO Roster, then resume the activation.",
           "automation": "manual-guidance"
         }
       ],
@@ -857,7 +857,8 @@
           "rules": [
             "Blast 2\"",
             "Heavy"
-          ]
+          ],
+          "manualResolution": "Resolve all primary and secondary targets on the tabletop. Record wounds or elimination for every affected operative in the Player or NPO Roster, then resume this activation."
         },
         {
           "id": "missile-krak",
@@ -1004,7 +1005,8 @@
             "Seek Light",
             "Stun",
             "Torrent 1\""
-          ]
+          ],
+          "manualResolution": "Resolve all primary and secondary targets on the tabletop. Record wounds or elimination for every affected operative in the Player or NPO Roster, then resume this activation."
         },
         {
           "id": "autostubber-sweeping",
@@ -1016,7 +1018,8 @@
           "rules": [
             "Heavy (Dash only)",
             "Torrent 1\""
-          ]
+          ],
+          "manualResolution": "Resolve all primary and secondary targets on the tabletop. Record wounds or elimination for every affected operative in the Player or NPO Roster, then resume this activation."
         },
         {
           "id": "fists",
@@ -1933,5 +1936,8 @@
       ],
       "text": "Gain 1 Fieldcraft point, or 2 if an eligible Vox-Operator is in the killzone and outside enemy control range. Track points at the table and discard them at the end of this turning point."
     }
-  ]
+  ],
+  "validation": {
+    "requireStableIds": true
+  }
 }

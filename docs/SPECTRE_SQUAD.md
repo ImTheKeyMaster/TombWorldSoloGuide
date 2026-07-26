@@ -28,11 +28,15 @@ Spectre Squad requires multiple official loadout choices for the same operative 
 
 ### Player team definition validation
 
-The loader now rejects duplicate operative IDs, unknown roster categories, invalid weapon types, and duplicate declared weapon IDs. This is generic fail-visible protection for all team definitions and is covered by source-level and data validation tests.
+Teams can opt into complete stable-ID enforcement with `validation.requireStableIds`. The loader then rejects missing or duplicate operative, weapon, ability, faction-rule, and gambit IDs, while continuing to reject unknown roster categories and invalid weapon types. This is generic fail-visible protection that preserves compatibility for older definitions and is covered by source-level and data validation tests.
 
 ### Multi-weapon placeholder
 
 The generic combat picker now begins with “Select a weapon...” when multiple valid profiles exist. Continue remains disabled and no dice are rolled until a profile is selected. Single-profile automatic selection and rolling are unchanged.
+
+### Manual tabletop weapon resolution
+
+Any weapon profile can declare `manualResolution`. Combat preparation then shows its instructions alongside the weapon rules. Spectre Squad uses this for Blast and Torrent profiles so players are explicitly directed to resolve all targets, update every affected roster entry, and safely resume the activation.
 
 ## Known limitations
 

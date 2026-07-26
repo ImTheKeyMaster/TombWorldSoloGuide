@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v6.6.0
+# Tomb World Solo Guide v6.6.1
+
+## v6.6.1
+
+**Version 6.6.1 - Spectre Squad Review Corrections**
+
+- Completed opt-in stable-ID validation for Spectre operative weapons, abilities, faction rules, and gambits.
+- Added generic manual tabletop weapon-resolution guidance for Blast and Torrent profiles, including explicit affected-roster updates.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v6.6.1.
 
 ## v6.6.0
 
