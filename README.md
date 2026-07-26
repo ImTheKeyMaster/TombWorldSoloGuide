@@ -1,4 +1,21 @@
-# Tomb World Solo Guide v6.4.11
+# Tomb World Solo Guide v6.5.1
+
+## v6.5.1
+
+**Version 6.5.1 - Player Team Review Corrections**
+
+- Applied complete data-driven roster validation during setup and deployment, including required leader and Gravis limits.
+- Limited faction Strategic Gambit reminders to their declared turning points and clarified legal-roster guidance.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v6.5.1.
+
+## v6.5.0
+
+**Version 6.5.0 - Tempestus Aquilons Player Kill Team**
+
+- Added the Tempestus Aquilons as a selectable 11-operative Player Kill Team with official datacards, loadout choices, multiple weapon profiles, and tabletop faction-rule guidance.
+- Generalized roster category requirements and limits so future Player Kill Teams can declare legal selection constraints in data.
+- Added regression coverage for roster legality, profiles, state tracking, save compatibility, and the existing Deathwatch team.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v6.5.0.
 
 ## v6.4.11
 

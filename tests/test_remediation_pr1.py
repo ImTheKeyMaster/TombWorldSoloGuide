@@ -74,7 +74,7 @@ class RemediationPr1Tests(unittest.TestCase):
         self.assertRegex(self.app, r"const allChecked=checks\.length>0&&checks\.every\(check=>state\.setupChecks\[check\.id\]\)")
 
     def test_roster_scope_and_turning_point_one_baseline(self):
-        self.assertIn("does not validate every team-building restriction", self.app)
+        self.assertIn("Build a legal kill team using its current official rules", self.app)
         self.assertIn("Cooperative team splitting is not currently supported", self.app)
         self.assertIn("state.turningPoint=0", self.app)
         self.assertIn("state.turningPoint++;", self.app)
@@ -83,7 +83,7 @@ class RemediationPr1Tests(unittest.TestCase):
         self.assertIn("const STORAGE_KEY = 'tombWorldSoloGuide.v1';", self.app)
 
     def test_version_and_cache_busters_match(self):
-        expected = "6.4.11"
+        expected = "6.5.1"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()

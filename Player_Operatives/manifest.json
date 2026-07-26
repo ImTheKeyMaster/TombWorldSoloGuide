@@ -21,6 +21,13 @@
       "file": "Kasrkin.json",
       "faction": "Imperium",
       "description": "Elite Astra Militarum storm troopers"
+    },
+    {
+      "id": "tempestus-aquilons",
+      "name": "Tempestus Aquilons",
+      "file": "TempestusAquilons.json",
+      "faction": "Imperium",
+      "description": "Airborne Tempestus Scions with flexible drop deployment"
     }
   ]
 }
