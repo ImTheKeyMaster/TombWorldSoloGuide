@@ -78,6 +78,15 @@ class NpoRosterReadOnlyActivationTests(unittest.TestCase):
             "}",
             self.styles,
         )
+        self.assertIn(
+            ".player-roster-card:not(.dead):hover:not(:disabled){border-color:#3b7755}",
+            self.styles,
+        )
+        self.assertIn(
+            ".npo-roster-card:not(.dead):hover{border-color:var(--line)}",
+            self.styles,
+        )
+        self.assertNotIn(".npo-roster-card:hover{border-color:var(--line)}", self.styles)
 
 
 if __name__ == "__main__":
