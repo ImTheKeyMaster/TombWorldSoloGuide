@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v6.7.4
+# Tomb World Solo Guide v6.7.5
+
+## v6.7.5
+
+**Version 6.7.5 - Consistent Eliminated Operative Borders**
+
+- Applied the Activation Tracker's red eliminated border treatment to eliminated Player Operative and NPO roster cards.
+- Preserved the existing eliminated badges, dimming, and Player/Necron skull overlays while matching the border thickness and corner radius across all three views.
+- Added focused regression coverage and synchronized visible, internal, cache-busting, and service-worker cache versions to v6.7.5.
 
 ## v6.7.4
 

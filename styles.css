@@ -781,8 +781,13 @@ button.tracker-operative:hover{
 .tracker-operative.spent strong{
   color:var(--muted);
 }
-.tracker-operative.eliminated{
+.tracker-operative.eliminated,
+.operative-card.dead,
+.npo-roster-card.dead{
   border:2px solid var(--danger);
+  border-radius:10px;
+}
+.tracker-operative.eliminated{
   background:rgba(125,25,25,.2);
   color:var(--danger);
 }
