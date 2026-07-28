@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.0.2';
+  const APP_VERSION = '7.0.3';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -326,7 +326,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         {id:'geomantic-disturbance',name:'Geomantic Disturbance',ap:1,target:{kind:'terrain-point',visible:true,range:8,affectedOperativesWithin:2},restrictions:{ordersExcluded:['Conceal'],actorOutsideEnemyControlRange:true},resolution:{manualTabletopSelection:true,dicePerTarget:'2D6',separateRollPerTarget:true,damage:'roll-minus-remaining-wounds-if-positive'},description:'Select a visible terrain point within 8 inches. Separately roll 2D6 for every operative within 2 inches; if a roll exceeds its remaining wounds, inflict the difference. Unavailable while Concealed or within enemy control range.'},
         {id:'canoptek-control',name:'Canoptek Control',ap:1,target:{side:'friendly',keywordsAll:['Canoptek Circle','Canoptek'],visible:true,range:6},restrictions:{actorOutsideEnemyControlRange:true,notCounteracting:true},freeAction:{ap:1,consumeTargetApl:false,startActivation:false,preserveActivatedState:true,obeyNormalRestrictions:true,maxMove:2,repositionWhollyWithin:2},description:'A visible friendly Canoptek operative within 6 inches immediately performs one legal 1 AP action for free, moving no more than 2 inches. Unavailable in enemy control range or while counteracting.'},
         {id:'molecular-breach',name:'Molecular Breach',ap:1,target:{side:'friendly',keywordsAll:['Canoptek Circle'],visible:true,range:6},restrictions:{actorOutsideEnemyControlRange:true},temporaryEffect:{id:'molecular-breach',scope:'target',trigger:'next-movement-action',consumeOnTrigger:true,persist:true,dashDistance:3,useMoveStatOtherwise:true,chargeGetsNoBonus:true,closeQuartersPassWalls:true,validPlacementRequired:true,enemyControlRangeAllowedOnlyForCharge:true},description:'A visible friendly Canoptek Circle operative within 6 inches replaces its next movement with removal and valid setup within its Move (3 inches for Dash). In close quarters it may pass through Walls; only Charge may end in enemy control range.'}
-      ],passiveRules:[],abilities:[],strategicRules:[],behavior:{summary:'Use support actions manually; otherwise resolve its selected weapon.',actions:['Shoot','Fight','Reposition','Dash'],operatesHatches:true}
+      ],passiveRules:[],abilities:[],strategicRules:[],behavior:{summary:'Support and control allies before attacking or repositioning.',actions:['Canoptek Control','Molecular Breach','Geomantic Disturbance','Shoot','Fight','Reposition','Dash'],operatesHatches:true}
     },
     'Canoptek Macrocyte Warrior': {
       id:'canoptek-macrocyte-warrior',name:'Canoptek Macrocyte Warrior',type:'Canoptek Macrocyte Warrior',faction:'Canoptek Circle',physicalQuantity:3,move:7,apl:2,save:4,wounds:7,baseSize:28,
@@ -351,7 +351,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       actions:[
         {id:'overcharge',name:'Overcharge',ap:1,target:{side:'friendly',keywordsAll:['Canoptek Circle','Canoptek'],visible:true,range:3,excludeSelf:true},restrictions:{actorOutsideEnemyControlRange:true},temporaryAplModifier:{amount:1,expires:'end-of-target-next-activation',sourceUnique:true,persist:true},description:'Select another visible friendly Canoptek operative within 3 inches. Add 1 to its APL until the end of its next activation. Unavailable in enemy control range.'},
         {id:'cranial-overload',name:'Cranial Overload',ap:1,target:{side:'enemy',visible:true,range:3},restrictions:{actorOutsideEnemyControlRange:true},temporaryAplModifier:{amount:-1,minimumEffectiveApl:1,expires:'end-of-target-next-activation',sourceUnique:true,persist:true},description:'Select a visible enemy operative within 3 inches. Subtract 1 from its APL (minimum 1) until the end of its next activation. Unavailable in enemy control range.'}
-      ],passiveRules:[],abilities:[],strategicRules:[],behavior:{summary:'Use support actions manually; otherwise resolve its selected weapon.',actions:['Shoot','Fight','Reposition','Dash'],operatesHatches:true}
+      ],passiveRules:[],abilities:[],strategicRules:[],behavior:{summary:'Improve an ally or disrupt an enemy before attacking or repositioning.',actions:['Overcharge','Cranial Overload','Shoot','Fight','Reposition','Dash'],operatesHatches:true}
     },
     'Canoptek Macrocyte Reanimator': {
       id:'canoptek-macrocyte-reanimator',name:'Canoptek Macrocyte Reanimator',type:'Canoptek Macrocyte Reanimator',faction:'Canoptek Circle',physicalQuantity:1,move:7,apl:2,save:4,wounds:7,baseSize:null,
@@ -360,7 +360,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       meleeWeapons:[{id:'claws-and-tail',name:'Claws & tail',type:'melee',attacks:4,hit:4,damage:{normal:3,critical:4},rules:[],ruleIds:[]}],
       actions:[{id:'nanoscarab-beam',name:'Nanoscarab Beam',ap:1,oncePerTurningPoint:true,target:{side:'friendly',keywordsAll:['Canoptek Circle'],visible:true,range:6,notIncapacitated:true,excludeReanimatedThisTurningPoint:true},restrictions:{actorOutsideEnemyControlRange:true},healing:{dice:'3D3',capAtMaximum:true,recordRolledAndRestored:true},description:'Once per turning point, a visible friendly Canoptek Circle operative within 6 inches regains up to 3D3 lost wounds. It cannot target an incapacitated operative or one saved by Reanimate this turning point.'}],
       passiveRules:[{id:'reanimate',name:'Reanimate',oncePerTurningPoint:true,optional:true,trigger:'another-friendly-would-be-incapacitated',target:{keywordsAll:['Canoptek Circle'],visible:true,range:6,excludeSelf:true},restrictions:{reanimatorAlive:true,bothOutsideEnemyControlRange:true,shootAttackCannotTargetReanimator:true},replacement:{wounds:1,preventIncapacitationForAction:true,freeDashAfterAction:true,dashEndsWithinSourceControlRange:true,endTargetActivationIfCurrent:true},temporaryAplModifiers:[{target:'source',amount:-1,expires:'end-of-next-activation'},{target:'saved-operative',amount:-1,expires:'end-of-next-activation'}],description:'Once per turning point, when another visible friendly Canoptek Circle operative within 6 inches would be incapacitated, it may remain at 1 wound and cannot be incapacitated again during that action. Afterward it may Dash for free, ending in the Reanimator control range. Both operatives suffer -1 APL through their next activation.'}],
-      abilities:[{id:'reanimate',name:'Reanimate',text:'Once per turning point, optionally prevent another eligible friendly operative from being incapacitated, leave it at 1 wound, then resolve its free Dash and temporary APL penalties.'}],strategicRules:[],behavior:{summary:'Resolve support rules manually when eligible; otherwise use its selected weapon.',actions:['Shoot','Fight','Reposition','Dash'],operatesHatches:true}
+      abilities:[{id:'reanimate',name:'Reanimate',text:'Once per turning point, optionally prevent another eligible friendly operative from being incapacitated, leave it at 1 wound, then resolve its free Dash and temporary APL penalties.'}],strategicRules:[],behavior:{summary:'Repair wounded allies before attacking or repositioning.',actions:['Nanoscarab Beam','Shoot','Fight','Reposition','Dash'],operatesHatches:true}
     }
   };
 
@@ -786,8 +786,16 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       }
       if(definition.loadoutOptions&&!definition.loadoutOptions.some(option=>option.id===npo.weaponId))errors.push(`${definition.name} has an unsupported loadout.`);
     });
-    Object.entries(counts).forEach(([type,count])=>{if(count>npoDefinitions[type].physicalQuantity)errors.push(`${type} exceeds its physical quantity of ${npoDefinitions[type].physicalQuantity}.`);});
-    if(ids.size>MAX_PHYSICAL_NPOS)errors.push(`Allocated NPOs exceed the ${MAX_PHYSICAL_NPOS}-model Tomb World inventory.`);
+    Object.entries(counts).forEach(([type,count])=>{
+      const definition=npoDefinitions[type];
+      const scuttlingException=type==='Canoptek Macrocyte Warrior'
+        && roster.filter(npo=>npo?.type===type&&npo.wounds>0).length<=definition.physicalQuantity
+        && count-definition.physicalQuantity<=roster.filter(npo=>npo?.type===type&&npo.createdBy==='a-ceaseless-scuttling').length;
+      if(count>definition.physicalQuantity&&!scuttlingException)errors.push(`${type} exceeds its physical quantity of ${definition.physicalQuantity}.`);
+    });
+    const excessIsScuttlingHistory=ids.size>MAX_PHYSICAL_NPOS
+      && ids.size-MAX_PHYSICAL_NPOS<=roster.filter(npo=>npo?.createdBy==='a-ceaseless-scuttling').length;
+    if(ids.size>MAX_PHYSICAL_NPOS&&!excessIsScuttlingHistory)errors.push(`Allocated NPOs exceed the ${MAX_PHYSICAL_NPOS}-model Tomb World inventory.`);
     if(roster.filter(npo=>npo?.type===TOMB_CRAWLER_TYPE&&npo.weaponId===ISOLATOR_LOADOUT).length>1)errors.push('Only one Tomb Crawler can have a transdimensional isolator.');
     return {valid:errors.length===0,errors,inventory:npoInventory(roster)};
   }
@@ -918,9 +926,29 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return operatives.map(operative=>{const dice=rollTwoD6(operative),total=dice.reduce((sum,value)=>sum+value,0);return {operativeId:operative.id,dice,total,damage:Math.max(0,total-operative.wounds)};});
   }
   function markerControlApl(npo){return npo?.type===TOMB_CRAWLER_TYPE?3:effectiveApl(npo?.id,npo?.apl);}
+  function npoThreatRating(npo){
+    const definition=npoDefinition(npo?.type);
+    if(!definition)return 0;
+    const profiles=[...(definition.rangedWeapons||[]),...(definition.meleeWeapons||[])].flatMap(weaponProfiles);
+    const peakDamage=Math.max(0,...profiles.map(profile=>Number(profile.attacks||0)*Number(profile.damage?.normal||0)));
+    const durability=Math.max(0,Number(npo.wounds||0))*(7-Math.max(2,Number(definition.save||6)))/5;
+    return Math.max(0,Math.round((durability+Number(definition.apl||0)+peakDamage/4)*10)/10);
+  }
+  function activeNpoThreat(){return activeNpos().reduce((total,npo)=>total+npoThreatRating(npo),0);}
   function ceaselessScuttlingEligible(turningPoint=state.turningPoint,roster=state.roster){
     const living=roster.filter(npo=>npo.type==='Canoptek Macrocyte Warrior'&&npo.wounds>0).length;
-    return turningPoint>1&&living<3&&npoInventory(roster)['Canoptek Macrocyte Warrior'].remaining>0;
+    return turningPoint>1&&living<3;
+  }
+  function createCeaselessScuttlingWarrior(weaponId){
+    if(!ceaselessScuttlingEligible())return null;
+    const definition=npoDefinition('Canoptek Macrocyte Warrior');
+    if(!definition.loadoutOptions.some(option=>option.id===weaponId))return null;
+    const warrior=createNpo(definition.type,definition.name,{weaponId,ready:true,dormant:false});
+    warrior.createdBy='a-ceaseless-scuttling';
+    warrior.order='Conceal';
+    state.roster.push(warrior);
+    log(`A Ceaseless Scuttling created ${npoName(warrior)} (${definition.loadoutOptions.find(option=>option.id===weaponId).name}) ready with a Conceal order in the NPO drop zone.`);
+    return warrior;
   }
   function aggressiveDefenceDamage(rollResult){return Number(rollResult)>=2?1:0;}
   function reanimateEligible({reanimator,target,visible,distance,sourceInControlRange=false,targetInControlRange=false,shootTargets=[]}){
@@ -1846,11 +1874,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         ? `<section class="card reinforcement-card"><p class="eyebrow">REINFORCEMENTS</p>${deployingNpos.length?`<h3>Deploy ${deployingNpos.length} NPO${deployingNpos.length===1?'':'s'}</h3><ul class="reinforcement-list">${deployingNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul><p>Deploy ${deployingNpos.length===1?'this NPO':'these NPOs'} onto the battlefield using the Tomb World reinforcement rules.</p>`:''}${d.blocked?`<div class="reinforcement-blocked"><h3>Unable to Deploy</h3>${blockedNpos.length?`<ul class="reinforcement-list">${blockedNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul>`:`<p>${d.blocked} reinforcement${d.blocked===1?'':'s'}</p>`}<p>Battlefield capacity was reached or no legal physical model remains.</p></div>`:''}</section>`:'';
       const placements=deployingNpos.map(npo=>`<label class="check-row"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong><small>Randomly determine an open hatchway, set up this operative with a Conceal order using the printed placement requirements, then confirm.</small></span></label>`).join('');
       const resolvedEvents=(d.events||[]).filter(event=>event!==d.event&&event.status!=='drawn').map(strategyEventHtml).join('');
+      const scuttlingEligible=ceaselessScuttlingEligible()&&d.ceaselessScuttlingTurningPoint!==state.turningPoint;
+      const scuttlingCard=state.turningPoint>1?`<section class="card reinforcement-card"><p class="eyebrow">STRATEGIC GAMBIT</p><h3>A Ceaseless Scuttling</h3><p>${scuttlingEligible?'Fewer than three Macrocyte Warriors remain. You may reuse an incapacitated miniature to set up a new operative instance.':'Unavailable: three Warriors remain, or this gambit was already resolved this turning point.'}</p><button class="btn secondary" id="ceaselessScuttling" ${scuttlingEligible?'':'disabled'}>Use A Ceaseless Scuttling</button></section>`:'';
       const activeEvents=(state.eventState.active||[]).map(event=>`<div class="summary-box"><strong>${escapeHtml(event.title)}</strong><br>${escapeHtml(event.text)}</div>`).join('');
       const showStatTooltips=!window.matchMedia('(max-width:600px)').matches;
       const tooltipAttrs=text=>showStatTooltips?` tabindex="0" data-tooltip="${text}"`:'';
       const infoDot=showStatTooltips?'<span class="info-dot">i</span>':'';
-      return `<section class="next-card"><span class="phase">STRATEGY PHASE</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol></div>${factionGuidanceHtml('gambits')}${missionStrategyPromptHtml()}<div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat"${tooltipAttrs('Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events.')}><small>THREAT LEVEL ${infoDot}</small><strong>${state.threat}</strong></div><div class="stat tooltip-stat"${tooltipAttrs('Grade 0–3 is derived from Threat and determines reinforcement pressure and some events.')}><small>GRADE LEVEL ${infoDot}</small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat"${tooltipAttrs('The number of living NPOs that are Ready and may still activate during this Turning Point.')}><small>NPOs Ready ${infoDot}</small><strong>${readyNpos().length}</strong></div></div>${reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':`${reinforcementCard}${deployingNpos.length?`<div class="checklist">${placements}</div>`:''}`}${resolvedEvents}${d.event?.status==='drawn'?strategyEventHtml(d.event):''}${activeEvents?`<h3>Active event effects</h3>${activeEvents}`:''}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending||placementPending||missionPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':placementPending?'Confirm Reinforcement Placement':missionPending?'Resolve Mission Rule to Continue':'Strategy Phase Complete'}</button></section>`;
+      return `<section class="next-card"><span class="phase">STRATEGY PHASE</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol></div>${factionGuidanceHtml('gambits')}${missionStrategyPromptHtml()}${scuttlingCard}<div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat"${tooltipAttrs('Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events.')}><small>THREAT LEVEL ${infoDot}</small><strong>${state.threat}</strong></div><div class="stat tooltip-stat"${tooltipAttrs('Grade 0–3 is derived from Threat and determines reinforcement pressure and some events.')}><small>GRADE LEVEL ${infoDot}</small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat"${tooltipAttrs('The number of living NPOs that are Ready and may still activate during this Turning Point.')}><small>NPOs Ready ${infoDot}</small><strong>${readyNpos().length}</strong></div></div>${reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':`${reinforcementCard}${deployingNpos.length?`<div class="checklist">${placements}</div>`:''}`}${resolvedEvents}${d.event?.status==='drawn'?strategyEventHtml(d.event):''}${activeEvents?`<h3>Active event effects</h3>${activeEvents}`:''}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending||placementPending||missionPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':placementPending?'Confirm Reinforcement Placement':missionPending?'Resolve Mission Rule to Continue':'Strategy Phase Complete'}</button></section>`;
     }
     return '';
   }
@@ -2043,6 +2073,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#resolveStrategyEvent')?.addEventListener('click',resolveStrategyEvent);
     $('#redrawStrategyEvent')?.addEventListener('click',()=>{redrawCurrentEvent('No breach or open hatchway could be changed.');save();render();});
     $('#continueStrategy')?.addEventListener('click',()=>beginFirefight(state.strategyData?.suggestedInitiative==='npo'?'npo':'player'));
+    $('#ceaselessScuttling')?.addEventListener('click',showCeaselessScuttling);
     $('#retryMissionReady')?.addEventListener('click',continueTurningPointStart);
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
     $('#npoActivation')?.addEventListener('click',showNpoSelection);
@@ -2072,6 +2103,19 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#threatHudToggle')?.addEventListener('click',()=>{threatAdjustOpen=!threatAdjustOpen;render();});
     $('#threatUp')?.addEventListener('click',()=>{setThreat(1,'Manual adjustment');save();render();});
     $('#threatDown')?.addEventListener('click',()=>{setThreat(-1,'Manual adjustment');save();render();});
+  }
+
+  function showCeaselessScuttling(){
+    if(!ceaselessScuttlingEligible())return;
+    showModal('A Ceaseless Scuttling',`<p>Select a supported loadout for the new operative instance, then confirm a valid setup wholly within the NPO drop zone.</p><div class="field"><label for="scuttlingLoadout">Loadout</label><select id="scuttlingLoadout"><option value="gauss-scalpel">Gauss scalpel and claws &amp; tail</option><option value="tesla-caster">Tesla caster and claws &amp; tail</option></select></div><label class="check-row"><input id="scuttlingPlacement" type="checkbox"><span>Valid NPO drop-zone setup location confirmed</span></label><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmScuttling" disabled>Create New Warrior</button></div>`);
+    $('#scuttlingPlacement').onchange=()=>{$('#confirmScuttling').disabled=!$('#scuttlingPlacement').checked;};
+    $('#confirmScuttling').onclick=()=>{
+      const warrior=createCeaselessScuttlingWarrior($('#scuttlingLoadout').value);
+      if(!warrior)return;
+      state.strategyData.ceaselessScuttlingTurningPoint=state.turningPoint;
+      state.activationHistory.unshift({side:'npo',label:npoName(warrior),action:'A Ceaseless Scuttling',loadout:warrior.weaponId,turningPoint:state.turningPoint,instanceId:warrior.id});
+      save();closeModal();render();
+    };
   }
 
   async function startTurningPoint(){
@@ -2356,14 +2400,22 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const result=legal[roll(legal.length)-1];return {...result,weaponId:generatedWeaponId(result)};
   }
   function nextNpo(){return readyNpos().find(n=>n.id===state.activeNpoId)||null;}
+  function beginNpoActivation(n){
+    const definition=npoDefinition(n.type),apl=effectiveApl(n.id,definition.apl);
+    state.activeNpoId=n.id;
+    state.lastActivation={npoId:n.id,name:npoName(n),baseApl:definition.apl,effectiveApl:apl,remainingAp:apl,completedActionIds:[],committed:false};
+    notifyMissionActivationStarted('npo',n.id);
+    save();
+    runNpoPrompt(n,0,{},[]);
+  }
 
   function showNpoSelection(){
     const candidates=readyNpos();
-    if(candidates.length===1){state.activeNpoId=candidates[0].id;notifyMissionActivationStarted('npo',candidates[0].id);runNpoPrompt(candidates[0],0,{},[]);return;}
+    if(candidates.length===1){state.activeNpoId=candidates[0].id;beginNpoActivation(candidates[0]);return;}
     const options=sortedNposForDisplay(candidates).map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(npoName(n))}</option>`).join('');
     showModal('Select NPO to Activate',`<p>Use the Threat Principle in order. Select an NPO that:</p><ol><li>has an ability, or is a threat, to Shoot or Fight a Player operative;</li><li>is not in cover;</li><li>is closest to a Player operative.</li></ol><p class="muted">If more than one NPO is still tied, determine one at random on the tabletop.</p><div class="field"><label for="officialNpoSelection">Next ready NPO</label><select id="officialNpoSelection"><option value="">Select matching NPO</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Exit Guide</button><button class="btn primary" id="confirmNpoSelection" disabled>Continue</button></div>`);
     $('#officialNpoSelection').onchange=()=>{$('#confirmNpoSelection').disabled=!$('#officialNpoSelection').value;};
-    $('#confirmNpoSelection').onclick=()=>{const n=candidates.find(item=>item.id===$('#officialNpoSelection').value);if(!n)return;state.activeNpoId=n.id;notifyMissionActivationStarted('npo',n.id);save();runNpoPrompt(n,0,{},[]);};
+    $('#confirmNpoSelection').onclick=()=>{const n=candidates.find(item=>item.id===$('#officialNpoSelection').value);if(n)beginNpoActivation(n);};
   }
 
   function remainingPlayerOperatives(){
@@ -2789,6 +2841,14 @@ function showPlayerActivation(stage={}){
       if(!pending||pending.committed)continue;
       const n=state.roster.find(x=>x.id===pending.targetId);
       if(!n)continue;
+      const incapacitationId=`${state.turningPoint}:${state.activationNumber}:${pending.attackType}:${n.id}`;
+      if(pending.after<=0&&!state.npoRuleState.incapacitationTriggers.includes(incapacitationId)){
+        const reanimator=activeNpos().find(item=>item.type==='Canoptek Macrocyte Reanimator'&&item.id!==n.id);
+        if(reanimator&&state.npoRuleState.oncePerTurningPoint.reanimate!==state.turningPoint){
+          offerReanimateForPendingDamage(stage,pending,n,reanimator,incapacitationId);
+          return true;
+        }
+      }
       const before=n.wounds;
       n.wounds=Math.max(0,pending.after);
       pending.committed=true;
@@ -2806,6 +2866,23 @@ function showPlayerActivation(stage={}){
       if(checkGameEnd())return true;
     }
     return false;
+  }
+
+  function offerReanimateForPendingDamage(stage,pending,target,reanimator,incapacitationId){
+    showModal('Reanimate?',`<p>${escapeHtml(npoName(target))} would be incapacitated. ${escapeHtml(npoName(reanimator))} may use Reanimate before removal if all tabletop restrictions are met.</p><div class="checklist"><label class="check-row"><input id="reanimateVisible" type="checkbox"><span>The target is visible to and within 6 inches of the Reanimator.</span></label><label class="check-row"><input id="reanimateControl" type="checkbox"><span>Neither operative is within enemy control range.</span></label>${pending.attackType==='shoot'?'<label class="check-row"><input id="reanimateShoot" type="checkbox"><span>The Reanimator was not a primary or secondary target of this Shoot action.</span></label>':''}</div><div class="wizard-actions"><button class="btn ghost" id="declineReanimate">Decline</button><button class="btn primary" id="acceptReanimate" disabled>Use Reanimate</button></div>`);
+    const update=()=>{$('#acceptReanimate').disabled=!$('#reanimateVisible').checked||!$('#reanimateControl').checked||(pending.attackType==='shoot'&&!$('#reanimateShoot').checked);};
+    $$('input',modal).forEach(input=>input.onchange=update);
+    const resume=()=>{save();closeModal();if(!applyPendingPlayerDamage(stage))completePlayerActivation(stage);};
+    $('#declineReanimate').onclick=()=>{state.npoRuleState.incapacitationTriggers.push(incapacitationId);resume();};
+    $('#acceptReanimate').onclick=()=>{
+      if(!reanimateEligible({reanimator,target,visible:true,distance:6,shootTargets:[]}))return;
+      state.npoRuleState.incapacitationTriggers.push(incapacitationId);
+      pending.after=1;pending.damage=Math.max(0,pending.before-1);
+      const effect=applyReanimate(reanimator,target,{duringTargetActivation:false});
+      log(`${npoName(reanimator)} used Reanimate on ${npoName(target)}; it remains at 1 wound. Apply the optional free Dash within the Reanimator's control range and both -1 APL effects.`);
+      pending.reanimate=effect;
+      resume();
+    };
   }
 
   async function completePlayerActivation(stage={}){
@@ -3269,8 +3346,46 @@ function showPlayerActivation(stage={}){
 
   function npoBehavior(n){return npoDefinition(n.type)?.behavior;}
 
+  function npoActionId(actionName){
+    const normalized=String(actionName).toLowerCase();
+    return normalized.startsWith('fight')?'fight':normalized.startsWith('shoot')?'shoot':normalized.startsWith('charge')?'charge':normalized.startsWith('dash')?'dash':normalized.startsWith('fall back')?'fall-back':normalized.startsWith('reposition')?'reposition':normalized.replace(/\s+/g,'-');
+  }
+  function legalNpoActions(n,context={}){
+    const definition=npoDefinition(n?.type);
+    if(!definition||n.wounds<=0||!n.ready)return [];
+    const activation=state.lastActivation?.npoId===n.id?state.lastActivation:null;
+    const remainingAp=Number.isFinite(context.remainingAp)?context.remainingAp:Number(activation?.remainingAp??effectiveApl(n.id,definition.apl));
+    const completed=new Set(context.completedActionIds||activation?.completedActionIds||[]);
+    return (npoBehavior(n)?.actions||[]).filter(actionName=>{
+      const id=npoActionId(actionName),profileAction=(definition.actions||[]).find(action=>action.id===id);
+      const cost=Number(profileAction?.ap||1);
+      if(cost>remainingAp||completed.has(id))return false;
+      if((id==='shoot'&&completed.has('fight'))||(id==='fight'&&completed.has('shoot')))return false;
+      if(context.inEnemyControlRange&&profileAction?.restrictions?.actorOutsideEnemyControlRange)return false;
+      if(context.counteracting&&profileAction?.restrictions?.notCounteracting)return false;
+      if(profileAction?.restrictions?.ordersExcluded?.includes(n.order))return false;
+      if(profileAction?.oncePerTurningPoint&&state.npoRuleState.oncePerTurningPoint[id]===state.turningPoint)return false;
+      return true;
+    });
+  }
+  function rankLegalNpoActions(n,legalActions,context={}){
+    const definition=npoDefinition(n.type);
+    const priorities={
+      'geomancer':['Canoptek Control','Molecular Breach','Geomantic Disturbance','Shoot','Fight','Reposition','Dash'],
+      'canoptek-tomb-crawler':context.inEnemyControlRange?['Fight','Shoot','Charge','Reposition','Dash']:['Shoot','Charge','Fight','Reposition','Dash'],
+      'canoptek-macrocyte-warrior':context.inEnemyControlRange?['Fight','Shoot','Charge','Reposition','Dash']:['Shoot','Charge','Fight','Reposition','Dash'],
+      'canoptek-macrocyte-accelerator':['Overcharge','Cranial Overload','Shoot','Fight','Reposition','Dash'],
+      'canoptek-macrocyte-reanimator':['Nanoscarab Beam','Reposition','Dash','Shoot','Fight']
+    };
+    const order=priorities[definition.id]||npoBehavior(n)?.actions||[];
+    return [...legalActions].sort((a,b)=>order.indexOf(a)-order.indexOf(b));
+  }
+  function recommendedNpoActions(n,context={}){
+    return rankLegalNpoActions(n,legalNpoActions(n,context),context);
+  }
+
   function npoActionQuestion(n,index){
-    const action=npoBehavior(n)?.actions[index];
+    const action=recommendedNpoActions(n)[index];
     if(!action)return null;
     return {key:`action-${index}`,action,title:`Can this NPO ${action}?`,help:'Check movement, visibility, cover, control range, measurement, action points, order and all other tabletop restrictions. Choose Yes only if this printed action is legal now.'};
   }
@@ -3572,7 +3687,9 @@ function showPlayerActivation(stage={}){
     const q=npoActionQuestion(n,index);
     if(!q){resolveNpo(n,answers,history);return;}
     const priorTop=$('.npo-question-active',modal)?.getBoundingClientRect().top;
-    modalBody.innerHTML=`<div class="modal-inner"><h2>NPO Activation: ${escapeHtml(npoName(n))}</h2><div class="ai-wizard">
+    const definition=npoDefinition(n.type),modifiers=(state.npoRuleState.aplModifiers||[]).filter(item=>item.targetId===n.id),pendingBreach=(state.npoRuleState.pendingMovementEffects||[]).some(item=>item.targetId===n.id&&item.ruleId==='molecular-breach');
+    const loadout=definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name;
+    modalBody.innerHTML=`<div class="modal-inner"><h2>NPO Activation: ${escapeHtml(npoName(n))}</h2><div class="activation-profile-strip"><span>${n.wounds}/${n.maxWounds} wounds</span><span>APL ${definition.apl} · effective ${effectiveApl(n.id,definition.apl)}</span><span>${escapeHtml(n.order)} order</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} APL · ${escapeHtml(item.ruleId)}</span>`).join('')}${pendingBreach?'<span>Molecular Breach pending</span>':''}</div><div class="ai-wizard">
       <div class="npo-question-flow">${renderCompletedNpoQuestions(history)}${renderActiveNpoQuestion(q)}</div>
       <div class="wizard-actions">
         <button class="btn ghost" id="aiBack" ${history.length===0?'disabled':''}>Back</button>
@@ -3585,7 +3702,7 @@ function showPlayerActivation(stage={}){
     $$('[data-answer]',modal).forEach(btn=>btn.onclick=()=>{
       const answer=btn.dataset.answer==='yes';
       const nextAnswers={...answers,[q.key]:answer};
-      const action=npoBehavior(n).actions[index];
+      const action=recommendedNpoActions(n)[index];
       const nextHistory=[...history,{index,answers,answer,action}];
       if(answer)resolveNpo(n,{...nextAnswers,action},nextHistory);
       else runNpoPrompt(n,index+1,nextAnswers,nextHistory);
@@ -3603,12 +3720,69 @@ function showPlayerActivation(stage={}){
     return {action,target,stance:'Engage',threat:attack?1:0,reason:c.action?'This is the first legal action in this operative’s printed behavior list.':'No printed action is currently legal; this NPO passes.',path:[action]};
   }
 
+  function npoSpecialAction(n,actionName){
+    const id=npoActionId(actionName);
+    return (npoDefinition(n.type)?.actions||[]).find(action=>action.id===id)||null;
+  }
+  function resolveNpoSpecialAction(n,decision,answers,questionHistory){
+    const action=npoSpecialAction(n,decision.action);
+    if(!action){completeNpoActivation();return;}
+    const friendlies=sortedNposForDisplay(activeNpos().filter(target=>(action.id==='nanoscarab-beam'||target.id!==n.id)
+      &&(!action.target?.keywordsAll||action.target.keywordsAll.every(keyword=>npoDefinition(target.type)?.keywords.includes(keyword)))
+      &&(action.id!=='nanoscarab-beam'||target.wounds<target.maxWounds&&!state.npoRuleState.reanimatedTargetIds.includes(target.id))));
+    const friendlyOptions=friendlies.map(target=>`<option value="${escapeHtml(target.id)}">${escapeHtml(npoName(target))}</option>`).join('');
+    const enemyOptions=remainingPlayerOperatives().map(id=>`<option value="${escapeHtml(id)}">${escapeHtml(playerName(id))}</option>`).join('');
+    const targetOptions=action.target?.side==='enemy'?enemyOptions:friendlyOptions;
+    const targetLabel=action.target?.side==='enemy'?'Enemy operative':'Friendly operative';
+    if(action.id==='geomantic-disturbance'){
+      const affected=[...sortedNposForDisplay(activeNpos()),...inPlayLivingPlayerOperativeIds().map(id=>({id:`player:${id}`,label:playerName(id)}))];
+      showModal(action.name,`<p>Identify a visible terrain point within 8 inches, then select every operative within 2 inches. Position is confirmed on the tabletop.</p><div class="checklist">${affected.map(target=>`<label class="check-row"><input type="checkbox" data-disturbance-target="${escapeHtml(target.id)}"><span>${escapeHtml(target.label||npoName(target))}</span></label>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="cancelSpecialAction">Cancel</button><button class="btn primary" id="confirmSpecialAction">Roll separately</button></div>`);
+      $('#cancelSpecialAction').onclick=()=>renderNpoDecisionResult(n,decision,[],answers,false,false,false,true,questionHistory);
+      $('#confirmSpecialAction').onclick=()=>{
+        const selected=$$('[data-disturbance-target]:checked').map(input=>input.dataset.disturbanceTarget);
+        const targets=selected.map(id=>id.startsWith('player:')?livePlayerOperative(id.slice(7)):state.roster.find(item=>item.id===id)).filter(Boolean);
+        const results=resolveGeomanticDisturbance(targets);
+        results.forEach(result=>{
+          const targetId=selected[results.indexOf(result)],target=targets[results.indexOf(result)],before=target.wounds;
+          if(targetId.startsWith('player:'))state.playerWounds[target.id]=Math.max(0,before-result.damage);
+          else {target.wounds=Math.max(0,before-result.damage);if(!target.wounds){target.ready=false;target.deployed=false;target.battlefieldState='out-of-action';}}
+          log(`${npoName(n)} used Geomantic Disturbance on ${targetId.startsWith('player:')?playerName(target.id):npoName(target)}: ${result.dice.join('+')}=${result.total}; ${result.damage} damage.`);
+        });
+        finishNpoSpecialAction(n,action,{targets:selected,results},decision,answers,questionHistory);
+      };
+      return;
+    }
+    showModal(action.name,`<p>${escapeHtml(action.description)}</p><div class="field"><label for="specialActionTarget">${targetLabel}</label><select id="specialActionTarget"><option value="">Select operative…</option>${targetOptions}</select></div>${action.id==='canoptek-control'?'<div class="field"><label for="freeActionChoice">Legal 1 AP free action</label><select id="freeActionChoice"><option>Reposition</option><option>Dash</option><option>Charge</option><option>Shoot</option><option>Fight</option><option>Mission action</option></select></div>':''}<label class="check-row"><input id="specialRangeConfirmed" type="checkbox"><span>Visibility, range, control-range, and placement restrictions are confirmed on the tabletop.</span></label><div class="wizard-actions"><button class="btn ghost" id="cancelSpecialAction">Cancel</button><button class="btn primary" id="confirmSpecialAction" disabled>Resolve</button></div>`);
+    const update=()=>{$('#confirmSpecialAction').disabled=!$('#specialActionTarget').value||!$('#specialRangeConfirmed').checked;};
+    $('#specialActionTarget').onchange=update;$('#specialRangeConfirmed').onchange=update;
+    $('#cancelSpecialAction').onclick=()=>renderNpoDecisionResult(n,decision,[],answers,false,false,false,true,questionHistory);
+    $('#confirmSpecialAction').onclick=()=>{
+      const targetId=$('#specialActionTarget').value;
+      const target=action.target?.side==='enemy'?{id:targetId,name:playerName(targetId),apl:playerDefinition(targetId)?.apl||2}:state.roster.find(item=>item.id===targetId);
+      let result={targetId};
+      if(action.id==='canoptek-control')result={...result,freeAction:$('#freeActionChoice').value,maxMove:2,preservedReady:target.ready};
+      if(action.id==='molecular-breach')result.applied=applyMolecularBreach(n.id,target.id);
+      if(action.id==='overcharge')result.applied=applyTemporaryAplModifier({sourceId:n.id,targetId:target.id,ruleId:'overcharge',amount:1});
+      if(action.id==='cranial-overload')result.applied=applyTemporaryAplModifier({sourceId:n.id,targetId:target.id,ruleId:'cranial-overload',amount:-1});
+      if(action.id==='nanoscarab-beam')result=useNanoscarabBeam(target);
+      if(!result){showToast('That action is no longer legal.');return;}
+      log(`${npoName(n)} used ${action.name} on ${target.name||npoName(target)}${action.id==='canoptek-control'?` for a free ${result.freeAction} (maximum 2 inches of movement)`:''}.`);
+      finishNpoSpecialAction(n,action,result,decision,answers,questionHistory);
+    };
+  }
+  function finishNpoSpecialAction(n,action,result,decision,answers,questionHistory){
+    state.lastActivation={...state.lastActivation,specialActionResolved:true,specialActionResult:result,remainingAp:Math.max(0,state.lastActivation.remainingAp-action.ap),completedActionIds:[...(state.lastActivation.completedActionIds||[]),action.id]};
+    if(action.oncePerTurningPoint)state.npoRuleState.oncePerTurningPoint[action.id]=state.turningPoint;
+    save();
+    renderNpoDecisionResult(n,decision,[],answers,true,false,false,true,questionHistory);
+  }
+
   function resolveNpo(n,c,questionHistory=[]){
     state.npoAttackTargetId=null;
     const decision=chooseNpoDecision(n,c);
     const attacks=decision.action.includes('Fight')||decision.action.includes('Shoot');
     const dice=[];
-    state.lastActivation={npoId:n.id,name:npoName(n),...decision,dice,answers:c,questionHistory,attackRequired:attacks,targetConfirmed:false,committed:false};
+    state.lastActivation={...state.lastActivation,npoId:n.id,name:npoName(n),...decision,dice,answers:c,questionHistory,attackRequired:attacks,targetConfirmed:false,committed:false};
     save();
 
     renderNpoDecisionResult(n,decision,dice,c,false,false,attacks,false,questionHistory);
@@ -3674,7 +3848,10 @@ function showPlayerActivation(stage={}){
       openSaveWizard(rolledDice,true);
     });
 
-    $('#completeNpo').onclick=()=>completeNpoActivation();
+    $('#completeNpo').onclick=()=>{
+      if(npoSpecialAction(n,decision.action)&&!state.lastActivation.specialActionResolved)resolveNpoSpecialAction(n,decision,answers,questionHistory);
+      else completeNpoActivation();
+    };
   }
 
   async function completeNpoActivation(attackSummary=null){
