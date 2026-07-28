@@ -79,6 +79,21 @@ class CanoptekProfileTests(unittest.TestCase):
         self.assertIn("state.npoRuleState.reanimatedTargetIds=[]", APP)
         self.assertRegex(APP, re.compile(r"function aggressiveDefenseDamage\(rollResult\).*?return result>=2\?1:0", re.S))
 
+    def test_legacy_placeholder_stats_fall_back_to_completed_profile(self):
+        self.assertIn("move:Number(npo.move)>0?Number(npo.move):definition.move", APP)
+        self.assertIn("maxWounds:Number(npo.maxWounds)>0?Number(npo.maxWounds):definition.wounds", APP)
+        self.assertIn("npo.wounds!==null", APP)
+
+    def test_unautomated_weapon_rules_require_explicit_tabletop_resolution(self):
+        self.assertIn("const tabletopRules=", APP)
+        self.assertIn("Piercing Crits|Blast|Torrent|Seek Light|Severe|Shock|Stun", APP)
+        self.assertIn("confirm any required tabletop targets or effects", APP)
+
+    def test_reanimate_penalty_and_healing_edge_cases_are_safe(self):
+        self.assertIn("deferCurrentActivation:duringTargetActivation", APP)
+        self.assertIn("if(item.deferCurrentActivation){item.deferCurrentActivation=false;return true;}", APP)
+        self.assertIn("playerDefinition(target.id)?.wounds", APP)
+
     def test_profile_ui_and_version(self):
         self.assertIn("Gameplay profile", APP)
         self.assertIn("Operative actions", APP)

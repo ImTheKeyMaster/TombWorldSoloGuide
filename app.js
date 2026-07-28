@@ -816,13 +816,17 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function canonicalAttackProfile(profile){
     const piercing=(profile?.rules||[]).map(String).map(rule=>rule.match(/(?:Piercing|AP)\s*(\d+)/i)).find(Boolean);
     const lethal=(profile?.rules||[]).map(String).map(rule=>rule.match(/Lethal\s*(\d)\+/i)).find(Boolean);
+    const tabletopRules=(profile?.rules||[]).filter(rule=>/Piercing Crits|Blast|Torrent|Seek Light|Severe|Shock|Stun/i.test(rule));
+    const manualResolution=profile?.manualResolution||(tabletopRules.length
+      ? `Apply ${tabletopRules.join(', ')} using the Core rules and confirm any required tabletop targets or effects before completing this attack.`
+      : '');
     return {
       dice:Number(profile?.attacks||0),hit:Number(profile?.hit||0),
       critThreshold:Number(lethal?.[1]||6),
       normal:Number(profile?.damage?.normal||0),crit:Number(profile?.damage?.critical||0),
       ap:Number(piercing?.[1]||0),
       rules:[...(profile?.rules||[])],weaponId:profile?.weaponId||'',profileId:profile?.id||'',
-      manualResolution:profile?.manualResolution||'',
+      manualResolution,
       name:profile?.weaponName===profile?.name?profile?.name:`${profile?.weaponName}: ${profile?.name}`
     };
   }
@@ -847,11 +851,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       type,
       name:npo.name||definition.name,
       displayNumber:Number.isInteger(npo.displayNumber)&&npo.displayNumber>0?npo.displayNumber:null,
-      move:Number.isFinite(Number(npo.move))?Number(npo.move):definition.move,
-      apl:Number.isFinite(Number(npo.apl))?Number(npo.apl):definition.apl,
-      save:Number.isFinite(Number(npo.save))?Number(npo.save):definition.save,
-      maxWounds:Number.isFinite(Number(npo.maxWounds))?Number(npo.maxWounds):definition.wounds,
-      wounds:Number.isFinite(Number(npo.wounds))?Number(npo.wounds):definition.wounds,
+      move:Number(npo.move)>0?Number(npo.move):definition.move,
+      apl:Number(npo.apl)>0?Number(npo.apl):definition.apl,
+      save:Number(npo.save)>0?Number(npo.save):definition.save,
+      maxWounds:Number(npo.maxWounds)>0?Number(npo.maxWounds):definition.wounds,
+      wounds:Number.isFinite(Number(npo.wounds))&&npo.wounds!==null?Math.max(0,Number(npo.wounds)):definition.wounds,
       baseSize:Number.isFinite(Number(npo.baseSize))?Number(npo.baseSize):definition.baseSize,
       behavior:npo.behavior||definition.compatibilityBehavior,
       attack:canonicalAttackProfile(npoAttackProfiles({...npo,type,weaponId},'shoot')[0]||npoAttackProfiles({...npo,type,weaponId},'melee')[0]) || {...definition.compatibilityAttack},
@@ -885,15 +889,19 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const modifier=(state.npoRuleState?.aplModifiers||[]).filter(item=>item.targetId===operativeId).reduce((total,item)=>total+Number(item.amount||0),0);
     return Math.max(1,Number(baseApl||0)+modifier);
   }
-  function applyTemporaryAplModifier({sourceId,targetId,ruleId,amount}){
+  function applyTemporaryAplModifier({sourceId,targetId,ruleId,amount,deferCurrentActivation=false}){
     const modifiers=state.npoRuleState.aplModifiers;
     const duplicate=modifiers.find(item=>item.sourceId===sourceId&&item.targetId===targetId&&item.ruleId===ruleId);
     if(duplicate)return false;
-    modifiers.push({id:`${ruleId}:${sourceId}:${targetId}`,sourceId,targetId,ruleId,amount,expires:'end-of-target-next-activation'});
+    modifiers.push({id:`${ruleId}:${sourceId}:${targetId}`,sourceId,targetId,ruleId,amount,expires:'end-of-target-next-activation',deferCurrentActivation});
     return true;
   }
   function expireActivationEffects(operativeId){
-    state.npoRuleState.aplModifiers=state.npoRuleState.aplModifiers.filter(item=>item.targetId!==operativeId);
+    state.npoRuleState.aplModifiers=state.npoRuleState.aplModifiers.filter(item=>{
+      if(item.targetId!==operativeId)return true;
+      if(item.deferCurrentActivation){item.deferCurrentActivation=false;return true;}
+      return false;
+    });
   }
   function applyMolecularBreach(sourceId,targetId){
     const effects=state.npoRuleState.pendingMovementEffects;
@@ -925,7 +933,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     state.npoRuleState.oncePerTurningPoint.reanimate=state.turningPoint;
     state.npoRuleState.reanimatedTargetIds.push(target.id);
     applyTemporaryAplModifier({sourceId:reanimator.id,targetId:reanimator.id,ruleId:'reanimate-source',amount:-1});
-    applyTemporaryAplModifier({sourceId:reanimator.id,targetId:target.id,ruleId:'reanimate-target',amount:-1});
+    applyTemporaryAplModifier({sourceId:reanimator.id,targetId:target.id,ruleId:'reanimate-target',amount:-1,deferCurrentActivation:duringTargetActivation});
     target.preventIncapacitationActionId=state.activationNumber;
     if(duringTargetActivation)target.ready=false;
     return {wounds:1,freeDash:{mustEndWithinSourceControlRange:true},activationEnded:duringTargetActivation};
@@ -933,7 +941,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function useNanoscarabBeam(target,rollResults=rollDice(3,3)){
     if(state.npoRuleState.oncePerTurningPoint.nanoscarabBeam===state.turningPoint||target.wounds<=0||state.npoRuleState.reanimatedTargetIds.includes(target.id))return null;
     const rolled=rollResults.reduce((sum,value)=>sum+value,0),before=target.wounds;
-    target.wounds=Math.min(target.maxWounds,before+rolled);
+    const maximum=Number(target.maxWounds||npoDefinition(target.type)?.wounds||playerDefinition(target.id)?.wounds||before);
+    target.wounds=Math.min(maximum,before+rolled);
     state.npoRuleState.oncePerTurningPoint.nanoscarabBeam=state.turningPoint;
     return {dice:rollResults,rolled,restored:target.wounds-before};
   }
@@ -3895,9 +3904,10 @@ function showPlayerActivation(stage={}){
   function npoProfileDetailsHtml(n,definition){
     const ranged=(definition.rangedWeapons||[]).filter(weapon=>!definition.loadoutOptions||weapon.id===n.weaponId);
     const melee=definition.meleeWeapons||[];
+    const selectedLoadout=definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name||'Fixed weapons';
     const actionItems=(definition.actions||[]).map(action=>`<div><strong>${escapeHtml(action.name)} · ${action.ap} AP</strong><p>${escapeHtml(action.description)}</p>${action.oncePerTurningPoint?`<small>${state.npoRuleState.oncePerTurningPoint[action.id]===state.turningPoint?'Used this turning point':'Available this turning point'}</small>`:''}</div>`).join('');
     const passiveItems=(definition.passiveRules||[]).map(rule=>`<div><strong>${escapeHtml(rule.name)}</strong><p>${escapeHtml(rule.description)}</p>${rule.oncePerTurningPoint?`<small>${state.npoRuleState.oncePerTurningPoint[rule.id]===state.turningPoint?'Used this turning point':'Available this turning point'}</small>`:''}</div>`).join('');
-    return `<details class="operative-guidance npo-profile-details"><summary>Gameplay profile</summary><p><strong>Selected loadout:</strong> ${escapeHtml(npoWeapon(definition,n.weaponId)?.name||'Fixed weapons')}</p>${ranged.length?`<strong>Ranged weapons</strong><ul class="npo-weapon-list">${ranged.map(npoProfileWeaponHtml).join('')}</ul>`:''}${melee.length?`<strong>Melee weapons</strong><ul class="npo-weapon-list">${melee.map(npoProfileWeaponHtml).join('')}</ul>`:''}${actionItems?`<strong>Operative actions</strong>${actionItems}`:''}${passiveItems?`<strong>Passive rules</strong>${passiveItems}`:''}</details>`;
+    return `<details class="operative-guidance npo-profile-details"><summary>Gameplay profile</summary><p><strong>Selected loadout:</strong> ${escapeHtml(selectedLoadout)}</p>${ranged.length?`<strong>Ranged weapons</strong><ul class="npo-weapon-list">${ranged.map(npoProfileWeaponHtml).join('')}</ul>`:''}${melee.length?`<strong>Melee weapons</strong><ul class="npo-weapon-list">${melee.map(npoProfileWeaponHtml).join('')}</ul>`:''}${actionItems?`<strong>Operative actions</strong>${actionItems}`:''}${passiveItems?`<strong>Passive rules</strong>${passiveItems}`:''}</details>`;
   }
   function npoRosterCard(n,controls){
     const hasProfile=Number.isFinite(n.maxWounds)&&n.maxWounds>0;
