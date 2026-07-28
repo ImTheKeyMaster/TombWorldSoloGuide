@@ -66,7 +66,7 @@ class StrategyPhaseUiTests(unittest.TestCase):
 
     def test_tomb_world_event_placeholder_is_removed(self):
         self.assertNotIn("No Tomb World event is required.", APP)
-        self.assertIn("displayedEvents.map(strategyEventHtml).join('')", STRATEGY_CARD)
+        self.assertIn("displayedEvents.map(event=>strategyEventHtml(event,activeEffects)).join('')", STRATEGY_CARD)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v7.4.1
+# Tomb World Solo Guide v7.4.2
+
+## v7.4.2
+
+**Version 7.4.2 - Remove Duplicate Strategy Event Effects**
+
+- Removed duplicate active-event cards from the Strategy Phase when the full Tomb World Event card is already displayed.
+- Added a clear `RESOLVED • ACTIVE` presentation for persistent event effects.
+- Preserved compact active-event reminders during later gameplay screens.
+- Corrected singular and plural event-card summary wording.
+- Preserved all event rules, Restless Tomb behavior, event state, timing, and expiry.
 
 ## v7.4.1
 

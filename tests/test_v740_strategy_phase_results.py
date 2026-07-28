@@ -27,7 +27,7 @@ class StrategyPhaseResultsTests(unittest.TestCase):
 
     def test_empty_actions_and_events_sections_are_omitted(self):
         self.assertIn("actionsHtml?`<section class=\"strategy-actions-section\"", STRATEGY)
-        self.assertIn('showEvents=eventPresentation.required||eventPresentation.cardsDrawn||activeEvents', STRATEGY)
+        self.assertIn('showEvents=eventPresentation.required||eventPresentation.cardsDrawn||unmatchedActiveEvents', STRATEGY)
         self.assertIn('showEvents?`<section class="strategy-events-section"', STRATEGY)
 
     def test_requirement_and_summary_use_persisted_current_turn_state_without_mutation(self):
@@ -69,10 +69,10 @@ assert.deepEqual(strategyEventPresentation(data),{{required:0,cardsDrawn:0,resol
             self.assertNotIn(mutation, helpers)
 
     def test_canonical_status_has_visible_text_and_history_is_chronological(self):
-        self.assertIn("statusLabels={drawn:'PENDING',resolved:'RESOLVED',redrawn:'REDRAWN'}", EVENT_HTML)
+        self.assertIn("statusLabels={drawn:'PENDING',resolved:activeEffect?'RESOLVED • ACTIVE':'RESOLVED',redrawn:'REDRAWN'}", EVENT_HTML)
         self.assertIn('data-event-status="${escapeHtml(event.status)}"', EVENT_HTML)
         self.assertIn("event.status!=='drawn'||index===d.eventIndex", STRATEGY)
-        self.assertIn('displayedEvents.map(strategyEventHtml)', STRATEGY)
+        self.assertIn('displayedEvents.map(event=>strategyEventHtml(event,activeEffects))', STRATEGY)
         self.assertNotIn("event.status==='redrawn'?'Redraw required':'Resolved'", EVENT_HTML)
 
     def test_battlefield_values_remain_canonical_and_completion_logic_is_unchanged(self):
@@ -87,14 +87,14 @@ assert.deepEqual(strategyEventPresentation(data),{{required:0,cardsDrawn:0,resol
         self.assertIn('aria-labelledby="strategy-actions-heading"', STRATEGY)
         self.assertIn('aria-labelledby="strategy-events-heading"', STRATEGY)
         self.assertIn('aria-labelledby="battlefield-state-heading"', STRATEGY)
-        self.assertIn("aria-label=\"${eventPresentation.required} ${eventPresentation.required===1?'event':'events'} required", STRATEGY)
+        self.assertIn('aria-label="${eventSummary.accessible}"', STRATEGY)
         self.assertIn('@media(max-width:420px)', STYLES)
         self.assertNotIn('position:absolute', STYLES.split('.strategy-actions-section', 1)[1].split('\n', 1)[0])
 
     def test_release_version_and_notes_are_consistent(self):
-        self.assertIn("const APP_VERSION = '7.4.1';", APP)
-        self.assertIn('V7.4.1', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v7.4.1'))
+        self.assertIn("const APP_VERSION = '7.4.2';", APP)
+        self.assertIn('V7.4.2', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v7.4.2'))
         self.assertIn('Version 7.4.0 - Reorganize Strategy Phase Results', README)
         self.assertNotIn('portrait', EVENT_HTML.lower())
         self.assertNotIn('obelisk', EVENT_HTML.lower())
