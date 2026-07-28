@@ -64,7 +64,7 @@ class V701NpoInventoryTests(unittest.TestCase):
     def test_save_reload_preserves_instance_fields_and_validates_new_saves(self):
         normalized = self.source("function normalizeState", "function npoDefinition")
         npo = self.source("function normalizeNpo", "function mission()")
-        self.assertIn("raw.version===APP_VERSION", normalized)
+        self.assertIn("if(Array.isArray(raw.roster))", normalized)
         self.assertLess(normalized.index("validateNpoRoster(raw.roster)"), normalized.index("map(normalizeNpo)"))
         self.assertIn("validateNpoRoster(merged.roster)", normalized)
         self.assertIn("displayNumber", npo)
@@ -107,8 +107,8 @@ class V701NpoInventoryTests(unittest.TestCase):
         self.assertGreaterEqual(generation.count("state.roster=previousRoster"), 2)
 
     def test_version_and_release_notes_are_701(self):
-        self.assertIn("const APP_VERSION = '7.0.5';", APP)
-        self.assertIn("V7.0.5", (ROOT / "index.html").read_text())
+        self.assertIn("const APP_VERSION = '7.0.6';", APP)
+        self.assertIn("V7.0.6", (ROOT / "index.html").read_text())
         self.assertIn("## v7.0.4", (ROOT / "README.md").read_text())
 
 

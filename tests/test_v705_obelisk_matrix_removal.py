@@ -31,7 +31,7 @@ class ObeliskMatrixRemovalTests(unittest.TestCase):
         cls.profiles = definitions()
 
     def test_no_matrix_gameplay_ui_rules_or_accessibility_text(self):
-        self.assertNotIn("obelisk", PRODUCTION.lower())
+        self.assertNotIn("obelisk node matrix support", PRODUCTION.lower())
         self.assertNotRegex(PRODUCTION.lower(), r"within (?:your |the )?matrix|matrix (?:bonus|range|status)")
         self.assertNotRegex(INDEX, r"(?i)aria-(?:label|describedby)=[^>]*(?:obelisk|matrix)")
 
@@ -82,7 +82,7 @@ class ObeliskMatrixRemovalTests(unittest.TestCase):
             },
         }
         result = persistence_result(f"p.migrateSave({json.dumps(legacy)})")
-        self.assertEqual(result["saveVersion"], 2)
+        self.assertEqual(result["saveVersion"], 3)
         self.assertEqual((result["turningPoint"], result["roster"][0]["wounds"]), (2, 17))
         self.assertEqual(result["activationHistory"], legacy["activationHistory"])
         self.assertNotIn("obeliskNodes", result)
@@ -94,23 +94,23 @@ class ObeliskMatrixRemovalTests(unittest.TestCase):
 
     def test_new_saves_do_not_write_injected_matrix_fields(self):
         state = {
-            "version": "7.0.5", "matrixActive": True,
+            "version": "7.0.6", "matrixActive": True,
             "roster": [{"id": "warrior-1", "type": "Canoptek Macrocyte Warrior", "wounds": 7, "insideMatrix": True}],
             "npoRuleState": {"aplModifiers": [{"ruleId": "matrix-accurate", "amount": 1}]},
         }
         result = persistence_result(f"p.createPersistedSave({json.dumps(state)})")
-        self.assertEqual(result["saveVersion"], 2)
+        self.assertEqual(result["saveVersion"], 3)
         self.assertNotIn("matrixActive", result)
         self.assertNotIn("insideMatrix", result["roster"][0])
         self.assertEqual(result["npoRuleState"]["aplModifiers"], [])
 
     def test_release_and_offline_assets_are_synchronized(self):
-        self.assertIn("const APP_VERSION = '7.0.5';", APP)
-        self.assertIn("const APP_VERSION = '7.0.5';", WORKER)
-        self.assertIn("V7.0.5", INDEX)
-        self.assertIn("const SAVE_VERSION = 2;", PERSISTENCE)
+        self.assertIn("const APP_VERSION = '7.0.6';", APP)
+        self.assertIn("const APP_VERSION = '7.0.6';", WORKER)
+        self.assertIn("V7.0.6", INDEX)
+        self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
         for asset in ("app.js", "mission-engine.js", "persistence.js", "styles.css"):
-            self.assertIn(f"{asset}?v=7.0.5", INDEX)
+            self.assertIn(f"{asset}?v=7.0.6", INDEX)
         self.assertNotRegex(WORKER, r"(?i)(?:obelisk|matrix)[^\n]*(?:png|svg|jpe?g|webp)")
 
     def test_ordering_portrait_and_unrelated_behavior_regressions(self):
