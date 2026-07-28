@@ -31,7 +31,7 @@ class NpoRosterReadOnlyActivationTests(unittest.TestCase):
         card = self.function_source("function npoRosterCard", "function operativeCard")
 
         self.assertIn("npoRosterCard(n,n.battlefieldState==='deployed'||n.wounds<=0)", roster)
-        self.assertIn('data-delete="${n.id}">Remove NPO</button>', card)
+        self.assertIn('data-delete="${n.id}" ${state.turningPoint>0?\'disabled\':\'\'}>Remove NPO</button>', card)
         self.assertNotIn(">Delete</button>", card)
 
         wound_controls, removal_control = card.split('</div>`:\'\'}', 1)
