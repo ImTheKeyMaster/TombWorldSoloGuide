@@ -50,7 +50,14 @@ class CanoptekIntegrationTests(unittest.TestCase):
         self.assertIn("const warrior=createNpo", APP)
         self.assertIn("warrior.createdBy='a-ceaseless-scuttling'", APP)
         self.assertIn("warrior.order='Conceal'", APP)
-        self.assertIn("turningPoint>1&&living<3", APP)
+        self.assertIn("turningPoint>1&&living<3&&deployed<MAX_NPOS", APP)
+
+    def test_reviewed_reanimate_and_modifier_regressions(self):
+        self.assertIn("protectedForAction=n.preventIncapacitationActionId===state.activationNumber", APP)
+        self.assertIn("n.wounds===0?aggressiveDefenseDamageValue(pending):0", APP)
+        self.assertIn("apl=effectiveApl(current.playerOperativeId,baseApl)", APP)
+        self.assertIn("Continue Activation", APP)
+        self.assertIn("consumeMolecularBreach(target.id,freeAction)", APP)
 
     def test_manual_spatial_confirmation_is_preserved(self):
         self.assertIn("Visibility, range, control-range, and placement restrictions are confirmed on the tabletop", APP)

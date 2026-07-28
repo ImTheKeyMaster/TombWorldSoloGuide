@@ -929,7 +929,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function npoThreatRating(npo){
     const definition=npoDefinition(npo?.type);
     if(!definition)return 0;
-    const profiles=[...(definition.rangedWeapons||[]),...(definition.meleeWeapons||[])].flatMap(weaponProfiles);
+    const profiles=[...npoAttackProfiles(npo,'shoot'),...npoAttackProfiles(npo,'melee')];
     const peakDamage=Math.max(0,...profiles.map(profile=>Number(profile.attacks||0)*Number(profile.damage?.normal||0)));
     const durability=Math.max(0,Number(npo.wounds||0))*(7-Math.max(2,Number(definition.save||6)))/5;
     return Math.max(0,Math.round((durability+Number(definition.apl||0)+peakDamage/4)*10)/10);
@@ -937,7 +937,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function activeNpoThreat(){return activeNpos().reduce((total,npo)=>total+npoThreatRating(npo),0);}
   function ceaselessScuttlingEligible(turningPoint=state.turningPoint,roster=state.roster){
     const living=roster.filter(npo=>npo.type==='Canoptek Macrocyte Warrior'&&npo.wounds>0).length;
-    return turningPoint>1&&living<3;
+    const deployed=roster.filter(npo=>npo.battlefieldState==='deployed'&&npo.wounds>0).length;
+    return turningPoint>1&&living<3&&deployed<MAX_NPOS;
   }
   function createCeaselessScuttlingWarrior(weaponId){
     if(!ceaselessScuttlingEligible())return null;
@@ -2470,7 +2471,8 @@ function showPlayerActivation(stage={}){
 
     const selectOperative=(current,id)=>{
       const selectedOperative=playerDefinition(id);
-      return {...current,playerOperativeId:id||'',apl:Number(selectedOperative?.apl||current.apl||3)};
+      const baseApl=Number(selectedOperative?.apl||current.baseApl||current.apl||3);
+      return {...current,playerOperativeId:id||'',baseApl,apl:id?effectiveApl(id,baseApl):baseApl};
     };
     const stagedId=String(stage.playerOperativeId||'');
     if(stagedId && !remaining.includes(stagedId)){
@@ -2577,7 +2579,8 @@ function showPlayerActivation(stage={}){
 
     function updatePlayerActionAvailability(){
       const current=readPlayerActivationStage(stage);
-      const apl=Number(playerDefinition(current.playerOperativeId)?.apl||current.apl||3);
+      const baseApl=Number(playerDefinition(current.playerOperativeId)?.apl||current.baseApl||current.apl||3);
+      const apl=effectiveApl(current.playerOperativeId,baseApl);
       current.apl=apl;
       const used=playerActionCost(current);
       const conflicts=playerActionConflicts(current);
@@ -2645,7 +2648,8 @@ function showPlayerActivation(stage={}){
     const melee=Boolean($('#eaMelee')?.checked);
     return {
       playerOperativeId:String($('#playerOperativeSelect')?.value||previous.playerOperativeId||''),
-      apl:Number(playerDefinition(previous.playerOperativeId)?.apl||previous.apl||3),
+      baseApl:Number(playerDefinition(previous.playerOperativeId)?.apl||previous.baseApl||previous.apl||3),
+      apl:effectiveApl(previous.playerOperativeId,Number(playerDefinition(previous.playerOperativeId)?.apl||previous.baseApl||previous.apl||3)),
       move:Boolean($('#eaMove')?.checked),
       dash:Boolean($('#eaDash')?.checked),
       charge:Boolean($('#eaCharge')?.checked),
@@ -2850,12 +2854,14 @@ function showPlayerActivation(stage={}){
         }
       }
       const before=n.wounds;
+      const protectedForAction=n.preventIncapacitationActionId===state.activationNumber;
       n.wounds=Math.max(0,pending.after);
+      if(protectedForAction)n.wounds=Math.max(1,n.wounds);
       pending.committed=true;
       if(n.wounds===0)n.ready=false;
       if(n.wounds===0){n.deployed=false;n.battlefieldState='out-of-action';}
       log(`${playerName(stage.playerOperativeId)} ${pending.attackType==='shoot'?'shot':'made a Melee attack against'} ${npoName(n)} for ${pending.damage} damage (${before} → ${n.wounds} wounds).`);
-      const aggressiveDamage=aggressiveDefenseDamageValue(pending);
+      const aggressiveDamage=n.wounds===0?aggressiveDefenseDamageValue(pending):0;
       if(aggressiveDamage>0){
         const playerBefore=playerCurrentWounds(stage.playerOperativeId);
         const playerAfter=Math.max(0,playerBefore-aggressiveDamage);
@@ -3760,7 +3766,11 @@ function showPlayerActivation(stage={}){
       const targetId=$('#specialActionTarget').value;
       const target=action.target?.side==='enemy'?{id:targetId,name:playerName(targetId),apl:playerDefinition(targetId)?.apl||2}:state.roster.find(item=>item.id===targetId);
       let result={targetId};
-      if(action.id==='canoptek-control')result={...result,freeAction:$('#freeActionChoice').value,maxMove:2,preservedReady:target.ready};
+      if(action.id==='canoptek-control'){
+        const freeAction=$('#freeActionChoice').value;
+        result={...result,freeAction,maxMove:2,preservedReady:target.ready};
+        if(['Reposition','Dash','Charge'].includes(freeAction))result.molecularBreach=consumeMolecularBreach(target.id,freeAction);
+      }
       if(action.id==='molecular-breach')result.applied=applyMolecularBreach(n.id,target.id);
       if(action.id==='overcharge')result.applied=applyTemporaryAplModifier({sourceId:n.id,targetId:target.id,ruleId:'overcharge',amount:1});
       if(action.id==='cranial-overload')result.applied=applyTemporaryAplModifier({sourceId:n.id,targetId:target.id,ruleId:'cranial-overload',amount:-1});
@@ -3771,7 +3781,7 @@ function showPlayerActivation(stage={}){
     };
   }
   function finishNpoSpecialAction(n,action,result,decision,answers,questionHistory){
-    state.lastActivation={...state.lastActivation,specialActionResolved:true,specialActionResult:result,remainingAp:Math.max(0,state.lastActivation.remainingAp-action.ap),completedActionIds:[...(state.lastActivation.completedActionIds||[]),action.id]};
+    state.lastActivation={...state.lastActivation,specialActionResolved:true,specialActionResult:result,remainingAp:Math.max(0,state.lastActivation.remainingAp-action.ap),completedActionIds:[...(state.lastActivation.completedActionIds||[]),action.id],resolvedActions:[...(state.lastActivation.resolvedActions||[]),{id:action.id,name:action.name,result}]};
     if(action.oncePerTurningPoint)state.npoRuleState.oncePerTurningPoint[action.id]=state.turningPoint;
     save();
     renderNpoDecisionResult(n,decision,[],answers,true,false,false,true,questionHistory);
@@ -3826,7 +3836,7 @@ function showPlayerActivation(stage={}){
           <div><small>Unsaved critical hits</small><strong>${attackSummary.critRemaining}</strong></div>
         </div>
       </section><div class="summary-box"><strong>Actions:</strong> ${attackSummary.attackType==='shoot'?'Shooting':'Melee'} attack resolved.${eliminationAction}</div>`:''}
-      <div class="wizard-actions"><button class="btn primary" id="completeNpo" ${attackRequired&&!attackResolved?'disabled':''}>Complete Activation</button></div>
+      <div class="wizard-actions"><button class="btn primary" id="completeNpo" ${attackRequired&&!attackResolved?'disabled':''}>${state.lastActivation.specialActionResolved&&state.lastActivation.remainingAp>0?'Continue Activation':'Complete Activation'}</button></div>
     </div>`;
     if(!modal.open)modal.showModal();
     const openSaveWizard=(resolvedDice,animate=false)=>showNpoAttackWizard(n,resolvedDice,(summary)=>{
@@ -3850,6 +3860,10 @@ function showPlayerActivation(stage={}){
 
     $('#completeNpo').onclick=()=>{
       if(npoSpecialAction(n,decision.action)&&!state.lastActivation.specialActionResolved)resolveNpoSpecialAction(n,decision,answers,questionHistory);
+      else if(state.lastActivation.specialActionResolved&&state.lastActivation.remainingAp>0){
+        state.lastActivation={...state.lastActivation,specialActionResolved:false,specialActionResult:null,action:null,attackRequired:false,attackResolved:false};
+        save();runNpoPrompt(n,0,{},[]);
+      }
       else completeNpoActivation();
     };
   }
@@ -3866,7 +3880,9 @@ function showPlayerActivation(stage={}){
     if(state.lastActivation.threat)setThreat(state.lastActivation.threat,`${npoName(n)} ${state.lastActivation.action.includes('Fight')?'Fight':'Shoot'}`);
     const activationId=missionActivationId('npo',n.id);
     n.ready=false;state.npoActivated++;state.activationNumber++;
-    state.activationHistory.unshift({side:'npo',label:npoName(n),action:state.lastActivation.action,target:state.npoAttackTargetId?playerName(state.npoAttackTargetId):null,attackSummary});
+    const movementEffect=consumeMolecularBreach(n.id,npoActionId(state.lastActivation.action)==='fall-back'?'Fall Back':state.lastActivation.action?.split(' ')[0]);
+    const resolvedActions=[...(state.lastActivation.resolvedActions||[]),...(state.lastActivation.action?[{id:npoActionId(state.lastActivation.action),name:state.lastActivation.action}]:[])];
+    state.activationHistory.unshift({side:'npo',label:npoName(n),action:state.lastActivation.action,actions:resolvedActions,target:state.npoAttackTargetId?playerName(state.npoAttackTargetId):null,attackSummary,molecularBreach:movementEffect||null});
     state.lastActivation.committed=true;
     expireActivationEffects(n.id);
     state.activeNpoId=null;advanceAfterActivation('npo');
