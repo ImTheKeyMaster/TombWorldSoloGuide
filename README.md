@@ -1,4 +1,15 @@
-# Tomb World Solo Guide v7.3.0
+# Tomb World Solo Guide v7.4.0
+
+## v7.4.0
+
+**Version 7.4.0 - Reorganize Strategy Phase Results**
+
+- Reordered the Strategy Phase screen for clearer rules timing and results.
+- Grouped Restless Tomb requirements with Tomb World event cards.
+- Added dynamic required, drawn, and resolved event counts.
+- Added clear Pending, Redrawn, and Resolved event statuses.
+- Moved Current Battlefield State below event and reinforcement results.
+- Preserved all Strategy Phase gameplay, event-count, Restless Tomb, and Deadly Encounters behavior.
 
 ## v7.3.0
 

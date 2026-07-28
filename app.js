@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.3.0';
+  const APP_VERSION = '7.4.0';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
 
@@ -1883,8 +1883,27 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function missionStrategyPromptHtml(){
     if(missionEngine()?.type!=='escape'||state.turningPoint<=1||state.missionState.escapedIds.length)return '';
     const calibration=state.missionState.auspexCalibrations[state.turningPoint];
-    if(calibration)return `<div class="summary-box"><strong>Auspex Calibration:</strong> ${escapeHtml(calibration.instruction)}</div>`;
-    return `<div class="summary-box"><strong>Auspex Calibration required.</strong><br>No operatives have escaped. Resolve the mission’s Strategic Gambit before continuing.<div class="event-controls"><button class="btn secondary" id="resolveAuspexCalibration">Roll Auspex Calibration</button></div></div>`;
+    if(calibration)return `<div class="summary-box"><p class="eyebrow">MISSION RULE</p><strong>Auspex Calibration</strong><br>${escapeHtml(calibration.instruction)}</div>`;
+    return `<div class="summary-box"><p class="eyebrow">MISSION RULE</p><strong>Auspex Calibration</strong><br>No operatives have escaped. Resolve this mission rule before continuing.<div class="event-controls"><button class="btn secondary" id="resolveAuspexCalibration">Roll Auspex Calibration</button></div></div>`;
+  }
+
+  function strategyEventPresentation(data=state.strategyData||{}){
+    const currentRequirement=data.eventRequirementTurningPoint===state.turningPoint;
+    const currentEvents=currentRequirement&&Array.isArray(data.events)?data.events:[];
+    return {
+      required:currentRequirement?(Number(data.requiredEventCount)||0):0,
+      cardsDrawn:currentEvents.length,
+      resolved:currentEvents.filter(event=>event.status==='resolved').length,
+      events:currentEvents
+    };
+  }
+
+  function strategyEventRequirementLabel(data,presentation){
+    if(!presentation.required)return '';
+    const eventWord=presentation.required===1?'event':'events';
+    const standardRequired=Number(data.normalEventCount)>0||presentation.events.some(event=>event.requiredBy==='standard');
+    const source=standardRequired?'the standard Tomb World rules':'Restless Tomb';
+    return `${presentation.required} ${eventWord} required by ${source}.`;
   }
 
   function strategyCard(){
@@ -1898,15 +1917,23 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const reinforcementCard=deployingNpos.length||d.blocked
         ? `<section class="card reinforcement-card"><p class="eyebrow">REINFORCEMENTS</p>${deployingNpos.length?`<h3>Deploy ${deployingNpos.length} NPO${deployingNpos.length===1?'':'s'}</h3><ul class="reinforcement-list">${deployingNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul><p>Deploy ${deployingNpos.length===1?'this NPO':'these NPOs'} onto the battlefield using the Tomb World reinforcement rules.</p>`:''}${d.blocked?`<div class="reinforcement-blocked"><h3>Unable to Deploy</h3>${blockedNpos.length?`<ul class="reinforcement-list">${blockedNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul>`:`<p>${d.blocked} reinforcement${d.blocked===1?'':'s'}</p>`}<p>Battlefield capacity was reached or no legal physical model remains.</p></div>`:''}</section>`:'';
       const placements=deployingNpos.map(npo=>`<label class="check-row"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong><small>Randomly determine an open hatchway, set up this operative with a Conceal order using the printed placement requirements, then confirm.</small></span></label>`).join('');
-      const resolvedEvents=(d.events||[]).filter(event=>event!==d.event&&event.status!=='drawn').map(strategyEventHtml).join('');
+      const eventPresentation=strategyEventPresentation(d);
+      const displayedEvents=eventPresentation.events.filter((event,index)=>event.status!=='drawn'||index===d.eventIndex);
       const scuttlingEligible=ceaselessScuttlingEligible()&&d.ceaselessScuttlingTurningPoint!==state.turningPoint;
       const scuttlingCard=state.turningPoint>1?`<section class="card reinforcement-card"><p class="eyebrow">STRATEGIC GAMBIT</p><h3>A Ceaseless Scuttling</h3><p>${scuttlingEligible?'Fewer than three Macrocyte Warriors remain. You may reuse an incapacitated miniature to set up a new operative instance.':'Unavailable: three Warriors remain, or this gambit was already resolved this turning point.'}</p><button class="btn secondary" id="ceaselessScuttling" ${scuttlingEligible?'':'disabled'}>Use A Ceaseless Scuttling</button></section>`:'';
       const activeEvents=(state.eventState.active||[]).map(event=>`<div class="summary-box"><strong>${escapeHtml(event.title)}</strong><br>${escapeHtml(event.text)}</div>`).join('');
       const showStatTooltips=!window.matchMedia('(max-width:600px)').matches;
       const tooltipAttrs=text=>showStatTooltips?` tabindex="0" data-tooltip="${text}"`:'';
       const infoDot=showStatTooltips?'<span class="info-dot">i</span>':'';
-      const restlessNotice=d.normalEventCount===0&&d.requiredEventCount>0?'<div class="summary-box"><strong>Restless Tomb:</strong> Resolve one Tomb World event.</div>':'';
-      return `<section class="next-card"><span class="phase">STRATEGY PHASE</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol></div>${restlessNotice}${factionGuidanceHtml('gambits')}${missionStrategyPromptHtml()}${scuttlingCard}<div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat"${tooltipAttrs('Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events.')}><small>THREAT LEVEL ${infoDot}</small><strong>${state.threat}</strong></div><div class="stat tooltip-stat"${tooltipAttrs('Grade 0–3 is derived from Threat and determines reinforcement pressure and some events.')}><small>GRADE LEVEL ${infoDot}</small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat"${tooltipAttrs('The number of living NPOs that are Ready and may still activate during this Turning Point.')}><small>NPOs Ready ${infoDot}</small><strong>${readyNpos().length}</strong></div></div>${reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':`${reinforcementCard}${deployingNpos.length?`<div class="checklist">${placements}</div>`:''}`}${resolvedEvents}${d.event?.status==='drawn'?strategyEventHtml(d.event):''}${activeEvents?`<h3>Active event effects</h3>${activeEvents}`:''}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending||placementPending||missionPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':placementPending?'Confirm Reinforcement Placement':missionPending?'Resolve Mission Rule to Continue':'Strategy Phase Complete'}</button></section>`;
+      const actionsHtml=`${missionStrategyPromptHtml()}${factionGuidanceHtml('gambits')}${scuttlingCard}`;
+      const actionsSection=actionsHtml?`<section class="strategy-actions-section" aria-labelledby="strategy-actions-heading"><h3 id="strategy-actions-heading" class="strategy-section-heading">Resolve Strategy Phase Actions</h3>${actionsHtml}</section>`:'';
+      const showEvents=eventPresentation.required||eventPresentation.cardsDrawn||activeEvents;
+      const requirementLabel=strategyEventRequirementLabel(d,eventPresentation);
+      const eventSummary=`${eventPresentation.required} required • ${eventPresentation.cardsDrawn} cards drawn • ${eventPresentation.resolved} resolved`;
+      const eventsSection=showEvents?`<section class="strategy-events-section" aria-labelledby="strategy-events-heading"><h3 id="strategy-events-heading" class="strategy-section-heading">Tomb World Events</h3>${requirementLabel?`<p class="strategy-event-requirement">${escapeHtml(requirementLabel)}</p>`:''}<p class="strategy-event-summary" aria-label="${eventPresentation.required} ${eventPresentation.required===1?'event':'events'} required, ${eventPresentation.cardsDrawn} event ${eventPresentation.cardsDrawn===1?'card':'cards'} drawn, ${eventPresentation.resolved} ${eventPresentation.resolved===1?'event':'events'} resolved">${eventSummary}</p>${displayedEvents.map(strategyEventHtml).join('')}${activeEvents?`<h4>Active event effects</h4>${activeEvents}`:''}</section>`:'';
+      const reinforcementResults=reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':`${reinforcementCard}${deployingNpos.length?`<div class="checklist">${placements}</div>`:''}`;
+      const battlefieldState=`<section class="battlefield-state-section" aria-labelledby="battlefield-state-heading"><h3 id="battlefield-state-heading" class="strategy-section-heading">Current Battlefield State</h3><div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat"${tooltipAttrs('Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events.')}><small>THREAT LEVEL ${infoDot}</small><strong>${state.threat}</strong></div><div class="stat tooltip-stat"${tooltipAttrs('Grade 0–3 is derived from Threat and determines reinforcement pressure and some events.')}><small>GRADE LEVEL ${infoDot}</small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat"${tooltipAttrs('The number of living NPOs that are Ready and may still activate during this Turning Point.')}><small>NPOs Ready ${infoDot}</small><strong>${readyNpos().length}</strong></div></div></section>`;
+      return `<section class="next-card"><span class="phase">STRATEGY PHASE</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><h3>Strategy Phase Checklist</h3><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol></div>${actionsSection}${eventsSection}${reinforcementResults}${battlefieldState}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending||placementPending||missionPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':placementPending?'Confirm Reinforcement Placement':missionPending?'Resolve Mission Rule to Continue':'Strategy Phase Complete'}</button></section>`;
     }
     return '';
   }
@@ -2007,8 +2034,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     fill="currentColor"
   />
 </svg></span><span class="tomb-world-event-label">TOMB WORLD EVENT</span></div>`;
-    const eventDetails=`${eventHeader}<h3 class="tomb-world-event-title">${escapeHtml(title)}</h3><div class="tomb-world-event-effect"><div class="tomb-world-event-effect-label">Effect</div><p class="tomb-world-event-description">${escapeHtml(description)}</p></div>`;
-    if(event.status!=='drawn')return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite">${eventDetails}<div class="event-resolution">${event.status==='redrawn'?'Redraw required':'Resolved'}: ${escapeHtml(event.result||'Complete')}</div></div>`;
+    const statusLabels={drawn:'PENDING',resolved:'RESOLVED',redrawn:'REDRAWN'};
+    const eventDetails=`${eventHeader}<div class="tomb-world-event-heading"><h3 class="tomb-world-event-title">${escapeHtml(title)}</h3><span class="strategy-event-status" data-event-status="${escapeHtml(event.status)}">${statusLabels[event.status]||escapeHtml(event.status).toUpperCase()}</span></div><div class="tomb-world-event-effect"><div class="tomb-world-event-effect-label">Effect</div><p class="tomb-world-event-description">${escapeHtml(description)}</p></div>`;
+    if(event.status!=='drawn')return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite">${eventDetails}<div class="event-resolution">${escapeHtml(event.result||'Complete')}</div></div>`;
     const labels={
       'awakened-warrior':'Confirm Warrior Placement',
       'chittering-drone':'Confirm Scarab Placement',
