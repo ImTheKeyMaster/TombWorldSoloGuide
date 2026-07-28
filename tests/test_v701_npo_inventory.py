@@ -27,6 +27,7 @@ class V701NpoInventoryTests(unittest.TestCase):
         self.assertIn("MAX_PHYSICAL_NPOS", validation)
         self.assertIn("Only one Tomb Crawler", validation)
         self.assertIn("unsupported loadout", validation)
+        self.assertIn("duplicate display number", validation)
 
     def test_all_mutating_flows_use_inventory_or_central_validation(self):
         for action in (
@@ -40,7 +41,7 @@ class V701NpoInventoryTests(unittest.TestCase):
         generation = self.source("function generateRoster", "function ensureStartingNpoGeneration")
         self.assertIn("state.roster=[]", generation)
         self.assertIn("if(!result)", generation)
-        self.assertIn("state.roster=[];console.warn", generation)
+        self.assertIn("state.roster=previousRoster", generation)
         self.assertNotRegex(generation, r"Canoptek Macrocyte['\"]")
 
     def test_manual_selector_uses_only_catalog_and_remaining_inventory(self):
@@ -64,6 +65,7 @@ class V701NpoInventoryTests(unittest.TestCase):
         normalized = self.source("function normalizeState", "function npoDefinition")
         npo = self.source("function normalizeNpo", "function mission()")
         self.assertIn("raw.version===APP_VERSION", normalized)
+        self.assertLess(normalized.index("validateNpoRoster(raw.roster)"), normalized.index("map(normalizeNpo)"))
         self.assertIn("validateNpoRoster(merged.roster)", normalized)
         self.assertIn("displayNumber", npo)
         self.assertIn("weaponId", npo)
@@ -92,8 +94,17 @@ class V701NpoInventoryTests(unittest.TestCase):
 
     def test_setup_regeneration_has_confirmation_and_clean_generation(self):
         self.assertIn("Regenerate NPO Roster?", APP)
-        self.assertIn("state.startingNpoGeneration=startingNpoRoll();generateRoster", APP)
-        self.assertIn("state.setupChecks={}", APP)
+        regeneration = self.source("function regenerateNpoRoster", "function render()")
+        self.assertIn("previousGeneration", regeneration)
+        self.assertNotIn("startingNpoRoll()", regeneration)
+        self.assertIn("deployedNpoIds:[],reserveNpoIds:[]", regeneration)
+        self.assertIn("check.id==='starting-npos'", regeneration)
+        self.assertNotIn("state.setupChecks={}", regeneration)
+
+    def test_failed_generation_restores_the_previous_roster(self):
+        generation = self.source("function generateRoster", "function ensureStartingNpoGeneration")
+        self.assertIn("const previousRoster=state.roster", generation)
+        self.assertGreaterEqual(generation.count("state.roster=previousRoster"), 2)
 
     def test_version_and_release_notes_are_701(self):
         self.assertIn("const APP_VERSION = '7.0.1';", APP)

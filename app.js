@@ -573,19 +573,24 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
   function normalizeState(raw){
     raw=isRecord(raw)?raw:{};
+    if(raw.version===APP_VERSION&&Array.isArray(raw.roster)){
+      const validation=validateNpoRoster(raw.roster);
+      if(!validation.valid)throw new Error(`Saved NPO roster is invalid: ${validation.errors.join(' ')}`);
+    }
     const base=initialState(), merged={...base,...raw};
     if(!['home','help','setup','game'].includes(merged.screen))merged.screen='home';
     if(!['play','mission','roster','player-roster','journal','help'].includes(merged.tab))merged.tab='play';
     merged.turningPoint=boundedInteger(raw.turningPoint,0,999);
     merged.threat=boundedInteger(raw.threat,0,15);
     merged.roster=Array.isArray(raw.roster)?raw.roster.map(normalizeNpo).filter(Boolean):[];
-    const nextDisplayNumber={};
+    const usedDisplayNumbers={};
     merged.roster.forEach(npo=>{
       const definition=npoDefinition(npo.type);
-      nextDisplayNumber[npo.type]=(nextDisplayNumber[npo.type]||0)+1;
-      npo.displayNumber=definition?.physicalQuantity>1
-        ? (Number.isInteger(npo.displayNumber)&&npo.displayNumber>0?npo.displayNumber:nextDisplayNumber[npo.type])
-        : null;
+      if(definition?.physicalQuantity<=1){npo.displayNumber=null;return;}
+      const used=usedDisplayNumbers[npo.type]||(usedDisplayNumbers[npo.type]=new Set());
+      if(Number.isInteger(npo.displayNumber)&&npo.displayNumber>0&&!used.has(npo.displayNumber)){used.add(npo.displayNumber);return;}
+      let displayNumber=1;while(used.has(displayNumber))displayNumber++;
+      npo.displayNumber=displayNumber;used.add(displayNumber);
     });
     if(Number(raw.turningPoint)>0){
       const importedRoster=Array.isArray(raw.roster)?raw.roster:[];
@@ -737,7 +742,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }]));
   }
   function validateNpoRoster(roster=state.roster){
-    const errors=[], ids=new Set(), counts=Object.fromEntries(Object.keys(npoDefinitions).map(type=>[type,0]));
+    const errors=[], ids=new Set(), displayNumbers={},counts=Object.fromEntries(Object.keys(npoDefinitions).map(type=>[type,0]));
     if(!Array.isArray(roster))return {valid:false,errors:['NPO roster must be an array.']};
     roster.forEach((npo,index)=>{
       if(!isRecord(npo)){errors.push(`NPO ${index+1} is invalid.`);return;}
@@ -748,6 +753,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       if(!definition){errors.push(`Unsupported NPO type: ${npo.type||'missing'}.`);return;}
       counts[npo.type]++;
       if(!npo.name)errors.push(`NPO ${npo.id||index+1} is missing a name.`);
+      if(definition.physicalQuantity>1){
+        const used=displayNumbers[npo.type]||(displayNumbers[npo.type]=new Set());
+        if(!Number.isInteger(npo.displayNumber)||npo.displayNumber<1)errors.push(`${definition.name} is missing a display number.`);
+        else if(used.has(npo.displayNumber))errors.push(`${definition.name} has duplicate display number ${npo.displayNumber}.`);
+        else used.add(npo.displayNumber);
+      }
       if(definition.loadoutOptions&&!definition.loadoutOptions.some(option=>option.id===npo.weaponId))errors.push(`${definition.name} has an unsupported loadout.`);
     });
     Object.entries(counts).forEach(([type,count])=>{if(count>npoDefinitions[type].physicalQuantity)errors.push(`${type} exceeds its physical quantity of ${npoDefinitions[type].physicalQuantity}.`);});
@@ -1047,17 +1058,18 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function generateRoster(generation){
     const m=mission(),count=MAX_NPOS,formula=generation.calculation;
+    const previousRoster=state.roster;
     state.roster=[];
     for(let i=0;i<count;i++){
       const result=availableGenerationResult();
       if(!result){
         console.warn(`[NPO inventory] ${m.name} requested ${count} models, but only ${state.roster.length} legal generated models were available.`);
-        break;
+        state.roster=previousRoster;showToast('A complete legal NPO roster could not be generated.');return null;
       }
       state.roster.push(createNpo(result.type,`${result.type} ${i+1}`,{weaponId:result.weaponId,ready:false,deployed:false}));
     }
     const validation=validateNpoRoster(state.roster);
-    if(!validation.valid){state.roster=[];console.warn('[NPO inventory] Generated roster was rejected.',validation.errors);showToast('A legal NPO roster could not be generated.');return null;}
+    if(!validation.valid){state.roster=previousRoster;console.warn('[NPO inventory] Generated roster was rejected.',validation.errors);showToast('A legal NPO roster could not be generated.');return null;}
     selectStartingNpos(generation);
     state.newIds=[]; log(`${m.name}: selected ${generation.deploymentCount} of ${state.roster.length} starting NPOs (${formula}).`); return {count:state.roster.length,formula};
   }
@@ -1073,6 +1085,16 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     state.startingNpoGeneration=startingNpoRoll();
     generateRoster(state.startingNpoGeneration);
     save();
+    return true;
+  }
+  function regenerateNpoRoster(){
+    if(state.turningPoint>0||!state.startingNpoGeneration)return false;
+    const previousGeneration=state.startingNpoGeneration;
+    const generation={...previousGeneration,deployedNpoIds:[],reserveNpoIds:[],availableNpos:MAX_NPOS,animationShown:true};
+    if(!generateRoster(generation))return false;
+    state.startingNpoGeneration=generation;
+    const deploymentCheck=missionSetupChecks('deploy').find(check=>check.id==='starting-npos');
+    if(deploymentCheck)state.setupChecks[deploymentCheck.id]=false;
     return true;
   }
 
@@ -1419,7 +1441,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $$('[data-npo-loadout]').forEach(select=>select.onchange=()=>changeNpoLoadout(select.dataset.npoLoadout,select.value));
     $('#regenerateNpoRoster')?.addEventListener('click',()=>{
       showModal('Regenerate NPO Roster?',`<p>This replaces only the generated NPO roster and rebuilds it from the complete physical inventory.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmRegenerateNpoRoster">Regenerate</button></div>`);
-      $('#confirmRegenerateNpoRoster').onclick=()=>{if(state.turningPoint>0)return;state.setupChecks={};state.startingNpoGeneration=startingNpoRoll();generateRoster(state.startingNpoGeneration);closeModal();save();render();};
+      $('#confirmRegenerateNpoRoster').onclick=()=>{if(!regenerateNpoRoster())return;closeModal();save();render();};
     });
     if(stepId==='deploy')runStartingNpoGeneration();
     $('#npoDeployed')?.addEventListener('change',e=>{const selected=new Set(state.startingNpoGeneration?.deployedNpoIds||[]);state.roster.filter(n=>selected.has(n.id)).forEach(n=>n.deployed=e.target.checked);save();render();});
