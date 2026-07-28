@@ -1,4 +1,10 @@
-# Tomb World Solo Guide v7.1.0
+# Tomb World Solo Guide v7.1.1
+
+## v7.1.1
+
+**Version 7.1.1 - NPO Card Action Placement**
+
+- Kept Gameplay Profile with the normal operative information and confined the bottom-aligned action area to the wound/heal row followed by Remove NPO.
 
 ## v7.1.0
 

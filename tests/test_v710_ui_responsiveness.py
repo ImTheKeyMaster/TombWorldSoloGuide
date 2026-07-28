@@ -53,21 +53,24 @@ class V710UiResponsivenessTests(unittest.TestCase):
         self.assertIn('class="deployment-roster">${deployedNpoRoster}</span>', deployment)
         self.assertNotIn('class="deployment-roster">• ${deployedNpoRoster}', deployment)
 
-    def test_npo_wound_controls_are_last_and_bottom_anchored(self):
+    def test_npo_profile_precedes_bottom_action_area(self):
         card = self.source("function npoRosterCard", "function operativeCard")
-        self.assertLess(card.index('class="quick-actions"'), card.index('class="wound-controls"'))
-        self.assertIn(".npo-roster-card .wound-controls{margin-top:auto;padding-top:14px}", CSS)
+        self.assertLess(card.index("npoProfileDetailsHtml(n,definition)"), card.index('class="npo-card-actions"'))
+        self.assertLess(card.index('class="wound-controls"'), card.index('class="quick-actions"'))
+        self.assertLess(card.index("+ Heal"), card.index("Remove NPO"))
+        self.assertIn(".npo-card-actions{margin-top:auto;padding-top:14px}", CSS)
+        self.assertIn(".npo-card-actions .wound-controls{margin-top:0}", CSS)
         self.assertIn(".npo-roster-card{position:relative;display:flex;flex-direction:column", CSS)
         self.assertIn("− Wound", card)
         self.assertIn("+ Heal", card)
         self.assertIn("npo-roster-card.dead", CSS)
 
     def test_release_version_is_synchronized(self):
-        self.assertIn("const APP_VERSION = '7.1.0';", APP)
-        self.assertIn("const APP_VERSION = '7.1.0';", WORKER)
-        self.assertIn("V7.1.0", INDEX)
+        self.assertIn("const APP_VERSION = '7.1.1';", APP)
+        self.assertIn("const APP_VERSION = '7.1.1';", WORKER)
+        self.assertIn("V7.1.1", INDEX)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "app.js"):
-            self.assertIn(f"{asset}?v=7.1.0", INDEX)
+            self.assertIn(f"{asset}?v=7.1.1", INDEX)
 
 
 if __name__ == "__main__":
