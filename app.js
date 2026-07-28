@@ -1036,7 +1036,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(npo.battlefieldState==='reserve')return {status:'RESERVE',className:'reserve'};
     if(npo.battlefieldState==='deployed'&&npo.dormant)return {status:'DORMANT',className:'dormant'};
     if(npo.battlefieldState==='deployed'&&npo.ready)return {status:'READY',className:'ready'};
-    if(npo.battlefieldState==='deployed'&&state.activationNumber>0)return {status:'ACTIVATED',className:'activated'};
+    if(npo.battlefieldState==='deployed'&&state.npoActivated>0)return {status:'ACTIVATED',className:'activated'};
     if(npo.battlefieldState==='deployed')return {status:'READY',className:'ready'};
     return {status:'RESERVE',className:'reserve'};
   }

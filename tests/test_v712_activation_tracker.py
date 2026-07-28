@@ -16,10 +16,10 @@ class ActivationTrackerV712Tests(unittest.TestCase):
     def source(self, start, end):
         return APP.split(start, 1)[1].split(end, 1)[0]
 
-    def run_tracker_helpers(self, roster, activation_number=0):
+    def run_tracker_helpers(self, roster, npo_activated=0):
         helpers = "function trackerNpos()" + self.source("function trackerNpos()", "function livingPlayerOperativeCount")
         script = f"""
-const state={{roster:{json.dumps(roster)},activationNumber:{activation_number}}};
+const state={{roster:{json.dumps(roster)},npoActivated:{npo_activated}}};
 {helpers}
 console.log(JSON.stringify({{rows:trackerNpos().map(npo=>({{id:npo.id,...npoTrackerStatus(npo)}}))}}));
 """
@@ -60,7 +60,7 @@ console.log(JSON.stringify({{rows:trackerNpos().map(npo=>({{id:npo.id,...npoTrac
             {"id": "Activated", "wounds": 5, "battlefieldState": "deployed", "dormant": False, "ready": False},
             {"id": "Eliminated", "wounds": 0, "battlefieldState": "out-of-action", "dormant": False, "ready": False},
         ]
-        rows = self.run_tracker_helpers(roster, activation_number=1)
+        rows = self.run_tracker_helpers(roster, npo_activated=1)
         self.assertEqual([(r["status"], r["className"]) for r in rows], [
             ("DORMANT", "dormant"), ("READY", "ready"),
             ("ACTIVATED", "activated"), ("ELIMINATED", "eliminated")])
@@ -69,7 +69,15 @@ console.log(JSON.stringify({{rows:trackerNpos().map(npo=>({{id:npo.id,...npoTrac
         roster = self.roster(1)
         self.assertEqual([r["status"] for r in self.run_tracker_helpers(roster)], ["READY", "READY"])
         roster[0]["ready"] = False
-        self.assertEqual([r["status"] for r in self.run_tracker_helpers(roster, activation_number=1)], ["ACTIVATED", "READY"])
+        self.assertEqual([r["status"] for r in self.run_tracker_helpers(roster, npo_activated=1)], ["ACTIVATED", "READY"])
+
+    def test_player_activation_does_not_classify_an_npo_as_activated(self):
+        roster = self.roster(1)
+        roster[0]["ready"] = False
+        self.assertEqual([r["status"] for r in self.run_tracker_helpers(roster)], ["READY", "READY"])
+        resolver = self.source("function npoTrackerStatus(npo)", "function livingPlayerOperativeCount")
+        self.assertIn("state.npoActivated>0", resolver)
+        self.assertNotIn("state.activationNumber>0", resolver)
 
     def test_tracker_uses_filtered_sorted_copy_and_leaves_gameplay_selection_order(self):
         tracker = self.source("function activationTracker()", "function showPlayerOperativeStatus")
