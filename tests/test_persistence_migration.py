@@ -13,18 +13,19 @@ const assert=require('assert');
 const persistence=require('./persistence.js');
 const {currentSaveVersion,migrateSave,createPersistedSave,migrations}=persistence;
 
-assert.equal(currentSaveVersion(),1);
+assert.equal(currentSaveVersion(),2);
 assert.equal(typeof migrations[0],'function');
+assert.equal(typeof migrations[1],'function');
 
 const unversioned=migrateSave({missionId:'04',roster:[],playerRoster:[]});
-assert.equal(unversioned.saveVersion,1);
+assert.equal(unversioned.saveVersion,2);
 assert.deepEqual(unversioned.missionState,{});
 assert.deepEqual(unversioned.reinforcementState,{operativeIds:[],blockedOperativeIds:[]});
 
 const versionZero=migrateSave({saveVersion:0,roster:[],playerRoster:[]});
-assert.equal(versionZero.saveVersion,1);
+assert.equal(versionZero.saveVersion,2);
 
-const latest=migrateSave({saveVersion:1,roster:[],playerRoster:[],missionState:{destruction:4}});
+const latest=migrateSave({saveVersion:2,roster:[],playerRoster:[],missionState:{destruction:4}});
 assert.equal(latest.missionState.destruction,4);
 
 const corrupted=migrateSave({
@@ -59,7 +60,7 @@ assert.deepEqual(references.reinforcementState.operativeIds,['valid']);
 assert.deepEqual(references.reinforcementState.blockedOperativeIds,[]);
 
 assert.throws(
-  ()=>migrateSave({saveVersion:2,roster:[],playerRoster:[],futureFeature:{enabled:true}}),
+  ()=>migrateSave({saveVersion:3,roster:[],playerRoster:[],futureFeature:{enabled:true}}),
   /newer than supported/
 );
 
@@ -68,7 +69,7 @@ assert.deepStrictEqual(migrateSave(once),once);
 assert.deepStrictEqual(once.unknownFutureField,{kept:true});
 assert.deepStrictEqual(
   createPersistedSave({roster:[],temporaryUiState:{open:true},cachedHtml:'<p>cache</p>',domReferences:{node:'app'}}),
-  {roster:[],saveVersion:1}
+  {roster:[],saveVersion:2}
 );
 assert.throws(()=>migrateSave(null),/must be an object/);
 assert.throws(()=>migrateSave({saveVersion:'one'}),/invalid saveVersion/);

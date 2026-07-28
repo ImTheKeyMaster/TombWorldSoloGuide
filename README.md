@@ -1,4 +1,15 @@
-# Tomb World Solo Guide v7.0.4
+# Tomb World Solo Guide v7.0.5
+
+## v7.0.5
+
+**Version 7.0.5 - Obelisk Node Matrix Cleanup**
+
+- Removed all active Obelisk Node Matrix support and references, including Matrix-derived bonuses, targeting alternatives, UI, and state.
+- Preserved the normal visible-distance options for Canoptek Control, Molecular Breach, Overcharge, Cranial Overload, Reanimate, and Nanoscarab Beam.
+- Added narrowly scoped save normalization that safely ignores obsolete Matrix-only fields from existing v7 saves without changing ordinary operative or battle-history state.
+- Confirmed that no Matrix-only assets or cache entries remain, while retaining mission, player-operative, status, faction, and eliminated-NPO assets.
+
+---
 
 ## v7.0.4
 

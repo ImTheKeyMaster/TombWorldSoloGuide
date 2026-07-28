@@ -1,8 +1,15 @@
 (function(root){
   'use strict';
 
-  const SAVE_VERSION = 1;
+  const SAVE_VERSION = 2;
   const NON_PERSISTED_FIELDS = new Set(['temporaryUiState','cachedHtml','domReferences']);
+  const OBSOLETE_MATRIX_FIELDS = new Set([
+    'obeliskNodeMatrix','obeliskMatrix','nodeMatrix','obeliskNode','obeliskNodes',
+    'nodeMarker','nodeMarkers','withinMatrix','insideMatrix','matrixBonus','matrixActive',
+    'matrixRange','matrixTargeting','matrixControl','matrixPowered','matrixEnhanced',
+    'matrixDerivedApl','matrixWeaponModifiers','matrixActionTargets','matrixMovementHistory',
+    'pendingMatrixQuestion','matrixUiStep'
+  ]);
   const isRecord = value => Boolean(value)&&typeof value==='object'&&!Array.isArray(value);
   const clone = value => JSON.parse(JSON.stringify(value));
   const integer = (value,fallback=0) => Number.isFinite(Number(value))?Math.max(0,Math.round(Number(value))):fallback;
@@ -15,9 +22,33 @@
     return {...save,saveVersion:1};
   }
 
-  const migrations = {0:migrate0to1};
+  const matrixRule = value => typeof value==='string'&&/(?:obelisk|matrix|node-control)/i.test(value);
+  function withoutObsoleteFields(value){
+    if(!isRecord(value))return value;
+    return Object.fromEntries(Object.entries(value).filter(([field])=>!OBSOLETE_MATRIX_FIELDS.has(field)));
+  }
+  function stripObsoleteMatrixState(save){
+    const cleaned=withoutObsoleteFields(save);
+    cleaned.roster=records(cleaned.roster).map(withoutObsoleteFields);
+    if(isRecord(cleaned.npoRuleState)){
+      const ruleState=withoutObsoleteFields(cleaned.npoRuleState);
+      ruleState.aplModifiers=records(ruleState.aplModifiers).filter(modifier=>!matrixRule(modifier.ruleId)&&!matrixRule(modifier.id));
+      ruleState.pendingMovementEffects=records(ruleState.pendingMovementEffects).filter(effect=>!matrixRule(effect.ruleId)&&!matrixRule(effect.id));
+      ruleState.oncePerTurningPoint=isRecord(ruleState.oncePerTurningPoint)
+        ? Object.fromEntries(Object.entries(ruleState.oncePerTurningPoint).filter(([ruleId])=>!matrixRule(ruleId)))
+        : {};
+      cleaned.npoRuleState=ruleState;
+    }
+    return cleaned;
+  }
+  function migrate1to2(save){
+    return {...stripObsoleteMatrixState(save),saveVersion:2};
+  }
+
+  const migrations = {0:migrate0to1,1:migrate1to2};
 
   function normalizeSave(save){
+    save=stripObsoleteMatrixState(save);
     const normalized={...save};
     normalized.roster=records(save.roster);
     normalized.playerRoster=strings(save.playerRoster);
@@ -73,7 +104,7 @@
   function createPersistedSave(state){
     if(!isRecord(state))throw new TypeError('Game state must be an object.');
     const gameplayState=Object.fromEntries(Object.entries(state).filter(([field])=>!NON_PERSISTED_FIELDS.has(field)));
-    return {...clone(gameplayState),saveVersion:currentSaveVersion()};
+    return {...stripObsoleteMatrixState(clone(gameplayState)),saveVersion:currentSaveVersion()};
   }
 
   const api={currentSaveVersion,migrateSave,createPersistedSave,migrations};
