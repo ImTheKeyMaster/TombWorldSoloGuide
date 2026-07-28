@@ -28,6 +28,7 @@ class ReinforcementCheckboxInteractionTests(unittest.TestCase):
         script = f"""
 const assert=require('assert');
 const state={{
+  threat:0,
   roster:[
     {{id:'a',reinforcement:{{placementConfirmed:false}},deployed:false}},
     {{id:'b',reinforcement:{{hatchway:'legacy',placementConfirmed:false}},deployed:false}}
@@ -45,6 +46,8 @@ function render(){{
 {confirmation}
 confirmReinforcementPlacement('a',true);
 assert.equal(state.roster[0].reinforcement.placementConfirmed,true);
+assert.equal(state.roster[0].battlefieldState,'deployed');
+assert.equal(state.roster[0].dormant,true);
 assert.equal(rendered.checkboxes[0].checked,true);
 assert.equal(state.reinforcementState.status,'placement');
 assert.equal(rendered.continueStrategyDisabled,true);
@@ -53,6 +56,8 @@ assert.equal(state.reinforcementState.status,'complete');
 assert.equal(rendered.continueStrategyDisabled,false);
 confirmReinforcementPlacement('a',false);
 assert.equal(state.roster[0].reinforcement.placementConfirmed,false);
+assert.equal(state.roster[0].battlefieldState,'reserve');
+assert.equal(state.roster[0].ready,false);
 assert.equal(state.reinforcementState.status,'placement');
 assert.equal(rendered.continueStrategyDisabled,true);
 """

@@ -44,7 +44,9 @@ class StrategyPhaseUiTests(unittest.TestCase):
 
     def test_reserve_npos_are_selected_and_deployed_without_duplication(self):
         self.assertIn("reserveNpos().find", REINFORCEMENTS)
-        self.assertIn("n.battlefieldState='deployed';n.deployed=true;n.dormant=state.threat===0;n.ready=!n.dormant", REINFORCEMENTS)
+        self.assertIn("n.battlefieldState='reserve';n.deployed=false;n.dormant=false;n.ready=false", REINFORCEMENTS)
+        placement = APP.split("function confirmReinforcementPlacement", 1)[1].split("function rollInitiative", 1)[0]
+        self.assertIn("npo.battlefieldState=npo.deployed?'deployed':'reserve'", placement)
         self.assertIn("function activeNpos(){ return state.roster.filter(n => n.battlefieldState==='deployed'", APP)
         self.assertIn("filter(id=>id!==n.id)", REINFORCEMENTS)
         deploy_branch = REINFORCEMENTS.split("continue;", 1)[1]

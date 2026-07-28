@@ -150,7 +150,7 @@ class StartingNpoGenerationTests(unittest.TestCase):
         self.assertIn("if(n)", reinforcement)
         self.assertIn("else{", reinforcement)
         placement = self.source("function confirmReinforcementPlacement", "function rollInitiative")
-        self.assertIn("npo.battlefieldState='deployed'", placement)
+        self.assertIn("npo.battlefieldState=npo.deployed?'deployed':'reserve'", placement)
         self.assertNotIn("reserveIds.add(npo.id)", placement)
 
     def test_saved_identifiers_and_legacy_states_are_normalized(self):

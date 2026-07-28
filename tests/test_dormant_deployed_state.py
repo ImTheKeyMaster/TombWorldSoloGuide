@@ -52,9 +52,12 @@ class DormantDeployedStateTests(unittest.TestCase):
     def test_reinforcement_moves_reserve_to_deployed_and_applies_threat_dormancy(self):
         reinforcement = self.source("function processReinforcementStage()", "function reinforcementTriggered")
         self.assertIn("reserveNpos().find", reinforcement)
-        self.assertIn("n.battlefieldState='deployed'", reinforcement)
-        self.assertIn("n.dormant=state.threat===0", reinforcement)
-        self.assertIn("n.ready=!n.dormant", reinforcement)
+        self.assertIn("n.battlefieldState='reserve'", reinforcement)
+        self.assertIn("n.ready=false", reinforcement)
+        confirmation = self.source("function confirmReinforcementPlacement", "function rollInitiative")
+        self.assertIn("battlefieldState=npo.deployed?'deployed':'reserve'", confirmation)
+        self.assertIn("npo.dormant=npo.deployed&&state.threat===0", confirmation)
+        self.assertIn("npo.ready=npo.deployed&&!npo.dormant", confirmation)
 
     def test_save_load_preserves_independent_states(self):
         normalize = self.source("function normalizeState(raw)", "function npoDefinition")
