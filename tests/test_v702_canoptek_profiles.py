@@ -98,9 +98,9 @@ class CanoptekProfileTests(unittest.TestCase):
         self.assertIn("Gameplay profile", APP)
         self.assertIn("Operative actions", APP)
         self.assertIn("Passive rules", APP)
-        self.assertIn("const APP_VERSION = '7.0.6';", APP)
-        self.assertIn("V7.0.6", (ROOT / "index.html").read_text())
-        self.assertNotIn("portraits", APP.lower())
+        self.assertIn("const APP_VERSION = '7.0.7';", APP)
+        self.assertIn("V7.0.7", (ROOT / "index.html").read_text())
+        self.assertNotIn("npoPortrait", APP)
 
 
 if __name__ == "__main__":

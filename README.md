@@ -1,4 +1,22 @@
-# Tomb World Solo Guide v7.0.6
+# Tomb World Solo Guide v7.0.7
+
+## v7.0.7
+
+**Version 7.0.7 - Complete v7 Validation, Documentation, and Cleanup**
+
+- Completed release validation of the seven supported Tomb World NPO types, their 21-model physical inventory, legal instance loadouts, alphabetical presentation, deployment, activation, combat, support rules, reinforcement, threat, history, and battle completion paths.
+- Verified current-save reload and import/export round trips plus deterministic legacy migration, including safe cleanup of obsolete NPO portrait and Obelisk Node Matrix fields and regeneration for unsupported retired active rosters.
+- Expanded player help for the Tomb World box roster, alphabetical lists, per-instance loadouts, text-only NPO presentation, unsupported Matrix rules, and the v7 save-migration flow.
+- Validated responsive and accessible text-based NPO displays and the offline application shell while preserving player-operative portraits, mission maps, status icons, existing gameplay balance, and player-operative behavior.
+- Removed a stale persistence-result assumption that prevented a valid saved battle from enabling and restoring **Continue Game**, with focused regression coverage.
+
+### Supported Tomb World NPO pool
+
+The Guide uses the physical NPO models in the Tomb World box: the **Canoptek Circle**, **Necron Warriors**, and **Canoptek Scarab Swarms**. The Canoptek Circle consists of the **Geomancer**, **Canoptek Tomb Crawler**, **Canoptek Macrocyte Warrior**, **Canoptek Macrocyte Accelerator**, and **Canoptek Macrocyte Reanimator**. Together with the Necron Warrior and Canoptek Scarab Swarm, these are the seven active NPO types.
+
+Rosters draw from the 21 physical models available in the box. Applicable loadouts are selected per operative instance, and user-facing NPO lists use alphabetical, natural-number ordering. NPO portraits are intentionally not displayed, and the Obelisk Node Matrix is not supported by the app.
+
+Current and older saves are handled by the v7 migration system. Known legacy aliases are normalized safely. An active battle containing an unsupported retired NPO must return to setup and regenerate its NPO roster after the player confirms the migration notice; canceling leaves the original saved data unchanged.
 
 ## v7.0.6
 

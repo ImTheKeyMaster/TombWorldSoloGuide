@@ -107,8 +107,8 @@ class V701NpoInventoryTests(unittest.TestCase):
         self.assertGreaterEqual(generation.count("state.roster=previousRoster"), 2)
 
     def test_version_and_release_notes_are_701(self):
-        self.assertIn("const APP_VERSION = '7.0.6';", APP)
-        self.assertIn("V7.0.6", (ROOT / "index.html").read_text())
+        self.assertIn("const APP_VERSION = '7.0.7';", APP)
+        self.assertIn("V7.0.7", (ROOT / "index.html").read_text())
         self.assertIn("## v7.0.4", (ROOT / "README.md").read_text())
 
 
