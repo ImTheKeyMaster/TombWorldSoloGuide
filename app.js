@@ -2,8 +2,9 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.2.0';
+  const APP_VERSION = '7.3.0';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
+  const DeadlyEncounters=TombWorldDeadlyEncounters;
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -478,7 +479,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   const initialState = () => ({
     version:APP_VERSION, saveVersion:currentSaveVersion(), screen:'home', tab:'play', setupStep:0, missionId:null,
-    setupChecks:{}, restlessTombEnabled:false, roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerRosterInitializedForTeamId:'', playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
+    setupChecks:{}, restlessTombEnabled:false, deadlyEncountersEnabled:false, deadlyEncountersState:DeadlyEncounters.emptyState(), roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerRosterInitializedForTeamId:'', playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
     strategyStage:null, strategyData:null, strategyPipeline:null, missionReadyContext:{sarcophagusControllers:0}, activationNumber:0,totalActivationsThisTP:0, playerActivated:0, npoActivated:0,
@@ -608,6 +609,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.turningPoint=boundedInteger(raw.turningPoint,0,999);
     merged.threat=boundedInteger(raw.threat,0,15);
     merged.restlessTombEnabled=raw.restlessTombEnabled===true;
+    merged.deadlyEncountersEnabled=raw.deadlyEncountersEnabled===true;
+    merged.deadlyEncountersState=DeadlyEncounters.normalizeState(raw.deadlyEncountersState);
     merged.roster=Array.isArray(raw.roster)?raw.roster.map(normalizeNpo).filter(Boolean):[];
     const usedDisplayNumbers={};
     merged.roster.forEach(npo=>{
@@ -1568,7 +1571,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
     const m=mission();
     const rules=(m.rules||[]).map(rule=>`<div class="mission-rule"><strong>${escapeHtml(rule.name||'Special Rule')}</strong>${rule.timing?`<small>${escapeHtml(rule.timing)}</small>`:''}<p>${escapeHtml(rule.summary||'')}</p></div>`).join('');
-    return `<h3>Mission Briefing</h3><div class="mission-briefing"><div class="mission-briefing-section mission-heading"><span>Mission</span><strong>${escapeHtml(m.number)} · ${escapeHtml(m.name)}</strong></div><div class="mission-briefing-section"><h4>Objective</h4><p>${escapeHtml(m.objective)}</p></div><div class="mission-briefing-section"><h4>Special Rules</h4>${rules||`<p>${escapeHtml(missionSpecial())}</p>`}</div><div class="mission-briefing-section"><h4>Optional House Rule</h4><label class="check-row restless-tomb-option"><input id="restlessTombEnabled" type="checkbox" ${state.restlessTombEnabled?'checked':''}><span><strong>Restless Tomb</strong><small>Beginning with Turning Point 2, resolve at least one Tomb World event during each Strategy Phase, regardless of Threat Grade. Turning Point 1 is unaffected, and standard event rules may require additional events at higher Threat. This optional house rule increases activity and difficulty.</small></span></label></div></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
+    return `<h3>Mission Briefing</h3><div class="mission-briefing"><div class="mission-briefing-section mission-heading"><span>Mission</span><strong>${escapeHtml(m.number)} · ${escapeHtml(m.name)}</strong></div><div class="mission-briefing-section"><h4>Objective</h4><p>${escapeHtml(m.objective)}</p></div><div class="mission-briefing-section"><h4>Special Rules</h4>${rules||`<p>${escapeHtml(missionSpecial())}</p>`}</div><div class="mission-briefing-section optional-rules"><h4>Optional Rules</h4><label class="check-row restless-tomb-option"><input id="restlessTombEnabled" type="checkbox" ${state.restlessTombEnabled?'checked':''}><span><strong>Restless Tomb</strong><span class="rule-classification">House Rule</span><small>Beginning with Turning Point 2, resolve at least one Tomb World event during each Strategy Phase, regardless of Threat Grade. Turning Point 1 is unaffected, and standard event rules may require additional events at higher Threat. This optional house rule increases activity and difficulty.</small></span></label><label class="check-row deadly-encounters-option"><input id="deadlyEncountersEnabled" type="checkbox" ${state.deadlyEncountersEnabled?'checked':''}><span><strong>Deadly Encounters: Tomb Worlds</strong><span class="rule-classification official">Official Expansion - White Dwarf 521</span><small>Reveal persistent Room and Objective Features using the official D33 tables when Player operatives explore the tomb. PvE Player actions reveal features; NPOs never reveal them, but revealed features can affect NPOs. This independent expansion increases battlefield complexity and danger.</small></span></label></div></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
   }
 
   function bindSetup(stepId){
@@ -1623,11 +1626,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }));
     $('#playerDeployed')?.addEventListener('change',e=>{state.playerDeployed=e.target.checked;save();render();});
     $('#restlessTombEnabled')?.addEventListener('change',e=>{state.restlessTombEnabled=e.target.checked;save();render();});
+    $('#deadlyEncountersEnabled')?.addEventListener('change',e=>{state.deadlyEncountersEnabled=e.target.checked;save();render();});
     $('#beginGame')?.addEventListener('click',()=>{
       state.screen='game';state.tab='play';state.turningPoint=0;state.phase='between';state.nextSide='player';state.playerCount=(state.playerRoster||[]).length;state.playerReady=state.playerCount;
       objectiveEngine?.refreshMissionContext(missionLifecycleContext());
       if(!state.playerWounds||Object.keys(state.playerWounds).length===0)initializePlayerWounds();
-      state.roster.forEach(n=>n.ready=false);log(`Mission started: ${mission().name}.`);startTurningPoint();
+      state.roster.forEach(n=>n.ready=false);log(`Mission started: ${mission().name}.`);if(state.deadlyEncountersEnabled)log('Deadly Encounters: Tomb Worlds enabled (official PvE expansion, White Dwarf 521).');startTurningPoint();
     });
   }
 
@@ -4094,7 +4098,7 @@ function showPlayerActivation(stage={}){
     app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">MISSION</p><h2>${m.number} · ${m.name}</h2><p>${m.brief}</p></div></div>
       <section class="card"><h3>Objective</h3><p>${m.objective}</p><div class="stat-grid"><div class="stat"><small>Starting NPOs</small><strong>${missionSetup(m)}</strong></div><div class="stat"><small>TP1 Initiative</small><strong>${missionFirstInitiative(m)==='npo'?'NPOs':'Player'}</strong></div><div class="stat"><small>Objective</small><strong>${escapeHtml(m.missionEngine?.progressLabel||missionTracker(m))}</strong></div></div><p><strong>NPO deployment:</strong> ${escapeHtml(m.startingNpos?.deployment||'Use the mission rules.')}</p></section>
       ${boardSvg(m.id)}
-      <section class="card"><h3>Battle settings</h3><p><strong>Restless Tomb:</strong> ${state.restlessTombEnabled?'On':'Off'}</p></section>
+      <section class="card"><h3>Battle settings</h3><p><strong>Restless Tomb:</strong> ${state.restlessTombEnabled?'On':'Off'} (House Rule)</p><p><strong>Deadly Encounters:</strong> ${state.deadlyEncountersEnabled?'On':'Off'} (Official Expansion - White Dwarf 521)</p></section>
       <section class="card"><h3>Mission rules</h3><div class="mission-rules">${rules}</div></section>
       <section class="card"><h3>Victory</h3><p><strong>Win:</strong> ${escapeHtml(m.victory?.win||'See mission rules.')}</p><p><strong>Lose:</strong> ${escapeHtml(m.victory?.lose||'See mission rules.')}</p></section>${missionProgressHtml()}`;
   }
@@ -4147,6 +4151,7 @@ function showPlayerActivation(stage={}){
   function operativeCard(n,controls){return npoRosterCard(n,controls);}
   function renderJournal(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">JOURNAL</p><h2>Battle Record</h2><p>Automatic game-state and Threat history.</p></div><button class="btn ghost" id="clearJournal">Clear</button></div><section class="card"><ol class="activity-log">${state.journal.length?state.journal.map(j=>`<li><time>${new Date(j.time).toLocaleString()}</time>${escapeHtml(j.text)}</li>`).join(''):'<li>No events recorded.</li>'}</ol></section>`;$('#clearJournal').onclick=()=>{state.journal=[];save();render();};}
   function renderHelp(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">FIELD HELP</p><h2>Instructions & quick reference</h2><p>Review the NPO decision process and common gameplay terms without changing the current game.</p></div></div>${guideInstructionsHtml(false)}<section class="card help-list">
+    <details><summary>Deadly Encounters: Tomb Worlds</summary><p>This is the official optional expansion from White Dwarf 521, February 2026. The Guide implements only its PvE solo method. Player operatives reveal persistent features; NPOs never reveal them, although revealed features can affect NPOs. Rooms and eligible markers use separate D33 tables, and every feature rule is unique across the battle. Deadly Encounters is independent from Restless Tomb. Consult the official publication for authoritative wording.</p></details>
     <details><summary>What does Player mean?</summary><p>Your solo player-controlled Kill Team operatives.</p></details>
     <details><summary>What is an NPO?</summary><p>A non-player operative controlled by the Guide’s decision tree.</p></details>
     <details><summary>What is Threat Level?</summary><p>A 0–15 alert meter that rises from loud or destructive actions. Higher Threat produces higher grades, more reinforcements, and eventually Tomb World events.</p></details>
@@ -4361,7 +4366,7 @@ function showPlayerActivation(stage={}){
 
   function missionDetailsContentFallback(){
     const selected=mission();
-    return `<div class="mission-details"><h3>${escapeHtml(selected?.name||'Selected Mission')}</h3><section><h4>Objective</h4><p>${escapeHtml(selected?.objective||'Review the mission rules and track progress on the tabletop.')}</p></section><section><h4>Battle settings</h4><p>Restless Tomb: ${state.restlessTombEnabled?'On':'Off'}</p></section><p class="muted">Automated mission progress is not available for this mission.</p></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
+    return `<div class="mission-details"><h3>${escapeHtml(selected?.name||'Selected Mission')}</h3><section><h4>Objective</h4><p>${escapeHtml(selected?.objective||'Review the mission rules and track progress on the tabletop.')}</p></section><section><h4>Battle settings</h4><p>Restless Tomb: ${state.restlessTombEnabled?'On':'Off'} (House Rule)</p><p>Deadly Encounters: ${state.deadlyEncountersEnabled?'On':'Off'} (Official Expansion - White Dwarf 521)</p></section><p class="muted">Automated mission progress is not available for this mission.</p></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
   }
 
   function missionDetailsContent(){
@@ -4369,10 +4374,10 @@ function showPlayerActivation(stage={}){
     const model=objectiveEngine.getMissionDetailsModel();
     const objective=model.objectives[0];
     const history=model.history.slice(0,objectiveDefinition.presentation.historyDisplayCount||5);
-    if(!objective)return `<div class="mission-details"><h3>${escapeHtml(model.name)}</h3><section><h4>Battle settings</h4><p>Restless Tomb: ${state.restlessTombEnabled?'On':'Off'}</p></section><section><h4>Objective</h4><p>${escapeHtml(model.objectiveSummary)}</p></section><section><h4>Recent Activity</h4>${history.length?`<ul class="mission-history">${history.map(entry=>`<li><span>${escapeHtml(missionHistoryText(entry))}</span></li>`).join('')}</ul>`:'<p class="muted mission-history-empty">No mission activity yet.</p>'}</section></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
+    if(!objective)return `<div class="mission-details"><h3>${escapeHtml(model.name)}</h3><section><h4>Battle settings</h4><p>Restless Tomb: ${state.restlessTombEnabled?'On':'Off'} (House Rule)</p><p>Deadly Encounters: ${state.deadlyEncountersEnabled?'On':'Off'} (Official Expansion - White Dwarf 521)</p></section><section><h4>Objective</h4><p>${escapeHtml(model.objectiveSummary)}</p></section><section><h4>Recent Activity</h4>${history.length?`<ul class="mission-history">${history.map(entry=>`<li><span>${escapeHtml(missionHistoryText(entry))}</span></li>`).join('')}</ul>`:'<p class="muted mission-history-empty">No mission activity yet.</p>'}</section></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
     const completedDuring=objective.completedTurningPoint?`<section><h4>Completed during</h4><p>Turning Point ${objective.completedTurningPoint}</p></section>`:'';
     const activity=history.length?`<ul class="mission-history">${history.map(entry=>`<li><span>${escapeHtml(missionHistoryText(entry))}</span>${entry.turningPoint?`<small>Turning Point ${entry.turningPoint}</small>`:''}</li>`).join('')}</ul>`:'<p class="muted mission-history-empty">No mission activity yet.</p>';
-    return `<div class="mission-details"><h3>${escapeHtml(model.name)}</h3><section><h4>Battle settings</h4><p>Restless Tomb: ${state.restlessTombEnabled?'On':'Off'}</p></section>${objective.completed?'<p class="mission-complete-status">✓ Objective Complete</p>':`<section><h4>Objective</h4><p>${escapeHtml(model.objectiveSummary)}</p></section>`}${completedDuring}<section><h4>${objective.completed?'Final Progress':'Progress'}</h4><p class="mission-progress">${objective.value} / ${objective.target}</p></section><section><h4>Recent Activity</h4>${activity}</section></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
+    return `<div class="mission-details"><h3>${escapeHtml(model.name)}</h3><section><h4>Battle settings</h4><p>Restless Tomb: ${state.restlessTombEnabled?'On':'Off'} (House Rule)</p><p>Deadly Encounters: ${state.deadlyEncountersEnabled?'On':'Off'} (Official Expansion - White Dwarf 521)</p></section>${objective.completed?'<p class="mission-complete-status">✓ Objective Complete</p>':`<section><h4>Objective</h4><p>${escapeHtml(model.objectiveSummary)}</p></section>`}${completedDuring}<section><h4>${objective.completed?'Final Progress':'Progress'}</h4><p class="mission-progress">${objective.value} / ${objective.target}</p></section><section><h4>Recent Activity</h4>${activity}</section></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
   }
 
   function showMissionDetails(){
@@ -4458,11 +4463,55 @@ function showPlayerActivation(stage={}){
   });
 
   function showToast(text){toast.textContent=text;toast.hidden=false;clearTimeout(showToast.t);showToast.t=setTimeout(()=>toast.hidden=true,6500);}
+  function deadlyFeatureNames(ids){return (ids||[]).map(id=>DeadlyEncounters.features.find(feature=>feature.id===id)?.name).filter(Boolean);}
+  function deadlyEntityList(records,emptyText){
+    const entries=Object.values(records||{});
+    if(!entries.length)return `<p class="muted">${escapeHtml(emptyText)}</p>`;
+    return `<ul class="deadly-entity-list">${entries.map(entity=>{const names=deadlyFeatureNames(entity.featureIds);return `<li><strong>${escapeHtml(entity.label)}</strong><span class="feature-status">${names.length?`Active — ${names.map(escapeHtml).join(' + ')}`:`${entity.eligible?'Eligible':'Not unexplored'} — unresolved`}</span>${names.length?`<small>Revealed in Turning Point ${entity.turningPoint||'—'}. ${escapeHtml(entity.featureIds.map(id=>DeadlyEncounters.features.find(feature=>feature.id===id)?.summary).filter(Boolean).join(' '))}</small>`:''}</li>`;}).join('')}</ul>`;
+  }
+  function deadlyOperativeOptions(){
+    const players=selectedPlayerOperatives().filter(operative=>playerCurrentWounds(operative.id)>0).map(operative=>({id:operative.id,label:`Player — ${operative.name}`}));
+    const npos=activeNpos().map(operative=>({id:operative.id,label:`NPO — ${npoName(operative)}`}));
+    return [...players,...npos];
+  }
+  function showDeadlyEncountersPanel(){
+    const de=state.deadlyEncountersState,locations=Object.entries(de.operativeLocations).filter(([,roomId])=>roomId);
+    showModal('Deadly Encounters: Tomb Worlds',`<p><strong>Status:</strong> ${state.deadlyEncountersEnabled?'On':'Off'} · <span class="rule-classification official">Official Expansion - White Dwarf 521</span></p>${state.deadlyEncountersEnabled?`<section class="deadly-section"><h3>Rooms</h3>${deadlyEntityList(de.rooms,'No rooms registered.')}</section><section class="deadly-section"><h3>Eligible markers</h3>${deadlyEntityList(de.objectives,'No markers registered.')}${Object.keys(de.objectives).length>3?'<p class="nonblocking-note">More than three markers are registered. Three is an official recommendation, not a limit.</p>':''}</section><section class="deadly-section"><h3>Operative room locations</h3>${locations.length?`<ul>${locations.map(([operativeId,roomId])=>`<li>${escapeHtml(deadlyOperativeOptions().find(item=>item.id===operativeId)?.label||operativeId)} — ${escapeHtml(de.rooms[roomId]?.label||'Outside registered rooms')}</li>`).join('')}</ul>`:'<p class="muted">No battlefield room locations recorded.</p>'}</section><section class="deadly-section"><h3>Active and pending effects</h3><p>${de.temporaryEffects.length?`${de.temporaryEffects.length} temporary effect(s) active.`:'No temporary effects.'}</p><p>${de.pendingResolution?'A mandatory resolution is pending.':'No resolution pending.'}</p></section><div class="game-menu-grid"><button class="btn primary" id="recordDeadlyEncounter">Record Deadly Encounter</button><button class="btn secondary" id="registerDeadlyRoom">Register Room</button><button class="btn secondary" id="registerDeadlyObjective">Register Marker</button><button class="btn secondary" id="updateDeadlyLocation">Update Room Location</button><button class="btn ghost" id="correctDeadlyRecord">Correct Location or Encounter</button></div>`:'<p>Deadly Encounters is disabled for this battle. No feature prompts or effects apply.</p>'}<p class="source-note">Concise play aid based on White Dwarf 521, February 2026. Consult the official publication for authoritative wording.</p><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`);
+    if(!state.deadlyEncountersEnabled)return;
+    $('#registerDeadlyRoom').onclick=showRegisterDeadlyRoom;
+    $('#registerDeadlyObjective').onclick=showRegisterDeadlyObjective;
+    $('#recordDeadlyEncounter').onclick=showRecordDeadlyEncounter;
+    $('#updateDeadlyLocation').onclick=showUpdateDeadlyLocation;
+    $('#correctDeadlyRecord').onclick=showCorrectDeadlyRecord;
+  }
+  function showRegisterDeadlyRoom(){
+    showModal('Register Unexplored Room',`<div class="field"><label for="deadlyRoomLabel">Room label</label><input id="deadlyRoomLabel" maxlength="60" placeholder="Northern Chamber"></div><div class="field"><label for="deadlyDropZone">Drop-zone classification</label><select id="deadlyDropZone"><option value="none">No drop zone</option><option value="player">Player drop zone</option><option value="npo">NPO drop zone</option><option value="both">Both drop zones</option></select></div><p class="muted">Rooms with no drop zone, an NPO drop zone, or both drop zones are unexplored. A Player-only drop-zone room is not.</p><div class="wizard-actions"><button class="btn ghost" id="backDeadlyPanel">Cancel</button><button class="btn primary" id="confirmDeadlyRoom">Register Room</button></div>`);
+    $('#backDeadlyPanel').onclick=showDeadlyEncountersPanel;$('#confirmDeadlyRoom').onclick=()=>{const label=$('#deadlyRoomLabel').value.trim();if(!label){showToast('Enter a room label.');return;}const id=`room-${Date.now().toString(36)}`;state.deadlyEncountersState=DeadlyEncounters.registerRoom(state.deadlyEncountersState,{id,label,missionId:state.missionId,dropZone:$('#deadlyDropZone').value});log(`Deadly Encounters: registered room ${label}.`);save();showDeadlyEncountersPanel();};
+  }
+  function showRegisterDeadlyObjective(){
+    showModal('Register Eligible Marker',`<div class="field"><label for="deadlyObjectiveLabel">Objective or mission marker label</label><input id="deadlyObjectiveLabel" maxlength="60" placeholder="Objective A"></div><p>Register only markers the player declares eligible. The recommendation of three markers is not a hard limit.</p><div class="wizard-actions"><button class="btn ghost" id="backDeadlyPanel">Cancel</button><button class="btn primary" id="confirmDeadlyObjective">Register Marker</button></div>`);
+    $('#backDeadlyPanel').onclick=showDeadlyEncountersPanel;$('#confirmDeadlyObjective').onclick=()=>{const label=$('#deadlyObjectiveLabel').value.trim();if(!label){showToast('Enter a marker label.');return;}const id=`marker-${Date.now().toString(36)}`;state.deadlyEncountersState=DeadlyEncounters.registerObjective(state.deadlyEncountersState,{id,label,missionId:state.missionId,eligible:true});log(`Deadly Encounters: registered eligible marker ${label}.`);save();showDeadlyEncountersPanel();};
+  }
+  function showRecordDeadlyEncounter(){
+    const de=state.deadlyEncountersState,roomOptions=Object.values(de.rooms).filter(room=>room.eligible&&!room.featureIds.length),objectiveOptions=Object.values(de.objectives).filter(marker=>marker.eligible&&!marker.featureIds.length),operatives=deadlyOperativeOptions();
+    showModal('Record Deadly Encounter',`<p>Only a Player operative can reveal a feature. Room entry interrupts movement; resolve the feature before completing affected movement.</p><div class="field"><label for="deadlyTrigger">Discovery trigger</label><select id="deadlyTrigger"><option value="opened">Opened an unexplored room</option><option value="entered">Entered an unexplored room</option><option value="contested">First contested an eligible marker</option><option value="controlled">First controlled an eligible marker</option></select></div><div class="field"><label for="deadlyEntity">Room or marker</label><select id="deadlyEntity"></select></div><div class="field"><label for="deadlyOperative">Triggering Player operative</label><select id="deadlyOperative"><option value="">Select operative</option>${operatives.filter(item=>item.label.startsWith('Player')).map(item=>`<option value="${escapeHtml(item.id)}">${escapeHtml(item.label)}</option>`).join('')}</select></div><div class="wizard-actions"><button class="btn ghost" id="backDeadlyPanel">Cancel</button><button class="btn primary" id="confirmDeadlyDiscovery">Roll official D33</button></div>`);
+    const refresh=()=>{const room=['opened','entered'].includes($('#deadlyTrigger').value),items=room?roomOptions:objectiveOptions;$('#deadlyEntity').innerHTML=items.length?items.map(item=>`<option value="${escapeHtml(item.id)}">${escapeHtml(item.label)}</option>`).join(''):'<option value="">No unresolved eligible record</option>';};refresh();$('#deadlyTrigger').onchange=refresh;$('#backDeadlyPanel').onclick=showDeadlyEncountersPanel;
+    $('#confirmDeadlyDiscovery').onclick=()=>{const triggerType=$('#deadlyTrigger').value,entityId=$('#deadlyEntity').value,operativeId=$('#deadlyOperative').value;if(!entityId||!operativeId){showToast('Select an unresolved record and Player operative.');return;}const room=['opened','entered'].includes(triggerType),actionId=`manual-${Date.now().toString(36)}`,context={missionId:state.missionId,turningPoint:state.turningPoint,activationId:`tp${state.turningPoint}-a${state.activationNumber}`,actionId,actionType:'manual-record',actingSide:'player',operativeId,triggerType,...(room?{roomId:entityId,entityType:'room',entityId}:{objectiveId:entityId,entityType:'objective',entityId})};const result=DeadlyEncounters.discover(state.deadlyEncountersState,true,context);state.deadlyEncountersState=result.state;result.attempts?.forEach(attempt=>log(`Deadly Encounters D33 ${attempt.result}: ${attempt.status}${attempt.reason?` — ${attempt.reason}`:''}`));const names=deadlyFeatureNames(result.featureIds);log(`Deadly Encounters: ${room?'room':'marker'} ${result.entity?.label||entityId} revealed ${names.join(' and ')||result.message}.`);save();showDeadlyResult(result,room,triggerType);};
+  }
+  function showDeadlyResult(result,isRoom,triggerType){
+    const names=deadlyFeatureNames(result.featureIds),features=result.featureIds.map(id=>DeadlyEncounters.features.find(feature=>feature.id===id)).filter(Boolean);
+    showModal(result.exhausted?'Official Table Exhausted':'Deadly Encounter Revealed',`<p class="d33-result" aria-label="D33 results ${result.attempts.map(attempt=>attempt.result).join(', ')}"><strong>D33:</strong> ${result.attempts.map(attempt=>`<span>${attempt.result}</span>`).join(' ')}</p>${names.length?`<h3>${names.map(escapeHtml).join(' + ')}</h3><ol class="resolution-steps">${features.map(feature=>`<li><strong>${escapeHtml(feature.automation)}</strong>: ${escapeHtml(feature.summary)}</li>`).join('')}</ol>`:`<p>${escapeHtml(result.message)}</p>`}${isRoom&&triggerType==='entered'?'<p><strong>Resume movement now</strong>, applying the revealed rule to the remaining action.</p>':''}<p class="source-note">Consult White Dwarf 521 for authoritative wording.</p><div class="wizard-actions"><button class="btn primary" id="ackDeadlyResult">Acknowledge and Continue</button></div>`);$('#ackDeadlyResult').onclick=showDeadlyEncountersPanel;
+  }
+  function showUpdateDeadlyLocation(){
+    const rooms=Object.values(state.deadlyEncountersState.rooms),operatives=deadlyOperativeOptions();showModal('Update Operative Room Location',`<div class="field"><label for="deadlyLocationOperative">Deployed living operative</label><select id="deadlyLocationOperative">${operatives.map(item=>`<option value="${escapeHtml(item.id)}">${escapeHtml(item.label)}</option>`).join('')}</select></div><div class="field"><label for="deadlyLocationRoom">Current room</label><select id="deadlyLocationRoom"><option value="">Outside registered rooms</option>${rooms.map(room=>`<option value="${escapeHtml(room.id)}">${escapeHtml(room.label)}</option>`).join('')}</select></div><p class="muted">Use after Reposition, Dash, Charge, Fall Back, teleportation, or NPO movement. Pause first if a Player operative enters an unexplored room.</p><div class="wizard-actions"><button class="btn ghost" id="backDeadlyPanel">Cancel</button><button class="btn primary" id="confirmDeadlyLocation">Save Location</button></div>`);$('#backDeadlyPanel').onclick=showDeadlyEncountersPanel;$('#confirmDeadlyLocation').onclick=()=>{const operativeId=$('#deadlyLocationOperative').value,roomId=$('#deadlyLocationRoom').value||null;if(!operativeId)return;state.deadlyEncountersState.operativeLocations[operativeId]=roomId;log(`Deadly Encounters: corrected room location for ${deadlyOperativeOptions().find(item=>item.id===operativeId)?.label||operativeId}.`);save();showDeadlyEncountersPanel();};
+  }
+  function showCorrectDeadlyRecord(){showModal('Correct Location or Encounter',`<p>Location corrections can be recorded directly. To correct a committed encounter, record a note; damage, movement, dice, and model placement are not silently reversed.</p><div class="field"><label for="deadlyCorrection">Correction note</label><textarea id="deadlyCorrection" rows="4" maxlength="300"></textarea></div><label class="check-row"><input id="confirmPhysicalCorrection" type="checkbox"><span>I understand physical tabletop effects may require manual reversal.</span></label><div class="wizard-actions"><button class="btn ghost" id="backDeadlyPanel">Cancel</button><button class="btn danger" id="confirmDeadlyCorrection">Record Correction</button></div>`);$('#backDeadlyPanel').onclick=showDeadlyEncountersPanel;$('#confirmDeadlyCorrection').onclick=()=>{const note=$('#deadlyCorrection').value.trim();if(!note||!$('#confirmPhysicalCorrection').checked){showToast('Enter a note and confirm the tabletop warning.');return;}state.deadlyEncountersState.resolutionHistory.push({type:'correction',note,time:new Date().toISOString()});log(`Deadly Encounters correction: ${note}`);save();showDeadlyEncountersPanel();};}
   function showGameMenu(){
     showModal('Game Menu',`<p>Open a reference screen without changing the guided play sequence, or begin a completely new game.</p>
       <div class="game-menu-grid">
         <button class="btn primary" data-game-view="play">Return to Guided Play</button>
         <button class="btn secondary" id="menuMissionDetails">Mission Details</button>
+        <button class="btn secondary" id="menuDeadlyEncounters">Deadly Encounters</button>
         <button class="btn secondary" data-game-view="mission">Mission & Map</button>
         <button class="btn secondary" data-game-view="roster">NPO Roster</button>
         <button class="btn secondary" data-game-view="player-roster">Player Roster</button>
@@ -4481,6 +4530,7 @@ function showPlayerActivation(stage={}){
       render();
     });
     $('#menuMissionDetails').onclick=showMissionDetails;
+    $('#menuDeadlyEncounters').onclick=showDeadlyEncountersPanel;
     $('#menuExportSave').onclick=exportSave;
     $('#menuImportSave').onclick=()=>importInput.click();
     $('#menuNewGame').onclick=confirmNewGame;

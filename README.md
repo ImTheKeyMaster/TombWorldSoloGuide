@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v7.2.0
+# Tomb World Solo Guide v7.3.0
+
+## v7.3.0
+
+**Version 7.3.0 - Add Deadly Encounters: Tomb Worlds**
+
+- Added Deadly Encounters: Tomb Worlds as an optional official PvE solo expansion from White Dwarf 521, independent from Restless Tomb.
+- Added complete Room and Objective D33 tables, battle-wide feature uniqueness, and Unusual multi-feature resolution.
+- Added persistent manual room, eligible-marker, carrier-ready state, operative-location, roll, effect, pending-resolution, and correction tracking.
+- Added save, reload, import, and export support while preserving the Restless Tomb event calculation and existing mission behavior.
+- Added concise, copyright-conscious feature guidance; consult White Dwarf 521, February 2026 for authoritative wording.
 
 ## v7.2.0
 
