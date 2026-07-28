@@ -59,7 +59,7 @@ class RemediationPr2Tests(unittest.TestCase):
             "Canoptek Macrocyte Warrior": (7, 2, 4, 7, 28),
         }
         for operative, (move, apl, save, wounds, base_size) in expected.items():
-            pattern = rf"name:'{re.escape(operative)}',type:'{re.escape(operative)}',faction:'[^']+',physicalQuantity:\d+(?:,|,\n      loadoutOptions:\[[^\n]+\],\n      )move:{move},apl:{apl},save:{save},wounds:{wounds},baseSize:{base_size}"
+            pattern = rf"id:'[^']+',name:'{re.escape(operative)}',type:'{re.escape(operative)}',faction:'[^']+',physicalQuantity:\d+(?:,|,\n      loadoutOptions:\[[^\n]+\],\n      )move:{move},apl:{apl},save:{save},wounds:{wounds},baseSize:{base_size}"
             self.assertRegex(self.app, pattern)
         self.assertEqual(self.app.count("const npoDefinitions = {"), 1)
 

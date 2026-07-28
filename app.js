@@ -278,7 +278,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   // these canonical profiles and delegate externally defined Core mechanics to tabletop play.
   const npoDefinitions = {
     'Canoptek Scarab Swarm': {
-      name:'Canoptek Scarab Swarm',type:'Canoptek Scarab Swarm',faction:'Necron Host',physicalQuantity:3,move:6,apl:2,save:5,wounds:10,baseSize:40,
+      id:'canoptek-scarab-swarm',name:'Canoptek Scarab Swarm',type:'Canoptek Scarab Swarm',faction:'Necron Host',physicalQuantity:3,move:6,apl:2,save:5,wounds:10,baseSize:40,
       compatibilityBehavior:'Brawler',compatibilityAttack:{dice:5,hit:4,normal:2,crit:3},defaultWeaponId:'feeder-mandibles',
       rangedWeapons:[],
       meleeWeapons:[{id:'feeder-mandibles',name:'Feeder mandibles',type:'melee',attacks:5,hit:4,damage:{normal:1,critical:2},rules:[]}],
@@ -286,7 +286,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       behavior:{summary:'Move towards the enemy to fight them, seeking cover on the way.',actions:['Fight','Charge the closest player operative via the shortest possible route','Reposition towards the closest player operative, to cover if possible','Dash towards the closest player operative, to cover if possible'],operatesHatches:true}
     },
     'Necron Warrior': {
-      name:'Necron Warrior',type:'Necron Warrior',faction:'Necron Host',physicalQuantity:10,move:5,apl:2,save:4,wounds:9,baseSize:32,
+      id:'necron-warrior',name:'Necron Warrior',type:'Necron Warrior',faction:'Necron Host',physicalQuantity:10,move:5,apl:2,save:4,wounds:9,baseSize:32,
       compatibilityBehavior:'Marksman',compatibilityAttack:{dice:4,hit:4,normal:3,crit:4},defaultWeaponId:'gauss-flayer',
       rangedWeapons:[
         {id:'gauss-flayer',name:'Gauss flayer',type:'ranged',attacks:4,hit:4,damage:{normal:3,critical:4},rules:['Piercing 1']},
@@ -297,7 +297,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       behavior:{summary:'Move to an ideal position to shoot the enemy, but fight if unable to do anything else.',actions:['Fall Back','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission','Fight'],operatesHatches:true}
     },
     'Canoptek Tomb Crawler': {
-      name:'Canoptek Tomb Crawler',type:'Canoptek Tomb Crawler',faction:'Canoptek Circle',physicalQuantity:2,
+      id:'canoptek-tomb-crawler',name:'Canoptek Tomb Crawler',type:'Canoptek Tomb Crawler',faction:'Canoptek Circle',physicalQuantity:2,
       loadoutOptions:[{id:'twin-gauss-reapers',name:'Twin gauss reapers'},{id:'transdimensional-isolator',name:'Transdimensional isolator'}],
       move:5,apl:2,save:3,wounds:21,baseSize:50,
       compatibilityBehavior:'Guardian',compatibilityAttack:{dice:4,hit:3,normal:4,crit:5},defaultWeaponId:'twin-gauss-reapers',
@@ -317,12 +317,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use the sweeping twin gauss reapers profile when it would target more than one player operative.'}
     },
     'Geomancer': {
-      name:'Geomancer',type:'Geomancer',faction:'Canoptek Circle',physicalQuantity:1,
+      id:'geomancer',name:'Geomancer',type:'Geomancer',faction:'Canoptek Circle',physicalQuantity:1,
       move:null,apl:null,save:null,wounds:null,baseSize:null,compatibilityBehavior:'',compatibilityAttack:{},defaultWeaponId:null,
       rangedWeapons:[],meleeWeapons:[],abilities:[]
     },
     'Canoptek Macrocyte Warrior': {
-      name:'Canoptek Macrocyte Warrior',type:'Canoptek Macrocyte Warrior',faction:'Canoptek Circle',physicalQuantity:3,
+      id:'canoptek-macrocyte-warrior',name:'Canoptek Macrocyte Warrior',type:'Canoptek Macrocyte Warrior',faction:'Canoptek Circle',physicalQuantity:3,
       loadoutOptions:[{id:'gauss-scalpel',name:'Gauss scalpel'},{id:'tesla-caster',name:'Tesla caster'}],
       move:7,apl:2,save:4,wounds:7,baseSize:28,
       compatibilityBehavior:'Sentinel',compatibilityAttack:{dice:4,hit:3,normal:3,crit:4},defaultWeaponId:'gauss-scalpel',
@@ -338,12 +338,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use the living lightning tesla caster profile when it would target more than one player operative and no NPOs.'}
     },
     'Canoptek Macrocyte Accelerator': {
-      name:'Canoptek Macrocyte Accelerator',type:'Canoptek Macrocyte Accelerator',faction:'Canoptek Circle',physicalQuantity:1,
+      id:'canoptek-macrocyte-accelerator',name:'Canoptek Macrocyte Accelerator',type:'Canoptek Macrocyte Accelerator',faction:'Canoptek Circle',physicalQuantity:1,
       move:null,apl:null,save:null,wounds:null,baseSize:null,compatibilityBehavior:'',compatibilityAttack:{},defaultWeaponId:null,
       rangedWeapons:[],meleeWeapons:[],abilities:[]
     },
     'Canoptek Macrocyte Reanimator': {
-      name:'Canoptek Macrocyte Reanimator',type:'Canoptek Macrocyte Reanimator',faction:'Canoptek Circle',physicalQuantity:1,
+      id:'canoptek-macrocyte-reanimator',name:'Canoptek Macrocyte Reanimator',type:'Canoptek Macrocyte Reanimator',faction:'Canoptek Circle',physicalQuantity:1,
       move:null,apl:null,save:null,wounds:null,baseSize:null,compatibilityBehavior:'',compatibilityAttack:{},defaultWeaponId:null,
       rangedWeapons:[],meleeWeapons:[],abilities:[]
     }
@@ -3676,11 +3676,15 @@ function showPlayerActivation(stage={}){
     $$('[data-player-heal]').forEach(button=>button.onclick=()=>adjustPlayerWounds(button.dataset.playerHeal,1));
   }
   function npoRosterCard(n,controls){
-    const status=n.battlefieldState==='reserve'?'RESERVE':n.wounds<=0?'ELIMINATED':n.dormant?'DORMANT':n.ready?'READY':'ACTIVATED';
-    return `<article class="player-roster-card npo-roster-card ${n.wounds<=0?'dead':''}">
-      <div class="operative-card-header"><div class="operative-identity"><strong>${escapeHtml(npoName(n))}</strong><small>${escapeHtml(n.type)}</small></div><span class="operative-status-badge ${status.toLowerCase()}">${status}</span></div>
-      <div class="operative-stat-line"><span><small>ATTACK</small><b>${n.attack?.dice??'—'}</b></span><span><small>HIT</small><b>${n.attack?.hit??'—'}+</b></span><span><small>SAVE</small><b>${n.save}+</b></span><span><small>WOUNDS</small><b class="${n.wounds===0?'zero-wounds':''}">${n.wounds}/${n.maxWounds}</b></span></div>
-      ${controls?`<div class="wound-controls"><button class="btn ghost" data-wound="${n.id}" ${n.wounds<=0?'disabled':''}>− Wound</button><button class="btn ghost" data-heal="${n.id}" ${n.wounds>=n.maxWounds?'disabled':''}>+ Heal</button></div>`:''}<div class="quick-actions"><button class="btn danger" data-delete="${n.id}">Remove NPO</button></div>
+    const hasProfile=Number.isFinite(n.maxWounds)&&n.maxWounds>0;
+    const eliminated=hasProfile&&n.wounds<=0;
+    const status=n.battlefieldState==='reserve'?'RESERVE':!hasProfile?'PROFILE PENDING':eliminated?'ELIMINATED':n.dormant?'DORMANT':n.ready?'READY':'ACTIVATED';
+    const save=Number.isFinite(n.save)?`${n.save}+`:'—';
+    const wounds=hasProfile?`${n.wounds}/${n.maxWounds}`:'—';
+    return `<article class="player-roster-card npo-roster-card ${eliminated?'dead':''}">
+      <div class="operative-card-header"><div class="operative-identity"><strong>${escapeHtml(npoName(n))}</strong><small>${escapeHtml(n.type)}</small></div><span class="operative-status-badge ${status.toLowerCase().replace(' ','-')}">${status}</span></div>
+      <div class="operative-stat-line"><span><small>ATTACK</small><b>${n.attack?.dice||'—'}</b></span><span><small>HIT</small><b>${n.attack?.hit?`${n.attack.hit}+`:'—'}</b></span><span><small>SAVE</small><b>${save}</b></span><span><small>WOUNDS</small><b class="${eliminated?'zero-wounds':''}">${wounds}</b></span></div>
+      ${controls?`<div class="wound-controls"><button class="btn ghost" data-wound="${n.id}" ${!hasProfile||n.wounds<=0?'disabled':''}>− Wound</button><button class="btn ghost" data-heal="${n.id}" ${!hasProfile||n.wounds>=n.maxWounds?'disabled':''}>+ Heal</button></div>`:''}<div class="quick-actions"><button class="btn danger" data-delete="${n.id}">Remove NPO</button></div>
     </article>`;
   }
   function operativeCard(n,controls){return npoRosterCard(n,controls);}
