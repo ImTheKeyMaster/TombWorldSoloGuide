@@ -2091,9 +2091,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       activeNpos().filter(npo=>npo.wounds<npo.maxWounds).forEach(npo=>{
         const amount=rollD3()+2,before=npo.wounds;
         npo.wounds=Math.min(npo.maxWounds,npo.wounds+amount);
-        restored.push(`${npoName(npo)} ${before}→${npo.wounds}`);
+        restored.push({npo,result:`${npoName(npo)} ${before}→${npo.wounds}`});
       });
-      completeCurrentEvent(restored.length?restored.join('; '):'No wounded NPOs.');
+      const summary=sortedNposForDisplay(restored.map(entry=>entry.npo))
+        .map(npo=>restored.find(entry=>entry.npo===npo).result)
+        .join('; ');
+      completeCurrentEvent(summary||'No wounded NPOs.');
       return;
     }
     if(type==='stirrings'){

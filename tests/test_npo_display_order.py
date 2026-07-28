@@ -39,7 +39,7 @@ class NpoDisplayOrderTests(unittest.TestCase):
         add_npo = self.source("function showAddNpo", "function changeNpoLoadout")
         activation = self.source("function showNpoSelection", "function remainingPlayerOperatives")
         targets = self.source("function showPendingPlayerAttackWizard", "function bindPlayerAttackWizard")
-        event = self.source("function strategyEventHtml", "function activationTrackerHtml")
+        event = self.source("function strategyEventHtml", "function activationTracker()")
         self.assertIn("types=sortedNposForDisplay(Object.keys(npoDefinitions))", add_npo)
         self.assertIn('Select matching NPO</option>${options}', activation)
         self.assertIn("sortedNposForDisplay(candidates).map", activation)
@@ -48,10 +48,17 @@ class NpoDisplayOrderTests(unittest.TestCase):
         self.assertIn('Select a Scarab Swarm...</option>${sortedNposForDisplay', event)
 
     def test_reinforcement_lists_and_controls_share_sorted_copy(self):
-        strategy = self.source("function nextStepCard", "function activeEventEffectsHtml")
+        strategy = self.source("function strategyCard", "function strategyEventHtml")
         self.assertIn("deployingNpos=sortedNposForDisplay", strategy)
         self.assertIn("blockedNpos=sortedNposForDisplay", strategy)
         self.assertIn("const placements=deployingNpos.map", strategy)
+
+    def test_event_inline_summary_sorts_after_gameplay_results_are_applied(self):
+        event = self.source("function beginCurrentEvent", "function completeCurrentEvent")
+        mutation = event.index("npo.wounds=Math.min")
+        display_sort = event.index("sortedNposForDisplay(restored.map")
+        self.assertLess(mutation, display_sort)
+        self.assertIn("restored.push({npo,result:", event)
 
     def test_gameplay_selection_still_uses_canonical_candidate_order(self):
         activation = self.source("function showNpoSelection", "function remainingPlayerOperatives")
