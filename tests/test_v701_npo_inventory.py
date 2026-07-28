@@ -92,14 +92,11 @@ class V701NpoInventoryTests(unittest.TestCase):
         self.assertIn("physicalQuantity<=1", name)
         self.assertIn("n.displayNumber", name)
 
-    def test_setup_regeneration_has_confirmation_and_clean_generation(self):
-        self.assertIn("Regenerate NPO Roster?", APP)
-        regeneration = self.source("function regenerateNpoRoster", "function render()")
-        self.assertIn("previousGeneration", regeneration)
-        self.assertNotIn("startingNpoRoll()", regeneration)
-        self.assertIn("deployedNpoIds:[],reserveNpoIds:[]", regeneration)
-        self.assertIn("check.id==='starting-npos'", regeneration)
-        self.assertNotIn("state.setupChecks={}", regeneration)
+    def test_deployment_does_not_offer_roster_regeneration(self):
+        deployment = self.source("if(stepId==='deploy'){", "const m=mission();")
+        self.assertNotIn("Regenerate NPO Roster", deployment)
+        self.assertNotIn("regenerateNpoRoster", deployment)
+        self.assertNotIn("confirmRegenerateNpoRoster", APP)
 
     def test_failed_generation_restores_the_previous_roster(self):
         generation = self.source("function generateRoster", "function ensureStartingNpoGeneration")
@@ -107,8 +104,8 @@ class V701NpoInventoryTests(unittest.TestCase):
         self.assertGreaterEqual(generation.count("state.roster=previousRoster"), 2)
 
     def test_version_and_release_notes_are_701(self):
-        self.assertIn("const APP_VERSION = '7.0.7';", APP)
-        self.assertIn("V7.0.7", (ROOT / "index.html").read_text())
+        self.assertIn("const APP_VERSION = '7.1.0';", APP)
+        self.assertIn("V7.1.0", (ROOT / "index.html").read_text())
         self.assertIn("## v7.0.4", (ROOT / "README.md").read_text())
 
 

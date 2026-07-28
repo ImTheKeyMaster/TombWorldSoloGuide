@@ -38,13 +38,13 @@ class NpoRosterReadOnlyActivationTests(unittest.TestCase):
         self.assertIn("controls?", wound_controls)
         self.assertNotIn("controls?", removal_control)
 
-    def test_removal_action_is_anchored_without_placeholder_controls(self):
+    def test_wound_actions_are_anchored_after_removal_without_placeholders(self):
         self.assertIn(
             ".npo-roster-card{position:relative;display:flex;flex-direction:column;overflow:hidden;cursor:default}",
             self.styles,
         )
         self.assertIn(
-            ".npo-roster-card .quick-actions{margin-top:auto;padding-top:10px}",
+            ".npo-roster-card .wound-controls{margin-top:auto;padding-top:14px}",
             self.styles,
         )
 

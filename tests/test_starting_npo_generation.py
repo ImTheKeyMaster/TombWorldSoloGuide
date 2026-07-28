@@ -67,7 +67,7 @@ class StartingNpoGenerationTests(unittest.TestCase):
         self.assertIn("hasStartingNpos=generation.deployedNpoIds.length>0", presentation)
         self.assertIn("hasStartingNpos&&deploymentCheck", presentation)
         self.assertIn("hasStartingNpos?placementChecks:otherPlacementChecks", presentation)
-        self.assertIn('id="regenerateNpoRoster"', presentation)
+        self.assertNotIn('id="regenerateNpoRoster"', presentation)
         self.assertIn('id="checkAllDeployment"', presentation)
         for mission_file in (
             "01-shifting-labyrinth.json", "02-demolition-protocol.json",

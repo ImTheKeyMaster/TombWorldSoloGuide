@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v7.0.7
+# Tomb World Solo Guide v7.1.0
+
+## v7.1.0
+
+**Version 7.1.0 - Mission Selection Responsiveness and Deployment UI**
+
+- Mission choices now show their selected state immediately, before dependent mission automation finishes loading, and stale loads cannot replace a newer selection.
+- Simplified Deploy Kill Teams by removing deployment-screen NPO roster editing and regeneration while preserving the generated roster and deployment flow.
+- Corrected the compact deployed-NPO list to place one delimiter only between alphabetically sorted operative names.
+- Bottom-aligned the wound and heal controls across NPO roster cards using the existing responsive flex layout.
 
 ## v7.0.7
 
