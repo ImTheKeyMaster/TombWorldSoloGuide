@@ -94,7 +94,7 @@ class ObeliskMatrixRemovalTests(unittest.TestCase):
 
     def test_new_saves_do_not_write_injected_matrix_fields(self):
         state = {
-            "version": "7.2.0", "matrixActive": True,
+            "version": "7.3.0", "matrixActive": True,
             "roster": [{"id": "warrior-1", "type": "Canoptek Macrocyte Warrior", "wounds": 7, "insideMatrix": True}],
             "npoRuleState": {"aplModifiers": [{"ruleId": "matrix-accurate", "amount": 1}]},
         }
@@ -105,12 +105,12 @@ class ObeliskMatrixRemovalTests(unittest.TestCase):
         self.assertEqual(result["npoRuleState"]["aplModifiers"], [])
 
     def test_release_and_offline_assets_are_synchronized(self):
-        self.assertIn("const APP_VERSION = '7.2.0';", APP)
-        self.assertIn("const APP_VERSION = '7.2.0';", WORKER)
-        self.assertIn("V7.2.0", INDEX)
+        self.assertIn("const APP_VERSION = '7.3.0';", APP)
+        self.assertIn("const APP_VERSION = '7.3.0';", WORKER)
+        self.assertIn("V7.3.0", INDEX)
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
         for asset in ("app.js", "mission-engine.js", "persistence.js", "styles.css"):
-            self.assertIn(f"{asset}?v=7.2.0", INDEX)
+            self.assertIn(f"{asset}?v=7.3.0", INDEX)
         self.assertNotRegex(WORKER, r"(?i)(?:obelisk|matrix)[^\n]*(?:png|svg|jpe?g|webp)")
 
     def test_ordering_portrait_and_unrelated_behavior_regressions(self):
