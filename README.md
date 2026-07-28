@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v7.1.2
+# Tomb World Solo Guide v7.2.0
+
+## v7.2.0
+
+**Version 7.2.0 - Add Optional Restless Tomb Events**
+
+- Added the optional Restless Tomb house rule to Mission Briefing for all six missions.
+- Beginning with Turning Point 2, the option guarantees a minimum of one Tomb World event during each Strategy Phase; standard event rules still control higher event counts.
+- Restless Tomb defaults to off and persists with the current battle through save, reload, export, and import.
 
 ## v7.1.2
 

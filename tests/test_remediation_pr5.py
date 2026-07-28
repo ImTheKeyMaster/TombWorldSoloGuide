@@ -25,10 +25,12 @@ class RemediationPr5Tests(unittest.TestCase):
             self.assertIn(f"title:'{title}'", self.app)
 
     def test_official_draw_timing_and_count(self):
-        source = self.function_source('processEventStage', 'eventRecord')
-        self.assertIn('state.turningPoint>1&&d.grade===3', source)
-        self.assertIn("d.suggestedInitiative==='npo'||state.threat===15?2:1", source)
-        self.assertNotIn('&&state.threat===15?3', source)
+        source = self.function_source('normalStrategyEventCount', 'strategyEventCount')
+        self.assertIn('turningPoint<=1||grade!==3', source)
+        self.assertIn("suggestedInitiative==='npo'||threat===15?2:1", source)
+        effective = self.function_source('strategyEventCount', 'threatLabel')
+        self.assertIn('Math.max(normalCount,1)', effective)
+        self.assertNotIn('normalCount+1', effective)
 
     def test_draws_without_replacement_and_recycles_in_ready(self):
         draw = self.function_source('drawEvent', 'currentEvent')
@@ -40,6 +42,7 @@ class RemediationPr5Tests(unittest.TestCase):
     def test_redraw_is_resolved_before_later_pre_drawn_cards(self):
         redraw = self.function_source('redrawCurrentEvent', 'processReinforcementStage')
         self.assertIn('drawEvent(state.strategyData.eventIndex+1)', redraw)
+        self.assertIn('replacement.requiredBy=event.requiredBy', redraw)
         draw = self.function_source('drawEvent', 'currentEvent')
         self.assertIn('state.strategyData.events.splice(insertAt,0,event)', draw)
 
