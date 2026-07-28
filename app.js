@@ -2,8 +2,8 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.0.5';
-  const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
+  const APP_VERSION = '7.0.6';
+  const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -483,9 +483,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[]}, gameEnd:null
   });
 
-  const loadedState = load();
+  const loadedSave = load();
+  const pendingStoredMigration=loadedSave?.report?.requiresRegeneration?loadedSave:null;
+  const loadedState=pendingStoredMigration?null:loadedSave?.state;
   let state = normalizeState(loadedState || initialState());
-  if(loadedState?.version==='5.6.0'&&state.version===APP_VERSION)save();
   let lastRenderedStepKey = null;
   let startingNpoTimer = null;
   let threatAdjustOpen = false;
@@ -574,7 +575,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const saved=localStorage.getItem(STORAGE_KEY);
       if(!saved)return null;
       const parsed=JSON.parse(saved);
-      return migrateSave(parsed);
+      return migrateSaveDetailed(parsed,npoDefinitions);
     }catch(error){
       console.warn('[Persistence] Saved game could not be loaded; the original save was left unchanged.',error);
       return null;
@@ -590,7 +591,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
   function normalizeState(raw){
     raw=isRecord(raw)?raw:{};
-    if(raw.version===APP_VERSION&&Array.isArray(raw.roster)){
+    if(Array.isArray(raw.roster)){
       const validation=validateNpoRoster(raw.roster);
       if(!validation.valid)throw new Error(`Saved NPO roster is invalid: ${validation.errors.join(' ')}`);
     }
@@ -657,8 +658,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.playerOperativeStates=Object.fromEntries(merged.playerRoster.map(id=>{
       const imported=isRecord(importedPlayerStates[id])?importedPlayerStates[id]:null;
       return [id,imported?.inPlay===false
-        ? {inPlay:false,...(typeof imported.offBoardReason==='string'&&imported.offBoardReason?{offBoardReason:imported.offBoardReason}:{})}
-        : {inPlay:true}];
+        ? {...imported,inPlay:false,...(typeof imported.offBoardReason==='string'&&imported.offBoardReason?{offBoardReason:imported.offBoardReason}:{})}
+        : {...(imported||{}),inPlay:true}];
     }));
     merged.setupChecks=raw?.setupChecks&&!Array.isArray(raw.setupChecks)&&typeof raw.setupChecks==='object'?{...raw.setupChecks}:{};
     const importedRuleState=isRecord(raw?.npoRuleState)?raw.npoRuleState:{};
@@ -748,7 +749,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       merged.strategyStage=null;
       merged.nextSide=resolvedSide;
     }
-    if(raw.version===APP_VERSION){
+    if(Array.isArray(raw.roster)){
       const validation=validateNpoRoster(merged.roster);
       if(!validation.valid)throw new Error(`Saved NPO roster is invalid: ${validation.errors.join(' ')}`);
     }
@@ -838,15 +839,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       name:profile?.weaponName===profile?.name?profile?.name:`${profile?.weaponName}: ${profile?.name}`
     };
   }
-  function legacyNpoType(npo){
-    if(npoDefinitions[npo?.type])return npo.type;
-    // TODO(v7 legacy-save migration): remove this temporary retired-type alias.
-    if(npo?.type==='Canoptek Macrocyte')return 'Canoptek Macrocyte Warrior';
-    return Object.keys(npoDefinitions).find(type=>String(npo?.name||'').startsWith(type))||npo?.type;
-  }
   function normalizeNpo(npo){
     if(!isRecord(npo))return null;
-    const type=legacyNpoType(npo),definition=npoDefinition(type);
+    const type=npo.type,definition=npoDefinition(type);
     if(!definition)return null;
     const weaponId=npoWeapon(definition,npo.weaponId)?.id||definition.defaultWeaponId;
     const battlefieldState=Number(npo.wounds)<=0
@@ -4460,7 +4455,41 @@ function showPlayerActivation(stage={}){
 
   function confirmNewGame(){showModal('Start New Game?',`<p>This will replace the current mission, roster, Threat, Turning Point, and Journal.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmNewGame">Start New Game</button></div>`);$('#confirmNewGame').onclick=()=>{localStorage.removeItem(STORAGE_KEY);state=initialState();state.screen='setup';objectiveEngine=null;objectiveDefinition=null;missionActivationStarts.clear();expandedRosterCategories=null;closeModal();save();render();};}
   function exportSave(){if(objectiveEngine)state.missionRuntime=objectiveEngine.getMissionRuntime();const blob=new Blob([JSON.stringify(createPersistedSave(state),null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tomb-world-solo-guide-save.json';a.click();URL.revokeObjectURL(a.href);}
-  importInput.addEventListener('change',async()=>{const f=importInput.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());state=normalizeState(migrateSave(data));state.screen='game';const missionRecovered=recoverInvalidMission();await loadObjectiveMission();save();render();if(!missionRecovered)showToast('Save imported.');}catch(error){console.warn('[Persistence] Imported save could not be migrated; browser progress was left unchanged.',error);showToast('That file is not a valid Tomb World Solo Guide save.');}finally{importInput.value='';}});
+  function migrationDetails(report){
+    const details=[];
+    if(report.aliasesApplied.length)details.push(`${report.aliasesApplied.length} legacy NPO ${report.aliasesApplied.length===1?'name was':'names were'} updated.`);
+    if(report.loadoutsNormalized.length)details.push(`${report.loadoutsNormalized.length} missing or legacy ${report.loadoutsNormalized.length===1?'loadout was':'loadouts were'} assigned a supported value.`);
+    if(report.woundsClamped.length)details.push(`${report.woundsClamped.length} invalid wound ${report.woundsClamped.length===1?'value was':'values were'} corrected.`);
+    if(report.pendingStateCleared.length)details.push('An unresolved action was returned to a stable game screen; committed wounds and effects were preserved.');
+    return details.map(detail=>`<li>${escapeHtml(detail)}</li>`).join('');
+  }
+  function showMigrationNotice(report){
+    showModal('NPO roster updated for v7',`<p>This save was updated to the current Tomb World NPO system. Known legacy names and loadouts were normalized, and obsolete NPO portrait and Obelisk Node Matrix fields were removed where present.</p>${migrationDetails(report)?`<ul>${migrationDetails(report)}</ul>`:''}<p>The game can continue.</p><div class="wizard-actions"><button class="btn primary" data-close>Continue</button></div>`);
+  }
+  async function commitImported(candidate,report){
+    const previous=state;
+    try{state=normalizeState(candidate);state.screen=report.requiresRegeneration?'setup':'game';await loadObjectiveMission();if(!save())throw new Error('Browser storage rejected the migrated save.');render();return true;}
+    catch(error){state=previous;await loadObjectiveMission();console.warn('[Persistence] Migrated import was not committed.',error);showToast('The imported save could not be committed; the current game is unchanged.');return false;}
+  }
+  function showRegenerationNotice(migration,source){
+    const causes=[...migration.report.unsupportedRetiredTypes,...migration.report.invalidPhysicalLimits,...migration.report.errors];
+    showModal('Current battle cannot be resumed',`<p>The current battle uses retired or invalid NPO data and cannot be resumed safely.</p>${causes.length?`<p><strong>Cause:</strong> ${causes.map(escapeHtml).join('; ')}</p>`:''}<p>The battle will return to setup and a new legal NPO roster must be generated. The selected mission, player team and roster choices, completed battle history, settings, and preferences will be preserved where possible.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmLegacyReset">Return to Setup</button></div>`);
+    $('#confirmLegacyReset').onclick=async()=>{
+      const reset=resetActiveBattle(migration.state);closeModal();
+      if(await commitImported(reset,{...migration.report,requiresRegeneration:true}))showToast(source==='import'?'Save imported and returned to setup.':'Legacy battle returned to setup.');
+    };
+  }
+  importInput.addEventListener('change',async()=>{
+    const f=importInput.files?.[0];if(!f)return;
+    try{
+      const data=JSON.parse(await f.text()),migration=migrateSaveDetailed(data,npoDefinitions);
+      if(migration.report.requiresRegeneration){showRegenerationNotice(migration,'import');return;}
+      if(await commitImported(migration.state,migration.report)){
+        if(migration.report.outcome==='migrated')showMigrationNotice(migration.report);else showToast('Save imported.');
+      }
+    }catch(error){console.warn('[Persistence] Imported save could not be migrated; browser progress was left unchanged.',error);showToast(error.message?.includes('newer than supported')?'That save was created by a newer unsupported version.':'That file is not a valid Tomb World Solo Guide save.');}
+    finally{importInput.value='';}
+  });
 
   function bindCommon(){
     const versionBadge=$('.version');
@@ -4485,6 +4514,10 @@ function showPlayerActivation(stage={}){
       }
       state.missionState=normalizeMissionState(state.missionState,missionDefinition(state.missionId),state.tracker);
       render();
+      if(pendingStoredMigration)showRegenerationNotice(pendingStoredMigration,'storage');
+      else if(loadedSave?.report?.outcome==='migrated'){
+        if(save())showMigrationNotice(loadedSave.report);
+      }
     })
     .catch(error=>{
       console.error(error);

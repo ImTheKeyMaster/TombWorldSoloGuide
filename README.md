@@ -1,4 +1,15 @@
-# Tomb World Solo Guide v7.0.5
+# Tomb World Solo Guide v7.0.6
+
+## v7.0.6
+
+**Version 7.0.6 - Legacy Save and Retired NPO Migration**
+
+- Added one deterministic, idempotent migration pipeline for browser saves and imported files, including canonical supported NPO identities, stable instance IDs, loadouts, wounds, and current profiles.
+- Detects unsupported or over-allocated active NPO rosters and requires an explicit, cancelable return to setup instead of trimming or silently substituting models.
+- Removes obsolete NPO portrait and Obelisk Node Matrix fields while preserving player data, settings, mission and roster selections, and completed historical records.
+- Validates migrated active allocations against the authoritative v7 catalog and preserves alphabetical NPO presentation.
+
+---
 
 ## v7.0.5
 
