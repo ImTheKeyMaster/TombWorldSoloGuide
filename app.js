@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.1.0';
+  const APP_VERSION = '7.1.1';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -4104,7 +4104,7 @@ function showPlayerActivation(stage={}){
     return `<article class="player-roster-card npo-roster-card ${eliminated?'dead':''}">
       <div class="operative-card-header"><div class="operative-identity"><strong>${escapeHtml(npoName(n))}</strong><small>${escapeHtml(n.type)}</small></div><span class="operative-status-badge ${status.toLowerCase().replace(' ','-')}">${status}</span></div>
       <div class="operative-stat-line"><span><small>APL</small><b>${effectiveApl(n.id,n.apl)||'—'}</b></span><span><small>MOVE</small><b>${Number.isFinite(n.move)?`${n.move}&quot;`:'—'}</b></span><span><small>SAVE</small><b>${save}</b></span><span><small>WOUNDS</small><b class="${eliminated?'zero-wounds':''}">${wounds}</b></span></div>
-      ${loadout}${npoProfileDetailsHtml(n,definition)}<div class="quick-actions"><button class="btn danger" data-delete="${n.id}" ${state.turningPoint>0?'disabled':''}>Remove NPO</button></div>${controls?`<div class="wound-controls"><button class="btn ghost" data-wound="${n.id}" ${!hasProfile||n.wounds<=0?'disabled':''}>− Wound</button><button class="btn ghost" data-heal="${n.id}" ${!hasProfile||n.wounds>=n.maxWounds?'disabled':''}>+ Heal</button></div>`:''}
+      ${loadout}${npoProfileDetailsHtml(n,definition)}<div class="npo-card-actions">${controls?`<div class="wound-controls"><button class="btn ghost" data-wound="${n.id}" ${!hasProfile||n.wounds<=0?'disabled':''}>− Wound</button><button class="btn ghost" data-heal="${n.id}" ${!hasProfile||n.wounds>=n.maxWounds?'disabled':''}>+ Heal</button></div>`:''}<div class="quick-actions"><button class="btn danger" data-delete="${n.id}" ${state.turningPoint>0?'disabled':''}>Remove NPO</button></div></div>
     </article>`;
   }
   function operativeCard(n,controls){return npoRosterCard(n,controls);}
