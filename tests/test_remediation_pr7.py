@@ -36,7 +36,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertIn('criticalSuccesses', recorded)
         self.assertIn('critRemaining:', recorded)
         self.assertIn('normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical', self.app)
-        for rule in ('Piercing 1', 'Punishing', 'Torrent 1"', 'Brutal', 'Blast 2"'):
+        for rule in ('Piercing 1', 'Severe', 'Torrent 1"', 'Shock', 'Blast 2"'):
             self.assertIn(rule, self.app)
 
     def test_player_shooting_uses_shared_automatic_combat(self):
@@ -53,7 +53,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
     def test_pack_defined_combat_abilities_have_follow_up_handlers(self):
         handlers = self.app.split('const combatAbilityHandlers = {', 1)[1].split('\n  };', 1)[0]
         self.assertIn("'dimensional-banishment'", handlers)
-        self.assertIn("'aggressive-defence-construct'", handlers)
+        self.assertIn("'aggressive-defence'", handlers)
         reminder = self.source('combatAbilityReminder', 'showPendingPlayerAttackWizard')
         self.assertIn('criticalSuccesses:combat.critRemaining', reminder)
         self.assertIn('remaining wounds', reminder)
@@ -87,7 +87,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertNotIn('postGame', self.app)
 
     def test_versions_are_synchronized(self):
-        expected = '7.0.1'
+        expected = '7.0.2'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"styles.css?v={expected}", (ROOT / 'index.html').read_text())
         self.assertIn(f"app.js?v={expected}", (ROOT / 'index.html').read_text())

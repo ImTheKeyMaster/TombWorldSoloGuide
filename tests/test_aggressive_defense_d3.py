@@ -31,7 +31,7 @@ class AggressiveDefenseD3Tests(unittest.TestCase):
 
     def test_d3_reuses_animated_die_and_resolves_all_results(self):
         resolver = self.source("function aggressiveDefenseDamage", "function aggressiveDefenseRollHtml")
-        self.assertIn("return result>=2?result:0", resolver)
+        self.assertIn("return result>=2?1:0", resolver)
         self.assertEqual([0 if value == 1 else value for value in (1, 2, 3)], [0, 2, 3])
         preview = self.source("function previewPendingPlayerAttack", "function displayPendingPlayerCombat")
         self.assertIn("Math.ceil(roll()/2)", preview)

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.0.1';
+  const APP_VERSION = '7.0.2';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -279,73 +279,88 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const npoDefinitions = {
     'Canoptek Scarab Swarm': {
       id:'canoptek-scarab-swarm',name:'Canoptek Scarab Swarm',type:'Canoptek Scarab Swarm',faction:'Necron Host',physicalQuantity:3,move:6,apl:2,save:5,wounds:10,baseSize:40,
-      compatibilityBehavior:'Brawler',compatibilityAttack:{dice:5,hit:4,normal:2,crit:3},defaultWeaponId:'feeder-mandibles',
-      rangedWeapons:[],
-      meleeWeapons:[{id:'feeder-mandibles',name:'Feeder mandibles',type:'melee',attacks:5,hit:4,damage:{normal:1,critical:2},rules:[]}],
-      abilities:[],
+      keywords:['Necron Host','Necron','Canoptek','Scarab Swarm'],compatibilityBehavior:'Brawler',compatibilityAttack:{dice:5,hit:4,normal:2,crit:3},defaultWeaponId:'feeder-mandibles',loadoutOptions:null,
+      rangedWeapons:[],meleeWeapons:[{id:'feeder-mandibles',name:'Feeder mandibles',type:'melee',attacks:5,hit:4,damage:{normal:1,critical:2},rules:[],ruleIds:[]}],
+      actions:[],passiveRules:[],abilities:[],strategicRules:[],
       behavior:{summary:'Move towards the enemy to fight them, seeking cover on the way.',actions:['Fight','Charge the closest player operative via the shortest possible route','Reposition towards the closest player operative, to cover if possible','Dash towards the closest player operative, to cover if possible'],operatesHatches:true}
     },
     'Necron Warrior': {
       id:'necron-warrior',name:'Necron Warrior',type:'Necron Warrior',faction:'Necron Host',physicalQuantity:10,move:5,apl:2,save:4,wounds:9,baseSize:32,
-      compatibilityBehavior:'Marksman',compatibilityAttack:{dice:4,hit:4,normal:3,crit:4},defaultWeaponId:'gauss-flayer',
+      keywords:['Necron Host','Necron','Warrior'],compatibilityBehavior:'Marksman',compatibilityAttack:{dice:4,hit:4,normal:3,crit:4},defaultWeaponId:'gauss-flayer',loadoutOptions:[{id:'gauss-flayer',name:'Gauss flayer'},{id:'gauss-reaper',name:'Gauss reaper'}],
       rangedWeapons:[
-        {id:'gauss-flayer',name:'Gauss flayer',type:'ranged',attacks:4,hit:4,damage:{normal:3,critical:4},rules:['Piercing 1']},
-        {id:'gauss-reaper',name:'Gauss reaper',type:'ranged',attacks:4,hit:3,damage:{normal:3,critical:4},rules:['Range 8"','Piercing 1']}
+        {id:'gauss-flayer',name:'Gauss flayer',type:'ranged',attacks:4,hit:4,damage:{normal:3,critical:4},rules:['Piercing 1'],ruleIds:['piercing']},
+        {id:'gauss-reaper',name:'Gauss reaper',type:'ranged',attacks:4,hit:3,damage:{normal:3,critical:4},rules:['Range 8"','Piercing 1'],ruleIds:['range','piercing'],range:8}
       ],
-      meleeWeapons:[{id:'combat-attachment',name:'Combat attachment',type:'melee',attacks:3,hit:4,damage:{normal:3,critical:4},rules:[]}],
-      abilities:[],
+      meleeWeapons:[{id:'combat-attachment',name:'Combat attachment',type:'melee',attacks:3,hit:4,damage:{normal:3,critical:4},rules:[],ruleIds:[]}],
+      actions:[],passiveRules:[],abilities:[],strategicRules:[],
       behavior:{summary:'Move to an ideal position to shoot the enemy, but fight if unable to do anything else.',actions:['Fall Back','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission','Fight'],operatesHatches:true}
     },
     'Canoptek Tomb Crawler': {
-      id:'canoptek-tomb-crawler',name:'Canoptek Tomb Crawler',type:'Canoptek Tomb Crawler',faction:'Canoptek Circle',physicalQuantity:2,
-      loadoutOptions:[{id:'twin-gauss-reapers',name:'Twin gauss reapers'},{id:'transdimensional-isolator',name:'Transdimensional isolator'}],
-      move:5,apl:2,save:3,wounds:21,baseSize:50,
-      compatibilityBehavior:'Guardian',compatibilityAttack:{dice:4,hit:3,normal:4,crit:5},defaultWeaponId:'twin-gauss-reapers',
+      id:'canoptek-tomb-crawler',name:'Canoptek Tomb Crawler',type:'Canoptek Tomb Crawler',faction:'Canoptek Circle',physicalQuantity:2,move:5,apl:2,save:3,wounds:21,baseSize:50,
+      keywords:['Canoptek Circle','Necron','Canoptek','Tomb Crawler'],compatibilityBehavior:'Guardian',compatibilityAttack:{dice:5,hit:4,normal:4,crit:5},defaultWeaponId:'twin-gauss-reapers',
+      loadoutOptions:[{id:'twin-gauss-reapers',name:'Twin gauss reapers and claws'},{id:'transdimensional-isolator',name:'Transdimensional isolator and claws'}],
       rangedWeapons:[
         {id:'twin-gauss-reapers',name:'Twin gauss reapers',type:'ranged',profiles:[
-          {id:'focused',name:'Focused',attacks:5,hit:4,damage:{normal:4,critical:5},rules:['Piercing 1','Punishing']},
-          {id:'sweeping',name:'Sweeping',attacks:4,hit:4,damage:{normal:4,critical:5},rules:['Piercing 1','Punishing','Torrent 1"']}
+          {id:'focused',name:'Focused',attacks:5,hit:4,damage:{normal:4,critical:5},rules:['Piercing 1','Severe'],ruleIds:['piercing','severe']},
+          {id:'sweeping',name:'Sweeping',attacks:4,hit:4,damage:{normal:4,critical:5},rules:['Piercing 1','Severe','Torrent 1"'],ruleIds:['piercing','severe','torrent'],torrent:1,manualResolution:'Identify each valid secondary target within 1 inch on the tabletop; resolve a separate attack against each and do not attack the primary target twice.'}
         ]},
-        {id:'transdimensional-isolator',name:'Transdimensional isolator',type:'ranged',attacks:5,hit:4,damage:{normal:5,critical:6},rules:['Dimensional Banishment']}
+        {id:'transdimensional-isolator',name:'Transdimensional isolator',type:'ranged',attacks:5,hit:4,damage:{normal:5,critical:6},rules:['Dimensional Banishment'],ruleIds:['dimensional-banishment'],postAttackEffect:{id:'dimensional-banishment',trigger:{damageInflictedOrCriticalRetained:true,targetMustSurvive:true},roll:'2D6',comparison:'greater-than-post-damage-wounds',incapacitationPrecedence:true}}
       ],
-      meleeWeapons:[{id:'claws',name:'Claws',type:'melee',attacks:4,hit:4,damage:{normal:4,critical:4},rules:['Brutal']}],
-      abilities:[
-        {id:'weapon-sentinel',name:'Weapon Sentinel',text:'When selecting a valid target, if this operative has a Conceal order, it cannot use Light terrain for cover. This can allow it to be targeted but does not remove its cover save.'},
-        {id:'steadfast',name:'Steadfast',text:'When determining control of a marker, this operative can be treated as having APL 3. This takes precedence over all other APL changes.'},
-        {id:'dimensional-banishment',name:'Dimensional Banishment',text:'After using this weapon, if damage was inflicted or any critical successes were retained and the target was not incapacitated, roll 2D6. If the result is higher than the target remaining wounds, it is incapacitated.'}
+      meleeWeapons:[{id:'claws',name:'Claws',type:'melee',attacks:4,hit:4,damage:{normal:4,critical:4},rules:[],ruleIds:[]}],actions:[],
+      passiveRules:[
+        {id:'weapon-sentinel',name:'Weapon Sentinel',targetValidity:{concealCannotUseLightTerrain:true,removeCoverSave:false},description:'With a Conceal order, this operative cannot use Light terrain to prevent selection as a valid target. It still retains any cover save.'},
+        {id:'steadfast',name:'Steadfast',markerControlApl:3,overridesAplChangesForControl:true,description:'For marker-control determination only, this operative may be treated as having APL 3.'}
       ],
+      abilities:[{id:'weapon-sentinel',name:'Weapon Sentinel',text:'With a Conceal order, this operative cannot use Light terrain to prevent selection as a valid target. It still retains any cover save.'},{id:'steadfast',name:'Steadfast',text:'For marker-control determination only, this operative may be treated as having APL 3.'}],strategicRules:[],
       behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use the sweeping twin gauss reapers profile when it would target more than one player operative.'}
     },
     'Geomancer': {
-      id:'geomancer',name:'Geomancer',type:'Geomancer',faction:'Canoptek Circle',physicalQuantity:1,
-      move:null,apl:null,save:null,wounds:null,baseSize:null,compatibilityBehavior:'',compatibilityAttack:{},defaultWeaponId:null,
-      rangedWeapons:[],meleeWeapons:[],abilities:[]
+      id:'geomancer',name:'Geomancer',type:'Geomancer',faction:'Canoptek Circle',physicalQuantity:1,move:6,apl:3,save:3,wounds:14,baseSize:null,
+      keywords:['Canoptek Circle','Necron','Leader','Cryptek','Geomancer'],compatibilityBehavior:'Support',compatibilityAttack:{dice:4,hit:3,normal:4,crit:5},defaultWeaponId:'tremorglaive',loadoutOptions:null,
+      rangedWeapons:[{id:'tremorglaive',name:'Tremorglaive',type:'ranged',profiles:[
+        {id:'part-matter',name:'Part matter',attacks:4,hit:3,damage:{normal:4,critical:5},rules:['Piercing 1','Piercing Crits 2'],ruleIds:['piercing','piercing-crits'],piercing:1,piercingCrits:2},
+        {id:'quake',name:'Quake',attacks:5,hit:3,damage:{normal:1,critical:2},rules:['Blast 2"','Seek Light','Stun'],ruleIds:['blast','seek-light','stun'],blast:2,manualResolution:'Identify valid secondary targets within 2 inches on the tabletop and resolve each separately; do not attack the primary target twice.'}
+      ]}],
+      meleeWeapons:[{id:'tremorglaive-sweep',name:'Tremorglaive (sweep)',type:'melee',attacks:4,hit:4,damage:{normal:4,critical:5},rules:['Severe','Shock','Stun'],ruleIds:['severe','shock','stun']}],
+      actions:[
+        {id:'geomantic-disturbance',name:'Geomantic Disturbance',ap:1,target:{kind:'terrain-point',visible:true,range:8,affectedOperativesWithin:2},restrictions:{ordersExcluded:['Conceal'],actorOutsideEnemyControlRange:true},resolution:{manualTabletopSelection:true,dicePerTarget:'2D6',separateRollPerTarget:true,damage:'roll-minus-remaining-wounds-if-positive'},description:'Select a visible terrain point within 8 inches. Separately roll 2D6 for every operative within 2 inches; if a roll exceeds its remaining wounds, inflict the difference. Unavailable while Concealed or within enemy control range.'},
+        {id:'canoptek-control',name:'Canoptek Control',ap:1,target:{side:'friendly',keywordsAll:['Canoptek Circle','Canoptek'],visible:true,range:6},restrictions:{actorOutsideEnemyControlRange:true,notCounteracting:true},freeAction:{ap:1,consumeTargetApl:false,startActivation:false,preserveActivatedState:true,obeyNormalRestrictions:true,maxMove:2,repositionWhollyWithin:2},description:'A visible friendly Canoptek operative within 6 inches immediately performs one legal 1 AP action for free, moving no more than 2 inches. Unavailable in enemy control range or while counteracting.'},
+        {id:'molecular-breach',name:'Molecular Breach',ap:1,target:{side:'friendly',keywordsAll:['Canoptek Circle'],visible:true,range:6},restrictions:{actorOutsideEnemyControlRange:true},temporaryEffect:{id:'molecular-breach',scope:'target',trigger:'next-movement-action',consumeOnTrigger:true,persist:true,dashDistance:3,useMoveStatOtherwise:true,chargeGetsNoBonus:true,closeQuartersPassWalls:true,validPlacementRequired:true,enemyControlRangeAllowedOnlyForCharge:true},description:'A visible friendly Canoptek Circle operative within 6 inches replaces its next movement with removal and valid setup within its Move (3 inches for Dash). In close quarters it may pass through Walls; only Charge may end in enemy control range.'}
+      ],passiveRules:[],abilities:[],strategicRules:[],behavior:{summary:'Use support actions manually; otherwise resolve its selected weapon.',actions:['Shoot','Fight','Reposition','Dash'],operatesHatches:true}
     },
     'Canoptek Macrocyte Warrior': {
-      id:'canoptek-macrocyte-warrior',name:'Canoptek Macrocyte Warrior',type:'Canoptek Macrocyte Warrior',faction:'Canoptek Circle',physicalQuantity:3,
-      loadoutOptions:[{id:'gauss-scalpel',name:'Gauss scalpel'},{id:'tesla-caster',name:'Tesla caster'}],
-      move:7,apl:2,save:4,wounds:7,baseSize:28,
-      compatibilityBehavior:'Sentinel',compatibilityAttack:{dice:4,hit:3,normal:3,crit:4},defaultWeaponId:'gauss-scalpel',
+      id:'canoptek-macrocyte-warrior',name:'Canoptek Macrocyte Warrior',type:'Canoptek Macrocyte Warrior',faction:'Canoptek Circle',physicalQuantity:3,move:7,apl:2,save:4,wounds:7,baseSize:28,
+      keywords:['Canoptek Circle','Necron','Canoptek','Macrocyte','Warrior'],compatibilityBehavior:'Sentinel',compatibilityAttack:{dice:4,hit:4,normal:2,crit:3},defaultWeaponId:'gauss-scalpel',loadoutOptions:[{id:'gauss-scalpel',name:'Gauss scalpel and claws & tail'},{id:'tesla-caster',name:'Tesla caster and claws & tail'}],
       rangedWeapons:[
-        {id:'gauss-scalpel',name:'Gauss scalpel',type:'ranged',attacks:4,hit:4,damage:{normal:3,critical:4},rules:['Piercing 1']},
-        {id:'tesla-caster',name:'Tesla caster',type:'ranged',profiles:[
-          {id:'focused',name:'Focused',attacks:5,hit:4,damage:{normal:2,critical:3},rules:[]},
-          {id:'living-lightning',name:'Living lightning',attacks:5,hit:4,damage:{normal:2,critical:3},rules:['Blast 2"']}
-        ]}
+        {id:'gauss-scalpel',name:'Gauss scalpel',type:'ranged',attacks:4,hit:4,damage:{normal:2,critical:3},rules:['Piercing 1'],ruleIds:['piercing']},
+        {id:'tesla-caster',name:'Tesla caster',type:'ranged',profiles:[{id:'focused',name:'Focused',attacks:4,hit:4,damage:{normal:2,critical:3},rules:[],ruleIds:[]},{id:'living-lightning',name:'Living lightning',attacks:4,hit:4,damage:{normal:2,critical:3},rules:['Blast 2"'],ruleIds:['blast'],blast:2,manualResolution:'Identify valid secondary targets within 2 inches on the tabletop and resolve each separately; do not attack the primary target twice.'}]}
       ],
-      meleeWeapons:[{id:'claws-and-tail',name:'Claws & tail',type:'melee',attacks:4,hit:4,damage:{normal:3,critical:4},rules:[]}],
-      abilities:[{id:'aggressive-defence-construct',name:'Aggressive Defense Construct',text:'If incapacitated by a player operative within 2", roll one D3. On a 2+, inflict damage on that player operative equal to the result.'}],
+      meleeWeapons:[{id:'claws-and-tail',name:'Claws & tail',type:'melee',attacks:3,hit:4,damage:{normal:3,critical:4},rules:[],ruleIds:[]}],actions:[],
+      passiveRules:[
+        {id:'aggressive-defence',name:'Aggressive Defence',trigger:'incapacitated',sourceMustBeEnemyOperative:true,sourceRange:2,oncePerIncapacitation:true,roll:'D3',successThreshold:2,damage:1,resolveBeforeRemoval:true,description:'When an enemy operative within 2 inches incapacitates this operative, roll D3 before removal; on 2+, inflict exactly 1 damage on that enemy.'},
+        {id:'expendable-construct',name:'Expendable Construct',excludeFromScoring:['escape','survive','incapacitated'],description:'Ignore this operative for scoring conditions that require operatives to escape, survive, or be incapacitated.'}
+      ],abilities:[{id:'aggressive-defence',name:'Aggressive Defence',text:'When an enemy operative within 2 inches incapacitates this operative, roll D3 before removal; on 2+, inflict exactly 1 damage on that enemy.'},{id:'expendable-construct',name:'Expendable Construct',text:'Ignore this operative for scoring conditions that require operatives to escape, survive, or be incapacitated.'}],
+      strategicRules:[{id:'a-ceaseless-scuttling',name:'A Ceaseless Scuttling',kind:'strategic-gambit',turningPointMinimum:2,requiresLivingFriendlyBelow:3,operativeType:'Canoptek Macrocyte Warrior',physicalLimit:3,setUp:{ready:true,order:'Conceal',location:'NPO drop zone'},manualResolution:true,description:'After Turning Point 1, if fewer than three friendly Warriors remain, another legally equipped Warrior may be set up ready with a Conceal order wholly within the NPO drop zone, subject to the three-model limit.'}],
       behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use the living lightning tesla caster profile when it would target more than one player operative and no NPOs.'}
     },
     'Canoptek Macrocyte Accelerator': {
-      id:'canoptek-macrocyte-accelerator',name:'Canoptek Macrocyte Accelerator',type:'Canoptek Macrocyte Accelerator',faction:'Canoptek Circle',physicalQuantity:1,
-      move:null,apl:null,save:null,wounds:null,baseSize:null,compatibilityBehavior:'',compatibilityAttack:{},defaultWeaponId:null,
-      rangedWeapons:[],meleeWeapons:[],abilities:[]
+      id:'canoptek-macrocyte-accelerator',name:'Canoptek Macrocyte Accelerator',type:'Canoptek Macrocyte Accelerator',faction:'Canoptek Circle',physicalQuantity:1,move:7,apl:2,save:4,wounds:7,baseSize:null,
+      keywords:['Canoptek Circle','Necron','Canoptek','Macrocyte','Accelerator'],compatibilityBehavior:'Support',compatibilityAttack:{dice:4,hit:4,normal:2,crit:3},defaultWeaponId:'spark',loadoutOptions:null,
+      rangedWeapons:[{id:'spark',name:'Spark',type:'ranged',attacks:4,hit:4,damage:{normal:2,critical:3},rules:['Range 4"','Piercing 1'],ruleIds:['range','piercing'],range:4}],
+      meleeWeapons:[{id:'claws-and-spark',name:'Claws & spark',type:'melee',attacks:3,hit:4,damage:{normal:3,critical:4},rules:['Lethal 5+','Stun'],ruleIds:['lethal','stun'],lethal:5}],
+      actions:[
+        {id:'overcharge',name:'Overcharge',ap:1,target:{side:'friendly',keywordsAll:['Canoptek Circle','Canoptek'],visible:true,range:3,excludeSelf:true},restrictions:{actorOutsideEnemyControlRange:true},temporaryAplModifier:{amount:1,expires:'end-of-target-next-activation',sourceUnique:true,persist:true},description:'Select another visible friendly Canoptek operative within 3 inches. Add 1 to its APL until the end of its next activation. Unavailable in enemy control range.'},
+        {id:'cranial-overload',name:'Cranial Overload',ap:1,target:{side:'enemy',visible:true,range:3},restrictions:{actorOutsideEnemyControlRange:true},temporaryAplModifier:{amount:-1,minimumEffectiveApl:1,expires:'end-of-target-next-activation',sourceUnique:true,persist:true},description:'Select a visible enemy operative within 3 inches. Subtract 1 from its APL (minimum 1) until the end of its next activation. Unavailable in enemy control range.'}
+      ],passiveRules:[],abilities:[],strategicRules:[],behavior:{summary:'Use support actions manually; otherwise resolve its selected weapon.',actions:['Shoot','Fight','Reposition','Dash'],operatesHatches:true}
     },
     'Canoptek Macrocyte Reanimator': {
-      id:'canoptek-macrocyte-reanimator',name:'Canoptek Macrocyte Reanimator',type:'Canoptek Macrocyte Reanimator',faction:'Canoptek Circle',physicalQuantity:1,
-      move:null,apl:null,save:null,wounds:null,baseSize:null,compatibilityBehavior:'',compatibilityAttack:{},defaultWeaponId:null,
-      rangedWeapons:[],meleeWeapons:[],abilities:[]
+      id:'canoptek-macrocyte-reanimator',name:'Canoptek Macrocyte Reanimator',type:'Canoptek Macrocyte Reanimator',faction:'Canoptek Circle',physicalQuantity:1,move:7,apl:2,save:4,wounds:7,baseSize:null,
+      keywords:['Canoptek Circle','Necron','Canoptek','Macrocyte','Reanimator'],compatibilityBehavior:'Support',compatibilityAttack:{dice:4,hit:4,normal:3,crit:4},defaultWeaponId:'atomiser-beam',loadoutOptions:null,
+      rangedWeapons:[{id:'atomiser-beam',name:'Atomiser beam',type:'ranged',attacks:4,hit:4,damage:{normal:3,critical:4},rules:['Range 6"','Lethal 5+'],ruleIds:['range','lethal'],range:6,lethal:5}],
+      meleeWeapons:[{id:'claws-and-tail',name:'Claws & tail',type:'melee',attacks:4,hit:4,damage:{normal:3,critical:4},rules:[],ruleIds:[]}],
+      actions:[{id:'nanoscarab-beam',name:'Nanoscarab Beam',ap:1,oncePerTurningPoint:true,target:{side:'friendly',keywordsAll:['Canoptek Circle'],visible:true,range:6,notIncapacitated:true,excludeReanimatedThisTurningPoint:true},restrictions:{actorOutsideEnemyControlRange:true},healing:{dice:'3D3',capAtMaximum:true,recordRolledAndRestored:true},description:'Once per turning point, a visible friendly Canoptek Circle operative within 6 inches regains up to 3D3 lost wounds. It cannot target an incapacitated operative or one saved by Reanimate this turning point.'}],
+      passiveRules:[{id:'reanimate',name:'Reanimate',oncePerTurningPoint:true,optional:true,trigger:'another-friendly-would-be-incapacitated',target:{keywordsAll:['Canoptek Circle'],visible:true,range:6,excludeSelf:true},restrictions:{reanimatorAlive:true,bothOutsideEnemyControlRange:true,shootAttackCannotTargetReanimator:true},replacement:{wounds:1,preventIncapacitationForAction:true,freeDashAfterAction:true,dashEndsWithinSourceControlRange:true,endTargetActivationIfCurrent:true},temporaryAplModifiers:[{target:'source',amount:-1,expires:'end-of-next-activation'},{target:'saved-operative',amount:-1,expires:'end-of-next-activation'}],description:'Once per turning point, when another visible friendly Canoptek Circle operative within 6 inches would be incapacitated, it may remain at 1 wound and cannot be incapacitated again during that action. Afterward it may Dash for free, ending in the Reanimator control range. Both operatives suffer -1 APL through their next activation.'}],
+      abilities:[{id:'reanimate',name:'Reanimate',text:'Once per turning point, optionally prevent another eligible friendly operative from being incapacitated, leave it at 1 wound, then resolve its free Dash and temporary APL penalties.'}],strategicRules:[],behavior:{summary:'Resolve support rules manually when eligible; otherwise use its selected weapon.',actions:['Shoot','Fight','Reposition','Dash'],operatesHatches:true}
     }
   };
 
@@ -463,7 +478,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], playerWounds:{}, playerOperativeStates:{}, reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0},
     gradeMilestone:null, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0,
     npoAttackTargetId:null,
-    npoAttackSummary:null, combatState:null, missionState:null, missionRuntime:null, startingNpoGeneration:null, eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[]}, gameEnd:null
+    npoAttackSummary:null, combatState:null, missionState:null, missionRuntime:null, startingNpoGeneration:null,
+    npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[]},
+    eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[]}, gameEnd:null
   });
 
   const loadedState = load();
@@ -644,6 +661,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         : {inPlay:true}];
     }));
     merged.setupChecks=raw?.setupChecks&&!Array.isArray(raw.setupChecks)&&typeof raw.setupChecks==='object'?{...raw.setupChecks}:{};
+    const importedRuleState=isRecord(raw?.npoRuleState)?raw.npoRuleState:{};
+    merged.npoRuleState={
+      aplModifiers:Array.isArray(importedRuleState.aplModifiers)?importedRuleState.aplModifiers.filter(isRecord).map(modifier=>({...modifier})):[],
+      pendingMovementEffects:Array.isArray(importedRuleState.pendingMovementEffects)?importedRuleState.pendingMovementEffects.filter(isRecord).map(effect=>({...effect})):[],
+      oncePerTurningPoint:isRecord(importedRuleState.oncePerTurningPoint)?{...importedRuleState.oncePerTurningPoint}:{},
+      reanimatedTargetIds:normalizeIdList(importedRuleState.reanimatedTargetIds),
+      incapacitationTriggers:normalizeIdList(importedRuleState.incapacitationTriggers)
+    };
     merged.startingNpoGeneration=isRecord(raw?.startingNpoGeneration)
       ? {...raw.startingNpoGeneration,dice:Array.isArray(raw.startingNpoGeneration.dice)?raw.startingNpoGeneration.dice.map(value=>boundedInteger(value,1,3,1)):[]}
       : null;
@@ -778,7 +803,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
   function weaponProfiles(weapon){
     if(!weapon)return [];
-    return (weapon.profiles||[weapon]).map(profile=>({...profile,weaponId:weapon.id,weaponName:weapon.name}));
+    return (weapon.profiles||[weapon]).map(profile=>({...profile,type:weapon.type,weaponId:weapon.id,weaponName:weapon.name}));
   }
   function npoAttackProfiles(npo,attackType){
     const definition=npoDefinition(npo?.type);
@@ -790,11 +815,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
   function canonicalAttackProfile(profile){
     const piercing=(profile?.rules||[]).map(String).map(rule=>rule.match(/(?:Piercing|AP)\s*(\d+)/i)).find(Boolean);
+    const lethal=(profile?.rules||[]).map(String).map(rule=>rule.match(/Lethal\s*(\d)\+/i)).find(Boolean);
     return {
       dice:Number(profile?.attacks||0),hit:Number(profile?.hit||0),
+      critThreshold:Number(lethal?.[1]||6),
       normal:Number(profile?.damage?.normal||0),crit:Number(profile?.damage?.critical||0),
       ap:Number(piercing?.[1]||0),
       rules:[...(profile?.rules||[])],weaponId:profile?.weaponId||'',profileId:profile?.id||'',
+      manualResolution:profile?.manualResolution||'',
       name:profile?.weaponName===profile?.name?profile?.name:`${profile?.weaponName}: ${profile?.name}`
     };
   }
@@ -847,6 +875,68 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function roll(sides=6){ return Math.floor(Math.random()*sides)+1; }
   function rollD3(){ return roll(3); }
+  function rollDice(count,sides){return Array.from({length:count},()=>roll(sides));}
+  function npoProfileSchemaValid(definition){
+    return Boolean(definition?.id&&definition?.type&&definition?.name
+      &&['apl','move','save','wounds'].every(field=>Number.isFinite(definition[field]))
+      &&['rangedWeapons','meleeWeapons','actions','passiveRules','strategicRules','keywords'].every(field=>Array.isArray(definition[field])));
+  }
+  function effectiveApl(operativeId,baseApl){
+    const modifier=(state.npoRuleState?.aplModifiers||[]).filter(item=>item.targetId===operativeId).reduce((total,item)=>total+Number(item.amount||0),0);
+    return Math.max(1,Number(baseApl||0)+modifier);
+  }
+  function applyTemporaryAplModifier({sourceId,targetId,ruleId,amount}){
+    const modifiers=state.npoRuleState.aplModifiers;
+    const duplicate=modifiers.find(item=>item.sourceId===sourceId&&item.targetId===targetId&&item.ruleId===ruleId);
+    if(duplicate)return false;
+    modifiers.push({id:`${ruleId}:${sourceId}:${targetId}`,sourceId,targetId,ruleId,amount,expires:'end-of-target-next-activation'});
+    return true;
+  }
+  function expireActivationEffects(operativeId){
+    state.npoRuleState.aplModifiers=state.npoRuleState.aplModifiers.filter(item=>item.targetId!==operativeId);
+  }
+  function applyMolecularBreach(sourceId,targetId){
+    const effects=state.npoRuleState.pendingMovementEffects;
+    if(effects.some(effect=>effect.targetId===targetId&&effect.ruleId==='molecular-breach'))return false;
+    effects.push({id:`molecular-breach:${sourceId}:${targetId}`,ruleId:'molecular-breach',sourceId,targetId,trigger:'next-movement-action',consumeOnTrigger:true});
+    return true;
+  }
+  function consumeMolecularBreach(targetId,actionName){
+    if(!['Reposition','Dash','Charge','Fall Back'].includes(actionName))return null;
+    const index=state.npoRuleState.pendingMovementEffects.findIndex(effect=>effect.targetId===targetId&&effect.ruleId==='molecular-breach');
+    return index<0?null:state.npoRuleState.pendingMovementEffects.splice(index,1)[0];
+  }
+  function resolveGeomanticDisturbance(operatives,rollTwoD6=()=>rollDice(2,6)){
+    return operatives.map(operative=>{const dice=rollTwoD6(operative),total=dice.reduce((sum,value)=>sum+value,0);return {operativeId:operative.id,dice,total,damage:Math.max(0,total-operative.wounds)};});
+  }
+  function markerControlApl(npo){return npo?.type===TOMB_CRAWLER_TYPE?3:effectiveApl(npo?.id,npo?.apl);}
+  function ceaselessScuttlingEligible(turningPoint=state.turningPoint,roster=state.roster){
+    const living=roster.filter(npo=>npo.type==='Canoptek Macrocyte Warrior'&&npo.wounds>0).length;
+    return turningPoint>1&&living<3&&npoInventory(roster)['Canoptek Macrocyte Warrior'].remaining>0;
+  }
+  function aggressiveDefenceDamage(rollResult){return Number(rollResult)>=2?1:0;}
+  function reanimateEligible({reanimator,target,visible,distance,sourceInControlRange=false,targetInControlRange=false,shootTargets=[]}){
+    const used=state.npoRuleState.oncePerTurningPoint.reanimate===state.turningPoint;
+    return !used&&reanimator&&target&&reanimator.id!==target.id&&reanimator.wounds>0&&target.type&&npoDefinition(target.type)?.keywords.includes('Canoptek Circle')
+      &&visible&&distance<=6&&!sourceInControlRange&&!targetInControlRange&&!shootTargets.includes(reanimator.id);
+  }
+  function applyReanimate(reanimator,target,{duringTargetActivation=false}={}){
+    target.wounds=1;
+    state.npoRuleState.oncePerTurningPoint.reanimate=state.turningPoint;
+    state.npoRuleState.reanimatedTargetIds.push(target.id);
+    applyTemporaryAplModifier({sourceId:reanimator.id,targetId:reanimator.id,ruleId:'reanimate-source',amount:-1});
+    applyTemporaryAplModifier({sourceId:reanimator.id,targetId:target.id,ruleId:'reanimate-target',amount:-1});
+    target.preventIncapacitationActionId=state.activationNumber;
+    if(duringTargetActivation)target.ready=false;
+    return {wounds:1,freeDash:{mustEndWithinSourceControlRange:true},activationEnded:duringTargetActivation};
+  }
+  function useNanoscarabBeam(target,rollResults=rollDice(3,3)){
+    if(state.npoRuleState.oncePerTurningPoint.nanoscarabBeam===state.turningPoint||target.wounds<=0||state.npoRuleState.reanimatedTargetIds.includes(target.id))return null;
+    const rolled=rollResults.reduce((sum,value)=>sum+value,0),before=target.wounds;
+    target.wounds=Math.min(target.maxWounds,before+rolled);
+    state.npoRuleState.oncePerTurningPoint.nanoscarabBeam=state.turningPoint;
+    return {dice:rollResults,rolled,restored:target.wounds-before};
+  }
   function uid(existing=state.roster){
     const ids=new Set((existing||[]).map(npo=>npo?.id));
     let id;
@@ -1977,6 +2067,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   async function startTurningPoint(){
     state.turningPoint++;
+    state.npoRuleState.reanimatedTargetIds=[];
+    state.npoRuleState.incapacitationTriggers=[];
     if(missionEngine()?.type==='regroup')state.missionState={operativeChecks:{},lastCheckedTurningPoint:state.turningPoint};
     state.tpStartThreat=state.threat;
     state.tpStartGrade=threatGrade();
@@ -2700,7 +2792,7 @@ function showPlayerActivation(stage={}){
         const playerAfter=Math.max(0,playerBefore-aggressiveDamage);
         state.playerWounds[stage.playerOperativeId]=playerAfter;
         if(playerAfter<=0&&!state.playerCasualtyIds.includes(stage.playerOperativeId))state.playerCasualtyIds.push(stage.playerOperativeId);
-        log(`Aggressive Defense Construct dealt ${aggressiveDamage} damage to ${playerName(stage.playerOperativeId)} (${playerBefore} → ${playerAfter} wounds).`);
+        log(`Aggressive Defence dealt ${aggressiveDamage} damage to ${playerName(stage.playerOperativeId)} (${playerBefore} → ${playerAfter} wounds).`);
       }
       if(checkGameEnd())return true;
     }
@@ -2739,6 +2831,7 @@ function showPlayerActivation(stage={}){
     state.activationNumber++;
     const summary=playerActivationSummary(stage);
     state.activationHistory.unshift({side:'player',label:playerName(operativeId),summary});
+    expireActivationEffects(operativeId);
     advanceAfterActivation('player');
     log(`${playerName(operativeId)} completed activation: ${summary}.`);
     closeModal();
@@ -2816,7 +2909,7 @@ function showPlayerActivation(stage={}){
   const combatAbilityHandlers = {
     'dimensional-banishment':({criticalSuccesses,damage,targetIncapacitated})=>
       !targetIncapacitated&&(damage>0||criticalSuccesses>0),
-    'aggressive-defence-construct':({targetIncapacitated,attackerWithinTwo})=>
+    'aggressive-defence':({targetIncapacitated,attackerWithinTwo})=>
       targetIncapacitated&&attackerWithinTwo
   };
 
@@ -2968,7 +3061,7 @@ function showPlayerActivation(stage={}){
 
   function aggressiveDefenseDamage(rollResult){
     const result=Math.max(1,Math.min(3,Math.round(Number(rollResult)||1)));
-    return result>=2?result:0;
+    return result>=2?1:0;
   }
 
   function aggressiveDefenseDamageValue(combat){
@@ -2976,7 +3069,7 @@ function showPlayerActivation(stage={}){
   }
 
   function aggressiveDefenseRollHtml(){
-    return `<section class="combat-stage" id="aggressiveDefenseRoll" aria-label="Aggressive Defense Construct roll">
+    return `<section class="combat-stage" id="aggressiveDefenseRoll" aria-label="Aggressive Defence roll">
       <small>AGGRESSIVE DEFENSE CONSTRUCT</small>
       <p>The destroyed Macrocyte retaliates.</p>
       <div class="dice-row animated-roll" id="aggressiveDefenseDie">${rollingDieHtml()}</div>
@@ -2998,7 +3091,7 @@ function showPlayerActivation(stage={}){
       const retaliatoryDamageMessage=aggressiveDamage>0
         ? `${attackerName?`${escapeHtml(attackerName)} suffers`:'The attacking operative suffers'} ${aggressiveDamage} retaliatory damage.`
         : `No retaliatory damage inflicted${attackerName?` on ${escapeHtml(attackerName)}`:''}.`;
-      return `<section class="combat-stage aggressive-defense-result" aria-label="Aggressive Defense Construct result">
+      return `<section class="combat-stage aggressive-defense-result" aria-label="Aggressive Defence result">
         <small>AGGRESSIVE DEFENSE CONSTRUCT</small>
         <strong>D3 Roll: ${combat.aggressiveDefenseRoll}</strong>
         <p>${retaliatoryDamageMessage}</p>
@@ -3133,7 +3226,7 @@ function showPlayerActivation(stage={}){
     result.recordedOutcome=false;
     result.attackerWithinTwo=Boolean(diceDraft.attackerWithinTwo);
     const retaliationApplies=n.type==='Canoptek Macrocyte Warrior'
-      &&combatAbilityHandlers['aggressive-defence-construct']({targetIncapacitated:result.after<=0,attackerWithinTwo:Boolean(diceDraft.attackerWithinTwo)});
+      &&combatAbilityHandlers['aggressive-defence']({targetIncapacitated:result.after<=0,attackerWithinTwo:Boolean(diceDraft.attackerWithinTwo)});
     if(retaliationApplies){
       const rolledValue=Math.ceil(roll()/2);
       result.aggressiveDefenseRoll=rolledValue;
@@ -3589,6 +3682,7 @@ function showPlayerActivation(stage={}){
     n.ready=false;state.npoActivated++;state.activationNumber++;
     state.activationHistory.unshift({side:'npo',label:npoName(n),action:state.lastActivation.action,target:state.npoAttackTargetId?playerName(state.npoAttackTargetId):null,attackSummary});
     state.lastActivation.committed=true;
+    expireActivationEffects(n.id);
     state.activeNpoId=null;advanceAfterActivation('npo');
     log(`${npoName(n)}: ${state.lastActivation.action}.`);
     state.npoAttackTargetId=null;
@@ -3795,6 +3889,16 @@ function showPlayerActivation(stage={}){
     $$('[data-player-wound]').forEach(button=>button.onclick=()=>adjustPlayerWounds(button.dataset.playerWound,-1));
     $$('[data-player-heal]').forEach(button=>button.onclick=()=>adjustPlayerWounds(button.dataset.playerHeal,1));
   }
+  function npoProfileWeaponHtml(weapon){
+    return weaponProfiles(weapon).map(profile=>{const label=profile.name===weapon.name?weapon.name:`${weapon.name} (${profile.name.toLowerCase()})`;return `<li><strong>${escapeHtml(label)}</strong><span>${profile.attacks}A · ${profile.hit}+ · ${profile.damage.normal}/${profile.damage.critical}${profile.rules?.length?` · ${escapeHtml(profile.rules.join(', '))}`:''}</span></li>`;}).join('');
+  }
+  function npoProfileDetailsHtml(n,definition){
+    const ranged=(definition.rangedWeapons||[]).filter(weapon=>!definition.loadoutOptions||weapon.id===n.weaponId);
+    const melee=definition.meleeWeapons||[];
+    const actionItems=(definition.actions||[]).map(action=>`<div><strong>${escapeHtml(action.name)} · ${action.ap} AP</strong><p>${escapeHtml(action.description)}</p>${action.oncePerTurningPoint?`<small>${state.npoRuleState.oncePerTurningPoint[action.id]===state.turningPoint?'Used this turning point':'Available this turning point'}</small>`:''}</div>`).join('');
+    const passiveItems=(definition.passiveRules||[]).map(rule=>`<div><strong>${escapeHtml(rule.name)}</strong><p>${escapeHtml(rule.description)}</p>${rule.oncePerTurningPoint?`<small>${state.npoRuleState.oncePerTurningPoint[rule.id]===state.turningPoint?'Used this turning point':'Available this turning point'}</small>`:''}</div>`).join('');
+    return `<details class="operative-guidance npo-profile-details"><summary>Gameplay profile</summary><p><strong>Selected loadout:</strong> ${escapeHtml(npoWeapon(definition,n.weaponId)?.name||'Fixed weapons')}</p>${ranged.length?`<strong>Ranged weapons</strong><ul class="npo-weapon-list">${ranged.map(npoProfileWeaponHtml).join('')}</ul>`:''}${melee.length?`<strong>Melee weapons</strong><ul class="npo-weapon-list">${melee.map(npoProfileWeaponHtml).join('')}</ul>`:''}${actionItems?`<strong>Operative actions</strong>${actionItems}`:''}${passiveItems?`<strong>Passive rules</strong>${passiveItems}`:''}</details>`;
+  }
   function npoRosterCard(n,controls){
     const hasProfile=Number.isFinite(n.maxWounds)&&n.maxWounds>0;
     const eliminated=hasProfile&&n.wounds<=0;
@@ -3805,8 +3909,8 @@ function showPlayerActivation(stage={}){
     const loadout=definition?.loadoutOptions&&state.turningPoint===0?`<div class="field"><label for="loadout-${escapeHtml(n.id)}">Loadout</label><select id="loadout-${escapeHtml(n.id)}" data-npo-loadout="${escapeHtml(n.id)}">${definition.loadoutOptions.map(option=>`<option value="${option.id}" ${option.id===n.weaponId?'selected':''} ${option.id===ISOLATOR_LOADOUT&&isolatorUsed?'disabled':''}>${escapeHtml(option.name)}</option>`).join('')}</select></div>`:'';
     return `<article class="player-roster-card npo-roster-card ${eliminated?'dead':''}">
       <div class="operative-card-header"><div class="operative-identity"><strong>${escapeHtml(npoName(n))}</strong><small>${escapeHtml(n.type)}</small></div><span class="operative-status-badge ${status.toLowerCase().replace(' ','-')}">${status}</span></div>
-      <div class="operative-stat-line"><span><small>ATTACK</small><b>${n.attack?.dice||'—'}</b></span><span><small>HIT</small><b>${n.attack?.hit?`${n.attack.hit}+`:'—'}</b></span><span><small>SAVE</small><b>${save}</b></span><span><small>WOUNDS</small><b class="${eliminated?'zero-wounds':''}">${wounds}</b></span></div>
-      ${loadout}${controls?`<div class="wound-controls"><button class="btn ghost" data-wound="${n.id}" ${!hasProfile||n.wounds<=0?'disabled':''}>− Wound</button><button class="btn ghost" data-heal="${n.id}" ${!hasProfile||n.wounds>=n.maxWounds?'disabled':''}>+ Heal</button></div>`:''}<div class="quick-actions"><button class="btn danger" data-delete="${n.id}" ${state.turningPoint>0?'disabled':''}>Remove NPO</button></div>
+      <div class="operative-stat-line"><span><small>APL</small><b>${effectiveApl(n.id,n.apl)||'—'}</b></span><span><small>MOVE</small><b>${Number.isFinite(n.move)?`${n.move}&quot;`:'—'}</b></span><span><small>SAVE</small><b>${save}</b></span><span><small>WOUNDS</small><b class="${eliminated?'zero-wounds':''}">${wounds}</b></span></div>
+      ${loadout}${npoProfileDetailsHtml(n,definition)}${controls?`<div class="wound-controls"><button class="btn ghost" data-wound="${n.id}" ${!hasProfile||n.wounds<=0?'disabled':''}>− Wound</button><button class="btn ghost" data-heal="${n.id}" ${!hasProfile||n.wounds>=n.maxWounds?'disabled':''}>+ Heal</button></div>`:''}<div class="quick-actions"><button class="btn danger" data-delete="${n.id}" ${state.turningPoint>0?'disabled':''}>Remove NPO</button></div>
     </article>`;
   }
   function operativeCard(n,controls){return npoRosterCard(n,controls);}

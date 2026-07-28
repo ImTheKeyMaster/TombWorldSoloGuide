@@ -35,8 +35,8 @@ class V7NpoCatalogTests(unittest.TestCase):
         self.assertNotIn("Canoptek Macrocyte'", selector)
 
     def test_loadouts_are_metadata_not_separate_operative_types(self):
-        self.assertIn("loadoutOptions:[{id:'twin-gauss-reapers',name:'Twin gauss reapers'},{id:'transdimensional-isolator',name:'Transdimensional isolator'}]", self.catalog)
-        self.assertIn("loadoutOptions:[{id:'gauss-scalpel',name:'Gauss scalpel'},{id:'tesla-caster',name:'Tesla caster'}]", self.catalog)
+        self.assertIn("loadoutOptions:[{id:'twin-gauss-reapers',name:'Twin gauss reapers and claws'},{id:'transdimensional-isolator',name:'Transdimensional isolator and claws'}]", self.catalog)
+        self.assertIn("loadoutOptions:[{id:'gauss-scalpel',name:'Gauss scalpel and claws & tail'},{id:'tesla-caster',name:'Tesla caster and claws & tail'}]", self.catalog)
         active_names = {name for _, name, _, _, _ in self.entries}
         for unsupported_type in ("Gauss Tomb Crawler", "Isolator Tomb Crawler", "Tesla Warrior"):
             self.assertNotIn(unsupported_type, active_names)
@@ -51,9 +51,9 @@ class V7NpoCatalogTests(unittest.TestCase):
 
     def test_displayed_application_version_is_7_0_0(self):
         index = (ROOT / "index.html").read_text()
-        self.assertIn("V7.0.1", index)
-        self.assertIn("const APP_VERSION = '7.0.1';", self.app)
-        self.assertIn("const APP_VERSION = '7.0.1';", (ROOT / "service-worker.js").read_text())
+        self.assertIn("V7.0.2", index)
+        self.assertIn("const APP_VERSION = '7.0.2';", self.app)
+        self.assertIn("const APP_VERSION = '7.0.2';", (ROOT / "service-worker.js").read_text())
 
 
 if __name__ == "__main__":
