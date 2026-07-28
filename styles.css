@@ -1127,6 +1127,8 @@ button.tracker-operative:hover{
 .mission-briefing-section+.mission-briefing-section{border-top:1px solid rgba(118,245,168,.18)}
 .mission-briefing h4{margin:0 0 10px;font-size:1rem}
 .mission-briefing p{margin:0;line-height:1.55}
+.restless-tomb-option{margin:0}
+.restless-tomb-option input:focus-visible{outline:2px solid var(--green);outline-offset:3px}
 .mission-heading span{display:block;color:var(--green);font-weight:850;font-size:.85rem;margin-bottom:4px}
 .mission-heading strong{display:block;color:var(--text);font-size:1.08rem}
 .mission-rule+.mission-rule{margin-top:18px}

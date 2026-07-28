@@ -179,6 +179,7 @@
   function normalizeSave(save){
     save=stripObsoleteMatrixState(save);
     const normalized={...save};
+    normalized.restlessTombEnabled=save.restlessTombEnabled===true;
     normalized.roster=records(save.roster);normalized.playerRoster=strings(save.playerRoster);
     const importedPlayerStates=isRecord(save.playerOperativeStates)?save.playerOperativeStates:{};
     normalized.playerOperativeStates=Object.fromEntries(normalized.playerRoster.map(id=>{const value=isRecord(importedPlayerStates[id])?importedPlayerStates[id]:{};return [id,{...value,inPlay:value.inPlay!==false,...(typeof value.offBoardReason==='string'&&value.offBoardReason?{offBoardReason:value.offBoardReason}:{})}];}));
