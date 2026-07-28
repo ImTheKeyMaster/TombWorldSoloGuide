@@ -1,12 +1,13 @@
-# Tomb World Solo Guide v7.0.0
+# Tomb World Solo Guide v7.0.1
 
-## v7.0.0
+## v7.0.1
 
-**Version 7.0.0 - Tomb World Box NPO Catalog**
+**Version 7.0.1 - NPO Roster Generation and Box Inventory Limits**
 
-- Replaced the active NPO catalog with the seven operative types supplied in the Kill Team: Tomb World boxed set.
-- Recorded each type's faction and physical model quantity, plus the supported future loadouts for Tomb Crawlers and Macrocyte Warriors.
-- Updated visible, internal, cache-busting, and service-worker cache versions to v7.0.0.
+- Updated NPO roster generation to allocate only models from the authoritative Tomb World physical inventory.
+- Enforced physical box quantities globally across starting rosters, reserves, eliminated operatives, events, and reinforcements.
+- Added stable operative numbering and instance loadout selection, including the one-isolator Tomb Crawler limit.
+- Updated reinforcement availability to respect every model already allocated to the active game.
 
 ---
 

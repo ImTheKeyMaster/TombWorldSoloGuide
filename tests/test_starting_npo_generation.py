@@ -67,7 +67,8 @@ class StartingNpoGenerationTests(unittest.TestCase):
         self.assertIn("hasStartingNpos=generation.deployedNpoIds.length>0", presentation)
         self.assertIn("hasStartingNpos&&deploymentCheck", presentation)
         self.assertIn("hasStartingNpos?placementChecks:otherPlacementChecks", presentation)
-        self.assertIn("hasStartingNpos?`<div class=\"setup-bulk-row\"", presentation)
+        self.assertIn('id="regenerateNpoRoster"', presentation)
+        self.assertIn('id="checkAllDeployment"', presentation)
         for mission_file in (
             "01-shifting-labyrinth.json", "02-demolition-protocol.json",
             "03-recover-transponder.json", "04-destroy-sarcophagus.json",
@@ -124,7 +125,8 @@ class StartingNpoGenerationTests(unittest.TestCase):
 
     def test_generation_tables_and_reinforcements_are_unchanged(self):
         self.assertRegex(self.app, r"function rollNpo\(\)\{")
-        self.assertRegex(self.app, r"function randomReinforcement\(\)\{return rollNpo\(\);\}")
+        self.assertRegex(self.app, r"function randomReinforcement\(\)\{")
+        self.assertIn("const result=rollNpo();", self.app)
         self.assertEqual(self.app.count("function rollNpo()"), 1)
 
     def test_selection_partitions_every_available_npo_once(self):

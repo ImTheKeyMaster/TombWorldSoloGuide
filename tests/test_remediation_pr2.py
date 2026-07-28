@@ -47,7 +47,8 @@ class RemediationPr2Tests(unittest.TestCase):
         self.assertEqual(self.app.count("const npoGenerationTable = ["), 1)
         self.assertEqual(self.app.count("function generationResult("), 1)
         self.assertIn("const result=rollNpo();", self.app)
-        self.assertIn("function randomReinforcement(){return rollNpo();}", self.app)
+        self.assertIn("function randomReinforcement(){", self.app)
+        self.assertIn("const result=rollNpo();", self.app)
         self.assertNotIn("const table=[", self.app)
         self.assertNotRegex(self.app, r"r<=\d+\?'Canoptek")
 

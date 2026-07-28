@@ -50,14 +50,12 @@ class StrategyPhaseUiTests(unittest.TestCase):
         deploy_branch = REINFORCEMENTS.split("continue;", 1)[1]
         self.assertLess(deploy_branch.index("if(n){"), deploy_branch.index("createNpo(type"))
 
-    def test_blocked_npos_are_named_and_remain_in_reserve(self):
-        self.assertIn("blockedOperativeIds.push(n.id)", REINFORCEMENTS)
-        blocked_branch = REINFORCEMENTS.split("if(i>=actual){", 1)[1].split("continue;", 1)[0]
-        self.assertNotIn("battlefieldState=", blocked_branch)
-        self.assertIn("deployed:false", blocked_branch)
-        self.assertIn("if(!n){", blocked_branch)
-        self.assertIn("blockedNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`)", STRATEGY_CARD)
-        self.assertIn("Battlefield NPO limit reached.", STRATEGY_CARD)
+    def test_blocked_reinforcements_do_not_allocate_phantom_models(self):
+        self.assertIn("blocked=requested-actual", REINFORCEMENTS)
+        self.assertIn("if(!rr){blocked++;continue;}", REINFORCEMENTS)
+        self.assertNotIn("if(i>=actual)", REINFORCEMENTS)
+        self.assertNotIn("blockedOperativeIds.push(n.id)", REINFORCEMENTS)
+        self.assertIn("no legal physical model remains.", STRATEGY_CARD)
 
     def test_loaded_blocked_ids_cannot_overlap_deployed_reinforcements(self):
         normalization = APP.split("function normalizeState(raw)", 1)[1].split("function npoDefinition", 1)[0]

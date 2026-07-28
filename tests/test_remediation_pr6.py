@@ -28,7 +28,8 @@ class RemediationPr6Tests(unittest.TestCase):
         self.assertIn("randomReinforcement()", reinforcement)
         self.assertIn("weaponId:rr.weaponId", reinforcement)
         self.assertIn("deployed:true", reinforcement)
-        self.assertIn("function randomReinforcement(){return rollNpo();}", self.app)
+        self.assertIn("function randomReinforcement(){", self.app)
+        self.assertIn("const result=rollNpo();", self.app)
         create = self.function_source("createNpo", "rollNpo")
         self.assertIn("weaponId,order:'Conceal'", create)
 
@@ -39,7 +40,7 @@ class RemediationPr6Tests(unittest.TestCase):
         self.assertIn("MAX_NPOS-activeNpos().length", source)
         self.assertIn("actual=Math.min(requested,slots)", source)
         self.assertIn("blocked=requested-actual", source)
-        self.assertIn("Battlefield NPO limit reached.", self.app)
+        self.assertIn("Battlefield capacity was reached or no legal physical model remains.", self.app)
 
     def test_placement_is_manual_and_blocks_progress_until_confirmed(self):
         card = self.function_source("strategyCard", "strategyEventHtml")
