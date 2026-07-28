@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.0.6';
+  const APP_VERSION = '7.0.7';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -1285,6 +1285,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       <p>Select a remaining Player operative, set its APL, choose legal actions, and press <strong>Complete Activation</strong>. Selected Shooting or Melee attacks are then resolved. Damage remains pending until you confirm the entire activation, so canceling or going back does not alter NPO wounds.</p>
     </section>`;
 
+    const npoRoster=`<section class="help-section">
+      <h3>Tomb World NPO roster</h3>
+      <p>The supported pool uses the physical models in the Tomb World box: the <strong>Canoptek Circle</strong> (Geomancer, Canoptek Tomb Crawler, Canoptek Macrocyte Warrior, Canoptek Macrocyte Accelerator, and Canoptek Macrocyte Reanimator), <strong>Necron Warriors</strong>, and <strong>Canoptek Scarab Swarms</strong>.</p>
+      <p>NPO lists are alphabetical, and applicable loadouts are selected for each operative instance. NPO portraits are intentionally not displayed. The Obelisk Node Matrix is not supported by the Guide.</p>
+      <p>Current saves and older saves use the v7 migration flow. If an active legacy battle contains an unsupported retired NPO, the Guide asks before returning that battle to setup so a legal roster can be regenerated.</p>
+    </section>`;
+
     const quick=`<section class="help-section quick-reference-grid">
       <article><h4>Player</h4><p>Your solo kill-team operatives.</p></article>
       <article><h4>NPO</h4><p>A non-player operative controlled by the Guide.</p></article>
@@ -1294,12 +1301,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       <article><h4>Expended</h4><p>The operative has activated or is otherwise unavailable.</p></article>
     </section>`;
 
-    if(full) return overview+flow+ai+combat+quick;
-    return ai+quick;
+    if(full) return overview+npoRoster+flow+ai+combat+quick;
+    return npoRoster+ai+quick;
   }
 
   function renderHome(){
-    const canContinue=Boolean(load()?.missionId && load()?.screen==='game');
+    const savedGame=load()?.state;
+    const canContinue=Boolean(savedGame?.missionId&&savedGame?.screen==='game');
     app.innerHTML=`<section class="hero-card">
       <img class="hero-symbol" src="Assets/icon.svg" alt="">
       <p class="eyebrow">A STEP-BY-STEP DIGITAL GAME MASTER</p>
@@ -1312,7 +1320,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       </div>
     </section>`;
     $('#newGameBtn').onclick=()=>{ state=initialState(); state.screen='setup'; state.setupStep=0; expandedRosterCategories=null; save(); render(); };
-    $('#continueBtn').onclick=()=>{ const saved=load(); if(saved){state=normalizeState(saved);state.screen='game';render();} };
+    $('#continueBtn').onclick=()=>{ if(savedGame){state=normalizeState(savedGame);state.screen='game';render();} };
     $('#homeHelpBtn').onclick=()=>{
       state.screen='help';
       render();
