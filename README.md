@@ -1,4 +1,15 @@
-# Tomb World Solo Guide v7.0.1
+# Tomb World Solo Guide v7.0.2
+
+## v7.0.2
+
+**Version 7.0.2 - Complete Canoptek Circle NPO Profiles**
+
+- Added complete structured profiles, errata-corrected weapons, operative actions, and passive rules for all five Canoptek Circle NPO types.
+- Added loadout-dependent weapon modes and persistent temporary APL, Molecular Breach, Reanimate, and Nanoscarab Beam rule state using the shared NPO profile schema.
+- Audited Necron Warrior and Canoptek Scarab Swarm against the shared schema without changing their existing gameplay statistics.
+- Continued to exclude the unsupported Obelisk Node Matrix while preserving normal non-Matrix targeting options and alphabetical NPO display ordering.
+
+---
 
 ## v7.0.1
 
