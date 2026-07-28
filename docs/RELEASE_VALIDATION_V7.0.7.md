@@ -4,7 +4,7 @@
 
 Version 7.0.7 is the final v7 stabilization pass. The release keeps exactly seven active NPO types and the existing 21-model Tomb World inventory. It adds no NPO type, profile, loadout, mission, tactical rule, or player-operative behavior.
 
-The pre-change suite completed with **307 passing tests and no failures**. The final suite completes with **314 passing tests and no failures**. The only reproduced release defect was the Home screen reading `missionId` and `screen` from the migration result wrapper instead of its validated `state`; this left **Continue Game** disabled for a valid saved battle. The fix uses the already migrated state for both availability and restoration.
+The pre-change suite completed with **307 passing tests and no failures**. The final suite completes with **315 passing tests and no failures**. The only reproduced release defect was the Home screen reading `missionId` and `screen` from the migration result wrapper instead of its validated `state`; this left **Continue Game** disabled for a valid saved battle. The fix uses the already migrated state for both availability and restoration.
 
 ## Catalog, inventory, roster, and ordering
 
@@ -61,7 +61,7 @@ pytest -q
 307 passed in 4.11s (before changes)
 
 python3 -m unittest discover -s tests -v
-314 tests passed (after changes)
+315 tests passed (after changes)
 
 node --check app.js
 node --check persistence.js

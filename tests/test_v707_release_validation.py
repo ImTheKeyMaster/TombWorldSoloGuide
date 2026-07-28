@@ -88,7 +88,8 @@ class V707ReleaseValidationTests(unittest.TestCase):
 
     def test_continue_game_uses_the_migrated_state_payload(self):
         home = APP.split("function renderHome", 1)[1].split("function renderHowItWorks", 1)[0]
-        self.assertIn("const savedGame=load()?.state", home)
+        self.assertIn("const saved=load()", home)
+        self.assertIn("saved?.report?.requiresRegeneration?null:saved?.state", home)
         self.assertIn("savedGame?.missionId&&savedGame?.screen==='game'", home)
         self.assertIn("state=normalizeState(savedGame)", home)
         self.assertNotIn("load()?.missionId", home)
@@ -130,6 +131,46 @@ assert.ok(imported.state.roster.every(npo=>!('portrait' in npo)&&!('matrixActive
         self.assertTrue((ROOT / "Assets/Images/eliminated-necron-skull.png").is_file())
         for asset in re.findall(r"'\./([^']+)'", WORKER):
             self.assertTrue((ROOT / asset).exists(), asset)
+
+    def test_service_worker_install_and_activation_complete(self):
+        script = r"""
+const assert=require('assert');
+const fs=require('fs');
+const vm=require('vm');
+const listeners={};
+const added=[];
+const deleted=[];
+const context={
+  URL,Request,Response,
+  self:{addEventListener:(name,handler)=>{listeners[name]=handler;},clients:{claim:async()=>{}}},
+  caches:{
+    open:async name=>({addAll:async assets=>{added.push({name,assets});}}),
+    keys:async()=>['tomb-world-solo-guide-7.0.6','unrelated-cache'],
+    delete:async name=>{deleted.push(name);return true;},
+    match:async()=>undefined
+  },
+  fetch:async()=>new Response('ok',{status:200})
+};
+vm.runInNewContext(fs.readFileSync('service-worker.js','utf8'),context);
+const dispatch=async name=>{
+  let pending;
+  listeners[name]({waitUntil:promise=>{pending=promise;}});
+  await pending;
+};
+(async()=>{
+  await dispatch('install');
+  assert.equal(added.length,1);
+  assert.equal(added[0].name,'tomb-world-solo-guide-7.0.7');
+  assert.ok(added[0].assets.includes('./index.html'));
+  assert.ok(added[0].assets.includes('./app.js?v=7.0.7'));
+  await dispatch('activate');
+  assert.deepEqual(deleted,['tomb-world-solo-guide-7.0.6']);
+})().catch(error=>{console.error(error);process.exitCode=1;});
+"""
+        result = subprocess.run(
+            ["node", "-e", script], cwd=ROOT, text=True, capture_output=True
+        )
+        self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
 
     def test_release_version_help_and_accessible_elimination_text_are_current(self):
         self.assertIn("const APP_VERSION = '7.0.7';", APP)

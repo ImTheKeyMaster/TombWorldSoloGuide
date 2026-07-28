@@ -1306,7 +1306,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function renderHome(){
-    const savedGame=load()?.state;
+    const saved=load();
+    const savedGame=saved?.report?.requiresRegeneration?null:saved?.state;
     const canContinue=Boolean(savedGame?.missionId&&savedGame?.screen==='game');
     app.innerHTML=`<section class="hero-card">
       <img class="hero-symbol" src="Assets/icon.svg" alt="">
