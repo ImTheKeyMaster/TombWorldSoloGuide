@@ -25,7 +25,7 @@ class AggressiveDefenseD3Tests(unittest.TestCase):
         preview = self.source("function previewPendingPlayerAttack", "function displayPendingPlayerCombat")
         self.assertIn("if(retaliationApplies)", preview)
         self.assertIn("aggressiveDefenseAnimating:true", preview)
-        self.assertIn("n.type==='Canoptek Macrocyte'", preview)
+        self.assertIn("n.type==='Canoptek Macrocyte Warrior'", preview)
         self.assertIn("targetIncapacitated:result.after<=0", preview)
         self.assertIn("attackerWithinTwo:Boolean(diceDraft.attackerWithinTwo)", preview)
 

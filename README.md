@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v6.7.5
+# Tomb World Solo Guide v7.0.0
+
+## v7.0.0
+
+**Version 7.0.0 - Tomb World Box NPO Catalog**
+
+- Replaced the active NPO catalog with the seven operative types supplied in the Kill Team: Tomb World boxed set.
+- Recorded each type's faction and physical model quantity, plus the supported future loadouts for Tomb Crawlers and Macrocyte Warriors.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v7.0.0.
+
+---
 
 ## v6.7.5
 

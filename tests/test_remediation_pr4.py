@@ -19,7 +19,7 @@ class RemediationPr4Tests(unittest.TestCase):
             'Canoptek Scarab Swarm': ['Fight', 'Charge the closest player operative via the shortest possible route', 'Reposition towards the closest player operative, to cover if possible', 'Dash towards the closest player operative, to cover if possible'],
             'Necron Warrior': ['Fall Back', 'Shoot', 'Reposition to gain a valid unobscured target or better win the mission', 'Dash to gain a valid unobscured target or better win the mission', 'Fight'],
             'Canoptek Tomb Crawler': ['Fight', 'Shoot', 'Reposition to gain a valid unobscured target or better win the mission', 'Dash to gain a valid unobscured target or better win the mission'],
-            'Canoptek Macrocyte': ['Fight', 'Shoot', 'Reposition to gain a valid unobscured target or better win the mission', 'Dash to gain a valid unobscured target or better win the mission'],
+            'Canoptek Macrocyte Warrior': ['Fight', 'Shoot', 'Reposition to gain a valid unobscured target or better win the mission', 'Dash to gain a valid unobscured target or better win the mission'],
         }
         for operative, actions in expected.items():
             definition = self.app.split(f"'{operative}': {{", 1)[1].split("\n    },", 1)[0]
@@ -68,7 +68,7 @@ class RemediationPr4Tests(unittest.TestCase):
         self.assertIn('if(state.lastActivation?.committed)return', commit)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = '6.7.5'
+        expected = '7.0.0'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / 'service-worker.js').read_text())
         index = (ROOT / 'index.html').read_text()

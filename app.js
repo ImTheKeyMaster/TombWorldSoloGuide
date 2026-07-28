@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '6.7.5';
+  const APP_VERSION = '7.0.0';
   const {currentSaveVersion,migrateSave,createPersistedSave}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -278,7 +278,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   // these canonical profiles and delegate externally defined Core mechanics to tabletop play.
   const npoDefinitions = {
     'Canoptek Scarab Swarm': {
-      name:'Canoptek Scarab Swarm',type:'Canoptek Scarab Swarm',move:6,apl:2,save:5,wounds:10,baseSize:40,
+      name:'Canoptek Scarab Swarm',type:'Canoptek Scarab Swarm',faction:'Necron Host',physicalQuantity:3,move:6,apl:2,save:5,wounds:10,baseSize:40,
       compatibilityBehavior:'Brawler',compatibilityAttack:{dice:5,hit:4,normal:2,crit:3},defaultWeaponId:'feeder-mandibles',
       rangedWeapons:[],
       meleeWeapons:[{id:'feeder-mandibles',name:'Feeder mandibles',type:'melee',attacks:5,hit:4,damage:{normal:1,critical:2},rules:[]}],
@@ -286,7 +286,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       behavior:{summary:'Move towards the enemy to fight them, seeking cover on the way.',actions:['Fight','Charge the closest player operative via the shortest possible route','Reposition towards the closest player operative, to cover if possible','Dash towards the closest player operative, to cover if possible'],operatesHatches:true}
     },
     'Necron Warrior': {
-      name:'Necron Warrior',type:'Necron Warrior',move:5,apl:2,save:4,wounds:9,baseSize:32,
+      name:'Necron Warrior',type:'Necron Warrior',faction:'Necron Host',physicalQuantity:10,move:5,apl:2,save:4,wounds:9,baseSize:32,
       compatibilityBehavior:'Marksman',compatibilityAttack:{dice:4,hit:4,normal:3,crit:4},defaultWeaponId:'gauss-flayer',
       rangedWeapons:[
         {id:'gauss-flayer',name:'Gauss flayer',type:'ranged',attacks:4,hit:4,damage:{normal:3,critical:4},rules:['Piercing 1']},
@@ -297,7 +297,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       behavior:{summary:'Move to an ideal position to shoot the enemy, but fight if unable to do anything else.',actions:['Fall Back','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission','Fight'],operatesHatches:true}
     },
     'Canoptek Tomb Crawler': {
-      name:'Canoptek Tomb Crawler',type:'Canoptek Tomb Crawler',move:5,apl:2,save:3,wounds:21,baseSize:50,
+      name:'Canoptek Tomb Crawler',type:'Canoptek Tomb Crawler',faction:'Canoptek Circle',physicalQuantity:2,
+      loadoutOptions:[{id:'twin-gauss-reapers',name:'Twin gauss reapers'},{id:'transdimensional-isolator',name:'Transdimensional isolator'}],
+      move:5,apl:2,save:3,wounds:21,baseSize:50,
       compatibilityBehavior:'Guardian',compatibilityAttack:{dice:4,hit:3,normal:4,crit:5},defaultWeaponId:'twin-gauss-reapers',
       rangedWeapons:[
         {id:'twin-gauss-reapers',name:'Twin gauss reapers',type:'ranged',profiles:[
@@ -314,8 +316,15 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       ],
       behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use the sweeping twin gauss reapers profile when it would target more than one player operative.'}
     },
-    'Canoptek Macrocyte': {
-      name:'Canoptek Macrocyte',type:'Canoptek Macrocyte',move:7,apl:2,save:4,wounds:7,baseSize:28,
+    'Geomancer': {
+      name:'Geomancer',type:'Geomancer',faction:'Canoptek Circle',physicalQuantity:1,
+      move:null,apl:null,save:null,wounds:null,baseSize:null,compatibilityBehavior:'',compatibilityAttack:{},defaultWeaponId:null,
+      rangedWeapons:[],meleeWeapons:[],abilities:[]
+    },
+    'Canoptek Macrocyte Warrior': {
+      name:'Canoptek Macrocyte Warrior',type:'Canoptek Macrocyte Warrior',faction:'Canoptek Circle',physicalQuantity:3,
+      loadoutOptions:[{id:'gauss-scalpel',name:'Gauss scalpel'},{id:'tesla-caster',name:'Tesla caster'}],
+      move:7,apl:2,save:4,wounds:7,baseSize:28,
       compatibilityBehavior:'Sentinel',compatibilityAttack:{dice:4,hit:3,normal:3,crit:4},defaultWeaponId:'gauss-scalpel',
       rangedWeapons:[
         {id:'gauss-scalpel',name:'Gauss scalpel',type:'ranged',attacks:4,hit:4,damage:{normal:3,critical:4},rules:['Piercing 1']},
@@ -327,6 +336,16 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       meleeWeapons:[{id:'claws-and-tail',name:'Claws & tail',type:'melee',attacks:4,hit:4,damage:{normal:3,critical:4},rules:[]}],
       abilities:[{id:'aggressive-defence-construct',name:'Aggressive Defense Construct',text:'If incapacitated by a player operative within 2", roll one D3. On a 2+, inflict damage on that player operative equal to the result.'}],
       behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use the living lightning tesla caster profile when it would target more than one player operative and no NPOs.'}
+    },
+    'Canoptek Macrocyte Accelerator': {
+      name:'Canoptek Macrocyte Accelerator',type:'Canoptek Macrocyte Accelerator',faction:'Canoptek Circle',physicalQuantity:1,
+      move:null,apl:null,save:null,wounds:null,baseSize:null,compatibilityBehavior:'',compatibilityAttack:{},defaultWeaponId:null,
+      rangedWeapons:[],meleeWeapons:[],abilities:[]
+    },
+    'Canoptek Macrocyte Reanimator': {
+      name:'Canoptek Macrocyte Reanimator',type:'Canoptek Macrocyte Reanimator',faction:'Canoptek Circle',physicalQuantity:1,
+      move:null,apl:null,save:null,wounds:null,baseSize:null,compatibilityBehavior:'',compatibilityAttack:{},defaultWeaponId:null,
+      rangedWeapons:[],meleeWeapons:[],abilities:[]
     }
   };
 
@@ -334,7 +353,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   // instruction to use the next row is a tabletop contingency, not a fallback.
   const npoGenerationTable = [
     {min:2,max:3,type:'Canoptek Scarab Swarm',weaponIds:['feeder-mandibles']},
-    {min:4,max:6,type:'Canoptek Macrocyte',weaponIds:['gauss-scalpel','tesla-caster']},
+    {min:4,max:6,type:'Canoptek Macrocyte Warrior',weaponIds:['gauss-scalpel','tesla-caster']},
     {min:7,max:10,type:'Necron Warrior',weaponIds:['gauss-flayer','gauss-reaper']},
     {min:11,max:11,type:'Canoptek Tomb Crawler',weaponIds:['twin-gauss-reapers']},
     {min:12,max:12,type:'Canoptek Tomb Crawler',weaponIds:['transdimensional-isolator']}
@@ -718,6 +737,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
   function legacyNpoType(npo){
     if(npoDefinitions[npo?.type])return npo.type;
+    // TODO(v7 legacy-save migration): remove this temporary retired-type alias.
+    if(npo?.type==='Canoptek Macrocyte')return 'Canoptek Macrocyte Warrior';
     return Object.keys(npoDefinitions).find(type=>String(npo?.name||'').startsWith(type))||npo?.type;
   }
   function normalizeNpo(npo){
@@ -2820,7 +2841,7 @@ function showPlayerActivation(stage={}){
   }
 
   function aggressiveDefenseFields(npo){
-    return npo?.type==='Canoptek Macrocyte'
+    return npo?.type==='Canoptek Macrocyte Warrior'
       ? '<label class="check-row compact-check"><input type="checkbox" id="attackerWithinTwo"><span><strong>Attacker is within 2&quot; of this Macrocyte</strong></span></label>'
       : '';
   }
@@ -2933,7 +2954,7 @@ function showPlayerActivation(stage={}){
     $('#cancelPendingAttack').onclick=()=>cancelPendingPlayerCombat(stage,attackType,onCancel);
     $('#openCombatResolution').onclick=()=>showPlayerCombatResolution(stage,attackType,targetSelect.value,Number(weaponSelect.value),onResolved,onCancel);
     renderChoices();
-    if(singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte')showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
+    if(singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte Warrior')showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
   }
 
   function showPlayerCombatResolution(stage,attackType,targetId,weaponIndex,onResolved,onCancel,{result=null,animate=true}={}){
@@ -2991,7 +3012,7 @@ function showPlayerActivation(stage={}){
     result.retainedSaves=retainedDiceTotals(result.saveDice).normal+retainedDiceTotals(result.saveDice).critical;
     result.recordedOutcome=false;
     result.attackerWithinTwo=Boolean(diceDraft.attackerWithinTwo);
-    const retaliationApplies=n.type==='Canoptek Macrocyte'
+    const retaliationApplies=n.type==='Canoptek Macrocyte Warrior'
       &&combatAbilityHandlers['aggressive-defence-construct']({targetIncapacitated:result.after<=0,attackerWithinTwo:Boolean(diceDraft.attackerWithinTwo)});
     if(retaliationApplies){
       const rolledValue=Math.ceil(roll()/2);
