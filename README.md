@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v7.1.1
+# Tomb World Solo Guide v7.1.2
+
+## v7.1.2
+
+**Version 7.1.2 - Correct NPO Activation Tracker Start States**
+
+- Reserve NPOs no longer appear as Activated: the Activation Tracker now lists only deployed and previously deployed eliminated NPOs.
+- Dormant NPOs use a distinct, subdued Dormant state and style while preserving visible status text.
+- Common Threat behavior remains unchanged across all missions: living deployed NPOs are Dormant at Threat 0 and Ready above Threat 0.
 
 ## v7.1.1
 

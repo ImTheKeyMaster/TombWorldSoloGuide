@@ -32,7 +32,7 @@ class NpoDisplayOrderTests(unittest.TestCase):
         roster = self.source("function renderRoster()", "function renderPlayerRoster()")
         self.assertNotIn("npoRosterCard(npo,false)", setup)
         self.assertIn("sortedNposForDisplay(generation.deployedNpoIds.map", setup)
-        self.assertIn("sortedNposForDisplay(state.roster).map(n=>", tracker)
+        self.assertIn("sortedNposForDisplay(trackerNpos()).map(n=>", tracker)
         self.assertIn("sortedNposForDisplay(state.roster).map(n=>npoRosterCard", roster)
 
     def test_npo_type_and_instance_dropdowns_keep_placeholders_first(self):

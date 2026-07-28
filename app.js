@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.1.1';
+  const APP_VERSION = '7.1.2';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
 
 let lastTouchEnd=0;
@@ -653,6 +653,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       blockedOperativeIds:blockedReinforcementIds,
       blocked:boundedInteger(importedReinforcements.blocked,0,MAX_NPOS)
     };
+    if(merged.reinforcementState.status==='placement'){
+      merged.reinforcementState.operativeIds.forEach(id=>{
+        const npo=merged.roster.find(item=>item.id===id);
+        if(!npo||npo.reinforcement?.placementConfirmed)return;
+        npo.battlefieldState='reserve';npo.deployed=false;npo.dormant=false;npo.ready=false;
+      });
+    }
     merged.activationHistory=Array.isArray(raw?.activationHistory)?raw.activationHistory:[];
     merged.playerActivatedIds=Array.isArray(raw?.playerActivatedIds)?raw.playerActivatedIds:[];
     merged.playerCasualtyIds=Array.isArray(raw?.playerCasualtyIds)?raw.playerCasualtyIds:[];
@@ -1021,6 +1028,18 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function activeNpos(){ return state.roster.filter(n => n.battlefieldState==='deployed'&&n.wounds > 0); }
   function reserveNpos(){ return state.roster.filter(n => n.battlefieldState==='reserve'&&n.wounds > 0); }
   function readyNpos(){ return activeNpos().filter(n => n.ready&&!n.dormant); }
+  function trackerNpos(){
+    return state.roster.filter(npo=>npo.battlefieldState==='deployed'||npo.battlefieldState==='out-of-action');
+  }
+  function npoTrackerStatus(npo){
+    if(npo.wounds<=0||npo.battlefieldState==='out-of-action')return {status:'ELIMINATED',className:'eliminated'};
+    if(npo.battlefieldState==='reserve')return {status:'RESERVE',className:'reserve'};
+    if(npo.battlefieldState==='deployed'&&npo.dormant)return {status:'DORMANT',className:'dormant'};
+    if(npo.battlefieldState==='deployed'&&npo.ready)return {status:'READY',className:'ready'};
+    if(npo.battlefieldState==='deployed'&&state.npoActivated>0)return {status:'ACTIVATED',className:'activated'};
+    if(npo.battlefieldState==='deployed')return {status:'READY',className:'ready'};
+    return {status:'RESERVE',className:'reserve'};
+  }
   function livingPlayerOperativeCount(){
     return livingPlayerOperativeIds().length;
   }
@@ -2001,11 +2020,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         <span>${escapeHtml(operative?.name||operativeId)}</span><span class="tracker-operative-status">${casualty?'<span class="tracker-elimination-icon" aria-hidden="true">☠</span>':''}<strong>${status}</strong></span>
       </button>`;
     }).join('');
-    const npoRows=sortedNposForDisplay(state.roster).map(n=>{
-      const eliminated=n.wounds<=0;
-      const status=eliminated?'ELIMINATED':n.dormant?'DORMANT':n.ready?'READY':'ACTIVATED';
-      const cls=eliminated?'eliminated':n.ready?'ready':'activated';
-      return `<div class="tracker-operative npo ${cls}"><span>${escapeHtml(npoName(n))}</span><span class="tracker-operative-status">${eliminated?'<span class="tracker-elimination-icon" aria-hidden="true">☠</span>':''}<strong>${status}</strong></span></div>`;
+    const npoRows=sortedNposForDisplay(trackerNpos()).map(n=>{
+      const trackerStatus=npoTrackerStatus(n);
+      return `<div class="tracker-operative npo ${trackerStatus.className}"><span>${escapeHtml(npoName(n))}</span><span class="tracker-operative-status">${trackerStatus.status==='ELIMINATED'?'<span class="tracker-elimination-icon" aria-hidden="true">☠</span>':''}<strong>${trackerStatus.status}</strong></span></div>`;
     }).join('');
     return `<section class="card activation-tracker"><details class="activation-details">
       <summary><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div></summary>
@@ -2297,9 +2314,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         let n=reserveNpos().find(candidate=>candidate.type===type&&!state.reinforcementState.operativeIds.includes(candidate.id)&&!state.reinforcementState.blockedOperativeIds.includes(candidate.id));
         if(n){
           n.reinforcement={turningPoint:state.turningPoint,placementConfirmed:false};
-          n.battlefieldState='deployed';n.deployed=true;n.dormant=state.threat===0;n.ready=!n.dormant;
+          n.battlefieldState='reserve';n.deployed=false;n.dormant=false;n.ready=false;
         }else{
-          n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId,deployed:true,reinforcement:{turningPoint:state.turningPoint,placementConfirmed:false}});
+          n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId,deployed:false,reinforcement:{turningPoint:state.turningPoint,placementConfirmed:false}});
           if(!commitNpoRoster([...state.roster,n],'add a reinforcement')){blocked++;continue;}
           state.newIds.push(n.id);
         }
@@ -2325,8 +2342,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const npo=state.roster.find(item=>item.id===id&&state.reinforcementState.operativeIds.includes(item.id));
     if(!npo?.reinforcement)return;
     npo.reinforcement.placementConfirmed=Boolean(confirmed);
-    npo.deployed=true;
-    npo.battlefieldState='deployed';
+    npo.deployed=npo.reinforcement.placementConfirmed;
+    npo.battlefieldState=npo.deployed?'deployed':'reserve';
+    npo.dormant=npo.deployed&&state.threat===0;
+    npo.ready=npo.deployed&&!npo.dormant;
     const complete=state.reinforcementState.operativeIds.every(operativeId=>state.roster.find(item=>item.id===operativeId)?.reinforcement?.placementConfirmed);
     state.reinforcementState.status=complete?'complete':'placement';
     save();render();

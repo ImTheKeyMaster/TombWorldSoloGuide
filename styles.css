@@ -775,6 +775,20 @@ button.tracker-operative:hover{
   border-color:var(--green);
   background:rgba(92,245,157,.09);
 }
+.tracker-operative.dormant{
+  border-color:#40584a;
+  background:rgba(80,104,89,.12);
+  color:#b5c4ba;
+}
+.tracker-operative.dormant strong,
+.tracker-operative.reserve strong{
+  color:var(--muted);
+}
+.tracker-operative.reserve{
+  border-color:#34473c;
+  background:#0a1711;
+  color:var(--muted);
+}
 .tracker-operative.spent{
   opacity:.55;
 }
