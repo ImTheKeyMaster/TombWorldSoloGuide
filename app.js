@@ -99,8 +99,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const configuredEngine=missionEngine(selectedMission), progressIds=configuredEngine?.progressIdsField&&state.missionState?.[configuredEngine.progressIdsField];
       if(configuredEngine?.objectiveId&&Array.isArray(progressIds))objectiveEngine.setObjectiveValue(configuredEngine.objectiveId,progressIds.length,missionLifecycleContext());
       if(!restoringRuntime)await executeMissionLifecycleHook('onMissionInitialized');
+      if(requestId!==missionLoadRequestId||state.missionId!==missionId)return;
     }catch(error){
       if(requestId!==missionLoadRequestId||state.missionId!==missionId)return;
+      objectiveEngine=null;objectiveDefinition=null;
       console.error('[MissionEngine] Mission automation unavailable.',{code:error.code||'LOAD_FAILED',missionId:selectedMission?.number,path:error.details?.path,reason:error.message});
       showToast('Mission automation could not be loaded. Track this mission manually.');
     }

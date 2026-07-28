@@ -13,7 +13,7 @@ class V710UiResponsivenessTests(unittest.TestCase):
         return APP.split(start, 1)[1].split(end, 1)[0]
 
     def test_mission_selection_renders_before_dependent_load(self):
-        binding = self.source("function bindSetup", "function missionChecklistBinding")
+        binding = self.source("function bindSetup", "function runStartingNpoGeneration")
         handler = binding.split("$$('.mission-choice')", 1)[1].split("$('#setupHome')", 1)[0]
         self.assertLess(handler.index("state.missionId=missionId"), handler.index("render()"))
         self.assertLess(handler.index("render()"), handler.index("setTimeout"))
@@ -26,16 +26,17 @@ class V710UiResponsivenessTests(unittest.TestCase):
     def test_latest_mission_load_wins_and_failure_preserves_selection(self):
         loader = self.source("async function loadObjectiveMission", "let playerManifest")
         self.assertIn("const requestId=++missionLoadRequestId", loader)
-        self.assertGreaterEqual(loader.count("requestId!==missionLoadRequestId||state.missionId!==missionId"), 2)
+        self.assertGreaterEqual(loader.count("requestId!==missionLoadRequestId||state.missionId!==missionId"), 3)
         self.assertLess(loader.index("await TombWorldMissionEngine.loadMissionDefinition"), loader.index("objectiveDefinition=definition"))
         stale_guard = loader.index("requestId!==missionLoadRequestId||state.missionId!==missionId")
         self.assertLess(stale_guard, loader.index("objectiveDefinition=definition"))
         self.assertIn("showToast('Mission automation could not be loaded.", loader)
+        self.assertIn("objectiveEngine=null;objectiveDefinition=null", loader.split("catch(error)", 1)[1])
         self.assertNotIn("state.missionId=", loader)
 
     def test_deployment_has_no_editor_or_regeneration_control(self):
         deployment = self.source("if(stepId==='deploy'){", "const m=mission();")
-        binding = self.source("function bindSetup", "function missionChecklistBinding")
+        binding = self.source("function bindSetup", "function runStartingNpoGeneration")
         self.assertNotIn("Edit generated NPO roster", deployment)
         self.assertNotIn("addSetupNpo", deployment)
         self.assertNotIn("regenerateNpoRoster", deployment)
