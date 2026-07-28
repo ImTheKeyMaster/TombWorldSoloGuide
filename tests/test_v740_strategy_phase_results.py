@@ -22,7 +22,7 @@ class StrategyPhaseResultsTests(unittest.TestCase):
         ]
         positions = [rendered.index(value) for value in order]
         self.assertEqual(positions, sorted(positions))
-        self.assertIn('missionStrategyPromptHtml()}${scuttlingCard}', STRATEGY)
+        self.assertIn("missionStrategyPromptHtml()}${factionGuidanceHtml('gambits')}${scuttlingCard}", STRATEGY)
         self.assertNotIn('Restless Tomb:</strong> Resolve one Tomb World event.', APP)
 
     def test_empty_actions_and_events_sections_are_omitted(self):
@@ -51,11 +51,16 @@ assert.equal(strategyEventRequirementLabel(data,result),'1 event required by Res
 assert.equal(JSON.stringify(data),before);
 data.normalEventCount=1;
 assert.equal(strategyEventRequirementLabel(data,result),'1 event required by the standard Tomb World rules.');
+data.normalEventCount=0;
+events[1].requiredBy='standard';
+assert.equal(strategyEventRequirementLabel(data,result),'1 event required by the standard Tomb World rules.');
+events[1].requiredBy='restless-tomb';
 data.requiredEventCount=2;
+data.normalEventCount=2;
 result.required=2;
 assert.equal(strategyEventRequirementLabel(data,result),'2 events required by the standard Tomb World rules.');
 state.turningPoint=3;
-assert.deepEqual(strategyEventPresentation(data),{{required:2,cardsDrawn:0,resolved:0,events:[]}});
+assert.deepEqual(strategyEventPresentation(data),{{required:0,cardsDrawn:0,resolved:0,events:[]}});
 """
         result = subprocess.run(['node', '-e', script], cwd=ROOT, text=True, capture_output=True)
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)

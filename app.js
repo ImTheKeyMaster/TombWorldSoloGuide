@@ -1884,13 +1884,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(missionEngine()?.type!=='escape'||state.turningPoint<=1||state.missionState.escapedIds.length)return '';
     const calibration=state.missionState.auspexCalibrations[state.turningPoint];
     if(calibration)return `<div class="summary-box"><p class="eyebrow">MISSION RULE</p><strong>Auspex Calibration</strong><br>${escapeHtml(calibration.instruction)}</div>`;
-    return `<div class="summary-box"><p class="eyebrow">MISSION RULE</p><strong>Auspex Calibration</strong><br>No operatives have escaped. Resolve the mission’s Strategic Gambit before continuing.<div class="event-controls"><button class="btn secondary" id="resolveAuspexCalibration">Roll Auspex Calibration</button></div></div>`;
+    return `<div class="summary-box"><p class="eyebrow">MISSION RULE</p><strong>Auspex Calibration</strong><br>No operatives have escaped. Resolve this mission rule before continuing.<div class="event-controls"><button class="btn secondary" id="resolveAuspexCalibration">Roll Auspex Calibration</button></div></div>`;
   }
 
   function strategyEventPresentation(data=state.strategyData||{}){
-    const currentEvents=data.eventRequirementTurningPoint===state.turningPoint&&Array.isArray(data.events)?data.events:[];
+    const currentRequirement=data.eventRequirementTurningPoint===state.turningPoint;
+    const currentEvents=currentRequirement&&Array.isArray(data.events)?data.events:[];
     return {
-      required:Number(data.requiredEventCount)||0,
+      required:currentRequirement?(Number(data.requiredEventCount)||0):0,
       cardsDrawn:currentEvents.length,
       resolved:currentEvents.filter(event=>event.status==='resolved').length,
       events:currentEvents
@@ -1900,7 +1901,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function strategyEventRequirementLabel(data,presentation){
     if(!presentation.required)return '';
     const eventWord=presentation.required===1?'event':'events';
-    const source=Number(data.normalEventCount)>0?'the standard Tomb World rules':'Restless Tomb';
+    const standardRequired=Number(data.normalEventCount)>0||presentation.events.some(event=>event.requiredBy==='standard');
+    const source=standardRequired?'the standard Tomb World rules':'Restless Tomb';
     return `${presentation.required} ${eventWord} required by ${source}.`;
   }
 
@@ -1923,7 +1925,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const showStatTooltips=!window.matchMedia('(max-width:600px)').matches;
       const tooltipAttrs=text=>showStatTooltips?` tabindex="0" data-tooltip="${text}"`:'';
       const infoDot=showStatTooltips?'<span class="info-dot">i</span>':'';
-      const actionsHtml=`${factionGuidanceHtml('gambits')}${missionStrategyPromptHtml()}${scuttlingCard}`;
+      const actionsHtml=`${missionStrategyPromptHtml()}${factionGuidanceHtml('gambits')}${scuttlingCard}`;
       const actionsSection=actionsHtml?`<section class="strategy-actions-section" aria-labelledby="strategy-actions-heading"><h3 id="strategy-actions-heading" class="strategy-section-heading">Resolve Strategy Phase Actions</h3>${actionsHtml}</section>`:'';
       const showEvents=eventPresentation.required||eventPresentation.cardsDrawn||activeEvents;
       const requirementLabel=strategyEventRequirementLabel(d,eventPresentation);
