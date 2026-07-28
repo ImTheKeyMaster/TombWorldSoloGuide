@@ -1,4 +1,15 @@
-# Tomb World Solo Guide v7.0.3
+# Tomb World Solo Guide v7.0.4
+
+## v7.0.4
+
+**Version 7.0.4 - Text-Based NPO Displays**
+
+- Removed the obsolete Canoptek Circle miniature portraits and kept active NPO catalog, roster, deployment, activation, combat, and selector displays compact and text based.
+- Removed the remaining NPO portrait asset dependency without adding replacement thumbnails, fallbacks, loading handlers, or cache entries.
+- Preserved player-operative image assets, mission maps, action and status icons, and the eliminated-NPO skull overlay and red card border.
+- Preserved NPO gameplay behavior, save identity, alphabetical display ordering, and the intentional exclusion of the Obelisk Node Matrix.
+
+---
 
 ## v7.0.3
 
