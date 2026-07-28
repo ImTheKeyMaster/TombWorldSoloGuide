@@ -1398,7 +1398,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const deploymentCheck=placementChecks.find(check=>check.id==='starting-npos');
       const otherPlacementChecks=placementChecks.filter(check=>check.id!=='starting-npos');
       const deploymentInstruction=`Deploy the ${generation.deploymentCount} selected starting NPOs.`;
-      const deployedNpoRoster=generation.deployedNpoIds.map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean).map(npo=>escapeHtml(npoName(npo))).join(' • ');
+      const deployedNpoRoster=sortedNposForDisplay(generation.deployedNpoIds.map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean)).map(npo=>escapeHtml(npoName(npo))).join(' • ');
       const playerRoster=(state.playerRoster||[]).map(id=>playerDefinition(id)).filter(Boolean).map(operative=>escapeHtml(operative.name)).join(' • ');
       const deploymentDetails=mission().startingNpos?.deployment||'Use the mission deployment rules.';
       const selectionComplete=generation.deployedNpoIds.length===generation.deploymentCount&&generation.deployedNpoIds.length+generation.reserveNpoIds.length===generation.availableNpos;
@@ -1409,7 +1409,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const {minRoster,maxRoster}=playerRosterLimits();
       const playerValid=playerRosterValidation().valid;
       const inventory=npoInventory(),remaining=Object.values(inventory).reduce((sum,item)=>sum+item.remaining,0);
-      const rosterEditor=`<details class="operative-guidance"><summary>Edit generated NPO roster · ${remaining} models remaining</summary><div class="setup-bulk-row"><button class="btn secondary" id="addSetupNpo" ${remaining?'':'disabled'}>Add NPO</button></div><div class="player-roster-grid npo-roster-grid">${state.roster.map(npo=>npoRosterCard(npo,false)).join('')}</div></details>`;
+      const rosterEditor=`<details class="operative-guidance"><summary>Edit generated NPO roster · ${remaining} models remaining</summary><div class="setup-bulk-row"><button class="btn secondary" id="addSetupNpo" ${remaining?'':'disabled'}>Add NPO</button></div><div class="player-roster-grid npo-roster-grid">${sortedNposForDisplay(state.roster).map(npo=>npoRosterCard(npo,false)).join('')}</div></details>`;
       return `<h3>Deploy Kill Teams</h3><p>Use the generated rosters to place both forces, then confirm every mission requirement and resource choice.</p>${missionRoll}${rosterEditor}${factionGuidanceHtml()}<div class="setup-bulk-row"><button class="btn secondary" id="regenerateNpoRoster">Regenerate NPO Roster</button>${hasStartingNpos?`<button class="btn secondary" id="checkAllDeployment" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'disabled':''}>Check All</button>`:''}</div><div class="checklist deployment-checklist">${deploymentRow}${setupChecklistHtml(otherPlacementChecks)}<label class="check-row deployment-check"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${playerValid?'':'disabled'}><span><strong>Deploy ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} Kill Team</strong><span class="deployment-roster">• ${playerRoster}</span><small>All selected Player operatives are on the battlefield.</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'':'disabled'}>Deployment Complete</button></div>`;
     }
     const m=mission();
@@ -1741,11 +1741,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(state.strategyStage==='summary'){
       const reinforcementPending=Boolean(d.eventPending);
       const placementPending=state.reinforcementState.status==='placement', missionPending=missionStrategyPending();
-      const deployingNpos=(state.reinforcementState.operativeIds||[]).map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean);
-      const blockedNpos=(state.reinforcementState.blockedOperativeIds||[]).map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean);
+      const deployingNpos=sortedNposForDisplay((state.reinforcementState.operativeIds||[]).map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean));
+      const blockedNpos=sortedNposForDisplay((state.reinforcementState.blockedOperativeIds||[]).map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean));
       const reinforcementCard=deployingNpos.length||d.blocked
         ? `<section class="card reinforcement-card"><p class="eyebrow">REINFORCEMENTS</p>${deployingNpos.length?`<h3>Deploy ${deployingNpos.length} NPO${deployingNpos.length===1?'':'s'}</h3><ul class="reinforcement-list">${deployingNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul><p>Deploy ${deployingNpos.length===1?'this NPO':'these NPOs'} onto the battlefield using the Tomb World reinforcement rules.</p>`:''}${d.blocked?`<div class="reinforcement-blocked"><h3>Unable to Deploy</h3>${blockedNpos.length?`<ul class="reinforcement-list">${blockedNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul>`:`<p>${d.blocked} reinforcement${d.blocked===1?'':'s'}</p>`}<p>Battlefield capacity was reached or no legal physical model remains.</p></div>`:''}</section>`:'';
-      const placements=(state.reinforcementState.operativeIds||[]).map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean).map(npo=>`<label class="check-row"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong><small>Randomly determine an open hatchway, set up this operative with a Conceal order using the printed placement requirements, then confirm.</small></span></label>`).join('');
+      const placements=deployingNpos.map(npo=>`<label class="check-row"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong><small>Randomly determine an open hatchway, set up this operative with a Conceal order using the printed placement requirements, then confirm.</small></span></label>`).join('');
       const resolvedEvents=(d.events||[]).filter(event=>event!==d.event&&event.status!=='drawn').map(strategyEventHtml).join('');
       const activeEvents=(state.eventState.active||[]).map(event=>`<div class="summary-box"><strong>${escapeHtml(event.title)}</strong><br>${escapeHtml(event.text)}</div>`).join('');
       const showStatTooltips=!window.matchMedia('(max-width:600px)').matches;
@@ -1861,7 +1861,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       'tabletop-confirm':'Confirm Tabletop Resolution'
     };
     const scarabChoices=event.execution.type==='chittering-drone'&&Array.isArray(event.eligibleNpoIds)&&event.eligibleNpoIds.length>1
-      ? `<div class="field"><label for="eventNpoSelect">Wounded Scarab Swarm</label><select id="eventNpoSelect"><option value="">Select a Scarab Swarm...</option>${event.eligibleNpoIds.map(id=>{const n=activeNpos().find(item=>item.id===id);return n?`<option value="${escapeHtml(id)}">${escapeHtml(npoName(n))} — ${n.wounds} of ${n.maxWounds} wounds</option>`:'';}).join('')}</select></div>`:'';
+      ? `<div class="field"><label for="eventNpoSelect">Wounded Scarab Swarm</label><select id="eventNpoSelect"><option value="">Select a Scarab Swarm...</option>${sortedNposForDisplay(event.eligibleNpoIds.map(id=>activeNpos().find(item=>item.id===id)).filter(Boolean)).map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(npoName(n))} — ${n.wounds} of ${n.maxWounds} wounds</option>`).join('')}</select></div>`:'';
     const impossibleControl=event.execution.type==='maze-reforms'?'<button class="btn secondary" id="redrawStrategyEvent">No Valid Changes · Draw Again</button>':'';
     return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}<div class="event-controls">${scarabChoices}<button class="btn primary" id="resolveStrategyEvent" ${scarabChoices?'disabled':''}>${labels[event.definitionId]||labels[event.execution.type]||'Resolve Event'}</button>${impossibleControl}</div></div>`;
   }
@@ -1880,7 +1880,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         <span>${escapeHtml(operative?.name||operativeId)}</span><span class="tracker-operative-status">${casualty?'<span class="tracker-elimination-icon" aria-hidden="true">☠</span>':''}<strong>${status}</strong></span>
       </button>`;
     }).join('');
-    const npoRows=state.roster.map(n=>{
+    const npoRows=sortedNposForDisplay(state.roster).map(n=>{
       const eliminated=n.wounds<=0;
       const status=eliminated?'ELIMINATED':n.dormant?'DORMANT':n.ready?'READY':'ACTIVATED';
       const cls=eliminated?'eliminated':n.ready?'ready':'activated';
@@ -2256,7 +2256,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function showNpoSelection(){
     const candidates=readyNpos();
     if(candidates.length===1){state.activeNpoId=candidates[0].id;notifyMissionActivationStarted('npo',candidates[0].id);runNpoPrompt(candidates[0],0,{},[]);return;}
-    const options=candidates.map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(npoName(n))}</option>`).join('');
+    const options=sortedNposForDisplay(candidates).map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(npoName(n))}</option>`).join('');
     showModal('Select NPO to Activate',`<p>Use the Threat Principle in order. Select an NPO that:</p><ol><li>has an ability, or is a threat, to Shoot or Fight a Player operative;</li><li>is not in cover;</li><li>is closest to a Player operative.</li></ol><p class="muted">If more than one NPO is still tied, determine one at random on the tabletop.</p><div class="field"><label for="officialNpoSelection">Next ready NPO</label><select id="officialNpoSelection"><option value="">Select matching NPO</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Exit Guide</button><button class="btn primary" id="confirmNpoSelection" disabled>Continue</button></div>`);
     $('#officialNpoSelection').onchange=()=>{$('#confirmNpoSelection').disabled=!$('#officialNpoSelection').value;};
     $('#confirmNpoSelection').onclick=()=>{const n=candidates.find(item=>item.id===$('#officialNpoSelection').value);if(!n)return;state.activeNpoId=n.id;notifyMissionActivationStarted('npo',n.id);save();runNpoPrompt(n,0,{},[]);};
@@ -2751,6 +2751,18 @@ function showPlayerActivation(stage={}){
     return `${n.type} ${n.displayNumber||1}`;
   }
 
+  function compareNpoDisplayNames(a,b){
+    const displayName=value=>typeof value==='string'?value:npoName(value);
+    return String(displayName(a)||'').localeCompare(String(displayName(b)||''),undefined,{numeric:true,sensitivity:'base'});
+  }
+
+  function sortedNposForDisplay(npos){
+    return [...(Array.isArray(npos)?npos:[])]
+      .map((npo,index)=>({npo,index}))
+      .sort((a,b)=>compareNpoDisplayNames(a.npo,b.npo)||a.index-b.index)
+      .map(item=>item.npo);
+  }
+
   function sortOperativesGlobally(){
     const compareText=(a,b)=>String(a||'').localeCompare(String(b||''),undefined,{sensitivity:'base',numeric:true});
 
@@ -2764,11 +2776,6 @@ function showPlayerActivation(stage={}){
       state.playerRoster.sort((a,b)=>compareText(playerName(a),playerName(b))||compareText(a,b));
     }
 
-    // Sort the authoritative NPO roster by type. The centralized npoName()
-    // function then assigns duplicate numbers consistently everywhere.
-    if(Array.isArray(state.roster)){
-      state.roster.sort((a,b)=>compareText(a.type,b.type)||compareText(a.id,b.id));
-    }
   }
 
   function playerAttackWeapons(operativeId,attackType){
@@ -3005,7 +3012,7 @@ function showPlayerActivation(stage={}){
   }
 
   function showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel){
-    const targets=activeNpos().filter(n=>projectedNpoWounds(n.id,stage)>0);
+    const targets=sortedNposForDisplay(activeNpos().filter(n=>projectedNpoWounds(n.id,stage)>0));
     if(!targets.length){
       showToast('No active NPO is available as a target.');
       showPlayerActivation(stage);
@@ -3764,7 +3771,7 @@ function showPlayerActivation(stage={}){
       <section class="card"><h3>Mission rules</h3><div class="mission-rules">${rules}</div></section>
       <section class="card"><h3>Victory</h3><p><strong>Win:</strong> ${escapeHtml(m.victory?.win||'See mission rules.')}</p><p><strong>Lose:</strong> ${escapeHtml(m.victory?.lose||'See mission rules.')}</p></section>${missionProgressHtml()}`;
   }
-  function renderRoster(){const available=Object.values(npoInventory()).reduce((sum,item)=>sum+item.remaining,0);app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">NPO ROSTER</p><h2>${activeNpos().length} active NPOs</h2><p>${available} of ${MAX_PHYSICAL_NPOS} physical models remain available. Activation status is tracked automatically.</p></div><button class="btn secondary" id="addNpo" ${available?'':'disabled'}>Add NPO</button></div><div class="player-roster-grid npo-roster-grid">${state.roster.length?state.roster.map(n=>npoRosterCard(n,n.battlefieldState==='deployed'||n.wounds<=0)).join(''):'<div class="card empty">No NPOs are currently on the battlefield.</div>'}</div>`;$('#addNpo').onclick=showAddNpo;$$('[data-wound]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.wound,-1));$$('[data-heal]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.heal,1));$$('[data-delete]').forEach(b=>b.onclick=()=>deleteNpo(b.dataset.delete));$$('[data-npo-loadout]').forEach(select=>select.onchange=()=>changeNpoLoadout(select.dataset.npoLoadout,select.value));}
+  function renderRoster(){const available=Object.values(npoInventory()).reduce((sum,item)=>sum+item.remaining,0);app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">NPO ROSTER</p><h2>${activeNpos().length} active NPOs</h2><p>${available} of ${MAX_PHYSICAL_NPOS} physical models remain available. Activation status is tracked automatically.</p></div><button class="btn secondary" id="addNpo" ${available?'':'disabled'}>Add NPO</button></div><div class="player-roster-grid npo-roster-grid">${state.roster.length?sortedNposForDisplay(state.roster).map(n=>npoRosterCard(n,n.battlefieldState==='deployed'||n.wounds<=0)).join(''):'<div class="card empty">No NPOs are currently on the battlefield.</div>'}</div>`;$('#addNpo').onclick=showAddNpo;$$('[data-wound]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.wound,-1));$$('[data-heal]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.heal,1));$$('[data-delete]').forEach(b=>b.onclick=()=>deleteNpo(b.dataset.delete));$$('[data-npo-loadout]').forEach(select=>select.onchange=()=>changeNpoLoadout(select.dataset.npoLoadout,select.value));}
   function renderPlayerRoster(){
     const casualties=new Set(state.playerCasualtyIds||[]);
     const activated=new Set(state.playerActivatedIds||[]);
@@ -3835,9 +3842,9 @@ function showPlayerActivation(stage={}){
     if(rawLabel==='REGROUP') return `<g class="guide-map-marker guide-map-regroup" transform="translate(${x} ${y})"><circle r="27"/><path d="M-12 0H12M0-12V12"/><text class="guide-map-marker-caption" y="46" text-anchor="middle">REGROUP</text></g>`;
     return `<g class="guide-map-marker guide-map-objective" transform="translate(${x} ${y})"><path d="M0-18 18 0 0 18-18 0Z"/><text y="5" text-anchor="middle">${label}</text></g>`;
   }
-  function rosterBreakdown(){const counts={};state.roster.forEach(n=>counts[n.type]=(counts[n.type]||0)+1);return Object.entries(counts).map(([k,v])=>`${v} ${k}${v>1?'s':''}`).join(' · ')||'No starting NPOs';}
+  function rosterBreakdown(){const counts={};state.roster.forEach(n=>counts[n.type]=(counts[n.type]||0)+1);return Object.entries(counts).sort(([a],[b])=>compareNpoDisplayNames(a,b)).map(([k,v])=>`${v} ${k}${v>1?'s':''}`).join(' · ')||'No starting NPOs';}
   function showAddNpo(){
-    const inventory=npoInventory(),types=Object.keys(npoDefinitions);
+    const inventory=npoInventory(),types=sortedNposForDisplay(Object.keys(npoDefinitions));
     showModal('Add NPO',`<div class="field"><label>NPO type</label><select id="newNpoType">${types.map(type=>`<option value="${escapeHtml(type)}" ${inventory[type].remaining?'':'disabled'}>${escapeHtml(type)} — ${inventory[type].remaining} remaining</option>`).join('')}</select></div><div id="newNpoLoadout"></div><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmAdd">Add NPO</button></div>`);
     const renderLoadout=()=>{const type=$('#newNpoType').value,definition=npoDefinition(type),isolatorUsed=state.roster.some(npo=>npo.type===TOMB_CRAWLER_TYPE&&npo.weaponId===ISOLATOR_LOADOUT);$('#newNpoLoadout').innerHTML=definition?.loadoutOptions?`<div class="field"><label>Loadout</label><select id="newNpoWeapon">${definition.loadoutOptions.map(option=>`<option value="${option.id}" ${option.id===ISOLATOR_LOADOUT&&isolatorUsed?'disabled':''}>${escapeHtml(option.name)}</option>`).join('')}</select></div>`:'';};
     $('#newNpoType').onchange=renderLoadout;renderLoadout();
