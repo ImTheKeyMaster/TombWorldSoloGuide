@@ -21,7 +21,7 @@ class RemediationPr2Tests(unittest.TestCase):
         ]
         expected_types = {
             2: "Canoptek Scarab Swarm", 3: "Canoptek Scarab Swarm",
-            4: "Canoptek Macrocyte", 5: "Canoptek Macrocyte", 6: "Canoptek Macrocyte",
+            4: "Canoptek Macrocyte Warrior", 5: "Canoptek Macrocyte Warrior", 6: "Canoptek Macrocyte Warrior",
             7: "Necron Warrior", 8: "Necron Warrior", 9: "Necron Warrior", 10: "Necron Warrior",
             11: "Canoptek Tomb Crawler", 12: "Canoptek Tomb Crawler",
         }
@@ -56,10 +56,10 @@ class RemediationPr2Tests(unittest.TestCase):
             "Canoptek Scarab Swarm": (6, 2, 5, 10, 40),
             "Necron Warrior": (5, 2, 4, 9, 32),
             "Canoptek Tomb Crawler": (5, 2, 3, 21, 50),
-            "Canoptek Macrocyte": (7, 2, 4, 7, 28),
+            "Canoptek Macrocyte Warrior": (7, 2, 4, 7, 28),
         }
         for operative, (move, apl, save, wounds, base_size) in expected.items():
-            pattern = rf"name:'{re.escape(operative)}',type:'{re.escape(operative)}',move:{move},apl:{apl},save:{save},wounds:{wounds},baseSize:{base_size}"
+            pattern = rf"id:'[^']+',name:'{re.escape(operative)}',type:'{re.escape(operative)}',faction:'[^']+',physicalQuantity:\d+(?:,|,\n      loadoutOptions:\[[^\n]+\],\n      )move:{move},apl:{apl},save:{save},wounds:{wounds},baseSize:{base_size}"
             self.assertRegex(self.app, pattern)
         self.assertEqual(self.app.count("const npoDefinitions = {"), 1)
 

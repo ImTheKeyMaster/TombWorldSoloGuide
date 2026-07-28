@@ -81,9 +81,9 @@ assert.equal(engine.getMissionRuntime().history.length,0);assert.equal(engine.ge
         self.assertIn("setThreat(gradeFloor-state.threat,'Scout Room')",app)
         self.assertIn("stage.hatch&&state.missionId!=='scout-sub-crypt'",app)
         self.assertIn("'./Missions/definition-05-scout-sub-crypt.json'",worker)
-        self.assertIn("const APP_VERSION = '6.7.5'",app)
-        self.assertIn("const APP_VERSION = '6.7.5'",worker)
-        self.assertIn('V6.7.5',index)
+        self.assertIn("const APP_VERSION = '7.0.0'",app)
+        self.assertIn("const APP_VERSION = '7.0.0'",worker)
+        self.assertIn('V7.0.0',index)
 
 
 if __name__ == '__main__':
