@@ -1,4 +1,15 @@
-# Tomb World Solo Guide v7.0.2
+# Tomb World Solo Guide v7.0.3
+
+## v7.0.3
+
+**Version 7.0.3 - Canoptek Circle Activation and Combat Integration**
+
+- Integrated all five Canoptek Circle types into the shared NPO activation recommendation, effective-APL, action-legality, target-selection, and combat flows.
+- Added loadout-aware attacks and weapon modes, guided Canoptek support actions, Reanimate and Nanoscarab Beam resolution, and Canoptek incapacitation and post-attack effects.
+- Added A Ceaseless Scuttling to the Strategy Phase with a new-instance physical-model exception, plus persistent rule history, threat-safe state, and turning-point restrictions.
+- Preserved alphabetical presentation, existing Necron Host behavior, and the intentional exclusion of the Obelisk Node Matrix and NPO portraits.
+
+---
 
 ## v7.0.2
 
