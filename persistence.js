@@ -11,14 +11,9 @@
     'matrixDerivedApl','matrixWeaponModifiers','matrixActionTargets','matrixMovementHistory',
     'pendingMatrixQuestion','matrixUiStep'
   ]);
-  // Every alias below is present in the pre-v7 catalog or its saved weapon/name fields.
+  // This is the only superseded type name present in repository history.
   const LEGACY_TYPE_ALIASES = Object.freeze({
-    'canoptek macrocyte':'Canoptek Macrocyte Warrior',
-    'macrocyte warrior':'Canoptek Macrocyte Warrior',
-    'macrocyte accelerator':'Canoptek Macrocyte Accelerator',
-    'macrocyte reanimator':'Canoptek Macrocyte Reanimator',
-    'tomb crawler':'Canoptek Tomb Crawler',
-    'scarab swarm':'Canoptek Scarab Swarm'
+    'canoptek macrocyte':'Canoptek Macrocyte Warrior'
   });
   // Repository history contains no other named retired catalog entry. Unknown legacy
   // identities are still reported explicitly and can never be guessed into this set.
@@ -64,7 +59,7 @@
     }
     return cleaned;
   }
-  function migrate1to2(save){return {...stripObsoleteMatrixState(save),saveVersion:2};}
+  function migrate1to2(save,report){return {...stripObsoleteMatrixState(save,report),saveVersion:2};}
   function migrate2to3(save){return {...save,saveVersion:3};}
   const migrations = {0:migrate0to1,1:migrate1to2,2:migrate2to3};
 
@@ -142,7 +137,10 @@
     });
     Object.entries(counts).forEach(([type,count])=>{
       const definition=catalog[type];
-      const scuttling=count-definition.physicalQuantity<=roster.filter(npo=>npo.type===type&&npo.createdBy==='a-ceaseless-scuttling').length;
+      const living=roster.filter(npo=>npo.type===type&&npo.wounds>0).length;
+      const scuttling=type==='Canoptek Macrocyte Warrior'
+        && living<=definition.physicalQuantity
+        && count-definition.physicalQuantity<=roster.filter(npo=>npo.type===type&&npo.createdBy==='a-ceaseless-scuttling').length;
       if(count>definition.physicalQuantity&&!scuttling)report.invalidPhysicalLimits.push(`${type}: ${count} of ${definition.physicalQuantity}`);
     });
     const isolators=roster.filter(npo=>npo.type==='Canoptek Tomb Crawler'&&npo.weaponId==='transdimensional-isolator').length;
@@ -174,8 +172,8 @@
     if(report.pendingStateCleared.length){save.activeNpoId=null;save.npoAttackTargetId=null;}
   }
   function resetActiveBattle(save){
-    const preserved={missionId:save.missionId,playerTeamId:save.playerTeamId,playerTeamFile:save.playerTeamFile,playerRoster:save.playerRoster,playerRosterInitializedForTeamId:save.playerRosterInitializedForTeamId,journal:save.journal,preferences:save.preferences,settings:save.settings};
-    return {...save,...preserved,screen:'setup',tab:'play',setupStep:0,setupChecks:{},roster:[],turningPoint:0,phase:'setup',initiative:'player',nextSide:'player',playerDeployed:false,playerActivatedIds:[],playerCasualtyIds:[],playerWounds:{},playerOperativeStates:{},activeNpoId:null,lastActivation:null,npoAttackTargetId:null,npoAttackSummary:null,combatState:null,activationHistory:[],reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0},strategyStage:null,strategyData:null,strategyPipeline:null,npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[]},startingNpoGeneration:null,gameEnd:null,completed:false};
+    const completedJournal=save.completed||save.gameEnd?records(save.journal):[];
+    return {...save,screen:'setup',tab:'play',setupStep:0,setupChecks:{},roster:[],playerRosterInitializedForTeamId:'',turningPoint:0,threat:0,tracker:0,phase:'setup',initiative:'player',nextSide:'player',playerDeployed:false,playerActivatedIds:[],playerCasualtyIds:[],playerWounds:{},playerOperativeStates:{},playerReady:0,activeNpoId:null,lastActivation:null,npoAttackTargetId:null,npoAttackSummary:null,combatState:null,journal:completedJournal,activationHistory:[],activationNumber:0,totalActivationsThisTP:0,playerActivated:0,npoActivated:0,reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0},strategyStage:null,strategyData:null,strategyPipeline:null,missionState:null,missionRuntime:null,missionReadyContext:{sarcophagusControllers:0},npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[]},startingNpoGeneration:null,eventState:{},gameEnd:null,completed:false};
   }
 
   function normalizeSave(save){
@@ -197,7 +195,12 @@
     if(!Number.isInteger(version)||version<0)throw new TypeError('Saved game has an invalid saveVersion.');
     if(version>SAVE_VERSION)throw new Error(`Save schema ${version} is newer than supported schema ${SAVE_VERSION}.`);
     const report=migrationReport(version);
-    while(version<SAVE_VERSION){const migration=migrations[version];if(typeof migration!=='function')throw new Error(`No migration is available from save schema ${version}.`);migrated=migration(migrated);version=migrated.saveVersion;}
+    while(version<SAVE_VERSION){
+      const migration=migrations[version];if(typeof migration!=='function')throw new Error(`No migration is available from save schema ${version}.`);
+      migrated=migration(migrated,report);
+      if(!Number.isInteger(migrated.saveVersion)||migrated.saveVersion<=version)throw new Error(`Migration from save schema ${version} did not advance the version.`);
+      version=migrated.saveVersion;
+    }
     migrated=stripObsoleteMatrixState(migrated,report);migrated.roster=normalizeActiveRoster(migrated,catalog,report);validateAllocation(migrated.roster,catalog,report);normalizeRuleState(migrated,migrated.roster,report);clearUnsafePendingState(migrated,migrated.roster,report);
     report.unsupportedRetiredTypes=[...new Set(report.unsupportedRetiredTypes)];
     report.outcome=report.requiresRegeneration?'regeneration-required':(report.aliasesApplied.length||report.instanceIdsCreated.length||report.loadoutsNormalized.length||report.woundsClamped.length||report.portraitFieldsRemoved||report.matrixFieldsRemoved||report.temporaryEffectsRemoved||report.pendingStateCleared.length?'migrated':'current');
@@ -209,7 +212,12 @@
     let migrated=clone(save),version=migrated.saveVersion===undefined?0:migrated.saveVersion;
     if(!Number.isInteger(version)||version<0)throw new TypeError('Saved game has an invalid saveVersion.');
     if(version>SAVE_VERSION)throw new Error(`Save schema ${version} is newer than supported schema ${SAVE_VERSION}.`);
-    while(version<SAVE_VERSION){const migration=migrations[version];if(!migration)throw new Error(`No migration is available from save schema ${version}.`);migrated=migration(migrated);version=migrated.saveVersion;}
+    while(version<SAVE_VERSION){
+      const migration=migrations[version];if(!migration)throw new Error(`No migration is available from save schema ${version}.`);
+      migrated=migration(migrated);
+      if(!Number.isInteger(migrated.saveVersion)||migrated.saveVersion<=version)throw new Error(`Migration from save schema ${version} did not advance the version.`);
+      version=migrated.saveVersion;
+    }
     return normalizeSave(migrated);
   }
   function createPersistedSave(state){

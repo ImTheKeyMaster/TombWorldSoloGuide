@@ -32,6 +32,7 @@ assert.equal(migrated.state.roster[0].portraitPath,undefined);
 assert.equal(migrated.state.obeliskNodeMatrix,undefined);
 assert.equal(migrated.state.playerOperativeStates.player.portrait,'keep.png');
 assert.equal(migrated.state.journal[0].npo,'Retired Sentinel');
+assert.ok(migrated.report.matrixFieldsRemoved>=2);
 assert.deepStrictEqual(p.migrateSaveDetailed(migrated.state,catalog).state,migrated.state);
 
 const retired=p.migrateSaveDetailed({saveVersion:2,roster:[{id:'old',type:'Crypt Sentinel'}],playerRoster:[]},catalog);
@@ -43,8 +44,10 @@ const excess=p.migrateSaveDetailed({saveVersion:2,roster:[1,2,3].map(i=>({id:`cr
 assert.equal(excess.report.requiresRegeneration,true);
 assert.ok(excess.report.invalidPhysicalLimits.length);
 
-const reset=p.resetActiveBattle({...retired.state,missionId:'04',playerRoster:['player'],journal:[{result:'won'}],settings:{sound:false},turningPoint:3});
-assert.equal(reset.turningPoint,0);assert.deepEqual(reset.roster,[]);assert.equal(reset.missionId,'04');assert.deepEqual(reset.playerRoster,['player']);assert.deepEqual(reset.journal,[{result:'won'}]);assert.deepEqual(reset.settings,{sound:false});
+const reset=p.resetActiveBattle({...retired.state,missionId:'04',playerRoster:['player'],journal:[{text:'uncommitted'}],settings:{sound:false},turningPoint:3,missionRuntime:{active:true},npoRuleState:{aplModifiers:[{ruleId:'overcharge'}]}});
+assert.equal(reset.turningPoint,0);assert.deepEqual(reset.roster,[]);assert.equal(reset.missionId,'04');assert.deepEqual(reset.playerRoster,['player']);assert.deepEqual(reset.journal,[]);assert.equal(reset.missionRuntime,null);assert.deepEqual(reset.npoRuleState.aplModifiers,[]);assert.deepEqual(reset.settings,{sound:false});
+const completedReset=p.resetActiveBattle({...retired.state,completed:true,journal:[{result:'won'}]});
+assert.deepEqual(completedReset.journal,[{result:'won'}]);
 const exported=p.createPersistedSave({...migrated.state,roster:[{...migrated.state.roster[0],portrait:'gone',obeliskMatrix:true}]});
 assert.equal(exported.saveVersion,3);assert.equal(exported.roster[0].portrait,undefined);assert.equal(exported.roster[0].obeliskMatrix,undefined);
 assert.equal(p.migrateSaveDetailed(exported,catalog).report.outcome,'current');
@@ -63,6 +66,7 @@ assert.equal(p.migrateSaveDetailed(exported,catalog).report.outcome,'current');
         self.assertIn("migrateSaveDetailed(data,npoDefinitions)", app)
         self.assertNotIn("TODO(v7 legacy-save migration)", app)
         self.assertIn("const RETIRED_NPO_TYPES = Object.freeze([])", persistence)
+        self.assertEqual(persistence.count("'canoptek macrocyte':"), 1)
         self.assertIn("const APP_VERSION = '7.0.6';", app)
 
 
