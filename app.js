@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.4.1';
+  const APP_VERSION = '7.4.2';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
 
@@ -1907,6 +1907,21 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return `${presentation.required} ${eventWord} required by ${source}.`;
   }
 
+  function strategyEventActiveEffect(event,activeEffects=state.eventState.active||[]){
+    return activeEffects.find(active=>{
+      if(event.instanceId&&active.instanceId)return event.instanceId===active.instanceId;
+      return Boolean(event.definitionId&&active.definitionId&&event.definitionId===active.definitionId);
+    })||null;
+  }
+
+  function strategyEventSummary(presentation){
+    const {required,cardsDrawn,resolved}=presentation;
+    return {
+      visible:`${required} required • ${cardsDrawn} ${cardsDrawn===1?'card':'cards'} drawn • ${resolved} resolved`,
+      accessible:`${required} ${required===1?'event':'events'} required, ${cardsDrawn} event ${cardsDrawn===1?'card':'cards'} drawn, ${resolved} ${resolved===1?'event':'events'} resolved`
+    };
+  }
+
   function strategyCard(){
     const d=state.strategyData||{};
     if(state.strategyStage==='mission-ready')return `<section class="next-card"><span class="phase">STRATEGY PHASE · READY STEP</span><h2>Mission event pending</h2><p>Complete the mission Ready-step event before initiative is determined.</p><button class="btn primary big-action" id="retryMissionReady">Continue Mission Event</button></section>`;
@@ -1922,16 +1937,18 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const displayedEvents=eventPresentation.events.filter((event,index)=>event.status!=='drawn'||index===d.eventIndex);
       const scuttlingEligible=ceaselessScuttlingEligible()&&d.ceaselessScuttlingTurningPoint!==state.turningPoint;
       const scuttlingCard=state.turningPoint>1?`<section class="card reinforcement-card"><p class="eyebrow">STRATEGIC GAMBIT</p><h3>A Ceaseless Scuttling</h3><p>${scuttlingEligible?'Fewer than three Macrocyte Warriors remain. You may reuse an incapacitated miniature to set up a new operative instance.':'Unavailable: three Warriors remain, or this gambit was already resolved this turning point.'}</p><button class="btn secondary" id="ceaselessScuttling" ${scuttlingEligible?'':'disabled'}>Use A Ceaseless Scuttling</button></section>`:'';
-      const activeEvents=(state.eventState.active||[]).map(event=>`<div class="summary-box"><strong>${escapeHtml(event.title)}</strong><br>${escapeHtml(event.text)}</div>`).join('');
+      const activeEffects=state.eventState.active||[];
+      const unmatchedActiveEffects=activeEffects.filter(active=>!displayedEvents.some(event=>strategyEventActiveEffect(event,[active])));
+      const unmatchedActiveEvents=unmatchedActiveEffects.map(event=>`<div class="summary-box"><strong>${escapeHtml(event.title)}</strong><br>${escapeHtml(event.text)}</div>`).join('');
       const showStatTooltips=!window.matchMedia('(max-width:600px)').matches;
       const tooltipAttrs=text=>showStatTooltips?` tabindex="0" data-tooltip="${text}"`:'';
       const infoDot=showStatTooltips?'<span class="info-dot">i</span>':'';
       const actionsHtml=`${missionStrategyPromptHtml()}${factionGuidanceHtml('gambits')}${scuttlingCard}`;
       const actionsSection=actionsHtml?`<section class="strategy-actions-section" aria-labelledby="strategy-actions-heading"><h3 id="strategy-actions-heading" class="strategy-section-heading">Resolve Strategy Phase Actions</h3>${actionsHtml}</section>`:'';
-      const showEvents=eventPresentation.required||eventPresentation.cardsDrawn||activeEvents;
+      const showEvents=eventPresentation.required||eventPresentation.cardsDrawn||unmatchedActiveEvents;
       const requirementLabel=strategyEventRequirementLabel(d,eventPresentation);
-      const eventSummary=`${eventPresentation.required} required • ${eventPresentation.cardsDrawn} cards drawn • ${eventPresentation.resolved} resolved`;
-      const eventsSection=showEvents?`<section class="strategy-events-section" aria-labelledby="strategy-events-heading"><h3 id="strategy-events-heading" class="strategy-section-heading">Tomb World Events</h3>${requirementLabel?`<p class="strategy-event-requirement">${escapeHtml(requirementLabel)}</p>`:''}<p class="strategy-event-summary" aria-label="${eventPresentation.required} ${eventPresentation.required===1?'event':'events'} required, ${eventPresentation.cardsDrawn} event ${eventPresentation.cardsDrawn===1?'card':'cards'} drawn, ${eventPresentation.resolved} ${eventPresentation.resolved===1?'event':'events'} resolved">${eventSummary}</p>${displayedEvents.map(strategyEventHtml).join('')}${activeEvents?`<h4>Active event effects</h4>${activeEvents}`:''}</section>`:'';
+      const eventSummary=strategyEventSummary(eventPresentation);
+      const eventsSection=showEvents?`<section class="strategy-events-section" aria-labelledby="strategy-events-heading"><h3 id="strategy-events-heading" class="strategy-section-heading">Tomb World Events</h3>${requirementLabel?`<p class="strategy-event-requirement">${escapeHtml(requirementLabel)}</p>`:''}<p class="strategy-event-summary" aria-label="${eventSummary.accessible}">${eventSummary.visible}</p>${displayedEvents.map(event=>strategyEventHtml(event,activeEffects)).join('')}${unmatchedActiveEvents?`<h4>Other Active Event Effects</h4>${unmatchedActiveEvents}`:''}</section>`:'';
       const reinforcementResults=reinforcementPending?'<div class="summary-box"><strong>Resolve the Tomb World event before generating reinforcements.</strong></div>':`${reinforcementCard}${deployingNpos.length?`<div class="checklist">${placements}</div>`:''}`;
       const battlefieldState=`<section class="battlefield-state-section" aria-labelledby="battlefield-state-heading"><h3 id="battlefield-state-heading" class="strategy-section-heading">Current Battlefield State</h3><div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat"${tooltipAttrs('Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events.')}><small>THREAT LEVEL ${infoDot}</small><strong>${state.threat}</strong></div><div class="stat tooltip-stat"${tooltipAttrs('Grade 0–3 is derived from Threat and determines reinforcement pressure and some events.')}><small>GRADE LEVEL ${infoDot}</small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat"${tooltipAttrs('The number of living NPOs that are Ready and may still activate during this Turning Point.')}><small>NPOs Ready ${infoDot}</small><strong>${readyNpos().length}</strong></div></div></section>`;
       return `<section class="next-card"><span class="phase">STRATEGY PHASE</span><h2>Complete the Strategy Phase</h2><p class="strategy-intro">Before continuing to initiative, complete the tabletop Strategy Phase for Turning Point ${state.turningPoint}.</p><div class="strategy-phase-guide"><h3>Strategy Phase Checklist</h3><ol><li>Generate Command Points (CP) as required by the game rules.</li><li>Play any Strategic Ploys you want to use this Turning Point.</li><li>Resolve abilities and mission rules that occur during the Strategy Phase.</li><li>Review the Guide's Threat, reinforcement, and Tomb World event results below.</li></ol></div>${actionsSection}${eventsSection}${reinforcementResults}${battlefieldState}<button class="btn primary big-action" id="continueStrategy" ${reinforcementPending||placementPending||missionPending?'disabled':''}>${reinforcementPending?'Resolve Event to Continue':placementPending?'Confirm Reinforcement Placement':missionPending?'Resolve Mission Rule to Continue':'Strategy Phase Complete'}</button></section>`;
@@ -1939,7 +1956,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return '';
   }
 
-  function strategyEventHtml(event){
+  function strategyEventHtml(event,activeEffects=state.eventState.active||[]){
     const title=event.title||event[0],description=event.text||event.description||event[1];
     if(event.type!=='tomb-world-event')return `<div class="summary-box"><strong>${escapeHtml(title)}</strong><br>${escapeHtml(description)}</div>`;
     const eventHeader=`<div class="tomb-world-event-header"><span class="tomb-world-event-icon" aria-hidden="true"><svg
@@ -2035,8 +2052,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     fill="currentColor"
   />
 </svg></span><span class="tomb-world-event-label">TOMB WORLD EVENT</span></div>`;
-    const statusLabels={drawn:'PENDING',resolved:'RESOLVED',redrawn:'REDRAWN'};
-    const eventDetails=`${eventHeader}<div class="tomb-world-event-heading"><h3 class="tomb-world-event-title">${escapeHtml(title)}</h3><span class="strategy-event-status" data-event-status="${escapeHtml(event.status)}">${statusLabels[event.status]||escapeHtml(event.status).toUpperCase()}</span></div><div class="tomb-world-event-effect"><div class="tomb-world-event-effect-label">Effect</div><p class="tomb-world-event-description">${escapeHtml(description)}</p></div>`;
+    const activeEffect=event.status==='resolved'?strategyEventActiveEffect(event,activeEffects):null;
+    const statusLabels={drawn:'PENDING',resolved:activeEffect?'RESOLVED • ACTIVE':'RESOLVED',redrawn:'REDRAWN'};
+    const activeLabel=activeEffect?.expiresAfterTurningPoint!==undefined?'Resolved and active until the end of the Turning Point':'Resolved and active';
+    const statusLabel=statusLabels[event.status]||escapeHtml(event.status).toUpperCase();
+    const eventDetails=`${eventHeader}<div class="tomb-world-event-heading"><h3 class="tomb-world-event-title">${escapeHtml(title)}</h3><span class="strategy-event-status" data-event-status="${escapeHtml(event.status)}"${activeEffect?` data-event-active="true" aria-label="${activeLabel}"`:''}>${statusLabel}</span></div><div class="tomb-world-event-effect"><div class="tomb-world-event-effect-label">Effect</div><p class="tomb-world-event-description">${escapeHtml(description)}</p></div>`;
     if(event.status!=='drawn')return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite">${eventDetails}<div class="event-resolution">${escapeHtml(event.result||'Complete')}</div></div>`;
     const labels={
       'awakened-warrior':'Confirm Warrior Placement',

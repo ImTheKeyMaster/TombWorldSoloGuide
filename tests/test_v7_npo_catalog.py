@@ -51,9 +51,9 @@ class V7NpoCatalogTests(unittest.TestCase):
 
     def test_displayed_application_version_is_7_0_0(self):
         index = (ROOT / "index.html").read_text()
-        self.assertIn("V7.4.1", index)
-        self.assertIn("const APP_VERSION = '7.4.1';", self.app)
-        self.assertIn("const APP_VERSION = '7.4.1';", (ROOT / "service-worker.js").read_text())
+        self.assertIn("V7.4.2", index)
+        self.assertIn("const APP_VERSION = '7.4.2';", self.app)
+        self.assertIn("const APP_VERSION = '7.4.2';", (ROOT / "service-worker.js").read_text())
 
 
 if __name__ == "__main__":
