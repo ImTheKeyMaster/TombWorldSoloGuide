@@ -96,13 +96,24 @@
     return {state,featureIds:[],attempts,exhausted:true,message:`No unused official ${table} feature could be generated safely.`};
   }
   function MathD3(){return Math.floor(Math.random()*3)+1;}
-  function discover(current,enabled,context,rollD3=MathD3){
+  function MathD6(){return Math.floor(Math.random()*6)+1;}
+  function initializeDeterminedEffects(state,entity,rollD6=MathD6){
+    entity.activeEffectState=isRecord(entity.activeEffectState)?entity.activeEffectState:{};
+    if(entity.featureIds.includes('room-accelerated-decelerated-time')&&!entity.activeEffectState['room-accelerated-decelerated-time']){
+      const effect=handlers.resolveTimeMode({d6:rollD6()});
+      entity.activeEffectState['room-accelerated-decelerated-time']=effect;
+      state.resolutionHistory.push({type:'persistent-mode',entityId:entity.id,featureId:'room-accelerated-decelerated-time',...effect});
+    }
+    return state;
+  }
+  function discover(current,enabled,context,rollD3=MathD3,rollD6=MathD6){
     let state=normalizeState(current);const pipeline=triggerPipeline(enabled,state,context);
     if(!pipeline.checks.length)return {state,checks:pipeline.checks,duplicate:Boolean(pipeline.duplicate),featureIds:[]};
     const check=pipeline.checks[0],key=check.type==='room'?'rooms':'objectives';
     const rolled=rollFeature(state,check.type,rollD3);state=rolled.state;
     const entity=state[key][check.entityId];
     Object.assign(entity,{discoveryMethod:check.triggerType,triggeringOperativeId:context.operativeId||null,missionId:context.missionId||null,turningPoint:context.turningPoint||0,activationId:context.activationId||null,actionId:context.actionId||null,d33Attempts:rolled.attempts,featureIds:rolled.featureIds,resolutionState:rolled.exhausted?'exhausted':'determined',activeEffectState:{}});
+    initializeDeterminedEffects(state,entity,rollD6);
     state.completedTransactionIds.push(pipeline.transactionId);
     state.resolutionHistory.push({transactionId:pipeline.transactionId,type:'discovery',entityType:check.type,entityId:entity.id,featureIds:rolled.featureIds,turningPoint:context.turningPoint||0,status:entity.resolutionState});
     return {...rolled,state,checks:pipeline.checks,entity};
@@ -114,8 +125,30 @@
   function meleeDamage(damage,current,operativeId){return roomFeatureIdsForOperative(current,operativeId).includes('room-gravitic-anomaly')?Math.max(0,Number(damage)-1):Number(damage);}
   function actionRestrictions(current,operativeId){const ids=roomFeatureIdsForOperative(current,operativeId);return {dashBlocked:ids.includes('room-crumbling-floor'),chargeBonus:ids.includes('room-crumbling-floor')?0:2,pauseGuidance:'Pause if this operative first enters an unexplored room.',airborneVirus:ids.includes('room-airborne-virus')};}
   function improveLethal(existing){if(existing==null)return 5;return Math.max(2,Number(existing)-1);}
-  function validateDefinitions(){const ids=new Set();for(const [table,items] of Object.entries(tables)){if(items.length!==9||new Set(items.map(item=>item.result)).size!==9||D33_RESULTS.some(result=>!items.some(item=>item.result===result)))throw new Error(`${table} D33 table is incomplete.`);for(const item of items){if(ids.has(item.id)&&item.id!==UNUSUAL_ID)throw new Error(`Duplicate feature ID: ${item.id}`);ids.add(item.id);if(!item.automation||!item.handler||!item.source)throw new Error(`Incomplete feature: ${item.id}`);}}return true;}
+  const handlers=Object.freeze({
+    applyRoomModifiers:({move,normalDamage,criticalDamage,featureIds=[]})=>({
+      move:Math.max(0,Number(move)+(featureIds.includes('room-collapsed-ceiling')?-1:0)+(featureIds.includes('room-gravitic-anomaly')?1:0)),
+      normalDamage:Math.max(0,Number(normalDamage)-(featureIds.includes('room-gravitic-anomaly')?1:0)),
+      criticalDamage:Math.max(0,Number(criticalDamage)-(featureIds.includes('room-gravitic-anomaly')?1:0)),
+      coverReminder:featureIds.includes('room-collapsed-ceiling'),dashBlocked:featureIds.includes('room-crumbling-floor'),chargeBonus:featureIds.includes('room-crumbling-floor')?0:2
+    }),
+    checkDarkness:({distanceThroughRoom})=>({visible:!(Number(distanceThroughRoom)>6)}),
+    resolveCorrosiveDamage:({wallInControlRange,d3})=>({damage:wallInControlRange?0:Number(d3)}),
+    resolveEnergyRupture:({wallInControlRange,usedThisActivation,d3})=>({damage:wallInControlRange&&!usedThisActivation?Number(d3):0,usedThisActivation:wallInControlRange||usedThisActivation}),
+    checkAirborneVirus:({actionType,d6,apl})=>{const exempt=['charge','dash','fall back','fight','reposition','shoot'].includes(String(actionType).toLowerCase());return {allowed:exempt||Number(d6)<=Number(apl),apSpent:false,exempt};},
+    resolveTimeMode:({d6})=>({roll:Number(d6),mode:Number(d6)<=3?'accelerated':'decelerated'}),
+    offerQuantumShield:({targetWithinThree})=>({defenceRerolls:targetWithinThree?1:0}),
+    resolveTeslaDamage:({actionType,contesting,d3})=>({damage:contesting&&['charge','dash','fall back','reposition'].includes(String(actionType).toLowerCase())?Number(d3):0}),
+    guideTeleportation:({legal})=>({commit:Boolean(legal),cancelled:!legal,apSpent:Boolean(legal)}),
+    resolveControlNode:({controlled,usedThisTurningPoint})=>({additionalCp:controlled&&!usedThisTurningPoint?1:0,usedThisTurningPoint:Boolean(controlled||usedThisTurningPoint)}),
+    resolveAdjustTime:({controlsAtStart,controlsAtEnd,enemyInControlRange,usedThisTurningPoint})=>({allowed:controlsAtStart&&!enemyInControlRange&&!usedThisTurningPoint,apCost:1,ready:controlsAtStart&&controlsAtEnd&&!enemyInControlRange&&!usedThisTurningPoint}),
+    applyHyperphaseAura:({withinThree,lethal})=>({lethal:withinThree?improveLethal(lethal):lethal}),
+    resolveRegeneration:({contesting,usedThisBattle,d6})=>{const prevented=contesting&&!usedThisBattle&&Number(d6)>=4;return {prevented,wounds:prevented?1:0,discardRemainingAttackDice:prevented,usedThisBattle:usedThisBattle||prevented};},
+    resolveAmplification:({controlsMarker,enemyInControlRange,weaponId})=>({allowed:controlsMarker&&!enemyInControlRange&&Boolean(weaponId),apCost:0,weaponId:weaponId||null,lethal:4,hot:true,expires:'activation-or-counteraction-end'}),
+    resolveUnusual:context=>context
+  });
+  function validateDefinitions(){const ids=new Set();for(const [table,items] of Object.entries(tables)){if(items.length!==9||new Set(items.map(item=>item.result)).size!==9||D33_RESULTS.some(result=>!items.some(item=>item.result===result)))throw new Error(`${table} D33 table is incomplete.`);for(const item of items){if(ids.has(item.id)&&item.id!==UNUSUAL_ID)throw new Error(`Duplicate feature ID: ${item.id}`);ids.add(item.id);if(!item.automation||typeof handlers[item.handler]!=='function'||!item.source)throw new Error(`Incomplete feature: ${item.id}`);if(item.duration.includes('activation')&&item.duration!=='activation-start'&&item.cleanupTiming==='none')throw new Error(`Temporary feature has no cleanup: ${item.id}`);}}return true;}
   validateDefinitions();
-  const api={SOURCE,D33_RESULTS,UNUSUAL_ID,tables,features:[...roomFeatures,...objectiveFeatures],emptyState,normalizeState,roomEligible,d33,findFeature,transactionId,triggerPipeline,rollFeature,discover,registerRoom,registerObjective,roomFeatureIdsForOperative,effectiveMove,meleeDamage,actionRestrictions,improveLethal,validateDefinitions};
+  const api={SOURCE,D33_RESULTS,UNUSUAL_ID,tables,features:[...roomFeatures,...objectiveFeatures],handlers,emptyState,normalizeState,roomEligible,d33,findFeature,transactionId,triggerPipeline,rollFeature,discover,initializeDeterminedEffects,registerRoom,registerObjective,roomFeatureIdsForOperative,effectiveMove,meleeDamage,actionRestrictions,improveLethal,validateDefinitions};
   root.TombWorldDeadlyEncounters=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

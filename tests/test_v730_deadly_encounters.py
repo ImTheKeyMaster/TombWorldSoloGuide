@@ -48,6 +48,7 @@ class DeadlyEncounterDefinitions(unittest.TestCase):
 
     def test_all_handlers_are_classified(self):
         self.assertTrue(node("const d=require('./deadly-encounters.js');console.log(JSON.stringify(d.validateDefinitions()))"))
+        self.assertTrue(node("const d=require('./deadly-encounters.js');console.log(JSON.stringify(d.features.every(x=>typeof d.handlers[x.handler]==='function')))"))
 
 class DeadlyEncounterD33(unittest.TestCase):
     def test_first_d3_is_tens_and_second_is_units(self):
@@ -76,6 +77,10 @@ class DeadlyEncounterD33(unittest.TestCase):
     def test_exhaustion_stops_without_reuse(self):
         data=node("const d=require('./deadly-encounters.js');let s=d.emptyState();s.usedFeatureIds=d.tables.room.map(x=>x.id);let r=d.rollFeature(s,'room',()=>1);console.log(JSON.stringify(r));")
         self.assertTrue(data['exhausted']);self.assertEqual(data['featureIds'],[]);self.assertIn('No unused official room feature',data['message'])
+
+    def test_time_mode_is_rolled_once_and_persisted(self):
+        script="""const d=require('./deadly-encounters.js');let s=d.registerRoom(d.emptyState(),{id:'r1',label:'Room 1',missionId:'05',dropZone:'none'});let c={missionId:'05',turningPoint:1,activationId:'a1',actionId:'x1',actingSide:'player',operativeId:'p1',triggerType:'opened',roomId:'r1',entityType:'room',entityId:'r1'};let q=[2,3];let a=d.discover(s,true,c,()=>q.shift(),()=>5);let b=d.normalizeState(JSON.parse(JSON.stringify(a.state)));console.log(JSON.stringify(b.rooms.r1.activeEffectState['room-accelerated-decelerated-time']));"""
+        self.assertEqual(node(script),{'roll':5,'mode':'decelerated'})
 
     def test_idempotent_transaction_prevents_rerender_reload_and_rapid_taps(self):
         script="""const d=require('./deadly-encounters.js');let s=d.registerRoom(d.emptyState(),{id:'r1',label:'Room 1',missionId:'05',dropZone:'none'});let c={missionId:'05',turningPoint:1,activationId:'a1',actionId:'x1',actingSide:'player',operativeId:'p1',triggerType:'opened',roomId:'r1',entityType:'room',entityId:'r1'};let q=[1,1];let a=d.discover(s,true,c,()=>q.shift());let b=d.discover(a.state,true,c,()=>{throw Error('rerolled')});console.log(JSON.stringify({a:a.featureIds,b:b.featureIds,duplicate:b.duplicate,history:b.state.rollHistory.length}));"""
@@ -136,6 +141,15 @@ class DeadlyEncounterBriefingAndPersistence(unittest.TestCase):
         self.assertIn('restlessTombEnabled:false,deadlyEncountersEnabled:false',PERSISTENCE)
 
 class DeadlyEncounterIntegration(unittest.TestCase):
+    def test_resolution_handlers_execute_feature_rules(self):
+        data=node("const d=require('./deadly-encounters.js');console.log(JSON.stringify({room:d.handlers.applyRoomModifiers({move:6,normalDamage:4,criticalDamage:5,featureIds:['room-collapsed-ceiling','room-gravitic-anomaly','room-crumbling-floor']}),virus:d.handlers.checkAirborneVirus({actionType:'mission action',d6:5,apl:2}),regen:d.handlers.resolveRegeneration({contesting:true,usedThisBattle:false,d6:4}),amp:d.handlers.resolveAmplification({controlsMarker:true,enemyInControlRange:false,weaponId:'blade'})}))")
+        self.assertEqual(data['room'],{'move':6,'normalDamage':3,'criticalDamage':4,'coverReminder':True,'dashBlocked':True,'chargeBonus':0})
+        self.assertFalse(data['virus']['allowed']);self.assertFalse(data['virus']['apSpent'])
+        self.assertEqual(data['regen']['wounds'],1);self.assertTrue(data['regen']['discardRemainingAttackDice'])
+        self.assertEqual((data['amp']['apCost'],data['amp']['lethal'],data['amp']['hot']),(0,4,True))
+
+    def test_carried_marker_update_is_available(self):
+        self.assertIn('Update Carried Marker',APP);self.assertIn('marker.carrierId=',APP)
     def test_restless_tomb_event_count_unchanged(self):
         logic=APP.split('function strategyEventCount',1)[1].split('function threatLabel',1)[0]
         self.assertIn('state.restlessTombEnabled&&state.turningPoint>=2?Math.max(normalCount,1):normalCount',logic)
