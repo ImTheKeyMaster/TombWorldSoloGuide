@@ -30,7 +30,7 @@ class NpoDisplayOrderTests(unittest.TestCase):
         setup = self.source("function setupContent", "function bindSetup")
         tracker = self.source("function activationTracker", "function nextStepCard")
         roster = self.source("function renderRoster()", "function renderPlayerRoster()")
-        self.assertIn("sortedNposForDisplay(state.roster).map(npo=>npoRosterCard", setup)
+        self.assertNotIn("npoRosterCard(npo,false)", setup)
         self.assertIn("sortedNposForDisplay(generation.deployedNpoIds.map", setup)
         self.assertIn("sortedNposForDisplay(state.roster).map(n=>", tracker)
         self.assertIn("sortedNposForDisplay(state.roster).map(n=>npoRosterCard", roster)

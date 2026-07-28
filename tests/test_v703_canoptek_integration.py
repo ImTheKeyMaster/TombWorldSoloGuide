@@ -65,8 +65,8 @@ class CanoptekIntegrationTests(unittest.TestCase):
         self.assertIn("Roll separately", APP)
 
     def test_version_matrix_and_portrait_constraints(self):
-        self.assertIn("const APP_VERSION = '7.0.7';", APP)
-        self.assertIn("V7.0.7", (ROOT / "index.html").read_text())
+        self.assertIn("const APP_VERSION = '7.1.0';", APP)
+        self.assertIn("V7.1.0", (ROOT / "index.html").read_text())
         self.assertNotIn("obelisk node matrix support", APP.lower())
         self.assertNotIn("npoPortrait", APP)
 

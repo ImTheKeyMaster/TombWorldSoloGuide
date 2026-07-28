@@ -76,14 +76,14 @@ assert.equal(engine.getMissionRuntime().history.length,0);assert.equal(engine.ge
         self.assertIn('state.missionState.scoutedByRoom[button.dataset.scoutRoom]=operativeId',app)
         self.assertIn('delete state.missionState.scoutedByRoom[button.dataset.correctScoutRoom]',app)
         self.assertIn('normalized.scoutedByRoom=',app)
-        self.assertLess(app.index('state.missionState=normalizeMissionState(state.missionState,selectedMission,state.tracker)'),app.index('objectiveDefinition=await TombWorldMissionEngine.loadMissionDefinition'))
+        self.assertLess(app.index('state.missionState=normalizeMissionState(state.missionState,selectedMission,state.tracker)'),app.index('const definition=await TombWorldMissionEngine.loadMissionDefinition'))
         self.assertIn("Math.min(5,(outcome?.results?.awakenRoll?.total??rollD3())+threatGrade())",app)
         self.assertIn("setThreat(gradeFloor-state.threat,'Scout Room')",app)
         self.assertIn("stage.hatch&&state.missionId!=='scout-sub-crypt'",app)
         self.assertIn("'./Missions/definition-05-scout-sub-crypt.json'",worker)
-        self.assertIn("const APP_VERSION = '7.0.7'",app)
-        self.assertIn("const APP_VERSION = '7.0.7'",worker)
-        self.assertIn('V7.0.7',index)
+        self.assertIn("const APP_VERSION = '7.1.0'",app)
+        self.assertIn("const APP_VERSION = '7.1.0'",worker)
+        self.assertIn('V7.1.0',index)
 
 
 if __name__ == '__main__':
