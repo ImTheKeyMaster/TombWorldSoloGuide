@@ -64,7 +64,7 @@
   const migrations = {0:migrate0to1,1:migrate1to2,2:migrate2to3};
 
   function migrationReport(sourceVersion){
-    return {sourceVersion,targetVersion:SAVE_VERSION,outcome:'current',aliasesApplied:[],instanceIdsCreated:[],instanceIdsRepaired:[],loadoutsNormalized:[],woundsClamped:[],portraitFieldsRemoved:0,matrixFieldsRemoved:0,unsupportedRetiredTypes:[],invalidPhysicalLimits:[],temporaryEffectsRemoved:0,pendingStateCleared:[],requiresRegeneration:false,completedHistoryPreserved:true,warnings:[],errors:[]};
+    return {sourceVersion,targetVersion:SAVE_VERSION,outcome:'current',aliasesApplied:[],instanceNamesRepaired:[],instanceIdsCreated:[],instanceIdsRepaired:[],loadoutsNormalized:[],woundsClamped:[],portraitFieldsRemoved:0,matrixFieldsRemoved:0,unsupportedRetiredTypes:[],invalidPhysicalLimits:[],temporaryEffectsRemoved:0,pendingStateCleared:[],requiresRegeneration:false,completedHistoryPreserved:true,warnings:[],errors:[]};
   }
   function canonicalCatalog(catalog){
     if(!isRecord(catalog)||!Object.keys(catalog).length)throw new TypeError('The authoritative NPO catalog is required.');
@@ -102,8 +102,8 @@
       const resolution=resolveLegacyNpoType(npo,catalog);
       if(!resolution.supported){report.unsupportedRetiredTypes.push(resolution.legacyType);report.requiresRegeneration=true;return npo;}
       const definition=catalog[resolution.type];
-      if(resolution.type!==npo.type||npo.name!==definition.name){report.aliasesApplied.push({from:String(npo.type||npo.name||''),to:resolution.type});npo.type=resolution.type;}
-      npo.name=definition.name;
+      if(resolution.type!==npo.type){report.aliasesApplied.push({from:String(npo.type||npo.name||''),to:resolution.type});npo.type=resolution.type;npo.name=definition.name;}
+      else if(typeof npo.name!=='string'||!npo.name.trim()){npo.name=definition.name;report.instanceNamesRepaired.push({id:npo.id||null,to:definition.name});}
       if(typeof npo.id!=='string'||!npo.id){npo.id=deterministicId(npo.type,index);report.instanceIdsCreated.push(npo.id);}
       if(seenIds.has(npo.id)){
         const previous=seenIds.get(npo.id);
@@ -206,7 +206,7 @@
     }
     migrated=stripObsoleteMatrixState(migrated,report);migrated.roster=normalizeActiveRoster(migrated,catalog,report);validateAllocation(migrated.roster,catalog,report);normalizeRuleState(migrated,migrated.roster,report);clearUnsafePendingState(migrated,migrated.roster,report);
     report.unsupportedRetiredTypes=[...new Set(report.unsupportedRetiredTypes)];
-    report.outcome=report.requiresRegeneration?'regeneration-required':(report.aliasesApplied.length||report.instanceIdsCreated.length||report.loadoutsNormalized.length||report.woundsClamped.length||report.portraitFieldsRemoved||report.matrixFieldsRemoved||report.temporaryEffectsRemoved||report.pendingStateCleared.length?'migrated':'current');
+    report.outcome=report.requiresRegeneration?'regeneration-required':(report.aliasesApplied.length||report.instanceNamesRepaired.length||report.instanceIdsCreated.length||report.instanceIdsRepaired.length||report.loadoutsNormalized.length||report.woundsClamped.length||report.portraitFieldsRemoved||report.matrixFieldsRemoved||report.temporaryEffectsRemoved||report.pendingStateCleared.length?'migrated':'current');
     return {state:normalizeSave(migrated),report};
   }
   function migrateSave(save,catalog){

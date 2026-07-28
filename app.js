@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.4.0';
+  const APP_VERSION = '7.4.1';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
 
@@ -494,6 +494,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const loadedSave = load();
   const pendingStoredMigration=loadedSave?.report?.requiresRegeneration?loadedSave:null;
   const loadedState=pendingStoredMigration?null:loadedSave?.state;
+  let storedMigrationNoticeShown=false;
   let state = normalizeState(loadedState || initialState());
   let lastRenderedStepKey = null;
   let startingNpoTimer = null;
@@ -4574,6 +4575,7 @@ function showPlayerActivation(stage={}){
   function migrationDetails(report){
     const details=[];
     if(report.aliasesApplied.length)details.push(`${report.aliasesApplied.length} legacy NPO ${report.aliasesApplied.length===1?'name was':'names were'} updated.`);
+    if(report.instanceNamesRepaired.length)details.push(`${report.instanceNamesRepaired.length} missing NPO instance ${report.instanceNamesRepaired.length===1?'name was':'names were'} repaired.`);
     if(report.loadoutsNormalized.length)details.push(`${report.loadoutsNormalized.length} missing or legacy ${report.loadoutsNormalized.length===1?'loadout was':'loadouts were'} assigned a supported value.`);
     if(report.woundsClamped.length)details.push(`${report.woundsClamped.length} invalid wound ${report.woundsClamped.length===1?'value was':'values were'} corrected.`);
     if(report.pendingStateCleared.length)details.push('An unresolved action was returned to a stable game screen; committed wounds and effects were preserved.');
@@ -4581,6 +4583,9 @@ function showPlayerActivation(stage={}){
   }
   function showMigrationNotice(report){
     showModal('NPO roster updated for v7',`<p>This save was updated to the current Tomb World NPO system. Known legacy names and loadouts were normalized, and obsolete NPO portrait and Obelisk Node Matrix fields were removed where present.</p>${migrationDetails(report)?`<ul>${migrationDetails(report)}</ul>`:''}<p>The game can continue.</p><div class="wizard-actions"><button class="btn primary" data-close>Continue</button></div>`);
+  }
+  function hasMeaningfulMigrationChanges(report){
+    return report?.outcome==='migrated'&&Boolean(report.aliasesApplied.length||report.instanceNamesRepaired.length||report.instanceIdsCreated.length||report.instanceIdsRepaired.length||report.loadoutsNormalized.length||report.woundsClamped.length||report.portraitFieldsRemoved||report.matrixFieldsRemoved||report.temporaryEffectsRemoved||report.pendingStateCleared.length);
   }
   async function commitImported(candidate,report){
     const previous=state;
@@ -4601,7 +4606,7 @@ function showPlayerActivation(stage={}){
       const data=JSON.parse(await f.text()),migration=migrateSaveDetailed(data,npoDefinitions);
       if(migration.report.requiresRegeneration){showRegenerationNotice(migration,'import');return;}
       if(await commitImported(migration.state,migration.report)){
-        if(migration.report.outcome==='migrated')showMigrationNotice(migration.report);else showToast('Save imported.');
+        if(hasMeaningfulMigrationChanges(migration.report))showMigrationNotice(migration.report);else showToast('Save imported.');
       }
     }catch(error){console.warn('[Persistence] Imported save could not be migrated; browser progress was left unchanged.',error);showToast(error.message?.includes('newer than supported')?'That save was created by a newer unsupported version.':'That file is not a valid Tomb World Solo Guide save.');}
     finally{importInput.value='';}
@@ -4631,8 +4636,8 @@ function showPlayerActivation(stage={}){
       state.missionState=normalizeMissionState(state.missionState,missionDefinition(state.missionId),state.tracker);
       render();
       if(pendingStoredMigration)showRegenerationNotice(pendingStoredMigration,'storage');
-      else if(loadedSave?.report?.outcome==='migrated'){
-        if(save())showMigrationNotice(loadedSave.report);
+      else if(!storedMigrationNoticeShown&&hasMeaningfulMigrationChanges(loadedSave?.report)){
+        if(save()){storedMigrationNoticeShown=true;showMigrationNotice(loadedSave.report);}
       }
     })
     .catch(error=>{

@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v7.4.0
+# Tomb World Solo Guide v7.4.1
+
+## v7.4.1
+
+**Version 7.4.1 - Stop Repeated NPO Migration Notices**
+
+- Fixed current numbered NPO instance names being incorrectly reported as legacy aliases.
+- Current canonical saves now load idempotently without showing the v7 roster-migration notice after ordinary app updates or reloads.
+- Genuine legacy aliases, invalid loadouts, obsolete fields, and other real save repairs continue to migrate once and remain fully supported.
 
 ## v7.4.0
 
