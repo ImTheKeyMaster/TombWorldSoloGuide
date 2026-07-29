@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.5.1';
+  const APP_VERSION = '7.5.2';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
   const EventEffects=TombWorldEventEffects;
@@ -2981,8 +2981,10 @@ function showPlayerActivation(stage={}){
       );
       return;
     }
-    state.combatState=null;
+    state.combatState={side:'player',stage:{...stage}};
+    save();
     if(applyPendingPlayerDamage(stage))return;
+    state.combatState=null;
     completePlayerActivation(stage);
   }
 
@@ -3033,30 +3035,56 @@ function showPlayerActivation(stage={}){
       }
       const before=n.wounds;
       const protectedForAction=n.preventIncapacitationActionId===state.activationNumber;
+      if(pending.after<=0&&!protectedForAction&&n.type==='Canoptek Macrocyte Warrior'&&pending.attackerWithinTwo&&!pending.aggressiveDefenseResolved){
+        showAggressiveDefenseResolution(stage,pending,n,incapacitationId);
+        return true;
+      }
       n.wounds=Math.max(0,pending.after);
       if(protectedForAction)n.wounds=Math.max(1,n.wounds);
       pending.committed=true;
       if(n.wounds===0)n.ready=false;
       if(n.wounds===0){n.deployed=false;n.battlefieldState='out-of-action';}
-      if(n.wounds===0&&n.type==='Canoptek Macrocyte Warrior'&&pending.attackerWithinTwo){
-        const retaliation=eventTransaction(`aggressive-defence:${incapacitationId}`);
-        if(!Number.isInteger(retaliation.roll))retaliation.roll=Math.ceil(roll()/2);
-        pending.aggressiveDefenseRoll=retaliation.roll;
-        pending.aggressiveDefenseDamage=aggressiveDefenseDamage(retaliation.roll);
-        retaliation.committed=true;
-      }
       log(`${playerName(stage.playerOperativeId)} ${pending.attackType==='shoot'?'shot':'made a Melee attack against'} ${npoName(n)} for ${pending.damage} damage (${before} → ${n.wounds} wounds).`);
-      const aggressiveDamage=n.wounds===0?aggressiveDefenseDamageValue(pending):0;
-      if(aggressiveDamage>0){
-        const playerBefore=playerCurrentWounds(stage.playerOperativeId);
-        const playerAfter=Math.max(0,playerBefore-aggressiveDamage);
-        state.playerWounds[stage.playerOperativeId]=playerAfter;
-        if(playerAfter<=0&&!state.playerCasualtyIds.includes(stage.playerOperativeId))state.playerCasualtyIds.push(stage.playerOperativeId);
-        log(`Aggressive Defence dealt ${aggressiveDamage} damage to ${playerName(stage.playerOperativeId)} (${playerBefore} → ${playerAfter} wounds).`);
-      }
       if(checkGameEnd())return true;
     }
     return false;
+  }
+
+  function showAggressiveDefenseResolution(stage,pending,target,incapacitationId){
+    const retaliation=eventTransaction(`aggressive-defence:${incapacitationId}`);
+    if(!Number.isInteger(retaliation.roll))retaliation.roll=Math.ceil(roll()/2);
+    pending.aggressiveDefenseRoll=retaliation.roll;
+    pending.aggressiveDefenseDamage=aggressiveDefenseDamage(retaliation.roll);
+    retaliation.committed=true;
+    state.combatState={side:'player',stage:{...stage}};
+    save();
+    missionDialogLocked=true;
+    showModal('Aggressive Defence',`<p><strong>${escapeHtml(npoName(target))}</strong> was incapacitated by an enemy operative within 2 inches.</p><p>Roll one D3 before removing it.</p><section class="combat-stage" aria-label="Aggressive Defence roll"><div class="dice-row animated-roll" id="aggressiveDefenseDie">${rollingDieHtml()}</div><div id="aggressiveDefenseResult" aria-live="polite"></div></section><div class="wizard-actions"><button class="btn primary" id="continueAggressiveDefense" disabled>Continue</button></div>`);
+    const button=$('#continueAggressiveDefense');
+    const die=$('#aggressiveDefenseDie');
+    setTimeout(()=>{
+      if(!button?.isConnected)return;
+      die.innerHTML=dieHtml({value:retaliation.roll,kind:'hit',retained:true});
+      die.classList.replace('animated-roll','settled');
+      $('#aggressiveDefenseResult').innerHTML=`<strong>D3 Roll: ${retaliation.roll}</strong><p>${pending.aggressiveDefenseDamage?'The attacking operative suffers 1 damage.':'The attacking operative suffers no damage.'}</p>`;
+      button.disabled=false;
+    },700);
+    button.onclick=()=>{
+      if(button.disabled||pending.aggressiveDefenseResolved)return;
+      pending.aggressiveDefenseResolved=true;
+      const aggressiveDamage=aggressiveDefenseDamageValue(pending);
+      if(aggressiveDamage>0&&!pending.aggressiveDefenseDamageApplied){
+        const playerBefore=playerCurrentWounds(stage.playerOperativeId);
+        const playerAfter=Math.max(0,playerBefore-aggressiveDamage);
+        state.playerWounds[stage.playerOperativeId]=playerAfter;
+        pending.aggressiveDefenseDamageApplied=true;
+        if(playerAfter<=0&&!state.playerCasualtyIds.includes(stage.playerOperativeId))state.playerCasualtyIds.push(stage.playerOperativeId);
+        log(`Aggressive Defence dealt ${aggressiveDamage} damage to ${playerName(stage.playerOperativeId)} (${playerBefore} → ${playerAfter} wounds).`);
+      }
+      state.combatState={side:'player',stage:{...stage}};
+      save();missionDialogLocked=false;closeModal();
+      if(!applyPendingPlayerDamage(stage)){state.combatState=null;completePlayerActivation(stage);}
+    };
   }
 
   function showIncapacitationOrderChoice(stage,pending,target,reanimator,incapacitationId,transaction){
@@ -3356,7 +3384,7 @@ function showPlayerActivation(stage={}){
 
   function aggressiveDefenseFields(npo){
     return npo?.type==='Canoptek Macrocyte Warrior'
-      ? '<label class="check-row compact-check"><input type="checkbox" id="attackerWithinTwo"><span><strong>Attacker is within 2&quot; of this Macrocyte</strong></span></label>'
+      ? '<label class="check-row compact-check"><input type="checkbox" id="attackerWithinTwo"><span><strong>Attacker is within 2&quot; of this Macrocyte</strong><small>Required only if this attack incapacitates the Macrocyte.</small></span></label>'
       : '';
   }
 
@@ -3503,10 +3531,11 @@ function showPlayerActivation(stage={}){
 
     const transactionId=`attack:${state.turningPoint}:${state.activationNumber}:${attackType}:${stage.playerOperativeId}:${targetId}`;
     const transaction=eventTransaction(transactionId,{definitionAnswers:{}});
+    transaction.definitionAnswers.attackerWithinTwo=attackerWithinTwo;
     if(result?.moreThanEight!==undefined)transaction.definitionAnswers.moreThanEight=result.moreThanEight;
     else if(transaction.definitionAnswers.moreThanEight===undefined)transaction.definitionAnswers.moreThanEight=Boolean(moreThanEight);
     const rerolls=effectiveAttackRerolls({attackerSide:'player',attackType,moreThanEight:transaction.definitionAnswers.moreThanEight});
-    const diceDraft={attackDice:[],defenseDice:[],attackerWithinTwo,moreThanEight:transaction.definitionAnswers.moreThanEight,rerolls,transactionId};
+    const diceDraft={attackDice:[],defenseDice:[],attackerWithinTwo:transaction.definitionAnswers.attackerWithinTwo,moreThanEight:transaction.definitionAnswers.moreThanEight,rerolls,transactionId};
     save();
     runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,onComplete:(attackDice,defenseDice)=>{
       diceDraft.attackDice=attackDice;

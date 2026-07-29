@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v7.5.1
+# Tomb World Solo Guide v7.5.2
+
+## v7.5.2
+
+**Version 7.5.2 - Restore Guided Aggressive Defence Resolution**
+
+- Pauses an incapacitating Player attack after prevention effects to show the mandatory animated Aggressive Defence D3 result before removing the Macrocyte.
+- Applies one retaliatory wound exactly once on a 2 or 3 and preserves the within-2-inch answer throughout the pending attack.
+
+---
 
 ## v7.5.1
 
