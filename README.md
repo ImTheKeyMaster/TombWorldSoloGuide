@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v7.4.2
+# Tomb World Solo Guide v7.5.0
+
+## v7.5.0
+
+**Version 7.5.0 - Correct and Automate Tomb World Event Effects**
+- Added a reusable gameplay engine for persistent Tomb World events.
+- Corrected and automated Dark of the Tomb, My Will Be Done, Reanimation Protocols, Countertemporal Shifting, and Subjugation Glyphs using the bundled official mission pack.
+- Integrated event effects with rerolls, weapon rules, per-die damage, incapacitation, reanimation, and effective APL.
+- Persisted event dice, selections, and answers so navigation and reload cannot repeat an effect.
+- Preserved Restless Tomb, Deadly Encounters, event probabilities, and unrelated gameplay.
 
 ## v7.4.2
 

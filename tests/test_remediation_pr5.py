@@ -48,7 +48,7 @@ class RemediationPr5Tests(unittest.TestCase):
 
     def test_active_effects_persist_and_expire(self):
         initial = self.app.split('const initialState = () => ({', 1)[1].split('\n  });', 1)[0]
-        self.assertIn('eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[]}', initial)
+        self.assertIn('eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[],transactions:{}', initial)
         execution = self.function_source('beginCurrentEvent', 'completeCurrentEvent')
         self.assertIn('state.eventState.active.push', execution)
         self.assertIn('expiresAfterTurningPoint:state.turningPoint', execution)
@@ -58,7 +58,7 @@ class RemediationPr5Tests(unittest.TestCase):
         normalize = self.function_source('normalizeState', 'npoDefinition')
         self.assertIn('isRecord(raw.eventState)', normalize)
         self.assertIn('validInstances', normalize)
-        self.assertIn('eventDefinitions[event.definitionId]', normalize)
+        self.assertIn('eventDefinitions[definitionId]', normalize)
         self.assertIn('events:Array.isArray(raw.strategyData.events)', normalize)
 
     def test_conditional_event_choices_and_active_presentation(self):

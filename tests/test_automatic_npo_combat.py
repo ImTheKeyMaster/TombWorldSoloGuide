@@ -89,11 +89,11 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         self.assertIn("screen.continueButton.disabled=false", wizard)
 
     def test_aggressive_defense_rolls_without_a_manual_button(self):
-        preview = self.source("function previewPendingPlayerAttack", "function displayPendingPlayerCombat")
+        preview = self.source("function applyPendingPlayerDamage", "function offerReanimateForPendingDamage")
         roll_ui = self.source("function aggressiveDefenseRollHtml", "function combatAbilityReminder")
         self.assertIn("Math.ceil(roll()/2)", preview)
-        self.assertIn("settleAnimatedDice", preview)
-        self.assertIn("aggressiveDefenseDamage(rolledValue)", preview)
+        self.assertIn("eventTransaction(`aggressive-defence:${incapacitationId}`)", preview)
+        self.assertIn("aggressiveDefenseDamage(retaliation.roll)", preview)
         self.assertNotIn("rollAggressiveDefense", preview + roll_ui)
         self.assertNotIn("Roll D3", roll_ui)
 
