@@ -70,7 +70,7 @@ class NpoDisplayOrderTests(unittest.TestCase):
     def test_instance_identity_and_save_reload_paths_are_not_changed_by_sorting(self):
         create = self.source("function createNpo", "function rollNpo")
         normalize = self.source("function normalizeState", "function npoDefinition")
-        self.assertIn("id:uid()", create)
+        self.assertIn("id:physicalInstance.id", create)
         self.assertIn("displayNumber", create)
         self.assertIn("map(normalizeNpo)", normalize)
         self.assertNotIn("sortedNposForDisplay", normalize)

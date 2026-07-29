@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.5.0';
+  const APP_VERSION = '7.5.1';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
   const EventEffects=TombWorldEventEffects;
@@ -796,6 +796,20 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       maximum:definition.physicalQuantity,used:used[type],remaining:Math.max(0,definition.physicalQuantity-used[type])
     }]));
   }
+  function lowestAvailableNpoInstances(type,quantity,allocationContext={}){
+    const definition=npoDefinition(type),roster=Array.isArray(allocationContext.roster)?allocationContext.roster:state.roster;
+    if(!definition||!Number.isInteger(quantity)||quantity<1)return [];
+    const allocated=uniqueNpoInstances(roster).filter(npo=>npo.type===type);
+    if(definition.physicalQuantity===1)return allocated.length?[]:[{id:`${definition.id}-1`,displayNumber:null}];
+    const allocatedIds=new Set(allocated.map(npo=>npo.id));
+    const allocatedNumbers=new Set(allocated.map(npo=>Number(npo.displayNumber)).filter(Number.isInteger));
+    const available=[];
+    for(let displayNumber=1;displayNumber<=definition.physicalQuantity;displayNumber++){
+      const id=`${definition.id}-${displayNumber}`;
+      if(!allocatedIds.has(id)&&!allocatedNumbers.has(displayNumber))available.push({id,displayNumber:definition.physicalQuantity>1?displayNumber:null});
+    }
+    return available.slice(0,quantity);
+  }
   function validateNpoRoster(roster=state.roster){
     const errors=[], ids=new Set(), displayNumbers={},counts=Object.fromEntries(Object.keys(npoDefinitions).map(type=>[type,0]));
     if(!Array.isArray(roster))return {valid:false,errors:['NPO roster must be an array.']};
@@ -977,10 +991,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(!ceaselessScuttlingEligible())return null;
     const definition=npoDefinition('Canoptek Macrocyte Warrior');
     if(!definition.loadoutOptions.some(option=>option.id===weaponId))return null;
-    const warrior=createNpo(definition.type,definition.name,{weaponId,ready:true,dormant:false});
+    const returned=state.roster
+      .filter(npo=>npo.type===definition.type&&(npo.battlefieldState==='out-of-action'||npo.wounds<=0))
+      .sort((a,b)=>(Number(a.displayNumber)||0)-(Number(b.displayNumber)||0))[0];
+    const warrior=returned||createNpo(definition.type,definition.name,{weaponId,ready:true,dormant:false});
+    if(returned)Object.assign(warrior,{weaponId,wounds:definition.wounds,maxWounds:definition.wounds,attack:canonicalAttackProfile(npoAttackProfiles({type:definition.type,weaponId},'shoot')[0]||npoAttackProfiles({type:definition.type,weaponId},'melee')[0]),ready:true,dormant:false,deployed:true,battlefieldState:'deployed'});
     warrior.createdBy='a-ceaseless-scuttling';
     warrior.order='Conceal';
-    state.roster.push(warrior);
+    if(!returned)state.roster.push(warrior);
     log(`A Ceaseless Scuttling created ${npoName(warrior)} (${definition.loadoutOptions.find(option=>option.id===weaponId).name}) ready with a Conceal order in the NPO drop zone.`);
     return warrior;
   }
@@ -1008,26 +1026,19 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     state.npoRuleState.oncePerTurningPoint.nanoscarabBeam=state.turningPoint;
     return {dice:rollResults,rolled,restored:target.wounds-before};
   }
-  function uid(existing=state.roster){
-    const ids=new Set((existing||[]).map(npo=>npo?.id));
-    let id;
-    do{id=`${Date.now().toString(36)}-${Math.random().toString(36).slice(2,7)}`;}while(ids.has(id));
-    return id;
-  }
   function generationResult(total){return npoGenerationTable.find(row=>total>=row.min&&total<=row.max)||null;}
   function generatedWeaponId(result){return result.weaponIds[roll(result.weaponIds.length)-1];}
   function createNpo(type,name=`${type} ${state.roster.length+1}`,options={}){
     const definition=npoDefinition(type);
     if(!definition)throw new Error(`Unknown NPO type: ${type}`);
+    const [physicalInstance]=lowestAvailableNpoInstances(type,1,options.allocationContext||{});
+    if(!physicalInstance)throw new Error(`No ${type} model remains available.`);
     let weaponId=npoWeapon(definition,options.weaponId)?.id||definition.defaultWeaponId;
     if(type===TOMB_CRAWLER_TYPE&&weaponId===ISOLATOR_LOADOUT&&state.roster.some(npo=>npo.type===type&&npo.weaponId===ISOLATOR_LOADOUT))weaponId=definition.defaultWeaponId;
     const battlefieldState=options.battlefieldState||(options.deployed===false?'reserve':'deployed');
     const dormant=battlefieldState==='deployed'&&(options.dormant??state.threat===0);
-    const displayNumber=definition.physicalQuantity>1
-      ? Math.max(0,...state.roster.filter(npo=>npo.type===type).map(npo=>Number(npo.displayNumber)||0))+1
-      : null;
     return {
-      id:uid(),name,type,displayNumber,move:definition.move,apl:definition.apl,save:definition.save,
+      id:physicalInstance.id,name,type,displayNumber:physicalInstance.displayNumber,move:definition.move,apl:definition.apl,save:definition.save,
       maxWounds:definition.wounds,wounds:definition.wounds,baseSize:definition.baseSize,
       behavior:definition.compatibilityBehavior,attack:canonicalAttackProfile(npoAttackProfiles({type,weaponId},'shoot')[0]||npoAttackProfiles({type,weaponId},'melee')[0]),weaponId,order:'Conceal',
       ready:options.ready??(battlefieldState==='deployed'&&!dormant),dormant,
@@ -1225,9 +1236,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const swapIndex=Math.floor(Math.random()*(index+1));
       [shuffled[index],shuffled[swapIndex]]=[shuffled[swapIndex],shuffled[index]];
     }
-    generation.deployedNpoIds=shuffled.slice(0,generation.deploymentCount).map(npo=>npo.id);
-    generation.reserveNpoIds=shuffled.slice(generation.deploymentCount).map(npo=>npo.id);
+    const selectedTypeCounts=shuffled.slice(0,generation.deploymentCount).reduce((counts,npo)=>({...counts,[npo.type]:(counts[npo.type]||0)+1}),{});
+    generation.deployedNpoIds=Object.entries(selectedTypeCounts).flatMap(([type,quantity])=>available
+      .filter(npo=>npo.type===type)
+      .sort((a,b)=>(Number(a.displayNumber)||0)-(Number(b.displayNumber)||0))
+      .slice(0,quantity)
+      .map(npo=>npo.id));
     const deployedIds=new Set(generation.deployedNpoIds);
+    generation.reserveNpoIds=available.filter(npo=>!deployedIds.has(npo.id)).map(npo=>npo.id);
     available.forEach(npo=>{
       npo.battlefieldState=deployedIds.has(npo.id)?'deployed':'reserve';
       npo.deployed=npo.battlefieldState==='deployed';
@@ -4422,8 +4438,6 @@ function showPlayerActivation(stage={}){
   function deleteNpo(id){
     if(state.turningPoint>0){showToast('NPOs remain allocated after gameplay begins.');return;}
     state.roster=state.roster.filter(x=>x.id!==id);
-    const counters={};
-    state.roster.forEach(npo=>{if(npoDefinition(npo.type)?.physicalQuantity>1){counters[npo.type]=(counters[npo.type]||0)+1;npo.displayNumber=counters[npo.type];}});
     if(state.startingNpoGeneration)selectStartingNpos(state.startingNpoGeneration);
     save();render();
   }

@@ -136,7 +136,7 @@ class StartingNpoGenerationTests(unittest.TestCase):
         self.assertIn("return false", selection)
         self.assertIn("Math.min(generation.missionRoll,available.length)", selection)
         self.assertIn("slice(0,generation.deploymentCount)", selection)
-        self.assertIn("slice(generation.deploymentCount)", selection)
+        self.assertIn("available.filter(npo=>!deployedIds.has(npo.id))", selection)
         self.assertIn("battlefieldState=deployedIds.has(npo.id)?'deployed':'reserve'", selection)
 
     def test_battlefield_eligibility_excludes_reserve_and_out_of_action(self):

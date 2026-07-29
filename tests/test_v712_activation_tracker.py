@@ -101,7 +101,7 @@ console.log(JSON.stringify({{rows:trackerNpos().map(npo=>({{id:npo.id,...npoTrac
         self.assertIn("createNpo(definition.type,definition.name,{weaponId,ready:true,dormant:false})", scuttling)
         self.assertIn("state.roster.push(warrior)", scuttling)
         create = self.source("function createNpo", "function rollNpo")
-        self.assertIn("id:uid()", create)
+        self.assertIn("id:physicalInstance.id", create)
 
     def test_save_normalization_preserves_canonical_tracker_states(self):
         normalize = self.source("function normalizeState(raw)", "function npoDefinition")
@@ -127,12 +127,12 @@ console.log(JSON.stringify({{rows:trackerNpos().map(npo=>({{id:npo.id,...npoTrac
         self.assertNotIn("npoRows.length", tracker)
 
     def test_current_version_is_consistent(self):
-        self.assertIn("const APP_VERSION = '7.5.0';", APP)
-        self.assertIn("const APP_VERSION = '7.5.0';", WORKER)
-        self.assertIn("V7.5.0", INDEX)
+        self.assertIn("const APP_VERSION = '7.5.1';", APP)
+        self.assertIn("const APP_VERSION = '7.5.1';", WORKER)
+        self.assertIn("V7.5.1", INDEX)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "app.js"):
-            self.assertIn(f"{asset}?v=7.5.0", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v7.5.0"))
+            self.assertIn(f"{asset}?v=7.5.1", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v7.5.1"))
 
 
 if __name__ == "__main__":
