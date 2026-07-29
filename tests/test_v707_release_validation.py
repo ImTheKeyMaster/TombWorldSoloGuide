@@ -104,7 +104,7 @@ const roster=Object.values(catalog).map((definition,index)=>({{
   id:`${{definition.id}}-${{index+1}}`, type:definition.type, name:definition.name,
   weaponId:definition.defaultWeaponId, wounds:definition.wounds, maxWounds:definition.wounds
 }}));
-const state={{version:'7.5.6',saveVersion:persistence.currentSaveVersion(),missionId:'01',
+const state={{version:'7.5.7',saveVersion:persistence.currentSaveVersion(),missionId:'01',
   roster,playerRoster:['player-1'],journal:[{{text:'completed history'}}]}};
 const exported=persistence.createPersistedSave(state);
 const imported=persistence.migrateSaveDetailed(JSON.parse(JSON.stringify(exported)),catalog);
@@ -160,9 +160,9 @@ const dispatch=async name=>{
 (async()=>{
   await dispatch('install');
   assert.equal(added.length,1);
-  assert.equal(added[0].name,'tomb-world-solo-guide-7.5.6');
+  assert.equal(added[0].name,'tomb-world-solo-guide-7.5.7');
   assert.ok(added[0].assets.includes('./index.html'));
-  assert.ok(added[0].assets.includes('./app.js?v=7.5.6'));
+  assert.ok(added[0].assets.includes('./app.js?v=7.5.7'));
   await dispatch('activate');
   assert.deepEqual(deleted,['tomb-world-solo-guide-7.0.6']);
 })().catch(error=>{console.error(error);process.exitCode=1;});
@@ -173,11 +173,11 @@ const dispatch=async name=>{
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
 
     def test_release_version_help_and_accessible_elimination_text_are_current(self):
-        self.assertIn("const APP_VERSION = '7.5.6';", APP)
-        self.assertIn("const APP_VERSION = '7.5.6';", WORKER)
-        self.assertIn("V7.5.6", INDEX)
+        self.assertIn("const APP_VERSION = '7.5.7';", APP)
+        self.assertIn("const APP_VERSION = '7.5.7';", WORKER)
+        self.assertIn("V7.5.7", INDEX)
         for asset in ("app.js", "mission-engine.js", "persistence.js", "styles.css"):
-            self.assertIn(f"{asset}?v=7.5.6", INDEX)
+            self.assertIn(f"{asset}?v=7.5.7", INDEX)
         self.assertIn("Tomb World NPO roster", APP)
         self.assertIn("NPO portraits are intentionally not displayed", APP)
         roster_card = APP.split("function npoRosterCard", 1)[1].split("function operativeCard", 1)[0]

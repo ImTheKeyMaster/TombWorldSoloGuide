@@ -127,13 +127,13 @@ class EventRedrawTests(unittest.TestCase):
         self.assertIn("retaliation.committed=true", APP)
 
     def test_version_753_is_consistent_without_save_schema_change(self):
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v7.5.6"))
-        self.assertIn("## v7.5.6", README)
-        self.assertIn("const APP_VERSION = '7.5.6';", APP)
-        self.assertIn("const APP_VERSION = '7.5.6';", WORKER)
-        self.assertIn("V7.5.6", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v7.5.7"))
+        self.assertIn("## v7.5.7", README)
+        self.assertIn("const APP_VERSION = '7.5.7';", APP)
+        self.assertIn("const APP_VERSION = '7.5.7';", WORKER)
+        self.assertIn("V7.5.7", INDEX)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=7.5.6", INDEX)
+            self.assertIn(f"{asset}?v=7.5.7", INDEX)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
 
 

@@ -59,7 +59,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertEqual(definition["hooks"]["onStrategyPhaseReadyStep"][0]["oncePer"], "turningPoint")
 
     def test_mission_five_awakens_once_and_scouts_only_after_placement(self):
-        renderer = self.source("scout:(engine,progress)=>{", "regroup:(engine,progress)=>{")
+        renderer = self.source("scout:(engine,progress,{readOnly=false}={})=>{", "regroup:(engine,progress,{readOnly=false}={})=>{")
         self.assertIn("First Open / Entry", renderer)
         self.assertIn("awakening?.placementConfirmed", renderer)
         handler = self.source("$$('[data-awaken-room]')", "$$('[data-regroup-check]')")
@@ -99,7 +99,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertIn("Assets/Images/${victory?'victory':'defeat'}.png", self.app)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = "7.5.6"
+        expected = "7.5.7"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         index = (ROOT / "index.html").read_text()
         self.assertIn(f"styles.css?v={expected}", index)
