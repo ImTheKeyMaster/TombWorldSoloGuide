@@ -135,12 +135,12 @@ class StrategyPhaseStepTests(unittest.TestCase):
         self.assertIn('lowestAvailableNpoInstances', APP)
 
     def test_32_version_754_is_consistent(self):
-        self.assertIn("const APP_VERSION = '7.5.9';", APP)
-        self.assertIn("const APP_VERSION = '7.5.9';", WORKER)
-        self.assertIn('V7.5.9', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v7.5.9'))
+        self.assertIn("const APP_VERSION = '7.6.0';", APP)
+        self.assertIn("const APP_VERSION = '7.6.0';", WORKER)
+        self.assertIn('V7.6.0', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v7.6.0'))
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=7.5.9', INDEX)
+            self.assertIn(f'{asset}?v=7.6.0', INDEX)
 
     def test_33_accessible_progress_focus_and_mobile_layout(self):
         self.assertIn('aria-label="Strategy Phase, step ${number} of 3: ${label}"', function_body('strategyProgressHtml'))

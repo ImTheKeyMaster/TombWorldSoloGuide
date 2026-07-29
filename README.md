@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v7.5.9
+# Tomb World Solo Guide v7.6.0
+
+## v7.6.0
+
+**Version 7.6.0 - Renumber Selected Player Operatives**
+
+- Renumbered duplicate Player operatives sequentially after the final legal roster is selected instead of retaining source-data instance numbers.
+- Applied one persisted display-number mapping across setup, deployment, activation, combat, casualty tracking, and battle summaries while preserving operative IDs and save compatibility.
+
+---
 
 ## v7.5.9
 
