@@ -73,7 +73,8 @@
   }
 
   function effectiveWeaponProfile(state,profile,context={}){
-    return applyActiveTombWorldEventHooks(state,'effectiveWeapon',{...context,profile:{...profile,rules:[...(profile?.rules||[])]}}).profile;
+    const result=applyActiveTombWorldEventHooks(state,'effectiveWeapon',{...context,profile:{...profile,rules:[...(profile?.rules||[])]}});
+    return result.messages?.length?{...result.profile,eventMessages:[...result.messages]}:result.profile;
   }
 
   function effectiveAttackRerolls(state,context={}){

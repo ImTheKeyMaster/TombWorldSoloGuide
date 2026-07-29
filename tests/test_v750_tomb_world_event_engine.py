@@ -77,6 +77,20 @@ class TombWorldEventEngineTests(unittest.TestCase):
         for marker in ("pending.after=1", "n.ready=false", "discardRemainingAttackDice", "applyTemporaryAplModifier", "aggressive-defence"):
             self.assertIn(marker, APP)
 
+    def test_simultaneous_incapacitation_effects_require_a_persisted_order_choice(self):
+        pipeline = APP.split("function applyPendingPlayerDamage", 1)[1].split("function offerReanimateForPendingDamage", 1)[0]
+        self.assertIn("showIncapacitationOrderChoice", pipeline)
+        self.assertIn("pipelineTransaction.firstSourceId", pipeline)
+        self.assertIn("'macrocyte-reanimate'", pipeline)
+        self.assertIn("'tomb-world-event:reanimation-protocols'", pipeline)
+        self.assertLess(pipeline.index("if(pending.after<=0"), pipeline.index("aggressive-defence:"))
+
+    def test_contextual_messages_are_only_attached_when_an_event_applies(self):
+        self.assertIn("combat.eventMessages||combat.profile?.eventMessages", APP)
+        self.assertIn("Dark of the Tomb: Attack dice cannot be rerolled", ENGINE)
+        self.assertIn("My Will Be Done: This NPO has Accurate 1", ENGINE)
+        self.assertIn("Countertemporal Shifting: Resolved one D6", APP)
+
     def test_subjugation_is_immediate_without_replacement_and_persisted(self):
         definition = next(line for line in APP.splitlines() if line.strip().startswith("'subjugation-glyphs':"))
         self.assertIn("lifecycle:'immediate'", definition)
