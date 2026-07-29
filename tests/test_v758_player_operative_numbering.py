@@ -18,11 +18,20 @@ class PlayerOperativeNumberingTests(unittest.TestCase):
         self.assertIn("npo.displayNumber=allocateDisplayNumber(used,preferredNumber)", APP)
         self.assertIn("state.playerDisplayNumbers[id]=allocateDisplayNumber(used)", APP)
 
-    def test_display_name_uses_stored_number_without_renumbering_casualties(self):
-        player_name = APP[APP.index("function playerName(id)"):APP.index("function assignPlayerDisplayNumbers()")]
-        self.assertIn("state.playerDisplayNumbers?.[id]", player_name)
-        self.assertNotIn("playerCasualtyIds", player_name)
-        self.assertNotIn("livingPlayerOperative", player_name)
+    def test_display_name_uses_current_roster_without_renumbering_casualties(self):
+        operative_name = APP[APP.index("function operativeName"):APP.index("function allocateDisplayNumber")]
+        self.assertIn("state.playerRoster||[]", operative_name)
+        self.assertIn("state.roster||[]", operative_name)
+        self.assertNotIn("playerCasualtyIds", operative_name)
+        self.assertNotIn("livingPlayerOperative", operative_name)
+
+    def test_player_and_npo_names_use_one_shared_formatter(self):
+        self.assertIn("return operativeName(id,'player')", APP)
+        self.assertIn("return operativeName(n,'npo')", APP)
+
+    def test_special_action_messages_do_not_bypass_the_shared_formatter(self):
+        self.assertNotIn("target.name||npoName(target)", APP)
+        self.assertIn("action.target?.side==='enemy'?playerName(targetId):npoName(target)", APP)
 
     def test_roster_and_auxiliary_views_use_canonical_player_name(self):
         for expected in (

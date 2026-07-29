@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v7.5.8
+# Tomb World Solo Guide v7.5.9
+
+## v7.5.9
+
+**Version 7.5.9 - Standardize Duplicate Operative Naming**
+
+- Added one shared, roster-aware display-name formatter for Player and NPO operatives.
+- Applied sequential duplicate numbering across rosters, deployment, activation, combat, dialogs, events, notifications, and battle summaries.
+- Kept single-instance operative names unnumbered and preserved saved data and gameplay behavior.
+
+---
 
 ## v7.5.8
 
