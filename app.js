@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.6.0';
+  const APP_VERSION = '7.6.1';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
   const EventEffects=TombWorldEventEffects;
@@ -113,6 +113,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   let playerManifest=null;
   let playerTeamData=null;
+  let playerTeamLoadRequestId=0;
+  let loadedPlayerTeamId=null;
+  let playerTeamLoadStatus='idle';
+  let playerTeamLoadError=null;
+  let setupNavigationInProgress=false;
   async function loadPlayerManifest(){
     const response=await fetch('Player_Operatives/manifest.json',{cache:'no-store'});
     if(!response.ok)throw new Error(`Unable to load manifest.json (${response.status})`);
@@ -124,18 +129,43 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function playerTeamEntry(teamId=state.playerTeamId){
     return playerManifest?.teams?.find(team=>team.id===teamId)||null;
   }
+  function canBuildPlayerRoster(){
+    return Boolean(state.playerTeamId&&playerTeamLoadStatus==='loaded'&&loadedPlayerTeamId===state.playerTeamId&&playerTeamData);
+  }
   async function loadPlayerTeamData(teamId=state.playerTeamId){
+    const requestId=++playerTeamLoadRequestId;
     const entry=playerTeamEntry(teamId);
     if(!entry)throw new Error(`Kill Team "${teamId||'unknown'}" is not listed in manifest.json.`);
-    const response=await fetch(`Player_Operatives/${entry.file}`,{cache:'no-store'});
-    if(!response.ok)throw new Error(`Unable to load ${entry.file} (${response.status})`);
-    const data=await response.json();
-    validatePlayerTeamData(data,entry.file);
-    playerTeamData=data;
-    state.playerTeamId=entry.id;
-    state.playerTeamFile=entry.file;
-    assignPlayerDisplayNumbers();
-    return data;
+    playerTeamLoadStatus='loading';
+    playerTeamLoadError=null;
+    loadedPlayerTeamId=null;
+    playerTeamData=null;
+    render();
+    try{
+      const response=await fetch(`Player_Operatives/${entry.file}`,{cache:'no-store'});
+      if(!response.ok)throw new Error(`Unable to load ${entry.file} (${response.status})`);
+      const data=await response.json();
+      validatePlayerTeamData(data,entry.file);
+      if(requestId!==playerTeamLoadRequestId||state.playerTeamId!==teamId)return null;
+      playerTeamData=data;
+      loadedPlayerTeamId=teamId;
+      state.playerTeamFile=entry.file;
+      playerTeamLoadStatus='loaded';
+      const operativeIds=new Set(data.operatives.map(operative=>operative.id));
+      if((state.playerRoster||[]).some(id=>!operativeIds.has(id)))clearPlayerTeamDependentState();
+      assignPlayerDisplayNumbers();
+      save();
+      render();
+      return data;
+    }catch(error){
+      if(requestId!==playerTeamLoadRequestId||state.playerTeamId!==teamId)return null;
+      playerTeamData=null;
+      loadedPlayerTeamId=null;
+      playerTeamLoadStatus='error';
+      playerTeamLoadError=error;
+      render();
+      throw error;
+    }
   }
   function validatePlayerTeamData(data,fileName){
     if(!data||!Array.isArray(data.operatives)||!data.operatives.length)throw new Error(`${fileName} has no operatives.`);
@@ -1566,33 +1596,54 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function hasMultiplePlayerTeams(){return (playerManifest?.teams?.length||0)>1;}
+  function clearPlayerTeamDependentState(){
+    state.playerRosterInitializedForTeamId='';
+    state.playerRoster=[];
+    state.playerDisplayNumbers={};
+    state.playerCount=0;
+    state.playerReady=0;
+    state.playerCasualtyIds=[];
+    state.playerWounds={};
+    state.playerActivatedIds=[];
+    state.playerDeployed=false;
+  }
+  function selectPlayerTeam(teamId){
+    ++playerTeamLoadRequestId;
+    state.playerTeamId=teamId;
+    state.playerTeamFile='';
+    playerTeamData=null;
+    loadedPlayerTeamId=null;
+    playerTeamLoadStatus='loading';
+    playerTeamLoadError=null;
+    clearPlayerTeamDependentState();
+    save();
+    render();
+    loadPlayerTeamData(teamId).catch(error=>{
+      if(state.playerTeamId===teamId){
+        console.error(error);
+        showToast('Unable to load this Kill Team. Select it again to retry.');
+      }
+    });
+  }
+  function playerTeamLoadPresentation(){
+    if(playerTeamLoadStatus==='loading')return '<p class="muted" role="status" aria-live="polite">Loading selected Kill Team operatives…</p>';
+    if(playerTeamLoadStatus==='error')return '<p class="muted" role="alert">Unable to load this Kill Team. Select it again to retry.</p>';
+    return '';
+  }
+  function buildPlayerRosterButton(id){
+    const loading=playerTeamLoadStatus==='loading';
+    const reason=loading?'The selected Kill Team is still loading.':playerTeamLoadStatus==='error'?'The selected Kill Team could not be loaded.':'Select a Kill Team first.';
+    return `<button class="btn primary" id="${id}" ${canBuildPlayerRoster()?'':`disabled aria-disabled="true" title="${reason}"`}>${loading?'Loading Team...':'Build Roster'}</button>`;
+  }
   function renderTeamSelection(){
     const cards=(playerManifest?.teams||[]).map(team=>`<button type="button" class="team-select-card ${state.playerTeamId===team.id?'selected':''}" data-player-team="${escapeHtml(team.id)}">
       <div class="team-select-card-head"><div><strong>${escapeHtml(team.name)}</strong><small>${escapeHtml(team.faction||'Kill Team')}</small></div>${state.playerTeamId===team.id?'<span>✓</span>':''}</div>
       <p>${escapeHtml(team.description||'')}</p>
     </button>`).join('');
-    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Choose Kill Team</h2><p>Select the player-controlled Kill Team for this battle.</p></div></div><section class="wizard-card"><div class="team-select-grid">${cards}</div><div class="wizard-actions"><button class="btn ghost" id="teamSelectHome">Back</button></div></section></div>`;
+    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Choose Kill Team</h2><p>Select the player-controlled Kill Team for this battle.</p></div></div><section class="wizard-card"><div class="team-select-grid">${cards}</div>${playerTeamLoadPresentation()}<div class="wizard-actions"><button class="btn ghost" id="teamSelectHome">Back</button>${buildPlayerRosterButton('teamSelectNext')}</div></section></div>`;
     $('#teamSelectHome').onclick=()=>{state.screen='home';save();render();};
-    $$('[data-player-team]').forEach(button=>button.onclick=async()=>{
-      try{
-        state.playerTeamId=button.dataset.playerTeam;
-        state.playerRosterInitializedForTeamId='';
-        state.playerRoster=[];
-        state.playerDisplayNumbers={};
-        state.playerCount=0;
-        state.playerReady=0;
-        state.playerCasualtyIds=[];
-        state.playerWounds={};
-        state.playerActivatedIds=[];
-        state.playerDeployed=false;
-        await loadPlayerTeamData(state.playerTeamId);
-        save();
-        render();
-      }catch(error){
-        console.error(error);
-        showToast(error.message);
-      }
-    });
+    $('#teamSelectNext').onclick=()=>{if(!canBuildPlayerRoster()){showToast('Wait for the selected Kill Team to finish loading.');return;}state.screen='setup';state.setupStep=activeSetupSteps().indexOf('playerRoster');save();render();};
+    $$('[data-player-team]').forEach(button=>button.onclick=()=>selectPlayerTeam(button.dataset.playerTeam));
   }
 
   const setupStepDefinitions={
@@ -1618,6 +1669,27 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const steps=activeSetupSteps();
     const stepId=currentSetupStepId();
     if(stepId==='playerRoster'){
+      if(!canBuildPlayerRoster()){
+        if(playerTeamLoadStatus==='loading'){
+          const teamStep=steps.indexOf('team');
+          app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Build Player Roster</h2><p>Loading the selected Kill Team before displaying its operatives.</p></div></div><section class="wizard-card"><p role="status" aria-live="polite">Loading selected Kill Team operatives…</p>${teamStep>=0?'<div class="wizard-actions"><button class="btn ghost" id="playerRosterLoadBack">Back</button></div>':''}</section></div>`;
+          $('#playerRosterLoadBack')?.addEventListener('click',()=>{state.setupStep=teamStep;save();render();});
+          return;
+        }
+        const teamStep=steps.indexOf('team');
+        if(teamStep<0){
+          const failed=playerTeamLoadStatus==='error';
+          app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Build Player Roster</h2><p>Loading the selected Kill Team before displaying its operatives.</p></div></div><section class="wizard-card"><p role="${failed?'alert':'status'}">${failed?'Unable to load this Kill Team.':'Loading selected Kill Team operatives…'}</p>${failed?'<div class="wizard-actions"><button class="btn primary" id="retryPlayerTeamLoad" aria-label="Retry selected Kill Team load">Retry Team Load</button></div>':''}</section></div>`;
+          $('#retryPlayerTeamLoad')?.addEventListener('click',()=>loadPlayerTeamData(state.playerTeamId).catch(()=>{}));
+          return;
+        }
+        state.setupStep=teamStep;
+        save();
+        render();
+        if(state.playerTeamId&&playerTeamLoadStatus!=='loading')setTimeout(()=>loadPlayerTeamData(state.playerTeamId).catch(()=>{}),0);
+        setTimeout(()=>showToast('Wait for the selected Kill Team to finish loading.'),0);
+        return;
+      }
       autoSelectRequiredPlayerOperatives();
       save();
     }
@@ -1659,7 +1731,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
     if(stepId==='team'){
       const cards=(playerManifest?.teams||[]).map(team=>`<button type="button" class="team-select-card ${state.playerTeamId===team.id?'selected':''}" data-player-team="${escapeHtml(team.id)}"><div class="team-select-card-head"><div><strong>${escapeHtml(team.name)}</strong><small>${escapeHtml(team.faction||'Kill Team')}</small></div>${state.playerTeamId===team.id?'<span>✓</span>':''}</div><p>${escapeHtml(team.description||'')}</p></button>`).join('');
-      return `<h3>Which Kill Team are you playing?</h3><p>Your choice determines the operatives available on the next step.</p><div class="team-select-grid">${cards}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${state.playerTeamId?'':'disabled'}>Build Roster</button></div>`;
+      return `<h3>Which Kill Team are you playing?</h3><p>Your choice determines the operatives available on the next step.</p><div class="team-select-grid">${cards}</div>${playerTeamLoadPresentation()}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button>${buildPlayerRosterButton('setupNext')}</div>`;
     }
     if(stepId==='playerRoster'){
       const selected=new Set(state.playerRoster||[]);
@@ -1759,18 +1831,16 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $$('.mission-choice').forEach(b=>b.onclick=()=>{const missionId=b.dataset.mission;state.missionId=missionId;state.missionState=freshMissionState(mission());state.missionRuntime=null;state.tracker=0;state.setupChecks={};state.roster=[];state.startingNpoGeneration=null;save();render();setTimeout(()=>loadObjectiveMission(missionId).then(()=>{if(state.missionId===missionId)save();}),0);});
     $('#setupHome')?.addEventListener('click',()=>{state.screen='home';save();render();});
     $('#setupBack')?.addEventListener('click',()=>{state.setupStep=Math.max(0,state.setupStep-1);save();render();});
-    $('#setupNext')?.addEventListener('click',()=>{if(stepId==='playerRoster')assignPlayerDisplayNumbers();const steps=activeSetupSteps();state.setupStep=Math.min(steps.length-1,state.setupStep+1);save();render();});
-    $$('[data-player-team]').forEach(button=>button.onclick=async()=>{
-      try{
-        if(state.playerTeamId!==button.dataset.playerTeam){
-          state.playerTeamId=button.dataset.playerTeam;
-          state.playerRosterInitializedForTeamId='';
-          state.playerRoster=[];state.playerDisplayNumbers={};state.playerCount=0;state.playerReady=0;state.playerCasualtyIds=[];state.playerWounds={};state.playerActivatedIds=[];state.playerDeployed=false;
-          await loadPlayerTeamData(state.playerTeamId);
-        }
-        save();render();
-      }catch(error){console.error(error);showToast(error.message);}
+    $('#setupNext')?.addEventListener('click',()=>{
+      if(setupNavigationInProgress)return;
+      if(currentSetupStepId()!==stepId)return;
+      if(stepId==='team'&&!canBuildPlayerRoster()){showToast('Wait for the selected Kill Team to finish loading.');return;}
+      setupNavigationInProgress=true;
+      if(stepId==='playerRoster')assignPlayerDisplayNumbers();
+      const steps=activeSetupSteps();state.setupStep=Math.min(steps.length-1,state.setupStep+1);save();render();
+      setupNavigationInProgress=false;
     });
+    $$('[data-player-team]').forEach(button=>button.onclick=()=>selectPlayerTeam(button.dataset.playerTeam));
     $$('[data-check]').forEach(c=>c.onchange=()=>{state.setupChecks[c.dataset.check]=c.checked;save();render();});
     $('#checkAllSetup')?.addEventListener('click',()=>{missionSetupChecks('killzone').forEach(check=>{state.setupChecks[check.id]=true;});save();render();});
     $('#randomPlayerTeam')?.addEventListener('click',()=>{randomPlayerRoster();save();render();});
@@ -5111,9 +5181,9 @@ function showPlayerActivation(stage={}){
       const teams=manifest.teams||[];
       if(teams.length===1){
         state.playerTeamId=teams[0].id;
-        await loadPlayerTeamData(teams[0].id);
+        try{await loadPlayerTeamData(teams[0].id);}catch(error){console.error(error);}
       }else if(state.playerTeamId&&teams.some(team=>team.id===state.playerTeamId)){
-        await loadPlayerTeamData(state.playerTeamId);
+        try{await loadPlayerTeamData(state.playerTeamId);}catch(error){console.error(error);}
       }else{
         state.playerTeamId='';
         state.playerTeamFile='';
