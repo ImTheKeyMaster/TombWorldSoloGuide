@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.3.0
+# Tomb World Solo Guide v8.3.1
+
+## v8.3.1
+
+**Version 8.3.1 - Fix Fall Back Question Guidance**
+
+- Clarified that the initial control-range question does not require movement.
+- Moved Fall Back movement instructions to the destination-feasibility question.
+- Preserved Fall Back’s 2 AP cost and existing activation behavior.
 
 ## v8.3.0
 
