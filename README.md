@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v8.0.1
+# Tomb World Solo Guide v8.1.0
+
+## v8.1.0
+
+**Version 8.1.0 - Streamline NPO Multi-Action Flow**
+
+- Removed redundant action-completed interstitials after confirmed NPO movement.
+- NPOs now proceed directly from Reposition, Dash, Charge, and Fall Back confirmation to their next applicable action.
+- Removed duplicate generic completion screens after acknowledged Shoot and Fight combat results.
+- Added compact AP and completed-action context to subsequent activation questions.
+- Preserved meaningful special-action, combat, event, mission, and ability resolution screens.
 
 ## v8.0.1
 

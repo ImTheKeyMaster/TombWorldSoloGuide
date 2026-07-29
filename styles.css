@@ -1299,6 +1299,7 @@ button.tracker-operative:hover{
   border-radius: .45rem;
   font-size: .78rem;
 }
+.npo-action-progress{margin:-.35rem 0 .85rem;color:var(--green)!important;font-size:.82rem;font-weight:800;line-height:1.35}
 
 .optional-rules{display:grid;gap:12px}
 .optional-rules h4{margin-bottom:0}
