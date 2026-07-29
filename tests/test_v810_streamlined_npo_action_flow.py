@@ -23,7 +23,7 @@ class V810StreamlinedNpoActionFlowTests(unittest.TestCase):
 
     def test_routine_movement_keeps_physical_confirmation(self):
         movement = section('function resolveNpoAction', 'function initiativeSummary')
-        self.assertIn("Confirm ${escapeHtml(pendingAction.name.split(' ')[0])} Complete", movement)
+        self.assertIn("Confirm ${escapeHtml(displayAction)} Complete", movement)
         for action in ('reposition', 'dash', 'charge', 'fall-back'):
             self.assertIn(action, section('const ROUTINE_NPO_MOVEMENT_ACTIONS', 'let lastTouchEnd'))
 

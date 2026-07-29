@@ -46,9 +46,17 @@ class V830NpoMovementGuidanceTests(unittest.TestCase):
         commit = section('function commitNpoAction', 'function renderNpoActionResult')
         self.assertIn('name:actionName', commit)
         self.assertIn('result,...(attackSummary?', commit)
-        self.assertIn("const journalAction=['reposition','dash'].includes(actionId)?npoMovementInstruction(n,actionName):actionName", commit)
+        self.assertIn("const journalAction=['reposition','dash'].includes(actionId)?npoMovementInstruction(actionName):actionName", commit)
         self.assertIn('log(`${npoName(n)} completed ${journalAction}. ${activation.remainingAp} AP remaining.`)', commit)
         self.assertIn('activation.resolvedActions=[...(activation.resolvedActions||[]),record]', commit)
+
+    def test_action_prompts_and_result_summaries_do_not_repeat_long_internal_names(self):
+        movement = section('function resolveNpoAction', 'function initiativeSummary')
+        self.assertIn('const displayAction=conciseNpoActionName(pendingAction)', movement)
+        self.assertIn('Confirm ${escapeHtml(displayAction)} Complete', movement)
+        result = section('function renderNpoActionResult', 'function renderNpoActivationEnd')
+        self.assertIn('conciseNpoActionName(record)', result)
+        self.assertIn('map(action=>escapeHtml(conciseNpoActionName(action)))', result)
 
     def test_priorities_ap_costs_and_action_results_are_unchanged(self):
         self.assertIn("const NPO_CORE_ACTION_COSTS={'reposition':1,'dash':1,'charge':1,'shoot':1,'fight':1,'fall-back':2}", APP)
