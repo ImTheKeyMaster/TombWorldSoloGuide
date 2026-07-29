@@ -90,7 +90,7 @@ class V701NpoInventoryTests(unittest.TestCase):
         self.assertIn("id:physicalInstance.id", create)
         self.assertIn("displayNumber", create)
         self.assertIn("const roster=isPlayer?(state.playerRoster||[]):(state.roster||[])", name)
-        self.assertIn("if(matching.length<=1)return baseName", name)
+        self.assertIn("if(matching.length<=1)return `${baseName}${identity?.suffix||''}`", name)
 
     def test_deployment_does_not_offer_roster_regeneration(self):
         deployment = self.source("if(stepId==='deploy'){", "const m=mission();")
@@ -104,8 +104,8 @@ class V701NpoInventoryTests(unittest.TestCase):
         self.assertGreaterEqual(generation.count("state.roster=previousRoster"), 2)
 
     def test_version_and_release_notes_are_701(self):
-        self.assertIn("const APP_VERSION = '7.5.9';", APP)
-        self.assertIn("V7.5.9", (ROOT / "index.html").read_text())
+        self.assertIn("const APP_VERSION = '7.6.0';", APP)
+        self.assertIn("V7.6.0", (ROOT / "index.html").read_text())
         self.assertIn("## v7.0.4", (ROOT / "README.md").read_text())
 
 

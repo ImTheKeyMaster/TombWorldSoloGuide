@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.5.9';
+  const APP_VERSION = '7.6.0';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
   const EventEffects=TombWorldEventEffects;
@@ -134,6 +134,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     playerTeamData=data;
     state.playerTeamId=entry.id;
     state.playerTeamFile=entry.file;
+    assignPlayerDisplayNumbers();
     return data;
   }
   function validatePlayerTeamData(data,fileName){
@@ -271,14 +272,30 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const title=kind==='gambits'?'Faction Strategic Gambits':'Faction Rules Guidance';
     return `<section class="card faction-guidance"><h3>${title}</h3>${entries.map(entry=>`<div class="mission-rule"><strong>${escapeHtml(entry.name)}</strong>${entry.timing?`<small>${escapeHtml(entry.timing)}</small>`:''}<p>${escapeHtml(entry.text)}</p></div>`).join('')}<p class="muted">Resolve these rules on the tabletop; the Guide presents reminders without simulating positioning.</p></section>`;
   }
+  function playerDisplayIdentity(id){
+    const definition=playerDefinition(id);
+    const sourceName=definition?.name||String(id);
+    const match=definition?.officialName?sourceName.match(/^(.*?)\s+\d+(\s*\(.*\))?$/):null;
+    return {
+      groupName:definition?.officialName||match?.[1]||sourceName,
+      baseName:match?.[1]||sourceName,
+      suffix:match?.[2]||''
+    };
+  }
   function operativeName(operative,side){
     const isPlayer=side==='player';
     const id=isPlayer?operative:operative?.id;
     const definition=isPlayer?playerDefinition(id):npoDefinition(operative?.type);
-    const baseName=isPlayer?(definition?.name||String(id)):(definition?.name||operative?.type||'NPO');
+    const identity=isPlayer?playerDisplayIdentity(id):null;
+    const baseName=isPlayer?identity.baseName:(definition?.name||operative?.type||'NPO');
     const roster=isPlayer?(state.playerRoster||[]):(state.roster||[]);
-    const matching=roster.filter(item=>isPlayer?playerDefinition(item)?.name===baseName:(npoDefinition(item.type)?.name||item.type)===baseName);
-    if(matching.length<=1)return baseName;
+    const matching=roster.filter(item=>isPlayer?playerDisplayIdentity(item).groupName===identity.groupName:(npoDefinition(item.type)?.name||item.type)===baseName);
+    if(matching.length<=1)return `${baseName}${identity?.suffix||''}`;
+    if(isPlayer){
+      const storedNumber=state.playerDisplayNumbers?.[id];
+      const index=matching.indexOf(id);
+      return `${baseName} ${Number.isInteger(storedNumber)&&storedNumber>0?storedNumber:index>=0?index+1:1}${identity.suffix}`;
+    }
     const index=matching.findIndex(item=>(isPlayer?item:item.id)===id);
     return `${baseName} ${index>=0?index+1:1}`;
   }
@@ -301,13 +318,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function assignPlayerDisplayNumbers(){
     const nameCounts={};
     (state.playerRoster||[]).forEach(id=>{
-      const name=playerDefinition(id)?.name;
+      const name=playerDisplayIdentity(id).groupName;
       if(name)nameCounts[name]=(nameCounts[name]||0)+1;
     });
     const usedDisplayNumbers={};
     state.playerDisplayNumbers={};
     (state.playerRoster||[]).forEach(id=>{
-      const name=playerDefinition(id)?.name;
+      const name=playerDisplayIdentity(id).groupName;
       if(!name||nameCounts[name]<=1)return;
       const used=usedDisplayNumbers[name]||(usedDisplayNumbers[name]=new Set());
       state.playerDisplayNumbers[id]=allocateDisplayNumber(used);
