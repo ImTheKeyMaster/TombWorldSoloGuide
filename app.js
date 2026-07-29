@@ -2315,7 +2315,6 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const activatedIds=new Set(state.playerActivatedIds||[]);
     const casualtyIds=new Set(state.playerCasualtyIds||[]);
     const playerRows=(state.playerRoster||[]).map(operativeId=>{
-      const operative=playerDefinition(operativeId);
       const casualty=casualtyIds.has(operativeId);
       const activated=activatedIds.has(operativeId);
       const operativeState=playerOperativeState(operativeId);
@@ -4296,7 +4295,8 @@ function showPlayerActivation(stage={}){
       if(action.id==='cranial-overload')result.applied=applyTemporaryAplModifier({sourceId:n.id,targetId:target.id,ruleId:'cranial-overload',amount:-1});
       if(action.id==='nanoscarab-beam')result=useNanoscarabBeam(target);
       if(!result){showToast('That action is no longer legal.');return;}
-      log(`${npoName(n)} used ${action.name} on ${target.name||npoName(target)}${action.id==='canoptek-control'?` for a free ${result.freeAction} (maximum 2 inches of movement)`:''}.`);
+      const targetName=action.target?.side==='enemy'?playerName(targetId):npoName(target);
+      log(`${npoName(n)} used ${action.name} on ${targetName}${action.id==='canoptek-control'?` for a free ${result.freeAction} (maximum 2 inches of movement)`:''}.`);
       finishNpoSpecialAction(n,action,result,decision,answers,questionHistory);
     };
   }

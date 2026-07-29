@@ -29,6 +29,10 @@ class PlayerOperativeNumberingTests(unittest.TestCase):
         self.assertIn("return operativeName(id,'player')", APP)
         self.assertIn("return operativeName(n,'npo')", APP)
 
+    def test_special_action_messages_do_not_bypass_the_shared_formatter(self):
+        self.assertNotIn("target.name||npoName(target)", APP)
+        self.assertIn("action.target?.side==='enemy'?playerName(targetId):npoName(target)", APP)
+
     def test_roster_and_auxiliary_views_use_canonical_player_name(self):
         for expected in (
             "chosen?playerName(o.id):o.name",
