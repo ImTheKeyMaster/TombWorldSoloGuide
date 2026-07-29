@@ -1,4 +1,15 @@
-# Tomb World Solo Guide v7.5.2
+# Tomb World Solo Guide v7.5.3
+
+## v7.5.3
+
+**Version 7.5.3 - Fix Tomb World Event Redraws**
+
+- Fixed The Maze Reforms `No Valid Changes · Draw Again` action so it reliably displays one replacement event card.
+- Made event redraws atomic and persistent so rapid taps, rerendering, and reload cannot draw duplicate cards.
+- Added safe event-deck recycling and recoverable handling when no replacement is available.
+- Applied the same centralized redraw behavior to all Tomb World events that can require another card.
+
+---
 
 ## v7.5.2
 

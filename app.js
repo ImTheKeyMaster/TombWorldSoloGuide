@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.5.2';
+  const APP_VERSION = '7.5.3';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
   const EventEffects=TombWorldEventEffects;
@@ -501,6 +501,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   let startingNpoTimer = null;
   let threatAdjustOpen = false;
   let expandedRosterCategories = null;
+  const eventRedrawsInProgress = new Set();
   function autoSelectRequiredPlayerOperatives(){
     if(!playerTeamData||state.playerRosterInitializedForTeamId===playerTeamData.teamId)return;
     state.playerRosterInitializedForTeamId=playerTeamData.teamId;
@@ -2105,7 +2106,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     };
     const scarabChoices=event.execution.type==='chittering-drone'&&Array.isArray(event.eligibleNpoIds)&&event.eligibleNpoIds.length>1
       ? `<div class="field"><label for="eventNpoSelect">Wounded Scarab Swarm</label><select id="eventNpoSelect"><option value="">Select a Scarab Swarm...</option>${sortedNposForDisplay(event.eligibleNpoIds.map(id=>activeNpos().find(item=>item.id===id)).filter(Boolean)).map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(npoName(n))} — ${n.wounds} of ${n.maxWounds} wounds</option>`).join('')}</select></div>`:'';
-    const impossibleControl=event.execution.type==='maze-reforms'?'<button class="btn secondary" id="redrawStrategyEvent">No Valid Changes · Draw Again</button>':'';
+    const impossibleControl=event.execution.type==='maze-reforms'?'<button type="button" class="btn secondary" id="redrawStrategyEvent" aria-label="No valid terrain changes are possible; draw another Tomb World event card">No Valid Changes · Draw Again</button>':'';
     return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}<div class="event-controls">${scarabChoices}<button class="btn primary" id="resolveStrategyEvent" ${scarabChoices?'disabled':''}>${labels[event.definitionId]||labels[event.execution.type]||'Resolve Event'}</button>${impossibleControl}</div></div>`;
   }
 
@@ -2183,7 +2184,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $$('[data-reinforcement-placement]').forEach(input=>input.addEventListener('change',()=>confirmReinforcementPlacement(input.dataset.reinforcementPlacement,input.checked)));
     $('#eventNpoSelect')?.addEventListener('change',e=>{$('#resolveStrategyEvent').disabled=!e.target.value;});
     $('#resolveStrategyEvent')?.addEventListener('click',resolveStrategyEvent);
-    $('#redrawStrategyEvent')?.addEventListener('click',()=>{redrawCurrentEvent('No breach or open hatchway could be changed.');save();render();});
+    $('#redrawStrategyEvent')?.addEventListener('click',event=>{
+      const button=event.currentTarget;
+      if(button.disabled)return;
+      button.disabled=true;
+      if(!redrawCurrentEvent('No breach or open hatchway could be changed.'))button.disabled=false;
+    });
     $('#continueStrategy')?.addEventListener('click',()=>beginFirefight(state.strategyData?.suggestedInitiative==='npo'?'npo':'player'));
     $('#ceaselessScuttling')?.addEventListener('click',showCeaselessScuttling);
     $('#retryMissionReady')?.addEventListener('click',continueTurningPointStart);
@@ -2335,6 +2341,31 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return event;
   }
 
+  function drawReplacementEvent(originalEvent,insertAt){
+    const available=state.eventState.available||[],used=state.eventState.used||[];
+    let pool=available.filter(instanceId=>instanceId!==originalEvent.instanceId);
+    let recycling=false;
+    if(!pool.length){
+      pool=[...new Set([...available,...used])].filter(instanceId=>instanceId!==originalEvent.instanceId);
+      recycling=true;
+    }
+    const validPool=pool.filter(instanceId=>eventDeck.some(card=>card.instanceId===instanceId));
+    if(!validPool.length)return null;
+    const instanceId=validPool[roll(validPool.length)-1];
+    const card=eventDeck.find(candidate=>candidate.instanceId===instanceId);
+    if(!card)return null;
+    if(recycling){
+      state.eventState.available=[...new Set([...available,...used])].filter(id=>id!==instanceId);
+      state.eventState.used=[instanceId];
+    }else{
+      state.eventState.available=available.filter(id=>id!==instanceId);
+      if(!used.includes(instanceId))state.eventState.used=[...used,instanceId];
+    }
+    const replacement=eventRecord(card);
+    state.strategyData.events.splice(insertAt,0,replacement);
+    return replacement;
+  }
+
   function currentEvent(){return state.strategyData?.events?.[state.strategyData.eventIndex||0]||null;}
 
   function beginCurrentEvent(){
@@ -2424,13 +2455,53 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function redrawCurrentEvent(reason){
-    const event=currentEvent();
+    const data=state.strategyData,event=currentEvent();
+    if(!data||!event||event.status!=='drawn')return false;
+    const eventIndex=data.eventIndex||0;
+    const transactionId=`event-redraw:${state.turningPoint}:${event.instanceId}:${eventIndex}`;
+    if(eventRedrawsInProgress.has(transactionId))return false;
+    const existing=state.eventState.transactions?.[transactionId];
+    if(existing&&typeof existing==='object'&&existing.committed&&existing.originalEventInstanceId===event.instanceId){
+      const replacementIndex=data.events.findIndex(item=>item.instanceId===existing.replacementInstanceId);
+      if(replacementIndex>=0){
+        data.eventIndex=replacementIndex;
+        data.event=data.events[replacementIndex];
+        data.eventPending=data.event.status==='drawn';
+        return false;
+      }
+    }
+    eventRedrawsInProgress.add(transactionId);
+    const replacement=drawReplacementEvent(event,eventIndex+1);
+    if(!replacement){
+      data.event=event;
+      data.eventPending=true;
+      state.eventState.transactions[transactionId]={
+        transactionId,type:'event-redraw',turningPoint:state.turningPoint,
+        originalEventInstanceId:event.instanceId,originalDefinitionId:event.definitionId,
+        replacementInstanceId:null,reason,status:'failed',committed:false
+      };
+      log(`${event.title}: another event card could not be drawn; the redraw remains available.`);
+      save();
+      eventRedrawsInProgress.delete(transactionId);
+      showModal('Another event card could not be drawn.',`<p>The event deck has no valid replacement card available. Try again or use the Game Menu to review the battle state.</p><div class="wizard-actions"><button type="button" class="btn primary" data-close>Return to Event</button></div>`);
+      return false;
+    }
     event.status='redrawn';event.result=reason;
-    const replacement=drawEvent(state.strategyData.eventIndex+1);
-    if(replacement)replacement.requiredBy=event.requiredBy;
-    state.strategyData.eventIndex++;
+    replacement.requiredBy=event.requiredBy;
+    data.eventIndex=eventIndex+1;
+    data.event=replacement;
+    data.eventPending=true;
+    state.eventState.transactions[transactionId]={
+      transactionId,type:'event-redraw',turningPoint:state.turningPoint,
+      originalEventInstanceId:event.instanceId,originalDefinitionId:event.definitionId,
+      replacementInstanceId:replacement.instanceId,reason,status:'committed',committed:true
+    };
     log(`${event.title}: ${reason} Another event card was drawn.`);
     beginCurrentEvent();
+    save();
+    eventRedrawsInProgress.delete(transactionId);
+    render();
+    return true;
   }
 
   function processReinforcementStage(){
@@ -2526,10 +2597,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       result=`${npoName(n)} regained all lost wounds.`;
     }else if(event.execution.type==='chittering-drone'||event.execution.type==='awakened-warrior'){
       const type=event.execution.type==='chittering-drone'?'Canoptek Scarab Swarm':'Necron Warrior';
-      if(activeNpos().length>=MAX_NPOS||!npoInventory()[type]?.remaining){redrawCurrentEvent(`${type} could not be set up.`);save();render();return;}
+      if(activeNpos().length>=MAX_NPOS||!npoInventory()[type]?.remaining){redrawCurrentEvent(`${type} could not be set up.`);return;}
       const n=createNpo(type,`${type} E${state.turningPoint}`,{order:'Conceal'});
       n.ready=true;n.dormant=false;
-      if(!commitNpoRoster([...state.roster,n],'resolve that event')){redrawCurrentEvent(`${type} could not be set up.`);save();render();return;}
+      if(!commitNpoRoster([...state.roster,n],'resolve that event')){redrawCurrentEvent(`${type} could not be set up.`);return;}
       state.newIds.push(n.id);
       result=`${npoName(n)} was set up Ready with a Conceal order; printed placement confirmed.`;
     }

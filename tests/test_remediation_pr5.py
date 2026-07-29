@@ -41,10 +41,10 @@ class RemediationPr5Tests(unittest.TestCase):
 
     def test_redraw_is_resolved_before_later_pre_drawn_cards(self):
         redraw = self.function_source('redrawCurrentEvent', 'processReinforcementStage')
-        self.assertIn('drawEvent(state.strategyData.eventIndex+1)', redraw)
+        self.assertIn('drawReplacementEvent(event,eventIndex+1)', redraw)
         self.assertIn('replacement.requiredBy=event.requiredBy', redraw)
-        draw = self.function_source('drawEvent', 'currentEvent')
-        self.assertIn('state.strategyData.events.splice(insertAt,0,event)', draw)
+        draw = self.function_source('drawReplacementEvent', 'currentEvent')
+        self.assertIn('state.strategyData.events.splice(insertAt,0,replacement)', draw)
 
     def test_active_effects_persist_and_expire(self):
         initial = self.app.split('const initialState = () => ({', 1)[1].split('\n  });', 1)[0]
