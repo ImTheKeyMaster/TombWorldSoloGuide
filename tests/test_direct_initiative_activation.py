@@ -67,7 +67,7 @@ class DirectInitiativeActivationTests(unittest.TestCase):
         ]
         self.assertEqual(expected, sorted(expected, key=start.index))
         binding = self.function_source("bindPlay", "startTurningPoint")
-        self.assertIn("reinforcementPending||placementPending||missionPending?'disabled'", self.function_source("strategyCard", "strategyEventHtml"))
+        self.assertIn("state.reinforcementState.status!=='placement'", self.function_source("strategyProgressHtml", "strategyEventHtml"))
         self.assertIn("beginFirefight(state.strategyData?.suggestedInitiative==='npo'?'npo':'player')", binding)
 
 

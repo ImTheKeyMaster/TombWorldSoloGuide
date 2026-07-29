@@ -1,4 +1,15 @@
-# Tomb World Solo Guide v7.5.3
+# Tomb World Solo Guide v7.5.4
+
+## v7.5.4
+
+**Version 7.5.4 - Split Strategy Phase into Guided Steps**
+
+- Split the Strategy Phase into Strategy Actions, Tomb World Events, and Reinforcements & Review screens.
+- Added Back and Continue navigation with persistent step progress.
+- Kept required event and reinforcement resolution blocking on the appropriate step.
+- Preserved initiative, event draws, redraws, reinforcements, Restless Tomb, and all existing gameplay behavior.
+
+---
 
 ## v7.5.3
 

@@ -67,9 +67,9 @@ assert.equal(rendered.continueStrategyDisabled,true);
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
 
     def test_strategy_button_uses_placement_status_and_legacy_hatchways_are_preserved(self):
-        strategy_card = self.function_source("strategyCard()", "strategyEventHtml(event)")
-        self.assertIn("placementPending=state.reinforcementState.status==='placement'", strategy_card)
-        self.assertIn("reinforcementPending||placementPending||missionPending?'disabled':''", strategy_card)
+        strategy_card = self.function_source("strategyProgressHtml(step)", "strategyEventHtml(event)")
+        self.assertIn("state.reinforcementState.status!=='placement'", strategy_card)
+        self.assertIn("canLeaveStrategyActions()&&canLeaveStrategyEvents()", strategy_card)
         normalization = self.function_source("normalizeNpo(npo)", "mission()")
         self.assertIn("hatchway:String(npo.reinforcement.hatchway||'')", normalization)
 

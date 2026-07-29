@@ -8,27 +8,21 @@ APP = (ROOT / 'app.js').read_text()
 STYLES = (ROOT / 'styles.css').read_text()
 INDEX = (ROOT / 'index.html').read_text()
 README = (ROOT / 'README.md').read_text()
-STRATEGY = APP.split('function strategyCard()', 1)[1].split('function strategyEventHtml', 1)[0]
+STRATEGY = APP.split('function strategyProgressHtml', 1)[1].split('function strategyEventHtml', 1)[0]
 EVENT_HTML = APP.split('function strategyEventHtml', 1)[1].split('function activationTracker', 1)[0]
 
 
 class StrategyPhaseResultsTests(unittest.TestCase):
     def test_screen_sections_follow_required_document_order(self):
-        rendered = STRATEGY.rsplit('return `<section class="next-card"', 1)[1]
-        order = [
-            'Complete the Strategy Phase', 'strategy-intro', 'Strategy Phase Checklist',
-            '${actionsSection}', '${eventsSection}', '${reinforcementResults}',
-            '${battlefieldState}', 'id="continueStrategy"'
-        ]
-        positions = [rendered.index(value) for value in order]
-        self.assertEqual(positions, sorted(positions))
+        self.assertIn('Resolve Strategy Phase Actions', STRATEGY)
+        self.assertIn('Resolve Tomb World Events', STRATEGY)
+        self.assertIn('Deploy Reinforcements and Review', STRATEGY)
         self.assertIn("missionStrategyPromptHtml()}${factionGuidanceHtml('gambits')}${scuttlingCard}", STRATEGY)
         self.assertNotIn('Restless Tomb:</strong> Resolve one Tomb World event.', APP)
 
-    def test_empty_actions_and_events_sections_are_omitted(self):
-        self.assertIn("actionsHtml?`<section class=\"strategy-actions-section\"", STRATEGY)
-        self.assertIn('showEvents=eventPresentation.required||eventPresentation.cardsDrawn||unmatchedActiveEvents', STRATEGY)
-        self.assertIn('showEvents?`<section class="strategy-events-section"', STRATEGY)
+    def test_empty_actions_and_events_have_guided_messages(self):
+        self.assertIn('No additional guided Strategy Phase actions are required.', STRATEGY)
+        self.assertIn('No Tomb World event is required during this Strategy Phase.', STRATEGY)
 
     def test_requirement_and_summary_use_persisted_current_turn_state_without_mutation(self):
         helpers = re.search(
@@ -76,25 +70,25 @@ assert.deepEqual(strategyEventPresentation(data),{{required:0,cardsDrawn:0,resol
         self.assertNotIn("event.status==='redrawn'?'Redraw required':'Resolved'", EVENT_HTML)
 
     def test_battlefield_values_remain_canonical_and_completion_logic_is_unchanged(self):
-        battlefield = STRATEGY.split('const battlefieldState=', 1)[1]
+        battlefield = STRATEGY.split('const battlefield=', 1)[1]
         self.assertIn('${state.threat}', battlefield)
         self.assertIn('${threatGrade()}', battlefield)
         self.assertIn('${readyNpos().length}', battlefield)
-        self.assertIn("reinforcementPending||placementPending||missionPending?'disabled':''", STRATEGY)
+        self.assertIn("state.reinforcementState.status!=='placement'", STRATEGY)
         self.assertNotIn('eventPresentation.resolved?', STRATEGY)
 
     def test_accessible_responsive_presentation(self):
-        self.assertIn('aria-labelledby="strategy-actions-heading"', STRATEGY)
-        self.assertIn('aria-labelledby="strategy-events-heading"', STRATEGY)
+        self.assertIn('aria-label="Strategy Phase, step ${number} of 3: ${label}"', STRATEGY)
+        self.assertIn('id="strategy-step-heading" tabindex="-1"', STRATEGY)
         self.assertIn('aria-labelledby="battlefield-state-heading"', STRATEGY)
-        self.assertIn('aria-label="${eventSummary.accessible}"', STRATEGY)
+        self.assertIn('aria-label="${summary.accessible}"', STRATEGY)
         self.assertIn('@media(max-width:420px)', STYLES)
         self.assertNotIn('position:absolute', STYLES.split('.strategy-actions-section', 1)[1].split('\n', 1)[0])
 
     def test_release_version_and_notes_are_consistent(self):
-        self.assertIn("const APP_VERSION = '7.5.3';", APP)
-        self.assertIn('V7.5.3', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v7.5.3'))
+        self.assertIn("const APP_VERSION = '7.5.4';", APP)
+        self.assertIn('V7.5.4', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v7.5.4'))
         self.assertIn('Version 7.4.0 - Reorganize Strategy Phase Results', README)
         self.assertNotIn('portrait', EVENT_HTML.lower())
         self.assertNotIn('obelisk', EVENT_HTML.lower())

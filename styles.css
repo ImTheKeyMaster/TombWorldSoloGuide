@@ -594,6 +594,16 @@ body.modal-open{
   color:var(--muted);
   line-height:1.5;
 }
+.strategy-progress{margin-bottom:10px;color:var(--green);font-size:.72rem;font-weight:900;letter-spacing:.12em}
+.strategy-progress-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:220px;margin-top:9px}
+.strategy-progress-bar i{display:block;height:4px;border-radius:999px;background:var(--line)}
+.strategy-progress-bar i.complete{background:var(--green)}
+.strategy-navigation{display:grid;grid-template-columns:1fr;gap:12px;align-items:stretch;margin-top:24px;padding-bottom:env(safe-area-inset-bottom)}
+.strategy-navigation.two-actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.strategy-navigation .btn{width:100%}
+.strategy-empty-message{margin:18px 0!important}
+.strategy-warning strong{color:#f2bf72}
+@media(max-width:600px){.strategy-navigation.two-actions .btn{padding-inline:10px}.strategy-step h2{font-size:clamp(1.7rem,8vw,2.35rem)}}
 .strategy-phase-guide{
   margin:0 0 18px;
   padding:14px 16px;
