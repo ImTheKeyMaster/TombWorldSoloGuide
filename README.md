@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v8.0.0
+# Tomb World Solo Guide v8.0.1
+
+## v8.0.1
+
+**Version 8.0.1 - Fix NPO Action Eligibility and Activation Restore**
+
+- Replaced vague NPO action questions with objective tabletop eligibility questions.
+- Preserved printed behavior priorities while ensuring the player confirms facts rather than making tactical choices.
+- Corrected Necron Warrior Fall Back handling so it is considered only when the NPO is within Player control range.
+- Fixed refresh and Update App restoration during in-progress NPO activations.
+- Added a visible recovery screen for unexpected startup restoration errors.
 
 ## v8.0.0
 

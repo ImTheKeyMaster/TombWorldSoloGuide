@@ -28,7 +28,8 @@ class RemediationPr4Tests(unittest.TestCase):
 
     def test_question_flow_tracks_declines_within_the_current_pass(self):
         source = self.function_source('runNpoPrompt', 'chooseNpoDecision')
-        self.assertIn('if(answer)resolveNpo', source)
+        self.assertIn("}else if(answer){", source)
+        self.assertIn('resolveNpo(n,{...nextAnswers,action},nextHistory)', source)
         self.assertIn('state.lastActivation.declinedActionIds=', source)
         self.assertIn('runNpoPrompt(n,0,nextAnswers,nextHistory)', source)
         self.assertNotIn('objective', source)
@@ -37,7 +38,8 @@ class RemediationPr4Tests(unittest.TestCase):
 
     def test_active_question_icon_uses_the_printed_action(self):
         question = self.function_source('npoActionQuestion', 'npoIcon')
-        self.assertIn('action,title:', question)
+        self.assertIn('action,actionId:id', question)
+        self.assertIn('title,help:', question)
         renderer = self.function_source('renderActiveNpoQuestion', 'runNpoPrompt')
         self.assertIn("npoQuestionIcons[q.action.split(' ')[0]]", renderer)
         self.assertNotIn('npoQuestionIcons[q.key]', renderer)
@@ -69,7 +71,7 @@ class RemediationPr4Tests(unittest.TestCase):
         self.assertIn('if(state.lastActivation?.committed)return', commit)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = '8.0.0'
+        expected = '8.0.1'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / 'service-worker.js').read_text())
         index = (ROOT / 'index.html').read_text()
