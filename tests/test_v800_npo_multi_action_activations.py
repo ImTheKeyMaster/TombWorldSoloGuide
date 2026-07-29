@@ -144,14 +144,14 @@ class V800NpoMultiActionActivationTests(unittest.TestCase):
         self.assertIn('resolvedActions:Array.isArray(merged.lastActivation.resolvedActions)', APP)
         self.assertIn('combatDraft', APP)
     def test_32_reload_does_not_duplicate_damage(self):
-        self.assertIn('if(resolutionCommitted)return', APP)
+        self.assertIn('resolutionCommitted||!pending||!canCommitNpoAction', APP)
     def test_33_journal_is_committed_once(self):
         source = self.source('commitNpoAction', 'renderNpoActionResult')
         self.assertEqual(source.count('log('), 1)
     def test_34_rapid_taps_are_idempotent(self):
-        source = self.source('commitNpoAction', 'renderNpoActionResult')
-        self.assertIn('activation.pendingAction?.id!==actionId', source)
-        self.assertIn('activation.pendingAction?.decisionPass!==activation.decisionPass', source)
+        source = self.source('canCommitNpoAction', 'commitNpoAction')
+        self.assertIn('pending?.id===actionId', source)
+        self.assertIn('pending.decisionPass===activation.decisionPass', source)
     def test_35_dead_targets_excluded(self):
         self.assertIn('inPlayLivingPlayerOperativeIds()', APP)
         self.assertIn('state.npoAttackTargetId=null', self.source('commitNpoAction', 'renderNpoActionResult'))
@@ -165,6 +165,24 @@ class V800NpoMultiActionActivationTests(unittest.TestCase):
     def test_41_supported_npo_profiles_unchanged_and_present(self):
         for name in ('Necron Warrior', 'Canoptek Tomb Crawler', 'Geomancer', 'Canoptek Macrocyte Warrior', 'Canoptek Macrocyte Accelerator', 'Canoptek Macrocyte Reanimator', 'Canoptek Scarab Swarm'):
             self.assertIn(f"'{name}': {{", APP)
+
+    def test_stale_controls_cannot_apply_side_effects_before_commit_validation(self):
+        movement = self.source('resolveNpoAction', 'initiativeSummary')
+        self.assertLess(movement.index('canCommitNpoAction(pendingAction.id'), movement.index('consumeMolecularBreach(n.id'))
+        combat = self.source('showNpoAttackWizard', 'spinnerField')
+        self.assertLess(combat.index('canCommitNpoAction(pending.id'), combat.index('applyNpoAttackDamage(n,target,summary)'))
+
+    def test_incapacitation_can_finish_an_active_activation(self):
+        continuation = self.source('continueNpoActivation', 'canCommitNpoAction')
+        self.assertIn('n.wounds<=0', continuation)
+        completion = self.source('completeNpoActivation', 'applyNpoAttackDamage')
+        self.assertNotIn('if(!n||!n.ready)return', completion)
+
+    def test_final_activation_commit_guard_is_set_before_side_effects(self):
+        completion = self.source('completeNpoActivation', 'applyNpoAttackDamage')
+        guard = 'state.lastActivation.committed=true;state.lastActivation.completed=true'
+        self.assertLess(completion.index(guard), completion.index('setThreat('))
+        self.assertLess(completion.index(guard), completion.index('state.npoActivated++'))
 
 
 if __name__ == '__main__':
