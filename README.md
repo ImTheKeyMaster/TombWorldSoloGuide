@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v7.6.2
+# Tomb World Solo Guide v7.6.3
+
+## v7.6.3
+
+**Version 7.6.3 - Remove Leading Player Roster Delimiter**
+
+- Removed the unnecessary leading dot from the Player operative list on the deployment screen.
+- Standardized compact Player and NPO deployment lists to use separators only between operative names.
+- Preserved Player numbering, weapon variants, roster order, and deployment behavior.
+
+---
 
 ## v7.6.2
 

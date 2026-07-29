@@ -49,7 +49,7 @@ class V710UiResponsivenessTests(unittest.TestCase):
     def test_deployed_npo_delimiters_are_joined_between_sorted_names(self):
         deployment = self.source("if(stepId==='deploy'){", "const m=mission();")
         self.assertIn("sortedNposForDisplay(generation.deployedNpoIds.map", deployment)
-        self.assertIn(".filter(Boolean)).map(npo=>escapeHtml(npoName(npo))).join(' · ')", deployment)
+        self.assertIn(".filter(Boolean)).map(npo=>escapeHtml(npoName(npo))))", deployment)
         self.assertIn('class="deployment-roster">${deployedNpoRoster}</span>', deployment)
         self.assertNotIn('class="deployment-roster">• ${deployedNpoRoster}', deployment)
 
@@ -66,11 +66,11 @@ class V710UiResponsivenessTests(unittest.TestCase):
         self.assertIn("npo-roster-card.dead", CSS)
 
     def test_release_version_is_synchronized(self):
-        self.assertIn("const APP_VERSION = '7.6.2';", APP)
-        self.assertIn("const APP_VERSION = '7.6.2';", WORKER)
-        self.assertIn("V7.6.2", INDEX)
+        self.assertIn("const APP_VERSION = '7.6.3';", APP)
+        self.assertIn("const APP_VERSION = '7.6.3';", WORKER)
+        self.assertIn("V7.6.3", INDEX)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "app.js"):
-            self.assertIn(f"{asset}?v=7.6.2", INDEX)
+            self.assertIn(f"{asset}?v=7.6.3", INDEX)
 
 
 if __name__ == "__main__":
