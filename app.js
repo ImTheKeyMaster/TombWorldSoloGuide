@@ -2473,6 +2473,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     eventRedrawsInProgress.add(transactionId);
     const replacement=drawReplacementEvent(event,eventIndex+1);
     if(!replacement){
+      data.event=event;
+      data.eventPending=true;
       state.eventState.transactions[transactionId]={
         transactionId,type:'event-redraw',turningPoint:state.turningPoint,
         originalEventInstanceId:event.instanceId,originalDefinitionId:event.definitionId,

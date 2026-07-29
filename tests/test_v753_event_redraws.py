@@ -65,10 +65,18 @@ class EventRedrawTests(unittest.TestCase):
         self.assertIn("status:'failed',committed:false", failure)
         self.assertIn("the redraw remains available", failure)
         self.assertIn("The event deck has no valid replacement card available", failure)
+        self.assertIn("data.event=event", failure)
+        self.assertIn("data.eventPending=true", failure)
         self.assertIn("return false", failure)
         self.assertNotIn("eventIndex=", failure)
         self.assertNotIn("eventPending=false", failure)
         self.assertNotIn("completeStrategyStage", failure)
+
+    def test_automatic_redraw_failure_keeps_reinforcements_blocked(self):
+        failure = self.redraw.split("if(!replacement){", 1)[1].split("event.status='redrawn'", 1)[0]
+        turning_point = source("function finishTurningPointStart", "function completeStrategyStage")
+        self.assertIn("data.eventPending=true", failure)
+        self.assertIn("if(!state.strategyData.eventPending)processReinforcementStage()", turning_point)
 
     def test_committed_transaction_is_stable_and_persistent(self):
         for field in ("transactionId", "type:'event-redraw'", "turningPoint", "originalEventInstanceId",
