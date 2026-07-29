@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v7.5.6
+# Tomb World Solo Guide v7.5.7
+
+## v7.5.7
+
+**Version 7.5.7 - Clean Up the Battle Complete Screen**
+
+- Changed the Battle Complete heading focus outline from the browser-default blue to the app’s green accent.
+- Removed Confirm Escape, Undo Escape, and other mission-editing controls from completed mission reviews.
+- Preserved final mission progress, operative statuses, accessibility focus, and all active mission controls.
+
+---
 
 ## v7.5.6
 
