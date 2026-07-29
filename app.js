@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.5.4';
+  const APP_VERSION = '7.5.5';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
   const EventEffects=TombWorldEventEffects;
@@ -1895,7 +1895,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function activeEventEffectsHtml(){
     const active=state.eventState.active||[];
     if(!active.length)return '';
-    return `<section class="card"><p class="eyebrow">ACTIVE TOMB WORLD ${active.length===1?'EVENT':'EVENTS'}</p>${active.map(event=>`<div class="summary-box"><strong>${escapeHtml(event.title)}</strong><br>${escapeHtml(event.text)}</div>`).join('')}</section>`;
+    const heading=`ACTIVE TOMB WORLD ${active.length===1?'EVENT':'EVENTS'}`;
+    return `<section class="card active-events-panel"><details class="active-events-details"><summary class="active-events-summary" aria-label="${active.length===1?'Active Tomb World Event':'Active Tomb World Events'}, ${active.length} active"><span>${heading}</span><span class="active-events-count">${active.length} ACTIVE</span></summary><div class="active-events-content">${active.map(event=>`<div class="summary-box"><strong>${escapeHtml(event.title)}</strong><br>${escapeHtml(event.text)}</div>`).join('')}</div></details></section>`;
   }
 
   function tombWorldEventActive(definitionId){
