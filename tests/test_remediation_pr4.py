@@ -26,10 +26,11 @@ class RemediationPr4Tests(unittest.TestCase):
             encoded = ','.join(repr(action) for action in actions)
             self.assertIn(f'actions:[{encoded}]', definition)
 
-    def test_question_flow_stops_at_first_legal_action(self):
+    def test_question_flow_tracks_declines_within_the_current_pass(self):
         source = self.function_source('runNpoPrompt', 'chooseNpoDecision')
         self.assertIn('if(answer)resolveNpo', source)
-        self.assertIn('else runNpoPrompt(n,index+1', source)
+        self.assertIn('state.lastActivation.declinedActionIds=', source)
+        self.assertIn('runNpoPrompt(n,0,nextAnswers,nextHistory)', source)
         self.assertNotIn('objective', source)
         self.assertNotIn('wounded', source)
         self.assertNotIn('clustered', source)
@@ -68,7 +69,7 @@ class RemediationPr4Tests(unittest.TestCase):
         self.assertIn('if(state.lastActivation?.committed)return', commit)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = '7.6.3'
+        expected = '8.0.0'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / 'service-worker.js').read_text())
         index = (ROOT / 'index.html').read_text()

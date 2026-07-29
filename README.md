@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v7.6.3
+# Tomb World Solo Guide v8.0.0
+
+## v8.0.0
+
+**Version 8.0.0 - Full NPO Multi-Action Activations**
+
+- Rebuilt NPO activations around a persistent AP-based action loop.
+- NPOs now reevaluate their printed behavior after movement, attacks, and special actions while AP remains.
+- Added complete action history, correct AP spending, multi-action combat continuation, and safe save-and-reload behavior.
+- Prevented activations from ending after the first ordinary action when additional useful legal actions remain.
+- Preserved all NPO profiles, combat rules, Tomb World events, missions, and existing Player behavior.
 
 ## v7.6.3
 
