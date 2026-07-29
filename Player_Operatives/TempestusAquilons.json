@@ -80,7 +80,7 @@
   "operatives": [
     {
       "id": "tempestor-power",
-      "name": "Tempestor — Power weapon",
+      "name": "Tempestor (Power Weapon)",
       "officialName": "Aquilon Tempestor",
       "role": "Leader",
       "category": "tempestor",
@@ -124,7 +124,7 @@
     },
     {
       "id": "tempestor-relic",
-      "name": "Tempestor — Relic bolt pistol",
+      "name": "Tempestor (Relic Bolt Pistol)",
       "officialName": "Aquilon Tempestor",
       "role": "Leader",
       "category": "tempestor",
@@ -167,7 +167,7 @@
     },
     {
       "id": "tempestor-carbine",
-      "name": "Tempestor — Lascarbine",
+      "name": "Tempestor (Lascarbine)",
       "officialName": "Aquilon Tempestor",
       "role": "Leader",
       "category": "tempestor",
@@ -505,7 +505,7 @@
     },
     {
       "id": "servo-flamer",
-      "name": "Servo-Sentry — Flamer",
+      "name": "Servo-Sentry (Flamer)",
       "officialName": "Aquilon Servo-Sentry",
       "role": "Servo-Sentry",
       "category": "servo-sentry",
@@ -541,7 +541,7 @@
     },
     {
       "id": "servo-grenade",
-      "name": "Servo-Sentry — Grenade launcher",
+      "name": "Servo-Sentry (Grenade Launcher)",
       "officialName": "Aquilon Servo-Sentry",
       "role": "Servo-Sentry",
       "category": "servo-sentry",
@@ -585,7 +585,7 @@
     },
     {
       "id": "servo-volley",
-      "name": "Servo-Sentry — Hot-shot volley gun",
+      "name": "Servo-Sentry (Hot-shot Volley Gun)",
       "officialName": "Aquilon Servo-Sentry",
       "role": "Servo-Sentry",
       "category": "servo-sentry",

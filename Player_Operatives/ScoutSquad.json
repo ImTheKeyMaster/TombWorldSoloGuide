@@ -148,7 +148,7 @@
   "operatives": [
     {
       "id": "sergeant-shotgun",
-      "name": "Scout Sergeant \u2014 Astartes Shotgun",
+      "name": "Scout Sergeant (Astartes Shotgun)",
       "officialName": "Scout Sergeant",
       "role": "Leader",
       "category": "leader",
@@ -210,7 +210,7 @@
     },
     {
       "id": "sergeant-boltgun",
-      "name": "Scout Sergeant \u2014 Boltgun",
+      "name": "Scout Sergeant (Boltgun)",
       "officialName": "Scout Sergeant",
       "role": "Leader",
       "category": "leader",
@@ -270,7 +270,7 @@
     },
     {
       "id": "sergeant-pistol-chainsword",
-      "name": "Scout Sergeant \u2014 Bolt Pistol & Chainsword",
+      "name": "Scout Sergeant (Bolt Pistol & Chainsword)",
       "officialName": "Scout Sergeant",
       "role": "Leader",
       "category": "leader",
@@ -332,7 +332,7 @@
     },
     {
       "id": "heavy-gunner-heavy-bolter",
-      "name": "Scout Heavy Gunner \u2014 Heavy Bolter",
+      "name": "Scout Heavy Gunner (Heavy Bolter)",
       "officialName": "Scout Heavy Gunner",
       "role": "Heavy Gunner",
       "category": "specialists",
@@ -408,7 +408,7 @@
     },
     {
       "id": "heavy-gunner-missile-launcher",
-      "name": "Scout Heavy Gunner \u2014 Missile Launcher",
+      "name": "Scout Heavy Gunner (Missile Launcher)",
       "officialName": "Scout Heavy Gunner",
       "role": "Heavy Gunner",
       "category": "specialists",
@@ -678,7 +678,7 @@
     },
     {
       "id": "warrior-1-shotgun",
-      "name": "Scout Warrior 1 \u2014 Astartes Shotgun",
+      "name": "Scout Warrior 1 (Astartes Shotgun)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -736,7 +736,7 @@
     },
     {
       "id": "warrior-1-boltgun",
-      "name": "Scout Warrior 1 \u2014 Boltgun",
+      "name": "Scout Warrior 1 (Boltgun)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -792,7 +792,7 @@
     },
     {
       "id": "warrior-1-pistol-blade",
-      "name": "Scout Warrior 1 \u2014 Bolt Pistol & Combat Blade",
+      "name": "Scout Warrior 1 (Bolt Pistol & Combat Blade)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -850,7 +850,7 @@
     },
     {
       "id": "warrior-2-shotgun",
-      "name": "Scout Warrior 2 \u2014 Astartes Shotgun",
+      "name": "Scout Warrior 2 (Astartes Shotgun)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -908,7 +908,7 @@
     },
     {
       "id": "warrior-2-boltgun",
-      "name": "Scout Warrior 2 \u2014 Boltgun",
+      "name": "Scout Warrior 2 (Boltgun)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -964,7 +964,7 @@
     },
     {
       "id": "warrior-2-pistol-blade",
-      "name": "Scout Warrior 2 \u2014 Bolt Pistol & Combat Blade",
+      "name": "Scout Warrior 2 (Bolt Pistol & Combat Blade)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1022,7 +1022,7 @@
     },
     {
       "id": "warrior-3-shotgun",
-      "name": "Scout Warrior 3 \u2014 Astartes Shotgun",
+      "name": "Scout Warrior 3 (Astartes Shotgun)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1080,7 +1080,7 @@
     },
     {
       "id": "warrior-3-boltgun",
-      "name": "Scout Warrior 3 \u2014 Boltgun",
+      "name": "Scout Warrior 3 (Boltgun)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1136,7 +1136,7 @@
     },
     {
       "id": "warrior-3-pistol-blade",
-      "name": "Scout Warrior 3 \u2014 Bolt Pistol & Combat Blade",
+      "name": "Scout Warrior 3 (Bolt Pistol & Combat Blade)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1194,7 +1194,7 @@
     },
     {
       "id": "warrior-4-shotgun",
-      "name": "Scout Warrior 4 \u2014 Astartes Shotgun",
+      "name": "Scout Warrior 4 (Astartes Shotgun)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1252,7 +1252,7 @@
     },
     {
       "id": "warrior-4-boltgun",
-      "name": "Scout Warrior 4 \u2014 Boltgun",
+      "name": "Scout Warrior 4 (Boltgun)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1308,7 +1308,7 @@
     },
     {
       "id": "warrior-4-pistol-blade",
-      "name": "Scout Warrior 4 \u2014 Bolt Pistol & Combat Blade",
+      "name": "Scout Warrior 4 (Bolt Pistol & Combat Blade)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1366,7 +1366,7 @@
     },
     {
       "id": "warrior-5-shotgun",
-      "name": "Scout Warrior 5 \u2014 Astartes Shotgun",
+      "name": "Scout Warrior 5 (Astartes Shotgun)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1424,7 +1424,7 @@
     },
     {
       "id": "warrior-5-boltgun",
-      "name": "Scout Warrior 5 \u2014 Boltgun",
+      "name": "Scout Warrior 5 (Boltgun)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1480,7 +1480,7 @@
     },
     {
       "id": "warrior-5-pistol-blade",
-      "name": "Scout Warrior 5 \u2014 Bolt Pistol & Combat Blade",
+      "name": "Scout Warrior 5 (Bolt Pistol & Combat Blade)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1538,7 +1538,7 @@
     },
     {
       "id": "warrior-6-shotgun",
-      "name": "Scout Warrior 6 \u2014 Astartes Shotgun",
+      "name": "Scout Warrior 6 (Astartes Shotgun)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1596,7 +1596,7 @@
     },
     {
       "id": "warrior-6-boltgun",
-      "name": "Scout Warrior 6 \u2014 Boltgun",
+      "name": "Scout Warrior 6 (Boltgun)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1652,7 +1652,7 @@
     },
     {
       "id": "warrior-6-pistol-blade",
-      "name": "Scout Warrior 6 \u2014 Bolt Pistol & Combat Blade",
+      "name": "Scout Warrior 6 (Bolt Pistol & Combat Blade)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1710,7 +1710,7 @@
     },
     {
       "id": "warrior-7-shotgun",
-      "name": "Scout Warrior 7 \u2014 Astartes Shotgun",
+      "name": "Scout Warrior 7 (Astartes Shotgun)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1768,7 +1768,7 @@
     },
     {
       "id": "warrior-7-boltgun",
-      "name": "Scout Warrior 7 \u2014 Boltgun",
+      "name": "Scout Warrior 7 (Boltgun)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1824,7 +1824,7 @@
     },
     {
       "id": "warrior-7-pistol-blade",
-      "name": "Scout Warrior 7 \u2014 Bolt Pistol & Combat Blade",
+      "name": "Scout Warrior 7 (Bolt Pistol & Combat Blade)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1882,7 +1882,7 @@
     },
     {
       "id": "warrior-8-shotgun",
-      "name": "Scout Warrior 8 \u2014 Astartes Shotgun",
+      "name": "Scout Warrior 8 (Astartes Shotgun)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1940,7 +1940,7 @@
     },
     {
       "id": "warrior-8-boltgun",
-      "name": "Scout Warrior 8 \u2014 Boltgun",
+      "name": "Scout Warrior 8 (Boltgun)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",
@@ -1996,7 +1996,7 @@
     },
     {
       "id": "warrior-8-pistol-blade",
-      "name": "Scout Warrior 8 \u2014 Bolt Pistol & Combat Blade",
+      "name": "Scout Warrior 8 (Bolt Pistol & Combat Blade)",
       "officialName": "Scout Warrior",
       "role": "Warrior",
       "category": "warriors",

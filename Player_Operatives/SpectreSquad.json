@@ -158,7 +158,7 @@
     },
     {
       "id": "field-medicae-lascarbine",
-      "name": "Field Medicae — Lascarbine",
+      "name": "Field Medicae (Lascarbine)",
       "officialName": "Spectre Field Medicae",
       "role": "Field Medicae",
       "category": "specialists",
@@ -213,7 +213,7 @@
     },
     {
       "id": "field-medicae-lasrifle",
-      "name": "Field Medicae — Lasrifle",
+      "name": "Field Medicae (Lasrifle)",
       "officialName": "Spectre Field Medicae",
       "role": "Field Medicae",
       "category": "specialists",
@@ -269,7 +269,7 @@
     },
     {
       "id": "grenadier-lascarbine",
-      "name": "Grenadier — Lascarbine",
+      "name": "Grenadier (Lascarbine)",
       "officialName": "Spectre Grenadier",
       "role": "Grenadier",
       "category": "specialists",
@@ -330,7 +330,7 @@
     },
     {
       "id": "grenadier-lasrifle",
-      "name": "Grenadier — Lasrifle",
+      "name": "Grenadier (Lasrifle)",
       "officialName": "Spectre Grenadier",
       "role": "Grenadier",
       "category": "specialists",
@@ -392,7 +392,7 @@
     },
     {
       "id": "guide-lascarbine",
-      "name": "Guide — Lascarbine",
+      "name": "Guide (Lascarbine)",
       "officialName": "Spectre Guide",
       "role": "Guide",
       "category": "specialists",
@@ -447,7 +447,7 @@
     },
     {
       "id": "guide-lasrifle",
-      "name": "Guide — Lasrifle",
+      "name": "Guide (Lasrifle)",
       "officialName": "Spectre Guide",
       "role": "Guide",
       "category": "specialists",
@@ -503,7 +503,7 @@
     },
     {
       "id": "loader-lascarbine",
-      "name": "Loader — Lascarbine",
+      "name": "Loader (Lascarbine)",
       "officialName": "Spectre Loader",
       "role": "Loader",
       "category": "specialists",
@@ -558,7 +558,7 @@
     },
     {
       "id": "loader-lasrifle",
-      "name": "Loader — Lasrifle",
+      "name": "Loader (Lasrifle)",
       "officialName": "Spectre Loader",
       "role": "Loader",
       "category": "specialists",
@@ -614,7 +614,7 @@
     },
     {
       "id": "vox-operator-lascarbine",
-      "name": "Vox-Operator — Lascarbine",
+      "name": "Vox-Operator (Lascarbine)",
       "officialName": "Spectre Vox-Operator",
       "role": "Vox-Operator",
       "category": "specialists",
@@ -663,7 +663,7 @@
     },
     {
       "id": "vox-operator-lasrifle",
-      "name": "Vox-Operator — Lasrifle",
+      "name": "Vox-Operator (Lasrifle)",
       "officialName": "Spectre Vox-Operator",
       "role": "Vox-Operator",
       "category": "specialists",
@@ -713,7 +713,7 @@
     },
     {
       "id": "gunner-meltagun",
-      "name": "Gunner — Meltagun",
+      "name": "Gunner (Meltagun)",
       "officialName": "Spectre Gunner",
       "role": "Gunner",
       "category": "specialists",
@@ -757,7 +757,7 @@
     },
     {
       "id": "gunner-plasma",
-      "name": "Gunner — Plasma gun",
+      "name": "Gunner (Plasma Gun)",
       "officialName": "Spectre Gunner",
       "role": "Gunner",
       "category": "specialists",
@@ -1034,7 +1034,7 @@
     },
     {
       "id": "trooper-1-lascarbine",
-      "name": "Trooper 1 — Lascarbine",
+      "name": "Trooper 1 (Lascarbine)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
@@ -1083,7 +1083,7 @@
     },
     {
       "id": "trooper-1-lasrifle",
-      "name": "Trooper 1 — Lasrifle",
+      "name": "Trooper 1 (Lasrifle)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
@@ -1133,7 +1133,7 @@
     },
     {
       "id": "trooper-2-lascarbine",
-      "name": "Trooper 2 — Lascarbine",
+      "name": "Trooper 2 (Lascarbine)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
@@ -1182,7 +1182,7 @@
     },
     {
       "id": "trooper-2-lasrifle",
-      "name": "Trooper 2 — Lasrifle",
+      "name": "Trooper 2 (Lasrifle)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
@@ -1232,7 +1232,7 @@
     },
     {
       "id": "trooper-3-lascarbine",
-      "name": "Trooper 3 — Lascarbine",
+      "name": "Trooper 3 (Lascarbine)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
@@ -1281,7 +1281,7 @@
     },
     {
       "id": "trooper-3-lasrifle",
-      "name": "Trooper 3 — Lasrifle",
+      "name": "Trooper 3 (Lasrifle)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
@@ -1331,7 +1331,7 @@
     },
     {
       "id": "trooper-4-lascarbine",
-      "name": "Trooper 4 — Lascarbine",
+      "name": "Trooper 4 (Lascarbine)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
@@ -1380,7 +1380,7 @@
     },
     {
       "id": "trooper-4-lasrifle",
-      "name": "Trooper 4 — Lasrifle",
+      "name": "Trooper 4 (Lasrifle)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
@@ -1430,7 +1430,7 @@
     },
     {
       "id": "trooper-5-lascarbine",
-      "name": "Trooper 5 — Lascarbine",
+      "name": "Trooper 5 (Lascarbine)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
@@ -1479,7 +1479,7 @@
     },
     {
       "id": "trooper-5-lasrifle",
-      "name": "Trooper 5 — Lasrifle",
+      "name": "Trooper 5 (Lasrifle)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
@@ -1529,7 +1529,7 @@
     },
     {
       "id": "trooper-6-lascarbine",
-      "name": "Trooper 6 — Lascarbine",
+      "name": "Trooper 6 (Lascarbine)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
@@ -1578,7 +1578,7 @@
     },
     {
       "id": "trooper-6-lasrifle",
-      "name": "Trooper 6 — Lasrifle",
+      "name": "Trooper 6 (Lasrifle)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
@@ -1628,7 +1628,7 @@
     },
     {
       "id": "trooper-7-lascarbine",
-      "name": "Trooper 7 — Lascarbine",
+      "name": "Trooper 7 (Lascarbine)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
@@ -1677,7 +1677,7 @@
     },
     {
       "id": "trooper-7-lasrifle",
-      "name": "Trooper 7 — Lasrifle",
+      "name": "Trooper 7 (Lasrifle)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
@@ -1727,7 +1727,7 @@
     },
     {
       "id": "trooper-8-lascarbine",
-      "name": "Trooper 8 — Lascarbine",
+      "name": "Trooper 8 (Lascarbine)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
@@ -1776,7 +1776,7 @@
     },
     {
       "id": "trooper-8-lasrifle",
-      "name": "Trooper 8 — Lasrifle",
+      "name": "Trooper 8 (Lasrifle)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
@@ -1826,7 +1826,7 @@
     },
     {
       "id": "trooper-9-lascarbine",
-      "name": "Trooper 9 — Lascarbine",
+      "name": "Trooper 9 (Lascarbine)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
@@ -1875,7 +1875,7 @@
     },
     {
       "id": "trooper-9-lasrifle",
-      "name": "Trooper 9 — Lasrifle",
+      "name": "Trooper 9 (Lasrifle)",
       "officialName": "Spectre Trooper",
       "role": "Trooper",
       "category": "troopers",
