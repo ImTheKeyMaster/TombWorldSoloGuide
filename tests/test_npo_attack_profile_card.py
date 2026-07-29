@@ -46,7 +46,7 @@ class NpoAttackProfileCardTests(unittest.TestCase):
         self.assertIn("guidance.innerHTML=npoCombatGuidanceHtml(n,{attackType,profile})", wizard)
         self.assertIn("resolveRetainedCombat(rolledAttackDice,rolledDefenseDice,profile)", wizard)
         self.assertIn("applyNpoAttackDamage(n,target,summary)", wizard)
-        self.assertIn("if(resolutionCommitted)return", wizard)
+        self.assertIn("if(resolutionCommitted||!pending||!canCommitNpoAction", wizard)
 
     def test_multiple_profiles_require_a_deliberate_selection_before_rolling(self):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
