@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.1.0';
+  const APP_VERSION = '8.2.0';
   const NPO_ACTION_TRANSITIONS = Object.freeze({
     AUTO_CONTINUE:'auto-continue',
     ACKNOWLEDGE:'acknowledge',
@@ -4024,9 +4024,9 @@ function showPlayerActivation(stage={}){
   const NPO_ACTION_INQUIRIES={
     'fall-back':{
       applicabilityQuestion:'Is this NPO within control range of a Player operative?',
-      feasibilityQuestion:'Can this NPO be placed legally after performing Fall Back?',
-      help:'Confirm control range first. If applicable, confirm a legal placement using the shortest legal route.',
-      selectedInstruction:'Fall Back from the Player operative using the shortest legal route.'
+      feasibilityQuestion:'Can this NPO Fall Back and finish outside the control range of all Player operatives?',
+      help:n=>`Move it up to ${npoDefinition(n.type)?.move} inches using the shortest available route. Select Yes only if its base can fit at a destination outside every Player operative’s control range.`,
+      selectedInstruction:'Fall Back using the shortest available route and finish outside the control range of every Player operative.'
     },
     shoot:{
       feasibilityQuestion:'Does this NPO have a valid Player operative it can legally Shoot?',
@@ -4108,7 +4108,8 @@ function showPlayerActivation(stage={}){
     const id=npoActionId(action),inquiry=NPO_ACTION_INQUIRIES[id];
     const applicability=id==='fall-back'&&activation.currentContext?.inEnemyControlRange===null;
     const title=applicability?inquiry.applicabilityQuestion:(inquiry?.feasibilityQuestion||`Are all requirements for ${action} currently satisfied?`);
-    return {key:`${id}-${applicability?'applicability':'feasibility'}`,action,actionId:id,type:applicability?'applicability':'feasibility',title,help:inquiry?.help||'Confirm target eligibility, visibility, distance, control range, placement, availability, and every other physical restriction.'};
+    const help=typeof inquiry?.help==='function'?inquiry.help(n):inquiry?.help;
+    return {key:`${id}-${applicability?'applicability':'feasibility'}`,action,actionId:id,type:applicability?'applicability':'feasibility',title,help:help||'Confirm target eligibility, visibility, distance, control range, placement, availability, and every other physical restriction.'};
   }
 
   const npoQuestionIcons = {

@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.1.0
+# Tomb World Solo Guide v8.2.0
+
+## v8.2.0
+
+**Version 8.2.0 - Clarify NPO Fall Back Guidance**
+
+- Reworded the Fall Back question to explain that the NPO must finish outside every Player operative’s control range.
+- Added clear guidance for movement distance, route selection, and base placement.
+- Preserved Fall Back priority, AP cost, eligibility, and activation behavior.
 
 ## v8.1.0
 

@@ -32,8 +32,14 @@ class V801NpoActionEligibilityTests(unittest.TestCase):
         self.assertNotIn('remainingAp=', prompt)
 
     def test_05_yes_control_range_proceeds_to_placement(self):
-        self.assertIn("feasibilityQuestion:'Can this NPO be placed legally after performing Fall Back?'", APP)
+        self.assertNotIn('Can this NPO be placed legally after performing Fall Back?', APP)
+        self.assertIn("feasibilityQuestion:'Can this NPO Fall Back and finish outside the control range of all Player operatives?'", APP)
+        for guidance in ('Move it up to ${npoDefinition(n.type)?.move} inches', 'shortest available route', 'base can fit', 'outside every Player operative’s control range'):
+            self.assertIn(guidance, APP)
         self.assertIn('if(answer){save();runNpoPrompt(n,0,nextAnswers,nextHistory);}', APP)
+
+    def test_05b_fall_back_instruction_is_explicit(self):
+        self.assertIn("selectedInstruction:'Fall Back using the shortest available route and finish outside the control range of every Player operative.'", APP)
 
     def test_06_fall_back_costs_two_ap(self):
         self.assertIn("'fall-back':2", APP)
