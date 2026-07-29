@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v7.6.1
+# Tomb World Solo Guide v7.6.2
+
+## v7.6.2
+
+**Version 7.6.2 - Remove Team Loading Layout Shift**
+
+- Removed the temporary visible Kill Team loading message that caused the setup screen to shift and flash.
+- Retained the disabled `Loading Team...` button and accessible loading state.
+- Preserved load failures, retry behavior, and all v7.6.1 stale-request protections.
+
+---
 
 ## v7.6.1
 
