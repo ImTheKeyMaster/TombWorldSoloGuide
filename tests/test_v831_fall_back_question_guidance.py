@@ -2,6 +2,8 @@ import re
 import unittest
 from pathlib import Path
 
+from tests.test_v800_npo_multi_action_activations import ActivationModel
+
 ROOT = Path(__file__).resolve().parents[1]
 APP = (ROOT / 'app.js').read_text()
 INDEX = (ROOT / 'index.html').read_text()
@@ -19,7 +21,10 @@ class V831FallBackQuestionGuidanceTests(unittest.TestCase):
     def test_applicability_question_explicitly_prevents_movement(self):
         inquiry = section("'fall-back':{", '    shoot:{')
         self.assertIn("applicabilityQuestion:'Is this NPO within control range of a Player operative?'", inquiry)
-        self.assertIn('Do not move it yet.', inquiry)
+        self.assertIn(
+            "applicabilityHelp:'Answer Yes if this NPO is currently within control range of at least one Player operative. Do not move it yet.'",
+            inquiry,
+        )
 
     def test_applicability_help_contains_no_movement_instruction(self):
         inquiry = section("'fall-back':{", '    shoot:{')
@@ -38,11 +43,16 @@ class V831FallBackQuestionGuidanceTests(unittest.TestCase):
         question = section('function npoActionQuestion', 'const npoQuestionIcons')
         self.assertIn("applicability?inquiry?.applicabilityHelp:(inquiry?.feasibilityHelp??inquiry?.help)", question)
 
-    def test_fall_back_still_costs_two_ap_and_apl_two_is_exhausted(self):
+    def test_normal_apl_two_necron_warrior_completes_after_two_ap_fall_back(self):
+        warrior = section("'Necron Warrior': {", "'Canoptek Tomb Crawler': {")
+        apl = int(re.search(r'apl:(\d+)', warrior).group(1))
+        activation = ActivationModel(apl)
+
+        self.assertEqual(ActivationModel.COSTS['fall-back'], 2)
         self.assertIn("'fall-back':2", APP)
-        starting_ap = 2
-        remaining_ap = starting_ap - 2
-        self.assertEqual(remaining_ap, 0)
+        self.assertTrue(activation.commit('fall-back'))
+        self.assertEqual(activation.remaining, 0)
+
         continuation = section('function continueNpoActivation', 'function canCommitNpoAction')
         self.assertIn('if(activation.remainingAp<=0){completeNpoActivation();return;}', continuation)
 
