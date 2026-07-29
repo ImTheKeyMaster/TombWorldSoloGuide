@@ -1670,6 +1670,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const stepId=currentSetupStepId();
     if(stepId==='playerRoster'){
       if(!canBuildPlayerRoster()){
+        if(playerTeamLoadStatus==='loading'){
+          const teamStep=steps.indexOf('team');
+          app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Build Player Roster</h2><p>Loading the selected Kill Team before displaying its operatives.</p></div></div><section class="wizard-card"><p role="status" aria-live="polite">Loading selected Kill Team operatives…</p>${teamStep>=0?'<div class="wizard-actions"><button class="btn ghost" id="playerRosterLoadBack">Back</button></div>':''}</section></div>`;
+          $('#playerRosterLoadBack')?.addEventListener('click',()=>{state.setupStep=teamStep;save();render();});
+          return;
+        }
         const teamStep=steps.indexOf('team');
         if(teamStep<0){
           const failed=playerTeamLoadStatus==='error';
@@ -1827,6 +1833,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#setupBack')?.addEventListener('click',()=>{state.setupStep=Math.max(0,state.setupStep-1);save();render();});
     $('#setupNext')?.addEventListener('click',()=>{
       if(setupNavigationInProgress)return;
+      if(currentSetupStepId()!==stepId)return;
       if(stepId==='team'&&!canBuildPlayerRoster()){showToast('Wait for the selected Kill Team to finish loading.');return;}
       setupNavigationInProgress=true;
       if(stepId==='playerRoster')assignPlayerDisplayNumbers();
