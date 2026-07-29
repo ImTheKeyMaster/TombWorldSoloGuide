@@ -69,7 +69,7 @@ class StrategyPhaseStepTests(unittest.TestCase):
 
     def test_13_resolved_event_allows_review(self):
         body = function_body('canLeaveStrategyEvents')
-        self.assertIn("event.status==='drawn'", body)
+        self.assertIn("(d.events||[])[d.eventIndex||0]?.status!=='drawn'", body)
 
     def test_14_no_event_message(self):
         self.assertIn('No Tomb World event is required during this Strategy Phase.', function_body('strategyEventsStepHtml'))
@@ -111,6 +111,7 @@ class StrategyPhaseStepTests(unittest.TestCase):
         self.assertIn(": 'actions'", normalization)
 
     def test_26_complete_enters_firefight_once(self):
+        self.assertIn("state.phase==='strategy'&&state.strategyStage==='summary'", function_body('canCompleteStrategyPhase'))
         binding = function_body('bindPlay')
         line = next(line for line in binding.splitlines() if "$('#continueStrategy')" in line)
         self.assertEqual(line.count('beginFirefight('), 1)
@@ -145,7 +146,8 @@ class StrategyPhaseStepTests(unittest.TestCase):
         self.assertIn('aria-label="Strategy Phase, step ${number} of 3: ${label}"', function_body('strategyProgressHtml'))
         self.assertIn('id="strategy-step-heading" tabindex="-1"', APP)
         self.assertIn("$('#strategy-step-heading')?.focus", function_body('showStrategyViewStep'))
-        self.assertIn('grid-template-columns:minmax(0,1fr) minmax(0,1fr)', STYLES)
+        self.assertIn('.strategy-navigation{display:grid;grid-template-columns:1fr', STYLES)
+        self.assertIn('.strategy-navigation.two-actions{grid-template-columns:minmax(0,1fr) minmax(0,1fr)', STYLES)
         self.assertIn('env(safe-area-inset-bottom)', STYLES)
 
 

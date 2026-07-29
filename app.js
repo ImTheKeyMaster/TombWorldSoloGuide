@@ -1974,13 +1974,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function strategyProgressHtml(step){
-    const steps={actions:[1,'Strategy Actions'],events:[2,'Tomb World Events'],review:[3,'Reinforcements and Review']};
+    const steps={actions:[1,'Strategy Actions'],events:[2,'Tomb World Events'],review:[3,'Reinforcements & Review']};
     const [number,label]=steps[step];
     return `<div class="strategy-progress" role="status" aria-label="Strategy Phase, step ${number} of 3: ${label}"><span>STRATEGY PHASE · STEP ${number} OF 3</span><div class="strategy-progress-bar" aria-hidden="true">${[1,2,3].map(item=>`<i class="${item<=number?'complete':''}"></i>`).join('')}</div></div>`;
   }
 
   function strategyNavigationHtml({backId,backLabel,continueId,continueLabel,disabled=false,disabledReason=''}){
-    return `<div class="strategy-navigation${backId?' two-actions':''}">${backId?`<button type="button" class="btn ghost" id="${backId}">${backLabel}</button>`:'<span></span>'}<button type="button" class="btn primary" id="${continueId}" ${disabled?'disabled':''}${disabledReason?` title="${escapeHtml(disabledReason)}"`:''}>${continueLabel}</button></div>`;
+    return `<div class="strategy-navigation${backId?' two-actions':''}">${backId?`<button type="button" class="btn ghost" id="${backId}">${backLabel}</button>`:''}<button type="button" class="btn primary" id="${continueId}" ${disabled?'disabled':''}${disabledReason?` title="${escapeHtml(disabledReason)}"`:''}>${continueLabel}</button></div>`;
   }
 
   function strategyRequiredRedrawPending(){
@@ -1991,11 +1991,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function canLeaveStrategyEvents(){
     const d=state.strategyData||{};
-    return !d.eventPending&&!strategyEventPresentation(d).events.some(event=>event.status==='drawn')&&!strategyRequiredRedrawPending();
+    return !d.eventPending&&(d.events||[])[d.eventIndex||0]?.status!=='drawn'&&!strategyRequiredRedrawPending();
   }
 
   function canCompleteStrategyPhase(){
-    return canLeaveStrategyActions()&&canLeaveStrategyEvents()&&state.reinforcementState.status!=='placement';
+    return state.phase==='strategy'&&state.strategyStage==='summary'&&canLeaveStrategyActions()&&canLeaveStrategyEvents()&&state.reinforcementState.status!=='placement';
   }
 
   function showStrategyViewStep(step,fromStep){
@@ -2003,7 +2003,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(state.phase!=='strategy'||state.strategyStage!=='summary'||!d||strategyViewStep(d)!==fromStep)return;
     const allowed=fromStep==='actions'&&step==='events'?canLeaveStrategyActions()
       : fromStep==='events'&&step==='review'?canLeaveStrategyEvents()
-      : fromStep==='events'&&step==='actions'||fromStep==='review'&&step==='events';
+      : (fromStep==='events'&&step==='actions')||(fromStep==='review'&&step==='events');
     if(!allowed)return;
     d.viewStep=step;
     save();render();
