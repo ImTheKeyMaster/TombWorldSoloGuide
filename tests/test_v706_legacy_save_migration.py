@@ -67,7 +67,7 @@ assert.equal(p.migrateSaveDetailed(exported,catalog).report.outcome,'current');
         self.assertNotIn("TODO(v7 legacy-save migration)", app)
         self.assertIn("const RETIRED_NPO_TYPES = Object.freeze([])", persistence)
         self.assertEqual(persistence.count("'canoptek macrocyte':"), 1)
-        self.assertIn("const APP_VERSION = '7.5.3';", app)
+        self.assertIn("const APP_VERSION = '7.5.4';", app)
 
 
 if __name__ == "__main__":

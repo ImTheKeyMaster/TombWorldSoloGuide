@@ -6,11 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 APP = (ROOT / "app.js").read_text()
 STYLES = (ROOT / "styles.css").read_text()
-STRATEGY_CARD = re.search(
-    r"function strategyCard\(\)\{(?P<body>.*?)\n  \}\n\n  function strategyEventHtml",
-    APP,
-    re.S,
-).group("body")
+STRATEGY_CARD = APP.split("function strategyActionsStepHtml", 1)[1].split("function strategyEventHtml", 1)[0]
 REINFORCEMENTS = APP.split("function processReinforcementStage()", 1)[1].split("function reinforcementTriggered", 1)[0]
 
 
@@ -39,7 +35,7 @@ class StrategyPhaseUiTests(unittest.TestCase):
 
     def test_empty_reinforcement_card_is_not_rendered(self):
         self.assertIn("deployingNpos.length||d.blocked", STRATEGY_CARD)
-        self.assertIn("</section>`:''", STRATEGY_CARD)
+        self.assertIn('No reinforcements were generated this Turning Point.', STRATEGY_CARD)
         self.assertNotIn("No reinforcements arrive.", APP)
 
     def test_reserve_npos_are_selected_and_deployed_without_duplication(self):
@@ -65,7 +61,7 @@ class StrategyPhaseUiTests(unittest.TestCase):
         self.assertIn("npo.battlefieldState==='reserve'", normalization)
 
     def test_tomb_world_event_placeholder_is_removed(self):
-        self.assertNotIn("No Tomb World event is required.", APP)
+        self.assertIn("No Tomb World event is required during this Strategy Phase.", APP)
         self.assertIn("displayedEvents.map(event=>strategyEventHtml(event,activeEffects)).join('')", STRATEGY_CARD)
 
 

@@ -32,7 +32,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertNotIn("failedExitIds", self.app)
         self.assertNotIn("Other Exit", self.app)
         self.assertIn("missionStrategyPending", self.app)
-        self.assertIn("reinforcementPending||placementPending||missionPending", self.app)
+        self.assertIn("canCompleteStrategyPhase", self.app)
 
     def test_mission_two_tracks_individual_permanently_open_features(self):
         engine = self.by_type["sabotage"]["missionEngine"]
@@ -99,7 +99,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertIn("Assets/Images/${victory?'victory':'defeat'}.png", self.app)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = "7.5.3"
+        expected = "7.5.4"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         index = (ROOT / "index.html").read_text()
         self.assertIn(f"styles.css?v={expected}", index)

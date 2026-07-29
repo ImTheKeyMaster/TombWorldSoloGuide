@@ -90,9 +90,9 @@ class EventRedrawTests(unittest.TestCase):
 
     def test_replacement_runs_normal_flow_and_blocks_strategy(self):
         self.assertIn("beginCurrentEvent();", self.redraw)
-        strategy = source("function strategyCard", "function strategyEventHtml")
-        self.assertIn("reinforcementPending=Boolean(d.eventPending)", strategy)
-        self.assertIn("reinforcementPending||placementPending||missionPending?'disabled':''", strategy)
+        strategy = source("function strategyProgressHtml", "function strategyEventHtml")
+        self.assertIn("!d.eventPending", strategy)
+        self.assertIn("strategyRequiredRedrawPending()", strategy)
 
     def test_all_impossible_events_share_centralized_redraw(self):
         self.assertIn("if(state.threat===15){redrawCurrentEvent('Threat was already 15.');return;}", self.begin)
@@ -127,13 +127,13 @@ class EventRedrawTests(unittest.TestCase):
         self.assertIn("retaliation.committed=true", APP)
 
     def test_version_753_is_consistent_without_save_schema_change(self):
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v7.5.3"))
-        self.assertIn("## v7.5.3", README)
-        self.assertIn("const APP_VERSION = '7.5.3';", APP)
-        self.assertIn("const APP_VERSION = '7.5.3';", WORKER)
-        self.assertIn("V7.5.3", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v7.5.4"))
+        self.assertIn("## v7.5.4", README)
+        self.assertIn("const APP_VERSION = '7.5.4';", APP)
+        self.assertIn("const APP_VERSION = '7.5.4';", WORKER)
+        self.assertIn("V7.5.4", INDEX)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=7.5.3", INDEX)
+            self.assertIn(f"{asset}?v=7.5.4", INDEX)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
 
 

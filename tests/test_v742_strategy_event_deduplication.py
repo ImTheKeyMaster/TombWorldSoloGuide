@@ -18,9 +18,9 @@ EVENT_HTML = APP.split("function strategyEventHtml", 1)[1].split("function activ
 def render_strategy(events, active, required=1, normal=0):
     event_index = next((index for index, item in enumerate(events) if item['status'] == 'drawn'), len(events))
     script = f"""
-const state={{turningPoint:2,strategyStage:'summary',threat:0,
-  strategyData:{{eventRequirementTurningPoint:2,requiredEventCount:{required},normalEventCount:{normal},events:{json.dumps(events)},eventIndex:{event_index},eventPending:false}},
-  eventState:{{active:{json.dumps(active)}}},reinforcementState:{{status:'idle',operativeIds:[],blockedOperativeIds:[]}},roster:[]}};
+const state={{turningPoint:2,phase:'strategy',strategyStage:'summary',threat:0,
+  strategyData:{{viewStep:'events',eventRequirementTurningPoint:2,requiredEventCount:{required},normalEventCount:{normal},events:{json.dumps(events)},eventIndex:{event_index},eventPending:false}},
+  eventState:{{active:{json.dumps(active)},transactions:{{}}}},reinforcementState:{{status:'idle',operativeIds:[],blockedOperativeIds:[]}},roster:[]}};
 const window={{matchMedia:()=>({{matches:true}})}};
 const escapeHtml=value=>String(value??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
 const sortedNposForDisplay=items=>items;
@@ -66,7 +66,7 @@ class StrategyEventDeduplicationTests(unittest.TestCase):
         self.assertNotIn("Other Active Event Effects", html)
         self.assertIn("RESOLVED • ACTIVE", html)
         self.assertIn("Effect active until the end of this Turning Point.", html)
-        self.assertLess(html.index("Countertemporal Shifting"), html.index("Current Battlefield State"))
+        self.assertNotIn("Current Battlefield State", html)
 
     def test_statuses_are_derived_without_mutating_canonical_records(self):
         immediate = event("metal-1", "living-metal-flux", "Living Metal Flux", "Regain wounds.")
@@ -117,7 +117,7 @@ class StrategyEventDeduplicationTests(unittest.TestCase):
         self.assertIn("0 required • 0 cards drawn • 0 resolved", subprocess.run(
             ["node", "-e", f"const state={{eventState:{{active:[]}}}}; function strategyEventPresentation{STRATEGY_HELPERS}; console.log(strategyEventSummary({{required:0,cardsDrawn:0,resolved:0}}).visible)"],
             cwd=ROOT, text=True, capture_output=True, check=True).stdout)
-        self.assertNotIn("Tomb World Events", zero)
+        self.assertIn("No Tomb World Event", zero)
 
     def test_lifecycle_persistence_and_later_reminders_remain_unchanged(self):
         later = APP.split("function activeEventEffectsHtml", 1)[1].split("function nextStepCard", 1)[0]
@@ -138,11 +138,11 @@ class StrategyEventDeduplicationTests(unittest.TestCase):
         self.assertIn("Math.max(normalCount,1)", counts)
         self.assertIn("1 event required by Restless Tomb.", render_strategy([self.resolved], [self.active]))
         self.assertIn("ACTIVE TOMB WORLD", APP.split("function activeEventEffectsHtml", 1)[1].split("function nextStepCard", 1)[0])
-        self.assertIn("const APP_VERSION = '7.5.3';", APP)
-        self.assertIn("const APP_VERSION = '7.5.3';", WORKER)
-        self.assertIn("V7.5.3", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v7.5.3"))
-        self.assertIn("## v7.5.3", README)
+        self.assertIn("const APP_VERSION = '7.5.4';", APP)
+        self.assertIn("const APP_VERSION = '7.5.4';", WORKER)
+        self.assertIn("V7.5.4", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v7.5.4"))
+        self.assertIn("## v7.5.4", README)
         self.assertNotIn("portrait", EVENT_HTML.lower())
         self.assertNotIn("obelisk", EVENT_HTML.lower())
 

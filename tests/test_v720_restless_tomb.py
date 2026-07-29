@@ -91,8 +91,8 @@ assert.equal(count(7,0,0,'player',true),1);
         self.assertIn('d.eventRequirementTurningPoint=state.turningPoint', APP)
         self.assertIn('d.eventSlotsDrawn=0', APP)
         self.assertIn('event.status=\'resolved\'', APP)
-        self.assertIn("reinforcementPending=Boolean(d.eventPending)", APP)
-        self.assertIn("reinforcementPending||placementPending||missionPending?'disabled':''", APP)
+        self.assertIn("!d.eventPending", APP)
+        self.assertIn("strategyRequiredRedrawPending()", APP)
         self.assertIn("if(state.phase!=='strategy'||state.strategyStage!=='summary'||!event||!state.strategyData.eventPending)return", APP)
         self.assertIn("replacement.requiredBy=event.requiredBy", APP)
         self.assertIn('events:Array.isArray(raw.strategyData.events)', APP)
@@ -142,13 +142,13 @@ assert.deepEqual(p.migrateSave(saved).strategyData,saved.strategyData);
         self.assertNotIn("type==='scout'", core_rule)
 
     def test_release_and_out_of_scope_constraints(self):
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v7.5.3'))
-        self.assertIn('## v7.5.3', README)
-        self.assertIn("const APP_VERSION = '7.5.3';", APP)
-        self.assertIn("const APP_VERSION = '7.5.3';", WORKER)
-        self.assertIn('V7.5.3', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v7.5.4'))
+        self.assertIn('## v7.5.4', README)
+        self.assertIn("const APP_VERSION = '7.5.4';", APP)
+        self.assertIn("const APP_VERSION = '7.5.4';", WORKER)
+        self.assertIn('V7.5.4', INDEX)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'app.js'):
-            self.assertIn(f'{asset}?v=7.5.3', INDEX)
+            self.assertIn(f'{asset}?v=7.5.4', INDEX)
         self.assertNotIn('portrait', APP.split('const eventDefinitions', 1)[1].split('const eventDeck', 1)[0].lower())
         self.assertNotIn('obelisk', APP.split('function strategyEventCount', 1)[1].split('function threatLabel', 1)[0].lower())
 

@@ -48,7 +48,7 @@ class NpoDisplayOrderTests(unittest.TestCase):
         self.assertIn('Select a Scarab Swarm...</option>${sortedNposForDisplay', event)
 
     def test_reinforcement_lists_and_controls_share_sorted_copy(self):
-        strategy = self.source("function strategyCard", "function strategyEventHtml")
+        strategy = self.source("function strategyProgressHtml", "function strategyEventHtml")
         self.assertIn("deployingNpos=sortedNposForDisplay", strategy)
         self.assertIn("blockedNpos=sortedNposForDisplay", strategy)
         self.assertIn("const placements=deployingNpos.map", strategy)
