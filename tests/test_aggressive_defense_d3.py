@@ -23,8 +23,9 @@ class AggressiveDefenseD3Tests(unittest.TestCase):
 
     def test_roll_is_only_offered_when_the_ability_applies(self):
         committed = self.source("function applyPendingPlayerDamage", "function offerReanimateForPendingDamage")
-        self.assertIn("if(n.wounds===0&&n.type==='Canoptek Macrocyte Warrior'&&pending.attackerWithinTwo)", committed)
-        self.assertLess(committed.index("n.wounds=Math.max"), committed.index("aggressive-defence:"))
+        trigger="if(pending.after<=0&&!protectedForAction&&n.type==='Canoptek Macrocyte Warrior'&&pending.attackerWithinTwo&&!pending.aggressiveDefenseResolved)"
+        self.assertIn(trigger, committed)
+        self.assertLess(committed.index("showAggressiveDefenseResolution"), committed.index("n.wounds=Math.max"))
 
     def test_d3_reuses_animated_die_and_resolves_all_results(self):
         resolver = self.source("function aggressiveDefenseDamage", "function aggressiveDefenseRollHtml")
@@ -38,8 +39,8 @@ class AggressiveDefenseD3Tests(unittest.TestCase):
 
     def test_continue_waits_for_d3_and_non_triggered_combat_does_not_wait(self):
         committed = self.source("function applyPendingPlayerDamage", "function offerReanimateForPendingDamage")
-        self.assertLess(committed.index("n.wounds=Math.max"), committed.index("aggressive-defence:"))
-        self.assertIn("if(n.wounds===0", committed)
+        self.assertLess(committed.index("showAggressiveDefenseResolution"), committed.index("n.wounds=Math.max"))
+        self.assertIn("if(pending.after<=0&&!protectedForAction", committed)
 
     def test_roll_is_persisted_before_animation_and_restored_without_replay(self):
         committed = self.source("function applyPendingPlayerDamage", "function offerReanimateForPendingDamage")
@@ -71,6 +72,22 @@ class AggressiveDefenseD3Tests(unittest.TestCase):
         apply_damage = self.source("function applyPendingPlayerDamage", "function completePlayerActivation")
         self.assertIn("playerBefore-aggressiveDamage", apply_damage)
         self.assertIn("state.playerWounds[stage.playerOperativeId]=playerAfter", apply_damage)
+
+    def test_guided_resolution_is_mandatory_persisted_and_applies_damage_once(self):
+        resolver = self.source("function showAggressiveDefenseResolution", "function showIncapacitationOrderChoice")
+        self.assertIn("showModal('Aggressive Defence'", resolver)
+        self.assertIn("Roll one D3 before removing it.", resolver)
+        self.assertIn('id="continueAggressiveDefense" disabled', resolver)
+        self.assertIn("missionDialogLocked=true", resolver)
+        self.assertIn("pending.aggressiveDefenseResolved=true", resolver)
+        self.assertIn("!pending.aggressiveDefenseDamageApplied", resolver)
+        self.assertIn("state.combatState={side:'player',stage:{...stage}}", resolver)
+
+    def test_checkbox_has_helper_text_and_is_saved_with_attack_transaction(self):
+        fields = self.source("function aggressiveDefenseFields", "function aggressiveDefenseDamage")
+        self.assertIn("Required only if this attack incapacitates the Macrocyte.", fields)
+        combat = self.source("function showPlayerCombatResolution", "function previewPendingPlayerAttack")
+        self.assertIn("transaction.definitionAnswers.attackerWithinTwo=attackerWithinTwo", combat)
 
     def test_result_message_includes_roll_and_only_appears_after_a_roll(self):
         reminder = self.source("function combatAbilityReminder", "function cancelPendingPlayerCombat")

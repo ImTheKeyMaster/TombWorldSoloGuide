@@ -54,7 +54,7 @@ class CanoptekIntegrationTests(unittest.TestCase):
 
     def test_reviewed_reanimate_and_modifier_regressions(self):
         self.assertIn("protectedForAction=n.preventIncapacitationActionId===state.activationNumber", APP)
-        self.assertIn("n.wounds===0?aggressiveDefenseDamageValue(pending):0", APP)
+        self.assertIn("!pending.aggressiveDefenseDamageApplied", APP)
         self.assertIn("apl=effectiveApl(current.playerOperativeId,baseApl)", APP)
         self.assertIn("Continue Activation", APP)
         self.assertIn("consumeMolecularBreach(target.id,freeAction)", APP)
@@ -65,8 +65,8 @@ class CanoptekIntegrationTests(unittest.TestCase):
         self.assertIn("Roll separately", APP)
 
     def test_version_matrix_and_portrait_constraints(self):
-        self.assertIn("const APP_VERSION = '7.5.1';", APP)
-        self.assertIn("V7.5.1", (ROOT / "index.html").read_text())
+        self.assertIn("const APP_VERSION = '7.5.2';", APP)
+        self.assertIn("V7.5.2", (ROOT / "index.html").read_text())
         self.assertNotIn("obelisk node matrix support", APP.lower())
         self.assertNotIn("npoPortrait", APP)
 
