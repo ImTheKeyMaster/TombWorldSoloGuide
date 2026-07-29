@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v7.5.4
+# Tomb World Solo Guide v7.5.5
+
+## v7.5.5
+
+**Version 7.5.5 - Collapse Active Tomb World Events**
+
+- Made the Active Tomb World Events panel collapsible and collapsed by default during gameplay.
+- Added a compact active-event count so the current activation remains prominent on mobile screens.
+- Preserved full event descriptions when expanded and retained all automatic and guided event mechanics.
+
+---
 
 ## v7.5.4
 
