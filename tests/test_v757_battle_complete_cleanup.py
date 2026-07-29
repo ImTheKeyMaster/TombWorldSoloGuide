@@ -44,7 +44,7 @@ class BattleCompleteCleanupTests(unittest.TestCase):
         body = function_body("missionProgressHtml")
         self.assertIn("renderer(engine,progress,{readOnly})", body)
         self.assertIn("mission-objective-readonly", body)
-        self.assertIn("inert", body)
+        self.assertNotIn("inert", body)
 
     def test_04_completed_escape_keeps_names_statuses_and_count(self):
         body = renderer("escape", "sabotage")
@@ -75,7 +75,7 @@ class BattleCompleteCleanupTests(unittest.TestCase):
         self.assertIn("readOnly?`<div", sabotage)
         self.assertIn("const assignment=readOnly?'':", transponder)
         self.assertIn("const escapeControl=readOnly?'':", transponder)
-        self.assertIn("available&&!readOnly", destruction)
+        self.assertIn("readOnly?finalState:activeControl", destruction)
         self.assertIn("const actions=readOnly?'':", scout)
         self.assertIn("readOnly?`<span>", regroup)
 

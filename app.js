@@ -1852,7 +1852,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const carrier=progress.carrierId?playerName(progress.carrierId):'None';
       const assignment=readOnly?'':transponderFound?`<div class="field"><label for="transponderCarrier">Current carrier</label><select id="transponderCarrier"><option value="">Marker is not being carried…</option>${livingPlayerOptions(progress.carrierId)}</select></div>`:`<div class="field"><label for="transponderOperative">Operative resolving the marker</label><select id="transponderOperative"><option value="">Select operative…</option>${livingPlayerOptions()}</select></div>`;
       const escapeControl=readOnly?'':`<button class="btn primary" id="transponderEscape" ${progress.carrierId&&isPlayerOperativeInPlay(progress.carrierId)&&!state.playerCasualtyIds.includes(progress.carrierId)&&!progress.escaped?'':'disabled'}>Confirm Carrier Escaped</button>`;
-      return `<p>Pick up an unresolved marker, then roll D3. The transponder is found only if the result is higher than the number of other unresolved markers.</p>${progress.lastRoll?`<div class="summary-box"><strong>Last search:</strong> rolled ${progress.lastRoll.roll}; ${escapeHtml(progress.lastRoll.result)}.</div>`:''}${assignment}<div class="mission-objective-list">${sites}</div><div class="summary-box"><strong>Carrier:</strong> ${escapeHtml(carrier)}${progress.escaped?' · Escaped':''}</div>${escapeControl}`;
+      return `<p>Pick up an unresolved marker, then roll D3. The transponder is found only if the result is higher than the number of other unresolved markers.</p>${progress.lastRoll?`<div class="summary-box"><strong>Last search:</strong> rolled ${progress.lastRoll.roll}; ${escapeHtml(progress.lastRoll.result)}.</div>`:''}${assignment}<div class="mission-objective-list">${sites}</div><div class="summary-box"><strong>Carrier:</strong> ${escapeHtml(carrier)}${readOnly&&progress.escaped?' · Escaped':''}</div>${escapeControl}`;
     },
     destruction:(engine,progress,{readOnly=false}={})=>{
       if(!objectiveEngine)return '<p class="muted">Mission automation is unavailable.</p>';
@@ -1862,7 +1862,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const dice=action.operations.find(operation=>operation.type==='requestDiceRoll')?.dice;
       const available=objectiveEngine.evaluateMissionConditions(action.availability);
       const diceLabel=dice?`${dice.count}D${dice.sides}`:'';
-      return `<p>${escapeHtml(objectiveDefinition.briefing)}</p><p><strong>${model.value} / ${model.target} ${escapeHtml(objective.label)}</strong></p>${available&&!readOnly?`<button class="btn primary" id="resolveMissionAction" ${missionOperationResolving?'disabled':''}>${escapeHtml(action.label)}${diceLabel?` (${diceLabel})`:''}</button>`:`<div class="summary-box"><strong>${model.completed?'✓ COMPLETE':'FINAL PROGRESS'}</strong><br>${model.value} / ${model.target} ${escapeHtml(objective.label)}</div>`}`;
+      const activeControl=available?`<button class="btn primary" id="resolveMissionAction" ${missionOperationResolving?'disabled':''}>${escapeHtml(action.label)}${diceLabel?` (${diceLabel})`:''}</button>`:`<div class="summary-box"><strong>✓ COMPLETE</strong><br>${model.value} / ${model.target} ${escapeHtml(objective.label)}</div>`;
+      const finalState=`<div class="summary-box"><strong>${model.completed?'✓ COMPLETE':'FINAL PROGRESS'}</strong><br>${model.value} / ${model.target} ${escapeHtml(objective.label)}</div>`;
+      return `<p>${escapeHtml(objectiveDefinition.briefing)}</p><p><strong>${model.value} / ${model.target} ${escapeHtml(objective.label)}</strong></p>${readOnly?finalState:activeControl}`;
     },
     scout:(engine,progress,{readOnly=false}={})=>{
       const scouted=new Set(progress.scoutedRoomIds);
@@ -1880,7 +1882,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const engine=missionEngine(), progress=state.missionState||freshMissionState();
     const renderer=missionProgressRenderers[engine?.type];
     if(!renderer)return '';
-    return `<section class="card mission-objective-card${readOnly?' mission-objective-readonly':''}"><p class="eyebrow">MISSION OBJECTIVE</p><h3>${escapeHtml(engine.progressLabel)}</h3><div ${readOnly?'inert':''}>${renderer(engine,progress,{readOnly})}</div>${readOnly?'<p class="muted">Completed mission state is preserved for review.</p>':''}</section>`;
+    return `<section class="card mission-objective-card${readOnly?' mission-objective-readonly':''}"><p class="eyebrow">MISSION OBJECTIVE</p><h3>${escapeHtml(engine.progressLabel)}</h3><div>${renderer(engine,progress,{readOnly})}</div>${readOnly?'<p class="muted">Completed mission state is preserved for review.</p>':''}</section>`;
   }
 
   function updateMissionProgress(message){
