@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.5.7';
+  const APP_VERSION = '7.5.8';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
   const EventEffects=TombWorldEventEffects;
@@ -271,14 +271,18 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const title=kind==='gambits'?'Faction Strategic Gambits':'Faction Rules Guidance';
     return `<section class="card faction-guidance"><h3>${title}</h3>${entries.map(entry=>`<div class="mission-rule"><strong>${escapeHtml(entry.name)}</strong>${entry.timing?`<small>${escapeHtml(entry.timing)}</small>`:''}<p>${escapeHtml(entry.text)}</p></div>`).join('')}<p class="muted">Resolve these rules on the tabletop; the Guide presents reminders without simulating positioning.</p></section>`;
   }
+  function playerOperativeDisplayName(name){
+    return String(name).replace(/ — (.+)$/,(_,variant)=>` (${variant.replace(/\b[a-z]/g,letter=>letter.toUpperCase())})`);
+  }
   function playerName(id){
     const definition=playerDefinition(id);
     if(!definition)return String(id);
     const baseName=definition.name||String(id);
     const matchingSelected=(state.playerRoster||[]).filter(selectedId=>playerDefinition(selectedId)?.name===baseName);
-    if(matchingSelected.length<=1)return baseName;
+    const displayName=playerOperativeDisplayName(baseName);
+    if(matchingSelected.length<=1)return displayName;
     const index=matchingSelected.indexOf(id);
-    return `${baseName} ${index>=0?index+1:1}`;
+    return `${displayName} ${index>=0?index+1:1}`;
   }
 
   let missions=[];
@@ -1655,7 +1659,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
           const categoryBlocked=!chosen&&Number.isFinite(categoryMaximum)&&categorySelected>=categoryMaximum;
           const selectionGroupMaximum=Number(playerTeamData?.selectionRules?.selectionGroupMax??Infinity);
           const selectionGroupBlocked=!chosen&&o.selectionGroup&&Number.isFinite(selectionGroupMaximum)&&selectedDefs.filter(candidate=>candidate.selectionGroup===o.selectionGroup).length>=selectionGroupMaximum;
-          return `<button type="button" class="player-roster-card ${chosen?'selected':''}" data-select-player="${o.id}" ${rosterBlocked||gravisBlocked||gunnerBlocked||categoryBlocked||selectionGroupBlocked?'disabled':''}><div class="player-roster-card-head"><div><strong>${escapeHtml(o.name)}</strong><small>${escapeHtml(o.role)}${o.gravis?' · GRAVIS':''}</small></div><span>${chosen?'✓':'+'}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${o.apl}</b></span><span><small>MOVE</small><b>${o.move}"</b></span><span><small>SAVE</small><b>${o.save}+</b></span><span><small>WOUNDS</small><b>${o.wounds}</b></span></div></button>`;
+          return `<button type="button" class="player-roster-card ${chosen?'selected':''}" data-select-player="${o.id}" ${rosterBlocked||gravisBlocked||gunnerBlocked||categoryBlocked||selectionGroupBlocked?'disabled':''}><div class="player-roster-card-head"><div><strong>${escapeHtml(playerOperativeDisplayName(o.name))}</strong><small>${escapeHtml(o.role)}${o.gravis?' · GRAVIS':''}</small></div><span>${chosen?'✓':'+'}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${o.apl}</b></span><span><small>MOVE</small><b>${o.move}"</b></span><span><small>SAVE</small><b>${o.save}+</b></span><span><small>WOUNDS</small><b>${o.wounds}</b></span></div></button>`;
         }).join('');
         return `<section class="roster-category"><button type="button" class="roster-category-heading" data-roster-category-toggle="${escapeHtml(category.id)}" aria-expanded="${expanded}" aria-controls="${panelId}"><span class="roster-category-title"><span class="roster-category-indicator" aria-hidden="true">›</span>${escapeHtml(category.label)}</span><span>${categorySelected} selected</span></button><div class="player-roster-grid roster-category-content" id="${panelId}" ${expanded?'':'hidden'}>${cards}</div></section>`;
       }).join('');
@@ -1671,7 +1675,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       if((playerTeamData?.rosterCategories||[]).some(category=>category.id!=='leader'&&(category.requiredCount||category.maxCount)))requirements.splice(0,requirements.length,...validation.requirements);
       const valid=validation.valid&&requiredLeaderSelected&&(!hasGravis||(gravisCount>=1&&gravisCount<=maxGravis));
       const requirementItems=requirements.map(requirement=>`<li>${escapeHtml(requirement)}</li>`).join('');
-      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><p class="muted">Build a legal kill team using its current official rules. Cooperative team splitting is not currently supported.</p><div class="setup-bulk-row"><button class="btn secondary" id="randomPlayerTeam">Random Team</button></div><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
+      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><p class="muted">Build a legal kill team using its current official rules. Cooperative team splitting is not currently supported.</p><div class="setup-bulk-row"><button class="btn secondary" id="randomPlayerTeam">Random Team</button></div><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(playerOperativeDisplayName(o.name))).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
     }
     if(stepId==='deploy'){
       const generation=state.startingNpoGeneration;
@@ -1685,7 +1689,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const otherPlacementChecks=placementChecks.filter(check=>check.id!=='starting-npos');
       const deploymentInstruction=`Deploy the ${generation.deploymentCount} selected starting NPOs.`;
       const deployedNpoRoster=sortedNposForDisplay(generation.deployedNpoIds.map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean)).map(npo=>escapeHtml(npoName(npo))).join(' · ');
-      const playerRoster=(state.playerRoster||[]).map(id=>playerDefinition(id)).filter(Boolean).map(operative=>escapeHtml(operative.name)).join(' • ');
+      const playerRoster=(state.playerRoster||[]).map(id=>playerDefinition(id)).filter(Boolean).map(operative=>escapeHtml(playerOperativeDisplayName(operative.name))).join(' • ');
       const deploymentDetails=mission().startingNpos?.deployment||'Use the mission deployment rules.';
       const selectionComplete=generation.deployedNpoIds.length===generation.deploymentCount&&generation.deployedNpoIds.length+generation.reserveNpoIds.length===generation.availableNpos;
       const allNposPlaced=selectionComplete&&generation.deployedNpoIds.every(id=>state.roster.find(npo=>npo.id===id)?.deployed);
@@ -4582,7 +4586,7 @@ function showPlayerActivation(stage={}){
       const abilities=(operative.abilities||[]).map(ability=>typeof ability==='string'?{name:ability,text:''}:ability);
       const abilityGuidance=abilities.length?`<details class="operative-guidance"><summary>Operative abilities (${abilities.length})</summary>${abilities.map(ability=>`<div><strong>${escapeHtml(ability.name)}</strong>${ability.text?`<p>${escapeHtml(ability.text)}</p>`:''}</div>`).join('')}<small>Resolve these abilities on the tabletop unless the Guide explicitly prompts you.</small></details>`:'';
       const wounds=playerCurrentWounds(id), maxWounds=Number(playerDefinition(id)?.wounds??operative.wounds);
-      return `<article class="operative-card roster-operative-card ${eliminated?'dead':''}"><div class="operative-card-header"><div class="operative-identity"><h4>${escapeHtml(operative.name)}</h4><p>${escapeHtml(operative.role||'Operative')}</p></div><span class="operative-status-badge ${status.toLowerCase().replace(' ','-')}">${status}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${operative.apl??'—'}</b></span><span><small>MOVE</small><b>${operative.move??'—'}"</b></span><span><small>SAVE</small><b>${operative.save??'—'}+</b></span><span><small>WOUNDS</small><b class="${wounds===0?'zero-wounds':''}">${wounds}/${maxWounds}</b></span></div>${weaponNames?`<p class="player-roster-weapons"><strong>Weapons:</strong> ${weaponNames}</p>`:''}${abilityGuidance}<div class="wound-controls"><button class="btn ghost" data-player-wound="${id}" ${wounds<=0||operativeState.inPlay===false?'disabled':''}>− Wound</button><button class="btn ghost" data-player-heal="${id}" ${wounds>=maxWounds||operativeState.inPlay===false?'disabled':''}>+ Heal</button></div></article>`;
+      return `<article class="operative-card roster-operative-card ${eliminated?'dead':''}"><div class="operative-card-header"><div class="operative-identity"><h4>${escapeHtml(playerOperativeDisplayName(operative.name))}</h4><p>${escapeHtml(operative.role||'Operative')}</p></div><span class="operative-status-badge ${status.toLowerCase().replace(' ','-')}">${status}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${operative.apl??'—'}</b></span><span><small>MOVE</small><b>${operative.move??'—'}"</b></span><span><small>SAVE</small><b>${operative.save??'—'}+</b></span><span><small>WOUNDS</small><b class="${wounds===0?'zero-wounds':''}">${wounds}/${maxWounds}</b></span></div>${weaponNames?`<p class="player-roster-weapons"><strong>Weapons:</strong> ${weaponNames}</p>`:''}${abilityGuidance}<div class="wound-controls"><button class="btn ghost" data-player-wound="${id}" ${wounds<=0||operativeState.inPlay===false?'disabled':''}>− Wound</button><button class="btn ghost" data-player-heal="${id}" ${wounds>=maxWounds||operativeState.inPlay===false?'disabled':''}>+ Heal</button></div></article>`;
     }).join('');
     const teamName=playerTeamData?.teamName||playerTeamEntry()?.name||'Player';
     app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">PLAYER ROSTER</p><h2>${escapeHtml(teamName)}</h2><p>${inPlayPlayerOperativeIds().filter(id=>!casualties.has(id)).length} active on the battlefield of ${(state.playerRoster||[]).length} selected operatives.</p></div></div>${factionGuidanceHtml()}<div class="roster-grid">${cards||'<div class="card empty">No Player operatives were selected for this game.</div>'}</div>`;
@@ -4935,7 +4939,7 @@ function showPlayerActivation(stage={}){
     return `<ul class="deadly-entity-list">${entries.map(entity=>{const names=deadlyFeatureNames(entity.featureIds);return `<li><strong>${escapeHtml(entity.label)}</strong><span class="feature-status">${names.length?`Active — ${names.map(escapeHtml).join(' + ')}`:`${entity.eligible?'Eligible':'Not unexplored'} — unresolved`}</span>${names.length?`<small>Revealed in Turning Point ${entity.turningPoint||'—'}. ${escapeHtml(entity.featureIds.map(id=>DeadlyEncounters.features.find(feature=>feature.id===id)?.summary).filter(Boolean).join(' '))}</small>`:''}</li>`;}).join('')}</ul>`;
   }
   function deadlyOperativeOptions(){
-    const players=selectedPlayerOperatives().filter(operative=>playerCurrentWounds(operative.id)>0).map(operative=>({id:operative.id,label:`Player — ${operative.name}`}));
+    const players=selectedPlayerOperatives().filter(operative=>playerCurrentWounds(operative.id)>0).map(operative=>({id:operative.id,label:`Player — ${playerOperativeDisplayName(operative.name)}`}));
     const npos=activeNpos().map(operative=>({id:operative.id,label:`NPO — ${npoName(operative)}`}));
     return [...players,...npos];
   }
