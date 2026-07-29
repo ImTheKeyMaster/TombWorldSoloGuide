@@ -46,6 +46,7 @@ class V801ActivationRestoreTests(unittest.TestCase):
     def test_07b_action_result_restores_without_recommitting(self):
         self.assertIn('activation.awaitingActionResult={...record,endsActivation}', APP)
         self.assertIn('if(activation.awaitingActionResult){renderNpoActionResult', APP)
+        self.assertIn('ROUTINE_NPO_MOVEMENT_ACTIONS.has(activation.awaitingActionResult.id)', APP)
         renderer = section('function renderNpoActionResult', 'function renderNpoActivationEnd')
         self.assertIn('activation.awaitingActionResult=null;save()', renderer)
         self.assertNotIn('commitNpoAction(', renderer)
@@ -104,12 +105,12 @@ vm.runInNewContext(fs.readFileSync('app.js','utf8'),context);
         self.assertIn('localStorage.getItem(STORAGE_KEY)', recovery)
 
     def test_18_version_801_everywhere(self):
-        self.assertIn("const APP_VERSION = '8.0.1';", APP)
-        self.assertIn("const APP_VERSION = '8.0.1';", WORKER)
-        self.assertIn('V8.0.1', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.0.1'))
+        self.assertIn("const APP_VERSION = '8.1.0';", APP)
+        self.assertIn("const APP_VERSION = '8.1.0';", WORKER)
+        self.assertIn('V8.1.0', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.1.0'))
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.0.1', INDEX)
+            self.assertIn(f'{asset}?v=8.1.0', INDEX)
 
 
 if __name__ == '__main__':

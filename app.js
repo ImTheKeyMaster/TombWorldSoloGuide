@@ -2,7 +2,13 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.0.1';
+  const APP_VERSION = '8.1.0';
+  const NPO_ACTION_TRANSITIONS = Object.freeze({
+    AUTO_CONTINUE:'auto-continue',
+    ACKNOWLEDGE:'acknowledge',
+    COMPLETE_ACTIVATION:'complete-activation'
+  });
+  const ROUTINE_NPO_MOVEMENT_ACTIONS = new Set(['reposition','dash','charge','fall-back']);
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
   const EventEffects=TombWorldEventEffects;
@@ -4398,13 +4404,20 @@ function showPlayerActivation(stage={}){
     </section>`;
   }
 
+  function renderNpoActionProgress(activation=state.lastActivation){
+    const actions=activation?.resolvedActions||[];
+    if(!actions.length)return '';
+    const names=actions.map(action=>escapeHtml(action.name)).join(', ');
+    return `<p class="npo-action-progress">${activation.remainingAp} AP remaining · Completed: ${names}</p>`;
+  }
+
   function runNpoPrompt(n,index,answers,history){
     const q=npoActionQuestion(n,index);
     if(!q){renderNpoActivationEnd(n,'No further useful legal actions are available.');return;}
     const priorTop=$('.npo-question-active',modal)?.getBoundingClientRect().top;
     const definition=npoDefinition(n.type),modifiers=(state.npoRuleState.aplModifiers||[]).filter(item=>item.targetId===n.id),pendingBreach=(state.npoRuleState.pendingMovementEffects||[]).some(item=>item.targetId===n.id&&item.ruleId==='molecular-breach');
     const loadout=definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name;
-    modalBody.innerHTML=`<div class="modal-inner"><h2>NPO Activation: ${escapeHtml(npoName(n))}</h2><div class="activation-profile-strip"><span>${n.wounds}/${n.maxWounds} wounds</span><span>APL ${definition.apl} · effective ${effectiveApl(n.id,definition.apl)}</span><span>${escapeHtml(n.order)} order</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} APL · ${escapeHtml(item.ruleId)}</span>`).join('')}${pendingBreach?'<span>Molecular Breach pending</span>':''}</div><div class="ai-wizard">
+    modalBody.innerHTML=`<div class="modal-inner"><h2 id="activeNpoQuestionHeading" tabindex="-1">NPO Activation: ${escapeHtml(npoName(n))}</h2><div class="activation-profile-strip"><span>${n.wounds}/${n.maxWounds} wounds</span><span>APL ${definition.apl} · effective ${effectiveApl(n.id,definition.apl)}</span><span>${escapeHtml(n.order)} order</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} APL · ${escapeHtml(item.ruleId)}</span>`).join('')}${pendingBreach?'<span>Molecular Breach pending</span>':''}</div>${renderNpoActionProgress()}${state.lastActivation.autoTransitionAnnouncement?`<span class="visually-hidden" role="status" aria-live="polite">${escapeHtml(state.lastActivation.autoTransitionAnnouncement)}</span>`:''}<div class="ai-wizard">
       <div class="npo-question-flow">${renderCompletedNpoQuestions(history)}${renderActiveNpoQuestion(q)}</div>
       <div class="wizard-actions">
         <button class="btn ghost" id="aiBack" ${history.length===0?'disabled':''}>Back</button>
@@ -4412,6 +4425,7 @@ function showPlayerActivation(stage={}){
       </div>
     </div></div>`;
     if(!modal.open)modal.showModal();
+    if(state.lastActivation.autoTransitionAnnouncement){state.lastActivation.autoTransitionAnnouncement=null;save();requestAnimationFrame(()=>$('#activeNpoQuestionHeading')?.focus({preventScroll:true}));}
     $('[data-close]',modal).onclick=closeModal;
     if(priorTop!==undefined)requestAnimationFrame(()=>{const active=$('.npo-question-active',modal);if(!active)return;const delta=active.getBoundingClientRect().top-priorTop;modal.scrollBy({top:delta,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});});
     $$('[data-answer]',modal).forEach(btn=>btn.onclick=()=>{
@@ -4465,11 +4479,19 @@ function showPlayerActivation(stage={}){
 
   function continueNpoActivation(){
     const activation=state.lastActivation,n=state.roster.find(item=>item.id===activation?.npoId);
-    if(!activation||activation.committed||activation.completed)return;
+    if(!activation||activation.committed)return;
+    if(activation.awaitingActionResult&&ROUTINE_NPO_MOVEMENT_ACTIONS.has(activation.awaitingActionResult.id)){
+      const record=activation.awaitingActionResult;
+      activation.awaitingActionResult=null;
+      activation.autoTransitionAnnouncement=`${record.name} completed. ${activation.remainingAp} AP remaining. Continuing activation.`;
+      save();
+      if(activation.remainingAp<=0||activation.completed){completeNpoActivation();return;}
+    }
+    if(activation.completed)return;
     if(!n||n.wounds<=0||!n.deployed||!n.ready){completeNpoActivation();return;}
     if(activation.awaitingActionResult){renderNpoActionResult(n,activation.awaitingActionResult,Boolean(activation.awaitingActionResult.endsActivation));return;}
     if(activation.pendingAction){resolveNpoAction(n,activation.pendingAction);return;}
-    if(activation.remainingAp<=0){renderNpoActivationEnd(n,'No AP remains.');return;}
+    if(activation.remainingAp<=0){completeNpoActivation();return;}
     const available=recommendedNpoActions(n,activation.currentContext||{}).filter(name=>!(activation.declinedActionIds||[]).includes(npoActionId(name)));
     if(!available.length){renderNpoActivationEnd(n,'No further useful legal actions are available.');return;}
     runNpoPrompt(n,0,{},activation.questionHistory||[]);
@@ -4482,7 +4504,16 @@ function showPlayerActivation(stage={}){
       &&!(activation.completedActionIds||[]).includes(actionId));
   }
 
-  function commitNpoAction({actionId,actionName,apCost,result=null,changesPosition=false,endsActivation=false,attackSummary=null}){
+  function scheduleNpoActionTransition(activation,npoId,transitionMode){
+    requestAnimationFrame(()=>{
+      const current=state.lastActivation;
+      if(current!==activation||current.activationId!==activation.activationId||current.npoId!==npoId||state.activeNpoId!==npoId||current.committed)return;
+      if(transitionMode===NPO_ACTION_TRANSITIONS.COMPLETE_ACTIVATION||current.remainingAp<=0||current.completed){completeNpoActivation();return;}
+      continueNpoActivation();
+    });
+  }
+
+  function commitNpoAction({actionId,actionName,apCost,result=null,changesPosition=false,endsActivation=false,attackSummary=null,transitionMode=NPO_ACTION_TRANSITIONS.ACKNOWLEDGE}){
     const activation=state.lastActivation,n=state.roster.find(item=>item.id===activation?.npoId);
     if(!canCommitNpoAction(actionId,apCost))return false;
     const before=activation.remainingAp;
@@ -4491,7 +4522,6 @@ function showPlayerActivation(stage={}){
     activation.actionSequence=(activation.actionSequence||0)+1;
     const record={sequence:activation.actionSequence,id:actionId,name:actionName,apCost,apBefore:before,apRemaining:activation.remainingAp,result,...(attackSummary?{attackSummary}:{})};
     activation.resolvedActions=[...(activation.resolvedActions||[]),record];
-    activation.awaitingActionResult={...record,endsActivation};
     activation.attackPerformed=activation.attackPerformed||actionId==='shoot'||actionId==='fight';
     activation.fightPerformed=activation.fightPerformed||actionId==='fight';
     activation.pendingAction=null;activation.combatDraft=null;activation.attackResolved=false;activation.attackRequired=false;
@@ -4502,8 +4532,17 @@ function showPlayerActivation(stage={}){
     if(changesPosition)activation.currentContext={inEnemyControlRange:null,hasValidShootTarget:null,hasValidFightTarget:null};
     state.npoAttackTargetId=null;state.npoAttackSummary=null;
     log(`${npoName(n)} completed ${actionName}. ${activation.remainingAp} AP remaining.`);
+    if(transitionMode===NPO_ACTION_TRANSITIONS.ACKNOWLEDGE){
+      activation.awaitingActionResult={...record,endsActivation};
+      if(endsActivation)activation.completed=true;
+      save();renderNpoActionResult(n,record,endsActivation);
+      return true;
+    }
+    activation.awaitingActionResult=null;
+    activation.autoTransitionAnnouncement=`${actionName} completed. ${activation.remainingAp} AP remaining. Continuing activation.`;
     if(endsActivation)activation.completed=true;
-    save();renderNpoActionResult(n,record,endsActivation);
+    save();
+    scheduleNpoActionTransition(activation,n.id,transitionMode);
     return true;
   }
 
@@ -4605,7 +4644,7 @@ function showPlayerActivation(stage={}){
       const distance=pendingAction.id==='dash'?3:npoDefinition(n.type)?.move;
       modalBody.innerHTML=`<div class="modal-inner ai-result"><div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>AP: ${state.lastActivation.remainingAp} → ${state.lastActivation.remainingAp-pendingAction.apCost}</p></div></div><div class="npo-result-card">${npoIcon('command')}<div><small>${escapeHtml(pendingAction.name.toUpperCase())}</small><strong>${escapeHtml(pendingAction.name)}</strong><p>${escapeHtml(decision.reason)}</p>${distance?`<p>Maximum movement: ${distance} inches.</p>`:''}</div></div><div class="wizard-actions"><button class="btn primary" id="confirmNpoMovement">Confirm ${escapeHtml(pendingAction.name.split(' ')[0])} Complete</button></div></div>`;
       if(!modal.open)modal.showModal();
-      $('#confirmNpoMovement').onclick=()=>{const button=$('#confirmNpoMovement');if(!canCommitNpoAction(pendingAction.id,pendingAction.apCost))return;button.disabled=true;const effect=consumeMolecularBreach(n.id,pendingAction.id==='fall-back'?'Fall Back':pendingAction.name.split(' ')[0]);commitNpoAction({actionId:pendingAction.id,actionName:pendingAction.name,apCost:pendingAction.apCost,result:effect||decision.reason,changesPosition:true});};
+      $('#confirmNpoMovement').onclick=()=>{const button=$('#confirmNpoMovement');if(!canCommitNpoAction(pendingAction.id,pendingAction.apCost))return;button.disabled=true;const effect=consumeMolecularBreach(n.id,pendingAction.id==='fall-back'?'Fall Back':pendingAction.name.split(' ')[0]);commitNpoAction({actionId:pendingAction.id,actionName:pendingAction.name,apCost:pendingAction.apCost,result:effect||decision.reason,changesPosition:true,transitionMode:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});};
       return;
     }
     renderNpoDecisionResult(n,decision,[],state.lastActivation.answers||{},false,false,/^(shoot|fight)$/.test(pendingAction.id),false,state.lastActivation.questionHistory||[]);
@@ -4654,7 +4693,7 @@ function showPlayerActivation(stage={}){
     if(!modal.open)modal.showModal();
     const openSaveWizard=(resolvedDice,animate=false)=>showNpoAttackWizard(n,resolvedDice,(summary)=>{
       const pending=state.lastActivation?.pendingAction;
-      if(pending)commitNpoAction({actionId:pending.id,actionName:pending.name,apCost:pending.apCost,result:`${summary.damage} damage to ${summary.targetName}.`,attackSummary:summary});
+      if(pending)commitNpoAction({actionId:pending.id,actionName:pending.name,apCost:pending.apCost,result:`${summary.damage} damage to ${summary.targetName}.`,attackSummary:summary,transitionMode:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});
     },()=>{
       save();
       renderNpoDecisionResult(n,decision,resolvedDice,answers,false,false,true,true);
