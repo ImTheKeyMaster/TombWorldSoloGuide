@@ -95,7 +95,7 @@ class V810StreamlinedNpoActionFlowTests(unittest.TestCase):
         self.assertIn('pending.decisionPass===activation.decisionPass', guard)
         self.assertIn('completedActionIds', guard)
 
-    def test_version_810_everywhere(self):
+    def test_current_version_820_everywhere(self):
         self.assertIn("const APP_VERSION = '8.2.0';", APP)
         self.assertIn("const APP_VERSION = '8.2.0';", WORKER)
         self.assertIn('V8.2.0', INDEX)

@@ -36,7 +36,10 @@ class V801NpoActionEligibilityTests(unittest.TestCase):
         self.assertIn("feasibilityQuestion:'Can this NPO Fall Back and finish outside the control range of all Player operatives?'", APP)
         for guidance in ('Move it up to ${npoDefinition(n.type)?.move} inches', 'shortest available route', 'base can fit', 'outside every Player operative’s control range'):
             self.assertIn(guidance, APP)
-        self.assertIn('if(answer){save();runNpoPrompt(n,0,nextAnswers,nextHistory);}', APP)
+        prompt = section('function runNpoPrompt', 'function chooseNpoDecision')
+        self.assertIn('if(answer){save();runNpoPrompt(n,0,nextAnswers,nextHistory);}', prompt)
+        self.assertIn("nextHistory.push({action,type:'selected'", prompt)
+        self.assertIn('resolveNpo(n,{...nextAnswers,action},nextHistory)', prompt)
 
     def test_05b_fall_back_instruction_is_explicit(self):
         self.assertIn("selectedInstruction:'Fall Back using the shortest available route and finish outside the control range of every Player operative.'", APP)
@@ -60,8 +63,17 @@ class V801NpoActionEligibilityTests(unittest.TestCase):
         self.assertIn("action==='Fall Back'", section('function chooseNpoDecision', 'function continueNpoActivation'))
 
     def test_09_inapplicable_fall_back_continues_to_shoot(self):
-        self.assertIn('save();runNpoPrompt(n,0,nextAnswers,nextHistory)', APP)
+        prompt = section('function runNpoPrompt', 'function chooseNpoDecision')
+        self.assertIn('declinedActionIds=[...(state.lastActivation.declinedActionIds||[]),npoActionId(action)]', prompt)
+        self.assertIn('save();runNpoPrompt(n,0,nextAnswers,nextHistory)', prompt)
         self.assertIn('Fall Back was not applicable.', APP)
+
+    def test_09b_fall_back_question_and_help_are_screen_reader_available(self):
+        rendered = section('function renderActiveNpoQuestion', 'function renderNpoActionProgress')
+        self.assertIn('aria-live="polite" aria-atomic="true"', rendered)
+        self.assertIn('<h3>${escapeHtml(q.title)}</h3><p>${escapeHtml(q.help)}</p>', rendered)
+        self.assertIn('data-answer="no"', rendered)
+        self.assertIn('data-answer="yes"', rendered)
 
     def test_10_shoot_wording_is_objective(self):
         self.assertIn('Does this NPO have a valid Player operative it can legally Shoot?', APP)
