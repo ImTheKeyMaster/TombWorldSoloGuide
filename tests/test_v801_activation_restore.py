@@ -43,6 +43,13 @@ class V801ActivationRestoreTests(unittest.TestCase):
         self.assertIn("typeof merged.lastActivation.pendingAction.id==='string'", APP)
         self.assertIn('if(activation.pendingAction){resolveNpoAction(n,activation.pendingAction);return;}', APP)
 
+    def test_07b_action_result_restores_without_recommitting(self):
+        self.assertIn('activation.awaitingActionResult={...record,endsActivation}', APP)
+        self.assertIn('if(activation.awaitingActionResult){renderNpoActionResult', APP)
+        renderer = section('function renderNpoActionResult', 'function renderNpoActivationEnd')
+        self.assertIn('activation.awaitingActionResult=null;save()', renderer)
+        self.assertNotIn('commitNpoAction(', renderer)
+
     def test_08_remaining_ap_preserved(self):
         self.assertIn('remainingAp:remaining', APP)
 
@@ -65,17 +72,17 @@ class V801ActivationRestoreTests(unittest.TestCase):
         self.assertEqual(commit.count('log('), 1)
 
     def test_14_runtime_startup_save_does_not_hit_tdz(self):
-        # Execute the production helper and the production normalization assignment
-        # against the regression save. This is a runtime JavaScript check, not only
-        # a source assertion, and fails if the fallback reaches an uninitialized state.
-        helper = section('function activationIdFromState', 'function missionActivationId')
-        assignment = "merged.lastActivation={...merged.lastActivation,activationId:merged.lastActivation.activationId||activationIdFromState(merged,'npo',merged.lastActivation.npoId)};"
-        script = f"""
-{helper}
-const loadedState={{phase:'firefight',activeNpoId:'saved-npo',turningPoint:3,activationNumber:7,lastActivation:{{npoId:'saved-npo',remainingAp:1,committed:false}}}};
-function normalizeRegressionSave(raw){{const merged={{turningPoint:0,activationNumber:0,...raw}};{assignment}return merged;}}
-let state=normalizeRegressionSave(loadedState);
-if(state.lastActivation.activationId!=='3:8:npo:saved-npo'||state.lastActivation.remainingAp!==1)process.exit(1);
+        script = r"""
+const fs=require('fs'),vm=require('vm');
+const saved={phase:'firefight',activeNpoId:'saved-npo',lastActivation:{npoId:'saved-npo',remainingAp:1,committed:false}};
+const nodes=new Map();
+function element(){return {hidden:false,disabled:false,open:false,innerHTML:'',style:{},dataset:{},classList:{add(){},remove(){},toggle(){}},addEventListener(){},querySelector(){return element()},querySelectorAll(){return []},setAttribute(){},removeAttribute(){},showModal(){this.open=true},close(){this.open=false}};}
+const document={addEventListener(){},querySelector(selector){if(!nodes.has(selector))nodes.set(selector,element());return nodes.get(selector);},querySelectorAll(){return []},createElement(){return element();}};
+const context={console,document,window:{addEventListener(){},location:{reload(){}}},navigator:{onLine:true},localStorage:{getItem(){return JSON.stringify(saved);},setItem(){},removeItem(){}},fetch(){return Promise.reject(new Error('stop after initialization'));},requestAnimationFrame(){},matchMedia(){return {matches:true};},URL:{createObjectURL(){return '';},revokeObjectURL(){}},Blob,crypto:{randomUUID(){return 'uuid';}},setTimeout,clearTimeout,
+  TombWorldPersistence:{currentSaveVersion(){return 7;},migrateSaveDetailed(raw){return {state:raw,report:{requiresRegeneration:false,aliasesApplied:[],instanceNamesRepaired:[],instanceIdsCreated:[],instanceIdsRepaired:[],loadoutsNormalized:[],woundsClamped:[],unsupportedRetiredTypes:[],invalidPhysicalLimits:[],errors:[],pendingStateCleared:[]}};},createPersistedSave(state){return state;},resetActiveBattle(state){return state;}},
+  TombWorldDeadlyEncounters:{emptyState(){return {rooms:{},objectives:{},operativeLocations:{},resolutionHistory:[]};},normalizeState(state){return state||this.emptyState();},features:[]},TombWorldEventEffects:{},TombWorldMissionEngine:{}};
+context.globalThis=context;
+vm.runInNewContext(fs.readFileSync('app.js','utf8'),context);
 """
         result = subprocess.run(['node', '-e', script], cwd=ROOT, text=True, capture_output=True)
         self.assertEqual(result.returncode, 0, result.stderr)

@@ -42,6 +42,12 @@ class V801NpoActionEligibilityTests(unittest.TestCase):
         legal = section('function legalNpoActions', 'function rankLegalNpoActions')
         self.assertIn('cost>remainingAp', legal)
 
+    def test_07b_app_known_attack_requirements_are_filtered(self):
+        legal = section('function legalNpoActions', 'function rankLegalNpoActions')
+        self.assertIn("['shoot','fight','charge'].includes(id)&&!inPlayLivingPlayerOperativeIds().length", legal)
+        self.assertIn("id==='shoot'&&!(definition.rangedWeapons||[]).length", legal)
+        self.assertIn("id==='fight'&&!(definition.meleeWeapons||[]).length", legal)
+
     def test_08_legal_fall_back_precedes_shoot(self):
         warrior = APP[APP.index("'Necron Warrior': {"):APP.index("'Geomancer': {")]
         self.assertLess(warrior.index("'Fall Back'"), warrior.index("'Shoot'"))

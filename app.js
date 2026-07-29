@@ -904,7 +904,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         resolvedActions:Array.isArray(merged.lastActivation.resolvedActions)?merged.lastActivation.resolvedActions:[],
         decisionPass:Math.max(1,Number(merged.lastActivation.decisionPass||1)),
         declinedActionIds:Array.isArray(merged.lastActivation.declinedActionIds)?merged.lastActivation.declinedActionIds:[],
-        questionHistory:Array.isArray(merged.lastActivation.questionHistory)?merged.lastActivation.questionHistory:[],
+        questionHistory:Array.isArray(merged.lastActivation.questionHistory)
+          ? merged.lastActivation.questionHistory.filter(item=>isRecord(item)&&typeof item.action==='string').map(item=>({...item}))
+          : [],
         pendingAction:isRecord(merged.lastActivation.pendingAction)
           &&typeof merged.lastActivation.pendingAction.id==='string'
           &&typeof merged.lastActivation.pendingAction.name==='string'
@@ -912,6 +914,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
           ? {...merged.lastActivation.pendingAction,apCost:Number(merged.lastActivation.pendingAction.apCost),decisionPass:Math.max(1,Number(merged.lastActivation.pendingAction.decisionPass||merged.lastActivation.decisionPass||1))}
           : null,
         currentContext:{inEnemyControlRange:null,hasValidShootTarget:null,hasValidFightTarget:null,...(isRecord(merged.lastActivation.currentContext)?merged.lastActivation.currentContext:{})},
+        awaitingActionResult:isRecord(merged.lastActivation.awaitingActionResult)
+          &&typeof merged.lastActivation.awaitingActionResult.id==='string'
+          &&typeof merged.lastActivation.awaitingActionResult.name==='string'
+          &&Number.isFinite(Number(merged.lastActivation.awaitingActionResult.apCost))
+          &&Number.isFinite(Number(merged.lastActivation.awaitingActionResult.apBefore))
+          &&Number.isFinite(Number(merged.lastActivation.awaitingActionResult.apRemaining))
+          ? {...merged.lastActivation.awaitingActionResult}
+          : null,
         attackPerformed:Boolean(merged.lastActivation.attackPerformed||merged.lastActivation.resolvedActions?.some(action=>['shoot','fight'].includes(action.id))),
         fightPerformed:Boolean(merged.lastActivation.fightPerformed||merged.lastActivation.resolvedActions?.some(action=>action.id==='fight')),
         committed:Boolean(merged.lastActivation.committed),completed:Boolean(merged.lastActivation.completed||merged.lastActivation.committed)
@@ -4055,6 +4065,9 @@ function showPlayerActivation(stage={}){
     return (npoBehavior(n)?.actions||[]).filter(actionName=>{
       const id=npoActionId(actionName),profileAction=(definition.actions||[]).find(action=>action.id===id),cost=npoActionCost(n,id);
       if(cost===null||cost>remainingAp||completed.has(id))return false;
+      if(['shoot','fight','charge'].includes(id)&&!inPlayLivingPlayerOperativeIds().length)return false;
+      if(id==='shoot'&&!(definition.rangedWeapons||[]).length)return false;
+      if(id==='fight'&&!(definition.meleeWeapons||[]).length)return false;
       if((id==='shoot'&&completed.has('fight'))||(id==='fight'&&completed.has('shoot')))return false;
       if(id==='charge'&&['reposition','fall-back'].some(done=>completed.has(done)))return false;
       if(['reposition','dash','fall-back'].includes(id)&&completed.has('charge'))return false;
@@ -4454,6 +4467,7 @@ function showPlayerActivation(stage={}){
     const activation=state.lastActivation,n=state.roster.find(item=>item.id===activation?.npoId);
     if(!activation||activation.committed||activation.completed)return;
     if(!n||n.wounds<=0||!n.deployed||!n.ready){completeNpoActivation();return;}
+    if(activation.awaitingActionResult){renderNpoActionResult(n,activation.awaitingActionResult,Boolean(activation.awaitingActionResult.endsActivation));return;}
     if(activation.pendingAction){resolveNpoAction(n,activation.pendingAction);return;}
     if(activation.remainingAp<=0){renderNpoActivationEnd(n,'No AP remains.');return;}
     const available=recommendedNpoActions(n,activation.currentContext||{}).filter(name=>!(activation.declinedActionIds||[]).includes(npoActionId(name)));
@@ -4477,6 +4491,7 @@ function showPlayerActivation(stage={}){
     activation.actionSequence=(activation.actionSequence||0)+1;
     const record={sequence:activation.actionSequence,id:actionId,name:actionName,apCost,apBefore:before,apRemaining:activation.remainingAp,result,...(attackSummary?{attackSummary}:{})};
     activation.resolvedActions=[...(activation.resolvedActions||[]),record];
+    activation.awaitingActionResult={...record,endsActivation};
     activation.attackPerformed=activation.attackPerformed||actionId==='shoot'||actionId==='fight';
     activation.fightPerformed=activation.fightPerformed||actionId==='fight';
     activation.pendingAction=null;activation.combatDraft=null;activation.attackResolved=false;activation.attackRequired=false;
@@ -4497,7 +4512,7 @@ function showPlayerActivation(stage={}){
     const history=activation.resolvedActions.map(action=>escapeHtml(action.name)).join(', ');
     modalBody.innerHTML=`<div class="modal-inner ai-result"><div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div><div class="summary-box"><strong>${escapeHtml(record.name)} completed</strong><p>AP: ${record.apBefore} → ${record.apRemaining} · ${record.apCost} AP spent</p>${record.result?`<p>${escapeHtml(typeof record.result==='string'?record.result:record.result.summary||'Action resolved.')}</p>`:''}<p><strong>Completed actions:</strong> ${history}</p></div><div class="wizard-actions"><button class="btn primary" id="continueNpoActivation">${canContinue?'Continue Activation':'Complete Activation'}</button></div></div>`;
     if(!modal.open)modal.showModal();
-    $('#continueNpoActivation').onclick=()=>{const button=$('#continueNpoActivation');button.disabled=true;if(canContinue)continueNpoActivation();else completeNpoActivation();};
+    $('#continueNpoActivation').onclick=()=>{const button=$('#continueNpoActivation');button.disabled=true;activation.awaitingActionResult=null;save();if(canContinue)continueNpoActivation();else completeNpoActivation();};
   }
 
   function renderNpoActivationEnd(n,message){
