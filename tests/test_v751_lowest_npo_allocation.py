@@ -13,17 +13,18 @@ def source(start, end):
 
 
 class LowestNpoAllocationTests(unittest.TestCase):
-    def allocate(self, quantity, allocated=()):
+    def allocate(self, quantity, allocated=(), definition=None):
         helper = "function lowestAvailableNpoInstances" + source(
             "function lowestAvailableNpoInstances", "function validateNpoRoster"
         )
+        definition = definition or {"id": "necron-warrior", "type": "Necron Warrior", "physicalQuantity": 10}
         roster = [
-            {"id": f"legacy-{number}", "type": "Necron Warrior", "displayNumber": number}
+            {"id": f"legacy-{number}", "type": definition["type"], "displayNumber": number}
             for number in allocated
         ]
         script = f"""
 const state={{roster:{json.dumps(roster)}}};
-const definition={{id:'necron-warrior',type:'Necron Warrior',physicalQuantity:10}};
+const definition={json.dumps(definition)};
 function npoDefinition(type){{return type===definition.type?definition:null;}}
 function isRecord(value){{return value&&typeof value==='object'&&!Array.isArray(value);}}
 function uniqueNpoInstances(roster=state.roster){{
@@ -31,7 +32,7 @@ function uniqueNpoInstances(roster=state.roster){{
   return roster.filter(npo=>isRecord(npo)&&typeof npo.id==='string'&&npo.id&&!seen.has(npo.id)&&seen.add(npo.id));
 }}
 {helper}
-process.stdout.write(JSON.stringify(lowestAvailableNpoInstances('Necron Warrior',{quantity})));
+process.stdout.write(JSON.stringify(lowestAvailableNpoInstances(definition.type,{quantity})));
 """
         result = subprocess.run(["node", "-e", script], check=True, text=True, capture_output=True)
         return json.loads(result.stdout)
@@ -51,6 +52,11 @@ process.stdout.write(JSON.stringify(lowestAvailableNpoInstances('Necron Warrior'
         self.assertEqual([item["displayNumber"] for item in allocated], list(range(1, 11)))
         self.assertGreater(allocated.index(next(item for item in allocated if item["displayNumber"] == 10)),
                            allocated.index(next(item for item in allocated if item["displayNumber"] == 9)))
+
+    def test_single_model_type_is_unavailable_even_for_legacy_instance_ids(self):
+        geomancer = {"id": "geomancer", "type": "Geomancer", "physicalQuantity": 1}
+        self.assertEqual(self.allocate(1, definition=geomancer), [{"id": "geomancer-1", "displayNumber": None}])
+        self.assertEqual(self.allocate(1, (1,), geomancer), [])
 
     def test_every_creation_path_uses_the_central_allocator(self):
         create = source("function createNpo", "function rollNpo")
@@ -87,13 +93,25 @@ process.stdout.write(JSON.stringify(lowestAvailableNpoInstances('Necron Warrior'
         self.assertNotIn("Math.random", helper)
 
     def test_reported_starting_roster_displays_exact_lowest_number_example(self):
+        display_functions = "function npoName" + source("function npoName", "function sortOperativesGlobally")
         roster = [
-            "Canoptek Scarab Swarm 2", "Necron Warrior 2", "Canoptek Tomb Crawler 1",
-            "Canoptek Scarab Swarm 1", "Necron Warrior 1",
+            {"type": "Canoptek Scarab Swarm", "displayNumber": 2},
+            {"type": "Necron Warrior", "displayNumber": 2},
+            {"type": "Canoptek Tomb Crawler", "displayNumber": 1},
+            {"type": "Canoptek Scarab Swarm", "displayNumber": 1},
+            {"type": "Necron Warrior", "displayNumber": 1},
         ]
-        displayed = " · ".join(sorted(roster, key=lambda name: [
-            int(part) if part.isdigit() else part.casefold() for part in name.split()
-        ]))
+        script = f"""
+const definitions={{
+  'Canoptek Scarab Swarm':{{physicalQuantity:3}},
+  'Canoptek Tomb Crawler':{{physicalQuantity:2}},
+  'Necron Warrior':{{physicalQuantity:10}}
+}};
+function npoDefinition(type){{return definitions[type]||null;}}
+{display_functions}
+process.stdout.write(sortedNposForDisplay({json.dumps(roster)}).map(npoName).join(' · '));
+"""
+        displayed = subprocess.run(["node", "-e", script], check=True, text=True, capture_output=True).stdout
         self.assertEqual(
             displayed,
             "Canoptek Scarab Swarm 1 · Canoptek Scarab Swarm 2 · Canoptek Tomb Crawler 1 · Necron Warrior 1 · Necron Warrior 2",

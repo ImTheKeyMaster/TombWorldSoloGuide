@@ -94,7 +94,7 @@ class ObeliskMatrixRemovalTests(unittest.TestCase):
 
     def test_new_saves_do_not_write_injected_matrix_fields(self):
         state = {
-            "version": "7.5.1", "matrixActive": True,
+            "version": "7.5.0", "matrixActive": True,
             "roster": [{"id": "warrior-1", "type": "Canoptek Macrocyte Warrior", "wounds": 7, "insideMatrix": True}],
             "npoRuleState": {"aplModifiers": [{"ruleId": "matrix-accurate", "amount": 1}]},
         }

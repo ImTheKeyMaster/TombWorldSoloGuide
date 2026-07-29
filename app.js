@@ -800,6 +800,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const definition=npoDefinition(type),roster=Array.isArray(allocationContext.roster)?allocationContext.roster:state.roster;
     if(!definition||!Number.isInteger(quantity)||quantity<1)return [];
     const allocated=uniqueNpoInstances(roster).filter(npo=>npo.type===type);
+    if(definition.physicalQuantity===1)return allocated.length?[]:[{id:`${definition.id}-1`,displayNumber:null}];
     const allocatedIds=new Set(allocated.map(npo=>npo.id));
     const allocatedNumbers=new Set(allocated.map(npo=>Number(npo.displayNumber)).filter(Number.isInteger));
     const available=[];
@@ -994,7 +995,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       .filter(npo=>npo.type===definition.type&&(npo.battlefieldState==='out-of-action'||npo.wounds<=0))
       .sort((a,b)=>(Number(a.displayNumber)||0)-(Number(b.displayNumber)||0))[0];
     const warrior=returned||createNpo(definition.type,definition.name,{weaponId,ready:true,dormant:false});
-    if(returned)Object.assign(warrior,{weaponId,wounds:definition.wounds,maxWounds:definition.wounds,ready:true,dormant:false,deployed:true,battlefieldState:'deployed'});
+    if(returned)Object.assign(warrior,{weaponId,wounds:definition.wounds,maxWounds:definition.wounds,attack:canonicalAttackProfile(npoAttackProfiles({type:definition.type,weaponId},'shoot')[0]||npoAttackProfiles({type:definition.type,weaponId},'melee')[0]),ready:true,dormant:false,deployed:true,battlefieldState:'deployed'});
     warrior.createdBy='a-ceaseless-scuttling';
     warrior.order='Conceal';
     if(!returned)state.roster.push(warrior);
