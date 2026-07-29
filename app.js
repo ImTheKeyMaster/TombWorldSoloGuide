@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.0.0';
+  const APP_VERSION = '8.0.1';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
   const EventEffects=TombWorldEventEffects;
@@ -578,7 +578,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const pendingStoredMigration=loadedSave?.report?.requiresRegeneration?loadedSave:null;
   const loadedState=pendingStoredMigration?null:loadedSave?.state;
   let storedMigrationNoticeShown=false;
-  let state = normalizeState(loadedState || initialState());
+  let state;
+  let startupInitializationError=null;
+  try{state=normalizeState(loadedState || initialState());}
+  catch(error){
+    startupInitializationError=error;
+    state=initialState();
+    console.error('[Startup] Saved activation restoration failed; the stored save was preserved.',error);
+  }
   let lastRenderedStepKey = null;
   let startingNpoTimer = null;
   let threatAdjustOpen = false;
@@ -889,7 +896,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const activationNpo=merged.roster.find(npo=>npo.id===merged.lastActivation.npoId),definition=npoDefinition(activationNpo?.type);
       const effective=Number(merged.lastActivation.effectiveApl??definition?.apl??0),remaining=Math.max(0,Number(merged.lastActivation.remainingAp??effective));
       merged.lastActivation={
-        ...merged.lastActivation,activationId:merged.lastActivation.activationId||missionActivationId('npo',merged.lastActivation.npoId),
+        ...merged.lastActivation,activationId:merged.lastActivation.activationId||activationIdFromState(merged,'npo',merged.lastActivation.npoId),
         baseApl:Number(merged.lastActivation.baseApl??definition?.apl??effective),effectiveApl:effective,
         startingAp:Number(merged.lastActivation.startingAp??effective),remainingAp:remaining,
         actionSequence:Number(merged.lastActivation.actionSequence??merged.lastActivation.resolvedActions?.length??0),
@@ -897,9 +904,24 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         resolvedActions:Array.isArray(merged.lastActivation.resolvedActions)?merged.lastActivation.resolvedActions:[],
         decisionPass:Math.max(1,Number(merged.lastActivation.decisionPass||1)),
         declinedActionIds:Array.isArray(merged.lastActivation.declinedActionIds)?merged.lastActivation.declinedActionIds:[],
-        questionHistory:Array.isArray(merged.lastActivation.questionHistory)?merged.lastActivation.questionHistory:[],
-        pendingAction:isRecord(merged.lastActivation.pendingAction)?merged.lastActivation.pendingAction:null,
-        currentContext:isRecord(merged.lastActivation.currentContext)?merged.lastActivation.currentContext:{},
+        questionHistory:Array.isArray(merged.lastActivation.questionHistory)
+          ? merged.lastActivation.questionHistory.filter(item=>isRecord(item)&&typeof item.action==='string').map(item=>({...item}))
+          : [],
+        pendingAction:isRecord(merged.lastActivation.pendingAction)
+          &&typeof merged.lastActivation.pendingAction.id==='string'
+          &&typeof merged.lastActivation.pendingAction.name==='string'
+          &&Number.isFinite(Number(merged.lastActivation.pendingAction.apCost))
+          ? {...merged.lastActivation.pendingAction,apCost:Number(merged.lastActivation.pendingAction.apCost),decisionPass:Math.max(1,Number(merged.lastActivation.pendingAction.decisionPass||merged.lastActivation.decisionPass||1))}
+          : null,
+        currentContext:{inEnemyControlRange:null,hasValidShootTarget:null,hasValidFightTarget:null,...(isRecord(merged.lastActivation.currentContext)?merged.lastActivation.currentContext:{})},
+        awaitingActionResult:isRecord(merged.lastActivation.awaitingActionResult)
+          &&typeof merged.lastActivation.awaitingActionResult.id==='string'
+          &&typeof merged.lastActivation.awaitingActionResult.name==='string'
+          &&Number.isFinite(Number(merged.lastActivation.awaitingActionResult.apCost))
+          &&Number.isFinite(Number(merged.lastActivation.awaitingActionResult.apBefore))
+          &&Number.isFinite(Number(merged.lastActivation.awaitingActionResult.apRemaining))
+          ? {...merged.lastActivation.awaitingActionResult}
+          : null,
         attackPerformed:Boolean(merged.lastActivation.attackPerformed||merged.lastActivation.resolvedActions?.some(action=>['shoot','fight'].includes(action.id))),
         fightPerformed:Boolean(merged.lastActivation.fightPerformed||merged.lastActivation.resolvedActions?.some(action=>action.id==='fight')),
         committed:Boolean(merged.lastActivation.committed),completed:Boolean(merged.lastActivation.completed||merged.lastActivation.committed)
@@ -2942,7 +2964,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     state.lastActivation={
       activationId:missionActivationId('npo',n.id),npoId:n.id,name:npoName(n),baseApl:definition.apl,effectiveApl:apl,
       startingAp:apl,remainingAp:apl,actionSequence:0,completedActionIds:[],resolvedActions:[],decisionPass:1,
-      declinedActionIds:[],questionHistory:[],pendingAction:null,currentContext:{},attackPerformed:false,fightPerformed:false,
+      declinedActionIds:[],questionHistory:[],pendingAction:null,currentContext:{inEnemyControlRange:null,hasValidShootTarget:null,hasValidFightTarget:null},attackPerformed:false,fightPerformed:false,
       committed:false,completed:false
     };
     notifyMissionActivationStarted('npo',n.id);
@@ -3993,6 +4015,39 @@ function showPlayerActivation(stage={}){
     return normalized.startsWith('fight')?'fight':normalized.startsWith('shoot')?'shoot':normalized.startsWith('charge')?'charge':normalized.startsWith('dash')?'dash':normalized.startsWith('fall back')?'fall-back':normalized.startsWith('reposition')?'reposition':normalized.replace(/\s+/g,'-');
   }
   const NPO_CORE_ACTION_COSTS={'reposition':1,'dash':1,'charge':1,'shoot':1,'fight':1,'fall-back':2};
+  const NPO_ACTION_INQUIRIES={
+    'fall-back':{
+      applicabilityQuestion:'Is this NPO within control range of a Player operative?',
+      feasibilityQuestion:'Can this NPO be placed legally after performing Fall Back?',
+      help:'Confirm control range first. If applicable, confirm a legal placement using the shortest legal route.',
+      selectedInstruction:'Fall Back from the Player operative using the shortest legal route.'
+    },
+    shoot:{
+      feasibilityQuestion:'Does this NPO have a valid Player operative it can legally Shoot?',
+      help:'Verify visibility, obscuring, cover where relevant to target priority, weapon range, order restrictions, enemy control range, a valid living target, and any active rule restrictions.',
+      selectedInstruction:'Shoot the highest-priority valid Player operative.'
+    },
+    fight:{
+      feasibilityQuestion:'Is a valid Player operative within this NPO’s control range?',
+      help:'Confirm a valid living Player operative is within control range and no active rule prevents Fight.',
+      selectedInstruction:'Fight the highest-priority valid Player operative.'
+    },
+    charge:{
+      feasibilityQuestion:'Can this NPO legally Charge and finish within control range of a valid Player operative?',
+      help:'Confirm charge reach, a legal route and destination, and a valid living Player operative. The app applies printed target priority.',
+      selectedInstruction:'Charge the highest-priority valid Player operative.'
+    },
+    reposition:{
+      feasibilityQuestion:'Can this NPO Reposition to gain an unobscured valid target or better accomplish the mission?',
+      help:'Answer Yes only when a legal destination accomplishes the action’s printed purpose.',
+      selectedInstruction:'Reposition to gain an unobscured valid target or better accomplish the mission.'
+    },
+    dash:{
+      feasibilityQuestion:'Can this NPO Dash to improve its position for its printed objective?',
+      help:'Answer Yes only when the Dash has a useful legal destination for the printed objective.',
+      selectedInstruction:'Dash to improve its position for its printed objective.'
+    }
+  };
   function npoActionCost(n,actionId){
     const profileAction=(npoDefinition(n?.type)?.actions||[]).find(action=>action.id===actionId);
     if(profileAction&&Number.isFinite(Number(profileAction.ap)))return Math.max(0,Number(profileAction.ap));
@@ -4010,6 +4065,9 @@ function showPlayerActivation(stage={}){
     return (npoBehavior(n)?.actions||[]).filter(actionName=>{
       const id=npoActionId(actionName),profileAction=(definition.actions||[]).find(action=>action.id===id),cost=npoActionCost(n,id);
       if(cost===null||cost>remainingAp||completed.has(id))return false;
+      if(['shoot','fight','charge'].includes(id)&&!inPlayLivingPlayerOperativeIds().length)return false;
+      if(id==='shoot'&&!(definition.rangedWeapons||[]).length)return false;
+      if(id==='fight'&&!(definition.meleeWeapons||[]).length)return false;
       if((id==='shoot'&&completed.has('fight'))||(id==='fight'&&completed.has('shoot')))return false;
       if(id==='charge'&&['reposition','fall-back'].some(done=>completed.has(done)))return false;
       if(['reposition','dash','fall-back'].includes(id)&&completed.has('charge'))return false;
@@ -4041,7 +4099,10 @@ function showPlayerActivation(stage={}){
     const activation=state.lastActivation;
     const action=recommendedNpoActions(n,activation?.currentContext||{}).filter(name=>!(activation?.declinedActionIds||[]).includes(npoActionId(name)))[index];
     if(!action)return null;
-    return {key:`action-${index}`,action,title:`Can this NPO ${action}?`,help:'Check movement, visibility, cover, control range, measurement, action points, order and all other tabletop restrictions. Choose Yes only if this printed action is legal now.'};
+    const id=npoActionId(action),inquiry=NPO_ACTION_INQUIRIES[id];
+    const applicability=id==='fall-back'&&activation.currentContext?.inEnemyControlRange===null;
+    const title=applicability?inquiry.applicabilityQuestion:(inquiry?.feasibilityQuestion||`Are all requirements for ${action} currently satisfied?`);
+    return {key:`${id}-${applicability?'applicability':'feasibility'}`,action,actionId:id,type:applicability?'applicability':'feasibility',title,help:inquiry?.help||'Confirm target eligibility, visibility, distance, control range, placement, availability, and every other physical restriction.'};
   }
 
   const npoQuestionIcons = {
@@ -4327,7 +4388,7 @@ function showPlayerActivation(stage={}){
   }
 
   function renderCompletedNpoQuestions(history){
-    return history.map(item=>`<div class="npo-question-complete npo-question-history">${npoIcon(npoQuestionIcons[item.action.split(' ')[0]])}<span>${escapeHtml(item.action)}</span><strong>${item.answer?'Yes':'No'}</strong></div>`).join('');
+    return history.map(item=>`<div class="npo-question-complete npo-question-history">${npoIcon(npoQuestionIcons[item.action.split(' ')[0]])}<span><small>${escapeHtml(item.type==='applicability'?'APPLICABILITY':item.type==='selected'?'SELECTED ACTION':'FEASIBILITY')}</small>${escapeHtml(item.question||item.action)}</span><strong>${item.type==='selected'?'Selected':item.answer?'Yes':'No'}</strong></div>`).join('');
   }
 
   function renderActiveNpoQuestion(q){
@@ -4358,10 +4419,25 @@ function showPlayerActivation(stage={}){
       const answer=btn.dataset.answer==='yes';
       const nextAnswers={...answers,[q.key]:answer};
       const action=recommendedNpoActions(n,state.lastActivation?.currentContext||{}).filter(name=>!(state.lastActivation?.declinedActionIds||[]).includes(npoActionId(name)))[index];
-      const nextHistory=[...history,{index,answers,answer,action}];
+      const contextBefore={...(state.lastActivation.currentContext||{})};
+      const nextHistory=[...history,{index,answers,answer,action,type:q.type,question:q.title,contextBefore}];
       state.lastActivation.questionHistory=nextHistory;
-      if(answer)resolveNpo(n,{...nextAnswers,action},nextHistory);
+      if(q.type==='applicability'){
+        state.lastActivation.currentContext.inEnemyControlRange=answer;
+        if(answer){save();runNpoPrompt(n,0,nextAnswers,nextHistory);}
+        else{
+          state.lastActivation.declinedActionIds=[...(state.lastActivation.declinedActionIds||[]),q.actionId];
+          save();runNpoPrompt(n,0,nextAnswers,nextHistory);
+        }
+      }else if(answer){
+        if(q.actionId==='shoot')state.lastActivation.currentContext.hasValidShootTarget=true;
+        if(q.actionId==='fight')state.lastActivation.currentContext.hasValidFightTarget=true;
+        nextHistory.push({action,type:'selected',question:`${action} selected as the first applicable action in this operative’s printed behavior.`});
+        resolveNpo(n,{...nextAnswers,action},nextHistory);
+      }
       else{
+        if(q.actionId==='shoot')state.lastActivation.currentContext.hasValidShootTarget=false;
+        if(q.actionId==='fight')state.lastActivation.currentContext.hasValidFightTarget=false;
         state.lastActivation.declinedActionIds=[...(state.lastActivation.declinedActionIds||[]),npoActionId(action)];
         save();runNpoPrompt(n,0,nextAnswers,nextHistory);
       }
@@ -4370,6 +4446,7 @@ function showPlayerActivation(stage={}){
       const previous=history[history.length-1];
       if(previous){
         state.lastActivation.declinedActionIds=(state.lastActivation.declinedActionIds||[]).filter(id=>id!==npoActionId(previous.action));
+        state.lastActivation.currentContext={...previous.contextBefore};
         state.lastActivation.questionHistory=history.slice(0,-1);save();runNpoPrompt(n,0,previous.answers,history.slice(0,-1));
       }
     });
@@ -4379,7 +4456,10 @@ function showPlayerActivation(stage={}){
     const action=c.action||'Pass';
     const attack=/^(Fight|Shoot)/.test(action);
     const target=action.startsWith('Fight')?'Apply Fight target priority: most likely to incapacitate, greatest mission impact, then Ready; randomize any remaining tie':action.startsWith('Shoot')?'Apply Shoot target priority: most likely to incapacitate, greatest mission impact, not obscured, not in cover, closest, then Ready; randomize any remaining tie':'Follow the target and movement priority printed in this action';
-    const reason=c.action?(action.startsWith('Reposition')?'Reposition to gain a valid unobscured target or better win the mission.':action.startsWith('Dash')?'Dash to gain a valid unobscured target or better win the mission.':action.startsWith('Charge')?'Charge the highest-priority valid Player operative.':action.startsWith('Shoot')?'Shoot the highest-priority valid Player operative.':action.startsWith('Fight')?'Fight the highest-priority valid Player operative.':`Perform ${action}.`):'No printed action is currently legal; this NPO passes.';
+    const inquiry=NPO_ACTION_INQUIRIES[npoActionId(action)];
+    const skippedFallBack=(state.lastActivation?.questionHistory||[]).some(item=>item.type==='applicability'&&item.action==='Fall Back'&&item.answer===false);
+    const priorityReason=action==='Fall Back'?' This NPO is within control range of a Player operative. Fall Back is its first applicable action in the printed behavior list.':skippedFallBack?' Fall Back was not applicable. This is the next applicable action in the printed behavior list.':' This is the first applicable action in the printed behavior list.';
+    const reason=c.action?`${inquiry?.selectedInstruction||`Perform ${action}.`}${priorityReason}`:'No printed action is currently legal; this NPO passes.';
     return {action,target,stance:'Engage',threat:attack?1:0,reason,path:[action]};
   }
 
@@ -4387,6 +4467,7 @@ function showPlayerActivation(stage={}){
     const activation=state.lastActivation,n=state.roster.find(item=>item.id===activation?.npoId);
     if(!activation||activation.committed||activation.completed)return;
     if(!n||n.wounds<=0||!n.deployed||!n.ready){completeNpoActivation();return;}
+    if(activation.awaitingActionResult){renderNpoActionResult(n,activation.awaitingActionResult,Boolean(activation.awaitingActionResult.endsActivation));return;}
     if(activation.pendingAction){resolveNpoAction(n,activation.pendingAction);return;}
     if(activation.remainingAp<=0){renderNpoActivationEnd(n,'No AP remains.');return;}
     const available=recommendedNpoActions(n,activation.currentContext||{}).filter(name=>!(activation.declinedActionIds||[]).includes(npoActionId(name)));
@@ -4410,6 +4491,7 @@ function showPlayerActivation(stage={}){
     activation.actionSequence=(activation.actionSequence||0)+1;
     const record={sequence:activation.actionSequence,id:actionId,name:actionName,apCost,apBefore:before,apRemaining:activation.remainingAp,result,...(attackSummary?{attackSummary}:{})};
     activation.resolvedActions=[...(activation.resolvedActions||[]),record];
+    activation.awaitingActionResult={...record,endsActivation};
     activation.attackPerformed=activation.attackPerformed||actionId==='shoot'||actionId==='fight';
     activation.fightPerformed=activation.fightPerformed||actionId==='fight';
     activation.pendingAction=null;activation.combatDraft=null;activation.attackResolved=false;activation.attackRequired=false;
@@ -4417,6 +4499,7 @@ function showPlayerActivation(stage={}){
     activation.decisionPass++;
     activation.declinedActionIds=[];
     activation.questionHistory=[];
+    if(changesPosition)activation.currentContext={inEnemyControlRange:null,hasValidShootTarget:null,hasValidFightTarget:null};
     state.npoAttackTargetId=null;state.npoAttackSummary=null;
     log(`${npoName(n)} completed ${actionName}. ${activation.remainingAp} AP remaining.`);
     if(endsActivation)activation.completed=true;
@@ -4429,7 +4512,7 @@ function showPlayerActivation(stage={}){
     const history=activation.resolvedActions.map(action=>escapeHtml(action.name)).join(', ');
     modalBody.innerHTML=`<div class="modal-inner ai-result"><div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div><div class="summary-box"><strong>${escapeHtml(record.name)} completed</strong><p>AP: ${record.apBefore} → ${record.apRemaining} · ${record.apCost} AP spent</p>${record.result?`<p>${escapeHtml(typeof record.result==='string'?record.result:record.result.summary||'Action resolved.')}</p>`:''}<p><strong>Completed actions:</strong> ${history}</p></div><div class="wizard-actions"><button class="btn primary" id="continueNpoActivation">${canContinue?'Continue Activation':'Complete Activation'}</button></div></div>`;
     if(!modal.open)modal.showModal();
-    $('#continueNpoActivation').onclick=()=>{const button=$('#continueNpoActivation');button.disabled=true;if(canContinue)continueNpoActivation();else completeNpoActivation();};
+    $('#continueNpoActivation').onclick=()=>{const button=$('#continueNpoActivation');button.disabled=true;activation.awaitingActionResult=null;save();if(canContinue)continueNpoActivation();else completeNpoActivation();};
   }
 
   function renderNpoActivationEnd(n,message){
@@ -5022,8 +5105,14 @@ function showPlayerActivation(stage={}){
     };
   }
 
+  function activationIdFromState(sourceState,side,operativeId){
+    const turningPoint=Number(sourceState?.turningPoint||0);
+    const activationNumber=Number(sourceState?.activationNumber||0);
+    return `${turningPoint}:${activationNumber+1}:${side}:${operativeId}`;
+  }
+
   function missionActivationId(side,operativeId){
-    return `${state.turningPoint}:${state.activationNumber+1}:${side}:${operativeId}`;
+    return activationIdFromState(state,side,operativeId);
   }
 
   function notifyMissionActivationStarted(side,operativeId){
@@ -5290,7 +5379,21 @@ function showPlayerActivation(stage={}){
     gameMenuBtn.onclick=showGameMenu;
   }
 
-  Promise.all([loadMissionPack(),loadPlayerManifest()])
+  function renderStartupRecovery(error){
+    console.error('[Startup] Application restoration could not continue.',error);
+    app.innerHTML=`<section class="card startup-recovery" role="alert"><p class="eyebrow">RECOVERY</p><h2>Your saved game could not be loaded</h2><p>Your stored save has been preserved. Retry loading, or export a backup before troubleshooting.</p><div class="wizard-actions"><button class="btn primary" id="retryStartup">Retry Loading</button><button class="btn ghost" id="exportStoredSave">Export Save</button></div></section>`;
+    $('#retryStartup').onclick=()=>window.location.reload();
+    $('#exportStoredSave').onclick=()=>{
+      const stored=localStorage.getItem(STORAGE_KEY);
+      if(!stored){showToast('No stored save is available to export.');return;}
+      const blob=new Blob([stored],{type:'application/json'}),link=document.createElement('a');
+      link.href=URL.createObjectURL(blob);link.download='tomb-world-solo-guide-recovery-save.json';link.click();URL.revokeObjectURL(link.href);
+    };
+    bindCommon();
+  }
+
+  if(startupInitializationError)renderStartupRecovery(startupInitializationError);
+  else Promise.all([loadMissionPack(),loadPlayerManifest()])
     .then(async ([,manifest])=>{
       await loadObjectiveMission();
       recoverInvalidMission();
@@ -5314,8 +5417,6 @@ function showPlayerActivation(stage={}){
       }
     })
     .catch(error=>{
-      console.error(error);
-      app.innerHTML=`<section class="card"><h2>Player operative data could not be loaded</h2><p>${escapeHtml(error.message)}</p><p>Run the app from a web server so it can load the mission and player-operative JSON files.</p></section>`;
-      bindCommon();
+      renderStartupRecovery(error);
     });
 })();
