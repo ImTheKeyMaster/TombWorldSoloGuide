@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.5.5';
+  const APP_VERSION = '7.5.6';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
   const EventEffects=TombWorldEventEffects;
@@ -10,6 +10,7 @@
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
   const MAX_NPOS = 10;
+  const MAX_TURNING_POINTS = 4;
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const app = $('#app');
@@ -489,7 +490,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     npoAttackTargetId:null,
     npoAttackSummary:null, combatState:null, missionState:null, missionRuntime:null, startingNpoGeneration:null,
     npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[]},
-    eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[],transactions:{},playerAplModifiers:[],reanimationAttempts:{}}, gameEnd:null
+    eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[],transactions:{},playerAplModifiers:[],reanimationAttempts:{}}, gameEnd:null,
+    finalResolution:{pending:false,turningPointEnded:false,cleanupComplete:false,battleEndHookStarted:false,resultLogged:false,invalidSaveCorrected:false}
   });
 
   const loadedSave = load();
@@ -609,7 +611,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const base=initialState(), merged={...base,...raw};
     if(!['home','help','setup','game'].includes(merged.screen))merged.screen='home';
     if(!['play','mission','roster','player-roster','journal','help'].includes(merged.tab))merged.tab='play';
-    merged.turningPoint=boundedInteger(raw.turningPoint,0,999);
+    const invalidTurningPoint=Number(raw.turningPoint)>MAX_TURNING_POINTS;
+    merged.turningPoint=Math.min(boundedInteger(raw.turningPoint,0,999),MAX_TURNING_POINTS);
     merged.threat=boundedInteger(raw.threat,0,15);
     merged.restlessTombEnabled=raw.restlessTombEnabled===true;
     merged.deadlyEncountersEnabled=raw.deadlyEncountersEnabled===true;
@@ -647,6 +650,24 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       if(npo.dormant)npo.ready=false;
     });
     merged.journal=Array.isArray(raw.journal)?raw.journal.filter(isRecord):[];
+    const importedFinalResolution=isRecord(raw.finalResolution)?raw.finalResolution:{};
+    merged.finalResolution={
+      pending:Boolean(importedFinalResolution.pending),
+      turningPointEnded:Boolean(importedFinalResolution.turningPointEnded),
+      cleanupComplete:Boolean(importedFinalResolution.cleanupComplete),
+      battleEndHookStarted:Boolean(importedFinalResolution.battleEndHookStarted),
+      resultLogged:Boolean(importedFinalResolution.resultLogged),
+      invalidSaveCorrected:Boolean(importedFinalResolution.invalidSaveCorrected)
+    };
+    if(invalidTurningPoint){
+      merged.finalResolution.pending=true;
+      merged.finalResolution.turningPointEnded=true;
+      merged.finalResolution.cleanupComplete=true;
+      if(!merged.finalResolution.invalidSaveCorrected){
+        merged.journal.unshift({time:new Date().toISOString(),text:`Battle corrected to the ${MAX_TURNING_POINTS}-Turning-Point limit; mission and roster progress were preserved.`});
+        merged.finalResolution.invalidSaveCorrected=true;
+      }
+    }
     merged.newIds=normalizeIdList(raw.newIds,merged.roster.map(npo=>npo.id));
     const importedReinforcements=isRecord(raw.reinforcementState)?raw.reinforcementState:{};
     const reinforcementIds=normalizeIdList(importedReinforcements.operativeIds,merged.roster.map(npo=>npo.id));
@@ -747,7 +768,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const deckRecord=eventDeck.find(card=>card.instanceId===event.instanceId);
       const definitionId=event.definitionId||deckRecord?.definitionId;
       return eventDefinitions[definitionId]?{...event,definitionId}:null;
-    }).filter(event=>event&&event.expiresAfterTurningPoint>=merged.turningPoint):[];
+    }).filter(event=>event&&event.startedTurningPoint<=MAX_TURNING_POINTS&&event.expiresAfterTurningPoint>=merged.turningPoint):[];
     merged.eventState={
       available,
       used,
@@ -756,6 +777,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       playerAplModifiers:Array.isArray(importedEvents.playerAplModifiers)?importedEvents.playerAplModifiers.filter(isRecord).map(item=>({...item})):[],
       reanimationAttempts:isRecord(importedEvents.reanimationAttempts)?{...importedEvents.reanimationAttempts}:{}
     };
+    if(invalidTurningPoint)merged.eventState.active=merged.eventState.active.filter(event=>event.expiresAfterTurningPoint>MAX_TURNING_POINTS);
     const livingImportedPlayers=merged.playerRoster.filter(id=>merged.playerOperativeStates[id]?.inPlay!==false&&!merged.playerCasualtyIds.includes(id)).length;
     merged.missionReadyContext=raw?.missionReadyContext&&typeof raw.missionReadyContext==='object'
       ? {sarcophagusControllers:normalizeSarcophagusControllers(raw.missionReadyContext.sarcophagusControllers,livingImportedPlayers)}
@@ -785,6 +807,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       merged.phase='firefight';
       merged.strategyStage=null;
       merged.nextSide=resolvedSide;
+    }
+    if(invalidTurningPoint){
+      merged.phase='battle-resolution';
+      merged.strategyStage=null;merged.strategyData=null;merged.strategyPipeline=null;
+      merged.activeNpoId=null;merged.combatState=null;merged.npoAttackTargetId=null;merged.npoAttackSummary=null;
+      merged.newIds=[];merged.activationHistory=[];merged.playerActivatedIds=[];
+      merged.reinforcementState={turningPoint:MAX_TURNING_POINTS,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0};
     }
     if(Array.isArray(raw.roster)){
       const validation=validateNpoRoster(merged.roster);
@@ -1094,23 +1123,24 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   const missionOutcomeEvaluators = {
-    escape:(engine,progress)=>{
+    escape:(engine,progress,timing)=>{
       const total=state.playerRoster.length, departed=new Set([...progress.escapedIds,...state.playerCasualtyIds]);
-      if(!total||departed.size<total)return null;
+      if(!total)return null;
+      if(departed.size<total)return timing==='turning-point-limit'?'defeat':null;
       return progress.escapedIds.length>=Math.ceil(total/2)?'victory':'defeat';
     },
-    sabotage:(engine,progress)=>progress.completedFeatureIds.length>=engine.required?'victory':null,
-    transponder:(engine,progress)=>progress.escaped?'victory':null,
-    destruction:()=>null,
-    scout:(engine,progress)=>progress.scoutedRoomIds.length>=engine.required?'victory':null,
+    sabotage:(engine,progress,timing)=>progress.completedFeatureIds.length>=engine.required?'victory':timing==='turning-point-limit'?'defeat':null,
+    transponder:(engine,progress,timing)=>progress.escaped?'victory':timing==='turning-point-limit'?'defeat':null,
+    destruction:(engine,progress,timing)=>progress.destruction>=engine.required?'victory':timing==='turning-point-limit'?'defeat':null,
+    scout:(engine,progress,timing)=>progress.scoutedRoomIds.length>=engine.required?'victory':timing==='turning-point-limit'?'defeat':null,
     regroup:(engine,progress,timing)=>{
-      if(timing!=='end-turning-point')return null;
+      if(!['end-turning-point','turning-point-limit'].includes(timing))return null;
       const survivors=inPlayLivingPlayerOperativeIds();
       if(!survivors.length)return null;
       return survivors.every(id=>{
         const check=progress.operativeChecks[id]||{};
         return check.inDropZone&&check.outsideNpoControl&&check.nearPlayer;
-      })?'victory':null;
+      })?'victory':timing==='turning-point-limit'?'defeat':null;
     }
   };
 
@@ -1127,9 +1157,16 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     state.gameEnd=outcome;
     state.completed=true;
     state.phase='end';
-    executeMissionLifecycleHook('onBattleEnded',{outcome});
+    state.finalResolution=state.finalResolution||{};
+    if(!state.finalResolution.battleEndHookStarted){
+      state.finalResolution.battleEndHookStarted=true;
+      executeMissionLifecycleHook('onBattleEnded',{outcome});
+    }
     const engine=missionEngine();
-    log(`${mission().name}: ${outcome}. ${outcome==='victory'?engine?.success:engine?.failure}`);
+    if(!state.finalResolution.resultLogged){
+      log(`${mission().name}: ${outcome}. ${outcome==='victory'?engine?.success:engine?.failure}`);
+      state.finalResolution.resultLogged=true;
+    }
     closeModal();
     save();
     render();
@@ -1139,6 +1176,29 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function checkGameEnd(timing='immediate'){
     const outcome=missionOutcome(timing);
     return outcome?completeMission(outcome):false;
+  }
+
+  function completeTurningPointCleanup(){
+    state.eventState.active=state.eventState.active.filter(event=>event.expiresAfterTurningPoint!==state.turningPoint);
+    state.strategyStage=null;state.strategyData=null;state.newIds=[];
+    state.finalResolution.cleanupComplete=true;
+  }
+
+  async function resolveTurningPointLimit(){
+    state.finalResolution=state.finalResolution||{};
+    if(!state.finalResolution.turningPointEnded){
+      if(await executeMissionLifecycleHook('onTurningPointEnded')===null)return false;
+      state.finalResolution.turningPointEnded=true;
+      log(`Turning Point ${state.turningPoint} completed.`);
+    }
+    if(!state.finalResolution.cleanupComplete)completeTurningPointCleanup();
+    const outcome=missionOutcome('turning-point-limit');
+    if(outcome)return completeMission(outcome);
+    state.finalResolution.pending=true;
+    state.phase='battle-resolution';
+    save();render();
+    showToast(`Turning Point ${MAX_TURNING_POINTS} is the final Turning Point. Record the mission outcome.`);
+    return true;
   }
 
   function totalLivingOperatives(){
@@ -1705,9 +1765,19 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function renderGame(){
     if(state.gameEnd){
       const victory=state.gameEnd==='victory';
-      app.innerHTML=`<section class="hero-card mission-outcome"><p class="eyebrow">MISSION COMPLETE</p><img class="game-end-image" src="Assets/Images/${victory?'victory':'defeat'}.png" alt="${victory?'Victory':'Defeat'}"><h2>${victory?'Victory':'Defeat'}</h2><p>${escapeHtml(victory?missionEngine()?.success:missionEngine()?.failure)}</p>${missionProgressHtml(true)}<div class="button-row"><button class="btn secondary" id="reviewCompletedMission">Review Mission</button><button class="btn primary" id="gameEndNewGame">Start New Game</button></div></section>`;
+      const atLimit=state.turningPoint>=MAX_TURNING_POINTS&&state.finalResolution?.turningPointEnded;
+      app.innerHTML=`<section class="hero-card mission-outcome"><p class="eyebrow">${atLimit?'BATTLE COMPLETE':'MISSION COMPLETE'}</p><img class="game-end-image" src="Assets/Images/${victory?'victory':'defeat'}.png" alt="${victory?'Victory':'Defeat'}"><h2 id="battle-complete-heading" tabindex="-1">${atLimit?'Battle Complete':victory?'Victory':'Defeat'}</h2>${atLimit?`<p role="status">Turning Point ${MAX_TURNING_POINTS} has ended.</p><h3>MISSION ${victory?'VICTORY':'DEFEAT'}</h3>`:''}<p>${escapeHtml(victory?missionEngine()?.success:missionEngine()?.failure)}</p>${missionProgressHtml(true)}<div class="button-row"><button class="btn secondary" id="reviewCompletedMission">Review Mission</button><button class="btn primary" id="gameEndNewGame">Start New Game</button></div></section>`;
       $('#reviewCompletedMission').onclick=()=>showModal(`${mission().number} · ${mission().name}`,`<p><strong>Objective:</strong> ${escapeHtml(mission().objective)}</p><p><strong>Outcome:</strong> ${escapeHtml(victory?missionEngine()?.success:missionEngine()?.failure)}</p><div class="wizard-actions"><button class="btn primary" data-close>Done</button></div>`);
       $('#gameEndNewGame').onclick=confirmNewGame;
+      requestAnimationFrame(()=>$('#battle-complete-heading')?.focus());
+      return;
+    }
+    if(state.finalResolution?.pending&&state.turningPoint>=MAX_TURNING_POINTS){
+      const engine=missionEngine();
+      app.innerHTML=`<section class="hero-card mission-outcome" aria-live="polite"><p class="eyebrow">BATTLE COMPLETE</p><h2 id="battle-complete-heading" tabindex="-1">Battle Complete</h2><p>Turning Point ${MAX_TURNING_POINTS} has ended. Resolve the mission’s final success condition and record the outcome.</p>${engine?.type==='destruction'?`<div class="summary-box"><strong>Current Destruction score:</strong> ${state.missionState?.destruction||0}</div>`:''}<div class="summary-box"><strong>Success:</strong> ${escapeHtml(engine?.success||mission()?.victory?.win||'Resolve the mission success condition.')}</div><div class="summary-box"><strong>Failure:</strong> ${escapeHtml(engine?.failure||mission()?.victory?.lose||'Resolve the mission failure condition.')}</div><div class="button-row"><button class="btn danger" id="recordFinalDefeat" aria-label="Record mission defeat">Record Defeat</button><button class="btn primary" id="recordFinalVictory" aria-label="Record mission victory">Record Victory</button></div></section>`;
+      $('#recordFinalDefeat').onclick=()=>completeMission('defeat');
+      $('#recordFinalVictory').onclick=()=>completeMission('victory');
+      requestAnimationFrame(()=>$('#battle-complete-heading')?.focus());
       return;
     }
     if(state.tab==='play') renderPlay();
@@ -1906,6 +1976,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function nextStepCard(){
     if(state.completed) return `<section class="next-card"><span class="phase">MISSION COMPLETE</span><h2>Record the outcome</h2><p>The mission has reached its conclusion. Review the Journal or begin a new game.</p><button class="btn primary big-action" id="newGameFromPlay">Start New Game</button></section>`;
     if(state.phase==='between'){
+      if(state.turningPoint>=MAX_TURNING_POINTS){
+        queueMicrotask(resolveTurningPointLimit);
+        return `<section class="next-card"><span class="phase">BATTLE COMPLETE</span><h2>Resolving final mission outcome</h2><p>Turning Point ${MAX_TURNING_POINTS} has ended. No further Turning Point can begin.</p></section>`;
+      }
       return `<section class="next-card"><span class="phase">NEXT STEP</span><h2>Start Turning Point ${state.turningPoint+1}</h2><p>The Guide will ready operatives, apply mission Ready rules, determine initiative, then process current events and reinforcements.</p><button class="btn primary big-action" id="startTp">Start Next Turning Point</button></section>`;
     }
     if(state.phase==='strategy') return strategyCard();
@@ -2275,12 +2349,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     });
     $('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked;});
     $('#finishTp')?.addEventListener('click',async()=>{
+      if(state.turningPoint>=MAX_TURNING_POINTS){await resolveTurningPointLimit();return;}
       if(await executeMissionLifecycleHook('onTurningPointEnded')===null)return;
       log(`Turning Point ${state.turningPoint} completed.`);
-      state.eventState.active=state.eventState.active.filter(event=>event.expiresAfterTurningPoint!==state.turningPoint);
-      state.strategyStage=null;
-      state.strategyData=null;
-      state.newIds=[];
+      completeTurningPointCleanup();
       if(checkGameEnd('end-turning-point'))return;
       state.phase='between';
       save();render();
@@ -2305,7 +2377,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   async function startTurningPoint(){
+    if(state.turningPoint>=MAX_TURNING_POINTS){
+      await resolveTurningPointLimit();
+      return;
+    }
     state.turningPoint++;
+    state.finalResolution={...state.finalResolution,pending:false,turningPointEnded:false,cleanupComplete:false};
     state.npoRuleState.reanimatedTargetIds=[];
     state.npoRuleState.incapacitationTriggers=[];
     if(missionEngine()?.type==='regroup')state.missionState={operativeChecks:{},lastCheckedTurningPoint:state.turningPoint};
@@ -4965,7 +5042,8 @@ function showPlayerActivation(stage={}){
         playerTeamData=null;
       }
       state.missionState=normalizeMissionState(state.missionState,missionDefinition(state.missionId),state.tracker);
-      render();
+      if(state.finalResolution?.invalidSaveCorrected&&state.finalResolution.pending)await resolveTurningPointLimit();
+      else render();
       if(pendingStoredMigration)showRegenerationNotice(pendingStoredMigration,'storage');
       else if(!storedMigrationNoticeShown&&hasMeaningfulMigrationChanges(loadedSave?.report)){
         if(save()){storedMigrationNoticeShown=true;showMigrationNotice(loadedSave.report);}
