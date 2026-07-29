@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v7.5.7
+# Tomb World Solo Guide v7.5.8
+
+## v7.5.8
+
+**Version 7.5.8 - Standardize Player Operative Variant Naming**
+
+- Standardized player operative weapon and loadout variant names to use parentheses instead of em dashes throughout the interface.
+- Updated only operative display-name fields while preserving operative IDs, saved games, sorting, filtering, and gameplay behavior.
+
+---
 
 ## v7.5.7
 

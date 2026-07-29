@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.5.7';
+  const APP_VERSION = '7.5.8';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
   const EventEffects=TombWorldEventEffects;
