@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.3.0';
+  const APP_VERSION = '8.3.1';
   const NPO_ACTION_TRANSITIONS = Object.freeze({
     AUTO_CONTINUE:'auto-continue',
     ACKNOWLEDGE:'acknowledge',
@@ -4025,7 +4025,8 @@ function showPlayerActivation(stage={}){
     'fall-back':{
       applicabilityQuestion:'Is this NPO within control range of a Player operative?',
       feasibilityQuestion:'Can this NPO Fall Back and finish outside the control range of all Player operatives?',
-      help:n=>`Move it up to ${npoDefinition(n.type)?.move} inches using the shortest available route. Select Yes only if its base can fit at a destination outside every Player operative’s control range.`,
+      applicabilityHelp:'Answer Yes if this NPO is currently within control range of at least one Player operative. Do not move it yet.',
+      feasibilityHelp:n=>`It can move up to ${npoDefinition(n.type)?.move} inches. Select Yes only if its base can fit at a destination outside every Player operative’s control range.`,
       selectedInstruction:'Fall Back using the shortest available route and finish outside the control range of every Player operative.'
     },
     shoot:{
@@ -4116,7 +4117,8 @@ function showPlayerActivation(stage={}){
     const id=npoActionId(action),inquiry=NPO_ACTION_INQUIRIES[id];
     const applicability=id==='fall-back'&&activation.currentContext?.inEnemyControlRange===null;
     const title=applicability?inquiry.applicabilityQuestion:(inquiry?.feasibilityQuestion||`Are all requirements for ${action} currently satisfied?`);
-    const help=typeof inquiry?.help==='function'?inquiry.help(n):inquiry?.help;
+    const inquiryHelp=applicability?inquiry?.applicabilityHelp:(inquiry?.feasibilityHelp??inquiry?.help);
+    const help=typeof inquiryHelp==='function'?inquiryHelp(n):inquiryHelp;
     return {key:`${id}-${applicability?'applicability':'feasibility'}`,action,actionId:id,type:applicability?'applicability':'feasibility',title,help:help||'Confirm target eligibility, visibility, distance, control range, placement, availability, and every other physical restriction.'};
   }
 
