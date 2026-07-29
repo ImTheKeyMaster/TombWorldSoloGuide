@@ -134,6 +134,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     playerTeamData=data;
     state.playerTeamId=entry.id;
     state.playerTeamFile=entry.file;
+    assignPlayerDisplayNumbers();
     return data;
   }
   function validatePlayerTeamData(data,fileName){
@@ -274,7 +275,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function playerDisplayIdentity(id){
     const definition=playerDefinition(id);
     const sourceName=definition?.name||String(id);
-    const match=sourceName.match(/^(.*?)\s+\d+(\s*\(.*\))?$/);
+    const match=definition?.officialName?sourceName.match(/^(.*?)\s+\d+(\s*\(.*\))?$/):null;
     return {
       groupName:definition?.officialName||match?.[1]||sourceName,
       baseName:match?.[1]||sourceName,
