@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.2.0
+# Tomb World Solo Guide v8.3.0
+
+## v8.3.0
+
+**Version 8.3.0 - Clarify NPO Movement Guidance**
+
+- Replaced unclear `printed objective` terminology with direct movement guidance.
+- Simplified completed-action progress summaries to concise action names.
+- Preserved NPO priorities, AP costs, and activation behavior.
 
 ## v8.2.0
 
