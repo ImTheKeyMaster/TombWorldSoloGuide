@@ -92,9 +92,9 @@ assert.deepEqual(strategyEventPresentation(data),{{required:0,cardsDrawn:0,resol
         self.assertNotIn('position:absolute', STYLES.split('.strategy-actions-section', 1)[1].split('\n', 1)[0])
 
     def test_release_version_and_notes_are_consistent(self):
-        self.assertIn("const APP_VERSION = '7.4.2';", APP)
-        self.assertIn('V7.4.2', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v7.4.2'))
+        self.assertIn("const APP_VERSION = '7.5.0';", APP)
+        self.assertIn('V7.5.0', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v7.5.0'))
         self.assertIn('Version 7.4.0 - Reorganize Strategy Phase Results', README)
         self.assertNotIn('portrait', EVENT_HTML.lower())
         self.assertNotIn('obelisk', EVENT_HTML.lower())

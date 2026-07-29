@@ -129,7 +129,7 @@ class StrategyEventDeduplicationTests(unittest.TestCase):
         self.assertIn("event.text", later)
         self.assertIn("expiresAfterTurningPoint!==state.turningPoint", expiry)
         self.assertIn("state.eventState.active.push({...event", resolution)
-        self.assertIn("active:Array.isArray(importedEvents.active)", normalization)
+        self.assertIn("const normalizedActive=Array.isArray(importedEvents.active)", normalization)
         self.assertNotIn("state.eventState.active=", STRATEGY_CARD)
 
     def test_rules_and_release_regressions(self):
@@ -138,11 +138,11 @@ class StrategyEventDeduplicationTests(unittest.TestCase):
         self.assertIn("Math.max(normalCount,1)", counts)
         self.assertIn("1 event required by Restless Tomb.", render_strategy([self.resolved], [self.active]))
         self.assertIn("ACTIVE TOMB WORLD", APP.split("function activeEventEffectsHtml", 1)[1].split("function nextStepCard", 1)[0])
-        self.assertIn("const APP_VERSION = '7.4.2';", APP)
-        self.assertIn("const APP_VERSION = '7.4.2';", WORKER)
-        self.assertIn("V7.4.2", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v7.4.2"))
-        self.assertIn("## v7.4.2", README)
+        self.assertIn("const APP_VERSION = '7.5.0';", APP)
+        self.assertIn("const APP_VERSION = '7.5.0';", WORKER)
+        self.assertIn("V7.5.0", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v7.5.0"))
+        self.assertIn("## v7.5.0", README)
         self.assertNotIn("portrait", EVENT_HTML.lower())
         self.assertNotIn("obelisk", EVENT_HTML.lower())
 

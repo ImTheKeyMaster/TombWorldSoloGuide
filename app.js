@@ -2,9 +2,10 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.4.2';
+  const APP_VERSION = '7.5.0';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
+  const EventEffects=TombWorldEventEffects;
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
@@ -388,12 +389,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   // Physical Tomb World Event deck, Tomb World Mission Pack pp. 20-22.
   // Card-instance IDs preserve the printed duplicate weighting.
   const eventDefinitions = {
-    'subjugation-glyphs':{title:'Subjugation Glyphs',text:'Until the end of the turning point, subtract 1 from the APL stat of player operatives while they are within 2" of an objective marker.',execution:{type:'activate'},duration:'turning-point'},
+    'subjugation-glyphs':{title:'Subjugation Glyphs',text:'Randomly test eligible Player operatives without replacement. If a D6 is higher than an operative’s effective APL, subtract 1 from its APL.',execution:{type:'subjugation-glyphs'},lifecycle:'immediate',duration:'persistent',handlerId:'subjugation-glyphs',gameplayHooks:['effectivePlayerApl'],automationType:'automatic',priority:10},
     'transdimensional-relocation':{title:'Transdimensional Relocation',text:'Relocate the player operative that is closest to an NPO. Follow the placement restrictions on the event card.',execution:{type:'tabletop-confirm'},duration:'immediate'},
-    'my-will-be-done':{title:'My Will Be Done',text:'Until the end of the turning point, improve the Hit stat of NPO weapons by 1.',execution:{type:'activate'},duration:'turning-point'},
-    'reanimation-protocols':{title:'Reanimation Protocols',text:'Until the end of the turning point, resolve Reanimation Protocols whenever an NPO is incapacitated, as described on the event card.',execution:{type:'activate'},duration:'turning-point'},
-    'dark-of-the-tomb':{title:'Dark of the Tomb',text:'Until the end of the turning point, apply the Dark of the Tomb effect and its required re-rolls as described on the event card.',execution:{type:'activate'},duration:'turning-point'},
-    'countertemporal-shifting':{title:'Countertemporal Shifting',text:'Until the end of the turning point, when an NPO would lose wounds, roll one D6 for each point of damage inflicted: for each 5+, that point of damage is ignored.',execution:{type:'activate'},duration:'turning-point'},
+    'my-will-be-done':{title:'My Will Be Done',text:'Until the end of the turning point, while an NPO is in the same room as the C1 sarcophagus, its weapons have Accurate 1.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'my-will-be-done',gameplayHooks:['effectiveWeapon'],automationType:'tabletop-answer',priority:20},
+    'reanimation-protocols':{title:'Reanimation Protocols',text:'Until the end of the turning point, the first time each NPO would be incapacitated, roll one D6. On 4+, it reanimates with 1 wound.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'reanimation-protocols',gameplayHooks:['incapacitationCandidates'],automationType:'automatic',priority:10},
+    'dark-of-the-tomb':{title:'Dark of the Tomb',text:'Until the end of the turning point, Player Shoot attack dice cannot be rerolled when the target is more than 8 inches away.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'dark-of-the-tomb',gameplayHooks:['attackRerolls'],automationType:'tabletop-answer',priority:10},
+    'countertemporal-shifting':{title:'Countertemporal Shifting',text:'Until the end of the turning point, when an attack die would inflict 3 or more damage on an NPO, roll one D6. On 5+, subtract 1 damage from that die.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'countertemporal-shifting',gameplayHooks:['damagePackets'],automationType:'automatic',priority:30},
     'living-metal-flux':{title:'Living Metal Flux',text:'Each NPO that has lost any wounds regains D3+2 wounds.',execution:{type:'living-metal-flux'},duration:'immediate'},
     'maze-reforms':{title:'The Maze Reforms',text:'Close one breach and up to D3 open hatchways. If this cannot be resolved, draw another event card.',execution:{type:'maze-reforms'},duration:'immediate',redrawIfImpossible:true},
     'stirrings-of-horror':{title:'Stirrings of Horror',text:'Increase the Threat level by 1. If the Threat level is already 15, draw another event card instead.',execution:{type:'stirrings'},duration:'immediate',redrawIfImpossible:true},
@@ -488,7 +489,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     npoAttackTargetId:null,
     npoAttackSummary:null, combatState:null, missionState:null, missionRuntime:null, startingNpoGeneration:null,
     npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[]},
-    eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[]}, gameEnd:null
+    eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[],transactions:{},playerAplModifiers:[],reanimationAttempts:{}}, gameEnd:null
   });
 
   const loadedSave = load();
@@ -733,10 +734,19 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const validInstances=new Set(eventDeck.map(card=>card.instanceId));
     const available=Array.isArray(importedEvents.available)?normalizeIdList(importedEvents.available,validInstances):eventDeck.map(card=>card.instanceId);
     const used=normalizeIdList(importedEvents.used,validInstances).filter(id=>!available.includes(id));
+    const normalizedActive=Array.isArray(importedEvents.active)?importedEvents.active.map(event=>{
+      if(!isRecord(event))return null;
+      const deckRecord=eventDeck.find(card=>card.instanceId===event.instanceId);
+      const definitionId=event.definitionId||deckRecord?.definitionId;
+      return eventDefinitions[definitionId]?{...event,definitionId}:null;
+    }).filter(event=>event&&event.expiresAfterTurningPoint>=merged.turningPoint):[];
     merged.eventState={
       available,
       used,
-      active:Array.isArray(importedEvents.active)?importedEvents.active.filter(event=>isRecord(event)&&eventDefinitions[event.definitionId]).map(event=>({...event})):[]
+      active:normalizedActive,
+      transactions:isRecord(importedEvents.transactions)?{...importedEvents.transactions}:{},
+      playerAplModifiers:Array.isArray(importedEvents.playerAplModifiers)?importedEvents.playerAplModifiers.filter(isRecord).map(item=>({...item})):[],
+      reanimationAttempts:isRecord(importedEvents.reanimationAttempts)?{...importedEvents.reanimationAttempts}:{}
     };
     const livingImportedPlayers=merged.playerRoster.filter(id=>merged.playerOperativeStates[id]?.inPlay!==false&&!merged.playerCasualtyIds.includes(id)).length;
     merged.missionReadyContext=raw?.missionReadyContext&&typeof raw.missionReadyContext==='object'
@@ -907,9 +917,18 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       &&['apl','move','save','wounds'].every(field=>Number.isFinite(definition[field]))
       &&['rangedWeapons','meleeWeapons','actions','passiveRules','strategicRules','keywords'].every(field=>Array.isArray(definition[field])));
   }
+  function effectivePlayerApl(operativeId,baseApl){return EventEffects.effectivePlayerApl(state,operativeId,baseApl);}
+  function effectiveNpoApl(operativeId,baseApl){return EventEffects.effectiveNpoApl(state,operativeId,baseApl);}
   function effectiveApl(operativeId,baseApl){
-    const modifier=(state.npoRuleState?.aplModifiers||[]).filter(item=>item.targetId===operativeId).reduce((total,item)=>total+Number(item.amount||0),0);
-    return Math.max(1,Number(baseApl||0)+modifier);
+    return state.playerRoster?.includes(operativeId)?effectivePlayerApl(operativeId,baseApl):effectiveNpoApl(operativeId,baseApl);
+  }
+  function effectiveWeaponProfile(profile,context={}){return EventEffects.effectiveWeaponProfile(state,profile,{turningPoint:state.turningPoint,...context});}
+  function effectiveAttackRerolls(context={}){return EventEffects.effectiveAttackRerolls(state,{turningPoint:state.turningPoint,...context});}
+  function applyActiveTombWorldEventHooks(hookName,context={}){return EventEffects.applyActiveTombWorldEventHooks(state,hookName,{turningPoint:state.turningPoint,...context});}
+  function resolveNpoIncapacitation(context={}){return EventEffects.resolveNpoIncapacitation(state,{turningPoint:state.turningPoint,...context});}
+  function eventTransaction(id,defaults={}){
+    state.eventState.transactions=state.eventState.transactions||{};
+    return state.eventState.transactions[id]||(state.eventState.transactions[id]={id,turningPoint:state.turningPoint,committed:false,...defaults});
   }
   function applyTemporaryAplModifier({sourceId,targetId,ruleId,amount,deferCurrentActivation=false}){
     const modifiers=state.npoRuleState.aplModifiers;
@@ -1855,6 +1874,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return `<section class="card"><p class="eyebrow">ACTIVE TOMB WORLD ${active.length===1?'EVENT':'EVENTS'}</p>${active.map(event=>`<div class="summary-box"><strong>${escapeHtml(event.title)}</strong><br>${escapeHtml(event.text)}</div>`).join('')}</section>`;
   }
 
+  function tombWorldEventActive(definitionId){
+    return EventEffects.activeRecords(state,state.turningPoint).some(event=>event.definitionId===definitionId);
+  }
+
   function nextStepCard(){
     if(state.completed) return `<section class="next-card"><span class="phase">MISSION COMPLETE</span><h2>Record the outcome</h2><p>The mission has reached its conclusion. Review the Journal or begin a new game.</p><button class="btn primary big-action" id="newGameFromPlay">Start New Game</button></section>`;
     if(state.phase==='between'){
@@ -2308,6 +2331,29 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       return;
     }
     const type=event.execution.type;
+    if(type==='subjugation-glyphs'){
+      const transaction=eventTransaction(`event:${event.instanceId}:${state.turningPoint}`,{definitionId:event.definitionId,selections:[],rolls:[]});
+      if(!transaction.committed){
+        const eligible=(state.playerRoster||[]).filter(id=>!state.playerCasualtyIds.includes(id)&&playerOperativeState(id).inPlay!==false);
+        const remaining=[...eligible];
+        while(remaining.length){
+          const selectedIndex=roll(remaining.length)-1;
+          const operativeId=remaining.splice(selectedIndex,1)[0];
+          const die=roll(),baseApl=Number(playerDefinition(operativeId)?.apl||3),apl=effectivePlayerApl(operativeId,baseApl);
+          transaction.selections.push(operativeId);transaction.rolls.push(die);
+          if(die>apl){
+            const modifierId=`subjugation-glyphs:${event.instanceId}:${operativeId}`;
+            if(!state.eventState.playerAplModifiers.some(item=>item.id===modifierId))state.eventState.playerAplModifiers.push({id:modifierId,sourceId:event.instanceId,targetId:operativeId,ruleId:'subjugation-glyphs',amount:-1,expires:null});
+            transaction.affectedOperativeId=operativeId;
+            break;
+          }
+        }
+        transaction.committed=true;
+      }
+      const tested=transaction.selections.map((id,index)=>`${playerName(id)} rolled ${transaction.rolls[index]}`).join('; ');
+      completeCurrentEvent(`${tested||'No eligible operatives.'}${transaction.affectedOperativeId?`; ${playerName(transaction.affectedOperativeId)} suffers -1 APL.`:'; no operative was affected.'}`);
+      return;
+    }
     if(type==='living-metal-flux'){
       const restored=[];
       activeNpos().filter(npo=>npo.wounds<npo.maxWounds).forEach(npo=>{
@@ -2328,7 +2374,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       return;
     }
     if(type==='activate'){
-      state.eventState.active.push({...event,startedTurningPoint:state.turningPoint,expiresAfterTurningPoint:state.turningPoint,status:'active'});
+      if(!state.eventState.active.some(active=>active.instanceId===event.instanceId&&active.startedTurningPoint===state.turningPoint)){
+        const definition=eventDefinitions[event.definitionId];
+        state.eventState.active.push({...event,lifecycle:definition.lifecycle,handlerId:definition.handlerId,gameplayHooks:[...definition.gameplayHooks],automationType:definition.automationType,priority:definition.priority,startedTurningPoint:state.turningPoint,expiresAfterTurningPoint:state.turningPoint,status:'active'});
+      }
       completeCurrentEvent('Effect active until the end of this Turning Point.');
       return;
     }
@@ -2811,6 +2860,7 @@ function showPlayerActivation(stage={}){
       ${combat.recordedOutcome?'<div class="combat-stage"><small>TABLETOP RESOLUTION</small><p>Physical dice and retained successes resolved by the player.</p></div>':`<div class="combat-stage"><small>ATTACK DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div></div><div class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No defense dice rolled</span>'}</div>${combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':''}</div>`}
       ${elimination}
       ${combatAbilityReminder(combat)}
+      ${(combat.eventMessages||combat.profile?.eventMessages||[]).map(message=>`<div class="summary-box"><strong>${escapeHtml(message)}</strong></div>`).join('')}
       <div class="damage-summary">
         <div><small>${combat.recordedOutcome?'Retained normal successes':'Unsaved normal hits'}</small><strong>${combat.normalRemaining}</strong></div>
         <div><small>${combat.recordedOutcome?'Retained critical successes':'Unsaved critical hits'}</small><strong>${combat.critRemaining}</strong></div>
@@ -2927,8 +2977,40 @@ function showPlayerActivation(stage={}){
       if(!n)continue;
       const incapacitationId=`${state.turningPoint}:${state.activationNumber}:${pending.attackType}:${n.id}`;
       if(pending.after<=0&&!state.npoRuleState.incapacitationTriggers.includes(incapacitationId)){
+        const eventAttemptKey=`${state.turningPoint}:${n.id}`;
+        const candidates=resolveNpoIncapacitation({npoId:n.id,eventAttempts:state.eventState.reanimationAttempts,candidates:[]}).candidates;
+        const eventEligible=candidates.some(candidate=>candidate.sourceId==='tomb-world-event:reanimation-protocols');
         const reanimator=activeNpos().find(item=>item.type==='Canoptek Macrocyte Reanimator'&&item.id!==n.id);
-        if(reanimator&&state.npoRuleState.oncePerTurningPoint.reanimate!==state.turningPoint){
+        const reanimateAvailable=Boolean(reanimator&&state.npoRuleState.oncePerTurningPoint.reanimate!==state.turningPoint);
+        const pipelineTransaction=eventTransaction(`incapacitation:${incapacitationId}:pipeline`,{npoId:n.id});
+        if(eventEligible&&reanimateAvailable&&!pipelineTransaction.firstSourceId){
+          showIncapacitationOrderChoice(stage,pending,n,reanimator,incapacitationId,pipelineTransaction);
+          return true;
+        }
+        if(reanimateAvailable&&pipelineTransaction.firstSourceId==='macrocyte-reanimate'){
+          offerReanimateForPendingDamage(stage,pending,n,reanimator,incapacitationId,()=>{
+            pipelineTransaction.firstSourceId='tomb-world-event:reanimation-protocols';
+            save();
+            if(!applyPendingPlayerDamage(stage))completePlayerActivation(stage);
+          });
+          return true;
+        }
+        if(eventEligible){
+          const transaction=eventTransaction(`incapacitation:${incapacitationId}:reanimation-protocols`,{definitionId:'reanimation-protocols',npoId:n.id});
+          if(!Number.isInteger(transaction.roll))transaction.roll=roll();
+          state.eventState.reanimationAttempts[eventAttemptKey]={roll:transaction.roll,transactionId:transaction.id,consumed:true};
+          transaction.committed=true;
+          state.npoRuleState.incapacitationTriggers.push(incapacitationId);
+          if(transaction.roll>=4){
+            pending.after=1;pending.damage=Math.max(0,pending.before-1);pending.discardRemainingAttackDice=true;pending.eventReanimation={sourceId:'tomb-world-event:reanimation-protocols',roll:transaction.roll};
+            n.ready=false;
+            applyTemporaryAplModifier({sourceId:pending.transactionId||incapacitationId,targetId:n.id,ruleId:'tomb-world-event-reanimation-protocols',amount:-1});
+            n.preventIncapacitationActionId=state.activationNumber;
+            log(`Reanimation Protocols event: ${npoName(n)} rolled ${transaction.roll} and reanimated with 1 wound; remaining attack dice from this action were discarded.`);
+          }else log(`Reanimation Protocols event: ${npoName(n)} rolled ${transaction.roll}; its once-per-Turning-Point attempt was consumed.`);
+          save();
+        }
+        if(pending.after<=0&&reanimator&&state.npoRuleState.oncePerTurningPoint.reanimate!==state.turningPoint){
           offerReanimateForPendingDamage(stage,pending,n,reanimator,incapacitationId);
           return true;
         }
@@ -2940,6 +3022,13 @@ function showPlayerActivation(stage={}){
       pending.committed=true;
       if(n.wounds===0)n.ready=false;
       if(n.wounds===0){n.deployed=false;n.battlefieldState='out-of-action';}
+      if(n.wounds===0&&n.type==='Canoptek Macrocyte Warrior'&&pending.attackerWithinTwo){
+        const retaliation=eventTransaction(`aggressive-defence:${incapacitationId}`);
+        if(!Number.isInteger(retaliation.roll))retaliation.roll=Math.ceil(roll()/2);
+        pending.aggressiveDefenseRoll=retaliation.roll;
+        pending.aggressiveDefenseDamage=aggressiveDefenseDamage(retaliation.roll);
+        retaliation.committed=true;
+      }
       log(`${playerName(stage.playerOperativeId)} ${pending.attackType==='shoot'?'shot':'made a Melee attack against'} ${npoName(n)} for ${pending.damage} damage (${before} → ${n.wounds} wounds).`);
       const aggressiveDamage=n.wounds===0?aggressiveDefenseDamageValue(pending):0;
       if(aggressiveDamage>0){
@@ -2954,12 +3043,27 @@ function showPlayerActivation(stage={}){
     return false;
   }
 
-  function offerReanimateForPendingDamage(stage,pending,target,reanimator,incapacitationId){
+  function showIncapacitationOrderChoice(stage,pending,target,reanimator,incapacitationId,transaction){
+    showModal('Choose Incapacitation Effect',`<p>${escapeHtml(npoName(target))} would be incapacitated and two prevention effects are available. Choose which one to resolve first; the other remains available if the first does not prevent incapacitation.</p><div class="wizard-actions"><button class="btn secondary" id="eventReanimationFirst">Event Reanimation Protocols</button><button class="btn secondary" id="macrocyteReanimateFirst">${escapeHtml(npoName(reanimator))} Reanimate</button></div>`);
+    const choose=sourceId=>{
+      if(transaction.firstSourceId)return;
+      transaction.firstSourceId=sourceId;
+      save();closeModal();
+      if(!applyPendingPlayerDamage(stage))completePlayerActivation(stage);
+    };
+    $('#eventReanimationFirst').onclick=()=>choose('tomb-world-event:reanimation-protocols');
+    $('#macrocyteReanimateFirst').onclick=()=>choose('macrocyte-reanimate');
+  }
+
+  function offerReanimateForPendingDamage(stage,pending,target,reanimator,incapacitationId,onDecline=null){
     showModal('Reanimate?',`<p>${escapeHtml(npoName(target))} would be incapacitated. ${escapeHtml(npoName(reanimator))} may use Reanimate before removal if all tabletop restrictions are met.</p><div class="checklist"><label class="check-row"><input id="reanimateVisible" type="checkbox"><span>The target is visible to and within 6 inches of the Reanimator.</span></label><label class="check-row"><input id="reanimateControl" type="checkbox"><span>Neither operative is within enemy control range.</span></label>${pending.attackType==='shoot'?'<label class="check-row"><input id="reanimateShoot" type="checkbox"><span>The Reanimator was not a primary or secondary target of this Shoot action.</span></label>':''}</div><div class="wizard-actions"><button class="btn ghost" id="declineReanimate">Decline</button><button class="btn primary" id="acceptReanimate" disabled>Use Reanimate</button></div>`);
     const update=()=>{$('#acceptReanimate').disabled=!$('#reanimateVisible').checked||!$('#reanimateControl').checked||(pending.attackType==='shoot'&&!$('#reanimateShoot').checked);};
     $$('input',modal).forEach(input=>input.onchange=update);
     const resume=()=>{save();closeModal();if(!applyPendingPlayerDamage(stage))completePlayerActivation(stage);};
-    $('#declineReanimate').onclick=()=>{state.npoRuleState.incapacitationTriggers.push(incapacitationId);resume();};
+    $('#declineReanimate').onclick=()=>{
+      if(onDecline){closeModal();onDecline();return;}
+      state.npoRuleState.incapacitationTriggers.push(incapacitationId);resume();
+    };
     $('#acceptReanimate').onclick=()=>{
       if(!reanimateEligible({reanimator,target,visible:true,distance:6,shootTargets:[]}))return;
       state.npoRuleState.incapacitationTriggers.push(incapacitationId);
@@ -3167,6 +3271,13 @@ function showPlayerActivation(stage={}){
       return {value,kind:value>=critThreshold?'crit':value>=threshold?'hit':'miss',retained:false};
     });
   }
+  function rolledAttackDiceForProfile(profile){
+    const accurate=Math.min(Number(profile?.accurate||0),Math.max(0,Number(profile?.dice||0)));
+    return retainSuccessfulDice([
+      ...Array.from({length:accurate},()=>({value:Number(profile.hit||2),kind:'hit',retained:true,automatic:'Accurate 1'})),
+      ...rolledCombatDice(Math.max(0,Number(profile.dice||0)-accurate),profile.hit,profile.critThreshold)
+    ]);
+  }
 
   function retainSuccessfulDice(dice=[]){
     return dice.map(die=>({...die,retained:die.kind==='hit'||die.kind==='crit'}));
@@ -3174,7 +3285,9 @@ function showPlayerActivation(stage={}){
 
   function runAutomaticCombatRolls({container,profile,defenseSave,rolledAttackDice=null,rolledDefenseDice=null,onComplete}){
     let timer=null;
-    const attackDice=rolledAttackDice||retainSuccessfulDice(rolledCombatDice(profile.dice,profile.hit,profile.critThreshold));
+    const attackDice=rolledAttackDice||retainSuccessfulDice(profile.accurate
+      ? rolledAttackDiceForProfile(profile)
+      : rolledCombatDice(profile.dice,profile.hit,profile.critThreshold));
     container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row animated-roll">${attackDice.map(()=>rollingDieHtml()).join('')}</div></section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row"><span class="muted">Rolling after the attack…</span></div></section>`;
     timer=setTimeout(()=>{
       if(!container.isConnected)return;
@@ -3312,11 +3425,15 @@ function showPlayerActivation(stage={}){
       ? `<section class="compact-elimination-notice"><strong>☠ ${escapeHtml(stage.pendingShoot.targetName)} was eliminated by the Shoot attack.</strong><span>Choose another melee target, or Cancel to revise the activation.</span></section>`
       : '';
 
+    const darkDistance=attackType==='shoot'&&tombWorldEventActive('dark-of-the-tomb')
+      ? '<label class="check-row compact-check"><input type="checkbox" id="darkOfTombDistance"><span><strong>Target is more than 8 inches away</strong><small>Required for Dark of the Tomb because the Guide cannot measure tabletop distance.</small></span></label>'
+      : '';
     showModal(`Resolve ${attackLabel} Attack`,`
       ${priorElimination}
       <p>Select the target and attack profile before rolling.</p>
       ${targetControl}
       ${weaponControl}
+      ${darkDistance}
       <div class="summary-box" id="playerWeaponSummary"><strong>Weapon:</strong> —</div>
       <div id="aggressiveDefenseFields"></div>
       <div id="weaponRules"></div>
@@ -3337,12 +3454,12 @@ function showPlayerActivation(stage={}){
     targetSelect.addEventListener('change',renderChoices);
     weaponSelect.addEventListener('change',renderChoices);
     $('#cancelPendingAttack').onclick=()=>cancelPendingPlayerCombat(stage,attackType,onCancel);
-    $('#openCombatResolution').onclick=()=>showPlayerCombatResolution(stage,attackType,targetSelect.value,Number(weaponSelect.value),onResolved,onCancel);
+    $('#openCombatResolution').onclick=()=>showPlayerCombatResolution(stage,attackType,targetSelect.value,Number(weaponSelect.value),onResolved,onCancel,{moreThanEight:Boolean($('#darkOfTombDistance')?.checked)});
     renderChoices();
-    if(singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte Warrior')showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
+    if(singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte Warrior'&&!darkDistance)showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
   }
 
-  function showPlayerCombatResolution(stage,attackType,targetId,weaponIndex,onResolved,onCancel,{result=null,animate=true}={}){
+  function showPlayerCombatResolution(stage,attackType,targetId,weaponIndex,onResolved,onCancel,{result=null,animate=true,moreThanEight=false}={}){
     const target=activeNpos().find(n=>n.id===targetId);
     const weapon=playerAttackWeapons(stage.playerOperativeId,attackType)[weaponIndex];
     if(!target||!weapon){showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel);return;}
@@ -3368,7 +3485,13 @@ function showPlayerActivation(stage={}){
       return;
     }
 
-    const diceDraft={attackDice:[],defenseDice:[],attackerWithinTwo};
+    const transactionId=`attack:${state.turningPoint}:${state.activationNumber}:${attackType}:${stage.playerOperativeId}:${targetId}`;
+    const transaction=eventTransaction(transactionId,{definitionAnswers:{}});
+    if(result?.moreThanEight!==undefined)transaction.definitionAnswers.moreThanEight=result.moreThanEight;
+    else if(transaction.definitionAnswers.moreThanEight===undefined)transaction.definitionAnswers.moreThanEight=Boolean(moreThanEight);
+    const rerolls=effectiveAttackRerolls({attackerSide:'player',attackType,moreThanEight:transaction.definitionAnswers.moreThanEight});
+    const diceDraft={attackDice:[],defenseDice:[],attackerWithinTwo,moreThanEight:transaction.definitionAnswers.moreThanEight,rerolls,transactionId};
+    save();
     runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,onComplete:(attackDice,defenseDice)=>{
       diceDraft.attackDice=attackDice;
       diceDraft.defenseDice=defenseDice;
@@ -3397,22 +3520,17 @@ function showPlayerActivation(stage={}){
     result.retainedSaves=retainedDiceTotals(result.saveDice).normal+retainedDiceTotals(result.saveDice).critical;
     result.recordedOutcome=false;
     result.attackerWithinTwo=Boolean(diceDraft.attackerWithinTwo);
-    const retaliationApplies=n.type==='Canoptek Macrocyte Warrior'
-      &&combatAbilityHandlers['aggressive-defence']({targetIncapacitated:result.after<=0,attackerWithinTwo:Boolean(diceDraft.attackerWithinTwo)});
-    if(retaliationApplies){
-      const rolledValue=Math.ceil(roll()/2);
-      result.aggressiveDefenseRoll=rolledValue;
-      result.aggressiveDefenseDamage=aggressiveDefenseDamage(rolledValue);
-      stage[`${attackType}CombatDraft`]=result;
-      state.combatState={side:'player',stage:{...stage}};
-      save();
-      displayPendingPlayerCombat(stage,attackType,{...result,aggressiveDefenseAnimating:true},onResolved,onCancel,false,true);
-      const aggressiveDefenseDie=$('#aggressiveDefenseDie');
-      settleAnimatedDice([{row:aggressiveDefenseDie,dice:[{value:rolledValue,kind:'hit'}]}],()=>{
-        if(aggressiveDefenseDie?.isConnected)displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,false);
-      });
-      return;
-    }
+    result.moreThanEight=Boolean(diceDraft.moreThanEight);
+    result.rerolls=diceDraft.rerolls;
+    result.transactionId=diceDraft.transactionId;
+    const transaction=eventTransaction(result.transactionId,{definitionAnswers:{}});
+    const packets=EventEffects.damagePackets(resolution.normal,resolution.critical,profile);
+    result.damagePackets=EventEffects.resolveCountertemporalPackets(state,packets,{turningPoint:state.turningPoint,attackerSide:'player',defenderSide:'npo',attackType,savedRolls:transaction.countertemporalRolls,rollD6:()=>roll()});
+    transaction.countertemporalRolls=result.damagePackets.map(packet=>Number.isInteger(packet.countertemporalRoll)?packet.countertemporalRoll:null);
+    result.eventMessages=[...(diceDraft.rerolls.messages||[])];
+    if(result.damagePackets.some(packet=>Number.isInteger(packet.countertemporalRoll)))result.eventMessages.push('Countertemporal Shifting: Resolved one D6 for each qualifying attack die.');
+    result.damage=result.damagePackets.reduce((total,packet)=>total+packet.finalDamage,0);
+    result.after=Math.max(0,result.before-result.damage);
     result.aggressiveDefenseDamage=0;
     stage[`${attackType}CombatDraft`]=result;
     state.combatState={side:'player',stage:{...stage}};
@@ -4016,11 +4134,14 @@ function showPlayerActivation(stage={}){
     const profileControl=availableProfiles.length>1&&!sameCombat&&!rollingCombat
       ? `<div class="field compact-combat-choice"><label for="npoCombatProfile">NPO Weapon Profile</label><select id="npoCombatProfile"><option value="" ${selectedProfileIndex<0?'selected ':''}disabled>Select a weapon...</option>${availableProfiles.map((profile,index)=>`<option value="${index}" ${index===selectedProfileIndex?'selected':''}>${escapeHtml(canonicalAttackProfile(profile).name)}</option>`).join('')}</select></div>`
       : '';
+    const willBeDone=tombWorldEventActive('my-will-be-done')&&!sameCombat&&!rollingCombat
+      ? '<label class="check-row compact-check"><input type="checkbox" id="sameRoomAsC1"><span><strong>NPO is in the same room as C1</strong><small>Required for My Will Be Done because the Guide cannot determine tabletop room location.</small></span></label>'
+      : '';
     const guidance=npoCombatGuidanceHtml(n,{attackType,profile:initialProfile});
     const screen=showSharedCombatResolutionScreen({
       title:'Resolve Combat',attackerName:npoName(n),defenderName:target.name,attackType,
       weaponName:initialProfile?.name||'—',attackLabel:initialProfile?combatAttackLabel(initialProfile):'—',defenseLabel:`3 dice · ${target.save||3}+`,
-      cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',extraHtml:`<div id="npoCombatGuidance">${guidance}</div>${profileControl}`,
+      cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',extraHtml:`<div id="npoCombatGuidance">${guidance}</div>${profileControl}${willBeDone}`,
       detailsHtml:`<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`
     });
     const cancel=()=>{
@@ -4077,7 +4198,10 @@ function showPlayerActivation(stage={}){
       if(profileIndex<0||!Number.isInteger(profileIndex))return;
       rollStarted=true;
       if(combatTimer)combatTimer();
-      const profile=canonicalAttackProfile(availableProfiles[profileIndex]);
+      const baseProfile=canonicalAttackProfile(availableProfiles[profileIndex]);
+      const transaction=eventTransaction(`attack:${state.turningPoint}:${state.activationNumber}:npo:${n.id}:${target.id}`,{definitionAnswers:{}});
+      if(transaction.definitionAnswers.sameRoomAsC1===undefined)transaction.definitionAnswers.sameRoomAsC1=Boolean($('#sameRoomAsC1')?.checked);
+      const profile=effectiveWeaponProfile(baseProfile,{attackerSide:'npo',attackType,sameRoomAsC1:transaction.definitionAnswers.sameRoomAsC1});
       const profileSelect=$('#npoCombatProfile');
       if(profileSelect)profileSelect.disabled=true;
       const weapon=$('.compact-combat-profile div:nth-child(4) strong');
@@ -4091,7 +4215,7 @@ function showPlayerActivation(stage={}){
       $('#combatResults').replaceChildren();
       $('#completeNpoCombat').disabled=true;
       $('#completeNpoCombat').textContent='Rolling…';
-      const rolledAttackDice=restoredRoll?.attackDice||retainSuccessfulDice(rolledCombatDice(profile.dice,profile.hit,profile.critThreshold));
+      const rolledAttackDice=restoredRoll?.attackDice||rolledAttackDiceForProfile(profile);
       const rolledDefenseDice=restoredRoll?.saveDice||retainSuccessfulDice(rolledCombatDice(Math.max(0,3-profile.ap),Number(target.save)||3));
       state.lastActivation={...state.lastActivation,dice:attackDice.map(d=>({...d})),targetConfirmed:true,combatDraft:{
         rolling:true,attackType,targetId:target.id,targetName:target.name,profile,attackDice:rolledAttackDice,saveDice:rolledDefenseDice
@@ -4122,6 +4246,11 @@ function showPlayerActivation(stage={}){
     });
     if(sameCombat)displayCombat(saved,animateCombat);
     else if(rollingCombat)startAutomaticCombat(saved);
+    else if(availableProfiles.length===1&&willBeDone){
+      screen.continueButton.disabled=false;
+      screen.continueButton.textContent='Roll Attack';
+      screen.continueButton.onclick=()=>startAutomaticCombat();
+    }
     else if(availableProfiles.length===1)startAutomaticCombat();
     else if(selectingCombat){
       screen.continueButton.disabled=false;
