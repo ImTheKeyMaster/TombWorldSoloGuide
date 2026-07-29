@@ -93,13 +93,14 @@ process.stdout.write(JSON.stringify(lowestAvailableNpoInstances(definition.type,
         self.assertNotIn("Math.random", helper)
 
     def test_reported_starting_roster_displays_exact_lowest_number_example(self):
-        display_functions = "function npoName" + source("function npoName", "function sortOperativesGlobally")
+        display_functions = "function operativeName" + source("function operativeName", "function allocateDisplayNumber")
+        display_functions += "function npoName" + source("function npoName", "function sortOperativesGlobally")
         roster = [
-            {"type": "Canoptek Scarab Swarm", "displayNumber": 2},
-            {"type": "Necron Warrior", "displayNumber": 2},
-            {"type": "Canoptek Tomb Crawler", "displayNumber": 1},
-            {"type": "Canoptek Scarab Swarm", "displayNumber": 1},
-            {"type": "Necron Warrior", "displayNumber": 1},
+            {"id": "scarab-2", "type": "Canoptek Scarab Swarm", "displayNumber": 2},
+            {"id": "warrior-2", "type": "Necron Warrior", "displayNumber": 2},
+            {"id": "crawler-1", "type": "Canoptek Tomb Crawler", "displayNumber": 1},
+            {"id": "scarab-1", "type": "Canoptek Scarab Swarm", "displayNumber": 1},
+            {"id": "warrior-1", "type": "Necron Warrior", "displayNumber": 1},
         ]
         script = f"""
 const definitions={{
@@ -108,13 +109,15 @@ const definitions={{
   'Necron Warrior':{{physicalQuantity:10}}
 }};
 function npoDefinition(type){{return definitions[type]||null;}}
+function playerDefinition(){{return null;}}
+const state={{roster:{json.dumps(roster)},playerRoster:[]}};
 {display_functions}
 process.stdout.write(sortedNposForDisplay({json.dumps(roster)}).map(npoName).join(' · '));
 """
         displayed = subprocess.run(["node", "-e", script], check=True, text=True, capture_output=True).stdout
         self.assertEqual(
             displayed,
-            "Canoptek Scarab Swarm 1 · Canoptek Scarab Swarm 2 · Canoptek Tomb Crawler 1 · Necron Warrior 1 · Necron Warrior 2",
+            "Canoptek Scarab Swarm 1 · Canoptek Scarab Swarm 2 · Canoptek Tomb Crawler · Necron Warrior 1 · Necron Warrior 2",
         )
 
 

@@ -86,11 +86,11 @@ class V701NpoInventoryTests(unittest.TestCase):
 
     def test_numbering_is_stored_separately_from_unique_id(self):
         create = self.source("function createNpo", "function rollNpo")
-        name = self.source("function npoName", "function sortOperativesGlobally")
+        name = self.source("function operativeName", "function allocateDisplayNumber")
         self.assertIn("id:physicalInstance.id", create)
         self.assertIn("displayNumber", create)
-        self.assertIn("physicalQuantity<=1", name)
-        self.assertIn("n.displayNumber", name)
+        self.assertIn("const roster=isPlayer?(state.playerRoster||[]):(state.roster||[])", name)
+        self.assertIn("if(matching.length<=1)return baseName", name)
 
     def test_deployment_does_not_offer_roster_regeneration(self):
         deployment = self.source("if(stepId==='deploy'){", "const m=mission();")
@@ -104,8 +104,8 @@ class V701NpoInventoryTests(unittest.TestCase):
         self.assertGreaterEqual(generation.count("state.roster=previousRoster"), 2)
 
     def test_version_and_release_notes_are_701(self):
-        self.assertIn("const APP_VERSION = '7.5.8';", APP)
-        self.assertIn("V7.5.8", (ROOT / "index.html").read_text())
+        self.assertIn("const APP_VERSION = '7.5.9';", APP)
+        self.assertIn("V7.5.9", (ROOT / "index.html").read_text())
         self.assertIn("## v7.0.4", (ROOT / "README.md").read_text())
 
 

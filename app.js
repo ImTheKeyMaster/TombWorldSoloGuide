@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.5.8';
+  const APP_VERSION = '7.5.9';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
   const EventEffects=TombWorldEventEffects;
@@ -271,16 +271,20 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const title=kind==='gambits'?'Faction Strategic Gambits':'Faction Rules Guidance';
     return `<section class="card faction-guidance"><h3>${title}</h3>${entries.map(entry=>`<div class="mission-rule"><strong>${escapeHtml(entry.name)}</strong>${entry.timing?`<small>${escapeHtml(entry.timing)}</small>`:''}<p>${escapeHtml(entry.text)}</p></div>`).join('')}<p class="muted">Resolve these rules on the tabletop; the Guide presents reminders without simulating positioning.</p></section>`;
   }
-  function playerName(id){
-    const definition=playerDefinition(id);
-    if(!definition)return String(id);
-    const baseName=definition.name||String(id);
-    const matchingSelected=(state.playerRoster||[]).filter(selectedId=>playerDefinition(selectedId)?.name===baseName);
-    if(matchingSelected.length<=1)return baseName;
-    const storedNumber=state.playerDisplayNumbers?.[id];
-    if(Number.isInteger(storedNumber)&&storedNumber>0)return `${baseName} ${storedNumber}`;
-    const index=matchingSelected.indexOf(id);
+  function operativeName(operative,side){
+    const isPlayer=side==='player';
+    const id=isPlayer?operative:operative?.id;
+    const definition=isPlayer?playerDefinition(id):npoDefinition(operative?.type);
+    const baseName=isPlayer?(definition?.name||String(id)):(definition?.name||operative?.type||'NPO');
+    const roster=isPlayer?(state.playerRoster||[]):(state.roster||[]);
+    const matching=roster.filter(item=>isPlayer?playerDefinition(item)?.name===baseName:(npoDefinition(item.type)?.name||item.type)===baseName);
+    if(matching.length<=1)return baseName;
+    const index=matching.findIndex(item=>(isPlayer?item:item.id)===id);
     return `${baseName} ${index>=0?index+1:1}`;
+  }
+
+  function playerName(id){
+    return operativeName(id,'player');
   }
 
   function allocateDisplayNumber(usedNumbers,preferredNumber){
@@ -2317,8 +2321,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const operativeState=playerOperativeState(operativeId);
       const status=operativeState.inPlay===false?(operativeState.offBoardReason==='escaped'?'ESCAPED':'OFF BOARD'):casualty?'ELIMINATED':activated?'ACTIVATED':'READY';
       const cls=operativeState.inPlay===false?'activated':casualty?'eliminated':activated?'activated':'ready';
-      return `<button type="button" class="tracker-operative player ${cls}" data-player-operative="${operativeId}" title="Select ${escapeHtml(operative?.name||operativeId)} to mark it eliminated or restore it">
-        <span>${escapeHtml(operative?.name||operativeId)}</span><span class="tracker-operative-status">${casualty?'<span class="tracker-elimination-icon" aria-hidden="true">☠</span>':''}<strong>${status}</strong></span>
+      return `<button type="button" class="tracker-operative player ${cls}" data-player-operative="${operativeId}" title="Select ${escapeHtml(playerName(operativeId))} to mark it eliminated or restore it">
+        <span>${escapeHtml(playerName(operativeId))}</span><span class="tracker-operative-status">${casualty?'<span class="tracker-elimination-icon" aria-hidden="true">☠</span>':''}<strong>${status}</strong></span>
       </button>`;
     }).join('');
     const npoRows=sortedNposForDisplay(trackerNpos()).map(n=>{
@@ -3437,10 +3441,7 @@ function showPlayerActivation(stage={}){
   }
 
   function npoName(n){
-    if(!n)return 'NPO';
-    const definition=npoDefinition(n.type);
-    if(!definition||definition.physicalQuantity<=1)return n.type;
-    return `${n.type} ${n.displayNumber||1}`;
+    return operativeName(n,'npo');
   }
 
   function compareNpoDisplayNames(a,b){
@@ -4428,7 +4429,7 @@ function showPlayerActivation(stage={}){
     }
     state.playerCasualtyIds=[...casualties];
     state.playerReady=playerOperativesRemaining();
-    log(`${npoName(n)} dealt ${summary.damage} damage to ${target.name} (${summary.before} → ${summary.after} wounds).`);
+    log(`${npoName(n)} dealt ${summary.damage} damage to ${playerName(target.id)} (${summary.before} → ${summary.after} wounds).`);
   }
 
   function showNpoAttackWizard(n,attackDice,onDone,onCancel,animateCombat=false){
@@ -4460,7 +4461,7 @@ function showPlayerActivation(stage={}){
       : '';
     const guidance=npoCombatGuidanceHtml(n,{attackType,profile:initialProfile});
     const screen=showSharedCombatResolutionScreen({
-      title:'Resolve Combat',attackerName:npoName(n),defenderName:target.name,attackType,
+      title:'Resolve Combat',attackerName:npoName(n),defenderName:playerName(target.id),attackType,
       weaponName:initialProfile?.name||'—',attackLabel:initialProfile?combatAttackLabel(initialProfile):'—',defenseLabel:`3 dice · ${target.save||3}+`,
       cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',extraHtml:`<div id="npoCombatGuidance">${guidance}</div>${profileControl}${willBeDone}`,
       detailsHtml:`<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`
@@ -4500,11 +4501,11 @@ function showPlayerActivation(stage={}){
     const finishAutomaticCombat=(profile,rolledAttackDice,rolledDefenseDice)=>{
       const resolution=resolveRetainedCombat(rolledAttackDice,rolledDefenseDice,profile);
       const combat={
-        ...recordedCombat({attackerName:npoName(n),defenderName:target.name,attackType,attackerSide:'npo',defenderSide:'player',profile,before:target.wounds||10,
+        ...recordedCombat({attackerName:npoName(n),defenderName:playerName(target.id),attackType,attackerSide:'npo',defenderSide:'player',profile,before:target.wounds||10,
           normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical,damage:resolution.damage}),
         attackDice:rolledAttackDice,saveDice:rolledDefenseDice,
         retainedSaves:retainedDiceTotals(rolledDefenseDice).normal+retainedDiceTotals(rolledDefenseDice).critical,
-        recordedOutcome:false,targetId:target.id,targetName:target.name
+        recordedOutcome:false,targetId:target.id,targetName:playerName(target.id)
       };
       state.lastActivation={...state.lastActivation,combatDraft:combat};
       save();
@@ -4539,7 +4540,7 @@ function showPlayerActivation(stage={}){
       const rolledAttackDice=restoredRoll?.attackDice||rolledAttackDiceForProfile(profile);
       const rolledDefenseDice=restoredRoll?.saveDice||retainSuccessfulDice(rolledCombatDice(Math.max(0,3-profile.ap),Number(target.save)||3));
       state.lastActivation={...state.lastActivation,dice:attackDice.map(d=>({...d})),targetConfirmed:true,combatDraft:{
-        rolling:true,attackType,targetId:target.id,targetName:target.name,profile,attackDice:rolledAttackDice,saveDice:rolledDefenseDice
+        rolling:true,attackType,targetId:target.id,targetName:playerName(target.id),profile,attackDice:rolledAttackDice,saveDice:rolledDefenseDice
       }};
       save();
       combatTimer=runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,rolledAttackDice,rolledDefenseDice,onComplete:(completedAttackDice,completedDefenseDice)=>{
@@ -4552,7 +4553,7 @@ function showPlayerActivation(stage={}){
       if(event.currentTarget.value===''||!Number.isInteger(profileIndex)||!availableProfiles[profileIndex])return;
       const profile=canonicalAttackProfile(availableProfiles[profileIndex]);
       selectedProfileIndex=profileIndex;
-      state.lastActivation={...state.lastActivation,combatDraft:{selecting:true,attackType,targetId:target.id,targetName:target.name,profile}};
+      state.lastActivation={...state.lastActivation,combatDraft:{selecting:true,attackType,targetId:target.id,targetName:playerName(target.id),profile}};
       save();
       const weapon=$('.compact-combat-profile div:nth-child(4) strong');
       if(weapon)weapon.textContent=profile.name;
