@@ -277,8 +277,26 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const baseName=definition.name||String(id);
     const matchingSelected=(state.playerRoster||[]).filter(selectedId=>playerDefinition(selectedId)?.name===baseName);
     if(matchingSelected.length<=1)return baseName;
+    const storedNumber=state.playerDisplayNumbers?.[id];
+    if(Number.isInteger(storedNumber)&&storedNumber>0)return `${baseName} ${storedNumber}`;
     const index=matchingSelected.indexOf(id);
     return `${baseName} ${index>=0?index+1:1}`;
+  }
+
+  function assignPlayerDisplayNumbers(){
+    const nameCounts={};
+    (state.playerRoster||[]).forEach(id=>{
+      const name=playerDefinition(id)?.name;
+      if(name)nameCounts[name]=(nameCounts[name]||0)+1;
+    });
+    const nextNumbers={};
+    state.playerDisplayNumbers={};
+    (state.playerRoster||[]).forEach(id=>{
+      const name=playerDefinition(id)?.name;
+      if(!name||nameCounts[name]<=1)return;
+      nextNumbers[name]=(nextNumbers[name]||0)+1;
+      state.playerDisplayNumbers[id]=nextNumbers[name];
+    });
   }
 
   let missions=[];
@@ -481,7 +499,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   const initialState = () => ({
     version:APP_VERSION, saveVersion:currentSaveVersion(), screen:'home', tab:'play', setupStep:0, missionId:null,
-    setupChecks:{}, restlessTombEnabled:false, deadlyEncountersEnabled:false, deadlyEncountersState:DeadlyEncounters.emptyState(), roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerRosterInitializedForTeamId:'', playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
+    setupChecks:{}, restlessTombEnabled:false, deadlyEncountersEnabled:false, deadlyEncountersState:DeadlyEncounters.emptyState(), roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerDisplayNumbers:{}, playerRosterInitializedForTeamId:'', playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
     strategyStage:null, strategyData:null, strategyPipeline:null, missionReadyContext:{sarcophagusControllers:0}, activationNumber:0,totalActivationsThisTP:0, playerActivated:0, npoActivated:0,
@@ -524,6 +542,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function applyPlayerRoster(operativeIds){
     state.playerRoster=[...operativeIds];
+    state.playerDisplayNumbers={};
     state.playerCount=state.playerRoster.length;
     state.playerReady=state.playerCount;
     state.playerCasualtyIds=[];
@@ -697,6 +716,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       ? {side:'player',stage:{...raw.combatState.stage}}
       : null;
     merged.playerRoster=Array.isArray(raw?.playerRoster)?raw.playerRoster:[];
+    merged.playerDisplayNumbers=isRecord(raw?.playerDisplayNumbers)
+      ? Object.fromEntries(Object.entries(raw.playerDisplayNumbers).filter(([id,number])=>merged.playerRoster.includes(id)&&Number.isInteger(number)&&number>0))
+      : {};
     const importedPlayerStates=isRecord(raw?.playerOperativeStates)?raw.playerOperativeStates:{};
     merged.playerOperativeStates=Object.fromEntries(merged.playerRoster.map(id=>{
       const imported=isRecord(importedPlayerStates[id])?importedPlayerStates[id]:null;
@@ -1655,7 +1677,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
           const categoryBlocked=!chosen&&Number.isFinite(categoryMaximum)&&categorySelected>=categoryMaximum;
           const selectionGroupMaximum=Number(playerTeamData?.selectionRules?.selectionGroupMax??Infinity);
           const selectionGroupBlocked=!chosen&&o.selectionGroup&&Number.isFinite(selectionGroupMaximum)&&selectedDefs.filter(candidate=>candidate.selectionGroup===o.selectionGroup).length>=selectionGroupMaximum;
-          return `<button type="button" class="player-roster-card ${chosen?'selected':''}" data-select-player="${o.id}" ${rosterBlocked||gravisBlocked||gunnerBlocked||categoryBlocked||selectionGroupBlocked?'disabled':''}><div class="player-roster-card-head"><div><strong>${escapeHtml(o.name)}</strong><small>${escapeHtml(o.role)}${o.gravis?' · GRAVIS':''}</small></div><span>${chosen?'✓':'+'}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${o.apl}</b></span><span><small>MOVE</small><b>${o.move}"</b></span><span><small>SAVE</small><b>${o.save}+</b></span><span><small>WOUNDS</small><b>${o.wounds}</b></span></div></button>`;
+          return `<button type="button" class="player-roster-card ${chosen?'selected':''}" data-select-player="${o.id}" ${rosterBlocked||gravisBlocked||gunnerBlocked||categoryBlocked||selectionGroupBlocked?'disabled':''}><div class="player-roster-card-head"><div><strong>${escapeHtml(chosen?playerName(o.id):o.name)}</strong><small>${escapeHtml(o.role)}${o.gravis?' · GRAVIS':''}</small></div><span>${chosen?'✓':'+'}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${o.apl}</b></span><span><small>MOVE</small><b>${o.move}"</b></span><span><small>SAVE</small><b>${o.save}+</b></span><span><small>WOUNDS</small><b>${o.wounds}</b></span></div></button>`;
         }).join('');
         return `<section class="roster-category"><button type="button" class="roster-category-heading" data-roster-category-toggle="${escapeHtml(category.id)}" aria-expanded="${expanded}" aria-controls="${panelId}"><span class="roster-category-title"><span class="roster-category-indicator" aria-hidden="true">›</span>${escapeHtml(category.label)}</span><span>${categorySelected} selected</span></button><div class="player-roster-grid roster-category-content" id="${panelId}" ${expanded?'':'hidden'}>${cards}</div></section>`;
       }).join('');
@@ -1671,7 +1693,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       if((playerTeamData?.rosterCategories||[]).some(category=>category.id!=='leader'&&(category.requiredCount||category.maxCount)))requirements.splice(0,requirements.length,...validation.requirements);
       const valid=validation.valid&&requiredLeaderSelected&&(!hasGravis||(gravisCount>=1&&gravisCount<=maxGravis));
       const requirementItems=requirements.map(requirement=>`<li>${escapeHtml(requirement)}</li>`).join('');
-      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><p class="muted">Build a legal kill team using its current official rules. Cooperative team splitting is not currently supported.</p><div class="setup-bulk-row"><button class="btn secondary" id="randomPlayerTeam">Random Team</button></div><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(o.name)).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
+      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><p class="muted">Build a legal kill team using its current official rules. Cooperative team splitting is not currently supported.</p><div class="setup-bulk-row"><button class="btn secondary" id="randomPlayerTeam">Random Team</button></div><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${selectedDefs.map(o=>escapeHtml(playerName(o.id))).join(' · ')}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
     }
     if(stepId==='deploy'){
       const generation=state.startingNpoGeneration;
@@ -1685,7 +1707,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const otherPlacementChecks=placementChecks.filter(check=>check.id!=='starting-npos');
       const deploymentInstruction=`Deploy the ${generation.deploymentCount} selected starting NPOs.`;
       const deployedNpoRoster=sortedNposForDisplay(generation.deployedNpoIds.map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean)).map(npo=>escapeHtml(npoName(npo))).join(' · ');
-      const playerRoster=(state.playerRoster||[]).map(id=>playerDefinition(id)).filter(Boolean).map(operative=>escapeHtml(operative.name)).join(' • ');
+      const playerRoster=(state.playerRoster||[]).map(id=>escapeHtml(playerName(id))).join(' • ');
       const deploymentDetails=mission().startingNpos?.deployment||'Use the mission deployment rules.';
       const selectionComplete=generation.deployedNpoIds.length===generation.deploymentCount&&generation.deployedNpoIds.length+generation.reserveNpoIds.length===generation.availableNpos;
       const allNposPlaced=selectionComplete&&generation.deployedNpoIds.every(id=>state.roster.find(npo=>npo.id===id)?.deployed);
@@ -1705,7 +1727,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $$('.mission-choice').forEach(b=>b.onclick=()=>{const missionId=b.dataset.mission;state.missionId=missionId;state.missionState=freshMissionState(mission());state.missionRuntime=null;state.tracker=0;state.setupChecks={};state.roster=[];state.startingNpoGeneration=null;save();render();setTimeout(()=>loadObjectiveMission(missionId).then(()=>{if(state.missionId===missionId)save();}),0);});
     $('#setupHome')?.addEventListener('click',()=>{state.screen='home';save();render();});
     $('#setupBack')?.addEventListener('click',()=>{state.setupStep=Math.max(0,state.setupStep-1);save();render();});
-    $('#setupNext')?.addEventListener('click',()=>{const steps=activeSetupSteps();state.setupStep=Math.min(steps.length-1,state.setupStep+1);save();render();});
+    $('#setupNext')?.addEventListener('click',()=>{if(stepId==='playerRoster')assignPlayerDisplayNumbers();const steps=activeSetupSteps();state.setupStep=Math.min(steps.length-1,state.setupStep+1);save();render();});
     $$('[data-player-team]').forEach(button=>button.onclick=async()=>{
       try{
         if(state.playerTeamId!==button.dataset.playerTeam){
@@ -4582,7 +4604,7 @@ function showPlayerActivation(stage={}){
       const abilities=(operative.abilities||[]).map(ability=>typeof ability==='string'?{name:ability,text:''}:ability);
       const abilityGuidance=abilities.length?`<details class="operative-guidance"><summary>Operative abilities (${abilities.length})</summary>${abilities.map(ability=>`<div><strong>${escapeHtml(ability.name)}</strong>${ability.text?`<p>${escapeHtml(ability.text)}</p>`:''}</div>`).join('')}<small>Resolve these abilities on the tabletop unless the Guide explicitly prompts you.</small></details>`:'';
       const wounds=playerCurrentWounds(id), maxWounds=Number(playerDefinition(id)?.wounds??operative.wounds);
-      return `<article class="operative-card roster-operative-card ${eliminated?'dead':''}"><div class="operative-card-header"><div class="operative-identity"><h4>${escapeHtml(operative.name)}</h4><p>${escapeHtml(operative.role||'Operative')}</p></div><span class="operative-status-badge ${status.toLowerCase().replace(' ','-')}">${status}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${operative.apl??'—'}</b></span><span><small>MOVE</small><b>${operative.move??'—'}"</b></span><span><small>SAVE</small><b>${operative.save??'—'}+</b></span><span><small>WOUNDS</small><b class="${wounds===0?'zero-wounds':''}">${wounds}/${maxWounds}</b></span></div>${weaponNames?`<p class="player-roster-weapons"><strong>Weapons:</strong> ${weaponNames}</p>`:''}${abilityGuidance}<div class="wound-controls"><button class="btn ghost" data-player-wound="${id}" ${wounds<=0||operativeState.inPlay===false?'disabled':''}>− Wound</button><button class="btn ghost" data-player-heal="${id}" ${wounds>=maxWounds||operativeState.inPlay===false?'disabled':''}>+ Heal</button></div></article>`;
+      return `<article class="operative-card roster-operative-card ${eliminated?'dead':''}"><div class="operative-card-header"><div class="operative-identity"><h4>${escapeHtml(playerName(id))}</h4><p>${escapeHtml(operative.role||'Operative')}</p></div><span class="operative-status-badge ${status.toLowerCase().replace(' ','-')}">${status}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${operative.apl??'—'}</b></span><span><small>MOVE</small><b>${operative.move??'—'}"</b></span><span><small>SAVE</small><b>${operative.save??'—'}+</b></span><span><small>WOUNDS</small><b class="${wounds===0?'zero-wounds':''}">${wounds}/${maxWounds}</b></span></div>${weaponNames?`<p class="player-roster-weapons"><strong>Weapons:</strong> ${weaponNames}</p>`:''}${abilityGuidance}<div class="wound-controls"><button class="btn ghost" data-player-wound="${id}" ${wounds<=0||operativeState.inPlay===false?'disabled':''}>− Wound</button><button class="btn ghost" data-player-heal="${id}" ${wounds>=maxWounds||operativeState.inPlay===false?'disabled':''}>+ Heal</button></div></article>`;
     }).join('');
     const teamName=playerTeamData?.teamName||playerTeamEntry()?.name||'Player';
     app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">PLAYER ROSTER</p><h2>${escapeHtml(teamName)}</h2><p>${inPlayPlayerOperativeIds().filter(id=>!casualties.has(id)).length} active on the battlefield of ${(state.playerRoster||[]).length} selected operatives.</p></div></div>${factionGuidanceHtml()}<div class="roster-grid">${cards||'<div class="card empty">No Player operatives were selected for this game.</div>'}</div>`;
@@ -4935,7 +4957,7 @@ function showPlayerActivation(stage={}){
     return `<ul class="deadly-entity-list">${entries.map(entity=>{const names=deadlyFeatureNames(entity.featureIds);return `<li><strong>${escapeHtml(entity.label)}</strong><span class="feature-status">${names.length?`Active — ${names.map(escapeHtml).join(' + ')}`:`${entity.eligible?'Eligible':'Not unexplored'} — unresolved`}</span>${names.length?`<small>Revealed in Turning Point ${entity.turningPoint||'—'}. ${escapeHtml(entity.featureIds.map(id=>DeadlyEncounters.features.find(feature=>feature.id===id)?.summary).filter(Boolean).join(' '))}</small>`:''}</li>`;}).join('')}</ul>`;
   }
   function deadlyOperativeOptions(){
-    const players=selectedPlayerOperatives().filter(operative=>playerCurrentWounds(operative.id)>0).map(operative=>({id:operative.id,label:`Player — ${operative.name}`}));
+    const players=selectedPlayerOperatives().filter(operative=>playerCurrentWounds(operative.id)>0).map(operative=>({id:operative.id,label:`Player — ${playerName(operative.id)}`}));
     const npos=activeNpos().map(operative=>({id:operative.id,label:`NPO — ${npoName(operative)}`}));
     return [...players,...npos];
   }

@@ -5,6 +5,7 @@
 **Version 7.5.8 - Standardize Player Operative Variant Naming**
 
 - Standardized player operative weapon and loadout variant names to use parentheses instead of em dashes throughout the interface.
+- Added stable display-order numbering for duplicate Player Operatives across setup, gameplay, and the battle record.
 - Updated only operative display-name fields while preserving operative IDs, saved games, sorting, filtering, and gameplay behavior.
 
 ---
