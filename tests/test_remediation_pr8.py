@@ -25,7 +25,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertEqual(self.by_type["scout"]["missionEngine"]["required"], 3)
 
     def test_mission_one_waits_for_every_operative_and_requires_half_to_escape(self):
-        evaluator = self.source("escape:(engine,progress)=>{", "sabotage:(engine,progress)")
+        evaluator = self.source("escape:(engine,progress,timing)=>{", "sabotage:(engine,progress,timing)")
         self.assertIn("departed.size<total", evaluator)
         self.assertIn("Math.ceil(total/2)", evaluator)
         self.assertNotIn("activeNpos", evaluator)
@@ -44,7 +44,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
         handler = self.source("$$('[data-search-site]')", "$('#transponderEscape')")
         self.assertIn("result>otherRemaining", handler)
         self.assertIn("progress.carrierId=carrier", handler)
-        evaluator = self.source("transponder:(engine,progress)", "destruction:(engine,progress)")
+        evaluator = self.source("transponder:(engine,progress,timing)", "destruction:(engine,progress,timing)")
         self.assertIn("progress.escaped?'victory'", evaluator)
         self.assertIn("const transponderFound=Object.values(progress.sites).includes('found')", self.app)
         self.assertIn("id=\"transponderCarrier\"", self.app)
@@ -71,7 +71,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
 
     def test_mission_six_victory_is_only_evaluated_at_end_of_turning_point(self):
         evaluator = self.source("regroup:(engine,progress,timing)=>{", "  };\n\n  function missionOutcome")
-        self.assertIn("timing!=='end-turning-point'", evaluator)
+        self.assertIn("['end-turning-point','turning-point-limit'].includes(timing)", evaluator)
         for predicate in ("inDropZone", "outsideNpoControl", "nearPlayer"):
             self.assertIn(predicate, evaluator)
         self.assertIn("checkGameEnd('end-turning-point')", self.app)
@@ -99,7 +99,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertIn("Assets/Images/${victory?'victory':'defeat'}.png", self.app)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = "7.5.5"
+        expected = "7.5.6"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         index = (ROOT / "index.html").read_text()
         self.assertIn(f"styles.css?v={expected}", index)

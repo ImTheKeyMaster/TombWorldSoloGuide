@@ -18,7 +18,7 @@ class RemediationPr9StabilizationTests(unittest.TestCase):
         for helper in ("isRecord", "boundedInteger", "normalizeIdList"):
             self.assertIn(f"const {helper}", self.app)
         normalize = self.source("function normalizeState(raw)", "function npoDefinition")
-        self.assertIn("merged.turningPoint=boundedInteger(raw.turningPoint,0,999)", normalize)
+        self.assertIn("merged.turningPoint=Math.min(boundedInteger(raw.turningPoint,0,999),MAX_TURNING_POINTS)", normalize)
         self.assertIn("merged.threat=boundedInteger(raw.threat,0,15)", normalize)
 
     def test_corrupted_top_level_and_npo_data_recover_safely(self):
@@ -63,7 +63,7 @@ class RemediationPr9StabilizationTests(unittest.TestCase):
         self.assertIn("recoverInvalidMission();", self.app)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = "7.5.5"
+        expected = "7.5.6"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         index = (ROOT / "index.html").read_text()
         self.assertIn(f"styles.css?v={expected}", index)

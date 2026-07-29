@@ -1,4 +1,15 @@
-# Tomb World Solo Guide v7.5.5
+# Tomb World Solo Guide v7.5.6
+
+## v7.5.6
+
+**Version 7.5.6 - Enforce the Four Turning Point Limit**
+
+- Prevented battles from advancing beyond Turning Point 4.
+- Added final mission outcome evaluation when Turning Point 4 ends.
+- Added guided victory or defeat recording when the final result requires tabletop confirmation.
+- Safely redirects previously saved Turning Point 5 battles to final resolution without repeating gameplay.
+
+---
 
 ## v7.5.5
 
