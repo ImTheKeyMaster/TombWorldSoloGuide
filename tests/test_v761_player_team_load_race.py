@@ -39,11 +39,11 @@ class PlayerTeamLoadRaceTests(unittest.TestCase):
         for rule in ("maxGunners", "maxGravis", "selectionGroupMax", "mandatoryTroopers"):
             self.assertIn(rule, APP)
     def test_23_numbering_remains_present(self): self.assertIn("assignPlayerDisplayNumbers();", APP)
-    def test_24_version_is_761(self):
-        self.assertIn("const APP_VERSION = '7.6.1';", APP)
-        self.assertIn("const APP_VERSION = '7.6.1';", WORKER)
-        self.assertIn("V7.6.1", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v7.6.1"))
+    def test_24_current_version_is_762(self):
+        self.assertIn("const APP_VERSION = '7.6.2';", APP)
+        self.assertIn("const APP_VERSION = '7.6.2';", WORKER)
+        self.assertIn("V7.6.2", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v7.6.2"))
     def test_25_loading_and_error_are_accessible(self):
         self.assertIn('role="status"', APP)
         self.assertIn('role="alert"', APP)

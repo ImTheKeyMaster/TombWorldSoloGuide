@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '7.6.1';
+  const APP_VERSION = '7.6.2';
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
   const EventEffects=TombWorldEventEffects;
@@ -1626,9 +1626,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     });
   }
   function playerTeamLoadPresentation(){
-    if(playerTeamLoadStatus==='loading')return '<p class="muted" role="status" aria-live="polite">Loading selected Kill Team operatives…</p>';
     if(playerTeamLoadStatus==='error')return '<p class="muted" role="alert">Unable to load this Kill Team. Select it again to retry.</p>';
     return '';
+  }
+  function playerTeamLoadingAnnouncement(){
+    return playerTeamLoadStatus==='loading'?'<span class="visually-hidden" role="status" aria-live="polite">Loading selected Kill Team operatives.</span>':'';
   }
   function buildPlayerRosterButton(id){
     const loading=playerTeamLoadStatus==='loading';
@@ -1640,7 +1642,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       <div class="team-select-card-head"><div><strong>${escapeHtml(team.name)}</strong><small>${escapeHtml(team.faction||'Kill Team')}</small></div>${state.playerTeamId===team.id?'<span>✓</span>':''}</div>
       <p>${escapeHtml(team.description||'')}</p>
     </button>`).join('');
-    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Choose Kill Team</h2><p>Select the player-controlled Kill Team for this battle.</p></div></div><section class="wizard-card"><div class="team-select-grid">${cards}</div>${playerTeamLoadPresentation()}<div class="wizard-actions"><button class="btn ghost" id="teamSelectHome">Back</button>${buildPlayerRosterButton('teamSelectNext')}</div></section></div>`;
+    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Choose Kill Team</h2><p>Select the player-controlled Kill Team for this battle.</p></div></div><section class="wizard-card" aria-busy="${playerTeamLoadStatus==='loading'}">${playerTeamLoadingAnnouncement()}<div class="team-select-grid">${cards}</div>${playerTeamLoadPresentation()}<div class="wizard-actions"><button class="btn ghost" id="teamSelectHome">Back</button>${buildPlayerRosterButton('teamSelectNext')}</div></section></div>`;
     $('#teamSelectHome').onclick=()=>{state.screen='home';save();render();};
     $('#teamSelectNext').onclick=()=>{if(!canBuildPlayerRoster()){showToast('Wait for the selected Kill Team to finish loading.');return;}state.screen='setup';state.setupStep=activeSetupSteps().indexOf('playerRoster');save();render();};
     $$('[data-player-team]').forEach(button=>button.onclick=()=>selectPlayerTeam(button.dataset.playerTeam));
@@ -1672,14 +1674,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       if(!canBuildPlayerRoster()){
         if(playerTeamLoadStatus==='loading'){
           const teamStep=steps.indexOf('team');
-          app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Build Player Roster</h2><p>Loading the selected Kill Team before displaying its operatives.</p></div></div><section class="wizard-card"><p role="status" aria-live="polite">Loading selected Kill Team operatives…</p>${teamStep>=0?'<div class="wizard-actions"><button class="btn ghost" id="playerRosterLoadBack">Back</button></div>':''}</section></div>`;
+          app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Build Player Roster</h2><p>Loading the selected Kill Team before displaying its operatives.</p></div></div><section class="wizard-card" aria-busy="true">${playerTeamLoadingAnnouncement()}${teamStep>=0?'<div class="wizard-actions"><button class="btn ghost" id="playerRosterLoadBack">Back</button></div>':''}</section></div>`;
           $('#playerRosterLoadBack')?.addEventListener('click',()=>{state.setupStep=teamStep;save();render();});
           return;
         }
         const teamStep=steps.indexOf('team');
         if(teamStep<0){
           const failed=playerTeamLoadStatus==='error';
-          app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Build Player Roster</h2><p>Loading the selected Kill Team before displaying its operatives.</p></div></div><section class="wizard-card"><p role="${failed?'alert':'status'}">${failed?'Unable to load this Kill Team.':'Loading selected Kill Team operatives…'}</p>${failed?'<div class="wizard-actions"><button class="btn primary" id="retryPlayerTeamLoad" aria-label="Retry selected Kill Team load">Retry Team Load</button></div>':''}</section></div>`;
+          app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Build Player Roster</h2><p>Loading the selected Kill Team before displaying its operatives.</p></div></div><section class="wizard-card" aria-busy="${!failed}">${failed?'<p role="alert">Unable to load this Kill Team.</p>':playerTeamLoadingAnnouncement()}${failed?'<div class="wizard-actions"><button class="btn primary" id="retryPlayerTeamLoad" aria-label="Retry selected Kill Team load">Retry Team Load</button></div>':''}</section></div>`;
           $('#retryPlayerTeamLoad')?.addEventListener('click',()=>loadPlayerTeamData(state.playerTeamId).catch(()=>{}));
           return;
         }
@@ -1731,7 +1733,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
     if(stepId==='team'){
       const cards=(playerManifest?.teams||[]).map(team=>`<button type="button" class="team-select-card ${state.playerTeamId===team.id?'selected':''}" data-player-team="${escapeHtml(team.id)}"><div class="team-select-card-head"><div><strong>${escapeHtml(team.name)}</strong><small>${escapeHtml(team.faction||'Kill Team')}</small></div>${state.playerTeamId===team.id?'<span>✓</span>':''}</div><p>${escapeHtml(team.description||'')}</p></button>`).join('');
-      return `<h3>Which Kill Team are you playing?</h3><p>Your choice determines the operatives available on the next step.</p><div class="team-select-grid">${cards}</div>${playerTeamLoadPresentation()}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button>${buildPlayerRosterButton('setupNext')}</div>`;
+      return `<h3>Which Kill Team are you playing?</h3><p>Your choice determines the operatives available on the next step.</p><div class="team-select-grid" aria-busy="${playerTeamLoadStatus==='loading'}">${playerTeamLoadingAnnouncement()}${cards}</div>${playerTeamLoadPresentation()}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button>${buildPlayerRosterButton('setupNext')}</div>`;
     }
     if(stepId==='playerRoster'){
       const selected=new Set(state.playerRoster||[]);
