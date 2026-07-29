@@ -1,0 +1,72 @@
+import re
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+APP = (ROOT / 'app.js').read_text()
+INDEX = (ROOT / 'index.html').read_text()
+WORKER = (ROOT / 'service-worker.js').read_text()
+README = (ROOT / 'README.md').read_text()
+PERSISTENCE = (ROOT / 'persistence.js').read_text()
+
+
+def section(start, end):
+    begin = APP.index(start)
+    return APP[begin:APP.index(end, begin)]
+
+
+class V830NpoMovementGuidanceTests(unittest.TestCase):
+    def test_action_questions_do_not_show_printed_objective(self):
+        inquiries = section('const NPO_ACTION_INQUIRIES=', 'function npoActionCost')
+        self.assertNotIn('printed objective', inquiries.lower())
+        self.assertNotIn('printed behavior', section('function renderCompletedNpoQuestions', 'function continueNpoActivation').lower())
+
+    def test_dash_question_and_help_describe_a_useful_destination(self):
+        self.assertIn("feasibilityQuestion:'Can this NPO Dash to a more useful position?'", APP)
+        self.assertIn("help:'Select Yes only if the Dash moves it toward an unobstructed shooting position or helps it complete the mission. Otherwise, select No.'", APP)
+
+    def test_movement_guidance_is_tailored_without_changing_action_definitions(self):
+        guidance = section('function npoMovementInstruction', 'function npoActionCost')
+        self.assertIn('closer to the highest-priority Player operative, using cover where possible', guidance)
+        self.assertIn('toward an unobstructed valid target or improve its mission position', guidance)
+        self.assertIn('improve its ability to complete or defend the mission objective', guidance)
+        self.assertIn("'Dash towards the closest player operative, to cover if possible'", APP)
+        self.assertIn("'Dash to gain a valid unobscured target or better win the mission'", APP)
+
+    def test_compact_progress_uses_only_concise_action_names(self):
+        progress = section('function renderNpoActionProgress', 'function runNpoPrompt')
+        self.assertIn('conciseNpoActionName(action)', progress)
+        concise = section('function conciseNpoActionName', 'function legalNpoActions')
+        self.assertIn("action.id==='fall-back'?'Fall Back'", concise)
+        self.assertIn("action.id[0].toUpperCase()+action.id.slice(1)", concise)
+        self.assertIn('return action.name', concise)
+        self.assertNotIn('action.name)).join', progress)
+
+    def test_history_and_journal_retain_detailed_action_text(self):
+        commit = section('function commitNpoAction', 'function renderNpoActionResult')
+        self.assertIn('name:actionName', commit)
+        self.assertIn('result,...(attackSummary?', commit)
+        self.assertIn("const journalAction=['reposition','dash'].includes(actionId)?npoMovementInstruction(n,actionName):actionName", commit)
+        self.assertIn('log(`${npoName(n)} completed ${journalAction}. ${activation.remainingAp} AP remaining.`)', commit)
+        self.assertIn('activation.resolvedActions=[...(activation.resolvedActions||[]),record]', commit)
+
+    def test_priorities_ap_costs_and_action_results_are_unchanged(self):
+        self.assertIn("const NPO_CORE_ACTION_COSTS={'reposition':1,'dash':1,'charge':1,'shoot':1,'fight':1,'fall-back':2}", APP)
+        self.assertIn("'geomancer':['Canoptek Control','Molecular Breach','Geomantic Disturbance','Shoot','Fight','Reposition','Dash']", APP)
+        self.assertIn('activation.remainingAp=Math.max(0,before-apCost)', APP)
+        self.assertIn('const record={sequence:activation.actionSequence,id:actionId,name:actionName,apCost,apBefore:before,apRemaining:activation.remainingAp,result', APP)
+        self.assertIn('scheduleNpoActionTransition(activation,n.id,transitionMode)', APP)
+
+    def test_version_830_is_consistent_and_save_version_is_unchanged(self):
+        self.assertIn("const APP_VERSION = '8.3.0';", APP)
+        self.assertIn("const APP_VERSION = '8.3.0';", WORKER)
+        self.assertIn('V8.3.0', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.3.0'))
+        self.assertIn('## v8.3.0', README)
+        for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
+            self.assertIn(f'{asset}?v=8.3.0', INDEX)
+        self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
+
+
+if __name__ == '__main__':
+    unittest.main()

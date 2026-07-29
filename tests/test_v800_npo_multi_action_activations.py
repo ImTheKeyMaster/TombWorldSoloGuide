@@ -92,7 +92,7 @@ class V800NpoMultiActionActivationTests(unittest.TestCase):
         self.assertIn("id==='fight'&&completed.has('shoot')", APP)
 
     def test_18_movement_yes_is_affirmative(self):
-        self.assertIn('Reposition to gain an unobscured valid target or better accomplish the mission.', APP)
+        self.assertIn('toward an unobstructed valid target or improve its mission position.', APP)
 
     def test_19_contradictory_wording_absent(self):
         self.assertNotIn('cannot move to a valid shooting position', APP.lower())
@@ -160,8 +160,8 @@ class V800NpoMultiActionActivationTests(unittest.TestCase):
     def test_38_deadly_encounters_preserved(self): self.assertIn('DeadlyEncounters', APP)
     def test_39_player_activations_preserved(self): self.assertIn('function completePlayerActivation(', APP)
     def test_40_version_800_everywhere(self):
-        self.assertIn("const APP_VERSION = '8.2.0';", APP); self.assertIn("const APP_VERSION = '8.2.0';", WORKER)
-        self.assertIn('V8.2.0', INDEX); self.assertTrue(README.startswith('# Tomb World Solo Guide v8.2.0'))
+        self.assertIn("const APP_VERSION = '8.3.0';", APP); self.assertIn("const APP_VERSION = '8.3.0';", WORKER)
+        self.assertIn('V8.3.0', INDEX); self.assertTrue(README.startswith('# Tomb World Solo Guide v8.3.0'))
     def test_41_supported_npo_profiles_unchanged_and_present(self):
         for name in ('Necron Warrior', 'Canoptek Tomb Crawler', 'Geomancer', 'Canoptek Macrocyte Warrior', 'Canoptek Macrocyte Accelerator', 'Canoptek Macrocyte Reanimator', 'Canoptek Scarab Swarm'):
             self.assertIn(f"'{name}': {{", APP)

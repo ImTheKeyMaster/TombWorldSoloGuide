@@ -90,7 +90,7 @@ class V801NpoActionEligibilityTests(unittest.TestCase):
         self.assertIn('Can this NPO Reposition to gain an unobscured valid target or better accomplish the mission?', APP)
 
     def test_14_dash_requires_printed_purpose(self):
-        self.assertIn('Can this NPO Dash to improve its position for its printed objective?', APP)
+        self.assertIn('Can this NPO Dash to a more useful position?', APP)
 
     def test_15_movement_clears_spatial_context(self):
         commit = section('function commitNpoAction', 'function renderNpoActionResult')
