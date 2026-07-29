@@ -57,6 +57,8 @@ class TurningPointLimitTests(unittest.TestCase):
         body = function_body("nextStepCard")
         self.assertLess(body.index("state.turningPoint>=MAX_TURNING_POINTS"), body.index('id="startTp"'))
         self.assertIn("No further Turning Point can begin.", body)
+        self.assertNotIn("resolveTurningPointLimit", body)
+        self.assertIn("void resolveTurningPointLimit()", function_body("bindPlay"))
 
     def test_09_final_sequence_runs_hook_cleanup_then_outcome(self):
         body = function_body("resolveTurningPointLimit")
@@ -89,12 +91,14 @@ class TurningPointLimitTests(unittest.TestCase):
         self.assertIn("$('#battle-complete-heading')?.focus()", body)
 
     def test_15_battle_end_hook_and_journal_are_idempotent(self):
-        body = function_body("completeMission")
-        self.assertIn("battleEndHookStarted", body)
+        body = function_body("finalizeMissionCompletion")
+        self.assertIn("battleEndHookComplete", body)
         self.assertIn("resultLogged", body)
+        self.assertLess(body.index("onBattleEnded"), body.index("battleEndHookComplete=true"))
 
     def test_16_turning_point_end_hook_is_idempotent(self):
         body = function_body("resolveTurningPointLimit")
+        self.assertIn("if(turningPointLimitPending)return false", body)
         self.assertIn("if(!state.finalResolution.turningPointEnded)", body)
         self.assertIn("state.finalResolution.turningPointEnded=true", body)
 
