@@ -283,19 +283,30 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return `${baseName} ${index>=0?index+1:1}`;
   }
 
+  function allocateDisplayNumber(usedNumbers,preferredNumber){
+    if(Number.isInteger(preferredNumber)&&preferredNumber>0&&!usedNumbers.has(preferredNumber)){
+      usedNumbers.add(preferredNumber);
+      return preferredNumber;
+    }
+    let displayNumber=1;
+    while(usedNumbers.has(displayNumber))displayNumber++;
+    usedNumbers.add(displayNumber);
+    return displayNumber;
+  }
+
   function assignPlayerDisplayNumbers(){
     const nameCounts={};
     (state.playerRoster||[]).forEach(id=>{
       const name=playerDefinition(id)?.name;
       if(name)nameCounts[name]=(nameCounts[name]||0)+1;
     });
-    const nextNumbers={};
+    const usedDisplayNumbers={};
     state.playerDisplayNumbers={};
     (state.playerRoster||[]).forEach(id=>{
       const name=playerDefinition(id)?.name;
       if(!name||nameCounts[name]<=1)return;
-      nextNumbers[name]=(nextNumbers[name]||0)+1;
-      state.playerDisplayNumbers[id]=nextNumbers[name];
+      const used=usedDisplayNumbers[name]||(usedDisplayNumbers[name]=new Set());
+      state.playerDisplayNumbers[id]=allocateDisplayNumber(used);
     });
   }
 
@@ -643,9 +654,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const definition=npoDefinition(npo.type);
       if(definition?.physicalQuantity<=1){npo.displayNumber=null;return;}
       const used=usedDisplayNumbers[npo.type]||(usedDisplayNumbers[npo.type]=new Set());
-      if(Number.isInteger(npo.displayNumber)&&npo.displayNumber>0&&!used.has(npo.displayNumber)){used.add(npo.displayNumber);return;}
-      let displayNumber=1;while(used.has(displayNumber))displayNumber++;
-      npo.displayNumber=displayNumber;used.add(displayNumber);
+      const preferredNumber=Number.isInteger(npo.displayNumber)?npo.displayNumber:null;
+      npo.displayNumber=allocateDisplayNumber(used,preferredNumber);
     });
     if(Number(raw.turningPoint)>0){
       const importedRoster=Array.isArray(raw.roster)?raw.roster:[];
@@ -1547,6 +1557,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         state.playerTeamId=button.dataset.playerTeam;
         state.playerRosterInitializedForTeamId='';
         state.playerRoster=[];
+        state.playerDisplayNumbers={};
         state.playerCount=0;
         state.playerReady=0;
         state.playerCasualtyIds=[];
@@ -1733,7 +1744,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         if(state.playerTeamId!==button.dataset.playerTeam){
           state.playerTeamId=button.dataset.playerTeam;
           state.playerRosterInitializedForTeamId='';
-          state.playerRoster=[];state.playerCount=0;state.playerReady=0;state.playerCasualtyIds=[];state.playerWounds={};state.playerActivatedIds=[];state.playerDeployed=false;
+          state.playerRoster=[];state.playerDisplayNumbers={};state.playerCount=0;state.playerReady=0;state.playerCasualtyIds=[];state.playerWounds={};state.playerActivatedIds=[];state.playerDeployed=false;
           await loadPlayerTeamData(state.playerTeamId);
         }
         save();render();

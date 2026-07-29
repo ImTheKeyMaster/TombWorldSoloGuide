@@ -10,8 +10,13 @@ class PlayerOperativeNumberingTests(unittest.TestCase):
     def test_finalized_numbers_are_persisted_by_operative_id(self):
         self.assertIn("playerDisplayNumbers:{}", APP)
         self.assertIn("if(stepId==='playerRoster')assignPlayerDisplayNumbers()", APP)
-        self.assertIn("state.playerDisplayNumbers[id]=nextNumbers[name]", APP)
+        self.assertIn("state.playerDisplayNumbers[id]=allocateDisplayNumber(used)", APP)
         self.assertIn("merged.playerDisplayNumbers=isRecord(raw?.playerDisplayNumbers)", APP)
+
+    def test_player_and_npo_numbering_share_the_same_allocator(self):
+        self.assertIn("function allocateDisplayNumber(usedNumbers,preferredNumber)", APP)
+        self.assertIn("npo.displayNumber=allocateDisplayNumber(used,preferredNumber)", APP)
+        self.assertIn("state.playerDisplayNumbers[id]=allocateDisplayNumber(used)", APP)
 
     def test_display_name_uses_stored_number_without_renumbering_casualties(self):
         player_name = APP[APP.index("function playerName(id)"):APP.index("function assignPlayerDisplayNumbers()")]
