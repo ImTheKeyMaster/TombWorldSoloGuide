@@ -1,4 +1,15 @@
-# Tomb World Solo Guide v7.6.0
+# Tomb World Solo Guide v7.6.1
+
+## v7.6.1
+
+**Version 7.6.1 - Prevent Stale Player Team Selection**
+
+- Disabled Build Roster until the currently selected Kill Team has completely loaded.
+- Added request-token protection so older team-load responses cannot overwrite a newer selection.
+- Added defensive roster-screen validation and clear loading, failure, and retry states.
+- Preserved all Player roster rules, operative numbering, and existing setup behavior.
+
+---
 
 ## v7.6.0
 
