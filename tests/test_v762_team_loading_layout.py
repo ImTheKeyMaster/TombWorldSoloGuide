@@ -24,6 +24,9 @@ class TeamLoadingLayoutTests(unittest.TestCase):
 
     def test_04_team_selection_exposes_busy_state(self):
         self.assertGreaterEqual(APP.count('aria-busy="${playerTeamLoadStatus===\'loading\'}"'), 2)
+        setup_shell = APP[APP.index("    const details=setupStepDefinitions[stepId];"):
+                          APP.index("    bindSetup(stepId);")]
+        self.assertIn("stepId==='team'", setup_shell)
 
     def test_05_loading_announcement_is_visually_hidden(self):
         announcement = APP[APP.index("  function playerTeamLoadingAnnouncement"):
@@ -32,50 +35,64 @@ class TeamLoadingLayoutTests(unittest.TestCase):
         self.assertIn('role="status" aria-live="polite"', announcement)
 
     def test_06_no_visible_loading_paragraph_between_grid_and_actions(self):
-        for marker in ("teamSelectNext", "setupNext')"):
-            area = APP[max(0, APP.index(marker) - 700):APP.index(marker) + 100]
-            self.assertNotIn('<p class="muted" role="status"', area)
+        standalone = APP[APP.index("  function renderTeamSelection"):
+                         APP.index("  const setupStepDefinitions")]
+        setup_content = APP.index("  function setupContent(stepId)")
+        team_start = APP.index("    if(stepId==='team'){", setup_content)
+        setup_team = APP[team_start:APP.index("    if(stepId==='playerRoster'){", team_start)]
+        for area in (standalone, setup_team):
+            grid_end = area.index('${playerTeamLoadPresentation()}')
+            actions = area.index('<div class="wizard-actions">', grid_end)
+            self.assertNotIn('role="status"', area[grid_end:actions])
 
-    def test_07_success_does_not_add_or_remove_visible_status_row(self):
+    def test_07_team_grid_contains_only_team_cards(self):
+        setup_content = APP.index("  function setupContent(stepId)")
+        team_start = APP.index("    if(stepId==='team'){", setup_content)
+        setup_team = APP[team_start:APP.index("    if(stepId==='playerRoster'){", team_start)]
+        grid = setup_team[setup_team.index('<div class="team-select-grid">'):
+                          setup_team.index('${playerTeamLoadPresentation()}')]
+        self.assertNotIn('visually-hidden', grid)
+
+    def test_08_success_does_not_add_or_remove_visible_status_row(self):
         presentation = APP[APP.index("  function playerTeamLoadPresentation"):
                            APP.index("  function playerTeamLoadingAnnouncement")]
         self.assertEqual(presentation.count('<p'), 1)
         self.assertIn("playerTeamLoadStatus==='error'", presentation)
 
-    def test_08_visible_load_error_remains(self):
+    def test_09_visible_load_error_remains(self):
         self.assertIn('<p class="muted" role="alert">Unable to load this Kill Team.', APP)
 
-    def test_09_retry_team_load_remains_available(self):
+    def test_10_retry_team_load_remains_available(self):
         self.assertIn('>Retry Team Load</button>', APP)
         self.assertIn("loadPlayerTeamData(state.playerTeamId).catch", APP)
 
-    def test_10_defensive_loading_screen_does_not_repeat_visible_label(self):
+    def test_11_defensive_loading_screen_does_not_repeat_visible_label(self):
         render_setup = APP[APP.index("  function renderSetup"):
                            APP.index("  function missionSetupChecks")]
         self.assertNotIn('<p role="status" aria-live="polite">Loading selected Kill Team operatives', render_setup)
         self.assertNotIn("'Loading selected Kill Team operatives", render_setup)
 
-    def test_11_defensive_screen_retains_stable_content(self):
+    def test_12_defensive_screen_retains_stable_content(self):
         self.assertIn('<h2>Build Player Roster</h2>', APP)
         self.assertIn('Loading the selected Kill Team before displaying its operatives.', APP)
         self.assertIn('aria-busy="true"', APP)
 
-    def test_12_stale_response_protection_is_unchanged(self):
+    def test_13_stale_response_protection_is_unchanged(self):
         self.assertIn('let playerTeamLoadRequestId=0;', APP)
         self.assertGreaterEqual(
             APP.count('requestId!==playerTeamLoadRequestId||state.playerTeamId!==teamId'), 2
         )
         self.assertIn('loadedPlayerTeamId===state.playerTeamId', APP)
 
-    def test_13_build_roster_cannot_advance_while_loading(self):
+    def test_14_build_roster_cannot_advance_while_loading(self):
         self.assertIn("if(stepId==='team'&&!canBuildPlayerRoster())", APP)
         self.assertIn("if(!canBuildPlayerRoster()){showToast", APP)
 
-    def test_14_only_matching_team_roster_can_display(self):
+    def test_15_only_matching_team_roster_can_display(self):
         self.assertIn("loadedPlayerTeamId===state.playerTeamId", APP)
         self.assertIn("if(!canBuildPlayerRoster())", APP[APP.index("  function renderSetup"):])
 
-    def test_15_application_displays_version_762(self):
+    def test_16_application_displays_version_762(self):
         self.assertIn("const APP_VERSION = '7.6.2';", APP)
         self.assertIn("const APP_VERSION = '7.6.2';", WORKER)
         self.assertIn("V7.6.2", INDEX)

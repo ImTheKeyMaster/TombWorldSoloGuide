@@ -1698,7 +1698,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(stepId==='deploy')ensureStartingNpoGeneration();
     if(stepId==='deploy')satisfyEmptyStartingNpoDeployment();
     const details=setupStepDefinitions[stepId];
-    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>${details.title}</h2><p>${details.subtitle}</p></div><div class="step-count">${state.setupStep+1} / ${steps.length}</div></div><div class="progress-bar"><span style="width:${((state.setupStep+1)/steps.length)*100}%"></span></div><section class="wizard-card">${setupContent(stepId)}</section></div>`;
+    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>${details.title}</h2><p>${details.subtitle}</p></div><div class="step-count">${state.setupStep+1} / ${steps.length}</div></div><div class="progress-bar"><span style="width:${((state.setupStep+1)/steps.length)*100}%"></span></div><section class="wizard-card"${stepId==='team'?` aria-busy="${playerTeamLoadStatus==='loading'}"`:''}>${setupContent(stepId)}</section></div>`;
     bindSetup(stepId);
   }
   function missionSetupChecks(stage){
@@ -1733,7 +1733,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
     if(stepId==='team'){
       const cards=(playerManifest?.teams||[]).map(team=>`<button type="button" class="team-select-card ${state.playerTeamId===team.id?'selected':''}" data-player-team="${escapeHtml(team.id)}"><div class="team-select-card-head"><div><strong>${escapeHtml(team.name)}</strong><small>${escapeHtml(team.faction||'Kill Team')}</small></div>${state.playerTeamId===team.id?'<span>✓</span>':''}</div><p>${escapeHtml(team.description||'')}</p></button>`).join('');
-      return `<h3>Which Kill Team are you playing?</h3><p>Your choice determines the operatives available on the next step.</p><div class="team-select-grid" aria-busy="${playerTeamLoadStatus==='loading'}">${playerTeamLoadingAnnouncement()}${cards}</div>${playerTeamLoadPresentation()}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button>${buildPlayerRosterButton('setupNext')}</div>`;
+      return `<h3>Which Kill Team are you playing?</h3><p>Your choice determines the operatives available on the next step.</p>${playerTeamLoadingAnnouncement()}<div class="team-select-grid">${cards}</div>${playerTeamLoadPresentation()}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button>${buildPlayerRosterButton('setupNext')}</div>`;
     }
     if(stepId==='playerRoster'){
       const selected=new Set(state.playerRoster||[]);
