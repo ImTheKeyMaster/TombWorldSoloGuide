@@ -47,7 +47,7 @@ class CanoptekIntegrationTests(unittest.TestCase):
     def test_scuttling_is_strategy_phase_new_instance_exception(self):
         self.assertIn('id="ceaselessScuttling"', APP)
         self.assertIn("function createCeaselessScuttlingWarrior", APP)
-        self.assertIn("const warrior=createNpo", APP)
+        self.assertIn("returned||createNpo", APP)
         self.assertIn("warrior.createdBy='a-ceaseless-scuttling'", APP)
         self.assertIn("warrior.order='Conceal'", APP)
         self.assertIn("turningPoint>1&&living<3&&deployed<MAX_NPOS", APP)
@@ -65,8 +65,8 @@ class CanoptekIntegrationTests(unittest.TestCase):
         self.assertIn("Roll separately", APP)
 
     def test_version_matrix_and_portrait_constraints(self):
-        self.assertIn("const APP_VERSION = '7.5.0';", APP)
-        self.assertIn("V7.5.0", (ROOT / "index.html").read_text())
+        self.assertIn("const APP_VERSION = '7.5.1';", APP)
+        self.assertIn("V7.5.1", (ROOT / "index.html").read_text())
         self.assertNotIn("obelisk node matrix support", APP.lower())
         self.assertNotIn("npoPortrait", APP)
 

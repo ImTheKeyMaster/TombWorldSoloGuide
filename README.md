@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v7.5.0
+# Tomb World Solo Guide v7.5.1
+
+## v7.5.1
+
+**Version 7.5.1 - Allocate the Lowest Available NPO Numbers**
+- Added one deterministic physical-instance allocator shared by every NPO creation path.
+- Starting rosters, reinforcements, Tomb World events, mission effects, and manual additions now use the lowest available number for each NPO type.
+- Preserved random NPO-type and loadout selection, physical and loadout limits, natural display sorting, and existing saved-battle identities.
+- Stopped setup deletion from renumbering the NPO instances that remain allocated.
 
 ## v7.5.0
 
