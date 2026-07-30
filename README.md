@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.5.3
+# Tomb World Solo Guide v8.5.4
+
+## v8.5.4
+
+**Version 8.5.4 - Clarify Partial Reinforcement Deployment**
+
+* Clearly separated deployable NPOs from reinforcements blocked by battlefield capacity or physical inventory.
+* Updated deployment headings after confirmation.
+* Added precise blocking reasons and singular or plural wording.
+* Preserved all reinforcement generation and deployment rules.
 
 ## v8.5.3
 

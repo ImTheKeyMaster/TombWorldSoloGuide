@@ -40,7 +40,8 @@ class RemediationPr6Tests(unittest.TestCase):
         self.assertIn("MAX_NPOS-activeNpos().length", source)
         self.assertIn("actual=Math.min(requested,slots)", source)
         self.assertIn("blocked=requested-actual", source)
-        self.assertIn("Battlefield capacity was reached or no legal physical model remains.", self.app)
+        self.assertIn("The battlefield limit of ${MAX_NPOS} NPOs was reached.", self.app)
+        self.assertIn("No eligible physical NPO models remain in the Tomb World inventory.", self.app)
 
     def test_placement_is_manual_and_blocks_progress_until_confirmed(self):
         card = self.function_source("strategyProgressHtml", "strategyEventHtml")
@@ -57,7 +58,7 @@ class RemediationPr6Tests(unittest.TestCase):
 
     def test_reinforcement_state_and_metadata_are_normalized(self):
         initial = self.app.split("const initialState = () => ({", 1)[1].split("\n  });", 1)[0]
-        self.assertIn("reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0}", initial)
+        self.assertIn("reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0,blockedByCapacity:0,blockedByInventory:0}", initial)
         normalize = self.function_source("normalizeState", "npoDefinition")
         self.assertIn("isRecord(raw.reinforcementState)", normalize)
         self.assertIn("normalizeIdList(importedReinforcements.operativeIds", normalize)

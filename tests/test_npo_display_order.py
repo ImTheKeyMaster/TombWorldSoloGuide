@@ -50,7 +50,7 @@ class NpoDisplayOrderTests(unittest.TestCase):
     def test_reinforcement_lists_and_controls_share_sorted_copy(self):
         strategy = self.source("function strategyProgressHtml", "function strategyEventHtml")
         self.assertIn("deployingNpos=sortedNposForDisplay", strategy)
-        self.assertIn("blockedNpos=sortedNposForDisplay", strategy)
+        self.assertNotIn("blockedNpos=sortedNposForDisplay", strategy)
         self.assertIn("const placements=deployingNpos.map", strategy)
 
     def test_event_inline_summary_sorts_after_gameplay_results_are_applied(self):
