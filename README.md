@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.5.0
+# Tomb World Solo Guide v8.5.1
+
+## v8.5.1
+
+**Version 8.5.1 - Fix Guided Weapon Rule Combat Resume**
+
+- Fixed Torrent, Blast, and Seek Light combat resumption after guided tabletop questions.
+- Combat screens are now rebuilt before dice rolling begins.
+- Preserved weapon, target, profile, and secondary-target selections.
+- Added safe recovery instead of an uncaught missing-DOM error.
 
 ## v8.5.0
 

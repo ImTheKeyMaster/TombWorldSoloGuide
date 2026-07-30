@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.5.0';
+  const APP_VERSION = '8.5.1';
   const WEAPON_RULE_HANDLERS = Object.freeze({
     severe:{mode:'automatic',phase:'after-attack-roll'},
     'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
@@ -84,6 +84,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   let objectiveEngine=null;
   let objectiveDefinition=null;
   let missionOperationResolving=false;
+  let weaponRuleResumePending=false;
   let missionDialogLocked=false;
   let missionLoadRequestId=0;
   const missionActivationStarts=new Set();
@@ -3362,11 +3363,38 @@ function showPlayerActivation(stage={}){
     return {dice:$('#automaticCombat'),results:$('#combatResults'),continueButton:$(`#${continueId}`)};
   }
 
+  function showCombatResumeRecovery(onReturn){
+    console.error('[Combat] Guided weapon-rule combat screen could not be restored.');
+    showModal('Combat could not resume',`<p>No dice or damage were committed. Return to the combat screen and try again.</p><div class="wizard-actions"><button class="btn primary" id="returnToCombat">Return to Combat</button></div>`);
+    $('#returnToCombat').onclick=onReturn;
+  }
+
+  function resumeCombatAfterWeaponRuleCheck({render,onMounted,onRecovery}){
+    if(weaponRuleResumePending)return;
+    weaponRuleResumePending=true;
+    save();
+    requestAnimationFrame(()=>{
+      const mounted=render();
+      weaponRuleResumePending=false;
+      const combatResults=$('#combatResults');
+      const completeButton=mounted?.continueButton;
+      if(!combatResults||!completeButton||!mounted?.dice?.isConnected){
+        showCombatResumeRecovery(onRecovery||render);
+        return;
+      }
+      onMounted(mounted);
+    });
+  }
+
   function displaySharedCombatResult(combat,{pending=false,animate=false,waiting=false,message='',onContinue,extraHtml=''}={}){
     const results=$('#combatResults');
     const dice=$('#automaticCombat');
     const button=$('.combat-resolution-footer .btn.primary');
-    if(dice)dice.replaceChildren();
+    if(!results||!button||!dice?.isConnected){
+      showCombatResumeRecovery(closeModal);
+      return;
+    }
+    dice.replaceChildren();
     results.innerHTML=`${renderCombatResolution(combat,{pending,animate,showParticipants:false})}${extraHtml}${message?`<p class="muted">${escapeHtml(message)}</p>`:''}`;
     let visualComplete=!animate&&!waiting;
     button.textContent='Continue';
@@ -3879,8 +3907,9 @@ function showPlayerActivation(stage={}){
 
   function showSeekLightCheck({target,resolutionKey,onContinue,onBack}){
     const saved=state.weaponRuleResolution;
-    if(target?.order!=='Conceal'||saved?.resolutionKey===resolutionKey&&saved?.seekLightAnswer){onContinue(saved?.seekLightAnswer||null);return;}
-    showModal('Seek Light',`<p id="seekLightHelp">Is the target visible and using Light terrain for cover?</p><p class="muted">Seek Light only bypasses Conceal when the target is using Light terrain for cover. It does not remove a cover save.</p><div class="wizard-actions"><button class="btn ghost" id="seekLightBack">Back</button><button class="btn ghost" data-close>Close Guide</button><button class="btn secondary" id="seekLightNo">No</button><button class="btn primary" id="seekLightYes">Yes</button></div>`);
+    if(target?.order!=='Conceal'){onContinue(null);return;}
+    const savedAnswer=saved?.resolutionKey===resolutionKey?saved.seekLightAnswer:null;
+    showModal('Seek Light',`<p id="seekLightHelp">Is the target visible and using Light terrain for cover?</p><p class="muted">Seek Light only bypasses Conceal when the target is using Light terrain for cover. It does not remove a cover save.</p><div class="wizard-actions"><button class="btn ghost" id="seekLightBack">Back</button><button class="btn ghost" data-close>Close Guide</button><button class="btn secondary" id="seekLightNo" aria-pressed="${savedAnswer==='no'}">No${savedAnswer==='no'?' (selected)':''}</button><button class="btn primary" id="seekLightYes" aria-pressed="${savedAnswer==='yes'}">Yes${savedAnswer==='yes'?' (selected)':''}</button></div>`);
     const answer=value=>{state.weaponRuleResolution={...(saved?.resolutionKey===resolutionKey?saved:{}),resolutionKey,primaryTargetId:target.id,seekLightAnswer:value,tabletopCheckConfirmed:false};save();onContinue(value);};
     $('#seekLightBack').onclick=onBack;
     $('#seekLightNo').onclick=()=>answer('no');
@@ -3897,14 +3926,27 @@ function showPlayerActivation(stage={}){
       ? `Blast attacks every other operative visible to and within ${distance} inches of the primary target, including friendly operatives.`
       : `Torrent attacks each selected valid enemy target within ${distance} inches of the primary target.`;
     const automaticallySelected=ruleId==='torrent'&&attackerSide==='npo';
+    const saved=state.weaponRuleResolution;
+    const sameStep=saved?.ruleId===ruleId&&saved?.primaryTargetId===primaryTargetId&&saved?.profileKey===profileKey;
     showModal(ruleId[0].toUpperCase()+ruleId.slice(1),`<p id="secondaryTargetHelp">${escapeHtml(question)}</p><p class="muted">${escapeHtml(help)}</p><div class="checklist" aria-describedby="secondaryTargetHelp">${eligible.length?eligible.map(weaponRuleTargetOption).join(''):'<p class="muted">No other operatives are available.</p>'}</div><label class="check-row"><input id="tabletopCheckConfirmed" type="checkbox"><span>I have confirmed visibility and distance on the tabletop.</span></label><div class="wizard-actions"><button class="btn ghost" id="secondaryTargetsBack">Back</button><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmSecondaryTargets" disabled>Continue</button></div>`);
-    if(automaticallySelected)$$('[data-weapon-rule-target]').forEach(input=>{input.checked=true;});
-    $('#secondaryTargetsBack').onclick=onBack;
-    $('#tabletopCheckConfirmed').onchange=event=>{$('#confirmSecondaryTargets').disabled=!event.currentTarget.checked;};
-    $('#confirmSecondaryTargets').onclick=()=>{
-      const secondaryTargetIds=$$('[data-weapon-rule-target]:checked').map(input=>input.value);
+    $$('[data-weapon-rule-target]').forEach(input=>{input.checked=sameStep?(saved.secondaryTargetIds||[]).includes(input.value):automaticallySelected;});
+    const confirmation=$('#tabletopCheckConfirmed');
+    confirmation.checked=Boolean(sameStep&&saved.tabletopCheckConfirmed);
+    const persistStep=()=>{
+      const secondaryTargetIds=$$('[data-weapon-rule-target]:checked').map(input=>input.value).filter(id=>id!==primaryTargetId);
       const seekLightAnswer=state.weaponRuleResolution?.primaryTargetId===primaryTargetId?state.weaponRuleResolution.seekLightAnswer:null;
-      state.weaponRuleResolution={...createWeaponRuleResolution({activationId:`${state.turningPoint}:${state.activationNumber}`,actionId:attackerSide==='npo'?'npo-attack':'player-attack',profileKey,ruleId,primaryTargetId,secondaryTargetIds}),...(seekLightAnswer?{seekLightAnswer}:{})};
+      state.weaponRuleResolution={...createWeaponRuleResolution({activationId:`${state.turningPoint}:${state.activationNumber}`,actionId:attackerSide==='npo'?'npo-attack':'player-attack',profileKey,ruleId,primaryTargetId,secondaryTargetIds}),tabletopCheckConfirmed:confirmation.checked,continueConfirmed:false,...(seekLightAnswer?{seekLightAnswer}:{})};
+      save();
+    };
+    $('#secondaryTargetsBack').onclick=onBack;
+    $$('[data-weapon-rule-target]').forEach(input=>input.onchange=persistStep);
+    confirmation.onchange=()=>{persistStep();$('#confirmSecondaryTargets').disabled=!confirmation.checked;};
+    $('#confirmSecondaryTargets').disabled=!confirmation.checked;
+    $('#confirmSecondaryTargets').onclick=event=>{
+      if(weaponRuleResumePending)return;
+      event.currentTarget.disabled=true;
+      persistStep();
+      state.weaponRuleResolution={...state.weaponRuleResolution,continueConfirmed:true};
       save();onContinue(state.weaponRuleResolution);
     };
   }
@@ -4107,7 +4149,14 @@ function showPlayerActivation(stage={}){
     $('#cancelPendingAttack').onclick=()=>cancelPendingPlayerCombat(stage,attackType,onCancel);
     $('#openCombatResolution').onclick=()=>{
       const target=activeNpos().find(n=>n.id===targetSelect.value),weapon=weapons[Number(weaponSelect.value)],profile=playerWeaponProfile(weapon);
-      const proceed=()=>showPlayerCombatResolution(stage,attackType,target.id,Number(weaponSelect.value),onResolved,onCancel,{moreThanEight:Boolean($('#darkOfTombDistance')?.checked)});
+      const proceed=()=>{
+        const moreThanEight=Boolean($('#darkOfTombDistance')?.checked);
+        resumeCombatAfterWeaponRuleCheck({
+          render:()=>showPlayerCombatResolution(stage,attackType,target.id,Number(weaponSelect.value),onResolved,onCancel,{moreThanEight,deferRoll:true}),
+          onMounted:mounted=>mounted.startRoll(),
+          onRecovery:()=>showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel)
+        });
+      };
       const back=()=>showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel);
       const ruleId=weaponHasRule(profile,'blast')?'blast':weaponHasRule(profile,'torrent')?'torrent':null;
       const resolutionKey=`player:${state.turningPoint}:${state.activationNumber}:${stage.playerOperativeId}:${target.id}:${weapon.id||weapon.name}`;
@@ -4126,7 +4175,7 @@ function showPlayerActivation(stage={}){
     if(singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte Warrior'&&!darkDistance&&!requiresTabletopCheck)showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
   }
 
-  function showPlayerCombatResolution(stage,attackType,targetId,weaponIndex,onResolved,onCancel,{result=null,animate=true,moreThanEight=false}={}){
+  function showPlayerCombatResolution(stage,attackType,targetId,weaponIndex,onResolved,onCancel,{result=null,animate=true,moreThanEight=false,deferRoll=false}={}){
     const target=activeNpos().find(n=>n.id===targetId);
     const weapon=playerAttackWeapons(stage.playerOperativeId,attackType)[weaponIndex];
     if(!target||!weapon){showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel);return;}
@@ -4160,11 +4209,18 @@ function showPlayerActivation(stage={}){
     const rerolls=effectiveAttackRerolls({attackerSide:'player',attackType,moreThanEight:transaction.definitionAnswers.moreThanEight});
     const diceDraft={attackDice:[],defenseDice:[],attackerWithinTwo:transaction.definitionAnswers.attackerWithinTwo,moreThanEight:transaction.definitionAnswers.moreThanEight,rerolls,transactionId};
     save();
-    runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,onComplete:(attackDice,defenseDice)=>{
-      diceDraft.attackDice=attackDice;
-      diceDraft.defenseDice=defenseDice;
-      previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft,{targetId,weaponIndex});
-    }});
+    let rollStarted=false;
+    const startRoll=()=>{
+      if(rollStarted)return;
+      rollStarted=true;
+      runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,onComplete:(attackDice,defenseDice)=>{
+        diceDraft.attackDice=attackDice;
+        diceDraft.defenseDice=defenseDice;
+        previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft,{targetId,weaponIndex});
+      }});
+    };
+    if(!deferRoll)startRoll();
+    return {...screen,startRoll};
   }
 
   function previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft,selection={}){
@@ -5099,7 +5155,7 @@ function showPlayerActivation(stage={}){
     log(`${npoName(n)} dealt ${summary.damage} damage to ${playerName(target.id)} (${summary.before} → ${summary.after} wounds).`);
   }
 
-  function showNpoAttackWizard(n,attackDice,onDone,onCancel,animateCombat=false){
+  function showNpoAttackWizard(n,attackDice,onDone,onCancel,animateCombat=false,resumeGuided=false){
     const target=selectedNpoAttackTarget();
     if(!target){showToast('Select the targeted Player operative first.');if(onCancel)onCancel();return;}
     const attackType=state.lastActivation?.action?.includes('Fight')?'melee':'shoot';
@@ -5206,9 +5262,13 @@ function showPlayerActivation(stage={}){
         : availableProfiles.length===1?0:selectedProfileIndex;
       if(profileIndex<0||!Number.isInteger(profileIndex))return;
       const baseProfile=canonicalAttackProfile(availableProfiles[profileIndex]);
-      if(!restoredRoll&&!guidedConfirmed&&!state.weaponRuleResolution?.tabletopCheckConfirmed){
+      if(!restoredRoll&&!guidedConfirmed&&!state.weaponRuleResolution?.continueConfirmed){
         const back=()=>{rollStarted=false;showNpoAttackWizard(n,attackDice,onDone,onCancel,false);};
-        const resume=()=>startAutomaticCombat(null,true);
+        const resume=()=>resumeCombatAfterWeaponRuleCheck({
+          render:()=>showNpoAttackWizard(n,attackDice,onDone,onCancel,false,true),
+          onMounted:mounted=>mounted.startAutomaticCombat(null,true),
+          onRecovery:back
+        });
         const ruleId=weaponHasRule(baseProfile,'blast')?'blast':weaponHasRule(baseProfile,'torrent')?'torrent':null;
         const resolutionKey=`npo:${state.turningPoint}:${state.activationNumber}:${n.id}:${target.id}:${baseProfile.weaponId}:${baseProfile.profileId}`;
         const selectSecondaryTargets=()=>{
@@ -5235,9 +5295,15 @@ function showPlayerActivation(stage={}){
       if(rules)rules.innerHTML=weaponRulesHtml(profile);
       const guidance=$('#npoCombatGuidance');
       if(guidance)guidance.innerHTML=npoCombatGuidanceHtml(n,{attackType,profile});
-      $('#combatResults').replaceChildren();
-      $('#completeNpoCombat').disabled=true;
-      $('#completeNpoCombat').textContent='Rolling…';
+      const combatResults=$('#combatResults');
+      const completeButton=$('#completeNpoCombat');
+      if(!combatResults||!completeButton||!screen?.dice?.isConnected){
+        showCombatResumeRecovery(()=>showNpoAttackWizard(n,attackDice,onDone,onCancel,false));
+        return;
+      }
+      combatResults.replaceChildren();
+      completeButton.disabled=true;
+      completeButton.textContent='Rolling…';
       const rolledAttackDice=restoredRoll?.attackDice||rolledAttackDiceForProfile(profile);
       const rolledDefenseDice=restoredRoll?.saveDice||retainSuccessfulDice(rolledCombatDice(effectiveDefenseDiceCount(profile,rolledAttackDice,3),Number(target.save)||3));
       state.lastActivation={...state.lastActivation,dice:attackDice.map(d=>({...d})),targetConfirmed:true,combatDraft:{
@@ -5277,9 +5343,12 @@ function showPlayerActivation(stage={}){
     }
     else if(availableProfiles.length===1)startAutomaticCombat();
     else if(selectingCombat){
-      screen.continueButton.disabled=false;
-      screen.continueButton.onclick=()=>startAutomaticCombat();
+      if(!resumeGuided){
+        screen.continueButton.disabled=false;
+        screen.continueButton.onclick=()=>startAutomaticCombat();
+      }
     }
+    return {...screen,startAutomaticCombat};
   }
 
   function spinnerField(id,label,value,min,max){return `<div class="field spinner-field"><label>${label}</label><div class="spinner"><input id="${id}" type="number" value="${value}" min="${min}" max="${max}" inputmode="numeric"><button type="button" data-spin="${id}" data-delta="-1" aria-label="Decrease ${label}">−</button><button type="button" data-spin="${id}" data-delta="1" aria-label="Increase ${label}">+</button></div></div>`;}
