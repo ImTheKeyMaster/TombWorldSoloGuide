@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.5.2';
+  const APP_VERSION = '8.5.3';
   const WEAPON_RULE_HANDLERS = Object.freeze({
     severe:{mode:'automatic',phase:'after-attack-roll'},
     'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
@@ -13,8 +13,10 @@
     shock:{mode:'guided',phase:'fight-resolution'},
     piercing:{mode:'automatic',phase:'before-defense-roll'},
     lethal:{mode:'automatic',phase:'attack-roll'},
-    accurate:{mode:'automatic',phase:'attack-roll'}
+    accurate:{mode:'automatic',phase:'attack-roll'},
+    range:{mode:'tabletop-check',phase:'target-selection'}
   });
+  const warnedUnsupportedWeaponRules=new Set();
   const NPO_ACTION_TRANSITIONS = Object.freeze({
     AUTO_CONTINUE:'auto-continue',
     ACKNOWLEDGE:'acknowledge',
@@ -3822,6 +3824,10 @@ function showPlayerActivation(stage={}){
     return match?.[1]||normalized.replace(/\s+/g,'-');
   }
 
+  function normalizedWeaponRuleWarningKey(rule){
+    return String(rule||'').trim().toLowerCase().replace(/[“”]/g,'"').replace(/\s+/g,' ');
+  }
+
   function weaponRuleValue(profile,ruleId){
     const normalizedId=String(ruleId||'').trim().toLowerCase();
     const direct=Number(profile?.[normalizedId.replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase())]);
@@ -3885,8 +3891,16 @@ function showPlayerActivation(stage={}){
   function weaponRuleStatuses(profile){
     return (profile?.rules||[]).map(rule=>{
       const id=normalizedWeaponRuleId(rule),handler=WEAPON_RULE_HANDLERS[id];
-      if(!handler){console.warn(`[Weapon rules] ${rule} is not yet supported by the Guide.`);return `${rule} is not yet supported by the Guide.`;}
+      if(!handler){
+        const warningKey=normalizedWeaponRuleWarningKey(rule);
+        if(!warnedUnsupportedWeaponRules.has(warningKey)){
+          warnedUnsupportedWeaponRules.add(warningKey);
+          console.warn(`[Weapon rules] ${rule} is not yet supported by the Guide.`);
+        }
+        return `${rule} is not yet supported by the Guide.`;
+      }
       if(handler.mode==='automatic')return `${rule}: handled automatically`;
+      if(id==='range')return `${rule}: target distance checked before combat`;
       if(id==='blast'||id==='torrent')return `${rule}: additional targets will be selected next`;
       if(id==='seek-light')return 'Seek Light: target terrain will be checked';
       if(id==='shock')return 'Shock: resolved during the Fight sequence';

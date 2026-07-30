@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.5.2
+# Tomb World Solo Guide v8.5.3
+
+## v8.5.3
+
+**Version 8.5.3 - Recognize Weapon Range Rules**
+
+* Recognized Range weapon rules as supported target-eligibility checks.
+* Removed misleading unsupported-rule messages and warnings for Range.
+* Prevented duplicate console warnings for unknown weapon rules.
+* Preserved all combat calculations and weapon behavior.
 
 ## v8.5.2
 
