@@ -22,7 +22,7 @@ class V801NpoActionEligibilityTests(unittest.TestCase):
         self.assertNotIn('title:`Can this NPO ${action}?`', APP)
 
     def test_03_fall_back_asks_control_range_first(self):
-        self.assertIn("applicabilityQuestion:'Is this NPO within control range of a Player operative?'", APP)
+        self.assertIn("applicabilityQuestion:'Is this NPO within the control range of any Player operative?'", APP)
         self.assertIn("applicability=id==='fall-back'", APP)
 
     def test_04_no_control_range_skips_without_spending_ap(self):

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.5.1';
+  const APP_VERSION = '8.5.2';
   const WEAPON_RULE_HANDLERS = Object.freeze({
     severe:{mode:'automatic',phase:'after-attack-roll'},
     'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
@@ -4291,9 +4291,9 @@ function showPlayerActivation(stage={}){
   const NPO_CORE_ACTION_COSTS={'reposition':1,'dash':1,'charge':1,'shoot':1,'fight':1,'fall-back':2};
   const NPO_ACTION_INQUIRIES={
     'fall-back':{
-      applicabilityQuestion:'Is this NPO within control range of a Player operative?',
+      applicabilityQuestion:'Is this NPO within the control range of any Player operative?',
       feasibilityQuestion:'Can it move away and finish outside every Player operative’s control range?',
-      applicabilityHelp:'Select Yes if a Player operative is in its control range. Do not move the NPO yet.',
+      applicabilityHelp:'Select Yes if this NPO is currently within a Player operative’s control range. Do not move the NPO yet.',
       feasibilityHelp:n=>`Move it up to ${npoDefinition(n.type)?.move} inches. Select Yes only if its base fits at a destination outside every Player operative’s control range.`,
       selectedInstruction:'Fall Back using the shortest available route and finish outside every Player operative’s control range.'
     },

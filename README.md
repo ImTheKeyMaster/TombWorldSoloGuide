@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v8.5.1
+# Tomb World Solo Guide v8.5.2
+
+## v8.5.2
+
+**Version 8.5.2 - Clarify Fall Back Control Range Question**
+
+- Clarified the first Fall Back question so its title and helper consistently describe the NPO being within a Player operative’s control range.
+- Preserved all Fall Back eligibility, priority, AP, and activation behavior.
 
 ## v8.5.1
 

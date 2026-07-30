@@ -20,9 +20,13 @@ def section(start, end):
 class V831FallBackQuestionGuidanceTests(unittest.TestCase):
     def test_applicability_question_explicitly_prevents_movement(self):
         inquiry = section("'fall-back':{", '    shoot:{')
-        self.assertIn("applicabilityQuestion:'Is this NPO within control range of a Player operative?'", inquiry)
+        self.assertIn("applicabilityQuestion:'Is this NPO within the control range of any Player operative?'", inquiry)
         self.assertIn(
-            "applicabilityHelp:'Select Yes if a Player operative is in its control range. Do not move the NPO yet.'",
+            "applicabilityHelp:'Select Yes if this NPO is currently within a Player operative’s control range. Do not move the NPO yet.'",
+            inquiry,
+        )
+        self.assertNotIn(
+            'Select Yes if a Player operative is in its control range. Do not move the NPO yet.',
             inquiry,
         )
 
@@ -66,13 +70,13 @@ class V831FallBackQuestionGuidanceTests(unittest.TestCase):
         self.assertIn("commitNpoAction({actionId:pendingAction.id", movement)
 
     def test_version_831_is_consistent_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.5.1';", APP)
-        self.assertIn("const APP_VERSION = '8.5.1';", WORKER)
-        self.assertIn('V8.5.1', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.5.1'))
-        self.assertIn('## v8.5.1', README)
+        self.assertIn("const APP_VERSION = '8.5.2';", APP)
+        self.assertIn("const APP_VERSION = '8.5.2';", WORKER)
+        self.assertIn('V8.5.2', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.5.2'))
+        self.assertIn('## v8.5.2', README)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.5.1', INDEX)
+            self.assertIn(f'{asset}?v=8.5.2', INDEX)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
 
