@@ -75,7 +75,8 @@ class BattleCompleteCleanupTests(unittest.TestCase):
         self.assertIn("readOnly?`<div", sabotage)
         self.assertIn("const assignment=readOnly?'':", transponder)
         self.assertIn("const escapeControl=readOnly?'':", transponder)
-        self.assertIn("readOnly?finalState:activeControl", destruction)
+        self.assertIn("readOnly?finalState:", destruction)
+        self.assertNotIn('id="resolveMissionAction"', destruction)
         self.assertIn("const actions=readOnly?'':", scout)
         self.assertIn("readOnly?`<span>", regroup)
 
@@ -83,7 +84,7 @@ class BattleCompleteCleanupTests(unittest.TestCase):
         all_renderers = APP[APP.index("const missionProgressRenderers"):APP.index("function missionProgressHtml")]
         for control in (
             'data-mission-feature', 'data-search-site', 'id="transponderCarrier"',
-            'id="resolveMissionAction"', 'data-awaken-room', 'data-scout-room',
+'data-awaken-room', 'data-scout-room',
             'data-regroup-check',
         ):
             self.assertIn(control, all_renderers)
@@ -102,13 +103,13 @@ class BattleCompleteCleanupTests(unittest.TestCase):
         self.assertIn("const MAX_TURNING_POINTS = 4;", APP)
 
     def test_11_application_displays_version_757(self):
-        self.assertIn("const APP_VERSION = '8.5.4';", APP)
-        self.assertIn("const APP_VERSION = '8.5.4';", WORKER)
-        self.assertIn("V8.5.4", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.5.4"))
-        self.assertIn("## v8.5.4", README)
+        self.assertIn("const APP_VERSION = '8.6.0';", APP)
+        self.assertIn("const APP_VERSION = '8.6.0';", WORKER)
+        self.assertIn("V8.6.0", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.0"))
+        self.assertIn("## v8.6.0", README)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.5.4", INDEX)
+            self.assertIn(f"{asset}?v=8.6.0", INDEX)
 
     def test_12_save_version_is_unchanged(self):
         persistence = (ROOT / "persistence.js").read_text()

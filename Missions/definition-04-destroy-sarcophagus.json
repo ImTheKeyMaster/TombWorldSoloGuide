@@ -23,7 +23,8 @@
     {
       "id": "breachSarcophagus",
       "label": "Breach Sarcophagus",
-      "description": "Confirm that the operative can perform this mission action, then roll 2D6.",
+      "description": "During a Player operative's activation, it can perform this action while within the sarcophagus's control range. Spend the required AP, roll 2D6, and add the total to Destruction Points.",
+      "oncePer": "activation",
       "availability": {
         "all": [
           { "path": "mission.objectives.destructionPoints.completed", "operator": "==", "value": false }
@@ -31,8 +32,8 @@
       },
       "confirmation": {
         "required": true,
-        "title": "Breach Sarcophagus?",
-        "message": "Confirm that the operative can perform this mission action."
+        "title": "Breach Sarcophagus",
+        "message": "Complete the guided Player Activation eligibility checks before performing this mission action."
       },
       "operations": [
         {
@@ -102,7 +103,7 @@
     "objectiveId": "destructionPoints",
     "operator": ">=",
     "value": 20,
-    "endsBattle": false,
+    "endsBattle": true,
     "dialogId": "objectiveComplete"
   },
   "hud": {
@@ -113,7 +114,7 @@
   "dialogs": {
     "objectiveComplete": {
       "title": "MISSION OBJECTIVE COMPLETE",
-      "message": "Continue the battle."
+      "message": "The sarcophagus has been destroyed. The Player team is victorious."
     }
   },
   "presentation": { "historyDisplayCount": 5, "showHud": true }

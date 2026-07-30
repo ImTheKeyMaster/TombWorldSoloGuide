@@ -32,7 +32,7 @@ const definition=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarc
   });
   const runtime=engine.initializeMissionRuntime(definition,{now:()=> '2026-07-22T00:00:00Z'});
   assert.equal(engine.getMissionHudModel().value,0);
-  await engine.executeMissionAction('breachSarcophagus',{turningPoint:1,phase:'firefight'});
+  await engine.executeMissionAction('breachSarcophagus',{turningPoint:1,phase:'firefight',activationId:'1:a'});
   assert.equal(engine.getMissionHudModel().value,9);
   assert.equal(engine.getMissionDetailsModel().history.length,1);
   await engine.executeMissionHook('onStrategyPhaseReadyStep',{turningPoint:2,phase:'strategy'});
@@ -40,12 +40,12 @@ const definition=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarc
   assert.equal(engine.getObjectiveValue('destructionPoints'),6);
   assert.equal((await engine.executeMissionHook('onStrategyPhaseReadyStep',{turningPoint:2}))[0].status,'already-executed');
   assert.equal(inputRequests,1);
-  await engine.executeMissionAction('breachSarcophagus',{turningPoint:2,phase:'firefight'});
+  await engine.executeMissionAction('breachSarcophagus',{turningPoint:2,phase:'firefight',activationId:'2:a'});
   assert.equal(engine.getObjectiveValue('destructionPoints'),18);
   engine.adjustObjectiveValue('destructionPoints',7,{turningPoint:3});
   assert.equal(engine.getObjectiveValue('destructionPoints'),20);
   assert.equal(runtime.objectives.destructionPoints.completed,true);
-  assert.equal(definition.completion.endsBattle,false);
+  assert.equal(definition.completion.endsBattle,true);
   const historyLength=runtime.history.length;
   engine.adjustObjectiveValue('destructionPoints',-20,{turningPoint:3});
   assert.equal(engine.getObjectiveValue('destructionPoints'),20);
@@ -65,11 +65,11 @@ const definition=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarc
         worker = (ROOT / "service-worker.js").read_text()
         manifest = json.loads((ROOT / "Missions/manifest.json").read_text())
 
-        self.assertIn("const APP_VERSION = '8.5.4'", app)
-        self.assertIn("const APP_VERSION = '8.5.4'", worker)
-        self.assertIn("V8.5.4", index)
+        self.assertIn("const APP_VERSION = '8.6.0'", app)
+        self.assertIn("const APP_VERSION = '8.6.0'", worker)
+        self.assertIn("V8.6.0", index)
         for asset in ("app.js", "mission-engine.js", "persistence.js", "styles.css"):
-            self.assertIn(f"{asset}?v=8.5.4", index)
+            self.assertIn(f"{asset}?v=8.6.0", index)
         for asset in (
             "Missions/manifest.json",
             "Missions/mission.schema.json",

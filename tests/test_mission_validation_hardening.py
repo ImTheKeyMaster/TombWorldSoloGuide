@@ -78,7 +78,7 @@ assert.throws(()=>api.validateMissionDefinition(invalid),error=>error.code==='IN
 (async()=>{
   const engine=api.createMissionEngine({requestDiceRoll:async()=>({dice:[4,2],total:6})});
   engine.initializeMissionRuntime(definition);
-  await engine.executeMissionAction('breachSarcophagus');
+  await engine.executeMissionAction('breachSarcophagus',{activationId:'validation:a'});
   assert.equal(engine.getObjectiveValue('destructionPoints'),4);
 })().catch(error=>{console.error(error);process.exit(1)});
 """
