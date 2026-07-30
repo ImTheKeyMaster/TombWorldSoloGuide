@@ -52,7 +52,7 @@ class NpoAttackProfileCardTests(unittest.TestCase):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
         self.assertIn('<option value="" ${selectedProfileIndex<0?', wizard)
         self.assertIn("disabled>Choose a profile...</option>", wizard)
-        self.assertIn("else if(availableProfiles.length===1)startAutomaticCombat()", wizard)
+        self.assertIn("else if(availableProfiles.length===1&&!resumeGuided)startAutomaticCombat()", wizard)
         self.assertIn("if(profileIndex<0||!Number.isInteger(profileIndex))return", wizard)
         self.assertIn("event.currentTarget.value===''", wizard)
         self.assertIn("$('#npoCombatProfile')?.addEventListener('change',event=>{", wizard)
@@ -91,7 +91,7 @@ class NpoAttackProfileCardTests(unittest.TestCase):
         self.assertIn("definition.meleeWeapons||[]", profiles)
         self.assertIn("availableProfiles.length===1?canonicalAttackProfile(availableProfiles[0]):null", wizard)
         self.assertIn("availableProfiles.length===1?0:selectedProfileIndex", wizard)
-        self.assertIn("else if(availableProfiles.length===1)startAutomaticCombat()", wizard)
+        self.assertIn("else if(availableProfiles.length===1&&!resumeGuided)startAutomaticCombat()", wizard)
 
     def test_no_valid_profile_fails_safely_with_back_action(self):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
