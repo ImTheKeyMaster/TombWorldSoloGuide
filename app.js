@@ -3807,12 +3807,11 @@ function showPlayerActivation(stage={}){
     return Math.max(0,Number(baseDice||0)-reduction);
   }
 
-  function automaticWeaponRuleMessages(profile,attackDice,targetName='the target'){
+  function automaticWeaponRuleMessages(profile,attackDice){
     const messages=[];
     const piercingCrits=weaponRuleValue(profile,'piercing-crits');
     const hasCritical=(attackDice||[]).some(die=>die.retained&&die.kind==='crit');
     if(piercingCrits>0&&hasCritical)messages.push(`Piercing Crits ${piercingCrits} applied: the defender rolls ${piercingCrits} fewer defense dice.`);
-    if(weaponHasRule(profile,'stun')&&hasCritical)messages.push(`Stun applied: ${targetName} has -1 APL until the end of its next activation.`);
     return messages;
   }
 
@@ -3834,6 +3833,19 @@ function showPlayerActivation(stage={}){
     const discardedKind=dice[index].kind==='hit'?'normal':'critical';
     dice[index]={...dice[index],retained:false,discardedByShock:true};
     return {dice,applied:true,discardedKind,message:`Shock applied: one unresolved ${discardedKind} success was discarded.`};
+  }
+
+  function showGuidedShockStep(combat,onContinue,onBack){
+    showModal('Shock',`<p id="shockHelp">Did this NPO just strike with its first critical success?</p><p class="muted">Check the unresolved successes in this Fight sequence. Shock triggers only once.</p><div class="wizard-actions"><button class="btn ghost" id="shockBack">Back</button><button class="btn ghost" data-close>Close Guide</button><button class="btn secondary" id="shockNo">No</button><button class="btn primary" id="shockYes">Yes</button></div>`);
+    $('#shockBack').onclick=onBack;
+    $('#shockNo').onclick=()=>onContinue({...combat,shockResolved:true,shockApplied:false});
+    $('#shockYes').onclick=()=>{
+      showModal('Shock',`<p id="shockDiscardHelp">Which unresolved opponent success was discarded?</p><p class="muted">Discard one unresolved normal success. Only discard a critical success if no normal success remains.</p><div class="wizard-actions"><button class="btn ghost" id="shockChoiceBack">Back</button><button class="btn ghost" data-close>Close Guide</button><button class="btn secondary" id="shockCritical">Critical success</button><button class="btn primary" id="shockNormal">Normal success</button></div>`);
+      $('#shockChoiceBack').onclick=()=>showGuidedShockStep(combat,onContinue,onBack);
+      const finish=discardedKind=>onContinue({...combat,shockResolved:true,shockApplied:true,shockDiscardedKind:discardedKind,eventMessages:[...(combat.eventMessages||[]),`Shock applied: one unresolved ${discardedKind} success was discarded.`]});
+      $('#shockNormal').onclick=()=>finish('normal');
+      $('#shockCritical').onclick=()=>finish('critical');
+    };
   }
 
   function weaponRuleStatuses(profile){
@@ -3865,11 +3877,11 @@ function showPlayerActivation(stage={}){
     return `<label class="check-row" for="weapon-rule-target-${id}"><input id="weapon-rule-target-${id}" type="checkbox" value="${id}" data-weapon-rule-target><span>${label}</span></label>`;
   }
 
-  function showSeekLightCheck({target,onContinue,onBack}){
+  function showSeekLightCheck({target,resolutionKey,onContinue,onBack}){
     const saved=state.weaponRuleResolution;
-    if(target?.order!=='Conceal'||saved?.seekLightAnswer){onContinue(saved?.seekLightAnswer||null);return;}
+    if(target?.order!=='Conceal'||saved?.resolutionKey===resolutionKey&&saved?.seekLightAnswer){onContinue(saved?.seekLightAnswer||null);return;}
     showModal('Seek Light',`<p id="seekLightHelp">Is the target visible and using Light terrain for cover?</p><p class="muted">Seek Light only bypasses Conceal when the target is using Light terrain for cover. It does not remove a cover save.</p><div class="wizard-actions"><button class="btn ghost" id="seekLightBack">Back</button><button class="btn ghost" data-close>Close Guide</button><button class="btn secondary" id="seekLightNo">No</button><button class="btn primary" id="seekLightYes">Yes</button></div>`);
-    const answer=value=>{state.weaponRuleResolution={...(state.weaponRuleResolution||{}),seekLightAnswer:value,tabletopCheckConfirmed:true};save();onContinue(value);};
+    const answer=value=>{state.weaponRuleResolution={...(saved?.resolutionKey===resolutionKey?saved:{}),resolutionKey,primaryTargetId:target.id,seekLightAnswer:value,tabletopCheckConfirmed:false};save();onContinue(value);};
     $('#seekLightBack').onclick=onBack;
     $('#seekLightNo').onclick=()=>answer('no');
     $('#seekLightYes').onclick=()=>answer('yes');
@@ -3891,7 +3903,8 @@ function showPlayerActivation(stage={}){
     $('#tabletopCheckConfirmed').onchange=event=>{$('#confirmSecondaryTargets').disabled=!event.currentTarget.checked;};
     $('#confirmSecondaryTargets').onclick=()=>{
       const secondaryTargetIds=$$('[data-weapon-rule-target]:checked').map(input=>input.value);
-      state.weaponRuleResolution=createWeaponRuleResolution({activationId:`${state.turningPoint}:${state.activationNumber}`,actionId:attackerSide==='npo'?'npo-attack':'player-attack',profileKey,ruleId,primaryTargetId,secondaryTargetIds});
+      const seekLightAnswer=state.weaponRuleResolution?.primaryTargetId===primaryTargetId?state.weaponRuleResolution.seekLightAnswer:null;
+      state.weaponRuleResolution={...createWeaponRuleResolution({activationId:`${state.turningPoint}:${state.activationNumber}`,actionId:attackerSide==='npo'?'npo-attack':'player-attack',profileKey,ruleId,primaryTargetId,secondaryTargetIds}),...(seekLightAnswer?{seekLightAnswer}:{})};
       save();onContinue(state.weaponRuleResolution);
     };
   }
@@ -4096,14 +4109,16 @@ function showPlayerActivation(stage={}){
       const target=activeNpos().find(n=>n.id===targetSelect.value),weapon=weapons[Number(weaponSelect.value)],profile=playerWeaponProfile(weapon);
       const proceed=()=>showPlayerCombatResolution(stage,attackType,target.id,Number(weaponSelect.value),onResolved,onCancel,{moreThanEight:Boolean($('#darkOfTombDistance')?.checked)});
       const back=()=>showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel);
-      if(weaponHasRule(profile,'seek-light')&&target.order==='Conceal'){showSeekLightCheck({target,onContinue:proceed,onBack:back});return;}
       const ruleId=weaponHasRule(profile,'blast')?'blast':weaponHasRule(profile,'torrent')?'torrent':null;
-      if(ruleId){
+      const resolutionKey=`player:${state.turningPoint}:${state.activationNumber}:${stage.playerOperativeId}:${target.id}:${weapon.id||weapon.name}`;
+      const selectSecondaryTargets=()=>{
+        if(!ruleId){proceed();return;}
         const playerTargets=(state.playerRoster||[]).map(id=>({id,label:playerName(id),wounds:Number(state.playerWounds[id]??playerDefinition(id)?.wounds??0),inPlay:state.playerOperativeStates?.[id]?.inPlay!==false}));
         const npoTargets=activeNpos().map(npo=>({id:npo.id,label:npoName(npo),wounds:npo.wounds,inPlay:npo.battlefieldState==='deployed'}));
         showSecondaryTargetCheck({ruleId,distance:weaponRuleValue(profile,ruleId),attackerSide:'player',attackerId:stage.playerOperativeId,primaryTargetId:target.id,targets:ruleId==='blast'?[...playerTargets,...npoTargets]:npoTargets,profileKey:weapon.id||weapon.name,onContinue:proceed,onBack:back});return;
-      }
-      proceed();
+      };
+      if(weaponHasRule(profile,'seek-light')&&target.order==='Conceal'){showSeekLightCheck({target,resolutionKey,onContinue:selectSecondaryTargets,onBack:back});return;}
+      selectSecondaryTargets();
     };
     renderChoices();
     const singleProfile=weapons.length===1?playerWeaponProfile(weapons[0]):null;
@@ -5131,6 +5146,10 @@ function showPlayerActivation(stage={}){
     const commitCombat=(combat)=>{
       const pending=state.lastActivation?.pendingAction;
       if(resolutionCommitted||!pending||!canCommitNpoAction(pending.id,pending.apCost))return;
+      if(attackType==='melee'&&weaponHasRule(combat.profile,'shock')&&!combat.shockResolved){
+        showGuidedShockStep(combat,updated=>{state.lastActivation={...state.lastActivation,combatDraft:updated};save();showNpoAttackWizard(n,attackDice,onDone,onCancel,false);},()=>showNpoAttackWizard(n,attackDice,onDone,onCancel,false));
+        return;
+      }
       resolutionCommitted=true;
       const complete=$('#completeNpoCombat');
       complete.disabled=true;
@@ -5190,13 +5209,16 @@ function showPlayerActivation(stage={}){
       if(!restoredRoll&&!guidedConfirmed&&!state.weaponRuleResolution?.tabletopCheckConfirmed){
         const back=()=>{rollStarted=false;showNpoAttackWizard(n,attackDice,onDone,onCancel,false);};
         const resume=()=>startAutomaticCombat(null,true);
-        if(weaponHasRule(baseProfile,'seek-light')&&target.order==='Conceal'){showSeekLightCheck({target,onContinue:resume,onBack:back});return;}
         const ruleId=weaponHasRule(baseProfile,'blast')?'blast':weaponHasRule(baseProfile,'torrent')?'torrent':null;
-        if(ruleId){
+        const resolutionKey=`npo:${state.turningPoint}:${state.activationNumber}:${n.id}:${target.id}:${baseProfile.weaponId}:${baseProfile.profileId}`;
+        const selectSecondaryTargets=()=>{
+          if(!ruleId){resume();return;}
           const playerTargets=inPlayLivingPlayerOperativeIds().map(id=>({id,label:playerName(id),wounds:playerCurrentWounds(id),inPlay:true}));
           const npoTargets=activeNpos().map(operative=>({id:operative.id,label:npoName(operative),wounds:operative.wounds,inPlay:true}));
           showSecondaryTargetCheck({ruleId,distance:weaponRuleValue(baseProfile,ruleId),attackerSide:'npo',attackerId:n.id,primaryTargetId:target.id,targets:ruleId==='blast'?[...playerTargets,...npoTargets]:playerTargets,profileKey:`${baseProfile.weaponId}:${baseProfile.profileId}`,onContinue:resume,onBack:back});return;
-        }
+        };
+        if(weaponHasRule(baseProfile,'seek-light')&&target.order==='Conceal'){showSeekLightCheck({target,resolutionKey,onContinue:selectSecondaryTargets,onBack:back});return;}
+        selectSecondaryTargets();return;
       }
       rollStarted=true;
       if(combatTimer)combatTimer();

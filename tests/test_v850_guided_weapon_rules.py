@@ -26,7 +26,7 @@ class GuidedWeaponRuleTests(unittest.TestCase):
     def test_22_to_24_shock(self):
         self.assertIn('function resolveShockCriticalStrike',APP); self.assertLess(APP.index("die.retained&&die.kind==='hit'",APP.index('function resolveShockCriticalStrike')),APP.index("die.retained&&die.kind==='crit'",APP.index('function resolveShockCriticalStrike'))); self.assertNotIn('Shock applied: the defender rolls',APP)
     def test_25_to_28_persistence_and_idempotence(self):
-        self.assertIn('merged.weaponRuleResolution',APP); self.assertIn('state.weaponRuleResolution=createWeaponRuleResolution',APP); self.assertIn('advanceWeaponRuleResolution',APP); self.assertIn('new Set([...(resolution.completedTargetIds||[])',APP)
+        self.assertIn('merged.weaponRuleResolution',APP); self.assertIn('createWeaponRuleResolution({activationId:',APP); self.assertIn('advanceWeaponRuleResolution',APP); self.assertIn('new Set([...(resolution.completedTargetIds||[])',APP)
     def test_29_30_back_and_close(self):
         self.assertIn('id="secondaryTargetsBack">Back',APP); self.assertIn('data-close>Close Guide',APP); self.assertIn('save();onContinue(state.weaponRuleResolution)',APP)
     def test_31_registered_modes(self):
