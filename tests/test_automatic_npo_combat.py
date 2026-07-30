@@ -18,7 +18,7 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         shared = self.source("function runAutomaticCombatRolls", "function retainedDiceTotals")
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
         self.assertIn("runAutomaticCombatRolls", wizard)
-        self.assertIn("rolledCombatDice(profile.dice,profile.hit,profile.critThreshold)", shared)
+        self.assertIn("rolledAttackDiceForProfile(profile)", shared)
         self.assertIn("rolledCombatDice(Math.max(0,3-profile.ap),Number(defenseSave)||3)", shared)
         self.assertEqual(shared.count("timer=setTimeout"), 1)
         self.assertIn("timer=settleCombatDice", shared)
@@ -71,7 +71,7 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         self.assertIn("else if(rollingCombat)startAutomaticCombat(saved)", wizard)
         self.assertIn("rolledAttackDice=restoredRoll?.attackDice||", wizard)
         self.assertIn("rolledDefenseDice=restoredRoll?.saveDice||", wizard)
-        self.assertIn("rolledAttackDice||retainSuccessfulDice", shared)
+        self.assertIn("applySevereToAttackDice(retainSuccessfulDice(rolledAttackDice),profile).dice", shared)
         self.assertIn("rolledDefenseDice||retainSuccessfulDice", shared)
 
     def test_unselected_multiple_profile_attack_restores_without_rolling(self):

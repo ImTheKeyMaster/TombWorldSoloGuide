@@ -86,7 +86,8 @@ class CanoptekProfileTests(unittest.TestCase):
 
     def test_unautomated_weapon_rules_require_explicit_tabletop_resolution(self):
         self.assertIn("const tabletopRules=", APP)
-        self.assertIn("Piercing Crits|Blast|Torrent|Seek Light|Severe|Shock|Stun", APP)
+        self.assertIn("Piercing Crits|Blast|Torrent|Seek Light|Shock|Stun", APP)
+        self.assertNotIn("Piercing Crits|Blast|Torrent|Seek Light|Severe|Shock|Stun", APP)
         self.assertIn("confirm any required tabletop targets or effects", APP)
 
     def test_reanimate_penalty_and_healing_edge_cases_are_safe(self):
@@ -98,8 +99,8 @@ class CanoptekProfileTests(unittest.TestCase):
         self.assertIn("Gameplay profile", APP)
         self.assertIn("Operative actions", APP)
         self.assertIn("Passive rules", APP)
-        self.assertIn("const APP_VERSION = '8.4.2';", APP)
-        self.assertIn("V8.4.2", (ROOT / "index.html").read_text())
+        self.assertIn("const APP_VERSION = '8.4.3';", APP)
+        self.assertIn("V8.4.3", (ROOT / "index.html").read_text())
         self.assertNotIn("npoPortrait", APP)
 
 
