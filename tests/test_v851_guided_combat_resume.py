@@ -14,6 +14,8 @@ class GuidedCombatResumeTests(unittest.TestCase):
         self.assertIn("render:()=>showNpoAttackWizard", APP)
         self.assertIn("render:()=>showPlayerCombatResolution", APP)
         self.assertIn("requestAnimationFrame", APP)
+        self.assertIn("finally{\n        weaponRuleResumePending=false", APP)
+        self.assertIn("Guided weapon-rule combat screen render failed.", APP)
 
     def test_02_required_mount_is_checked_before_roll(self):
         check = "if(!combatResults||!completeButton||!screen?.dice?.isConnected)"
@@ -26,6 +28,7 @@ class GuidedCombatResumeTests(unittest.TestCase):
         self.assertIn("onMounted:mounted=>mounted.startRoll()", APP)
         self.assertIn("return {...screen,startAutomaticCombat}", APP)
         self.assertIn("return {...screen,startRoll}", APP)
+        self.assertIn("else if(availableProfiles.length===1&&!resumeGuided)startAutomaticCombat()", APP)
 
     def test_04_guided_answers_and_secondary_targets_are_persisted(self):
         self.assertIn("secondaryTargetIds", APP)
@@ -72,6 +75,8 @@ class GuidedCombatResumeTests(unittest.TestCase):
         self.assertIn("weaponHasRule(profile,'seek-light')", APP)
         self.assertIn("weaponHasRule(baseProfile,'blast')", APP)
         self.assertIn("weaponHasRule(profile,'torrent')", APP)
+        self.assertIn("const weaponIndex=Number(weaponSelect.value)", APP)
+        self.assertIn("const moreThanEight=Boolean($('#darkOfTombDistance')?.checked)", APP)
 
     def test_11_version_851_is_consistent(self):
         self.assertIn("const APP_VERSION = '8.5.1';", APP)

@@ -77,7 +77,7 @@ class AutomaticNpoCombatTests(unittest.TestCase):
     def test_unselected_multiple_profile_attack_restores_without_rolling(self):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
         ending = wizard.split("    if(sameCombat)displayCombat(saved,animateCombat)", 1)[1]
-        self.assertIn("else if(availableProfiles.length===1)startAutomaticCombat()", ending)
+        self.assertIn("else if(availableProfiles.length===1&&!resumeGuided)startAutomaticCombat()", ending)
         self.assertIn("else if(selectingCombat){", ending)
         self.assertNotIn("else startAutomaticCombat()", ending)
 

@@ -3374,8 +3374,14 @@ function showPlayerActivation(stage={}){
     weaponRuleResumePending=true;
     save();
     requestAnimationFrame(()=>{
-      const mounted=render();
-      weaponRuleResumePending=false;
+      let mounted=null;
+      try{
+        mounted=render();
+      }catch(error){
+        console.error('[Combat] Guided weapon-rule combat screen render failed.',error);
+      }finally{
+        weaponRuleResumePending=false;
+      }
       const combatResults=$('#combatResults');
       const completeButton=mounted?.continueButton;
       if(!combatResults||!completeButton||!mounted?.dice?.isConnected){
@@ -4148,11 +4154,13 @@ function showPlayerActivation(stage={}){
     weaponSelect.addEventListener('change',renderChoices);
     $('#cancelPendingAttack').onclick=()=>cancelPendingPlayerCombat(stage,attackType,onCancel);
     $('#openCombatResolution').onclick=()=>{
-      const target=activeNpos().find(n=>n.id===targetSelect.value),weapon=weapons[Number(weaponSelect.value)],profile=playerWeaponProfile(weapon);
+      const target=activeNpos().find(n=>n.id===targetSelect.value);
+      const weaponIndex=Number(weaponSelect.value);
+      const weapon=weapons[weaponIndex],profile=playerWeaponProfile(weapon);
+      const moreThanEight=Boolean($('#darkOfTombDistance')?.checked);
       const proceed=()=>{
-        const moreThanEight=Boolean($('#darkOfTombDistance')?.checked);
         resumeCombatAfterWeaponRuleCheck({
-          render:()=>showPlayerCombatResolution(stage,attackType,target.id,Number(weaponSelect.value),onResolved,onCancel,{moreThanEight,deferRoll:true}),
+          render:()=>showPlayerCombatResolution(stage,attackType,target.id,weaponIndex,onResolved,onCancel,{moreThanEight,deferRoll:true}),
           onMounted:mounted=>mounted.startRoll(),
           onRecovery:()=>showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel)
         });
@@ -5341,7 +5349,7 @@ function showPlayerActivation(stage={}){
       screen.continueButton.textContent='Roll Attack';
       screen.continueButton.onclick=()=>startAutomaticCombat();
     }
-    else if(availableProfiles.length===1)startAutomaticCombat();
+    else if(availableProfiles.length===1&&!resumeGuided)startAutomaticCombat();
     else if(selectingCombat){
       if(!resumeGuided){
         screen.continueButton.disabled=false;
