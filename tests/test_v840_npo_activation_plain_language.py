@@ -16,14 +16,14 @@ def section(start, end):
 
 class V840NpoActivationPlainLanguageTests(unittest.TestCase):
     def test_version_and_save_compatibility(self):
-        self.assertIn("const APP_VERSION = '8.4.0';", APP)
-        self.assertIn("const APP_VERSION = '8.4.0';", WORKER)
-        self.assertIn('V8.4.0', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.4.0'))
-        self.assertIn('## v8.4.0', README)
+        self.assertIn("const APP_VERSION = '8.4.1';", APP)
+        self.assertIn("const APP_VERSION = '8.4.1';", WORKER)
+        self.assertIn('V8.4.1', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.4.1'))
+        self.assertIn('## v8.4.1', README)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.4.0', INDEX)
+            self.assertIn(f'{asset}?v=8.4.1', INDEX)
 
     def test_profile_and_progress_plain_language(self):
         prompt = section('function runNpoPrompt', 'function chooseNpoDecision')
@@ -74,7 +74,7 @@ class V840NpoActivationPlainLanguageTests(unittest.TestCase):
     def test_reposition_and_dash_are_behavior_specific(self):
         movement = section('function npoMovementInquiry', 'function npoMovementInstruction')
         for wording in (
-            'Can this NPO Reposition to get a clear shot?',
+            'Can this NPO Reposition to a position where it can Shoot?',
             'Can this NPO Reposition closer to its target?',
             'Can this NPO Reposition to use a support action or help the mission?',
             'Can this NPO Reposition to help complete or defend the mission?',

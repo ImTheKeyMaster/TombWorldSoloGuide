@@ -87,7 +87,7 @@ class V801NpoActionEligibilityTests(unittest.TestCase):
         self.assertIn('Can this NPO reach a Player operative with a Charge?', APP)
 
     def test_13_reposition_requires_printed_purpose(self):
-        self.assertIn('Can this NPO Reposition to get a clear shot?', APP)
+        self.assertIn('Can this NPO Reposition to a position where it can Shoot?', APP)
 
     def test_14_dash_requires_printed_purpose(self):
         self.assertIn('Can a 3-inch Dash put this NPO in a better position?', APP)

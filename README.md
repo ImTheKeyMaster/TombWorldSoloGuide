@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.4.0
+# Tomb World Solo Guide v8.4.1
+
+## v8.4.1
+
+**Version 8.4.1 - Preserve NPO Movement Intent**
+
+- Added separate movement purposes so rejecting a Reposition-to-Shoot option does not reject every Reposition.
+- Movement that promises Shoot or Fight now proceeds directly to that follow-up action.
+- Added clear final-AP Dash guidance so players know the activation will end.
+- Preserved NPO priorities, AP costs, combat, missions, and event behavior.
 
 ## v8.4.0
 

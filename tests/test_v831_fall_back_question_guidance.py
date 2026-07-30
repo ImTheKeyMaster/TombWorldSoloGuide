@@ -41,7 +41,8 @@ class V831FallBackQuestionGuidanceTests(unittest.TestCase):
 
     def test_question_stage_selects_separate_helper_text(self):
         question = section('function npoActionQuestion', 'const npoQuestionIcons')
-        self.assertIn("applicability?inquiry?.applicabilityHelp:(inquiry?.feasibilityHelp??inquiry?.help)", question)
+        self.assertIn("applicability?inquiry?.applicabilityHelp:", question)
+        self.assertIn("inquiry?.feasibilityHelp??inquiry?.help", question)
 
     def test_normal_apl_two_necron_warrior_completes_after_two_ap_fall_back(self):
         warrior = section("'Necron Warrior': {", "'Canoptek Tomb Crawler': {")
@@ -65,13 +66,13 @@ class V831FallBackQuestionGuidanceTests(unittest.TestCase):
         self.assertIn("commitNpoAction({actionId:pendingAction.id", movement)
 
     def test_version_831_is_consistent_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.4.0';", APP)
-        self.assertIn("const APP_VERSION = '8.4.0';", WORKER)
-        self.assertIn('V8.4.0', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.4.0'))
-        self.assertIn('## v8.4.0', README)
+        self.assertIn("const APP_VERSION = '8.4.1';", APP)
+        self.assertIn("const APP_VERSION = '8.4.1';", WORKER)
+        self.assertIn('V8.4.1', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.4.1'))
+        self.assertIn('## v8.4.1', README)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.4.0', INDEX)
+            self.assertIn(f'{asset}?v=8.4.1', INDEX)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
 
