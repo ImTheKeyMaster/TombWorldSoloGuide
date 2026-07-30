@@ -22,7 +22,7 @@ class V810StreamlinedNpoActionFlowTests(unittest.TestCase):
         self.assertIn('transitionMode===NPO_ACTION_TRANSITIONS.ACKNOWLEDGE', commit)
 
     def test_routine_movement_keeps_physical_confirmation(self):
-        movement = section('function resolveNpoAction', 'function initiativeSummary')
+        movement = section('function renderNpoMovementConfirmation', 'function resolveNpoAction')
         self.assertIn("Confirm ${escapeHtml(displayAction)} Complete", movement)
         for action in ('reposition', 'dash', 'charge', 'fall-back'):
             self.assertIn(action, section('const ROUTINE_NPO_MOVEMENT_ACTIONS', 'let lastTouchEnd'))
@@ -67,7 +67,7 @@ class V810StreamlinedNpoActionFlowTests(unittest.TestCase):
             self.assertIn(action, APP)
 
     def test_compact_progress_is_chronological_and_nonblocking(self):
-        progress = section('function renderNpoActionProgress', 'function runNpoPrompt')
+        progress = section('function renderNpoActionProgress', 'function titleCaseRuleId')
         self.assertIn('activation?.resolvedActions||[]', progress)
         self.assertIn("actions.map(action=>escapeHtml(conciseNpoActionName(action))).join(', ')", progress)
         self.assertIn('AP left (${names} complete)', progress)
@@ -98,12 +98,12 @@ class V810StreamlinedNpoActionFlowTests(unittest.TestCase):
         self.assertIn('completedActionIds', guard)
 
     def test_current_version_830_everywhere(self):
-        self.assertIn("const APP_VERSION = '8.4.1';", APP)
-        self.assertIn("const APP_VERSION = '8.4.1';", WORKER)
-        self.assertIn('V8.4.1', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.4.1'))
+        self.assertIn("const APP_VERSION = '8.4.2';", APP)
+        self.assertIn("const APP_VERSION = '8.4.2';", WORKER)
+        self.assertIn('V8.4.2', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.4.2'))
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.4.1', INDEX)
+            self.assertIn(f'{asset}?v=8.4.2', INDEX)
 
 
 if __name__ == '__main__':

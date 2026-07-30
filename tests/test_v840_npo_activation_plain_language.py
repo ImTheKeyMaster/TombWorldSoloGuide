@@ -16,17 +16,17 @@ def section(start, end):
 
 class V840NpoActivationPlainLanguageTests(unittest.TestCase):
     def test_version_and_save_compatibility(self):
-        self.assertIn("const APP_VERSION = '8.4.1';", APP)
-        self.assertIn("const APP_VERSION = '8.4.1';", WORKER)
-        self.assertIn('V8.4.1', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.4.1'))
-        self.assertIn('## v8.4.1', README)
+        self.assertIn("const APP_VERSION = '8.4.2';", APP)
+        self.assertIn("const APP_VERSION = '8.4.2';", WORKER)
+        self.assertIn('V8.4.2', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.4.2'))
+        self.assertIn('## v8.4.2', README)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.4.1', INDEX)
+            self.assertIn(f'{asset}?v=8.4.2', INDEX)
 
     def test_profile_and_progress_plain_language(self):
-        prompt = section('function runNpoPrompt', 'function chooseNpoDecision')
+        prompt = section('function renderNpoActivationHeader', 'function renderNpoGuideFooter')
         self.assertIn('Wounds: ${n.wounds}/${n.maxWounds}', prompt)
         self.assertIn("effective===definition.apl?'':` (${effective} AP this activation)`", prompt)
         self.assertNotIn(' · effective ', prompt)
@@ -129,8 +129,8 @@ class V840NpoActivationPlainLanguageTests(unittest.TestCase):
         active = section('function renderActiveNpoQuestion', 'function renderNpoActionProgress')
         self.assertIn('aria-labelledby="activeNpoQuestion"', active)
         self.assertIn('aria-describedby="activeNpoQuestionHelp"', active)
-        prompt = section('function runNpoPrompt', 'function chooseNpoDecision')
-        self.assertIn('role="status" aria-live="polite" aria-label="Activation profile"', prompt)
+        header = section('function renderNpoActivationHeader', 'function renderNpoGuideFooter')
+        self.assertIn('role="status" aria-live="polite" aria-label="Activation profile"', header)
 
     def test_gameplay_constants_and_priority_order_are_unchanged(self):
         self.assertIn("const NPO_CORE_ACTION_COSTS={'reposition':1,'dash':1,'charge':1,'shoot':1,'fight':1,'fall-back':2}", APP)

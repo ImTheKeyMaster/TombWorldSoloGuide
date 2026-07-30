@@ -194,6 +194,7 @@
 .npo-question-history .npo-question-icon--charge{width:24px;height:24px;flex:0 0 24px;color:var(--text-muted)}
 .npo-question-active h3{margin:12px 0 6px}.npo-question-active p{margin:0}.npo-question-active .ai-choice-grid{margin:20px 0 0}
 .npo-question-active .ai-choice{min-height:54px;display:flex;justify-content:center;padding:12px}.npo-question-active .ai-choice.yes{background:rgba(34,104,64,.28);border-color:rgba(118,245,168,.45)}
+.npo-movement-confirmation .npo-movement-cost{margin-top:10px;color:var(--green);font-size:.82rem;font-weight:800}.npo-movement-confirmation .npo-movement-confirm{grid-column:1 / -1;width:100%}
 .npo-result-card{display:flex;align-items:flex-start;gap:14px;padding:18px;margin:13px 0;border:1px solid rgba(118,245,168,.55);border-radius:16px;background:linear-gradient(145deg,rgba(34,104,64,.25),rgba(7,20,15,.98))}
 .npo-result-card small{display:block;color:var(--green);font-size:.67rem;font-weight:900;letter-spacing:.12em;margin-bottom:6px}.npo-result-card strong{display:block;line-height:1.45}.npo-result-card p{margin:7px 0 0;font-size:.88rem}.npo-result-card .npo-question-icon{width:42px;height:42px}
 .npo-result-card>div{min-width:0;flex:1}.npo-target-priority{margin-top:15px;padding-top:15px;border-top:1px solid rgba(118,245,168,.22)}.npo-target-priority .target-selection{margin-top:13px}.npo-target-priority .target-selection label{letter-spacing:normal}
