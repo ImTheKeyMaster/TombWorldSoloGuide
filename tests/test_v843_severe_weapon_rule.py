@@ -61,15 +61,15 @@ def severe(dice, profile):
 
 
 class SevereWeaponRuleTests(unittest.TestCase):
-    def test_version_843_is_consistent_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.4.3';", APP)
-        self.assertIn("const APP_VERSION = '8.4.3';", WORKER)
-        self.assertIn('V8.4.3', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.4.3'))
+    def test_version_850_is_consistent_and_save_version_is_unchanged(self):
+        self.assertIn("const APP_VERSION = '8.5.0';", APP)
+        self.assertIn("const APP_VERSION = '8.5.0';", WORKER)
+        self.assertIn('V8.5.0', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.5.0'))
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.4.3', INDEX)
+            self.assertIn(f'{asset}?v=8.5.0', INDEX)
         self.assertNotIn('8.4.2', APP + INDEX + WORKER)
-        self.assertIn('## v8.4.3', README)
+        self.assertIn('## v8.5.0', README)
 
     def test_rule_detection_uses_ids_then_rules_fallback(self):
         die = [{'value': 4, 'kind': 'hit', 'retained': True}]
@@ -156,14 +156,13 @@ class SevereWeaponRuleTests(unittest.TestCase):
         self.assertIn('critThreshold:Number(lethal?.[1]||6)', canonical)
         self.assertIn('profile.accurate=Math.max(1,Number(profile.accurate||0))', EVENT_EFFECTS)
 
-    def test_manual_resolution_excludes_severe_but_preserves_other_rules(self):
+    def test_manual_resolution_is_replaced_by_registered_rule_handlers(self):
         canonical = function_source('canonicalAttackProfile')
-        self.assertIn('Piercing Crits|Blast|Torrent|Seek Light|Shock|Stun', canonical)
-        self.assertNotIn('|Severe|', canonical)
-        self.assertIn('tabletopRules.join', canonical)
+        self.assertNotIn('manualResolution', canonical)
+        self.assertIn('WEAPON_RULE_HANDLERS', APP)
+        self.assertNotIn('<strong>Manual tabletop resolution</strong>', APP)
         self.assertIn("rules:['Severe','Shock','Stun']", APP)
         self.assertIn("rules:['Piercing 1','Severe']", APP)
-        self.assertIn('Also attack each other target within 1 inch of the primary target. Resolve each attack separately. Do not attack the primary target twice.', APP)
 
     def test_message_and_accessible_label_only_follow_a_conversion(self):
         message = function_source('severeAppliedHtml')

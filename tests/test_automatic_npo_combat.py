@@ -19,7 +19,7 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
         self.assertIn("runAutomaticCombatRolls", wizard)
         self.assertIn("rolledAttackDiceForProfile(profile)", shared)
-        self.assertIn("rolledCombatDice(Math.max(0,3-profile.ap),Number(defenseSave)||3)", shared)
+        self.assertIn("effectiveDefenseDiceCount(profile,attackDice,3)", shared)
         self.assertEqual(shared.count("timer=setTimeout"), 1)
         self.assertIn("timer=settleCombatDice", shared)
         self.assertIn("rollingDieHtml()", shared)

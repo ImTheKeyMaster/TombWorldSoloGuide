@@ -128,8 +128,8 @@ class SpectreSquadTests(unittest.TestCase):
         self.assertIn("if(singleTarget&&weapons.length===1", self.app)
         self.assertIn("runAutomaticCombatRolls", self.app)
         self.assertIn("if(draft)", self.app)
-        self.assertIn("Manual tabletop resolution", self.app)
-        self.assertIn("profile?.manualResolution", self.app)
+        self.assertNotIn("<strong>Manual tabletop resolution</strong>", self.app)
+        self.assertIn("weaponRuleStatuses(profile)", self.app)
 
     def test_faction_and_manual_ability_classification(self):
         rules = {rule["id"]: rule for rule in self.team["factionRules"]}
@@ -159,7 +159,7 @@ if(restored.playerTeamId!=='spectre-squad'||restored.playerWounds.sharpshooter!=
         self.assertNotIn("state.playerTeamId==='spectre-squad'", self.app)
 
     def test_version_consistency(self):
-        expected = "8.4.3"
+        expected = "8.5.0"
         self.assertIn(f"const APP_VERSION = '{expected}'", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}'", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()
