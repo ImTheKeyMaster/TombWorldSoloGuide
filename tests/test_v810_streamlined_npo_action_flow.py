@@ -31,7 +31,8 @@ class V810StreamlinedNpoActionFlowTests(unittest.TestCase):
         movement = section('function resolveNpoAction', 'function initiativeSummary')
         handler = movement[movement.index("$('#confirmNpoMovement').onclick"):]
         self.assertIn('button.disabled=true', handler)
-        self.assertIn('transitionMode:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE', handler)
+        self.assertIn('NPO_ACTION_TRANSITIONS.AUTO_CONTINUE', handler)
+        self.assertIn('NPO_ACTION_TRANSITIONS.COMPLETE_ACTIVATION', handler)
         self.assertNotIn('renderNpoActionResult(', handler.split('};', 1)[0])
 
     def test_auto_commit_saves_without_pending_result_then_schedules(self):
@@ -97,12 +98,12 @@ class V810StreamlinedNpoActionFlowTests(unittest.TestCase):
         self.assertIn('completedActionIds', guard)
 
     def test_current_version_830_everywhere(self):
-        self.assertIn("const APP_VERSION = '8.4.0';", APP)
-        self.assertIn("const APP_VERSION = '8.4.0';", WORKER)
-        self.assertIn('V8.4.0', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.4.0'))
+        self.assertIn("const APP_VERSION = '8.4.1';", APP)
+        self.assertIn("const APP_VERSION = '8.4.1';", WORKER)
+        self.assertIn('V8.4.1', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.4.1'))
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.4.0', INDEX)
+            self.assertIn(f'{asset}?v=8.4.1', INDEX)
 
 
 if __name__ == '__main__':
