@@ -4043,6 +4043,30 @@ function showPlayerActivation(stage={}){
       feasibilityQuestion:'Can this NPO reach a Player operative with a Charge?',
       help:'Measure the Charge. Select Yes only if its base can reach and fit next to a target. The app will choose which target to Charge.',
       selectedInstruction:'Charge the first Player operative that matches the target priority.'
+    },
+    'geomantic-disturbance':{
+      feasibilityQuestion:'Can the Geomancer see a terrain point within 8 inches?',
+      help:'Select Yes only if it has an Engage order, is outside enemy control range, and can see a terrain point within 8 inches.'
+    },
+    'canoptek-control':{
+      feasibilityQuestion:'Can the Geomancer see a friendly Canoptek within 6 inches?',
+      help:'Select Yes only if the Geomancer is outside enemy control range and is not counteracting.'
+    },
+    'molecular-breach':{
+      feasibilityQuestion:'Can the Geomancer see a friendly Canoptek Circle NPO within 6 inches?',
+      help:'Select Yes only if the Geomancer is outside enemy control range.'
+    },
+    overcharge:{
+      feasibilityQuestion:'Can the Accelerator see another friendly Canoptek within 3 inches?',
+      help:'Select Yes only if the Accelerator is outside enemy control range.'
+    },
+    'cranial-overload':{
+      feasibilityQuestion:'Can the Accelerator see a Player operative within 3 inches?',
+      help:'Select Yes only if the Accelerator is outside enemy control range.'
+    },
+    'nanoscarab-beam':{
+      feasibilityQuestion:'Can the Reanimator see a wounded Canoptek Circle NPO within 6 inches?',
+      help:'Select Yes only if the target is not incapacitated and was not saved by Reanimate this turning point.'
     }
   };
   function npoMovementFocus(n,action){
@@ -4422,8 +4446,8 @@ function showPlayerActivation(stage={}){
   }
 
   function renderActiveNpoQuestion(q){
-    return `<section class="npo-question-active npo-question-card--active" aria-live="polite" aria-atomic="true">
-      ${npoIcon(npoQuestionIcons[q.action.split(' ')[0]])}<h3>${escapeHtml(q.title)}</h3><p>${escapeHtml(q.help)}</p>
+    return `<section class="npo-question-active npo-question-card--active" aria-live="polite" aria-atomic="true" aria-labelledby="activeNpoQuestion" aria-describedby="activeNpoQuestionHelp">
+      ${npoIcon(npoQuestionIcons[q.action.split(' ')[0]])}<h3 id="activeNpoQuestion">${escapeHtml(q.title)}</h3><p id="activeNpoQuestionHelp">${escapeHtml(q.help)}</p>
       <div class="ai-choice-grid"><button class="ai-choice no" data-answer="no"><strong>No</strong></button><button class="ai-choice yes" data-answer="yes"><strong>Yes</strong></button></div>
     </section>`;
   }
@@ -4443,7 +4467,7 @@ function showPlayerActivation(stage={}){
     const priorTop=$('.npo-question-active',modal)?.getBoundingClientRect().top;
     const definition=npoDefinition(n.type),modifiers=(state.npoRuleState.aplModifiers||[]).filter(item=>item.targetId===n.id),pendingBreach=(state.npoRuleState.pendingMovementEffects||[]).some(item=>item.targetId===n.id&&item.ruleId==='molecular-breach');
     const loadout=definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name,effective=effectiveApl(n.id,definition.apl);
-    modalBody.innerHTML=`<div class="modal-inner"><h2 id="activeNpoQuestionHeading" tabindex="-1">NPO Activation: ${escapeHtml(npoName(n))}</h2><div class="activation-profile-strip"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>APL ${definition.apl}${effective===definition.apl?'':` (${effective} AP this activation)`}</span><span>Order: ${escapeHtml(n.order)}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Next movement uses Molecular Breach</span>':''}</div>${renderNpoActionProgress()}${state.lastActivation.autoTransitionAnnouncement?`<span class="visually-hidden" role="status" aria-live="polite">${escapeHtml(state.lastActivation.autoTransitionAnnouncement)}</span>`:''}<div class="ai-wizard">
+    modalBody.innerHTML=`<div class="modal-inner"><h2 id="activeNpoQuestionHeading" tabindex="-1">NPO Activation: ${escapeHtml(npoName(n))}</h2><div class="activation-profile-strip" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>APL ${definition.apl}${effective===definition.apl?'':` (${effective} AP this activation)`}</span><span>Order: ${escapeHtml(n.order)}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Next movement uses Molecular Breach</span>':''}</div>${renderNpoActionProgress()}${state.lastActivation.autoTransitionAnnouncement?`<span class="visually-hidden" role="status" aria-live="polite">${escapeHtml(state.lastActivation.autoTransitionAnnouncement)}</span>`:''}<div class="ai-wizard">
       <div class="npo-question-flow">${renderCompletedNpoQuestions(history)}${renderActiveNpoQuestion(q)}</div>
       <div class="wizard-actions">
         <button class="btn ghost" id="aiBack" ${history.length===0?'disabled':''}>Back</button>
@@ -4593,6 +4617,17 @@ function showPlayerActivation(stage={}){
     const id=npoActionId(actionName);
     return (npoDefinition(n.type)?.actions||[]).find(action=>action.id===id)||null;
   }
+  function npoSpecialActionDescription(action){
+    if(action.id==='geomantic-disturbance')return `<ol><li>Choose a terrain point the Geomancer can see within 8 inches.</li><li>Select every operative within 2 inches of that point.</li><li>Roll 2D6 separately for each. If the total is higher than its remaining wounds, deal damage equal to the difference.</li></ol><p>Cannot be used while the Geomancer has a Conceal order or is in enemy control range.</p>`;
+    const paragraphs={
+      'canoptek-control':['Choose a visible friendly Canoptek within 6 inches. It immediately performs one free 1 AP action. Any movement from that action is limited to 2 inches.','Cannot be used while the Geomancer is in enemy control range or during a counteraction.'],
+      'molecular-breach':['Choose a visible friendly Canoptek Circle NPO within 6 inches. During its next movement action, remove it and set it up instead of moving normally.','Use its Move distance, or 3 inches for Dash. In close quarters it can pass through Walls. Only Charge may end in enemy control range.'],
+      overcharge:['Choose another visible friendly Canoptek within 3 inches. It gets 1 extra AP in its next activation (+1 APL).','Cannot be used while the Accelerator is in enemy control range.'],
+      'cranial-overload':['Choose a visible Player operative within 3 inches. It gets 1 fewer AP in its next activation, to a minimum of 1 (-1 APL).','Cannot be used while the Accelerator is in enemy control range.'],
+      'nanoscarab-beam':['Choose a visible wounded Canoptek Circle NPO within 6 inches. Roll 3D3 and restore that many wounds, up to its maximum.','It cannot target an incapacitated NPO or one saved by Reanimate this turning point.']
+    };
+    return (paragraphs[action.id]||[action.description]).map(text=>`<p>${escapeHtml(text)}</p>`).join('');
+  }
   function resolveNpoSpecialAction(n,decision,answers,questionHistory){
     const action=npoSpecialAction(n,decision.action);
     if(!action){completeNpoActivation();return;}
@@ -4626,7 +4661,7 @@ function showPlayerActivation(stage={}){
     }
     const confirmation=action.id==='molecular-breach'?'I confirmed that this NPO can be placed as instructed.':'I confirmed that this target is visible and within range.';
     const buttonLabels={'canoptek-control':'Use Canoptek Control','molecular-breach':'Apply Molecular Breach',overcharge:'Use Overcharge','cranial-overload':'Use Cranial Overload','nanoscarab-beam':'Roll Healing'};
-    showModal(action.name,`<p>${escapeHtml(action.description)}</p><div class="field"><label for="specialActionTarget">${targetLabel}</label><select id="specialActionTarget"><option value="">Select operative…</option>${targetOptions}</select></div>${action.id==='canoptek-control'?'<div class="field"><label for="freeActionChoice">Choose the free 1 AP action</label><select id="freeActionChoice"><option>Reposition</option><option>Dash</option><option>Charge</option><option>Shoot</option><option>Fight</option><option>Mission action</option></select></div>':''}<label class="check-row" for="specialRangeConfirmed"><input id="specialRangeConfirmed" type="checkbox"><span>${escapeHtml(confirmation)}</span></label><div class="wizard-actions"><button class="btn ghost" id="cancelSpecialAction">Cancel</button><button class="btn primary" id="confirmSpecialAction" disabled>${escapeHtml(buttonLabels[action.id]||`Use ${action.name}`)}</button></div>`);
+    showModal(action.name,`${npoSpecialActionDescription(action)}<div class="field"><label for="specialActionTarget">${targetLabel}</label><select id="specialActionTarget"><option value="">Select operative…</option>${targetOptions}</select></div>${action.id==='canoptek-control'?'<div class="field"><label for="freeActionChoice">Choose the free 1 AP action</label><select id="freeActionChoice"><option>Reposition</option><option>Dash</option><option>Charge</option><option>Shoot</option><option>Fight</option><option>Mission action</option></select></div>':''}<label class="check-row" for="specialRangeConfirmed"><input id="specialRangeConfirmed" type="checkbox"><span>${escapeHtml(confirmation)}</span></label><div class="wizard-actions"><button class="btn ghost" id="cancelSpecialAction">Cancel</button><button class="btn primary" id="confirmSpecialAction" disabled>${escapeHtml(buttonLabels[action.id]||`Use ${action.name}`)}</button></div>`);
     const update=()=>{$('#confirmSpecialAction').disabled=!$('#specialActionTarget').value||!$('#specialRangeConfirmed').checked;};
     $('#specialActionTarget').onchange=update;$('#specialRangeConfirmed').onchange=update;
     $('#cancelSpecialAction').onclick=()=>resolveNpoAction(n,state.lastActivation.pendingAction);

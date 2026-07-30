@@ -71,7 +71,7 @@ class V801NpoActionEligibilityTests(unittest.TestCase):
     def test_09b_fall_back_question_and_help_are_screen_reader_available(self):
         rendered = section('function renderActiveNpoQuestion', 'function renderNpoActionProgress')
         self.assertIn('aria-live="polite" aria-atomic="true"', rendered)
-        self.assertIn('<h3>${escapeHtml(q.title)}</h3><p>${escapeHtml(q.help)}</p>', rendered)
+        self.assertIn('<h3 id="activeNpoQuestion">${escapeHtml(q.title)}</h3><p id="activeNpoQuestionHelp">${escapeHtml(q.help)}</p>', rendered)
         self.assertIn('data-answer="no"', rendered)
         self.assertIn('data-answer="yes"', rendered)
 

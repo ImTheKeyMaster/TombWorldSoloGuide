@@ -58,6 +58,19 @@ class V840NpoActivationPlainLanguageTests(unittest.TestCase):
         for banned in ('living Player operative', 'legally', 'printed objective', 'printed behavior'):
             self.assertNotIn(banned, inquiries)
 
+    def test_special_actions_have_specific_tabletop_questions(self):
+        inquiries = section('const NPO_ACTION_INQUIRIES=', 'function npoMovementFocus')
+        expected = (
+            'Can the Geomancer see a terrain point within 8 inches?',
+            'Can the Geomancer see a friendly Canoptek within 6 inches?',
+            'Can the Geomancer see a friendly Canoptek Circle NPO within 6 inches?',
+            'Can the Accelerator see another friendly Canoptek within 3 inches?',
+            'Can the Accelerator see a Player operative within 3 inches?',
+            'Can the Reanimator see a wounded Canoptek Circle NPO within 6 inches?',
+        )
+        for wording in expected:
+            self.assertIn(wording, inquiries)
+
     def test_reposition_and_dash_are_behavior_specific(self):
         movement = section('function npoMovementInquiry', 'function npoMovementInstruction')
         for wording in (
@@ -104,6 +117,20 @@ class V840NpoActivationPlainLanguageTests(unittest.TestCase):
         for wording in ('Player operative', 'Friendly NPO', 'Use Canoptek Control', 'Apply Molecular Breach', 'Use Overcharge', 'Use Cranial Overload', 'Roll Healing', 'Roll Damage'):
             self.assertIn(wording, special)
         self.assertNotIn('>Resolve</button>', special)
+
+    def test_special_action_steps_use_semantic_markup(self):
+        descriptions = section('function npoSpecialActionDescription', 'function resolveNpoSpecialAction')
+        self.assertIn("if(action.id==='geomantic-disturbance')return `<ol><li>", descriptions)
+        self.assertIn('</li></ol><p>Cannot be used while the Geomancer', descriptions)
+        for action in ('canoptek-control', 'molecular-breach', 'overcharge', 'cranial-overload', 'nanoscarab-beam'):
+            self.assertIn(action, descriptions)
+
+    def test_question_and_profile_accessibility_associations(self):
+        active = section('function renderActiveNpoQuestion', 'function renderNpoActionProgress')
+        self.assertIn('aria-labelledby="activeNpoQuestion"', active)
+        self.assertIn('aria-describedby="activeNpoQuestionHelp"', active)
+        prompt = section('function runNpoPrompt', 'function chooseNpoDecision')
+        self.assertIn('role="status" aria-live="polite" aria-label="Activation profile"', prompt)
 
     def test_gameplay_constants_and_priority_order_are_unchanged(self):
         self.assertIn("const NPO_CORE_ACTION_COSTS={'reposition':1,'dash':1,'charge':1,'shoot':1,'fight':1,'fall-back':2}", APP)
