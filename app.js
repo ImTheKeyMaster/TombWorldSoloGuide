@@ -783,14 +783,24 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const blockedReinforcementIds=normalizeIdList(importedReinforcements.blockedOperativeIds,merged.roster.map(npo=>npo.id))
       .filter(id=>!reinforcementIds.includes(id)&&merged.roster.some(npo=>npo.id===id&&npo.battlefieldState==='reserve'));
     const reinforcementStatus=['idle','placement','complete','blocked'].includes(importedReinforcements.status)?importedReinforcements.status:'idle';
+    const blockedReinforcements=boundedInteger(importedReinforcements.blocked,0,MAX_NPOS);
+    const hasCapacityReason=Number.isFinite(Number(importedReinforcements.blockedByCapacity));
+    const hasInventoryReason=Number.isFinite(Number(importedReinforcements.blockedByInventory));
+    const hasBlockedReasons=hasCapacityReason||hasInventoryReason;
+    const deployedCount=merged.roster.filter(npo=>npo.battlefieldState==='deployed'&&npo.wounds>0).length;
+    const legacyCapacityBlocked=Math.min(blockedReinforcements,Math.max(0,reinforcementIds.length+blockedReinforcements-Math.max(0,MAX_NPOS-deployedCount)));
+    const blockedByCapacity=hasBlockedReasons
+      ? hasCapacityReason?boundedInteger(importedReinforcements.blockedByCapacity,0,blockedReinforcements):Math.max(0,blockedReinforcements-boundedInteger(importedReinforcements.blockedByInventory,0,blockedReinforcements))
+      : legacyCapacityBlocked;
+    const blockedByInventory=hasInventoryReason?boundedInteger(importedReinforcements.blockedByInventory,0,blockedReinforcements-blockedByCapacity):blockedReinforcements-blockedByCapacity;
     merged.reinforcementState={
       turningPoint:boundedInteger(importedReinforcements.turningPoint,0,merged.turningPoint),
       status:reinforcementStatus==='placement'&&!reinforcementIds.length?'idle':reinforcementStatus,
       operativeIds:reinforcementIds,
       blockedOperativeIds:blockedReinforcementIds,
-      blocked:boundedInteger(importedReinforcements.blocked,0,MAX_NPOS),
-      blockedByCapacity:boundedInteger(importedReinforcements.blockedByCapacity,0,MAX_NPOS),
-      blockedByInventory:boundedInteger(importedReinforcements.blockedByInventory,0,MAX_NPOS)
+      blocked:blockedReinforcements,
+      blockedByCapacity,
+      blockedByInventory
     };
     if(merged.reinforcementState.status==='placement'){
       merged.reinforcementState.operativeIds.forEach(id=>{
@@ -2349,7 +2359,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const blockedReason=reinforcementBlockedReason(capacityBlocked,inventoryBlocked,blockedCount);
     const deployedSection=deployedNpos.length?`<div class="reinforcement-deployed"><h3>${deployedNpos.length} NPO${deployedNpos.length===1?'':'s'} deployed</h3><ul class="reinforcement-list">${deployedNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul></div>`:'';
     const pendingSection=pendingNpos.length?`<div class="reinforcement-pending"><h3>Deploy ${pendingNpos.length} NPO${pendingNpos.length===1?'':'s'}</h3><ul class="reinforcement-list">${pendingNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul><p>Deploy ${pendingNpos.length===1?'this NPO':'these NPOs'} onto the battlefield using the Tomb World reinforcement rules.</p></div>`:'';
-    const reinforcementCard=deployingNpos.length||d.blocked
+    const reinforcementCard=deployingNpos.length||blockedCount
       ? `<section class="card reinforcement-card" aria-live="polite"><p class="eyebrow">REINFORCEMENTS</p>${deployedSection}${pendingSection}${blockedCount?`<div class="reinforcement-blocked" role="status"><h3>${deployingNpos.length?`${blockedCount} additional reinforcement${blockedCount===1?'':'s'} could not be deployed`:'No reinforcements could be deployed'}</h3><p>${blockedReason}</p></div>`:''}</section>`
       : '<div class="summary-box strategy-empty-message">No reinforcements were generated this Turning Point.</div>';
     const placements=deployingNpos.map(npo=>`<label class="check-row"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong><small>Randomly determine an open hatchway, set up this operative with a Conceal order using the printed placement requirements, then confirm.</small></span></label>`).join('');

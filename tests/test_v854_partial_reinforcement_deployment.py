@@ -46,6 +46,16 @@ class PartialReinforcementDeploymentTests(unittest.TestCase):
         self.assertIn("blockedByInventory++", GENERATION)
         self.assertNotIn("blockedOperativeIds.push", GENERATION)
 
+    def test_saved_results_restore_precise_blocking_reasons(self):
+        normalization = APP.split("function normalizeState(raw)", 1)[1].split(
+            "function npoDefinition", 1
+        )[0]
+        self.assertIn("const hasBlockedReasons=", normalization)
+        self.assertIn("const legacyCapacityBlocked=", normalization)
+        self.assertIn("blockedByInventory=hasInventoryReason?", normalization)
+        self.assertIn("deployingNpos.length||blockedCount", REVIEW)
+        self.assertNotIn("deployingNpos.length||d.blocked", REVIEW)
+
     def test_blocked_results_do_not_control_strategy_completion(self):
         self.assertIn("state.reinforcementState.status!=='placement'", APP)
         self.assertIn("status=reinforcements.length?'placement':blocked?'blocked':'complete'", GENERATION)

@@ -34,7 +34,7 @@ class StrategyPhaseUiTests(unittest.TestCase):
         self.assertIn("onto the battlefield using the Tomb World reinforcement rules.", STRATEGY_CARD)
 
     def test_empty_reinforcement_card_is_not_rendered(self):
-        self.assertIn("deployingNpos.length||d.blocked", STRATEGY_CARD)
+        self.assertIn("deployingNpos.length||blockedCount", STRATEGY_CARD)
         self.assertIn('No reinforcements were generated this Turning Point.', STRATEGY_CARD)
         self.assertNotIn("No reinforcements arrive.", APP)
 
