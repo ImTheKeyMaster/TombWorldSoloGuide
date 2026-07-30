@@ -105,12 +105,12 @@ vm.runInNewContext(fs.readFileSync('app.js','utf8'),context);
         self.assertIn('localStorage.getItem(STORAGE_KEY)', recovery)
 
     def test_18_version_801_everywhere(self):
-        self.assertIn("const APP_VERSION = '8.5.4';", APP)
-        self.assertIn("const APP_VERSION = '8.5.4';", WORKER)
-        self.assertIn('V8.5.4', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.5.4'))
+        self.assertIn("const APP_VERSION = '8.6.0';", APP)
+        self.assertIn("const APP_VERSION = '8.6.0';", WORKER)
+        self.assertIn('V8.6.0', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.0'))
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.5.4', INDEX)
+            self.assertIn(f'{asset}?v=8.6.0', INDEX)
 
 
 if __name__ == '__main__':

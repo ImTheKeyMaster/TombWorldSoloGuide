@@ -81,7 +81,7 @@ const mission=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarcoph
   const files={'Missions/manifest.json':{definitions:[{file:'04.json'}]},'Missions/04.json':mission};
   const response=value=>({ok:true,status:200,json:async()=>value});
   const loaded=await api.loadMissionDefinition('destroy-sarcophagus',{fetch:async path=>response(files[path])});
-  assert.equal(loaded.id,'04');assert.equal(loaded.completion.endsBattle,false);
+  assert.equal(loaded.id,'04');assert.equal(loaded.completion.endsBattle,true);
   await assert.rejects(()=>api.loadMissionDefinition('missing',{fetch:async path=>response(files[path])}),error=>error.code==='UNKNOWN_MISSION_ID');
   await assert.rejects(()=>api.loadMissionDefinition('04',{fetch:async path=>path.endsWith('manifest.json')?response(files[path]):({ok:true,status:200,json:async()=>{throw new SyntaxError('bad json')}})}),error=>error.code==='MALFORMED_JSON');
   await assert.rejects(()=>api.createMissionRegistry(['a','b'],async()=>mission),error=>error.code==='DUPLICATE_MISSION_ID');

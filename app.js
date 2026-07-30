@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.5.4';
+  const APP_VERSION = '8.6.0';
   const WEAPON_RULE_HANDLERS = Object.freeze({
     severe:{mode:'automatic',phase:'after-attack-roll'},
     'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
@@ -118,6 +118,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       objectiveDefinition=definition;
       objectiveEngine=TombWorldMissionEngine.createMissionEngine({requestDiceRoll:animateMissionDice,requestNumericInput:requestMissionNumber,setOperativeInPlay});
       state.missionRuntime=objectiveEngine.restoreMissionRuntime(objectiveDefinition,state.missionRuntime,missionLifecycleContext());
+      if(selectedMission.number==='04'){
+        const destruction=objectiveEngine.getObjectiveValue('destructionPoints');
+        state.missionState.destruction=destruction;
+        if(destruction>=20&&!state.gameEnd)completeMission('victory');
+      }
       if(missionEngine(selectedMission)?.type==='sabotage')objectiveEngine.setObjectiveValue('sabotagedFeatures',state.missionState?.completedFeatureIds?.length||0,missionLifecycleContext());
       if(missionEngine(selectedMission)?.type==='transponder')objectiveEngine.setObjectiveValue('transponderRecovered',state.missionState?.escaped?1:0,missionLifecycleContext());
       const configuredEngine=missionEngine(selectedMission), progressIds=configuredEngine?.progressIdsField&&state.missionState?.[configuredEngine.progressIdsField];
@@ -589,7 +594,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], playerWounds:{}, playerOperativeStates:{}, reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0,blockedByCapacity:0,blockedByInventory:0},
     gradeMilestone:null, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0,
     npoAttackTargetId:null,
-    npoAttackSummary:null, combatState:null, weaponRuleResolution:null, missionState:null, missionRuntime:null, startingNpoGeneration:null,
+    npoAttackSummary:null, combatState:null, weaponRuleResolution:null, missionState:null, missionRuntime:null, missionActionContext:null, startingNpoGeneration:null,
     npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[]},
     eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[],transactions:{},playerAplModifiers:[],reanimationAttempts:{}}, gameEnd:null,
     finalResolution:{pending:false,turningPointEnded:false,cleanupComplete:false,battleEndHookComplete:false,resultLogged:false,invalidSaveCorrected:false}
@@ -2072,14 +2077,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     destruction:(engine,progress,{readOnly=false}={})=>{
       if(!objectiveEngine)return '<p class="muted">Mission automation is unavailable.</p>';
       const model=objectiveEngine.getMissionHudModel();
-      const action=objectiveDefinition.actions[0];
       const objective=objectiveDefinition.objectives.find(item=>item.id===model.objectiveId);
-      const dice=action.operations.find(operation=>operation.type==='requestDiceRoll')?.dice;
-      const available=objectiveEngine.evaluateMissionConditions(action.availability);
-      const diceLabel=dice?`${dice.count}D${dice.sides}`:'';
-      const activeControl=available?`<button class="btn primary" id="resolveMissionAction" ${missionOperationResolving?'disabled':''}>${escapeHtml(action.label)}${diceLabel?` (${diceLabel})`:''}</button>`:`<div class="summary-box"><strong>✓ COMPLETE</strong><br>${model.value} / ${model.target} ${escapeHtml(objective.label)}</div>`;
       const finalState=`<div class="summary-box"><strong>${model.completed?'✓ COMPLETE':'FINAL PROGRESS'}</strong><br>${model.value} / ${model.target} ${escapeHtml(objective.label)}</div>`;
-      return `<p>${escapeHtml(objectiveDefinition.briefing)}</p><p><strong>${model.value} / ${model.target} ${escapeHtml(objective.label)}</strong></p>${readOnly?finalState:activeControl}`;
+      return `<p><strong>${model.value} / ${model.target} ${escapeHtml(objective.label)}</strong></p>${readOnly?finalState:'<p>Player operatives can perform Breach Sarcophagus during their activations while within the sarcophagus’s control range.</p>'}`;
     },
     scout:(engine,progress,{readOnly=false}={})=>{
       const scouted=new Set(progress.scoutedRoomIds);
@@ -3064,7 +3064,29 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   };
 
   function playerActionCost(stage){
-    return Object.entries(PLAYER_ACTION_COSTS).reduce((total,[key,cost])=>total+(stage[key]?cost:0),0);
+    return Object.entries(PLAYER_ACTION_COSTS).reduce((total,[key,cost])=>total+(stage[key]?cost:0),0)
+      + (stage.missionBreachCommitted?Math.max(1,Number(stage.missionBreachCost)||2):0);
+  }
+
+  function qualifyingBreachDiscount(operative){
+    if(!operative)return false;
+    const operativeRules=[...(operative.abilities||[]),...(operative.rules||[])].map(String);
+    if(operativeRules.some(rule=>/breach/i.test(rule)&&/(?:1\s*AP|reduce|costs?\s*1)/i.test(rule)))return true;
+    return (operative.weapons||[]).some(weapon=>{
+      const rules=(weapon.rules||[]).map(String);
+      return rules.some(rule=>/^Piercing(?:\s|$)/i.test(rule))&&!rules.some(rule=>/^(?:Blast|Torrent)(?:\s|$)/i.test(rule));
+    });
+  }
+
+  function breachSarcophagusApCost(operativeId){
+    return Math.max(1,qualifyingBreachDiscount(playerDefinition(operativeId))?1:2);
+  }
+
+  function canOfferBreachSarcophagus(stage,operativeId){
+    if(state.missionId!=='destroy-sarcophagus'||state.gameEnd||state.nextSide!=='player'||state.phase!=='firefight')return false;
+    if(!operativeId||!isPlayerOperativeInPlay(operativeId)||state.playerCasualtyIds.includes(operativeId))return false;
+    if(stage.missionBreachCommitted)return false;
+    return Number(objectiveEngine?.getMissionHudModel().value||state.missionState?.destruction||0)<20;
   }
 
   function playerActionConflicts(stage){
@@ -3117,6 +3139,14 @@ function showPlayerActivation(stage={}){
     const fallBackDistance=moveDistance;
     const shootPending=stage.pendingShoot||null;
     const meleePending=stage.pendingMelee||null;
+    const breachAvailable=canOfferBreachSarcophagus(stage,selectedId);
+    const breachCost=selectedId?breachSarcophagusApCost(selectedId):2;
+    const breachRemainingAp=Number(stage.apl||selectedOperative?.apl||3)-playerActionCost(stage);
+
+    if(selectedId&&state.missionActionContext?.actionId==='breachSarcophagus'&&state.missionActionContext.operativeId===selectedId){
+      renderBreachSarcophagusStep(stage);
+      return;
+    }
 
     showModal('Activate an Operative',`
       <p>Choose the Player operative being activated. That operative cannot activate again during this Turning Point after the activation is confirmed.</p>
@@ -3166,7 +3196,8 @@ function showPlayerActivation(stage={}){
             <div class="toggle-list player-action-list">
               <label><input type="checkbox" id="eaHatch" ${checked('hatch')}><span>Operate Hatch <small>1 AP</small></span></label>
               <label><input type="checkbox" id="eaBreach" ${checked('breach')}><span>Breach <small>1 AP</small></span></label>
-              <label><input type="checkbox" id="eaObjective" ${checked('objective')}><span>Mission-specific action <small>1 AP</small></span></label>
+              ${state.missionId==='destroy-sarcophagus'?'':`<label><input type="checkbox" id="eaObjective" ${checked('objective')}><span>Mission-specific action <small>1 AP</small></span></label>`}
+              ${breachAvailable?`<button type="button" class="btn secondary" id="breachSarcophagus" ${breachRemainingAp<breachCost?'disabled':''}>Breach Sarcophagus (${breachCost} AP)</button>${breachRemainingAp<breachCost?'<small class="warning-text">Not enough AP to Breach the sarcophagus.</small>':''}`:''}
             </div>
           </section>
 
@@ -3231,6 +3262,11 @@ function showPlayerActivation(stage={}){
         const hypothetical={...current,[key]:true};
         box.disabled=playerActionCost(hypothetical)>apl || playerActionConflicts(hypothetical).length>0;
       });
+      const missionBreach=$('#breachSarcophagus');
+      if(missionBreach){
+        const cost=breachSarcophagusApCost(current.playerOperativeId);
+        missionBreach.disabled=apl-used<cost||(cost===1&&(current.shoot||current.charge));
+      }
     }
 
     $('#eaPass')?.addEventListener('change',e=>{
@@ -3242,6 +3278,8 @@ function showPlayerActivation(stage={}){
       updatePlayerActionAvailability();
     }));
     updatePlayerActionAvailability();
+
+    $('#breachSarcophagus')?.addEventListener('click',()=>beginBreachSarcophagus(readPlayerActivationStage(stage)));
 
     $('#cancelPlayerActivation').onclick=()=>{closeModal();render();};
     $('#confirmPlayer').onclick=()=>{
@@ -3288,12 +3326,15 @@ function showPlayerActivation(stage={}){
       pendingMelee:melee?previous.pendingMelee||null:null,
       shootCombatDraft:shoot?previous.shootCombatDraft||null:null,
       meleeCombatDraft:melee?previous.meleeCombatDraft||null:null
+      ,missionBreachCommitted:Boolean(previous.missionBreachCommitted)
+      ,missionBreachCost:previous.missionBreachCost
+      ,missionBreachRecord:previous.missionBreachRecord||null
     };
   }
 
   function playerActivationHasAction(stage){
     return Boolean(stage.move || stage.dash || stage.charge || stage.fallBack || stage.shoot || stage.melee ||
-      stage.damage || stage.hatch || stage.breach || stage.objective || stage.pass);
+      stage.damage || stage.hatch || stage.breach || stage.objective || stage.missionBreachCommitted || stage.pass);
   }
 
   function playerActivationSummary(stage){
@@ -3308,6 +3349,7 @@ function showPlayerActivation(stage={}){
     if(stage.hatch)actions.push('Operate Hatch');
     if(stage.breach)actions.push('Breach');
     if(stage.objective)actions.push('Mission action');
+    if(stage.missionBreachCommitted)actions.push('Breach Sarcophagus');
     if(stage.pass)actions.push('Pass / no action recorded');
     return actions.length?actions.join(', '):'No actions recorded';
   }
@@ -3641,6 +3683,7 @@ function showPlayerActivation(stage={}){
       return;
     }
     state.combatState=null;
+    state.missionActionContext=null;
     let inc=0;
     if(stage.shoot)inc++;
     if(stage.melee)inc++;
@@ -3661,7 +3704,7 @@ function showPlayerActivation(stage={}){
     state.playerActivated=state.playerActivatedIds.length;
     state.activationNumber++;
     const summary=playerActivationSummary(stage);
-    state.activationHistory.unshift({side:'player',label:playerName(operativeId),summary});
+    state.activationHistory.unshift({side:'player',label:playerName(operativeId),summary,...(stage.missionBreachRecord?{missionAction:stage.missionBreachRecord}:{})});
     expireActivationEffects(operativeId);
     advanceAfterActivation('player');
     log(`${playerName(operativeId)} completed activation: ${summary}.`);
@@ -5568,9 +5611,10 @@ function showPlayerActivation(stage={}){
     save();render();
   }
 
-  function animateMissionDice(operation){
+  function animateMissionDice(operation,context={}){
     return new Promise((resolve,reject)=>{
-      const dice=Array.from({length:operation.dice.count},()=>roll(operation.dice.sides));
+      const supplied=context.missionDice;
+      const dice=Array.isArray(supplied)&&supplied.length===operation.dice.count?supplied:Array.from({length:operation.dice.count},()=>roll(operation.dice.sides));
       let settled=false;
       showModal(operation.label||'Mission Roll',`<div class="dice-row animated-roll" id="missionDiceRoll">${dice.map(()=>rollingDieHtml()).join('')}</div><p>Rolling ${operation.dice.count}D${operation.dice.sides}…</p>`,()=>{if(!settled)reject(new TombWorldMissionEngine.MissionEngineError('DICE_CANCELLED','Mission dice roll was cancelled.'));});
       missionDialogLocked=true;
@@ -5732,6 +5776,86 @@ function showPlayerActivation(stage={}){
     options=options&&typeof options==='object'?options:{};
     showModal(options.title||'Confirm Mission Action',`<p>${escapeHtml(options.description||'')}</p><p>${escapeHtml(options.message||'')}</p><div class="wizard-actions"><button class="btn ghost" data-close>${escapeHtml(options.cancelLabel||'Cancel')}</button><button class="btn primary" id="confirmMissionDialog">${escapeHtml(options.confirmLabel||'Confirm')}</button></div>`);
     $('#confirmMissionDialog').onclick=typeof onConfirm==='function'?onConfirm:closeModal;
+  }
+
+  function clearPendingBreach(stage){
+    state.missionActionContext=null;
+    state.combatState={side:'player',stage:{...stage}};
+    save();
+    showPlayerActivation(stage);
+  }
+
+  function beginBreachSarcophagus(stage){
+    const operativeId=stage.playerOperativeId;
+    const activationId=missionActivationId('player',operativeId);
+    const apCost=breachSarcophagusApCost(operativeId);
+    const remainingAp=Number(stage.apl||3)-playerActionCost(stage);
+    if(!canOfferBreachSarcophagus(stage,operativeId))return;
+    if(remainingAp<apCost){showToast('Not enough AP to Breach the sarcophagus.');return;}
+    if(apCost===1&&(stage.shoot||stage.charge)){showToast('The Breach reduction cannot be combined with Shoot or Charge in this activation.');return;}
+    state.combatState={side:'player',stage:{...stage}};
+    state.missionActionContext={missionId:'04',actionId:'breachSarcophagus',side:'player',operativeId,activationId,apCost,remainingAp,step:'control-range',controlRangeConfirmed:null,enemyControlRangeConfirmed:null,committed:false,diceRolled:false,dice:[],previousTotal:null,newTotal:null,victoryCommitted:false};
+    save();renderBreachSarcophagusStep(stage);
+  }
+
+  function renderBreachSarcophagusStep(stage){
+    const context=state.missionActionContext;
+    if(!context||context.missionId!=='04'||context.actionId!=='breachSarcophagus')return showPlayerActivation(stage);
+    if(context.operativeId!==stage.playerOperativeId||context.activationId!==missionActivationId('player',stage.playerOperativeId)){
+      state.missionActionContext=null;save();showToast('The active operative changed. Breach was not performed.');showPlayerActivation(stage);return;
+    }
+    if(context.committed&&context.diceRolled&&!context.newTotal){performBreachSarcophagus(stage,true);return;}
+    if(context.step==='control-range'){
+      showModal('Breach Sarcophagus',`<h3>Is this operative within the sarcophagus’s control range?</h3><p>Select Yes only if the operative is close enough to control the sarcophagus objective marker.</p><div class="wizard-actions"><button class="btn ghost" id="breachControlNo">No</button><button class="btn primary" id="breachControlYes">Yes</button></div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button></div>`);
+      $('#breachControlNo').onclick=()=>clearPendingBreach(stage);
+      $('#breachControlYes').onclick=()=>{context.controlRangeConfirmed=true;context.step='enemy-control-range';save();renderBreachSarcophagusStep(stage);};
+      return;
+    }
+    if(context.step==='enemy-control-range'){
+      showModal('Breach Sarcophagus',`<h3>Is this operative outside the control range of every NPO?</h3><p>An operative cannot perform Breach while it is within an enemy operative’s control range.</p><div class="wizard-actions"><button class="btn ghost" id="breachEnemyNo">No</button><button class="btn primary" id="breachEnemyYes">Yes</button></div><div class="wizard-actions"><button class="btn ghost" id="breachBackToControl">Back</button><button class="btn ghost" data-close>Close Guide</button></div>`);
+      $('#breachEnemyNo').onclick=()=>clearPendingBreach(stage);
+      $('#breachEnemyYes').onclick=()=>{context.enemyControlRangeConfirmed=true;context.step='confirmation';save();renderBreachSarcophagusStep(stage);};
+      $('#breachBackToControl').onclick=()=>{context.enemyControlRangeConfirmed=null;context.step='control-range';save();renderBreachSarcophagusStep(stage);};
+      return;
+    }
+    const total=Number(objectiveEngine?.getObjectiveValue('destructionPoints')||state.missionState?.destruction||0);
+    showModal('Breach Sarcophagus',`<div class="summary-box"><strong>${escapeHtml(playerName(context.operativeId))}</strong><br>AP available: ${context.remainingAp}<br>Breach AP cost: ${context.apCost}<br>Destruction Points: ${total} / 20</div><p>Spend ${context.apCost} AP and roll 2D6. Add the total to the sarcophagus’s Destruction Points.</p><div class="wizard-actions"><button class="btn primary" id="performBreach">Perform Breach</button></div><div class="wizard-actions"><button class="btn ghost" id="breachBackToEnemy">Back</button><button class="btn ghost" data-close>Close Guide</button></div>`);
+    $('#breachBackToEnemy').onclick=()=>{context.step='enemy-control-range';save();renderBreachSarcophagusStep(stage);};
+    $('#performBreach').onclick=()=>performBreachSarcophagus(stage);
+  }
+
+  async function performBreachSarcophagus(stage,resume=false){
+    const context=state.missionActionContext,button=$('#performBreach');
+    if(button)button.disabled=true;
+    if(!context||context.newTotal!=null||context.operativeId!==stage.playerOperativeId||context.activationId!==missionActivationId('player',stage.playerOperativeId))return;
+    if(!context.controlRangeConfirmed||!context.enemyControlRangeConfirmed)return clearPendingBreach(stage);
+    if(!context.committed){
+      if(Number(stage.apl||3)-playerActionCost(stage)<context.apCost){showToast('Not enough AP to Breach the sarcophagus.');return clearPendingBreach(stage);}
+      context.committed=true;context.diceRolled=true;context.dice=[roll(),roll()];context.step='result';
+      stage.missionBreachCommitted=true;stage.missionBreachCost=context.apCost;
+      state.combatState={side:'player',stage:{...stage}};save();
+    }
+    const outcome=await runMissionEvent(()=>objectiveEngine.executeMissionAction('breachSarcophagus',{...missionLifecycleContext({activationId:context.activationId,operativeId:context.operativeId}),side:'player',remainingAp:context.remainingAp,apCost:context.apCost,controlRangeConfirmed:true,enemyControlRangeConfirmed:true,missionDice:context.dice}));
+    if(!outcome)return;
+    const change=outcome.changes[0];context.previousTotal=change.before;context.newTotal=change.after;
+    state.missionState.destruction=change.after;
+    stage.missionBreachRecord={operativeId:context.operativeId,activationId:context.activationId,apCost:context.apCost,dice:[...context.dice],previousTotal:change.before,newTotal:change.after};
+    state.combatState={side:'player',stage:{...stage}};
+    log(`${playerName(context.operativeId)} performed Breach Sarcophagus for ${context.apCost} AP. Rolled ${context.dice.join(' and ')} and added ${change.after-change.before} Destruction Points: ${change.before} to ${change.after}.`);
+    save();
+    const won=change.after>=20;
+    if(won&&!state.gameEnd){
+      context.previousPhase=state.phase;
+      context.victoryCommitted=true;
+      state.gameEnd='victory';state.completed=true;state.phase='end';
+      state.finalResolution=state.finalResolution||{};
+      save();
+    }
+    showModal(won?'MISSION OBJECTIVE COMPLETE':'BREACH SARCOPHAGUS',`<div class="mission-roll-result"><div class="dice-row settled">${context.dice.map(value=>dieHtml({value})).join('')}</div><p>Dice: ${context.dice.join(' + ')} · Total: ${context.dice.reduce((sum,value)=>sum+value,0)}</p><p>Destruction Points added: ${change.after-change.before}</p><div class="summary-box"><strong>Progress: ${change.after} / 20 Destruction Points</strong></div>${won?'<p>The sarcophagus has been destroyed. The Player team is victorious.</p>':''}</div><div class="wizard-actions"><button class="btn primary" id="breachResultContinue">${won?'View Victory':'Return to Activation'}</button></div>`);
+    $('#breachResultContinue').onclick=()=>{
+      if(won){void finalizeMissionCompletion('victory',context.previousPhase||'firefight');}
+      else {state.missionActionContext=null;save();showPlayerActivation(stage);}
+    };
   }
 
   function confirmMissionAction(){

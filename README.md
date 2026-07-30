@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v8.5.4
+# Tomb World Solo Guide v8.6.0
+
+## v8.6.0
+
+**Version 8.6.0 - Correct Destroy Sarcophagus Mission Flow**
+
+- Moved Breach Sarcophagus into individual Player operative activations.
+- Added control-range, AP, action-usage, and eligibility checks.
+- Removed the repeatable end-of-turn Breach button.
+- Added immediate Player victory when Destruction Points reach 20.
+- Preserved Nanoscarab Repair while the objective remains incomplete.
 
 ## v8.5.4
 
