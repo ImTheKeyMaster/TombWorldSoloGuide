@@ -3824,6 +3824,10 @@ function showPlayerActivation(stage={}){
     return match?.[1]||normalized.replace(/\s+/g,'-');
   }
 
+  function normalizedWeaponRuleWarningKey(rule){
+    return String(rule||'').trim().toLowerCase().replace(/[“”]/g,'"').replace(/\s+/g,' ');
+  }
+
   function weaponRuleValue(profile,ruleId){
     const normalizedId=String(ruleId||'').trim().toLowerCase();
     const direct=Number(profile?.[normalizedId.replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase())]);
@@ -3888,8 +3892,9 @@ function showPlayerActivation(stage={}){
     return (profile?.rules||[]).map(rule=>{
       const id=normalizedWeaponRuleId(rule),handler=WEAPON_RULE_HANDLERS[id];
       if(!handler){
-        if(!warnedUnsupportedWeaponRules.has(id)){
-          warnedUnsupportedWeaponRules.add(id);
+        const warningKey=normalizedWeaponRuleWarningKey(rule);
+        if(!warnedUnsupportedWeaponRules.has(warningKey)){
+          warnedUnsupportedWeaponRules.add(warningKey);
           console.warn(`[Weapon rules] ${rule} is not yet supported by the Guide.`);
         }
         return `${rule} is not yet supported by the Guide.`;

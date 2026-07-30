@@ -20,15 +20,15 @@ const console={{warn:message=>warnings.push(message)}};
 {handlers}
 {normalize}
 {statuses}
-const rangeProfile={{rules:['Range 8"','Piercing 1']}};
-const unknownProfile={{rules:['Mystery Rule 2','Mystery Rule 2']}};
+const rangeRules=['Range 6"','Range 8"','Range 12"'];
+const rangeProfile={{rules:[rangeRules[1],'Piercing 1']}};
+const unknownProfile={{rules:['Mystery Rule 2','  mystery   rule 2  ','Mystery Rule 3']}};
 const rangeStatuses=weaponRuleStatuses(rangeProfile);
 weaponRuleStatuses(rangeProfile);
 const unknownStatuses=weaponRuleStatuses(unknownProfile);
 weaponRuleStatuses(unknownProfile);
 process.stdout.write(JSON.stringify({{
-  rangeId:normalizedWeaponRuleId('Range 8"'),
-  rangeValue:weaponRuleValue(rangeProfile,'range'),
+  normalizedRanges:rangeRules.map(rule=>({{id:normalizedWeaponRuleId(rule),value:weaponRuleValue({{rules:[rule]}},'range')}})),
   rangeHandler:WEAPON_RULE_HANDLERS[normalizedWeaponRuleId('Range 8"')],
   rangeStatuses,
   unknownStatuses,
@@ -45,8 +45,11 @@ class WeaponRangeRuleTests(unittest.TestCase):
         cls.result = evaluate_weapon_rules()
 
     def test_range_normalizes_and_preserves_distance(self):
-        self.assertEqual(self.result["rangeId"], "range")
-        self.assertEqual(self.result["rangeValue"], 8)
+        self.assertEqual(self.result["normalizedRanges"], [
+            {"id": "range", "value": 6},
+            {"id": "range", "value": 8},
+            {"id": "range", "value": 12},
+        ])
 
     def test_range_is_supported_target_selection_tabletop_check(self):
         self.assertEqual(self.result["rangeHandler"], {"mode": "tabletop-check", "phase": "target-selection"})
@@ -60,9 +63,10 @@ class WeaponRangeRuleTests(unittest.TestCase):
         self.assertIn("Piercing 1: handled automatically", self.result["rangeStatuses"])
 
     def test_unknown_rules_remain_visible_and_warn_only_once(self):
-        self.assertEqual(self.result["unknownStatuses"].count("Mystery Rule 2 is not yet supported by the Guide."), 2)
-        unknown_warnings = [warning for warning in self.result["warnings"] if "Mystery Rule 2" in warning]
-        self.assertEqual(len(unknown_warnings), 1)
+        self.assertEqual(len(self.result["unknownStatuses"]), 3)
+        self.assertTrue(all("is not yet supported by the Guide." in status for status in self.result["unknownStatuses"]))
+        unknown_warnings = [warning for warning in self.result["warnings"] if "mystery" in warning.lower()]
+        self.assertEqual(len(unknown_warnings), 2)
 
     def test_version_853_is_consistent(self):
         self.assertIn("const APP_VERSION = '8.5.3';", APP)
