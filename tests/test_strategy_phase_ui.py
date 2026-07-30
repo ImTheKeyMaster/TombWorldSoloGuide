@@ -29,8 +29,8 @@ class StrategyPhaseUiTests(unittest.TestCase):
         self.assertNotIn('data-tooltip="Additional NPOs', APP)
 
     def test_card_lists_exact_deployed_npo_names_and_action(self):
-        self.assertIn("deployingNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`)", STRATEGY_CARD)
-        self.assertIn("Deploy ${deployingNpos.length} NPO", STRATEGY_CARD)
+        self.assertIn("pendingNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`)", STRATEGY_CARD)
+        self.assertIn("Deploy ${pendingNpos.length} NPO", STRATEGY_CARD)
         self.assertIn("onto the battlefield using the Tomb World reinforcement rules.", STRATEGY_CARD)
 
     def test_empty_reinforcement_card_is_not_rendered(self):
@@ -50,10 +50,10 @@ class StrategyPhaseUiTests(unittest.TestCase):
 
     def test_blocked_reinforcements_do_not_allocate_phantom_models(self):
         self.assertIn("blocked=requested-actual", REINFORCEMENTS)
-        self.assertIn("if(!rr){blocked++;continue;}", REINFORCEMENTS)
+        self.assertIn("if(!rr){blocked++;state.reinforcementState.blockedByInventory++;continue;}", REINFORCEMENTS)
         self.assertNotIn("if(i>=actual)", REINFORCEMENTS)
         self.assertNotIn("blockedOperativeIds.push(n.id)", REINFORCEMENTS)
-        self.assertIn("no legal physical model remains.", STRATEGY_CARD)
+        self.assertIn("No eligible physical NPO models remain in the Tomb World inventory.", STRATEGY_CARD)
 
     def test_loaded_blocked_ids_cannot_overlap_deployed_reinforcements(self):
         normalization = APP.split("function normalizeState(raw)", 1)[1].split("function npoDefinition", 1)[0]

@@ -1263,7 +1263,7 @@ button.tracker-operative:hover{
   .compact-combat-profile div{padding:7px}
 }
 .deployment-checklist{gap:8px;margin-top:10px}.deployment-check{padding-block:11px}.deployment-check>span{display:grid;gap:3px}.deployment-roster{display:block;color:var(--text);font-size:.88rem;line-height:1.35}
-.reinforcement-card{margin:18px 0;padding:17px;box-shadow:none}.reinforcement-card h3{margin:6px 0 8px}.reinforcement-card>p{margin:8px 0 0}.reinforcement-list{margin:0;padding-left:1.25rem;line-height:1.6}.reinforcement-blocked{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}.reinforcement-blocked h3{color:#f2bf72}.reinforcement-blocked p{margin:6px 0 0;color:#f2bf72}
+.reinforcement-card{margin:18px 0;padding:17px;box-shadow:none}.reinforcement-card h3{margin:6px 0 8px}.reinforcement-card>p{margin:8px 0 0}.reinforcement-pending p{margin:8px 0 0}.reinforcement-deployed+.reinforcement-pending{margin-top:18px}.reinforcement-list{margin:0;padding-left:1.25rem;line-height:1.6}.reinforcement-blocked{margin-top:18px;padding:14px;border-top:1px solid var(--line);border-radius:10px;background:rgba(242,191,114,.06)}.reinforcement-blocked h3{margin-top:0;color:#f2bf72;font-size:.92rem}.reinforcement-blocked p{margin:6px 0 0;color:#f2bf72}
 
 /* Mission objective HUD and reusable dialogs */
 .hud .mission-hud{min-height:44px}.hud .mission-hud strong{white-space:nowrap;text-align:center;font-size:clamp(.68rem,2.2vw,.9rem)}
