@@ -69,7 +69,8 @@ class V810StreamlinedNpoActionFlowTests(unittest.TestCase):
         progress = section('function renderNpoActionProgress', 'function runNpoPrompt')
         self.assertIn('activation?.resolvedActions||[]', progress)
         self.assertIn("actions.map(action=>escapeHtml(conciseNpoActionName(action))).join(', ')", progress)
-        self.assertIn('AP remaining · Completed:', progress)
+        self.assertIn('AP left (${names} complete)', progress)
+        self.assertIn('activation.remainingAp<=0', progress)
         self.assertNotIn('button', progress)
         self.assertIn('${renderNpoActionProgress()}', APP)
 
@@ -96,12 +97,12 @@ class V810StreamlinedNpoActionFlowTests(unittest.TestCase):
         self.assertIn('completedActionIds', guard)
 
     def test_current_version_830_everywhere(self):
-        self.assertIn("const APP_VERSION = '8.3.1';", APP)
-        self.assertIn("const APP_VERSION = '8.3.1';", WORKER)
-        self.assertIn('V8.3.1', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.3.1'))
+        self.assertIn("const APP_VERSION = '8.4.0';", APP)
+        self.assertIn("const APP_VERSION = '8.4.0';", WORKER)
+        self.assertIn('V8.4.0', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.4.0'))
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.3.1', INDEX)
+            self.assertIn(f'{asset}?v=8.4.0', INDEX)
 
 
 if __name__ == '__main__':

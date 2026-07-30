@@ -60,13 +60,13 @@ class CanoptekIntegrationTests(unittest.TestCase):
         self.assertIn("consumeMolecularBreach(target.id,freeAction)", APP)
 
     def test_manual_spatial_confirmation_is_preserved(self):
-        self.assertIn("Visibility, range, control-range, and placement restrictions are confirmed on the tabletop", APP)
-        self.assertIn("Identify a visible terrain point within 8 inches", APP)
-        self.assertIn("Roll separately", APP)
+        self.assertIn("I confirmed that this target is visible and within range.", APP)
+        self.assertIn("Choose a visible terrain point within 8 inches", APP)
+        self.assertIn("Roll Damage", APP)
 
     def test_version_matrix_and_portrait_constraints(self):
-        self.assertIn("const APP_VERSION = '8.3.1';", APP)
-        self.assertIn("V8.3.1", (ROOT / "index.html").read_text())
+        self.assertIn("const APP_VERSION = '8.4.0';", APP)
+        self.assertIn("V8.4.0", (ROOT / "index.html").read_text())
         self.assertNotIn("obelisk node matrix support", APP.lower())
         self.assertNotIn("npoPortrait", APP)
 

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.3.1';
+  const APP_VERSION = '8.4.0';
   const NPO_ACTION_TRANSITIONS = Object.freeze({
     AUTO_CONTINUE:'auto-continue',
     ACKNOWLEDGE:'acknowledge',
@@ -398,7 +398,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       rangedWeapons:[
         {id:'twin-gauss-reapers',name:'Twin gauss reapers',type:'ranged',profiles:[
           {id:'focused',name:'Focused',attacks:5,hit:4,damage:{normal:4,critical:5},rules:['Piercing 1','Severe'],ruleIds:['piercing','severe']},
-          {id:'sweeping',name:'Sweeping',attacks:4,hit:4,damage:{normal:4,critical:5},rules:['Piercing 1','Severe','Torrent 1"'],ruleIds:['piercing','severe','torrent'],torrent:1,manualResolution:'Identify each valid secondary target within 1 inch on the tabletop; resolve a separate attack against each and do not attack the primary target twice.'}
+          {id:'sweeping',name:'Sweeping',attacks:4,hit:4,damage:{normal:4,critical:5},rules:['Piercing 1','Severe','Torrent 1"'],ruleIds:['piercing','severe','torrent'],torrent:1,manualResolution:'Also attack each other target within 1 inch of the primary target. Resolve each attack separately. Do not attack the primary target twice.'}
         ]},
         {id:'transdimensional-isolator',name:'Transdimensional isolator',type:'ranged',attacks:5,hit:4,damage:{normal:5,critical:6},rules:['Dimensional Banishment'],ruleIds:['dimensional-banishment'],postAttackEffect:{id:'dimensional-banishment',trigger:{damageInflictedOrCriticalRetained:true,targetMustSurvive:true},roll:'2D6',comparison:'greater-than-post-damage-wounds',incapacitationPrecedence:true}}
       ],
@@ -408,20 +408,20 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         {id:'steadfast',name:'Steadfast',markerControlApl:3,overridesAplChangesForControl:true,description:'For marker-control determination only, this operative may be treated as having APL 3.'}
       ],
       abilities:[{id:'weapon-sentinel',name:'Weapon Sentinel',text:'With a Conceal order, this operative cannot use Light terrain to prevent selection as a valid target. It still retains any cover save.'},{id:'steadfast',name:'Steadfast',text:'For marker-control determination only, this operative may be treated as having APL 3.'}],strategicRules:[],
-      behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use the sweeping twin gauss reapers profile when it would target more than one player operative.'}
+      behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use Sweeping when it can hit at least two Player operatives.'}
     },
     'Geomancer': {
       id:'geomancer',name:'Geomancer',type:'Geomancer',faction:'Canoptek Circle',physicalQuantity:1,move:6,apl:3,save:3,wounds:14,baseSize:null,
       keywords:['Canoptek Circle','Necron','Leader','Cryptek','Geomancer'],compatibilityBehavior:'Support',compatibilityAttack:{dice:4,hit:3,normal:4,crit:5},defaultWeaponId:'tremorglaive',loadoutOptions:null,
       rangedWeapons:[{id:'tremorglaive',name:'Tremorglaive',type:'ranged',profiles:[
         {id:'part-matter',name:'Part matter',attacks:4,hit:3,damage:{normal:4,critical:5},rules:['Piercing 1','Piercing Crits 2'],ruleIds:['piercing','piercing-crits'],piercing:1,piercingCrits:2},
-        {id:'quake',name:'Quake',attacks:5,hit:3,damage:{normal:1,critical:2},rules:['Blast 2"','Seek Light','Stun'],ruleIds:['blast','seek-light','stun'],blast:2,manualResolution:'Identify valid secondary targets within 2 inches on the tabletop and resolve each separately; do not attack the primary target twice.'}
+        {id:'quake',name:'Quake',attacks:5,hit:3,damage:{normal:1,critical:2},rules:['Blast 2"','Seek Light','Stun'],ruleIds:['blast','seek-light','stun'],blast:2,manualResolution:'Also attack each other target within 2 inches of the primary target. Resolve each attack separately. Do not attack the primary target twice.'}
       ]}],
       meleeWeapons:[{id:'tremorglaive-sweep',name:'Tremorglaive (sweep)',type:'melee',attacks:4,hit:4,damage:{normal:4,critical:5},rules:['Severe','Shock','Stun'],ruleIds:['severe','shock','stun']}],
       actions:[
-        {id:'geomantic-disturbance',name:'Geomantic Disturbance',ap:1,target:{kind:'terrain-point',visible:true,range:8,affectedOperativesWithin:2},restrictions:{ordersExcluded:['Conceal'],actorOutsideEnemyControlRange:true},resolution:{manualTabletopSelection:true,dicePerTarget:'2D6',separateRollPerTarget:true,damage:'roll-minus-remaining-wounds-if-positive'},description:'Select a visible terrain point within 8 inches. Separately roll 2D6 for every operative within 2 inches; if a roll exceeds its remaining wounds, inflict the difference. Unavailable while Concealed or within enemy control range.'},
-        {id:'canoptek-control',name:'Canoptek Control',ap:1,target:{side:'friendly',keywordsAll:['Canoptek Circle','Canoptek'],visible:true,range:6},restrictions:{actorOutsideEnemyControlRange:true,notCounteracting:true},freeAction:{ap:1,consumeTargetApl:false,startActivation:false,preserveActivatedState:true,obeyNormalRestrictions:true,maxMove:2,repositionWhollyWithin:2},description:'A visible friendly Canoptek operative within 6 inches immediately performs one legal 1 AP action for free, moving no more than 2 inches. Unavailable in enemy control range or while counteracting.'},
-        {id:'molecular-breach',name:'Molecular Breach',ap:1,target:{side:'friendly',keywordsAll:['Canoptek Circle'],visible:true,range:6},restrictions:{actorOutsideEnemyControlRange:true},temporaryEffect:{id:'molecular-breach',scope:'target',trigger:'next-movement-action',consumeOnTrigger:true,persist:true,dashDistance:3,useMoveStatOtherwise:true,chargeGetsNoBonus:true,closeQuartersPassWalls:true,validPlacementRequired:true,enemyControlRangeAllowedOnlyForCharge:true},description:'A visible friendly Canoptek Circle operative within 6 inches replaces its next movement with removal and valid setup within its Move (3 inches for Dash). In close quarters it may pass through Walls; only Charge may end in enemy control range.'}
+        {id:'geomantic-disturbance',name:'Geomantic Disturbance',ap:1,target:{kind:'terrain-point',visible:true,range:8,affectedOperativesWithin:2},restrictions:{ordersExcluded:['Conceal'],actorOutsideEnemyControlRange:true},resolution:{manualTabletopSelection:true,dicePerTarget:'2D6',separateRollPerTarget:true,damage:'roll-minus-remaining-wounds-if-positive'},description:'1. Choose a terrain point the Geomancer can see within 8 inches. 2. Select every operative within 2 inches of that point. 3. Roll 2D6 separately for each. If the total is higher than its remaining wounds, deal damage equal to the difference. Cannot be used while the Geomancer has a Conceal order or is in enemy control range.'},
+        {id:'canoptek-control',name:'Canoptek Control',ap:1,target:{side:'friendly',keywordsAll:['Canoptek Circle','Canoptek'],visible:true,range:6},restrictions:{actorOutsideEnemyControlRange:true,notCounteracting:true},freeAction:{ap:1,consumeTargetApl:false,startActivation:false,preserveActivatedState:true,obeyNormalRestrictions:true,maxMove:2,repositionWhollyWithin:2},description:'Choose a visible friendly Canoptek within 6 inches. It immediately performs one free 1 AP action. Any movement from that action is limited to 2 inches. Cannot be used while the Geomancer is in enemy control range or during a counteraction.'},
+        {id:'molecular-breach',name:'Molecular Breach',ap:1,target:{side:'friendly',keywordsAll:['Canoptek Circle'],visible:true,range:6},restrictions:{actorOutsideEnemyControlRange:true},temporaryEffect:{id:'molecular-breach',scope:'target',trigger:'next-movement-action',consumeOnTrigger:true,persist:true,dashDistance:3,useMoveStatOtherwise:true,chargeGetsNoBonus:true,closeQuartersPassWalls:true,validPlacementRequired:true,enemyControlRangeAllowedOnlyForCharge:true},description:'Choose a visible friendly Canoptek Circle NPO within 6 inches. During its next movement action, remove it and set it up instead of moving normally. Use its Move distance, or 3 inches for Dash. In close quarters it can pass through Walls. Only Charge may end in enemy control range.'}
       ],passiveRules:[],abilities:[],strategicRules:[],behavior:{summary:'Support and control allies before attacking or repositioning.',actions:['Canoptek Control','Molecular Breach','Geomantic Disturbance','Shoot','Fight','Reposition','Dash'],operatesHatches:true}
     },
     'Canoptek Macrocyte Warrior': {
@@ -429,7 +429,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       keywords:['Canoptek Circle','Necron','Canoptek','Macrocyte','Warrior'],compatibilityBehavior:'Sentinel',compatibilityAttack:{dice:4,hit:4,normal:2,crit:3},defaultWeaponId:'gauss-scalpel',loadoutOptions:[{id:'gauss-scalpel',name:'Gauss scalpel and claws & tail'},{id:'tesla-caster',name:'Tesla caster and claws & tail'}],
       rangedWeapons:[
         {id:'gauss-scalpel',name:'Gauss scalpel',type:'ranged',attacks:4,hit:4,damage:{normal:2,critical:3},rules:['Piercing 1'],ruleIds:['piercing']},
-        {id:'tesla-caster',name:'Tesla caster',type:'ranged',profiles:[{id:'focused',name:'Focused',attacks:4,hit:4,damage:{normal:2,critical:3},rules:[],ruleIds:[]},{id:'living-lightning',name:'Living lightning',attacks:4,hit:4,damage:{normal:2,critical:3},rules:['Blast 2"'],ruleIds:['blast'],blast:2,manualResolution:'Identify valid secondary targets within 2 inches on the tabletop and resolve each separately; do not attack the primary target twice.'}]}
+        {id:'tesla-caster',name:'Tesla caster',type:'ranged',profiles:[{id:'focused',name:'Focused',attacks:4,hit:4,damage:{normal:2,critical:3},rules:[],ruleIds:[]},{id:'living-lightning',name:'Living lightning',attacks:4,hit:4,damage:{normal:2,critical:3},rules:['Blast 2"'],ruleIds:['blast'],blast:2,manualResolution:'Also attack each other target within 2 inches of the primary target. Resolve each attack separately. Do not attack the primary target twice.'}]}
       ],
       meleeWeapons:[{id:'claws-and-tail',name:'Claws & tail',type:'melee',attacks:3,hit:4,damage:{normal:3,critical:4},rules:[],ruleIds:[]}],actions:[],
       passiveRules:[
@@ -437,7 +437,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         {id:'expendable-construct',name:'Expendable Construct',excludeFromScoring:['escape','survive','incapacitated'],description:'Ignore this operative for scoring conditions that require operatives to escape, survive, or be incapacitated.'}
       ],abilities:[{id:'aggressive-defence',name:'Aggressive Defence',text:'When an enemy operative within 2 inches incapacitates this operative, roll D3 before removal; on 2+, inflict exactly 1 damage on that enemy.'},{id:'expendable-construct',name:'Expendable Construct',text:'Ignore this operative for scoring conditions that require operatives to escape, survive, or be incapacitated.'}],
       strategicRules:[{id:'a-ceaseless-scuttling',name:'A Ceaseless Scuttling',kind:'strategic-gambit',turningPointMinimum:2,requiresLivingFriendlyBelow:3,operativeType:'Canoptek Macrocyte Warrior',physicalLimit:3,setUp:{ready:true,order:'Conceal',location:'NPO drop zone'},manualResolution:true,description:'After Turning Point 1, if fewer than three friendly Warriors remain, another legally equipped Warrior may be set up ready with a Conceal order wholly within the NPO drop zone, subject to the three-model limit.'}],
-      behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use the living lightning tesla caster profile when it would target more than one player operative and no NPOs.'}
+      behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use Living Lightning when it can hit at least two Player operatives and no NPOs.'}
     },
     'Canoptek Macrocyte Accelerator': {
       id:'canoptek-macrocyte-accelerator',name:'Canoptek Macrocyte Accelerator',type:'Canoptek Macrocyte Accelerator',faction:'Canoptek Circle',physicalQuantity:1,move:7,apl:2,save:4,wounds:7,baseSize:null,
@@ -445,8 +445,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       rangedWeapons:[{id:'spark',name:'Spark',type:'ranged',attacks:4,hit:4,damage:{normal:2,critical:3},rules:['Range 4"','Piercing 1'],ruleIds:['range','piercing'],range:4}],
       meleeWeapons:[{id:'claws-and-spark',name:'Claws & spark',type:'melee',attacks:3,hit:4,damage:{normal:3,critical:4},rules:['Lethal 5+','Stun'],ruleIds:['lethal','stun'],lethal:5}],
       actions:[
-        {id:'overcharge',name:'Overcharge',ap:1,target:{side:'friendly',keywordsAll:['Canoptek Circle','Canoptek'],visible:true,range:3,excludeSelf:true},restrictions:{actorOutsideEnemyControlRange:true},temporaryAplModifier:{amount:1,expires:'end-of-target-next-activation',sourceUnique:true,persist:true},description:'Select another visible friendly Canoptek operative within 3 inches. Add 1 to its APL until the end of its next activation. Unavailable in enemy control range.'},
-        {id:'cranial-overload',name:'Cranial Overload',ap:1,target:{side:'enemy',visible:true,range:3},restrictions:{actorOutsideEnemyControlRange:true},temporaryAplModifier:{amount:-1,minimumEffectiveApl:1,expires:'end-of-target-next-activation',sourceUnique:true,persist:true},description:'Select a visible enemy operative within 3 inches. Subtract 1 from its APL (minimum 1) until the end of its next activation. Unavailable in enemy control range.'}
+        {id:'overcharge',name:'Overcharge',ap:1,target:{side:'friendly',keywordsAll:['Canoptek Circle','Canoptek'],visible:true,range:3,excludeSelf:true},restrictions:{actorOutsideEnemyControlRange:true},temporaryAplModifier:{amount:1,expires:'end-of-target-next-activation',sourceUnique:true,persist:true},description:'Choose another visible friendly Canoptek within 3 inches. It gets 1 extra AP in its next activation (+1 APL). Cannot be used while the Accelerator is in enemy control range.'},
+        {id:'cranial-overload',name:'Cranial Overload',ap:1,target:{side:'enemy',visible:true,range:3},restrictions:{actorOutsideEnemyControlRange:true},temporaryAplModifier:{amount:-1,minimumEffectiveApl:1,expires:'end-of-target-next-activation',sourceUnique:true,persist:true},description:'Choose a visible Player operative within 3 inches. It gets 1 fewer AP in its next activation, to a minimum of 1 (-1 APL). Cannot be used while the Accelerator is in enemy control range.'}
       ],passiveRules:[],abilities:[],strategicRules:[],behavior:{summary:'Improve an ally or disrupt an enemy before attacking or repositioning.',actions:['Overcharge','Cranial Overload','Shoot','Fight','Reposition','Dash'],operatesHatches:true}
     },
     'Canoptek Macrocyte Reanimator': {
@@ -454,7 +454,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       keywords:['Canoptek Circle','Necron','Canoptek','Macrocyte','Reanimator'],compatibilityBehavior:'Support',compatibilityAttack:{dice:4,hit:4,normal:3,crit:4},defaultWeaponId:'atomiser-beam',loadoutOptions:null,
       rangedWeapons:[{id:'atomiser-beam',name:'Atomiser beam',type:'ranged',attacks:4,hit:4,damage:{normal:3,critical:4},rules:['Range 6"','Lethal 5+'],ruleIds:['range','lethal'],range:6,lethal:5}],
       meleeWeapons:[{id:'claws-and-tail',name:'Claws & tail',type:'melee',attacks:4,hit:4,damage:{normal:3,critical:4},rules:[],ruleIds:[]}],
-      actions:[{id:'nanoscarab-beam',name:'Nanoscarab Beam',ap:1,oncePerTurningPoint:true,target:{side:'friendly',keywordsAll:['Canoptek Circle'],visible:true,range:6,notIncapacitated:true,excludeReanimatedThisTurningPoint:true},restrictions:{actorOutsideEnemyControlRange:true},healing:{dice:'3D3',capAtMaximum:true,recordRolledAndRestored:true},description:'Once per turning point, a visible friendly Canoptek Circle operative within 6 inches regains up to 3D3 lost wounds. It cannot target an incapacitated operative or one saved by Reanimate this turning point.'}],
+      actions:[{id:'nanoscarab-beam',name:'Nanoscarab Beam',ap:1,oncePerTurningPoint:true,target:{side:'friendly',keywordsAll:['Canoptek Circle'],visible:true,range:6,notIncapacitated:true,excludeReanimatedThisTurningPoint:true},restrictions:{actorOutsideEnemyControlRange:true},healing:{dice:'3D3',capAtMaximum:true,recordRolledAndRestored:true},description:'Choose a visible wounded Canoptek Circle NPO within 6 inches. Roll 3D3 and restore that many wounds, up to its maximum. It cannot target an incapacitated NPO or one saved by Reanimate this turning point.'}],
       passiveRules:[{id:'reanimate',name:'Reanimate',oncePerTurningPoint:true,optional:true,trigger:'another-friendly-would-be-incapacitated',target:{keywordsAll:['Canoptek Circle'],visible:true,range:6,excludeSelf:true},restrictions:{reanimatorAlive:true,bothOutsideEnemyControlRange:true,shootAttackCannotTargetReanimator:true},replacement:{wounds:1,preventIncapacitationForAction:true,freeDashAfterAction:true,dashEndsWithinSourceControlRange:true,endTargetActivationIfCurrent:true},temporaryAplModifiers:[{target:'source',amount:-1,expires:'end-of-next-activation'},{target:'saved-operative',amount:-1,expires:'end-of-next-activation'}],description:'Once per turning point, when another visible friendly Canoptek Circle operative within 6 inches would be incapacitated, it may remain at 1 wound and cannot be incapacitated again during that action. Afterward it may Dash for free, ending in the Reanimator control range. Both operatives suffer -1 APL through their next activation.'}],
       abilities:[{id:'reanimate',name:'Reanimate',text:'Once per turning point, optionally prevent another eligible friendly operative from being incapacitated, leave it at 1 wound, then resolve its free Dash and temporary APL penalties.'}],strategicRules:[],behavior:{summary:'Repair wounded allies before attacking or repositioning.',actions:['Nanoscarab Beam','Shoot','Fight','Reposition','Dash'],operatesHatches:true}
     }
@@ -478,7 +478,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const eventDefinitions = {
     'subjugation-glyphs':{title:'Subjugation Glyphs',text:'Randomly test eligible Player operatives without replacement. If a D6 is higher than an operative’s effective APL, subtract 1 from its APL.',execution:{type:'subjugation-glyphs'},lifecycle:'immediate',duration:'persistent',handlerId:'subjugation-glyphs',gameplayHooks:['effectivePlayerApl'],automationType:'automatic',priority:10},
     'transdimensional-relocation':{title:'Transdimensional Relocation',text:'Relocate the player operative that is closest to an NPO. Follow the placement restrictions on the event card.',execution:{type:'tabletop-confirm'},duration:'immediate'},
-    'my-will-be-done':{title:'My Will Be Done',text:'Until the end of the turning point, while an NPO is in the same room as the C1 sarcophagus, its weapons have Accurate 1.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'my-will-be-done',gameplayHooks:['effectiveWeapon'],automationType:'tabletop-answer',priority:20},
+    'my-will-be-done':{title:'My Will Be Done',text:'Until the end of the turning point, while an NPO is in the same room as the sarcophagus, its weapons have Accurate 1.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'my-will-be-done',gameplayHooks:['effectiveWeapon'],automationType:'tabletop-answer',priority:20},
     'reanimation-protocols':{title:'Reanimation Protocols',text:'Until the end of the turning point, the first time each NPO would be incapacitated, roll one D6. On 4+, it reanimates with 1 wound.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'reanimation-protocols',gameplayHooks:['incapacitationCandidates'],automationType:'automatic',priority:10},
     'dark-of-the-tomb':{title:'Dark of the Tomb',text:'Until the end of the turning point, Player Shoot attack dice cannot be rerolled when the target is more than 8 inches away.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'dark-of-the-tomb',gameplayHooks:['attackRerolls'],automationType:'tabletop-answer',priority:10},
     'countertemporal-shifting':{title:'Countertemporal Shifting',text:'Until the end of the turning point, when an attack die would inflict 3 or more damage on an NPO, roll one D6. On 5+, subtract 1 damage from that die.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'countertemporal-shifting',gameplayHooks:['damagePackets'],automationType:'automatic',priority:30},
@@ -2983,7 +2983,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const candidates=readyNpos();
     if(candidates.length===1){state.activeNpoId=candidates[0].id;beginNpoActivation(candidates[0]);return;}
     const options=sortedNposForDisplay(candidates).map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(npoName(n))}</option>`).join('');
-    showModal('Select NPO to Activate',`<p>Use the Threat Principle in order. Select an NPO that:</p><ol><li>has an ability, or is a threat, to Shoot or Fight a Player operative;</li><li>is not in cover;</li><li>is closest to a Player operative.</li></ol><p class="muted">If more than one NPO is still tied, determine one at random on the tabletop.</p><div class="field"><label for="officialNpoSelection">Next ready NPO</label><select id="officialNpoSelection"><option value="">Select matching NPO</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Exit Guide</button><button class="btn primary" id="confirmNpoSelection" disabled>Continue</button></div>`);
+    showModal('Select NPO to Activate',`<p>Use the Threat Principle in order. Select an NPO that:</p><ol><li>has an ability, or is a threat, to Shoot or Fight a Player operative;</li><li>is not in cover;</li><li>is closest to a Player operative.</li></ol><p class="muted">If more than one NPO is still tied, determine one at random on the tabletop.</p><div class="field"><label for="officialNpoSelection">Next ready NPO</label><select id="officialNpoSelection"><option value="">Select matching NPO</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmNpoSelection" disabled>Continue</button></div>`);
     $('#officialNpoSelection').onchange=()=>{$('#confirmNpoSelection').disabled=!$('#officialNpoSelection').value;};
     $('#confirmNpoSelection').onclick=()=>{const n=candidates.find(item=>item.id===$('#officialNpoSelection').value);if(n)beginNpoActivation(n);};
   }
@@ -3706,7 +3706,7 @@ function showPlayerActivation(stage={}){
         : null;
     const items=[guidance,weaponSentinel&&{text:`${weaponSentinel.name}: ${weaponSentinel.text}`,attackType:'shoot'}]
       .filter(item=>item?.text&&item.attackType===attackType&&(!profile||!item.weaponId||item.weaponId===profile.weaponId));
-    return items.length?`<div class="summary-box"><strong>NPO combat guidance</strong><ul>${items.map(item=>`<li>${escapeHtml(item.text)}</li>`).join('')}</ul></div>`:'';
+    return items.length?`<div class="summary-box"><strong>Weapon guidance</strong><ul>${items.map(item=>`<li>${escapeHtml(item.text)}</li>`).join('')}</ul></div>`:'';
   }
 
   function recordedCombat({attackerName,defenderName,attackType,attackerSide,defenderSide,profile,before,normalSuccesses=0,criticalSuccesses=0,damage=0}){
@@ -4024,40 +4024,77 @@ function showPlayerActivation(stage={}){
   const NPO_ACTION_INQUIRIES={
     'fall-back':{
       applicabilityQuestion:'Is this NPO within control range of a Player operative?',
-      feasibilityQuestion:'Can this NPO Fall Back and finish outside the control range of all Player operatives?',
-      applicabilityHelp:'Answer Yes if this NPO is currently within control range of at least one Player operative. Do not move it yet.',
-      feasibilityHelp:n=>`It can move up to ${npoDefinition(n.type)?.move} inches. Select Yes only if its base can fit at a destination outside every Player operative’s control range.`,
-      selectedInstruction:'Fall Back using the shortest available route and finish outside the control range of every Player operative.'
+      feasibilityQuestion:'Can it move away and finish outside every Player operative’s control range?',
+      applicabilityHelp:'Select Yes if a Player operative is in its control range. Do not move the NPO yet.',
+      feasibilityHelp:n=>`Move it up to ${npoDefinition(n.type)?.move} inches. Select Yes only if its base fits at a destination outside every Player operative’s control range.`,
+      selectedInstruction:'Fall Back using the shortest available route and finish outside every Player operative’s control range.'
     },
     shoot:{
-      feasibilityQuestion:'Does this NPO have a valid Player operative it can legally Shoot?',
-      help:'Verify visibility, obscuring, cover where relevant to target priority, weapon range, order restrictions, enemy control range, a valid living target, and any active rule restrictions.',
-      selectedInstruction:'Shoot the highest-priority valid Player operative.'
+      feasibilityQuestion:'Can this NPO shoot a Player operative from where it is?',
+      help:'Check visibility, weapon range, its order, and any terrain or rule that blocks the shot. The app will choose the target next.',
+      selectedInstruction:'Shoot the first Player operative that matches the target priority.'
     },
     fight:{
-      feasibilityQuestion:'Is a valid Player operative within this NPO’s control range?',
-      help:'Confirm a valid living Player operative is within control range and no active rule prevents Fight.',
-      selectedInstruction:'Fight the highest-priority valid Player operative.'
+      feasibilityQuestion:'Is a Player operative close enough for this NPO to Fight?',
+      help:'Select Yes if a Player operative is in its control range and no rule prevents the Fight.',
+      selectedInstruction:'Fight the first Player operative that matches the target priority.'
     },
     charge:{
-      feasibilityQuestion:'Can this NPO legally Charge and finish within control range of a valid Player operative?',
-      help:'Confirm charge reach, a legal route and destination, and a valid living Player operative. The app applies printed target priority.',
-      selectedInstruction:'Charge the highest-priority valid Player operative.'
+      feasibilityQuestion:'Can this NPO reach a Player operative with a Charge?',
+      help:'Measure the Charge. Select Yes only if its base can reach and fit next to a target. The app will choose which target to Charge.',
+      selectedInstruction:'Charge the first Player operative that matches the target priority.'
     },
-    reposition:{
-      feasibilityQuestion:'Can this NPO Reposition to gain an unobscured valid target or better accomplish the mission?',
-      help:'Select Yes only if the Reposition moves it toward an unobstructed shooting position, closer to the highest-priority Player operative, or into a better position to complete or defend the mission objective. Otherwise, select No.'
+    'geomantic-disturbance':{
+      feasibilityQuestion:'Can the Geomancer see a terrain point within 8 inches?',
+      help:'Select Yes only if it has an Engage order, is outside enemy control range, and can see a terrain point within 8 inches.'
     },
-    dash:{
-      feasibilityQuestion:'Can this NPO Dash to a more useful position?',
-      help:'Select Yes only if the Dash moves it toward an unobstructed shooting position or helps it complete the mission. Otherwise, select No.'
+    'canoptek-control':{
+      feasibilityQuestion:'Can the Geomancer see a friendly Canoptek within 6 inches?',
+      help:'Select Yes only if the Geomancer is outside enemy control range and is not counteracting.'
+    },
+    'molecular-breach':{
+      feasibilityQuestion:'Can the Geomancer see a friendly Canoptek Circle NPO within 6 inches?',
+      help:'Select Yes only if the Geomancer is outside enemy control range.'
+    },
+    overcharge:{
+      feasibilityQuestion:'Can the Accelerator see another friendly Canoptek within 3 inches?',
+      help:'Select Yes only if the Accelerator is outside enemy control range.'
+    },
+    'cranial-overload':{
+      feasibilityQuestion:'Can the Accelerator see a Player operative within 3 inches?',
+      help:'Select Yes only if the Accelerator is outside enemy control range.'
+    },
+    'nanoscarab-beam':{
+      feasibilityQuestion:'Can the Reanimator see a wounded Canoptek Circle NPO within 6 inches?',
+      help:'Select Yes only if the target is not incapacitated and was not saved by Reanimate this turning point.'
     }
   };
-  function npoMovementInstruction(action){
+  function npoMovementFocus(n,action){
+    const id=npoDefinition(n.type)?.id;
+    if(['geomancer','canoptek-macrocyte-accelerator','canoptek-macrocyte-reanimator'].includes(id))return 'support';
+    if(String(action).includes('closest player operative'))return 'fight';
+    if(String(action).includes('valid unobscured target'))return 'shoot';
+    return 'mission';
+  }
+  function npoMovementInquiry(n,action,id){
+    const focus=npoMovementFocus(n,action);
+    if(id==='reposition'){
+      if(focus==='shoot')return {question:'Can this NPO Reposition to get a clear shot?',help:'Select Yes if it can move to a position where it can shoot a Player operative.'};
+      if(focus==='fight')return {question:'Can this NPO Reposition closer to its target?',help:'Select Yes if it can move closer to the nearest Player operative, using cover when possible.'};
+      if(focus==='support')return {question:'Can this NPO Reposition to use a support action or help the mission?',help:'Select Yes if moving would help it use a higher-priority action or improve its mission position.'};
+      return {question:'Can this NPO Reposition to help complete or defend the mission?',help:'Select Yes only if it can reach a clearly better mission position.'};
+    }
+    if(focus==='fight')return {question:'Can a 3-inch Dash move this NPO closer to its target?',help:'Select Yes if the Dash moves it closer to the nearest Player operative, using cover when possible.'};
+    if(focus==='support')return {question:'Can a 3-inch Dash help this NPO use a support action?',help:'Select Yes if the Dash helps it reach an ally, enemy, or mission position needed for a higher-priority action.'};
+    return {question:'Can a 3-inch Dash put this NPO in a better position?',help:'Select Yes if the Dash moves it toward a clear shot or a better mission position.'};
+  }
+  function npoMovementInstruction(n,action){
     const name=npoActionId(action)==='dash'?'Dash':'Reposition';
-    if(action.includes('closest player operative'))return `${name} closer to the highest-priority Player operative, using cover where possible.`;
-    if(action.includes('valid unobscured target'))return `${name} toward an unobstructed valid target or improve its mission position.`;
-    return `${name} to improve its ability to complete or defend the mission objective.`;
+    const distance=name==='Dash'?3:npoDefinition(n.type)?.move,focus=npoMovementFocus(n,action);
+    if(focus==='fight')return `${name==='Dash'?'Dash':'Move'} this NPO up to ${distance} inches toward the selected Player operative, using cover when possible.`;
+    if(focus==='shoot')return name==='Dash'?`Dash this NPO up to 3 inches toward a clear shot or a better mission position.`:`Move this NPO up to ${distance} inches to get a clear shot. If that is not possible, move it to help the mission.`;
+    if(focus==='support')return `${name==='Dash'?'Dash':'Move'} this NPO up to ${distance} inches toward an ally, enemy, or mission position needed for its next support action.`;
+    return `${name==='Dash'?'Dash':'Move'} this NPO up to ${distance} inches toward the mission objective or a position that helps defend it.`;
   }
   function npoActionCost(n,actionId){
     const profileAction=(npoDefinition(n?.type)?.actions||[]).find(action=>action.id===actionId);
@@ -4114,12 +4151,12 @@ function showPlayerActivation(stage={}){
     const activation=state.lastActivation;
     const action=recommendedNpoActions(n,activation?.currentContext||{}).filter(name=>!(activation?.declinedActionIds||[]).includes(npoActionId(name)))[index];
     if(!action)return null;
-    const id=npoActionId(action),inquiry=NPO_ACTION_INQUIRIES[id];
+    const id=npoActionId(action),inquiry=NPO_ACTION_INQUIRIES[id],movementInquiry=['reposition','dash'].includes(id)?npoMovementInquiry(n,action,id):null;
     const applicability=id==='fall-back'&&activation.currentContext?.inEnemyControlRange===null;
-    const title=applicability?inquiry.applicabilityQuestion:(inquiry?.feasibilityQuestion||`Are all requirements for ${action} currently satisfied?`);
+    const title=applicability?inquiry.applicabilityQuestion:(movementInquiry?.question||inquiry?.feasibilityQuestion||`Can this NPO use ${action} now?`);
     const inquiryHelp=applicability?inquiry?.applicabilityHelp:(inquiry?.feasibilityHelp??inquiry?.help);
-    const help=typeof inquiryHelp==='function'?inquiryHelp(n):inquiryHelp;
-    return {key:`${id}-${applicability?'applicability':'feasibility'}`,action,actionId:id,type:applicability?'applicability':'feasibility',title,help:help||'Confirm target eligibility, visibility, distance, control range, placement, availability, and every other physical restriction.'};
+    const help=movementInquiry?.help||(typeof inquiryHelp==='function'?inquiryHelp(n):inquiryHelp);
+    return {key:`${id}-${applicability?'applicability':'feasibility'}`,action,actionId:id,type:applicability?'applicability':'feasibility',title,help:help||'Check the action’s target, distance, and placement. Select Yes only if the action can be completed now.'};
   }
 
   const npoQuestionIcons = {
@@ -4405,34 +4442,36 @@ function showPlayerActivation(stage={}){
   }
 
   function renderCompletedNpoQuestions(history){
-    return history.map(item=>`<div class="npo-question-complete npo-question-history">${npoIcon(npoQuestionIcons[item.action.split(' ')[0]])}<span><small>${escapeHtml(item.type==='applicability'?'APPLICABILITY':item.type==='selected'?'SELECTED ACTION':'FEASIBILITY')}</small>${escapeHtml(item.question||item.action)}</span><strong>${item.type==='selected'?'Selected':item.answer?'Yes':'No'}</strong></div>`).join('');
+    return history.map(item=>`<div class="npo-question-complete npo-question-history">${npoIcon(npoQuestionIcons[item.action.split(' ')[0]])}<span>${escapeHtml(item.question||item.action)}</span><strong>${item.type==='selected'?'Selected':item.answer?'Yes':'No'}</strong></div>`).join('');
   }
 
   function renderActiveNpoQuestion(q){
-    return `<section class="npo-question-active npo-question-card--active" aria-live="polite" aria-atomic="true">
-      ${npoIcon(npoQuestionIcons[q.action.split(' ')[0]])}<h3>${escapeHtml(q.title)}</h3><p>${escapeHtml(q.help)}</p>
+    return `<section class="npo-question-active npo-question-card--active" aria-live="polite" aria-atomic="true" aria-labelledby="activeNpoQuestion" aria-describedby="activeNpoQuestionHelp">
+      ${npoIcon(npoQuestionIcons[q.action.split(' ')[0]])}<h3 id="activeNpoQuestion">${escapeHtml(q.title)}</h3><p id="activeNpoQuestionHelp">${escapeHtml(q.help)}</p>
       <div class="ai-choice-grid"><button class="ai-choice no" data-answer="no"><strong>No</strong></button><button class="ai-choice yes" data-answer="yes"><strong>Yes</strong></button></div>
     </section>`;
   }
 
   function renderNpoActionProgress(activation=state.lastActivation){
     const actions=activation?.resolvedActions||[];
-    if(!actions.length)return '';
+    if(!actions.length||activation.remainingAp<=0)return '';
     const names=actions.map(action=>escapeHtml(conciseNpoActionName(action))).join(', ');
-    return `<p class="npo-action-progress">${activation.remainingAp} AP remaining · Completed: ${names}</p>`;
+    return `<p class="npo-action-progress" role="status" aria-live="polite">${activation.remainingAp} AP left (${names} complete)</p>`;
   }
+
+  function titleCaseRuleId(ruleId){return String(ruleId).split('-').map(word=>word[0]?.toUpperCase()+word.slice(1)).join(' ');}
 
   function runNpoPrompt(n,index,answers,history){
     const q=npoActionQuestion(n,index);
-    if(!q){renderNpoActivationEnd(n,'No further useful legal actions are available.');return;}
+    if(!q){renderNpoActivationEnd(n,'No useful actions remain.');return;}
     const priorTop=$('.npo-question-active',modal)?.getBoundingClientRect().top;
     const definition=npoDefinition(n.type),modifiers=(state.npoRuleState.aplModifiers||[]).filter(item=>item.targetId===n.id),pendingBreach=(state.npoRuleState.pendingMovementEffects||[]).some(item=>item.targetId===n.id&&item.ruleId==='molecular-breach');
-    const loadout=definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name;
-    modalBody.innerHTML=`<div class="modal-inner"><h2 id="activeNpoQuestionHeading" tabindex="-1">NPO Activation: ${escapeHtml(npoName(n))}</h2><div class="activation-profile-strip"><span>${n.wounds}/${n.maxWounds} wounds</span><span>APL ${definition.apl} · effective ${effectiveApl(n.id,definition.apl)}</span><span>${escapeHtml(n.order)} order</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} APL · ${escapeHtml(item.ruleId)}</span>`).join('')}${pendingBreach?'<span>Molecular Breach pending</span>':''}</div>${renderNpoActionProgress()}${state.lastActivation.autoTransitionAnnouncement?`<span class="visually-hidden" role="status" aria-live="polite">${escapeHtml(state.lastActivation.autoTransitionAnnouncement)}</span>`:''}<div class="ai-wizard">
+    const loadout=definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name,effective=effectiveApl(n.id,definition.apl);
+    modalBody.innerHTML=`<div class="modal-inner"><h2 id="activeNpoQuestionHeading" tabindex="-1">NPO Activation: ${escapeHtml(npoName(n))}</h2><div class="activation-profile-strip" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>APL ${definition.apl}${effective===definition.apl?'':` (${effective} AP this activation)`}</span><span>Order: ${escapeHtml(n.order)}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Next movement uses Molecular Breach</span>':''}</div>${renderNpoActionProgress()}${state.lastActivation.autoTransitionAnnouncement?`<span class="visually-hidden" role="status" aria-live="polite">${escapeHtml(state.lastActivation.autoTransitionAnnouncement)}</span>`:''}<div class="ai-wizard">
       <div class="npo-question-flow">${renderCompletedNpoQuestions(history)}${renderActiveNpoQuestion(q)}</div>
       <div class="wizard-actions">
         <button class="btn ghost" id="aiBack" ${history.length===0?'disabled':''}>Back</button>
-        <button class="btn ghost" data-close>Exit Guide</button>
+        <button class="btn ghost" data-close>Close Guide</button>
       </div>
     </div></div>`;
     if(!modal.open)modal.showModal();
@@ -4457,7 +4496,7 @@ function showPlayerActivation(stage={}){
       }else if(answer){
         if(q.actionId==='shoot')state.lastActivation.currentContext.hasValidShootTarget=true;
         if(q.actionId==='fight')state.lastActivation.currentContext.hasValidFightTarget=true;
-        nextHistory.push({action,type:'selected',question:`${conciseNpoActionName({id:q.actionId,name:action})} selected as the first useful legal action for this operative.`});
+        nextHistory.push({action,type:'selected',question:conciseNpoActionName({id:q.actionId,name:action})});
         resolveNpo(n,{...nextAnswers,action},nextHistory);
       }
       else{
@@ -4480,12 +4519,12 @@ function showPlayerActivation(stage={}){
   function chooseNpoDecision(n,c){
     const action=c.action||'Pass';
     const attack=/^(Fight|Shoot)/.test(action);
-    const target=action.startsWith('Fight')?'Apply Fight target priority: most likely to incapacitate, greatest mission impact, then Ready; randomize any remaining tie':action.startsWith('Shoot')?'Apply Shoot target priority: most likely to incapacitate, greatest mission impact, not obscured, not in cover, closest, then Ready; randomize any remaining tie':'Follow the target and movement guidance for this action';
+    const target=action.startsWith('Fight')?['Most likely to be taken out','Most important to the mission','A Ready operative']:action.startsWith('Shoot')?['Most likely to be taken out','Most important to the mission','Clearest shot','Not in cover','Closest','A Ready operative']:[];
     const inquiry=NPO_ACTION_INQUIRIES[npoActionId(action)];
     const skippedFallBack=(state.lastActivation?.questionHistory||[]).some(item=>item.type==='applicability'&&item.action==='Fall Back'&&item.answer===false);
-    const priorityReason=action==='Fall Back'?' This NPO is within control range of a Player operative. Fall Back is its first useful legal action.':skippedFallBack?' Fall Back was not applicable. This is the next useful legal action.':' This is the first useful legal action.';
-    const movementInstruction=['reposition','dash'].includes(npoActionId(action))?npoMovementInstruction(action):null;
-    const reason=c.action?`${movementInstruction||inquiry?.selectedInstruction||`Perform ${action}.`}${priorityReason}`:'No listed action is currently useful and legal; this NPO passes.';
+    const priorityReason=action==='Fall Back'?' This NPO is in a Player operative’s control range, so Fall Back is its first available action.':skippedFallBack?' Fall Back was not available, so use the next action in its priority list.':' This is the first action in its priority list that works now.';
+    const movementInstruction=['reposition','dash'].includes(npoActionId(action))?npoMovementInstruction(n,action):null;
+    const reason=c.action?`${movementInstruction||inquiry?.selectedInstruction||`Use ${action}.`}${priorityReason}`:'No useful actions remain.';
     return {action,target,stance:'Engage',threat:attack?1:0,reason,path:[action]};
   }
 
@@ -4505,7 +4544,7 @@ function showPlayerActivation(stage={}){
     if(activation.pendingAction){resolveNpoAction(n,activation.pendingAction);return;}
     if(activation.remainingAp<=0){completeNpoActivation();return;}
     const available=recommendedNpoActions(n,activation.currentContext||{}).filter(name=>!(activation.declinedActionIds||[]).includes(npoActionId(name)));
-    if(!available.length){renderNpoActivationEnd(n,'No further useful legal actions are available.');return;}
+    if(!available.length){renderNpoActivationEnd(n,'No useful actions remain.');return;}
     runNpoPrompt(n,0,{},activation.questionHistory||[]);
   }
 
@@ -4543,7 +4582,7 @@ function showPlayerActivation(stage={}){
     activation.questionHistory=[];
     if(changesPosition)activation.currentContext={inEnemyControlRange:null,hasValidShootTarget:null,hasValidFightTarget:null};
     state.npoAttackTargetId=null;state.npoAttackSummary=null;
-    const journalAction=['reposition','dash'].includes(actionId)?npoMovementInstruction(actionName):actionName;
+    const journalAction=['reposition','dash'].includes(actionId)?npoMovementInstruction(n,actionName):actionName;
     log(`${npoName(n)} completed ${journalAction}. ${activation.remainingAp} AP remaining.`);
     if(transitionMode===NPO_ACTION_TRANSITIONS.ACKNOWLEDGE){
       activation.awaitingActionResult={...record,endsActivation};
@@ -4578,6 +4617,17 @@ function showPlayerActivation(stage={}){
     const id=npoActionId(actionName);
     return (npoDefinition(n.type)?.actions||[]).find(action=>action.id===id)||null;
   }
+  function npoSpecialActionDescription(action){
+    if(action.id==='geomantic-disturbance')return `<ol><li>Choose a terrain point the Geomancer can see within 8 inches.</li><li>Select every operative within 2 inches of that point.</li><li>Roll 2D6 separately for each. If the total is higher than its remaining wounds, deal damage equal to the difference.</li></ol><p>Cannot be used while the Geomancer has a Conceal order or is in enemy control range.</p>`;
+    const paragraphs={
+      'canoptek-control':['Choose a visible friendly Canoptek within 6 inches. It immediately performs one free 1 AP action. Any movement from that action is limited to 2 inches.','Cannot be used while the Geomancer is in enemy control range or during a counteraction.'],
+      'molecular-breach':['Choose a visible friendly Canoptek Circle NPO within 6 inches. During its next movement action, remove it and set it up instead of moving normally.','Use its Move distance, or 3 inches for Dash. In close quarters it can pass through Walls. Only Charge may end in enemy control range.'],
+      overcharge:['Choose another visible friendly Canoptek within 3 inches. It gets 1 extra AP in its next activation (+1 APL).','Cannot be used while the Accelerator is in enemy control range.'],
+      'cranial-overload':['Choose a visible Player operative within 3 inches. It gets 1 fewer AP in its next activation, to a minimum of 1 (-1 APL).','Cannot be used while the Accelerator is in enemy control range.'],
+      'nanoscarab-beam':['Choose a visible wounded Canoptek Circle NPO within 6 inches. Roll 3D3 and restore that many wounds, up to its maximum.','It cannot target an incapacitated NPO or one saved by Reanimate this turning point.']
+    };
+    return (paragraphs[action.id]||[action.description]).map(text=>`<p>${escapeHtml(text)}</p>`).join('');
+  }
   function resolveNpoSpecialAction(n,decision,answers,questionHistory){
     const action=npoSpecialAction(n,decision.action);
     if(!action){completeNpoActivation();return;}
@@ -4587,10 +4637,10 @@ function showPlayerActivation(stage={}){
     const friendlyOptions=friendlies.map(target=>`<option value="${escapeHtml(target.id)}">${escapeHtml(npoName(target))}</option>`).join('');
     const enemyOptions=remainingPlayerOperatives().map(id=>`<option value="${escapeHtml(id)}">${escapeHtml(playerName(id))}</option>`).join('');
     const targetOptions=action.target?.side==='enemy'?enemyOptions:friendlyOptions;
-    const targetLabel=action.target?.side==='enemy'?'Enemy operative':'Friendly operative';
+    const targetLabel=action.target?.side==='enemy'?'Player operative':'Friendly NPO';
     if(action.id==='geomantic-disturbance'){
       const affected=[...sortedNposForDisplay(activeNpos()),...inPlayLivingPlayerOperativeIds().map(id=>({id:`player:${id}`,label:playerName(id)}))];
-      showModal(action.name,`<p>Identify a visible terrain point within 8 inches, then select every operative within 2 inches. Position is confirmed on the tabletop.</p><div class="checklist">${affected.map(target=>`<label class="check-row"><input type="checkbox" data-disturbance-target="${escapeHtml(target.id)}"><span>${escapeHtml(target.label||npoName(target))}</span></label>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="cancelSpecialAction">Cancel</button><button class="btn primary" id="confirmSpecialAction">Roll separately</button></div>`);
+      showModal(action.name,`<p>Choose a visible terrain point within 8 inches, then select every operative within 2 inches of it.</p><div class="checklist">${affected.map(target=>`<label class="check-row"><input type="checkbox" data-disturbance-target="${escapeHtml(target.id)}"><span>${escapeHtml(target.label||npoName(target))}</span></label>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="cancelSpecialAction">Cancel</button><button class="btn primary" id="confirmSpecialAction">Roll Damage</button></div>`);
       $('#cancelSpecialAction').onclick=()=>resolveNpoAction(n,state.lastActivation.pendingAction);
       $('#confirmSpecialAction').onclick=()=>{
         const button=$('#confirmSpecialAction');
@@ -4609,7 +4659,9 @@ function showPlayerActivation(stage={}){
       };
       return;
     }
-    showModal(action.name,`<p>${escapeHtml(action.description)}</p><div class="field"><label for="specialActionTarget">${targetLabel}</label><select id="specialActionTarget"><option value="">Select operative…</option>${targetOptions}</select></div>${action.id==='canoptek-control'?'<div class="field"><label for="freeActionChoice">Legal 1 AP free action</label><select id="freeActionChoice"><option>Reposition</option><option>Dash</option><option>Charge</option><option>Shoot</option><option>Fight</option><option>Mission action</option></select></div>':''}<label class="check-row"><input id="specialRangeConfirmed" type="checkbox"><span>Visibility, range, control-range, and placement restrictions are confirmed on the tabletop.</span></label><div class="wizard-actions"><button class="btn ghost" id="cancelSpecialAction">Cancel</button><button class="btn primary" id="confirmSpecialAction" disabled>Resolve</button></div>`);
+    const confirmation=action.id==='molecular-breach'?'I confirmed that this NPO can be placed as instructed.':'I confirmed that this target is visible and within range.';
+    const buttonLabels={'canoptek-control':'Use Canoptek Control','molecular-breach':'Apply Molecular Breach',overcharge:'Use Overcharge','cranial-overload':'Use Cranial Overload','nanoscarab-beam':'Roll Healing'};
+    showModal(action.name,`${npoSpecialActionDescription(action)}<div class="field"><label for="specialActionTarget">${targetLabel}</label><select id="specialActionTarget"><option value="">Select operative…</option>${targetOptions}</select></div>${action.id==='canoptek-control'?'<div class="field"><label for="freeActionChoice">Choose the free 1 AP action</label><select id="freeActionChoice"><option>Reposition</option><option>Dash</option><option>Charge</option><option>Shoot</option><option>Fight</option><option>Mission action</option></select></div>':''}<label class="check-row" for="specialRangeConfirmed"><input id="specialRangeConfirmed" type="checkbox"><span>${escapeHtml(confirmation)}</span></label><div class="wizard-actions"><button class="btn ghost" id="cancelSpecialAction">Cancel</button><button class="btn primary" id="confirmSpecialAction" disabled>${escapeHtml(buttonLabels[action.id]||`Use ${action.name}`)}</button></div>`);
     const update=()=>{$('#confirmSpecialAction').disabled=!$('#specialActionTarget').value||!$('#specialRangeConfirmed').checked;};
     $('#specialActionTarget').onchange=update;$('#specialRangeConfirmed').onchange=update;
     $('#cancelSpecialAction').onclick=()=>resolveNpoAction(n,state.lastActivation.pendingAction);
@@ -4656,7 +4708,7 @@ function showPlayerActivation(stage={}){
     if(npoActionChangesContext(pendingAction.id)){
       const distance=pendingAction.id==='dash'?3:npoDefinition(n.type)?.move;
       const displayAction=conciseNpoActionName(pendingAction);
-      modalBody.innerHTML=`<div class="modal-inner ai-result"><div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>AP: ${state.lastActivation.remainingAp} → ${state.lastActivation.remainingAp-pendingAction.apCost}</p></div></div><div class="npo-result-card">${npoIcon('command')}<div><small>${escapeHtml(displayAction.toUpperCase())}</small><strong>${escapeHtml(displayAction)}</strong><p>${escapeHtml(decision.reason)}</p>${distance?`<p>Maximum movement: ${distance} inches.</p>`:''}</div></div><div class="wizard-actions"><button class="btn primary" id="confirmNpoMovement">Confirm ${escapeHtml(displayAction)} Complete</button></div></div>`;
+      modalBody.innerHTML=`<div class="modal-inner ai-result"><div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>AP: ${state.lastActivation.remainingAp} → ${state.lastActivation.remainingAp-pendingAction.apCost}</p></div></div><div class="npo-result-card">${npoIcon('command')}<div><small>${escapeHtml(displayAction.toUpperCase())}</small><strong>${escapeHtml(displayAction)}</strong><p>${escapeHtml(decision.reason)}</p></div></div><div class="wizard-actions"><button class="btn primary" id="confirmNpoMovement">Confirm ${escapeHtml(displayAction)} Complete</button></div></div>`;
       if(!modal.open)modal.showModal();
       $('#confirmNpoMovement').onclick=()=>{const button=$('#confirmNpoMovement');if(!canCommitNpoAction(pendingAction.id,pendingAction.apCost))return;button.disabled=true;const effect=consumeMolecularBreach(n.id,pendingAction.id==='fall-back'?'Fall Back':pendingAction.name.split(' ')[0]);commitNpoAction({actionId:pendingAction.id,actionName:pendingAction.name,apCost:pendingAction.apCost,result:effect||decision.reason,changesPosition:true,transitionMode:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});};
       return;
@@ -4680,7 +4732,8 @@ function showPlayerActivation(stage={}){
     const targetName=state.npoAttackTargetId?playerName(state.npoAttackTargetId):'';
     const targetField=targetConfirmed||eligibleTargetIds.length===1
       ? `<input id="npoPriorityTarget" value="${escapeHtml(targetName)}" readonly>`
-      : `<select id="npoPriorityTarget" ${attackResolved?'disabled':''}><option value="">Select matching operative</option>${targetOptions}</select>`;
+      : `<select id="npoPriorityTarget" ${attackResolved?'disabled':''}><option value="">Select the first operative that matches the priority above.</option>${targetOptions}</select>`;
+    const targetPriority=decision.target.length?`<p>Choose the target in this order:</p><ol>${decision.target.map(item=>`<li>${escapeHtml(item)}</li>`).join('')}</ol><p>Randomize only if still tied.</p>`:'';
     const attackSummary=attackResolved&&state.npoAttackSummary?{
       ...state.npoAttackSummary,
       side:'player',
@@ -4688,9 +4741,8 @@ function showPlayerActivation(stage={}){
     }:null;
     const eliminationAction=newlyEliminated(attackSummary)?` Eliminated ${escapeHtml(attackSummary.targetName)}.`:'';
     modalBody.innerHTML=`<div class="modal-inner ai-result">
-      <div class="npo-question-flow">${renderCompletedNpoQuestions(questionHistory)}</div>
       <div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div>
-      <div class="npo-result-card">${npoIcon('command')}<div><small>ACTIVATION PLAN</small><strong>${escapeHtml(decision.action)}</strong><p>${escapeHtml(decision.reason)}</p><div class="npo-target-priority"><small>TARGET PRIORITY</small><strong>${escapeHtml(decision.target)}</strong>${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Target Player Operative</label>${targetField}</div>`:''}</div></div></div>
+      <div class="npo-result-card">${npoIcon('command')}<div><small>NEXT ACTION</small><strong>${escapeHtml(decision.action)}</strong><p>${escapeHtml(decision.reason)}</p><div class="npo-target-priority"><small>TARGET PRIORITY</small>${targetPriority}${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Select Target</label>${targetField}</div>`:''}</div></div></div>
       ${attackRequired&&!targetConfirmed?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
       ${attackRequired&&targetConfirmed&&!attackResolved?`<button class="btn secondary big-action" id="rollPlayerSaves">Resolve Combat</button>`:''}
       ${attackSummary?`${renderEliminationSummary(attackSummary)}<section class="card npo-attack-summary">
@@ -4782,7 +4834,7 @@ function showPlayerActivation(stage={}){
     const sameCombat=savedCombat&&!rollingCombat&&!selectingCombat;
     if(!availableProfiles.length){
       const weaponType=attackType==='shoot'?'shooting':'melee';
-      showModal('Unable to Resolve Combat',`<div class="modal-inner"><div class="summary-box"><strong>No valid ${weaponType} weapon available</strong><p>${escapeHtml(npoName(n))} has no weapon or profile valid for this ${weaponType} attack.</p></div><div class="wizard-actions"><button class="btn ghost" id="cancelNpoAttack">Back</button></div></div>`);
+      showModal('Unable to Resolve Combat',`<div class="modal-inner"><div class="summary-box"><strong>This NPO has no weapon it can use for this ${weaponType} attack.</strong></div><div class="wizard-actions"><button class="btn ghost" id="cancelNpoAttack">Back</button></div></div>`);
       $('#cancelNpoAttack').onclick=()=>{if(onCancel)onCancel();};
       return;
     }
@@ -4792,10 +4844,10 @@ function showPlayerActivation(stage={}){
       return candidate.weaponId===initialProfile.weaponId&&candidate.profileId===initialProfile.profileId;
     }):-1;
     const profileControl=availableProfiles.length>1&&!sameCombat&&!rollingCombat
-      ? `<div class="field compact-combat-choice"><label for="npoCombatProfile">NPO Weapon Profile</label><select id="npoCombatProfile"><option value="" ${selectedProfileIndex<0?'selected ':''}disabled>Select a weapon...</option>${availableProfiles.map((profile,index)=>`<option value="${index}" ${index===selectedProfileIndex?'selected':''}>${escapeHtml(canonicalAttackProfile(profile).name)}</option>`).join('')}</select></div>`
+      ? `<div class="field compact-combat-choice"><label for="npoCombatProfile">Choose Weapon Profile</label><select id="npoCombatProfile"><option value="" ${selectedProfileIndex<0?'selected ':''}disabled>Choose a profile...</option>${availableProfiles.map((profile,index)=>`<option value="${index}" ${index===selectedProfileIndex?'selected':''}>${escapeHtml(canonicalAttackProfile(profile).name)}</option>`).join('')}</select></div>`
       : '';
     const willBeDone=tombWorldEventActive('my-will-be-done')&&!sameCombat&&!rollingCombat
-      ? '<label class="check-row compact-check"><input type="checkbox" id="sameRoomAsC1"><span><strong>NPO is in the same room as C1</strong><small>Required for My Will Be Done because the Guide cannot determine tabletop room location.</small></span></label>'
+      ? '<label class="check-row compact-check" for="sameRoomAsC1"><input type="checkbox" id="sameRoomAsC1"><span><strong>Is this NPO in the same room as the sarcophagus?</strong><small>This matters only while My Will Be Done is active.</small></span></label>'
       : '';
     const guidance=npoCombatGuidanceHtml(n,{attackType,profile:initialProfile});
     const screen=showSharedCombatResolutionScreen({

@@ -22,14 +22,14 @@ class V830NpoMovementGuidanceTests(unittest.TestCase):
         self.assertNotIn('printed behavior', section('function renderCompletedNpoQuestions', 'function continueNpoActivation').lower())
 
     def test_dash_question_and_help_describe_a_useful_destination(self):
-        self.assertIn("feasibilityQuestion:'Can this NPO Dash to a more useful position?'", APP)
-        self.assertIn("help:'Select Yes only if the Dash moves it toward an unobstructed shooting position or helps it complete the mission. Otherwise, select No.'", APP)
+        self.assertIn("question:'Can a 3-inch Dash put this NPO in a better position?'", APP)
+        self.assertIn("help:'Select Yes if the Dash moves it toward a clear shot or a better mission position.'", APP)
 
     def test_movement_guidance_is_tailored_without_changing_action_definitions(self):
         guidance = section('function npoMovementInstruction', 'function npoActionCost')
-        self.assertIn('closer to the highest-priority Player operative, using cover where possible', guidance)
-        self.assertIn('toward an unobstructed valid target or improve its mission position', guidance)
-        self.assertIn('improve its ability to complete or defend the mission objective', guidance)
+        self.assertIn('toward the selected Player operative, using cover when possible', guidance)
+        self.assertIn('to get a clear shot', guidance)
+        self.assertIn('toward the mission objective or a position that helps defend it', guidance)
         self.assertIn("'Dash towards the closest player operative, to cover if possible'", APP)
         self.assertIn("'Dash to gain a valid unobscured target or better win the mission'", APP)
 
@@ -46,7 +46,7 @@ class V830NpoMovementGuidanceTests(unittest.TestCase):
         commit = section('function commitNpoAction', 'function renderNpoActionResult')
         self.assertIn('name:actionName', commit)
         self.assertIn('result,...(attackSummary?', commit)
-        self.assertIn("const journalAction=['reposition','dash'].includes(actionId)?npoMovementInstruction(actionName):actionName", commit)
+        self.assertIn("const journalAction=['reposition','dash'].includes(actionId)?npoMovementInstruction(n,actionName):actionName", commit)
         self.assertIn('log(`${npoName(n)} completed ${journalAction}. ${activation.remainingAp} AP remaining.`)', commit)
         self.assertIn('activation.resolvedActions=[...(activation.resolvedActions||[]),record]', commit)
 
@@ -66,13 +66,13 @@ class V830NpoMovementGuidanceTests(unittest.TestCase):
         self.assertIn('scheduleNpoActionTransition(activation,n.id,transitionMode)', APP)
 
     def test_version_830_is_consistent_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.3.1';", APP)
-        self.assertIn("const APP_VERSION = '8.3.1';", WORKER)
-        self.assertIn('V8.3.1', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.3.1'))
-        self.assertIn('## v8.3.1', README)
+        self.assertIn("const APP_VERSION = '8.4.0';", APP)
+        self.assertIn("const APP_VERSION = '8.4.0';", WORKER)
+        self.assertIn('V8.4.0', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.4.0'))
+        self.assertIn('## v8.4.0', README)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.3.1', INDEX)
+            self.assertIn(f'{asset}?v=8.4.0', INDEX)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
 

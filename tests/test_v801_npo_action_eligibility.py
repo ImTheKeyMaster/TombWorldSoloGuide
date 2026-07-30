@@ -33,8 +33,8 @@ class V801NpoActionEligibilityTests(unittest.TestCase):
 
     def test_05_yes_control_range_proceeds_to_placement(self):
         self.assertNotIn('Can this NPO be placed legally after performing Fall Back?', APP)
-        self.assertIn("feasibilityQuestion:'Can this NPO Fall Back and finish outside the control range of all Player operatives?'", APP)
-        for guidance in ('It can move up to ${npoDefinition(n.type)?.move} inches', 'base can fit', 'outside every Player operative’s control range'):
+        self.assertIn("feasibilityQuestion:'Can it move away and finish outside every Player operative’s control range?'", APP)
+        for guidance in ('Move it up to ${npoDefinition(n.type)?.move} inches', 'base fits', 'outside every Player operative’s control range'):
             self.assertIn(guidance, APP)
         prompt = section('function runNpoPrompt', 'function chooseNpoDecision')
         self.assertIn('if(answer){save();runNpoPrompt(n,0,nextAnswers,nextHistory);}', prompt)
@@ -42,7 +42,7 @@ class V801NpoActionEligibilityTests(unittest.TestCase):
         self.assertIn('resolveNpo(n,{...nextAnswers,action},nextHistory)', prompt)
 
     def test_05b_fall_back_instruction_is_explicit(self):
-        self.assertIn("selectedInstruction:'Fall Back using the shortest available route and finish outside the control range of every Player operative.'", APP)
+        self.assertIn("selectedInstruction:'Fall Back using the shortest available route and finish outside every Player operative’s control range.'", APP)
 
     def test_06_fall_back_costs_two_ap(self):
         self.assertIn("'fall-back':2", APP)
@@ -66,31 +66,31 @@ class V801NpoActionEligibilityTests(unittest.TestCase):
         prompt = section('function runNpoPrompt', 'function chooseNpoDecision')
         self.assertIn('declinedActionIds=[...(state.lastActivation.declinedActionIds||[]),npoActionId(action)]', prompt)
         self.assertIn('save();runNpoPrompt(n,0,nextAnswers,nextHistory)', prompt)
-        self.assertIn('Fall Back was not applicable.', APP)
+        self.assertIn('Fall Back was not available', APP)
 
     def test_09b_fall_back_question_and_help_are_screen_reader_available(self):
         rendered = section('function renderActiveNpoQuestion', 'function renderNpoActionProgress')
         self.assertIn('aria-live="polite" aria-atomic="true"', rendered)
-        self.assertIn('<h3>${escapeHtml(q.title)}</h3><p>${escapeHtml(q.help)}</p>', rendered)
+        self.assertIn('<h3 id="activeNpoQuestion">${escapeHtml(q.title)}</h3><p id="activeNpoQuestionHelp">${escapeHtml(q.help)}</p>', rendered)
         self.assertIn('data-answer="no"', rendered)
         self.assertIn('data-answer="yes"', rendered)
 
     def test_10_shoot_wording_is_objective(self):
-        self.assertIn('Does this NPO have a valid Player operative it can legally Shoot?', APP)
-        for fact in ('visibility', 'obscuring', 'cover', 'weapon range', 'order restrictions', 'enemy control range', 'valid living target', 'active rule restrictions'):
+        self.assertIn('Can this NPO shoot a Player operative from where it is?', APP)
+        for fact in ('visibility', 'weapon range', 'order', 'terrain'):
             self.assertIn(fact, APP)
 
     def test_11_fight_wording_is_objective(self):
-        self.assertIn('Is a valid Player operative within this NPO’s control range?', APP)
+        self.assertIn('Is a Player operative close enough for this NPO to Fight?', APP)
 
     def test_12_charge_wording_is_objective(self):
-        self.assertIn('Can this NPO legally Charge and finish within control range of a valid Player operative?', APP)
+        self.assertIn('Can this NPO reach a Player operative with a Charge?', APP)
 
     def test_13_reposition_requires_printed_purpose(self):
-        self.assertIn('Can this NPO Reposition to gain an unobscured valid target or better accomplish the mission?', APP)
+        self.assertIn('Can this NPO Reposition to get a clear shot?', APP)
 
     def test_14_dash_requires_printed_purpose(self):
-        self.assertIn('Can this NPO Dash to a more useful position?', APP)
+        self.assertIn('Can a 3-inch Dash put this NPO in a better position?', APP)
 
     def test_15_movement_clears_spatial_context(self):
         commit = section('function commitNpoAction', 'function renderNpoActionResult')
@@ -106,9 +106,10 @@ class V801NpoActionEligibilityTests(unittest.TestCase):
 
     def test_18_all_core_actions_have_inquiries(self):
         inquiry = section('const NPO_ACTION_INQUIRIES=', 'function npoActionCost')
-        for action in ("'fall-back'", 'shoot:', 'fight:', 'charge:', 'reposition:', 'dash:'):
+        for action in ("'fall-back'", 'shoot:', 'fight:', 'charge:'):
             self.assertIn(action, inquiry)
-        self.assertIn('Are all requirements for ${action} currently satisfied?', APP)
+        self.assertIn("['reposition','dash'].includes(id)?npoMovementInquiry", APP)
+        self.assertIn('Can this NPO use ${action} now?', APP)
 
     def test_19_supported_behavior_lists_unchanged(self):
         for npo in ('Necron Warrior', 'Canoptek Scarab Swarm', 'Canoptek Tomb Crawler', 'Canoptek Macrocyte Warrior', 'Canoptek Macrocyte Accelerator', 'Canoptek Macrocyte Reanimator', 'Geomancer'):
