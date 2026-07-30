@@ -84,11 +84,10 @@ class CanoptekProfileTests(unittest.TestCase):
         self.assertIn("maxWounds:Number(npo.maxWounds)>0?Number(npo.maxWounds):definition.wounds", APP)
         self.assertIn("npo.wounds!==null", APP)
 
-    def test_unautomated_weapon_rules_require_explicit_tabletop_resolution(self):
-        self.assertIn("const tabletopRules=", APP)
-        self.assertIn("Piercing Crits|Blast|Torrent|Seek Light|Shock|Stun", APP)
-        self.assertNotIn("Piercing Crits|Blast|Torrent|Seek Light|Severe|Shock|Stun", APP)
-        self.assertIn("confirm any required tabletop targets or effects", APP)
+    def test_weapon_rules_use_registered_automatic_or_guided_resolution(self):
+        self.assertIn("const WEAPON_RULE_HANDLERS", APP)
+        self.assertIn("weaponRuleStatuses(profile)", APP)
+        self.assertNotIn("using the Core rules and confirm any required tabletop", APP)
 
     def test_reanimate_penalty_and_healing_edge_cases_are_safe(self):
         self.assertIn("deferCurrentActivation:duringTargetActivation", APP)
@@ -99,8 +98,8 @@ class CanoptekProfileTests(unittest.TestCase):
         self.assertIn("Gameplay profile", APP)
         self.assertIn("Operative actions", APP)
         self.assertIn("Passive rules", APP)
-        self.assertIn("const APP_VERSION = '8.4.3';", APP)
-        self.assertIn("V8.4.3", (ROOT / "index.html").read_text())
+        self.assertIn("const APP_VERSION = '8.5.0';", APP)
+        self.assertIn("V8.5.0", (ROOT / "index.html").read_text())
         self.assertNotIn("npoPortrait", APP)
 
 

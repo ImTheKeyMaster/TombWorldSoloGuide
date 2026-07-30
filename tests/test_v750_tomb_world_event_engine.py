@@ -113,9 +113,9 @@ class TombWorldEventEngineTests(unittest.TestCase):
     def test_compatibility_surfaces_and_version(self):
         self.assertIn("function normalStrategyEventCount", APP)
         self.assertIn("DeadlyEncounters", APP)
-        self.assertIn("const APP_VERSION = '8.4.3';", APP)
-        self.assertIn("V8.4.3", INDEX)
-        self.assertIn("event-effects.js?v=8.4.3", INDEX)
+        self.assertIn("const APP_VERSION = '8.5.0';", APP)
+        self.assertIn("V8.5.0", INDEX)
+        self.assertIn("event-effects.js?v=8.5.0", INDEX)
 
 
 if __name__ == "__main__":

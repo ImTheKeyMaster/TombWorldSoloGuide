@@ -2,7 +2,19 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.4.3';
+  const APP_VERSION = '8.5.0';
+  const WEAPON_RULE_HANDLERS = Object.freeze({
+    severe:{mode:'automatic',phase:'after-attack-roll'},
+    'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
+    stun:{mode:'automatic',phase:'after-attack-roll'},
+    'seek-light':{mode:'tabletop-check',phase:'target-selection'},
+    blast:{mode:'guided',phase:'secondary-targets'},
+    torrent:{mode:'guided',phase:'secondary-targets'},
+    shock:{mode:'guided',phase:'fight-resolution'},
+    piercing:{mode:'automatic',phase:'before-defense-roll'},
+    lethal:{mode:'automatic',phase:'attack-roll'},
+    accurate:{mode:'automatic',phase:'attack-roll'}
+  });
   const NPO_ACTION_TRANSITIONS = Object.freeze({
     AUTO_CONTINUE:'auto-continue',
     ACKNOWLEDGE:'acknowledge',
@@ -574,7 +586,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], playerWounds:{}, playerOperativeStates:{}, reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0},
     gradeMilestone:null, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0,
     npoAttackTargetId:null,
-    npoAttackSummary:null, combatState:null, missionState:null, missionRuntime:null, startingNpoGeneration:null,
+    npoAttackSummary:null, combatState:null, weaponRuleResolution:null, missionState:null, missionRuntime:null, startingNpoGeneration:null,
     npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[]},
     eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[],transactions:{},playerAplModifiers:[],reanimationAttempts:{}}, gameEnd:null,
     finalResolution:{pending:false,turningPointEnded:false,cleanupComplete:false,battleEndHookComplete:false,resultLogged:false,invalidSaveCorrected:false}
@@ -788,6 +800,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.playerWounds=raw?.playerWounds&&typeof raw.playerWounds==='object'?{...raw.playerWounds}:{};
     merged.combatState=isRecord(raw.combatState)&&raw.combatState.side==='player'&&isRecord(raw.combatState.stage)
       ? {side:'player',stage:{...raw.combatState.stage}}
+      : null;
+    merged.weaponRuleResolution=isRecord(raw.weaponRuleResolution)
+      ? {...raw.weaponRuleResolution,secondaryTargetIds:normalizeIdList(raw.weaponRuleResolution.secondaryTargetIds),completedTargetIds:normalizeIdList(raw.weaponRuleResolution.completedTargetIds)}
       : null;
     merged.playerRoster=Array.isArray(raw?.playerRoster)?raw.playerRoster:[];
     merged.playerDisplayNumbers=isRecord(raw?.playerDisplayNumbers)
@@ -1046,17 +1061,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function canonicalAttackProfile(profile){
     const piercing=(profile?.rules||[]).map(String).map(rule=>rule.match(/(?:Piercing|AP)\s*(\d+)/i)).find(Boolean);
     const lethal=(profile?.rules||[]).map(String).map(rule=>rule.match(/Lethal\s*(\d)\+/i)).find(Boolean);
-    const tabletopRules=(profile?.rules||[]).filter(rule=>/Piercing Crits|Blast|Torrent|Seek Light|Shock|Stun/i.test(rule));
-    const manualResolution=profile?.manualResolution||(tabletopRules.length
-      ? `Apply ${tabletopRules.join(', ')} using the Core rules and confirm any required tabletop targets or effects before completing this attack.`
-      : '');
     return {
       dice:Number(profile?.attacks||0),hit:Number(profile?.hit||0),
       critThreshold:Number(lethal?.[1]||6),
       normal:Number(profile?.damage?.normal||0),crit:Number(profile?.damage?.critical||0),
       ap:Number(piercing?.[1]||0),
       rules:[...(profile?.rules||[])],ruleIds:[...(profile?.ruleIds||[])],weaponId:profile?.weaponId||'',profileId:profile?.id||'',
-      manualResolution,
       name:profile?.weaponName===profile?.name?profile?.name:`${profile?.weaponName}: ${profile?.name}`
     };
   }
@@ -1132,6 +1142,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function expireActivationEffects(operativeId){
     state.npoRuleState.aplModifiers=state.npoRuleState.aplModifiers.filter(item=>{
       if(item.targetId!==operativeId)return true;
+      if(item.deferCurrentActivation){item.deferCurrentActivation=false;return true;}
+      return false;
+    });
+    state.eventState.playerAplModifiers=state.eventState.playerAplModifiers.filter(item=>{
+      if(item.targetId!==operativeId||item.expires!=='end-of-target-next-activation')return true;
       if(item.deferCurrentActivation){item.deferCurrentActivation=false;return true;}
       return false;
     });
@@ -3667,10 +3682,8 @@ function showPlayerActivation(stage={}){
 
   function weaponRulesHtml(profile){
     const rules=(profile?.rules||[]).map(rule=>`<li>${escapeHtml(rule)}</li>`).join('');
-    const manualResolution=profile?.manualResolution
-      ? `<div class="summary-box"><strong>Manual tabletop resolution</strong><p>${escapeHtml(profile.manualResolution)}</p></div>`
-      : '';
-    return `${rules?`<section class="weapon-rules"><strong>Weapon rules</strong><ul>${rules}</ul></section>`:''}${manualResolution}`;
+    const statuses=weaponRuleStatuses(profile).map(status=>`<li>${escapeHtml(status)}</li>`).join('');
+    return `${rules?`<section class="weapon-rules"><strong>Weapon rules</strong><ul>${rules}</ul>${statuses?`<ul class="muted weapon-rule-status">${statuses}</ul>`:''}</section>`:''}`;
   }
 
   function normalizedGuidanceMatchText(value){
@@ -3763,7 +3776,143 @@ function showPlayerActivation(stage={}){
   function weaponHasRule(profile,ruleId){
     const normalizedId=String(ruleId).trim().toLowerCase();
     return (profile?.ruleIds||[]).some(id=>String(id).trim().toLowerCase()===normalizedId)
-      ||(profile?.rules||[]).some(rule=>String(rule).trim().toLowerCase()===normalizedId);
+      ||(profile?.rules||[]).some(rule=>String(rule||'').trim().toLowerCase()===normalizedId
+        ||String(rule||'').trim().toLowerCase().startsWith(`${normalizedId.replace(/-/g,' ')} `));
+  }
+
+  function normalizedWeaponRuleId(rule){
+    const normalized=String(rule||'').trim().toLowerCase().replace(/[“”"]/g,'').replace(/\s+/g,' ');
+    if(/^piercing crits(?:\s+\d+)?$/.test(normalized))return 'piercing-crits';
+    if(/^seek light$/.test(normalized))return 'seek-light';
+    const match=normalized.match(/^([a-z]+)(?:\s+\d+(?:\+)?)?$/);
+    return match?.[1]||normalized.replace(/\s+/g,'-');
+  }
+
+  function weaponRuleValue(profile,ruleId){
+    const normalizedId=String(ruleId||'').trim().toLowerCase();
+    const direct=Number(profile?.[normalizedId.replace(/-([a-z])/g,(_,letter)=>letter.toUpperCase())]);
+    if(Number.isFinite(direct)&&direct>0)return direct;
+    for(const rule of profile?.rules||[]){
+      if(normalizedWeaponRuleId(rule)!==normalizedId)continue;
+      const value=String(rule).match(/(\d+)/);
+      if(value)return Number(value[1]);
+    }
+    return 0;
+  }
+
+  function effectiveDefenseDiceCount(profile,attackDice,baseDice=3){
+    let reduction=Math.max(0,Number(profile?.ap||0));
+    const piercingCrits=weaponRuleValue(profile,'piercing-crits');
+    if(piercingCrits>0&&(attackDice||[]).some(die=>die.retained&&die.kind==='crit'))reduction=Math.max(reduction,piercingCrits);
+    return Math.max(0,Number(baseDice||0)-reduction);
+  }
+
+  function automaticWeaponRuleMessages(profile,attackDice){
+    const messages=[];
+    const piercingCrits=weaponRuleValue(profile,'piercing-crits');
+    const hasCritical=(attackDice||[]).some(die=>die.retained&&die.kind==='crit');
+    if(piercingCrits>0&&hasCritical)messages.push(`Piercing Crits ${piercingCrits} applied: the defender rolls ${piercingCrits} fewer defense dice.`);
+    return messages;
+  }
+
+  function applyStunForAttack({profile,attackDice,sourceAttackId,targetId,targetName='the target',targetSide='npo'}){
+    if(!weaponHasRule(profile,'stun')||!(attackDice||[]).some(die=>die.retained&&die.kind==='crit'))return {applied:false,message:''};
+    const modifiers=targetSide==='player'?state.eventState.playerAplModifiers:state.npoRuleState.aplModifiers;
+    const id=`stun:${sourceAttackId}:${targetId}`;
+    if(modifiers.some(modifier=>modifier.id===id))return {applied:false,message:''};
+    modifiers.push({id,sourceId:sourceAttackId,targetId,ruleId:'stun',amount:-1,expires:'end-of-target-next-activation',deferCurrentActivation:false});
+    return {applied:true,message:`Stun applied: ${targetName} has -1 APL until the end of its next activation.`};
+  }
+
+  function resolveShockCriticalStrike(opponentDice,shockApplied=false){
+    const dice=(opponentDice||[]).map(die=>({...die}));
+    if(shockApplied)return {dice,applied:false,discardedKind:null};
+    let index=dice.findIndex(die=>die.retained&&die.kind==='hit');
+    if(index<0)index=dice.findIndex(die=>die.retained&&die.kind==='crit');
+    if(index<0)return {dice,applied:true,discardedKind:null};
+    const discardedKind=dice[index].kind==='hit'?'normal':'critical';
+    dice[index]={...dice[index],retained:false,discardedByShock:true};
+    return {dice,applied:true,discardedKind,message:`Shock applied: one unresolved ${discardedKind} success was discarded.`};
+  }
+
+  function showGuidedShockStep(combat,onContinue,onBack){
+    showModal('Shock',`<p id="shockHelp">Did this NPO just strike with its first critical success?</p><p class="muted">Check the unresolved successes in this Fight sequence. Shock triggers only once.</p><div class="wizard-actions"><button class="btn ghost" id="shockBack">Back</button><button class="btn ghost" data-close>Close Guide</button><button class="btn secondary" id="shockNo">No</button><button class="btn primary" id="shockYes">Yes</button></div>`);
+    $('#shockBack').onclick=onBack;
+    $('#shockNo').onclick=()=>onContinue({...combat,shockResolved:true,shockApplied:false});
+    $('#shockYes').onclick=()=>{
+      showModal('Shock',`<p id="shockDiscardHelp">Which unresolved opponent success was discarded?</p><p class="muted">Discard one unresolved normal success. Only discard a critical success if no normal success remains.</p><div class="wizard-actions"><button class="btn ghost" id="shockChoiceBack">Back</button><button class="btn ghost" data-close>Close Guide</button><button class="btn secondary" id="shockCritical">Critical success</button><button class="btn primary" id="shockNormal">Normal success</button></div>`);
+      $('#shockChoiceBack').onclick=()=>showGuidedShockStep(combat,onContinue,onBack);
+      const finish=discardedKind=>onContinue({...combat,shockResolved:true,shockApplied:true,shockDiscardedKind:discardedKind,eventMessages:[...(combat.eventMessages||[]),`Shock applied: one unresolved ${discardedKind} success was discarded.`]});
+      $('#shockNormal').onclick=()=>finish('normal');
+      $('#shockCritical').onclick=()=>finish('critical');
+    };
+  }
+
+  function weaponRuleStatuses(profile){
+    return (profile?.rules||[]).map(rule=>{
+      const id=normalizedWeaponRuleId(rule),handler=WEAPON_RULE_HANDLERS[id];
+      if(!handler){console.warn(`[Weapon rules] ${rule} is not yet supported by the Guide.`);return `${rule} is not yet supported by the Guide.`;}
+      if(handler.mode==='automatic')return `${rule}: handled automatically`;
+      if(id==='blast'||id==='torrent')return `${rule}: additional targets will be selected next`;
+      if(id==='seek-light')return 'Seek Light: target terrain will be checked';
+      if(id==='shock')return 'Shock: resolved during the Fight sequence';
+      return `${rule}: informational only`;
+    });
+  }
+
+  function createWeaponRuleResolution({activationId,actionId,profileKey,ruleId,primaryTargetId,secondaryTargetIds=[]}){
+    const targets=[primaryTargetId,...secondaryTargetIds.filter(id=>id!==primaryTargetId)];
+    return {activationId,actionId,profileKey,ruleId,primaryTargetId,secondaryTargetIds:targets.slice(1),completedTargetIds:[],currentTargetId:targets[0]||null,currentSequenceIndex:0,totalSequences:targets.length,tabletopCheckConfirmed:true,committed:false};
+  }
+
+  function advanceWeaponRuleResolution(resolution,completedTargetId){
+    const completed=[...new Set([...(resolution.completedTargetIds||[]),completedTargetId])];
+    const targets=[resolution.primaryTargetId,...(resolution.secondaryTargetIds||[])];
+    const next=targets.find(id=>!completed.includes(id))||null;
+    return {...resolution,completedTargetIds:completed,currentTargetId:next,currentSequenceIndex:next?targets.indexOf(next):targets.length,committed:Boolean(completedTargetId)};
+  }
+
+  function weaponRuleTargetOption(target){
+    const id=escapeHtml(target.id),label=escapeHtml(target.label);
+    return `<label class="check-row" for="weapon-rule-target-${id}"><input id="weapon-rule-target-${id}" type="checkbox" value="${id}" data-weapon-rule-target><span>${label}</span></label>`;
+  }
+
+  function showSeekLightCheck({target,resolutionKey,onContinue,onBack}){
+    const saved=state.weaponRuleResolution;
+    if(target?.order!=='Conceal'||saved?.resolutionKey===resolutionKey&&saved?.seekLightAnswer){onContinue(saved?.seekLightAnswer||null);return;}
+    showModal('Seek Light',`<p id="seekLightHelp">Is the target visible and using Light terrain for cover?</p><p class="muted">Seek Light only bypasses Conceal when the target is using Light terrain for cover. It does not remove a cover save.</p><div class="wizard-actions"><button class="btn ghost" id="seekLightBack">Back</button><button class="btn ghost" data-close>Close Guide</button><button class="btn secondary" id="seekLightNo">No</button><button class="btn primary" id="seekLightYes">Yes</button></div>`);
+    const answer=value=>{state.weaponRuleResolution={...(saved?.resolutionKey===resolutionKey?saved:{}),resolutionKey,primaryTargetId:target.id,seekLightAnswer:value,tabletopCheckConfirmed:false};save();onContinue(value);};
+    $('#seekLightBack').onclick=onBack;
+    $('#seekLightNo').onclick=()=>answer('no');
+    $('#seekLightYes').onclick=()=>answer('yes');
+  }
+
+  function showSecondaryTargetCheck({ruleId,distance,attackerSide,attackerId,primaryTargetId,targets,profileKey,onContinue,onBack}){
+    const isBlast=ruleId==='blast';
+    const eligible=(targets||[]).filter(target=>target.id!==attackerId&&target.id!==primaryTargetId&&target.inPlay!==false&&Number(target.wounds)>0);
+    const question=isBlast
+      ? `Which other operatives are visible to and within ${distance} inches of the primary target?`
+      : `Are there other valid targets within ${distance} inches of the primary target?`;
+    const help=isBlast
+      ? `Blast attacks every other operative visible to and within ${distance} inches of the primary target, including friendly operatives.`
+      : `Torrent attacks each selected valid enemy target within ${distance} inches of the primary target.`;
+    const automaticallySelected=ruleId==='torrent'&&attackerSide==='npo';
+    showModal(ruleId[0].toUpperCase()+ruleId.slice(1),`<p id="secondaryTargetHelp">${escapeHtml(question)}</p><p class="muted">${escapeHtml(help)}</p><div class="checklist" aria-describedby="secondaryTargetHelp">${eligible.length?eligible.map(weaponRuleTargetOption).join(''):'<p class="muted">No other operatives are available.</p>'}</div><label class="check-row"><input id="tabletopCheckConfirmed" type="checkbox"><span>I have confirmed visibility and distance on the tabletop.</span></label><div class="wizard-actions"><button class="btn ghost" id="secondaryTargetsBack">Back</button><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmSecondaryTargets" disabled>Continue</button></div>`);
+    if(automaticallySelected)$$('[data-weapon-rule-target]').forEach(input=>{input.checked=true;});
+    $('#secondaryTargetsBack').onclick=onBack;
+    $('#tabletopCheckConfirmed').onchange=event=>{$('#confirmSecondaryTargets').disabled=!event.currentTarget.checked;};
+    $('#confirmSecondaryTargets').onclick=()=>{
+      const secondaryTargetIds=$$('[data-weapon-rule-target]:checked').map(input=>input.value);
+      const seekLightAnswer=state.weaponRuleResolution?.primaryTargetId===primaryTargetId?state.weaponRuleResolution.seekLightAnswer:null;
+      state.weaponRuleResolution={...createWeaponRuleResolution({activationId:`${state.turningPoint}:${state.activationNumber}`,actionId:attackerSide==='npo'?'npo-attack':'player-attack',profileKey,ruleId,primaryTargetId,secondaryTargetIds}),...(seekLightAnswer?{seekLightAnswer}:{})};
+      save();onContinue(state.weaponRuleResolution);
+    };
+  }
+
+  function weaponRuleSequenceProgress(resolution,targetName){
+    if(!resolution||resolution.totalSequences<2)return '';
+    const label=resolution.ruleId[0].toUpperCase()+resolution.ruleId.slice(1);
+    return `<p class="weapon-rule-progress" aria-live="polite">${label} attack ${resolution.currentSequenceIndex+1} of ${resolution.totalSequences}: ${escapeHtml(targetName)}</p>`;
   }
 
   function applySevereToAttackDice(dice,profile){
@@ -3791,8 +3940,10 @@ function showPlayerActivation(stage={}){
     container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row animated-roll">${attackDice.map(()=>rollingDieHtml()).join('')}</div></section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row"><span class="muted">Rolling after the attack…</span></div></section>`;
     timer=setTimeout(()=>{
       if(!container.isConnected)return;
-      const defenseDice=rolledDefenseDice||retainSuccessfulDice(rolledCombatDice(Math.max(0,3-profile.ap),Number(defenseSave)||3));
-      container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row settled" data-combat-attack-dice>${attackDice.map(dieHtml).join('')}</div>${severeAppliedHtml(attackDice)}</section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row animated-roll" data-combat-save-dice>${defenseDice.length?defenseDice.map(()=>rollingDieHtml()).join(''):'<span class="muted">No defense dice rolled</span>'}</div></section>`;
+      const defenseCount=effectiveDefenseDiceCount(profile,attackDice,3);
+      const defenseDice=rolledDefenseDice||retainSuccessfulDice(rolledCombatDice(defenseCount,Number(defenseSave)||3));
+      const automaticMessages=automaticWeaponRuleMessages(profile,attackDice);
+      container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row settled" data-combat-attack-dice>${attackDice.map(dieHtml).join('')}</div>${severeAppliedHtml(attackDice)}${automaticMessages.map(message=>`<p role="status">${escapeHtml(message)}</p>`).join('')}</section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row animated-roll" data-combat-save-dice>${defenseDice.length?defenseDice.map(()=>rollingDieHtml()).join(''):'<span class="muted">No defense dice rolled</span>'}</div></section>`;
       timer=settleCombatDice({attackDice,saveDice:defenseDice},()=>{
         timer=null;
         if(container.isConnected)onComplete(attackDice,defenseDice);
@@ -3954,9 +4105,25 @@ function showPlayerActivation(stage={}){
     targetSelect.addEventListener('change',renderChoices);
     weaponSelect.addEventListener('change',renderChoices);
     $('#cancelPendingAttack').onclick=()=>cancelPendingPlayerCombat(stage,attackType,onCancel);
-    $('#openCombatResolution').onclick=()=>showPlayerCombatResolution(stage,attackType,targetSelect.value,Number(weaponSelect.value),onResolved,onCancel,{moreThanEight:Boolean($('#darkOfTombDistance')?.checked)});
+    $('#openCombatResolution').onclick=()=>{
+      const target=activeNpos().find(n=>n.id===targetSelect.value),weapon=weapons[Number(weaponSelect.value)],profile=playerWeaponProfile(weapon);
+      const proceed=()=>showPlayerCombatResolution(stage,attackType,target.id,Number(weaponSelect.value),onResolved,onCancel,{moreThanEight:Boolean($('#darkOfTombDistance')?.checked)});
+      const back=()=>showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel);
+      const ruleId=weaponHasRule(profile,'blast')?'blast':weaponHasRule(profile,'torrent')?'torrent':null;
+      const resolutionKey=`player:${state.turningPoint}:${state.activationNumber}:${stage.playerOperativeId}:${target.id}:${weapon.id||weapon.name}`;
+      const selectSecondaryTargets=()=>{
+        if(!ruleId){proceed();return;}
+        const playerTargets=(state.playerRoster||[]).map(id=>({id,label:playerName(id),wounds:Number(state.playerWounds[id]??playerDefinition(id)?.wounds??0),inPlay:state.playerOperativeStates?.[id]?.inPlay!==false}));
+        const npoTargets=activeNpos().map(npo=>({id:npo.id,label:npoName(npo),wounds:npo.wounds,inPlay:npo.battlefieldState==='deployed'}));
+        showSecondaryTargetCheck({ruleId,distance:weaponRuleValue(profile,ruleId),attackerSide:'player',attackerId:stage.playerOperativeId,primaryTargetId:target.id,targets:ruleId==='blast'?[...playerTargets,...npoTargets]:npoTargets,profileKey:weapon.id||weapon.name,onContinue:proceed,onBack:back});return;
+      };
+      if(weaponHasRule(profile,'seek-light')&&target.order==='Conceal'){showSeekLightCheck({target,resolutionKey,onContinue:selectSecondaryTargets,onBack:back});return;}
+      selectSecondaryTargets();
+    };
     renderChoices();
-    if(singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte Warrior'&&!darkDistance)showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
+    const singleProfile=weapons.length===1?playerWeaponProfile(weapons[0]):null;
+    const requiresTabletopCheck=singleProfile&&['seek-light','blast','torrent'].some(ruleId=>weaponHasRule(singleProfile,ruleId));
+    if(singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte Warrior'&&!darkDistance&&!requiresTabletopCheck)showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
   }
 
   function showPlayerCombatResolution(stage,attackType,targetId,weaponIndex,onResolved,onCancel,{result=null,animate=true,moreThanEight=false}={}){
@@ -4015,6 +4182,7 @@ function showPlayerActivation(stage={}){
       targetId:n.id,targetName:npoName(n),weaponName:weapon.name,weaponIndex,
       severeApplied:diceDraft.attackDice.some(die=>die.severeConverted)
     };
+    const stun=applyStunForAttack({profile,attackDice:diceDraft.attackDice,sourceAttackId:diceDraft.transactionId,targetId:n.id,targetName:npoName(n),targetSide:'npo'});
     result.rolledAttackDice=diceDraft.attackDice.map(die=>({...die}));
     result.rolledDefenseDice=diceDraft.defenseDice.map(die=>({...die}));
     result.attackDice=result.rolledAttackDice;
@@ -4029,7 +4197,7 @@ function showPlayerActivation(stage={}){
     const packets=EventEffects.damagePackets(resolution.normal,resolution.critical,profile);
     result.damagePackets=EventEffects.resolveCountertemporalPackets(state,packets,{turningPoint:state.turningPoint,attackerSide:'player',defenderSide:'npo',attackType,savedRolls:transaction.countertemporalRolls,rollD6:()=>roll()});
     transaction.countertemporalRolls=result.damagePackets.map(packet=>Number.isInteger(packet.countertemporalRoll)?packet.countertemporalRoll:null);
-    result.eventMessages=[...(diceDraft.rerolls.messages||[])];
+    result.eventMessages=[...(diceDraft.rerolls.messages||[]),...(stun.message?[stun.message]:[])];
     if(result.damagePackets.some(packet=>Number.isInteger(packet.countertemporalRoll)))result.eventMessages.push('Countertemporal Shifting: Resolved one D6 for each qualifying attack die.');
     result.damage=result.damagePackets.reduce((total,packet)=>total+packet.finalDamage,0);
     result.after=Math.max(0,result.before-result.damage);
@@ -4963,7 +5131,7 @@ function showPlayerActivation(stage={}){
       title:'Resolve Combat',attackerName:npoName(n),defenderName:playerName(target.id),attackType,
       weaponName:initialProfile?.name||'—',attackLabel:initialProfile?combatAttackLabel(initialProfile):'—',defenseLabel:`3 dice · ${target.save||3}+`,
       cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',extraHtml:`<div id="npoCombatGuidance">${guidance}</div>${profileControl}${willBeDone}`,
-      detailsHtml:`<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`
+      detailsHtml:`${weaponRuleSequenceProgress(state.weaponRuleResolution,playerName(target.id))}<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`
     });
     const cancel=()=>{
       if(combatTimer)combatTimer();
@@ -4978,6 +5146,10 @@ function showPlayerActivation(stage={}){
     const commitCombat=(combat)=>{
       const pending=state.lastActivation?.pendingAction;
       if(resolutionCommitted||!pending||!canCommitNpoAction(pending.id,pending.apCost))return;
+      if(attackType==='melee'&&weaponHasRule(combat.profile,'shock')&&!combat.shockResolved){
+        showGuidedShockStep(combat,updated=>{state.lastActivation={...state.lastActivation,combatDraft:updated};save();showNpoAttackWizard(n,attackDice,onDone,onCancel,false);},()=>showNpoAttackWizard(n,attackDice,onDone,onCancel,false));
+        return;
+      }
       resolutionCommitted=true;
       const complete=$('#completeNpoCombat');
       complete.disabled=true;
@@ -4986,6 +5158,18 @@ function showPlayerActivation(stage={}){
       save();
       const summary={...resolvedCombat,side:'player'};
       applyNpoAttackDamage(n,target,summary);
+      const queue=state.weaponRuleResolution;
+      if(queue?.currentTargetId===target.id){
+        state.weaponRuleResolution=advanceWeaponRuleResolution(queue,target.id);
+        if(state.weaponRuleResolution.currentTargetId){
+          state.npoAttackTargetId=state.weaponRuleResolution.currentTargetId;
+          state.lastActivation={...state.lastActivation,combatDraft:null};
+          save();
+          showNpoAttackWizard(n,attackDice,onDone,onCancel,false);
+          return;
+        }
+        state.weaponRuleResolution=null;
+      }
       if(onDone)onDone(summary);
     };
     const displayCombat=(combat,animate=false)=>{
@@ -4999,6 +5183,7 @@ function showPlayerActivation(stage={}){
       if(banishmentRequired)bindSpinners($('#dimensionalBanishmentField'));
     };
     const finishAutomaticCombat=(profile,rolledAttackDice,rolledDefenseDice)=>{
+      const stun=applyStunForAttack({profile,attackDice:rolledAttackDice,sourceAttackId:`attack:${state.turningPoint}:${state.activationNumber}:npo:${n.id}:${target.id}`,targetId:target.id,targetName:playerName(target.id),targetSide:'player'});
       const resolution=resolveRetainedCombat(rolledAttackDice,rolledDefenseDice,profile);
       const combat={
         ...recordedCombat({attackerName:npoName(n),defenderName:playerName(target.id),attackType,attackerSide:'npo',defenderSide:'player',profile,before:target.wounds||10,
@@ -5008,20 +5193,35 @@ function showPlayerActivation(stage={}){
         recordedOutcome:false,targetId:target.id,targetName:playerName(target.id),
         severeApplied:rolledAttackDice.some(die=>die.severeConverted)
       };
+      combat.eventMessages=stun.message?[stun.message]:[];
       state.lastActivation={...state.lastActivation,combatDraft:combat};
       save();
       displayCombat(combat,false);
     };
     let rollStarted=false;
-    const startAutomaticCombat=(restoredRoll=null)=>{
+    const startAutomaticCombat=(restoredRoll=null,guidedConfirmed=false)=>{
       if(rollStarted)return;
       const profileIndex=restoredRoll
         ? availableProfiles.findIndex(profile=>canonicalAttackProfile(profile).weaponId===restoredRoll.profile.weaponId&&canonicalAttackProfile(profile).profileId===restoredRoll.profile.profileId)
         : availableProfiles.length===1?0:selectedProfileIndex;
       if(profileIndex<0||!Number.isInteger(profileIndex))return;
+      const baseProfile=canonicalAttackProfile(availableProfiles[profileIndex]);
+      if(!restoredRoll&&!guidedConfirmed&&!state.weaponRuleResolution?.tabletopCheckConfirmed){
+        const back=()=>{rollStarted=false;showNpoAttackWizard(n,attackDice,onDone,onCancel,false);};
+        const resume=()=>startAutomaticCombat(null,true);
+        const ruleId=weaponHasRule(baseProfile,'blast')?'blast':weaponHasRule(baseProfile,'torrent')?'torrent':null;
+        const resolutionKey=`npo:${state.turningPoint}:${state.activationNumber}:${n.id}:${target.id}:${baseProfile.weaponId}:${baseProfile.profileId}`;
+        const selectSecondaryTargets=()=>{
+          if(!ruleId){resume();return;}
+          const playerTargets=inPlayLivingPlayerOperativeIds().map(id=>({id,label:playerName(id),wounds:playerCurrentWounds(id),inPlay:true}));
+          const npoTargets=activeNpos().map(operative=>({id:operative.id,label:npoName(operative),wounds:operative.wounds,inPlay:true}));
+          showSecondaryTargetCheck({ruleId,distance:weaponRuleValue(baseProfile,ruleId),attackerSide:'npo',attackerId:n.id,primaryTargetId:target.id,targets:ruleId==='blast'?[...playerTargets,...npoTargets]:playerTargets,profileKey:`${baseProfile.weaponId}:${baseProfile.profileId}`,onContinue:resume,onBack:back});return;
+        };
+        if(weaponHasRule(baseProfile,'seek-light')&&target.order==='Conceal'){showSeekLightCheck({target,resolutionKey,onContinue:selectSecondaryTargets,onBack:back});return;}
+        selectSecondaryTargets();return;
+      }
       rollStarted=true;
       if(combatTimer)combatTimer();
-      const baseProfile=canonicalAttackProfile(availableProfiles[profileIndex]);
       const transaction=eventTransaction(`attack:${state.turningPoint}:${state.activationNumber}:npo:${n.id}:${target.id}`,{definitionAnswers:{}});
       if(transaction.definitionAnswers.sameRoomAsC1===undefined)transaction.definitionAnswers.sameRoomAsC1=Boolean($('#sameRoomAsC1')?.checked);
       const profile=effectiveWeaponProfile(baseProfile,{attackerSide:'npo',attackType,sameRoomAsC1:transaction.definitionAnswers.sameRoomAsC1});
@@ -5039,7 +5239,7 @@ function showPlayerActivation(stage={}){
       $('#completeNpoCombat').disabled=true;
       $('#completeNpoCombat').textContent='Rolling…';
       const rolledAttackDice=restoredRoll?.attackDice||rolledAttackDiceForProfile(profile);
-      const rolledDefenseDice=restoredRoll?.saveDice||retainSuccessfulDice(rolledCombatDice(Math.max(0,3-profile.ap),Number(target.save)||3));
+      const rolledDefenseDice=restoredRoll?.saveDice||retainSuccessfulDice(rolledCombatDice(effectiveDefenseDiceCount(profile,rolledAttackDice,3),Number(target.save)||3));
       state.lastActivation={...state.lastActivation,dice:attackDice.map(d=>({...d})),targetConfirmed:true,combatDraft:{
         rolling:true,attackType,targetId:target.id,targetName:playerName(target.id),profile,attackDice:rolledAttackDice,saveDice:rolledDefenseDice,
         severeApplied:rolledAttackDice.some(die=>die.severeConverted)

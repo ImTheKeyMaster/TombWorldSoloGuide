@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v8.4.3
+# Tomb World Solo Guide v8.5.0
+
+## v8.5.0
+
+**Version 8.5.0 - Replace Manual Weapon Rule Resolution**
+
+- Replaced generic manual weapon-rule instructions with automatic and guided resolution.
+- Automated Piercing Crits and Stun.
+- Added guided Blast, Torrent, Seek Light, and Shock flows.
+- Added persistent multi-target attack sequencing.
+- Preserved Severe, combat values, activation behavior, missions, and events.
 
 ## v8.4.3
 
