@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.0
+# Tomb World Solo Guide v8.6.1
+
+## v8.6.1
+
+**Version 8.6.1 - Simplify Breach Navigation**
+
+* Replaced Close Guide with Cancel on the first Breach Sarcophagus question.
+* Removed Close Guide from later Breach steps.
+* Added full-width Back navigation on secondary and confirmation screens.
+* Preserved all Breach eligibility, AP, dice, mission progress, and victory behavior.
 
 ## v8.6.0
 

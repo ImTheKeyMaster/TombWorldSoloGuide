@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.0';
+  const APP_VERSION = '8.6.1';
   const WEAPON_RULE_HANDLERS = Object.freeze({
     severe:{mode:'automatic',phase:'after-attack-roll'},
     'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
@@ -5785,6 +5785,10 @@ function showPlayerActivation(stage={}){
     showPlayerActivation(stage);
   }
 
+  function focusBreachQuestion(id){
+    requestAnimationFrame(()=>$(id)?.focus({preventScroll:true}));
+  }
+
   function beginBreachSarcophagus(stage){
     const operativeId=stage.playerOperativeId;
     const activationId=missionActivationId('player',operativeId);
@@ -5806,21 +5810,22 @@ function showPlayerActivation(stage={}){
     }
     if(context.committed&&context.diceRolled&&!context.newTotal){performBreachSarcophagus(stage,true);return;}
     if(context.step==='control-range'){
-      showModal('Breach Sarcophagus',`<h3>Is this operative within the sarcophagus’s control range?</h3><p>Select Yes only if the operative is close enough to control the sarcophagus objective marker.</p><div class="wizard-actions"><button class="btn ghost" id="breachControlNo">No</button><button class="btn primary" id="breachControlYes">Yes</button></div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button></div>`);
+      showModal('Breach Sarcophagus',`<h3 id="breachControlQuestion" tabindex="-1">Is this operative within the sarcophagus’s control range?</h3><p>Select Yes only if the operative is close enough to control the sarcophagus objective marker.</p><div class="wizard-actions"><button class="btn ghost" id="breachControlNo">No</button><button class="btn primary" id="breachControlYes">Yes</button></div><div class="wizard-actions breach-navigation"><button class="btn ghost" id="cancelBreach" aria-label="Cancel and abandon Breach Sarcophagus">Cancel</button></div>`);
       $('#breachControlNo').onclick=()=>clearPendingBreach(stage);
       $('#breachControlYes').onclick=()=>{context.controlRangeConfirmed=true;context.step='enemy-control-range';save();renderBreachSarcophagusStep(stage);};
+      $('#cancelBreach').onclick=()=>clearPendingBreach(stage);
       return;
     }
     if(context.step==='enemy-control-range'){
-      showModal('Breach Sarcophagus',`<h3>Is this operative outside the control range of every NPO?</h3><p>An operative cannot perform Breach while it is within an enemy operative’s control range.</p><div class="wizard-actions"><button class="btn ghost" id="breachEnemyNo">No</button><button class="btn primary" id="breachEnemyYes">Yes</button></div><div class="wizard-actions"><button class="btn ghost" id="breachBackToControl">Back</button><button class="btn ghost" data-close>Close Guide</button></div>`);
+      showModal('Breach Sarcophagus',`<h3 id="breachEnemyQuestion" tabindex="-1">Is this operative outside the control range of every NPO?</h3><p>An operative cannot perform Breach while it is within an enemy operative’s control range.</p><div class="wizard-actions"><button class="btn ghost" id="breachEnemyNo">No</button><button class="btn primary" id="breachEnemyYes">Yes</button></div><div class="wizard-actions breach-navigation"><button class="btn ghost" id="breachBackToControl" aria-label="Back to the sarcophagus control-range question">Back</button></div>`);
       $('#breachEnemyNo').onclick=()=>clearPendingBreach(stage);
       $('#breachEnemyYes').onclick=()=>{context.enemyControlRangeConfirmed=true;context.step='confirmation';save();renderBreachSarcophagusStep(stage);};
-      $('#breachBackToControl').onclick=()=>{context.enemyControlRangeConfirmed=null;context.step='control-range';save();renderBreachSarcophagusStep(stage);};
+      $('#breachBackToControl').onclick=()=>{context.enemyControlRangeConfirmed=null;context.step='control-range';save();renderBreachSarcophagusStep(stage);focusBreachQuestion('#breachControlQuestion');};
       return;
     }
     const total=Number(objectiveEngine?.getObjectiveValue('destructionPoints')||state.missionState?.destruction||0);
-    showModal('Breach Sarcophagus',`<div class="summary-box"><strong>${escapeHtml(playerName(context.operativeId))}</strong><br>AP available: ${context.remainingAp}<br>Breach AP cost: ${context.apCost}<br>Destruction Points: ${total} / 20</div><p>Spend ${context.apCost} AP and roll 2D6. Add the total to the sarcophagus’s Destruction Points.</p><div class="wizard-actions"><button class="btn primary" id="performBreach">Perform Breach</button></div><div class="wizard-actions"><button class="btn ghost" id="breachBackToEnemy">Back</button><button class="btn ghost" data-close>Close Guide</button></div>`);
-    $('#breachBackToEnemy').onclick=()=>{context.step='enemy-control-range';save();renderBreachSarcophagusStep(stage);};
+    showModal('Breach Sarcophagus',`<div class="summary-box"><strong>${escapeHtml(playerName(context.operativeId))}</strong><br>AP available: ${context.remainingAp}<br>Breach AP cost: ${context.apCost}<br>Destruction Points: ${total} / 20</div><p>Spend ${context.apCost} AP and roll 2D6. Add the total to the sarcophagus’s Destruction Points.</p><div class="wizard-actions breach-navigation"><button class="btn primary" id="performBreach">Perform Breach</button></div><div class="wizard-actions breach-navigation"><button class="btn ghost" id="breachBackToEnemy" aria-label="Back to the enemy control-range question">Back</button></div>`);
+    $('#breachBackToEnemy').onclick=()=>{context.enemyControlRangeConfirmed=null;context.step='enemy-control-range';save();renderBreachSarcophagusStep(stage);focusBreachQuestion('#breachEnemyQuestion');};
     $('#performBreach').onclick=()=>performBreachSarcophagus(stage);
   }
 
