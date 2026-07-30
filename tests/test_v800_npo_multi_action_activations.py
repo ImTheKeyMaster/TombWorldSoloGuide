@@ -92,7 +92,7 @@ class V800NpoMultiActionActivationTests(unittest.TestCase):
         self.assertIn("id==='fight'&&completed.has('shoot')", APP)
 
     def test_18_movement_yes_is_affirmative(self):
-        self.assertIn('toward an unobstructed valid target or improve its mission position.', APP)
+        self.assertIn('to get a clear shot. If that is not possible, move it to help the mission.', APP)
 
     def test_19_contradictory_wording_absent(self):
         self.assertNotIn('cannot move to a valid shooting position', APP.lower())
@@ -110,7 +110,7 @@ class V800NpoMultiActionActivationTests(unittest.TestCase):
         self.assertNotIn('completeNpoActivation(summary)', renderer)
 
     def test_23_unused_ap_can_complete(self):
-        self.assertIn('No further useful legal actions are available.', APP)
+        self.assertIn('No useful actions remain.', APP)
         self.assertIn('AP remain${remaining===1', APP)
 
     def test_24_three_ap_supports_three_actions(self):
@@ -160,8 +160,8 @@ class V800NpoMultiActionActivationTests(unittest.TestCase):
     def test_38_deadly_encounters_preserved(self): self.assertIn('DeadlyEncounters', APP)
     def test_39_player_activations_preserved(self): self.assertIn('function completePlayerActivation(', APP)
     def test_40_version_800_everywhere(self):
-        self.assertIn("const APP_VERSION = '8.3.1';", APP); self.assertIn("const APP_VERSION = '8.3.1';", WORKER)
-        self.assertIn('V8.3.1', INDEX); self.assertTrue(README.startswith('# Tomb World Solo Guide v8.3.1'))
+        self.assertIn("const APP_VERSION = '8.4.0';", APP); self.assertIn("const APP_VERSION = '8.4.0';", WORKER)
+        self.assertIn('V8.4.0', INDEX); self.assertTrue(README.startswith('# Tomb World Solo Guide v8.4.0'))
     def test_41_supported_npo_profiles_unchanged_and_present(self):
         for name in ('Necron Warrior', 'Canoptek Tomb Crawler', 'Geomancer', 'Canoptek Macrocyte Warrior', 'Canoptek Macrocyte Accelerator', 'Canoptek Macrocyte Reanimator', 'Canoptek Scarab Swarm'):
             self.assertIn(f"'{name}': {{", APP)

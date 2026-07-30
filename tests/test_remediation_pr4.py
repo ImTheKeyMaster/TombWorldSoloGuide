@@ -55,10 +55,10 @@ class RemediationPr4Tests(unittest.TestCase):
         source = self.function_source('chooseNpoDecision', 'resolveNpo')
         self.assertIn("action.startsWith('Fight')", source)
         self.assertIn("action.startsWith('Shoot')", source)
-        self.assertIn('most likely to incapacitate', source)
-        self.assertIn('greatest mission impact', source)
-        self.assertIn('not obscured, not in cover, closest, then Ready', source)
-        self.assertIn('randomize any remaining tie', source)
+        self.assertIn('Most likely to be taken out', source)
+        self.assertIn('Most important to the mission', source)
+        self.assertIn('Clearest shot', source)
+        self.assertIn('A Ready operative', source)
         self.assertNotIn('largest cluster', source)
 
     def test_recommendation_does_not_commit_activation(self):
@@ -71,7 +71,7 @@ class RemediationPr4Tests(unittest.TestCase):
         self.assertIn('if(state.lastActivation?.committed)return', commit)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = '8.3.1'
+        expected = '8.4.0'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / 'service-worker.js').read_text())
         index = (ROOT / 'index.html').read_text()

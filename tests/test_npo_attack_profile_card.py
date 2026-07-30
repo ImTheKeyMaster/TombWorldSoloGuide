@@ -51,7 +51,7 @@ class NpoAttackProfileCardTests(unittest.TestCase):
     def test_multiple_profiles_require_a_deliberate_selection_before_rolling(self):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
         self.assertIn('<option value="" ${selectedProfileIndex<0?', wizard)
-        self.assertIn("disabled>Select a weapon...</option>", wizard)
+        self.assertIn("disabled>Choose a profile...</option>", wizard)
         self.assertIn("else if(availableProfiles.length===1)startAutomaticCombat()", wizard)
         self.assertIn("if(profileIndex<0||!Number.isInteger(profileIndex))return", wizard)
         self.assertIn("event.currentTarget.value===''", wizard)
@@ -96,7 +96,7 @@ class NpoAttackProfileCardTests(unittest.TestCase):
     def test_no_valid_profile_fails_safely_with_back_action(self):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
         no_weapon = wizard.split("if(!availableProfiles.length){", 1)[1].split("const initialProfile", 1)[0]
-        self.assertIn("No valid ${weaponType} weapon available", no_weapon)
+        self.assertIn("This NPO has no weapon it can use for this ${weaponType} attack.", no_weapon)
         self.assertIn('id="cancelNpoAttack">Back</button>', no_weapon)
         self.assertNotIn("runAutomaticCombatRolls", no_weapon)
 

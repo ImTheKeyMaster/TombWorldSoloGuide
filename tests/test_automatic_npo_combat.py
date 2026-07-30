@@ -83,7 +83,7 @@ class AutomaticNpoCombatTests(unittest.TestCase):
 
     def test_pending_weapon_summary_is_distinct_from_dropdown_placeholder(self):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
-        self.assertIn("disabled>Select a weapon...</option>", wizard)
+        self.assertIn("disabled>Choose a profile...</option>", wizard)
         self.assertIn("weaponName:initialProfile?.name||'—'", wizard)
         self.assertIn("if(weapon)weapon.textContent=profile.name", wizard)
         self.assertIn("screen.continueButton.disabled=false", wizard)

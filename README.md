@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v8.3.1
+# Tomb World Solo Guide v8.4.0
+
+## v8.4.0
+
+**Version 8.4.0 - Simplify NPO Activation Guidance**
+
+- Rewrote NPO Activation questions and instructions in concise, plain language.
+- Removed internal labels such as Applicability, Feasibility, printed objective, and effective APL.
+- Added behavior-specific Reposition and Dash guidance.
+- Reformatted target priorities and special-action instructions for faster tabletop use.
+- Preserved all NPO priorities, AP costs, combat, missions, events, and activation behavior.
 
 ## v8.3.1
 
