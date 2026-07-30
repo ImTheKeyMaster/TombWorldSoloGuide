@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.4.2
+# Tomb World Solo Guide v8.4.3
+
+## v8.4.3
+
+**Version 8.4.3 - Automate the Severe Weapon Rule**
+
+- Severe now automatically converts one retained normal success into a critical success when no critical success was retained.
+- Updated combat dice, damage, persistence, and accessibility to reflect the converted result.
+- Removed incorrect manual-resolution instructions for Severe.
+- Preserved all other weapon rules, combat behavior, missions, and events.
 
 ## v8.4.2
 

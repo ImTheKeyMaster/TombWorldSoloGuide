@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.4.2';
+  const APP_VERSION = '8.4.3';
   const NPO_ACTION_TRANSITIONS = Object.freeze({
     AUTO_CONTINUE:'auto-continue',
     ACKNOWLEDGE:'acknowledge',
@@ -1046,7 +1046,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function canonicalAttackProfile(profile){
     const piercing=(profile?.rules||[]).map(String).map(rule=>rule.match(/(?:Piercing|AP)\s*(\d+)/i)).find(Boolean);
     const lethal=(profile?.rules||[]).map(String).map(rule=>rule.match(/Lethal\s*(\d)\+/i)).find(Boolean);
-    const tabletopRules=(profile?.rules||[]).filter(rule=>/Piercing Crits|Blast|Torrent|Seek Light|Severe|Shock|Stun/i.test(rule));
+    const tabletopRules=(profile?.rules||[]).filter(rule=>/Piercing Crits|Blast|Torrent|Seek Light|Shock|Stun/i.test(rule));
     const manualResolution=profile?.manualResolution||(tabletopRules.length
       ? `Apply ${tabletopRules.join(', ')} using the Core rules and confirm any required tabletop targets or effects before completing this attack.`
       : '');
@@ -1055,7 +1055,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       critThreshold:Number(lethal?.[1]||6),
       normal:Number(profile?.damage?.normal||0),crit:Number(profile?.damage?.critical||0),
       ap:Number(piercing?.[1]||0),
-      rules:[...(profile?.rules||[])],weaponId:profile?.weaponId||'',profileId:profile?.id||'',
+      rules:[...(profile?.rules||[])],ruleIds:[...(profile?.ruleIds||[])],weaponId:profile?.weaponId||'',profileId:profile?.id||'',
       manualResolution,
       name:profile?.weaponName===profile?.name?profile?.name:`${profile?.weaponName}: ${profile?.name}`
     };
@@ -3306,7 +3306,7 @@ function showPlayerActivation(stage={}){
         <div><small>Attack type</small><strong>${combat.attackType==='shoot'?'Shooting':'Melee'}</strong></div>
         ${combat.recordedOutcome?'':`<div><small>Retained saves</small><strong>${combat.retainedSaves??(combat.coverRetained?1:0)}</strong></div>`}
       </div>`:''}
-      ${combat.recordedOutcome?'<div class="combat-stage"><small>TABLETOP RESOLUTION</small><p>Physical dice and retained successes resolved by the player.</p></div>':`<div class="combat-stage"><small>ATTACK DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div></div><div class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No defense dice rolled</span>'}</div>${combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':''}</div>`}
+      ${combat.recordedOutcome?'<div class="combat-stage"><small>TABLETOP RESOLUTION</small><p>Physical dice and retained successes resolved by the player.</p></div>':`<div class="combat-stage"><small>ATTACK DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div>${severeAppliedHtml(combat.attackDice)}</div><div class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No defense dice rolled</span>'}</div>${combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':''}</div>`}
       ${elimination}
       ${combatAbilityReminder(combat)}
       ${(combat.eventMessages||combat.profile?.eventMessages||[]).map(message=>`<div class="summary-box"><strong>${escapeHtml(message)}</strong></div>`).join('')}
@@ -3652,7 +3652,9 @@ function showPlayerActivation(stage={}){
       critThreshold:Number(lethalRule?.[1]||6),
       normal:damage.normal,
       crit:damage.crit,
-      ap:weaponPiercingValue(weapon)
+      ap:weaponPiercingValue(weapon),
+      rules:[...(weapon?.rules||[])],
+      ruleIds:[...(weapon?.ruleIds||[])]
     };
   }
 
@@ -3747,26 +3749,50 @@ function showPlayerActivation(stage={}){
   }
   function rolledAttackDiceForProfile(profile){
     const accurate=Math.min(Number(profile?.accurate||0),Math.max(0,Number(profile?.dice||0)));
-    return retainSuccessfulDice([
+    const retainedDice=retainSuccessfulDice([
       ...Array.from({length:accurate},()=>({value:Number(profile.hit||2),kind:'hit',retained:true,automatic:'Accurate 1'})),
       ...rolledCombatDice(Math.max(0,Number(profile.dice||0)-accurate),profile.hit,profile.critThreshold)
     ]);
+    return applySevereToAttackDice(retainedDice,profile).dice;
   }
 
   function retainSuccessfulDice(dice=[]){
     return dice.map(die=>({...die,retained:die.kind==='hit'||die.kind==='crit'}));
   }
 
+  function weaponHasRule(profile,ruleId){
+    const normalizedId=String(ruleId).trim().toLowerCase();
+    return (profile?.ruleIds||[]).some(id=>String(id).trim().toLowerCase()===normalizedId)
+      ||(profile?.rules||[]).some(rule=>String(rule).trim().toLowerCase()===normalizedId);
+  }
+
+  function applySevereToAttackDice(dice,profile){
+    const updatedDice=(dice||[]).map(die=>({...die}));
+    if(!weaponHasRule(profile,'severe')||updatedDice.some(die=>die.retained&&die.kind==='crit')){
+      return {dice:updatedDice,applied:false,convertedIndex:-1};
+    }
+    const convertedIndex=updatedDice.findIndex(die=>die.retained&&die.kind==='hit');
+    if(convertedIndex<0)return {dice:updatedDice,applied:false,convertedIndex:-1};
+    updatedDice[convertedIndex]={...updatedDice[convertedIndex],kind:'crit',retained:true,originalKind:'hit',severeConverted:true};
+    return {dice:updatedDice,applied:true,convertedIndex};
+  }
+
+  function severeAppliedHtml(dice=[]){
+    return dice.some(die=>die.severeConverted)
+      ? '<p class="severe-applied" role="status">Severe applied: one normal success became a critical success.</p>'
+      : '';
+  }
+
   function runAutomaticCombatRolls({container,profile,defenseSave,rolledAttackDice=null,rolledDefenseDice=null,onComplete}){
     let timer=null;
-    const attackDice=rolledAttackDice||retainSuccessfulDice(profile.accurate
-      ? rolledAttackDiceForProfile(profile)
-      : rolledCombatDice(profile.dice,profile.hit,profile.critThreshold));
+    const attackDice=rolledAttackDice
+      ? applySevereToAttackDice(retainSuccessfulDice(rolledAttackDice),profile).dice
+      : rolledAttackDiceForProfile(profile);
     container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row animated-roll">${attackDice.map(()=>rollingDieHtml()).join('')}</div></section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row"><span class="muted">Rolling after the attack…</span></div></section>`;
     timer=setTimeout(()=>{
       if(!container.isConnected)return;
       const defenseDice=rolledDefenseDice||retainSuccessfulDice(rolledCombatDice(Math.max(0,3-profile.ap),Number(defenseSave)||3));
-      container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row settled" data-combat-attack-dice>${attackDice.map(dieHtml).join('')}</div></section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row animated-roll" data-combat-save-dice>${defenseDice.length?defenseDice.map(()=>rollingDieHtml()).join(''):'<span class="muted">No defense dice rolled</span>'}</div></section>`;
+      container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row settled" data-combat-attack-dice>${attackDice.map(dieHtml).join('')}</div>${severeAppliedHtml(attackDice)}</section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row animated-roll" data-combat-save-dice>${defenseDice.length?defenseDice.map(()=>rollingDieHtml()).join(''):'<span class="muted">No defense dice rolled</span>'}</div></section>`;
       timer=settleCombatDice({attackDice,saveDice:defenseDice},()=>{
         timer=null;
         if(container.isConnected)onComplete(attackDice,defenseDice);
@@ -5063,7 +5089,7 @@ function showPlayerActivation(stage={}){
   }
 
   const pipPositions={1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};
-  function dieHtml(d){const kind=d.kind||'';return `<div class="die ${kind}" aria-label="${d.value}${kind?` ${kind}`:''}">${pipPositions[d.value].map(p=>`<span class="pip" style="grid-area:${Math.ceil(p/3)}/${((p-1)%3)+1}"></span>`).join('')}</div>`;}
+  function dieHtml(d){const kind=d.kind||'';const label=d.severeConverted?'Critical success, converted from a normal success by Severe.':`${d.value}${kind?` ${kind}`:''}`;return `<div class="die ${kind}" aria-label="${label}">${pipPositions[d.value].map(p=>`<span class="pip" style="grid-area:${Math.ceil(p/3)}/${((p-1)%3)+1}"></span>`).join('')}</div>`;}
 
   function renderMission(){
     const m=mission();

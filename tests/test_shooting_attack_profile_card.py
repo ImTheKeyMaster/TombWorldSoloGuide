@@ -38,7 +38,7 @@ class ShootingAttackProfileCardTests(unittest.TestCase):
         self.assertIn("weaponSelect.value===''?null:weapons[Number(weaponSelect.value)]", wizard)
         self.assertIn('<option value="">Select a weapon...</option>', wizard)
         self.assertIn("runAutomaticCombatRolls({container:screen.dice,profile", resolution)
-        self.assertIn("rolledCombatDice(profile.dice,profile.hit,profile.critThreshold)", automatic_rolls)
+        self.assertIn("rolledAttackDiceForProfile(profile)", automatic_rolls)
         dice_roller = self.source("function rolledCombatDice", "function retainedDiceTotals")
         self.assertIn("Array.from({length:Math.max(0,count)}", dice_roller)
         self.assertIn("value>=threshold", dice_roller)

@@ -36,7 +36,7 @@ class NpoAttackProfileCardTests(unittest.TestCase):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
         self.assertIn("profile.dice", formatter)
         self.assertIn("profile.hit", formatter)
-        self.assertIn("rolledCombatDice(profile.dice,profile.hit,profile.critThreshold)", roller)
+        self.assertIn("rolledAttackDiceForProfile(profile)", roller)
         self.assertIn("runAutomaticCombatRolls({container:screen.dice,profile", wizard)
         self.assertIn("defenseLabel:`3 dice · ${target.save||3}+`", wizard)
 
