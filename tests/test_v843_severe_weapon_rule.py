@@ -171,8 +171,8 @@ class SevereWeaponRuleTests(unittest.TestCase):
         render = function_source('renderCombatResolution')
         self.assertIn('dice.some(die=>die.severeConverted)', message)
         self.assertIn('Severe applied: one normal success became a critical success.', message)
-        self.assertIn('Critical success, converted from a normal success by Severe.', die)
-        self.assertIn('severeAppliedHtml(combat.attackDice)', render)
+        self.assertIn('Critical success, converted from a normal success by Severe. Rolled value ${d.value}.', die)
+        self.assertIn('severeAppliedHtml(combat.attackDice,combat.severeApplied)', render)
         self.assertIn('role="status"', message)
 
     def test_saved_converted_die_restores_without_second_conversion_or_damage_commit(self):
@@ -182,7 +182,10 @@ class SevereWeaponRuleTests(unittest.TestCase):
         self.assertTrue(restored['dice'][0]['severeConverted'])
         self.assertEqual(4, restored['dice'][0]['value'])
         npo = function_source('showNpoAttackWizard')
+        player = function_source('previewPendingPlayerAttack')
         player_display = function_source('displayPendingPlayerCombat')
+        self.assertIn('severeApplied:diceDraft.attackDice.some(die=>die.severeConverted)', player)
+        self.assertIn('severeApplied:rolledAttackDice.some(die=>die.severeConverted)', npo)
         self.assertIn('if(sameCombat)displayCombat(saved,animateCombat)', npo)
         self.assertIn('if(resolutionCommitted', npo)
         self.assertIn('if(stage[`${attackType}CombatDraft`]===result)onResolved(result)', player_display)

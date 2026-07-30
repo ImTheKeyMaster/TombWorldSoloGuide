@@ -3306,7 +3306,7 @@ function showPlayerActivation(stage={}){
         <div><small>Attack type</small><strong>${combat.attackType==='shoot'?'Shooting':'Melee'}</strong></div>
         ${combat.recordedOutcome?'':`<div><small>Retained saves</small><strong>${combat.retainedSaves??(combat.coverRetained?1:0)}</strong></div>`}
       </div>`:''}
-      ${combat.recordedOutcome?'<div class="combat-stage"><small>TABLETOP RESOLUTION</small><p>Physical dice and retained successes resolved by the player.</p></div>':`<div class="combat-stage"><small>ATTACK DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div>${severeAppliedHtml(combat.attackDice)}</div><div class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No defense dice rolled</span>'}</div>${combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':''}</div>`}
+      ${combat.recordedOutcome?'<div class="combat-stage"><small>TABLETOP RESOLUTION</small><p>Physical dice and retained successes resolved by the player.</p></div>':`<div class="combat-stage"><small>ATTACK DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div>${severeAppliedHtml(combat.attackDice,combat.severeApplied)}</div><div class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No defense dice rolled</span>'}</div>${combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':''}</div>`}
       ${elimination}
       ${combatAbilityReminder(combat)}
       ${(combat.eventMessages||combat.profile?.eventMessages||[]).map(message=>`<div class="summary-box"><strong>${escapeHtml(message)}</strong></div>`).join('')}
@@ -3777,8 +3777,8 @@ function showPlayerActivation(stage={}){
     return {dice:updatedDice,applied:true,convertedIndex};
   }
 
-  function severeAppliedHtml(dice=[]){
-    return dice.some(die=>die.severeConverted)
+  function severeAppliedHtml(dice=[],severeApplied=false){
+    return severeApplied||dice.some(die=>die.severeConverted)
       ? '<p class="severe-applied" role="status">Severe applied: one normal success became a critical success.</p>'
       : '';
   }
@@ -4012,7 +4012,8 @@ function showPlayerActivation(stage={}){
     const result={
       ...recordedCombat({attackerName:playerName(stage.playerOperativeId),defenderName:npoName(n),attackType,attackerSide:'player',defenderSide:'npo',profile:{...profile,rules:weapon.rules||[]},before,
         normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical,damage:resolution.damage}),
-      targetId:n.id,targetName:npoName(n),weaponName:weapon.name,weaponIndex
+      targetId:n.id,targetName:npoName(n),weaponName:weapon.name,weaponIndex,
+      severeApplied:diceDraft.attackDice.some(die=>die.severeConverted)
     };
     result.rolledAttackDice=diceDraft.attackDice.map(die=>({...die}));
     result.rolledDefenseDice=diceDraft.defenseDice.map(die=>({...die}));
@@ -5004,7 +5005,8 @@ function showPlayerActivation(stage={}){
           normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical,damage:resolution.damage}),
         attackDice:rolledAttackDice,saveDice:rolledDefenseDice,
         retainedSaves:retainedDiceTotals(rolledDefenseDice).normal+retainedDiceTotals(rolledDefenseDice).critical,
-        recordedOutcome:false,targetId:target.id,targetName:playerName(target.id)
+        recordedOutcome:false,targetId:target.id,targetName:playerName(target.id),
+        severeApplied:rolledAttackDice.some(die=>die.severeConverted)
       };
       state.lastActivation={...state.lastActivation,combatDraft:combat};
       save();
@@ -5039,7 +5041,8 @@ function showPlayerActivation(stage={}){
       const rolledAttackDice=restoredRoll?.attackDice||rolledAttackDiceForProfile(profile);
       const rolledDefenseDice=restoredRoll?.saveDice||retainSuccessfulDice(rolledCombatDice(Math.max(0,3-profile.ap),Number(target.save)||3));
       state.lastActivation={...state.lastActivation,dice:attackDice.map(d=>({...d})),targetConfirmed:true,combatDraft:{
-        rolling:true,attackType,targetId:target.id,targetName:playerName(target.id),profile,attackDice:rolledAttackDice,saveDice:rolledDefenseDice
+        rolling:true,attackType,targetId:target.id,targetName:playerName(target.id),profile,attackDice:rolledAttackDice,saveDice:rolledDefenseDice,
+        severeApplied:rolledAttackDice.some(die=>die.severeConverted)
       }};
       save();
       combatTimer=runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,rolledAttackDice,rolledDefenseDice,onComplete:(completedAttackDice,completedDefenseDice)=>{
@@ -5089,7 +5092,7 @@ function showPlayerActivation(stage={}){
   }
 
   const pipPositions={1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};
-  function dieHtml(d){const kind=d.kind||'';const label=d.severeConverted?'Critical success, converted from a normal success by Severe.':`${d.value}${kind?` ${kind}`:''}`;return `<div class="die ${kind}" aria-label="${label}">${pipPositions[d.value].map(p=>`<span class="pip" style="grid-area:${Math.ceil(p/3)}/${((p-1)%3)+1}"></span>`).join('')}</div>`;}
+  function dieHtml(d){const kind=d.kind||'';const label=d.severeConverted?`Critical success, converted from a normal success by Severe. Rolled value ${d.value}.`:`${d.value}${kind?` ${kind}`:''}`;return `<div class="die ${kind}" aria-label="${label}">${pipPositions[d.value].map(p=>`<span class="pip" style="grid-area:${Math.ceil(p/3)}/${((p-1)%3)+1}"></span>`).join('')}</div>`;}
 
   function renderMission(){
     const m=mission();
