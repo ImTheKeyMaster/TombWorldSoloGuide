@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.4.1';
+  const APP_VERSION = '8.4.2';
   const NPO_ACTION_TRANSITIONS = Object.freeze({
     AUTO_CONTINUE:'auto-continue',
     ACKNOWLEDGE:'acknowledge',
@@ -4464,7 +4464,7 @@ function showPlayerActivation(stage={}){
 
   function renderActiveNpoQuestion(q){
     return `<section class="npo-question-active npo-question-card--active" aria-live="polite" aria-atomic="true" aria-labelledby="activeNpoQuestion" aria-describedby="activeNpoQuestionHelp">
-      ${npoIcon(npoQuestionIcons[q.action.split(' ')[0]])}<h3 id="activeNpoQuestion">${escapeHtml(q.title)}</h3><p id="activeNpoQuestionHelp">${escapeHtml(q.help)}</p>
+      ${npoIcon(npoQuestionIcons[q.action.split(' ')[0]])}<h3 id="activeNpoQuestion" tabindex="-1">${escapeHtml(q.title)}</h3><p id="activeNpoQuestionHelp">${escapeHtml(q.help)}</p>
       <div class="ai-choice-grid"><button class="ai-choice no" data-answer="no"><strong>No</strong></button><button class="ai-choice yes" data-answer="yes"><strong>Yes</strong></button></div>
     </section>`;
   }
@@ -4478,18 +4478,24 @@ function showPlayerActivation(stage={}){
 
   function titleCaseRuleId(ruleId){return String(ruleId).split('-').map(word=>word[0]?.toUpperCase()+word.slice(1)).join(' ');}
 
+  function renderNpoActivationHeader(n){
+    const definition=npoDefinition(n.type),modifiers=(state.npoRuleState.aplModifiers||[]).filter(item=>item.targetId===n.id);
+    const pendingBreach=(state.npoRuleState.pendingMovementEffects||[]).some(item=>item.targetId===n.id&&item.ruleId==='molecular-breach');
+    const loadout=definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name,effective=effectiveApl(n.id,definition.apl);
+    return `<h2 id="activeNpoQuestionHeading" tabindex="-1">NPO Activation: ${escapeHtml(npoName(n))}</h2><div class="activation-profile-strip" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>APL ${definition.apl}${effective===definition.apl?'':` (${effective} AP this activation)`}</span><span>Order: ${escapeHtml(n.order)}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Next movement uses Molecular Breach</span>':''}</div>${renderNpoActionProgress()}`;
+  }
+
+  function renderNpoGuideFooter({backDisabled=false}={}){
+    return `<div class="wizard-actions npo-guide-footer"><button class="btn ghost" id="aiBack" ${backDisabled?'disabled':''}>Back</button><button class="btn ghost" data-close>Close Guide</button></div>`;
+  }
+
   function runNpoPrompt(n,index,answers,history){
     const q=npoActionQuestion(n,index);
     if(!q){renderNpoActivationEnd(n,'No useful actions remain.');return;}
     const priorTop=$('.npo-question-active',modal)?.getBoundingClientRect().top;
-    const definition=npoDefinition(n.type),modifiers=(state.npoRuleState.aplModifiers||[]).filter(item=>item.targetId===n.id),pendingBreach=(state.npoRuleState.pendingMovementEffects||[]).some(item=>item.targetId===n.id&&item.ruleId==='molecular-breach');
-    const loadout=definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name,effective=effectiveApl(n.id,definition.apl);
-    modalBody.innerHTML=`<div class="modal-inner"><h2 id="activeNpoQuestionHeading" tabindex="-1">NPO Activation: ${escapeHtml(npoName(n))}</h2><div class="activation-profile-strip" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>APL ${definition.apl}${effective===definition.apl?'':` (${effective} AP this activation)`}</span><span>Order: ${escapeHtml(n.order)}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Next movement uses Molecular Breach</span>':''}</div>${renderNpoActionProgress()}${state.lastActivation.autoTransitionAnnouncement?`<span class="visually-hidden" role="status" aria-live="polite">${escapeHtml(state.lastActivation.autoTransitionAnnouncement)}</span>`:''}<div class="ai-wizard">
+    modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}${state.lastActivation.autoTransitionAnnouncement?`<span class="visually-hidden" role="status" aria-live="polite">${escapeHtml(state.lastActivation.autoTransitionAnnouncement)}</span>`:''}<div class="ai-wizard">
       <div class="npo-question-flow">${renderCompletedNpoQuestions(history)}${renderActiveNpoQuestion(q)}</div>
-      <div class="wizard-actions">
-        <button class="btn ghost" id="aiBack" ${history.length===0?'disabled':''}>Back</button>
-        <button class="btn ghost" data-close>Close Guide</button>
-      </div>
+      ${renderNpoGuideFooter({backDisabled:history.length===0})}
     </div></div>`;
     if(!modal.open)modal.showModal();
     if(state.lastActivation.autoTransitionAnnouncement){state.lastActivation.autoTransitionAnnouncement=null;save();requestAnimationFrame(()=>$('#activeNpoQuestionHeading')?.focus({preventScroll:true}));}
@@ -4755,15 +4761,37 @@ function showPlayerActivation(stage={}){
     save();resolveNpoAction(n,state.lastActivation.pendingAction);
   }
 
+  function backFromNpoMovementConfirmation(n){
+    const activation=state.lastActivation,history=activation?.questionHistory||[];
+    const selected=history[history.length-1],previous=history[history.length-2];
+    if(!activation?.pendingAction||selected?.type!=='selected'||!previous||previous.answer!==true)return;
+    const earlierHistory=history.slice(0,-2);
+    activation.pendingAction=null;
+    if(!previous.movementIntentId||activation.movementIntent?.id===previous.movementIntentId)activation.movementIntent=null;
+    if(activation.pendingFollowUpAction?.movementActionId===npoActionId(previous.action))activation.pendingFollowUpAction=null;
+    activation.currentContext={...previous.contextBefore};
+    activation.answers={...previous.answers};
+    activation.questionHistory=earlierHistory;
+    save();
+    runNpoPrompt(n,previous.index,previous.answers,earlierHistory);
+    requestAnimationFrame(()=>$('#activeNpoQuestion')?.focus({preventScroll:true}));
+  }
+
+  function renderNpoMovementConfirmation(n,pendingAction,decision){
+    const displayAction=conciseNpoActionName(pendingAction),headingId='activeNpoMovementHeading',instructionId='activeNpoMovementInstruction';
+    modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}<div class="ai-wizard"><div class="npo-question-flow"><section class="npo-question-active npo-question-card--active npo-movement-confirmation" aria-labelledby="${headingId}" aria-describedby="${instructionId}">${npoIcon(npoQuestionIcons[displayAction])}<h3 id="${headingId}" tabindex="-1">${escapeHtml(displayAction)}</h3><p id="${instructionId}">${escapeHtml(decision.reason)}</p><p class="npo-movement-cost">Costs ${pendingAction.apCost} AP (${state.lastActivation.remainingAp} AP to ${state.lastActivation.remainingAp-pendingAction.apCost} AP)</p><div class="ai-choice-grid"><button class="ai-choice yes npo-movement-confirm" id="confirmNpoMovement"><strong>Confirm ${escapeHtml(displayAction)} Complete</strong></button></div></section></div>${renderNpoGuideFooter()}</div></div>`;
+    if(!modal.open)modal.showModal();
+    $('[data-close]',modal).onclick=closeModal;
+    $('#aiBack').onclick=()=>backFromNpoMovementConfirmation(n);
+    requestAnimationFrame(()=>$('#activeNpoMovementHeading')?.focus({preventScroll:true}));
+  }
+
   function resolveNpoAction(n,pendingAction){
     if(!pendingAction||state.lastActivation?.pendingAction?.id!==pendingAction.id)return;
     const decision=chooseNpoDecision(n,{action:pendingAction.name});
     if(npoSpecialAction(n,pendingAction.name)){resolveNpoSpecialAction(n,decision,state.lastActivation.answers||{},state.lastActivation.questionHistory||[]);return;}
     if(npoActionChangesContext(pendingAction.id)){
-      const distance=pendingAction.id==='dash'?3:npoDefinition(n.type)?.move;
-      const displayAction=conciseNpoActionName(pendingAction);
-      modalBody.innerHTML=`<div class="modal-inner ai-result"><div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>AP: ${state.lastActivation.remainingAp} → ${state.lastActivation.remainingAp-pendingAction.apCost}</p></div></div><div class="npo-result-card">${npoIcon('command')}<div><small>${escapeHtml(displayAction.toUpperCase())}</small><strong>${escapeHtml(displayAction)}</strong><p>${escapeHtml(decision.reason)}</p></div></div><div class="wizard-actions"><button class="btn primary" id="confirmNpoMovement">Confirm ${escapeHtml(displayAction)} Complete</button></div></div>`;
-      if(!modal.open)modal.showModal();
+      renderNpoMovementConfirmation(n,pendingAction,decision);
       $('#confirmNpoMovement').onclick=()=>{const button=$('#confirmNpoMovement');if(!canCommitNpoAction(pendingAction.id,pendingAction.apCost))return;button.disabled=true;const effect=consumeMolecularBreach(n.id,pendingAction.id==='fall-back'?'Fall Back':pendingAction.name.split(' ')[0]);const finalApDash=pendingAction.id==='dash'&&state.lastActivation.remainingAp===pendingAction.apCost&&!state.lastActivation.pendingFollowUpAction;commitNpoAction({actionId:pendingAction.id,actionName:pendingAction.name,apCost:pendingAction.apCost,result:effect||decision.reason,changesPosition:true,endsActivation:finalApDash,transitionMode:finalApDash?NPO_ACTION_TRANSITIONS.COMPLETE_ACTIVATION:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});};
       return;
     }

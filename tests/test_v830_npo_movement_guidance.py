@@ -51,7 +51,7 @@ class V830NpoMovementGuidanceTests(unittest.TestCase):
         self.assertIn('activation.resolvedActions=[...(activation.resolvedActions||[]),record]', commit)
 
     def test_action_prompts_and_result_summaries_do_not_repeat_long_internal_names(self):
-        movement = section('function resolveNpoAction', 'function initiativeSummary')
+        movement = section('function renderNpoMovementConfirmation', 'function resolveNpoAction')
         self.assertIn('const displayAction=conciseNpoActionName(pendingAction)', movement)
         self.assertIn('Confirm ${escapeHtml(displayAction)} Complete', movement)
         result = section('function renderNpoActionResult', 'function renderNpoActivationEnd')
@@ -66,13 +66,13 @@ class V830NpoMovementGuidanceTests(unittest.TestCase):
         self.assertIn('scheduleNpoActionTransition(activation,n.id,transitionMode)', APP)
 
     def test_version_830_is_consistent_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.4.1';", APP)
-        self.assertIn("const APP_VERSION = '8.4.1';", WORKER)
-        self.assertIn('V8.4.1', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.4.1'))
-        self.assertIn('## v8.4.1', README)
+        self.assertIn("const APP_VERSION = '8.4.2';", APP)
+        self.assertIn("const APP_VERSION = '8.4.2';", WORKER)
+        self.assertIn('V8.4.2', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.4.2'))
+        self.assertIn('## v8.4.2', README)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.4.1', INDEX)
+            self.assertIn(f'{asset}?v=8.4.2', INDEX)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
 

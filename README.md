@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v8.4.1
+# Tomb World Solo Guide v8.4.2
+
+## v8.4.2
+
+**Version 8.4.2 - Unify NPO Movement Confirmation Layout**
+
+- Updated NPO movement confirmation screens to use the full activation heading, profile strip, and card layout.
+- Moved movement confirmation buttons into the same control area as NPO question choices.
+- Added Back navigation that safely returns to the selecting question without committing movement.
+- Added Close Guide navigation that preserves the pending movement and follow-up state.
+- Preserved movement intent, AP costs, combat, missions, and event behavior.
 
 ## v8.4.1
 
