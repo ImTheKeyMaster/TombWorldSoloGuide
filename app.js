@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.2';
+  const APP_VERSION = '8.6.3';
   const WEAPON_RULE_HANDLERS = Object.freeze({
     severe:{mode:'automatic',phase:'after-attack-roll'},
     'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
@@ -497,7 +497,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   // Card-instance IDs preserve the printed duplicate weighting.
   const eventDefinitions = {
     'subjugation-glyphs':{title:'Subjugation Glyphs',text:'Randomly test eligible Player operatives without replacement. If a D6 is higher than an operative’s effective APL, subtract 1 from its APL.',execution:{type:'subjugation-glyphs'},lifecycle:'immediate',duration:'persistent',handlerId:'subjugation-glyphs',gameplayHooks:['effectivePlayerApl'],automationType:'automatic',priority:10},
-    'transdimensional-relocation':{title:'Transdimensional Relocation',text:'Relocate the player operative that is closest to an NPO. Follow the placement restrictions on the event card.',execution:{type:'tabletop-confirm'},duration:'immediate'},
+    'transdimensional-relocation':{title:'Transdimensional Relocation',text:'Relocate the Player operative closest to an NPO. Follow the placement restrictions on the event card.',execution:{type:'tabletop-confirm'},duration:'immediate'},
     'my-will-be-done':{title:'My Will Be Done',text:'Until the end of the turning point, while an NPO is in the same room as the sarcophagus, its weapons have Accurate 1.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'my-will-be-done',gameplayHooks:['effectiveWeapon'],automationType:'tabletop-answer',priority:20},
     'reanimation-protocols':{title:'Reanimation Protocols',text:'Until the end of the turning point, the first time each NPO would be incapacitated, roll one D6. On 4+, it reanimates with 1 wound.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'reanimation-protocols',gameplayHooks:['incapacitationCandidates'],automationType:'automatic',priority:10},
     'dark-of-the-tomb':{title:'Dark of the Tomb',text:'Until the end of the turning point, Player Shoot attack dice cannot be rerolled when the target is more than 8 inches away.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'dark-of-the-tomb',gameplayHooks:['attackRerolls'],automationType:'tabletop-answer',priority:10},
@@ -505,8 +505,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     'living-metal-flux':{title:'Living Metal Flux',text:'Each NPO that has lost any wounds regains D3+2 wounds.',execution:{type:'living-metal-flux'},duration:'immediate'},
     'maze-reforms':{title:'The Maze Reforms',text:'Close one breach and up to D3 open hatchways. If this cannot be resolved, draw another event card.',execution:{type:'maze-reforms'},duration:'immediate',redrawIfImpossible:true},
     'stirrings-of-horror':{title:'Stirrings of Horror',text:'Increase the Threat level by 1. If the Threat level is already 15, draw another event card instead.',execution:{type:'stirrings'},duration:'immediate',redrawIfImpossible:true},
-    'chittering-drone':{title:'A Chittering Drone',text:'If a Canoptek Scarab Swarm has lost any wounds, it regains all lost wounds. Otherwise, set up one ready Canoptek Scarab Swarm with a Conceal order as described on the event card. If neither effect is possible, draw another event card.',execution:{type:'chittering-drone'},duration:'immediate',redrawIfImpossible:true},
-    'awakened-warrior':{title:'Awakened Warrior',text:'Set up one ready Necron Warrior with a Conceal order as described on the event card. If this is not possible, draw another event card.',execution:{type:'awakened-warrior'},duration:'immediate',redrawIfImpossible:true}
+    'chittering-drone':{title:'A Chittering Drone',text:'If a Canoptek Scarab Swarm has lost any wounds, it regains all lost wounds. Otherwise, set up one Ready Canoptek Scarab Swarm with a Conceal order using the placement instructions on the event card. If neither effect is possible, draw another event card.',execution:{type:'chittering-drone'},duration:'immediate',redrawIfImpossible:true},
+    'awakened-warrior':{title:'Awakened Warrior',text:'Set up one Ready Necron Warrior with a Conceal order using the placement instructions on the event card. If no eligible Necron Warrior can be placed, draw another event card.',execution:{type:'awakened-warrior'},duration:'immediate',redrawIfImpossible:true}
   };
   const eventDeck = [
     {instanceId:'subjugation-glyphs-1',definitionId:'subjugation-glyphs'},
@@ -2362,7 +2362,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const reinforcementCard=deployingNpos.length||blockedCount
       ? `<section class="card reinforcement-card" aria-live="polite"><p class="eyebrow">REINFORCEMENTS</p>${deployedSection}${pendingSection}${blockedCount?`<div class="reinforcement-blocked" role="status"><h3>${deployingNpos.length?`${blockedCount} additional reinforcement${blockedCount===1?'':'s'} could not be deployed`:'No reinforcements could be deployed'}</h3><p>${blockedReason}</p></div>`:''}</section>`
       : '<div class="summary-box strategy-empty-message">No reinforcements were generated this Turning Point.</div>';
-    const placements=deployingNpos.map(npo=>`<label class="check-row"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong><small>Randomly determine an open hatchway, set up this operative with a Conceal order using the printed placement requirements, then confirm.</small></span></label>`).join('');
+    const placements=deployingNpos.map(npo=>`<label class="check-row"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong><small>Randomly determine an open hatchway, set up this operative with a Conceal order following the Tomb World reinforcement placement restrictions, then confirm.</small></span></label>`).join('');
     const showStatTooltips=!window.matchMedia('(max-width:600px)').matches;
     const tooltipAttrs=text=>showStatTooltips?` tabindex="0" data-tooltip="${text}"`:'';
     const infoDot=showStatTooltips?'<span class="info-dot">i</span>':'';
@@ -2492,7 +2492,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const eventDetails=`${eventHeader}<div class="tomb-world-event-heading"><h3 class="tomb-world-event-title">${escapeHtml(title)}</h3><span class="strategy-event-status" data-event-status="${escapeHtml(event.status)}"${activeEffect?` data-event-active="true" aria-label="${activeLabel}"`:''}>${statusLabel}</span></div><div class="tomb-world-event-effect"><div class="tomb-world-event-effect-label">Effect</div><p class="tomb-world-event-description">${escapeHtml(description)}</p></div>`;
     if(event.status!=='drawn')return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite">${eventDetails}<div class="event-resolution">${escapeHtml(event.result||'Complete')}</div></div>`;
     const labels={
-      'awakened-warrior':'Confirm Warrior Placement',
+      'awakened-warrior':'Confirm Necron Warrior Placement',
       'chittering-drone':'Confirm Scarab Placement',
       'maze-reforms':'Confirm Terrain Changes',
       'tabletop-confirm':'Confirm Tabletop Resolution'
@@ -3003,7 +3003,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       n.ready=true;n.dormant=false;
       if(!commitNpoRoster([...state.roster,n],'resolve that event')){redrawCurrentEvent(`${type} could not be set up.`);return;}
       state.newIds.push(n.id);
-      result=`${npoName(n)} was set up Ready with a Conceal order; printed placement confirmed.`;
+      result=`${npoName(n)} was set up Ready with a Conceal order using the event card’s placement instructions.`;
     }
     if(event.execution.type==='maze-reforms')result='Breach and hatchway changes completed on the tabletop.';
     completeCurrentEvent(result);

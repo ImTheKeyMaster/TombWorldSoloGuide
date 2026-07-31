@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.2
+# Tomb World Solo Guide v8.6.3
+
+## v8.6.3
+
+**Version 8.6.3 - Clarify Event Placement Instructions**
+
+- Replaced vague `printed placement` terminology with clear references to event-card placement instructions.
+- Improved Awakened Warrior instructions and resolved messaging.
+- Clarified placement wording across Tomb World events and reinforcements.
+- Preserved all event, placement, reinforcement, and Strategy Phase behavior.
 
 ## v8.6.2
 
