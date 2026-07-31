@@ -613,6 +613,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     console.error('[Startup] Saved activation restoration failed; the stored save was preserved.',error);
   }
   let lastRenderedStepKey = null;
+  let focusedRelocationInstanceId = null;
   let startingNpoTimer = null;
   let threatAdjustOpen = false;
   let expandedRosterCategories = null;
@@ -2623,10 +2624,16 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       resolveStrategyEvent(button);
     });
     const pendingRelocation=currentEvent();
-    if(strategyViewStep(state.strategyData)==='events'&&pendingRelocation?.definitionId==='transdimensional-relocation'&&pendingRelocation.status==='drawn'){
-      if(validTransdimensionalRelocationSelection(pendingRelocation))requestAnimationFrame(()=>$('#transdimensional-relocation-selection-heading')?.focus({preventScroll:true}));
+    const relocationVisible=strategyViewStep(state.strategyData)==='events'&&pendingRelocation?.definitionId==='transdimensional-relocation'&&pendingRelocation.status==='drawn';
+    if(relocationVisible){
+      if(validTransdimensionalRelocationSelection(pendingRelocation)){
+        if(focusedRelocationInstanceId!==pendingRelocation.instanceId){
+          focusedRelocationInstanceId=pendingRelocation.instanceId;
+          requestAnimationFrame(()=>$('#transdimensional-relocation-selection-heading')?.focus({preventScroll:true}));
+        }
+      }
       else setTimeout(()=>redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.'),0);
-    }
+    }else focusedRelocationInstanceId=null;
     $('#redrawStrategyEvent')?.addEventListener('click',event=>{
       const button=event.currentTarget;
       if(button.disabled)return;
@@ -3050,7 +3057,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(state.phase!=='strategy'||state.strategyStage!=='summary'||!event||!state.strategyData.eventPending)return;
     let result='Tabletop effect confirmed.';
     if(event.execution.type==='transdimensional-relocation'){
-      if(event.status!=='drawn'||event.resolution?.confirmed||!validTransdimensionalRelocationSelection(event)){if(button)button.disabled=false;return;}
+      if(event.status!=='drawn'||event.resolution?.confirmed){if(button)button.disabled=false;return;}
+      if(!validTransdimensionalRelocationSelection(event)){
+        if(!prepareTransdimensionalRelocation(event))redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.');
+        else render();
+        return;
+      }
       const names=event.resolution.playerOperativeIds.map(playerName);
       event.resolution.confirmed=true;
       result=`${names[0]} and ${names[1]} swapped positions.`;

@@ -86,6 +86,8 @@ class TransdimensionalRelocationTests(unittest.TestCase):
         self.assertIn("event.status!=='drawn'", relocation)
         self.assertIn("event.resolution?.confirmed", relocation)
         self.assertIn("validTransdimensionalRelocationSelection(event)", relocation)
+        self.assertIn("prepareTransdimensionalRelocation(event)", relocation)
+        self.assertIn("redrawCurrentEvent", relocation)
         self.assertIn("event.resolution.confirmed=true", relocation)
         self.assertIn("swapped positions.", relocation)
         for field in ("playerWounds", "playerActivatedIds", "playerOperativeStates", ".ready", ".order", ".apl"):
@@ -98,6 +100,8 @@ class TransdimensionalRelocationTests(unittest.TestCase):
         self.assertIn('aria-live="polite"', card)
         self.assertIn('id="transdimensional-relocation-selection-heading" tabindex="-1"', card)
         self.assertIn("transdimensional-relocation-selection-heading", binding)
+        self.assertIn("focusedRelocationInstanceId!==pendingRelocation.instanceId", binding)
+        self.assertIn("else focusedRelocationInstanceId=null", binding)
         self.assertIn('id="resolved-transdimensional-relocation-heading" tabindex="-1"', card)
         self.assertIn("resolved-transdimensional-relocation-heading", resolution)
         self.assertIn("button.disabled=true", binding)
