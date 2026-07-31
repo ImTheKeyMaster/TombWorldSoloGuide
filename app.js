@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.8';
+  const APP_VERSION = '8.6.9';
   const WEAPON_RULE_HANDLERS = Object.freeze({
     severe:{mode:'automatic',phase:'after-attack-roll'},
     'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
@@ -5503,7 +5503,8 @@ function showPlayerActivation(stage={}){
       $('#confirmNpoMovement').onclick=()=>{const button=$('#confirmNpoMovement');if(!canCommitNpoAction(pendingAction.id,pendingAction.apCost))return;button.disabled=true;const effect=consumeMolecularBreach(n.id,pendingAction.id==='fall-back'?'Fall Back':pendingAction.name.split(' ')[0]);const finalApDash=pendingAction.id==='dash'&&state.lastActivation.remainingAp===pendingAction.apCost&&!state.lastActivation.pendingFollowUpAction;commitNpoAction({actionId:pendingAction.id,actionName:pendingAction.name,apCost:pendingAction.apCost,result:effect||decision.reason,changesPosition:true,endsActivation:finalApDash,transitionMode:finalApDash?NPO_ACTION_TRANSITIONS.COMPLETE_ACTIVATION:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});};
       return;
     }
-    renderNpoDecisionResult(n,decision,[],state.lastActivation.answers||{},false,false,/^(shoot|fight)$/.test(pendingAction.id),false,state.lastActivation.questionHistory||[]);
+    const activation=state.lastActivation;
+    renderNpoDecisionResult(n,decision,activation.dice||[],activation.answers||{},Boolean(activation.attackResolved),false,/^(shoot|fight)$/.test(pendingAction.id),Boolean(activation.targetConfirmed),activation.questionHistory||[]);
   }
 
   function initiativeSummary(dice){
@@ -5512,6 +5513,55 @@ function showPlayerActivation(stage={}){
     const misses=dice.filter(d=>d.kind==='miss').length;
     if(crits===0&&hits===0)return 'Attack missed. No saves or damage required.';
     return `${crits} critical · ${hits} normal · ${misses} miss`;
+  }
+
+  function updateNpoTargetConfirmationAvailability(){
+    const targetId=String($('#npoPriorityTarget')?.tagName==='SELECT'?$('#npoPriorityTarget').value:'');
+    const button=$('#confirmNpoTarget');
+    if(button)button.disabled=!eligibleNpoAttackTargets().includes(targetId||String(state.npoAttackTargetId||''));
+  }
+
+  function showNpoTargetRecovery(n,decision){
+    const activation=state.lastActivation;
+    console.error('[NPO Target] Target confirmation failed because the pending attack was not preserved.',{
+      npoId:n.id,pendingAction:activation?.pendingAction,targetId:state.npoAttackTargetId
+    });
+    modalBody.innerHTML=`<div class="modal-inner"><h2>Target could not be confirmed</h2><div class="summary-box">The attack state was not preserved. No AP, dice, or damage were committed.</div><div class="wizard-actions"><button class="btn primary" id="recoverNpoActivation">Return to NPO Activation</button></div></div>`;
+    if(!modal.open)modal.showModal();
+    $('#recoverNpoActivation').onclick=()=>{
+      const current=state.lastActivation;
+      state.npoAttackTargetId=null;state.npoAttackSummary=null;state.weaponRuleResolution=null;
+      state.lastActivation={...current,pendingAction:null,targetConfirmed:false,attackRequired:false,attackResolved:false,combatDraft:null};
+      save();runNpoPrompt(n,0,current?.answers||{},current?.questionHistory||[]);
+    };
+  }
+
+  function confirmNpoAttackTarget(n,decision){
+    const targetControl=$('#npoPriorityTarget');
+    const selectedTargetId=String((targetControl?.tagName==='SELECT'?targetControl.value:'')||state.npoAttackTargetId||'');
+    const eligibleTargetIds=eligibleNpoAttackTargets();
+    if(!selectedTargetId||!eligibleTargetIds.includes(selectedTargetId)){
+      state.npoAttackTargetId=null;
+      state.npoAttackSummary=null;
+      save();
+      renderNpoDecisionResult(n,decision,[],state.lastActivation?.answers||{},false,false,true,false,state.lastActivation?.questionHistory||[]);
+      showToast('That Player operative is no longer an eligible target. Select another target.');
+      return false;
+    }
+    const activation=state.lastActivation,pendingAction=activation?.pendingAction;
+    if(!pendingAction||!['shoot','fight'].includes(pendingAction.id)){
+      showNpoTargetRecovery(n,decision);
+      return false;
+    }
+    state.npoAttackTargetId=selectedTargetId;
+    state.npoAttackSummary=null;
+    state.lastActivation={...activation,targetConfirmed:true,attackRequired:true,attackResolved:false};
+    const history=state.activationHistory.find(item=>item.side==='npo'&&item.label===npoName(n)&&!item.target);
+    if(history)history.target=playerName(selectedTargetId);
+    log(`${npoName(n)} confirmed ${playerName(selectedTargetId)} as the attack target.`);
+    save();
+    renderNpoDecisionResult(n,decision,[],state.lastActivation.answers||{},false,false,true,true,state.lastActivation.questionHistory||[]);
+    return true;
   }
 
   function renderNpoDecisionResult(n,decision,dice,answers,attackResolved,animateDice=true,attackRequired=(decision.action.includes('Fight')||decision.action.includes('Shoot')),targetConfirmed=dice.length>0,questionHistory=state.lastActivation?.questionHistory||[]){
@@ -5529,7 +5579,7 @@ function showPlayerActivation(stage={}){
     const targetName=state.npoAttackTargetId?playerTargetLabel(state.npoAttackTargetId):'';
     const targetField=targetConfirmed||eligibleTargetIds.length===1
       ? `<input id="npoPriorityTarget" value="${escapeHtml(targetName)}" readonly>`
-      : `<select id="npoPriorityTarget" ${attackResolved?'disabled':''}><option value="">Select the first operative that matches the priority above.</option>${targetOptions}</select>`;
+      : `<select id="npoPriorityTarget" ${attackResolved?'disabled':''}><option value="" ${state.npoAttackTargetId?'':'selected'}>Select the first operative that matches the priority above.</option>${targetOptions}</select>`;
     const targetPriority=decision.target.length?`<p>Choose the target in this order:</p><ol>${decision.target.map(item=>`<li>${escapeHtml(item)}</li>`).join('')}</ol><p>Randomize only if still tied.</p>`:'';
     const attackSummary=attackResolved&&state.npoAttackSummary?{
       ...state.npoAttackSummary,
@@ -5567,18 +5617,16 @@ function showPlayerActivation(stage={}){
       save();
       renderNpoDecisionResult(n,decision,resolvedDice,answers,false,false,true,true);
     },animate);
-    $('#npoPriorityTarget')?.addEventListener('change',()=>{state.npoAttackTargetId=$('#npoPriorityTarget').value||null;const b=$('#confirmNpoTarget');if(b)b.disabled=!state.npoAttackTargetId;save();});
+    $('#npoPriorityTarget')?.addEventListener('change',event=>{state.npoAttackTargetId=event.currentTarget.value||null;save();updateNpoTargetConfirmationAvailability();});
     $('#rollPlayerSaves')?.addEventListener('click',()=>openSaveWizard(dice));
-    $('#confirmNpoTarget')?.addEventListener('click',()=>{
-      if(!state.npoAttackTargetId)return;
-      state.npoAttackSummary=null;
-      const rolledDice=[];
-      const history=state.activationHistory.find(x=>x.side==='npo'&&x.label===npoName(n)&&!x.target);
-      if(history)history.target=playerName(state.npoAttackTargetId);
-      log(`${npoName(n)} confirmed ${playerName(state.npoAttackTargetId)} as the attack target.`);
-      save();
-      openSaveWizard(rolledDice,true);
-    });
+    const confirmTargetButton=$('#confirmNpoTarget');
+    if(confirmTargetButton)confirmTargetButton.onclick=()=>{
+      if(confirmTargetButton.disabled)return;
+      confirmTargetButton.disabled=true;
+      const confirmed=confirmNpoAttackTarget(n,decision);
+      if(!confirmed&&confirmTargetButton.isConnected)confirmTargetButton.disabled=false;
+    };
+    updateNpoTargetConfirmationAvailability();
 
     $('#completeNpo')?.addEventListener('click',()=>{
       const pending=state.lastActivation?.pendingAction;
@@ -5654,7 +5702,7 @@ function showPlayerActivation(stage={}){
     }
     if(!target){showToast('Select the targeted Player operative first.');if(onCancel)onCancel();return;}
     const targetSide=state.weaponRuleResolution?.orderedTargets?.find(item=>item.targetId===target.id)?.targetSide||'player';
-    const targetName=targetSide==='npo'?npoName(target):targetName;
+    const targetName=targetSide==='npo'?npoName(target):playerName(target.id);
     const attackType=state.lastActivation?.action?.includes('Fight')?'melee':'shoot';
     const availableProfiles=npoAttackProfiles(n,attackType);
     const saved=state.lastActivation?.combatDraft;
