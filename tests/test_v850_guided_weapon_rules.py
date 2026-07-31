@@ -9,7 +9,7 @@ README=(ROOT/'README.md').read_text()
 
 class GuidedWeaponRuleTests(unittest.TestCase):
     def test_01_version_850(self):
-        self.assertIn("const APP_VERSION = '8.6.11';",APP); self.assertIn("const APP_VERSION = '8.6.11';",WORKER); self.assertIn('V8.6.11',INDEX)
+        self.assertIn("const APP_VERSION = '8.6.6';",APP); self.assertIn("const APP_VERSION = '8.6.6';",WORKER); self.assertIn('V8.6.6',INDEX)
     def test_02_no_manual_heading(self): self.assertNotIn('<strong>Manual tabletop resolution</strong>',APP)
     def test_03_no_generic_core_instruction(self): self.assertNotIn('using the Core rules and confirm any required tabletop',APP)
     def test_04_to_07_piercing_crits(self):
@@ -32,6 +32,6 @@ class GuidedWeaponRuleTests(unittest.TestCase):
     def test_31_registered_modes(self):
         for rule in ('severe','piercing-crits','stun','seek-light','blast','torrent','shock','piercing','lethal','accurate'): self.assertIn(f"{rule}:{{mode:" if '-' not in rule else f"'{rule}':{{mode:",APP)
     def test_32_release_notes_and_accessibility(self):
-        self.assertIn('## v8.6.11',README); self.assertIn('aria-live="polite"',APP); self.assertIn('data-weapon-rule-target',APP); self.assertIn('role="status"',APP)
+        self.assertIn('## v8.6.6',README); self.assertIn('aria-live="polite"',APP); self.assertIn('data-weapon-rule-target',APP); self.assertIn('role="status"',APP)
 
 if __name__=='__main__': unittest.main()

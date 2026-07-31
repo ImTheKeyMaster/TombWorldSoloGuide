@@ -65,11 +65,11 @@ const definition=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarc
         worker = (ROOT / "service-worker.js").read_text()
         manifest = json.loads((ROOT / "Missions/manifest.json").read_text())
 
-        self.assertIn("const APP_VERSION = '8.6.11'", app)
-        self.assertIn("const APP_VERSION = '8.6.11'", worker)
-        self.assertIn("V8.6.11", index)
+        self.assertIn("const APP_VERSION = '8.6.6'", app)
+        self.assertIn("const APP_VERSION = '8.6.6'", worker)
+        self.assertIn("V8.6.6", index)
         for asset in ("app.js", "mission-engine.js", "persistence.js", "styles.css"):
-            self.assertIn(f"{asset}?v=8.6.11", index)
+            self.assertIn(f"{asset}?v=8.6.6", index)
         for asset in (
             "Missions/manifest.json",
             "Missions/mission.schema.json",

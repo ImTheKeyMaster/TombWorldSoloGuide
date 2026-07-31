@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.11
+# Tomb World Solo Guide v8.6.6
+
+## v8.6.6
+
+**Version 8.6.6 - Fix Blast Combat Resolution**
+
+- Initialized a fresh attack and defense roll for every Blast target while keeping the originally selected weapon profile locked.
+- Applied each target's damage before advancing and skipped targets that were no longer valid.
+- Cleared Blast target and dice state when an attack is cancelled or completed.
+- Preserved standard single-target attacks and the normal activation flow.
 
 ## v8.6.11
 
@@ -45,7 +54,7 @@
 - Added per-target damage, persistence, history, and final multi-target summaries.
 - Preserved single AP costs, weapon rules, combat effects, missions, and activation behavior.
 
-## v8.6.6
+## v8.6.6 (previous release)
 
 **Version 8.6.6 - Show Reposition Distance in NPO Guidance**
 
