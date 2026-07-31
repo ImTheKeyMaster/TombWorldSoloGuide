@@ -16,14 +16,14 @@ def section(start, end):
 
 class V840NpoActivationPlainLanguageTests(unittest.TestCase):
     def test_version_and_save_compatibility(self):
-        self.assertIn("const APP_VERSION = '8.6.7';", APP)
-        self.assertIn("const APP_VERSION = '8.6.7';", WORKER)
-        self.assertIn('V8.6.7', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.7'))
-        self.assertIn('## v8.6.7', README)
+        self.assertIn("const APP_VERSION = '8.6.8';", APP)
+        self.assertIn("const APP_VERSION = '8.6.8';", WORKER)
+        self.assertIn('V8.6.8', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.8'))
+        self.assertIn('## v8.6.8', README)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.7', INDEX)
+            self.assertIn(f'{asset}?v=8.6.8', INDEX)
 
     def test_profile_and_progress_plain_language(self):
         prompt = section('function renderNpoActivationHeader', 'function renderNpoGuideFooter')
@@ -49,8 +49,8 @@ class V840NpoActivationPlainLanguageTests(unittest.TestCase):
         expected = (
             'Is this NPO within the control range of any Player operative?',
             'Can it move away and finish outside every Player operative’s control range?',
-            'Can this NPO shoot a Player operative from where it is?',
-            'Is a Player operative close enough for this NPO to Fight?',
+            'Does this NPO currently have a Player operative it can Shoot without moving?',
+            'Is a valid Player operative currently within this NPO’s control range?',
             'Can this NPO reach a Player operative with a Charge?',
         )
         for wording in expected:

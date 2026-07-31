@@ -76,12 +76,11 @@ class V801NpoActionEligibilityTests(unittest.TestCase):
         self.assertIn('data-answer="yes"', rendered)
 
     def test_10_shoot_wording_is_objective(self):
-        self.assertIn('Can this NPO shoot a Player operative from where it is?', APP)
-        for fact in ('visibility', 'weapon range', 'order', 'terrain'):
-            self.assertIn(fact, APP)
+        self.assertIn('Does this NPO currently have a Player operative it can Shoot without moving?', APP)
+        self.assertIn('Do not move the NPO.', APP)
 
     def test_11_fight_wording_is_objective(self):
-        self.assertIn('Is a Player operative close enough for this NPO to Fight?', APP)
+        self.assertIn('Is a valid Player operative currently within this NPO’s control range?', APP)
 
     def test_12_charge_wording_is_objective(self):
         self.assertIn('Can this NPO reach a Player operative with a Charge?', APP)

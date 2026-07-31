@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.7';
+  const APP_VERSION = '8.6.8';
   const WEAPON_RULE_HANDLERS = Object.freeze({
     severe:{mode:'automatic',phase:'after-attack-roll'},
     'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
@@ -4656,13 +4656,13 @@ function showPlayerActivation(stage={}){
       selectedInstruction:'Fall Back using the shortest available route and finish outside every Player operative’s control range.'
     },
     shoot:{
-      feasibilityQuestion:'Can this NPO shoot a Player operative from where it is?',
-      help:'Check visibility, weapon range, its order, and any terrain or rule that blocks the shot. The app will choose the target next.',
+      feasibilityQuestion:'Does this NPO currently have a Player operative it can Shoot without moving?',
+      help:'Select Yes if it can make a shooting attack from its current position. Do not move the NPO.',
       selectedInstruction:'Shoot the first Player operative that matches the target priority.'
     },
     fight:{
-      feasibilityQuestion:'Is a Player operative close enough for this NPO to Fight?',
-      help:'Select Yes if a Player operative is in its control range and no rule prevents the Fight.',
+      feasibilityQuestion:'Is a valid Player operative currently within this NPO’s control range?',
+      help:'Select Yes if this NPO can Fight a Player operative from its current position. Do not move the NPO.',
       selectedInstruction:'Fight the first Player operative that matches the target priority.'
     },
     charge:{
@@ -4722,10 +4722,12 @@ function showPlayerActivation(stage={}){
     const activation=state.lastActivation,focus=npoMovementFocus(n,action),remainingAp=Number(activation?.remainingAp||0);
     const declined=new Set(activation?.declinedMovementIntentIds||[]);
     const shootCanFollow=remainingAp>=2&&!(activation?.completedActionIds||[]).includes('shoot')&&!(activation?.completedActionIds||[]).includes('fight');
+    const fightCanFollow=remainingAp>=2&&!(activation?.completedActionIds||[]).includes('fight')&&!(activation?.completedActionIds||[]).includes('shoot');
     if(id==='reposition'){
       const distance=formatMovementDistance(npoRepositionDistance(n));
       if(focus==='shoot'&&shootCanFollow&&!declined.has('reposition-enable-shoot'))return {id:'reposition-enable-shoot',purpose:'enable-shoot',followUpActionId:'shoot',guaranteesFollowUp:true,question:distance?`Can this NPO Reposition up to ${distance} and finish where it can Shoot?`:'Can this NPO Reposition to a position where it can Shoot?',help:'Select Yes only if it can finish the Reposition with a Player operative it can Shoot.'};
       if(focus==='shoot')return {id:'reposition-general-position',purpose:'general-position',followUpActionId:null,guaranteesFollowUp:false,question:distance?`Can this NPO Reposition up to ${distance} to improve its position for the next activation or the mission?`:'Can this NPO Reposition to improve its position for the next activation or the mission?',help:'Select Yes if it can move closer to a future shooting position, gain useful cover, or help complete or defend the mission.'};
+      if(focus==='fight'&&fightCanFollow)return {id:'reposition-enable-fight',purpose:'enable-fight',followUpActionId:'fight',guaranteesFollowUp:false,question:distance?`Can this NPO Reposition up to ${distance} closer to its target?`:'Can this NPO Reposition closer to its target?',help:'Select Yes if it can move closer to the nearest Player operative, using cover when possible.'};
       if(focus==='fight')return {question:distance?`Can this NPO Reposition up to ${distance} closer to its target?`:'Can this NPO Reposition closer to its target?',help:'Select Yes if it can move closer to the nearest Player operative, using cover when possible.'};
       if(focus==='support')return {question:distance?`Can this NPO Reposition up to ${distance} to use a support action or help the mission?`:'Can this NPO Reposition to use a support action or help the mission?',help:'Select Yes if moving would help it use a higher-priority action or improve its mission position.'};
       return {question:distance?`Can this NPO Reposition up to ${distance} to help complete or defend the mission?`:'Can this NPO Reposition to help complete or defend the mission?',help:'Select Yes only if it can reach a clearly better mission position.'};
@@ -4733,6 +4735,7 @@ function showPlayerActivation(stage={}){
     if(remainingAp===1)return {id:'dash-final-position',purpose:'final-position',followUpActionId:null,guaranteesFollowUp:false,endsActivation:true,question:'Can this NPO use its last AP to Dash to a better position?',help:'Select Yes if the Dash improves cover, mission position, or its setup for the next Turning Point. The activation will end after the Dash.'};
     if(focus==='shoot'&&shootCanFollow&&!declined.has('dash-enable-shoot'))return {id:'dash-enable-shoot',purpose:'enable-shoot',followUpActionId:'shoot',guaranteesFollowUp:true,question:'Can a 3-inch Dash move this NPO to a position where it can Shoot?',help:'Select Yes only if it can finish the Dash with a Player operative it can Shoot.'};
     if(focus==='shoot')return {id:'dash-general-position',purpose:'general-position',followUpActionId:null,guaranteesFollowUp:false,question:'Can a 3-inch Dash improve this NPO’s position?',help:'Select Yes if it improves cover, moves it toward the mission, or sets up a better position for a later activation.'};
+    if(focus==='fight'&&fightCanFollow)return {id:'dash-enable-fight',purpose:'enable-fight',followUpActionId:'fight',guaranteesFollowUp:false,question:'Can a 3-inch Dash move this NPO closer to its target?',help:'Select Yes if the Dash moves it closer to the nearest Player operative, using cover when possible.'};
     if(focus==='fight')return {question:'Can a 3-inch Dash move this NPO closer to its target?',help:'Select Yes if the Dash moves it closer to the nearest Player operative, using cover when possible.'};
     if(focus==='support')return {question:'Can a 3-inch Dash help this NPO use a support action?',help:'Select Yes if the Dash helps it reach an ally, enemy, or mission position needed for a higher-priority action.'};
     return {question:'Can a 3-inch Dash put this NPO in a better position?',help:'Select Yes if the Dash moves it toward a clear shot or a better mission position.'};
@@ -4798,11 +4801,36 @@ function showPlayerActivation(stage={}){
     return rankLegalNpoActions(n,legalNpoActions(n,context),context);
   }
 
+  function attackAvailabilityForMovementIntent(activation,intent){
+    if(intent?.followUpActionId==='shoot')return activation.currentContext.hasValidShootTarget;
+    if(intent?.followUpActionId==='fight')return activation.currentContext.hasValidFightTarget;
+    return undefined;
+  }
+
+  function directNpoAttackQuestion(n,action,availability=null){
+    const actionId=npoActionId(action),inquiry=NPO_ACTION_INQUIRIES[actionId];
+    return {key:`${actionId}-feasibility`,action,actionId,type:'feasibility',title:inquiry.feasibilityQuestion,help:inquiry.help,movementIntent:null,autoSelect:availability===true};
+  }
+
   function npoActionQuestion(n,index){
     const activation=state.lastActivation;
     const action=recommendedNpoActions(n,activation?.currentContext||{}).filter(name=>!(activation?.declinedActionIds||[]).includes(npoActionId(name)))[index];
     if(!action)return null;
-    const id=npoActionId(action),inquiry=NPO_ACTION_INQUIRIES[id],movementInquiry=['reposition','dash'].includes(id)?npoMovementInquiry(n,action,id):null;
+    const id=npoActionId(action),inquiry=NPO_ACTION_INQUIRIES[id];
+    const legalActions=legalNpoActions(n,activation?.currentContext||{});
+    const directAvailability=id==='shoot'?activation.currentContext.hasValidShootTarget:id==='fight'?activation.currentContext.hasValidFightTarget:undefined;
+    if(directAvailability===true)return directNpoAttackQuestion(n,action,directAvailability);
+    const fightAction=legalActions.find(name=>npoActionId(name)==='fight');
+    const chargeIntent=id==='charge'&&fightAction?{id:'charge-enable-fight',purpose:'enable-fight',followUpActionId:'fight',guaranteesFollowUp:activation.remainingAp>=2}:null;
+    let movementInquiry=['reposition','dash'].includes(id)?npoMovementInquiry(n,action,id):chargeIntent;
+    const intendedAttack=movementInquiry?.followUpActionId&&legalActions.find(name=>npoActionId(name)===movementInquiry.followUpActionId);
+    if(movementInquiry?.followUpActionId&&!intendedAttack){
+      movementInquiry={...movementInquiry,id:`${id}-general-position`,purpose:'general-position',followUpActionId:null,guaranteesFollowUp:false};
+    }
+    const availability=attackAvailabilityForMovementIntent(activation,movementInquiry);
+    if(availability===null||availability===true){
+      if(intendedAttack)return directNpoAttackQuestion(n,intendedAttack,availability);
+    }
     const applicability=id==='fall-back'&&activation.currentContext?.inEnemyControlRange===null;
     const title=applicability?inquiry.applicabilityQuestion:(movementInquiry?.question||inquiry?.feasibilityQuestion||`Can this NPO use ${action} now?`);
     const inquiryHelp=applicability?inquiry?.applicabilityHelp:(id==='charge'&&activation.remainingAp===1
@@ -5128,6 +5156,10 @@ function showPlayerActivation(stage={}){
   function runNpoPrompt(n,index,answers,history){
     const q=npoActionQuestion(n,index);
     if(!q){renderNpoActivationEnd(n,'No useful actions remain.');return;}
+    if(q.autoSelect){
+      resolveNpo(n,{...answers,action:q.action},history);
+      return;
+    }
     const priorTop=$('.npo-question-active',modal)?.getBoundingClientRect().top;
     modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}${state.lastActivation.autoTransitionAnnouncement?`<span class="visually-hidden" role="status" aria-live="polite">${escapeHtml(state.lastActivation.autoTransitionAnnouncement)}</span>`:''}<div class="ai-wizard">
       <div class="npo-question-flow">${renderCompletedNpoQuestions(history)}${renderActiveNpoQuestion(q)}</div>
@@ -5141,7 +5173,7 @@ function showPlayerActivation(stage={}){
       $$('[data-answer]',modal).forEach(choice=>choice.disabled=true);
       const answer=btn.dataset.answer==='yes';
       const nextAnswers={...answers,[q.key]:answer};
-      const action=recommendedNpoActions(n,state.lastActivation?.currentContext||{}).filter(name=>!(state.lastActivation?.declinedActionIds||[]).includes(npoActionId(name)))[index];
+      const action=q.action;
       const contextBefore={...(state.lastActivation.currentContext||{})};
       const nextHistory=[...history,{index,answers,answer,action,type:q.type,question:q.title,contextBefore,movementIntentId:q.movementIntent?.id||null}];
       state.lastActivation.questionHistory=nextHistory;
@@ -5153,6 +5185,11 @@ function showPlayerActivation(stage={}){
           save();runNpoPrompt(n,0,nextAnswers,nextHistory);
         }
       }else if(answer){
+        if(q.movementIntent&&attackAvailabilityForMovementIntent(state.lastActivation,q.movementIntent)===null){
+          console.warn(`Blocked ${q.actionId} before checking current ${q.movementIntent.followUpActionId} availability.`);
+          state.lastActivation.questionHistory=history;
+          save();runNpoPrompt(n,0,answers,history);return;
+        }
         if(q.actionId==='shoot')state.lastActivation.currentContext.hasValidShootTarget=true;
         if(q.actionId==='fight')state.lastActivation.currentContext.hasValidFightTarget=true;
         if(q.movementIntent){
@@ -5168,7 +5205,7 @@ function showPlayerActivation(stage={}){
       else{
         if(q.actionId==='shoot')state.lastActivation.currentContext.hasValidShootTarget=false;
         if(q.actionId==='fight')state.lastActivation.currentContext.hasValidFightTarget=false;
-        if(q.movementIntent?.id){
+        if(q.movementIntent?.id&&['reposition','dash'].includes(q.actionId)){
           state.lastActivation.declinedMovementIntentIds=[...new Set([...(state.lastActivation.declinedMovementIntentIds||[]),q.movementIntent.id])];
           const nextIntent=npoMovementInquiry(n,action,q.actionId);
           if(!nextIntent||state.lastActivation.declinedMovementIntentIds.includes(nextIntent.id))state.lastActivation.declinedActionIds=[...(state.lastActivation.declinedActionIds||[]),q.actionId];
@@ -5213,11 +5250,28 @@ function showPlayerActivation(stage={}){
     if(activation.completed)return;
     if(!n||n.wounds<=0||!n.deployed||!n.ready){completeNpoActivation();return;}
     if(activation.awaitingActionResult){renderNpoActionResult(n,activation.awaitingActionResult,Boolean(activation.awaitingActionResult.endsActivation));return;}
+    if(activation.pendingAction&&normalizeUnknownAttackMovement(activation)){
+      save();runNpoPrompt(n,0,{},activation.questionHistory||[]);return;
+    }
     if(activation.pendingAction){resolveNpoAction(n,activation.pendingAction);return;}
     if(activation.remainingAp<=0){completeNpoActivation();return;}
     const available=recommendedNpoActions(n,activation.currentContext||{}).filter(name=>!(activation.declinedActionIds||[]).includes(npoActionId(name)));
     if(!available.length){renderNpoActivationEnd(n,'No useful actions remain.');return;}
     runNpoPrompt(n,0,{},activation.questionHistory||[]);
+  }
+
+  function normalizeUnknownAttackMovement(activation){
+    if(!npoActionChangesContext(activation.pendingAction?.id))return false;
+    if(attackAvailabilityForMovementIntent(activation,activation.movementIntent)!==null)return false;
+    console.warn(`Restored ${activation.pendingAction.id} was blocked before its current-position attack check.`);
+    const history=activation.questionHistory||[];
+    let movementIndex=-1;
+    for(let index=history.length-1;index>=0;index--){
+      if(history[index].movementIntentId===activation.movementIntent?.id){movementIndex=index;break;}
+    }
+    activation.questionHistory=movementIndex<0?history:history.slice(0,movementIndex);
+    activation.pendingAction=null;activation.pendingFollowUpAction=null;activation.movementIntent=null;
+    return true;
   }
 
   function continueGuaranteedNpoFollowUp(){
@@ -5415,6 +5469,19 @@ function showPlayerActivation(stage={}){
     requestAnimationFrame(()=>$('#activeNpoQuestion')?.focus({preventScroll:true}));
   }
 
+  function backFromNpoAttackSelection(n){
+    const activation=state.lastActivation,history=activation?.questionHistory||[];
+    const selected=history[history.length-1],previous=history[history.length-2];
+    if(!activation?.pendingAction||selected?.type!=='selected'||!previous||previous.answer!==true)return;
+    activation.pendingAction=null;
+    activation.currentContext={...previous.contextBefore};
+    activation.answers={...previous.answers};
+    activation.questionHistory=history.slice(0,-2);
+    state.npoAttackTargetId=null;state.npoAttackSummary=null;
+    save();runNpoPrompt(n,0,previous.answers,activation.questionHistory);
+    requestAnimationFrame(()=>$('#activeNpoQuestion')?.focus({preventScroll:true}));
+  }
+
   function renderNpoMovementConfirmation(n,pendingAction,decision){
     const displayAction=conciseNpoActionName(pendingAction),headingId='activeNpoMovementHeading',instructionId='activeNpoMovementInstruction';
     modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}<div class="ai-wizard"><div class="npo-question-flow"><section class="npo-question-active npo-question-card--active npo-movement-confirmation" aria-labelledby="${headingId}" aria-describedby="${instructionId}">${npoIcon(npoQuestionIcons[displayAction])}<h3 id="${headingId}" tabindex="-1">${escapeHtml(displayAction)}</h3><p id="${instructionId}">${escapeHtml(decision.reason)}</p><p class="npo-movement-cost">Costs ${pendingAction.apCost} AP (${state.lastActivation.remainingAp} AP to ${state.lastActivation.remainingAp-pendingAction.apCost} AP)</p><div class="ai-choice-grid"><button class="ai-choice yes npo-movement-confirm" id="confirmNpoMovement"><strong>Confirm ${escapeHtml(displayAction)} Complete</strong></button></div></section></div>${renderNpoGuideFooter()}</div></div>`;
@@ -5426,6 +5493,9 @@ function showPlayerActivation(stage={}){
 
   function resolveNpoAction(n,pendingAction){
     if(!pendingAction||state.lastActivation?.pendingAction?.id!==pendingAction.id)return;
+    if(normalizeUnknownAttackMovement(state.lastActivation)){
+      save();runNpoPrompt(n,0,{},state.lastActivation.questionHistory||[]);return;
+    }
     const decision=chooseNpoDecision(n,{action:pendingAction.name});
     if(npoSpecialAction(n,pendingAction.name)){resolveNpoSpecialAction(n,decision,state.lastActivation.answers||{},state.lastActivation.questionHistory||[]);return;}
     if(npoActionChangesContext(pendingAction.id)){
@@ -5469,6 +5539,7 @@ function showPlayerActivation(stage={}){
     const eliminationAction=newlyEliminated(attackSummary)?` Eliminated ${escapeHtml(attackSummary.targetName)}.`:'';
     modalBody.innerHTML=`<div class="modal-inner ai-result">
       <div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div>
+      ${attackRequired&&questionHistory.length?`<div class="npo-question-flow">${renderCompletedNpoQuestions(questionHistory.filter(item=>item.type!=='selected'))}</div>`:''}
       <div class="npo-result-card">${npoIcon('command')}<div><small>NEXT ACTION</small><strong>${escapeHtml(decision.action)}</strong><p>${escapeHtml(decision.reason)}</p><div class="npo-target-priority"><small>TARGET PRIORITY</small>${targetPriority}${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Select Target</label>${targetField}</div>`:''}</div></div></div>
       ${attackRequired&&!targetConfirmed?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
       ${attackRequired&&targetConfirmed&&!attackResolved?`<button class="btn secondary big-action" id="rollPlayerSaves">Resolve Combat</button>`:''}
@@ -5482,8 +5553,11 @@ function showPlayerActivation(stage={}){
         </div>
       </section><div class="summary-box"><strong>Actions:</strong> ${attackSummary.attackType==='shoot'?'Shooting':'Melee'} attack resolved.${eliminationAction}</div>`:''}
       ${!attackRequired?`<div class="wizard-actions"><button class="btn primary" id="completeNpo">Confirm ${escapeHtml(decision.action)} Complete</button></div>`:''}
+      ${attackRequired&&!targetConfirmed?renderNpoGuideFooter():''}
     </div>`;
     if(!modal.open)modal.showModal();
+    $('[data-close]',modal)?.addEventListener('click',closeModal);
+    $('#aiBack')?.addEventListener('click',()=>backFromNpoAttackSelection(n));
     const openSaveWizard=(resolvedDice,animate=false)=>showNpoAttackWizard(n,resolvedDice,(summary,attackSummaries=[summary])=>{
       const pending=state.lastActivation?.pendingAction;
       if(pending)commitNpoAction({actionId:pending.id,actionName:pending.name,apCost:pending.apCost,

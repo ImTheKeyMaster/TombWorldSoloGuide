@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.7
+# Tomb World Solo Guide v8.6.8
+
+## v8.6.8
+
+**Version 8.6.8 - Check Attacks Before NPO Movement**
+
+- Added current-position Shoot and Fight checks before movement intended to enable those attacks.
+- NPOs now attack immediately when a valid target is already available.
+- Prevented unnecessary Reposition, Dash, and Charge AP spending.
+- Preserved NPO priorities, movement distances, attack follow-ups, multi-target combat, and save compatibility.
 
 ## v8.6.7
 
