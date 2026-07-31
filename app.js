@@ -4727,7 +4727,7 @@ function showPlayerActivation(stage={}){
       const distance=formatMovementDistance(npoRepositionDistance(n));
       if(focus==='shoot'&&shootCanFollow&&!declined.has('reposition-enable-shoot'))return {id:'reposition-enable-shoot',purpose:'enable-shoot',followUpActionId:'shoot',guaranteesFollowUp:true,question:distance?`Can this NPO Reposition up to ${distance} and finish where it can Shoot?`:'Can this NPO Reposition to a position where it can Shoot?',help:'Select Yes only if it can finish the Reposition with a Player operative it can Shoot.'};
       if(focus==='shoot')return {id:'reposition-general-position',purpose:'general-position',followUpActionId:null,guaranteesFollowUp:false,question:distance?`Can this NPO Reposition up to ${distance} to improve its position for the next activation or the mission?`:'Can this NPO Reposition to improve its position for the next activation or the mission?',help:'Select Yes if it can move closer to a future shooting position, gain useful cover, or help complete or defend the mission.'};
-      if(focus==='fight'&&fightCanFollow)return {id:'reposition-enable-fight',purpose:'enable-fight',followUpActionId:'fight',guaranteesFollowUp:false,question:distance?`Can this NPO Reposition up to ${distance} closer to a Player operative it can Fight?`:'Can this NPO Reposition closer to a Player operative it can Fight?',help:'Select Yes if it can move closer to a valid Fight target, using cover when possible.'};
+      if(focus==='fight'&&fightCanFollow)return {id:'reposition-enable-fight',purpose:'enable-fight',followUpActionId:'fight',guaranteesFollowUp:false,question:distance?`Can this NPO Reposition up to ${distance} closer to its target?`:'Can this NPO Reposition closer to its target?',help:'Select Yes if it can move closer to the nearest Player operative, using cover when possible.'};
       if(focus==='fight')return {question:distance?`Can this NPO Reposition up to ${distance} closer to its target?`:'Can this NPO Reposition closer to its target?',help:'Select Yes if it can move closer to the nearest Player operative, using cover when possible.'};
       if(focus==='support')return {question:distance?`Can this NPO Reposition up to ${distance} to use a support action or help the mission?`:'Can this NPO Reposition to use a support action or help the mission?',help:'Select Yes if moving would help it use a higher-priority action or improve its mission position.'};
       return {question:distance?`Can this NPO Reposition up to ${distance} to help complete or defend the mission?`:'Can this NPO Reposition to help complete or defend the mission?',help:'Select Yes only if it can reach a clearly better mission position.'};
@@ -4735,7 +4735,7 @@ function showPlayerActivation(stage={}){
     if(remainingAp===1)return {id:'dash-final-position',purpose:'final-position',followUpActionId:null,guaranteesFollowUp:false,endsActivation:true,question:'Can this NPO use its last AP to Dash to a better position?',help:'Select Yes if the Dash improves cover, mission position, or its setup for the next Turning Point. The activation will end after the Dash.'};
     if(focus==='shoot'&&shootCanFollow&&!declined.has('dash-enable-shoot'))return {id:'dash-enable-shoot',purpose:'enable-shoot',followUpActionId:'shoot',guaranteesFollowUp:true,question:'Can a 3-inch Dash move this NPO to a position where it can Shoot?',help:'Select Yes only if it can finish the Dash with a Player operative it can Shoot.'};
     if(focus==='shoot')return {id:'dash-general-position',purpose:'general-position',followUpActionId:null,guaranteesFollowUp:false,question:'Can a 3-inch Dash improve this NPO’s position?',help:'Select Yes if it improves cover, moves it toward the mission, or sets up a better position for a later activation.'};
-    if(focus==='fight'&&fightCanFollow)return {id:'dash-enable-fight',purpose:'enable-fight',followUpActionId:'fight',guaranteesFollowUp:false,question:'Can a 3-inch Dash move this NPO closer to a Player operative it can Fight?',help:'Select Yes if the Dash moves it closer to a valid Fight target, using cover when possible.'};
+    if(focus==='fight'&&fightCanFollow)return {id:'dash-enable-fight',purpose:'enable-fight',followUpActionId:'fight',guaranteesFollowUp:false,question:'Can a 3-inch Dash move this NPO closer to its target?',help:'Select Yes if the Dash moves it closer to the nearest Player operative, using cover when possible.'};
     if(focus==='fight')return {question:'Can a 3-inch Dash move this NPO closer to its target?',help:'Select Yes if the Dash moves it closer to the nearest Player operative, using cover when possible.'};
     if(focus==='support')return {question:'Can a 3-inch Dash help this NPO use a support action?',help:'Select Yes if the Dash helps it reach an ally, enemy, or mission position needed for a higher-priority action.'};
     return {question:'Can a 3-inch Dash put this NPO in a better position?',help:'Select Yes if the Dash moves it toward a clear shot or a better mission position.'};
@@ -4822,11 +4822,14 @@ function showPlayerActivation(stage={}){
     if(directAvailability===true)return directNpoAttackQuestion(n,action,directAvailability);
     const fightAction=legalActions.find(name=>npoActionId(name)==='fight');
     const chargeIntent=id==='charge'&&fightAction?{id:'charge-enable-fight',purpose:'enable-fight',followUpActionId:'fight',guaranteesFollowUp:activation.remainingAp>=2}:null;
-    const movementInquiry=['reposition','dash'].includes(id)?npoMovementInquiry(n,action,id):chargeIntent;
+    let movementInquiry=['reposition','dash'].includes(id)?npoMovementInquiry(n,action,id):chargeIntent;
+    const intendedAttack=movementInquiry?.followUpActionId&&legalActions.find(name=>npoActionId(name)===movementInquiry.followUpActionId);
+    if(movementInquiry?.followUpActionId&&!intendedAttack){
+      movementInquiry={...movementInquiry,id:`${id}-general-position`,purpose:'general-position',followUpActionId:null,guaranteesFollowUp:false};
+    }
     const availability=attackAvailabilityForMovementIntent(activation,movementInquiry);
     if(availability===null||availability===true){
-      const attackAction=legalActions.find(name=>npoActionId(name)===movementInquiry.followUpActionId);
-      if(attackAction)return directNpoAttackQuestion(n,attackAction,availability);
+      if(intendedAttack)return directNpoAttackQuestion(n,intendedAttack,availability);
     }
     const applicability=id==='fall-back'&&activation.currentContext?.inEnemyControlRange===null;
     const title=applicability?inquiry.applicabilityQuestion:(movementInquiry?.question||inquiry?.feasibilityQuestion||`Can this NPO use ${action} now?`);
@@ -5490,9 +5493,7 @@ function showPlayerActivation(stage={}){
 
   function resolveNpoAction(n,pendingAction){
     if(!pendingAction||state.lastActivation?.pendingAction?.id!==pendingAction.id)return;
-    if(npoActionChangesContext(pendingAction.id)&&attackAvailabilityForMovementIntent(state.lastActivation,state.lastActivation.movementIntent)===null){
-      console.warn(`Blocked ${pendingAction.id} before checking current ${state.lastActivation.movementIntent.followUpActionId} availability.`);
-      state.lastActivation.pendingAction=null;state.lastActivation.pendingFollowUpAction=null;state.lastActivation.movementIntent=null;
+    if(normalizeUnknownAttackMovement(state.lastActivation)){
       save();runNpoPrompt(n,0,{},state.lastActivation.questionHistory||[]);return;
     }
     const decision=chooseNpoDecision(n,{action:pendingAction.name});

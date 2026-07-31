@@ -1,3 +1,5 @@
+import json
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -166,6 +168,24 @@ class V868AttackBeforeMovementTests(unittest.TestCase):
         self.assertIn('Version 8.6.8 - Check Attacks Before NPO Movement', README)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
             self.assertIn(f'{asset}?v=8.6.8', INDEX)
+
+    def test_39_movement_availability_keeps_null_false_and_true_distinct(self):
+        helper = section('function attackAvailabilityForMovementIntent', 'function directNpoAttackQuestion')
+        script = f"""
+{helper}
+const values=[null,false,true];
+process.stdout.write(JSON.stringify(values.map(value=>attackAvailabilityForMovementIntent(
+  {{currentContext:{{hasValidShootTarget:value,hasValidFightTarget:value}}}},
+  {{followUpActionId:'shoot'}}
+))));
+"""
+        result = subprocess.run(['node', '-e', script], check=True, capture_output=True, text=True)
+        self.assertEqual(json.loads(result.stdout), [None, False, True])
+
+    def test_40_illegal_follow_up_is_not_treated_as_attack_enabling_movement(self):
+        question = section('function npoActionQuestion', 'const npoQuestionIcons')
+        self.assertIn("if(movementInquiry?.followUpActionId&&!intendedAttack)", question)
+        self.assertIn("purpose:'general-position',followUpActionId:null,guaranteesFollowUp:false", question)
 
 
 if __name__ == '__main__':
