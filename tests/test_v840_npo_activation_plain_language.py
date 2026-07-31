@@ -16,14 +16,14 @@ def section(start, end):
 
 class V840NpoActivationPlainLanguageTests(unittest.TestCase):
     def test_version_and_save_compatibility(self):
-        self.assertIn("const APP_VERSION = '8.6.5';", APP)
-        self.assertIn("const APP_VERSION = '8.6.5';", WORKER)
-        self.assertIn('V8.6.5', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.5'))
-        self.assertIn('## v8.6.5', README)
+        self.assertIn("const APP_VERSION = '8.6.6';", APP)
+        self.assertIn("const APP_VERSION = '8.6.6';", WORKER)
+        self.assertIn('V8.6.6', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.6'))
+        self.assertIn('## v8.6.6', README)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.5', INDEX)
+            self.assertIn(f'{asset}?v=8.6.6', INDEX)
 
     def test_profile_and_progress_plain_language(self):
         prompt = section('function renderNpoActivationHeader', 'function renderNpoGuideFooter')
@@ -74,10 +74,10 @@ class V840NpoActivationPlainLanguageTests(unittest.TestCase):
     def test_reposition_and_dash_are_behavior_specific(self):
         movement = section('function npoMovementInquiry', 'function npoMovementInstruction')
         for wording in (
-            'Can this NPO Reposition to a position where it can Shoot?',
-            'Can this NPO Reposition closer to its target?',
-            'Can this NPO Reposition to use a support action or help the mission?',
-            'Can this NPO Reposition to help complete or defend the mission?',
+            'Can this NPO Reposition up to ${distance} and finish where it can Shoot?',
+            'Can this NPO Reposition up to ${distance} closer to its target?',
+            'Can this NPO Reposition up to ${distance} to use a support action or help the mission?',
+            'Can this NPO Reposition up to ${distance} to help complete or defend the mission?',
             'Can a 3-inch Dash put this NPO in a better position?',
             'Can a 3-inch Dash move this NPO closer to its target?',
             'Can a 3-inch Dash help this NPO use a support action?',
