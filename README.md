@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.9
+# Tomb World Solo Guide v8.6.10
+
+## v8.6.10
+
+**Version 8.6.10 - Remove Redundant Target Confirmation Screen**
+
+- Target confirmation now proceeds directly into combat.
+- Removed the unnecessary read-only target confirmation step.
+- Simplified the single-target attack flow.
+- Preserved AP, target selection, multi-target attacks, and save recovery.
 
 ## v8.6.9
 

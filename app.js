@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.9';
+  const APP_VERSION = '8.6.10';
   const WEAPON_RULE_HANDLERS = Object.freeze({
     severe:{mode:'automatic',phase:'after-attack-roll'},
     'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
@@ -5560,8 +5560,20 @@ function showPlayerActivation(stage={}){
     if(history)history.target=playerName(selectedTargetId);
     log(`${npoName(n)} confirmed ${playerName(selectedTargetId)} as the attack target.`);
     save();
-    renderNpoDecisionResult(n,decision,[],state.lastActivation.answers||{},false,false,true,true,state.lastActivation.questionHistory||[]);
+    openNpoCombat(n,decision,[],state.lastActivation.answers||{});
     return true;
+  }
+
+  function openNpoCombat(n,decision,resolvedDice=[],answers=state.lastActivation?.answers||{},animate=false){
+    showNpoAttackWizard(n,resolvedDice,(summary,attackSummaries=[summary])=>{
+      const pending=state.lastActivation?.pendingAction;
+      if(pending)commitNpoAction({actionId:pending.id,actionName:pending.name,apCost:pending.apCost,
+        result:attackSummaries.map(item=>`${item.targetName} ${item.skipped?'skipped':`${item.damage} damage`}`).join(', '),
+        attackSummary:summary,attackSummaries,transitionMode:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});
+    },()=>{
+      save();
+      renderNpoDecisionResult(n,decision,resolvedDice,answers,false,false,true,false);
+    },animate);
   }
 
   function renderNpoDecisionResult(n,decision,dice,answers,attackResolved,animateDice=true,attackRequired=(decision.action.includes('Fight')||decision.action.includes('Shoot')),targetConfirmed=dice.length>0,questionHistory=state.lastActivation?.questionHistory||[]){
@@ -5575,6 +5587,10 @@ function showPlayerActivation(stage={}){
     }
     if(!targetConfirmed&&eligibleTargetIds.length===1)state.npoAttackTargetId=eligibleTargetIds[0];
     state.lastActivation={...state.lastActivation,name:npoName(n),...decision,dice,answers,questionHistory,attackResolved,attackRequired,targetConfirmed};save();
+    if(attackRequired&&targetConfirmed&&!attackResolved){
+      openNpoCombat(n,decision,dice,answers);
+      return;
+    }
     const targetOptions=eligibleTargetIds.map(id=>`<option value="${escapeHtml(id)}" ${state.npoAttackTargetId===id?'selected':''}>${escapeHtml(playerTargetLabel(id))}</option>`).join('');
     const targetName=state.npoAttackTargetId?playerTargetLabel(state.npoAttackTargetId):'';
     const targetField=targetConfirmed||eligibleTargetIds.length===1
@@ -5591,8 +5607,8 @@ function showPlayerActivation(stage={}){
       <div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div>
       ${attackRequired&&questionHistory.length?`<div class="npo-question-flow">${renderCompletedNpoQuestions(questionHistory.filter(item=>item.type!=='selected'))}</div>`:''}
       <div class="npo-result-card">${npoIcon('command')}<div><small>NEXT ACTION</small><strong>${escapeHtml(decision.action)}</strong><p>${escapeHtml(decision.reason)}</p><div class="npo-target-priority"><small>TARGET PRIORITY</small>${targetPriority}${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Select Target</label>${targetField}</div>`:''}</div></div></div>
-      ${attackRequired&&!targetConfirmed?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
-      ${attackRequired&&targetConfirmed&&!attackResolved?`<button class="btn secondary big-action" id="rollPlayerSaves">Resolve Combat</button>`:''}
+      ${attackRequired&&!targetConfirmed&&eligibleTargetIds.length>1?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
+      ${attackRequired&&!targetConfirmed&&eligibleTargetIds.length===1?`<button class="btn secondary big-action" id="resolveNpoTarget">Resolve Combat</button>`:''}
       ${attackSummary?`${renderEliminationSummary(attackSummary)}<section class="card npo-attack-summary">
         <p class="eyebrow">NPO ATTACK SUMMARY</p>
         ${renderAttackSummary(attackSummary)}
@@ -5608,17 +5624,14 @@ function showPlayerActivation(stage={}){
     if(!modal.open)modal.showModal();
     $('[data-close]',modal)?.addEventListener('click',closeModal);
     $('#aiBack')?.addEventListener('click',()=>backFromNpoAttackSelection(n));
-    const openSaveWizard=(resolvedDice,animate=false)=>showNpoAttackWizard(n,resolvedDice,(summary,attackSummaries=[summary])=>{
-      const pending=state.lastActivation?.pendingAction;
-      if(pending)commitNpoAction({actionId:pending.id,actionName:pending.name,apCost:pending.apCost,
-        result:attackSummaries.map(item=>`${item.targetName} ${item.skipped?'skipped':`${item.damage} damage`}`).join(', '),
-        attackSummary:summary,attackSummaries,transitionMode:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});
-    },()=>{
-      save();
-      renderNpoDecisionResult(n,decision,resolvedDice,answers,false,false,true,true);
-    },animate);
     $('#npoPriorityTarget')?.addEventListener('change',event=>{state.npoAttackTargetId=event.currentTarget.value||null;save();updateNpoTargetConfirmationAvailability();});
-    $('#rollPlayerSaves')?.addEventListener('click',()=>openSaveWizard(dice));
+    const resolveTargetButton=$('#resolveNpoTarget');
+    if(resolveTargetButton)resolveTargetButton.onclick=()=>{
+      if(resolveTargetButton.disabled)return;
+      resolveTargetButton.disabled=true;
+      const confirmed=confirmNpoAttackTarget(n,decision);
+      if(!confirmed&&resolveTargetButton.isConnected)resolveTargetButton.disabled=false;
+    };
     const confirmTargetButton=$('#confirmNpoTarget');
     if(confirmTargetButton)confirmTargetButton.onclick=()=>{
       if(confirmTargetButton.disabled)return;

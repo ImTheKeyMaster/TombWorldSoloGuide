@@ -142,13 +142,13 @@ assert.deepEqual(p.migrateSave(saved).strategyData,saved.strategyData);
         self.assertNotIn("type==='scout'", core_rule)
 
     def test_release_and_out_of_scope_constraints(self):
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.9'))
-        self.assertIn('## v8.6.9', README)
-        self.assertIn("const APP_VERSION = '8.6.9';", APP)
-        self.assertIn("const APP_VERSION = '8.6.9';", WORKER)
-        self.assertIn('V8.6.9', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.10'))
+        self.assertIn('## v8.6.10', README)
+        self.assertIn("const APP_VERSION = '8.6.10';", APP)
+        self.assertIn("const APP_VERSION = '8.6.10';", WORKER)
+        self.assertIn('V8.6.10', INDEX)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.9', INDEX)
+            self.assertIn(f'{asset}?v=8.6.10', INDEX)
         self.assertNotIn('portrait', APP.split('const eventDefinitions', 1)[1].split('const eventDeck', 1)[0].lower())
         self.assertNotIn('obelisk', APP.split('function strategyEventCount', 1)[1].split('function threatLabel', 1)[0].lower())
 
