@@ -103,13 +103,13 @@ class BattleCompleteCleanupTests(unittest.TestCase):
         self.assertIn("const MAX_TURNING_POINTS = 4;", APP)
 
     def test_11_application_displays_version_757(self):
-        self.assertIn("const APP_VERSION = '8.6.10';", APP)
-        self.assertIn("const APP_VERSION = '8.6.10';", WORKER)
-        self.assertIn("V8.6.10", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.10"))
-        self.assertIn("## v8.6.10", README)
+        self.assertIn("const APP_VERSION = '8.6.11';", APP)
+        self.assertIn("const APP_VERSION = '8.6.11';", WORKER)
+        self.assertIn("V8.6.11", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.11"))
+        self.assertIn("## v8.6.11", README)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.10", INDEX)
+            self.assertIn(f"{asset}?v=8.6.11", INDEX)
 
     def test_12_save_version_is_unchanged(self):
         persistence = (ROOT / "persistence.js").read_text()

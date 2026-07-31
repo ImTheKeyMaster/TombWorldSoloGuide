@@ -53,7 +53,8 @@ class GuidedCombatResumeTests(unittest.TestCase):
     def test_07_damage_waits_for_continue_and_is_committed_once(self):
         self.assertIn("Damage is applied exactly once when you Continue.", APP)
         self.assertIn("if(resolutionCommitted", APP)
-        self.assertIn("if(stage[`${attackType}CombatDraft`]===result)onResolved(result)", APP)
+        self.assertIn("if(resolutionCommitted||stage[`${attackType}CombatDraft`]!==result)return", APP)
+        self.assertIn("resolutionCommitted=true", APP)
 
     def test_08_visible_recovery_replaces_uncaught_missing_dom_failure(self):
         self.assertIn("function showCombatResumeRecovery", APP)
@@ -79,13 +80,13 @@ class GuidedCombatResumeTests(unittest.TestCase):
         self.assertIn("const moreThanEight=Boolean($('#darkOfTombDistance')?.checked)", APP)
 
     def test_11_version_851_is_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.10';", APP)
-        self.assertIn("const APP_VERSION = '8.6.10';", WORKER)
-        self.assertIn("V8.6.10", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.10"))
-        self.assertIn("## v8.6.10", README)
+        self.assertIn("const APP_VERSION = '8.6.11';", APP)
+        self.assertIn("const APP_VERSION = '8.6.11';", WORKER)
+        self.assertIn("V8.6.11", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.11"))
+        self.assertIn("## v8.6.11", README)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.10", INDEX)
+            self.assertIn(f"{asset}?v=8.6.11", INDEX)
 
 
 if __name__ == "__main__":
