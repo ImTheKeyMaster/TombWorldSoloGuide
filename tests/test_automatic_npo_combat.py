@@ -48,13 +48,13 @@ class AutomaticNpoCombatTests(unittest.TestCase):
 
     def test_combat_result_is_saved_and_restored(self):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
-        self.assertIn("state.lastActivation={...state.lastActivation,combatDraft:combat}", wizard)
+        self.assertIn("state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat}", wizard)
         self.assertIn("save();", wizard)
         self.assertIn("const savedCombat=saved&&saved.targetId===target.id&&saved.attackType===attackType", wizard)
         self.assertIn("if(sameCombat)displayCombat(saved,animateCombat)", wizard)
-        self.assertIn("displaySharedCombatResult(combat", wizard)
-        self.assertIn("const banishmentRequired=dimensionalBanishmentRequired(combat)", wizard)
-        self.assertIn("applyDimensionalBanishment(combat,num('dimensionalBanishmentRoll'))", wizard)
+        self.assertIn("displaySharedCombatResult(resolvedCombat", wizard)
+        self.assertIn("const banishmentAnimating=resolvedCombat.dimensionalBanishmentTriggered", wizard)
+        self.assertIn("resolveAutomaticDimensionalBanishment(combat)", wizard)
 
     def test_cancel_discards_a_new_automatic_result(self):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")

@@ -32,7 +32,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
 
     def test_weapon_rules_and_critical_successes_are_recorded(self):
         self.assertIn("rules:[...(profile?.rules||[])]", self.app)
-        recorded = self.source('recordedCombat', 'applyDimensionalBanishment')
+        recorded = self.source('recordedCombat', 'resolveDimensionalBanishment')
         self.assertIn('criticalSuccesses', recorded)
         self.assertIn('critRemaining:', recorded)
         self.assertIn('normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical', self.app)
@@ -55,14 +55,14 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertIn("'dimensional-banishment'", handlers)
         self.assertIn("'aggressive-defence'", handlers)
         reminder = self.source('combatAbilityReminder', 'showPendingPlayerAttackWizard')
-        self.assertIn('criticalSuccesses:combat.critRemaining', reminder)
+        self.assertIn('dimensionalBanishmentDice', reminder)
         self.assertIn('remaining wounds', reminder)
         self.assertIn('aggressiveDefenseDamage', reminder)
-        self.assertIn('applyDimensionalBanishment', self.app)
-        self.assertIn("total>combat.after?0:combat.after", self.app)
+        self.assertIn('resolveDimensionalBanishment', self.app)
+        self.assertIn('dimensionalBanishmentIncapacitated:incapacitated', self.app)
 
     def test_damage_and_incapacitation_use_one_recorded_outcome(self):
-        recorded = self.source('recordedCombat', 'combatOutcomeFields')
+        recorded = self.source('recordedCombat', 'resolveDimensionalBanishment')
         self.assertIn('after:Math.max(0,before-appliedDamage)', recorded)
         player_damage = self.source('applyPendingPlayerDamage', 'completePlayerActivation')
         self.assertIn('n.wounds=Math.max(0,pending.after)', player_damage)
@@ -87,7 +87,7 @@ class RemediationPr7CombatTests(unittest.TestCase):
         self.assertNotIn('postGame', self.app)
 
     def test_versions_are_synchronized(self):
-        expected = '8.6.1'
+        expected = '8.6.2'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"styles.css?v={expected}", (ROOT / 'index.html').read_text())
         self.assertIn(f"app.js?v={expected}", (ROOT / 'index.html').read_text())
