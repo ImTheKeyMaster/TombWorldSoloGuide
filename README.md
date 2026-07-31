@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v8.6.3
+# Tomb World Solo Guide v8.6.4
+
+## v8.6.4
+
+**Version 8.6.4 - Automate Transdimensional Relocation**
+
+- Corrected Transdimensional Relocation to randomly select two Player operatives and swap their positions.
+- Added automatic, persisted selection of two eligible operatives.
+- Added clear tabletop swap instructions and an action-specific confirmation.
+- Added safe redraw handling when fewer than two eligible operatives are available.
+- Preserved all operative wounds, orders, activation states, missions, and other event behavior.
 
 ## v8.6.3
 
