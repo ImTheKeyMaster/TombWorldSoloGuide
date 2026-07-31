@@ -4553,7 +4553,7 @@ function showPlayerActivation(stage={}){
     const target=targetSide==='player'?livePlayerOperative(targetId):activeNpos().find(n=>n.id===targetId);
     const locked=sequence?.orderedTargetIds?.length>1?lockedMultiTargetProfile(sequence,stage.playerOperativeId):null;
     if(sequence?.orderedTargetIds?.length>1&&!locked){
-      showMultiTargetProfileRecovery('player',()=>{state.combatState={side:'player',stage:{...stage,[`${attackType}CombatDraft`]:null}};save();showPlayerActivation(stage);});
+      showMultiTargetProfileRecovery('player',()=>{state.weaponRuleResolution=null;state.combatState={side:'player',stage:{...stage,[`${attackType}CombatDraft`]:null}};save();showPlayerActivation(stage);});
       return;
     }
     const weapons=playerAttackWeapons(stage.playerOperativeId,attackType);
@@ -4585,9 +4585,13 @@ function showPlayerActivation(stage={}){
     $('#cancelPendingAttack').onclick=()=>{
       stage[`${attackType}CombatDraft`]=null;
       if(sequence){
+        const listKey=attackType==='shoot'?'pendingShootResults':'pendingMeleeResults';
+        const legacyKey=attackType==='shoot'?'pendingShoot':'pendingMelee';
+        stage[listKey]=[];
+        stage[legacyKey]=null;
         state.weaponRuleResolution=null;
-        state.combatState=null;
-      }else state.combatState=null;
+      }
+      state.combatState=null;
       save();
       if(sequence)showPlayerActivation(stage);
       else showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel);
@@ -5769,7 +5773,7 @@ function showPlayerActivation(stage={}){
     const sequence=state.weaponRuleResolution;
     const locked=sequence?.orderedTargetIds?.length>1?lockedMultiTargetProfile(sequence,n):null;
     if(sequence?.orderedTargetIds?.length>1&&!locked){
-      showMultiTargetProfileRecovery('npo',()=>{state.lastActivation={...state.lastActivation,combatDraft:null};save();closeModal();render();});
+      showMultiTargetProfileRecovery('npo',()=>{state.weaponRuleResolution=null;state.npoAttackTargetId=null;state.lastActivation={...state.lastActivation,combatDraft:null};save();closeModal();render();});
       return;
     }
     const saved=state.lastActivation?.combatDraft;
@@ -5805,7 +5809,7 @@ function showPlayerActivation(stage={}){
       if(combatTimer)combatTimer();
       if(!sameCombat)state.lastActivation={...state.lastActivation,combatDraft:null};
       else if(sequence)state.lastActivation={...state.lastActivation,combatDraft:null};
-      if(sequence)state.weaponRuleResolution=null;
+      if(sequence){state.weaponRuleResolution=null;state.npoAttackTargetId=null;}
       save();
       if(onCancel)onCancel();
     };

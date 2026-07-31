@@ -29,7 +29,19 @@ class BlastCombatResolutionTests(unittest.TestCase):
     def test_cancel_clears_blast_sequence_and_dice_draft(self):
         wizard = self.source("function showNpoAttackWizard", "function renderRoster")
         self.assertIn("state.lastActivation={...state.lastActivation,combatDraft:null};", wizard)
-        self.assertIn("if(sequence)state.weaponRuleResolution=null;", wizard)
+        self.assertIn("if(sequence){state.weaponRuleResolution=null;state.npoAttackTargetId=null;}", wizard)
+
+    def test_player_cancel_discards_pending_blast_results(self):
+        combat = self.source("function showPlayerCombatResolution", "function previewPendingPlayerAttack")
+        self.assertIn("stage[listKey]=[];", combat)
+        self.assertIn("stage[legacyKey]=null;", combat)
+        self.assertIn("state.weaponRuleResolution=null;", combat)
+
+    def test_missing_locked_profile_returns_without_stale_sequence(self):
+        player = self.source("function showPlayerCombatResolution", "function previewPendingPlayerAttack")
+        npo = self.source("function showNpoAttackWizard", "function renderRoster")
+        self.assertIn("showMultiTargetProfileRecovery('player',()=>{state.weaponRuleResolution=null;", player)
+        self.assertIn("showMultiTargetProfileRecovery('npo',()=>{state.weaponRuleResolution=null;state.npoAttackTargetId=null;", npo)
 
     def test_single_target_path_remains_automatic(self):
         wizard = self.source("function showNpoAttackWizard", "function renderRoster")
