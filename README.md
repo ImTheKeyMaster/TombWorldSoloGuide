@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.8
+# Tomb World Solo Guide v8.6.9
+
+## v8.6.9
+
+**Version 8.6.9 - Fix NPO Target Confirmation**
+
+- Fixed Confirm Target after direct current-position Shoot and Fight checks.
+- Restored reliable target confirmation across all NPO attack entry paths.
+- Added visible recovery for invalid target or missing attack state.
+- Preserved AP, target priorities, Player wound labels, multi-target combat, and save compatibility.
 
 ## v8.6.8
 
