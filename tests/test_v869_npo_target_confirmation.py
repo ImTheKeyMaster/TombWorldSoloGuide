@@ -19,14 +19,14 @@ class V869NpoTargetConfirmationTests(unittest.TestCase):
         self.confirm = section("function confirmNpoAttackTarget", "function renderNpoDecisionResult")
         self.render = section("function renderNpoDecisionResult", "async function completeNpoActivation")
 
-    def test_01_version_869_is_displayed(self):
-        self.assertIn("const APP_VERSION = '8.6.9';", APP)
-        self.assertIn("const APP_VERSION = '8.6.9';", WORKER)
-        self.assertIn("V8.6.9", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.9"))
+    def test_01_version_8610_is_displayed(self):
+        self.assertIn("const APP_VERSION = '8.6.10';", APP)
+        self.assertIn("const APP_VERSION = '8.6.10';", WORKER)
+        self.assertIn("V8.6.10", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.10"))
 
     def test_02_direct_shoot_yes_opens_selection(self): self.assertIn("resolveNpo(n,{...nextAnswers,action},nextHistory)", APP)
-    def test_03_direct_shoot_confirmation_advances(self): self.assertIn("renderNpoDecisionResult(n,decision,[],state.lastActivation.answers||{},false,false,true,true", self.confirm)
+    def test_03_direct_shoot_confirmation_advances(self): self.assertIn("openNpoCombat(n,decision,[],state.lastActivation.answers||{})", self.confirm)
     def test_04_direct_fight_yes_opens_selection(self): self.assertIn("if(q.actionId==='fight')state.lastActivation.currentContext.hasValidFightTarget=true", APP)
     def test_05_direct_fight_confirmation_advances(self): self.assertIn("['shoot','fight'].includes(pendingAction.id)", self.confirm)
     def test_06_handler_reads_selector_value(self): self.assertIn("targetControl.value", self.confirm)
