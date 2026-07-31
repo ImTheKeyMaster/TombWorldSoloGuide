@@ -58,7 +58,7 @@ class V810StreamlinedNpoActionFlowTests(unittest.TestCase):
     def test_attacks_auto_continue_after_acknowledged_combat(self):
         decision = section('function renderNpoDecisionResult', 'async function completeNpoActivation')
         callback = decision[decision.index('const openSaveWizard='):]
-        self.assertIn('attackSummary:summary,transitionMode:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE', callback)
+        self.assertIn('attackSummary:summary,attackSummaries,transitionMode:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE', callback)
 
     def test_special_actions_keep_acknowledgment_by_default(self):
         special = section('function finishNpoSpecialAction', 'function resolveNpo')
@@ -98,12 +98,12 @@ class V810StreamlinedNpoActionFlowTests(unittest.TestCase):
         self.assertIn('completedActionIds', guard)
 
     def test_current_version_830_everywhere(self):
-        self.assertIn("const APP_VERSION = '8.6.6';", APP)
-        self.assertIn("const APP_VERSION = '8.6.6';", WORKER)
-        self.assertIn('V8.6.6', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.6'))
+        self.assertIn("const APP_VERSION = '8.6.7';", APP)
+        self.assertIn("const APP_VERSION = '8.6.7';", WORKER)
+        self.assertIn('V8.6.7', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.7'))
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.6', INDEX)
+            self.assertIn(f'{asset}?v=8.6.7', INDEX)
 
 
 if __name__ == '__main__':

@@ -62,7 +62,7 @@ class NpoAttackProfileCardTests(unittest.TestCase):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
         selection = wizard.split("$('#npoCombatProfile')?.addEventListener('change',event=>{", 1)[1].split("    });\n    if(sameCombat)", 1)[0]
         self.assertIn("selectedProfileIndex=profileIndex", selection)
-        self.assertIn("combatDraft:{selecting:true,attackType,targetId:target.id,targetName:playerName(target.id),profile}", selection)
+        self.assertIn("combatDraft:{selecting:true,attackType,targetId:target.id,targetName:targetName,profile}", selection)
         self.assertEqual(selection.count("save();"), 1)
         self.assertIn("weapon.textContent=profile.name", selection)
         self.assertIn("screen.continueButton.disabled=false", selection)
