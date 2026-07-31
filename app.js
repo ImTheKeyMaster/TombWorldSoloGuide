@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.11';
+  const APP_VERSION = '8.6.6';
   const WEAPON_RULE_HANDLERS = Object.freeze({
     severe:{mode:'automatic',phase:'after-attack-roll'},
     'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
@@ -4553,7 +4553,7 @@ function showPlayerActivation(stage={}){
     const target=targetSide==='player'?livePlayerOperative(targetId):activeNpos().find(n=>n.id===targetId);
     const locked=sequence?.orderedTargetIds?.length>1?lockedMultiTargetProfile(sequence,stage.playerOperativeId):null;
     if(sequence?.orderedTargetIds?.length>1&&!locked){
-      showMultiTargetProfileRecovery('player',()=>{state.combatState={side:'player',stage:{...stage,[`${attackType}CombatDraft`]:null}};save();showPlayerActivation(stage);});
+      showMultiTargetProfileRecovery('player',()=>{state.weaponRuleResolution=null;state.combatState={side:'player',stage:{...stage,[`${attackType}CombatDraft`]:null}};save();showPlayerActivation(stage);});
       return;
     }
     const weapons=playerAttackWeapons(stage.playerOperativeId,attackType);
@@ -4584,9 +4584,16 @@ function showPlayerActivation(stage={}){
 
     $('#cancelPendingAttack').onclick=()=>{
       stage[`${attackType}CombatDraft`]=null;
-      state.combatState=sequence?.completedTargetIds?.length?{side:'player',stage:{...stage}}:null;
+      if(sequence){
+        const listKey=attackType==='shoot'?'pendingShootResults':'pendingMeleeResults';
+        const legacyKey=attackType==='shoot'?'pendingShoot':'pendingMelee';
+        stage[listKey]=[];
+        stage[legacyKey]=null;
+        state.weaponRuleResolution=null;
+      }
+      state.combatState=null;
       save();
-      if(sequence?.completedTargetIds?.length)showPlayerActivation(stage);
+      if(sequence)showPlayerActivation(stage);
       else showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel);
     };
 
@@ -5766,7 +5773,7 @@ function showPlayerActivation(stage={}){
     const sequence=state.weaponRuleResolution;
     const locked=sequence?.orderedTargetIds?.length>1?lockedMultiTargetProfile(sequence,n):null;
     if(sequence?.orderedTargetIds?.length>1&&!locked){
-      showMultiTargetProfileRecovery('npo',()=>{state.lastActivation={...state.lastActivation,combatDraft:null};save();closeModal();render();});
+      showMultiTargetProfileRecovery('npo',()=>{state.weaponRuleResolution=null;state.npoAttackTargetId=null;state.lastActivation={...state.lastActivation,combatDraft:null};save();closeModal();render();});
       return;
     }
     const saved=state.lastActivation?.combatDraft;
@@ -5801,9 +5808,10 @@ function showPlayerActivation(stage={}){
     const cancel=()=>{
       if(combatTimer)combatTimer();
       if(!sameCombat)state.lastActivation={...state.lastActivation,combatDraft:null};
+      else if(sequence)state.lastActivation={...state.lastActivation,combatDraft:null};
+      if(sequence){state.weaponRuleResolution=null;state.npoAttackTargetId=null;}
       save();
-      if(sequence?.completedTargetIds?.length){closeModal();render();}
-      else if(onCancel)onCancel();
+      if(onCancel)onCancel();
     };
     $('#cancelNpoAttack').onclick=cancel;
 
@@ -5976,6 +5984,7 @@ function showPlayerActivation(stage={}){
       screen.continueButton.onclick=()=>startAutomaticCombat();
     }
     else if(availableProfiles.length===1&&!resumeGuided)startAutomaticCombat();
+    else if(locked&&!resumeGuided)startAutomaticCombat();
     else if(selectingCombat){
       if(!resumeGuided){
         screen.continueButton.disabled=false;
