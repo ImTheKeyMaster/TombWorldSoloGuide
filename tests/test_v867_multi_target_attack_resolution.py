@@ -14,8 +14,8 @@ class MultiTargetAttackResolutionTests(unittest.TestCase):
             self.assertIn(needle, APP)
 
     def test_01_version(self):
-        self.assert_app("const APP_VERSION = '8.6.10';")
-        self.assertIn("V8.6.10", INDEX); self.assertIn("const APP_VERSION = '8.6.10';", WORKER)
+        self.assert_app("const APP_VERSION = '8.6.11';")
+        self.assertIn("V8.6.11", INDEX); self.assertIn("const APP_VERSION = '8.6.11';", WORKER)
     def test_02_primary_first(self): self.assert_app("[primaryTargetId,...secondaryTargetIds]")
     def test_03_duplicate_ids_removed(self): self.assert_app("const orderedTargetIds=[...new Set")
     def test_04_primary_advances(self): self.assert_app("findIndex(id=>!completedTargetIds.includes(id))")
@@ -47,7 +47,7 @@ class MultiTargetAttackResolutionTests(unittest.TestCase):
     def test_30_npo_history_all_summaries(self): self.assert_app("action.attackSummaries", "attackSummaries")
     def test_31_player_history_all_summaries(self): self.assert_app("attackSummary:attackSummaries.at(-1)||null")
     def test_32_final_summary(self): self.assert_app("function showMultiTargetAttackSummary", "ATTACK COMPLETE")
-    def test_33_refresh_resumes_secondary(self): self.assert_app("normalizeMultiTargetAttackSequence(raw.weaponRuleResolution)")
+    def test_33_refresh_resumes_secondary(self): self.assert_app("normalizeMultiTargetAttackSequence(raw.weaponRuleResolution,")
     def test_34_refresh_keeps_dice(self): self.assert_app("if(rollingCombat)startAutomaticCombat(saved)")
     def test_35_update_preserves_results(self): self.assert_app("sequenceResults:Array.isArray(resolution.sequenceResults)")
     def test_36_double_continue_no_skip(self): self.assert_app("if(resolutionCommitted", "complete.disabled=true")

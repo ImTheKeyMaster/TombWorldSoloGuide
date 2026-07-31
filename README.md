@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.10
+# Tomb World Solo Guide v8.6.11
+
+## v8.6.11
+
+**Version 8.6.11 - Preserve Weapon Across Multi-Target Attacks**
+
+- Locked the selected weapon and profile for the complete multi-target attack.
+- Removed repeated weapon selection between targets.
+- Preserved separate dice, damage, and weapon-rule resolution for every target.
+- Preserved single AP cost, sequence recovery, and save compatibility.
 
 ## v8.6.10
 

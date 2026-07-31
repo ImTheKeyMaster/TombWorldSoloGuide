@@ -66,11 +66,11 @@ class V710UiResponsivenessTests(unittest.TestCase):
         self.assertIn("npo-roster-card.dead", CSS)
 
     def test_release_version_is_synchronized(self):
-        self.assertIn("const APP_VERSION = '8.6.10';", APP)
-        self.assertIn("const APP_VERSION = '8.6.10';", WORKER)
-        self.assertIn("V8.6.10", INDEX)
+        self.assertIn("const APP_VERSION = '8.6.11';", APP)
+        self.assertIn("const APP_VERSION = '8.6.11';", WORKER)
+        self.assertIn("V8.6.11", INDEX)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.10", INDEX)
+            self.assertIn(f"{asset}?v=8.6.11", INDEX)
 
 
 if __name__ == "__main__":
