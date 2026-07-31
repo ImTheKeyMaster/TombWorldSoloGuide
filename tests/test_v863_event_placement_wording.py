@@ -14,15 +14,15 @@ def source(start, end):
 
 
 class EventPlacementWordingTests(unittest.TestCase):
-    def test_version_863_is_consistent_without_save_schema_change(self):
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.3"))
-        self.assertIn("## v8.6.3", README)
-        self.assertIn("Version 8.6.3 - Clarify Event Placement Instructions", README)
-        self.assertIn("const APP_VERSION = '8.6.3';", APP)
-        self.assertIn("const APP_VERSION = '8.6.3';", WORKER)
-        self.assertIn("V8.6.3", INDEX)
+    def test_current_version_is_consistent_without_save_schema_change(self):
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.4"))
+        self.assertIn("## v8.6.4", README)
+        self.assertIn("Version 8.6.4 - Automate Transdimensional Relocation", README)
+        self.assertIn("const APP_VERSION = '8.6.4';", APP)
+        self.assertIn("const APP_VERSION = '8.6.4';", WORKER)
+        self.assertIn("V8.6.4", INDEX)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.3", INDEX)
+            self.assertIn(f"{asset}?v=8.6.4", INDEX)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
 
     def test_awakened_warrior_instruction_is_specific(self):
@@ -50,12 +50,12 @@ class EventPlacementWordingTests(unittest.TestCase):
         self.assertIn("'awakened-warrior':'Confirm Necron Warrior Placement'", event_card)
         self.assertIn("aria-live=\"polite\"", event_card)
 
-    def test_transdimensional_relocation_names_event_card_restrictions(self):
+    def test_transdimensional_relocation_uses_corrected_random_swap_effect(self):
         definitions = source("const eventDefinitions = {", "const eventDeck = [")
         relocation = next(line for line in definitions.splitlines() if "'transdimensional-relocation':" in line)
-        self.assertIn("Relocate the Player operative closest to an NPO.", relocation)
-        self.assertIn("Follow the placement restrictions on the event card.", relocation)
-        self.assertNotIn("printed", relocation.lower())
+        self.assertIn("Randomly select two Player operatives and swap their positions.", relocation)
+        self.assertNotIn("closest to an NPO", relocation)
+        self.assertNotIn("placement restrictions", relocation)
 
     def test_event_selection_allocation_and_impossible_redraw_logic_remain(self):
         deck = source("const eventDeck = [", "];\n\n  const missionStateFactories")

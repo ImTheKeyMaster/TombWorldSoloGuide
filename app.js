@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.3';
+  const APP_VERSION = '8.6.4';
   const WEAPON_RULE_HANDLERS = Object.freeze({
     severe:{mode:'automatic',phase:'after-attack-roll'},
     'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
@@ -497,7 +497,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   // Card-instance IDs preserve the printed duplicate weighting.
   const eventDefinitions = {
     'subjugation-glyphs':{title:'Subjugation Glyphs',text:'Randomly test eligible Player operatives without replacement. If a D6 is higher than an operative’s effective APL, subtract 1 from its APL.',execution:{type:'subjugation-glyphs'},lifecycle:'immediate',duration:'persistent',handlerId:'subjugation-glyphs',gameplayHooks:['effectivePlayerApl'],automationType:'automatic',priority:10},
-    'transdimensional-relocation':{title:'Transdimensional Relocation',text:'Relocate the Player operative closest to an NPO. Follow the placement restrictions on the event card.',execution:{type:'tabletop-confirm'},duration:'immediate'},
+    'transdimensional-relocation':{title:'Transdimensional Relocation',text:'Randomly select two Player operatives and swap their positions.',execution:{type:'transdimensional-relocation'},duration:'immediate',redrawIfImpossible:true},
     'my-will-be-done':{title:'My Will Be Done',text:'Until the end of the turning point, while an NPO is in the same room as the sarcophagus, its weapons have Accurate 1.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'my-will-be-done',gameplayHooks:['effectiveWeapon'],automationType:'tabletop-answer',priority:20},
     'reanimation-protocols':{title:'Reanimation Protocols',text:'Until the end of the turning point, the first time each NPO would be incapacitated, roll one D6. On 4+, it reanimates with 1 wound.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'reanimation-protocols',gameplayHooks:['incapacitationCandidates'],automationType:'automatic',priority:10},
     'dark-of-the-tomb':{title:'Dark of the Tomb',text:'Until the end of the turning point, Player Shoot attack dice cannot be rerolled when the target is more than 8 inches away.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'dark-of-the-tomb',gameplayHooks:['attackRerolls'],automationType:'tabletop-answer',priority:10},
@@ -613,6 +613,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     console.error('[Startup] Saved activation restoration failed; the stored save was preserved.',error);
   }
   let lastRenderedStepKey = null;
+  let focusedRelocationInstanceId = null;
   let startingNpoTimer = null;
   let threatAdjustOpen = false;
   let expandedRosterCategories = null;
@@ -1134,6 +1135,37 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function roll(sides=6){ return Math.floor(Math.random()*sides)+1; }
   function rollD3(){ return roll(3); }
   function rollDice(count,sides){return Array.from({length:count},()=>roll(sides));}
+  function selectRandomDistinctPlayerOperatives(operativeIds,count=2){
+    const available=[...new Set(operativeIds)];
+    for(let index=available.length-1;index>0;index--){
+      const swapIndex=roll(index+1)-1;
+      [available[index],available[swapIndex]]=[available[swapIndex],available[index]];
+    }
+    return available.slice(0,count);
+  }
+  function eligibleTransdimensionalRelocationOperativeIds(){
+    return inPlayLivingPlayerOperativeIds();
+  }
+  function validTransdimensionalRelocationSelection(event,eligibleIds=eligibleTransdimensionalRelocationOperativeIds()){
+    const selected=event?.resolution?.playerOperativeIds;
+    return event?.resolution?.type==='transdimensional-relocation'
+      &&Array.isArray(selected)&&selected.length===2&&new Set(selected).size===2
+      &&selected.every(id=>eligibleIds.includes(id));
+  }
+  function prepareTransdimensionalRelocation(event){
+    if(!event||event.definitionId!=='transdimensional-relocation'||event.status==='resolved')return true;
+    const eligibleIds=eligibleTransdimensionalRelocationOperativeIds();
+    if(validTransdimensionalRelocationSelection(event,eligibleIds))return true;
+    event.resolution=null;
+    if(eligibleIds.length<2)return false;
+    event.resolution={
+      type:'transdimensional-relocation',
+      playerOperativeIds:selectRandomDistinctPlayerOperatives(eligibleIds,2),
+      confirmed:false
+    };
+    save();
+    return true;
+  }
   function npoProfileSchemaValid(definition){
     return Boolean(definition?.id&&definition?.type&&definition?.name
       &&['apl','move','save','wounds'].every(field=>Number.isFinite(definition[field]))
@@ -2392,6 +2424,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function strategyEventHtml(event,activeEffects=state.eventState.active||[]){
     const title=event.title||event[0],description=event.text||event.description||event[1];
     if(event.type!=='tomb-world-event')return `<div class="summary-box"><strong>${escapeHtml(title)}</strong><br>${escapeHtml(description)}</div>`;
+    const isRelocation=event.definitionId==='transdimensional-relocation';
+    if(isRelocation&&event.status==='drawn')prepareTransdimensionalRelocation(event);
     const eventHeader=`<div class="tomb-world-event-header"><span class="tomb-world-event-icon" aria-hidden="true"><svg
   class="tomb-world-event-anomaly-icon"
   viewBox="0 0 32 32"
@@ -2489,13 +2523,20 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const statusLabels={drawn:'PENDING',resolved:activeEffect?'RESOLVED • ACTIVE':'RESOLVED',redrawn:'REDRAWN'};
     const activeLabel=activeEffect?.expiresAfterTurningPoint!==undefined?'Resolved and active until the end of the Turning Point':'Resolved and active';
     const statusLabel=statusLabels[event.status]||escapeHtml(event.status).toUpperCase();
-    const eventDetails=`${eventHeader}<div class="tomb-world-event-heading"><h3 class="tomb-world-event-title">${escapeHtml(title)}</h3><span class="strategy-event-status" data-event-status="${escapeHtml(event.status)}"${activeEffect?` data-event-active="true" aria-label="${activeLabel}"`:''}>${statusLabel}</span></div><div class="tomb-world-event-effect"><div class="tomb-world-event-effect-label">Effect</div><p class="tomb-world-event-description">${escapeHtml(description)}</p></div>`;
+    const resolvedHeadingId=isRelocation&&event.status==='resolved'?' id="resolved-transdimensional-relocation-heading" tabindex="-1"':'';
+    const eventDetails=`${eventHeader}<div class="tomb-world-event-heading"><h3 class="tomb-world-event-title"${resolvedHeadingId}>${escapeHtml(title)}</h3><span class="strategy-event-status" data-event-status="${escapeHtml(event.status)}"${activeEffect?` data-event-active="true" aria-label="${activeLabel}"`:''}>${statusLabel}</span></div><div class="tomb-world-event-effect"><div class="tomb-world-event-effect-label">Effect</div><p class="tomb-world-event-description">${escapeHtml(description)}</p></div>`;
     if(event.status!=='drawn')return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite">${eventDetails}<div class="event-resolution">${escapeHtml(event.result||'Complete')}</div></div>`;
+    if(isRelocation){
+      const selected=event.resolution?.playerOperativeIds||[];
+      if(selected.length!==2)return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite">${eventDetails}<div class="event-resolution">Another event card is being drawn because fewer than two Player operatives are on the battlefield.</div></div>`;
+      const names=selected.map(playerName);
+      const accessibleNames=names.join(' and ');
+      return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite" aria-label="Transdimensional Relocation. Operatives to swap: ${escapeHtml(accessibleNames)}.">${eventDetails}<div class="event-resolution"><h4 id="transdimensional-relocation-selection-heading" tabindex="-1">OPERATIVES TO SWAP</h4><ol>${names.map(name=>`<li>${escapeHtml(name)}</li>`).join('')}</ol><p>Remove both operatives from the killzone. Set each operative up in the other operative’s previous position.</p><p>Keep their wounds, order, Ready or Expended state, and all other statuses unchanged.</p></div><div class="event-controls"><button class="btn primary" id="resolveStrategyEvent" aria-label="Confirm positions swapped for ${escapeHtml(accessibleNames)}">Confirm Positions Swapped</button></div></div>`;
+    }
     const labels={
       'awakened-warrior':'Confirm Necron Warrior Placement',
       'chittering-drone':'Confirm Scarab Placement',
-      'maze-reforms':'Confirm Terrain Changes',
-      'tabletop-confirm':'Confirm Tabletop Resolution'
+      'maze-reforms':'Confirm Terrain Changes'
     };
     const scarabChoices=event.execution.type==='chittering-drone'&&Array.isArray(event.eligibleNpoIds)&&event.eligibleNpoIds.length>1
       ? `<div class="field"><label for="eventNpoSelect">Wounded Scarab Swarm</label><select id="eventNpoSelect"><option value="">Select a Scarab Swarm...</option>${sortedNposForDisplay(event.eligibleNpoIds.map(id=>activeNpos().find(item=>item.id===id)).filter(Boolean)).map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(npoName(n))} — ${n.wounds} of ${n.maxWounds} wounds</option>`).join('')}</select></div>`:'';
@@ -2576,7 +2617,23 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#startTp')?.addEventListener('click',startTurningPoint);
     $$('[data-reinforcement-placement]').forEach(input=>input.addEventListener('change',()=>confirmReinforcementPlacement(input.dataset.reinforcementPlacement,input.checked)));
     $('#eventNpoSelect')?.addEventListener('change',e=>{$('#resolveStrategyEvent').disabled=!e.target.value;});
-    $('#resolveStrategyEvent')?.addEventListener('click',resolveStrategyEvent);
+    $('#resolveStrategyEvent')?.addEventListener('click',event=>{
+      const button=event.currentTarget;
+      if(button.disabled)return;
+      if(currentEvent()?.definitionId==='transdimensional-relocation')button.disabled=true;
+      resolveStrategyEvent(button);
+    });
+    const pendingRelocation=currentEvent();
+    const relocationVisible=strategyViewStep(state.strategyData)==='events'&&pendingRelocation?.definitionId==='transdimensional-relocation'&&pendingRelocation.status==='drawn';
+    if(relocationVisible){
+      if(validTransdimensionalRelocationSelection(pendingRelocation)){
+        if(focusedRelocationInstanceId!==pendingRelocation.instanceId){
+          focusedRelocationInstanceId=pendingRelocation.instanceId;
+          requestAnimationFrame(()=>$('#transdimensional-relocation-selection-heading')?.focus({preventScroll:true}));
+        }
+      }
+      else setTimeout(()=>redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.'),0);
+    }else focusedRelocationInstanceId=null;
     $('#redrawStrategyEvent')?.addEventListener('click',event=>{
       const button=event.currentTarget;
       if(button.disabled)return;
@@ -2778,6 +2835,15 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       return;
     }
     const type=event.execution.type;
+    if(type==='transdimensional-relocation'){
+      if(!prepareTransdimensionalRelocation(event)){
+        redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.');
+        return;
+      }
+      d.eventPending=true;
+      save();
+      return;
+    }
     if(type==='subjugation-glyphs'){
       const transaction=eventTransaction(`event:${event.instanceId}:${state.turningPoint}`,{definitionId:event.definitionId,selections:[],rolls:[]});
       if(!transaction.committed){
@@ -2986,11 +3052,21 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     render();
   }
 
-  function resolveStrategyEvent(){
+  function resolveStrategyEvent(button=null){
     const event=currentEvent();
     if(state.phase!=='strategy'||state.strategyStage!=='summary'||!event||!state.strategyData.eventPending)return;
     let result='Tabletop effect confirmed.';
-    if(event.execution.type==='chittering-drone'&&event.eligibleNpoIds?.length){
+    if(event.execution.type==='transdimensional-relocation'){
+      if(event.status!=='drawn'||event.resolution?.confirmed){if(button)button.disabled=false;return;}
+      if(!validTransdimensionalRelocationSelection(event)){
+        if(!prepareTransdimensionalRelocation(event))redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.');
+        else render();
+        return;
+      }
+      const names=event.resolution.playerOperativeIds.map(playerName);
+      event.resolution.confirmed=true;
+      result=`${names[0]} and ${names[1]} swapped positions.`;
+    }else if(event.execution.type==='chittering-drone'&&event.eligibleNpoIds?.length){
       const operativeId=$('#eventNpoSelect')?.value;
       const n=activeNpos().find(item=>item.id===operativeId&&event.eligibleNpoIds.includes(item.id)&&item.wounds<item.maxWounds);
       if(!n)return;
@@ -3008,6 +3084,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(event.execution.type==='maze-reforms')result='Breach and hatchway changes completed on the tabletop.';
     completeCurrentEvent(result);
     save();render();
+    if(event.definitionId==='transdimensional-relocation')requestAnimationFrame(()=>$('#resolved-transdimensional-relocation-heading')?.focus({preventScroll:true}));
   }
 
   function randomReinforcement(){
