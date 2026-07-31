@@ -1,3 +1,5 @@
+import json
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -14,6 +16,24 @@ def section(start, end):
     return APP[begin:APP.index(end, begin)]
 
 
+def run_distance_helpers(expressions):
+    helpers = section('const missingNpoRepositionMoveWarnings', 'function npoMovementInquiry')
+    script = f"""
+const definitions={{Known:{{move:6}},Invalid:{{move:0}}}};
+const npoDefinition=type=>definitions[type]||null;
+const console={{warn:()=>{{}}}};
+{helpers}
+process.stdout.write(JSON.stringify([{','.join(expressions)}]));
+"""
+    result = subprocess.run(
+        ['node', '-e', script],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return json.loads(result.stdout)
+
+
 class V866NpoRepositionDistanceTests(unittest.TestCase):
     def test_version_and_release_notes(self):
         self.assertIn("const APP_VERSION = '8.6.6';", APP)
@@ -26,14 +46,33 @@ class V866NpoRepositionDistanceTests(unittest.TestCase):
 
     def test_distance_uses_current_npo_move_then_definition(self):
         helper = section('function npoRepositionDistance', 'function formatMovementDistance')
-        self.assertIn('npo?.move??npoDefinition(npo?.type)?.move', helper)
-        self.assertIn('Number.isFinite(move)&&move>0', helper)
+        self.assertIn('Number(npo?.move)', helper)
+        self.assertIn('Number(npoDefinition(npo?.type)?.move)', helper)
+        self.assertIn('Number.isFinite(currentMove)&&currentMove>0', helper)
+        self.assertIn('Number.isFinite(definitionMove)&&definitionMove>0', helper)
         self.assertIn('return null', helper)
+        self.assertEqual(
+            run_distance_helpers([
+                "npoRepositionDistance({type:'Known',move:7})",
+                "npoRepositionDistance({type:'Known'})",
+                "npoRepositionDistance({type:'Known',move:0})",
+                "npoRepositionDistance({type:'Known',move:'invalid'})",
+            ]),
+            [7, 6, 6, 6],
+        )
 
     def test_distance_formatting_handles_plural_and_singular(self):
         helper = section('function formatMovementDistance', 'function npoMovementInquiry')
         self.assertIn("distance===1?'inch':'inches'", helper)
         self.assertIn("if(!Number.isFinite(distance))return ''", helper)
+        self.assertEqual(
+            run_distance_helpers([
+                'formatMovementDistance(1)',
+                'formatMovementDistance(5)',
+                'formatMovementDistance(NaN)',
+            ]),
+            ['1 inch', '5 inches', ''],
+        )
 
     def test_every_reposition_question_variant_uses_distance(self):
         movement = section('function npoMovementInquiry', 'function npoMovementInstruction')
@@ -61,6 +100,13 @@ class V866NpoRepositionDistanceTests(unittest.TestCase):
         self.assertIn("'Can this NPO Reposition to improve its position for the next activation or the mission?'", movement)
         for unsafe in ('up to undefined inches', 'up to NaN inches', 'up to 0 inches'):
             self.assertNotIn(unsafe, APP)
+        self.assertEqual(
+            run_distance_helpers([
+                "npoRepositionDistance({type:'Invalid',move:0})",
+                "npoRepositionDistance({type:'Missing',move:'invalid'})",
+            ]),
+            [None, None],
+        )
 
     def test_confirmation_reuses_dynamic_distance_and_movement_intent(self):
         instruction = section('function npoMovementInstruction', 'function npoActionCost')

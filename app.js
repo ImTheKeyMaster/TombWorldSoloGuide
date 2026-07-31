@@ -4591,8 +4591,9 @@ function showPlayerActivation(stage={}){
   }
   const missingNpoRepositionMoveWarnings=new Set();
   function npoRepositionDistance(npo){
-    const move=Number(npo?.move??npoDefinition(npo?.type)?.move);
-    if(Number.isFinite(move)&&move>0)return move;
+    const currentMove=Number(npo?.move),definitionMove=Number(npoDefinition(npo?.type)?.move);
+    if(Number.isFinite(currentMove)&&currentMove>0)return currentMove;
+    if(Number.isFinite(definitionMove)&&definitionMove>0)return definitionMove;
     const warningKey=npo?.type||npo?.id||'unknown';
     if(!missingNpoRepositionMoveWarnings.has(warningKey)){
       missingNpoRepositionMoveWarnings.add(warningKey);
