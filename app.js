@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.1';
+  const APP_VERSION = '8.6.2';
   const WEAPON_RULE_HANDLERS = Object.freeze({
     severe:{mode:'automatic',phase:'after-attack-roll'},
     'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
@@ -3397,6 +3397,7 @@ function showPlayerActivation(stage={}){
       ${elimination}
       ${combatAbilityReminder(combat)}
       ${(combat.eventMessages||combat.profile?.eventMessages||[]).map(message=>`<div class="summary-box"><strong>${escapeHtml(message)}</strong></div>`).join('')}
+      ${combat.dimensionalBanishmentTriggered?`<div class="summary-box"><strong>Normal attack damage:</strong> ${combat.before} → ${combat.dimensionalBanishmentRemainingWounds}<br><strong>Dimensional Banishment:</strong> ${combat.dimensionalBanishmentIncapacitated?'incapacitated':'survived'}</div>`:''}
       <div class="damage-summary">
         <div><small>${combat.recordedOutcome?'Retained normal successes':'Unsaved normal hits'}</small><strong>${combat.normalRemaining}</strong></div>
         <div><small>${combat.recordedOutcome?'Retained critical successes':'Unsaved critical hits'}</small><strong>${combat.critRemaining}</strong></div>
@@ -3474,6 +3475,10 @@ function showPlayerActivation(stage={}){
     dice.replaceChildren();
     results.innerHTML=`${renderCombatResolution(combat,{pending,animate,showParticipants:false})}${extraHtml}${message?`<p class="muted">${escapeHtml(message)}</p>`:''}`;
     let visualComplete=!animate&&!waiting;
+    const completeWaiting=()=>{
+      visualComplete=true;
+      if(button.isConnected)button.disabled=false;
+    };
     button.textContent='Continue';
     button.disabled=!visualComplete;
     button.onclick=()=>{if(visualComplete&&onContinue)onContinue();};
@@ -3481,6 +3486,20 @@ function showPlayerActivation(stage={}){
       visualComplete=!waiting;
       if(button.isConnected)button.disabled=waiting;
     },results);
+    return {completeWaiting};
+  }
+
+  function settleDimensionalBanishment(combat,onSettled=()=>{}){
+    const row=$('[data-dimensional-banishment-dice]');
+    const values=combat.dimensionalBanishmentDice||[];
+    if(!row||values.length!==2){onSettled();return ()=>{};}
+    return settleAnimatedDice([{row,dice:values.map((value,index)=>({value,ariaLabel:`Dimensional Banishment die ${index+1}: ${value}`}))}],()=>{
+      const rolling=$('[data-dimensional-banishment-rolling]');
+      const result=$('[data-dimensional-banishment-result]');
+      if(rolling)rolling.remove();
+      if(result)result.hidden=false;
+      onSettled();
+    });
   }
 
   function settleCombatDice(combat,onSettled=()=>{},root=document){
@@ -3597,7 +3616,15 @@ function showPlayerActivation(stage={}){
       pending.committed=true;
       if(n.wounds===0)n.ready=false;
       if(n.wounds===0){n.deployed=false;n.battlefieldState='out-of-action';}
-      log(`${playerName(stage.playerOperativeId)} ${pending.attackType==='shoot'?'shot':'made a Melee attack against'} ${npoName(n)} for ${pending.damage} damage (${before} → ${n.wounds} wounds).`);
+      const normalAfter=pending.dimensionalBanishmentRemainingWounds??n.wounds;
+      log(`${playerName(stage.playerOperativeId)} ${pending.attackType==='shoot'?'shot':'made a Melee attack against'} ${npoName(n)} for ${pending.damage} damage (${before} → ${normalAfter} wounds).`);
+      if(pending.dimensionalBanishmentTriggered&&!pending.dimensionalBanishmentJournaled){
+        const outcome=pending.dimensionalBanishmentIncapacitated
+          ? `${pending.dimensionalBanishmentRoll} exceeded ${normalAfter} remaining wounds, so ${npoName(n)} was incapacitated.`
+          : `${npoName(n)} survived with ${normalAfter} wounds.`;
+        log(`${playerName(stage.playerOperativeId)} rolled ${pending.dimensionalBanishmentRoll} for Dimensional Banishment against ${npoName(n)}. ${outcome}`);
+        pending.dimensionalBanishmentJournaled=true;
+      }
       if(checkGameEnd())return true;
     }
     return false;
@@ -3847,17 +3874,41 @@ function showPlayerActivation(stage={}){
       before,after:Math.max(0,before-appliedDamage),attackDice:[],saveDice:[],retainedSaves:0,recordedOutcome:true};
   }
 
-  function applyDimensionalBanishment(combat,rollTotal){
-    const triggered=combatAbilityHandlers['dimensional-banishment']({criticalSuccesses:combat.critRemaining,damage:combat.damage,targetIncapacitated:combat.after<=0});
-    const total=Math.max(0,Math.round(Number(rollTotal)||0));
-    return {...combat,dimensionalBanishmentRoll:total,dimensionalBanishmentTriggered:triggered,
-      after:triggered&&total>combat.after?0:combat.after};
+  function resolveDimensionalBanishment(combat,dice){
+    if(combat.dimensionalBanishmentResolved)return {...combat};
+    const legacyRemaining=Number.isInteger(combat.dimensionalBanishmentRoll)&&combat.dimensionalBanishmentRoll>0&&combat.dimensionalBanishmentTriggered
+      ? Math.max(0,Number(combat.before||0)-Number(combat.damage||0))
+      : combat.after;
+    const normalAfter=Math.max(0,Number(combat.dimensionalBanishmentRemainingWounds??legacyRemaining)||0);
+    const triggered=combat.profile?.weaponId==='transdimensional-isolator'
+      &&combatAbilityHandlers['dimensional-banishment']({criticalSuccesses:combat.critRemaining,damage:combat.damage,targetIncapacitated:normalAfter<=0});
+    if(!triggered)return {...combat,dimensionalBanishmentTriggered:false,dimensionalBanishmentResolved:true};
+
+    const values=Array.isArray(dice)&&dice.length>=2
+      ? dice.slice(0,2).map(value=>Math.max(1,Math.min(6,Math.round(Number(value)||1))))
+      : [];
+    const recordedTotal=!values.length&&Number.isInteger(combat.dimensionalBanishmentRoll)&&combat.dimensionalBanishmentRoll>0
+      ? combat.dimensionalBanishmentRoll
+      : null;
+    const total=recordedTotal??values.reduce((sum,value)=>sum+value,0);
+    const incapacitated=total>normalAfter;
+    return {...combat,
+      dimensionalBanishmentTriggered:true,dimensionalBanishmentResolved:true,
+      dimensionalBanishmentDice:values,dimensionalBanishmentRoll:total,
+      dimensionalBanishmentRemainingWounds:normalAfter,
+      dimensionalBanishmentIncapacitated:incapacitated,
+      dimensionalBanishmentAnimationShown:recordedTotal!==null,
+      after:incapacitated?0:normalAfter};
   }
 
-  function dimensionalBanishmentRequired(combat){
-    return combat.profile?.weaponId==='transdimensional-isolator'
-      &&!Number.isInteger(combat.dimensionalBanishmentRoll)
+  function resolveAutomaticDimensionalBanishment(combat){
+    if(combat.dimensionalBanishmentResolved)return {...combat};
+    if(Number.isInteger(combat.dimensionalBanishmentRoll)&&combat.dimensionalBanishmentRoll>0){
+      return resolveDimensionalBanishment(combat,[]);
+    }
+    const triggered=combat.profile?.weaponId==='transdimensional-isolator'
       &&combatAbilityHandlers['dimensional-banishment']({criticalSuccesses:combat.critRemaining,damage:combat.damage,targetIncapacitated:combat.after<=0});
+    return resolveDimensionalBanishment(combat,triggered?rollDice(2,6):[]);
   }
 
   function rolledCombatDice(count,threshold,critThreshold=6){
@@ -4115,12 +4166,6 @@ function showPlayerActivation(stage={}){
     };
   }
 
-  function dimensionalBanishmentField(profile){
-    return profile?.weaponId==='transdimensional-isolator'
-      ? spinnerField('dimensionalBanishmentRoll','Dimensional Banishment 2D6 result (0 if not triggered)',0,0,12)
-      : '';
-  }
-
   function aggressiveDefenseFields(npo){
     return npo?.type==='Canoptek Macrocyte Warrior'
       ? '<label class="check-row compact-check"><input type="checkbox" id="attackerWithinTwo"><span><strong>Attacker is within 2&quot; of this Macrocyte</strong><small>Required only if this attack incapacitates the Macrocyte.</small></span></label>'
@@ -4146,11 +4191,20 @@ function showPlayerActivation(stage={}){
 
   function combatAbilityReminder(combat){
     if(combat.dimensionalBanishmentTriggered){
-      const incapacitated=combat.after<=0;
-      return `<div class="summary-box"><strong>Dimensional Banishment:</strong> 2D6 result ${combat.dimensionalBanishmentRoll}; the target ${incapacitated?'is incapacitated':'survives'}.</div>`;
-    }
-    if(combat.profile?.weaponId==='transdimensional-isolator'&&combatAbilityHandlers['dimensional-banishment']({criticalSuccesses:combat.critRemaining,damage:combat.damage,targetIncapacitated:combat.after<=0})){
-      return '<div class="summary-box"><strong>Dimensional Banishment:</strong> The target survived after damage was inflicted or a critical success was retained. Roll 2D6 physically; if the result is higher than its remaining wounds, record it as incapacitated.</div>';
+      const dice=combat.dimensionalBanishmentDice||[];
+      const total=combat.dimensionalBanishmentRoll;
+      const remaining=combat.dimensionalBanishmentRemainingWounds;
+      const target=escapeHtml(combat.defenderName||combat.targetName||'The target');
+      const rolling=!combat.dimensionalBanishmentAnimationShown&&dice.length===2;
+      const diceHtml=dice.length===2
+        ? `<div class="dice-row ${rolling?'animated-roll':'settled'}" data-dimensional-banishment-dice>${dice.map((value,index)=>rolling?rollingDieHtml():dieHtml({value,ariaLabel:`Dimensional Banishment die ${index+1}: ${value}`})).join('')}</div>`
+        : '';
+      const rollText=dice.length===2?`Rolled ${dice[0]} + ${dice[1]} = ${total}.`:`Recorded Dimensional Banishment total: ${total}`;
+      const comparison=combat.dimensionalBanishmentIncapacitated
+        ? `${total} is greater than the target’s ${remaining} remaining wounds.`
+        : `${total} is not greater than the target’s ${remaining} remaining wounds.`;
+      const outcome=combat.dimensionalBanishmentIncapacitated?`${target} is incapacitated.`:`${target} survives with ${remaining} wounds.`;
+      return `<section class="combat-stage dimensional-banishment-result" aria-label="Dimensional Banishment result"><small>DIMENSIONAL BANISHMENT</small>${diceHtml}<div data-dimensional-banishment-result ${rolling?'hidden':''} aria-live="polite"><p>${rollText}</p><p aria-label="Dimensional Banishment total: ${total}">${comparison}</p><strong>${outcome}</strong></div>${rolling?'<p data-dimensional-banishment-rolling>Rolling 2D6...</p>':''}</section>`;
     }
     if(combat.aggressiveDefenseAnimating)return aggressiveDefenseRollHtml();
     const aggressiveDamage=aggressiveDefenseDamageValue(combat);
@@ -4350,20 +4404,31 @@ function showPlayerActivation(stage={}){
     result.damage=result.damagePackets.reduce((total,packet)=>total+packet.finalDamage,0);
     result.after=Math.max(0,result.before-result.damage);
     result.aggressiveDefenseDamage=0;
-    stage[`${attackType}CombatDraft`]=result;
+    const resolvedResult=resolveAutomaticDimensionalBanishment(result);
+    stage[`${attackType}CombatDraft`]=resolvedResult;
     state.combatState={side:'player',stage:{...stage}};
     save();
-    displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,false);
+    displayPendingPlayerCombat(stage,attackType,resolvedResult,onResolved,onCancel,false);
   }
 
   function displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,animate,waiting=false){
-    displaySharedCombatResult(result,{
-      pending:true,animate,waiting,
+    const banishmentAnimating=result.dimensionalBanishmentTriggered&&!result.dimensionalBanishmentAnimationShown;
+    const display=displaySharedCombatResult(result,{
+      pending:true,animate,waiting:waiting||banishmentAnimating,
       message:'This result has been recorded. Wounds will be applied exactly once when you Continue.',
       onContinue:()=>{
         if(stage[`${attackType}CombatDraft`]===result)onResolved(result);
       }
     });
+    if(banishmentAnimating){
+      result.dimensionalBanishmentAnimationShown=true;
+      stage[`${attackType}CombatDraft`]=result;
+      state.combatState={side:'player',stage:{...stage}};
+      save();
+      settleDimensionalBanishment(result,()=>{
+        display?.completeWaiting();
+      });
+    }
   }
 
   function npoBehavior(n){return npoDefinition(n.type)?.behavior;}
@@ -5244,7 +5309,14 @@ function showPlayerActivation(stage={}){
     }
     state.playerCasualtyIds=[...casualties];
     state.playerReady=playerOperativesRemaining();
-    log(`${npoName(n)} dealt ${summary.damage} damage to ${playerName(target.id)} (${summary.before} → ${summary.after} wounds).`);
+    const normalAfter=summary.dimensionalBanishmentRemainingWounds??summary.after;
+    log(`${npoName(n)} dealt ${summary.damage} damage to ${playerName(target.id)} (${summary.before} → ${normalAfter} wounds).`);
+    if(summary.dimensionalBanishmentTriggered){
+      const outcome=summary.dimensionalBanishmentIncapacitated
+        ? `${summary.dimensionalBanishmentRoll} exceeded ${normalAfter} remaining wounds, so ${playerName(target.id)} was incapacitated.`
+        : `${playerName(target.id)} survived with ${normalAfter} wounds.`;
+      log(`${npoName(n)} rolled ${summary.dimensionalBanishmentRoll} for Dimensional Banishment against ${playerName(target.id)}. ${outcome}`);
+    }
   }
 
   function showNpoAttackWizard(n,attackDice,onDone,onCancel,animateCombat=false,resumeGuided=false){
@@ -5301,7 +5373,7 @@ function showPlayerActivation(stage={}){
       resolutionCommitted=true;
       const complete=$('#completeNpoCombat');
       complete.disabled=true;
-      const resolvedCombat=dimensionalBanishmentRequired(combat)?applyDimensionalBanishment(combat,num('dimensionalBanishmentRoll')):combat;
+      const resolvedCombat=resolveAutomaticDimensionalBanishment(combat);
       state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat};
       save();
       const summary={...resolvedCombat,side:'player'};
@@ -5321,14 +5393,26 @@ function showPlayerActivation(stage={}){
       if(onDone)onDone(summary);
     };
     const displayCombat=(combat,animate=false)=>{
-      const banishmentRequired=dimensionalBanishmentRequired(combat);
-      displaySharedCombatResult(combat,{
+      const resolvedCombat=resolveAutomaticDimensionalBanishment(combat);
+      const banishmentAnimating=resolvedCombat.dimensionalBanishmentTriggered&&!resolvedCombat.dimensionalBanishmentAnimationShown;
+      if(resolvedCombat!==combat){
+        state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat};
+        save();
+      }
+      const display=displaySharedCombatResult(resolvedCombat,{
         animate,
+        waiting:banishmentAnimating,
         message:'Damage is applied exactly once when you Continue.',
-        extraHtml:banishmentRequired?`<div id="dimensionalBanishmentField">${dimensionalBanishmentField(combat.profile)}</div>`:'',
-        onContinue:()=>commitCombat(combat)
+        onContinue:()=>commitCombat(resolvedCombat)
       });
-      if(banishmentRequired)bindSpinners($('#dimensionalBanishmentField'));
+      if(banishmentAnimating){
+        resolvedCombat.dimensionalBanishmentAnimationShown=true;
+        state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat};
+        save();
+        settleDimensionalBanishment(resolvedCombat,()=>{
+          display?.completeWaiting();
+        });
+      }
     };
     const finishAutomaticCombat=(profile,rolledAttackDice,rolledDefenseDice)=>{
       const stun=applyStunForAttack({profile,attackDice:rolledAttackDice,sourceAttackId:`attack:${state.turningPoint}:${state.activationNumber}:npo:${n.id}:${target.id}`,targetId:target.id,targetName:playerName(target.id),targetSide:'player'});
@@ -5342,9 +5426,10 @@ function showPlayerActivation(stage={}){
         severeApplied:rolledAttackDice.some(die=>die.severeConverted)
       };
       combat.eventMessages=stun.message?[stun.message]:[];
-      state.lastActivation={...state.lastActivation,combatDraft:combat};
+      const resolvedCombat=resolveAutomaticDimensionalBanishment(combat);
+      state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat};
       save();
-      displayCombat(combat,false);
+      displayCombat(resolvedCombat,false);
     };
     let rollStarted=false;
     const startAutomaticCombat=(restoredRoll=null,guidedConfirmed=false)=>{
@@ -5453,7 +5538,7 @@ function showPlayerActivation(stage={}){
   }
 
   const pipPositions={1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};
-  function dieHtml(d){const kind=d.kind||'';const label=d.severeConverted?`Critical success, converted from a normal success by Severe. Rolled value ${d.value}.`:`${d.value}${kind?` ${kind}`:''}`;return `<div class="die ${kind}" aria-label="${label}">${pipPositions[d.value].map(p=>`<span class="pip" style="grid-area:${Math.ceil(p/3)}/${((p-1)%3)+1}"></span>`).join('')}</div>`;}
+  function dieHtml(d){const kind=d.kind||'';const label=d.ariaLabel|| (d.severeConverted?`Critical success, converted from a normal success by Severe. Rolled value ${d.value}.`:`${d.value}${kind?` ${kind}`:''}`);return `<div class="die ${kind}" aria-label="${label}">${pipPositions[d.value].map(p=>`<span class="pip" style="grid-area:${Math.ceil(p/3)}/${((p-1)%3)+1}"></span>`).join('')}</div>`;}
 
   function renderMission(){
     const m=mission();

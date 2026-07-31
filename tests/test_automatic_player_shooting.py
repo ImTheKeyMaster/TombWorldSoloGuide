@@ -26,7 +26,7 @@ class AutomaticPlayerShootingTests(unittest.TestCase):
         preview = self.source('function previewPendingPlayerAttack', 'function displayPendingPlayerCombat')
         display = self.source('function displayPendingPlayerCombat', 'function npoBehavior')
         self.assertIn('resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,profile)', preview)
-        self.assertIn("stage[`${attackType}CombatDraft`]=result", preview)
+        self.assertIn("stage[`${attackType}CombatDraft`]=resolvedResult", preview)
         self.assertIn("state.combatState={side:'player',stage:{...stage}}", preview)
         self.assertIn('displaySharedCombatResult(result', display)
         shared_display = self.source('function displaySharedCombatResult', 'function settleCombatDice')
@@ -54,7 +54,7 @@ class AutomaticPlayerShootingTests(unittest.TestCase):
         shared = self.source('function runAutomaticCombatRolls', 'function retainedDiceTotals')
         preview = self.source('function previewPendingPlayerAttack', 'function displayPendingPlayerCombat')
         self.assertLess(shared.index('timer=settleCombatDice'), shared.index('onComplete(attackDice,defenseDice)'))
-        self.assertIn('displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,false)', preview)
+        self.assertIn('displayPendingPlayerCombat(stage,attackType,resolvedResult,onResolved,onCancel,false)', preview)
 
 if __name__ == '__main__':
     unittest.main()

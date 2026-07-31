@@ -34,7 +34,7 @@ class CanoptekIntegrationTests(unittest.TestCase):
         self.assertIn("function npoAttackProfiles", APP)
         self.assertIn("(definition.rangedWeapons||[]).filter(weapon=>weapon.id===npo.weaponId)", APP)
         self.assertIn("availableProfiles.map", APP)
-        self.assertIn("dimensionalBanishmentRequired(combat)", APP)
+        self.assertIn("resolveAutomaticDimensionalBanishment(combat)", APP)
 
     def test_reanimate_is_offered_before_damage_commit(self):
         application = APP.index("function applyPendingPlayerDamage")
@@ -65,8 +65,8 @@ class CanoptekIntegrationTests(unittest.TestCase):
         self.assertIn("Roll Damage", APP)
 
     def test_version_matrix_and_portrait_constraints(self):
-        self.assertIn("const APP_VERSION = '8.6.1';", APP)
-        self.assertIn("V8.6.1", (ROOT / "index.html").read_text())
+        self.assertIn("const APP_VERSION = '8.6.2';", APP)
+        self.assertIn("V8.6.2", (ROOT / "index.html").read_text())
         self.assertNotIn("obelisk node matrix support", APP.lower())
         self.assertNotIn("npoPortrait", APP)
 

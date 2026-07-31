@@ -69,13 +69,13 @@ class WeaponRangeRuleTests(unittest.TestCase):
         self.assertEqual(len(unknown_warnings), 2)
 
     def test_version_853_is_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.1';", APP)
-        self.assertIn("const APP_VERSION = '8.6.1';", WORKER)
-        self.assertIn("V8.6.1", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.1"))
-        self.assertIn("## v8.6.1", README)
+        self.assertIn("const APP_VERSION = '8.6.2';", APP)
+        self.assertIn("const APP_VERSION = '8.6.2';", WORKER)
+        self.assertIn("V8.6.2", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.2"))
+        self.assertIn("## v8.6.2", README)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.1", INDEX)
+            self.assertIn(f"{asset}?v=8.6.2", INDEX)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
 
 

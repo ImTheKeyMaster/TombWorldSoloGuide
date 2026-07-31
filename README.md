@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v8.6.1
+# Tomb World Solo Guide v8.6.2
+
+## v8.6.2
+
+**Version 8.6.2 - Automate Dimensional Banishment**
+
+* Dimensional Banishment now automatically rolls and displays 2D6.
+* The Guide compares the result with the target’s remaining wounds and explains whether the target survives or is incapacitated.
+* Removed manual Dimensional Banishment entry controls.
+* Added safe persistence and incapacitation-effect integration.
+* Preserved all weapon profiles, combat values, missions, and activation behavior.
 
 ## v8.6.1
 
