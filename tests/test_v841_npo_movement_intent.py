@@ -20,8 +20,8 @@ class V841NpoMovementIntentTests(unittest.TestCase):
         self.assertIn("id:'reposition-enable-shoot'", movement)
         self.assertIn("purpose:'enable-shoot'", movement)
         self.assertIn("followUpActionId:'shoot'", movement)
-        self.assertIn('Can this NPO Reposition to a position where it can Shoot?', movement)
-        self.assertIn('Can this NPO Reposition to improve its position for the next activation or the mission?', movement)
+        self.assertIn('Can this NPO Reposition up to ${distance} and finish where it can Shoot?', movement)
+        self.assertIn('Can this NPO Reposition up to ${distance} to improve its position for the next activation or the mission?', movement)
 
     def test_declining_one_movement_intent_does_not_decline_action(self):
         prompt = section('function runNpoPrompt', 'function chooseNpoDecision')
@@ -72,13 +72,13 @@ class V841NpoMovementIntentTests(unittest.TestCase):
         self.assertIn('canCommitNpoAction(pending.id,pending.apCost)', combat)
 
     def test_version_and_release_notes(self):
-        self.assertIn("const APP_VERSION = '8.6.5';", APP)
-        self.assertIn("const APP_VERSION = '8.6.5';", WORKER)
-        self.assertIn('V8.6.5', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.5'))
-        self.assertIn('## v8.6.5', README)
+        self.assertIn("const APP_VERSION = '8.6.6';", APP)
+        self.assertIn("const APP_VERSION = '8.6.6';", WORKER)
+        self.assertIn('V8.6.6', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.6'))
+        self.assertIn('## v8.6.6', README)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.5', INDEX)
+            self.assertIn(f'{asset}?v=8.6.6', INDEX)
 
 
 if __name__ == '__main__':

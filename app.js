@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.5';
+  const APP_VERSION = '8.6.6';
   const WEAPON_RULE_HANDLERS = Object.freeze({
     severe:{mode:'automatic',phase:'after-attack-roll'},
     'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
@@ -4589,16 +4589,32 @@ function showPlayerActivation(stage={}){
     if(String(action).includes('valid unobscured target'))return 'shoot';
     return 'mission';
   }
+  const missingNpoRepositionMoveWarnings=new Set();
+  function npoRepositionDistance(npo){
+    const move=Number(npo?.move??npoDefinition(npo?.type)?.move);
+    if(Number.isFinite(move)&&move>0)return move;
+    const warningKey=npo?.type||npo?.id||'unknown';
+    if(!missingNpoRepositionMoveWarnings.has(warningKey)){
+      missingNpoRepositionMoveWarnings.add(warningKey);
+      console.warn(`Unable to resolve Reposition distance for NPO: ${warningKey}`);
+    }
+    return null;
+  }
+  function formatMovementDistance(distance){
+    if(!Number.isFinite(distance))return '';
+    return `${distance} ${distance===1?'inch':'inches'}`;
+  }
   function npoMovementInquiry(n,action,id){
     const activation=state.lastActivation,focus=npoMovementFocus(n,action),remainingAp=Number(activation?.remainingAp||0);
     const declined=new Set(activation?.declinedMovementIntentIds||[]);
     const shootCanFollow=remainingAp>=2&&!(activation?.completedActionIds||[]).includes('shoot')&&!(activation?.completedActionIds||[]).includes('fight');
     if(id==='reposition'){
-      if(focus==='shoot'&&shootCanFollow&&!declined.has('reposition-enable-shoot'))return {id:'reposition-enable-shoot',purpose:'enable-shoot',followUpActionId:'shoot',guaranteesFollowUp:true,question:'Can this NPO Reposition to a position where it can Shoot?',help:'Select Yes only if it can finish the move with a Player operative it can Shoot.'};
-      if(focus==='shoot')return {id:'reposition-general-position',purpose:'general-position',followUpActionId:null,guaranteesFollowUp:false,question:'Can this NPO Reposition to improve its position for the next activation or the mission?',help:'Select Yes if it can move closer to a future shooting position, gain useful cover, or help complete or defend the mission.'};
-      if(focus==='fight')return {question:'Can this NPO Reposition closer to its target?',help:'Select Yes if it can move closer to the nearest Player operative, using cover when possible.'};
-      if(focus==='support')return {question:'Can this NPO Reposition to use a support action or help the mission?',help:'Select Yes if moving would help it use a higher-priority action or improve its mission position.'};
-      return {question:'Can this NPO Reposition to help complete or defend the mission?',help:'Select Yes only if it can reach a clearly better mission position.'};
+      const distance=formatMovementDistance(npoRepositionDistance(n));
+      if(focus==='shoot'&&shootCanFollow&&!declined.has('reposition-enable-shoot'))return {id:'reposition-enable-shoot',purpose:'enable-shoot',followUpActionId:'shoot',guaranteesFollowUp:true,question:distance?`Can this NPO Reposition up to ${distance} and finish where it can Shoot?`:'Can this NPO Reposition to a position where it can Shoot?',help:'Select Yes only if it can finish the Reposition with a Player operative it can Shoot.'};
+      if(focus==='shoot')return {id:'reposition-general-position',purpose:'general-position',followUpActionId:null,guaranteesFollowUp:false,question:distance?`Can this NPO Reposition up to ${distance} to improve its position for the next activation or the mission?`:'Can this NPO Reposition to improve its position for the next activation or the mission?',help:'Select Yes if it can move closer to a future shooting position, gain useful cover, or help complete or defend the mission.'};
+      if(focus==='fight')return {question:distance?`Can this NPO Reposition up to ${distance} closer to its target?`:'Can this NPO Reposition closer to its target?',help:'Select Yes if it can move closer to the nearest Player operative, using cover when possible.'};
+      if(focus==='support')return {question:distance?`Can this NPO Reposition up to ${distance} to use a support action or help the mission?`:'Can this NPO Reposition to use a support action or help the mission?',help:'Select Yes if moving would help it use a higher-priority action or improve its mission position.'};
+      return {question:distance?`Can this NPO Reposition up to ${distance} to help complete or defend the mission?`:'Can this NPO Reposition to help complete or defend the mission?',help:'Select Yes only if it can reach a clearly better mission position.'};
     }
     if(remainingAp===1)return {id:'dash-final-position',purpose:'final-position',followUpActionId:null,guaranteesFollowUp:false,endsActivation:true,question:'Can this NPO use its last AP to Dash to a better position?',help:'Select Yes if the Dash improves cover, mission position, or its setup for the next Turning Point. The activation will end after the Dash.'};
     if(focus==='shoot'&&shootCanFollow&&!declined.has('dash-enable-shoot'))return {id:'dash-enable-shoot',purpose:'enable-shoot',followUpActionId:'shoot',guaranteesFollowUp:true,question:'Can a 3-inch Dash move this NPO to a position where it can Shoot?',help:'Select Yes only if it can finish the Dash with a Player operative it can Shoot.'};
@@ -4609,11 +4625,13 @@ function showPlayerActivation(stage={}){
   }
   function npoMovementInstruction(n,action){
     const name=npoActionId(action)==='dash'?'Dash':'Reposition';
-    const distance=name==='Dash'?3:npoDefinition(n.type)?.move,focus=npoMovementFocus(n,action);
-    if(focus==='fight')return `${name==='Dash'?'Dash':'Move'} this NPO up to ${distance} inches toward the selected Player operative, using cover when possible.`;
-    if(focus==='shoot')return name==='Dash'?`Dash this NPO up to 3 inches toward a clear shot or a better mission position.`:`Move this NPO up to ${distance} inches to get a clear shot. If that is not possible, move it to help the mission.`;
-    if(focus==='support')return `${name==='Dash'?'Dash':'Move'} this NPO up to ${distance} inches toward an ally, enemy, or mission position needed for its next support action.`;
-    return `${name==='Dash'?'Dash':'Move'} this NPO up to ${distance} inches toward the mission objective or a position that helps defend it.`;
+    const distance=name==='Dash'?'3 inches':formatMovementDistance(npoRepositionDistance(n)),focus=npoMovementFocus(n,action);
+    if(name==='Reposition'&&state.lastActivation?.movementIntent?.purpose==='enable-shoot')return distance?`Move this NPO up to ${distance} and finish where it can Shoot.`:'Move this NPO and finish where it can Shoot.';
+    if(name==='Reposition'&&state.lastActivation?.movementIntent?.purpose==='general-position')return distance?`Move this NPO up to ${distance} to improve its cover, mission position, or setup for a later activation.`:'Move this NPO to improve its cover, mission position, or setup for a later activation.';
+    if(focus==='fight')return distance?`${name==='Dash'?'Dash':'Move'} this NPO up to ${distance} toward the selected Player operative, using cover when possible.`:`Move this NPO toward the selected Player operative, using cover when possible.`;
+    if(focus==='shoot')return name==='Dash'?`Dash this NPO up to 3 inches toward a clear shot or a better mission position.`:distance?`Move this NPO up to ${distance} to get a clear shot. If that is not possible, move it to help the mission.`:'Move this NPO to get a clear shot. If that is not possible, move it to help the mission.';
+    if(focus==='support')return distance?`${name==='Dash'?'Dash':'Move'} this NPO up to ${distance} toward an ally, enemy, or mission position needed for its next support action.`:`Move this NPO toward an ally, enemy, or mission position needed for its next support action.`;
+    return distance?`${name==='Dash'?'Dash':'Move'} this NPO up to ${distance} toward the mission objective or a position that helps defend it.`:`Move this NPO toward the mission objective or a position that helps defend it.`;
   }
   function npoActionCost(n,actionId){
     const profileAction=(npoDefinition(n?.type)?.actions||[]).find(action=>action.id===actionId);

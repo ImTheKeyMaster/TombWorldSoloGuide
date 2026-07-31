@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.5
+# Tomb World Solo Guide v8.6.6
+
+## v8.6.6
+
+**Version 8.6.6 - Show Reposition Distance in NPO Guidance**
+
+- Added each NPO’s Move distance to Reposition questions and confirmation instructions.
+- Updated shooting, fighting, support, and mission-focused Reposition guidance.
+- Preserved the fixed 3-inch Dash distance and all existing movement behavior.
+- Preserved AP costs, movement intent, combat follow-ups, and save compatibility.
 
 ## v8.6.5
 
