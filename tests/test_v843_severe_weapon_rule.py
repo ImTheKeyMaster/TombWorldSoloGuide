@@ -187,7 +187,8 @@ class SevereWeaponRuleTests(unittest.TestCase):
         self.assertIn('severeApplied:rolledAttackDice.some(die=>die.severeConverted)', npo)
         self.assertIn('if(sameCombat)displayCombat(saved,animateCombat)', npo)
         self.assertIn('if(resolutionCommitted', npo)
-        self.assertIn('if(stage[`${attackType}CombatDraft`]===result)onResolved(result)', player_display)
+        self.assertIn('if(resolutionCommitted||stage[`${attackType}CombatDraft`]!==result)return', player_display)
+        self.assertIn('resolutionCommitted=true', player_display)
 
 
 if __name__ == '__main__':

@@ -21,7 +21,7 @@ class V8611MultiTargetWeaponLockTests(unittest.TestCase):
         self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.11"))
 
     def test_02_sequence_stores_stable_profile(self):
-        self.assert_app("weaponId,profileKey,profileName,weaponRules:[...weaponRules]", "lockedMultiTargetProfile")
+        self.assert_app("weaponId,weaponName,profileKey,profileName,weaponRules:[...weaponRules]", "lockedMultiTargetProfile")
 
     def test_03_all_targets_restore_the_lock(self):
         self.assert_app("locked?availableProfiles.findIndex", "const weapon=locked?.weapon||weapons[weaponIndex]")
@@ -48,7 +48,17 @@ class V8611MultiTargetWeaponLockTests(unittest.TestCase):
         self.assertNotIn("state.weaponRuleResolution=null", APP[APP.index("function showMultiTargetProfileRecovery"):APP.index("function weaponRuleTargetOption")])
 
     def test_10_idempotent_transactions(self):
-        self.assert_app("committedTargetIds", "if(resolutionCommitted", "if(rollStarted)return")
+        self.assert_app("committedTargetIds", "resolutionCommitted||stage", "if(rollStarted)return")
+
+    def test_10a_npo_lock_does_not_use_current_loadout(self):
+        locked = APP[APP.index("function lockedMultiTargetProfile"):APP.index("function showMultiTargetProfileRecovery")]
+        self.assertIn("npoWeapon(definition,sequence.weaponId)", locked)
+        self.assertIn("weaponProfiles(weapon).map(canonicalAttackProfile)", locked)
+        self.assertNotIn("npoAttackProfiles(attacker", locked)
+
+    def test_10b_sequence_keeps_weapon_and_profile_names_distinct(self):
+        self.assert_app("weaponName:profile?.weaponName", "profileName:profile?.name")
+        self.assert_app("weaponName:profile.weaponName", "profileName:profile.profileName")
 
     def test_11_single_target_selection_unchanged(self):
         self.assert_app("const weaponControl=weapons.length===1", "Select a weapon...")
