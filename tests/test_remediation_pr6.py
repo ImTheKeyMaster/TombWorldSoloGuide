@@ -46,7 +46,7 @@ class RemediationPr6Tests(unittest.TestCase):
     def test_placement_is_manual_and_blocks_progress_until_confirmed(self):
         card = self.function_source("strategyProgressHtml", "strategyEventHtml")
         self.assertIn("Randomly determine an open hatchway", card)
-        self.assertIn("printed placement requirements", card)
+        self.assertIn("following the Tomb World reinforcement placement restrictions", card)
         self.assertIn("state.reinforcementState.status!=='placement'", card)
         placement = self.function_source("confirmReinforcementPlacement", "rollInitiative")
         self.assertIn("Boolean(confirmed)", placement)
