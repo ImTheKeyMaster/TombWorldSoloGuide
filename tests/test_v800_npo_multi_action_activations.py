@@ -160,8 +160,8 @@ class V800NpoMultiActionActivationTests(unittest.TestCase):
     def test_38_deadly_encounters_preserved(self): self.assertIn('DeadlyEncounters', APP)
     def test_39_player_activations_preserved(self): self.assertIn('function completePlayerActivation(', APP)
     def test_40_version_800_everywhere(self):
-        self.assertIn("const APP_VERSION = '8.6.4';", APP); self.assertIn("const APP_VERSION = '8.6.4';", WORKER)
-        self.assertIn('V8.6.4', INDEX); self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.4'))
+        self.assertIn("const APP_VERSION = '8.6.5';", APP); self.assertIn("const APP_VERSION = '8.6.5';", WORKER)
+        self.assertIn('V8.6.5', INDEX); self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.5'))
     def test_41_supported_npo_profiles_unchanged_and_present(self):
         for name in ('Necron Warrior', 'Canoptek Tomb Crawler', 'Geomancer', 'Canoptek Macrocyte Warrior', 'Canoptek Macrocyte Accelerator', 'Canoptek Macrocyte Reanimator', 'Canoptek Scarab Swarm'):
             self.assertIn(f"'{name}': {{", APP)

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.4';
+  const APP_VERSION = '8.6.5';
   const WEAPON_RULE_HANDLERS = Object.freeze({
     severe:{mode:'automatic',phase:'after-attack-roll'},
     'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
@@ -358,6 +358,24 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function playerName(id){
     return operativeName(id,'player');
+  }
+
+  function playerTargetLabel(id){
+    const name=playerName(id);
+    const current=Math.max(0,Number(playerCurrentWounds(id)||0));
+    const maximum=Number(playerDefinition(id)?.wounds);
+    return Number.isFinite(maximum)&&maximum>0
+      ? `${name} (${current}/${maximum} wounds)`
+      : `${name} (${current} wounds)`;
+  }
+
+  function playerTargetAriaLabel(id){
+    const name=playerName(id);
+    const current=Math.max(0,Number(playerCurrentWounds(id)||0));
+    const maximum=Number(playerDefinition(id)?.wounds);
+    return Number.isFinite(maximum)&&maximum>0
+      ? `Select ${name}, ${current} of ${maximum} wounds`
+      : `Select ${name}, ${current} wounds`;
   }
 
   function allocateDisplayNumber(usedNumbers,preferredNumber){
@@ -4120,7 +4138,8 @@ function showPlayerActivation(stage={}){
 
   function weaponRuleTargetOption(target){
     const id=escapeHtml(target.id),label=escapeHtml(target.label);
-    return `<label class="check-row" for="weapon-rule-target-${id}"><input id="weapon-rule-target-${id}" type="checkbox" value="${id}" data-weapon-rule-target><span>${label}</span></label>`;
+    const ariaLabel=target.ariaLabel?` aria-label="${escapeHtml(target.ariaLabel)}"`:'';
+    return `<label class="check-row" for="weapon-rule-target-${id}"><input id="weapon-rule-target-${id}" type="checkbox" value="${id}" data-weapon-rule-target${ariaLabel}><span>${label}</span></label>`;
   }
 
   function showSeekLightCheck({target,resolutionKey,onContinue,onBack}){
@@ -4385,7 +4404,7 @@ function showPlayerActivation(stage={}){
       const resolutionKey=`player:${state.turningPoint}:${state.activationNumber}:${stage.playerOperativeId}:${target.id}:${weapon.id||weapon.name}`;
       const selectSecondaryTargets=()=>{
         if(!ruleId){proceed();return;}
-        const playerTargets=(state.playerRoster||[]).map(id=>({id,label:playerName(id),wounds:Number(state.playerWounds[id]??playerDefinition(id)?.wounds??0),inPlay:state.playerOperativeStates?.[id]?.inPlay!==false}));
+        const playerTargets=(state.playerRoster||[]).map(id=>({id,label:playerTargetLabel(id),ariaLabel:playerTargetAriaLabel(id),wounds:playerCurrentWounds(id),inPlay:state.playerOperativeStates?.[id]?.inPlay!==false}));
         const npoTargets=activeNpos().map(npo=>({id:npo.id,label:npoName(npo),wounds:npo.wounds,inPlay:npo.battlefieldState==='deployed'}));
         showSecondaryTargetCheck({ruleId,distance:weaponRuleValue(profile,ruleId),attackerSide:'player',attackerId:stage.playerOperativeId,primaryTargetId:target.id,targets:ruleId==='blast'?[...playerTargets,...npoTargets]:npoTargets,profileKey:weapon.id||weapon.name,onContinue:proceed,onBack:back});return;
       };
@@ -5180,12 +5199,12 @@ function showPlayerActivation(stage={}){
       &&(!action.target?.keywordsAll||action.target.keywordsAll.every(keyword=>npoDefinition(target.type)?.keywords.includes(keyword)))
       &&(action.id!=='nanoscarab-beam'||target.wounds<target.maxWounds&&!state.npoRuleState.reanimatedTargetIds.includes(target.id))));
     const friendlyOptions=friendlies.map(target=>`<option value="${escapeHtml(target.id)}">${escapeHtml(npoName(target))}</option>`).join('');
-    const enemyOptions=remainingPlayerOperatives().map(id=>`<option value="${escapeHtml(id)}">${escapeHtml(playerName(id))}</option>`).join('');
+    const enemyOptions=remainingPlayerOperatives().map(id=>`<option value="${escapeHtml(id)}">${escapeHtml(playerTargetLabel(id))}</option>`).join('');
     const targetOptions=action.target?.side==='enemy'?enemyOptions:friendlyOptions;
     const targetLabel=action.target?.side==='enemy'?'Player operative':'Friendly NPO';
     if(action.id==='geomantic-disturbance'){
-      const affected=[...sortedNposForDisplay(activeNpos()),...inPlayLivingPlayerOperativeIds().map(id=>({id:`player:${id}`,label:playerName(id)}))];
-      showModal(action.name,`<p>Choose a visible terrain point within 8 inches, then select every operative within 2 inches of it.</p><div class="checklist">${affected.map(target=>`<label class="check-row"><input type="checkbox" data-disturbance-target="${escapeHtml(target.id)}"><span>${escapeHtml(target.label||npoName(target))}</span></label>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="cancelSpecialAction">Cancel</button><button class="btn primary" id="confirmSpecialAction">Roll Damage</button></div>`);
+      const affected=[...sortedNposForDisplay(activeNpos()),...inPlayLivingPlayerOperativeIds().map(id=>({id:`player:${id}`,label:playerTargetLabel(id),ariaLabel:playerTargetAriaLabel(id)}))];
+      showModal(action.name,`<p>Choose a visible terrain point within 8 inches, then select every operative within 2 inches of it.</p><div class="checklist">${affected.map(target=>`<label class="check-row"><input type="checkbox" data-disturbance-target="${escapeHtml(target.id)}"${target.ariaLabel?` aria-label="${escapeHtml(target.ariaLabel)}"`:''}><span>${escapeHtml(target.label||npoName(target))}</span></label>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="cancelSpecialAction">Cancel</button><button class="btn primary" id="confirmSpecialAction">Roll Damage</button></div>`);
       $('#cancelSpecialAction').onclick=()=>resolveNpoAction(n,state.lastActivation.pendingAction);
       $('#confirmSpecialAction').onclick=()=>{
         const button=$('#confirmSpecialAction');
@@ -5293,10 +5312,17 @@ function showPlayerActivation(stage={}){
 
   function renderNpoDecisionResult(n,decision,dice,answers,attackResolved,animateDice=true,attackRequired=(decision.action.includes('Fight')||decision.action.includes('Shoot')),targetConfirmed=dice.length>0,questionHistory=state.lastActivation?.questionHistory||[]){
     const eligibleTargetIds=eligibleNpoAttackTargets();
+    if(state.npoAttackTargetId&&!eligibleTargetIds.includes(state.npoAttackTargetId)){
+      state.npoAttackTargetId=null;
+      state.npoAttackSummary=null;
+      dice=[];
+      attackResolved=false;
+      targetConfirmed=false;
+    }
     if(!targetConfirmed&&eligibleTargetIds.length===1)state.npoAttackTargetId=eligibleTargetIds[0];
     state.lastActivation={...state.lastActivation,name:npoName(n),...decision,dice,answers,questionHistory,attackResolved,attackRequired,targetConfirmed};save();
-    const targetOptions=eligibleTargetIds.map(id=>`<option value="${escapeHtml(id)}" ${state.npoAttackTargetId===id?'selected':''}>${escapeHtml(playerName(id))}</option>`).join('');
-    const targetName=state.npoAttackTargetId?playerName(state.npoAttackTargetId):'';
+    const targetOptions=eligibleTargetIds.map(id=>`<option value="${escapeHtml(id)}" ${state.npoAttackTargetId===id?'selected':''}>${escapeHtml(playerTargetLabel(id))}</option>`).join('');
+    const targetName=state.npoAttackTargetId?playerTargetLabel(state.npoAttackTargetId):'';
     const targetField=targetConfirmed||eligibleTargetIds.length===1
       ? `<input id="npoPriorityTarget" value="${escapeHtml(targetName)}" readonly>`
       : `<select id="npoPriorityTarget" ${attackResolved?'disabled':''}><option value="">Select the first operative that matches the priority above.</option>${targetOptions}</select>`;
@@ -5527,7 +5553,7 @@ function showPlayerActivation(stage={}){
         const resolutionKey=`npo:${state.turningPoint}:${state.activationNumber}:${n.id}:${target.id}:${baseProfile.weaponId}:${baseProfile.profileId}`;
         const selectSecondaryTargets=()=>{
           if(!ruleId){resume();return;}
-          const playerTargets=inPlayLivingPlayerOperativeIds().map(id=>({id,label:playerName(id),wounds:playerCurrentWounds(id),inPlay:true}));
+          const playerTargets=inPlayLivingPlayerOperativeIds().map(id=>({id,label:playerTargetLabel(id),ariaLabel:playerTargetAriaLabel(id),wounds:playerCurrentWounds(id),inPlay:true}));
           const npoTargets=activeNpos().map(operative=>({id:operative.id,label:npoName(operative),wounds:operative.wounds,inPlay:true}));
           showSecondaryTargetCheck({ruleId,distance:weaponRuleValue(baseProfile,ruleId),attackerSide:'npo',attackerId:n.id,primaryTargetId:target.id,targets:ruleId==='blast'?[...playerTargets,...npoTargets]:playerTargets,profileKey:`${baseProfile.weaponId}:${baseProfile.profileId}`,onContinue:resume,onBack:back});return;
         };

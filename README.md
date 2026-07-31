@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.4
+# Tomb World Solo Guide v8.6.5
+
+## v8.6.5
+
+**Version 8.6.5 - Show Player Wounds in Target Selection**
+
+- Added current and maximum wounds to Player operative target-selection labels.
+- Updated NPO Shoot, Fight, special-action, and guided secondary-target selectors.
+- Preserved target priorities, eligibility, ordering, combat, and automatic selection behavior.
+- Kept target IDs and save data unchanged.
 
 ## v8.6.4
 
