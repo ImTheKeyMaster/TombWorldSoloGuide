@@ -45,7 +45,7 @@ class V830NpoMovementGuidanceTests(unittest.TestCase):
     def test_history_and_journal_retain_detailed_action_text(self):
         commit = section('function commitNpoAction', 'function renderNpoActionResult')
         self.assertIn('name:actionName', commit)
-        self.assertIn('result,...(attackSummary?', commit)
+        self.assertIn('result,\n      ...(allAttackSummaries.length?', commit)
         self.assertIn("const journalAction=['reposition','dash'].includes(actionId)?npoMovementInstruction(n,actionName):actionName", commit)
         self.assertIn('log(`${npoName(n)} completed ${journalAction}. ${activation.remainingAp} AP remaining.`)', commit)
         self.assertIn('activation.resolvedActions=[...(activation.resolvedActions||[]),record]', commit)
@@ -66,13 +66,13 @@ class V830NpoMovementGuidanceTests(unittest.TestCase):
         self.assertIn('scheduleNpoActionTransition(activation,n.id,transitionMode)', APP)
 
     def test_version_830_is_consistent_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.6.6';", APP)
-        self.assertIn("const APP_VERSION = '8.6.6';", WORKER)
-        self.assertIn('V8.6.6', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.6'))
-        self.assertIn('## v8.6.6', README)
+        self.assertIn("const APP_VERSION = '8.6.7';", APP)
+        self.assertIn("const APP_VERSION = '8.6.7';", WORKER)
+        self.assertIn('V8.6.7', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.7'))
+        self.assertIn('## v8.6.7', README)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.6', INDEX)
+            self.assertIn(f'{asset}?v=8.6.7', INDEX)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
 

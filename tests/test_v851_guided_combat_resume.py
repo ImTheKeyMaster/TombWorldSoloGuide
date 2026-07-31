@@ -38,9 +38,9 @@ class GuidedCombatResumeTests(unittest.TestCase):
         self.assertIn(".filter(id=>id!==primaryTargetId)", APP)
 
     def test_05_sequences_are_separate_and_completed_targets_are_idempotent(self):
-        self.assertIn("function advanceWeaponRuleResolution", APP)
-        self.assertIn("new Set([...(resolution.completedTargetIds||[]),completedTargetId])", APP)
-        self.assertIn("targets.find(id=>!completed.includes(id))", APP)
+        self.assertIn("function advanceMultiTargetAttackSequence", APP)
+        self.assertIn("new Set([...(normalized.completedTargetIds||[]),completedTargetId])", APP)
+        self.assertIn("normalized.orderedTargetIds.findIndex(id=>!completedTargetIds.includes(id))", APP)
         self.assertIn("state.weaponRuleResolution.currentTargetId", APP)
 
     def test_06_continue_is_guarded_against_repeated_clicks(self):
@@ -66,7 +66,7 @@ class GuidedCombatResumeTests(unittest.TestCase):
         self.assertIn('data-close>Close Guide', APP)
         self.assertIn('id="secondaryTargetsBack">Back', APP)
         self.assertIn("merged.weaponRuleResolution", APP)
-        self.assertIn("completedTargetIds:normalizeIdList", APP)
+        self.assertIn("committedTargetIds:normalizeIdList", APP)
         self.assertIn("rolling:true", APP)
 
     def test_10_seek_light_can_chain_into_secondary_target_guidance(self):
@@ -79,13 +79,13 @@ class GuidedCombatResumeTests(unittest.TestCase):
         self.assertIn("const moreThanEight=Boolean($('#darkOfTombDistance')?.checked)", APP)
 
     def test_11_version_851_is_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.6';", APP)
-        self.assertIn("const APP_VERSION = '8.6.6';", WORKER)
-        self.assertIn("V8.6.6", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.6"))
-        self.assertIn("## v8.6.6", README)
+        self.assertIn("const APP_VERSION = '8.6.7';", APP)
+        self.assertIn("const APP_VERSION = '8.6.7';", WORKER)
+        self.assertIn("V8.6.7", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.7"))
+        self.assertIn("## v8.6.7", README)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.6", INDEX)
+            self.assertIn(f"{asset}?v=8.6.7", INDEX)
 
 
 if __name__ == "__main__":

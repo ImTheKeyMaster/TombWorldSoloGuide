@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.6
+# Tomb World Solo Guide v8.6.7
+
+## v8.6.7
+
+**Version 8.6.7 - Fix Multi-Target Attack Resolution**
+
+- Fixed Blast, Torrent, and Sweeping attacks so every selected target receives a separate combat sequence.
+- Added reliable shared target sequencing for Player and NPO attacks.
+- Added per-target damage, persistence, history, and final multi-target summaries.
+- Preserved single AP costs, weapon rules, combat effects, missions, and activation behavior.
 
 ## v8.6.6
 
