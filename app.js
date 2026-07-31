@@ -3475,6 +3475,10 @@ function showPlayerActivation(stage={}){
     dice.replaceChildren();
     results.innerHTML=`${renderCombatResolution(combat,{pending,animate,showParticipants:false})}${extraHtml}${message?`<p class="muted">${escapeHtml(message)}</p>`:''}`;
     let visualComplete=!animate&&!waiting;
+    const completeWaiting=()=>{
+      visualComplete=true;
+      if(button.isConnected)button.disabled=false;
+    };
     button.textContent='Continue';
     button.disabled=!visualComplete;
     button.onclick=()=>{if(visualComplete&&onContinue)onContinue();};
@@ -3482,6 +3486,7 @@ function showPlayerActivation(stage={}){
       visualComplete=!waiting;
       if(button.isConnected)button.disabled=waiting;
     },results);
+    return {completeWaiting};
   }
 
   function settleDimensionalBanishment(combat,onSettled=()=>{}){
@@ -4408,7 +4413,7 @@ function showPlayerActivation(stage={}){
 
   function displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,animate,waiting=false){
     const banishmentAnimating=result.dimensionalBanishmentTriggered&&!result.dimensionalBanishmentAnimationShown;
-    displaySharedCombatResult(result,{
+    const display=displaySharedCombatResult(result,{
       pending:true,animate,waiting:waiting||banishmentAnimating,
       message:'This result has been recorded. Wounds will be applied exactly once when you Continue.',
       onContinue:()=>{
@@ -4421,8 +4426,7 @@ function showPlayerActivation(stage={}){
       state.combatState={side:'player',stage:{...stage}};
       save();
       settleDimensionalBanishment(result,()=>{
-        const button=$('.combat-resolution-footer .btn.primary');
-        if(button?.isConnected)button.disabled=false;
+        display?.completeWaiting();
       });
     }
   }
@@ -5395,7 +5399,7 @@ function showPlayerActivation(stage={}){
         state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat};
         save();
       }
-      displaySharedCombatResult(resolvedCombat,{
+      const display=displaySharedCombatResult(resolvedCombat,{
         animate,
         waiting:banishmentAnimating,
         message:'Damage is applied exactly once when you Continue.',
@@ -5406,8 +5410,7 @@ function showPlayerActivation(stage={}){
         state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat};
         save();
         settleDimensionalBanishment(resolvedCombat,()=>{
-          const button=$('.combat-resolution-footer .btn.primary');
-          if(button?.isConnected)button.disabled=false;
+          display?.completeWaiting();
         });
       }
     };

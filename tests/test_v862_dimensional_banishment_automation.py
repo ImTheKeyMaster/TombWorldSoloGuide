@@ -89,6 +89,16 @@ console.log(JSON.stringify({{result,unchanged:snapshot===JSON.stringify(original
         self.assertIn("is incapacitated", reminder)
         self.assertIn("survives with", reminder)
 
+    def test_continue_guard_is_released_after_banishment_animation(self):
+        shared = self.section("function displaySharedCombatResult", "function settleDimensionalBanishment")
+        player = self.section("function displayPendingPlayerCombat", "function npoBehavior")
+        npo = self.section("function showNpoAttackWizard", "function spinnerField")
+        self.assertIn("const completeWaiting=()=>", shared)
+        self.assertIn("visualComplete=true", shared)
+        self.assertIn("return {completeWaiting}", shared)
+        self.assertIn("display?.completeWaiting()", player)
+        self.assertIn("display?.completeWaiting()", npo)
+
     def test_persistence_legacy_totals_multitarget_and_journal_guards(self):
         legacy = self.run_resolver({**self.base_combat(), "dimensionalBanishmentRoll": 10}, [])["result"]
         self.assertEqual(legacy["dimensionalBanishmentRoll"], 10)
