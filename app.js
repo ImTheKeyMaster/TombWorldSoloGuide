@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.14';
+  const APP_VERSION = '8.6.15';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -64,23 +64,26 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return backgroundManifest;
   }
 
-  function chooseBackground(){
+  function selectRandomLandscapeBackground(){
     return backgroundManifest[Math.floor(Math.random()*backgroundManifest.length)]||null;
   }
 
-  function ensureGameBackgroundSelection(){
-    if(state.screen!=='game'||!backgroundManifest.length)return false;
-    const saved=state.backgroundSelection?.landscape;
-    if(backgroundManifest.includes(saved))return false;
-    const replacement=chooseBackground();
-    if(!replacement)return false;
-    if(saved)console.warn(`[Background] Saved landscape "${saved}" is unavailable; selected a replacement.`);
-    state.backgroundSelection={landscape:replacement};
-    return true;
+  function isValidLandscapeBackground(filename){
+    return backgroundManifest.includes(filename);
+  }
+
+  function ensureGameBackgroundSelection(sourceState=state){
+    const current=sourceState.backgroundSelection?.landscape;
+    if(isValidLandscapeBackground(current))return current;
+    const selected=selectRandomLandscapeBackground();
+    if(!selected)return null;
+    if(current)console.warn(`[Background] Saved landscape "${current}" is unavailable; selected a replacement.`);
+    sourceState.backgroundSelection={landscape:selected};
+    return selected;
   }
 
   function updateGameBackground(){
-    const filename=state.screen==='game'&&backgroundManifest.includes(state.backgroundSelection?.landscape)
+    const filename=['setup','game'].includes(state.screen)&&isValidLandscapeBackground(state.backgroundSelection?.landscape)
       ? state.backgroundSelection.landscape
       : null;
     const shouldDisplay=Boolean(filename&&desktopBackgroundMedia.matches);
@@ -102,7 +105,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     image.onload=()=>{
       loadingBackgroundFilename=null;
       loadedBackgroundFilename=filename;
-      if(state.backgroundSelection?.landscape!==filename||!desktopBackgroundMedia.matches)return;
+      if(!['setup','game'].includes(state.screen)||state.backgroundSelection?.landscape!==filename||!desktopBackgroundMedia.matches)return;
       gameBackground.style.backgroundImage=`url("${BACKGROUND_IMAGE_PATH}${filename}")`;
       document.documentElement.classList.add('desktop-game-background');
     };
@@ -1813,7 +1816,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         <button class="btn ghost" id="homeHelpBtn">How It Works</button>
       </div>
     </section>`;
-    $('#newGameBtn').onclick=()=>{ state=initialState(); state.screen='setup'; state.setupStep=0; expandedRosterCategories=null; save(); render(); };
+    $('#newGameBtn').onclick=startNewGameSetup;
     $('#continueBtn').onclick=()=>{ if(savedGame){state=normalizeState(savedGame);state.screen='game';render();} };
     $('#homeHelpBtn').onclick=()=>{
       state.screen='help';
@@ -6660,7 +6663,25 @@ function showPlayerActivation(stage={}){
     $('#menuNewGame').onclick=confirmNewGame;
   }
 
-  function confirmNewGame(){showModal('Start New Game?',`<p>This will replace the current mission, roster, Threat, Turning Point, and Journal.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmNewGame">Start New Game</button></div>`);$('#confirmNewGame').onclick=()=>{localStorage.removeItem(STORAGE_KEY);state=initialState();state.screen='setup';objectiveEngine=null;objectiveDefinition=null;missionActivationStarts.clear();expandedRosterCategories=null;closeModal();save();render();};}
+  function startNewGameSetup(){
+    document.documentElement.classList.remove('desktop-game-background');
+    gameBackground.style.backgroundImage='none';
+    loadedBackgroundFilename=null;
+    loadingBackgroundFilename=null;
+    localStorage.removeItem(STORAGE_KEY);
+    state=initialState();
+    state.screen='setup';
+    state.setupStep=0;
+    ensureGameBackgroundSelection();
+    objectiveEngine=null;
+    objectiveDefinition=null;
+    missionActivationStarts.clear();
+    expandedRosterCategories=null;
+    save();
+    updateGameBackground();
+    render();
+  }
+  function confirmNewGame(){showModal('Start New Game?',`<p>This will replace the current mission, roster, Threat, Turning Point, and Journal.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmNewGame">Start New Game</button></div>`);$('#confirmNewGame').onclick=()=>{closeModal();startNewGameSetup();};}
   function exportSave(){if(objectiveEngine)state.missionRuntime=objectiveEngine.getMissionRuntime();const blob=new Blob([JSON.stringify(createPersistedSave(state),null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tomb-world-solo-guide-save.json';a.click();URL.revokeObjectURL(a.href);}
   function migrationDetails(report){
     const details=[];
@@ -6726,7 +6747,11 @@ function showPlayerActivation(stage={}){
     .then(async ([,manifest])=>{
       await loadObjectiveMission();
       recoverInvalidMission();
-      if(ensureGameBackgroundSelection())save();
+      if(['setup','game'].includes(state.screen)){
+        const previousBackground=state.backgroundSelection?.landscape;
+        ensureGameBackgroundSelection();
+        if(state.backgroundSelection?.landscape!==previousBackground)save();
+      }
       const teams=manifest.teams||[];
       if(teams.length===1){
         state.playerTeamId=teams[0].id;

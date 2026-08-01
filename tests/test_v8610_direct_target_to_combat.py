@@ -22,10 +22,10 @@ class V8610DirectTargetToCombatTests(unittest.TestCase):
         self.render = section("function renderNpoDecisionResult", "async function completeNpoActivation")
 
     def test_01_version_displays_8610(self):
-        self.assertIn("const APP_VERSION = '8.6.14';", APP)
-        self.assertIn("const APP_VERSION = '8.6.14';", WORKER)
-        self.assertIn("V8.6.14", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.14"))
+        self.assertIn("const APP_VERSION = '8.6.15';", APP)
+        self.assertIn("const APP_VERSION = '8.6.15';", WORKER)
+        self.assertIn("V8.6.15", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.15"))
 
     def test_02_confirm_target_immediately_opens_combat(self):
         self.assertIn("openNpoCombat(n,decision,[]", self.confirm)
@@ -86,7 +86,7 @@ class V8610DirectTargetToCombatTests(unittest.TestCase):
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
     def test_15_release_notes_are_present(self):
-        self.assertIn("## v8.6.14", README)
+        self.assertIn("## v8.6.15", README)
         self.assertIn("Version 8.6.10 - Remove Redundant Target Confirmation Screen", README)
 
 

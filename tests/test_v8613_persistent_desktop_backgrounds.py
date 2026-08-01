@@ -18,9 +18,9 @@ BACKGROUND_DIR = ROOT / "Assets" / "Images" / "Backgrounds"
 
 class PersistentDesktopBackgroundTests(unittest.TestCase):
     def test_version_and_save_schema(self):
-        self.assertIn("const APP_VERSION = '8.6.14';", APP)
-        self.assertIn("V8.6.14", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.14"))
+        self.assertIn("const APP_VERSION = '8.6.15';", APP)
+        self.assertIn("V8.6.15", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.15"))
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
     def test_manifest_matches_current_landscape_images_in_natural_order(self):
@@ -33,10 +33,10 @@ class PersistentDesktopBackgroundTests(unittest.TestCase):
         natural = sorted(current, key=lambda name: int(re.search(r"\d+", name).group()))
         self.assertEqual(natural, manifest["landscape"])
 
-    def test_selection_is_created_only_for_a_game_and_persisted(self):
+    def test_selection_is_created_for_setup_or_game_and_persisted(self):
         self.assertIn("backgroundSelection:null", APP)
-        self.assertIn("state.screen!=='game'", APP)
-        self.assertIn("state.backgroundSelection={landscape:replacement}", APP)
+        self.assertIn("['setup','game'].includes(state.screen)", APP)
+        self.assertIn("sourceState.backgroundSelection={landscape:selected}", APP)
         self.assertIn("ensureGameBackgroundSelection();", APP)
         self.assertNotIn("backgroundSelection", PERSISTENCE.split("NON_PERSISTED_FIELDS", 1)[1].split("]", 1)[0])
 
@@ -47,7 +47,7 @@ class PersistentDesktopBackgroundTests(unittest.TestCase):
         self.assertNotIn("backgroundSelection", APP.split("function registerServiceWorker", 1)[1].split("registerServiceWorker();", 1)[0])
 
     def test_restore_import_battle_complete_and_offline_keep_selection(self):
-        self.assertIn("if(ensureGameBackgroundSelection())save();", APP)
+        self.assertIn("ensureGameBackgroundSelection();", APP)
         self.assertIn("ensureGameBackgroundSelection();if(!save())", APP)
         battle_complete = APP.split("function renderGame(){", 1)[1].split("function renderPlay", 1)[0]
         self.assertNotIn("chooseBackground", battle_complete)
@@ -55,14 +55,14 @@ class PersistentDesktopBackgroundTests(unittest.TestCase):
         self.assertNotIn("state.backgroundSelection=null", APP)
 
     def test_invalid_saved_filename_is_repaired_with_a_warning(self):
-        self.assertIn("backgroundManifest.includes(saved)", APP)
+        self.assertIn("isValidLandscapeBackground(current)", APP)
         self.assertIn("Saved landscape", APP)
         self.assertIn("selected a replacement", APP)
 
     def test_new_game_state_clears_the_previous_selection(self):
         self.assertIn("state=initialState()", APP)
         self.assertIn("$('#beginGame')?.addEventListener('click',async()=>", APP)
-        self.assertIn("chooseBackground()", APP)
+        self.assertIn("selectRandomLandscapeBackground()", APP)
         self.assertIn("backgroundSelection:null", PERSISTENCE.split("function resetActiveBattle", 1)[1].split("function normalizeSave", 1)[0])
 
     def test_desktop_only_layer_is_decorative_and_preloaded(self):
@@ -101,7 +101,7 @@ class PersistentDesktopBackgroundTests(unittest.TestCase):
             )
 
     def test_release_notes_document_manifest_regeneration(self):
-        self.assertIn("## v8.6.14", README)
+        self.assertIn("## v8.6.15", README)
         self.assertIn("python3 tools/generate-background-manifest.py", README)
 
 
