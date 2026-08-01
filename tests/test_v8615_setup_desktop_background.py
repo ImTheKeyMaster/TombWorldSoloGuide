@@ -29,7 +29,8 @@ class SetupDesktopBackgroundTests(unittest.TestCase):
         start = section("function startNewGameSetup(){", "function confirmNewGame")
         self.assertLess(start.index("state=initialState()"), start.index("ensureGameBackgroundSelection()"))
         self.assertLess(start.index("ensureGameBackgroundSelection()"), start.index("save()"))
-        self.assertLess(start.index("save()"), start.index("render()"))
+        self.assertLess(start.index("save()"), start.index("updateGameBackground()"))
+        self.assertLess(start.index("updateGameBackground()"), start.index("render()"))
         self.assertIn("state.screen='setup'", start)
 
     def test_new_setup_removes_the_previous_image_before_replacement(self):
@@ -44,6 +45,7 @@ class SetupDesktopBackgroundTests(unittest.TestCase):
         self.assertIn("['setup','game'].includes(state.screen)", renderer)
         self.assertIn("desktopBackgroundMedia.matches", renderer)
         self.assertIn("const image=new Image()", renderer)
+        self.assertIn("!['setup','game'].includes(state.screen)", renderer)
         self.assertIn("classList.add('desktop-game-background')", renderer)
 
     def test_selection_helper_validates_and_repairs_once(self):

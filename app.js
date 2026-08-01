@@ -105,7 +105,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     image.onload=()=>{
       loadingBackgroundFilename=null;
       loadedBackgroundFilename=filename;
-      if(state.backgroundSelection?.landscape!==filename||!desktopBackgroundMedia.matches)return;
+      if(!['setup','game'].includes(state.screen)||state.backgroundSelection?.landscape!==filename||!desktopBackgroundMedia.matches)return;
       gameBackground.style.backgroundImage=`url("${BACKGROUND_IMAGE_PATH}${filename}")`;
       document.documentElement.classList.add('desktop-game-background');
     };
@@ -6678,6 +6678,7 @@ function showPlayerActivation(stage={}){
     missionActivationStarts.clear();
     expandedRosterCategories=null;
     save();
+    updateGameBackground();
     render();
   }
   function confirmNewGame(){showModal('Start New Game?',`<p>This will replace the current mission, roster, Threat, Turning Point, and Journal.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmNewGame">Start New Game</button></div>`);$('#confirmNewGame').onclick=()=>{closeModal();startNewGameSetup();};}
