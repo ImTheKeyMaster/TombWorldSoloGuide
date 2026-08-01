@@ -135,13 +135,13 @@ class CollapsibleActiveEventsTests(unittest.TestCase):
         self.assertIn(".active-events-details[open] .active-events-summary::after", STYLES)
 
     def test_21_application_displays_version_755(self):
-        self.assertIn("const APP_VERSION = '8.6.12';", APP)
-        self.assertIn("const APP_VERSION = '8.6.12';", WORKER)
-        self.assertIn("V8.6.12", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.12"))
-        self.assertIn("## v8.6.12", README)
+        self.assertIn("const APP_VERSION = '8.6.13';", APP)
+        self.assertIn("const APP_VERSION = '8.6.13';", WORKER)
+        self.assertIn("V8.6.13", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.13"))
+        self.assertIn("## v8.6.13", README)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.12", INDEX)
+            self.assertIn(f"{asset}?v=8.6.13", INDEX)
 
     def test_22_save_version_and_event_engine_are_not_changed_by_component(self):
         self.assertNotIn("SAVE_VERSION", self.component)

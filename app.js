@@ -2,7 +2,9 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.12';
+  const APP_VERSION = '8.6.13';
+  const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
+  const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
     severe:{mode:'automatic',phase:'after-attack-roll'},
     'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
@@ -41,6 +43,78 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const importInput = $('#importInput');
   const updateNotice = $('#updateNotice');
   const updateAppBtn = $('#updateAppBtn');
+  const gameBackground = $('#gameBackground');
+  const matchMediaProvider=window.matchMedia||globalThis.matchMedia;
+  const desktopBackgroundMedia = matchMediaProvider.call(window,'(hover: hover) and (pointer: fine) and (min-width: 769px)');
+  let backgroundManifest=[];
+  let loadedBackgroundFilename=null;
+  let loadingBackgroundFilename=null;
+
+  async function loadBackgroundManifest(){
+    try{
+      const response=await fetch(BACKGROUND_MANIFEST_PATH,{cache:'no-store'});
+      if(!response.ok)throw new Error(`Unable to load background manifest (${response.status})`);
+      const data=await response.json();
+      backgroundManifest=Array.isArray(data.landscape)?data.landscape.filter(filename=>/^Landscape-\d{2,}\.png$/.test(filename)):[];
+      if(!backgroundManifest.length)throw new Error('Background manifest has no landscape images.');
+    }catch(error){
+      backgroundManifest=[];
+      console.warn('[Background] Landscape backgrounds are unavailable; using the standard background.',error);
+    }
+    return backgroundManifest;
+  }
+
+  function chooseBackground(){
+    return backgroundManifest[Math.floor(Math.random()*backgroundManifest.length)]||null;
+  }
+
+  function ensureGameBackgroundSelection(){
+    if(state.screen!=='game'||!backgroundManifest.length)return false;
+    const saved=state.backgroundSelection?.landscape;
+    if(backgroundManifest.includes(saved))return false;
+    const replacement=chooseBackground();
+    if(!replacement)return false;
+    if(saved)console.warn(`[Background] Saved landscape "${saved}" is unavailable; selected a replacement.`);
+    state.backgroundSelection={landscape:replacement};
+    return true;
+  }
+
+  function updateGameBackground(){
+    const filename=state.screen==='game'&&backgroundManifest.includes(state.backgroundSelection?.landscape)
+      ? state.backgroundSelection.landscape
+      : null;
+    const shouldDisplay=Boolean(filename&&desktopBackgroundMedia.matches);
+    if(!filename){
+      document.documentElement.classList.remove('desktop-game-background');
+      return;
+    }
+    if(loadedBackgroundFilename===filename){
+      if(shouldDisplay){
+        gameBackground.style.backgroundImage=`url("${BACKGROUND_IMAGE_PATH}${filename}")`;
+        document.documentElement.classList.add('desktop-game-background');
+      }else document.documentElement.classList.remove('desktop-game-background');
+      return;
+    }
+    if(loadingBackgroundFilename===filename)return;
+    document.documentElement.classList.remove('desktop-game-background');
+    loadingBackgroundFilename=filename;
+    const image=new Image();
+    image.onload=()=>{
+      loadingBackgroundFilename=null;
+      loadedBackgroundFilename=filename;
+      if(state.backgroundSelection?.landscape!==filename||!desktopBackgroundMedia.matches)return;
+      gameBackground.style.backgroundImage=`url("${BACKGROUND_IMAGE_PATH}${filename}")`;
+      document.documentElement.classList.add('desktop-game-background');
+    };
+    image.onerror=()=>{
+      loadingBackgroundFilename=null;
+      if(state.backgroundSelection?.landscape===filename)console.warn(`[Background] Could not load "${filename}"; using the standard background.`);
+    };
+    image.src=`${BACKGROUND_IMAGE_PATH}${filename}`;
+  }
+
+  if(desktopBackgroundMedia.addEventListener)desktopBackgroundMedia.addEventListener('change',updateGameBackground);
+  else desktopBackgroundMedia.addListener?.(updateGameBackground);
 
   function registerServiceWorker(){
     if(!('serviceWorker' in navigator))return;
@@ -605,6 +679,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   const initialState = () => ({
     version:APP_VERSION, saveVersion:currentSaveVersion(), screen:'home', tab:'play', setupStep:0, missionId:null,
+    backgroundSelection:null,
     setupChecks:{}, restlessTombEnabled:false, deadlyEncountersEnabled:false, deadlyEncountersState:DeadlyEncounters.emptyState(), roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerDisplayNumbers:{}, playerRosterInitializedForTeamId:'', playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
@@ -1623,6 +1698,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     else if(state.screen==='setup') renderSetup();
     else renderGame();
     bindCommon();
+    updateGameBackground();
 
     if(movedToNewStep){
       requestAnimationFrame(()=>{
@@ -2026,8 +2102,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#playerDeployed')?.addEventListener('change',e=>{state.playerDeployed=e.target.checked;save();render();});
     $('#restlessTombEnabled')?.addEventListener('change',e=>{state.restlessTombEnabled=e.target.checked;save();render();});
     $('#deadlyEncountersEnabled')?.addEventListener('change',e=>{state.deadlyEncountersEnabled=e.target.checked;save();render();});
-    $('#beginGame')?.addEventListener('click',()=>{
+    $('#beginGame')?.addEventListener('click',async()=>{
       state.screen='game';state.tab='play';state.turningPoint=0;state.phase='between';state.nextSide='player';state.playerCount=(state.playerRoster||[]).length;state.playerReady=state.playerCount;
+      if(!backgroundManifest.length)await loadBackgroundManifest();
+      ensureGameBackgroundSelection();
       objectiveEngine?.refreshMissionContext(missionLifecycleContext());
       if(!state.playerWounds||Object.keys(state.playerWounds).length===0)initializePlayerWounds();
       state.roster.forEach(n=>n.ready=false);log(`Mission started: ${mission().name}.`);if(state.deadlyEncountersEnabled)log('Deadly Encounters: Tomb Worlds enabled (official PvE expansion, White Dwarf 521).');startTurningPoint();
@@ -6564,7 +6642,7 @@ function showPlayerActivation(stage={}){
   }
   async function commitImported(candidate,report){
     const previous=state;
-    try{state=normalizeState(candidate);state.screen=report.requiresRegeneration?'setup':'game';await loadObjectiveMission();if(!save())throw new Error('Browser storage rejected the migrated save.');render();return true;}
+    try{state=normalizeState(candidate);state.screen=report.requiresRegeneration?'setup':'game';await loadObjectiveMission();ensureGameBackgroundSelection();if(!save())throw new Error('Browser storage rejected the migrated save.');render();return true;}
     catch(error){state=previous;await loadObjectiveMission();console.warn('[Persistence] Migrated import was not committed.',error);showToast('The imported save could not be committed; the current game is unchanged.');return false;}
   }
   function showRegenerationNotice(migration,source){
@@ -6607,10 +6685,11 @@ function showPlayerActivation(stage={}){
   }
 
   if(startupInitializationError)renderStartupRecovery(startupInitializationError);
-  else Promise.all([loadMissionPack(),loadPlayerManifest()])
+  else Promise.all([loadMissionPack(),loadPlayerManifest(),loadBackgroundManifest()])
     .then(async ([,manifest])=>{
       await loadObjectiveMission();
       recoverInvalidMission();
+      if(ensureGameBackgroundSelection())save();
       const teams=manifest.teams||[];
       if(teams.length===1){
         state.playerTeamId=teams[0].id;
