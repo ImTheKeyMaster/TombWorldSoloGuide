@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.14
+# Tomb World Solo Guide v8.6.15
+
+## v8.6.15
+
+**Version 8.6.15 - Show Desktop Background During Game Setup**
+
+* Desktop backgrounds are now selected when New Game setup begins.
+* The selected image remains visible throughout setup, gameplay, and Battle Complete.
+* Setup navigation, refresh, and Update App preserve the same image.
+* Mobile and portrait layouts retain the existing black-to-green background.
 
 ## v8.6.14
 
