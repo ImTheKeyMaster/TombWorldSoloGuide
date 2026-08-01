@@ -48,6 +48,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const desktopBackgroundMedia = matchMediaProvider.call(window,'(hover: hover) and (pointer: fine) and (min-width: 769px)');
   let backgroundManifest=[];
   let loadedBackgroundFilename=null;
+  let loadingBackgroundFilename=null;
 
   async function loadBackgroundManifest(){
     try{
@@ -94,21 +95,26 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       }else document.documentElement.classList.remove('desktop-game-background');
       return;
     }
+    if(loadingBackgroundFilename===filename)return;
     document.documentElement.classList.remove('desktop-game-background');
+    loadingBackgroundFilename=filename;
     const image=new Image();
     image.onload=()=>{
+      loadingBackgroundFilename=null;
       loadedBackgroundFilename=filename;
       if(state.backgroundSelection?.landscape!==filename||!desktopBackgroundMedia.matches)return;
       gameBackground.style.backgroundImage=`url("${BACKGROUND_IMAGE_PATH}${filename}")`;
       document.documentElement.classList.add('desktop-game-background');
     };
     image.onerror=()=>{
+      loadingBackgroundFilename=null;
       if(state.backgroundSelection?.landscape===filename)console.warn(`[Background] Could not load "${filename}"; using the standard background.`);
     };
     image.src=`${BACKGROUND_IMAGE_PATH}${filename}`;
   }
 
-  desktopBackgroundMedia.addEventListener?.('change',updateGameBackground);
+  if(desktopBackgroundMedia.addEventListener)desktopBackgroundMedia.addEventListener('change',updateGameBackground);
+  else desktopBackgroundMedia.addListener?.(updateGameBackground);
 
   function registerServiceWorker(){
     if(!('serviceWorker' in navigator))return;

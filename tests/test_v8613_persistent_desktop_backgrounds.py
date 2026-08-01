@@ -63,11 +63,13 @@ class PersistentDesktopBackgroundTests(unittest.TestCase):
         self.assertIn("state=initialState()", APP)
         self.assertIn("$('#beginGame')?.addEventListener('click',async()=>", APP)
         self.assertIn("chooseBackground()", APP)
+        self.assertIn("backgroundSelection:null", PERSISTENCE.split("function resetActiveBattle", 1)[1].split("function normalizeSave", 1)[0])
 
     def test_desktop_only_layer_is_decorative_and_preloaded(self):
         self.assertIn('<div id="gameBackground" aria-hidden="true"></div>', INDEX)
         self.assertIn("(hover: hover) and (pointer: fine) and (min-width: 769px)", APP)
         self.assertIn("const image=new Image()", APP)
+        self.assertIn("loadingBackgroundFilename===filename", APP)
         self.assertIn("pointer-events:none", STYLES)
         self.assertIn("position:fixed", STYLES)
         self.assertIn("forced-colors:active", STYLES)
