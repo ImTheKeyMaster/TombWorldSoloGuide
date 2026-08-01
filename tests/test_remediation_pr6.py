@@ -35,8 +35,8 @@ class RemediationPr6Tests(unittest.TestCase):
 
     def test_official_quantity_and_ten_npo_limit(self):
         source = self.function_source("processReinforcementStage", "reinforcementTriggered")
-        self.assertLess(source.index("d.grade=threatGrade()"), source.index("requested=d.grade"))
-        self.assertIn("requested=d.grade", source)
+        self.assertLess(source.index("d.grade=threatGrade()"), source.index("requested=gradeConfig(d.grade).reinforcements"))
+        self.assertIn("requested=gradeConfig(d.grade).reinforcements", source)
         self.assertIn("MAX_NPOS-activeNpos().length", source)
         self.assertIn("actual=Math.min(requested,slots)", source)
         self.assertIn("blocked=requested-actual", source)

@@ -152,7 +152,7 @@ class DeadlyEncounterIntegration(unittest.TestCase):
         self.assertIn('Update Carried Marker',APP);self.assertIn('marker.carrierId=',APP)
     def test_restless_tomb_event_count_unchanged(self):
         logic=APP.split('function strategyEventCount',1)[1].split('function threatLabel',1)[0]
-        self.assertIn('state.restlessTombEnabled&&state.turningPoint>=2?Math.max(normalCount,1):normalCount',logic)
+        self.assertIn('restlessTombEnabled&&turningPoint>=2?Math.max(normalCount,1):normalCount',logic)
         self.assertNotIn('deadly',logic.lower())
 
     def test_deadly_encounters_does_not_use_event_deck_or_threat(self):
@@ -175,11 +175,11 @@ class DeadlyEncounterIntegration(unittest.TestCase):
         self.assertIn('feature-status',APP)
 
     def test_release_version_and_precache(self):
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.13'));self.assertIn('## v8.6.13',README)
-        self.assertIn("const APP_VERSION = '8.6.13';",APP);self.assertIn("const APP_VERSION = '8.6.13';",WORKER);self.assertIn('V8.6.13',INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.14'));self.assertIn('## v8.6.14',README)
+        self.assertIn("const APP_VERSION = '8.6.14';",APP);self.assertIn("const APP_VERSION = '8.6.14';",WORKER);self.assertIn('V8.6.14',INDEX)
         self.assertIn('./deadly-encounters.js?v=${APP_VERSION}',WORKER)
         for asset in ['styles.css','mission-engine.js','persistence.js','deadly-encounters.js','app.js']:
-            self.assertIn(f'{asset}?v=8.6.13',INDEX)
+            self.assertIn(f'{asset}?v=8.6.14',INDEX)
 
 
 def _feature_test(feature_id, tokens):

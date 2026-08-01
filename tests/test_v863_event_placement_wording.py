@@ -15,14 +15,14 @@ def source(start, end):
 
 class EventPlacementWordingTests(unittest.TestCase):
     def test_current_version_is_consistent_without_save_schema_change(self):
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.13"))
-        self.assertIn("## v8.6.13", README)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.14"))
+        self.assertIn("## v8.6.14", README)
         self.assertIn("Version 8.6.5 - Show Player Wounds in Target Selection", README)
-        self.assertIn("const APP_VERSION = '8.6.13';", APP)
-        self.assertIn("const APP_VERSION = '8.6.13';", WORKER)
-        self.assertIn("V8.6.13", INDEX)
+        self.assertIn("const APP_VERSION = '8.6.14';", APP)
+        self.assertIn("const APP_VERSION = '8.6.14';", WORKER)
+        self.assertIn("V8.6.14", INDEX)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.13", INDEX)
+            self.assertIn(f"{asset}?v=8.6.14", INDEX)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
 
     def test_awakened_warrior_instruction_is_specific(self):

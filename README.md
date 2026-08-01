@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.13
+# Tomb World Solo Guide v8.6.14
+
+## v8.6.14
+
+**Version 8.6.14 - Explain Grade Gameplay Changes**
+
+* Added clear gameplay descriptions to Grade-change pop-up cards.
+* Grade cards now explain the active reinforcement, event, and awakening behavior.
+* Descriptions are derived from the same Grade configuration used by gameplay.
+* Added Restless Tomb-aware wording without changing any Grade mechanics.
 
 ## v8.6.13
 
