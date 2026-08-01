@@ -140,7 +140,7 @@ assert.deepEqual(second.state,first.state);
 """)
 
     def test_startup_notice_is_gated_by_real_changes_and_successful_save(self):
-        startup = APP.split("Promise.all([loadMissionPack(),loadPlayerManifest()])", 1)[1]
+        startup = APP.split("Promise.all([loadMissionPack(),loadPlayerManifest(),loadBackgroundManifest()])", 1)[1]
         imports = APP.split("importInput.addEventListener('change'", 1)[1].split(
             "function bindCommon", 1
         )[0]

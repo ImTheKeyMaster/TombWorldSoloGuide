@@ -1,12 +1,13 @@
 'use strict';
 
-const APP_VERSION = '8.6.12';
+const APP_VERSION = '8.6.13';
 const CACHE_PREFIX = 'tomb-world-solo-guide-';
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 const APP_SHELL = './index.html';
 const PRECACHE_ASSETS = [
   './', APP_SHELL, `./event-effects.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`,
   './manifest.webmanifest', './Assets/icon.svg',
+  './Assets/Images/Backgrounds/manifest.json',
   './Assets/Images/defeat.png', './Assets/Images/victory.png',
   './Assets/Maps/mission-01.png', './Assets/Maps/mission-02.png', './Assets/Maps/mission-03.png',
   './Assets/Maps/mission-04.png', './Assets/Maps/mission-05.png', './Assets/Maps/mission-06.png',
@@ -22,7 +23,13 @@ const PRECACHE_ASSETS = [
 const canCache = response => response && response.ok && response.type === 'basic';
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE_ASSETS)));
+  event.waitUntil(caches.open(CACHE_NAME).then(async cache => {
+    await cache.addAll(PRECACHE_ASSETS);
+    const response=await cache.match('./Assets/Images/Backgrounds/manifest.json');
+    const manifest=await response.json();
+    const backgrounds=(manifest.landscape||[]).map(filename=>`./Assets/Images/Backgrounds/${filename}`);
+    await cache.addAll(backgrounds);
+  }));
 });
 
 self.addEventListener('activate', event => {

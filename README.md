@@ -1,4 +1,16 @@
-# Tomb World Solo Guide v8.6.12
+# Tomb World Solo Guide v8.6.13
+
+## v8.6.13
+
+**Version 8.6.13 - Add Persistent Desktop Backgrounds**
+
+* Added one randomly selected landscape background for each new game.
+* Desktop games retain the same selected background for the complete battle.
+* Added manifest-based discovery for additional sequentially named landscape images.
+* Preserved the existing stylized black-to-green background on mobile and portrait layouts.
+* Added save, import, update, and offline persistence for the selected desktop background.
+
+After adding or removing files in `Assets/Images/Backgrounds/`, run `python3 tools/generate-background-manifest.py` and include the regenerated manifest in the next application release.
 
 ## v8.6.12
 
