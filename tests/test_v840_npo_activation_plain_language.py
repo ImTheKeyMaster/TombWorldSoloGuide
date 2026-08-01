@@ -16,14 +16,14 @@ def section(start, end):
 
 class V840NpoActivationPlainLanguageTests(unittest.TestCase):
     def test_version_and_save_compatibility(self):
-        self.assertIn("const APP_VERSION = '8.6.6';", APP)
-        self.assertIn("const APP_VERSION = '8.6.6';", WORKER)
-        self.assertIn('V8.6.6', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.6'))
-        self.assertIn('## v8.6.6', README)
+        self.assertIn("const APP_VERSION = '8.6.12';", APP)
+        self.assertIn("const APP_VERSION = '8.6.12';", WORKER)
+        self.assertIn('V8.6.12', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.12'))
+        self.assertIn('## v8.6.12', README)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.6', INDEX)
+            self.assertIn(f'{asset}?v=8.6.12', INDEX)
 
     def test_profile_and_progress_plain_language(self):
         prompt = section('function renderNpoActivationHeader', 'function renderNpoGuideFooter')

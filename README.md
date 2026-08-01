@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.6
+# Tomb World Solo Guide v8.6.12
+
+## v8.6.12
+
+**Version 8.6.12 - Fix Combat Summary Word Wrapping**
+
+* Prevented combat summary cards from splitting normal words.
+* Added a responsive multi-row desktop summary layout.
+* Preserved readable text and mobile responsiveness.
 
 ## v8.6.6
 

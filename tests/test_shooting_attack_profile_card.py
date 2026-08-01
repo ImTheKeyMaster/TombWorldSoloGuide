@@ -16,8 +16,8 @@ class ShootingAttackProfileCardTests(unittest.TestCase):
 
     def test_attack_card_is_immediately_before_unchanged_defense_card(self):
         screen = self.source("function showSharedCombatResolutionScreen", "function displaySharedCombatResult")
-        attack_card = "${attackLabel?`<div><small>Attack</small><strong>${escapeHtml(attackLabel)}</strong></div>`:''}"
-        defense_card = '<div><small>Defense</small><strong>${escapeHtml(defenseLabel)}</strong></div>'
+        attack_card = """${attackLabel?`<div><small>Attack</small><strong class="combat-summary-value">${escapeHtml(attackLabel)}</strong></div>`:''}"""
+        defense_card = '''<div><small>Defense</small><strong class="combat-summary-value">${escapeHtml(defenseLabel)}</strong></div>'''
         self.assertIn(attack_card, screen)
         self.assertIn(defense_card, screen)
         self.assertLess(screen.index(attack_card), screen.index(defense_card))

@@ -16,8 +16,8 @@ class NpoAttackProfileCardTests(unittest.TestCase):
 
     def test_shared_attack_card_is_immediately_before_defense(self):
         screen = self.source("function showSharedCombatResolutionScreen", "function displaySharedCombatResult")
-        attack = "${attackLabel?`<div><small>Attack</small><strong>${escapeHtml(attackLabel)}</strong></div>`:''}"
-        defense = '<div><small>Defense</small><strong>${escapeHtml(defenseLabel)}</strong></div>'
+        attack = """${attackLabel?`<div><small>Attack</small><strong class="combat-summary-value">${escapeHtml(attackLabel)}</strong></div>`:''}"""
+        defense = '''<div><small>Defense</small><strong class="combat-summary-value">${escapeHtml(defenseLabel)}</strong></div>'''
         self.assertIn(attack, screen)
         self.assertLess(screen.index(attack), screen.index(defense))
 

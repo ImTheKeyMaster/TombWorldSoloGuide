@@ -175,11 +175,11 @@ class DeadlyEncounterIntegration(unittest.TestCase):
         self.assertIn('feature-status',APP)
 
     def test_release_version_and_precache(self):
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.6'));self.assertIn('## v8.6.6',README)
-        self.assertIn("const APP_VERSION = '8.6.6';",APP);self.assertIn("const APP_VERSION = '8.6.6';",WORKER);self.assertIn('V8.6.6',INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.12'));self.assertIn('## v8.6.12',README)
+        self.assertIn("const APP_VERSION = '8.6.12';",APP);self.assertIn("const APP_VERSION = '8.6.12';",WORKER);self.assertIn('V8.6.12',INDEX)
         self.assertIn('./deadly-encounters.js?v=${APP_VERSION}',WORKER)
         for asset in ['styles.css','mission-engine.js','persistence.js','deadly-encounters.js','app.js']:
-            self.assertIn(f'{asset}?v=8.6.6',INDEX)
+            self.assertIn(f'{asset}?v=8.6.12',INDEX)
 
 
 def _feature_test(feature_id, tokens):
