@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.15
+# Tomb World Solo Guide v8.6.16
+
+## v8.6.16
+
+**Version 8.6.16 - Clarify Grade Gameplay Changes**
+
+* Reworded Grade effects to clearly explain what will happen after escalation.
+* Identified reinforcements explicitly as NPO reinforcements.
+* Distinguished app-controlled effects from player tabletop actions.
+* Standardized future tense, timing, terminology, and singular/plural grammar across all Grades.
 
 ## v8.6.15
 

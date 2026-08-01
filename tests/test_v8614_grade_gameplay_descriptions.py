@@ -16,10 +16,10 @@ def function_source(name, next_name):
 
 class GradeGameplayDescriptionTests(unittest.TestCase):
     def test_01_version_and_save_version(self):
-        self.assertIn("const APP_VERSION = '8.6.15';", APP)
-        self.assertIn("const APP_VERSION = '8.6.15';", WORKER)
-        self.assertIn("V8.6.15", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.15"))
+        self.assertIn("const APP_VERSION = '8.6.16';", APP)
+        self.assertIn("const APP_VERSION = '8.6.16';", WORKER)
+        self.assertIn("V8.6.16", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.16"))
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
     def test_02_every_grade_uses_one_canonical_configuration(self):
@@ -55,9 +55,9 @@ class GradeGameplayDescriptionTests(unittest.TestCase):
     def test_05_reinforcement_and_initial_grade_wording_matches_engine(self):
         helper = function_source("gradeGameplayDescription", "threatLabel")
         self.assertIn("config.reinforcements", helper)
-        self.assertIn("No normal reinforcements are deployed at this Grade.", helper)
-        self.assertIn("Deployed NPOs remain Dormant and are not Ready.", helper)
-        self.assertIn("Deployed NPOs are Ready instead of Dormant.", helper)
+        self.assertIn("No NPO reinforcements will be added through the normal Grade rules.", helper)
+        self.assertIn("Deployed NPOs will remain Dormant unless another rule makes them Ready.", helper)
+        self.assertIn("Deployed NPOs will enter play Ready instead of Dormant.", helper)
 
     def test_06_event_description_uses_normal_and_effective_helpers(self):
         helper = function_source("gradeGameplayDescription", "threatLabel")
@@ -84,7 +84,7 @@ class GradeGameplayDescriptionTests(unittest.TestCase):
         self.assertIn("<h3 id=\"grade-gameplay-heading\"", render)
         self.assertIn("<ul>", render)
         self.assertIn("gradeDescription.effects.map", render)
-        self.assertIn("escapeHtml(effect)", render)
+        self.assertIn("escapeHtml(effect.text)", render)
         self.assertIn("escapeHtml(gradeDescription.threatRange)", render)
         self.assertIn("dismissGradeMilestone')?.focus", render)
 
@@ -102,8 +102,8 @@ class GradeGameplayDescriptionTests(unittest.TestCase):
 
     def test_11_release_assets_and_notes(self):
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f'{asset}?v=8.6.15', INDEX)
-        self.assertIn("## v8.6.15", README)
+            self.assertIn(f'{asset}?v=8.6.16', INDEX)
+        self.assertIn("## v8.6.16", README)
         self.assertIn("**Version 8.6.14 - Explain Grade Gameplay Changes**", README)
 
     def test_12_next_grade_threshold_uses_canonical_configuration(self):

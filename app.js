@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.15';
+  const APP_VERSION = '8.6.16';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -1609,15 +1609,28 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       normalStrategyEventCount({turningPoint,grade:config.grade,suggestedInitiative:'npo',threat:config.minThreat}),
       normalStrategyEventCount({turningPoint,grade:config.grade,suggestedInitiative:'player',threat:config.maxThreat})
     );
-    const reinforcementEffect=config.reinforcements
-      ? `Deploy ${config.reinforcements} reinforcement${config.reinforcements===1?'':'s'} during each Strategy Phase after Turning Point 1.`
-      : 'No normal reinforcements are deployed at this Grade.';
-    let eventEffect;
-    if(effectiveEvents===0)eventEffect='No normal Tomb World events are resolved at this Grade.';
-    else if(restlessTombEnabled&&effectiveEvents>normalEvents)eventEffect=`Resolve at least ${effectiveEvents} Tomb World event${effectiveEvents===1?'':'s'} during each Strategy Phase after Turning Point 1 because Restless Tomb is enabled.`;
-    else if(elevatedEvents>standardEvents)eventEffect=`Resolve ${standardEvents} Tomb World event${standardEvents===1?'':'s'} during each Strategy Phase after Turning Point 1, or ${elevatedEvents} when NPOs have initiative or Threat reaches ${config.maxThreat}.`;
-    else eventEffect=`Resolve ${effectiveEvents} Tomb World event${effectiveEvents===1?'':'s'} during each Strategy Phase after Turning Point 1.`;
-    const awakeningEffect=config.grade===0?'Deployed NPOs remain Dormant and are not Ready.':'Deployed NPOs are Ready instead of Dormant.';
+    const reinforcementEffect={
+      id:'npo-reinforcements',
+      subject:'NPO reinforcements',
+      automation:config.reinforcements?'guided':'informational',
+      text:config.reinforcements
+        ? `The Guide will prompt you to place ${config.reinforcements} NPO reinforcement${config.reinforcements===1?'':'s'} during each Strategy Phase after Turning Point 1.`
+        : 'No NPO reinforcements will be added through the normal Grade rules.'
+    };
+    let eventText;
+    if(effectiveEvents===0)eventText='No Tomb World events will be resolved through the normal Grade rules.';
+    else if(restlessTombEnabled&&effectiveEvents>normalEvents)eventText=`The Guide will prompt you to resolve at least ${effectiveEvents} Tomb World event${effectiveEvents===1?'':'s'} during each Strategy Phase after Turning Point 1 because Restless Tomb is enabled.`;
+    else if(elevatedEvents>standardEvents)eventText=`The Guide will prompt you to resolve ${standardEvents} Tomb World event${standardEvents===1?'':'s'} during each Strategy Phase after Turning Point 1, or ${elevatedEvents} when NPOs have initiative or Threat reaches ${config.maxThreat}.`;
+    else eventText=`The Guide will prompt you to resolve ${effectiveEvents} Tomb World event${effectiveEvents===1?'':'s'} during each Strategy Phase after Turning Point 1.`;
+    const eventEffect={id:'tomb-world-events',subject:'Tomb World events',automation:effectiveEvents?'guided':'informational',text:eventText};
+    const awakeningEffect={
+      id:'npo-deployment-state',
+      subject:'NPO deployment state',
+      automation:'automatic',
+      text:config.grade===0
+        ? 'Deployed NPOs will remain Dormant unless another rule makes them Ready.'
+        : 'Deployed NPOs will enter play Ready instead of Dormant.'
+    };
     return {grade:config.grade,name:config.name,threatRange:`Threat Level ${config.minThreat}${config.minThreat===config.maxThreat?'':`–${config.maxThreat}`}`,effects:[reinforcementEffect,eventEffect,awakeningEffect].filter(Boolean)};
   }
   function threatLabel(){return gradeConfig(threatGrade()).name;}
@@ -2367,8 +2380,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function renderPlay(){
-    const gradeDescription=state.gradeMilestone?gradeGameplayDescription(state.gradeMilestone.grade,{threat:state.gradeMilestone.threat,turningPoint:Math.max(2,state.turningPoint),restlessTombEnabled:state.restlessTombEnabled}):null;
-    const milestone=gradeDescription?`<section class="grade-milestone" role="dialog" aria-labelledby="grade-milestone-heading" aria-describedby="grade-milestone-description"><div><small>THREAT ESCALATION</small><h2 id="grade-milestone-heading">Grade ${gradeDescription.grade}: ${escapeHtml(gradeDescription.name)}</h2><span>${escapeHtml(gradeDescription.threatRange)}</span><section id="grade-milestone-description" class="grade-gameplay-changes" aria-labelledby="grade-gameplay-heading"><h3 id="grade-gameplay-heading">GAMEPLAY CHANGES</h3><ul>${gradeDescription.effects.map(effect=>`<li>${escapeHtml(effect)}</li>`).join('')}</ul></section></div><button class="btn ghost compact" id="dismissGradeMilestone">Dismiss</button></section>`:'';
+    const gradeDescription=state.gradeMilestone?gradeGameplayDescription(state.gradeMilestone.grade,{threat:state.gradeMilestone.threat,turningPoint:Math.max(2,state.turningPoint),suggestedInitiative:state.strategyData?.suggestedInitiative,restlessTombEnabled:state.restlessTombEnabled}):null;
+    const milestone=gradeDescription?`<section class="grade-milestone" role="dialog" aria-labelledby="grade-milestone-heading" aria-describedby="grade-milestone-description"><div><small>THREAT ESCALATION</small><h2 id="grade-milestone-heading">Grade ${gradeDescription.grade}: ${escapeHtml(gradeDescription.name)}</h2><span>${escapeHtml(gradeDescription.threatRange)}</span><section id="grade-milestone-description" class="grade-gameplay-changes" aria-labelledby="grade-gameplay-heading"><h3 id="grade-gameplay-heading">GAMEPLAY CHANGES</h3><ul>${gradeDescription.effects.map(effect=>`<li>${escapeHtml(effect.text)}</li>`).join('')}</ul></section></div><button class="btn ghost compact" id="dismissGradeMilestone">Dismiss</button></section>`:'';
     app.innerHTML=hud()+milestone+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${state.phase!=='strategy'?activeEventEffectsHtml():''}${nextStepCard()}${state.phase==='firefight'?activationTracker():''}`;
     bindPlay();
     if(gradeDescription)requestAnimationFrame(()=>$('#dismissGradeMilestone')?.focus({preventScroll:true}));
