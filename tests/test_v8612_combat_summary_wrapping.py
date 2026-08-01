@@ -57,6 +57,14 @@ class V8612CombatSummaryWrappingTests(unittest.TestCase):
         self.assertLessEqual((minimum * 2) + gap, mobile_content_width)
         self.assertIn("overflow-x:hidden", STYLES)
 
+        narrow_phone_rule = (
+            "@media(max-width:360px){\n"
+            "  .combat-summary-grid,.combat-summary-grid.has-attack-profile{grid-template-columns:1fr}\n"
+            "}"
+        )
+        self.assertIn(narrow_phone_rule, STYLES)
+        self.assertGreater(STYLES.index(narrow_phone_rule), STYLES.index("/* v8.6.12 combat summary wrapping */"))
+
     def test_06_long_names_are_escaped_and_text_is_not_shrunk(self):
         screen = APP[APP.index("function showSharedCombatResolutionScreen"):APP.index("function severeAppliedHtml")]
         self.assertIn("${escapeHtml(attackerName)}", screen)

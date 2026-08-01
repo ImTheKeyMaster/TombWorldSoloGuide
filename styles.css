@@ -1334,3 +1334,6 @@ button.tracker-operative:hover{
 .combat-participants .combat-summary-value{
   overflow-wrap:break-word;
 }
+@media(max-width:360px){
+  .combat-summary-grid,.combat-summary-grid.has-attack-profile{grid-template-columns:1fr}
+}
