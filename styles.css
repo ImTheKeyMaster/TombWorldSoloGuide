@@ -1318,3 +1318,19 @@ button.tracker-operative:hover{
 .d33-result span{display:inline-grid;place-items:center;min-width:42px;min-height:42px;padding:5px;border:1px solid var(--green2);border-radius:8px;color:var(--green);font-weight:900}
 .resolution-steps{padding-left:1.4rem}
 @media(max-width:390px){.optional-rules .check-row{align-items:flex-start}.rule-classification{width:auto}.deadly-section .game-menu-grid{grid-template-columns:1fr}}
+
+/* v8.6.12 combat summary wrapping */
+.combat-summary-grid,
+.combat-summary-grid.has-attack-profile{
+  grid-template-columns:repeat(auto-fit,minmax(135px,1fr));
+  gap:.5rem;
+}
+.combat-summary-value{
+  min-width:0;
+  word-break:normal;
+  overflow-wrap:break-word;
+  hyphens:none;
+}
+.combat-participants .combat-summary-value{
+  overflow-wrap:break-word;
+}

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.6';
+  const APP_VERSION = '8.6.12';
   const WEAPON_RULE_HANDLERS = Object.freeze({
     severe:{mode:'automatic',phase:'after-attack-roll'},
     'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
@@ -3513,13 +3513,13 @@ function showPlayerActivation(stage={}){
   function showSharedCombatResolutionScreen({title,attackerName,defenderName,attackType,weaponName,attackLabel='',defenseLabel,cancelId,continueId,extraHtml='',detailsHtml=''}){
     showModal(title,`
       <section class="dedicated-combat-screen" aria-label="Combat resolution screen">
-        <div class="damage-summary combat-participants compact-combat-profile${attackLabel?' has-attack-profile':''}">
-          <div><small>Attacker</small><strong>${escapeHtml(attackerName)}</strong></div>
-          <div><small>Defender</small><strong>${escapeHtml(defenderName)}</strong></div>
-          <div><small>Attack type</small><strong>${attackType==='shoot'?'Shooting':'Melee'}</strong></div>
-          <div><small>Weapon</small><strong>${escapeHtml(weaponName)}</strong></div>
-          ${attackLabel?`<div><small>Attack</small><strong>${escapeHtml(attackLabel)}</strong></div>`:''}
-          <div><small>Defense</small><strong>${escapeHtml(defenseLabel)}</strong></div>
+        <div class="damage-summary combat-participants compact-combat-profile combat-summary-grid${attackLabel?' has-attack-profile':''}">
+          <div><small>Attacker</small><strong class="combat-summary-value">${escapeHtml(attackerName)}</strong></div>
+          <div><small>Defender</small><strong class="combat-summary-value">${escapeHtml(defenderName)}</strong></div>
+          <div><small>Attack type</small><strong class="combat-summary-value">${attackType==='shoot'?'Shooting':'Melee'}</strong></div>
+          <div><small>Weapon</small><strong class="combat-summary-value">${escapeHtml(weaponName)}</strong></div>
+          ${attackLabel?`<div><small>Attack</small><strong class="combat-summary-value">${escapeHtml(attackLabel)}</strong></div>`:''}
+          <div><small>Defense</small><strong class="combat-summary-value">${escapeHtml(defenseLabel)}</strong></div>
         </div>
         ${extraHtml}
         <div id="automaticCombat" class="combat-results combat-dice-area" aria-live="polite"></div>
