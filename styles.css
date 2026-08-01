@@ -646,10 +646,14 @@ body.modal-open{
   background:linear-gradient(135deg,rgba(212,155,56,.2),rgba(77,24,12,.38));
   box-shadow:0 0 24px rgba(212,155,56,.12);
 }
-.grade-milestone div{display:grid;gap:3px}
+.grade-milestone>div{display:grid;gap:3px;min-width:0}
 .grade-milestone small{font-weight:900;letter-spacing:.12em;color:#efc36d}
-.grade-milestone strong{font-size:1.15rem}
+.grade-milestone h2{margin:0;font-size:1.15rem}
 .grade-milestone span{color:var(--muted)}
+.grade-gameplay-changes{margin-top:10px}
+.grade-gameplay-changes h3{margin:0 0 6px;font-size:.8rem;letter-spacing:.12em}
+.grade-gameplay-changes ul{margin:0;padding-left:1.2rem}
+.grade-gameplay-changes li{margin-top:4px;line-height:1.35}
 .turn-summary-grid{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
