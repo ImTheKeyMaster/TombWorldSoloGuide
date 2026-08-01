@@ -1601,19 +1601,25 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const restlessTombEnabled=context.restlessTombEnabled??state.restlessTombEnabled;
     const normalEvents=normalStrategyEventCount({turningPoint,grade:config.grade,suggestedInitiative,threat});
     const effectiveEvents=strategyEventCount({grade:config.grade,suggestedInitiative},{turningPoint,threat,restlessTombEnabled});
+    const standardEvents=normalStrategyEventCount({turningPoint,grade:config.grade,suggestedInitiative:'player',threat:config.minThreat});
+    const elevatedEvents=Math.max(
+      normalStrategyEventCount({turningPoint,grade:config.grade,suggestedInitiative:'npo',threat:config.minThreat}),
+      normalStrategyEventCount({turningPoint,grade:config.grade,suggestedInitiative:'player',threat:config.maxThreat})
+    );
     const reinforcementEffect=config.reinforcements
       ? `Deploy ${config.reinforcements} reinforcement${config.reinforcements===1?'':'s'} during each Strategy Phase after Turning Point 1.`
       : 'No normal reinforcements are deployed at this Grade.';
     let eventEffect;
     if(effectiveEvents===0)eventEffect='No normal Tomb World events are resolved at this Grade.';
     else if(restlessTombEnabled&&effectiveEvents>normalEvents)eventEffect=`Resolve at least ${effectiveEvents} Tomb World event${effectiveEvents===1?'':'s'} during each Strategy Phase after Turning Point 1 because Restless Tomb is enabled.`;
-    else if(config.grade===3)eventEffect='Resolve 1 Tomb World event during each Strategy Phase after Turning Point 1, or 2 when NPOs have initiative or Threat reaches 15.';
+    else if(elevatedEvents>standardEvents)eventEffect=`Resolve ${standardEvents} Tomb World event${standardEvents===1?'':'s'} during each Strategy Phase after Turning Point 1, or ${elevatedEvents} when NPOs have initiative or Threat reaches ${config.maxThreat}.`;
     else eventEffect=`Resolve ${effectiveEvents} Tomb World event${effectiveEvents===1?'':'s'} during each Strategy Phase after Turning Point 1.`;
     const awakeningEffect=config.grade===0?'Deployed NPOs remain Dormant and are not Ready.':'Deployed NPOs are Ready instead of Dormant.';
     return {grade:config.grade,name:config.name,threatRange:`Threat Level ${config.minThreat}${config.minThreat===config.maxThreat?'':`–${config.maxThreat}`}`,effects:[reinforcementEffect,eventEffect,awakeningEffect].filter(Boolean)};
   }
   function threatLabel(){return gradeConfig(threatGrade()).name;}
-  function threatToNext(){ const g=threatGrade(); if(g===3)return 0; return [1,6,11][g]-state.threat; }
+  function nextGradeThreat(){return GRADE_CONFIG[threatGrade()+1]?.minThreat??null;}
+  function threatToNext(){const next=nextGradeThreat();return next===null?0:next-state.threat;}
   function log(text){ state.journal.unshift({time:new Date().toISOString(),text}); state.journal=state.journal.slice(0,150); }
   function setThreat(amount,reason){
     const before=state.threat;
@@ -2207,7 +2213,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return `<button class="hud-cell mission-hud" id="missionHud" type="button" aria-label="Mission details, ${escapeHtml(name)}, ${escapeHtml(status)}"><small>${escapeHtml(label)}</small><strong>${completeMark}${escapeHtml(value)}</strong></button>`;
   }
 
-  function hud(){return `<div class="hud"><div><small>Turning<span class="portrait-break"><br></span> Point</small><strong>${state.turningPoint||'Setup'}</strong></div><button class="hud-cell hud-threat" id="threatHudToggle" type="button" aria-expanded="${threatAdjustOpen}" aria-controls="threatAdjuster"><small>Threat<span class="portrait-break"><br></span> Level</small><strong>${state.threat}</strong></button><div><small>Grade<span class="portrait-break"><br></span> Level</small><strong>${threatGrade()}</strong></div><div><small>Player<span class="portrait-break"><br></span> Ready</small><strong>${state.playerReady}</strong></div><div><small>NPO<span class="portrait-break"><br></span> Ready</small><strong>${readyNpos().length}</strong></div>${missionHudHtml()}</div><div class="threat-strip ${threatAdjustOpen?'':'hidden'}" id="threatAdjuster"><div><strong>THREAT LEVEL: ${threatLabel()}</strong><small>${threatGrade()===3?'Maximum Grade':`Next Grade at Threat Level ${[1,6,11][threatGrade()]}`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
+  function hud(){return `<div class="hud"><div><small>Turning<span class="portrait-break"><br></span> Point</small><strong>${state.turningPoint||'Setup'}</strong></div><button class="hud-cell hud-threat" id="threatHudToggle" type="button" aria-expanded="${threatAdjustOpen}" aria-controls="threatAdjuster"><small>Threat<span class="portrait-break"><br></span> Level</small><strong>${state.threat}</strong></button><div><small>Grade<span class="portrait-break"><br></span> Level</small><strong>${threatGrade()}</strong></div><div><small>Player<span class="portrait-break"><br></span> Ready</small><strong>${state.playerReady}</strong></div><div><small>NPO<span class="portrait-break"><br></span> Ready</small><strong>${readyNpos().length}</strong></div>${missionHudHtml()}</div><div class="threat-strip ${threatAdjustOpen?'':'hidden'}" id="threatAdjuster"><div><strong>THREAT LEVEL: ${threatLabel()}</strong><small>${threatGrade()===3?'Maximum Grade':`Next Grade at Threat Level ${nextGradeThreat()}`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
 
   function livingPlayerOptions(selected=''){
     return inPlayPlayerOperativeIds().filter(id=>!state.playerCasualtyIds.includes(id)).map(id=>`<option value="${escapeHtml(id)}" ${id===selected?'selected':''}>${escapeHtml(playerName(id))}</option>`).join('');

@@ -64,6 +64,9 @@ class GradeGameplayDescriptionTests(unittest.TestCase):
         self.assertIn("normalStrategyEventCount", helper)
         self.assertIn("strategyEventCount", helper)
         self.assertIn("effectiveEvents>normalEvents", helper)
+        self.assertIn("elevatedEvents>standardEvents", helper)
+        self.assertIn("Threat reaches ${config.maxThreat}", helper)
+        self.assertNotIn("Threat reaches 15", helper)
         self.assertIn("because Restless Tomb is enabled", helper)
         self.assertIn("Math.max(normalCount,1)", function_source("strategyEventCount", "gradeGameplayDescription"))
 
@@ -102,6 +105,13 @@ class GradeGameplayDescriptionTests(unittest.TestCase):
             self.assertIn(f'{asset}?v=8.6.14', INDEX)
         self.assertIn("## v8.6.14", README)
         self.assertIn("**Version 8.6.14 - Explain Grade Gameplay Changes**", README)
+
+    def test_12_next_grade_threshold_uses_canonical_configuration(self):
+        helper = function_source("nextGradeThreat", "threatToNext")
+        self.assertIn("GRADE_CONFIG[threatGrade()+1]?.minThreat", helper)
+        self.assertIn("nextGradeThreat()", function_source("threatToNext", "log"))
+        self.assertIn("Next Grade at Threat Level ${nextGradeThreat()}", APP)
+        self.assertNotIn("[1,6,11]", APP)
 
 
 if __name__ == "__main__":
