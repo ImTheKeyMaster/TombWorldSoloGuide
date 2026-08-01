@@ -112,6 +112,7 @@ class GradeDescriptionClarityTests(unittest.TestCase):
     def test_19_refresh_derives_persisted_card_wording(self):
         self.assertIn("state.gradeMilestone?gradeGameplayDescription", self.renderer)
         self.assertIn("state.gradeMilestone.threat", self.renderer)
+        self.assertIn("suggestedInitiative:state.strategyData?.suggestedInitiative", self.renderer)
         self.assertIn("restlessTombEnabled:state.restlessTombEnabled", self.renderer)
 
     def test_20_save_version_remains_unchanged(self):
