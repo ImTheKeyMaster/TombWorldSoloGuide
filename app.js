@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.21';
+  const APP_VERSION = '8.6.22';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -2518,7 +2518,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     save();render();
     requestAnimationFrame(()=>{
       window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
-      $('#strategy-step-heading')?.focus({preventScroll:true});
+      focusInitialDialogControl(app);
     });
   }
 
@@ -2527,7 +2527,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const scuttlingEligible=ceaselessScuttlingEligible()&&d.ceaselessScuttlingTurningPoint!==state.turningPoint;
     const scuttlingCard=state.turningPoint>1?`<section class="card reinforcement-card"><p class="eyebrow">STRATEGIC GAMBIT</p><h3>A Ceaseless Scuttling</h3><p>${scuttlingEligible?'Fewer than three Macrocyte Warriors remain. You may reuse an incapacitated miniature to set up a new operative instance.':'Unavailable: three Warriors remain, or this gambit was already resolved this turning point.'}</p><button class="btn secondary" id="ceaselessScuttling" ${scuttlingEligible?'':'disabled'}>Use A Ceaseless Scuttling</button></section>`:'';
     const actionsHtml=`${missionStrategyPromptHtml()}${factionGuidanceHtml('gambits')}${scuttlingCard}`;
-    return `${strategyProgressHtml('actions')}<h2 id="strategy-step-heading" tabindex="-1">Resolve Strategy Phase Actions</h2><div class="strategy-phase-guide"><h3>Strategy Phase Checklist</h3><ol><li>Generate Command Points as required.</li><li>Play any Strategic Ploys.</li><li>Resolve abilities and mission rules.</li><li>Review optional Strategic Gambits.</li></ol></div>${actionsHtml||'<p class="strategy-empty-message">No additional guided Strategy Phase actions are required.</p>'}${strategyNavigationHtml({continueId:'continueStrategyEvents',continueLabel:'Continue to Tomb World Events',disabled:missionPending,disabledReason:missionPending?'Resolve the mandatory mission Strategy Phase rule before continuing.':''})}`;
+    return `${strategyProgressHtml('actions')}<h2 id="strategy-step-heading">Resolve Strategy Phase Actions</h2><div class="strategy-phase-guide"><h3>Strategy Phase Checklist</h3><ol><li>Generate Command Points as required.</li><li>Play any Strategic Ploys.</li><li>Resolve abilities and mission rules.</li><li>Review optional Strategic Gambits.</li></ol></div>${actionsHtml||'<p class="strategy-empty-message">No additional guided Strategy Phase actions are required.</p>'}${strategyNavigationHtml({continueId:'continueStrategyEvents',continueLabel:'Continue to Tomb World Events',disabled:missionPending,disabledReason:missionPending?'Resolve the mandatory mission Strategy Phase rule before continuing.':''})}`;
   }
 
   function strategyEventsStepHtml(d){
@@ -2539,7 +2539,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const hasEvents=presentation.required||presentation.cardsDrawn||unmatched;
     const content=hasEvents?`${requirement?`<p class="strategy-event-requirement">${escapeHtml(requirement)}</p>`:''}<p class="strategy-event-summary" aria-label="${summary.accessible}">${summary.visible}</p>${displayedEvents.map(event=>strategyEventHtml(event,activeEffects)).join('')}${unmatched?`<h3 class="strategy-section-heading">Other Active Event Effects</h3>${unmatched}`:''}`:'<div class="summary-box"><strong>No Tomb World Event</strong><p>No Tomb World event is required during this Strategy Phase.</p></div>';
     const blocked=!canLeaveStrategyEvents();
-    return `${strategyProgressHtml('events')}<h2 id="strategy-step-heading" tabindex="-1">Resolve Tomb World Events</h2>${content}${strategyNavigationHtml({backId:'backStrategyActions',backLabel:'Back to Strategy Actions',continueId:'continueStrategyReview',continueLabel:'Continue to Reinforcements',disabled:blocked,disabledReason:blocked?'Resolve the required Tomb World event or redraw before continuing.':''})}`;
+    return `${strategyProgressHtml('events')}<h2 id="strategy-step-heading">Resolve Tomb World Events</h2>${content}${strategyNavigationHtml({backId:'backStrategyActions',backLabel:'Back to Strategy Actions',continueId:'continueStrategyReview',continueLabel:'Continue to Reinforcements',disabled:blocked,disabledReason:blocked?'Resolve the required Tomb World event or redraw before continuing.':''})}`;
   }
 
   function strategyReviewStepHtml(d){
@@ -2564,7 +2564,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const blocked=!canCompleteStrategyPhase();
     const warning=unresolved?'<div class="summary-box strategy-warning"><strong>Event resolution is incomplete.</strong><p>Return to Tomb World Events and finish the required event transaction.</p></div>':'';
     const reason=state.reinforcementState.status==='placement'?'Confirm every reinforcement placement before completing the Strategy Phase.':missionStrategyPending()?'Resolve the mandatory mission Strategy Phase rule before completing the Strategy Phase.':unresolved?'Resolve the required Tomb World event or redraw before completing the Strategy Phase.':'';
-    return `${strategyProgressHtml('review')}<h2 id="strategy-step-heading" tabindex="-1">Deploy Reinforcements and Review</h2>${warning}${reinforcementCard}${deployingNpos.length?`<div class="checklist">${placements}</div>`:''}${battlefield}${strategyNavigationHtml({backId:'backStrategyEvents',backLabel:'Back to Tomb World Events',continueId:'continueStrategy',continueLabel:'Strategy Phase Complete',disabled:blocked,disabledReason:reason})}`;
+    return `${strategyProgressHtml('review')}<h2 id="strategy-step-heading">Deploy Reinforcements and Review</h2>${warning}${reinforcementCard}${deployingNpos.length?`<div class="checklist">${placements}</div>`:''}${battlefield}${strategyNavigationHtml({backId:'backStrategyEvents',backLabel:'Back to Tomb World Events',continueId:'continueStrategy',continueLabel:'Strategy Phase Complete',disabled:blocked,disabledReason:reason})}`;
   }
 
   function reinforcementBlockedReason(capacityBlocked,inventoryBlocked,totalBlocked){
@@ -2684,7 +2684,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const statusLabels={drawn:'PENDING',resolved:activeEffect?'RESOLVED • ACTIVE':'RESOLVED',redrawn:'REDRAWN'};
     const activeLabel=activeEffect?.expiresAfterTurningPoint!==undefined?'Resolved and active until the end of the Turning Point':'Resolved and active';
     const statusLabel=statusLabels[event.status]||escapeHtml(event.status).toUpperCase();
-    const resolvedHeadingId=isRelocation&&event.status==='resolved'?' id="resolved-transdimensional-relocation-heading" tabindex="-1"':'';
+    const resolvedHeadingId=isRelocation&&event.status==='resolved'?' id="resolved-transdimensional-relocation-heading"':'';
     const eventDetails=`${eventHeader}<div class="tomb-world-event-heading"><h3 class="tomb-world-event-title"${resolvedHeadingId}>${escapeHtml(title)}</h3><span class="strategy-event-status" data-event-status="${escapeHtml(event.status)}"${activeEffect?` data-event-active="true" aria-label="${activeLabel}"`:''}>${statusLabel}</span></div><div class="tomb-world-event-effect"><div class="tomb-world-event-effect-label">Effect</div><p class="tomb-world-event-description">${escapeHtml(description)}</p></div>`;
     if(event.status!=='drawn')return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite">${eventDetails}<div class="event-resolution">${escapeHtml(event.result||'Complete')}</div></div>`;
     if(isRelocation){
@@ -2692,7 +2692,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       if(selected.length!==2)return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite">${eventDetails}<div class="event-resolution">Another event card is being drawn because fewer than two Player operatives are on the battlefield.</div></div>`;
       const names=selected.map(playerName);
       const accessibleNames=names.join(' and ');
-      return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite" aria-label="Transdimensional Relocation. Operatives to swap: ${escapeHtml(accessibleNames)}.">${eventDetails}<div class="event-resolution"><h4 id="transdimensional-relocation-selection-heading" tabindex="-1">OPERATIVES TO SWAP</h4><ol>${names.map(name=>`<li>${escapeHtml(name)}</li>`).join('')}</ol><p>Remove both operatives from the killzone. Set each operative up in the other operative’s previous position.</p><p>Keep their wounds, order, Ready or Expended state, and all other statuses unchanged.</p></div><div class="event-controls"><button class="btn primary" id="resolveStrategyEvent" aria-label="Confirm positions swapped for ${escapeHtml(accessibleNames)}">Confirm Positions Swapped</button></div></div>`;
+      return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite" aria-label="Transdimensional Relocation. Operatives to swap: ${escapeHtml(accessibleNames)}.">${eventDetails}<div class="event-resolution"><h4 id="transdimensional-relocation-selection-heading">OPERATIVES TO SWAP</h4><ol>${names.map(name=>`<li>${escapeHtml(name)}</li>`).join('')}</ol><p>Remove both operatives from the killzone. Set each operative up in the other operative’s previous position.</p><p>Keep their wounds, order, Ready or Expended state, and all other statuses unchanged.</p></div><div class="event-controls"><button class="btn primary" id="resolveStrategyEvent" aria-label="Confirm positions swapped for ${escapeHtml(accessibleNames)}">Confirm Positions Swapped</button></div></div>`;
     }
     const labels={
       'awakened-warrior':'Confirm Necron Warrior Placement',
@@ -2790,7 +2790,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       if(validTransdimensionalRelocationSelection(pendingRelocation)){
         if(focusedRelocationInstanceId!==pendingRelocation.instanceId){
           focusedRelocationInstanceId=pendingRelocation.instanceId;
-          requestAnimationFrame(()=>$('#transdimensional-relocation-selection-heading')?.focus({preventScroll:true}));
+          requestAnimationFrame(()=>focusInitialDialogControl(app));
         }
       }
       else setTimeout(()=>redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.'),0);
@@ -3245,7 +3245,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(event.execution.type==='maze-reforms')result='Breach and hatchway changes completed on the tabletop.';
     completeCurrentEvent(result);
     save();render();
-    if(event.definitionId==='transdimensional-relocation')requestAnimationFrame(()=>$('#resolved-transdimensional-relocation-heading')?.focus({preventScroll:true}));
+    if(event.definitionId==='transdimensional-relocation')requestAnimationFrame(()=>focusInitialDialogControl(app));
   }
 
   function randomReinforcement(){
@@ -3275,7 +3275,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const candidates=readyNpos();
     if(candidates.length===1){state.activeNpoId=candidates[0].id;beginNpoActivation(candidates[0]);return;}
     const options=sortedNposForDisplay(candidates).map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(npoName(n))}</option>`).join('');
-    showModal('Select NPO to Activate',`<p>Use the Threat Principle in order. Select an NPO that:</p><ol><li>has an ability, or is a threat, to Shoot or Fight a Player operative;</li><li>is not in cover;</li><li>is closest to a Player operative.</li></ol><p class="muted">If more than one NPO is still tied, determine one at random on the tabletop.</p><div class="field"><label for="officialNpoSelection">Next ready NPO</label><select id="officialNpoSelection"><option value="">Select matching NPO</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmNpoSelection" disabled>Continue</button></div>`);
+    showModal('Select NPO to Activate',`<p>Use the Threat Principle in order. Select an NPO that:</p><ol><li>has an ability, or is a threat, to Shoot or Fight a Player operative;</li><li>is not in cover;</li><li>is closest to a Player operative.</li></ol><p class="muted">If more than one NPO is still tied, determine one at random on the tabletop.</p><div class="field"><label for="officialNpoSelection">Next ready NPO</label><select id="officialNpoSelection" data-dialog-focus><option value="">Select matching NPO</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmNpoSelection" disabled>Continue</button></div>`);
     $('#officialNpoSelection').onchange=()=>{$('#confirmNpoSelection').disabled=!$('#officialNpoSelection').value;};
     $('#confirmNpoSelection').onclick=()=>{const n=candidates.find(item=>item.id===$('#officialNpoSelection').value);if(n)beginNpoActivation(n);};
   }
@@ -3456,9 +3456,6 @@ function showPlayerActivation(stage={}){
     requestAnimationFrame(()=>{
       modal.scrollTop=0;
       modalBody.scrollTop=0;
-      if(document.activeElement!==modal){
-        try{modal.focus({preventScroll:true});}catch{modal.focus();}
-      }
       if(operativeSelect){
         operativeSelect.style.pointerEvents='none';
         requestAnimationFrame(()=>{operativeSelect.style.pointerEvents='';});
@@ -5321,7 +5318,7 @@ function showPlayerActivation(stage={}){
 
   function renderActiveNpoQuestion(q){
     return `<section class="npo-question-active npo-question-card--active" aria-live="polite" aria-atomic="true" aria-labelledby="activeNpoQuestion" aria-describedby="activeNpoQuestionHelp">
-      ${npoIcon(npoQuestionIcons[q.action.split(' ')[0]])}<h3 id="activeNpoQuestion" tabindex="-1">${escapeHtml(q.title)}</h3><p id="activeNpoQuestionHelp">${escapeHtml(q.help)}</p>
+      ${npoIcon(npoQuestionIcons[q.action.split(' ')[0]])}<h3 id="activeNpoQuestion">${escapeHtml(q.title)}</h3><p id="activeNpoQuestionHelp">${escapeHtml(q.help)}</p>
       <div class="ai-choice-grid"><button class="ai-choice no" data-answer="no"><strong>No</strong></button><button class="ai-choice yes" data-answer="yes"><strong>Yes</strong></button></div>
     </section>`;
   }
@@ -5339,7 +5336,7 @@ function showPlayerActivation(stage={}){
     const definition=npoDefinition(n.type),modifiers=(state.npoRuleState.aplModifiers||[]).filter(item=>item.targetId===n.id);
     const pendingBreach=(state.npoRuleState.pendingMovementEffects||[]).some(item=>item.targetId===n.id&&item.ruleId==='molecular-breach');
     const loadout=definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name,effective=effectiveApl(n.id,definition.apl);
-    return `<h2 id="activeNpoQuestionHeading" tabindex="-1">NPO Activation: ${escapeHtml(npoName(n))}</h2><div class="activation-profile-strip" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>APL ${definition.apl}${effective===definition.apl?'':` (${effective} AP this activation)`}</span><span>Order: ${escapeHtml(n.order)}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Next movement uses Molecular Breach</span>':''}</div>${renderNpoActionProgress()}`;
+    return `<h2 id="activeNpoQuestionHeading">NPO Activation: ${escapeHtml(npoName(n))}</h2><div class="activation-profile-strip" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>APL ${definition.apl}${effective===definition.apl?'':` (${effective} AP this activation)`}</span><span>Order: ${escapeHtml(n.order)}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Next movement uses Molecular Breach</span>':''}</div>${renderNpoActionProgress()}`;
   }
 
   function renderNpoGuideFooter({backDisabled=false}={}){
@@ -5354,12 +5351,16 @@ function showPlayerActivation(stage={}){
       return;
     }
     const priorTop=$('.npo-question-active',modal)?.getBoundingClientRect().top;
+    const wasOpen=modal.open;
     modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}${state.lastActivation.autoTransitionAnnouncement?`<span class="visually-hidden" role="status" aria-live="polite">${escapeHtml(state.lastActivation.autoTransitionAnnouncement)}</span>`:''}<div class="ai-wizard">
       <div class="npo-question-flow">${renderCompletedNpoQuestions(history)}${renderActiveNpoQuestion(q)}</div>
       ${renderNpoGuideFooter({backDisabled:history.length===0})}
     </div></div>`;
     if(!modal.open)modal.showModal();
-    if(state.lastActivation.autoTransitionAnnouncement){state.lastActivation.autoTransitionAnnouncement=null;save();requestAnimationFrame(()=>$('#activeNpoQuestionHeading')?.focus({preventScroll:true}));}
+    modal.setAttribute('aria-labelledby','activeNpoQuestionHeading');
+    modal.setAttribute('tabindex','-1');
+    if(!wasOpen)focusInitialDialogControl(modal);
+    if(state.lastActivation.autoTransitionAnnouncement){state.lastActivation.autoTransitionAnnouncement=null;save();requestAnimationFrame(()=>focusInitialDialogControl(modal));}
     $('[data-close]',modal).onclick=closeModal;
     if(priorTop!==undefined)requestAnimationFrame(()=>{const active=$('.npo-question-active',modal);if(!active)return;const delta=active.getBoundingClientRect().top-priorTop;modal.scrollBy({top:delta,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});});
     $$('[data-answer]',modal).forEach(btn=>btn.onclick=()=>{
@@ -5548,6 +5549,7 @@ function showPlayerActivation(stage={}){
     const history=activation.resolvedActions.map(action=>escapeHtml(conciseNpoActionName(action))).join(', ');
     modalBody.innerHTML=`<div class="modal-inner ai-result"><div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div><div class="summary-box"><strong>${escapeHtml(conciseNpoActionName(record))} completed</strong><p>AP: ${record.apBefore} → ${record.apRemaining} · ${record.apCost} AP spent</p>${record.result?`<p>${escapeHtml(typeof record.result==='string'?record.result:record.result.summary||'Action resolved.')}</p>`:''}<p><strong>Completed actions:</strong> ${history}</p></div><div class="wizard-actions"><button class="btn primary" id="continueNpoActivation">${canContinue?'Continue Activation':'Complete Activation'}</button></div></div>`;
     if(!modal.open)modal.showModal();
+    focusInitialDialogControl(modal);
     $('#continueNpoActivation').onclick=()=>{const button=$('#continueNpoActivation');button.disabled=true;activation.awaitingActionResult=null;save();if(canContinue)continueNpoActivation();else completeNpoActivation();};
   }
 
@@ -5555,6 +5557,7 @@ function showPlayerActivation(stage={}){
     const remaining=state.lastActivation.remainingAp;
     modalBody.innerHTML=`<div class="modal-inner ai-result"><h2>${escapeHtml(npoName(n))}</h2><div class="summary-box"><strong>${escapeHtml(message)}</strong>${remaining?`<p>${remaining} AP remain${remaining===1?'s':''} unused.</p>`:''}</div><div class="wizard-actions"><button class="btn primary" id="finishNpoActivation">Complete Activation</button></div></div>`;
     if(!modal.open)modal.showModal();
+    focusInitialDialogControl(modal);
     $('#finishNpoActivation').onclick=()=>{const button=$('#finishNpoActivation');button.disabled=true;completeNpoActivation();};
   }
 
@@ -5659,7 +5662,7 @@ function showPlayerActivation(stage={}){
     activation.questionHistory=earlierHistory;
     save();
     runNpoPrompt(n,previous.index,previous.answers,earlierHistory);
-    requestAnimationFrame(()=>$('#activeNpoQuestion')?.focus({preventScroll:true}));
+    requestAnimationFrame(()=>focusInitialDialogControl(modal));
   }
 
   function backFromNpoAttackSelection(n){
@@ -5672,16 +5675,18 @@ function showPlayerActivation(stage={}){
     activation.questionHistory=history.slice(0,-2);
     state.npoAttackTargetId=null;state.npoAttackSummary=null;
     save();runNpoPrompt(n,0,previous.answers,activation.questionHistory);
-    requestAnimationFrame(()=>$('#activeNpoQuestion')?.focus({preventScroll:true}));
+    requestAnimationFrame(()=>focusInitialDialogControl(modal));
   }
 
   function renderNpoMovementConfirmation(n,pendingAction,decision){
     const displayAction=conciseNpoActionName(pendingAction),headingId='activeNpoMovementHeading',instructionId='activeNpoMovementInstruction';
-    modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}<div class="ai-wizard"><div class="npo-question-flow"><section class="npo-question-active npo-question-card--active npo-movement-confirmation" aria-labelledby="${headingId}" aria-describedby="${instructionId}">${npoIcon(npoQuestionIcons[displayAction])}<h3 id="${headingId}" tabindex="-1">${escapeHtml(displayAction)}</h3><p id="${instructionId}">${escapeHtml(decision.reason)}</p><p class="npo-movement-cost">Costs ${pendingAction.apCost} AP (${state.lastActivation.remainingAp} AP to ${state.lastActivation.remainingAp-pendingAction.apCost} AP)</p><div class="ai-choice-grid"><button class="ai-choice yes npo-movement-confirm" id="confirmNpoMovement"><strong>Confirm ${escapeHtml(displayAction)} Complete</strong></button></div></section></div>${renderNpoGuideFooter()}</div></div>`;
+    modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}<div class="ai-wizard"><div class="npo-question-flow"><section class="npo-question-active npo-question-card--active npo-movement-confirmation" aria-labelledby="${headingId}" aria-describedby="${instructionId}">${npoIcon(npoQuestionIcons[displayAction])}<h3 id="${headingId}">${escapeHtml(displayAction)}</h3><p id="${instructionId}">${escapeHtml(decision.reason)}</p><p class="npo-movement-cost">Costs ${pendingAction.apCost} AP (${state.lastActivation.remainingAp} AP to ${state.lastActivation.remainingAp-pendingAction.apCost} AP)</p><div class="ai-choice-grid"><button class="ai-choice yes npo-movement-confirm" id="confirmNpoMovement"><strong>Confirm ${escapeHtml(displayAction)} Complete</strong></button></div></section></div>${renderNpoGuideFooter()}</div></div>`;
     if(!modal.open)modal.showModal();
+    modal.setAttribute('aria-labelledby','activeNpoQuestionHeading');
+    modal.setAttribute('tabindex','-1');
     $('[data-close]',modal).onclick=closeModal;
     $('#aiBack').onclick=()=>backFromNpoMovementConfirmation(n);
-    requestAnimationFrame(()=>$('#activeNpoMovementHeading')?.focus({preventScroll:true}));
+    requestAnimationFrame(()=>focusInitialDialogControl(modal));
   }
 
   function resolveNpoAction(n,pendingAction){
@@ -5815,6 +5820,7 @@ function showPlayerActivation(stage={}){
       ${attackRequired&&!targetConfirmed?renderNpoGuideFooter():''}
     </div>`;
     if(!modal.open)modal.showModal();
+    focusInitialDialogControl(modal);
     $('[data-close]',modal)?.addEventListener('click',closeModal);
     $('#aiBack')?.addEventListener('click',()=>backFromNpoAttackSelection(n));
     $('#npoPriorityTarget')?.addEventListener('change',event=>{state.npoAttackTargetId=event.currentTarget.value||null;save();updateNpoTargetConfirmationAvailability();});
@@ -6477,10 +6483,6 @@ function showPlayerActivation(stage={}){
     showPlayerActivation(stage);
   }
 
-  function focusBreachQuestion(id){
-    requestAnimationFrame(()=>$(id)?.focus({preventScroll:true}));
-  }
-
   function beginBreachSarcophagus(stage){
     const operativeId=stage.playerOperativeId;
     const activationId=missionActivationId('player',operativeId);
@@ -6502,22 +6504,22 @@ function showPlayerActivation(stage={}){
     }
     if(context.committed&&context.diceRolled&&!context.newTotal){performBreachSarcophagus(stage,true);return;}
     if(context.step==='control-range'){
-      showModal('Breach Sarcophagus',`<h3 id="breachControlQuestion" tabindex="-1">Is this operative within the sarcophagus’s control range?</h3><p>Select Yes only if the operative is close enough to control the sarcophagus objective marker.</p><div class="wizard-actions"><button class="btn ghost" id="breachControlNo">No</button><button class="btn primary" id="breachControlYes">Yes</button></div><div class="wizard-actions breach-navigation"><button class="btn ghost" id="cancelBreach" aria-label="Cancel and abandon Breach Sarcophagus">Cancel</button></div>`);
+      showModal('Breach Sarcophagus',`<h3 id="breachControlQuestion">Is this operative within the sarcophagus’s control range?</h3><p>Select Yes only if the operative is close enough to control the sarcophagus objective marker.</p><div class="wizard-actions"><button class="btn ghost" id="breachControlNo">No</button><button class="btn primary" id="breachControlYes">Yes</button></div><div class="wizard-actions breach-navigation"><button class="btn ghost" id="cancelBreach" aria-label="Cancel and abandon Breach Sarcophagus">Cancel</button></div>`,undefined,'breach-control-range');
       $('#breachControlNo').onclick=()=>clearPendingBreach(stage);
       $('#breachControlYes').onclick=()=>{context.controlRangeConfirmed=true;context.step='enemy-control-range';save();renderBreachSarcophagusStep(stage);};
       $('#cancelBreach').onclick=()=>clearPendingBreach(stage);
       return;
     }
     if(context.step==='enemy-control-range'){
-      showModal('Breach Sarcophagus',`<h3 id="breachEnemyQuestion" tabindex="-1">Is this operative outside the control range of every NPO?</h3><p>An operative cannot perform Breach while it is within an enemy operative’s control range.</p><div class="wizard-actions"><button class="btn ghost" id="breachEnemyNo">No</button><button class="btn primary" id="breachEnemyYes">Yes</button></div><div class="wizard-actions breach-navigation"><button class="btn ghost" id="breachBackToControl" aria-label="Back to the sarcophagus control-range question">Back</button></div>`);
+      showModal('Breach Sarcophagus',`<h3 id="breachEnemyQuestion">Is this operative outside the control range of every NPO?</h3><p>An operative cannot perform Breach while it is within an enemy operative’s control range.</p><div class="wizard-actions"><button class="btn ghost" id="breachEnemyNo">No</button><button class="btn primary" id="breachEnemyYes">Yes</button></div><div class="wizard-actions breach-navigation"><button class="btn ghost" id="breachBackToControl" aria-label="Back to the sarcophagus control-range question">Back</button></div>`,undefined,'breach-enemy-range');
       $('#breachEnemyNo').onclick=()=>clearPendingBreach(stage);
       $('#breachEnemyYes').onclick=()=>{context.enemyControlRangeConfirmed=true;context.step='confirmation';save();renderBreachSarcophagusStep(stage);};
-      $('#breachBackToControl').onclick=()=>{context.enemyControlRangeConfirmed=null;context.step='control-range';save();renderBreachSarcophagusStep(stage);focusBreachQuestion('#breachControlQuestion');};
+      $('#breachBackToControl').onclick=()=>{context.enemyControlRangeConfirmed=null;context.step='control-range';save();renderBreachSarcophagusStep(stage);};
       return;
     }
     const total=Number(objectiveEngine?.getObjectiveValue('destructionPoints')||state.missionState?.destruction||0);
-    showModal('Breach Sarcophagus',`<div class="summary-box"><strong>${escapeHtml(playerName(context.operativeId))}</strong><br>AP available: ${context.remainingAp}<br>Breach AP cost: ${context.apCost}<br>Destruction Points: ${total} / 20</div><p>Spend ${context.apCost} AP and roll 2D6. Add the total to the sarcophagus’s Destruction Points.</p><div class="wizard-actions breach-navigation"><button class="btn primary" id="performBreach">Perform Breach</button></div><div class="wizard-actions breach-navigation"><button class="btn ghost" id="breachBackToEnemy" aria-label="Back to the enemy control-range question">Back</button></div>`);
-    $('#breachBackToEnemy').onclick=()=>{context.enemyControlRangeConfirmed=null;context.step='enemy-control-range';save();renderBreachSarcophagusStep(stage);focusBreachQuestion('#breachEnemyQuestion');};
+    showModal('Breach Sarcophagus',`<div class="summary-box"><strong>${escapeHtml(playerName(context.operativeId))}</strong><br>AP available: ${context.remainingAp}<br>Breach AP cost: ${context.apCost}<br>Destruction Points: ${total} / 20</div><p>Spend ${context.apCost} AP and roll 2D6. Add the total to the sarcophagus’s Destruction Points.</p><div class="wizard-actions breach-navigation"><button class="btn primary" id="performBreach">Perform Breach</button></div><div class="wizard-actions breach-navigation"><button class="btn ghost" id="breachBackToEnemy" aria-label="Back to the enemy control-range question">Back</button></div>`,undefined,'breach-confirmation');
+    $('#breachBackToEnemy').onclick=()=>{context.enemyControlRangeConfirmed=null;context.step='enemy-control-range';save();renderBreachSarcophagusStep(stage);};
     $('#performBreach').onclick=()=>performBreachSarcophagus(stage);
   }
 
@@ -6568,24 +6570,42 @@ function showPlayerActivation(stage={}){
     });
   }
 
-  function showModal(title,content,onClose){
+  function isUsableFocusTarget(element){
+    if(!element||element.hidden||element.disabled||element.getAttribute('aria-hidden')==='true')return false;
+    if(element.closest('[hidden],[inert],[aria-hidden="true"]'))return false;
+    const style=getComputedStyle(element);
+    return style.display!=='none'&&style.visibility!=='hidden';
+  }
+
+  function focusInitialDialogControl(dialog){
+    if(!dialog)return;
+    const selectors='select:not([disabled]),input:not([disabled]),textarea:not([disabled]),button:not([disabled]),a[href],[role="button"][tabindex="0"]';
+    const preferred=$$('[data-dialog-focus]:not([disabled])',dialog).find(isUsableFocusTarget);
+    const firstInteractive=$$(selectors,dialog).find(isUsableFocusTarget);
+    const target=preferred||firstInteractive||dialog;
+    requestAnimationFrame(()=>{
+      if(!target?.isConnected)return;
+      try{target.focus({preventScroll:true});}catch{target.focus();}
+    });
+  }
+
+  function showModal(title,content,onClose,focusKey=title){
     const active=document.activeElement;
     if(active&&!modal.contains(active))modal._returnFocus=active;
+    const shouldFocus=!modal.open||modal._focusKey!==focusKey;
 
     modal.classList.remove('combat-resolution-modal');
-    modalBody.innerHTML=`<div class="modal-inner"><h2 id="modalTitle" tabindex="-1">${escapeHtml(title)}</h2>${content}</div>`;
+    modalBody.innerHTML=`<div class="modal-inner"><h2 id="modalTitle">${escapeHtml(title)}</h2>${content}</div>`;
     modal.setAttribute('aria-labelledby','modalTitle');
     modal.setAttribute('tabindex','-1');
     if(!modal.open)modal.showModal();
+    modal._focusKey=focusKey;
     modal._onClose=onClose;
     $$('[data-close]',modal).forEach(b=>b.onclick=closeModal);
 
-    requestAnimationFrame(()=>{
-      modal.scrollTop=0;
-      modalBody.scrollTop=0;
-      const target=$('#modalTitle',modal)||modal;
-      try{target.focus({preventScroll:true});}catch{target.focus();}
-    });
+    modal.scrollTop=0;
+    modalBody.scrollTop=0;
+    if(shouldFocus)focusInitialDialogControl(modal);
   }
   function closeModal(){
     missionDialogLocked=false;
@@ -6594,13 +6614,14 @@ function showPlayerActivation(stage={}){
     const returnFocus=modal._returnFocus;
     modal._onClose=null;
     modal._returnFocus=null;
+    modal._focusKey=null;
     if(cb)cb();
     if(returnFocus?.isConnected)requestAnimationFrame(()=>returnFocus.focus({preventScroll:true}));
   }
   modal.addEventListener('cancel',e=>{e.preventDefault();if(!missionDialogLocked)closeModal();});
   modal.addEventListener('keydown',event=>{
     if(event.key!=='Tab')return;
-    const controls=$$('button:not([disabled]),input:not([disabled]),select:not([disabled]),[href],[tabindex]:not([tabindex="-1"])',modal).filter(element=>!element.hidden);
+    const controls=$$('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[href],[role="button"][tabindex="0"]',modal).filter(isUsableFocusTarget);
     if(!controls.length){event.preventDefault();modal.focus();return;}
     const first=controls[0],last=controls.at(-1);
     if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}

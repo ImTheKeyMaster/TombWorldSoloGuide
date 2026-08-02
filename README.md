@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.21
+# Tomb World Solo Guide v8.6.22
+
+## v8.6.22
+
+**Version 8.6.22 - Prevent Guide Titles from Receiving Focus**
+
+* Removed keyboard and programmatic focus from non-interactive titles.
+* Dialogs now use their headings through accessible labeling instead of focusing them.
+* Initial focus now moves to the first meaningful interactive control.
+* Preserved visible focus indicators for all real controls.
 
 ## v8.6.21
 

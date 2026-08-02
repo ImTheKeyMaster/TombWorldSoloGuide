@@ -77,7 +77,8 @@ class V810StreamlinedNpoActionFlowTests(unittest.TestCase):
     def test_accessible_announcement_and_focus(self):
         self.assertIn('role="status" aria-live="polite"', APP)
         self.assertIn('Continuing activation.', APP)
-        self.assertIn("$('#activeNpoQuestionHeading')?.focus({preventScroll:true})", APP)
+        self.assertNotIn("$('#activeNpoQuestionHeading')?.focus", APP)
+        self.assertIn('focusInitialDialogControl(modal)', APP)
 
     def test_v801_routine_results_recover_without_recommit(self):
         continuation = section('function continueNpoActivation', 'function canCommitNpoAction')
@@ -97,12 +98,12 @@ class V810StreamlinedNpoActionFlowTests(unittest.TestCase):
         self.assertIn('completedActionIds', guard)
 
     def test_current_version_830_everywhere(self):
-        self.assertIn("const APP_VERSION = '8.6.21';", APP)
-        self.assertIn("const APP_VERSION = '8.6.21';", WORKER)
-        self.assertIn('V8.6.21', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.21'))
+        self.assertIn("const APP_VERSION = '8.6.22';", APP)
+        self.assertIn("const APP_VERSION = '8.6.22';", WORKER)
+        self.assertIn('V8.6.22', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.22'))
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.21', INDEX)
+            self.assertIn(f'{asset}?v=8.6.22', INDEX)
 
 
 if __name__ == '__main__':
