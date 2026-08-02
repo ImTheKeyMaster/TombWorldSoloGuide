@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.23';
+  const APP_VERSION = '8.6.24';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -3462,7 +3462,14 @@ function showPlayerActivation(stage={}){
         requestAnimationFrame(()=>{operativeSelect.style.pointerEvents='';});
       }
     });
-    operativeSelect?.addEventListener('change',()=>showPlayerActivation(selectOperative(stage,operativeSelect.value)));
+    operativeSelect?.addEventListener('change',event=>{
+      const select=event.currentTarget;
+      const operativeId=select.value;
+      if(!operativeId)return;
+      const selectedStage=selectOperative(stage,operativeId);
+      modal._skipFocusRestoreId=select.id;
+      closeTouchSelectAfterCommit(select,()=>showPlayerActivation(selectedStage));
+    });
 
     const actionIds=['eaMove','eaDash','eaCharge','eaFallBack','eaShoot','eaMelee','eaDamage','eaHatch','eaBreach','eaObjective'];
     const clearPass=()=>{if($('#eaPass'))$('#eaPass').checked=false;};
@@ -6626,6 +6633,15 @@ function showPlayerActivation(stage={}){
     });
   }
 
+  function closeTouchSelectAfterCommit(select,onComplete){
+    const coarsePointer=window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    if(!coarsePointer){onComplete();return;}
+    requestAnimationFrame(()=>{
+      if(document.activeElement===select)select.blur();
+      onComplete();
+    });
+  }
+
   let modalFocusSequence=0;
   function showModal(title,content,onClose,focusKey=null){
     const active=document.activeElement;
@@ -6633,6 +6649,8 @@ function showPlayerActivation(stage={}){
     const activeControlId=modal.contains(active)?active.id:null;
     const nextFocusKey=focusKey??++modalFocusSequence;
     const shouldFocus=!modal.open||modal._focusKey!==nextFocusKey;
+    const shouldRestoreFocus=modal._skipFocusRestoreId!==activeControlId;
+    modal._skipFocusRestoreId=null;
 
     modal.classList.remove('combat-resolution-modal');
     modalBody.innerHTML=`<div class="modal-inner"><h2 id="modalTitle">${escapeHtml(title)}</h2>${content}</div>`;
@@ -6646,7 +6664,7 @@ function showPlayerActivation(stage={}){
     modal.scrollTop=0;
     modalBody.scrollTop=0;
     if(shouldFocus)focusInitialDialogControl(modal);
-    else restoreDialogControlFocus(modal,activeControlId);
+    else if(shouldRestoreFocus)restoreDialogControlFocus(modal,activeControlId);
   }
   function closeModal(){
     missionDialogLocked=false;
