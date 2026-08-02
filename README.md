@@ -1,4 +1,10 @@
-# Tomb World Solo Guide v8.6.27
+# Tomb World Solo Guide v8.6.28
+
+## v8.6.28
+
+**Version 8.6.28 - Clarify Grade 1 Tomb World Event Text**
+
+* Clarified that Grade 1 does not trigger Tomb World events while other enabled rules may still trigger them.
 
 ## v8.6.27
 
