@@ -2311,7 +2311,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function commitMissionFeatureOpened({missionId,featureId,featureType,featureNumber,openedBy='breach',source='mission-map',operativeId=null,turningPoint=state.turningPoint,transactionId}={}){
     const selectedMission=missionDefinition(missionId||state.missionId),engine=missionEngine(selectedMission);
-    if(selectedMission?.id!==state.missionId||engine?.type!=='sabotage')return {status:'unavailable'};
+    if(selectedMission?.id!=='demolition-protocol'||selectedMission.id!==state.missionId||engine?.type!=='sabotage')return {status:'unavailable'};
     const feature=engine.features.find(item=>item.id===featureId),identity=missionFeatureIdentity(feature);
     if(!feature||!identity||identity.featureType!==featureType||identity.featureNumber!==Number(featureNumber))return {status:'invalid-target'};
     const progress=state.missionState||(state.missionState=freshMissionState(selectedMission));
@@ -2319,17 +2319,25 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     progress.featureTransactions=isRecord(progress.featureTransactions)?progress.featureTransactions:{};
     if(progress.featureTransactions[transactionKey]||ids.has(featureId))return {status:'already-open',feature};
     ids.add(featureId);
-    progress.completedFeatureIds=engine.features.map(item=>item.id).filter(id=>ids.has(id));
+    const completedFeatureIds=engine.features.map(item=>item.id).filter(id=>ids.has(id));
+    const before=completedFeatureIds.length-1,after=completedFeatureIds.length;
+    const runtimeSnapshot=objectiveEngine?JSON.parse(JSON.stringify(objectiveEngine.getMissionRuntime())):null;
+    try{
+      if(objectiveEngine){
+        objectiveEngine.setObjectiveValue('sabotagedFeatures',after,missionLifecycleContext({activationId:transactionKey,operativeId}));
+        const historyId=`mission-feature-open:${transactionKey}`;
+        const history=objectiveEngine.getMissionRuntime().history||[];
+        if(!history.some(entry=>entry.id===historyId))objectiveEngine.recordMissionHistory({id:historyId,type:'mission-feature-opened',title:`Opened ${feature.label} by Breach`,summary:`Opened ${feature.label} by Breach: +1`,featureId,openedBy,source,operativeId,turningPoint,delta:1,changes:[{objectiveId:'sabotagedFeatures',before,after}]},missionLifecycleContext({activationId:transactionKey,operativeId}));
+      }
+    }catch(error){
+      if(objectiveEngine&&runtimeSnapshot)state.missionRuntime=objectiveEngine.restoreMissionRuntime(objectiveDefinition,runtimeSnapshot,missionLifecycleContext());
+      console.error('[MissionFeature] Breach commit failed.',error);
+      return {status:'commit-failed',feature};
+    }
+    progress.completedFeatureIds=completedFeatureIds;
     progress.featureOpenDetails=isRecord(progress.featureOpenDetails)?progress.featureOpenDetails:{};
     progress.featureOpenDetails[featureId]={...identity,isOpen:true,openedBy,source,operativeId,turningPoint,transactionId:transactionKey};
     progress.featureTransactions[transactionKey]=featureId;
-    const before=progress.completedFeatureIds.length-1,after=progress.completedFeatureIds.length;
-    if(objectiveEngine){
-      objectiveEngine.setObjectiveValue('sabotagedFeatures',after,missionLifecycleContext({activationId:transactionKey,operativeId}));
-      const historyId=`mission-feature-open:${transactionKey}`;
-      const history=objectiveEngine.getMissionRuntime().history||[];
-      if(!history.some(entry=>entry.id===historyId))objectiveEngine.recordMissionHistory({id:historyId,type:'mission-feature-opened',title:`Opened ${feature.label} by Breach`,summary:`Opened ${feature.label} by Breach: +1`,featureId,openedBy,source,operativeId,turningPoint,delta:1,changes:[{objectiveId:'sabotagedFeatures',before,after}]},missionLifecycleContext({activationId:transactionKey,operativeId}));
-    }
     log(`${mission().name}: Opened ${feature.label} by Breach: +1.`);
     return {status:'completed',feature,before,after,transactionId:transactionKey};
   }
@@ -4129,6 +4137,7 @@ function showPlayerActivation(stage={}){
     expireActivationEffects(operativeId);
     advanceAfterActivation('player');
     log(`${playerName(operativeId)} completed activation: ${summary}.`);
+    if(stage.missionFeatureCommitted)checkGameEnd();
     closeModal();
     save();
     render();

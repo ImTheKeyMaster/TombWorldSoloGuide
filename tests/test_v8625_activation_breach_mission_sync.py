@@ -1,5 +1,4 @@
 import json
-import re
 import unittest
 from pathlib import Path
 
@@ -31,27 +30,36 @@ class TestV8625ActivationBreachMissionSync(unittest.TestCase):
     def test_08_dashboard_uses_hud_model(self): self.assertIn("objectiveEngine?.getMissionHudModel()", APP)
     def test_09_map_opened_status(self): self.assertIn("?'Opened by Breach':'Not opened'", APP)
     def test_10_specific_recent_activity(self): self.assertIn("Opened ${feature.label} by Breach: +1", APP)
-    def test_11_second_feature_counts(self): self.assertIn("progress.completedFeatureIds.length-1", APP)
+    def test_11_second_feature_counts(self): self.assertIn("const before=completedFeatureIds.length-1,after=completedFeatureIds.length", APP)
     def test_12_reopen_is_noop(self): self.assertIn("return {status:'already-open',feature}", APP)
     def test_13_rapid_commit_progress_dedup(self): self.assertIn("progress.featureTransactions[transactionKey]", APP)
     def test_14_rapid_commit_history_dedup(self): self.assertIn("history.some(entry=>entry.id===historyId)", APP)
     def test_15_selection_does_not_commit(self): self.assertNotIn("commitMissionFeatureOpened", self._function("showActivationBreachTargetSelection"))
     def test_16_cancel_returns_without_commit(self): self.assertIn("cancelActivationBreach').onclick=()=>showPlayerActivation", APP)
     def test_17_close_preserves_pending_stage(self): self.assertIn("state.combatState={side:'player',stage:{...stage,breachTargetId:null}}", APP)
-    def test_18_commit_at_activation_completion(self): self.assertIn("commitMissionFeatureOpened", self._function("completePlayerActivation"))
-    def test_19_invalid_lookup_recovers(self): self.assertIn("Breach target unavailable", APP)
+    def test_18_commit_at_activation_completion(self):
+        activation = self._function("completePlayerActivation")
+        self.assertIn("commitMissionFeatureOpened", activation)
+        self.assertLess(activation.index("commitMissionFeatureOpened"), activation.index("advanceAfterActivation('player')"))
+    def test_19_failed_lookup_or_commit_recovers_atomically(self):
+        updater = self._function("commitMissionFeatureOpened")
+        self.assertIn("runtimeSnapshot", updater)
+        self.assertIn("restoreMissionRuntime", updater)
+        self.assertIn("Breach target unavailable", APP)
     def test_20_refresh_before_commit(self): self.assertIn("breachTargetId:previous.breachTargetId||null", APP)
     def test_21_refresh_after_commit(self): self.assertIn("missionFeatureCommitted:Boolean(previous.missionFeatureCommitted)", APP)
     def test_22_update_app_uses_persisted_state(self): self.assertIn("waitingWorker.postMessage({type:'SKIP_WAITING'})", APP)
     def test_23_manual_map_uses_shared_helper(self): self.assertIn("source:'mission-map'", APP)
     def test_24_manual_correction_decrements_once(self): self.assertIn("delta:-1", APP)
     def test_25_corrected_feature_can_reopen(self): self.assertIn("delete state.missionState.featureOpenDetails?.[input.dataset.missionFeature]", APP)
-    def test_26_seven_features_complete(self): self.assertEqual(MISSION["missionEngine"]["required"], 7)
+    def test_26_seven_features_complete(self):
+        self.assertEqual(MISSION["missionEngine"]["required"], 7)
+        self.assertIn("checkGameEnd();", self._function("completePlayerActivation"))
     def test_27_battle_complete_uses_canonical_progress(self): self.assertIn("${missionProgressHtml(true)}", APP)
     def test_28_export_import_preserves_state(self):
         self.assertIn("createPersistedSave(state)", APP)
         self.assertIn("normalizeMissionState(raw?.missionState", APP)
-    def test_29_other_missions_are_scoped_out(self): self.assertIn("engine?.type!=='sabotage'", APP)
+    def test_29_other_missions_are_scoped_out(self): self.assertIn("selectedMission?.id!=='demolition-protocol'", APP)
     def test_30_save_version_unchanged(self): self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
     def test_31_release_notes(self): self.assertIn("Version 8.6.25 - Sync Breach Actions with Mission Progress", README)
 
