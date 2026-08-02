@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.25
+# Tomb World Solo Guide v8.6.26
+
+## v8.6.26
+
+**Version 8.6.26 - Sync Operate Hatch Actions with Mission Progress**
+
+* Added closed-hatchway target selection to Player activation Operate Hatch actions.
+* Kept Breach targets limited to closed breach points and validated both action types at completion.
+* Reused canonical mission progress, history, transaction, and save-recovery state for both actions.
+* Preserved Mission & Map corrections, unique feature counting, and save version 3 compatibility.
 
 ## v8.6.25
 

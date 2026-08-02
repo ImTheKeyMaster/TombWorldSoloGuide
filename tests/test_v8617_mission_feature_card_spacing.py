@@ -16,12 +16,12 @@ MISSION = json.loads((ROOT / "Missions/02-demolition-protocol.json").read_text()
 
 class MissionFeatureCardSpacingTests(unittest.TestCase):
     def test_release_version_is_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.25';", APP)
-        self.assertIn("const APP_VERSION = '8.6.25';", WORKER)
-        self.assertIn("V8.6.25", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.25"))
+        self.assertIn("const APP_VERSION = '8.6.26';", APP)
+        self.assertIn("const APP_VERSION = '8.6.26';", WORKER)
+        self.assertIn("V8.6.26", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.26"))
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.25", INDEX)
+            self.assertIn(f"{asset}?v=8.6.26", INDEX)
 
     def test_feature_labels_include_normal_space_before_number(self):
         labels = [feature["label"] for feature in MISSION["missionEngine"]["features"]]
@@ -33,7 +33,7 @@ class MissionFeatureCardSpacingTests(unittest.TestCase):
     def test_label_and_status_are_separate_escaped_elements(self):
         self.assertIn('class="mission-feature-card__label">${escapeHtml(label)}</span>', APP)
         self.assertIn('class="mission-feature-card__status">${escapeHtml(status)}</span>', APP)
-        self.assertIn("const status=completed.has(feature.id)?'Opened by Breach':'Not opened';", APP)
+        self.assertIn("const status=completed.has(feature.id)?`Opened by ${openedBy==='operate-hatch'?'Operate Hatch':'Breach'}`:'Not opened';", APP)
         self.assertNotIn("1Opened", APP)
         self.assertNotIn("5Not", APP)
 
