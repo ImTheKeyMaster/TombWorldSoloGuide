@@ -90,6 +90,7 @@ class BattleResultFocusabilityTests(unittest.TestCase):
         self.assertNotIn('.battle-result:focus', STYLES)
 
     def test_13_result_remains_available_to_assistive_technology(self):
+        self.assertIn('<img class="game-end-image" src="Assets/Images/${resultClass}.png" alt="">', self.completed)
         self.assertIn('<h2 class="battle-result', self.completed)
         self.assertIn('<h3 class="battle-result', self.completed)
         self.assertNotRegex(self.completed, r'battle-result[^>]*(?:aria-hidden|role="(?:button|link)")')
