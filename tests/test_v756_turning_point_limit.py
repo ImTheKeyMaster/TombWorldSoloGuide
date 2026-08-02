@@ -85,10 +85,10 @@ class TurningPointLimitTests(unittest.TestCase):
 
     def test_14_guided_screen_is_accessible(self):
         body = function_body("renderGame")
-        self.assertIn('id="battle-complete-heading" tabindex="-1"', body)
+        self.assertIn('class="battle-result battle-result--${resultClass}"', body)
         self.assertIn('aria-label="Record mission victory"', body)
         self.assertIn('aria-label="Record mission defeat"', body)
-        self.assertIn("$('#battle-complete-heading')?.focus()", body)
+        self.assertIn("$('#recordFinalDefeat')?.focus()", body)
 
     def test_15_battle_end_hook_and_journal_are_idempotent(self):
         body = function_body("finalizeMissionCompletion")
@@ -165,13 +165,13 @@ class TurningPointLimitTests(unittest.TestCase):
         self.assertIn("createPersistedSave(state)", function_body("exportSave"))
 
     def test_30_application_displays_version_756(self):
-        self.assertIn("const APP_VERSION = '8.6.17';", APP)
-        self.assertIn("const APP_VERSION = '8.6.17';", WORKER)
-        self.assertIn("V8.6.17", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.17"))
-        self.assertIn("## v8.6.17", README)
+        self.assertIn("const APP_VERSION = '8.6.18';", APP)
+        self.assertIn("const APP_VERSION = '8.6.18';", WORKER)
+        self.assertIn("V8.6.18", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.18"))
+        self.assertIn("## v8.6.18", README)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.17", INDEX)
+            self.assertIn(f"{asset}?v=8.6.18", INDEX)
 
 
 if __name__ == "__main__":

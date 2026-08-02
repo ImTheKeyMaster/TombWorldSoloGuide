@@ -28,17 +28,16 @@ def renderer(name, next_name=None):
 
 
 class BattleCompleteCleanupTests(unittest.TestCase):
-    def test_01_heading_retains_accessible_programmatic_focus(self):
+    def test_01_battle_result_is_non_interactive_and_actions_receive_focus(self):
         render = function_body("renderGame")
-        self.assertIn('id="battle-complete-heading" tabindex="-1"', render)
-        self.assertIn("requestAnimationFrame(()=>$('#battle-complete-heading')?.focus())", render)
+        self.assertIn('class="battle-result battle-result--${resultClass}"', render)
+        self.assertNotIn('id="battle-complete-heading" tabindex="-1"', render)
+        self.assertIn("requestAnimationFrame(()=>$('#reviewCompletedMission')?.focus())", render)
 
-    def test_02_focus_treatment_is_scoped_and_green(self):
-        match = re.search(r"\.mission-outcome #battle-complete-heading:focus\s*\{([^}]+)\}", STYLES)
-        self.assertIsNotNone(match)
-        rule = match.group(1)
-        self.assertIn("outline:3px solid var(--green)", rule)
-        self.assertNotRegex(rule, r"blue|#(?:00f|007aff|0a84ff)\b")
+    def test_02_real_controls_retain_scoped_visible_focus(self):
+        self.assertIn(".btn:focus-visible", STYLES)
+        self.assertIn("outline:2px solid var(--green)", STYLES)
+        self.assertNotIn(".battle-result:focus", STYLES)
 
     def test_03_read_only_mode_is_passed_explicitly(self):
         body = function_body("missionProgressHtml")
@@ -98,18 +97,18 @@ class BattleCompleteCleanupTests(unittest.TestCase):
     def test_10_victory_defeat_and_turning_point_limit_are_unchanged(self):
         render = function_body("renderGame")
         self.assertIn("victory?'victory':'defeat'", render)
-        self.assertIn("MISSION ${victory?'VICTORY':'DEFEAT'}", render)
+        self.assertIn("MISSION ${resultLabel.toUpperCase()}", render)
         self.assertIn("Turning Point ${MAX_TURNING_POINTS} has ended.", render)
         self.assertIn("const MAX_TURNING_POINTS = 4;", APP)
 
     def test_11_application_displays_version_757(self):
-        self.assertIn("const APP_VERSION = '8.6.17';", APP)
-        self.assertIn("const APP_VERSION = '8.6.17';", WORKER)
-        self.assertIn("V8.6.17", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.17"))
-        self.assertIn("## v8.6.17", README)
+        self.assertIn("const APP_VERSION = '8.6.18';", APP)
+        self.assertIn("const APP_VERSION = '8.6.18';", WORKER)
+        self.assertIn("V8.6.18", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.18"))
+        self.assertIn("## v8.6.18", README)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.17", INDEX)
+            self.assertIn(f"{asset}?v=8.6.18", INDEX)
 
     def test_12_save_version_is_unchanged(self):
         persistence = (ROOT / "persistence.js").read_text()
