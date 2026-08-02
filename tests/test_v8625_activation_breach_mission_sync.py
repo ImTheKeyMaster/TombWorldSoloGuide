@@ -36,7 +36,7 @@ class TestV8625ActivationBreachMissionSync(unittest.TestCase):
     def test_14_rapid_commit_history_dedup(self): self.assertIn("history.some(entry=>entry.id===historyId)", APP)
     def test_15_selection_does_not_commit(self): self.assertNotIn("commitMissionFeatureOpened", self._function("showActivationBreachTargetSelection"))
     def test_16_cancel_returns_without_commit(self): self.assertIn("cancelActivationBreach').onclick=()=>showPlayerActivation", APP)
-    def test_17_close_preserves_pending_stage(self): self.assertIn("state.combatState={side:'player',stage:{...stage,[targetKey]:pendingId,missionFeatureType:featureType}}", APP)
+    def test_17_close_preserves_pending_stage(self): self.assertIn("state.combatState={side:'player',stage:{...stage,[targetKey]:pendingId,[typeKey]:featureType}}", APP)
     def test_18_commit_at_activation_completion(self):
         activation = self._function("completePlayerActivation")
         self.assertIn("commitMissionFeatureOpened", activation)

@@ -68,10 +68,13 @@ class TestV8626OperateHatchMissionSync(unittest.TestCase):
         updater = self.function("commitMissionFeatureOpened")
         self.assertIn("progress.featureTransactions[transactionKey]", updater)
         self.assertIn("history.some(entry=>entry.id===historyId)", updater)
+        complete = self.function("completePlayerActivation")
+        self.assertIn("`${activationId}:${item.action}`", complete)
+        self.assertIn("missionStateSnapshot", complete)
 
     def test_13_refresh_preserves_pending_without_commit(self):
         reader = self.function("readPlayerActivationStage")
-        for field in ("hatchTargetId", "missionFeatureType", "missionFeatureTransactionId"):
+        for field in ("hatchTargetId", "hatchFeatureType", "hatchTransactionId"):
             self.assertIn(field, reader)
         self.assertIn("state.combatState={side:'player',stage:nextStage};\n      save();", APP)
 
@@ -84,12 +87,12 @@ class TestV8626OperateHatchMissionSync(unittest.TestCase):
         self.assertIn("completedFeatureIds", self.function("closedMissionFeatures"))
 
     def test_16_replayed_transaction_is_idempotent(self):
-        self.assertIn("featureTransactions?.[transactionId]===feature?.id", APP)
+        self.assertIn("featureTransactions?.[transactionId]===feature.id", APP)
 
     def test_17_invalid_targets_are_rejected(self):
         updater = self.function("commitMissionFeatureOpened")
         self.assertIn("return {status:'invalid-target'}", updater)
-        self.assertIn("identity?.featureType===expectedType", APP)
+        self.assertIn("identity?.featureType===item.featureType", APP)
         self.assertIn("already-open", updater)
 
     def test_18_no_targets_disable_actions(self):
@@ -97,8 +100,9 @@ class TestV8626OperateHatchMissionSync(unittest.TestCase):
         self.assertIn("No closed ${isHatch?'hatchways':'breach points'} remain", APP)
 
     def test_19_existing_breach_behavior_uses_shared_path(self):
-        self.assertIn("openedBy:missionFeatureAction", self.function("completePlayerActivation"))
+        self.assertIn("openedBy:item.action", self.function("completePlayerActivation"))
         self.assertIn("function showActivationBreachTargetSelection(stage)", APP)
+        self.assertIn("isHatch&&nextStage.breach&&!nextStage.breachTargetId", APP)
 
     def test_20_v8625_save_shape_loads(self):
         self.assertIn("normalizePendingAttackResultLists(raw.combatState.stage)", APP)

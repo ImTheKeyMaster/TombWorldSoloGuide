@@ -3649,9 +3649,12 @@ function showPlayerActivation(stage={}){
       ,missionBreachRecord:previous.missionBreachRecord||null
       ,breachTargetId:previous.breachTargetId||null
       ,hatchTargetId:previous.hatchTargetId||null
-      ,missionFeatureType:previous.missionFeatureType||null
-      ,missionFeatureTransactionId:previous.missionFeatureTransactionId||null
+      ,breachFeatureType:previous.breachFeatureType||previous.missionFeatureType||null
+      ,hatchFeatureType:previous.hatchFeatureType||null
+      ,breachTransactionId:previous.breachTransactionId||previous.missionFeatureTransactionId||null
+      ,hatchTransactionId:previous.hatchTransactionId||null
       ,missionFeatureCommitted:Boolean(previous.missionFeatureCommitted)
+      ,missionFeatureCommittedActions:isRecord(previous.missionFeatureCommittedActions)?{...previous.missionFeatureCommittedActions}:{}
     };
   }
 
@@ -3904,10 +3907,12 @@ function showPlayerActivation(stage={}){
   function showActivationFeatureTargetSelection(stage,action){
     const isHatch=action==='operate-hatch',featureType=isHatch?'hatchway':'breach-point';
     const targetKey=isHatch?'hatchTargetId':'breachTargetId';
+    const typeKey=isHatch?'hatchFeatureType':'breachFeatureType';
+    const transactionKey=isHatch?'hatchTransactionId':'breachTransactionId';
     const actionLabel=isHatch?'Operate Hatch':'Breach';
     const available=closedMissionFeatures(featureType);
     const pendingId=available.some(feature=>feature.id===stage[targetKey])?stage[targetKey]:null;
-    state.combatState={side:'player',stage:{...stage,[targetKey]:pendingId,missionFeatureType:featureType}};
+    state.combatState={side:'player',stage:{...stage,[targetKey]:pendingId,[typeKey]:featureType}};
     save();
     if(!available.length){
       showModal(`${actionLabel} target unavailable`,`<p>No closed ${isHatch?'hatchways':'breach points'} remain. No action was spent and no mission progress was changed.</p><div class="wizard-actions"><button class="btn ghost" id="returnFromBreachTarget">Return to Activation</button></div>`);
@@ -3923,10 +3928,14 @@ function showPlayerActivation(stage={}){
       const feature=available.find(item=>item.id===select.value);
       if(!feature)return showActivationFeatureTargetSelection(stage,action);
       confirm.disabled=true;
-      const transactionId=stage.missionFeatureTransactionId||missionActivationId('player',stage.playerOperativeId);
-      const nextStage={...stage,[targetKey]:feature.id,missionFeatureType:featureType,missionFeatureTransactionId:transactionId};
+      const transactionId=stage[transactionKey]||`${missionActivationId('player',stage.playerOperativeId)}:${action}`;
+      const nextStage={...stage,[targetKey]:feature.id,[typeKey]:featureType,[transactionKey]:transactionId};
       state.combatState={side:'player',stage:nextStage};
       save();
+      if(isHatch&&nextStage.breach&&!nextStage.breachTargetId){
+        showActivationFeatureTargetSelection(nextStage,'breach');
+        return;
+      }
       resolvePendingPlayerAttacks(nextStage);
     };
   }
@@ -4118,26 +4127,50 @@ function showPlayerActivation(stage={}){
       return;
     }
     const activationId=missionActivationId('player',operativeId);
-    const missionFeatureAction=stage.hatch?'operate-hatch':stage.breach?'breach':null;
-    if(state.missionId==='demolition-protocol'&&missionFeatureAction&&!stage.missionFeatureCommitted){
-      const targetKey=missionFeatureAction==='operate-hatch'?'hatchTargetId':'breachTargetId';
-      const expectedType=missionFeatureAction==='operate-hatch'?'hatchway':'breach-point';
-      const feature=missionEngine()?.features.find(item=>item.id===stage[targetKey]),identity=missionFeatureIdentity(feature);
-      const transactionId=stage.missionFeatureTransactionId||activationId;
-      const validIdentity=identity?.featureType===expectedType?identity:null;
-      const outcome=commitMissionFeatureOpened({...validIdentity,missionId:state.missionId,openedBy:missionFeatureAction,source:'player-activation',operativeId,turningPoint:state.turningPoint,transactionId});
-      const replayed=outcome.status==='already-open'&&state.missionState?.featureTransactions?.[transactionId]===feature?.id;
-      if(outcome.status!=='completed'&&!replayed){
-        const retryStage={...stage,[targetKey]:null,missionFeatureType:expectedType,missionFeatureTransactionId:transactionId};
+    const missionFeatureActions=[
+      ...(stage.hatch?[{action:'operate-hatch',targetKey:'hatchTargetId',typeKey:'hatchFeatureType',transactionKey:'hatchTransactionId',featureType:'hatchway'}]:[]),
+      ...(stage.breach?[{action:'breach',targetKey:'breachTargetId',typeKey:'breachFeatureType',transactionKey:'breachTransactionId',featureType:'breach-point'}]:[])
+    ];
+    if(state.missionId==='demolition-protocol'&&missionFeatureActions.length&&!stage.missionFeatureCommitted){
+      const pending=missionFeatureActions.map(item=>{
+        const feature=missionEngine()?.features.find(feature=>feature.id===stage[item.targetKey]);
+        const identity=missionFeatureIdentity(feature);
+        const transactionId=stage[item.transactionKey]||(item.action==='breach'&&stage.missionFeatureTransactionId)||`${activationId}:${item.action}`;
+        const alreadyOpen=Boolean(feature&&state.missionState?.completedFeatureIds?.includes(feature.id));
+        const replayed=alreadyOpen&&state.missionState?.featureTransactions?.[transactionId]===feature.id;
+        return {...item,feature,identity,transactionId,alreadyOpen,replayed,valid:identity?.featureType===item.featureType&&(!alreadyOpen||replayed)};
+      });
+      const invalid=pending.find(item=>!item.valid);
+      if(invalid){
+        const alreadyOpen=invalid.alreadyOpen;
+        const retryStage={...stage,[invalid.targetKey]:null,[invalid.typeKey]:invalid.featureType,[invalid.transactionKey]:invalid.transactionId};
         state.combatState={side:'player',stage:retryStage};
         save();
-        const alreadyOpen=outcome.status==='already-open';
-        showModal(alreadyOpen?'Feature already open':`${missionFeatureAction==='operate-hatch'?'Operate Hatch':'Breach'} target unavailable`,`<p>${alreadyOpen?'This feature is already open and does not add additional mission progress. No action was spent.':'The selected feature is missing, stale, or is the wrong type for this action. No action was spent and no mission progress was changed.'}</p><div class="wizard-actions"><button class="btn primary" id="recoverActivationBreach">Return to Target Selection</button></div>`);
-        $('#recoverActivationBreach').onclick=()=>showActivationFeatureTargetSelection(retryStage,missionFeatureAction);
+        showModal(alreadyOpen?'Feature already open':`${invalid.action==='operate-hatch'?'Operate Hatch':'Breach'} target unavailable`,`<p>${alreadyOpen?'This feature is already open and does not add additional mission progress. No action was spent.':'The selected feature is missing, stale, or is the wrong type for this action. No action was spent and no mission progress was changed.'}</p><div class="wizard-actions"><button class="btn primary" id="recoverActivationBreach">Return to Target Selection</button></div>`);
+        $('#recoverActivationBreach').onclick=()=>showActivationFeatureTargetSelection(retryStage,invalid.action);
         return;
       }
+      const missionStateSnapshot=JSON.parse(JSON.stringify(state.missionState));
+      const missionRuntimeSnapshot=objectiveEngine?JSON.parse(JSON.stringify(objectiveEngine.getMissionRuntime())):null;
+      const journalSnapshot=[...(state.journal||[])];
+      for(const item of pending){
+        const outcome=commitMissionFeatureOpened({...item.identity,missionId:state.missionId,openedBy:item.action,source:'player-activation',operativeId,turningPoint:state.turningPoint,transactionId:item.transactionId});
+        const replayed=outcome.status==='already-open'&&state.missionState?.featureTransactions?.[item.transactionId]===item.feature.id;
+        if(outcome.status!=='completed'&&!replayed){
+          state.missionState=missionStateSnapshot;
+          state.journal=journalSnapshot;
+          if(objectiveEngine&&missionRuntimeSnapshot)state.missionRuntime=objectiveEngine.restoreMissionRuntime(objectiveDefinition,missionRuntimeSnapshot,missionLifecycleContext());
+          const retryStage={...stage,[item.targetKey]:null,[item.typeKey]:item.featureType,[item.transactionKey]:item.transactionId};
+          state.combatState={side:'player',stage:retryStage};
+          save();
+          showModal(`${item.action==='operate-hatch'?'Operate Hatch':'Breach'} could not be recorded`,'<p>The mission update could not be completed. No action was spent and no mission progress was changed.</p><div class="wizard-actions"><button class="btn primary" id="recoverActivationBreach">Return to Target Selection</button></div>');
+          $('#recoverActivationBreach').onclick=()=>showActivationFeatureTargetSelection(retryStage,item.action);
+          return;
+        }
+      }
       stage.missionFeatureCommitted=true;
-      stage.missionFeatureRecord={featureId:feature.id,featureType:expectedType,openedBy:missionFeatureAction,transactionId};
+      stage.missionFeatureCommittedActions=Object.fromEntries(pending.map(item=>[item.action,{featureId:item.feature.id,featureType:item.featureType,transactionId:item.transactionId}]));
+      stage.missionFeatureRecord=pending.at(-1)?{featureId:pending.at(-1).feature.id,featureType:pending.at(-1).featureType,openedBy:pending.at(-1).action,transactionId:pending.at(-1).transactionId}:null;
       state.combatState={side:'player',stage:{...stage}};
     }
     state.combatState=null;
