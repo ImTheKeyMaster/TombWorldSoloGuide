@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.26
+# Tomb World Solo Guide v8.6.27
+
+## v8.6.27
+
+**Version 8.6.27 - Enlarge Victory and Defeat Artwork on Desktop**
+
+* Enlarged Victory and Defeat artwork on desktop screens for greater visual presence.
+* Preserved the existing mobile and tablet artwork size and result-screen layout.
+* Kept artwork centered, proportional, and contained within the battle-complete panel.
 
 ## v8.6.26
 
