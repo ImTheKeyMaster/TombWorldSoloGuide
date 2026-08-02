@@ -18,10 +18,10 @@ def section(start, end):
 
 class V868AttackBeforeMovementTests(unittest.TestCase):
     def test_01_version_is_displayed_consistently(self):
-        self.assertIn("const APP_VERSION = '8.6.24';", APP)
-        self.assertIn("const APP_VERSION = '8.6.24';", WORKER)
-        self.assertIn('V8.6.24', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.24'))
+        self.assertIn("const APP_VERSION = '8.6.25';", APP)
+        self.assertIn("const APP_VERSION = '8.6.25';", WORKER)
+        self.assertIn('V8.6.25', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.25'))
 
     def test_02_shoot_check_precedes_reposition_intent(self):
         question = section('function npoActionQuestion', 'const npoQuestionIcons')
@@ -167,7 +167,7 @@ class V868AttackBeforeMovementTests(unittest.TestCase):
     def test_38_release_notes_and_assets(self):
         self.assertIn('Version 8.6.8 - Check Attacks Before NPO Movement', README)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.24', INDEX)
+            self.assertIn(f'{asset}?v=8.6.25', INDEX)
 
     def test_39_movement_availability_keeps_null_false_and_true_distinct(self):
         helper = section('function attackAvailabilityForMovementIntent', 'function directNpoAttackQuestion')

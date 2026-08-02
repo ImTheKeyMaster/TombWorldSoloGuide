@@ -29,10 +29,10 @@ class MobileOperativePickerCloseTests(unittest.TestCase):
         ).group()
 
     def test_01_application_displays_version_8624(self):
-        self.assertIn("const APP_VERSION = '8.6.24';", APP)
-        self.assertIn("const APP_VERSION = '8.6.24';", WORKER)
-        self.assertIn("V8.6.24", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.24"))
+        self.assertIn("const APP_VERSION = '8.6.25';", APP)
+        self.assertIn("const APP_VERSION = '8.6.25';", WORKER)
+        self.assertIn("V8.6.25", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.25"))
 
     def test_02_player_selection_has_one_canonical_change_handler(self):
         self.assertEqual(self.activation.count("operativeSelect?.addEventListener('change'"), 1)
@@ -103,7 +103,7 @@ class MobileOperativePickerCloseTests(unittest.TestCase):
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
     def test_19_release_notes_are_present(self):
-        self.assertIn("## v8.6.24", README)
+        self.assertIn("## v8.6.25", README)
         self.assertIn("Version 8.6.24 - Close Player Operative Picker After Selection", README)
 
 

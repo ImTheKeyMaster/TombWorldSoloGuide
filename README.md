@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.24
+# Tomb World Solo Guide v8.6.25
+
+## v8.6.25
+
+**Version 8.6.25 - Sync Breach Actions with Mission Progress**
+
+* Connected Player activation Breach actions to the canonical mission-feature tracker.
+* Mission & Map, Mission Details, Dashboard, and Battle Complete now remain synchronized.
+* Added unique feature counting and duplicate-commit protection.
+* Preserved manual correction, save recovery, and the existing Demolition Protocol rules.
 
 ## v8.6.24
 
