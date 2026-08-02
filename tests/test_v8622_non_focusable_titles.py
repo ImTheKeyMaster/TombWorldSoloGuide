@@ -52,13 +52,14 @@ class NonFocusableTitleTests(unittest.TestCase):
         self.assertNotRegex(APP, r"\$\(['\"]#modalTitle['\"].*?(?:onclick|addEventListener)")
 
     def test_11_same_dialog_rerender_does_not_refocus(self):
-        self.assertIn("const shouldFocus=!modal.open||modal._focusKey!==focusKey;", APP)
-        self.assertIn("if(shouldFocus)focusInitialDialogControl(modal);", APP)
+        self.assertIn("const shouldFocus=!modal.open||modal._focusKey!==nextFocusKey;", APP)
+        self.assertIn("else restoreDialogControlFocus(modal,activeControlId);", APP)
 
     def test_12_new_guide_step_has_focus_identity(self):
-        self.assertIn("function showModal(title,content,onClose,focusKey=title)", APP)
+        self.assertIn("function showModal(title,content,onClose,focusKey=null)", APP)
         self.assertIn("'breach-control-range'", APP)
         self.assertIn("'breach-enemy-range'", APP)
+        self.assertIn("'player-activation'", APP)
 
     def test_13_refresh_restoration_never_focuses_title(self):
         self.assertNotRegex(APP, r"(?:restore|startup|refresh).*?modalTitle.*?focus", re.S)
@@ -103,7 +104,11 @@ class NonFocusableTitleTests(unittest.TestCase):
     def test_25_save_version_is_unchanged(self):
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
-    def test_26_no_heading_is_given_focusability(self):
+    def test_26_collapsed_controls_are_not_focus_targets(self):
+        self.assertIn("element.closest('details:not([open])')", APP)
+        self.assertIn("':scope > summary'", APP)
+
+    def test_27_no_heading_is_given_focusability(self):
         self.assertNotRegex(APP + INDEX, r'<h[1-6][^>]*(?:tabindex|autofocus)')
 
 

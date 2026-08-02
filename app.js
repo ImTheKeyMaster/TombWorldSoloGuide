@@ -3446,7 +3446,7 @@ function showPlayerActivation(stage={}){
           </section>
         </div>
         <div class="wizard-actions"><button class="btn ghost" id="cancelPlayerActivation">Cancel</button><button class="btn primary" id="confirmPlayer">Complete Activation</button></div>
-      </fieldset>`);
+      </fieldset>`,undefined,'player-activation');
 
     const operativeSelect=$('#playerOperativeSelect');
     const controls=$('#playerActivationControls');
@@ -6573,6 +6573,8 @@ function showPlayerActivation(stage={}){
   function isUsableFocusTarget(element){
     if(!element||element.hidden||element.disabled||element.getAttribute('aria-hidden')==='true')return false;
     if(element.closest('[hidden],[inert],[aria-hidden="true"]'))return false;
+    const collapsedDetails=element.closest('details:not([open])');
+    if(collapsedDetails&&!collapsedDetails.querySelector(':scope > summary')?.contains(element))return false;
     const style=getComputedStyle(element);
     return style.display!=='none'&&style.visibility!=='hidden';
   }
@@ -6589,23 +6591,36 @@ function showPlayerActivation(stage={}){
     });
   }
 
-  function showModal(title,content,onClose,focusKey=title){
+  function restoreDialogControlFocus(dialog,controlId){
+    if(!controlId)return;
+    requestAnimationFrame(()=>{
+      const target=document.getElementById(controlId);
+      if(!dialog.contains(target)||!isUsableFocusTarget(target))return;
+      try{target.focus({preventScroll:true});}catch{target.focus();}
+    });
+  }
+
+  let modalFocusSequence=0;
+  function showModal(title,content,onClose,focusKey=null){
     const active=document.activeElement;
     if(active&&!modal.contains(active))modal._returnFocus=active;
-    const shouldFocus=!modal.open||modal._focusKey!==focusKey;
+    const activeControlId=modal.contains(active)?active.id:null;
+    const nextFocusKey=focusKey??++modalFocusSequence;
+    const shouldFocus=!modal.open||modal._focusKey!==nextFocusKey;
 
     modal.classList.remove('combat-resolution-modal');
     modalBody.innerHTML=`<div class="modal-inner"><h2 id="modalTitle">${escapeHtml(title)}</h2>${content}</div>`;
     modal.setAttribute('aria-labelledby','modalTitle');
     modal.setAttribute('tabindex','-1');
     if(!modal.open)modal.showModal();
-    modal._focusKey=focusKey;
+    modal._focusKey=nextFocusKey;
     modal._onClose=onClose;
     $$('[data-close]',modal).forEach(b=>b.onclick=closeModal);
 
     modal.scrollTop=0;
     modalBody.scrollTop=0;
     if(shouldFocus)focusInitialDialogControl(modal);
+    else restoreDialogControlFocus(modal,activeControlId);
   }
   function closeModal(){
     missionDialogLocked=false;
