@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.19
+# Tomb World Solo Guide v8.6.20
+
+## v8.6.20
+
+**Version 8.6.20 - Keep Operative Cards Consistent Across Roster Groups**
+
+* Standardized operative card widths across all roster categories.
+* Single-operative groups now use one normal grid column instead of stretching across the row.
+* Preserved consistent selected-state styling and responsive layouts.
+* Added support for future categories with any number of operatives.
 
 ## v8.6.19
 

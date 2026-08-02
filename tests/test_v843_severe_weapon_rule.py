@@ -62,14 +62,14 @@ def severe(dice, profile):
 
 class SevereWeaponRuleTests(unittest.TestCase):
     def test_version_850_is_consistent_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.6.19';", APP)
-        self.assertIn("const APP_VERSION = '8.6.19';", WORKER)
-        self.assertIn('V8.6.19', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.19'))
+        self.assertIn("const APP_VERSION = '8.6.20';", APP)
+        self.assertIn("const APP_VERSION = '8.6.20';", WORKER)
+        self.assertIn('V8.6.20', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.20'))
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.19', INDEX)
+            self.assertIn(f'{asset}?v=8.6.20', INDEX)
         self.assertNotIn('8.4.2', APP + INDEX + WORKER)
-        self.assertIn('## v8.6.19', README)
+        self.assertIn('## v8.6.20', README)
 
     def test_rule_detection_uses_ids_then_rules_fallback(self):
         die = [{'value': 4, 'kind': 'hit', 'retained': True}]
