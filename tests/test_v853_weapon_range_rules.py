@@ -13,7 +13,7 @@ README = (ROOT / "README.md").read_text()
 def evaluate_weapon_rules():
     handlers = APP[APP.index("const WEAPON_RULE_HANDLERS"):APP.index("const NPO_ACTION_TRANSITIONS")]
     normalize = APP[APP.index("  function normalizedWeaponRuleId"):APP.index("  function effectiveDefenseDiceCount")]
-    statuses = APP[APP.index("  function weaponRuleStatuses"):APP.index("  function createWeaponRuleResolution")]
+    statuses = APP[APP.index("  function weaponRuleSummary"):APP.index("  function createWeaponRuleResolution")]
     script = f"""
 const warnings=[];
 const console={{warn:message=>warnings.push(message)}};
@@ -21,7 +21,7 @@ const console={{warn:message=>warnings.push(message)}};
 {normalize}
 {statuses}
 const rangeRules=['Range 6"','Range 8"','Range 12"'];
-const rangeProfile={{rules:[rangeRules[1],'Piercing 1']}};
+const rangeProfile={{rules:[rangeRules[1],'Piercing 1'],ap:1}};
 const unknownProfile={{rules:['Mystery Rule 2','  mystery   rule 2  ','Mystery Rule 3']}};
 const rangeStatuses=weaponRuleStatuses(rangeProfile);
 weaponRuleStatuses(rangeProfile);
@@ -60,22 +60,22 @@ class WeaponRangeRuleTests(unittest.TestCase):
         self.assertFalse(any('Range 8"' in warning for warning in self.result["warnings"]))
 
     def test_piercing_remains_automatic(self):
-        self.assertIn("Piercing 1: handled automatically", self.result["rangeStatuses"])
+        self.assertIn("Piercing 1: Defender rolls 1 fewer defense die. Handled automatically.", self.result["rangeStatuses"])
 
     def test_unknown_rules_remain_visible_and_warn_only_once(self):
-        self.assertEqual(len(self.result["unknownStatuses"]), 3)
+        self.assertEqual(len(self.result["unknownStatuses"]), 2)
         self.assertTrue(all("is not yet supported by the Guide." in status for status in self.result["unknownStatuses"]))
         unknown_warnings = [warning for warning in self.result["warnings"] if "mystery" in warning.lower()]
         self.assertEqual(len(unknown_warnings), 2)
 
     def test_version_853_is_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.22';", APP)
-        self.assertIn("const APP_VERSION = '8.6.22';", WORKER)
-        self.assertIn("V8.6.22", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.22"))
-        self.assertIn("## v8.6.22", README)
+        self.assertIn("const APP_VERSION = '8.6.23';", APP)
+        self.assertIn("const APP_VERSION = '8.6.23';", WORKER)
+        self.assertIn("V8.6.23", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.23"))
+        self.assertIn("## v8.6.23", README)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.22", INDEX)
+            self.assertIn(f"{asset}?v=8.6.23", INDEX)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
 
 
