@@ -42,8 +42,8 @@ class V842NpoMovementConfirmationLayoutTests(unittest.TestCase):
         self.assertIn('aria-labelledby="${headingId}"', confirmation)
         self.assertIn('aria-describedby="${instructionId}"', confirmation)
         self.assertIn("headingId='activeNpoMovementHeading'", confirmation)
-        self.assertIn('tabindex="-1"', confirmation)
-        self.assertIn("$('#activeNpoMovementHeading')?.focus({preventScroll:true})", confirmation)
+        self.assertNotRegex(confirmation, r'<h[1-6][^>]*tabindex')
+        self.assertIn('focusInitialDialogControl(modal)', confirmation)
         self.assertNotIn('displayAction.toUpperCase()', confirmation)
 
     def test_confirm_button_uses_full_width_choice_area(self):
@@ -74,7 +74,7 @@ class V842NpoMovementConfirmationLayoutTests(unittest.TestCase):
         self.assertIn('activation.currentContext={...previous.contextBefore}', back)
         self.assertIn('activation.answers={...previous.answers}', back)
         self.assertIn('runNpoPrompt(n,previous.index,previous.answers,earlierHistory)', back)
-        self.assertIn("$('#activeNpoQuestion')?.focus({preventScroll:true})", back)
+        self.assertIn('focusInitialDialogControl(modal)', back)
         for forbidden in ('commitNpoAction', 'consumeMolecularBreach', 'declinedActionIds', 'log(', 'showModal('):
             self.assertNotIn(forbidden, back)
 
@@ -104,13 +104,13 @@ class V842NpoMovementConfirmationLayoutTests(unittest.TestCase):
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
     def test_v842_version_is_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.21';", APP)
-        self.assertIn("const APP_VERSION = '8.6.21';", WORKER)
-        self.assertIn('V8.6.21', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.21'))
-        self.assertIn('## v8.6.21', README)
+        self.assertIn("const APP_VERSION = '8.6.22';", APP)
+        self.assertIn("const APP_VERSION = '8.6.22';", WORKER)
+        self.assertIn('V8.6.22', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.22'))
+        self.assertIn('## v8.6.22', README)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.21', INDEX)
+            self.assertIn(f'{asset}?v=8.6.22', INDEX)
 
 
 if __name__ == '__main__':

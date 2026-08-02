@@ -19,7 +19,7 @@ class SimplifyBreachNavigationV861Tests(unittest.TestCase):
         self.assertIn("$('#cancelBreach').onclick=()=>clearPendingBreach(stage)", first)
 
     def test_cancel_clears_context_and_returns_to_unchanged_activation(self):
-        clear = BREACH_FLOW.split("function focusBreachQuestion", 1)[0]
+        clear = BREACH_FLOW
         self.assertIn("state.missionActionContext=null", clear)
         self.assertIn("state.combatState={side:'player',stage:{...stage}}", clear)
         self.assertIn("showPlayerActivation(stage)", clear)
@@ -33,7 +33,7 @@ class SimplifyBreachNavigationV861Tests(unittest.TestCase):
         self.assertIn('class="wizard-actions breach-navigation"', second)
         self.assertIn('aria-label="Back to the sarcophagus control-range question"', second)
         self.assertIn("context.enemyControlRangeConfirmed=null;context.step='control-range'", second)
-        self.assertIn("focusBreachQuestion('#breachControlQuestion')", second)
+        self.assertIn("'breach-control-range'", BREACH_FLOW)
 
     def test_confirmation_has_only_perform_and_full_width_back(self):
         confirmation = BREACH_FLOW.split("const total=", 1)[1]
@@ -43,7 +43,7 @@ class SimplifyBreachNavigationV861Tests(unittest.TestCase):
         self.assertEqual(confirmation.count('class="wizard-actions breach-navigation"'), 2)
         self.assertIn('aria-label="Back to the enemy control-range question"', confirmation)
         self.assertIn("context.enemyControlRangeConfirmed=null;context.step='enemy-control-range'", confirmation)
-        self.assertIn("focusBreachQuestion('#breachEnemyQuestion')", confirmation)
+        self.assertIn("'breach-enemy-range'", BREACH_FLOW)
         self.assertNotIn("context.controlRangeConfirmed=null", confirmation)
 
     def test_navigation_before_perform_has_no_commit_side_effects(self):
@@ -58,12 +58,12 @@ class SimplifyBreachNavigationV861Tests(unittest.TestCase):
         self.assertIn(".wizard-actions.breach-navigation .btn{width:100%}", STYLES)
 
     def test_release_version_and_save_schema(self):
-        self.assertIn("const APP_VERSION = '8.6.21';", APP)
-        self.assertIn("const APP_VERSION = '8.6.21';", WORKER)
-        self.assertIn("V8.6.21", INDEX)
+        self.assertIn("const APP_VERSION = '8.6.22';", APP)
+        self.assertIn("const APP_VERSION = '8.6.22';", WORKER)
+        self.assertIn("V8.6.22", INDEX)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.21", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.21"))
+            self.assertIn(f"{asset}?v=8.6.22", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.22"))
         self.assertIn("Version 8.6.1 - Simplify Breach Navigation", README)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
 

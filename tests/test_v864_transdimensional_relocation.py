@@ -15,13 +15,13 @@ def source(start, end):
 
 class TransdimensionalRelocationTests(unittest.TestCase):
     def test_version_864_is_consistent_without_save_schema_change(self):
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.21"))
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.22"))
         self.assertIn("Version 8.6.5 - Show Player Wounds in Target Selection", README)
-        self.assertIn("const APP_VERSION = '8.6.21';", APP)
-        self.assertIn("const APP_VERSION = '8.6.21';", WORKER)
-        self.assertIn("V8.6.21", INDEX)
+        self.assertIn("const APP_VERSION = '8.6.22';", APP)
+        self.assertIn("const APP_VERSION = '8.6.22';", WORKER)
+        self.assertIn("V8.6.22", INDEX)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.21", INDEX)
+            self.assertIn(f"{asset}?v=8.6.22", INDEX)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
 
     def test_definition_has_correct_effect_and_safe_redraw(self):
@@ -98,12 +98,14 @@ class TransdimensionalRelocationTests(unittest.TestCase):
         binding = source("function bindPlay", "function showPlayerActivation")
         resolution = source("function resolveStrategyEvent", "function randomReinforcement")
         self.assertIn('aria-live="polite"', card)
-        self.assertIn('id="transdimensional-relocation-selection-heading" tabindex="-1"', card)
-        self.assertIn("transdimensional-relocation-selection-heading", binding)
+        self.assertIn('id="transdimensional-relocation-selection-heading"', card)
+        self.assertNotIn('id="transdimensional-relocation-selection-heading" tabindex', card)
+        self.assertIn('focusInitialDialogControl(app)', binding)
         self.assertIn("focusedRelocationInstanceId!==pendingRelocation.instanceId", binding)
         self.assertIn("else focusedRelocationInstanceId=null", binding)
-        self.assertIn('id="resolved-transdimensional-relocation-heading" tabindex="-1"', card)
-        self.assertIn("resolved-transdimensional-relocation-heading", resolution)
+        self.assertIn('id="resolved-transdimensional-relocation-heading"', card)
+        self.assertNotIn('id="resolved-transdimensional-relocation-heading" tabindex', card)
+        self.assertIn('focusInitialDialogControl(app)', resolution)
         self.assertIn("button.disabled=true", binding)
 
     def test_deck_weighting_and_other_effects_are_unchanged(self):

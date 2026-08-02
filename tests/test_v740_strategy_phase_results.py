@@ -79,16 +79,17 @@ assert.deepEqual(strategyEventPresentation(data),{{required:0,cardsDrawn:0,resol
 
     def test_accessible_responsive_presentation(self):
         self.assertIn('aria-label="Strategy Phase, step ${number} of 3: ${label}"', STRATEGY)
-        self.assertIn('id="strategy-step-heading" tabindex="-1"', STRATEGY)
+        self.assertIn('id="strategy-step-heading"', STRATEGY)
+        self.assertNotIn('id="strategy-step-heading" tabindex', STRATEGY)
         self.assertIn('aria-labelledby="battlefield-state-heading"', STRATEGY)
         self.assertIn('aria-label="${summary.accessible}"', STRATEGY)
         self.assertIn('@media(max-width:420px)', STYLES)
         self.assertNotIn('position:absolute', STYLES.split('.strategy-actions-section', 1)[1].split('\n', 1)[0])
 
     def test_release_version_and_notes_are_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.21';", APP)
-        self.assertIn('V8.6.21', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.21'))
+        self.assertIn("const APP_VERSION = '8.6.22';", APP)
+        self.assertIn('V8.6.22', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.22'))
         self.assertIn('Version 7.4.0 - Reorganize Strategy Phase Results', README)
         self.assertNotIn('portrait', EVENT_HTML.lower())
         self.assertNotIn('obelisk', EVENT_HTML.lower())
