@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.20';
+  const APP_VERSION = '8.6.21';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -6656,6 +6656,19 @@ function showPlayerActivation(stage={}){
     const markers=Object.values(state.deadlyEncountersState.objectives),operatives=deadlyOperativeOptions();showModal('Update Carried Marker',`<div class="field"><label for="deadlyCarrierMarker">Objective or mission marker</label><select id="deadlyCarrierMarker">${markers.map(marker=>`<option value="${escapeHtml(marker.id)}">${escapeHtml(marker.label)}</option>`).join('')}</select></div><div class="field"><label for="deadlyCarrierOperative">Current carrier</label><select id="deadlyCarrierOperative"><option value="">Not carried</option>${operatives.map(item=>`<option value="${escapeHtml(item.id)}">${escapeHtml(item.label)}</option>`).join('')}</select></div><p class="muted">The feature remains attached when the marker is picked up, dropped, or transferred. Measure from the carrier while carried.</p><div class="wizard-actions"><button class="btn ghost" id="backDeadlyPanel">Cancel</button><button class="btn primary" id="confirmDeadlyCarrier">Save Carrier</button></div>`);$('#backDeadlyPanel').onclick=showDeadlyEncountersPanel;$('#confirmDeadlyCarrier').onclick=()=>{const marker=state.deadlyEncountersState.objectives[$('#deadlyCarrierMarker').value];if(!marker)return;marker.carrierId=$('#deadlyCarrierOperative').value||null;log(`Deadly Encounters: ${marker.label} is ${marker.carrierId?'now carried':'no longer carried'}.`);save();showDeadlyEncountersPanel();};
   }
   function showCorrectDeadlyRecord(){showModal('Correct Location or Encounter',`<p>Location corrections can be recorded directly. To correct a committed encounter, record a note; damage, movement, dice, and model placement are not silently reversed.</p><div class="field"><label for="deadlyCorrection">Correction note</label><textarea id="deadlyCorrection" rows="4" maxlength="300"></textarea></div><label class="check-row"><input id="confirmPhysicalCorrection" type="checkbox"><span>I understand physical tabletop effects may require manual reversal.</span></label><div class="wizard-actions"><button class="btn ghost" id="backDeadlyPanel">Cancel</button><button class="btn danger" id="confirmDeadlyCorrection">Record Correction</button></div>`);$('#backDeadlyPanel').onclick=showDeadlyEncountersPanel;$('#confirmDeadlyCorrection').onclick=()=>{const note=$('#deadlyCorrection').value.trim();if(!note||!$('#confirmPhysicalCorrection').checked){showToast('Enter a note and confirm the tabletop warning.');return;}state.deadlyEncountersState.resolutionHistory.push({type:'correction',note,time:new Date().toISOString()});log(`Deadly Encounters correction: ${note}`);save();showDeadlyEncountersPanel();};}
+  function isNewGameSetupActive(){return state.screen==='setup';}
+  function isBattleComplete(){return state.screen==='game'&&Boolean(state.gameEnd||state.finalResolution?.pending);}
+  function isGuidedPlayActive(){return state.screen==='game'&&!isBattleComplete();}
+  function canOpenHelp(){return isNewGameSetupActive()||isGuidedPlayActive()||isBattleComplete();}
+  function openHelpFromGameMenu(){
+    closeModal();
+    renderHelp();
+    app.insertAdjacentHTML('afterbegin',`<div class="reference-return"><button class="btn primary" id="returnToGameMenu">Return to Game Menu</button><small>Reference screens do not change setup or guided play.</small></div>`);
+    $('#returnToGameMenu').onclick=()=>{
+      showGameMenu();
+      requestAnimationFrame(()=>$('#menuHelp')?.focus({preventScroll:true}));
+    };
+  }
   function showGameMenu(){
     const inGame=state.screen==='game';
     showModal('Game Menu',`<p>Open a reference screen without changing the guided play sequence, or begin a completely new game.</p>
@@ -6666,8 +6679,8 @@ function showPlayerActivation(stage={}){
         <button class="btn secondary" data-game-view="mission">Mission & Map</button>
         <button class="btn secondary" data-game-view="roster">NPO Roster</button>
         <button class="btn secondary" data-game-view="player-roster">Player Roster</button>
-        <button class="btn secondary" data-game-view="journal">Battle Journal</button>
-        <button class="btn secondary" data-game-view="help">Help</button>`:''}
+        <button class="btn secondary" data-game-view="journal">Battle Journal</button>`:''}
+        ${canOpenHelp()?'<button class="btn secondary" id="menuHelp" type="button">Help</button>':''}
         <button class="btn secondary" id="menuAbout" type="button">About</button>
       </div>
       <div class="game-menu-session">
@@ -6684,6 +6697,7 @@ function showPlayerActivation(stage={}){
       $('#menuMissionDetails').onclick=showMissionDetails;
       $('#menuDeadlyEncounters').onclick=showDeadlyEncountersPanel;
     }
+    if(canOpenHelp())$('#menuHelp').onclick=openHelpFromGameMenu;
     $('#menuAbout').onclick=showAbout;
     $('#menuExportSave').onclick=exportSave;
     $('#menuImportSave').onclick=()=>importInput.click();

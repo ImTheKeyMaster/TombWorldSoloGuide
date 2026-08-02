@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.20
+# Tomb World Solo Guide v8.6.21
+
+## v8.6.21
+
+**Version 8.6.21 - Add Help to New Game Setup Menu**
+
+* Added the existing Help screen to the Game Menu during New Game Setup.
+* Preserved the current setup step, selections, and background while viewing Help.
+* Restored focus to the Help button when returning to the Game Menu.
+* Kept About, save controls, and setup behavior unchanged.
 
 ## v8.6.20
 
