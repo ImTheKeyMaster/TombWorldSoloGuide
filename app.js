@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.25';
+  const APP_VERSION = '8.6.26';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -2258,7 +2258,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         const featureLabel=labelParts?.[1]||feature.label;
         const featureNumber=labelParts?.[2]||'';
         const label=`${featureLabel}${featureNumber?` ${featureNumber}`:''}`;
-        const status=completed.has(feature.id)?'Opened by Breach':'Not opened';
+        const openedBy=progress.featureOpenDetails?.[feature.id]?.openedBy;
+        const status=completed.has(feature.id)?`Opened by ${openedBy==='operate-hatch'?'Operate Hatch':'Breach'}`:'Not opened';
         return `<span class="mission-feature-card__text"><span class="mission-feature-card__label">${escapeHtml(label)}</span><span class="mission-feature-card__status">${escapeHtml(status)}</span></span>`;
       };
       return `<p>${model?.value??completed.size} of ${model?.target??engine.required} required features have been permanently opened by Breach.</p><div class="mission-objective-grid">${engine.features.map(feature=>readOnly?`<div class="mission-objective-check">${featureCard(feature)}</div>`:`<label class="mission-objective-check"><input type="checkbox" data-mission-feature="${feature.id}" ${completed.has(feature.id)?'checked':''} ${missionOperationResolving?'disabled':''}>${featureCard(feature)}</label>`).join('')}</div>`;
@@ -2309,6 +2310,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return {featureId:feature.id,featureType:match[1]==='breach'?'breach-point':'hatchway',featureNumber:Number(match[2])};
   }
 
+  function closedMissionFeatures(featureType){
+    const engine=missionEngine(),opened=new Set(state.missionState?.completedFeatureIds||[]);
+    if(engine?.type!=='sabotage')return [];
+    return engine.features.filter(feature=>missionFeatureIdentity(feature)?.featureType===featureType&&!opened.has(feature.id));
+  }
+
   function commitMissionFeatureOpened({missionId,featureId,featureType,featureNumber,openedBy='breach',source='mission-map',operativeId=null,turningPoint=state.turningPoint,transactionId}={}){
     const selectedMission=missionDefinition(missionId||state.missionId),engine=missionEngine(selectedMission);
     if(selectedMission?.id!=='demolition-protocol'||selectedMission.id!==state.missionId||engine?.type!=='sabotage')return {status:'unavailable'};
@@ -2327,18 +2334,21 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         objectiveEngine.setObjectiveValue('sabotagedFeatures',after,missionLifecycleContext({activationId:transactionKey,operativeId}));
         const historyId=`mission-feature-open:${transactionKey}`;
         const history=objectiveEngine.getMissionRuntime().history||[];
-        if(!history.some(entry=>entry.id===historyId))objectiveEngine.recordMissionHistory({id:historyId,type:'mission-feature-opened',title:`Opened ${feature.label} by Breach`,summary:`Opened ${feature.label} by Breach: +1`,featureId,openedBy,source,operativeId,turningPoint,delta:1,changes:[{objectiveId:'sabotagedFeatures',before,after}]},missionLifecycleContext({activationId:transactionKey,operativeId}));
+        const actionLabel=openedBy==='operate-hatch'?'Operate Hatch':'Breach';
+        if(!history.some(entry=>entry.id===historyId))objectiveEngine.recordMissionHistory({id:historyId,type:'mission-feature-opened',title:`${actionLabel}: Opened ${feature.label}`,summary:`${actionLabel}: Opened ${feature.label}: +1`,featureId,openedBy,source,operativeId,turningPoint,delta:1,changes:[{objectiveId:'sabotagedFeatures',before,after}]},missionLifecycleContext({activationId:transactionKey,operativeId}));
       }
     }catch(error){
       if(objectiveEngine&&runtimeSnapshot)state.missionRuntime=objectiveEngine.restoreMissionRuntime(objectiveDefinition,runtimeSnapshot,missionLifecycleContext());
-      console.error('[MissionFeature] Breach commit failed.',error);
+      console.error('[MissionFeature] Feature commit failed.',error);
       return {status:'commit-failed',feature};
     }
     progress.completedFeatureIds=completedFeatureIds;
     progress.featureOpenDetails=isRecord(progress.featureOpenDetails)?progress.featureOpenDetails:{};
     progress.featureOpenDetails[featureId]={...identity,isOpen:true,openedBy,source,operativeId,turningPoint,transactionId:transactionKey};
     progress.featureTransactions[transactionKey]=featureId;
-    log(`${mission().name}: Opened ${feature.label} by Breach: +1.`);
+    const actionLabel=openedBy==='operate-hatch'?'Operate Hatch':'Breach';
+    const activity=`${source==='player-activation'?`${playerName(operativeId)} used ${actionLabel} on`:'Opened'} ${feature.label}${source==='player-activation'?'':' by Breach'}: +1.`;
+    log(`${mission().name}: ${activity}`);
     return {status:'completed',feature,before,after,transactionId:transactionKey};
   }
 
@@ -3487,8 +3497,8 @@ function showPlayerActivation(stage={}){
           <section class="activation-group">
             <div class="activation-group-title"><span>▣</span><div><strong>Battlefield</strong><small>Terrain and mission interactions</small></div></div>
             <div class="toggle-list player-action-list">
-              <label><input type="checkbox" id="eaHatch" ${checked('hatch')}><span>Operate Hatch <small>1 AP</small></span></label>
-              <label><input type="checkbox" id="eaBreach" ${checked('breach')}><span>Breach <small>1 AP</small></span></label>
+              <label><input type="checkbox" id="eaHatch" ${checked('hatch')} ${state.missionId==='demolition-protocol'&&!stage.hatch&&!closedMissionFeatures('hatchway').length?'disabled':''}><span>Operate Hatch <small>1 AP</small></span></label>
+              <label><input type="checkbox" id="eaBreach" ${checked('breach')} ${state.missionId==='demolition-protocol'&&!stage.breach&&!closedMissionFeatures('breach-point').length?'disabled':''}><span>Breach <small>1 AP</small></span></label>
               ${state.missionId==='destroy-sarcophagus'?'':`<label><input type="checkbox" id="eaObjective" ${checked('objective')}><span>Mission-specific action <small>1 AP</small></span></label>`}
               ${breachAvailable?`<button type="button" class="btn secondary" id="breachSarcophagus" ${breachRemainingAp<breachCost?'disabled':''}>Breach Sarcophagus (${breachCost} AP)</button>${breachRemainingAp<breachCost?'<small class="warning-text">Not enough AP to Breach the sarcophagus.</small>':''}`:''}
             </div>
@@ -3557,7 +3567,8 @@ function showPlayerActivation(stage={}){
         if(!box)return;
         if(box.checked){box.disabled=false;return;}
         const hypothetical={...current,[key]:true};
-        box.disabled=playerActionCost(hypothetical)>apl || playerActionConflicts(hypothetical).length>0;
+        const hasMissionTarget=state.missionId!=='demolition-protocol'||key!=='hatch'&&key!=='breach'||closedMissionFeatures(key==='hatch'?'hatchway':'breach-point').length>0;
+        box.disabled=!hasMissionTarget||playerActionCost(hypothetical)>apl||playerActionConflicts(hypothetical).length>0;
       });
       const missionBreach=$('#breachSarcophagus');
       if(missionBreach){
@@ -3597,8 +3608,12 @@ function showPlayerActivation(stage={}){
         $('#confirmEmptyPlayerActivation').onclick=()=>resolvePendingPlayerAttacks(finalStage);
         return;
       }
+      if(state.missionId==='demolition-protocol'&&finalStage.hatch&&!finalStage.hatchTargetId){
+        showActivationFeatureTargetSelection(finalStage,'operate-hatch');
+        return;
+      }
       if(state.missionId==='demolition-protocol'&&finalStage.breach&&!finalStage.breachTargetId){
-        showActivationBreachTargetSelection(finalStage);
+        showActivationFeatureTargetSelection(finalStage,'breach');
         return;
       }
       resolvePendingPlayerAttacks(finalStage);
@@ -3633,7 +3648,13 @@ function showPlayerActivation(stage={}){
       ,missionBreachCost:previous.missionBreachCost
       ,missionBreachRecord:previous.missionBreachRecord||null
       ,breachTargetId:previous.breachTargetId||null
+      ,hatchTargetId:previous.hatchTargetId||null
+      ,breachFeatureType:previous.breachFeatureType||previous.missionFeatureType||null
+      ,hatchFeatureType:previous.hatchFeatureType||null
+      ,breachTransactionId:previous.breachTransactionId||previous.missionFeatureTransactionId||null
+      ,hatchTransactionId:previous.hatchTransactionId||null
       ,missionFeatureCommitted:Boolean(previous.missionFeatureCommitted)
+      ,missionFeatureCommittedActions:isRecord(previous.missionFeatureCommittedActions)?{...previous.missionFeatureCommittedActions}:{}
     };
   }
 
@@ -3883,31 +3904,43 @@ function showPlayerActivation(stage={}){
     completePlayerActivation(stage);
   }
 
-  function showActivationBreachTargetSelection(stage){
-    const engine=missionEngine(),opened=new Set(state.missionState?.completedFeatureIds||[]);
-    const available=engine?.type==='sabotage'?engine.features.filter(feature=>!opened.has(feature.id)):[];
-    state.combatState={side:'player',stage:{...stage,breachTargetId:null}};
+  function showActivationFeatureTargetSelection(stage,action){
+    const isHatch=action==='operate-hatch',featureType=isHatch?'hatchway':'breach-point';
+    const targetKey=isHatch?'hatchTargetId':'breachTargetId';
+    const typeKey=isHatch?'hatchFeatureType':'breachFeatureType';
+    const transactionKey=isHatch?'hatchTransactionId':'breachTransactionId';
+    const actionLabel=isHatch?'Operate Hatch':'Breach';
+    const available=closedMissionFeatures(featureType);
+    const pendingId=available.some(feature=>feature.id===stage[targetKey])?stage[targetKey]:null;
+    state.combatState={side:'player',stage:{...stage,[targetKey]:pendingId,[typeKey]:featureType}};
     save();
     if(!available.length){
-      showModal('Breach target unavailable','<p>The selected hatchway or breach point could not be recorded. No mission progress was changed. Return to target selection and try again.</p><div class="wizard-actions"><button class="btn ghost" id="returnFromBreachTarget">Return to Activation</button></div>');
+      showModal(`${actionLabel} target unavailable`,`<p>No closed ${isHatch?'hatchways':'breach points'} remain. No action was spent and no mission progress was changed.</p><div class="wizard-actions"><button class="btn ghost" id="returnFromBreachTarget">Return to Activation</button></div>`);
       $('#returnFromBreachTarget').onclick=()=>showPlayerActivation(stage);
       return;
     }
-    showModal('Select Breach Target',`<p>Choose the hatchway or breach point this operative successfully opened. Mission progress changes only when you confirm the completed activation.</p><div class="field"><label for="activationBreachTarget">Target feature</label><select id="activationBreachTarget"><option value="">Select target…</option>${available.map(feature=>`<option value="${escapeHtml(feature.id)}">${escapeHtml(feature.label)}</option>`).join('')}</select></div><div class="wizard-actions"><button class="btn ghost" id="cancelActivationBreach">Back</button><button class="btn primary" id="confirmActivationBreach" disabled>Confirm Target</button></div>`,undefined,'activation-breach-target');
+    showModal(`Select ${actionLabel} Target`,`<p>Choose the ${isHatch?'hatchway':'breach point'} this operative successfully opened. Mission progress changes only when the entire activation is completed.</p><div class="field"><label for="activationBreachTarget">Target feature</label><select id="activationBreachTarget"><option value="">Select target…</option>${available.map(feature=>`<option value="${escapeHtml(feature.id)}" ${feature.id===pendingId?'selected':''}>${escapeHtml(feature.label)}</option>`).join('')}</select></div><div class="wizard-actions"><button class="btn ghost" id="cancelActivationBreach">Back</button><button class="btn primary" id="confirmActivationBreach" ${pendingId?'':'disabled'}>Confirm Target</button></div>`,undefined,'activation-breach-target');
     const select=$('#activationBreachTarget'),confirm=$('#confirmActivationBreach');
     select.onchange=()=>{confirm.disabled=!available.some(feature=>feature.id===select.value);};
     $('#cancelActivationBreach').onclick=()=>showPlayerActivation(stage);
     confirm.onclick=()=>{
       if(confirm.disabled)return;
       const feature=available.find(item=>item.id===select.value);
-      if(!feature)return showActivationBreachTargetSelection(stage);
+      if(!feature)return showActivationFeatureTargetSelection(stage,action);
       confirm.disabled=true;
-      const nextStage={...stage,breachTargetId:feature.id};
+      const transactionId=stage[transactionKey]||`${missionActivationId('player',stage.playerOperativeId)}:${action}`;
+      const nextStage={...stage,[targetKey]:feature.id,[typeKey]:featureType,[transactionKey]:transactionId};
       state.combatState={side:'player',stage:nextStage};
       save();
+      if(isHatch&&nextStage.breach&&!nextStage.breachTargetId){
+        showActivationFeatureTargetSelection(nextStage,'breach');
+        return;
+      }
       resolvePendingPlayerAttacks(nextStage);
     };
   }
+
+  function showActivationBreachTargetSelection(stage){showActivationFeatureTargetSelection(stage,'breach');}
 
   function continuePlayerMultiTargetAttack(stage,attackType,result){
     const listKey=attackType==='shoot'?'pendingShootResults':'pendingMeleeResults';
@@ -4094,19 +4127,50 @@ function showPlayerActivation(stage={}){
       return;
     }
     const activationId=missionActivationId('player',operativeId);
-    if(state.missionId==='demolition-protocol'&&stage.breach&&!stage.missionFeatureCommitted){
-      const feature=missionEngine()?.features.find(item=>item.id===stage.breachTargetId),identity=missionFeatureIdentity(feature);
-      const outcome=commitMissionFeatureOpened({...identity,missionId:state.missionId,openedBy:'breach',source:'player-activation',operativeId,turningPoint:state.turningPoint,transactionId:activationId});
-      if(outcome.status!=='completed'){
-        state.combatState={side:'player',stage:{...stage,breachTargetId:null}};
+    const missionFeatureActions=[
+      ...(stage.hatch?[{action:'operate-hatch',targetKey:'hatchTargetId',typeKey:'hatchFeatureType',transactionKey:'hatchTransactionId',featureType:'hatchway'}]:[]),
+      ...(stage.breach?[{action:'breach',targetKey:'breachTargetId',typeKey:'breachFeatureType',transactionKey:'breachTransactionId',featureType:'breach-point'}]:[])
+    ];
+    if(state.missionId==='demolition-protocol'&&missionFeatureActions.length&&!stage.missionFeatureCommitted){
+      const pending=missionFeatureActions.map(item=>{
+        const feature=missionEngine()?.features.find(feature=>feature.id===stage[item.targetKey]);
+        const identity=missionFeatureIdentity(feature);
+        const transactionId=stage[item.transactionKey]||(item.action==='breach'&&stage.missionFeatureTransactionId)||`${activationId}:${item.action}`;
+        const alreadyOpen=Boolean(feature&&state.missionState?.completedFeatureIds?.includes(feature.id));
+        const replayed=alreadyOpen&&state.missionState?.featureTransactions?.[transactionId]===feature.id;
+        return {...item,feature,identity,transactionId,alreadyOpen,replayed,valid:identity?.featureType===item.featureType&&(!alreadyOpen||replayed)};
+      });
+      const invalid=pending.find(item=>!item.valid);
+      if(invalid){
+        const alreadyOpen=invalid.alreadyOpen;
+        const retryStage={...stage,[invalid.targetKey]:null,[invalid.typeKey]:invalid.featureType,[invalid.transactionKey]:invalid.transactionId};
+        state.combatState={side:'player',stage:retryStage};
         save();
-        const alreadyOpen=outcome.status==='already-open';
-        showModal(alreadyOpen?'Feature already open':'Breach target unavailable',`<p>${alreadyOpen?'This feature is already open and does not add additional mission progress. No action was spent.':'The selected hatchway or breach point could not be recorded. No mission progress was changed. Return to target selection and try again.'}</p><div class="wizard-actions"><button class="btn primary" id="recoverActivationBreach">Return to Target Selection</button></div>`);
-        $('#recoverActivationBreach').onclick=()=>showActivationBreachTargetSelection({...stage,breachTargetId:null});
+        showModal(alreadyOpen?'Feature already open':`${invalid.action==='operate-hatch'?'Operate Hatch':'Breach'} target unavailable`,`<p>${alreadyOpen?'This feature is already open and does not add additional mission progress. No action was spent.':'The selected feature is missing, stale, or is the wrong type for this action. No action was spent and no mission progress was changed.'}</p><div class="wizard-actions"><button class="btn primary" id="recoverActivationBreach">Return to Target Selection</button></div>`);
+        $('#recoverActivationBreach').onclick=()=>showActivationFeatureTargetSelection(retryStage,invalid.action);
         return;
       }
+      const missionStateSnapshot=JSON.parse(JSON.stringify(state.missionState));
+      const missionRuntimeSnapshot=objectiveEngine?JSON.parse(JSON.stringify(objectiveEngine.getMissionRuntime())):null;
+      const journalSnapshot=[...(state.journal||[])];
+      for(const item of pending){
+        const outcome=commitMissionFeatureOpened({...item.identity,missionId:state.missionId,openedBy:item.action,source:'player-activation',operativeId,turningPoint:state.turningPoint,transactionId:item.transactionId});
+        const replayed=outcome.status==='already-open'&&state.missionState?.featureTransactions?.[item.transactionId]===item.feature.id;
+        if(outcome.status!=='completed'&&!replayed){
+          state.missionState=missionStateSnapshot;
+          state.journal=journalSnapshot;
+          if(objectiveEngine&&missionRuntimeSnapshot)state.missionRuntime=objectiveEngine.restoreMissionRuntime(objectiveDefinition,missionRuntimeSnapshot,missionLifecycleContext());
+          const retryStage={...stage,[item.targetKey]:null,[item.typeKey]:item.featureType,[item.transactionKey]:item.transactionId};
+          state.combatState={side:'player',stage:retryStage};
+          save();
+          showModal(`${item.action==='operate-hatch'?'Operate Hatch':'Breach'} could not be recorded`,'<p>The mission update could not be completed. No action was spent and no mission progress was changed.</p><div class="wizard-actions"><button class="btn primary" id="recoverActivationBreach">Return to Target Selection</button></div>');
+          $('#recoverActivationBreach').onclick=()=>showActivationFeatureTargetSelection(retryStage,item.action);
+          return;
+        }
+      }
       stage.missionFeatureCommitted=true;
-      stage.missionFeatureRecord={featureId:feature.id,transactionId:activationId};
+      stage.missionFeatureCommittedActions=Object.fromEntries(pending.map(item=>[item.action,{featureId:item.feature.id,featureType:item.featureType,transactionId:item.transactionId}]));
+      stage.missionFeatureRecord=pending.at(-1)?{featureId:pending.at(-1).feature.id,featureType:pending.at(-1).featureType,openedBy:pending.at(-1).action,transactionId:pending.at(-1).transactionId}:null;
       state.combatState={side:'player',stage:{...stage}};
     }
     state.combatState=null;
