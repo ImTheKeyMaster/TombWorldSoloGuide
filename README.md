@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.17
+# Tomb World Solo Guide v8.6.18
+
+## v8.6.18
+
+**Version 8.6.18 - Remove Focusability from Battle Result Labels**
+
+* Changed Victory and Defeat to non-interactive result content.
+* Removed them from keyboard tab navigation.
+* Eliminated the undesirable focus border without weakening real control focus indicators.
+* Preserved Battle Complete styling and accessibility.
 
 ## v8.6.17
 

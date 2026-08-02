@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.17';
+  const APP_VERSION = '8.6.18';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -2190,18 +2190,20 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(state.gameEnd){
       const victory=state.gameEnd==='victory';
       const atLimit=state.turningPoint>=MAX_TURNING_POINTS&&state.finalResolution?.turningPointEnded;
-      app.innerHTML=`<section class="hero-card mission-outcome"><p class="eyebrow">${atLimit?'BATTLE COMPLETE':'MISSION COMPLETE'}</p><img class="game-end-image" src="Assets/Images/${victory?'victory':'defeat'}.png" alt="${victory?'Victory':'Defeat'}"><h2 id="battle-complete-heading" tabindex="-1">${atLimit?'Battle Complete':victory?'Victory':'Defeat'}</h2>${atLimit?`<p role="status">Turning Point ${MAX_TURNING_POINTS} has ended.</p><h3>MISSION ${victory?'VICTORY':'DEFEAT'}</h3>`:''}<p>${escapeHtml(victory?missionEngine()?.success:missionEngine()?.failure)}</p>${missionProgressHtml(true)}<div class="button-row"><button class="btn secondary" id="reviewCompletedMission">Review Mission</button><button class="btn primary" id="gameEndNewGame">Start New Game</button></div></section>`;
+      const resultLabel=victory?'Victory':'Defeat';
+      const resultClass=victory?'victory':'defeat';
+      app.innerHTML=`<section class="hero-card mission-outcome"><p class="eyebrow">${atLimit?'BATTLE COMPLETE':'MISSION COMPLETE'}</p><img class="game-end-image" src="Assets/Images/${resultClass}.png" alt="${resultLabel}">${atLimit?`<h2>Battle Complete</h2><p role="status">Turning Point ${MAX_TURNING_POINTS} has ended.</p><h3 class="battle-result battle-result--${resultClass}">MISSION ${resultLabel.toUpperCase()}</h3>`:`<h2 class="battle-result battle-result--${resultClass}">${resultLabel}</h2>`}<p>${escapeHtml(victory?missionEngine()?.success:missionEngine()?.failure)}</p>${missionProgressHtml(true)}<div class="button-row"><button class="btn secondary" id="reviewCompletedMission">Review Mission</button><button class="btn primary" id="gameEndNewGame">Start New Game</button></div></section>`;
       $('#reviewCompletedMission').onclick=()=>showModal(`${mission().number} · ${mission().name}`,`<p><strong>Objective:</strong> ${escapeHtml(mission().objective)}</p><p><strong>Outcome:</strong> ${escapeHtml(victory?missionEngine()?.success:missionEngine()?.failure)}</p><div class="wizard-actions"><button class="btn primary" data-close>Done</button></div>`);
       $('#gameEndNewGame').onclick=confirmNewGame;
-      requestAnimationFrame(()=>$('#battle-complete-heading')?.focus());
+      requestAnimationFrame(()=>$('#reviewCompletedMission')?.focus());
       return;
     }
     if(state.finalResolution?.pending&&state.turningPoint>=MAX_TURNING_POINTS){
       const engine=missionEngine();
-      app.innerHTML=`<section class="hero-card mission-outcome" aria-live="polite"><p class="eyebrow">BATTLE COMPLETE</p><h2 id="battle-complete-heading" tabindex="-1">Battle Complete</h2><p>Turning Point ${MAX_TURNING_POINTS} has ended. Resolve the mission’s final success condition and record the outcome.</p>${engine?.type==='destruction'?`<div class="summary-box"><strong>Current Destruction score:</strong> ${state.missionState?.destruction||0}</div>`:''}<div class="summary-box"><strong>Success:</strong> ${escapeHtml(engine?.success||mission()?.victory?.win||'Resolve the mission success condition.')}</div><div class="summary-box"><strong>Failure:</strong> ${escapeHtml(engine?.failure||mission()?.victory?.lose||'Resolve the mission failure condition.')}</div><div class="button-row"><button class="btn danger" id="recordFinalDefeat" aria-label="Record mission defeat">Record Defeat</button><button class="btn primary" id="recordFinalVictory" aria-label="Record mission victory">Record Victory</button></div></section>`;
+      app.innerHTML=`<section class="hero-card mission-outcome" aria-live="polite"><p class="eyebrow">BATTLE COMPLETE</p><h2>Battle Complete</h2><p>Turning Point ${MAX_TURNING_POINTS} has ended. Resolve the mission’s final success condition and record the outcome.</p>${engine?.type==='destruction'?`<div class="summary-box"><strong>Current Destruction score:</strong> ${state.missionState?.destruction||0}</div>`:''}<div class="summary-box"><strong>Success:</strong> ${escapeHtml(engine?.success||mission()?.victory?.win||'Resolve the mission success condition.')}</div><div class="summary-box"><strong>Failure:</strong> ${escapeHtml(engine?.failure||mission()?.victory?.lose||'Resolve the mission failure condition.')}</div><div class="button-row"><button class="btn danger" id="recordFinalDefeat" aria-label="Record mission defeat">Record Defeat</button><button class="btn primary" id="recordFinalVictory" aria-label="Record mission victory">Record Victory</button></div></section>`;
       $('#recordFinalDefeat').onclick=()=>completeMission('defeat');
       $('#recordFinalVictory').onclick=()=>completeMission('victory');
-      requestAnimationFrame(()=>$('#battle-complete-heading')?.focus());
+      requestAnimationFrame(()=>$('#recordFinalDefeat')?.focus());
       return;
     }
     if(state.tab==='play') renderPlay();

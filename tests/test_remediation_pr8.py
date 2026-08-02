@@ -96,10 +96,10 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertIn("state.gameEnd=outcome", complete)
         self.assertIn("state.completed=true", complete)
         self.assertIn("Completed mission state is preserved for review", self.app)
-        self.assertIn("Assets/Images/${victory?'victory':'defeat'}.png", self.app)
+        self.assertIn("Assets/Images/${resultClass}.png", self.app)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = "8.6.17"
+        expected = "8.6.18"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         index = (ROOT / "index.html").read_text()
         self.assertIn(f"styles.css?v={expected}", index)
