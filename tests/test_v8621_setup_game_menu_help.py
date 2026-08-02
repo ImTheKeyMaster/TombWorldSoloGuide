@@ -9,7 +9,7 @@ WORKER = (ROOT / "service-worker.js").read_text()
 README = (ROOT / "README.md").read_text()
 CSS = (ROOT / "styles.css").read_text()
 PERSISTENCE = (ROOT / "persistence.js").read_text()
-MENU = APP[APP.index("function canOpenHelp()") : APP.index("function showAbout()")]
+MENU = APP[APP.index("function isNewGameSetupActive()") : APP.index("function showAbout()")]
 OPEN_HELP = APP[APP.index("function openHelpFromGameMenu()") : APP.index("function showGameMenu()")]
 HELP = APP[APP.index("function renderHelp()") : APP.index("function boardSvg(")]
 SETUP = APP[APP.index("function renderSetup()") : APP.index("function runStartingNpoGeneration()")]
@@ -23,7 +23,7 @@ class SetupGameMenuHelpV8621Tests(unittest.TestCase):
 
     def test_02_game_menu_contains_accessible_help_button_during_setup(self):
         self.assertIn('id="menuHelp" type="button">Help</button>', MENU)
-        self.assertIn("['setup','game'].includes(state.screen)", MENU)
+        self.assertIn("isNewGameSetupActive()", MENU)
 
     def test_03_help_is_available_on_mission_selection(self):
         self.assertIn("if(stepId==='mission')", SETUP)
@@ -84,8 +84,9 @@ class SetupGameMenuHelpV8621Tests(unittest.TestCase):
         self.assertIn("render();", handler)
 
     def test_18_help_remains_available_during_active_guided_play_and_battle_complete(self):
-        self.assertIn("['setup','game'].includes(state.screen)", MENU)
-        self.assertNotIn("gameEnd", APP[APP.index("function canOpenHelp()") : APP.index("function openHelpFromGameMenu()")])
+        self.assertIn("isGuidedPlayActive()", MENU)
+        self.assertIn("isBattleComplete()", MENU)
+        self.assertIn("state.gameEnd||state.finalResolution?.pending", MENU)
 
     def test_19_about_remains_available_and_unchanged(self):
         self.assertIn('id="menuAbout" type="button">About</button>', MENU)
