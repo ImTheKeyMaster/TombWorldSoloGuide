@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.24';
+  const APP_VERSION = '8.6.25';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -621,7 +621,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   const missionStateFactories = {
     escape:()=>({escapedIds:[],auspexCalibrations:{}}),
-    sabotage:()=>({completedFeatureIds:[]}),
+    sabotage:()=>({completedFeatureIds:[],featureOpenDetails:{},featureTransactions:{}}),
     transponder:()=>({sites:{},carrierId:null,escaped:false,lastRoll:null}),
     destruction:()=>({destruction:0}),
     scout:()=>({awakenedRooms:{},scoutedRoomIds:[],scoutedByRoom:{}}),
@@ -660,6 +660,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       normalized.completedFeatureIds=Array.isArray(raw.completedFeatureIds)
         ? normalizeIdList(raw.completedFeatureIds,engine.features.map(feature=>feature.id))
         : engine.features.slice(0,boundedInteger(legacyTracker,0,engine.features.length)).map(feature=>feature.id);
+      const completedIds=new Set(normalized.completedFeatureIds);
+      normalized.featureOpenDetails=isRecord(raw.featureOpenDetails)
+        ? Object.fromEntries(Object.entries(raw.featureOpenDetails).filter(([id,detail])=>completedIds.has(id)&&isRecord(detail)).map(([id,detail])=>[id,{...detail,featureId:id,isOpen:true}]))
+        : {};
+      normalized.featureTransactions=isRecord(raw.featureTransactions)?{...raw.featureTransactions}:{};
     }else if(engine.type==='transponder'){
       normalized.sites=isRecord(raw.sites)?Object.fromEntries(Object.entries(raw.sites).filter(([,value])=>['found','empty'].includes(value))):{};
       normalized.carrierId=typeof raw.carrierId==='string'&&raw.carrierId?raw.carrierId:null;
@@ -2298,6 +2303,37 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     save();render();
   }
 
+  function missionFeatureIdentity(feature){
+    const match=String(feature?.id||'').match(/^(hatchway|breach)-(\d+)$/);
+    if(!match)return null;
+    return {featureId:feature.id,featureType:match[1]==='breach'?'breach-point':'hatchway',featureNumber:Number(match[2])};
+  }
+
+  function commitMissionFeatureOpened({missionId,featureId,featureType,featureNumber,openedBy='breach',source='mission-map',operativeId=null,turningPoint=state.turningPoint,transactionId}={}){
+    const selectedMission=missionDefinition(missionId||state.missionId),engine=missionEngine(selectedMission);
+    if(selectedMission?.id!==state.missionId||engine?.type!=='sabotage')return {status:'unavailable'};
+    const feature=engine.features.find(item=>item.id===featureId),identity=missionFeatureIdentity(feature);
+    if(!feature||!identity||identity.featureType!==featureType||identity.featureNumber!==Number(featureNumber))return {status:'invalid-target'};
+    const progress=state.missionState||(state.missionState=freshMissionState(selectedMission));
+    const ids=new Set(progress.completedFeatureIds||[]),transactionKey=String(transactionId||`manual:${featureId}:${turningPoint}:${ids.has(featureId)?'existing':'open'}`);
+    progress.featureTransactions=isRecord(progress.featureTransactions)?progress.featureTransactions:{};
+    if(progress.featureTransactions[transactionKey]||ids.has(featureId))return {status:'already-open',feature};
+    ids.add(featureId);
+    progress.completedFeatureIds=engine.features.map(item=>item.id).filter(id=>ids.has(id));
+    progress.featureOpenDetails=isRecord(progress.featureOpenDetails)?progress.featureOpenDetails:{};
+    progress.featureOpenDetails[featureId]={...identity,isOpen:true,openedBy,source,operativeId,turningPoint,transactionId:transactionKey};
+    progress.featureTransactions[transactionKey]=featureId;
+    const before=progress.completedFeatureIds.length-1,after=progress.completedFeatureIds.length;
+    if(objectiveEngine){
+      objectiveEngine.setObjectiveValue('sabotagedFeatures',after,missionLifecycleContext({activationId:transactionKey,operativeId}));
+      const historyId=`mission-feature-open:${transactionKey}`;
+      const history=objectiveEngine.getMissionRuntime().history||[];
+      if(!history.some(entry=>entry.id===historyId))objectiveEngine.recordMissionHistory({id:historyId,type:'mission-feature-opened',title:`Opened ${feature.label} by Breach`,summary:`Opened ${feature.label} by Breach: +1`,featureId,openedBy,source,operativeId,turningPoint,delta:1,changes:[{objectiveId:'sabotagedFeatures',before,after}]},missionLifecycleContext({activationId:transactionKey,operativeId}));
+    }
+    log(`${mission().name}: Opened ${feature.label} by Breach: +1.`);
+    return {status:'completed',feature,before,after,transactionId:transactionKey};
+  }
+
   function bindMissionProgressControls(){
     $$('[data-mission-escaped]').forEach(button=>button.onclick=async()=>{
       const id=button.dataset.missionEscaped, ids=new Set(state.missionState.escapedIds);
@@ -2315,13 +2351,23 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     });
     $$('[data-mission-feature]').forEach(input=>input.onchange=async()=>{
       const ids=new Set(state.missionState.completedFeatureIds);
-      const actionId=input.checked?'recordBreach':'correctBreach';
       $$('[data-mission-feature]').forEach(control=>{control.disabled=true;});
-      const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction(actionId,missionLifecycleContext())):null;
-      if(objectiveEngine&&!outcome){input.checked=!input.checked;$$('[data-mission-feature]').forEach(control=>{control.disabled=false;});return;}
-      input.checked?ids.add(input.dataset.missionFeature):ids.delete(input.dataset.missionFeature);
-      state.missionState.completedFeatureIds=[...ids];
-      updateMissionProgress(`${input.checked?'completed Breach on':'corrected'} ${input.dataset.missionFeature}.`);
+      const feature=missionEngine()?.features.find(item=>item.id===input.dataset.missionFeature),identity=missionFeatureIdentity(feature);
+      if(input.checked){
+        const outcome=commitMissionFeatureOpened({...identity,missionId:state.missionId,source:'mission-map',transactionId:`mission-map:${identity?.featureId}:${Date.now()}`});
+        if(outcome.status!=='completed'){input.checked=false;$$('[data-mission-feature]').forEach(control=>{control.disabled=false;});return;}
+        updateMissionProgress();
+        return;
+      }
+      ids.delete(input.dataset.missionFeature);
+      state.missionState.completedFeatureIds=missionEngine().features.map(item=>item.id).filter(id=>ids.has(id));
+      delete state.missionState.featureOpenDetails?.[input.dataset.missionFeature];
+      if(objectiveEngine){
+        const before=ids.size+1,after=ids.size;
+        objectiveEngine.setObjectiveValue('sabotagedFeatures',after,missionLifecycleContext());
+        objectiveEngine.recordMissionHistory({type:'mission-feature-corrected',title:`Corrected ${feature.label}`,summary:`Corrected ${feature.label}: -1`,featureId:feature.id,turningPoint:state.turningPoint,delta:-1,changes:[{objectiveId:'sabotagedFeatures',before,after}]},missionLifecycleContext());
+      }
+      updateMissionProgress(`corrected ${feature.label}.`);
     });
     $$('[data-search-site]').forEach(button=>button.onclick=async()=>{
       const carrier=$('#transponderOperative')?.value;
@@ -3543,6 +3589,10 @@ function showPlayerActivation(stage={}){
         $('#confirmEmptyPlayerActivation').onclick=()=>resolvePendingPlayerAttacks(finalStage);
         return;
       }
+      if(state.missionId==='demolition-protocol'&&finalStage.breach&&!finalStage.breachTargetId){
+        showActivationBreachTargetSelection(finalStage);
+        return;
+      }
       resolvePendingPlayerAttacks(finalStage);
     };
   }
@@ -3574,6 +3624,8 @@ function showPlayerActivation(stage={}){
       ,missionBreachCommitted:Boolean(previous.missionBreachCommitted)
       ,missionBreachCost:previous.missionBreachCost
       ,missionBreachRecord:previous.missionBreachRecord||null
+      ,breachTargetId:previous.breachTargetId||null
+      ,missionFeatureCommitted:Boolean(previous.missionFeatureCommitted)
     };
   }
 
@@ -3823,6 +3875,32 @@ function showPlayerActivation(stage={}){
     completePlayerActivation(stage);
   }
 
+  function showActivationBreachTargetSelection(stage){
+    const engine=missionEngine(),opened=new Set(state.missionState?.completedFeatureIds||[]);
+    const available=engine?.type==='sabotage'?engine.features.filter(feature=>!opened.has(feature.id)):[];
+    state.combatState={side:'player',stage:{...stage,breachTargetId:null}};
+    save();
+    if(!available.length){
+      showModal('Breach target unavailable','<p>The selected hatchway or breach point could not be recorded. No mission progress was changed. Return to target selection and try again.</p><div class="wizard-actions"><button class="btn ghost" id="returnFromBreachTarget">Return to Activation</button></div>');
+      $('#returnFromBreachTarget').onclick=()=>showPlayerActivation(stage);
+      return;
+    }
+    showModal('Select Breach Target',`<p>Choose the hatchway or breach point this operative successfully opened. Mission progress changes only when you confirm the completed activation.</p><div class="field"><label for="activationBreachTarget">Target feature</label><select id="activationBreachTarget"><option value="">Select target…</option>${available.map(feature=>`<option value="${escapeHtml(feature.id)}">${escapeHtml(feature.label)}</option>`).join('')}</select></div><div class="wizard-actions"><button class="btn ghost" id="cancelActivationBreach">Back</button><button class="btn primary" id="confirmActivationBreach" disabled>Confirm Target</button></div>`,undefined,'activation-breach-target');
+    const select=$('#activationBreachTarget'),confirm=$('#confirmActivationBreach');
+    select.onchange=()=>{confirm.disabled=!available.some(feature=>feature.id===select.value);};
+    $('#cancelActivationBreach').onclick=()=>showPlayerActivation(stage);
+    confirm.onclick=()=>{
+      if(confirm.disabled)return;
+      const feature=available.find(item=>item.id===select.value);
+      if(!feature)return showActivationBreachTargetSelection(stage);
+      confirm.disabled=true;
+      const nextStage={...stage,breachTargetId:feature.id};
+      state.combatState={side:'player',stage:nextStage};
+      save();
+      resolvePendingPlayerAttacks(nextStage);
+    };
+  }
+
   function continuePlayerMultiTargetAttack(stage,attackType,result){
     const listKey=attackType==='shoot'?'pendingShootResults':'pendingMeleeResults';
     const legacyKey=attackType==='shoot'?'pendingShoot':'pendingMelee';
@@ -4007,6 +4085,22 @@ function showPlayerActivation(stage={}){
       save();render();
       return;
     }
+    const activationId=missionActivationId('player',operativeId);
+    if(state.missionId==='demolition-protocol'&&stage.breach&&!stage.missionFeatureCommitted){
+      const feature=missionEngine()?.features.find(item=>item.id===stage.breachTargetId),identity=missionFeatureIdentity(feature);
+      const outcome=commitMissionFeatureOpened({...identity,missionId:state.missionId,openedBy:'breach',source:'player-activation',operativeId,turningPoint:state.turningPoint,transactionId:activationId});
+      if(outcome.status!=='completed'){
+        state.combatState={side:'player',stage:{...stage,breachTargetId:null}};
+        save();
+        const alreadyOpen=outcome.status==='already-open';
+        showModal(alreadyOpen?'Feature already open':'Breach target unavailable',`<p>${alreadyOpen?'This feature is already open and does not add additional mission progress. No action was spent.':'The selected hatchway or breach point could not be recorded. No mission progress was changed. Return to target selection and try again.'}</p><div class="wizard-actions"><button class="btn primary" id="recoverActivationBreach">Return to Target Selection</button></div>`);
+        $('#recoverActivationBreach').onclick=()=>showActivationBreachTargetSelection({...stage,breachTargetId:null});
+        return;
+      }
+      stage.missionFeatureCommitted=true;
+      stage.missionFeatureRecord={featureId:feature.id,transactionId:activationId};
+      state.combatState={side:'player',stage:{...stage}};
+    }
     state.combatState=null;
     state.missionActionContext=null;
     let inc=0;
@@ -4023,7 +4117,6 @@ function showPlayerActivation(stage={}){
       if(r>=4)inc++;
     }
     if(inc)setThreat(inc,'Player activation');
-    const activationId=missionActivationId('player',operativeId);
     if(!state.playerActivatedIds.includes(operativeId))state.playerActivatedIds.push(operativeId);
     state.playerReady=playerOperativesRemaining();
     state.playerActivated=state.playerActivatedIds.length;
@@ -6451,6 +6544,7 @@ function showPlayerActivation(stage={}){
 
   function missionHistoryText(entry){
     const change=entry.changes?.[0];
+    if(entry.type==='mission-feature-opened'||entry.type==='mission-feature-corrected')return entry.summary||entry.title;
     if(entry.operativeId)return `${entry.title||'Mission activity'}: ${playerName(entry.operativeId)}`;
     if(!change)return entry.summary||entry.title||'Mission activity recorded.';
     const delta=change.after-change.before;
