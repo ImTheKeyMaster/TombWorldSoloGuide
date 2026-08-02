@@ -159,7 +159,7 @@ if(restored.playerTeamId!=='spectre-squad'||restored.playerWounds.sharpshooter!=
         self.assertNotIn("state.playerTeamId==='spectre-squad'", self.app)
 
     def test_version_consistency(self):
-        expected = "8.6.20"
+        expected = "8.6.21"
         self.assertIn(f"const APP_VERSION = '{expected}'", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}'", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()
