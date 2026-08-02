@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.18';
+  const APP_VERSION = '8.6.19';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -1743,7 +1743,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const movedToNewStep = lastRenderedStepKey !== null && currentStepKey !== lastRenderedStepKey;
     lastRenderedStepKey = currentStepKey;
 
-    gameMenuBtn.hidden = state.screen !== 'game' || Boolean(state.gameEnd);
+    gameMenuBtn.hidden = !['setup','game'].includes(state.screen);
     if(state.screen==='home') renderHome();
     else if(state.screen==='help') renderHowItWorks();
     else if(state.screen==='setup') renderSetup();
@@ -6657,16 +6657,18 @@ function showPlayerActivation(stage={}){
   }
   function showCorrectDeadlyRecord(){showModal('Correct Location or Encounter',`<p>Location corrections can be recorded directly. To correct a committed encounter, record a note; damage, movement, dice, and model placement are not silently reversed.</p><div class="field"><label for="deadlyCorrection">Correction note</label><textarea id="deadlyCorrection" rows="4" maxlength="300"></textarea></div><label class="check-row"><input id="confirmPhysicalCorrection" type="checkbox"><span>I understand physical tabletop effects may require manual reversal.</span></label><div class="wizard-actions"><button class="btn ghost" id="backDeadlyPanel">Cancel</button><button class="btn danger" id="confirmDeadlyCorrection">Record Correction</button></div>`);$('#backDeadlyPanel').onclick=showDeadlyEncountersPanel;$('#confirmDeadlyCorrection').onclick=()=>{const note=$('#deadlyCorrection').value.trim();if(!note||!$('#confirmPhysicalCorrection').checked){showToast('Enter a note and confirm the tabletop warning.');return;}state.deadlyEncountersState.resolutionHistory.push({type:'correction',note,time:new Date().toISOString()});log(`Deadly Encounters correction: ${note}`);save();showDeadlyEncountersPanel();};}
   function showGameMenu(){
+    const inGame=state.screen==='game';
     showModal('Game Menu',`<p>Open a reference screen without changing the guided play sequence, or begin a completely new game.</p>
       <div class="game-menu-grid">
         <button class="btn primary" data-game-view="play">Return to Guided Play</button>
-        <button class="btn secondary" id="menuMissionDetails">Mission Details</button>
+        ${inGame?`<button class="btn secondary" id="menuMissionDetails">Mission Details</button>
         <button class="btn secondary" id="menuDeadlyEncounters">Deadly Encounters</button>
         <button class="btn secondary" data-game-view="mission">Mission & Map</button>
         <button class="btn secondary" data-game-view="roster">NPO Roster</button>
         <button class="btn secondary" data-game-view="player-roster">Player Roster</button>
         <button class="btn secondary" data-game-view="journal">Battle Journal</button>
-        <button class="btn secondary" data-game-view="help">Help</button>
+        <button class="btn secondary" data-game-view="help">Help</button>`:''}
+        <button class="btn secondary" id="menuAbout" type="button">About</button>
       </div>
       <div class="game-menu-session">
         <button class="btn ghost" id="menuExportSave">Export Save</button>
@@ -6674,16 +6676,42 @@ function showPlayerActivation(stage={}){
         <button class="btn danger" id="menuNewGame">Start New Game</button>
       </div>`);
     $$('[data-game-view]',modal).forEach(button=>button.onclick=()=>{
-      state.tab=button.dataset.gameView;
+      if(inGame){state.tab=button.dataset.gameView;save();}
       closeModal();
-      save();
       render();
     });
-    $('#menuMissionDetails').onclick=showMissionDetails;
-    $('#menuDeadlyEncounters').onclick=showDeadlyEncountersPanel;
+    if(inGame){
+      $('#menuMissionDetails').onclick=showMissionDetails;
+      $('#menuDeadlyEncounters').onclick=showDeadlyEncountersPanel;
+    }
+    $('#menuAbout').onclick=showAbout;
     $('#menuExportSave').onclick=exportSave;
     $('#menuImportSave').onclick=()=>importInput.click();
     $('#menuNewGame').onclick=confirmNewGame;
+  }
+
+  function showAbout(){
+    showModal('About',`<div class="about-intro">
+        <p class="about-app-name">Tomb World Solo Guide</p>
+        <p class="screen-version">Version ${APP_VERSION}</p>
+        <p><strong>Created by J.R. Benning</strong></p>
+        <p>Tomb World Solo Guide is a free, unofficial, fan-created companion for managing solo tabletop play. It is not a replacement for the official rules, publications, miniatures, terrain, cards, or other materials required to play.</p>
+      </div>
+      <div class="about-content">
+        <section><h3>Project Status</h3><p>This project is provided without charge and is not operated for commercial gain.</p></section>
+        <section><h3>Games Workshop Notice</h3><p>Tomb World Solo Guide is an unofficial fan-created project. It is not affiliated with, endorsed by, sponsored by, licensed by, or approved by Games Workshop Limited or any of its affiliates.</p><p>Games Workshop, Warhammer, Warhammer 40,000, Kill Team, Necron, Tomb World, and all associated names, logos, characters, factions, settings, artwork, and distinctive likenesses are trademarks, copyrights, or other intellectual property of Games Workshop Limited and/or its licensors.</p><p>All such intellectual property remains the property of its respective owners. No challenge to any ownership, trademark, copyright, or other proprietary right is intended.</p></section>
+        <section><h3>Official Rules and Materials</h3><p>This application is intended only as an organizational and gameplay aid for players who own or otherwise have lawful access to the required official products and rules.</p><p>It does not grant access to, replace, or authorize reproduction of any Games Workshop rulebook, publication, data card, mission pack, image, artwork, model, terrain component, or other official material.</p><p>Players are responsible for consulting the current official rules, errata, balance updates, and publications. If this application conflicts with an official Games Workshop source, the official source controls.</p><p>No part of this application should be interpreted as legal permission to copy, distribute, publish, or commercially exploit Games Workshop intellectual property.</p></section>
+        <section><h3>Project Content</h3><p>Original application code, interface design, and original project content are created by J.R. Benning except where otherwise stated.</p><p>Third-party names and references are used solely to identify the games, products, rules, and fictional elements with which this unofficial companion is intended to be used.</p><p>Any third-party material remains subject to the rights and terms of its respective owner.</p></section>
+        <section><h3>Software Disclaimer</h3><p>This application is provided &quot;as is&quot; and &quot;as available,&quot; without warranties of any kind, express or implied, including warranties of accuracy, completeness, reliability, merchantability, fitness for a particular purpose, availability, compatibility, or non-infringement.</p><p>Use of this application is at the user’s own risk. The author does not guarantee that the application is error-free, that its interpretation of any rule is correct, or that saved data will always remain available or compatible.</p><p>To the fullest extent permitted by applicable law, the author will not be liable for any direct, indirect, incidental, consequential, special, exemplary, or other damages arising from use of, inability to use, or reliance on this application.</p><p>Nothing in this notice excludes or limits liability where doing so would be prohibited by applicable law.</p></section>
+        <section><h3>User Responsibility</h3><p>Users are responsible for verifying gameplay decisions against the official rules and for ensuring that their use of this application and any related materials complies with applicable laws and the terms imposed by the relevant rights holders.</p></section>
+        <section><h3>Privacy</h3><p>Tomb World Solo Guide does not intentionally collect or transmit personal information. Game state and preferences are stored locally in the user’s browser unless the user explicitly exports or shares them.</p><p class="muted">The app is hosted on GitHub Pages, whose server request logs are governed by GitHub’s own practices. The app uses no analytics, advertising, tracking, cookies, external fonts, or third-party APIs.</p></section>
+        <section><h3>Contact</h3><p>Questions, corrections, attribution concerns, or rights-holder requests may be submitted through the project’s GitHub repository.</p><p>The author intends to address good-faith attribution, ownership, or rights-holder concerns promptly.</p><a class="btn secondary external-link" href="https://github.com/ImTheKeyMaster/TombWorldSoloGuide" target="_blank" rel="noopener noreferrer">Open Project Repository <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></section>
+      </div>
+      <div class="wizard-actions about-footer"><button class="btn primary" id="aboutBack" type="button">Back</button></div>`);
+    $('#aboutBack').onclick=()=>{
+      showGameMenu();
+      requestAnimationFrame(()=>$('#menuAbout')?.focus({preventScroll:true}));
+    };
   }
 
   function startNewGameSetup(){
