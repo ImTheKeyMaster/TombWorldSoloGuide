@@ -3466,9 +3466,9 @@ function showPlayerActivation(stage={}){
       const select=event.currentTarget;
       const operativeId=select.value;
       if(!operativeId)return;
+      const selectedStage=selectOperative(stage,operativeId);
       modal._skipFocusRestoreId=select.id;
-      showPlayerActivation(selectOperative(stage,operativeId));
-      closeTouchSelectAfterCommit(select);
+      closeTouchSelectAfterCommit(select,()=>showPlayerActivation(selectedStage));
     });
 
     const actionIds=['eaMove','eaDash','eaCharge','eaFallBack','eaShoot','eaMelee','eaDamage','eaHatch','eaBreach','eaObjective'];
@@ -6633,11 +6633,12 @@ function showPlayerActivation(stage={}){
     });
   }
 
-  function closeTouchSelectAfterCommit(select){
+  function closeTouchSelectAfterCommit(select,onComplete){
     const coarsePointer=window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-    if(!coarsePointer)return;
+    if(!coarsePointer){onComplete();return;}
     requestAnimationFrame(()=>{
       if(document.activeElement===select)select.blur();
+      onComplete();
     });
   }
 

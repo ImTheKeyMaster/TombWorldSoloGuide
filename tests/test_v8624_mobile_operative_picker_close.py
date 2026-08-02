@@ -25,7 +25,7 @@ class MobileOperativePickerCloseTests(unittest.TestCase):
             re.S,
         ).group()
         cls.close_helper = re.search(
-            r"function closeTouchSelectAfterCommit\(select\)\{.*?\n  \}", APP, re.S
+            r"function closeTouchSelectAfterCommit\(select,onComplete\)\{.*?\n  \}", APP, re.S
         ).group()
 
     def test_01_application_displays_version_8624(self):
@@ -39,7 +39,8 @@ class MobileOperativePickerCloseTests(unittest.TestCase):
         self.assertNotIn("operativeSelect?.addEventListener('input'", self.activation)
 
     def test_03_valid_selection_commits_once(self):
-        self.assertEqual(self.handler.count("showPlayerActivation(selectOperative(stage,operativeId))"), 1)
+        self.assertEqual(self.handler.count("selectOperative(stage,operativeId)"), 1)
+        self.assertEqual(self.handler.count("showPlayerActivation(selectedStage)"), 1)
 
     def test_04_selection_does_not_rerun_initial_focus(self):
         self.assertNotIn("focusInitialDialogControl", self.handler)
@@ -53,13 +54,15 @@ class MobileOperativePickerCloseTests(unittest.TestCase):
     def test_06_coarse_pointer_releases_focus_after_commit(self):
         self.assertIn("window.matchMedia('(hover: none) and (pointer: coarse)').matches", self.close_helper)
         self.assertIn("if(document.activeElement===select)select.blur();", self.close_helper)
-        self.assertLess(self.handler.index("showPlayerActivation("), self.handler.index("closeTouchSelectAfterCommit(select)"))
+        self.assertIn("closeTouchSelectAfterCommit(select,()=>showPlayerActivation(selectedStage))", self.handler)
+        self.assertLess(self.close_helper.index("select.blur()"), self.close_helper.rindex("onComplete()"))
 
     def test_07_value_is_captured_before_blur(self):
-        self.assertLess(self.handler.index("const operativeId=select.value"), self.handler.index("closeTouchSelectAfterCommit(select)"))
+        self.assertLess(self.handler.index("const operativeId=select.value"), self.handler.index("closeTouchSelectAfterCommit(select"))
 
     def test_08_keyboard_selection_is_not_unconditionally_blurred(self):
-        self.assertLess(self.close_helper.index("if(!coarsePointer)return"), self.close_helper.index("select.blur()"))
+        self.assertIn("if(!coarsePointer){onComplete();return;}", self.close_helper)
+        self.assertLess(self.close_helper.index("if(!coarsePointer)"), self.close_helper.index("select.blur()"))
 
     def test_09_selected_operative_remains_displayed(self):
         self.assertIn("selectedId===id?'selected':''", self.activation)
