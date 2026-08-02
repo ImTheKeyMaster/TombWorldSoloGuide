@@ -1,4 +1,15 @@
-# Tomb World Solo Guide v8.6.18
+# Tomb World Solo Guide v8.6.19
+
+## v8.6.19
+
+**Version 8.6.19 - Add About and Legal Information**
+
+* Added an About screen accessible from the Game Menu.
+* Added author credit for J.R. Benning.
+* Added unofficial-project, ownership, non-affiliation, official-rules,
+  warranty, liability, privacy, and user-responsibility notices.
+* Added a repository asset and intellectual-property audit.
+* Preserved gameplay state and offline access.
 
 ## v8.6.18
 
