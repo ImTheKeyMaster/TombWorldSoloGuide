@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.16';
+  const APP_VERSION = '8.6.17';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -2245,7 +2245,15 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     sabotage:(engine,progress,{readOnly=false}={})=>{
       const completed=new Set(progress.completedFeatureIds);
       const model=objectiveEngine?.getMissionHudModel();
-      return `<p>${model?.value??completed.size} of ${model?.target??engine.required} required features have been permanently opened by Breach.</p><div class="mission-objective-grid">${engine.features.map(feature=>readOnly?`<div class="mission-objective-check"><span><strong>${escapeHtml(feature.label)}</strong><small>${completed.has(feature.id)?'Opened by Breach':'Not opened'}</small></span></div>`:`<label class="mission-objective-check"><input type="checkbox" data-mission-feature="${feature.id}" ${completed.has(feature.id)?'checked':''} ${missionOperationResolving?'disabled':''}><span>${escapeHtml(feature.label)}</span></label>`).join('')}</div>`;
+      const featureCard=feature=>{
+        const labelParts=feature.label.match(/^(.*\S)\s+(\d+)$/);
+        const featureLabel=labelParts?.[1]||feature.label;
+        const featureNumber=labelParts?.[2]||'';
+        const label=`${featureLabel}${featureNumber?` ${featureNumber}`:''}`;
+        const status=completed.has(feature.id)?'Opened by Breach':'Not opened';
+        return `<span class="mission-feature-card__text"><span class="mission-feature-card__label">${escapeHtml(label)}</span><span class="mission-feature-card__status">${escapeHtml(status)}</span></span>`;
+      };
+      return `<p>${model?.value??completed.size} of ${model?.target??engine.required} required features have been permanently opened by Breach.</p><div class="mission-objective-grid">${engine.features.map(feature=>readOnly?`<div class="mission-objective-check">${featureCard(feature)}</div>`:`<label class="mission-objective-check"><input type="checkbox" data-mission-feature="${feature.id}" ${completed.has(feature.id)?'checked':''} ${missionOperationResolving?'disabled':''}>${featureCard(feature)}</label>`).join('')}</div>`;
     },
     transponder:(engine,progress,{readOnly=false}={})=>{
       const transponderFound=Object.values(progress.sites).includes('found');
