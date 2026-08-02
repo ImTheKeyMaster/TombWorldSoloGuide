@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.23
+# Tomb World Solo Guide v8.6.24
+
+## v8.6.24
+
+**Version 8.6.24 - Close Player Operative Picker After Selection**
+
+* Fixed the Player operative selection list remaining open on iPhone.
+* Prevented activation rerenders from refocusing the operative selector.
+* Added touch-aware picker closing without degrading keyboard accessibility.
+* Preserved operative selection, AP, actions, and activation state.
 
 ## v8.6.23
 
