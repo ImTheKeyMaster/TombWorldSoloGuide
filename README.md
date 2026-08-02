@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.16
+# Tomb World Solo Guide v8.6.17
+
+## v8.6.17
+
+**Version 8.6.17 - Fix Mission Objective Feature Card Spacing**
+
+* Added proper spacing between feature names and numbers.
+* Moved feature status text onto a separate line.
+* Standardized active and completed Mission Objective card rendering.
+* Preserved mission tracking and completion behavior.
 
 ## v8.6.16
 
