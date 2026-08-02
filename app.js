@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.22';
+  const APP_VERSION = '8.6.23';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -19,6 +19,7 @@
     range:{mode:'tabletop-check',phase:'target-selection'}
   });
   const warnedUnsupportedWeaponRules=new Set();
+  const warnedInvalidPiercingSummaries=new Set();
   const NPO_ACTION_TRANSITIONS = Object.freeze({
     AUTO_CONTINUE:'auto-continue',
     ACKNOWLEDGE:'acknowledge',
@@ -4110,9 +4111,8 @@ function showPlayerActivation(stage={}){
   };
 
   function weaponRulesHtml(profile){
-    const rules=(profile?.rules||[]).map(rule=>`<li>${escapeHtml(rule)}</li>`).join('');
-    const statuses=weaponRuleStatuses(profile).map(status=>`<li>${escapeHtml(status)}</li>`).join('');
-    return `${rules?`<section class="weapon-rules"><strong>Weapon rules</strong><ul>${rules}</ul>${statuses?`<ul class="muted weapon-rule-status">${statuses}</ul>`:''}</section>`:''}`;
+    const summaries=weaponRuleSummaries(profile).map(summary=>`<li>${escapeHtml(summary.label)}</li>`).join('');
+    return summaries?`<section class="weapon-rules"><strong>Weapon rules</strong><ul>${summaries}</ul></section>`:'';
   }
 
   function normalizedGuidanceMatchText(value){
@@ -4305,24 +4305,50 @@ function showPlayerActivation(stage={}){
     };
   }
 
-  function weaponRuleStatuses(profile){
-    return (profile?.rules||[]).map(rule=>{
-      const id=normalizedWeaponRuleId(rule),handler=WEAPON_RULE_HANDLERS[id];
-      if(!handler){
-        const warningKey=normalizedWeaponRuleWarningKey(rule);
-        if(!warnedUnsupportedWeaponRules.has(warningKey)){
-          warnedUnsupportedWeaponRules.add(warningKey);
-          console.warn(`[Weapon rules] ${rule} is not yet supported by the Guide.`);
-        }
-        return `${rule} is not yet supported by the Guide.`;
+  function weaponRuleSummary(profile,rule){
+    const id=normalizedWeaponRuleId(rule),handler=WEAPON_RULE_HANDLERS[id];
+    if(!handler){
+      const warningKey=normalizedWeaponRuleWarningKey(rule);
+      if(!warnedUnsupportedWeaponRules.has(warningKey)){
+        warnedUnsupportedWeaponRules.add(warningKey);
+        console.warn(`[Weapon rules] ${rule} is not yet supported by the Guide.`);
       }
-      if(handler.mode==='automatic')return `${rule}: handled automatically`;
-      if(id==='range')return `${rule}: target distance checked before combat`;
-      if(id==='blast'||id==='torrent')return `${rule}: additional targets will be selected next`;
-      if(id==='seek-light')return 'Seek Light: target terrain will be checked';
-      if(id==='shock')return 'Shock: resolved during the Fight sequence';
-      return `${rule}: informational only`;
-    });
+      return {id:normalizedWeaponRuleWarningKey(rule),label:`${rule} is not yet supported by the Guide.`};
+    }
+    if(id==='piercing'){
+      const value=Number(profile?.ap);
+      if(Number.isInteger(value)&&value>0){
+        const defenseDice=value===1?'defense die':'defense dice';
+        return {id:`piercing-${value}`,label:`Piercing ${value}: Defender rolls ${value} fewer ${defenseDice}. Handled automatically.`};
+      }
+      const warningKey=`${profile?.weaponId||''}:${profile?.profileId||''}:${String(rule)}`;
+      if(!warnedInvalidPiercingSummaries.has(warningKey)){
+        warnedInvalidPiercingSummaries.add(warningKey);
+        console.warn('[Weapon rules] Piercing has no valid positive value for its summary.');
+      }
+      return {id:'piercing',label:'Piercing: Handled automatically.'};
+    }
+    if(handler.mode==='automatic')return {id,label:`${rule}: Handled automatically.`};
+    if(id==='range')return {id:`${id}-${weaponRuleValue(profile,id)}`,label:`${rule}: target distance checked before combat`};
+    if(id==='blast'||id==='torrent')return {id:`${id}-${weaponRuleValue(profile,id)}`,label:`${rule}: additional targets will be selected next`};
+    if(id==='seek-light')return {id,label:'Seek Light: target terrain will be checked'};
+    if(id==='shock')return {id,label:'Shock: resolved during the Fight sequence'};
+    return {id,label:`${rule}: informational only`};
+  }
+
+  function weaponRuleSummaries(profile){
+    const summaries=[],seen=new Set();
+    for(const rule of profile?.rules||[]){
+      const summary=weaponRuleSummary(profile,rule);
+      if(seen.has(summary.id))continue;
+      seen.add(summary.id);
+      summaries.push(summary);
+    }
+    return summaries;
+  }
+
+  function weaponRuleStatuses(profile){
+    return weaponRuleSummaries(profile).map(summary=>summary.label);
   }
 
   function createWeaponRuleResolution({activationId,actionId,attackerSide,attackerId,attackType='shoot',weaponId,weaponName,profileKey,profileName,weaponRules=[],ruleId,primaryTargetId,secondaryTargetIds=[],targetDescriptors=[]}){
@@ -4649,7 +4675,7 @@ function showPlayerActivation(stage={}){
         ? `<strong>Weapon:</strong> ${escapeHtml(weapon.name)} · ${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}`
         : '<strong>Weapon:</strong> —';
       $('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target);
-      $('#weaponRules').innerHTML=weaponRulesHtml(weapon);
+      $('#weaponRules').innerHTML=weaponRulesHtml(weapon?playerWeaponProfile(weapon):null);
       $('#openCombatResolution').disabled=!target||!weapon;
     };
     targetSelect.addEventListener('change',renderChoices);

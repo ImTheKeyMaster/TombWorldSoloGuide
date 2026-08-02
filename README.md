@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v8.6.22
+# Tomb World Solo Guide v8.6.23
+
+## v8.6.23
+
+**Version 8.6.23 - Clarify Weapon Rule Summaries**
+
+* Replaced duplicate Piercing entries with one clear gameplay description.
+* Explained that Piercing reduces the defender’s defense dice.
+* Added correct singular and plural wording for Piercing values.
+* Consolidated similar duplicated automatically handled weapon-rule entries.
+* Preserved all existing combat calculations and automation.
 
 ## v8.6.22
 

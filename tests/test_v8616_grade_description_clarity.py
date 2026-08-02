@@ -22,9 +22,9 @@ class GradeDescriptionClarityTests(unittest.TestCase):
         cls.renderer = function_source("renderPlay", "activeEventEffectsHtml")
 
     def test_01_application_displays_version_8616(self):
-        self.assertIn("const APP_VERSION = '8.6.22';", APP)
-        self.assertIn("const APP_VERSION = '8.6.22';", WORKER)
-        self.assertIn("V8.6.22", INDEX)
+        self.assertIn("const APP_VERSION = '8.6.23';", APP)
+        self.assertIn("const APP_VERSION = '8.6.23';", WORKER)
+        self.assertIn("V8.6.23", INDEX)
 
     def test_02_effects_are_structured_explanations(self):
         for field in ("id:", "subject:", "automation:", "text:"):
@@ -119,10 +119,10 @@ class GradeDescriptionClarityTests(unittest.TestCase):
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
     def test_21_release_assets_and_notes_are_current(self):
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.22"))
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.23"))
         self.assertIn("**Version 8.6.16 - Clarify Grade Gameplay Changes**", README)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.22", INDEX)
+            self.assertIn(f"{asset}?v=8.6.23", INDEX)
 
 
 if __name__ == "__main__":
