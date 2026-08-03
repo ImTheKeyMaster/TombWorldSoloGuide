@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.33
+# Tomb World Solo Guide v8.6.34
+
+## v8.6.34
+
+**Version 8.6.34 - Use Target Reticle for Target Selection**
+
+* Replaced the NPO Shoot and Fight action icon with the existing target reticle while choosing a target.
+* Kept the normal action icons on questions and steps that are not selecting a target.
+* Preserved target priorities, selection behavior, accessibility, and combat rules.
 
 ## v8.6.33
 
