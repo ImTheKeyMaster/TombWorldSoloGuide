@@ -3515,7 +3515,6 @@ function showPlayerActivation(stage={}){
 
     const operativeSelect=$('#playerOperativeSelect');
     const controls=$('#playerActivationControls');
-    operativeSelect?.style.removeProperty('pointer-events');
     operativeSelect?.addEventListener('change',event=>{
       const select=event.currentTarget;
       const operativeId=select.value;
@@ -6857,7 +6856,9 @@ function showPlayerActivation(stage={}){
   function closeTouchSelectAfterCommit(select,onComplete){
     const coarsePointer=window.matchMedia('(hover: none) and (pointer: coarse)').matches;
     if(!coarsePointer){onComplete();return;}
+    const focusGeneration=modalFocusGeneration;
     requestAnimationFrame(()=>{
+      if(focusGeneration!==modalFocusGeneration||!modal.open)return;
       if(document.activeElement===select)select.blur();
       onComplete();
     });
@@ -6903,7 +6904,7 @@ function showPlayerActivation(stage={}){
     modal._focusKey=null;
     modal._skipFocusRestoreId=null;
     if(cb)cb();
-    if(returnFocus)requestAnimationFrame(()=>{
+    if(returnFocus?.isConnected||returnFocusId)requestAnimationFrame(()=>{
       if(focusGeneration!==modalFocusGeneration||modal.open)return;
       const target=returnFocus.isConnected?returnFocus:document.getElementById(returnFocusId);
       if(target?.isConnected)target.focus({preventScroll:true});

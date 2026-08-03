@@ -44,7 +44,7 @@ class PlayerActivationReopenSelectTests(unittest.TestCase):
     def test_02_selector_never_uses_pointer_events_none(self):
         self.assertNotRegex(self.activation, r"pointerEvents\s*=\s*['\"]none")
         self.assertNotRegex(self.activation, r"pointer-events\s*:\s*none")
-        self.assertIn("operativeSelect?.style.removeProperty('pointer-events');", self.activation)
+        self.assertNotIn("operativeSelect?.style", self.activation)
 
     def test_03_no_animation_frame_disables_selector(self):
         frames = re.findall(r"requestAnimationFrame\(.*?\);", self.activation, re.S)
@@ -111,6 +111,7 @@ class PlayerActivationReopenSelectTests(unittest.TestCase):
         self.assertIn("if(document.activeElement===select)select.blur();", self.close_helper)
         self.assertLess(self.close_helper.index("select.blur()"), self.close_helper.rindex("onComplete()"))
         self.assertIn("closeTouchSelectAfterCommit(select,()=>showPlayerActivation(selectedStage))", self.handler)
+        self.assertIn("focusGeneration!==modalFocusGeneration||!modal.open", self.close_helper)
 
     def test_17_close_clears_modal_focus_suppression_state(self):
         close = self.focus.split("function closeModal(){", 1)[1]
