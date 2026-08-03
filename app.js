@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.27';
+  const APP_VERSION = '8.6.28';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -1624,7 +1624,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         : 'No NPO reinforcements will be added through the normal Grade rules.'
     };
     let eventText;
-    if(effectiveEvents===0)eventText='No Tomb World events will be resolved through the normal Grade rules.';
+    if(effectiveEvents===0)eventText='Grade 1 will not trigger any Tomb World events. Other enabled rules may still trigger them.';
     else if(restlessTombEnabled&&effectiveEvents>normalEvents)eventText=`The Guide will prompt you to resolve at least ${effectiveEvents} Tomb World event${effectiveEvents===1?'':'s'} during each Strategy Phase after Turning Point 1 because Restless Tomb is enabled.`;
     else if(elevatedEvents>standardEvents)eventText=`The Guide will prompt you to resolve ${standardEvents} Tomb World event${standardEvents===1?'':'s'} during each Strategy Phase after Turning Point 1, or ${elevatedEvents} when NPOs have initiative or Threat reaches ${config.maxThreat}.`;
     else eventText=`The Guide will prompt you to resolve ${effectiveEvents} Tomb World event${effectiveEvents===1?'':'s'} during each Strategy Phase after Turning Point 1.`;

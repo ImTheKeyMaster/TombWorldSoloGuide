@@ -1,4 +1,10 @@
-# Tomb World Solo Guide v8.6.27
+# Tomb World Solo Guide v8.6.28
+
+## v8.6.28
+
+**Version 8.6.28 - Clarify Grade 1 Tomb World Event Text**
+
+* Updated the Grade 1 Threat Escalation card to explain that Grade 1 will not trigger any Tomb World events, while other enabled rules may still trigger them.
 
 ## v8.6.27
 
