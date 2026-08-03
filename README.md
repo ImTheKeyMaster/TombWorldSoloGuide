@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v8.6.28
+# Tomb World Solo Guide v8.6.29
+
+## v8.6.29
+
+**Version 8.6.29 - Fix Player Multi-Target Combat Resume**
+
+* Added deterministic weapon and profile identity for legacy Player team data.
+* Fixed valid Torrent and Blast attacks incorrectly displaying Combat could not resume.
+* Preserved the selected weapon profile across every multi-target attack.
+* Added safe recovery for older pending combat state without stable weapon IDs.
+* Preserved AP, damage, refresh recovery, and existing combat rules.
 
 ## v8.6.28
 

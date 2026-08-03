@@ -26,7 +26,7 @@ class ShootingAttackProfileCardTests(unittest.TestCase):
     def test_shooting_card_uses_the_selected_authoritative_weapon_profile(self):
         resolution = self.source("function showPlayerCombatResolution", "function previewPendingPlayerAttack")
         self.assertIn("const weapon=locked?.weapon||weapons[weaponIndex]", resolution)
-        self.assertIn("const profile=locked?.profile||playerWeaponProfile(weapon)", resolution)
+        self.assertIn("const profile=locked?.profile||playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex})", resolution)
         self.assertIn("attackLabel:attackType==='shoot'?combatAttackLabel(profile):''", resolution)
         self.assertNotRegex(resolution, r"attackLabel:.*`4 dice · 3\+`")
         self.assertIn("defenseLabel:`${Math.max(0,3-profile.ap)} dice · ${target.save}+`", resolution)

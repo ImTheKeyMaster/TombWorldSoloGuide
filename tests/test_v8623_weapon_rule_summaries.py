@@ -49,12 +49,12 @@ class WeaponRuleSummaryTests(unittest.TestCase):
         cls.result = evaluate_summaries()
 
     def test_01_version_8623_is_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.27';", APP)
-        self.assertIn("const APP_VERSION = '8.6.27';", WORKER)
-        self.assertIn("V8.6.27", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.27"))
+        self.assertIn("const APP_VERSION = '8.6.29';", APP)
+        self.assertIn("const APP_VERSION = '8.6.29';", WORKER)
+        self.assertIn("V8.6.29", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.29"))
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.27", INDEX)
+            self.assertIn(f"{asset}?v=8.6.29", INDEX)
 
     def test_02_to_09_piercing_is_one_clear_grammatical_item(self):
         self.assertEqual(self.result["one"], [{
@@ -76,7 +76,7 @@ class WeaponRuleSummaryTests(unittest.TestCase):
         self.assertEqual(self.result["defenseTwo"], 1)
 
     def test_12_to_16_shared_renderer_covers_all_combat_paths_and_restore(self):
-        self.assertIn("weaponRulesHtml(weapon?playerWeaponProfile(weapon):null)", APP)
+        self.assertIn("weaponRulesHtml(weapon?playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex}):null)", APP)
         self.assertGreaterEqual(APP.count("weaponRulesHtml(profile)"), 2)
         self.assertIn("weaponRulesHtml(initialProfile)", APP)
         self.assertIn("weaponRuleSequenceProgress(sequence", APP)
