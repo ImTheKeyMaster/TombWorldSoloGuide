@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.30
+# Tomb World Solo Guide v8.6.31
+
+## v8.6.31
+
+**Version 8.6.31 - Fix Player Operative Selector After Cancel**
+
+* Fixed the Player operative selector becoming unresponsive after canceling and reopening an activation on iPhone.
+* Removed temporary pointer-event suppression from the native selector.
+* Prevented touch devices from programmatically focusing the selector when the Guide opens.
+* Preserved native picker closing, keyboard accessibility, and activation state.
 
 ## v8.6.30
 

@@ -62,12 +62,12 @@ def severe(dice, profile):
 
 class SevereWeaponRuleTests(unittest.TestCase):
     def test_version_850_is_consistent_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.6.30';", APP)
-        self.assertIn("const APP_VERSION = '8.6.30';", WORKER)
-        self.assertIn('V8.6.30', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.30'))
+        self.assertIn("const APP_VERSION = '8.6.31';", APP)
+        self.assertIn("const APP_VERSION = '8.6.31';", WORKER)
+        self.assertIn('V8.6.31', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.31'))
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.30', INDEX)
+            self.assertIn(f'{asset}?v=8.6.31', INDEX)
         self.assertNotIn('8.4.2', APP + INDEX + WORKER)
         self.assertIn('## v8.6.25', README)
 
