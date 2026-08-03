@@ -98,8 +98,8 @@ class CanoptekProfileTests(unittest.TestCase):
         self.assertIn("Gameplay profile", APP)
         self.assertIn("Operative actions", APP)
         self.assertIn("Passive rules", APP)
-        self.assertIn("const APP_VERSION = '8.6.31';", APP)
-        self.assertIn("V8.6.31", (ROOT / "index.html").read_text())
+        self.assertIn("const APP_VERSION = '8.6.32';", APP)
+        self.assertIn("V8.6.32", (ROOT / "index.html").read_text())
         self.assertNotIn("npoPortrait", APP)
 
 

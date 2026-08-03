@@ -93,13 +93,13 @@ class TeamLoadingLayoutTests(unittest.TestCase):
         self.assertIn("if(!canBuildPlayerRoster())", APP[APP.index("  function renderSetup"):])
 
     def test_16_application_displays_version_763(self):
-        self.assertIn("const APP_VERSION = '8.6.31';", APP)
-        self.assertIn("const APP_VERSION = '8.6.31';", WORKER)
-        self.assertIn("V8.6.31", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.31"))
+        self.assertIn("const APP_VERSION = '8.6.32';", APP)
+        self.assertIn("const APP_VERSION = '8.6.32';", WORKER)
+        self.assertIn("V8.6.32", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.32"))
         for asset in ("styles.css", "mission-engine.js", "persistence.js",
                       "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.31", INDEX)
+            self.assertIn(f"{asset}?v=8.6.32", INDEX)
 
 
 if __name__ == "__main__":
