@@ -1760,8 +1760,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     updateGameBackground();
 
     if(state.hotResolution&&!state.hotResolution.acknowledged&&!modal.open){
-      const pendingStage=state.combatState?.side==='player'?state.combatState.stage:null;
-      showHotResult(state.hotResolution,()=>pendingStage?completePlayerActivation(pendingStage):render());
+      showHotResult(state.hotResolution,()=>resumePersistedHotContinuation(state.hotResolution));
     }
 
     if(movedToNewStep){
@@ -3691,6 +3690,8 @@ function showPlayerActivation(stage={}){
 
   function renderAttackSummary(attack){
     const lethal=newlyEliminated(attack);
+    const hot=attack.hot;
+    const hotSummary=hot?`<div class="summary-box hot-attack-summary"><strong>Hot roll: ${hot.roll}</strong><p>${hot.damage?`Attacker suffered ${hot.damage} damage (${hot.woundsBefore} → ${hot.woundsAfter} wounds).`:'Attacker suffered no damage.'}</p></div>`:'';
     return `<section class="attack-confirmation-card ${lethal?'eliminated':''}">
       <div class="attack-confirmation-heading">
         <small>${attack.attackType==='shoot'?'SHOOTING':'MELEE'}</small>
@@ -3701,6 +3702,7 @@ function showPlayerActivation(stage={}){
         <div><small>Damage</small><strong>${attack.damage}</strong></div>
         <div><small>Wounds</small><strong>${attack.before} → <span class="${lethal?'zero-wounds':''}">${attack.after}</span></strong></div>
       </div>
+      ${hotSummary}
     </section>`;
   }
 
@@ -4572,15 +4574,16 @@ function showPlayerActivation(stage={}){
       roll:Number.isInteger(rollValue)&&rollValue>=1&&rollValue<=6?rollValue:null,
       damage:Number.isInteger(damageValue)&&damageValue>=0?damageValue:null,
       applied:record.applied===true,acknowledged:record.acknowledged===true,
-      historyRecorded:record.historyRecorded===true,status:record.status==='error'?'error':record.acknowledged?'complete':'pending'};
+      historyRecorded:record.historyRecorded===true,continuation:isRecord(record.continuation)?record.continuation:null,
+      status:record.status==='error'?'error':record.acknowledged?'complete':'pending'};
   }
 
-  function hotWeaponUseContext({attackerSide,attackerId,activationId,actionId,profile,weaponName}){
+  function hotWeaponUseContext({attackerSide,attackerId,activationId,actionId,profile,weaponName,continuation=null}){
     if(!profile||!weaponHasRule(profile,'hot'))return null;
     const duplicateCount=(profile.rules||[]).filter(rule=>normalizedWeaponRuleId(rule)==='hot').length;
     if(duplicateCount>1)console.warn('[Weapon rules] Duplicate Hot rules were normalized to one resolution.',{attackerId,weaponId:profile.weaponId,profileId:profile.profileId});
     return {activationId,actionId,attackerSide,attackerId,weaponId:profile.weaponId,profileId:profile.profileId,
-      weaponName:weaponName||profile.weaponName||profile.name,effectiveHit:normalizeEffectiveHit(profile.hit)};
+      weaponName:weaponName||profile.weaponName||profile.name,effectiveHit:normalizeEffectiveHit(profile.hit),continuation};
   }
 
   function createHotResolution(context){
@@ -4595,6 +4598,7 @@ function showPlayerActivation(stage={}){
     if(record.applied)return record;
     const attacker=record.attackerSide==='player'?livePlayerOperative(record.attackerId):state.roster.find(npo=>npo.id===record.attackerId);
     const before=record.attackerSide==='player'?playerCurrentWounds(record.attackerId):Number(attacker?.wounds);
+    if(!attacker||!Number.isFinite(before))return {...record,status:'error',damage:0,applied:true};
     const damage=record.roll<record.effectiveHit?record.roll*2:0;
     const after=Math.max(0,before-damage),incapacitated=after===0&&before>0;
     if(record.attackerSide==='player'){
@@ -4625,13 +4629,18 @@ function showPlayerActivation(stage={}){
       state.hotResolution=record;
       save();
     }
-    if(!record.historyRecorded){
+    if(!record.historyRecorded&&!state.journal.some(entry=>entry.transactionId===record.id)){
       const name=record.attackerSide==='player'?playerName(record.attackerId):npoName(state.roster.find(npo=>npo.id===record.attackerId));
       const text=record.incapacitated
         ? `${name} rolled ${record.roll} for Hot, suffered ${record.damage} damage, and was incapacitated.`
         : record.damage?`${name} rolled ${record.roll} for Hot and suffered ${record.damage} damage (${record.woundsBefore} -> ${record.woundsAfter} wounds).`
           : `${name} rolled ${record.roll} for Hot and suffered no damage.`;
-      log(text);
+      state.journal.unshift({time:new Date().toISOString(),text,transactionId:record.id});
+      state.journal=state.journal.slice(0,150);
+      record={...record,historyRecorded:true};
+      state.hotResolution=record;
+      save();
+    }else if(!record.historyRecorded){
       record={...record,historyRecorded:true};
       state.hotResolution=record;
       save();
@@ -4649,7 +4658,15 @@ function showPlayerActivation(stage={}){
       const name=record.attackerSide==='player'?playerName(record.attackerId):npoName(state.roster.find(npo=>npo.id===record.attackerId));
       const comparison=record.damage?`${record.roll} is lower than ${record.effectiveHit}.`:`The result is not lower than the weapon's Hit stat.`;
       const outcome=record.incapacitated?`${escapeHtml(name)} is incapacitated by Hot.`:record.damage?`${escapeHtml(name)} suffers ${record.damage} damage.<br>Wounds: ${record.woundsBefore} -&gt; ${record.woundsAfter}`:'No damage.';
-      showModal('HOT',`<section class="combat-stage" aria-label="Hot result"><div class="dice-row settled">${dieHtml({value:record.roll,ariaLabel:`Hot roll: ${record.roll}`})}</div><p><strong>Hot roll: ${record.roll}</strong><br>Hit stat: ${record.effectiveHit}+</p><p>${escapeHtml(comparison)}</p><strong>${outcome}</strong></section><div class="wizard-actions"><button class="btn primary" id="continueHot">Continue</button></div>`,undefined,`hot:${record.id}`);
+      const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const die=reducedMotion?dieHtml({value:record.roll,ariaLabel:`Hot roll: ${record.roll}`}):rollingDieHtml();
+      showModal('HOT',`<section class="combat-stage" aria-label="Hot result"><div class="dice-row ${reducedMotion?'settled':'animated-roll'}" id="hotRollDie">${die}</div><p><strong>Hot roll: ${record.roll}</strong><br>Hit stat: ${record.effectiveHit}+</p><p>${escapeHtml(comparison)}</p><strong>${outcome}</strong></section><div class="wizard-actions"><button class="btn primary" id="continueHot">Continue</button></div>`,undefined,`hot:${record.id}`);
+      if(!reducedMotion)setTimeout(()=>{
+        const rollDie=$('#hotRollDie');
+        if(!rollDie?.isConnected)return;
+        rollDie.innerHTML=dieHtml({value:record.roll,ariaLabel:`Hot roll: ${record.roll}`});
+        rollDie.classList.replace('animated-roll','settled');
+      },700);
     }
     const button=$('#continueHot');button.focus({preventScroll:true});
     button.onclick=()=>{
@@ -4667,6 +4684,24 @@ function showPlayerActivation(stage={}){
     state.hotResolution=record;save();
     if(record.acknowledged){onContinue();return;}
     showHotResult(record,onContinue);
+  }
+
+  function resumePersistedHotContinuation(record){
+    if(record.attackerSide==='player'){
+      const stage=state.combatState?.side==='player'?state.combatState.stage:null;
+      if(stage)completePlayerActivation(stage);
+      else render();
+      return;
+    }
+    const continuation=record.continuation,activation=state.lastActivation;
+    if(!continuation||!activation?.pendingAction||activation.npoId!==record.attackerId){render();return;}
+    const pending=activation.pendingAction;
+    state.weaponRuleResolution=null;
+    const hot={roll:record.roll,damage:record.damage,woundsBefore:record.woundsBefore,woundsAfter:record.woundsAfter,incapacitated:record.incapacitated};
+    const attackSummary=continuation.attackSummary?{...continuation.attackSummary,hot}:null;
+    commitNpoAction({actionId:pending.id,actionName:pending.name,apCost:pending.apCost,
+      result:continuation.result,attackSummary,
+      attackSummaries:continuation.attackSummaries,transitionMode:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});
   }
 
   function createWeaponRuleResolution({activationId,actionId,attackerSide,attackerId,attackType='shoot',weaponId,weaponName,profileKey,profileName,weaponRules=[],ruleId,primaryTargetId,secondaryTargetIds=[],targetDescriptors=[]}){
@@ -6297,14 +6332,17 @@ function showPlayerActivation(stage={}){
       state.weaponRuleResolution=advanceMultiTargetAttackSequence(state.weaponRuleResolution,targetId,skipped);
       if(state.weaponRuleResolution.currentTargetId){state.npoAttackTargetId=state.weaponRuleResolution.currentTargetId;save();showNpoAttackWizard(n,attackDice,onDone,onCancel,false);return;}
       const completed=state.weaponRuleResolution;
-      save();showMultiTargetAttackSummary(completed,'npo',()=>{
-        const finish=()=>{state.weaponRuleResolution=null;save();if(onDone)onDone(completed.sequenceResults.at(-1),completed.sequenceResults);};
-        const used=completed.sequenceResults.some(result=>!result.skipped);
-        if(used&&attackType==='shoot'&&locked?.profile)completeShootingWeaponUse({attackerSide:'npo',attackerId:n.id,
-          activationId:state.lastActivation?.activationId||missionActivationId('npo',n.id),actionId:state.lastActivation?.pendingAction?.id||attackType,
-          profile:locked.profile,weaponName:locked.profile.weaponName||locked.profile.name},finish);
-        else finish();
-      });
+      save();
+      const completeSequence=()=>{state.weaponRuleResolution=null;save();if(onDone)onDone(completed.sequenceResults.at(-1),completed.sequenceResults);};
+      const finish=()=>showMultiTargetAttackSummary(completed,'npo',completeSequence);
+      const used=completed.sequenceResults.some(result=>!result.skipped);
+      const pending=state.lastActivation?.pendingAction;
+      if(used&&attackType==='shoot'&&locked?.profile)completeShootingWeaponUse({attackerSide:'npo',attackerId:n.id,
+        activationId:state.lastActivation?.activationId||missionActivationId('npo',n.id),actionId:state.lastActivation?.pendingAction?.id||attackType,
+        profile:locked.profile,weaponName:locked.profile.weaponName||locked.profile.name,
+        continuation:{result:completed.sequenceResults.map(item=>`${item.targetName} ${item.skipped?'skipped':`${item.damage} damage`}`).join(', '),
+          attackSummary:completed.sequenceResults.at(-1),attackSummaries:completed.sequenceResults,pendingAction:pending}},completeSequence);
+      else finish();
       return;
     }
     if(!target){showToast('Select the targeted Player operative first.');if(onCancel)onCancel();return;}
@@ -6373,11 +6411,13 @@ function showPlayerActivation(stage={}){
       state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat};
       save();
       let summary={...resolvedCombat,side:targetSide};
-      const finishWeaponUse=done=>attackType==='shoot'?completeShootingWeaponUse({
+      const finishWeaponUse=(done,attackSummaries=[summary])=>attackType==='shoot'?completeShootingWeaponUse({
         attackerSide:'npo',attackerId:n.id,
         activationId:state.lastActivation?.activationId||missionActivationId('npo',n.id),
         actionId:state.lastActivation?.pendingAction?.id||attackType,
-        profile:resolvedCombat.profile,weaponName:resolvedCombat.profile?.weaponName||resolvedCombat.profile?.name
+        profile:resolvedCombat.profile,weaponName:resolvedCombat.profile?.weaponName||resolvedCombat.profile?.name,
+        continuation:{result:attackSummaries.map(item=>`${item.targetName} ${item.skipped?'skipped':`${item.damage} damage`}`).join(', '),
+          attackSummary:summary,attackSummaries,pendingAction:state.lastActivation?.pendingAction}
       },done):done();
       const queue=state.weaponRuleResolution;
       if(queue?.currentTargetId===target.id){
@@ -6394,15 +6434,15 @@ function showPlayerActivation(stage={}){
         }
         const completed=state.weaponRuleResolution;
         save();
-        showMultiTargetAttackSummary(completed,'npo',()=>{
-          finishWeaponUse(()=>{
+        const completeSequence=()=>{
             state.weaponRuleResolution=null;
             save();
             const hot=state.hotResolution?.attackerId===n.id?state.hotResolution:null;
             if(hot)summary={...summary,hot:{roll:hot.roll,damage:hot.damage,woundsBefore:hot.woundsBefore,woundsAfter:hot.woundsAfter,incapacitated:hot.incapacitated}};
             if(onDone)onDone(summary,completed.sequenceResults);
-          });
-        });
+        };
+        if(weaponHasRule(resolvedCombat.profile,'hot'))finishWeaponUse(completeSequence,completed.sequenceResults);
+        else showMultiTargetAttackSummary(completed,'npo',completeSequence);
         return;
       }
       applyNpoAttackDamage(n,target,summary);

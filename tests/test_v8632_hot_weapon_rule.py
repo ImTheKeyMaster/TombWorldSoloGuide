@@ -55,5 +55,10 @@ class HotWeaponRuleTests(unittest.TestCase):
     def test_42_multi_completed(self): self.assertIn('completed:orderedTargetIds.length===0',APP); self.assertIn('finishWeaponUse',APP)
     def test_43_save_version(self): self.assertIn('const SAVE_VERSION = 3;',PERSISTENCE)
     def test_44_release(self): self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.32')); self.assertIn("const APP_VERSION = '8.6.32';",WORKER)
+    def test_45_history_uses_transaction_id(self): self.assertIn('entry.transactionId===record.id',HOT); self.assertIn('transactionId:record.id',HOT)
+    def test_46_npo_recovery_commits_pending_action(self): self.assertIn('function resumePersistedHotContinuation',HOT); self.assertIn('commitNpoAction({actionId:pending.id',HOT)
+    def test_47_npo_recovery_clears_completed_sequence(self): self.assertIn('state.weaponRuleResolution=null;',HOT)
+    def test_48_reduced_motion_skips_animation(self): self.assertIn("matchMedia('(prefers-reduced-motion: reduce)').matches",HOT); self.assertIn("reducedMotion?'settled':'animated-roll'",HOT)
+    def test_49_summary_distinguishes_hot_damage(self): self.assertIn('hot-attack-summary',APP); self.assertIn('Attacker suffered ${hot.damage} damage',APP)
 
 if __name__=='__main__': unittest.main()
