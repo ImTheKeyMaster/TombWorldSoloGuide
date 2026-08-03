@@ -4,7 +4,7 @@
 
 **Version 8.6.28 - Clarify Grade 1 Tomb World Event Text**
 
-* Clarified that Grade 1 does not trigger Tomb World events while other enabled rules may still trigger them.
+* Updated the Grade 1 Threat Escalation card to explain that Grade 1 will not trigger any Tomb World events, while other enabled rules may still trigger them.
 
 ## v8.6.27
 
