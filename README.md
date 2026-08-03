@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.32
+# Tomb World Solo Guide v8.6.33
+
+## v8.6.33
+
+**Version 8.6.33 - Replace Star Icons with Radar Scope**
+
+* Replaced the five-point star icon with the existing radar-scope icon.
+* Added the radar icon to all NPO control-range questions.
+* Reused one shared radar SVG across active questions, history, and action cards.
+* Preserved all NPO rules, decisions, and activation behavior.
 
 ## v8.6.32
 
