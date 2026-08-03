@@ -49,12 +49,12 @@ class WeaponRuleSummaryTests(unittest.TestCase):
         cls.result = evaluate_summaries()
 
     def test_01_version_8623_is_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.30';", APP)
-        self.assertIn("const APP_VERSION = '8.6.30';", WORKER)
-        self.assertIn("V8.6.30", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.30"))
+        self.assertIn("const APP_VERSION = '8.6.31';", APP)
+        self.assertIn("const APP_VERSION = '8.6.31';", WORKER)
+        self.assertIn("V8.6.31", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.31"))
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.30", INDEX)
+            self.assertIn(f"{asset}?v=8.6.31", INDEX)
 
     def test_02_to_09_piercing_is_one_clear_grammatical_item(self):
         self.assertEqual(self.result["one"], [{

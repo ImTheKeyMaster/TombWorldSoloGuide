@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.30';
+  const APP_VERSION = '8.6.31';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -3453,7 +3453,7 @@ function showPlayerActivation(stage={}){
 
     showModal('Activate an Operative',`
       <p>Choose the Player operative being activated. That operative cannot activate again during this Turning Point after the activation is confirmed.</p>
-      <div class="field">
+      <div class="field" data-touch-dialog-focus-container>
         <label>Player operative</label>
         ${remaining.length===1
           ? `<div class="readonly-select">${escapeHtml(playerName(selectedId))}</div>`
@@ -3515,17 +3515,6 @@ function showPlayerActivation(stage={}){
 
     const operativeSelect=$('#playerOperativeSelect');
     const controls=$('#playerActivationControls');
-
-    // iOS Safari can retain focus on the button that opened the dialog,
-    // which occasionally prevents the native select from opening on first tap.
-    requestAnimationFrame(()=>{
-      modal.scrollTop=0;
-      modalBody.scrollTop=0;
-      if(operativeSelect){
-        operativeSelect.style.pointerEvents='none';
-        requestAnimationFrame(()=>{operativeSelect.style.pointerEvents='';});
-      }
-    });
     operativeSelect?.addEventListener('change',event=>{
       const select=event.currentTarget;
       const operativeId=select.value;
@@ -6840,21 +6829,24 @@ function showPlayerActivation(stage={}){
     return style.display!=='none'&&style.visibility!=='hidden';
   }
 
-  function focusInitialDialogControl(dialog){
+  let modalFocusGeneration=0;
+  function focusInitialDialogControl(dialog,focusContainerOnTouch=false,focusGeneration=modalFocusGeneration){
     if(!dialog)return;
     const selectors='select:not([disabled]),input:not([disabled]),textarea:not([disabled]),button:not([disabled]),a[href],[role="button"][tabindex="0"]';
     const preferred=$$('[data-dialog-focus]:not([disabled])',dialog).find(isUsableFocusTarget);
     const firstInteractive=$$(selectors,dialog).find(isUsableFocusTarget);
-    const target=preferred||firstInteractive||dialog;
+    const coarsePointer=window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    const target=focusContainerOnTouch&&coarsePointer?dialog:preferred||firstInteractive||dialog;
     requestAnimationFrame(()=>{
-      if(!target?.isConnected)return;
+      if(focusGeneration!==modalFocusGeneration||!target?.isConnected)return;
       try{target.focus({preventScroll:true});}catch{target.focus();}
     });
   }
 
-  function restoreDialogControlFocus(dialog,controlId){
+  function restoreDialogControlFocus(dialog,controlId,focusGeneration=modalFocusGeneration){
     if(!controlId)return;
     requestAnimationFrame(()=>{
+      if(focusGeneration!==modalFocusGeneration)return;
       const target=document.getElementById(controlId);
       if(!dialog.contains(target)||!isUsableFocusTarget(target))return;
       try{target.focus({preventScroll:true});}catch{target.focus();}
@@ -6864,7 +6856,9 @@ function showPlayerActivation(stage={}){
   function closeTouchSelectAfterCommit(select,onComplete){
     const coarsePointer=window.matchMedia('(hover: none) and (pointer: coarse)').matches;
     if(!coarsePointer){onComplete();return;}
+    const focusGeneration=modalFocusGeneration;
     requestAnimationFrame(()=>{
+      if(focusGeneration!==modalFocusGeneration||!modal.open)return;
       if(document.activeElement===select)select.blur();
       onComplete();
     });
@@ -6872,6 +6866,7 @@ function showPlayerActivation(stage={}){
 
   let modalFocusSequence=0;
   function showModal(title,content,onClose,focusKey=null){
+    const focusGeneration=++modalFocusGeneration;
     const active=document.activeElement;
     if(active&&!modal.contains(active))modal._returnFocus=active;
     const activeControlId=modal.contains(active)?active.id:null;
@@ -6891,19 +6886,29 @@ function showPlayerActivation(stage={}){
 
     modal.scrollTop=0;
     modalBody.scrollTop=0;
-    if(shouldFocus)focusInitialDialogControl(modal);
+    if(shouldFocus){
+      if(modal.querySelector('[data-touch-dialog-focus-container]'))focusInitialDialogControl(modal,true,focusGeneration);
+      else focusInitialDialogControl(modal);
+    }
     else if(shouldRestoreFocus)restoreDialogControlFocus(modal,activeControlId);
   }
   function closeModal(){
+    const focusGeneration=++modalFocusGeneration;
     missionDialogLocked=false;
     if(modal.open)modal.close();
     const cb=modal._onClose;
     const returnFocus=modal._returnFocus;
+    const returnFocusId=returnFocus?.id;
     modal._onClose=null;
     modal._returnFocus=null;
     modal._focusKey=null;
+    modal._skipFocusRestoreId=null;
     if(cb)cb();
-    if(returnFocus?.isConnected)requestAnimationFrame(()=>returnFocus.focus({preventScroll:true}));
+    if(returnFocus?.isConnected||returnFocusId)requestAnimationFrame(()=>{
+      if(focusGeneration!==modalFocusGeneration||modal.open)return;
+      const target=returnFocus.isConnected?returnFocus:document.getElementById(returnFocusId);
+      if(target?.isConnected)target.focus({preventScroll:true});
+    });
   }
   modal.addEventListener('cancel',e=>{e.preventDefault();if(!missionDialogLocked)closeModal();});
   modal.addEventListener('keydown',event=>{
