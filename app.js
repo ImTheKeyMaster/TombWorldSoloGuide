@@ -4544,14 +4544,6 @@ function showPlayerActivation(stage={}){
   }
 
   function createWeaponRuleResolution({activationId,actionId,attackerSide,attackerId,attackType='shoot',weaponId,weaponName,profileKey,profileName,weaponRules=[],ruleId,primaryTargetId,secondaryTargetIds=[],targetDescriptors=[]}){
-    if(attackerSide==='player'&&(!weaponId||!profileKey)){
-      const candidates=playerAttackWeapons(attackerId,attackType).map((weapon,weaponIndex)=>playerWeaponProfile(weapon,{operativeId:attackerId,attackType,weaponIndex}))
-        .filter(profile=>profile.weaponName===weaponName&&profile.profileName===profileName);
-      if(candidates.length===1){
-        weaponId=candidates[0].weaponId;
-        profileKey=candidates[0].profileId;
-      }
-    }
     if(attackerSide==='player'&&(!weaponId||!profileKey))return null;
     const orderedTargetIds=[...new Set([primaryTargetId,...secondaryTargetIds].filter(Boolean))];
     const descriptorById=new Map(targetDescriptors.filter(isRecord).map(target=>[target.targetId||target.id,target]));
@@ -4845,7 +4837,7 @@ function showPlayerActivation(stage={}){
     onCancel();
   }
 
-  function showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel){
+  function showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel,preferredTargetId=''){
     const targets=sortedNposForDisplay(activeNpos().filter(n=>projectedNpoWounds(n.id,stage)>0));
     if(!targets.length){
       showToast('No active NPO is available as a target.');
@@ -4870,7 +4862,7 @@ function showPlayerActivation(stage={}){
     const singleTarget=targets.length===1?targets[0]:null;
     const targetControl=singleTarget
       ? `<div class="field"><label>Target NPO</label><div class="readonly-select">${escapeHtml(npoName(singleTarget))} · Wounds ${projectedNpoWounds(singleTarget.id,stage)}/${singleTarget.maxWounds} · Save ${singleTarget.save}+</div><input type="hidden" id="combatTarget" value="${singleTarget.id}"></div>`
-      : `<div class="field"><label>Target NPO</label><select id="combatTarget"><option value="">Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}">${escapeHtml(npoName(n))} · Wounds ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} · Save ${n.save}+</option>`).join('')}</select></div>`;
+      : `<div class="field"><label>Target NPO</label><select id="combatTarget"><option value="">Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}"${n.id===preferredTargetId?' selected':''}>${escapeHtml(npoName(n))} · Wounds ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} · Save ${n.save}+</option>`).join('')}</select></div>`;
     const weaponControl=weapons.length===1
       ? `<div class="field"><label>Weapon</label><div class="readonly-select">${escapeHtml(weapons[0].name)}</div><input type="hidden" id="playerWeaponSelect" value="0"></div>`
       : `<div class="field"><label>Weapon</label><select id="playerWeaponSelect"><option value="">Select a weapon...</option>${weapons.map((weapon,index)=>`<option value="${index}">${escapeHtml(weapon.name)}</option>`).join('')}</select></div>`;
@@ -4944,7 +4936,14 @@ function showPlayerActivation(stage={}){
     const legacyIdentity=normalizeLegacyPlayerMultiTargetIdentity(sequence,stage.playerOperativeId);
     sequence=legacyIdentity.sequence;
     if(legacyIdentity.status==='ambiguous'){
-      showLegacyPlayerWeaponRecovery(()=>showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel));
+      showLegacyPlayerWeaponRecovery(()=>{
+        const preferredTargetId=sequence.primaryTargetId;
+        stage[`${attackType}CombatDraft`]=null;
+        state.weaponRuleResolution=null;
+        state.combatState={side:'player',stage};
+        save();
+        showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel,preferredTargetId);
+      });
       return;
     }
     const targetSide=state.weaponRuleResolution?.orderedTargets?.find(item=>item.targetId===targetId)?.targetSide||'npo';

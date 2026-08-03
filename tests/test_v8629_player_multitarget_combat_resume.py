@@ -52,8 +52,8 @@ class V8629PlayerMultiTargetCombatResumeTests(unittest.TestCase):
     def test_06_new_player_sequence_rejects_empty_identity(self):
         source = function_source("createWeaponRuleResolution")
         self.assertIn("attackerSide==='player'&&(!weaponId||!profileKey)", source)
-        self.assertIn("if(candidates.length===1)", source)
         self.assertIn("return null", source)
+        self.assertNotIn("weaponName===", source)
 
     def test_07_deathwatch_hellstorm_uses_runtime_fallback(self):
         self.assertIn('"id": "breacher"', DEATHWATCH)
@@ -102,6 +102,8 @@ class V8629PlayerMultiTargetCombatResumeTests(unittest.TestCase):
         self.assertIn("Weapon selection must be confirmed", recovery)
         self.assertIn("No dice or damage were committed", recovery)
         self.assertIn("legacyIdentity.status==='ambiguous'", combat)
+        self.assertIn("state.weaponRuleResolution=null", combat)
+        self.assertIn("preferredTargetId", combat)
         self.assertLess(combat.index("legacyIdentity.status==='ambiguous'"), combat.index("runAutomaticCombatRolls"))
 
     def test_13_primary_and_secondary_targets_are_distinct_and_sequential(self):
