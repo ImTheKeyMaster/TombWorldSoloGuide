@@ -62,12 +62,12 @@ def severe(dice, profile):
 
 class SevereWeaponRuleTests(unittest.TestCase):
     def test_version_850_is_consistent_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.6.27';", APP)
-        self.assertIn("const APP_VERSION = '8.6.27';", WORKER)
-        self.assertIn('V8.6.27', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.27'))
+        self.assertIn("const APP_VERSION = '8.6.29';", APP)
+        self.assertIn("const APP_VERSION = '8.6.29';", WORKER)
+        self.assertIn('V8.6.29', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.29'))
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.27', INDEX)
+            self.assertIn(f'{asset}?v=8.6.29', INDEX)
         self.assertNotIn('8.4.2', APP + INDEX + WORKER)
         self.assertIn('## v8.6.25', README)
 
@@ -143,7 +143,7 @@ class SevereWeaponRuleTests(unittest.TestCase):
         self.assertIn("action?.includes('Fight')?'melee':'shoot'", npo)
         self.assertIn('runAutomaticCombatRolls({container:screen.dice,profile', npo)
         self.assertIn('canonicalAttackProfile(availableProfiles[profileIndex])', npo)
-        self.assertIn('playerWeaponProfile(weapon)', player)
+        self.assertIn('playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex})', player)
 
     def test_profiles_preserve_rules_ids_piercing_lethal_and_my_will_be_done(self):
         canonical = function_source('canonicalAttackProfile')
