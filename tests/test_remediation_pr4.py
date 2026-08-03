@@ -41,7 +41,7 @@ class RemediationPr4Tests(unittest.TestCase):
         self.assertIn('action,actionId:id', question)
         self.assertIn('title,help:', question)
         renderer = self.function_source('renderActiveNpoQuestion', 'runNpoPrompt')
-        self.assertIn("npoQuestionIcons[q.action.split(' ')[0]]", renderer)
+        self.assertIn("npoIcon(iconForNpoQuestion(q))", renderer)
         self.assertNotIn('npoQuestionIcons[q.key]', renderer)
 
     def test_activation_threat_principle_is_printed_in_order(self):
@@ -71,7 +71,7 @@ class RemediationPr4Tests(unittest.TestCase):
         self.assertIn('if(state.lastActivation?.committed)return', commit)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = '8.6.32'
+        expected = '8.6.33'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / 'service-worker.js').read_text())
         index = (ROOT / 'index.html').read_text()

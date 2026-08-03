@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.32';
+  const APP_VERSION = '8.6.33';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -5260,6 +5260,7 @@ function showPlayerActivation(stage={}){
   const NPO_CORE_ACTION_COSTS={'reposition':1,'dash':1,'charge':1,'shoot':1,'fight':1,'fall-back':2};
   const NPO_ACTION_INQUIRIES={
     'fall-back':{
+      concernsControlRange:true,
       applicabilityQuestion:'Is this NPO within the control range of any Player operative?',
       feasibilityQuestion:'Can it move away and finish outside every Player operative’s control range?',
       applicabilityHelp:'Select Yes if this NPO is currently within a Player operative’s control range. Do not move the NPO yet.',
@@ -5272,6 +5273,7 @@ function showPlayerActivation(stage={}){
       selectedInstruction:'Shoot the first Player operative that matches the target priority.'
     },
     fight:{
+      concernsControlRange:true,
       feasibilityQuestion:'Is a valid Player operative currently within this NPO’s control range?',
       help:'Select Yes if this NPO can Fight a Player operative from its current position. Do not move the NPO.',
       selectedInstruction:'Fight the first Player operative that matches the target priority.'
@@ -5420,7 +5422,7 @@ function showPlayerActivation(stage={}){
 
   function directNpoAttackQuestion(n,action,availability=null){
     const actionId=npoActionId(action),inquiry=NPO_ACTION_INQUIRIES[actionId];
-    return {key:`${actionId}-feasibility`,action,actionId,type:'feasibility',title:inquiry.feasibilityQuestion,help:inquiry.help,movementIntent:null,autoSelect:availability===true};
+    return {key:`${actionId}-feasibility`,action,actionId,type:'feasibility',title:inquiry.feasibilityQuestion,help:inquiry.help,movementIntent:null,autoSelect:availability===true,concernsControlRange:Boolean(inquiry.concernsControlRange)};
   }
 
   function npoActionQuestion(n,index){
@@ -5448,7 +5450,7 @@ function showPlayerActivation(stage={}){
       ? 'Measure the Charge. Select Yes only if its base can reach and fit next to a target. This will spend its last AP, so it will not Fight afterward.'
       : inquiry?.feasibilityHelp??inquiry?.help);
     const help=movementInquiry?.help||(typeof inquiryHelp==='function'?inquiryHelp(n):inquiryHelp);
-    return {key:movementInquiry?.id||`${id}-${applicability?'applicability':'feasibility'}`,action,actionId:id,type:applicability?'applicability':'feasibility',title,help:help||'Check the action’s target, distance, and placement. Select Yes only if the action can be completed now.',movementIntent:movementInquiry||null};
+    return {key:movementInquiry?.id||`${id}-${applicability?'applicability':'feasibility'}`,action,actionId:id,type:applicability?'applicability':'feasibility',title,help:help||'Check the action’s target, distance, and placement. Select Yes only if the action can be completed now.',movementIntent:movementInquiry||null,concernsControlRange:Boolean(inquiry?.concernsControlRange)};
   }
 
   const npoQuestionIcons = {
@@ -5456,13 +5458,13 @@ function showPlayerActivation(stage={}){
   };
 
   function npoIcon(type){
+    if(type==='command')return npoIcon('radar');
     const paths={
       crosshair:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>',
       objective:'<path d="M6 21V4m0 1h11l-2 4 2 4H6"/><circle cx="6" cy="21" r="2"/>',
       wounded:'<path d="M12 21s-7-4.4-7-10a4 4 0 017-2.7A4 4 0 0119 11c0 5.6-7 10-7 10z"/><path d="M9 12h2l1-3 2 6 1-3h2"/>',
       shield:'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6l7-3z"/><path d="M8 12h8"/>',
-      group:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-4 2-6 6-6s6 2 6 6m0-5c3 0 5 2 5 5"/>',
-      command:'<path d="M12 2l3 6 6 1-4.5 4.5 1 6.5-5.5-3-5.5 3 1-6.5L3 9l6-1 3-6z"/><circle cx="12" cy="12" r="2"/>'
+      group:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-4 2-6 6-6s6 2 6 6m0-5c3 0 5 2 5 5"/>'
     };
     if(type==='charge')return `<svg
   class="npo-question-icon npo-question-icon--charge"
@@ -5730,16 +5732,22 @@ function showPlayerActivation(stage={}){
     stroke-linecap="round"
   />
 </svg>`;
-    return `<svg class="npo-question-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[type]||paths.command}</svg>`;
+    if(!paths[type])return npoIcon('radar');
+    return `<svg class="npo-question-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${paths[type]}</svg>`;
+  }
+
+  function iconForNpoQuestion(question){
+    if(question.concernsControlRange)return 'radar';
+    return npoQuestionIcons[question.action.split(' ')[0]];
   }
 
   function renderCompletedNpoQuestions(history){
-    return history.map(item=>`<div class="npo-question-complete npo-question-history">${npoIcon(npoQuestionIcons[item.action.split(' ')[0]])}<span>${escapeHtml(item.question||item.action)}</span><strong>${item.type==='selected'?'Selected':item.answer?'Yes':'No'}</strong></div>`).join('');
+    return history.map(item=>`<div class="npo-question-complete npo-question-history">${npoIcon(iconForNpoQuestion(item))}<span>${escapeHtml(item.question||item.action)}</span><strong>${item.type==='selected'?'Selected':item.answer?'Yes':'No'}</strong></div>`).join('');
   }
 
   function renderActiveNpoQuestion(q){
     return `<section class="npo-question-active npo-question-card--active" aria-live="polite" aria-atomic="true" aria-labelledby="activeNpoQuestion" aria-describedby="activeNpoQuestionHelp">
-      ${npoIcon(npoQuestionIcons[q.action.split(' ')[0]])}<h3 id="activeNpoQuestion">${escapeHtml(q.title)}</h3><p id="activeNpoQuestionHelp">${escapeHtml(q.help)}</p>
+      ${npoIcon(iconForNpoQuestion(q))}<h3 id="activeNpoQuestion">${escapeHtml(q.title)}</h3><p id="activeNpoQuestionHelp">${escapeHtml(q.help)}</p>
       <div class="ai-choice-grid"><button class="ai-choice no" data-answer="no"><strong>No</strong></button><button class="ai-choice yes" data-answer="yes"><strong>Yes</strong></button></div>
     </section>`;
   }
@@ -5790,7 +5798,7 @@ function showPlayerActivation(stage={}){
       const nextAnswers={...answers,[q.key]:answer};
       const action=q.action;
       const contextBefore={...(state.lastActivation.currentContext||{})};
-      const nextHistory=[...history,{index,answers,answer,action,type:q.type,question:q.title,contextBefore,movementIntentId:q.movementIntent?.id||null}];
+      const nextHistory=[...history,{index,answers,answer,action,type:q.type,question:q.title,contextBefore,movementIntentId:q.movementIntent?.id||null,concernsControlRange:q.concernsControlRange}];
       state.lastActivation.questionHistory=nextHistory;
       if(q.type==='applicability'){
         state.lastActivation.currentContext.inEnemyControlRange=answer;
