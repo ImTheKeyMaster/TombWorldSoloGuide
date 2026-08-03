@@ -84,11 +84,11 @@ class NpoPortraitRemovalTests(unittest.TestCase):
             self.assertIn(f"id:'{type_id}'", CATALOG)
 
     def test_offline_shell_and_release_versions_are_synchronized(self):
-        self.assertIn("const APP_VERSION = '8.6.29';", APP)
-        self.assertIn("const APP_VERSION = '8.6.29';", WORKER)
-        self.assertIn("V8.6.29", INDEX)
+        self.assertIn("const APP_VERSION = '8.6.30';", APP)
+        self.assertIn("const APP_VERSION = '8.6.30';", WORKER)
+        self.assertIn("V8.6.30", INDEX)
         for asset in ("app.js", "mission-engine.js", "persistence.js", "styles.css"):
-            self.assertIn(f"{asset}?v=8.6.29", INDEX)
+            self.assertIn(f"{asset}?v=8.6.30", INDEX)
         self.assertIn("cache.addAll(PRECACHE_ASSETS)", WORKER)
 
     def test_matrix_interface_remains_excluded(self):

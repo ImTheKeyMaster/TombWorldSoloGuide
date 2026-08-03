@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.29
+# Tomb World Solo Guide v8.6.30
+
+## v8.6.30
+
+**Version 8.6.30 - Hide Mobile Scrollbars**
+
+* Hid scrollbar tracks and thumbs throughout mobile layouts while preserving touch scrolling.
+* Restored the scrollbar-free mobile appearance for pages, dialogs, maps, phase tracks, and checklists.
+* Preserved existing desktop scrollbar behavior and all scrollable container dimensions and overflow behavior.
 
 ## v8.6.29
 

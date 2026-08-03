@@ -72,13 +72,13 @@ class V841NpoMovementIntentTests(unittest.TestCase):
         self.assertIn('canCommitNpoAction(pending.id,pending.apCost)', combat)
 
     def test_version_and_release_notes(self):
-        self.assertIn("const APP_VERSION = '8.6.29';", APP)
-        self.assertIn("const APP_VERSION = '8.6.29';", WORKER)
-        self.assertIn('V8.6.29', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.29'))
+        self.assertIn("const APP_VERSION = '8.6.30';", APP)
+        self.assertIn("const APP_VERSION = '8.6.30';", WORKER)
+        self.assertIn('V8.6.30', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.30'))
         self.assertIn('## v8.6.25', README)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.29', INDEX)
+            self.assertIn(f'{asset}?v=8.6.30', INDEX)
 
 
 if __name__ == '__main__':
