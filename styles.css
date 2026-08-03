@@ -75,6 +75,29 @@ html.desktop-game-background #gameBackground{opacity:1}
 .board-map.guide-map-frame::-webkit-scrollbar{height:9px}
 .board-map.guide-map-frame::-webkit-scrollbar-track{background:rgba(5,12,8,.9);border-radius:999px}
 .board-map.guide-map-frame::-webkit-scrollbar-thumb{background:rgba(118,245,168,.55);border-radius:999px;border:2px solid rgba(5,12,8,.9)}
+@media(max-width:600px){
+  html,
+  body,
+  .modal,
+  .modal-inner,
+  .board-map,
+  .board-map.guide-map-frame,
+  .phase-track{
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  .modal::-webkit-scrollbar,
+  .modal-inner::-webkit-scrollbar,
+  .board-map::-webkit-scrollbar,
+  .board-map.guide-map-frame::-webkit-scrollbar,
+  .phase-track::-webkit-scrollbar{
+    display:none;
+    width:0;
+    height:0;
+  }
+}
 .board-map.guide-map-frame .guide-map-svg{
   width:800px;
   min-width:800px;
