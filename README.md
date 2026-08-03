@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v8.6.31
+# Tomb World Solo Guide v8.6.32
+
+## v8.6.32
+
+**Version 8.6.32 - Add Automatic Hot Weapon Rule Support**
+
+* Added automatic Hot rolls after weapons with Hot are used.
+* Applied self-damage using the weapon’s effective Hit stat.
+* Resolved Hot once after complete Blast and Torrent actions.
+* Added persistent recovery and duplicate-roll protection.
+* Added Player and NPO incapacitation handling for Hot damage.
 
 ## v8.6.31
 
