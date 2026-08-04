@@ -217,6 +217,7 @@ html.desktop-game-background #gameBackground{opacity:1}
 .npo-question-complete .npo-question-icon{width:25px;height:25px;color:var(--muted)}.npo-question-complete strong{color:var(--text);font-size:.8rem}
 .npo-question-complete .npo-question-icon--movement{width:30px;height:30px;flex:0 0 30px;color:var(--muted)}
 .npo-question-active{padding:22px;border:1px solid rgba(118,245,168,.55);border-radius:18px;background:linear-gradient(145deg,rgba(29,82,51,.3),rgba(7,20,15,.98));box-shadow:0 12px 30px rgba(0,0,0,.25)}
+.npo-active-question>.npo-question-icon.is-movement,.npo-active-question>.npo-question-icon.is-move-to-shoot{width:63px;height:63px;flex:0 0 63px}
 .npo-question-active .npo-question-icon--hatch{width:48px;height:48px}
 .npo-question-active .npo-question-icon--radar{width:52px;height:52px;flex:0 0 52px;color:var(--green)}
 .npo-question-card--active .npo-question-icon--charge{width:52px;height:52px;flex:0 0 52px}

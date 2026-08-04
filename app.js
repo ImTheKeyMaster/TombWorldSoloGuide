@@ -5462,7 +5462,7 @@ function showPlayerActivation(stage={}){
 
   function npoIcon(type){
     if(type==='command')return npoIcon('radar');
-    if(type==='moveToShoot')return `<svg class="npo-question-icon npo-question-icon--movement" viewBox="0 0 42 32" fill="none" aria-hidden="true" focusable="false"><g fill="currentColor" stroke="currentColor"><circle cx="3" cy="16" r="3" stroke="none"/><path d="M6 16h20" fill="none" stroke-width="2"/><path d="m8 12.5 5 3.5-5 3.5Z" stroke="none"/><path d="m13.5 12.5 5 3.5-5 3.5Z" stroke="none"/><path d="m19 12.5 5 3.5-5 3.5Z" stroke="none"/><circle cx="35" cy="16" r="4" fill="none" stroke-width="2"/><circle cx="35" cy="16" r="1.25" stroke="none"/><path d="M35 6v6M35 20v6M25 16h6M39 16h2" fill="none" stroke-width="2"/></g></svg>`;
+    if(type==='moveToShoot')return `<svg class="npo-question-icon npo-question-icon--movement is-move-to-shoot" viewBox="0 0 42 32" fill="none" aria-hidden="true" focusable="false"><g fill="currentColor" stroke="currentColor"><circle cx="3" cy="16" r="3" stroke="none"/><path d="M6 16h20" fill="none" stroke-width="2"/><path d="m8 12.5 5 3.5-5 3.5Z" stroke="none"/><path d="m13.5 12.5 5 3.5-5 3.5Z" stroke="none"/><path d="m19 12.5 5 3.5-5 3.5Z" stroke="none"/><circle cx="35" cy="16" r="4" fill="none" stroke-width="2"/><circle cx="35" cy="16" r="1.25" stroke="none"/><path d="M35 6v6M35 20v6M25 16h6M39 16h2" fill="none" stroke-width="2"/></g></svg>`;
     const paths={
       crosshair:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>',
       objective:'<path d="M6 21V4m0 1h11l-2 4 2 4H6"/><circle cx="6" cy="21" r="2"/>',
@@ -5471,7 +5471,7 @@ function showPlayerActivation(stage={}){
       group:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-4 2-6 6-6s6 2 6 6m0-5c3 0 5 2 5 5"/>'
     };
     if(type==='movement'||type==='charge-movement')return `<svg
-  class="npo-question-icon ${type==='movement'?'npo-question-icon--movement':'npo-question-icon--charge'}"
+  class="npo-question-icon ${type==='movement'?'npo-question-icon--movement':'npo-question-icon--charge'} is-movement"
   viewBox="0 0 32 32"
   width="32"
   height="32"
@@ -5775,7 +5775,7 @@ function showPlayerActivation(stage={}){
   }
 
   function renderActiveNpoQuestion(q){
-    return `<section class="npo-question-active npo-question-card--active" aria-live="polite" aria-atomic="true" aria-labelledby="activeNpoQuestion" aria-describedby="activeNpoQuestionHelp">
+    return `<section class="npo-question-active npo-question-card--active npo-active-question" aria-live="polite" aria-atomic="true" aria-labelledby="activeNpoQuestion" aria-describedby="activeNpoQuestionHelp">
       ${npoIcon(iconForNpoQuestion(q))}<h3 id="activeNpoQuestion">${escapeHtml(q.title)}</h3><p id="activeNpoQuestionHelp">${escapeHtml(q.help)}</p>
       <div class="ai-choice-grid"><button class="ai-choice no" data-answer="no"><strong>No</strong></button><button class="ai-choice yes" data-answer="yes"><strong>Yes</strong></button></div>
     </section>`;

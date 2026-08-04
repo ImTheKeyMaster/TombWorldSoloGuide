@@ -2,10 +2,11 @@
 
 ## v8.6.41
 
-**Version 8.6.41 - Match NPO History Icons to Muted Text**
+**Version 8.6.41 - Enlarge Active Movement Icons**
 
-* Updated every NPO prior-answer icon to use the same muted color as its history row text.
-* Preserved the bright green icon treatment for the active NPO question card.
+* Increased the standard movement and move-to-shoot icons by 50 percent on active NPO question cards.
+* Preserved the existing smaller size and muted color of movement icons in question history.
+* Kept all SVG artwork, colors, and gameplay behavior unchanged.
 
 ## v8.6.40
 
