@@ -12,9 +12,12 @@ SERVICE_WORKER = (ROOT / "service-worker.js").read_text()
 
 class RelocateToShootIconTests(unittest.TestCase):
     def test_only_enable_shoot_movement_questions_use_the_new_icon(self):
-        self.assertIn("if(question?.movementIntent?.purpose==='enable-shoot')return 'relocate-to-shoot';", APP)
+        self.assertIn("question?.movementIntent?.purpose==='enable-shoot'||question?.movementIntentId?.endsWith('-enable-shoot')", APP)
         self.assertIn("if(question.concernsControlRange)return 'radar';", APP)
         self.assertIn("Reposition:'objective',Dash:'movement'", APP)
+
+    def test_completed_enable_shoot_questions_keep_the_relocate_icon(self):
+        self.assertIn("movementIntentId:q.movementIntent?.id||null", APP)
 
     def test_icon_asset_uses_original_green_and_requested_geometry(self):
         self.assertIn('fill="#76f5a8" stroke="#76f5a8"', ICON)
@@ -29,10 +32,10 @@ class RelocateToShootIconTests(unittest.TestCase):
         self.assertIn("'./Assets/Icons/relocate-to-shoot.svg'", SERVICE_WORKER)
 
     def test_release_version_is_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.37';", APP)
-        self.assertIn("const APP_VERSION = '8.6.37';", SERVICE_WORKER)
-        self.assertIn('<div class="version">V8.6.37</div>', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.37'))
+        self.assertIn("const APP_VERSION = '8.6.38';", APP)
+        self.assertIn("const APP_VERSION = '8.6.38';", SERVICE_WORKER)
+        self.assertIn('<div class="version">V8.6.38</div>', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.38'))
 
 
 if __name__ == "__main__":

@@ -66,13 +66,13 @@ class V830NpoMovementGuidanceTests(unittest.TestCase):
         self.assertIn('scheduleNpoActionTransition(activation,n.id,transitionMode)', APP)
 
     def test_version_830_is_consistent_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.6.37';", APP)
-        self.assertIn("const APP_VERSION = '8.6.37';", WORKER)
-        self.assertIn('V8.6.37', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.37'))
+        self.assertIn("const APP_VERSION = '8.6.38';", APP)
+        self.assertIn("const APP_VERSION = '8.6.38';", WORKER)
+        self.assertIn('V8.6.38', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.38'))
         self.assertIn('## v8.6.25', README)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.37', INDEX)
+            self.assertIn(f'{asset}?v=8.6.38', INDEX)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
 

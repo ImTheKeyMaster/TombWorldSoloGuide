@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.37';
+  const APP_VERSION = '8.6.38';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -5756,7 +5756,7 @@ function showPlayerActivation(stage={}){
   }
 
   function iconForNpoQuestion(question){
-    if(question?.movementIntent?.purpose==='enable-shoot')return 'relocate-to-shoot';
+    if(question?.movementIntent?.purpose==='enable-shoot'||question?.movementIntentId?.endsWith('-enable-shoot'))return 'relocate-to-shoot';
     if(question.concernsControlRange)return 'radar';
     return npoQuestionIcons[question.action.split(' ')[0]];
   }

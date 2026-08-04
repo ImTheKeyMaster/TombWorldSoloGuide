@@ -1,4 +1,8 @@
-# Tomb World Solo Guide v8.6.37
+# Tomb World Solo Guide v8.6.38
+
+## v8.6.38
+
+- Kept the relocate-to-shoot icon on completed Dash-to-Shoot activation cards while preserving the standard Dash and Reposition icons everywhere else.
 
 ## v8.6.37
 

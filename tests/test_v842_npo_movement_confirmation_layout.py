@@ -104,13 +104,13 @@ class V842NpoMovementConfirmationLayoutTests(unittest.TestCase):
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
     def test_v842_version_is_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.37';", APP)
-        self.assertIn("const APP_VERSION = '8.6.37';", WORKER)
-        self.assertIn('V8.6.37', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.37'))
+        self.assertIn("const APP_VERSION = '8.6.38';", APP)
+        self.assertIn("const APP_VERSION = '8.6.38';", WORKER)
+        self.assertIn('V8.6.38', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.38'))
         self.assertIn('## v8.6.25', README)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.37', INDEX)
+            self.assertIn(f'{asset}?v=8.6.38', INDEX)
 
 
 if __name__ == '__main__':
