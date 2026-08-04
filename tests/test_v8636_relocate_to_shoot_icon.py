@@ -21,8 +21,9 @@ class RelocateToShootIconTests(unittest.TestCase):
         self.assertIn('<circle cx="4" cy="16" r="3" stroke="none"/>', ICON)
         self.assertIn('<path d="M7 16h11"', ICON)
         self.assertEqual(ICON.count('3.5Z'), 2)
-        self.assertIn('<circle cx="25" cy="16" r="5"', ICON)
+        self.assertIn('<circle cx="25" cy="16" r="5" fill="none" stroke-width="2"/>', ICON)
         self.assertIn('<circle cx="25" cy="16" r="1.5"', ICON)
+        self.assertIn('M25 8v3m0 10v3M17 16h3m10 0h1', ICON)
 
     def test_asset_is_rendered_and_precached(self):
         self.assertIn('src="Assets/Icons/relocate-to-shoot.svg"', APP)
