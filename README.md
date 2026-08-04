@@ -1,4 +1,8 @@
-# Tomb World Solo Guide v8.6.36
+# Tomb World Solo Guide v8.6.37
+
+## v8.6.37
+
+- Resized the custom relocate-to-shoot icon to match the Dash icon's width, movement marks, and visual weight while retaining its target reticle.
 
 ## v8.6.36
 
