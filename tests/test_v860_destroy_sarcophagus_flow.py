@@ -12,9 +12,9 @@ DEFINITION = json.loads((ROOT / "Missions/definition-04-destroy-sarcophagus.json
 
 class DestroySarcophagusV860Tests(unittest.TestCase):
     def test_version_and_definition(self):
-        self.assertIn("const APP_VERSION = '8.6.39';", APP)
-        self.assertIn("const APP_VERSION = '8.6.39';", WORKER)
-        self.assertIn("V8.6.39", INDEX)
+        self.assertIn("const APP_VERSION = '8.6.40';", APP)
+        self.assertIn("const APP_VERSION = '8.6.40';", WORKER)
+        self.assertIn("V8.6.40", INDEX)
         self.assertTrue(DEFINITION["completion"]["endsBattle"])
         self.assertEqual(DEFINITION["actions"][0]["oncePer"], "activation")
         self.assertEqual(DEFINITION["dialogs"]["objectiveComplete"]["message"], "The sarcophagus has been destroyed. The Player team is victorious.")

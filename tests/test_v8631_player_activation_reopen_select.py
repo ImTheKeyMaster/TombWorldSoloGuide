@@ -36,10 +36,10 @@ class PlayerActivationReopenSelectTests(unittest.TestCase):
         ).group()
 
     def test_01_application_displays_version_8631(self):
-        self.assertIn("const APP_VERSION = '8.6.39';", APP)
-        self.assertIn("const APP_VERSION = '8.6.39';", WORKER)
-        self.assertIn("V8.6.39", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.39"))
+        self.assertIn("const APP_VERSION = '8.6.40';", APP)
+        self.assertIn("const APP_VERSION = '8.6.40';", WORKER)
+        self.assertIn("V8.6.40", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.40"))
 
     def test_02_selector_never_uses_pointer_events_none(self):
         self.assertNotRegex(self.activation, r"pointerEvents\s*=\s*['\"]none")
