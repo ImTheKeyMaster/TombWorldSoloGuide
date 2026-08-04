@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.34';
+  const APP_VERSION = '8.6.35';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -5454,7 +5454,7 @@ function showPlayerActivation(stage={}){
   }
 
   const npoQuestionIcons = {
-    Fight:'radar',Charge:'charge',Shoot:'crosshair','Fall Back':'charge',Reposition:'objective',Dash:'charge'
+    Fight:'radar',Charge:'movement',Shoot:'crosshair','Fall Back':'charge',Reposition:'objective',Dash:'movement'
   };
 
   function npoIcon(type){
@@ -5466,6 +5466,24 @@ function showPlayerActivation(stage={}){
       shield:'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6l7-3z"/><path d="M8 12h8"/>',
       group:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-4 2-6 6-6s6 2 6 6m0-5c3 0 5 2 5 5"/>'
     };
+    if(type==='movement')return `<svg
+  class="npo-question-icon npo-question-icon--charge"
+  viewBox="0 0 32 32"
+  width="32"
+  height="32"
+  fill="currentColor"
+  stroke="currentColor"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+  focusable="false"
+>
+  <circle cx="4" cy="16" r="3" stroke="none" />
+  <line x1="7" y1="16" x2="25" y2="16" fill="none" stroke-width="2" />
+  <path d="M9 12.5L14 16L9 19.5Z" stroke="none" />
+  <path d="M14 12.5L19 16L14 19.5Z" stroke="none" />
+  <path d="M19 12.5L24 16L19 19.5Z" stroke="none" />
+  <circle cx="28" cy="16" r="3" fill="none" stroke-width="2" />
+</svg>`;
     if(type==='charge')return `<svg
   class="npo-question-icon npo-question-icon--charge"
   viewBox="0 0 32 32"

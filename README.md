@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.34
+# Tomb World Solo Guide v8.6.35
+
+## v8.6.35
+
+**Version 8.6.35 - Replace Dash and Charge Movement Icon**
+
+* Replaced the shared Dash and Charge icon with a movement icon featuring connected start and destination circles and three directional chevrons.
+* Reused the existing icon color, sizing, alignment, and accessibility behavior across questions, history entries, and movement confirmations.
+* Preserved the separate Fall Back, Reposition, Shoot, Fight, target-selection, and control-range icons and all action rules.
 
 ## v8.6.34
 
