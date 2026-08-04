@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.35';
+  const APP_VERSION = '8.6.36';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -5459,6 +5459,7 @@ function showPlayerActivation(stage={}){
 
   function npoIcon(type){
     if(type==='command')return npoIcon('radar');
+    if(type==='relocate-to-shoot')return '<img class="npo-question-icon" src="Assets/Icons/relocate-to-shoot.svg" alt="" aria-hidden="true">';
     const paths={
       crosshair:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>',
       objective:'<path d="M6 21V4m0 1h11l-2 4 2 4H6"/><circle cx="6" cy="21" r="2"/>',
@@ -5755,6 +5756,7 @@ function showPlayerActivation(stage={}){
   }
 
   function iconForNpoQuestion(question){
+    if(question?.movementIntent?.purpose==='enable-shoot')return 'relocate-to-shoot';
     if(question.concernsControlRange)return 'radar';
     return npoQuestionIcons[question.action.split(' ')[0]];
   }

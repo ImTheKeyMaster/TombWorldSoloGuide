@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.35
+# Tomb World Solo Guide v8.6.36
+
+## v8.6.36
+
+**Version 8.6.36 - Relocate to Shoot Icon**
+
+* Added a bright-green relocate-to-shoot icon combining a movement start, rightward chevrons, and target reticle.
+* Applied the new icon only to NPO movement questions that reposition or dash into a valid shooting position.
+* Preserved the existing icons, activation behavior, layout, and save compatibility.
 
 ## v8.6.35
 

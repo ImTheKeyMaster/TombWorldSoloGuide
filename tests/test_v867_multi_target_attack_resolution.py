@@ -14,8 +14,8 @@ class MultiTargetAttackResolutionTests(unittest.TestCase):
             self.assertIn(needle, APP)
 
     def test_01_version(self):
-        self.assert_app("const APP_VERSION = '8.6.35';")
-        self.assertIn("V8.6.35", INDEX); self.assertIn("const APP_VERSION = '8.6.35';", WORKER)
+        self.assert_app("const APP_VERSION = '8.6.36';")
+        self.assertIn("V8.6.36", INDEX); self.assertIn("const APP_VERSION = '8.6.36';", WORKER)
     def test_02_primary_first(self): self.assert_app("[primaryTargetId,...secondaryTargetIds]")
     def test_03_duplicate_ids_removed(self): self.assert_app("const orderedTargetIds=[...new Set")
     def test_04_primary_advances(self): self.assert_app("findIndex(id=>!completedTargetIds.includes(id))")
