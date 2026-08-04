@@ -1,6 +1,9 @@
-# Tomb World Solo Guide v8.6.39
+# Tomb World Solo Guide v8.6.40
 
-## v8.6.39
+## v8.6.40
+
+- Rebuilt the dedicated move-to-shoot SVG with a full outer target ring, center point, and four separate crosshair arms.
+- Applied the same fixed bright-green reticle artwork to Reposition-to-Shoot and Dash-to-Shoot cards, history, and confirmations while preserving standard movement endpoints.
 
 - Standardized NPO Reposition, Dash, and movement-to-shoot icons through a shared semantic mapping.
 - Restored the bright-green reticle-ended icon for Reposition-to-Shoot and Dash-to-Shoot questions, history, and confirmations.

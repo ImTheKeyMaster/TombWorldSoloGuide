@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 32" fill="none" aria-hidden="true">
+  <g fill="#76f5a8" stroke="#76f5a8">
+    <circle id="movement-start" cx="3" cy="16" r="3" stroke="none"/>
+    <path id="movement-line" d="M6 16h20" fill="none" stroke-width="2"/>
+    <path id="chevron-one" d="m8 12.5 5 3.5-5 3.5Z" stroke="none"/>
+    <path id="chevron-two" d="m13.5 12.5 5 3.5-5 3.5Z" stroke="none"/>
+    <path id="chevron-three" d="m19 12.5 5 3.5-5 3.5Z" stroke="none"/>
+    <circle id="reticle-outer-ring" cx="35" cy="16" r="4" fill="none" stroke-width="2"/>
+    <circle id="reticle-center-point" cx="35" cy="16" r="1.25" stroke="none"/>
+    <path id="reticle-top-arm" d="M35 6v6" fill="none" stroke-width="2"/>
+    <path id="reticle-bottom-arm" d="M35 20v6" fill="none" stroke-width="2"/>
+    <path id="reticle-left-arm" d="M25 16h6" fill="none" stroke-width="2"/>
+    <path id="reticle-right-arm" d="M39 16h2" fill="none" stroke-width="2"/>
+  </g>
+</svg>
