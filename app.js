@@ -5460,11 +5460,9 @@ function showPlayerActivation(stage={}){
     Fight:'radar',Charge:'charge-movement',Shoot:'crosshair','Fall Back':'charge',Reposition:npoMovementIcons.reposition,Dash:npoMovementIcons.dash
   };
 
-  function npoIcon(type,muted=false){
+  function npoIcon(type){
     if(type==='command')return npoIcon('radar');
-    if(type==='moveToShoot')return muted
-      ? `<svg class="npo-question-icon npo-question-icon--movement" viewBox="0 0 42 32" fill="none" aria-hidden="true" focusable="false"><g fill="currentColor" stroke="currentColor"><circle cx="3" cy="16" r="3" stroke="none"/><path d="M6 16h20" fill="none" stroke-width="2"/><path d="m8 12.5 5 3.5-5 3.5Z" stroke="none"/><path d="m13.5 12.5 5 3.5-5 3.5Z" stroke="none"/><path d="m19 12.5 5 3.5-5 3.5Z" stroke="none"/><circle cx="35" cy="16" r="4" fill="none" stroke-width="2"/><circle cx="35" cy="16" r="1.25" stroke="none"/><path d="M35 6v6M35 20v6M25 16h6M39 16h2" fill="none" stroke-width="2"/></g></svg>`
-      : '<img class="npo-question-icon npo-question-icon--movement" src="Assets/Icons/move-to-shoot.svg" alt="" aria-hidden="true">';
+    if(type==='moveToShoot')return `<svg class="npo-question-icon npo-question-icon--movement" viewBox="0 0 42 32" fill="none" aria-hidden="true" focusable="false"><g fill="currentColor" stroke="currentColor"><circle cx="3" cy="16" r="3" stroke="none"/><path d="M6 16h20" fill="none" stroke-width="2"/><path d="m8 12.5 5 3.5-5 3.5Z" stroke="none"/><path d="m13.5 12.5 5 3.5-5 3.5Z" stroke="none"/><path d="m19 12.5 5 3.5-5 3.5Z" stroke="none"/><circle cx="35" cy="16" r="4" fill="none" stroke-width="2"/><circle cx="35" cy="16" r="1.25" stroke="none"/><path d="M35 6v6M35 20v6M25 16h6M39 16h2" fill="none" stroke-width="2"/></g></svg>`;
     const paths={
       crosshair:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>',
       objective:'<path d="M6 21V4m0 1h11l-2 4 2 4H6"/><circle cx="6" cy="21" r="2"/>',
@@ -5773,7 +5771,7 @@ function showPlayerActivation(stage={}){
   }
 
   function renderCompletedNpoQuestions(history){
-    return history.map(item=>`<div class="npo-question-complete npo-question-history">${npoIcon(iconForNpoQuestion(item),true)}<span>${escapeHtml(item.question||item.action)}</span><strong>${item.type==='selected'?'Selected':item.answer?'Yes':'No'}</strong></div>`).join('');
+    return history.map(item=>`<div class="npo-question-complete npo-question-history">${npoIcon(iconForNpoQuestion(item))}<span>${escapeHtml(item.question||item.action)}</span><strong>${item.type==='selected'?'Selected':item.answer?'Yes':'No'}</strong></div>`).join('');
   }
 
   function renderActiveNpoQuestion(q){
