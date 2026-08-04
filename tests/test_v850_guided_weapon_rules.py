@@ -9,7 +9,7 @@ README=(ROOT/'README.md').read_text()
 
 class GuidedWeaponRuleTests(unittest.TestCase):
     def test_01_version_850(self):
-        self.assertIn("const APP_VERSION = '8.6.33';",APP); self.assertIn("const APP_VERSION = '8.6.33';",WORKER); self.assertIn('V8.6.33',INDEX)
+        self.assertIn("const APP_VERSION = '8.6.34';",APP); self.assertIn("const APP_VERSION = '8.6.34';",WORKER); self.assertIn('V8.6.34',INDEX)
     def test_02_no_manual_heading(self): self.assertNotIn('<strong>Manual tabletop resolution</strong>',APP)
     def test_03_no_generic_core_instruction(self): self.assertNotIn('using the Core rules and confirm any required tabletop',APP)
     def test_04_to_07_piercing_crits(self):

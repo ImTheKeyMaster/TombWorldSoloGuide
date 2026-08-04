@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.33';
+  const APP_VERSION = '8.6.34';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -5741,6 +5741,10 @@ function showPlayerActivation(stage={}){
     return npoQuestionIcons[question.action.split(' ')[0]];
   }
 
+  function iconForNpoDecision(attackRequired,targetConfirmed){
+    return attackRequired&&!targetConfirmed?'crosshair':'command';
+  }
+
   function renderCompletedNpoQuestions(history){
     return history.map(item=>`<div class="npo-question-complete npo-question-history">${npoIcon(iconForNpoQuestion(item))}<span>${escapeHtml(item.question||item.action)}</span><strong>${item.type==='selected'?'Selected':item.answer?'Yes':'No'}</strong></div>`).join('');
   }
@@ -6233,7 +6237,7 @@ function showPlayerActivation(stage={}){
     modalBody.innerHTML=`<div class="modal-inner ai-result">
       <div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div>
       ${attackRequired&&questionHistory.length?`<div class="npo-question-flow">${renderCompletedNpoQuestions(questionHistory.filter(item=>item.type!=='selected'))}</div>`:''}
-      <div class="npo-result-card">${npoIcon('command')}<div><small>NEXT ACTION</small><strong>${escapeHtml(decision.action)}</strong><p>${escapeHtml(decision.reason)}</p><div class="npo-target-priority"><small>TARGET PRIORITY</small>${targetPriority}${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Select Target</label>${targetField}</div>`:''}</div></div></div>
+      <div class="npo-result-card">${npoIcon(iconForNpoDecision(attackRequired,targetConfirmed))}<div><small>NEXT ACTION</small><strong>${escapeHtml(decision.action)}</strong><p>${escapeHtml(decision.reason)}</p><div class="npo-target-priority"><small>TARGET PRIORITY</small>${targetPriority}${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Select Target</label>${targetField}</div>`:''}</div></div></div>
       ${attackRequired&&!targetConfirmed&&eligibleTargetIds.length>1?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
       ${attackRequired&&!targetConfirmed&&eligibleTargetIds.length===1?`<button class="btn secondary big-action" id="resolveNpoTarget">Resolve Combat</button>`:''}
       ${attackSummary?`${renderEliminationSummary(attackSummary)}<section class="card npo-attack-summary">
