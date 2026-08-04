@@ -10,14 +10,14 @@ PERSISTENCE = (ROOT / "persistence.js").read_text()
 
 
 class DashChargeMovementIconTests(unittest.TestCase):
-    def test_dash_and_charge_share_new_movement_icon_only(self):
-        self.assertIn("Charge:'movement'", APP)
-        self.assertIn("Dash:'movement'", APP)
+    def test_dash_and_charge_share_new_movement_geometry(self):
+        self.assertIn("Charge:'charge-movement'", APP)
+        self.assertIn("Dash:npoMovementIcons.dash", APP)
         self.assertIn("'Fall Back':'charge'", APP)
-        self.assertEqual(APP.count("if(type==='movement')return `<svg"), 1)
+        self.assertEqual(APP.count("if(type==='movement'||type==='charge-movement')return `<svg"), 1)
 
     def test_movement_icon_geometry_and_inherited_color(self):
-        icon = APP.split("if(type==='movement')return `<svg", 1)[1].split("</svg>`;", 1)[0]
+        icon = APP.split("if(type==='movement'||type==='charge-movement')return `<svg", 1)[1].split("</svg>`;", 1)[0]
         self.assertIn('fill="currentColor"', icon)
         self.assertIn('stroke="currentColor"', icon)
         self.assertIn('<circle cx="4" cy="16" r="3" stroke="none" />', icon)
@@ -28,10 +28,10 @@ class DashChargeMovementIconTests(unittest.TestCase):
         self.assertIn('focusable="false"', icon)
 
     def test_release_version_is_current_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.6.38';", APP)
-        self.assertIn("const APP_VERSION = '8.6.38';", SERVICE_WORKER)
-        self.assertIn('<div class="version">V8.6.38</div>', INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.38"))
+        self.assertIn("const APP_VERSION = '8.6.39';", APP)
+        self.assertIn("const APP_VERSION = '8.6.39';", SERVICE_WORKER)
+        self.assertIn('<div class="version">V8.6.39</div>', INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.39"))
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
 

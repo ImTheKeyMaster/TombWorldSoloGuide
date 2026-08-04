@@ -33,7 +33,8 @@ class V842NpoMovementConfirmationLayoutTests(unittest.TestCase):
         for action in ('Reposition', 'Dash', 'Charge', 'Fall Back'):
             self.assertIn(action, icons)
         confirmation = section('function renderNpoMovementConfirmation', 'function resolveNpoAction')
-        self.assertIn('npoIcon(npoQuestionIcons[displayAction])', confirmation)
+        self.assertIn('iconForNpoQuestion({action:displayAction,movementIntent:state.lastActivation?.movementIntent})', confirmation)
+        self.assertIn('npoIcon(icon)', confirmation)
         self.assertNotIn("npoIcon('command')", confirmation)
 
     def test_confirmation_is_an_accessible_active_question_card(self):
@@ -104,13 +105,13 @@ class V842NpoMovementConfirmationLayoutTests(unittest.TestCase):
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
     def test_v842_version_is_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.38';", APP)
-        self.assertIn("const APP_VERSION = '8.6.38';", WORKER)
-        self.assertIn('V8.6.38', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.38'))
+        self.assertIn("const APP_VERSION = '8.6.39';", APP)
+        self.assertIn("const APP_VERSION = '8.6.39';", WORKER)
+        self.assertIn('V8.6.39', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.39'))
         self.assertIn('## v8.6.25', README)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.38', INDEX)
+            self.assertIn(f'{asset}?v=8.6.39', INDEX)
 
 
 if __name__ == '__main__':
