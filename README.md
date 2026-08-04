@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v8.6.40
+# Tomb World Solo Guide v8.6.41
+
+## v8.6.41
+
+**Version 8.6.41 - Match NPO History Icons to Muted Text**
+
+* Updated every NPO prior-answer icon to use the same muted color as its history row text.
+* Preserved the bright green icon treatment for the active NPO question card.
 
 ## v8.6.40
 
