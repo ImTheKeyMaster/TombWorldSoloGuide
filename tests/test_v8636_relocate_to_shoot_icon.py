@@ -29,7 +29,7 @@ class RelocateToShootIconTests(unittest.TestCase):
 
     def test_movement_icons_share_bright_green_sizing(self):
         styles = (ROOT / 'styles.css').read_text()
-        self.assertIn('.npo-question-icon--movement{width:42px;height:42px;flex:0 0 42px;color:#76f5a8}', styles)
+        self.assertIn('.npo-question-icon--movement{display:block;width:42px;height:42px;flex:0 0 42px;align-self:center;object-fit:contain;color:#76f5a8}', styles)
         self.assertIn('.npo-question-complete .npo-question-icon--movement{width:30px;height:30px;flex:0 0 30px;color:#76f5a8}', styles)
         self.assertIn('class="npo-question-icon npo-question-icon--movement" src="Assets/Icons/relocate-to-shoot.svg"', APP)
 
