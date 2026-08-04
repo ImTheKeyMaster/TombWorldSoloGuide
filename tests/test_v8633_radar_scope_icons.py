@@ -20,8 +20,8 @@ class RadarScopeIconTests(unittest.TestCase):
     def test_radar_remains_decorative_and_action_icons_remain_distinct(self):
         self.assertIn('class="npo-question-icon npo-question-icon--radar"', APP)
         self.assertIn('aria-hidden="true"\n  focusable="false"', APP)
-        self.assertIn("Fight:'radar',Charge:'charge',Shoot:'crosshair'", APP)
-        self.assertIn("Reposition:'objective',Dash:'charge'", APP)
+        self.assertIn("Fight:'radar',Charge:'movement',Shoot:'crosshair'", APP)
+        self.assertIn("Reposition:'objective',Dash:'movement'", APP)
 
 
 if __name__ == '__main__':
