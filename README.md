@@ -1,4 +1,10 @@
-# Tomb World Solo Guide v8.6.38
+# Tomb World Solo Guide v8.6.39
+
+## v8.6.39
+
+- Standardized NPO Reposition, Dash, and movement-to-shoot icons through a shared semantic mapping.
+- Restored the bright-green reticle-ended icon for Reposition-to-Shoot and Dash-to-Shoot questions, history, and confirmations.
+- Enlarged movement icons in active and completed guide cards while preserving mobile alignment.
 
 ## v8.6.38
 

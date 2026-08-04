@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.38';
+  const APP_VERSION = '8.6.39';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -5453,13 +5453,16 @@ function showPlayerActivation(stage={}){
     return {key:movementInquiry?.id||`${id}-${applicability?'applicability':'feasibility'}`,action,actionId:id,type:applicability?'applicability':'feasibility',title,help:help||'Check the action’s target, distance, and placement. Select Yes only if the action can be completed now.',movementIntent:movementInquiry||null,concernsControlRange:Boolean(inquiry?.concernsControlRange)};
   }
 
+  const npoMovementIcons = Object.freeze({
+    reposition:'movement',dash:'movement',repositionToShoot:'relocate-to-shoot',dashToShoot:'relocate-to-shoot'
+  });
   const npoQuestionIcons = {
-    Fight:'radar',Charge:'movement',Shoot:'crosshair','Fall Back':'charge',Reposition:'objective',Dash:'movement'
+    Fight:'radar',Charge:'charge-movement',Shoot:'crosshair','Fall Back':'charge',Reposition:npoMovementIcons.reposition,Dash:npoMovementIcons.dash
   };
 
   function npoIcon(type){
     if(type==='command')return npoIcon('radar');
-    if(type==='relocate-to-shoot')return '<img class="npo-question-icon" src="Assets/Icons/relocate-to-shoot.svg" alt="" aria-hidden="true">';
+    if(type==='relocate-to-shoot')return '<img class="npo-question-icon npo-question-icon--movement" src="Assets/Icons/relocate-to-shoot.svg" alt="" aria-hidden="true">';
     const paths={
       crosshair:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>',
       objective:'<path d="M6 21V4m0 1h11l-2 4 2 4H6"/><circle cx="6" cy="21" r="2"/>',
@@ -5467,8 +5470,8 @@ function showPlayerActivation(stage={}){
       shield:'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6l7-3z"/><path d="M8 12h8"/>',
       group:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-4 2-6 6-6s6 2 6 6m0-5c3 0 5 2 5 5"/>'
     };
-    if(type==='movement')return `<svg
-  class="npo-question-icon npo-question-icon--charge"
+    if(type==='movement'||type==='charge-movement')return `<svg
+  class="npo-question-icon ${type==='movement'?'npo-question-icon--movement':'npo-question-icon--charge'}"
   viewBox="0 0 32 32"
   width="32"
   height="32"
@@ -5756,7 +5759,9 @@ function showPlayerActivation(stage={}){
   }
 
   function iconForNpoQuestion(question){
-    if(question?.movementIntent?.purpose==='enable-shoot'||question?.movementIntentId?.endsWith('-enable-shoot'))return 'relocate-to-shoot';
+    const actionId=npoActionId(question?.action||'');
+    const enablesShoot=question?.movementIntent?.purpose==='enable-shoot'||question?.movementIntentId?.endsWith('-enable-shoot');
+    if(enablesShoot&&['reposition','dash'].includes(actionId))return npoMovementIcons[`${actionId}ToShoot`];
     if(question.concernsControlRange)return 'radar';
     return npoQuestionIcons[question.action.split(' ')[0]];
   }
@@ -6133,7 +6138,8 @@ function showPlayerActivation(stage={}){
 
   function renderNpoMovementConfirmation(n,pendingAction,decision){
     const displayAction=conciseNpoActionName(pendingAction),headingId='activeNpoMovementHeading',instructionId='activeNpoMovementInstruction';
-    modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}<div class="ai-wizard"><div class="npo-question-flow"><section class="npo-question-active npo-question-card--active npo-movement-confirmation" aria-labelledby="${headingId}" aria-describedby="${instructionId}">${npoIcon(npoQuestionIcons[displayAction])}<h3 id="${headingId}">${escapeHtml(displayAction)}</h3><p id="${instructionId}">${escapeHtml(decision.reason)}</p><p class="npo-movement-cost">Costs ${pendingAction.apCost} AP (${state.lastActivation.remainingAp} AP to ${state.lastActivation.remainingAp-pendingAction.apCost} AP)</p><div class="ai-choice-grid"><button class="ai-choice yes npo-movement-confirm" id="confirmNpoMovement"><strong>Confirm ${escapeHtml(displayAction)} Complete</strong></button></div></section></div>${renderNpoGuideFooter()}</div></div>`;
+    const icon=iconForNpoQuestion({action:displayAction,movementIntent:state.lastActivation?.movementIntent});
+    modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}<div class="ai-wizard"><div class="npo-question-flow"><section class="npo-question-active npo-question-card--active npo-movement-confirmation" aria-labelledby="${headingId}" aria-describedby="${instructionId}">${npoIcon(icon)}<h3 id="${headingId}">${escapeHtml(displayAction)}</h3><p id="${instructionId}">${escapeHtml(decision.reason)}</p><p class="npo-movement-cost">Costs ${pendingAction.apCost} AP (${state.lastActivation.remainingAp} AP to ${state.lastActivation.remainingAp-pendingAction.apCost} AP)</p><div class="ai-choice-grid"><button class="ai-choice yes npo-movement-confirm" id="confirmNpoMovement"><strong>Confirm ${escapeHtml(displayAction)} Complete</strong></button></div></section></div>${renderNpoGuideFooter()}</div></div>`;
     if(!modal.open)modal.showModal();
     modal.setAttribute('aria-labelledby','activeNpoQuestionHeading');
     modal.setAttribute('tabindex','-1');
