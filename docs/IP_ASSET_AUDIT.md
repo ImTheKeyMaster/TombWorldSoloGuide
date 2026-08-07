@@ -121,3 +121,11 @@ The application has no analytics, advertising, tracking scripts, cookie writes, 
 2. Prioritize the mission-pack PDF, map extracts, and rules/datacard PDFs for qualified rights review and remove public/deployed copies unless redistribution permission is established.
 3. Add a lightweight asset-provenance record (creator, source, date, licence/permission, modifications, and deployment status) whenever an asset is added or replaced.
 4. Re-audit after assets or rules content change. The About notice reduces affiliation confusion but does not resolve these asset risks or guarantee protection from a claim or takedown request.
+
+
+## v8.7.1 vendored pairing utilities
+
+| Asset | Purpose | Source / attribution | License | Deployment |
+|---|---|---|---|---|
+| `dashboard/vendor/qrcode-generator.js` | Browser QR encoder for pairing payloads | QRCode for JavaScript, Kazuhiko Arase; vendored from `qrcode-terminal` | MIT; local license included | Dashboard pairing only; no CDN |
+| `dashboard/vendor/qr-decoder.js` | Local camera-decoder fallback adapter | Tomb World Solo Guide contributors | Apache-2.0; local notice included | Dashboard pairing only; no CDN |

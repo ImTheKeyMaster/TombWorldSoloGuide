@@ -147,7 +147,7 @@ if(restored.playerTeamId!=='scout-squad'||restored.playerWounds.sniper!==4||rest
         self.assertNotRegex(self.app, r"playerTeamId\s*={2,3}\s*['\"]scout-squad")
 
     def test_version_consistency(self):
-        expected = "8.7.0"
+        expected = "8.7.1"
         self.assertIn(f"const APP_VERSION = '{expected}'", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}'", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()

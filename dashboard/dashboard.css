@@ -29,3 +29,4 @@ body {
 .dashboard-icon { width: 64px; height: 64px; }
 h1 { margin: 20px 0 12px; font-size: clamp(1.35rem, 6vw, 2rem); letter-spacing: 0.08em; }
 p { margin: 0; color: #a9bdb2; }
+.pairing,.verified{margin-top:24px;padding-top:20px;border-top:1px solid #315845}.pairing h2,.verified h2{color:#76f5a8}.qr-host{width:min(100%,380px);margin:18px auto}.pairing-qr{display:block;width:100%;height:auto}.qr-alternative{margin-top:8px;font-size:.85rem}.pairing label{display:block;text-align:left;margin:12px 0 6px}.pairing textarea{width:100%;resize:vertical;background:#090d0c;color:#e7f7ed;border:1px solid #315845;border-radius:8px;padding:10px;overflow-wrap:anywhere}.pairing button{width:100%;min-height:48px;margin-top:12px;border:0;border-radius:10px;background:#76f5a8;color:#062012;font-weight:800}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}

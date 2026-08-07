@@ -31,3 +31,7 @@ export function getDashboardAvailability() {
 export function getDashboardPagePath() {
   return DASHBOARD_CONFIG.pagePath;
 }
+
+export function isDashboardWebRtcSupported() {
+  return Boolean(globalThis.RTCPeerConnection && globalThis.crypto?.getRandomValues && globalThis.crypto?.subtle);
+}
