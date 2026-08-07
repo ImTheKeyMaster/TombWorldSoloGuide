@@ -7,7 +7,7 @@ export const COGITATOR_TEMPLATES = Object.freeze({
   wounds: change => [`${change.name || 'Operative'} combat integrity updated.`],
   incapacitated: change => [`Operative loss recorded: ${change.name || 'unknown operative'}.`],
   playerReadiness: () => ['Player readiness state updated.'],
-  npoReadiness: change => [change.direction === 'increased' ? 'Reinforcement protocols are engaged.' : 'Enemy assets retain combat integrity.'],
+  npoReadiness: () => ['NPO readiness state updated.'],
   eventAdded: change => [`Tomb World event active: ${change.name || 'unnamed event'}.`],
   eventRemoved: change => [`Tomb World event ended: ${change.name || 'unnamed event'}.`],
   battleComplete: change => [`Battle result confirmed: ${change.result}.`],

@@ -19,7 +19,7 @@ function sendHeartbeat(dataChannel) {
 function bindConnection(connection, dataChannel) {
   dataChannel.onopen = () => { update('connecting'); sendHeartbeat(dataChannel); heartbeatTimer = setInterval(() => sendHeartbeat(dataChannel), 5000); };
   dataChannel.onmessage = event => { const data = safeParseDashboardJson(event.data); if (!isReadOnlyDashboardMessage(data)) return; if (data.type === DASHBOARD_MESSAGE_TYPES.DASHBOARD_READY) { dataChannel.send(message(DASHBOARD_MESSAGE_TYPES.HELLO)); update('connected'); } else if (data.type === DASHBOARD_MESSAGE_TYPES.PING) dataChannel.send(message(DASHBOARD_MESSAGE_TYPES.PONG, { sentAt: data.sentAt, receivedAt: Date.now() })); else if (data.type === DASHBOARD_MESSAGE_TYPES.DISCONNECT) cleanupDashboardConnection(); messageSubscribers.forEach(listener => notify(listener, data)); };
-  dataChannel.onclose = () => { if (status !== 'idle') update('interrupted'); };
+  dataChannel.onclose = () => { clearInterval(heartbeatTimer); heartbeatTimer = null; if (status !== 'idle') update('interrupted'); };
   connection.onconnectionstatechange = () => { if (['failed', 'disconnected'].includes(connection.connectionState)) update('interrupted'); };
 }
 export function isWebRtcSupported() { return Boolean(globalThis.RTCPeerConnection && globalThis.crypto?.getRandomValues && globalThis.crypto?.subtle); }

@@ -27,13 +27,18 @@ function formatDuration(seconds) { const safe = Math.max(0, Number(seconds) || 0
 function replaceWithEmpty(container, message, tag = 'li') { container.replaceChildren(); const item = document.createElement(tag); item.className = 'empty-state'; item.textContent = message; container.append(item); }
 function addTextElement(parent, tag, value, className) { const element = document.createElement(tag); if (className) element.className = className; element.textContent = value; parent.append(element); return element; }
 function message(type, detail = {}) { return JSON.stringify({ protocolVersion: DASHBOARD_PROTOCOL_VERSION, type, ...detail }); }
-function panelFor(name) { return document.querySelector(name === 'status' ? '.status-strip' : `.${name}-panel`); }
+function panelFor(change) {
+  const statusSelector = { turningPoint: '[data-turning-point]', threat: '[data-threat-level]', grade: '[data-grade]', playerReadiness: '[data-player-ready]', npoReadiness: '[data-npo-ready]' }[change.type];
+  return statusSelector ? document.querySelector(statusSelector)?.closest('.status-module') : document.querySelector(`.${change.panel}-panel`);
+}
 function reactToChanges(changes) {
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  new Set(changes.map(change => change.panel)).forEach(name => {
-    const panel = panelFor(name); if (!panel) return;
+  const reactedPanels = new Set();
+  changes.forEach(change => {
+    const panel = panelFor(change); if (!panel || reactedPanels.has(panel)) return; reactedPanels.add(panel);
     panel.querySelector('.change-marker')?.remove();
     const marker = addTextElement(panel, 'span', 'UPDATED', 'change-marker'); marker.setAttribute('aria-hidden', 'true');
+    setTimeout(() => marker.remove(), reducedMotion ? 0 : 1200);
     panel.classList.remove('data-changed'); if (!reducedMotion) void panel.offsetWidth; panel.classList.add('data-changed');
   });
   if (!reducedMotion) changes.forEach(change => {
@@ -44,7 +49,7 @@ function reactToChanges(changes) {
 function addCogitatorChanges(changes) {
   changes.flatMap(cogitatorLinesFor).forEach(text => {
     const key = `${currentRevision}:${text}`;
-    if (cogitatorFeed.some(entry => entry.key === key)) return;
+    if (cogitatorFeed.some(entry => entry.key === key || entry.text === text)) return;
     cogitatorFeed.unshift({ key, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), text });
   });
   cogitatorFeed.splice(10);
@@ -86,11 +91,11 @@ function renderEvents(events, added = new Set()) {
   events.forEach(event => { const item = document.createElement('li'); item.className = event.category === 'critical' || event.severity === 'critical' ? 'critical' : 'warning'; if (added.has(event.id || event.title || JSON.stringify(event))) item.classList.add('new-entry'); addTextElement(item, 'b', `⚠ ${event.title || 'Active event'}`); addTextElement(item, 'span', event.summary || 'No event description received.'); if (event.effect) addTextElement(item, 'span', `Effect: ${event.effect}`); container.append(item); });
 }
 
-function renderActivity(entries, previousKeys = new Set()) {
+function renderActivity(entries, previousKeys = null) {
   const container = document.querySelector('[data-activity]');
   if (!entries.length) return replaceWithEmpty(container, 'No battle activity recorded');
   container.replaceChildren();
-  entries.slice(0, 10).forEach(entry => { const item = document.createElement('li'); item.className = entry.severity || entry.category || 'battle'; if (previousKeys.size && !previousKeys.has(activityKey(entry))) item.classList.add('new-entry'); addTextElement(item, 'time', entry.timestamp || (entry.sequence !== null ? `#${entry.sequence}` : 'LOG')); addTextElement(item, 'span', entry.text || 'Activity recorded'); container.append(item); });
+  entries.slice(0, 10).forEach(entry => { const item = document.createElement('li'); item.className = entry.severity || entry.category || 'battle'; if (previousKeys && !previousKeys.has(activityKey(entry))) item.classList.add('new-entry'); addTextElement(item, 'time', entry.timestamp || (entry.sequence !== null ? `#${entry.sequence}` : 'LOG')); addTextElement(item, 'span', entry.text || 'Activity recorded'); container.append(item); });
 }
 
 function renderRoster(selector, summarySelector, operatives) {
@@ -112,8 +117,8 @@ function renderNarrative(entries) {
 export function acceptDashboardSnapshot(snapshot) {
   if (snapshot?.schemaVersion !== DASHBOARD_SNAPSHOT_SCHEMA_VERSION) { setStatus(`Incompatible game-state schema (received ${snapshot?.schemaVersion ?? 'unknown'})`, 'incompatible'); return false; }
   if (!validateDashboardSnapshot(snapshot).valid || snapshot.revision <= currentRevision || previousSnapshot?.battle.result) return false;
-  const changes = detectDashboardChanges(previousSnapshot, snapshot);
-  const previousActivity = new Set((previousSnapshot?.recentActivity || []).map(activityKey));
+  const changes = previousSnapshot ? detectDashboardChanges(previousSnapshot, snapshot) : (snapshot.battle.result ? [{ type: 'battleComplete', panel: 'activation', result: snapshot.battle.result }] : []);
+  const previousActivity = previousSnapshot ? new Set(previousSnapshot.recentActivity.map(activityKey)) : null;
   currentRevision = snapshot.revision; shell.dataset.dashboardState = snapshot.battle.result ? 'complete' : 'connected';
   setText('[data-updated]', `Updated ${new Date(snapshot.updatedAt).toLocaleTimeString()}`);
   setText('[data-turning-point]', displayNumber(snapshot.battle.turningPoint));
@@ -123,7 +128,6 @@ export function acceptDashboardSnapshot(snapshot) {
   setText('[data-player-ready]', `${displayNumber(snapshot.readiness.playerReady)} / ${displayNumber(snapshot.readiness.playerTotal)}`); setText('[data-player-state]', `${displayNumber(snapshot.readiness.playerReady)} operatives ready`);
   setText('[data-npo-ready]', `${displayNumber(snapshot.readiness.npoReady)} / ${displayNumber(snapshot.readiness.npoTotal)}`); setText('[data-npo-state]', `${displayNumber(snapshot.readiness.npoReady)} hostiles ready`);
   setText('[data-battle-status]', snapshot.battle.result || snapshot.battle.status, 'Standby'); setText('[data-battle-phase]', snapshot.battle.phase, snapshot.battle.result ? 'Battle complete' : 'Phase unavailable');
-  if (snapshot.battle.elapsedSeconds !== null) setText('[data-session-duration]', formatDuration(snapshot.battle.elapsedSeconds));
   const addedEvents = new Set(changes.filter(change => change.type === 'eventAdded').map(change => change.key));
   renderMission(snapshot.mission); renderActivation(snapshot); renderEvents(snapshot.activeEvents, addedEvents); renderActivity(snapshot.recentActivity, previousActivity); renderRoster('[data-player-roster]', '[data-player-summary]', snapshot.playerOperatives); renderRoster('[data-npo-roster]', '[data-npo-summary]', snapshot.npoOperatives);
   addCogitatorChanges(changes); renderNarrative(cogitatorFeed); reactToChanges(changes); previousSnapshot = snapshot;
@@ -147,7 +151,7 @@ async function pair() {
   try {
     setStatus('Nexus link: negotiating', 'connecting'); const offer = await decodePairingData(encoded, { expectedType: 'offer', expectedSdpType: 'offer' }); clearPairingFragment();
     const peer = new RTCPeerConnection({ iceServers: DASHBOARD_CONFIG.iceServers });
-    peer.ondatachannel = event => { const channel = event.channel; if (channel.label !== 'tomb-world-dashboard') { channel.close(); return; } const send = (type, detail) => channel.send(message(type, detail)); channel.onopen = () => send(DASHBOARD_MESSAGE_TYPES.DASHBOARD_READY); channel.onmessage = messageEvent => { const incoming = safeParseDashboardJson(messageEvent.data); if (!validateDashboardMessage(incoming).valid) return; heartbeatAt = Date.now(); if (incoming.type === DASHBOARD_MESSAGE_TYPES.HELLO) { send(DASHBOARD_MESSAGE_TYPES.HELLO_ACK); send(DASHBOARD_MESSAGE_TYPES.REQUEST_SNAPSHOT); connectedAt = Date.now(); currentLinkState = 'LIVE'; setStatus('Nexus link: active', 'connected'); setText('[data-link-quality]', 'LIVE'); pairing.hidden = true; verification.hidden = false; clearInterval(heartbeatTimer); heartbeatTimer = setInterval(() => send(DASHBOARD_MESSAGE_TYPES.PING, { sentAt: Date.now() }), 5000); send(DASHBOARD_MESSAGE_TYPES.PING, { sentAt: Date.now() }); } else if (incoming.type === DASHBOARD_MESSAGE_TYPES.SNAPSHOT) acceptDashboardSnapshot(incoming.snapshot); else if (incoming.type === DASHBOARD_MESSAGE_TYPES.PING) send(DASHBOARD_MESSAGE_TYPES.PONG, { sentAt: incoming.sentAt, receivedAt: Date.now() }); else if (incoming.type === DASHBOARD_MESSAGE_TYPES.PONG) latencySamples = addLatencySample(latencySamples, incoming.sentAt, Date.now()); updateLinkTelemetry(); }; channel.onclose = () => { clearInterval(heartbeatTimer); setStatus('Nexus link: connection interrupted', 'interrupted'); setText('[data-link-quality]', 'LINK INTERRUPTED'); }; };
+    peer.ondatachannel = event => { const channel = event.channel; if (channel.label !== 'tomb-world-dashboard') { channel.close(); return; } const send = (type, detail) => channel.send(message(type, detail)); channel.onopen = () => send(DASHBOARD_MESSAGE_TYPES.DASHBOARD_READY); channel.onmessage = messageEvent => { const incoming = safeParseDashboardJson(messageEvent.data); if (!validateDashboardMessage(incoming).valid) return; if (incoming.type === DASHBOARD_MESSAGE_TYPES.HELLO) { send(DASHBOARD_MESSAGE_TYPES.HELLO_ACK); send(DASHBOARD_MESSAGE_TYPES.REQUEST_SNAPSHOT); connectedAt = Date.now(); heartbeatAt = connectedAt; currentLinkState = 'LIVE'; setStatus('Nexus link: active', 'connected'); setText('[data-link-quality]', 'LIVE'); pairing.hidden = true; verification.hidden = false; clearInterval(heartbeatTimer); heartbeatTimer = setInterval(() => send(DASHBOARD_MESSAGE_TYPES.PING, { sentAt: Date.now() }), 5000); send(DASHBOARD_MESSAGE_TYPES.PING, { sentAt: Date.now() }); } else if (incoming.type === DASHBOARD_MESSAGE_TYPES.SNAPSHOT) acceptDashboardSnapshot(incoming.snapshot); else if (incoming.type === DASHBOARD_MESSAGE_TYPES.PING) { heartbeatAt = Date.now(); send(DASHBOARD_MESSAGE_TYPES.PONG, { sentAt: incoming.sentAt, receivedAt: heartbeatAt }); } else if (incoming.type === DASHBOARD_MESSAGE_TYPES.PONG) { heartbeatAt = Date.now(); latencySamples = addLatencySample(latencySamples, incoming.sentAt, heartbeatAt); } updateLinkTelemetry(); }; channel.onclose = () => { clearInterval(heartbeatTimer); heartbeatTimer = null; setStatus('Nexus link: connection interrupted', 'interrupted'); setText('[data-link-quality]', 'LINK INTERRUPTED'); }; };
     await peer.setRemoteDescription({ type: offer.sdpType, sdp: offer.sdp }); await peer.setLocalDescription(await peer.createAnswer()); await waitForIce(peer); const answerCreatedAt = Date.now(); if (answerCreatedAt >= offer.expiresAt) throw new Error('Pairing payload has expired.');
     const answer = await serializePairingData({ protocolVersion: DASHBOARD_PROTOCOL_VERSION, type: 'answer', nonce: offer.nonce, createdAt: answerCreatedAt, expiresAt: offer.expiresAt, sdpType: 'answer', sdp: peer.localDescription.sdp, label: offer.label }); responseOutput.value = answer; await renderQrCode(document.querySelector('[data-response-qr]'), answer, 'Scan this response QR code with the game device.'); pairing.hidden = false; const sessionCode = await codeFor(offer.nonce); verification.querySelector('strong').textContent = sessionCode; setText('[data-session-id]', sessionCode); document.querySelector('[data-copy-response]').onclick = async () => { await navigator.clipboard.writeText(answer); setStatus('Response copied: return to game device', 'connecting'); }; setStatus('Nexus link: awaiting response scan', 'connecting');
   } catch (error) { setStatus(error.message || 'Nexus link: pairing failed', 'interrupted'); }
