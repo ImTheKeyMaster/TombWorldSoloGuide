@@ -1861,6 +1861,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function renderHome(){
+    stopDashboardAvailabilitySubscription();
     const saved=load();
     const savedGame=saved?.report?.requiresRegeneration?null:saved?.state;
     const canContinue=Boolean(savedGame?.missionId&&savedGame?.screen==='game');
@@ -1880,7 +1881,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#continueBtn').onclick=()=>{ if(savedGame){state=normalizeState(savedGame);state.screen='game';render();} };
     const setupDashboardBtn=$('#setupDashboardBtn');
     requestDashboardFeature().then(async feature=>{
-      feature.subscribeAvailability(available=>{const button=$('#setupDashboardBtn');if(button)button.hidden=!(canContinue&&available);});
+      unsubscribeDashboardAvailability=feature.subscribeAvailability(available=>{const button=$('#setupDashboardBtn');if(button)button.hidden=!(canContinue&&available);});
       const available=canContinue&&feature.isDashboardFeatureEnabled()&&feature.isDashboardWebRtcSupported()&&await feature.requestDashboardAvailability({hasResumableGame:canContinue,isEligible:()=>Boolean($('#setupDashboardBtn')&&canContinue)});
       if($('#setupDashboardBtn'))setupDashboardBtn.hidden=!available;
     }).catch(()=>{setupDashboardBtn.hidden=true;});
@@ -7252,7 +7253,7 @@ function showPlayerActivation(stage={}){
   function isBattleComplete(){return state.screen==='game'&&Boolean(state.gameEnd||state.finalResolution?.pending);}
   function isGuidedPlayActive(){return state.screen==='game'&&!isBattleComplete();}
   function canOpenHelp(){return isNewGameSetupActive()||isGuidedPlayActive()||isBattleComplete();}
-  let dashboardController=null, stopDashboardCamera=null, dashboardCountdown=null, unsubscribeDashboardStatus=null, dashboardPairingOpen=false;
+  let dashboardController=null, stopDashboardCamera=null, dashboardCountdown=null, unsubscribeDashboardStatus=null, unsubscribeDashboardAvailability=null, dashboardPairingOpen=false;
   // DASHBOARD INTEGRATION START
   async function getDashboardController(){dashboardController ||= await setupDashboardFeature();return dashboardController;}
   // DASHBOARD INTEGRATION END
@@ -7262,6 +7263,7 @@ function showPlayerActivation(stage={}){
   }
   function stopPairingCamera(){if(stopDashboardCamera){stopDashboardCamera();stopDashboardCamera=null;}}
   function stopDashboardStatusSubscription(){unsubscribeDashboardStatus?.();unsubscribeDashboardStatus=null;}
+  function stopDashboardAvailabilitySubscription(){unsubscribeDashboardAvailability?.();unsubscribeDashboardAvailability=null;}
   async function openDashboardPairing(reestablish=false){
     if(dashboardPairingOpen)return;
     const initiating=document.activeElement;
@@ -7290,7 +7292,22 @@ function showPlayerActivation(stage={}){
   }
   async function addDashboardGameMenuSection(){
     const host=$('#dashboardMenuSection');if(!host)return;
-    try{const feature=await requestDashboardFeature();const online=feature.isDashboardWebRtcSupported()&&await feature.requestDashboardAvailability({gameMenuOpen:true,activeGame:true,isEligible:()=>Boolean($('#dashboardMenuSection')&&state.screen==='game')});if(!host.isConnected)return;const controller=await getDashboardController();const detail=controller.getStatus();const connected=detail.status==='connected',attempted=detail.hasAttempt;host.innerHTML=`<h3>Dashboard</h3><p class="dashboard-menu-status" role="status" aria-live="polite">${online?detail.text:'Network unavailable'}</p>${connected?'<p class="dashboard-menu-status">Dashboard Connected</p>':''}${online?`<button class="btn secondary" id="menuSetupDashboard">${attempted?'Reestablish Pairing':'Setup Dashboard'}</button>`:''}${attempted?'<button class="btn ghost" id="menuDisconnectDashboard">Disconnect Dashboard</button>':''}`;if($('#menuSetupDashboard'))$('#menuSetupDashboard').onclick=()=>openDashboardPairing(attempted);if($('#menuDisconnectDashboard'))$('#menuDisconnectDashboard').onclick=async()=>{await controller.disconnect();addDashboardGameMenuSection();};}catch{host.innerHTML='<h3>Dashboard</h3><p class="dashboard-menu-status">Not connected</p>';}
+    try{
+      const feature=await requestDashboardFeature();
+      if(!feature.isDashboardFeatureEnabled()){host.remove();return;}
+      const controller=await getDashboardController();
+      const updateMenu=online=>{
+        if(!host.isConnected)return;
+        const detail=controller.getStatus(),connected=detail.status==='connected',attempted=detail.hasAttempt;
+        host.innerHTML=`<h3>Dashboard</h3><p class="dashboard-menu-status" role="status" aria-live="polite">${online?detail.text:'Network unavailable'}</p>${connected?'<p class="dashboard-menu-status">Dashboard Connected</p>':''}${online?`<button class="btn secondary" id="menuSetupDashboard">${attempted?'Reestablish Pairing':'Setup Dashboard'}</button>`:''}${attempted?'<button class="btn ghost" id="menuDisconnectDashboard">Disconnect Dashboard</button>':''}`;
+        if($('#menuSetupDashboard'))$('#menuSetupDashboard').onclick=()=>openDashboardPairing(attempted);
+        if($('#menuDisconnectDashboard'))$('#menuDisconnectDashboard').onclick=async()=>{stopPairingCamera();await controller.disconnect();updateMenu(feature.getDashboardAvailability());};
+      };
+      stopDashboardAvailabilitySubscription();
+      unsubscribeDashboardAvailability=feature.subscribeAvailability(updateMenu);
+      const online=feature.isDashboardWebRtcSupported()&&await feature.requestDashboardAvailability({gameMenuOpen:true,activeGame:true,isEligible:()=>Boolean($('#dashboardMenuSection')&&state.screen==='game')});
+      updateMenu(online);
+    }catch{host.innerHTML='<h3>Dashboard</h3><p class="dashboard-menu-status">Not connected</p>';}
   }
   function openHelpFromGameMenu(){
     closeModal();
@@ -7303,6 +7320,7 @@ function showPlayerActivation(stage={}){
   }
   function showGameMenu(){
     const inGame=state.screen==='game';
+    stopDashboardAvailabilitySubscription();
     showModal('Game Menu',`<p>Open a reference screen without changing the guided play sequence, or begin a completely new game.</p>
       <div class="game-menu-grid">
         <button class="btn primary" data-game-view="play">Return to Guided Play</button>
@@ -7320,7 +7338,7 @@ function showPlayerActivation(stage={}){
         <button class="btn ghost" id="menuExportSave">Export Save</button>
         <button class="btn ghost" id="menuImportSave">Import Save</button>
         <button class="btn danger" id="menuNewGame">Start New Game</button>
-      </div>`);
+      </div>`,stopDashboardAvailabilitySubscription);
     $$('[data-game-view]',modal).forEach(button=>button.onclick=()=>{
       if(inGame){state.tab=button.dataset.gameView;save();}
       closeModal();

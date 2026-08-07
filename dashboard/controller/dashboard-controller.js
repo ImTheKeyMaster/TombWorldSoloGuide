@@ -6,13 +6,15 @@ const STATUS_TEXT = Object.freeze({ idle: 'Not connected', creating: 'Creating l
 const activeChannels = new Set(); // Broadcast boundary kept collection-based for future multi-viewer support.
 const subscribers = new Set(), messageSubscribers = new Set();
 const sessionStore = globalThis.sessionStorage;
-let peer = null, channel = null, session = null, status = sessionStore?.getItem('tomb-world-dashboard-linked') ? 'interrupted' : 'idle';
+function readLinkedSession() { try { return sessionStore?.getItem('tomb-world-dashboard-linked') === '1'; } catch { return false; } }
+function writeLinkedSession(linked) { try { if (linked) sessionStore?.setItem('tomb-world-dashboard-linked', '1'); else sessionStore?.removeItem('tomb-world-dashboard-linked'); } catch { /* Connection state remains authoritative. */ } }
+let peer = null, channel = null, session = null, status = readLinkedSession() ? 'interrupted' : 'idle';
 let heartbeatTimer = null, disconnectTimer = null, generation = 0, violationCount = 0;
 function notify(listener, detail) { try { listener(detail); } catch (error) { console.warn('[Dashboard] Listener failed.', error); } }
 function detail() { return { status, text: STATUS_TEXT[status], verificationCode: session?.verificationCode || null, hasAttempt: status !== 'idle' || Boolean(session) }; }
 function update(next) { status = next; subscribers.forEach(listener => notify(listener, detail())); }
 function randomNonce() { const bytes = new Uint8Array(16); globalThis.crypto.getRandomValues(bytes); return [...bytes].map(value => value.toString(16).padStart(2, '0')).join(''); }
-function waitForIce(connection, token) { if (connection.iceGatheringState === 'complete') return Promise.resolve(); return new Promise((resolve, reject) => { const timer = setTimeout(() => reject(new Error('ICE gathering timed out.')), DASHBOARD_CONFIG.connectionTimeoutMs); const change = () => { if (token !== generation) return reject(new Error('Pairing attempt was superseded.')); if (connection.iceGatheringState === 'complete') { clearTimeout(timer); connection.removeEventListener('icegatheringstatechange', change); resolve(); } }; connection.addEventListener('icegatheringstatechange', change); }); }
+function waitForIce(connection, token) { if (connection.iceGatheringState === 'complete') return Promise.resolve(); return new Promise((resolve, reject) => { const finish = error => { clearTimeout(timer); connection.removeEventListener('icegatheringstatechange', change); error ? reject(error) : resolve(); }; const timer = setTimeout(() => finish(new Error('ICE gathering timed out.')), DASHBOARD_CONFIG.connectionTimeoutMs); const change = () => { if (token !== generation) finish(new Error('Pairing attempt was superseded.')); else if (connection.iceGatheringState === 'complete') finish(); }; connection.addEventListener('icegatheringstatechange', change); }); }
 async function verificationCode(nonce) { const digest = new Uint8Array(await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(`tomb-world-dashboard:${nonce}`))); const number = ((digest[0] << 16) | (digest[1] << 8) | digest[2]) % 1000000; return number.toString().padStart(6, '0').replace(/(\d{3})(\d{3})/, '$1 $2'); }
 function message(type, values = {}) { return JSON.stringify({ protocolVersion: DASHBOARD_PROTOCOL_VERSION, type, ...values }); }
 function sendHeartbeat(dataChannel) { if (dataChannel.readyState === 'open') dataChannel.send(message(DASHBOARD_MESSAGE_TYPES.PING, { sentAt: Date.now() })); }
@@ -26,7 +28,7 @@ function bindConnection(connection, dataChannel, token) {
     const data = safeParseDashboardJson(event.data);
     if (!isReadOnlyDashboardMessage(data)) { protocolViolation(dataChannel); return; }
     violationCount = 0;
-    if (data.type === DASHBOARD_MESSAGE_TYPES.DASHBOARD_READY) { dataChannel.send(message(DASHBOARD_MESSAGE_TYPES.HELLO)); sessionStore?.setItem('tomb-world-dashboard-linked', '1'); update('connected'); }
+    if (data.type === DASHBOARD_MESSAGE_TYPES.DASHBOARD_READY) { dataChannel.send(message(DASHBOARD_MESSAGE_TYPES.HELLO)); writeLinkedSession(true); update('connected'); }
     else if (data.type === DASHBOARD_MESSAGE_TYPES.PING) dataChannel.send(message(DASHBOARD_MESSAGE_TYPES.PONG, { sentAt: data.sentAt, receivedAt: Date.now() }));
     else if (data.type === DASHBOARD_MESSAGE_TYPES.DISCONNECT) cleanupDashboardConnection();
     messageSubscribers.forEach(listener => notify(listener, data));
@@ -38,8 +40,8 @@ function bindConnection(connection, dataChannel, token) {
     const next = connection.connectionState;
     if (next === 'new' || next === 'connecting') update('connecting');
     else if (next === 'connected') update('connected');
-    else if (next === 'disconnected') { update('interrupted'); disconnectTimer = setTimeout(() => { if (current() && connection.connectionState === 'disconnected') update('failed'); }, DASHBOARD_CONFIG.disconnectGraceMs); }
-    else if (next === 'failed') { update('failed'); dataChannel.close(); connection.close(); }
+    else if (next === 'disconnected') { update('interrupted'); disconnectTimer = setTimeout(() => { if (current() && connection.connectionState === 'disconnected') cleanupDashboardConnection({ preserveAttempt: true, nextStatus: 'failed' }); }, DASHBOARD_CONFIG.disconnectGraceMs); }
+    else if (next === 'failed') cleanupDashboardConnection({ preserveAttempt: true, nextStatus: 'failed' });
     else if (next === 'closed' && status !== 'idle') update('interrupted');
   };
 }
@@ -73,11 +75,11 @@ export async function applyDashboardResponse(encoded) {
   catch (error) { session.responseApplied = false; throw error; }
 }
 export function markWaitingForResponse() { if (session) update('response'); }
-export function cleanupDashboardConnection({ preserveAttempt = false } = {}) {
+export function cleanupDashboardConnection({ preserveAttempt = false, nextStatus = preserveAttempt ? 'interrupted' : 'idle' } = {}) {
   generation += 1; stopTimers(); activeChannels.forEach(activeChannel => activeChannel.close()); activeChannels.clear();
   if (channel) { channel.onopen = channel.onmessage = channel.onclose = null; }
   if (peer) peer.onconnectionstatechange = null;
   channel?.close(); peer?.close(); channel = peer = session = null; violationCount = 0;
-  if (!preserveAttempt) sessionStore?.removeItem('tomb-world-dashboard-linked');
-  update(preserveAttempt ? 'interrupted' : 'idle');
+  if (!preserveAttempt) writeLinkedSession(false);
+  update(nextStatus);
 }
