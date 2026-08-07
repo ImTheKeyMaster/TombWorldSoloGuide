@@ -16,12 +16,12 @@ MISSION = json.loads((ROOT / "Missions/02-demolition-protocol.json").read_text()
 
 class MissionFeatureCardSpacingTests(unittest.TestCase):
     def test_release_version_is_consistent(self):
-        self.assertIn("const APP_VERSION = '8.7.3';", APP)
-        self.assertIn("const APP_VERSION = '8.7.3';", WORKER)
-        self.assertIn("V8.7.3", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.7.3"))
+        self.assertIn("const APP_VERSION = '8.7.4';", APP)
+        self.assertIn("const APP_VERSION = '8.7.4';", WORKER)
+        self.assertIn("V8.7.4", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.7.4"))
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.7.3", INDEX)
+            self.assertIn(f"{asset}?v=8.7.4", INDEX)
 
     def test_feature_labels_include_normal_space_before_number(self):
         labels = [feature["label"] for feature in MISSION["missionEngine"]["features"]]

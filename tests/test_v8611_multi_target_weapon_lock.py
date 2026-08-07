@@ -15,10 +15,10 @@ class V8611MultiTargetWeaponLockTests(unittest.TestCase):
             self.assertIn(needle, APP)
 
     def test_01_version(self):
-        self.assertIn("const APP_VERSION = '8.7.3';", APP)
-        self.assertIn("const APP_VERSION = '8.7.3';", WORKER)
-        self.assertIn("V8.7.3", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.7.3"))
+        self.assertIn("const APP_VERSION = '8.7.4';", APP)
+        self.assertIn("const APP_VERSION = '8.7.4';", WORKER)
+        self.assertIn("V8.7.4", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.7.4"))
 
     def test_02_sequence_stores_stable_profile(self):
         self.assert_app("weaponId,weaponName,profileKey,profileName,weaponRules:[...weaponRules]", "lockedMultiTargetProfile")

@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.7.3
+# Tomb World Solo Guide v8.7.4
+
+## v8.7.4
+
+**Version 8.7.4 - Live Cogitator Dashboard**
+
+- Added event-aware dashboard reactions.
+- Added a concise authored Tactical Cogitator feed.
+- Added live link, latency, and session telemetry.
+- Added final Victory and Defeat dashboard states.
 
 ## v8.7.3
 
