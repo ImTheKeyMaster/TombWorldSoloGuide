@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.7.4
+# Tomb World Solo Guide v8.7.5
+
+## v8.7.5
+
+**Version 8.7.5 - Dashboard Reliability and Re-pairing**
+
+- Hardened dashboard connection cleanup and re-pairing.
+- Added strict online-only setup availability.
+- Added stale-link, reload, and protocol-error handling.
+- Preserved complete separation between the dashboard and gameplay systems.
 
 ## v8.7.4
 

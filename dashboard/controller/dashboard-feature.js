@@ -2,6 +2,7 @@ import { DASHBOARD_CONFIG } from '../shared/dashboard-config.js';
 import {
   checkDashboardOnline,
   getLastDashboardAvailability,
+  subscribeDashboardAvailability,
   setDashboardOnlineEligibility
 } from './dashboard-online.js';
 import { DASHBOARD_MESSAGE_TYPES } from '../shared/dashboard-protocol.js';
@@ -58,6 +59,8 @@ export async function requestDashboardAvailability({
 export function getDashboardAvailability() {
   return DASHBOARD_CONFIG.featureEnabled && getLastDashboardAvailability();
 }
+
+export function subscribeAvailability(listener) { return subscribeDashboardAvailability(listener); }
 
 export function getDashboardPagePath() {
   return DASHBOARD_CONFIG.pagePath;

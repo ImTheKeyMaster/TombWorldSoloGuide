@@ -17,6 +17,7 @@ let previousSnapshot = null;
 let heartbeatAt = null;
 let latencySamples = [];
 let heartbeatTimer = null;
+let protocolViolations = 0;
 let currentLinkState = 'LINK INTERRUPTED';
 const cogitatorFeed = [];
 
@@ -131,6 +132,7 @@ export function acceptDashboardSnapshot(snapshot) {
   const addedEvents = new Set(changes.filter(change => change.type === 'eventAdded').map(change => change.key));
   renderMission(snapshot.mission); renderActivation(snapshot); renderEvents(snapshot.activeEvents, addedEvents); renderActivity(snapshot.recentActivity, previousActivity); renderRoster('[data-player-roster]', '[data-player-summary]', snapshot.playerOperatives); renderRoster('[data-npo-roster]', '[data-npo-summary]', snapshot.npoOperatives);
   addCogitatorChanges(changes); renderNarrative(cogitatorFeed); reactToChanges(changes); previousSnapshot = snapshot;
+  try { sessionStorage.setItem('tomb-world-dashboard-snapshot', JSON.stringify(snapshot)); } catch { /* The live view continues when session storage is unavailable. */ }
   return true;
 }
 
@@ -147,11 +149,20 @@ function updateLinkTelemetry(now = Date.now()) {
 }
 async function pair() {
   const encoded = readPairingFragment(location.hash, 'offer');
-  if (!encoded) { setStatus('Nexus link: waiting for pairing', 'waiting'); return; }
+  if (!encoded) {
+    let stored = null; try { stored = JSON.parse(sessionStorage.getItem('tomb-world-dashboard-snapshot')); } catch { stored = null; }
+    let linkedBeforeReload = false; try { linkedBeforeReload = sessionStorage.getItem('tomb-world-dashboard-linked') === '1'; } catch { linkedBeforeReload = false; }
+    if (!stored && !linkedBeforeReload) { setStatus('Nexus link: waiting for pairing', 'waiting'); return; }
+    if (stored && validateDashboardSnapshot(stored).valid) acceptDashboardSnapshot(stored);
+    setStatus('COGITATOR LINK LOST', 'interrupted'); setText('[data-link-quality]', 'PAIRING REQUIRED');
+    pairing.hidden = false; responseOutput.value = 'Pairing must be reestablished from Game Menu on the game device.';
+    return;
+  }
+  clearPairingFragment();
   try {
-    setStatus('Nexus link: negotiating', 'connecting'); const offer = await decodePairingData(encoded, { expectedType: 'offer', expectedSdpType: 'offer' }); clearPairingFragment();
+    setStatus('Nexus link: negotiating', 'connecting'); const offer = await decodePairingData(encoded, { expectedType: 'offer', expectedSdpType: 'offer' });
     const peer = new RTCPeerConnection({ iceServers: DASHBOARD_CONFIG.iceServers });
-    peer.ondatachannel = event => { const channel = event.channel; if (channel.label !== 'tomb-world-dashboard') { channel.close(); return; } const send = (type, detail) => channel.send(message(type, detail)); channel.onopen = () => send(DASHBOARD_MESSAGE_TYPES.DASHBOARD_READY); channel.onmessage = messageEvent => { const incoming = safeParseDashboardJson(messageEvent.data); if (!validateDashboardMessage(incoming).valid) return; if (incoming.type === DASHBOARD_MESSAGE_TYPES.HELLO) { send(DASHBOARD_MESSAGE_TYPES.HELLO_ACK); send(DASHBOARD_MESSAGE_TYPES.REQUEST_SNAPSHOT); connectedAt = Date.now(); heartbeatAt = connectedAt; currentLinkState = 'LIVE'; setStatus('Nexus link: active', 'connected'); setText('[data-link-quality]', 'LIVE'); pairing.hidden = true; verification.hidden = false; clearInterval(heartbeatTimer); heartbeatTimer = setInterval(() => send(DASHBOARD_MESSAGE_TYPES.PING, { sentAt: Date.now() }), 5000); send(DASHBOARD_MESSAGE_TYPES.PING, { sentAt: Date.now() }); } else if (incoming.type === DASHBOARD_MESSAGE_TYPES.SNAPSHOT) acceptDashboardSnapshot(incoming.snapshot); else if (incoming.type === DASHBOARD_MESSAGE_TYPES.PING) { heartbeatAt = Date.now(); send(DASHBOARD_MESSAGE_TYPES.PONG, { sentAt: incoming.sentAt, receivedAt: heartbeatAt }); } else if (incoming.type === DASHBOARD_MESSAGE_TYPES.PONG) { heartbeatAt = Date.now(); latencySamples = addLatencySample(latencySamples, incoming.sentAt, heartbeatAt); } updateLinkTelemetry(); }; channel.onclose = () => { clearInterval(heartbeatTimer); heartbeatTimer = null; setStatus('Nexus link: connection interrupted', 'interrupted'); setText('[data-link-quality]', 'LINK INTERRUPTED'); }; };
+    peer.ondatachannel = event => { const channel = event.channel; if (channel.label !== 'tomb-world-dashboard') { channel.close(); return; } const send = (type, detail) => channel.send(message(type, detail)); channel.onopen = () => send(DASHBOARD_MESSAGE_TYPES.DASHBOARD_READY); channel.onmessage = messageEvent => { const incoming = safeParseDashboardJson(messageEvent.data); if (!validateDashboardMessage(incoming).valid) { protocolViolations += 1; if (protocolViolations >= DASHBOARD_CONFIG.maximumProtocolViolations) channel.close(); return; } protocolViolations = 0; if (incoming.type === DASHBOARD_MESSAGE_TYPES.HELLO) { send(DASHBOARD_MESSAGE_TYPES.HELLO_ACK); send(DASHBOARD_MESSAGE_TYPES.REQUEST_SNAPSHOT); connectedAt = Date.now(); heartbeatAt = connectedAt; currentLinkState = 'LIVE'; try { sessionStorage.setItem('tomb-world-dashboard-linked', '1'); } catch { /* Live state remains authoritative. */ } responseOutput.value = ''; document.querySelector('[data-response-qr]').replaceChildren(); setStatus('Nexus link: active', 'connected'); setText('[data-link-quality]', 'LIVE'); pairing.hidden = true; verification.hidden = false; clearInterval(heartbeatTimer); heartbeatTimer = setInterval(() => send(DASHBOARD_MESSAGE_TYPES.PING, { sentAt: Date.now() }), 5000); send(DASHBOARD_MESSAGE_TYPES.PING, { sentAt: Date.now() }); } else if (incoming.type === DASHBOARD_MESSAGE_TYPES.SNAPSHOT) acceptDashboardSnapshot(incoming.snapshot); else if (incoming.type === DASHBOARD_MESSAGE_TYPES.PING) { heartbeatAt = Date.now(); send(DASHBOARD_MESSAGE_TYPES.PONG, { sentAt: incoming.sentAt, receivedAt: heartbeatAt }); } else if (incoming.type === DASHBOARD_MESSAGE_TYPES.PONG) { heartbeatAt = Date.now(); latencySamples = addLatencySample(latencySamples, incoming.sentAt, heartbeatAt); } updateLinkTelemetry(); }; channel.onclose = () => { clearInterval(heartbeatTimer); heartbeatTimer = null; setStatus('Nexus link: connection interrupted', 'interrupted'); setText('[data-link-quality]', 'LINK INTERRUPTED'); }; };
     await peer.setRemoteDescription({ type: offer.sdpType, sdp: offer.sdp }); await peer.setLocalDescription(await peer.createAnswer()); await waitForIce(peer); const answerCreatedAt = Date.now(); if (answerCreatedAt >= offer.expiresAt) throw new Error('Pairing payload has expired.');
     const answer = await serializePairingData({ protocolVersion: DASHBOARD_PROTOCOL_VERSION, type: 'answer', nonce: offer.nonce, createdAt: answerCreatedAt, expiresAt: offer.expiresAt, sdpType: 'answer', sdp: peer.localDescription.sdp, label: offer.label }); responseOutput.value = answer; await renderQrCode(document.querySelector('[data-response-qr]'), answer, 'Scan this response QR code with the game device.'); pairing.hidden = false; const sessionCode = await codeFor(offer.nonce); verification.querySelector('strong').textContent = sessionCode; setText('[data-session-id]', sessionCode); document.querySelector('[data-copy-response]').onclick = async () => { await navigator.clipboard.writeText(answer); setStatus('Response copied: return to game device', 'connecting'); }; setStatus('Nexus link: awaiting response scan', 'connecting');
   } catch (error) { setStatus(error.message || 'Nexus link: pairing failed', 'interrupted'); }

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.7.4';
+  const APP_VERSION = '8.7.5';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -1861,6 +1861,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function renderHome(){
+    stopDashboardAvailabilitySubscription();
     const saved=load();
     const savedGame=saved?.report?.requiresRegeneration?null:saved?.state;
     const canContinue=Boolean(savedGame?.missionId&&savedGame?.screen==='game');
@@ -1880,6 +1881,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     $('#continueBtn').onclick=()=>{ if(savedGame){state=normalizeState(savedGame);state.screen='game';render();} };
     const setupDashboardBtn=$('#setupDashboardBtn');
     requestDashboardFeature().then(async feature=>{
+      unsubscribeDashboardAvailability=feature.subscribeAvailability(available=>{const button=$('#setupDashboardBtn');if(button)button.hidden=!(canContinue&&available);});
       const available=canContinue&&feature.isDashboardFeatureEnabled()&&feature.isDashboardWebRtcSupported()&&await feature.requestDashboardAvailability({hasResumableGame:canContinue,isEligible:()=>Boolean($('#setupDashboardBtn')&&canContinue)});
       if($('#setupDashboardBtn'))setupDashboardBtn.hidden=!available;
     }).catch(()=>{setupDashboardBtn.hidden=true;});
@@ -7251,7 +7253,7 @@ function showPlayerActivation(stage={}){
   function isBattleComplete(){return state.screen==='game'&&Boolean(state.gameEnd||state.finalResolution?.pending);}
   function isGuidedPlayActive(){return state.screen==='game'&&!isBattleComplete();}
   function canOpenHelp(){return isNewGameSetupActive()||isGuidedPlayActive()||isBattleComplete();}
-  let dashboardController=null, stopDashboardCamera=null, dashboardCountdown=null, unsubscribeDashboardStatus=null;
+  let dashboardController=null, stopDashboardCamera=null, dashboardCountdown=null, unsubscribeDashboardStatus=null, unsubscribeDashboardAvailability=null, dashboardPairingOpen=false;
   // DASHBOARD INTEGRATION START
   async function getDashboardController(){dashboardController ||= await setupDashboardFeature();return dashboardController;}
   // DASHBOARD INTEGRATION END
@@ -7261,18 +7263,23 @@ function showPlayerActivation(stage={}){
   }
   function stopPairingCamera(){if(stopDashboardCamera){stopDashboardCamera();stopDashboardCamera=null;}}
   function stopDashboardStatusSubscription(){unsubscribeDashboardStatus?.();unsubscribeDashboardStatus=null;}
+  function stopDashboardAvailabilitySubscription(){unsubscribeDashboardAvailability?.();unsubscribeDashboardAvailability=null;}
   async function openDashboardPairing(reestablish=false){
+    if(dashboardPairingOpen)return;
     const initiating=document.activeElement;
     try{
+      const feature=await requestDashboardFeature();
+      if(!navigator.onLine||!await feature.requestDashboardAvailability({activeGame:true,isEligible:()=>state.screen==='game'||Boolean($('#setupDashboardBtn'))}))throw new Error('Network unavailable. Dashboard setup requires an online connection.');
+      dashboardPairingOpen=true;
       const controller=await getDashboardController();
       if(reestablish){stopPairingCamera();await controller.reestablish();}
       const offer=await controller.createDashboardOffer();
       const dashboardUrl=new URL("dashboard/",document.baseURI);dashboardUrl.hash=`offer=${offer.encodedOffer}`;
-      showModal('Setup Companion Dashboard',`<p>Pair this game device with a read-only companion display. Only a minimized live dashboard snapshot is sent.</p><ol class="pairing-steps"><li>Open the QR code or URL on the dashboard device.</li><li>The dashboard will display a response QR code.</li><li>Scan that response with this device.</li><li>The link will then update automatically.</li></ol><div class="pairing-qr-host" id="dashboardOfferQr"></div><label class="pairing-label" for="dashboardUrl">Dashboard URL</label><textarea class="pairing-payload" id="dashboardUrl" rows="3" readonly></textarea><div class="pairing-copy-row"><button class="btn secondary" id="copyDashboardUrl">Copy URL</button>${navigator.share?'<button class="btn secondary" id="shareDashboardUrl">Share</button>':''}</div><p class="pairing-expiration" id="dashboardExpiration"></p><p class="pairing-status" id="dashboardPairingStatus" role="status" aria-live="polite">Waiting for dashboard</p><p class="verification-code" id="dashboardVerification" hidden>COGITATOR LINK VERIFIED<br>Code: <strong>${offer.verificationCode}</strong></p><div id="dashboardCameraHost"></div><div class="wizard-actions pairing-actions"><button class="btn primary" id="scanDashboardResponse">Scan Dashboard Response</button><button class="btn secondary" id="pasteDashboardResponse">Paste Response</button><button class="btn ghost" data-close>Cancel</button></div>`,()=>{stopPairingCamera();clearInterval(dashboardCountdown);stopDashboardStatusSubscription();if(controller.getStatus().status!=='connected')void controller.disconnect();initiating?.focus?.();});
+      showModal('Setup Companion Dashboard',`<p>Pair this game device with a read-only companion display. Only a minimized live dashboard snapshot is sent.</p><ol class="pairing-steps"><li>Open the QR code or URL on the dashboard device.</li><li>The dashboard will display a response QR code.</li><li>Scan that response with this device.</li><li>The link will then update automatically.</li></ol><div class="pairing-qr-host" id="dashboardOfferQr"></div><label class="pairing-label" for="dashboardUrl">Dashboard URL</label><textarea class="pairing-payload" id="dashboardUrl" rows="3" readonly></textarea><div class="pairing-copy-row"><button class="btn secondary" id="copyDashboardUrl">Copy URL</button>${navigator.share?'<button class="btn secondary" id="shareDashboardUrl">Share</button>':''}</div><p class="pairing-expiration" id="dashboardExpiration"></p><p class="pairing-status" id="dashboardPairingStatus" role="status" aria-live="polite">Waiting for dashboard</p><p class="verification-code" id="dashboardVerification" hidden>COGITATOR LINK VERIFIED<br>Code: <strong>${offer.verificationCode}</strong></p><div id="dashboardCameraHost"></div><div class="wizard-actions pairing-actions"><button class="btn primary" id="scanDashboardResponse">Scan Dashboard Response</button><button class="btn secondary" id="pasteDashboardResponse">Paste Response</button><button class="btn ghost" data-close>Cancel</button></div>`,()=>{dashboardPairingOpen=false;stopPairingCamera();clearInterval(dashboardCountdown);stopDashboardStatusSubscription();if(controller.getStatus().status!=='connected')void controller.disconnect();initiating?.focus?.();});
       $('#dashboardUrl').value=dashboardUrl.href;
       const {renderQrCode,scanQrCode}=await import('./dashboard/shared/qr-utils.js');
       await renderQrCode($('#dashboardOfferQr'),dashboardUrl.href,'Open this offer QR code on the companion dashboard device.');
-      const apply=async raw=>{try{await controller.applyDashboardResponse(dashboardResponseValue(raw));showToast('Dashboard response accepted. Connecting…');}catch(error){showToast(error.message);}};
+      let applyingResponse=false;const apply=async raw=>{if(applyingResponse)return;applyingResponse=true;stopPairingCamera();try{await controller.applyDashboardResponse(dashboardResponseValue(raw));showToast('Dashboard response accepted. Connecting…');}catch(error){applyingResponse=false;showToast(error.message);}};
       $('#copyDashboardUrl').onclick=async()=>{await navigator.clipboard.writeText(dashboardUrl.href);showToast('Dashboard URL copied.');};
       if($('#shareDashboardUrl'))$('#shareDashboardUrl').onclick=()=>navigator.share({title:'Tomb World Companion Dashboard',url:dashboardUrl.href});
       $('#pasteDashboardResponse').onclick=()=>{const response=prompt('Paste the dashboard response payload:');if(response)apply(response);};
@@ -7281,11 +7288,26 @@ function showPlayerActivation(stage={}){
       const refreshExpiration=()=>{const seconds=Math.max(0,Math.ceil((offer.expiresAt-Date.now())/1000));$('#dashboardExpiration').textContent=seconds?`Pairing expires in ${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`:'Pairing link expired.';};refreshExpiration();dashboardCountdown=setInterval(refreshExpiration,1000);
       stopDashboardStatusSubscription();
       unsubscribeDashboardStatus=controller.subscribeStatus(detail=>{const node=$('#dashboardPairingStatus'),verified=$('#dashboardVerification');if(node)node.textContent=detail.text;if(verified)verified.hidden=detail.status!=='connected';});
-    }catch(error){showToast(error.message||'Dashboard pairing could not be started.');}
+    }catch(error){dashboardPairingOpen=false;showToast(error.message||'Dashboard pairing could not be started.');}
   }
   async function addDashboardGameMenuSection(){
     const host=$('#dashboardMenuSection');if(!host)return;
-    try{const feature=await requestDashboardFeature();const online=feature.isDashboardWebRtcSupported()&&await feature.requestDashboardAvailability({gameMenuOpen:true,activeGame:true,isEligible:()=>Boolean($('#dashboardMenuSection')&&state.screen==='game')});if(!host.isConnected)return;const controller=await getDashboardController();const detail=controller.getStatus();host.innerHTML=`<h3>Dashboard</h3><p class="dashboard-menu-status" role="status" aria-live="polite">${detail.text}</p>${online?`<button class="btn secondary" id="menuSetupDashboard">${detail.hasAttempt?'Reestablish Dashboard Pairing':'Setup Dashboard'}</button>`:''}`;if($('#menuSetupDashboard'))$('#menuSetupDashboard').onclick=()=>openDashboardPairing(detail.hasAttempt);}catch{host.innerHTML='<h3>Dashboard</h3><p class="dashboard-menu-status">Not connected</p>';}
+    try{
+      const feature=await requestDashboardFeature();
+      if(!feature.isDashboardFeatureEnabled()){host.remove();return;}
+      const controller=await getDashboardController();
+      const updateMenu=online=>{
+        if(!host.isConnected)return;
+        const detail=controller.getStatus(),connected=detail.status==='connected',attempted=detail.hasAttempt;
+        host.innerHTML=`<h3>Dashboard</h3><p class="dashboard-menu-status" role="status" aria-live="polite">${online?detail.text:'Network unavailable'}</p>${connected?'<p class="dashboard-menu-status">Dashboard Connected</p>':''}${online?`<button class="btn secondary" id="menuSetupDashboard">${attempted?'Reestablish Pairing':'Setup Dashboard'}</button>`:''}${attempted?'<button class="btn ghost" id="menuDisconnectDashboard">Disconnect Dashboard</button>':''}`;
+        if($('#menuSetupDashboard'))$('#menuSetupDashboard').onclick=()=>openDashboardPairing(attempted);
+        if($('#menuDisconnectDashboard'))$('#menuDisconnectDashboard').onclick=async()=>{stopPairingCamera();await controller.disconnect();updateMenu(feature.getDashboardAvailability());};
+      };
+      stopDashboardAvailabilitySubscription();
+      unsubscribeDashboardAvailability=feature.subscribeAvailability(updateMenu);
+      const online=feature.isDashboardWebRtcSupported()&&await feature.requestDashboardAvailability({gameMenuOpen:true,activeGame:true,isEligible:()=>Boolean($('#dashboardMenuSection')&&state.screen==='game')});
+      updateMenu(online);
+    }catch{host.innerHTML='<h3>Dashboard</h3><p class="dashboard-menu-status">Not connected</p>';}
   }
   function openHelpFromGameMenu(){
     closeModal();
@@ -7298,6 +7320,7 @@ function showPlayerActivation(stage={}){
   }
   function showGameMenu(){
     const inGame=state.screen==='game';
+    stopDashboardAvailabilitySubscription();
     showModal('Game Menu',`<p>Open a reference screen without changing the guided play sequence, or begin a completely new game.</p>
       <div class="game-menu-grid">
         <button class="btn primary" data-game-view="play">Return to Guided Play</button>
@@ -7315,7 +7338,7 @@ function showPlayerActivation(stage={}){
         <button class="btn ghost" id="menuExportSave">Export Save</button>
         <button class="btn ghost" id="menuImportSave">Import Save</button>
         <button class="btn danger" id="menuNewGame">Start New Game</button>
-      </div>`);
+      </div>`,stopDashboardAvailabilitySubscription);
     $$('[data-game-view]',modal).forEach(button=>button.onclick=()=>{
       if(inGame){state.tab=button.dataset.gameView;save();}
       closeModal();
