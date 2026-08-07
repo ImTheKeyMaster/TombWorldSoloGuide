@@ -23,6 +23,9 @@ class TacticalCogitatorTests(unittest.TestCase):
         self.assertIn('No Current Activation', HTML)
         self.assertIn('No active events detected', HTML)
         self.assertIn('No battle activity recorded', HTML)
+        self.assertIn('data-player-summary', HTML)
+        self.assertIn("states = ['ready', 'active', 'activated', 'incapacitated', 'dormant', 'retired']", JS)
+        self.assertIn('event.effect', JS)
 
     def test_isolated_local_assets_only(self):
         self.assertNotIn('styles.css', HTML.replace('dashboard.css', ''))

@@ -61,9 +61,12 @@ function renderActivity(entries) {
   entries.slice(0, 10).forEach(entry => { const item = document.createElement('li'); item.className = entry.severity || entry.category || 'battle'; addTextElement(item, 'time', entry.timestamp || (entry.sequence !== null ? `#${entry.sequence}` : 'LOG')); addTextElement(item, 'span', entry.text || 'Activity recorded'); container.append(item); });
 }
 
-function renderRoster(selector, operatives) {
+function renderRoster(selector, summarySelector, operatives) {
   const container = document.querySelector(selector);
-  if (!operatives.length) return replaceWithEmpty(container, 'No roster data', 'p');
+  if (!operatives.length) { setText(summarySelector, 'No roster data'); return replaceWithEmpty(container, 'No roster data', 'p'); }
+  const counts = operatives.reduce((summary, operative) => { const state = operative.currentActivation ? 'active' : operative.status; summary[state] = (summary[state] || 0) + 1; return summary; }, {});
+  const states = ['ready', 'active', 'activated', 'incapacitated', 'dormant', 'retired'];
+  setText(summarySelector, states.filter(state => counts[state]).map(state => `${counts[state]} ${state}`).join(' · '));
   container.replaceChildren();
   operatives.forEach(operative => { const item = document.createElement('div'); const state = operative.currentActivation ? 'active' : operative.status; item.className = `roster-entry ${state || 'unavailable'}`; addTextElement(item, 'span', operative.name || 'Unknown operative'); addTextElement(item, 'small', operative.currentActivation ? 'Active' : (operative.status || 'Unavailable')); if (operative.wounds !== null) addTextElement(item, 'b', `${operative.wounds}/${displayNumber(operative.maximumWounds)}`); container.append(item); });
 }
@@ -87,7 +90,7 @@ export function acceptDashboardSnapshot(snapshot) {
   setText('[data-npo-ready]', `${displayNumber(snapshot.readiness.npoReady)} / ${displayNumber(snapshot.readiness.npoTotal)}`); setText('[data-npo-state]', `${displayNumber(snapshot.readiness.npoReady)} hostiles ready`);
   setText('[data-battle-status]', snapshot.battle.result || snapshot.battle.status, 'Standby'); setText('[data-battle-phase]', snapshot.battle.phase, snapshot.battle.result ? 'Battle complete' : 'Phase unavailable');
   if (snapshot.battle.elapsedSeconds !== null) setText('[data-session-duration]', formatDuration(snapshot.battle.elapsedSeconds));
-  renderMission(snapshot.mission); renderActivation(snapshot); renderEvents(snapshot.activeEvents); renderActivity(snapshot.recentActivity); renderRoster('[data-player-roster]', snapshot.playerOperatives); renderRoster('[data-npo-roster]', snapshot.npoOperatives); renderNarrative(snapshot.narrativeFeed);
+  renderMission(snapshot.mission); renderActivation(snapshot); renderEvents(snapshot.activeEvents); renderActivity(snapshot.recentActivity); renderRoster('[data-player-roster]', '[data-player-summary]', snapshot.playerOperatives); renderRoster('[data-npo-roster]', '[data-npo-summary]', snapshot.npoOperatives); renderNarrative(snapshot.narrativeFeed);
   document.querySelectorAll('.panel').forEach(panel => { panel.classList.remove('data-changed'); void panel.offsetWidth; panel.classList.add('data-changed'); });
   return true;
 }

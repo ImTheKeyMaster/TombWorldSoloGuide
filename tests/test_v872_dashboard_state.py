@@ -81,12 +81,14 @@ class DashboardStateTests(unittest.TestCase):
               app: { version: '8.7.3' }, battle: {}, threat: {}, readiness: {},
               mission: { objectives: [{ id: 'one', secret: 'excluded' }] },
               currentActivation: { side: 'npo', name: 'Warrior', secret: 'excluded' },
-              activeEvents: [{ id: 'event', title: 'Event', callback() {} }]
+              activeEvents: [{ id: 'event', title: 'Event', effect: 'Live effect', category: 'warning', callback() {} }]
             }, 1, 123);
             assert.equal(snapshot.battle.turningPoint, null);
             assert.equal(snapshot.currentActivation.secret, undefined);
             assert.equal(snapshot.mission.objectives[0].secret, undefined);
             assert.equal(snapshot.activeEvents[0].callback, undefined);
+            assert.equal(snapshot.activeEvents[0].effect, 'Live effect');
+            assert.equal(snapshot.activeEvents[0].category, 'warning');
             assert.ok(Object.isFrozen(snapshot.mission.objectives[0]));
             console.log('ok');
         """)

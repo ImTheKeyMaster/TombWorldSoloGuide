@@ -12,7 +12,10 @@ const operative = value => ({
 const objective = value => ({
   id: text(value?.id), name: text(value?.name), progress: number(value?.progress), target: number(value?.target)
 });
-const event = value => ({ id: text(value?.id), title: text(value?.title), summary: text(value?.summary) });
+const event = value => ({
+  id: text(value?.id), title: text(value?.title), summary: text(value?.summary),
+  effect: text(value?.effect), category: text(value?.category), severity: text(value?.severity)
+});
 const activation = value => value ? {
   side: text(value.side), operativeId: text(value.operativeId), name: text(value.name), number: number(value.number),
   wounds: number(value.wounds), maximumWounds: number(value.maximumWounds), apl: number(value.apl),
