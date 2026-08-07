@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.7.2';
+  const APP_VERSION = '8.7.3';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -48,7 +48,7 @@
       threat:{level:state.threat,name:threatLabel(),grade,gradeDescription:gradeGameplayDescription(grade).effects.map(effect=>effect.text).join(' ')},
       readiness:{playerReady:state.playerReady,playerTotal:state.playerCount,npoReady:readyNpos().length,npoTotal:activeNpos().length},
       mission:{id:state.missionId,number:selectedMission?.number||null,name:selectedMission?.name||null,summary:selectedMission?.objective||null,progress:Number.isFinite(Number(state.tracker))?Number(state.tracker):null,target:missionTrackerMax(selectedMission)||null,objectives:[]},
-      currentActivation:activeNpo?{side:'npo',operativeId:activeNpo.id,name:npoName(activeNpo),wounds:activeNpo.wounds,maximumWounds:activeNpo.maxWounds,apl:activeNpo.apl,apRemaining:state.lastActivation?.remainingAp??null,order:activeNpo.order||null,weaponName:npoWeapon(npoDefinition(activeNpo.type),activeNpo.weaponId)?.name||null}:activePlayer?{side:'player',operativeId:activePlayerId,name:playerName(activePlayerId),wounds:playerCurrentWounds(activePlayerId),maximumWounds:activePlayer.wounds,apl:activePlayer.apl??null,apRemaining:playerStage?Math.max(0,Number(playerStage.apl||activePlayer.apl||0)-playerActionCost(playerStage)):state.missionActionContext?.remainingAp??null,order:state.playerOperativeStates?.[activePlayerId]?.order||null,weaponName:null}:null,
+      currentActivation:activeNpo?{side:'npo',operativeId:activeNpo.id,name:npoName(activeNpo),number:activeNpo.displayNumber??null,wounds:activeNpo.wounds,maximumWounds:activeNpo.maxWounds,apl:activeNpo.apl,apRemaining:state.lastActivation?.remainingAp??null,order:activeNpo.order||null,weaponName:npoWeapon(npoDefinition(activeNpo.type),activeNpo.weaponId)?.name||null}:activePlayer?{side:'player',operativeId:activePlayerId,name:playerName(activePlayerId),number:state.playerDisplayNumbers?.[activePlayerId]??null,wounds:playerCurrentWounds(activePlayerId),maximumWounds:activePlayer.wounds,apl:activePlayer.apl??null,apRemaining:playerStage?Math.max(0,Number(playerStage.apl||activePlayer.apl||0)-playerActionCost(playerStage)):state.missionActionContext?.remainingAp??null,order:state.playerOperativeStates?.[activePlayerId]?.order||null,weaponName:null}:null,
       currentDirection:state.lastActivation?.pendingAction?{type:state.lastActivation.pendingAction.id,title:state.lastActivation.pendingAction.name,summary:state.lastActivation.reason||null}:null,
       activeEvents:(state.eventState?.active||[]).map(event=>({id:event.definitionId||event.instanceId||null,title:event.title||null,summary:event.text||null})),
       playerOperatives:(state.playerRoster||[]).map(id=>{const definition=playerDefinition(id),inPlay=playerOperativeState(id).inPlay!==false,incapacitated=(state.playerCasualtyIds||[]).includes(id);return {id,name:playerName(id),number:state.playerDisplayNumbers?.[id]??null,wounds:playerCurrentWounds(id),maximumWounds:definition?.wounds??null,status:operativeStatus(!(state.playerActivatedIds||[]).includes(id),incapacitated,false,inPlay),order:state.playerOperativeStates?.[id]?.order||null,currentActivation:id===activePlayerId};}),

@@ -20,11 +20,11 @@ def css_rule(selector):
 
 class V8612CombatSummaryWrappingTests(unittest.TestCase):
     def test_01_version_references_are_current(self):
-        self.assertIn("const APP_VERSION = '8.7.2';", APP)
-        self.assertIn("const APP_VERSION = '8.7.2';", WORKER)
-        self.assertIn("V8.7.2", INDEX)
-        self.assertIn("styles.css?v=8.7.2", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.7.2"))
+        self.assertIn("const APP_VERSION = '8.7.3';", APP)
+        self.assertIn("const APP_VERSION = '8.7.3';", WORKER)
+        self.assertIn("V8.7.3", INDEX)
+        self.assertIn("styles.css?v=8.7.3", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.7.3"))
 
     def test_02_summary_values_wrap_words_normally(self):
         rule = css_rule(".combat-summary-value")

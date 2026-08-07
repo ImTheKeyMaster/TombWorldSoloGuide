@@ -163,9 +163,9 @@ const dispatch=async name=>{
 (async()=>{
   await dispatch('install');
   assert.equal(added.length,2);
-  assert.equal(added[0].name,'tomb-world-solo-guide-8.7.2');
+  assert.equal(added[0].name,'tomb-world-solo-guide-8.7.3');
   assert.ok(added[0].assets.includes('./index.html'));
-  assert.ok(added[0].assets.includes('./app.js?v=8.7.2'));
+  assert.ok(added[0].assets.includes('./app.js?v=8.7.3'));
   assert.deepEqual(added[1].assets,['./Assets/Images/Backgrounds/Landscape-01.png']);
   await dispatch('activate');
   assert.deepEqual(deleted,['tomb-world-solo-guide-7.0.6']);
@@ -177,11 +177,11 @@ const dispatch=async name=>{
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
 
     def test_release_version_help_and_accessible_elimination_text_are_current(self):
-        self.assertIn("const APP_VERSION = '8.7.2';", APP)
-        self.assertIn("const APP_VERSION = '8.7.2';", WORKER)
-        self.assertIn("V8.7.2", INDEX)
+        self.assertIn("const APP_VERSION = '8.7.3';", APP)
+        self.assertIn("const APP_VERSION = '8.7.3';", WORKER)
+        self.assertIn("V8.7.3", INDEX)
         for asset in ("app.js", "mission-engine.js", "persistence.js", "styles.css"):
-            self.assertIn(f"{asset}?v=8.7.2", INDEX)
+            self.assertIn(f"{asset}?v=8.7.3", INDEX)
         self.assertIn("Tomb World NPO roster", APP)
         self.assertIn("NPO portraits are intentionally not displayed", APP)
         roster_card = APP.split("function npoRosterCard", 1)[1].split("function operativeCard", 1)[0]

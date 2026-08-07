@@ -14,7 +14,7 @@ const objective = value => ({
 });
 const event = value => ({ id: text(value?.id), title: text(value?.title), summary: text(value?.summary) });
 const activation = value => value ? {
-  side: text(value.side), operativeId: text(value.operativeId), name: text(value.name),
+  side: text(value.side), operativeId: text(value.operativeId), name: text(value.name), number: number(value.number),
   wounds: number(value.wounds), maximumWounds: number(value.maximumWounds), apl: number(value.apl),
   apRemaining: number(value.apRemaining), order: text(value.order), weaponName: text(value.weaponName)
 } : null;
@@ -45,7 +45,7 @@ export function createDashboardSnapshot(source, revision, updatedAt = Date.now()
     playerOperatives: list(source?.playerOperatives).map(operative),
     npoOperatives: list(source?.npoOperatives).map(operative),
     recentActivity: list(source?.recentActivity).slice(0, 10).map(item => ({ timestamp: text(item?.timestamp), sequence: number(item?.sequence), category: text(item?.category) || 'battle', text: text(item?.text) || '', severity: text(item?.severity) })),
-    narrativeFeed: []
+    narrativeFeed: list(source?.narrativeFeed).slice(0, 10).map(item => ({ timestamp: text(item?.timestamp), text: text(item?.text), summary: text(item?.summary) }))
   };
   if (!validateDashboardSnapshot(snapshot).valid) throw new Error('Dashboard snapshot validation failed.');
   return deepFreeze(snapshot);

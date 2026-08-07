@@ -129,3 +129,10 @@ The application has no analytics, advertising, tracking scripts, cookie writes, 
 |---|---|---|---|---|
 | `dashboard/vendor/qrcode-generator.js` | Browser QR encoder for pairing payloads | QRCode for JavaScript, Kazuhiko Arase; vendored from `qrcode-terminal` | MIT; local license included | Dashboard pairing only; no CDN |
 | `dashboard/vendor/qr-decoder.js` | Local camera-decoder fallback adapter | Tomb World Solo Guide contributors | Apache-2.0; local notice included | Dashboard pairing only; no CDN |
+
+## v8.7.3 original dashboard assets
+
+| Asset | Purpose | Source / attribution | License | Deployment |
+|---|---|---|---|---|
+| `dashboard/assets/tactical-operative.svg` | Generic wireframe operative schematic | Original vector artwork created for this repository; not traced from the dashboard mockup or third-party artwork | Original repository contribution | Tactical Cogitator activation panel only |
+| `dashboard/assets/objective-terrain.svg` | Abstract terrain and objective wireframe | Original vector artwork created for this repository | Original repository contribution | Tactical Cogitator mission panel only |
