@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v8.7.6
+# Tomb World Solo Guide v8.7.7
+
+## v8.7.7
+
+**Version 8.7.7 - iPhone Dashboard Pairing Reliability**
+
+- Made WebRTC offer generation tolerant of incomplete Safari ICE gathering.
+- Added explicit ICE candidate exchange to dashboard pairing.
+- Added multiple STUN discovery fallbacks.
+- Added useful iPhone pairing diagnostics and failure messages.
+- Reduced unnecessary WebRTC setup timeout delays.
 
 ## v8.7.6
 

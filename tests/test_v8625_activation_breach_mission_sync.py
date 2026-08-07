@@ -13,10 +13,10 @@ MISSION = json.loads((ROOT / "Missions/02-demolition-protocol.json").read_text()
 
 class TestV8625ActivationBreachMissionSync(unittest.TestCase):
     def test_01_version(self):
-        self.assertIn("const APP_VERSION = '8.7.6';", APP)
-        self.assertIn("V8.7.6", INDEX)
-        self.assertIn("const APP_VERSION = '8.7.6';", WORKER)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.7.6"))
+        self.assertIn("const APP_VERSION = '8.7.7';", APP)
+        self.assertIn("V8.7.7", INDEX)
+        self.assertIn("const APP_VERSION = '8.7.7';", WORKER)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.7.7"))
 
     def test_02_one_canonical_updater(self):
         self.assertEqual(APP.count("function commitMissionFeatureOpened("), 1)

@@ -4,6 +4,21 @@ import { DASHBOARD_PROTOCOL_VERSION, DASHBOARD_PAIRING_PAYLOAD_TYPES } from './d
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 const validTypes = new Set(Object.values(DASHBOARD_PAIRING_PAYLOAD_TYPES));
+const maximumCandidates = 32;
+const maximumCandidateLength = 2048;
+
+function validateCandidates(candidates) {
+  if (candidates === undefined) return;
+  if (!Array.isArray(candidates) || candidates.length > maximumCandidates) throw new Error('Unsupported or corrupt pairing payload.');
+  candidates.forEach(candidate => {
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) throw new Error('Unsupported or corrupt pairing payload.');
+    if (typeof candidate.candidate !== 'string' || !candidate.candidate || candidate.candidate.length > maximumCandidateLength) throw new Error('Unsupported or corrupt pairing payload.');
+    if (candidate.sdpMid !== undefined && candidate.sdpMid !== null && (typeof candidate.sdpMid !== 'string' || candidate.sdpMid.length > 64 || /[\r\n]/.test(candidate.sdpMid))) throw new Error('Unsupported or corrupt pairing payload.');
+    if (candidate.sdpMLineIndex !== undefined && candidate.sdpMLineIndex !== null && (!Number.isSafeInteger(candidate.sdpMLineIndex) || candidate.sdpMLineIndex < 0 || candidate.sdpMLineIndex > 65535)) throw new Error('Unsupported or corrupt pairing payload.');
+    if (candidate.usernameFragment !== undefined && (typeof candidate.usernameFragment !== 'string' || candidate.usernameFragment.length > 256 || /[\r\n]/.test(candidate.usernameFragment))) throw new Error('Unsupported or corrupt pairing payload.');
+    if (Object.keys(candidate).some(key => !['candidate', 'sdpMid', 'sdpMLineIndex', 'usernameFragment'].includes(key))) throw new Error('Unsupported or corrupt pairing payload.');
+  });
+}
 
 function base64Url(bytes) {
   let binary = '';
@@ -56,6 +71,7 @@ export function validatePairingData(data, { expectedType, expectedNonce, expecte
   if (!allowExpired && Date.now() > data.expiresAt) throw new Error('Pairing payload has expired.');
   if (!['offer', 'answer'].includes(data.sdpType) || (expectedSdpType && data.sdpType !== expectedSdpType)) throw new Error('Unexpected SDP type.');
   if (typeof data.sdp !== 'string' || !data.sdp || encoder.encode(data.sdp).byteLength > DASHBOARD_CONFIG.maximumPayloadSize) throw new Error('Pairing payload is too large.');
+  validateCandidates(data.candidates);
   if (data.label !== undefined && (typeof data.label !== 'string' || data.label.length > 80)) throw new Error('Unsupported or corrupt pairing payload.');
   return data;
 }
