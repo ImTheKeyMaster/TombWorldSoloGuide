@@ -6,6 +6,8 @@ export const DASHBOARD_CONFIG = Object.freeze({
   pagePath: 'dashboard/index.html',
   pairingLifetimeMs: 10 * 60 * 1000,
   connectionTimeoutMs: 30000,
+  disconnectGraceMs: 8000,
+  maximumProtocolViolations: 3,
   onlineProbeTimeoutMs: 3000,
   maximumPayloadSize: 65536,
   maximumEncodedPayloadSize: 100000,
