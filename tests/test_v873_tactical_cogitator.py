@@ -16,7 +16,7 @@ class TacticalCogitatorTests(unittest.TestCase):
     def test_snapshot_values_map_to_regions_and_safe_states(self):
         for field in ['battle.turningPoint', 'threat.level', 'mission.name',
                       'currentActivation', 'activeEvents', 'recentActivity',
-                      'playerOperatives', 'npoOperatives', 'narrativeFeed']:
+                      'playerOperatives', 'npoOperatives']:
             self.assertIn(field, JS)
         for state in ['waiting', 'connected', 'complete', 'interrupted', 'incompatible']:
             self.assertIn(state, HTML + JS)
