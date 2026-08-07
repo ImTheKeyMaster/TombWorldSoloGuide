@@ -47,7 +47,7 @@ class DashboardFoundationTests(unittest.TestCase):
     def test_normal_startup_does_not_create_or_load_webrtc(self):
         self.assertNotIn("RTCPeerConnection", APP)
         self.assertIn("import('./dashboard/controller/dashboard-feature.js')", APP)
-        self.assertIn("await import('./dashboard/controller/dashboard-controller.js')", APP)
+        self.assertIn("await import('./dashboard/controller/dashboard-feature.js')", APP)
         self.assertNotRegex(APP, r'(?m)^\s*(?:void\s+|await\s+)?getDashboardController\s*\(')
 
     def test_save_version_is_unchanged(self):

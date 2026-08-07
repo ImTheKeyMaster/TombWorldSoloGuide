@@ -4,6 +4,42 @@ import {
   getLastDashboardAvailability,
   setDashboardOnlineEligibility
 } from './dashboard-online.js';
+import { DASHBOARD_MESSAGE_TYPES } from '../shared/dashboard-protocol.js';
+import { createDashboardPublisher } from './dashboard-publisher.js';
+
+let controller = null;
+let publisher = null;
+let unsubscribeStatus = null;
+let unsubscribeMessages = null;
+
+async function getController() {
+  controller ||= await import('./dashboard-controller.js');
+  return controller;
+}
+
+export async function setup({ getSnapshotSource } = {}) {
+  if (publisher || typeof getSnapshotSource !== 'function') return;
+  const dashboardController = await getController();
+  publisher = createDashboardPublisher({ controller: dashboardController, getSnapshotSource });
+  unsubscribeStatus = dashboardController.subscribeDashboardStatus(detail => {
+    if (detail.status === 'connected') publisher?.publishImmediately();
+  });
+  unsubscribeMessages = dashboardController.subscribeDashboardMessages(message => {
+    if (message.type === DASHBOARD_MESSAGE_TYPES.REQUEST_SNAPSHOT) publisher?.publishImmediately();
+  });
+}
+
+export async function reestablish() { const value = await getController(); value.cleanupDashboardConnection(); return value; }
+export async function disconnect() { const value = await getController(); value.cleanupDashboardConnection(); }
+export function schedulePublish(reason) { publisher?.schedulePublish(reason); }
+export async function getStatus() { return (await getController()).getDashboardStatus(); }
+export async function subscribeStatus(listener) { return (await getController()).subscribeDashboardStatus(listener); }
+export async function createDashboardOffer(label) { return (await getController()).createDashboardOffer(label); }
+export async function applyDashboardResponse(encoded) { return (await getController()).applyDashboardResponse(encoded); }
+export async function markWaitingForResponse() { return (await getController()).markWaitingForResponse(); }
+export async function cleanupDashboardConnection() { return (await getController()).cleanupDashboardConnection(); }
+export function getDashboardStatus() { return controller?.getDashboardStatus() || { status: 'idle', text: 'Not connected', verificationCode: null, hasAttempt: false }; }
+export function subscribeDashboardStatus(listener) { return controller ? controller.subscribeDashboardStatus(listener) : () => {}; }
 
 export function isDashboardFeatureEnabled() {
   return DASHBOARD_CONFIG.featureEnabled;

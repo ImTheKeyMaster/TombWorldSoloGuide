@@ -1,5 +1,5 @@
 import { DASHBOARD_CONFIG } from './shared/dashboard-config.js';
-import { DASHBOARD_PROTOCOL_VERSION, DASHBOARD_MESSAGE_TYPES, safeParseDashboardJson, validateDashboardMessage } from './shared/dashboard-protocol.js';
+import { DASHBOARD_PROTOCOL_VERSION, DASHBOARD_MESSAGE_TYPES, DASHBOARD_SNAPSHOT_SCHEMA_VERSION, safeParseDashboardJson, validateDashboardMessage, validateDashboardSnapshot } from './shared/dashboard-protocol.js';
 import { readPairingFragment, clearPairingFragment, decodePairingData, serializePairingData } from './shared/pairing-codec.js';
 import { renderQrCode } from './shared/qr-utils.js';
 
@@ -7,7 +7,27 @@ const status = document.querySelector('[data-dashboard-status]');
 const pairing = document.querySelector('[data-dashboard-pairing]');
 const responseOutput = document.querySelector('[data-response-output]');
 const verification = document.querySelector('[data-verification]');
+let currentRevision = 0;
 function setStatus(value) { status.textContent = value; }
+function setText(selector, value) { document.querySelector(selector).textContent = value ?? '—'; }
+export function acceptDashboardSnapshot(snapshot) {
+  if (snapshot?.schemaVersion !== DASHBOARD_SNAPSHOT_SCHEMA_VERSION) { setText('[data-state-message]', `Incompatible game-state schema (received ${snapshot?.schemaVersion ?? 'unknown'}).`); return false; }
+  if (!validateDashboardSnapshot(snapshot).valid || snapshot.revision <= currentRevision) return false;
+  currentRevision = snapshot.revision;
+  setText('[data-state-message]', 'Live game state');
+  setText('[data-updated]', `Last updated ${new Date(snapshot.updatedAt).toLocaleTimeString()}`);
+  setText('[data-turning-point]', snapshot.battle.turningPoint);
+  setText('[data-threat]', `${snapshot.threat.level ?? '—'} · ${snapshot.threat.name ?? 'Unavailable'}`);
+  setText('[data-grade]', snapshot.threat.grade);
+  setText('[data-mission]', snapshot.mission.name ? `${snapshot.mission.number ?? ''} ${snapshot.mission.name}`.trim() : 'Unavailable');
+  setText('[data-activation]', snapshot.currentActivation ? `${snapshot.currentActivation.side}: ${snapshot.currentActivation.name}` : 'None');
+  setText('[data-direction]', snapshot.currentDirection ? `${snapshot.currentDirection.title}: ${snapshot.currentDirection.summary ?? ''}` : 'None');
+  setText('[data-ready]', `Player ${snapshot.readiness.playerReady ?? '—'}/${snapshot.readiness.playerTotal ?? '—'} · NPO ${snapshot.readiness.npoReady ?? '—'}/${snapshot.readiness.npoTotal ?? '—'}`);
+  setText('[data-events]', snapshot.activeEvents.length ? snapshot.activeEvents.map(event => event.title || 'Active event').join(', ') : 'None');
+  const activity = document.querySelector('[data-activity]'); activity.replaceChildren();
+  snapshot.recentActivity.forEach(entry => { const item = document.createElement('li'); item.textContent = entry.text; activity.append(item); });
+  return true;
+}
 function waitForIce(peer) { if (peer.iceGatheringState === 'complete') return Promise.resolve(); return new Promise((resolve, reject) => { const timer = setTimeout(() => reject(new Error('ICE gathering timed out.')), DASHBOARD_CONFIG.connectionTimeoutMs); peer.addEventListener('icegatheringstatechange', function change() { if (peer.iceGatheringState === 'complete') { clearTimeout(timer); peer.removeEventListener('icegatheringstatechange', change); resolve(); } }); }); }
 async function codeFor(nonce) { const bytes = new Uint8Array(await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(`tomb-world-dashboard:${nonce}`))); return (((bytes[0] << 16) | (bytes[1] << 8) | bytes[2]) % 1000000).toString().padStart(6, '0').replace(/(\d{3})(\d{3})/, '$1 $2'); }
 async function pair() {
@@ -21,8 +41,9 @@ async function pair() {
     peer.ondatachannel = event => {
       const channel = event.channel;
       if (channel.label !== 'tomb-world-dashboard') { channel.close(); return; }
-      channel.onopen = () => channel.send(JSON.stringify({ protocolVersion: DASHBOARD_PROTOCOL_VERSION, type: DASHBOARD_MESSAGE_TYPES.DASHBOARD_READY }));
-      channel.onmessage = messageEvent => { const message = safeParseDashboardJson(messageEvent.data); if (!validateDashboardMessage(message).valid || message.type !== DASHBOARD_MESSAGE_TYPES.HELLO) return; channel.send(JSON.stringify({ protocolVersion: DASHBOARD_PROTOCOL_VERSION, type: DASHBOARD_MESSAGE_TYPES.HELLO_ACK })); setStatus('Connected'); pairing.hidden = true; verification.hidden = false; };
+      const send = type => channel.send(JSON.stringify({ protocolVersion: DASHBOARD_PROTOCOL_VERSION, type }));
+      channel.onopen = () => send(DASHBOARD_MESSAGE_TYPES.DASHBOARD_READY);
+      channel.onmessage = messageEvent => { const message = safeParseDashboardJson(messageEvent.data); if (!validateDashboardMessage(message).valid) return; if (message.type === DASHBOARD_MESSAGE_TYPES.HELLO) { send(DASHBOARD_MESSAGE_TYPES.HELLO_ACK); send(DASHBOARD_MESSAGE_TYPES.REQUEST_SNAPSHOT); setStatus('Connected'); pairing.hidden = true; verification.hidden = false; } else if (message.type === DASHBOARD_MESSAGE_TYPES.SNAPSHOT) acceptDashboardSnapshot(message.snapshot); else if (message.type === DASHBOARD_MESSAGE_TYPES.PING) send(DASHBOARD_MESSAGE_TYPES.PONG); };
       channel.onclose = () => setStatus('Connection interrupted');
     };
     await peer.setRemoteDescription({ type: offer.sdpType, sdp: offer.sdp });
