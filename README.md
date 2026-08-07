@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.7.2
+# Tomb World Solo Guide v8.7.3
+
+## v8.7.3
+
+**Version 8.7.3 - Tactical Cogitator Dashboard**
+
+- Added a full-screen Tactical Cogitator dashboard.
+- Added mission, activation, threat, event, readiness, and activity panels.
+- Added responsive landscape and mobile layouts.
+- Kept all dashboard styling and assets isolated under dashboard/.
 
 ## v8.7.2
 

@@ -112,12 +112,12 @@ class TestV8626OperateHatchMissionSync(unittest.TestCase):
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
     def test_22_active_release_references(self):
-        self.assertIn("const APP_VERSION = '8.7.2';", APP)
-        self.assertIn("const APP_VERSION = '8.7.2';", WORKER)
-        self.assertIn("V8.7.2", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.7.2"))
+        self.assertIn("const APP_VERSION = '8.7.3';", APP)
+        self.assertIn("const APP_VERSION = '8.7.3';", WORKER)
+        self.assertIn("V8.7.3", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.7.3"))
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.7.2", INDEX)
+            self.assertIn(f"{asset}?v=8.7.3", INDEX)
         self.assertEqual(MISSION["missionEngine"]["required"], 7)
 
 
