@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.41
+# Tomb World Solo Guide v8.7.0
+
+## v8.7.0
+
+**Version 8.7.0 - Dashboard Foundation**
+
+- Added an isolated foundation for an optional companion dashboard.
+- Added reliable online availability detection.
+- Kept all dashboard files separate from the main application.
+- Preserved all gameplay and save behavior.
 
 ## v8.6.41
 

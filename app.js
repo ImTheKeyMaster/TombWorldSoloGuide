@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.41';
+  const APP_VERSION = '8.7.0';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -30,6 +30,13 @@
   const {currentSaveVersion,migrateSaveDetailed,createPersistedSave,resetActiveBattle}=TombWorldPersistence;
   const DeadlyEncounters=TombWorldDeadlyEncounters;
   const EventEffects=TombWorldEventEffects;
+
+  // DASHBOARD INTEGRATION START
+  // Kept dormant until a future Setup Dashboard action calls it explicitly.
+  async function requestDashboardFeature() {
+    return import('./dashboard/controller/dashboard-feature.js');
+  }
+  // DASHBOARD INTEGRATION END
 
 let lastTouchEnd=0;
 document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});

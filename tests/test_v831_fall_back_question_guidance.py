@@ -70,13 +70,13 @@ class V831FallBackQuestionGuidanceTests(unittest.TestCase):
         self.assertIn("commitNpoAction({actionId:pendingAction.id", movement)
 
     def test_version_831_is_consistent_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.6.41';", APP)
-        self.assertIn("const APP_VERSION = '8.6.41';", WORKER)
-        self.assertIn('V8.6.41', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.41'))
+        self.assertIn("const APP_VERSION = '8.7.0';", APP)
+        self.assertIn("const APP_VERSION = '8.7.0';", WORKER)
+        self.assertIn('V8.7.0', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.7.0'))
         self.assertIn('## v8.6.25', README)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.41', INDEX)
+            self.assertIn(f'{asset}?v=8.7.0', INDEX)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
 

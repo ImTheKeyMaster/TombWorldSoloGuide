@@ -28,10 +28,10 @@ class DashChargeMovementIconTests(unittest.TestCase):
         self.assertIn('focusable="false"', icon)
 
     def test_release_version_is_current_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.6.41';", APP)
-        self.assertIn("const APP_VERSION = '8.6.41';", SERVICE_WORKER)
-        self.assertIn('<div class="version">V8.6.41</div>', INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.41"))
+        self.assertIn("const APP_VERSION = '8.7.0';", APP)
+        self.assertIn("const APP_VERSION = '8.7.0';", SERVICE_WORKER)
+        self.assertIn('<div class="version">V8.7.0</div>', INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.7.0"))
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
 

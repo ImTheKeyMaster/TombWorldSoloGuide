@@ -98,12 +98,12 @@ class V810StreamlinedNpoActionFlowTests(unittest.TestCase):
         self.assertIn('completedActionIds', guard)
 
     def test_current_version_830_everywhere(self):
-        self.assertIn("const APP_VERSION = '8.6.41';", APP)
-        self.assertIn("const APP_VERSION = '8.6.41';", WORKER)
-        self.assertIn('V8.6.41', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.41'))
+        self.assertIn("const APP_VERSION = '8.7.0';", APP)
+        self.assertIn("const APP_VERSION = '8.7.0';", WORKER)
+        self.assertIn('V8.7.0', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.7.0'))
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.41', INDEX)
+            self.assertIn(f'{asset}?v=8.7.0', INDEX)
 
 
 if __name__ == '__main__':
