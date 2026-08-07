@@ -1,5 +1,9 @@
 from pathlib import Path
 import re
+import shutil
+import subprocess
+import tempfile
+import textwrap
 import unittest
 
 ROOT = Path(__file__).parents[1]
@@ -13,6 +17,17 @@ DASHBOARD = (ROOT / 'dashboard/dashboard.js').read_text()
 
 
 class DashboardStateTests(unittest.TestCase):
+    def run_module_script(self, script):
+        with tempfile.TemporaryDirectory() as directory:
+            temporary_root = Path(directory)
+            shutil.copytree(ROOT / 'dashboard', temporary_root / 'dashboard')
+            (temporary_root / 'package.json').write_text('{"type":"module"}')
+            result = subprocess.run(
+                ['node', '--input-type=module', '-e', textwrap.dedent(script)],
+                cwd=temporary_root, text=True, capture_output=True, check=True
+            )
+        return result.stdout.strip()
+
     def test_one_centralized_send_path_and_save_boundary(self):
         self.assertIn("dashboardFeature?.schedulePublish('committed-save')", APP)
         self.assertEqual(APP.count("schedulePublish('committed-save')"), 1)
@@ -57,6 +72,51 @@ class DashboardStateTests(unittest.TestCase):
         integration = APP.split('// DASHBOARD INTEGRATION START')
         self.assertGreaterEqual(len(integration), 4)
         self.assertIn("const APP_VERSION = '8.7.2';", APP)
+
+    def test_snapshot_runtime_minimization_nulls_and_read_only_shape(self):
+        output = self.run_module_script("""
+            import assert from 'node:assert/strict';
+            import { createDashboardSnapshot } from './dashboard/controller/dashboard-snapshot.js';
+            const snapshot = createDashboardSnapshot({
+              app: { version: '8.7.2' }, battle: {}, threat: {}, readiness: {},
+              mission: { objectives: [{ id: 'one', secret: 'excluded' }] },
+              currentActivation: { side: 'npo', name: 'Warrior', secret: 'excluded' },
+              activeEvents: [{ id: 'event', title: 'Event', callback() {} }]
+            }, 1, 123);
+            assert.equal(snapshot.battle.turningPoint, null);
+            assert.equal(snapshot.currentActivation.secret, undefined);
+            assert.equal(snapshot.mission.objectives[0].secret, undefined);
+            assert.equal(snapshot.activeEvents[0].callback, undefined);
+            assert.ok(Object.isFrozen(snapshot.mission.objectives[0]));
+            console.log('ok');
+        """)
+        self.assertEqual(output, 'ok')
+
+    def test_publisher_runtime_debounce_duplicates_revisions_and_failed_send(self):
+        output = self.run_module_script("""
+            import assert from 'node:assert/strict';
+            import { createDashboardPublisher } from './dashboard/controller/dashboard-publisher.js';
+            const sent = [];
+            let acceptsSend = true;
+            const controller = {
+              getDashboardStatus: () => ({ status: 'connected' }),
+              sendDashboardSnapshot: value => acceptsSend && Boolean(sent.push(JSON.parse(value)))
+            };
+            const source = { app: { version: '8.7.2' }, battle: {}, threat: {}, readiness: {}, mission: {} };
+            const publisher = createDashboardPublisher({ controller, getSnapshotSource: () => source, debounceMs: 20 });
+            publisher.schedulePublish('first'); publisher.schedulePublish('second');
+            await new Promise(resolve => setTimeout(resolve, 35));
+            assert.equal(sent.length, 1); assert.equal(sent[0].snapshot.revision, 1);
+            publisher.schedulePublish('duplicate'); await new Promise(resolve => setTimeout(resolve, 35));
+            assert.equal(sent.length, 1);
+            source.battle.turningPoint = 2; acceptsSend = false;
+            publisher.schedulePublish('failed'); await new Promise(resolve => setTimeout(resolve, 35));
+            acceptsSend = true; source.battle.turningPoint = 3;
+            publisher.schedulePublish('retry'); await new Promise(resolve => setTimeout(resolve, 35));
+            assert.equal(sent.length, 2); assert.equal(sent[1].snapshot.revision, 2);
+            console.log('ok');
+        """)
+        self.assertEqual(output, 'ok')
 
 
 if __name__ == '__main__':

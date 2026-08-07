@@ -16,7 +16,7 @@ export function createDashboardPublisher({ controller, getSnapshotSource, deboun
         console.warn('[Dashboard] Snapshot exceeds the configured maximum payload size.');
         return false;
       }
-      controller.sendDashboardSnapshot(message);
+      if (!controller.sendDashboardSnapshot(message)) return false;
       revision += 1;
       lastContent = content;
       return true;

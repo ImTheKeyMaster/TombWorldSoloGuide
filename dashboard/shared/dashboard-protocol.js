@@ -69,17 +69,39 @@ export function isReadOnlyDashboardMessage(value) {
   return validateDashboardMessage(value).valid && READ_ONLY_INBOUND_TYPES.has(value.type);
 }
 
+const isObject = value => Boolean(value && typeof value === 'object' && !Array.isArray(value));
+const isNullableString = value => value === null || typeof value === 'string';
+const isNullableNumber = value => value === null || Number.isFinite(value);
+const isOperativeSummary = value => isObject(value)
+  && isNullableString(value.id) && isNullableString(value.name) && isNullableNumber(value.number)
+  && isNullableNumber(value.wounds) && isNullableNumber(value.maximumWounds)
+  && typeof value.status === 'string' && isNullableString(value.order)
+  && typeof value.currentActivation === 'boolean';
+
 export function validateDashboardSnapshot(value) {
-  const valid = Boolean(value && typeof value === 'object' && !Array.isArray(value)
+  const valid = Boolean(isObject(value)
     && value.schemaVersion === DASHBOARD_SNAPSHOT_SCHEMA_VERSION
     && value.protocolVersion === DASHBOARD_PROTOCOL_VERSION
     && Number.isSafeInteger(value.revision) && value.revision > 0
     && Number.isFinite(value.updatedAt)
-    && value.app && typeof value.app.version === 'string'
-    && value.battle && value.threat && value.readiness && value.mission
+    && isObject(value.app) && typeof value.app.version === 'string'
+    && isObject(value.battle) && typeof value.battle.status === 'string'
+    && isNullableString(value.battle.result) && isNullableNumber(value.battle.turningPoint)
+    && isNullableNumber(value.battle.maximumTurningPoints) && isNullableString(value.battle.phase)
+    && isNullableNumber(value.battle.elapsedSeconds)
+    && isObject(value.threat) && isNullableNumber(value.threat.level)
+    && isNullableString(value.threat.name) && isNullableNumber(value.threat.grade)
+    && isNullableString(value.threat.gradeDescription)
+    && isObject(value.readiness) && ['playerReady', 'playerTotal', 'npoReady', 'npoTotal'].every(field => isNullableNumber(value.readiness[field]))
+    && isObject(value.mission) && isNullableString(value.mission.id)
+    && isNullableString(value.mission.number) && isNullableString(value.mission.name)
+    && isNullableString(value.mission.summary) && isNullableNumber(value.mission.progress)
+    && isNullableNumber(value.mission.target) && Array.isArray(value.mission.objectives)
+    && (value.currentActivation === null || isObject(value.currentActivation))
+    && (value.currentDirection === null || isObject(value.currentDirection))
     && Array.isArray(value.activeEvents)
-    && Array.isArray(value.playerOperatives)
-    && Array.isArray(value.npoOperatives)
+    && Array.isArray(value.playerOperatives) && value.playerOperatives.every(isOperativeSummary)
+    && Array.isArray(value.npoOperatives) && value.npoOperatives.every(isOperativeSummary)
     && Array.isArray(value.recentActivity)
     && Array.isArray(value.narrativeFeed));
   return valid ? { valid: true } : { valid: false, reason: 'invalid-snapshot-schema' };
