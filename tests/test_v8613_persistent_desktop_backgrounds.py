@@ -18,9 +18,9 @@ BACKGROUND_DIR = ROOT / "Assets" / "Images" / "Backgrounds"
 
 class PersistentDesktopBackgroundTests(unittest.TestCase):
     def test_version_and_save_schema(self):
-        self.assertIn("const APP_VERSION = '8.7.1';", APP)
-        self.assertIn("V8.7.1", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.7.1"))
+        self.assertIn("const APP_VERSION = '8.7.2';", APP)
+        self.assertIn("V8.7.2", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.7.2"))
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
     def test_manifest_matches_current_landscape_images_in_natural_order(self):

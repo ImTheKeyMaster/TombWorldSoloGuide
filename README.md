@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.7.1
+# Tomb World Solo Guide v8.7.2
+
+## v8.7.2
+
+**Version 8.7.2 - Live Dashboard State**
+
+- Added a centralized read-only dashboard snapshot.
+- Added automatic WebRTC updates after meaningful game changes.
+- Added revision and schema validation.
+- Kept dashboard publishing isolated from gameplay logic.
 
 ## v8.7.1
 

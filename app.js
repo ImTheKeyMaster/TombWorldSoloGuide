@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.7.1';
+  const APP_VERSION = '8.7.2';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -32,8 +32,32 @@
   const EventEffects=TombWorldEventEffects;
 
   // DASHBOARD INTEGRATION START
+  let dashboardFeature=null;
   async function requestDashboardFeature() {
-    return import('./dashboard/controller/dashboard-feature.js');
+    dashboardFeature ||= await import('./dashboard/controller/dashboard-feature.js');
+    return dashboardFeature;
+  }
+  function dashboardSnapshotSource(){
+    const selectedMission=mission(),activeNpo=state.roster.find(item=>item.id===state.activeNpoId&&item.wounds>0);
+    const playerStage=state.combatState?.side==='player'?state.combatState.stage:null;
+    const activePlayerId=playerStage?.playerOperativeId||(state.missionActionContext?.side==='player'?state.missionActionContext.operativeId:null),activePlayer=activePlayerId?playerDefinition(activePlayerId):null;
+    const grade=threatGrade(),status=state.screen!=='game'?'unavailable':state.gameEnd?'complete':'active';
+    const operativeStatus=(ready,incapacitated,dormant,inPlay=true)=>!inPlay?'unavailable':incapacitated?'incapacitated':dormant?'dormant':ready?'ready':'activated';
+    return {
+      app:{version:APP_VERSION},battle:{status,result:state.gameEnd||null,turningPoint:state.turningPoint||null,maximumTurningPoints:MAX_TURNING_POINTS,phase:state.phase||null,elapsedSeconds:null},
+      threat:{level:state.threat,name:threatLabel(),grade,gradeDescription:gradeGameplayDescription(grade).effects.map(effect=>effect.text).join(' ')},
+      readiness:{playerReady:state.playerReady,playerTotal:state.playerCount,npoReady:readyNpos().length,npoTotal:activeNpos().length},
+      mission:{id:state.missionId,number:selectedMission?.number||null,name:selectedMission?.name||null,summary:selectedMission?.objective||null,progress:Number.isFinite(Number(state.tracker))?Number(state.tracker):null,target:missionTrackerMax(selectedMission)||null,objectives:[]},
+      currentActivation:activeNpo?{side:'npo',operativeId:activeNpo.id,name:npoName(activeNpo),wounds:activeNpo.wounds,maximumWounds:activeNpo.maxWounds,apl:activeNpo.apl,apRemaining:state.lastActivation?.remainingAp??null,order:activeNpo.order||null,weaponName:npoWeapon(npoDefinition(activeNpo.type),activeNpo.weaponId)?.name||null}:activePlayer?{side:'player',operativeId:activePlayerId,name:playerName(activePlayerId),wounds:playerCurrentWounds(activePlayerId),maximumWounds:activePlayer.wounds,apl:activePlayer.apl??null,apRemaining:playerStage?Math.max(0,Number(playerStage.apl||activePlayer.apl||0)-playerActionCost(playerStage)):state.missionActionContext?.remainingAp??null,order:state.playerOperativeStates?.[activePlayerId]?.order||null,weaponName:null}:null,
+      currentDirection:state.lastActivation?.pendingAction?{type:state.lastActivation.pendingAction.id,title:state.lastActivation.pendingAction.name,summary:state.lastActivation.reason||null}:null,
+      activeEvents:(state.eventState?.active||[]).map(event=>({id:event.definitionId||event.instanceId||null,title:event.title||null,summary:event.text||null})),
+      playerOperatives:(state.playerRoster||[]).map(id=>{const definition=playerDefinition(id),inPlay=playerOperativeState(id).inPlay!==false,incapacitated=(state.playerCasualtyIds||[]).includes(id);return {id,name:playerName(id),number:state.playerDisplayNumbers?.[id]??null,wounds:playerCurrentWounds(id),maximumWounds:definition?.wounds??null,status:operativeStatus(!(state.playerActivatedIds||[]).includes(id),incapacitated,false,inPlay),order:state.playerOperativeStates?.[id]?.order||null,currentActivation:id===activePlayerId};}),
+      npoOperatives:(state.roster||[]).map(npo=>({id:npo.id,name:npoName(npo),number:npo.displayNumber??null,wounds:npo.wounds,maximumWounds:npo.maxWounds,status:operativeStatus(npo.ready,npo.wounds<=0,npo.dormant,npo.battlefieldState==='deployed'||npo.battlefieldState==='out-of-action'),order:npo.order||null,currentActivation:npo.id===state.activeNpoId})),
+      recentActivity:(state.journal||[]).slice(0,10).map((entry,index)=>({timestamp:entry.time||null,sequence:(state.journal||[]).length-index,category:'battle',text:entry.text||'',severity:null}))
+    };
+  }
+  async function setupDashboardFeature(){
+    const feature=await requestDashboardFeature();await feature.setup({getSnapshotSource:dashboardSnapshotSource});return feature;
   }
   // DASHBOARD INTEGRATION END
 
@@ -804,7 +828,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(objectiveEngine)state.missionRuntime=objectiveEngine.getMissionRuntime();
     state.version=APP_VERSION;
     state.saveVersion=currentSaveVersion();
-    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(createPersistedSave(state)));return true;}
+    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(createPersistedSave(state)));
+      // DASHBOARD INTEGRATION START
+      dashboardFeature?.schedulePublish('committed-save');
+      // DASHBOARD INTEGRATION END
+      return true;}
     catch{showToast('The game could not be saved. Check available browser storage.');return false;}
   }
   function load(){
@@ -7224,7 +7252,9 @@ function showPlayerActivation(stage={}){
   function isGuidedPlayActive(){return state.screen==='game'&&!isBattleComplete();}
   function canOpenHelp(){return isNewGameSetupActive()||isGuidedPlayActive()||isBattleComplete();}
   let dashboardController=null, stopDashboardCamera=null, dashboardCountdown=null, unsubscribeDashboardStatus=null;
-  async function getDashboardController(){dashboardController ||= await import('./dashboard/controller/dashboard-controller.js');return dashboardController;}
+  // DASHBOARD INTEGRATION START
+  async function getDashboardController(){dashboardController ||= await setupDashboardFeature();return dashboardController;}
+  // DASHBOARD INTEGRATION END
   function dashboardResponseValue(value){
     if(!value)return '';
     try{const parsed=new URL(value);return parsed.hash.match(/(?:^#|&)answer=([^&]+)/)?.[1]||value;}catch{return value.replace(/^#?answer=/,'').trim();}
@@ -7235,10 +7265,10 @@ function showPlayerActivation(stage={}){
     const initiating=document.activeElement;
     try{
       const controller=await getDashboardController();
-      if(reestablish){stopPairingCamera();controller.cleanupDashboardConnection();}
+      if(reestablish){stopPairingCamera();await controller.reestablish();}
       const offer=await controller.createDashboardOffer();
       const dashboardUrl=new URL("dashboard/",document.baseURI);dashboardUrl.hash=`offer=${offer.encodedOffer}`;
-      showModal('Setup Companion Dashboard',`<p>Pair this game device with a read-only companion display. No game save or dashboard snapshot is sent in this release.</p><ol class="pairing-steps"><li>Open the QR code or URL on the dashboard device.</li><li>The dashboard will display a response QR code.</li><li>Scan that response with this device.</li><li>The link will then update automatically.</li></ol><div class="pairing-qr-host" id="dashboardOfferQr"></div><label class="pairing-label" for="dashboardUrl">Dashboard URL</label><textarea class="pairing-payload" id="dashboardUrl" rows="3" readonly></textarea><div class="pairing-copy-row"><button class="btn secondary" id="copyDashboardUrl">Copy URL</button>${navigator.share?'<button class="btn secondary" id="shareDashboardUrl">Share</button>':''}</div><p class="pairing-expiration" id="dashboardExpiration"></p><p class="pairing-status" id="dashboardPairingStatus" role="status" aria-live="polite">Waiting for dashboard</p><p class="verification-code" id="dashboardVerification" hidden>COGITATOR LINK VERIFIED<br>Code: <strong>${offer.verificationCode}</strong></p><div id="dashboardCameraHost"></div><div class="wizard-actions pairing-actions"><button class="btn primary" id="scanDashboardResponse">Scan Dashboard Response</button><button class="btn secondary" id="pasteDashboardResponse">Paste Response</button><button class="btn ghost" data-close>Cancel</button></div>`,()=>{stopPairingCamera();clearInterval(dashboardCountdown);stopDashboardStatusSubscription();if(controller.getDashboardStatus().status!=='connected')controller.cleanupDashboardConnection();initiating?.focus?.();});
+      showModal('Setup Companion Dashboard',`<p>Pair this game device with a read-only companion display. Only a minimized live dashboard snapshot is sent.</p><ol class="pairing-steps"><li>Open the QR code or URL on the dashboard device.</li><li>The dashboard will display a response QR code.</li><li>Scan that response with this device.</li><li>The link will then update automatically.</li></ol><div class="pairing-qr-host" id="dashboardOfferQr"></div><label class="pairing-label" for="dashboardUrl">Dashboard URL</label><textarea class="pairing-payload" id="dashboardUrl" rows="3" readonly></textarea><div class="pairing-copy-row"><button class="btn secondary" id="copyDashboardUrl">Copy URL</button>${navigator.share?'<button class="btn secondary" id="shareDashboardUrl">Share</button>':''}</div><p class="pairing-expiration" id="dashboardExpiration"></p><p class="pairing-status" id="dashboardPairingStatus" role="status" aria-live="polite">Waiting for dashboard</p><p class="verification-code" id="dashboardVerification" hidden>COGITATOR LINK VERIFIED<br>Code: <strong>${offer.verificationCode}</strong></p><div id="dashboardCameraHost"></div><div class="wizard-actions pairing-actions"><button class="btn primary" id="scanDashboardResponse">Scan Dashboard Response</button><button class="btn secondary" id="pasteDashboardResponse">Paste Response</button><button class="btn ghost" data-close>Cancel</button></div>`,()=>{stopPairingCamera();clearInterval(dashboardCountdown);stopDashboardStatusSubscription();if(controller.getStatus().status!=='connected')void controller.disconnect();initiating?.focus?.();});
       $('#dashboardUrl').value=dashboardUrl.href;
       const {renderQrCode,scanQrCode}=await import('./dashboard/shared/qr-utils.js');
       await renderQrCode($('#dashboardOfferQr'),dashboardUrl.href,'Open this offer QR code on the companion dashboard device.');
@@ -7250,12 +7280,12 @@ function showPlayerActivation(stage={}){
       scanButton.onclick=async()=>{if(stopDashboardCamera){stopPairingCamera();scanButton.textContent='Scan Dashboard Response';scanButton.focus();return;}try{controller.markWaitingForResponse();scanButton.textContent='Cancel Scan';stopDashboardCamera=await scanQrCode({videoHost:$('#dashboardCameraHost'),onResult:apply,onStop:()=>{stopDashboardCamera=null;scanButton.textContent='Scan Dashboard Response';scanButton.focus();}});}catch(error){stopPairingCamera();showToast('Camera scanning is unavailable. Paste the response instead.');scanButton.focus();}};
       const refreshExpiration=()=>{const seconds=Math.max(0,Math.ceil((offer.expiresAt-Date.now())/1000));$('#dashboardExpiration').textContent=seconds?`Pairing expires in ${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`:'Pairing link expired.';};refreshExpiration();dashboardCountdown=setInterval(refreshExpiration,1000);
       stopDashboardStatusSubscription();
-      unsubscribeDashboardStatus=controller.subscribeDashboardStatus(detail=>{const node=$('#dashboardPairingStatus'),verified=$('#dashboardVerification');if(node)node.textContent=detail.text;if(verified)verified.hidden=detail.status!=='connected';});
+      unsubscribeDashboardStatus=controller.subscribeStatus(detail=>{const node=$('#dashboardPairingStatus'),verified=$('#dashboardVerification');if(node)node.textContent=detail.text;if(verified)verified.hidden=detail.status!=='connected';});
     }catch(error){showToast(error.message||'Dashboard pairing could not be started.');}
   }
   async function addDashboardGameMenuSection(){
     const host=$('#dashboardMenuSection');if(!host)return;
-    try{const feature=await requestDashboardFeature();const online=feature.isDashboardWebRtcSupported()&&await feature.requestDashboardAvailability({gameMenuOpen:true,activeGame:true,isEligible:()=>Boolean($('#dashboardMenuSection')&&state.screen==='game')});if(!host.isConnected)return;const controller=await getDashboardController();const detail=controller.getDashboardStatus();host.innerHTML=`<h3>Dashboard</h3><p class="dashboard-menu-status" role="status" aria-live="polite">${detail.text}</p>${online?`<button class="btn secondary" id="menuSetupDashboard">${detail.hasAttempt?'Reestablish Dashboard Pairing':'Setup Dashboard'}</button>`:''}`;if($('#menuSetupDashboard'))$('#menuSetupDashboard').onclick=()=>openDashboardPairing(detail.hasAttempt);}catch{host.innerHTML='<h3>Dashboard</h3><p class="dashboard-menu-status">Not connected</p>';}
+    try{const feature=await requestDashboardFeature();const online=feature.isDashboardWebRtcSupported()&&await feature.requestDashboardAvailability({gameMenuOpen:true,activeGame:true,isEligible:()=>Boolean($('#dashboardMenuSection')&&state.screen==='game')});if(!host.isConnected)return;const controller=await getDashboardController();const detail=controller.getStatus();host.innerHTML=`<h3>Dashboard</h3><p class="dashboard-menu-status" role="status" aria-live="polite">${detail.text}</p>${online?`<button class="btn secondary" id="menuSetupDashboard">${detail.hasAttempt?'Reestablish Dashboard Pairing':'Setup Dashboard'}</button>`:''}`;if($('#menuSetupDashboard'))$('#menuSetupDashboard').onclick=()=>openDashboardPairing(detail.hasAttempt);}catch{host.innerHTML='<h3>Dashboard</h3><p class="dashboard-menu-status">Not connected</p>';}
   }
   function openHelpFromGameMenu(){
     closeModal();
