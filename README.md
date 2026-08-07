@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.7.0
+# Tomb World Solo Guide v8.7.1
+
+## v8.7.1
+
+**Version 8.7.1 - WebRTC Dashboard Pairing**
+
+- Added one-time QR and URL pairing for the companion dashboard.
+- Added an online-only Setup Dashboard option beside Continue Game.
+- Added dashboard re-pairing from Game Menu.
+- Kept all dashboard traffic peer-to-peer and read-only.
 
 ## v8.7.0
 

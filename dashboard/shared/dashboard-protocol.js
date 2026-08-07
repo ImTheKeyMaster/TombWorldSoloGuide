@@ -6,6 +6,7 @@ export const MAXIMUM_ACCEPTED_MESSAGE_SIZE = DASHBOARD_CONFIG.maximumPayloadSize
 export const DASHBOARD_MESSAGE_TYPES = Object.freeze({
   HELLO: 'hello',
   DASHBOARD_READY: 'dashboard-ready',
+  HELLO_ACK: 'hello-ack',
   SNAPSHOT: 'snapshot',
   REQUEST_SNAPSHOT: 'request-snapshot',
   PING: 'ping',
