@@ -48,7 +48,7 @@ class DashboardLifecycleTests(unittest.TestCase):
         self.assertIn('if (!navigator.onLine)', ONLINE)
         self.assertIn("cache: 'no-store'", ONLINE)
         self.assertIn("id=\"setupDashboardBtn\" hidden", APP)
-        self.assertIn('canContinue&&available', APP)
+        self.assertIn('if(canContinue)requestDashboardFeature()', APP); self.assertIn('setupDashboardBtn.hidden=!available', APP)
         self.assertIn('Network unavailable', APP)
         self.assertIn('stopDashboardAvailabilitySubscription', APP)
         self.assertIn('if(!feature.isDashboardFeatureEnabled()){host.remove();return;}', APP)

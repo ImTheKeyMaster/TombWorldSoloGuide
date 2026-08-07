@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v8.7.5
+# Tomb World Solo Guide v8.7.6
+
+## v8.7.6
+
+**Version 8.7.6 - Dashboard Setup and Pairing UX**
+
+- Made Setup Dashboard reliably available from the Home screen when online.
+- Added immediate visual feedback when dashboard setup begins.
+- Added a QR code and complete shareable dashboard pairing URL.
+- Added Copy, Share, and Open Dashboard Link controls.
+- Improved dashboard pairing instructions and failure handling.
 
 ## v8.7.5
 
