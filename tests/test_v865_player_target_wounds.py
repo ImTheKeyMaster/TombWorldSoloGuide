@@ -14,13 +14,13 @@ PERSISTENCE = (ROOT / "persistence.js").read_text()
 
 class PlayerTargetWoundLabelsTests(unittest.TestCase):
     def test_release_version_is_consistent(self):
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.7.6"))
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.7.7"))
         self.assertIn("Version 8.6.5 - Show Player Wounds in Target Selection", README)
-        self.assertIn("const APP_VERSION = '8.7.6';", APP)
-        self.assertIn("const APP_VERSION = '8.7.6';", WORKER)
-        self.assertIn("V8.7.6", INDEX)
+        self.assertIn("const APP_VERSION = '8.7.7';", APP)
+        self.assertIn("const APP_VERSION = '8.7.7';", WORKER)
+        self.assertIn("V8.7.7", INDEX)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.7.6", INDEX)
+            self.assertIn(f"{asset}?v=8.7.7", INDEX)
 
     def test_shared_helper_uses_numbered_name_and_live_wounds(self):
         helper = re.search(r"function playerTargetLabel\(id\)\{(.*?)\n  \}", APP, re.S)

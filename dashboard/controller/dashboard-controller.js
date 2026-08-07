@@ -1,6 +1,7 @@
 import { DASHBOARD_CONFIG } from '../shared/dashboard-config.js';
 import { DASHBOARD_PROTOCOL_VERSION, DASHBOARD_MESSAGE_TYPES, safeParseDashboardJson, isReadOnlyDashboardMessage } from '../shared/dashboard-protocol.js';
 import { serializePairingData, decodePairingData } from '../shared/pairing-codec.js';
+import { collectIceCandidates, addRemoteIceCandidates, describeBrowserEnvironment } from '../shared/webrtc-ice.js';
 
 const STATUS_TEXT = Object.freeze({ idle: 'Not connected', creating: 'Creating link', offer: 'Waiting for dashboard', response: 'Waiting for response', connecting: 'Connecting', connected: 'Dashboard Connected', interrupted: 'Connection Interrupted', failed: 'Connection Interrupted' });
 const activeChannels = new Set(); // Broadcast boundary kept collection-based for future multi-viewer support.
@@ -9,12 +10,11 @@ const sessionStore = globalThis.sessionStorage;
 function readLinkedSession() { try { return sessionStore?.getItem('tomb-world-dashboard-linked') === '1'; } catch { return false; } }
 function writeLinkedSession(linked) { try { if (linked) sessionStore?.setItem('tomb-world-dashboard-linked', '1'); else sessionStore?.removeItem('tomb-world-dashboard-linked'); } catch { /* Connection state remains authoritative. */ } }
 let peer = null, channel = null, session = null, status = readLinkedSession() ? 'interrupted' : 'idle';
-let heartbeatTimer = null, disconnectTimer = null, generation = 0, violationCount = 0;
+let heartbeatTimer = null, disconnectTimer = null, generation = 0, violationCount = 0, iceAbortController = null, pairingDiagnostics = null;
 function notify(listener, detail) { try { listener(detail); } catch (error) { console.warn('[Dashboard] Listener failed.', error); } }
-function detail() { return { status, text: STATUS_TEXT[status], verificationCode: session?.verificationCode || null, hasAttempt: status !== 'idle' || Boolean(session) }; }
+function detail() { return { status, text: STATUS_TEXT[status], verificationCode: session?.verificationCode || null, hasAttempt: status !== 'idle' || Boolean(session), diagnostics: pairingDiagnostics }; }
 function update(next) { status = next; subscribers.forEach(listener => notify(listener, detail())); }
 function randomNonce() { const bytes = new Uint8Array(16); globalThis.crypto.getRandomValues(bytes); return [...bytes].map(value => value.toString(16).padStart(2, '0')).join(''); }
-function waitForIce(connection, token) { if (connection.iceGatheringState === 'complete') return Promise.resolve(); return new Promise((resolve, reject) => { const finish = error => { clearTimeout(timer); connection.removeEventListener('icegatheringstatechange', change); error ? reject(error) : resolve(); }; const timer = setTimeout(() => finish(new Error('ICE gathering timed out.')), DASHBOARD_CONFIG.connectionTimeoutMs); const change = () => { if (token !== generation) finish(new Error('Pairing attempt was superseded.')); else if (connection.iceGatheringState === 'complete') finish(); }; connection.addEventListener('icegatheringstatechange', change); }); }
 async function verificationCode(nonce) { const digest = new Uint8Array(await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(`tomb-world-dashboard:${nonce}`))); const number = ((digest[0] << 16) | (digest[1] << 8) | digest[2]) % 1000000; return number.toString().padStart(6, '0').replace(/(\d{3})(\d{3})/, '$1 $2'); }
 function message(type, values = {}) { return JSON.stringify({ protocolVersion: DASHBOARD_PROTOCOL_VERSION, type, ...values }); }
 function sendHeartbeat(dataChannel) { if (dataChannel.readyState === 'open') dataChannel.send(message(DASHBOARD_MESSAGE_TYPES.PING, { sentAt: Date.now() })); }
@@ -54,16 +54,22 @@ export function sendDashboardSnapshot(serializedMessage) {
   activeChannels.forEach(activeChannel => { if (activeChannel.readyState === 'open') { activeChannel.send(serializedMessage); sent = true; } });
   return sent;
 }
-export async function createDashboardOffer(label = 'Tomb World battle') {
+export async function createDashboardOffer(label = 'Tomb World battle', { onProgress } = {}) {
   cleanupDashboardConnection({ preserveAttempt: true });
   if (!isWebRtcSupported()) throw new Error('WebRTC is not supported on this device.');
   const token = generation, now = Date.now(), nonce = randomNonce(); update('creating');
+  onProgress?.('Creating WebRTC session...');
   peer = new RTCPeerConnection({ iceServers: DASHBOARD_CONFIG.iceServers });
   channel = peer.createDataChannel('tomb-world-dashboard', { ordered: true }); bindConnection(peer, channel, token);
   session = { nonce, createdAt: now, expiresAt: now + DASHBOARD_CONFIG.pairingLifetimeMs, verificationCode: await verificationCode(nonce), responseApplied: false };
-  await peer.setLocalDescription(await peer.createOffer()); await waitForIce(peer, token);
+  iceAbortController = new AbortController();
+  let gathered;
+  try { gathered = await collectIceCandidates(peer, { maximumWaitMs: DASHBOARD_CONFIG.connectionTimeoutMs, quietPeriodMs: DASHBOARD_CONFIG.iceCandidateQuietPeriodMs, signal: iceAbortController.signal, onProgress: progress => onProgress?.(`${progress.count} network route${progress.count === 1 ? '' : 's'} found...`), startGathering: async () => { await peer.setLocalDescription(await peer.createOffer()); onProgress?.('Discovering network route...'); } }); }
+  catch (error) { pairingDiagnostics = { browser: describeBrowserEnvironment(), ...(error.diagnostics || {}) }; error.diagnostics = pairingDiagnostics; throw error; }
+  pairingDiagnostics = { browser: describeBrowserEnvironment(), ...gathered.diagnostics };
   if (token !== generation) throw new Error('Pairing attempt was superseded.');
-  const payload = { protocolVersion: DASHBOARD_PROTOCOL_VERSION, type: 'offer', nonce, createdAt: now, expiresAt: session.expiresAt, sdpType: 'offer', sdp: peer.localDescription.sdp, label };
+  onProgress?.('Generating pairing code...');
+  const payload = { protocolVersion: DASHBOARD_PROTOCOL_VERSION, type: 'offer', nonce, createdAt: now, expiresAt: session.expiresAt, sdpType: 'offer', sdp: peer.localDescription.sdp, candidates: gathered.candidates, label };
   const encodedOffer = await serializePairingData(payload); update('offer');
   return { encodedOffer, expiresAt: session.expiresAt, verificationCode: session.verificationCode };
 }
@@ -71,12 +77,12 @@ export async function applyDashboardResponse(encoded) {
   if (!peer || !session) throw new Error('Create a dashboard link first.');
   if (session.responseApplied) throw new Error('Dashboard response was already applied.');
   session.responseApplied = true;
-  try { const answer = await decodePairingData(encoded, { expectedType: 'answer', expectedNonce: session.nonce, expectedSdpType: 'answer' }); update('connecting'); await peer.setRemoteDescription({ type: answer.sdpType, sdp: answer.sdp }); }
+  try { const answer = await decodePairingData(encoded, { expectedType: 'answer', expectedNonce: session.nonce, expectedSdpType: 'answer' }); update('connecting'); await peer.setRemoteDescription({ type: answer.sdpType, sdp: answer.sdp }); await addRemoteIceCandidates(peer, answer.candidates, answer.sdp); }
   catch (error) { session.responseApplied = false; throw error; }
 }
 export function markWaitingForResponse() { if (session) update('response'); }
 export function cleanupDashboardConnection({ preserveAttempt = false, nextStatus = preserveAttempt ? 'interrupted' : 'idle' } = {}) {
-  generation += 1; stopTimers(); activeChannels.forEach(activeChannel => activeChannel.close()); activeChannels.clear();
+  generation += 1; iceAbortController?.abort(); iceAbortController = null; pairingDiagnostics = null; stopTimers(); activeChannels.forEach(activeChannel => activeChannel.close()); activeChannels.clear();
   if (channel) { channel.onopen = channel.onmessage = channel.onclose = null; }
   if (peer) peer.onconnectionstatechange = null;
   channel?.close(); peer?.close(); channel = peer = session = null; violationCount = 0;

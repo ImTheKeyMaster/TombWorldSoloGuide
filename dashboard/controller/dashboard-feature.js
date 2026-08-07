@@ -33,7 +33,7 @@ export async function disconnect() { const value = await getController(); value.
 export function schedulePublish(reason) { publisher?.schedulePublish(reason); }
 export function getStatus() { return controller?.getDashboardStatus() || { status: 'idle', text: 'Not connected', verificationCode: null, hasAttempt: false }; }
 export function subscribeStatus(listener) { return controller ? controller.subscribeDashboardStatus(listener) : () => {}; }
-export async function createDashboardOffer(label) { return (await getController()).createDashboardOffer(label); }
+export async function createDashboardOffer(label, options) { return (await getController()).createDashboardOffer(label, options); }
 export async function applyDashboardResponse(encoded) { return (await getController()).applyDashboardResponse(encoded); }
 export async function markWaitingForResponse() { return (await getController()).markWaitingForResponse(); }
 

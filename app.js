@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.7.6';
+  const APP_VERSION = '8.7.7';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -7267,8 +7267,8 @@ function showPlayerActivation(stage={}){
   function stopPairingCamera(){if(stopDashboardCamera){stopDashboardCamera();stopDashboardCamera=null;}}
   function stopDashboardStatusSubscription(){unsubscribeDashboardStatus?.();unsubscribeDashboardStatus=null;}
   function stopDashboardAvailabilitySubscription(){unsubscribeDashboardAvailability?.();unsubscribeDashboardAvailability=null;}
-  function dashboardPairingPreparing(){return `<div class="pairing-preparing" id="dashboardPairingState" role="status" aria-live="polite"><span class="pairing-progress" aria-hidden="true"></span><p>Preparing secure dashboard link...</p></div><div class="wizard-actions"><button class="btn ghost" data-close>Close</button></div>`;}
-  function dashboardPairingError(message){return `<section class="pairing-error" id="dashboardPairingState" role="status" aria-live="polite"><h3>Dashboard Link Could Not Be Created</h3><p>${escapeHtml(message)}</p></section><div class="wizard-actions"><button class="btn primary" id="retryDashboardPairing">Try Again</button><button class="btn ghost" data-close>Close</button></div>`;}
+  function dashboardPairingPreparing(){return `<div class="pairing-preparing" id="dashboardPairingState" role="status" aria-live="polite"><span class="pairing-progress" aria-hidden="true"></span><p>Preparing secure dashboard link...</p><small id="dashboardPairingProgress">Creating WebRTC session...</small></div><div class="wizard-actions"><button class="btn ghost" data-close>Close</button></div>`;}
+  function dashboardPairingError(message,diagnostics){const errors=diagnostics?.stunErrors?.map(item=>item.errorCode).filter(Boolean).join(', ')||'None reported';const technical=diagnostics?`<details class="pairing-technical"><summary>Technical Details</summary><dl><div><dt>Browser</dt><dd>${escapeHtml(diagnostics.browser||'WebRTC browser')}</dd></div><div><dt>ICE state</dt><dd>${escapeHtml(diagnostics.iceGatheringState||'unknown')}</dd></div><div><dt>Routes found</dt><dd>${Number(diagnostics.gatheredCandidateCount)||0}</dd></div><div><dt>STUN errors</dt><dd>${escapeHtml(errors)}</dd></div></dl></details>`:'';return `<section class="pairing-error" id="dashboardPairingState" role="status" aria-live="polite"><h3>Dashboard Link Could Not Be Created</h3><p>${escapeHtml(message)}</p>${message.includes('network route')?'<p>If the problem continues, try:</p><ul><li>Switching Wi-Fi networks</li><li>Temporarily using cellular data</li><li>Opening Tomb World Solo Guide in Safari instead of the installed PWA</li></ul>':''}${technical}</section><div class="wizard-actions"><button class="btn primary" id="retryDashboardPairing">Try Again</button><button class="btn ghost" data-close>Close</button></div>`;}
   async function openDashboardPairing(reestablish=false){
     if(dashboardPairingOpen)return;
     const generation=++dashboardPairingGeneration;
@@ -7286,7 +7286,7 @@ function showPlayerActivation(stage={}){
       if(!isCurrent())return;
       controller=nextController;
       if(reestablish){stopPairingCamera();await controller.reestablish();if(!isCurrent())return;}
-      const offer=await controller.createDashboardOffer();
+      const offer=await controller.createDashboardOffer(undefined,{onProgress:value=>{const progress=$('#dashboardPairingProgress');if(progress&&isCurrent())progress.textContent=value;}});
       if(!isCurrent())return;
       const dashboardUrl=new URL("dashboard/",document.baseURI);dashboardUrl.hash=`offer=${offer.encodedOffer}`;
       showModal('Setup Companion Dashboard',`<p>Pair this game with a read-only companion dashboard.</p><ol class="pairing-steps"><li>On the device that will display the dashboard, scan the QR code below OR open the provided URL.</li><li>The dashboard device will open the Tomb World Dashboard and generate a response QR code.</li><li>Return to this device and select <strong>Scan Dashboard Response</strong>.</li><li>Scan the response QR code.</li><li>Once connected, dashboard updates occur automatically for the remainder of the session.</li></ol><div class="pairing-qr-host" id="dashboardOfferQr" aria-label="QR code containing the complete companion dashboard pairing link"></div><label class="pairing-label" for="dashboardUrl">Dashboard Link</label><textarea class="pairing-payload" id="dashboardUrl" rows="4" readonly></textarea><div class="pairing-copy-row"><button class="btn secondary" id="copyDashboardUrl">Copy URL</button>${navigator.share?'<button class="btn secondary" id="shareDashboardUrl">Share</button>':''}<a class="btn secondary" id="openDashboardUrl" target="_blank" rel="noopener noreferrer">Open Dashboard Link</a></div><p class="pairing-expiration" id="dashboardExpiration"></p><p class="pairing-status" id="dashboardPairingStatus" role="status" aria-live="polite">Waiting for dashboard device...</p><p class="verification-code" id="dashboardVerification" hidden>COGITATOR LINK VERIFIED<br>Code: <strong>${offer.verificationCode}</strong><br>Dashboard Connected</p><div id="dashboardCameraHost"></div><div class="wizard-actions pairing-actions"><button class="btn primary" id="scanDashboardResponse">Scan Dashboard Response</button><button class="btn secondary" id="pasteDashboardResponse">Paste Response</button><button class="btn ghost" data-close>Close</button></div>`,closePairing,'dashboard-pairing');
@@ -7311,8 +7311,10 @@ function showPlayerActivation(stage={}){
       stopPairingCamera();clearInterval(dashboardCountdown);stopDashboardStatusSubscription();
       if(controller)await controller.disconnect().catch(()=>{});
       if(!dashboardPairingOpen)return;
-      const message=error?.message==='Dashboard setup requires an internet connection.'?error.message:'Unable to establish the WebRTC pairing offer.';
-      showModal('Setup Companion Dashboard',dashboardPairingError(message),closePairing,'dashboard-pairing');
+      const noCandidates=error?.name==='NoIceCandidatesError',unsupported=/not supported/i.test(error?.message||'');
+      const stunFailure=noCandidates&&error?.diagnostics?.stunErrors?.length;
+      const message=error?.message==='Dashboard setup requires an internet connection.'?error.message:unsupported?'Companion Dashboard is not supported by this browser.':stunFailure?'WebRTC network discovery could not be completed. Try Again or switch networks.':noCandidates?'This device could not establish a WebRTC network route.':'Unable to establish the WebRTC pairing offer.';
+      showModal('Setup Companion Dashboard',dashboardPairingError(message,error?.diagnostics),closePairing,'dashboard-pairing');
       $('#retryDashboardPairing').onclick=()=>{dashboardPairingOpen=false;void openDashboardPairing(reestablish);};
     }
   }

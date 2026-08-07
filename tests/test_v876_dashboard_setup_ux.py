@@ -30,7 +30,7 @@ class DashboardSetupUxTests(unittest.TestCase):
                         pairing.index('await requestDashboardFeature()'))
         self.assertIn('Preparing secure dashboard link...', APP)
         self.assertLess(pairing.index("showModal('Setup Companion Dashboard',dashboardPairingPreparing()"),
-                        pairing.index('createDashboardOffer()'))
+                        pairing.index('createDashboardOffer('))
         self.assertIn('pairing-progress', CSS)
         self.assertIn('@media(prefers-reduced-motion:reduce)', CSS)
 
