@@ -30,7 +30,7 @@ class DashboardFoundationTests(unittest.TestCase):
 
     def test_dashboard_requests_are_network_only(self):
         dashboard_branch = WORKER.split("// DASHBOARD INTEGRATION START", 1)[1].split("// DASHBOARD INTEGRATION END", 1)[0]
-        self.assertIn("fetch(request)", dashboard_branch)
+        self.assertIn("fetch(request, {cache: 'no-store'})", dashboard_branch)
         self.assertNotRegex(dashboard_branch, r"caches?\.(?:open|match)")
         fetch_handler = WORKER.split("self.addEventListener('fetch'", 1)[1]
         self.assertLess(fetch_handler.index("/\\/dashboard"), fetch_handler.index("request.mode === 'navigate'"))
@@ -51,6 +51,12 @@ class DashboardFoundationTests(unittest.TestCase):
 
     def test_save_version_is_unchanged(self):
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
+
+    def test_event_rechecks_remain_eligibility_gated(self):
+        online = (DASHBOARD / "controller" / "dashboard-online.js").read_text()
+        feature = (DASHBOARD / "controller" / "dashboard-feature.js").read_text()
+        self.assertIn("if (shouldRecheckAvailability())", online)
+        self.assertIn("setDashboardOnlineEligibility(checkEligibility)", feature)
 
 
 if __name__ == "__main__":

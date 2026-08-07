@@ -1,13 +1,26 @@
 import { DASHBOARD_CONFIG } from '../shared/dashboard-config.js';
-import { checkDashboardOnline, getLastDashboardAvailability } from './dashboard-online.js';
+import {
+  checkDashboardOnline,
+  getLastDashboardAvailability,
+  setDashboardOnlineEligibility
+} from './dashboard-online.js';
 
 export function isDashboardFeatureEnabled() {
   return DASHBOARD_CONFIG.featureEnabled;
 }
 
-export async function requestDashboardAvailability({ hasResumableGame = false, gameMenuOpen = false, activeGame = false } = {}) {
+export async function requestDashboardAvailability({
+  hasResumableGame = false,
+  gameMenuOpen = false,
+  activeGame = false,
+  isEligible
+} = {}) {
   if (!DASHBOARD_CONFIG.featureEnabled) return false;
-  if (!hasResumableGame && !(gameMenuOpen && activeGame)) return false;
+  const checkEligibility = typeof isEligible === 'function'
+    ? isEligible
+    : () => hasResumableGame || (gameMenuOpen && activeGame);
+  setDashboardOnlineEligibility(checkEligibility);
+  if (!checkEligibility()) return false;
   return checkDashboardOnline();
 }
 

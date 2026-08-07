@@ -84,7 +84,7 @@ self.addEventListener('fetch', event => {
   // DASHBOARD INTEGRATION START
   // Dashboard pages and probes must never use Cache Storage or the app-shell fallback.
   if (/\/dashboard(?:\/|$)/.test(url.pathname)) {
-    event.respondWith(fetch(request));
+    event.respondWith(fetch(request, {cache: 'no-store'}));
     return;
   }
   // DASHBOARD INTEGRATION END

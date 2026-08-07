@@ -1,10 +1,13 @@
 import { DASHBOARD_CONFIG } from '../shared/dashboard-config.js';
 
-let availabilityRequested = false;
 let lastAvailability = false;
+let shouldRecheckAvailability = () => false;
+
+export function setDashboardOnlineEligibility(eligibilityCheck) {
+  shouldRecheckAvailability = typeof eligibilityCheck === 'function' ? eligibilityCheck : () => false;
+}
 
 export async function checkDashboardOnline() {
-  availabilityRequested = true;
   if (!navigator.onLine) {
     lastAvailability = false;
     return false;
@@ -34,7 +37,7 @@ export function getLastDashboardAvailability() {
 }
 
 function recheckRequestedAvailability() {
-  if (availabilityRequested) void checkDashboardOnline();
+  if (shouldRecheckAvailability()) void checkDashboardOnline();
 }
 
 window.addEventListener('online', recheckRequestedAvailability);
