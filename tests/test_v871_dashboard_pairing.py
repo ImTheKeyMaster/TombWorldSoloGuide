@@ -4,7 +4,7 @@ ROOT=Path(__file__).parents[1]
 APP=(ROOT/'app.js').read_text(); CONFIG=(ROOT/'dashboard/shared/dashboard-config.js').read_text(); CODEC=(ROOT/'dashboard/shared/pairing-codec.js').read_text(); CONTROLLER=(ROOT/'dashboard/controller/dashboard-controller.js').read_text(); DASH=(ROOT/'dashboard/dashboard.js').read_text(); WORKER=(ROOT/'service-worker.js').read_text(); PERSIST=(ROOT/'persistence.js').read_text()
 class DashboardPairingTests(unittest.TestCase):
  def test_visibility_and_lazy_loading(self):
-  self.assertIn('id="setupDashboardBtn" hidden',APP); self.assertIn('canContinue&&feature.isDashboardFeatureEnabled()',APP); self.assertIn('feature.isDashboardWebRtcSupported()',APP); self.assertIn('await feature.requestDashboardAvailability',APP); self.assertIn("await import('./dashboard/controller/dashboard-feature.js')",APP)
+  self.assertIn('id="setupDashboardBtn" hidden',APP); self.assertIn('if(canContinue)requestDashboardFeature()',APP); self.assertIn('feature.isDashboardFeatureEnabled()',APP); self.assertIn('feature.isDashboardWebRtcSupported()',APP); self.assertIn('await feature.requestDashboardAvailability',APP); self.assertIn("await import('./dashboard/controller/dashboard-feature.js')",APP)
  def test_config_is_stun_only(self):
   self.assertIn('stun:stun.cloudflare.com:3478',CONFIG); self.assertIn('stun:stun.cloudflare.com:53',CONFIG); self.assertNotIn('turn:',CONFIG.lower()); self.assertNotIn('credential',CONFIG.lower())
  def test_payload_validation(self):
