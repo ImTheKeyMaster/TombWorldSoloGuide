@@ -1877,17 +1877,19 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         <button class="btn ghost" id="homeHelpBtn">How It Works</button>
       </div>
     </section>`;
-    $('#newGameBtn').onclick=startNewGameSetup;
-    $('#continueBtn').onclick=()=>{ if(savedGame){state=normalizeState(savedGame);state.screen='game';render();} };
+    $('#newGameBtn').onclick=()=>{stopDashboardAvailabilitySubscription();startNewGameSetup();};
+    $('#continueBtn').onclick=()=>{ if(savedGame){stopDashboardAvailabilitySubscription();state=normalizeState(savedGame);state.screen='game';render();} };
     const setupDashboardBtn=$('#setupDashboardBtn');
     if(canContinue)requestDashboardFeature().then(async feature=>{
+      if($('#setupDashboardBtn')!==setupDashboardBtn)return;
       if(!feature.isDashboardFeatureEnabled()||!feature.isDashboardWebRtcSupported())return;
-      const updateAvailability=available=>{const button=$('#setupDashboardBtn');if(button)button.hidden=!available;};
+      const updateAvailability=available=>{if($('#setupDashboardBtn')===setupDashboardBtn)setupDashboardBtn.hidden=!available;};
       unsubscribeDashboardAvailability=feature.subscribeAvailability(updateAvailability);
-      updateAvailability(await feature.requestDashboardAvailability({hasResumableGame:true,isEligible:()=>Boolean($('#setupDashboardBtn'))}));
-    }).catch(()=>{const button=$('#setupDashboardBtn');if(button)button.hidden=true;});
+      updateAvailability(await feature.requestDashboardAvailability({hasResumableGame:true,isEligible:()=>$('#setupDashboardBtn')===setupDashboardBtn}));
+    }).catch(()=>{if($('#setupDashboardBtn')===setupDashboardBtn)setupDashboardBtn.hidden=true;});
     setupDashboardBtn.onclick=()=>openDashboardPairing(false);
     $('#homeHelpBtn').onclick=()=>{
+      stopDashboardAvailabilitySubscription();
       state.screen='help';
       render();
       window.scrollTo({top:0,left:0,behavior:'auto'});
@@ -7254,7 +7256,7 @@ function showPlayerActivation(stage={}){
   function isBattleComplete(){return state.screen==='game'&&Boolean(state.gameEnd||state.finalResolution?.pending);}
   function isGuidedPlayActive(){return state.screen==='game'&&!isBattleComplete();}
   function canOpenHelp(){return isNewGameSetupActive()||isGuidedPlayActive()||isBattleComplete();}
-  let dashboardController=null, stopDashboardCamera=null, dashboardCountdown=null, unsubscribeDashboardStatus=null, unsubscribeDashboardAvailability=null, dashboardPairingOpen=false;
+  let dashboardController=null, stopDashboardCamera=null, dashboardCountdown=null, unsubscribeDashboardStatus=null, unsubscribeDashboardAvailability=null, dashboardPairingOpen=false, dashboardPairingGeneration=0;
   // DASHBOARD INTEGRATION START
   async function getDashboardController(){dashboardController ||= await setupDashboardFeature();return dashboardController;}
   // DASHBOARD INTEGRATION END
@@ -7269,23 +7271,31 @@ function showPlayerActivation(stage={}){
   function dashboardPairingError(message){return `<section class="pairing-error" id="dashboardPairingState" role="status" aria-live="polite"><h3>Dashboard Link Could Not Be Created</h3><p>${escapeHtml(message)}</p></section><div class="wizard-actions"><button class="btn primary" id="retryDashboardPairing">Try Again</button><button class="btn ghost" data-close>Close</button></div>`;}
   async function openDashboardPairing(reestablish=false){
     if(dashboardPairingOpen)return;
-    const initiating=document.activeElement;
+    const generation=++dashboardPairingGeneration;
+    const isCurrent=()=>dashboardPairingOpen&&generation===dashboardPairingGeneration;
     let controller=null;
-    const closePairing=()=>{dashboardPairingOpen=false;stopPairingCamera();clearInterval(dashboardCountdown);stopDashboardStatusSubscription();if(controller?.getStatus().status!=='connected')void controller?.disconnect();initiating?.focus?.();};
+    const closePairing=()=>{dashboardPairingOpen=false;dashboardPairingGeneration+=1;stopPairingCamera();clearInterval(dashboardCountdown);stopDashboardStatusSubscription();if(controller?.getStatus().status!=='connected')void controller?.disconnect();};
     dashboardPairingOpen=true;
     showModal('Setup Companion Dashboard',dashboardPairingPreparing(),closePairing,'dashboard-pairing');
     try{
       const feature=await requestDashboardFeature();
-      if(!navigator.onLine||!await feature.requestDashboardAvailability({activeGame:true,isEligible:()=>dashboardPairingOpen}))throw new Error('Dashboard setup requires an internet connection.');
-      controller=await getDashboardController();
-      if(reestablish){stopPairingCamera();await controller.reestablish();}
+      if(!isCurrent())return;
+      if(!navigator.onLine||!await feature.requestDashboardAvailability({activeGame:true,isEligible:isCurrent}))throw new Error('Dashboard setup requires an internet connection.');
+      if(!isCurrent())return;
+      const nextController=await getDashboardController();
+      if(!isCurrent())return;
+      controller=nextController;
+      if(reestablish){stopPairingCamera();await controller.reestablish();if(!isCurrent())return;}
       const offer=await controller.createDashboardOffer();
+      if(!isCurrent())return;
       const dashboardUrl=new URL("dashboard/",document.baseURI);dashboardUrl.hash=`offer=${offer.encodedOffer}`;
       showModal('Setup Companion Dashboard',`<p>Pair this game with a read-only companion dashboard.</p><ol class="pairing-steps"><li>On the device that will display the dashboard, scan the QR code below OR open the provided URL.</li><li>The dashboard device will open the Tomb World Dashboard and generate a response QR code.</li><li>Return to this device and select <strong>Scan Dashboard Response</strong>.</li><li>Scan the response QR code.</li><li>Once connected, dashboard updates occur automatically for the remainder of the session.</li></ol><div class="pairing-qr-host" id="dashboardOfferQr" aria-label="QR code containing the complete companion dashboard pairing link"></div><label class="pairing-label" for="dashboardUrl">Dashboard Link</label><textarea class="pairing-payload" id="dashboardUrl" rows="4" readonly></textarea><div class="pairing-copy-row"><button class="btn secondary" id="copyDashboardUrl">Copy URL</button>${navigator.share?'<button class="btn secondary" id="shareDashboardUrl">Share</button>':''}<a class="btn secondary" id="openDashboardUrl" target="_blank" rel="noopener noreferrer">Open Dashboard Link</a></div><p class="pairing-expiration" id="dashboardExpiration"></p><p class="pairing-status" id="dashboardPairingStatus" role="status" aria-live="polite">Waiting for dashboard device...</p><p class="verification-code" id="dashboardVerification" hidden>COGITATOR LINK VERIFIED<br>Code: <strong>${offer.verificationCode}</strong><br>Dashboard Connected</p><div id="dashboardCameraHost"></div><div class="wizard-actions pairing-actions"><button class="btn primary" id="scanDashboardResponse">Scan Dashboard Response</button><button class="btn secondary" id="pasteDashboardResponse">Paste Response</button><button class="btn ghost" data-close>Close</button></div>`,closePairing,'dashboard-pairing');
       $('#dashboardUrl').value=dashboardUrl.href;
       $('#openDashboardUrl').href=dashboardUrl.href;
       const {renderQrCode,scanQrCode}=await import('./dashboard/shared/qr-utils.js');
+      if(!isCurrent())return;
       await renderQrCode($('#dashboardOfferQr'),dashboardUrl.href,'Open this offer QR code on the companion dashboard device.');
+      if(!isCurrent())return;
       let applyingResponse=false;const apply=async raw=>{if(applyingResponse)return;applyingResponse=true;stopPairingCamera();try{await controller.applyDashboardResponse(dashboardResponseValue(raw));showToast('Dashboard response accepted. Connecting…');}catch(error){applyingResponse=false;showToast(error.message);}};
       $('#copyDashboardUrl').onclick=async()=>{await navigator.clipboard.writeText(dashboardUrl.href);showToast('Dashboard URL copied.');};
       if($('#shareDashboardUrl'))$('#shareDashboardUrl').onclick=()=>navigator.share({title:'Tomb World Companion Dashboard',url:dashboardUrl.href});
@@ -7296,6 +7306,7 @@ function showPlayerActivation(stage={}){
       stopDashboardStatusSubscription();
       unsubscribeDashboardStatus=controller.subscribeStatus(detail=>{const node=$('#dashboardPairingStatus'),verified=$('#dashboardVerification');if(node)node.textContent=detail.status==='connected'?'Dashboard Connected':detail.status==='failed'?'Dashboard connection failed.':'Waiting for dashboard device...';if(verified)verified.hidden=detail.status!=='connected';});
     }catch(error){
+      if(!isCurrent())return;
       console.error('[Dashboard] Pairing setup failed.',error?.name||'DashboardSetupError');
       stopPairingCamera();clearInterval(dashboardCountdown);stopDashboardStatusSubscription();
       if(controller)await controller.disconnect().catch(()=>{});

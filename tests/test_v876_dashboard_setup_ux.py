@@ -14,7 +14,10 @@ class DashboardSetupUxTests(unittest.TestCase):
         self.assertIn('isDashboardWebRtcSupported()', APP)
         self.assertIn('subscribeAvailability(updateAvailability)', APP)
         self.assertIn('updateAvailability(await feature.requestDashboardAvailability', APP)
-        self.assertIn('button.hidden=!available', APP)
+        self.assertIn("if($('#setupDashboardBtn')!==setupDashboardBtn)return", APP)
+        self.assertIn('setupDashboardBtn.hidden=!available', APP)
+        self.assertIn("$('#newGameBtn').onclick=()=>{stopDashboardAvailabilitySubscription()", APP)
+        self.assertIn("if(savedGame){stopDashboardAvailabilitySubscription()", APP)
         self.assertIn("window.addEventListener('online', recheckRequestedAvailability)", ONLINE)
         self.assertIn("window.addEventListener('offline', recheckRequestedAvailability)", ONLINE)
         self.assertIn('lastAvailability = false', ONLINE)
@@ -59,6 +62,12 @@ class DashboardSetupUxTests(unittest.TestCase):
         self.assertIn('await controller.disconnect()', APP)
         self.assertIn("$('#retryDashboardPairing').onclick=()=>", APP)
         self.assertNotIn("catch(error){dashboardPairingOpen=false;showToast", APP)
+
+    def test_closing_during_async_setup_cannot_reopen_the_modal(self):
+        self.assertIn('const generation=++dashboardPairingGeneration', APP)
+        self.assertIn('const isCurrent=()=>dashboardPairingOpen&&generation===dashboardPairingGeneration', APP)
+        self.assertIn('dashboardPairingGeneration+=1', APP)
+        self.assertGreaterEqual(APP.count('if(!isCurrent())return;'), 6)
 
 
 if __name__ == '__main__':
