@@ -13,9 +13,18 @@ PERSISTENCE = (ROOT / "persistence.js").read_text()
 
 
 class DashboardIceTests(unittest.TestCase):
+    def module_url(self, source):
+        return "data:text/javascript;base64," + base64.b64encode(source.encode()).decode()
+
     def run_node(self, source):
+        helper_url = self.module_url((ROOT / "dashboard/shared/webrtc-ice.js").read_text())
+        config_url = self.module_url((ROOT / "dashboard/shared/dashboard-config.js").read_text())
+        protocol_source = (ROOT / "dashboard/shared/dashboard-protocol.js").read_text().replace("'./dashboard-config.js'", repr(config_url))
+        protocol_url = self.module_url(protocol_source)
+        codec_source = (ROOT / "dashboard/shared/pairing-codec.js").read_text().replace("'./dashboard-config.js'", repr(config_url)).replace("'./dashboard-protocol.js'", repr(protocol_url))
+        source = source.replace("HELPER_URL", helper_url).replace("CODEC_URL", self.module_url(codec_source))
         result = subprocess.run(
-            ["node", "--input-type=module", "-e", source.replace("HELPER_URL", "data:text/javascript;base64," + base64.b64encode((ROOT / "dashboard/shared/webrtc-ice.js").read_bytes()).decode())],
+            ["node", "--input-type=module", "-e", source],
             cwd=ROOT, capture_output=True, text=True
         )
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -45,6 +54,13 @@ class DashboardIceTests(unittest.TestCase):
             peer.emit('icecandidateerror',{errorCode:701,errorText:'failed at 192.168.1.2',url:'stun:stun.cloudflare.com:3478'});
             const error=await promise.catch(value=>value); assert.equal(error.name,'NoIceCandidatesError'); assert.equal(error.diagnostics.stunErrors[0].server,'stun.cloudflare.com');
             assert.equal(JSON.stringify(error.diagnostics).includes('192.168.1.2'),false);
+
+            peer=new Peer(); promise=collectIceCandidates(peer,{quietPeriodMs:50,maximumWaitMs:100,startGathering:()=>peer.emit('icecandidate',{candidate:rtc(4)})});
+            result=await promise; assert.equal(result.candidates.length,1);
+
+            peer=new Peer(); const abortController=new AbortController(), started=[]; abortController.abort();
+            const abortError=await collectIceCandidates(peer,{signal:abortController.signal,startGathering:()=>started.push(true)}).catch(value=>value);
+            assert.equal(abortError.name,'AbortError'); assert.deepEqual(started,[]);
         """))
 
     def test_remote_candidate_deduplication(self):
@@ -58,9 +74,21 @@ class DashboardIceTests(unittest.TestCase):
         """))
 
     def test_candidate_payload_validation(self):
-        codec = (ROOT / "dashboard/shared/pairing-codec.js").read_text()
-        for value in ["maximumCandidates = 32", "maximumCandidateLength = 2048", "Array.isArray(candidates)", "sdpMid.length > 64", "sdpMLineIndex < 0", "validateCandidates(data.candidates)"]:
-            self.assertIn(value, codec)
+        self.run_node(textwrap.dedent("""
+            import assert from 'node:assert/strict';
+            import { validatePairingData } from 'CODEC_URL';
+            const base={protocolVersion:1,type:'offer',nonce:'a'.repeat(32),createdAt:1,expiresAt:9999999999999,sdpType:'offer',sdp:'v=0',label:'test'};
+            const valid={candidate:'candidate:1 1 udp 1 192.0.2.1 9 typ host',sdpMid:'0',sdpMLineIndex:0,usernameFragment:'safe_1'};
+            assert.doesNotThrow(()=>validatePairingData({...base,candidates:[valid]}));
+            assert.doesNotThrow(()=>validatePairingData(base));
+            assert.throws(()=>validatePairingData({...base,candidates:{}}));
+            assert.throws(()=>validatePairingData({...base,candidates:Array(33).fill(valid)}));
+            assert.throws(()=>validatePairingData({...base,candidates:[{...valid,candidate:'x'.repeat(2049)}]}));
+            assert.throws(()=>validatePairingData({...base,candidates:[{...valid,candidate:'candidate:1\\r\\na=candidate:2'}]}));
+            assert.throws(()=>validatePairingData({...base,candidates:[{...valid,sdpMid:'bad value'}]}));
+            assert.throws(()=>validatePairingData({...base,candidates:[{...valid,sdpMLineIndex:-1}]}));
+            assert.throws(()=>validatePairingData({...base,candidates:[{...valid,privateField:'no'}]}));
+        """))
 
     def test_both_payloads_and_receivers_use_explicit_candidates(self):
         self.assertIn("candidates: gathered.candidates", CONTROLLER)

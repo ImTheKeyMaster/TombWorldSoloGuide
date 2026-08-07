@@ -15,7 +15,11 @@ function safeServer(url) {
   return match?.[1] || null;
 }
 function safeErrorText(value) {
-  return String(value).replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, '[address]').replace(/\b[0-9a-f]{0,4}(?::[0-9a-f]{0,4}){2,}\b/gi, '[address]').slice(0, 160);
+  return String(value)
+    .replace(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g, '[address]')
+    .replace(/(?:^|\s|\[)[0-9a-f]{0,4}(?::[0-9a-f]{0,4}){2,}(?:%[\w.-]+)?(?=$|\s|\])/gi, ' [address]')
+    .replace(/\b(?:candidate|ufrag|pwd)\s*[:=]\s*\S+/gi, '$1=[redacted]')
+    .slice(0, 160);
 }
 
 export class NoIceCandidatesError extends Error {
@@ -32,7 +36,7 @@ export function describeBrowserEnvironment(scope = globalThis) {
   return 'WebRTC browser';
 }
 
-export function collectIceCandidates(peer, { quietPeriodMs = 1250, maximumWaitMs = 8000, signal, onProgress } = {}) {
+export function collectIceCandidates(peer, { quietPeriodMs = 1250, maximumWaitMs = 8000, signal, onProgress, startGathering } = {}) {
   return new Promise((resolve, reject) => {
     const candidates = [], keys = new Set(), types = new Set(), stunErrors = [];
     let quietTimer = null, maximumTimer = null, settled = false;
@@ -65,9 +69,12 @@ export function collectIceCandidates(peer, { quietPeriodMs = 1250, maximumWaitMs
     peer.addEventListener('icecandidate', onCandidate);
     peer.addEventListener('icecandidateerror', onCandidateError);
     peer.addEventListener('icegatheringstatechange', onStateChange);
+    if (signal?.aborted) { onAbort(); return; }
     signal?.addEventListener('abort', onAbort, { once: true });
     maximumTimer = setTimeout(() => finish(false), maximumWaitMs);
-    if (peer.iceGatheringState === 'complete') queueMicrotask(() => finish(true));
+    Promise.resolve().then(() => settled ? undefined : startGathering?.()).then(() => {
+      if (peer.iceGatheringState === 'complete') finish(true);
+    }).catch(error => { if (!settled) { settled = true; cleanup(); reject(error); } });
   });
 }
 

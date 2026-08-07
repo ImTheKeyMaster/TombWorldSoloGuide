@@ -12,10 +12,10 @@ function validateCandidates(candidates) {
   if (!Array.isArray(candidates) || candidates.length > maximumCandidates) throw new Error('Unsupported or corrupt pairing payload.');
   candidates.forEach(candidate => {
     if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) throw new Error('Unsupported or corrupt pairing payload.');
-    if (typeof candidate.candidate !== 'string' || !candidate.candidate || candidate.candidate.length > maximumCandidateLength) throw new Error('Unsupported or corrupt pairing payload.');
-    if (candidate.sdpMid !== undefined && candidate.sdpMid !== null && (typeof candidate.sdpMid !== 'string' || candidate.sdpMid.length > 64 || /[\r\n]/.test(candidate.sdpMid))) throw new Error('Unsupported or corrupt pairing payload.');
+    if (typeof candidate.candidate !== 'string' || !/^candidate:[^\x00-\x20\x7f]+(?: [^\x00-\x1f\x7f]+)+$/.test(candidate.candidate) || candidate.candidate.length > maximumCandidateLength) throw new Error('Unsupported or corrupt pairing payload.');
+    if (candidate.sdpMid !== undefined && candidate.sdpMid !== null && (typeof candidate.sdpMid !== 'string' || !/^[!#$%&'*+\-.^_`|~A-Za-z0-9]{1,64}$/.test(candidate.sdpMid))) throw new Error('Unsupported or corrupt pairing payload.');
     if (candidate.sdpMLineIndex !== undefined && candidate.sdpMLineIndex !== null && (!Number.isSafeInteger(candidate.sdpMLineIndex) || candidate.sdpMLineIndex < 0 || candidate.sdpMLineIndex > 65535)) throw new Error('Unsupported or corrupt pairing payload.');
-    if (candidate.usernameFragment !== undefined && (typeof candidate.usernameFragment !== 'string' || candidate.usernameFragment.length > 256 || /[\r\n]/.test(candidate.usernameFragment))) throw new Error('Unsupported or corrupt pairing payload.');
+    if (candidate.usernameFragment !== undefined && (typeof candidate.usernameFragment !== 'string' || !/^[A-Za-z0-9+/=_-]{1,256}$/.test(candidate.usernameFragment))) throw new Error('Unsupported or corrupt pairing payload.');
     if (Object.keys(candidate).some(key => !['candidate', 'sdpMid', 'sdpMLineIndex', 'usernameFragment'].includes(key))) throw new Error('Unsupported or corrupt pairing payload.');
   });
 }

@@ -62,11 +62,9 @@ export async function createDashboardOffer(label = 'Tomb World battle', { onProg
   peer = new RTCPeerConnection({ iceServers: DASHBOARD_CONFIG.iceServers });
   channel = peer.createDataChannel('tomb-world-dashboard', { ordered: true }); bindConnection(peer, channel, token);
   session = { nonce, createdAt: now, expiresAt: now + DASHBOARD_CONFIG.pairingLifetimeMs, verificationCode: await verificationCode(nonce), responseApplied: false };
-  await peer.setLocalDescription(await peer.createOffer());
-  onProgress?.('Discovering network route...');
   iceAbortController = new AbortController();
   let gathered;
-  try { gathered = await collectIceCandidates(peer, { maximumWaitMs: DASHBOARD_CONFIG.connectionTimeoutMs, quietPeriodMs: DASHBOARD_CONFIG.iceCandidateQuietPeriodMs, signal: iceAbortController.signal, onProgress: progress => onProgress?.(`${progress.count} network route${progress.count === 1 ? '' : 's'} found...`) }); }
+  try { gathered = await collectIceCandidates(peer, { maximumWaitMs: DASHBOARD_CONFIG.connectionTimeoutMs, quietPeriodMs: DASHBOARD_CONFIG.iceCandidateQuietPeriodMs, signal: iceAbortController.signal, onProgress: progress => onProgress?.(`${progress.count} network route${progress.count === 1 ? '' : 's'} found...`), startGathering: async () => { await peer.setLocalDescription(await peer.createOffer()); onProgress?.('Discovering network route...'); } }); }
   catch (error) { pairingDiagnostics = { browser: describeBrowserEnvironment(), ...(error.diagnostics || {}) }; error.diagnostics = pairingDiagnostics; throw error; }
   pairingDiagnostics = { browser: describeBrowserEnvironment(), ...gathered.diagnostics };
   if (token !== generation) throw new Error('Pairing attempt was superseded.');
