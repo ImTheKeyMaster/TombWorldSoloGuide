@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.41
+# Tomb World Solo Guide v8.6.42
+
+## v8.6.42
+
+**Version 8.6.42 - Handle Combat With No NPO Targets**
+
+- Prevented Player operatives from selecting Shoot or Fight when no valid NPO targets remain.
+- Fixed Complete Activation becoming trapped by an impossible pending combat action.
+- Allowed Player operatives to continue using legal movement and mission actions after all current NPOs are eliminated.
+- Preserved mission-specific victory conditions and support for NPOs appearing later.
 
 ## v8.6.41
 

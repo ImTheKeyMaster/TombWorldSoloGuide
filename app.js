@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.41';
+  const APP_VERSION = '8.6.42';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -1410,6 +1410,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return {...result,rolls:[],total:null,weaponId:generatedWeaponId(result)};
   }
   function activeNpos(){ return state.roster.filter(n => n.battlefieldState==='deployed'&&n.wounds > 0); }
+  function hasValidPlayerCombatTargets(stage={}){
+    return activeNpos().some(npo=>projectedNpoWounds(npo.id,stage)>0);
+  }
   function reserveNpos(){ return state.roster.filter(n => n.battlefieldState==='reserve'&&n.wounds > 0); }
   function readyNpos(){ return activeNpos().filter(n => n.ready&&!n.dormant); }
   function trackerNpos(){
@@ -3414,6 +3417,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
 function showPlayerActivation(stage={}){
     if(!Object.keys(stage).length&&state.combatState?.side==='player')stage={...state.combatState.stage};
+    stage=normalizeImpossiblePlayerCombat(stage);
     const remaining=remainingPlayerOperatives();
     if(!remaining.length){
       state.playerReady=0;
@@ -3451,6 +3455,7 @@ function showPlayerActivation(stage={}){
     const breachAvailable=canOfferBreachSarcophagus(stage,selectedId);
     const breachCost=selectedId?breachSarcophagusApCost(selectedId):2;
     const breachRemainingAp=Number(stage.apl||selectedOperative?.apl||3)-playerActionCost(stage);
+    const combatTargetsAvailable=hasValidPlayerCombatTargets(stage);
 
     if(selectedId&&state.missionActionContext?.actionId==='breachSarcophagus'&&state.missionActionContext.operativeId===selectedId){
       renderBreachSarcophagusStep(stage);
@@ -3487,14 +3492,14 @@ function showPlayerActivation(stage={}){
 
           <section class="activation-group">
             <div class="activation-group-title"><span>⚔</span><div><strong>Combat</strong><small>Resolved after Complete Activation</small></div></div>
-            <div class="combat-action-card">
+            ${combatTargetsAvailable?`<div class="combat-action-card">
               <label><input type="checkbox" id="eaShoot" ${checked('shoot')}><span><strong>Shoot</strong><small>1 AP · One Shooting action for this operative</small></span></label>
               ${shootPending?`<div class="pending-attack-summary"><strong>Pending:</strong> ${escapeHtml(shootPending.targetName)} · ${shootPending.damage} damage</div>`:''}
             </div>
             <div class="combat-action-card">
               <label><input type="checkbox" id="eaMelee" ${checked('melee')||checked('fight')}><span><strong>Melee</strong><small>1 AP · One Melee action for this operative</small></span></label>
               ${meleePending?`<div class="pending-attack-summary"><strong>Pending:</strong> ${escapeHtml(meleePending.targetName)} · ${meleePending.damage} damage</div>`:''}
-            </div>
+            </div>`:''}
             <div class="toggle-list player-action-list compact-actions">
               <label><input type="checkbox" id="eaDamage" ${checked('damage')}><span>Other damage (ability, terrain, mission, etc.) <small>1 AP</small></span></label>
             </div>
@@ -3870,8 +3875,30 @@ function showPlayerActivation(stage={}){
     return normalized;
   }
 
+  function normalizeImpossiblePlayerCombat(stage={}){
+    const normalized=normalizePendingAttackResultLists(stage);
+    if(hasValidPlayerCombatTargets(normalized))return normalized;
+    let cleared=false;
+    for(const attackType of ['shoot','melee']){
+      const selected=normalized[attackType]||(attackType==='melee'&&normalized.fight);
+      if(!selected||pendingAttackResults(normalized,attackType).length)continue;
+      normalized[attackType]=false;
+      if(attackType==='melee')normalized.fight=false;
+      normalized[attackType==='shoot'?'pendingShoot':'pendingMelee']=null;
+      normalized[attackType==='shoot'?'pendingShootResults':'pendingMeleeResults']=[];
+      normalized[`${attackType}CombatDraft`]=null;
+      cleared=true;
+    }
+    if(cleared){
+      state.weaponRuleResolution=null;
+      if(state.combatState?.side==='player')state.combatState={side:'player',stage:{...normalized}};
+      save();
+    }
+    return normalized;
+  }
+
   function resolvePendingPlayerAttacks(stage){
-    stage=normalizePendingAttackResultLists(stage);
+    stage=normalizeImpossiblePlayerCombat(stage);
     if(stage.shoot&&!pendingAttackResults(stage,'shoot').length){
       showPendingPlayerAttackWizard(
         stage,
@@ -4126,6 +4153,7 @@ function showPlayerActivation(stage={}){
   }
 
   async function completePlayerActivation(stage={}){
+    stage=normalizeImpossiblePlayerCombat(stage);
     const operativeId=String(stage.playerOperativeId||'');
     const incapacitatedByCurrentHot=state.hotResolution?.attackerSide==='player'
       &&state.hotResolution.attackerId===operativeId&&state.hotResolution.incapacitated;
@@ -5002,7 +5030,7 @@ function showPlayerActivation(stage={}){
     const targets=sortedNposForDisplay(activeNpos().filter(n=>projectedNpoWounds(n.id,stage)>0));
     if(!targets.length){
       showToast('No active NPO is available as a target.');
-      showPlayerActivation(stage);
+      showPlayerActivation(normalizeImpossiblePlayerCombat(stage));
       return;
     }
 
