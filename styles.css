@@ -315,7 +315,7 @@ html.desktop-game-background #gameBackground{opacity:1}
   .game-menu-grid .btn:first-child,.game-menu-session .danger{grid-column:auto}
 }
 
-/* v8.6.44 optional large-screen operative status */
+/* v8.6.45 optional large-screen operative status */
 .game-workspace{position:relative;min-width:0}
 .operative-status-panel[hidden]{display:none}
 @media (min-width:900px) and (orientation:landscape), (min-width:900px) and (hover:hover) and (pointer:fine){
@@ -325,24 +325,26 @@ html.desktop-game-background #gameBackground{opacity:1}
   .operative-status-section{display:flex;min-height:0;flex-direction:column;padding:12px}
   .operative-status-section+.operative-status-section{border-top:1px solid var(--line)}
   .operative-status-section h2{flex:0 0 auto;margin:0 0 8px;color:var(--green);font-size:clamp(.72rem,.9vw,.86rem);letter-spacing:.13em;text-transform:uppercase}
-  .operative-status-list{display:grid;flex:1 1 auto;grid-template-columns:minmax(0,1fr);align-content:start;min-height:0;gap:4px;overflow:hidden}
-  .operative-status-row{min-width:0;padding:5px 7px;border-left:3px solid transparent;border-radius:0 7px 7px 0;background:rgba(7,20,15,.82);font-size:clamp(.69rem,.82vw,.78rem);line-height:1.18}
+  .operative-status-list{display:grid;flex:1 1 auto;grid-template-columns:minmax(0,1fr);align-content:start;min-height:0;gap:5px;overflow:hidden}
+  .operative-status-row{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2px 8px;min-width:0;padding:5px 7px;border:1px solid var(--line);border-radius:8px;background:rgba(7,20,15,.82);font-size:clamp(.69rem,.82vw,.78rem);line-height:1.18}
   .operative-status-row>strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(.72rem,.88vw,.82rem);letter-spacing:.025em;text-transform:uppercase}
-  .operative-status-row>div{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:7px;margin-top:2px;color:var(--muted)}
-  .operative-status-type{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .operative-status-wounds{display:inline-flex;color:var(--muted);font-variant-numeric:tabular-nums}
-  .operative-status-current{color:var(--text)}
-  .operative-status-current.wounded{color:#c19b42}
-  .operative-status-current.severe{color:#b94b50}
-  .operative-status-value{min-width:5.8em;text-align:right;font-size:.68rem;font-weight:900;letter-spacing:.035em}
-  .operative-status-row.active{border-left-color:var(--green);background:rgba(53,202,120,.13)}
+  .operative-status-type{overflow:hidden;color:var(--muted);text-overflow:ellipsis;white-space:nowrap}
+  .operative-status-wounds{min-width:4.7em;color:var(--text);text-align:right;font-size:clamp(1rem,1.35vw,1.22rem);font-weight:950;font-variant-numeric:tabular-nums;letter-spacing:.01em;white-space:nowrap}
+  .operative-status-value{text-align:right;font-size:.68rem;font-weight:900;letter-spacing:.035em;white-space:nowrap}
+  .operative-status-row.active{border-color:var(--green);background:rgba(53,202,120,.13)}
   .operative-status-row.active .operative-status-value{color:var(--green)}
+  .operative-status-row.eliminated{padding-left:28px;background:rgba(125,25,25,.2);color:var(--danger);opacity:.72}
+  .operative-status-row.eliminated>strong,.operative-status-row.eliminated .operative-status-value{color:var(--danger)}
+  .operative-status-elimination-icon{position:absolute;left:7px;top:50%;width:15px;height:15px;transform:translateY(-50%);color:var(--danger);font-size:.9rem;line-height:1}
+  .operative-status-elimination-icon.npo{background:url("Assets/Images/eliminated-necron-skull.png") center/contain no-repeat;filter:brightness(1.4) contrast(1.2) drop-shadow(0 0 1px rgba(255,255,255,.55))}
   .operative-status-section.two-column .operative-status-list{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(var(--status-column-rows),auto);grid-auto-flow:column;column-gap:5px}
-  .operative-status-section.two-column .operative-status-row>div{gap:4px}
-  .operative-status-section.two-column .operative-status-value{min-width:0;font-size:.65rem}
+  .operative-status-section.two-column .operative-status-row{column-gap:5px}
+  .operative-status-section.two-column .operative-status-wounds{font-size:1rem}
+  .operative-status-section.two-column .operative-status-value{font-size:.65rem}
   .operative-status-section.extra-compact{padding-block:8px}
   .operative-status-section.extra-compact .operative-status-list{gap:2px}
   .operative-status-section.extra-compact .operative-status-row{padding-block:3px;line-height:1.1}
+  .operative-status-section.extra-compact .operative-status-wounds{font-size:1rem}
   .operative-status-section.allow-scroll .operative-status-list{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--green2) transparent}
 }
 @media (min-width:900px) and (max-width:1100px) and (orientation:landscape), (min-width:900px) and (max-width:1100px) and (hover:hover) and (pointer:fine){
@@ -898,7 +900,8 @@ button.tracker-operative:hover{
 }
 .tracker-operative.eliminated,
 .operative-card.dead,
-.npo-roster-card.dead{
+.npo-roster-card.dead,
+.operative-status-row.eliminated{
   border:2px solid var(--danger);
   border-radius:10px;
 }

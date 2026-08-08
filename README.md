@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v8.6.44
+# Tomb World Solo Guide v8.6.45
+
+## v8.6.45
+
+**Version 8.6.45 - Refine Operative Status Panel**
+
+- Made wound counts the primary visual information in the Operative Status panel.
+- Added compact bordered boxes for living operatives.
+- Reused the existing roster red-border/icon treatment for eliminated operatives.
+- Removed wound-percentage color classifications.
+- Preserved the existing responsive and fit-first panel behavior.
 
 ## v8.6.44
 

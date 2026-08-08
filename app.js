@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.44';
+  const APP_VERSION = '8.6.45';
   const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
@@ -1454,12 +1454,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return (state.playerActivatedIds||[]).includes(operativeId)?'ACTIVATED':'READY';
   }
   function statusWoundsHtml(current,maximum){
-    const woundClass=current<=0||current<=maximum/2?'severe':current<maximum?'wounded':'';
-    return `<span class="operative-status-wounds"><span class="operative-status-current ${woundClass}">${current}</span><span>/${maximum}</span></span>`;
+    return `<span class="operative-status-wounds">${current} / ${maximum}</span>`;
   }
-  function operativeStatusRow({name,type,current,maximum,status}){
-    const active=status==='ACTIVE';
-    return `<div class="operative-status-row${active?' active':''}"><strong>${escapeHtml(name)}</strong><div><span class="operative-status-type">${escapeHtml(type)}</span>${statusWoundsHtml(current,maximum)}<span class="operative-status-value">${status}</span></div></div>`;
+  function operativeStatusRow({name,type,current,maximum,status,side}){
+    const eliminated=status==='ELIMINATED';
+    const active=!eliminated&&status==='ACTIVE';
+    const eliminationIcon=eliminated?`<span class="operative-status-elimination-icon ${side}" aria-hidden="true">${side==='player'?'☠':''}</span>`:'';
+    return `<div class="operative-status-row${eliminated?' eliminated':active?' active':''}">${eliminationIcon}<strong>${escapeHtml(name)}</strong>${statusWoundsHtml(current,maximum)}<span class="operative-status-type">${escapeHtml(type)}</span><span class="operative-status-value">${status}</span></div>`;
   }
   function renderOperativeStatusPanel(activePlayerId=null){
     const eligible=state.screen==='game'&&operativeStatusMedia.matches;
@@ -1473,11 +1474,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(!visible)return;
     const npoRows=sortedNposForDisplay(state.roster).map(npo=>{
       const status=npoStatus(npo);
-      return operativeStatusRow({name:npoName(npo),type:npoDefinition(npo.type)?.name||npo.type,current:Math.max(0,npo.wounds),maximum:npo.maxWounds,status});
+      return operativeStatusRow({name:npoName(npo),type:npoDefinition(npo.type)?.name||npo.type,current:Math.max(0,npo.wounds),maximum:npo.maxWounds,status,side:'npo'});
     }).join('');
     const playerRows=(state.playerRoster||[]).map(id=>{
       const definition=playerDefinition(id),maximum=Number(definition?.wounds||0);
-      return operativeStatusRow({name:playerName(id),type:definition?.role||'Operative',current:Math.max(0,playerCurrentWounds(id)),maximum,status:playerStatus(id,activePlayerId)});
+      return operativeStatusRow({name:playerName(id),type:definition?.role||'Operative',current:Math.max(0,playerCurrentWounds(id)),maximum,status:playerStatus(id,activePlayerId),side:'player'});
     }).join('');
     operativeStatusPanel.innerHTML=`<section class="operative-status-section"><h2>NPO Operatives</h2><div class="operative-status-list">${npoRows||'<p class="muted">No NPO operatives</p>'}</div></section><section class="operative-status-section"><h2>Player Operatives</h2><div class="operative-status-list">${playerRows||'<p class="muted">No Player operatives</p>'}</div></section>`;
     requestAnimationFrame(fitOperativeStatusPanel);
