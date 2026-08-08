@@ -71,14 +71,14 @@ class DashboardStateTests(unittest.TestCase):
         self.assertIn('const SAVE_VERSION = 3;', (ROOT / 'persistence.js').read_text())
         integration = APP.split('// DASHBOARD INTEGRATION START')
         self.assertGreaterEqual(len(integration), 4)
-        self.assertIn("const APP_VERSION = '8.7.7';", APP)
+        self.assertIn("const APP_VERSION = '8.7.8';", APP)
 
     def test_snapshot_runtime_minimization_nulls_and_read_only_shape(self):
         output = self.run_module_script("""
             import assert from 'node:assert/strict';
             import { createDashboardSnapshot } from './dashboard/controller/dashboard-snapshot.js';
             const snapshot = createDashboardSnapshot({
-              app: { version: '8.7.7' }, battle: {}, threat: {}, readiness: {},
+              app: { version: '8.7.8' }, battle: {}, threat: {}, readiness: {},
               mission: { objectives: [{ id: 'one', secret: 'excluded' }] },
               currentActivation: { side: 'npo', name: 'Warrior', secret: 'excluded' },
               activeEvents: [{ id: 'event', title: 'Event', effect: 'Live effect', category: 'warning', callback() {} }]
@@ -104,7 +104,7 @@ class DashboardStateTests(unittest.TestCase):
               getDashboardStatus: () => ({ status: 'connected' }),
               sendDashboardSnapshot: value => acceptsSend && Boolean(sent.push(JSON.parse(value)))
             };
-            const source = { app: { version: '8.7.7' }, battle: {}, threat: {}, readiness: {}, mission: {} };
+            const source = { app: { version: '8.7.8' }, battle: {}, threat: {}, readiness: {}, mission: {} };
             const publisher = createDashboardPublisher({ controller, getSnapshotSource: () => source, debounceMs: 20 });
             publisher.schedulePublish('first'); publisher.schedulePublish('second');
             await new Promise(resolve => setTimeout(resolve, 35));
