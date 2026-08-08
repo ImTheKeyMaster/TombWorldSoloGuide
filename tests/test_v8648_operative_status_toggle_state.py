@@ -13,7 +13,7 @@ SERVICE_WORKER = (ROOT / 'service-worker.js').read_text()
 
 class OperativeStatusToggleStateTests(unittest.TestCase):
     def test_aria_pressed_is_the_only_visual_state_source(self):
-        self.assertIn('.operative-status-toggle[aria-pressed="false"]{border-color:var(--line);color:var(--line);opacity:1;box-shadow:none}', CSS)
+        self.assertIn('.operative-status-toggle[aria-pressed="false"]{border-color:var(--line);background:transparent;color:var(--line);opacity:1;box-shadow:none}', CSS)
         self.assertIn('.version{border:1px solid var(--line);', CSS)
         self.assertIn('.operative-status-toggle[aria-pressed="true"]{', CSS)
         self.assertNotIn('.operative-status-toggle.active', CSS)
