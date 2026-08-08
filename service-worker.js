@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '8.7.8';
+const APP_VERSION = '8.6.41';
 const CACHE_PREFIX = 'tomb-world-solo-guide-';
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 const APP_SHELL = './index.html';
@@ -81,13 +81,6 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  // DASHBOARD INTEGRATION START
-  // Dashboard pages and probes must never use Cache Storage or the app-shell fallback.
-  if (/\/dashboard(?:\/|$)/.test(url.pathname)) {
-    event.respondWith(fetch(request, {cache: 'no-store'}));
-    return;
-  }
-  // DASHBOARD INTEGRATION END
   if (request.mode === 'navigate' || url.pathname.endsWith('/index.html')) {
     event.respondWith(networkFirst(request));
     return;
