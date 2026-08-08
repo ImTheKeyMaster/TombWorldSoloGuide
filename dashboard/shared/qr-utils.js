@@ -19,10 +19,16 @@ export async function renderQrCode(container, text, label) {
   container.innerHTML = `<svg class="pairing-qr" viewBox="0 0 ${size} ${size}" role="img" aria-label="${label}"><rect width="100%" height="100%" fill="#fff"/><path d="${path}" fill="#000"/></svg><p class="qr-alternative">${label}</p>`;
 }
 
-let decoderPromise;
+let decoderPromise, adapterPromise;
 async function ensureFallbackDecoder() {
-  if (!globalThis.jsQR) await (decoderPromise ||= loadScript(new URL('../vendor/jsQR.js', import.meta.url)));
-  if (!globalThis.TombWorldQrDecoder) await loadScript(new URL('../vendor/qr-decoder.js', import.meta.url));
+  if (!globalThis.jsQR) {
+    try { await (decoderPromise ||= loadScript(new URL('../vendor/jsQR.js', import.meta.url))); }
+    catch (error) { decoderPromise = null; throw error; }
+  }
+  if (!globalThis.TombWorldQrDecoder) {
+    try { await (adapterPromise ||= loadScript(new URL('../vendor/qr-decoder.js', import.meta.url))); }
+    catch (error) { adapterPromise = null; throw error; }
+  }
   if (!globalThis.TombWorldQrDecoder?.supported) throw new Error('Local QR scanning is unavailable. Paste the response instead.');
   return globalThis.TombWorldQrDecoder;
 }
@@ -81,8 +87,10 @@ export async function scanQrCode({ onResult, onStop, onCleanupReady, videoHost }
         }
       }
     } else {
-      const imageData = imageDataFrom(video, canvas, context);
-      if (imageData) value = fallback.decode(imageData);
+      try {
+        const imageData = imageDataFrom(video, canvas, context);
+        if (imageData) value = fallback.decode(imageData);
+      } catch { /* A transient frame read failure should not end scanning. */ }
     }
     if (value) {
       try { if (await onResult(value)) { stop(); return; } } catch { /* Invalid pairing payloads keep the scanner active. */ }

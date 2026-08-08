@@ -17,13 +17,15 @@ class IphoneDashboardQrTests(unittest.TestCase):
         self.assertGreater(library.stat().st_size, 200_000)
         self.assertTrue((ROOT / 'dashboard/vendor/jsQR-LICENSE.txt').is_file())
         self.assertIn('webpackUniversalModuleDefinition', library.read_text())
-        self.assertIn("supported: typeof global.jsQR === 'function'", ADAPTER)
+        self.assertIn('supported: true', ADAPTER)
         script = textwrap.dedent(f"""
             const assert=require('node:assert/strict'),vm=require('node:vm');
             const context={{globalThis:null,jsQR:(data,width,height)=>data[0]===7?{{data:`${{width}}x${{height}}`}}:null}};
             context.globalThis=context;vm.runInNewContext({ADAPTER!r},context);
             assert.equal(context.TombWorldQrDecoder.supported,true);
             assert.equal(context.TombWorldQrDecoder.decode({{data:[7],width:12,height:34}}),'12x34');
+            assert.equal(context.TombWorldQrDecoder.decode({{data:[0],width:1,height:1}}),null);
+            context.jsQR=()=>{{throw new Error('ordinary undecodable frame')}};
             assert.equal(context.TombWorldQrDecoder.decode({{data:[0],width:1,height:1}}),null);
         """)
         result = subprocess.run(['node', '-e', script], capture_output=True, text=True)
@@ -37,6 +39,8 @@ class IphoneDashboardQrTests(unittest.TestCase):
         self.assertLess(camera, fallback)
         self.assertIn("facingMode: { ideal: 'environment' }", QR_UTILS)
         self.assertIn('audio: false', QR_UTILS)
+        click = APP[APP.index('scanButton.onclick=async'):APP.index('photoButton.onclick=async')]
+        self.assertLess(click.index('scanQrCode('), click.index('controller.markWaitingForResponse()'))
 
     def test_iphone_fallback_video_and_throttled_frames(self):
         self.assertIn("typeof globalThis.BarcodeDetector !== 'function'", QR_UTILS)
@@ -54,6 +58,8 @@ class IphoneDashboardQrTests(unittest.TestCase):
         self.assertIn("return new BarcodeDetector({ formats: ['qr_code'] })", QR_UTILS)
         self.assertIn('if (++detectorFailures >= 3)', QR_UTILS)
         self.assertIn('fallback = await ensureFallbackDecoder()', QR_UTILS)
+        self.assertIn('decoderPromise = null', QR_UTILS)
+        self.assertIn('adapterPromise = null', QR_UTILS)
 
     def test_validation_cleanup_and_visible_scanner(self):
         for text in ['Point this device at the response QR code shown on the Dashboard.',
@@ -69,6 +75,7 @@ class IphoneDashboardQrTests(unittest.TestCase):
         self.assertIn('input.remove()', QR_UTILS)
         self.assertIn('pairing-camera-target', APP + CSS)
         self.assertGreaterEqual(APP.count('stopPairingCamera()'), 8)
+        self.assertIn("if(detail.status==='failed')stopPairingCamera()", APP)
 
     def test_photo_fallback_is_local_and_save_version_is_unchanged(self):
         self.assertIn("input.accept = 'image/*'", QR_UTILS)
