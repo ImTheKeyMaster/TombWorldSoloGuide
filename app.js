@@ -55,7 +55,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   let backgroundManifest=[];
   let loadedBackgroundFilename=null;
   let loadingBackgroundFilename=null;
-  const operativeStatusMedia=matchMediaProvider.call(window,'(min-width: 900px) and (orientation: landscape)');
+  const operativeStatusMedia=matchMediaProvider.call(window,'(min-width: 900px) and (orientation: landscape), (min-width: 900px) and (hover: hover) and (pointer: fine)');
   let showOperativeStatusPreference=localStorage.getItem(OPERATIVE_STATUS_PREFERENCE_KEY)==='true';
   let operativeStatusResizeTimer=null;
 
@@ -1427,7 +1427,6 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
   function npoTrackerStatus(npo){
     if(npo.wounds<=0||npo.battlefieldState==='out-of-action')return {status:'ELIMINATED',className:'eliminated'};
-    if(npo.id===state.activeNpoId&&state.lastActivation?.npoId===npo.id&&!state.lastActivation?.committed)return {status:'ACTIVE',className:'active'};
     if(npo.battlefieldState==='reserve')return {status:'RESERVE',className:'reserve'};
     if(npo.battlefieldState==='deployed'&&npo.dormant)return {status:'DORMANT',className:'dormant'};
     if(npo.battlefieldState==='deployed'&&npo.ready)return {status:'READY',className:'ready'};
@@ -1435,16 +1434,23 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(npo.battlefieldState==='deployed')return {status:'READY',className:'ready'};
     return {status:'RESERVE',className:'reserve'};
   }
+  function npoStatus(npo){
+    if(npo.wounds<=0||npo.battlefieldState==='out-of-action')return 'ELIMINATED';
+    if(npo.id===state.activeNpoId&&state.lastActivation?.npoId===npo.id&&!state.lastActivation?.committed)return 'ACTIVE';
+    if(npo.battlefieldState==='reserve')return 'RESERVE';
+    if(npo.dormant)return 'DORMANT';
+    return npo.ready?'READY':'ACTIVATED';
+  }
   function livingPlayerOperativeCount(){
     return livingPlayerOperativeIds().length;
   }
   function inPlayLivingPlayerOperativeCount(){return inPlayLivingPlayerOperativeIds().length;}
 
-  function playerStatus(operativeId){
+  function playerStatus(operativeId,activePlayerId=null){
     const operativeState=playerOperativeState(operativeId);
     if(operativeState.inPlay===false)return operativeState.offBoardReason==='escaped'?'ESCAPED':'NOT IN PLAY';
     if(playerCurrentWounds(operativeId)<=0||(state.playerCasualtyIds||[]).includes(operativeId))return 'ELIMINATED';
-    if(state.combatState?.side==='player'&&state.combatState.stage?.playerOperativeId===operativeId)return 'ACTIVE';
+    if(activePlayerId===operativeId||state.combatState?.side==='player'&&state.combatState.stage?.playerOperativeId===operativeId)return 'ACTIVE';
     return (state.playerActivatedIds||[]).includes(operativeId)?'ACTIVATED':'READY';
   }
   function statusWoundsHtml(current,maximum){
@@ -1455,7 +1461,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const active=status==='ACTIVE';
     return `<div class="operative-status-row${active?' active':''}"><strong>${escapeHtml(name)}</strong><div><span class="operative-status-type">${escapeHtml(type)}</span>${statusWoundsHtml(current,maximum)}<span class="operative-status-value">${status}</span></div></div>`;
   }
-  function renderOperativeStatusPanel(){
+  function renderOperativeStatusPanel(activePlayerId=null){
     const eligible=state.screen==='game'&&operativeStatusMedia.matches;
     const visible=eligible&&showOperativeStatusPreference;
     operativeStatusToggle.hidden=!eligible;
@@ -1466,12 +1472,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     operativeStatusPanel.hidden=!visible;
     if(!visible)return;
     const npoRows=sortedNposForDisplay(state.roster).map(npo=>{
-      const status=npoTrackerStatus(npo).status;
+      const status=npoStatus(npo);
       return operativeStatusRow({name:npoName(npo),type:npoDefinition(npo.type)?.name||npo.type,current:Math.max(0,npo.wounds),maximum:npo.maxWounds,status});
     }).join('');
     const playerRows=(state.playerRoster||[]).map(id=>{
       const definition=playerDefinition(id),maximum=Number(definition?.wounds||0);
-      return operativeStatusRow({name:playerName(id),type:definition?.role||'Operative',current:Math.max(0,playerCurrentWounds(id)),maximum,status:playerStatus(id)});
+      return operativeStatusRow({name:playerName(id),type:definition?.role||'Operative',current:Math.max(0,playerCurrentWounds(id)),maximum,status:playerStatus(id,activePlayerId)});
     }).join('');
     operativeStatusPanel.innerHTML=`<section class="operative-status-section"><h2>NPO Operatives</h2><div class="operative-status-list">${npoRows||'<p class="muted">No NPO operatives</p>'}</div></section><section class="operative-status-section"><h2>Player Operatives</h2><div class="operative-status-list">${playerRows||'<p class="muted">No Player operatives</p>'}</div></section>`;
     requestAnimationFrame(fitOperativeStatusPanel);
@@ -3515,7 +3521,6 @@ function showPlayerActivation(stage={}){
       showPlayerActivation(selectOperative(stage,remaining[0]));
       return;
     }
-
     const checked=key=>stage[key]?'checked':'';
     const selectedId=stagedId;
     if(selectedId)notifyMissionActivationStarted('player',selectedId);
@@ -3597,6 +3602,7 @@ function showPlayerActivation(stage={}){
         </div>
         <div class="wizard-actions"><button class="btn ghost" id="cancelPlayerActivation">Cancel</button><button class="btn primary" id="confirmPlayer">Complete Activation</button></div>
       </fieldset>`,undefined,'player-activation');
+    renderOperativeStatusPanel(selectedId);
 
     const operativeSelect=$('#playerOperativeSelect');
     const controls=$('#playerActivationControls');

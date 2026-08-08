@@ -31,8 +31,8 @@ class OperativeStatusPanelTests(unittest.TestCase):
 
     def test_visibility_is_game_and_large_landscape_only(self):
         self.assertIn("state.screen==='game'&&operativeStatusMedia.matches", APP)
-        self.assertIn("'(min-width: 900px) and (orientation: landscape)'", APP)
-        self.assertIn('@media (max-width:899px), (orientation:portrait)', CSS)
+        self.assertIn("'(min-width: 900px) and (orientation: landscape), (min-width: 900px) and (hover: hover) and (pointer: fine)'", APP)
+        self.assertIn('(orientation:portrait) and (pointer:coarse)', CSS)
 
     def test_workspace_and_vertical_sections(self):
         self.assertIn('grid-template-columns:minmax(320px,390px) minmax(0,1fr)', CSS)
@@ -40,7 +40,8 @@ class OperativeStatusPanelTests(unittest.TestCase):
         self.assertLess(INDEX.index('operativeStatusPanel'), INDEX.index('id="app"'))
 
     def test_authoritative_status_and_wound_precedence(self):
-        self.assertLess(APP.index("return {status:'ELIMINATED'", APP.index('function npoTrackerStatus')), APP.index("return {status:'ACTIVE'", APP.index('function npoTrackerStatus')))
+        npo_status = APP[APP.index('function npoStatus'):APP.index('function playerStatus')]
+        self.assertLess(npo_status.index("return 'ELIMINATED'"), npo_status.index("return 'ACTIVE'"))
         for status in ('ACTIVE', 'READY', 'ACTIVATED', 'DORMANT', 'ELIMINATED', 'RESERVE', 'ESCAPED', 'NOT IN PLAY'):
             self.assertIn(status, APP)
         self.assertIn("current<=0||current<=maximum/2?'severe':current<maximum?'wounded':''", APP)
@@ -53,6 +54,12 @@ class OperativeStatusPanelTests(unittest.TestCase):
         render = APP[APP.index('function render()'):APP.index('function renderHome()')]
         self.assertEqual(render.count('renderOperativeStatusPanel();'), 1)
         self.assertIn('window.addEventListener(\'resize\',scheduleOperativeStatusLayout)', APP)
+
+    def test_active_player_is_rendered_without_mutating_game_state(self):
+        self.assertIn('function renderOperativeStatusPanel(activePlayerId=null)', APP)
+        self.assertIn('renderOperativeStatusPanel(selectedId);', APP)
+        activation = APP[APP.index('function showPlayerActivation'):APP.index('function readPlayerActivationStage')]
+        self.assertNotIn('state.activePlayer', activation)
 
 
 if __name__ == '__main__':
