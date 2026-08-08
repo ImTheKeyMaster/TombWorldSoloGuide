@@ -19,13 +19,17 @@ class OperativeStatusToggleStateTests(unittest.TestCase):
         self.assertNotIn('.operative-status-toggle.active', CSS)
         self.assertNotIn("operativeStatusToggle.classList.toggle('active'", APP)
 
-    def test_off_hover_and_focus_have_distinct_medium_emphasis(self):
-        selector = '.operative-status-toggle[aria-pressed="false"]:hover,.operative-status-toggle[aria-pressed="false"]:focus-visible'
+    def test_off_pointer_interactions_do_not_override_dim_state(self):
+        self.assertNotIn('.operative-status-toggle[aria-pressed="false"]:hover', CSS)
+        self.assertNotIn('.operative-status-toggle[aria-pressed="false"]:active', CSS)
+
+    def test_off_keyboard_focus_uses_outline_without_brightening_control(self):
+        selector = '.operative-status-toggle[aria-pressed="false"]:focus-visible'
         rule = re.search(re.escape(selector) + r'\{([^}]+)\}', CSS).group(1)
-        self.assertIn('color:var(--green)', rule)
-        self.assertIn('opacity:.8', rule)
-        self.assertNotIn('background:', rule)
-        self.assertNotIn('box-shadow:', rule)
+        self.assertIn('outline:2px solid var(--green)', rule)
+        self.assertIn('outline-offset:2px', rule)
+        for property_name in ('border-color:', 'color:', 'background:', 'box-shadow:', 'opacity:'):
+            self.assertNotIn(property_name, rule)
 
     def test_on_state_keeps_full_bright_active_treatment(self):
         rule = re.search(r'\.operative-status-toggle\[aria-pressed="true"\]\{([^}]+)\}', CSS).group(1)
@@ -51,11 +55,11 @@ class OperativeStatusToggleStateTests(unittest.TestCase):
         self.assertIn('@media (max-width:899px), (orientation:portrait) and (hover:none), (orientation:portrait) and (pointer:coarse)', CSS)
 
     def test_release_version_and_save_version(self):
-        self.assertIn("const APP_VERSION = '8.6.48';", APP)
-        self.assertIn("const APP_VERSION = '8.6.48';", SERVICE_WORKER)
-        self.assertIn('V8.6.48', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.48'))
-        self.assertIn('## v8.6.48', README)
+        self.assertIn("const APP_VERSION = '8.6.49';", APP)
+        self.assertIn("const APP_VERSION = '8.6.49';", SERVICE_WORKER)
+        self.assertIn('V8.6.49', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.49'))
+        self.assertIn('## v8.6.49', README)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
 
