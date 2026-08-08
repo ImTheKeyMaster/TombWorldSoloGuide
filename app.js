@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.45';
+  const APP_VERSION = '8.6.46';
   const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
@@ -1485,15 +1485,20 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
   function fitOperativeStatusPanel(){
     if(operativeStatusPanel.hidden)return;
+    const minimumOperativeCardWidth=220;
     const sections=$$('.operative-status-section',operativeStatusPanel);
     sections.forEach(section=>{
       const list=$('.operative-status-list',section);
       section.classList.remove('two-column','extra-compact','allow-scroll');
       list.style.removeProperty('--status-column-rows');
       if(list.scrollHeight<=list.clientHeight)return;
-      section.classList.add('two-column');
-      list.style.setProperty('--status-column-rows',Math.ceil(list.children.length/2));
-      if(list.scrollHeight<=list.clientHeight)return;
+      const twoColumnGap=parseFloat(getComputedStyle(list).columnGap)||0;
+      const twoColumnCardWidth=(list.clientWidth-twoColumnGap)/2;
+      if(twoColumnCardWidth>=minimumOperativeCardWidth){
+        section.classList.add('two-column');
+        list.style.setProperty('--status-column-rows',Math.ceil(list.children.length/2));
+        if(list.scrollHeight<=list.clientHeight)return;
+      }
       section.classList.add('extra-compact');
       if(list.scrollHeight>list.clientHeight)section.classList.add('allow-scroll');
     });

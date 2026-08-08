@@ -15,8 +15,8 @@ MENU = APP[APP.index("function showGameMenu()") : APP.index("function showAbout(
 
 class AboutScreenV8619Tests(unittest.TestCase):
     def test_01_application_displays_version_8619(self):
-        self.assertIn("const APP_VERSION = '8.6.45';", APP)
-        self.assertIn("V8.6.45", INDEX)
+        self.assertIn("const APP_VERSION = '8.6.46';", APP)
+        self.assertIn("V8.6.46", INDEX)
 
     def test_02_game_menu_contains_about_button(self):
         self.assertIn('id="menuAbout" type="button">About</button>', MENU)
@@ -128,11 +128,11 @@ class AboutScreenV8619Tests(unittest.TestCase):
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
     def test_33_release_version_references_are_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.45';", WORKER)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.45"))
+        self.assertIn("const APP_VERSION = '8.6.46';", WORKER)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.46"))
         self.assertIn("## v8.6.25", README)
         for asset in ("styles.css", "app.js", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js"):
-            self.assertIn(f"{asset}?v=8.6.45", INDEX)
+            self.assertIn(f"{asset}?v=8.6.46", INDEX)
 
     def test_34_about_uses_semantic_sections_and_readable_text(self):
         for heading in ("Project Status", "Games Workshop Notice", "Official Rules and Materials", "Project Content", "Software Disclaimer", "User Responsibility", "Privacy", "Contact"):

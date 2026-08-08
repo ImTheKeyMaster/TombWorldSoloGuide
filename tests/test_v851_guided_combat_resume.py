@@ -80,13 +80,13 @@ class GuidedCombatResumeTests(unittest.TestCase):
         self.assertIn("const moreThanEight=Boolean($('#darkOfTombDistance')?.checked)", APP)
 
     def test_11_version_851_is_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.45';", APP)
-        self.assertIn("const APP_VERSION = '8.6.45';", WORKER)
-        self.assertIn("V8.6.45", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.45"))
+        self.assertIn("const APP_VERSION = '8.6.46';", APP)
+        self.assertIn("const APP_VERSION = '8.6.46';", WORKER)
+        self.assertIn("V8.6.46", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.46"))
         self.assertIn("## v8.6.25", README)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.45", INDEX)
+            self.assertIn(f"{asset}?v=8.6.46", INDEX)
 
 
 if __name__ == "__main__":

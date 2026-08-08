@@ -11,8 +11,8 @@ PERSISTENCE = (ROOT / 'persistence.js').read_text()
 
 class OperativeStatusPanelTests(unittest.TestCase):
     def test_version_and_save_schema(self):
-        self.assertIn("const APP_VERSION = '8.6.45';", APP)
-        self.assertIn('V8.6.45', INDEX)
+        self.assertIn("const APP_VERSION = '8.6.46';", APP)
+        self.assertIn('V8.6.46', INDEX)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
     def test_central_accessible_read_only_panel(self):
@@ -35,7 +35,7 @@ class OperativeStatusPanelTests(unittest.TestCase):
         self.assertIn('(orientation:portrait) and (pointer:coarse)', CSS)
 
     def test_workspace_and_vertical_sections(self):
-        self.assertIn('grid-template-columns:minmax(320px,390px) minmax(0,1fr)', CSS)
+        self.assertIn('grid-template-columns:clamp(360px,28vw,540px) minmax(0,1fr)', CSS)
         self.assertIn('grid-template-rows:minmax(0,1fr) minmax(0,1fr)', CSS)
         self.assertLess(INDEX.index('operativeStatusPanel'), INDEX.index('id="app"'))
 
