@@ -1,11 +1,11 @@
-/* Tomb World local QR fallback adapter, Apache-2.0. The decoder hook is kept local so camera capture never uses a CDN. */
+/* Local adapter for the vendored jsQR browser build. */
 (function (global) {
-  global.TombWorldQrDecoder = global.TombWorldQrDecoder || {
-    supported: false,
+  global.TombWorldQrDecoder = {
+    supported: typeof global.jsQR === 'function',
     decode(imageData) {
-      /* Native BarcodeDetector is preferred. Manual paste remains available on browsers without a native decoder. */
-      void imageData;
-      return null;
+      if (typeof global.jsQR !== 'function') return null;
+      const result = global.jsQR(imageData.data, imageData.width, imageData.height);
+      return result?.data || null;
     }
   };
 })(globalThis);

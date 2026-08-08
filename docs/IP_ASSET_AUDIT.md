@@ -136,3 +136,9 @@ The application has no analytics, advertising, tracking scripts, cookie writes, 
 |---|---|---|---|---|
 | `dashboard/assets/tactical-operative.svg` | Generic wireframe operative schematic | Original vector artwork created for this repository; not traced from the dashboard mockup or third-party artwork | Original repository contribution | Tactical Cogitator activation panel only |
 | `dashboard/assets/objective-terrain.svg` | Abstract terrain and objective wireframe | Original vector artwork created for this repository | Original repository contribution | Tactical Cogitator mission panel only |
+
+## v8.7.8 vendored QR decoder
+
+| Asset | Purpose | Source / attribution | Version | License | Deployment |
+|---|---|---|---|---|---|
+| `dashboard/vendor/jsQR.js` | Local browser QR decoding for camera frames and selected photos | jsQR by cozmo/jsQR; manually vendored from the upstream GitHub repository | 1.4.0, as identified by the vendored upstream package | Apache-2.0; `dashboard/vendor/jsQR-LICENSE.txt` | Dashboard pairing only; no CDN or image upload |

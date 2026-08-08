@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v8.7.7
+# Tomb World Solo Guide v8.7.8
+
+## v8.7.8
+
+**Version 8.7.8 - Fix iPhone Dashboard QR Scanner**
+
+- Added local jsQR decoding for iPhone Safari and PWA.
+- Fixed Scan Dashboard Response so it opens and uses the iPhone camera.
+- Added automatic fallback when native QR detection is unavailable.
+- Added camera cleanup, permission handling, and photo scanning fallback.
+- Kept all QR processing local to the device.
 
 ## v8.7.7
 
