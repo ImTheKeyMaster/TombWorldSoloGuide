@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.46';
+  const APP_VERSION = '8.6.47';
   const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
@@ -1480,27 +1480,67 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const definition=playerDefinition(id),maximum=Number(definition?.wounds||0);
       return operativeStatusRow({name:playerName(id),type:definition?.role||'Operative',current:Math.max(0,playerCurrentWounds(id)),maximum,status:playerStatus(id,activePlayerId),side:'player'});
     }).join('');
-    operativeStatusPanel.innerHTML=`<section class="operative-status-section"><h2>NPO Operatives</h2><div class="operative-status-list">${npoRows||'<p class="muted">No NPO operatives</p>'}</div></section><section class="operative-status-section"><h2>Player Operatives</h2><div class="operative-status-list">${playerRows||'<p class="muted">No Player operatives</p>'}</div></section>`;
+    operativeStatusPanel.innerHTML=`<section class="operative-status-section npo"><h2>NPO Operatives</h2><div class="operative-status-list">${npoRows||'<p class="muted">No NPO operatives</p>'}</div></section><section class="operative-status-section player"><h2>Player Operatives</h2><div class="operative-status-list">${playerRows||'<p class="muted">No Player operatives</p>'}</div></section>`;
     requestAnimationFrame(fitOperativeStatusPanel);
   }
   function fitOperativeStatusPanel(){
     if(operativeStatusPanel.hidden)return;
     const minimumOperativeCardWidth=220;
     const sections=$$('.operative-status-section',operativeStatusPanel);
+    const availableHeight=operativeStatusPanel.clientHeight;
+    const sectionHeightNeeded=section=>{
+      const list=$('.operative-status-list',section);
+      return list.scrollHeight+(section.offsetHeight-list.clientHeight);
+    };
+    const totalHeightNeeded=()=>sections.reduce((total,section)=>total+sectionHeightNeeded(section),0);
+    operativeStatusPanel.style.removeProperty('--status-npo-height');
+    operativeStatusPanel.style.removeProperty('--status-player-height');
     sections.forEach(section=>{
       const list=$('.operative-status-list',section);
       section.classList.remove('two-column','extra-compact','allow-scroll');
       list.style.removeProperty('--status-column-rows');
-      if(list.scrollHeight<=list.clientHeight)return;
+    });
+    sections.forEach(section=>{
+      const list=$('.operative-status-list',section);
+      if(totalHeightNeeded()<=availableHeight)return;
       const twoColumnGap=parseFloat(getComputedStyle(list).columnGap)||0;
       const twoColumnCardWidth=(list.clientWidth-twoColumnGap)/2;
       if(twoColumnCardWidth>=minimumOperativeCardWidth){
         section.classList.add('two-column');
         list.style.setProperty('--status-column-rows',Math.ceil(list.children.length/2));
-        if(list.scrollHeight<=list.clientHeight)return;
       }
+    });
+    sections.forEach(section=>{
+      if(totalHeightNeeded()<=availableHeight)return;
       section.classList.add('extra-compact');
-      if(list.scrollHeight>list.clientHeight)section.classList.add('allow-scroll');
+    });
+    const needs=sections.map(section=>sectionHeightNeeded(section));
+    const minimums=sections.map((section,index)=>{
+      const list=$('.operative-status-list',section);
+      const rows=[...list.children];
+      const visibleCards=Math.min(rows.length,index===0?1:2);
+      const gap=parseFloat(getComputedStyle(list).rowGap)||0;
+      const cardsHeight=rows.slice(0,visibleCards).reduce((height,row)=>height+row.getBoundingClientRect().height,0);
+      return section.offsetHeight-list.clientHeight+cardsHeight+Math.max(0,visibleCards-1)*gap;
+    });
+    let heights=[...needs];
+    if(needs[0]+needs[1]<=availableHeight){
+      heights[0]+=availableHeight-needs[0]-needs[1];
+    }else{
+      heights=[...minimums];
+      let remaining=Math.max(0,availableHeight-minimums[0]-minimums[1]);
+      [...sections.keys()].sort((a,b)=>(needs[a]-minimums[a])-(needs[b]-minimums[b])).forEach(index=>{
+        const addition=Math.min(remaining,Math.max(0,needs[index]-minimums[index]));
+        heights[index]+=addition;
+        remaining-=addition;
+      });
+      heights[0]+=remaining;
+    }
+    operativeStatusPanel.style.setProperty('--status-npo-height',`${heights[0]}px`);
+    operativeStatusPanel.style.setProperty('--status-player-height',`${heights[1]}px`);
+    sections.forEach(section=>{
+      const list=$('.operative-status-list',section);
+      if(list.scrollHeight>list.clientHeight+1)section.classList.add('allow-scroll');
     });
   }
   function scheduleOperativeStatusLayout(){
