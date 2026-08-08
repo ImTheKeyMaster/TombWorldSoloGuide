@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.47';
+  const APP_VERSION = '8.6.48';
   const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
@@ -1468,7 +1468,6 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     operativeStatusToggle.hidden=!eligible;
     operativeStatusToggle.setAttribute('aria-pressed',String(visible));
     operativeStatusToggle.setAttribute('aria-label',visible?'Hide operative status':'Show operative status');
-    operativeStatusToggle.classList.toggle('active',visible);
     gameWorkspace.classList.toggle('operative-status-visible',visible);
     operativeStatusPanel.hidden=!visible;
     if(!visible)return;
