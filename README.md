@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.47
+# Tomb World Solo Guide v8.6.48
+
+## v8.6.48
+
+**Version 8.6.48 - Clarify Operative Status Toggle State**
+
+- Dimmed the Operative Status split-view icon when the panel is off.
+- Preserved the bright green active treatment when the panel is enabled.
+- Improved hover and keyboard-focus feedback while keeping the off state clearly distinct.
 
 ## v8.6.47
 
