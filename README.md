@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v8.6.42
+# Tomb World Solo Guide v8.6.43
+
+## v8.6.43
+
+**Version 8.6.43 - Clarify My Will Be Done Automation**
+
+- Clarified that the app asks whether an attacking NPO is in the sarcophagus room and automatically applies Accurate 1 when applicable.
+- Preserved the official event effect text, existing combat automation, and other Tomb World Event explanations.
 
 ## v8.6.42
 
