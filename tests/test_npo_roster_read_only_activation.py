@@ -72,7 +72,8 @@ class NpoRosterReadOnlyActivationTests(unittest.TestCase):
         self.assertIn(
             ".tracker-operative.eliminated,\n"
             ".operative-card.dead,\n"
-            ".npo-roster-card.dead{\n"
+            ".npo-roster-card.dead,\n"
+            ".operative-status-row.eliminated{\n"
             "  border:2px solid var(--danger);\n"
             "  border-radius:10px;\n"
             "}",

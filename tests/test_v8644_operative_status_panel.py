@@ -11,8 +11,8 @@ PERSISTENCE = (ROOT / 'persistence.js').read_text()
 
 class OperativeStatusPanelTests(unittest.TestCase):
     def test_version_and_save_schema(self):
-        self.assertIn("const APP_VERSION = '8.6.44';", APP)
-        self.assertIn('V8.6.44', INDEX)
+        self.assertIn("const APP_VERSION = '8.6.45';", APP)
+        self.assertIn('V8.6.45', INDEX)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
     def test_central_accessible_read_only_panel(self):
@@ -44,8 +44,10 @@ class OperativeStatusPanelTests(unittest.TestCase):
         self.assertLess(npo_status.index("return 'ELIMINATED'"), npo_status.index("return 'ACTIVE'"))
         for status in ('ACTIVE', 'READY', 'ACTIVATED', 'DORMANT', 'ELIMINATED', 'RESERVE', 'ESCAPED', 'NOT IN PLAY'):
             self.assertIn(status, APP)
-        self.assertIn("current<=0||current<=maximum/2?'severe':current<maximum?'wounded':''", APP)
-        self.assertIn('<span>/${maximum}</span>', APP)
+        wounds = APP[APP.index('function statusWoundsHtml'):APP.index('function operativeStatusRow')]
+        self.assertNotIn('maximum/2', wounds)
+        self.assertNotIn('wounded', wounds)
+        self.assertIn('${current} / ${maximum}', wounds)
 
     def test_fit_first_progression_and_central_render(self):
         fit = APP[APP.index('function fitOperativeStatusPanel'):APP.index('function scheduleOperativeStatusLayout')]
