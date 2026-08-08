@@ -17,9 +17,9 @@ SETUP = APP[APP.index("function renderSetup()") : APP.index("function runStartin
 
 class SetupGameMenuHelpV8621Tests(unittest.TestCase):
     def test_01_application_displays_version_8621(self):
-        self.assertIn("const APP_VERSION = '8.6.46';", APP)
-        self.assertIn("V8.6.46", INDEX)
-        self.assertIn("const APP_VERSION = '8.6.46';", WORKER)
+        self.assertIn("const APP_VERSION = '8.6.47';", APP)
+        self.assertIn("V8.6.47", INDEX)
+        self.assertIn("const APP_VERSION = '8.6.47';", WORKER)
 
     def test_02_game_menu_contains_accessible_help_button_during_setup(self):
         self.assertIn('id="menuHelp" type="button">Help</button>', MENU)
@@ -100,10 +100,10 @@ class SetupGameMenuHelpV8621Tests(unittest.TestCase):
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
     def test_22_release_references_and_notes_are_consistent(self):
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.46"))
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.47"))
         self.assertIn("## v8.6.25", README)
         for asset in ("styles.css", "app.js", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js"):
-            self.assertIn(f"{asset}?v=8.6.46", INDEX)
+            self.assertIn(f"{asset}?v=8.6.47", INDEX)
         self.assertNotIn("8.6.20", APP + INDEX + WORKER)
 
     def test_23_help_open_and_close_do_not_save_or_mutate_state(self):

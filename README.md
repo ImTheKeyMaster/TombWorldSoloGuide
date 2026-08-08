@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.46
+# Tomb World Solo Guide v8.6.47
+
+## v8.6.47
+
+**Version 8.6.47 - Make Operative Status Panel Section Heights Dynamic**
+
+- Made the NPO and Player Operatives section heights dynamic in the desktop / landscape status panel.
+- Reallocated unused vertical space between the two sections based on actual content needs.
+- Reduced unnecessary internal scrolling when all operatives can fit in the available space.
+- Preserved existing operative card styling and wound/status visibility.
 
 ## v8.6.46
 
