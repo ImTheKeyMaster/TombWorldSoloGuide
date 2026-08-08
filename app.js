@@ -1488,9 +1488,19 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const minimumOperativeCardWidth=220;
     const sections=$$('.operative-status-section',operativeStatusPanel);
     const availableHeight=operativeStatusPanel.clientHeight;
+    const listHeightNeeded=list=>{
+      const listTop=list.getBoundingClientRect().top;
+      return [...list.children].reduce((height,row)=>Math.max(height,row.getBoundingClientRect().bottom-listTop),0);
+    };
+    const sectionChromeHeight=section=>{
+      const list=$('.operative-status-list',section);
+      const sectionStyle=getComputedStyle(section);
+      return list.getBoundingClientRect().top-section.getBoundingClientRect().top
+        +(parseFloat(sectionStyle.paddingBottom)||0)+(parseFloat(sectionStyle.borderBottomWidth)||0);
+    };
     const sectionHeightNeeded=section=>{
       const list=$('.operative-status-list',section);
-      return list.scrollHeight+(section.offsetHeight-list.clientHeight);
+      return listHeightNeeded(list)+sectionChromeHeight(section);
     };
     const totalHeightNeeded=()=>sections.reduce((total,section)=>total+sectionHeightNeeded(section),0);
     operativeStatusPanel.style.removeProperty('--status-npo-height');
@@ -1521,14 +1531,18 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const visibleCards=Math.min(rows.length,index===0?1:2);
       const gap=parseFloat(getComputedStyle(list).rowGap)||0;
       const cardsHeight=rows.slice(0,visibleCards).reduce((height,row)=>height+row.getBoundingClientRect().height,0);
-      return section.offsetHeight-list.clientHeight+cardsHeight+Math.max(0,visibleCards-1)*gap;
+      return sectionChromeHeight(section)+cardsHeight+Math.max(0,visibleCards-1)*gap;
     });
     let heights=[...needs];
     if(needs[0]+needs[1]<=availableHeight){
       heights[0]+=availableHeight-needs[0]-needs[1];
     }else{
       heights=[...minimums];
-      let remaining=Math.max(0,availableHeight-minimums[0]-minimums[1]);
+      const minimumTotal=minimums[0]+minimums[1];
+      if(minimumTotal>availableHeight){
+        heights=minimums.map(height=>height*availableHeight/minimumTotal);
+      }
+      let remaining=Math.max(0,availableHeight-heights[0]-heights[1]);
       [...sections.keys()].sort((a,b)=>(needs[a]-minimums[a])-(needs[b]-minimums[b])).forEach(index=>{
         const addition=Math.min(remaining,Math.max(0,needs[index]-minimums[index]));
         heights[index]+=addition;

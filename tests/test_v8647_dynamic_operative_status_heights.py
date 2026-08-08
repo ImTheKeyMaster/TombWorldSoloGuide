@@ -25,7 +25,9 @@ class DynamicOperativeStatusHeightTests(unittest.TestCase):
 
     def test_natural_content_heights_are_measured_against_available_height(self):
         self.assertIn('const availableHeight=operativeStatusPanel.clientHeight', self.fit)
-        self.assertIn('list.scrollHeight+(section.offsetHeight-list.clientHeight)', self.fit)
+        self.assertIn('row.getBoundingClientRect().bottom-listTop', self.fit)
+        self.assertIn('listHeightNeeded(list)+sectionChromeHeight(section)', self.fit)
+        self.assertNotIn('section.offsetHeight-list.clientHeight', self.fit)
         self.assertIn('if(needs[0]+needs[1]<=availableHeight)', self.fit)
         self.assertIn('heights[0]+=availableHeight-needs[0]-needs[1]', self.fit)
 
@@ -34,6 +36,11 @@ class DynamicOperativeStatusHeightTests(unittest.TestCase):
         self.assertIn("sort((a,b)=>(needs[a]-minimums[a])-(needs[b]-minimums[b]))", self.fit)
         self.assertIn("--status-npo-height',`${heights[0]}px`", self.fit)
         self.assertIn("--status-player-height',`${heights[1]}px`", self.fit)
+
+    def test_minimums_are_scaled_when_the_panel_is_too_short(self):
+        self.assertIn('if(minimumTotal>availableHeight)', self.fit)
+        self.assertIn('height*availableHeight/minimumTotal', self.fit)
+        self.assertIn('availableHeight-heights[0]-heights[1]', self.fit)
 
     def test_scrolling_is_only_enabled_after_dynamic_allocation(self):
         allocation = self.fit.index("--status-player-height',`${heights[1]}px`")
