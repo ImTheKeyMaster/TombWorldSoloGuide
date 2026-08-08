@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v8.6.45
+# Tomb World Solo Guide v8.6.46
+
+## v8.6.46
+
+**Version 8.6.46 - Improve Operative Status Panel Readability**
+
+- Expanded the Operative Status panel responsively on large displays.
+- Reduced unnecessary operative name and type truncation.
+- Added minimum readable widths before using two-column roster layouts.
+- Prioritized full operative information over avoiding internal scrolling.
+- Preserved prominent wound counts and existing eliminated styling.
 
 ## v8.6.45
 
