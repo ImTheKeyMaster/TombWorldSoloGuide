@@ -20,13 +20,14 @@ class OperativeStatusReadabilityTests(unittest.TestCase):
         type_rule = re.search(r'\.operative-status-type\{([^}]+)\}', CSS).group(1)
         for rule in (name_rule, type_rule):
             self.assertNotIn('text-overflow:ellipsis', rule)
-            self.assertNotIn('white-space:nowrap', rule)
             self.assertNotIn('overflow:hidden', rule)
-            self.assertIn('overflow-wrap:anywhere', rule)
+            self.assertIn('overflow-wrap:break-word', rule)
+            self.assertIn('white-space:normal', rule)
 
     def test_two_columns_require_readable_card_width_per_section(self):
         fit = APP[APP.index('function fitOperativeStatusPanel'):APP.index('function scheduleOperativeStatusLayout')]
-        self.assertIn('const minimumOperativeCardWidth=230', fit)
+        self.assertIn('const minimumOperativeCardWidth=220', fit)
+        self.assertIn('parseFloat(getComputedStyle(list).columnGap)||0', fit)
         self.assertIn('const twoColumnCardWidth=(list.clientWidth-twoColumnGap)/2', fit)
         self.assertIn('if(twoColumnCardWidth>=minimumOperativeCardWidth)', fit)
         self.assertIn('sections.forEach(section=>', fit)

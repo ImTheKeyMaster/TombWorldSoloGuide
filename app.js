@@ -1485,14 +1485,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
   function fitOperativeStatusPanel(){
     if(operativeStatusPanel.hidden)return;
-    const minimumOperativeCardWidth=230;
-    const twoColumnGap=5;
+    const minimumOperativeCardWidth=220;
     const sections=$$('.operative-status-section',operativeStatusPanel);
     sections.forEach(section=>{
       const list=$('.operative-status-list',section);
       section.classList.remove('two-column','extra-compact','allow-scroll');
       list.style.removeProperty('--status-column-rows');
       if(list.scrollHeight<=list.clientHeight)return;
+      const twoColumnGap=parseFloat(getComputedStyle(list).columnGap)||0;
       const twoColumnCardWidth=(list.clientWidth-twoColumnGap)/2;
       if(twoColumnCardWidth>=minimumOperativeCardWidth){
         section.classList.add('two-column');
