@@ -1,4 +1,14 @@
-# Tomb World Solo Guide v8.6.43
+# Tomb World Solo Guide v8.6.44
+
+## v8.6.44
+
+**Version 8.6.44 - Optional Operative Status Panel**
+
+- Added an optional large-screen Operative Status panel.
+- Added compact live NPO and Player operative status displays.
+- Added wound-condition coloring and current-activation highlighting.
+- Added responsive fit behavior designed to avoid unnecessary scrolling.
+- Preserved the existing single-column mobile and portrait-tablet experience.
 
 ## v8.6.43
 

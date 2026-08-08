@@ -2,7 +2,8 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.43';
+  const APP_VERSION = '8.6.44';
+  const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -39,6 +40,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const app = $('#app');
   const gameMenuBtn = $('#gameMenuBtn');
+  const gameWorkspace = $('#gameWorkspace');
+  const operativeStatusPanel = $('#operativeStatusPanel');
+  const operativeStatusToggle = $('#operativeStatusToggle');
   const modal = $('#modal');
   const modalBody = $('#modalBody');
   const toast = $('#toast');
@@ -51,6 +55,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   let backgroundManifest=[];
   let loadedBackgroundFilename=null;
   let loadingBackgroundFilename=null;
+  const operativeStatusMedia=matchMediaProvider.call(window,'(min-width: 900px) and (orientation: landscape)');
+  let showOperativeStatusPreference=localStorage.getItem(OPERATIVE_STATUS_PREFERENCE_KEY)==='true';
+  let operativeStatusResizeTimer=null;
 
   async function loadBackgroundManifest(){
     try{
@@ -1420,6 +1427,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
   function npoTrackerStatus(npo){
     if(npo.wounds<=0||npo.battlefieldState==='out-of-action')return {status:'ELIMINATED',className:'eliminated'};
+    if(npo.id===state.activeNpoId&&state.lastActivation?.npoId===npo.id&&!state.lastActivation?.committed)return {status:'ACTIVE',className:'active'};
     if(npo.battlefieldState==='reserve')return {status:'RESERVE',className:'reserve'};
     if(npo.battlefieldState==='deployed'&&npo.dormant)return {status:'DORMANT',className:'dormant'};
     if(npo.battlefieldState==='deployed'&&npo.ready)return {status:'READY',className:'ready'};
@@ -1431,6 +1439,71 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return livingPlayerOperativeIds().length;
   }
   function inPlayLivingPlayerOperativeCount(){return inPlayLivingPlayerOperativeIds().length;}
+
+  function playerStatus(operativeId){
+    const operativeState=playerOperativeState(operativeId);
+    if(operativeState.inPlay===false)return operativeState.offBoardReason==='escaped'?'ESCAPED':'NOT IN PLAY';
+    if(playerCurrentWounds(operativeId)<=0||(state.playerCasualtyIds||[]).includes(operativeId))return 'ELIMINATED';
+    if(state.combatState?.side==='player'&&state.combatState.stage?.playerOperativeId===operativeId)return 'ACTIVE';
+    return (state.playerActivatedIds||[]).includes(operativeId)?'ACTIVATED':'READY';
+  }
+  function statusWoundsHtml(current,maximum){
+    const woundClass=current<=0||current<=maximum/2?'severe':current<maximum?'wounded':'';
+    return `<span class="operative-status-wounds"><span class="operative-status-current ${woundClass}">${current}</span><span>/${maximum}</span></span>`;
+  }
+  function operativeStatusRow({name,type,current,maximum,status}){
+    const active=status==='ACTIVE';
+    return `<div class="operative-status-row${active?' active':''}"><strong>${escapeHtml(name)}</strong><div><span class="operative-status-type">${escapeHtml(type)}</span>${statusWoundsHtml(current,maximum)}<span class="operative-status-value">${status}</span></div></div>`;
+  }
+  function renderOperativeStatusPanel(){
+    const eligible=state.screen==='game'&&operativeStatusMedia.matches;
+    const visible=eligible&&showOperativeStatusPreference;
+    operativeStatusToggle.hidden=!eligible;
+    operativeStatusToggle.setAttribute('aria-pressed',String(visible));
+    operativeStatusToggle.setAttribute('aria-label',visible?'Hide operative status':'Show operative status');
+    operativeStatusToggle.classList.toggle('active',visible);
+    gameWorkspace.classList.toggle('operative-status-visible',visible);
+    operativeStatusPanel.hidden=!visible;
+    if(!visible)return;
+    const npoRows=sortedNposForDisplay(state.roster).map(npo=>{
+      const status=npoTrackerStatus(npo).status;
+      return operativeStatusRow({name:npoName(npo),type:npoDefinition(npo.type)?.name||npo.type,current:Math.max(0,npo.wounds),maximum:npo.maxWounds,status});
+    }).join('');
+    const playerRows=(state.playerRoster||[]).map(id=>{
+      const definition=playerDefinition(id),maximum=Number(definition?.wounds||0);
+      return operativeStatusRow({name:playerName(id),type:definition?.role||'Operative',current:Math.max(0,playerCurrentWounds(id)),maximum,status:playerStatus(id)});
+    }).join('');
+    operativeStatusPanel.innerHTML=`<section class="operative-status-section"><h2>NPO Operatives</h2><div class="operative-status-list">${npoRows||'<p class="muted">No NPO operatives</p>'}</div></section><section class="operative-status-section"><h2>Player Operatives</h2><div class="operative-status-list">${playerRows||'<p class="muted">No Player operatives</p>'}</div></section>`;
+    requestAnimationFrame(fitOperativeStatusPanel);
+  }
+  function fitOperativeStatusPanel(){
+    if(operativeStatusPanel.hidden)return;
+    const sections=$$('.operative-status-section',operativeStatusPanel);
+    sections.forEach(section=>{
+      const list=$('.operative-status-list',section);
+      section.classList.remove('two-column','extra-compact','allow-scroll');
+      list.style.removeProperty('--status-column-rows');
+      if(list.scrollHeight<=list.clientHeight)return;
+      section.classList.add('two-column');
+      list.style.setProperty('--status-column-rows',Math.ceil(list.children.length/2));
+      if(list.scrollHeight<=list.clientHeight)return;
+      section.classList.add('extra-compact');
+      if(list.scrollHeight>list.clientHeight)section.classList.add('allow-scroll');
+    });
+  }
+  function scheduleOperativeStatusLayout(){
+    clearTimeout(operativeStatusResizeTimer);
+    operativeStatusResizeTimer=setTimeout(()=>{renderOperativeStatusPanel();},120);
+  }
+  operativeStatusToggle.addEventListener('click',()=>{
+    showOperativeStatusPreference=!showOperativeStatusPreference;
+    localStorage.setItem(OPERATIVE_STATUS_PREFERENCE_KEY,String(showOperativeStatusPreference));
+    renderOperativeStatusPanel();
+  });
+  if(operativeStatusMedia.addEventListener)operativeStatusMedia.addEventListener('change',scheduleOperativeStatusLayout);
+  else operativeStatusMedia.addListener?.(scheduleOperativeStatusLayout);
+  window.addEventListener('resize',scheduleOperativeStatusLayout);
+  window.addEventListener('orientationchange',scheduleOperativeStatusLayout);
 
   function normalizeSarcophagusControllers(value,max=livingPlayerOperativeCount()){
     const limit=Math.max(0,Math.round(Number(max)||0));
@@ -1761,6 +1834,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     else renderGame();
     bindCommon();
     updateGameBackground();
+    renderOperativeStatusPanel();
 
     if(state.hotResolution&&!state.hotResolution.acknowledged&&!modal.open){
       showHotResult(state.hotResolution,()=>resumePersistedHotContinuation(state.hotResolution));
@@ -7148,6 +7222,7 @@ function showPlayerActivation(stage={}){
     modal._focusKey=nextFocusKey;
     modal._onClose=onClose;
     $$('[data-close]',modal).forEach(b=>b.onclick=closeModal);
+    renderOperativeStatusPanel();
 
     modal.scrollTop=0;
     modalBody.scrollTop=0;

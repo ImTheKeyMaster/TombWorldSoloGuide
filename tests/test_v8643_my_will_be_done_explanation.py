@@ -36,10 +36,10 @@ class MyWillBeDoneExplanationTests(unittest.TestCase):
         self.assertIn("profile.rules.push('Accurate 1')", engine)
 
     def test_release_version_is_consistent_without_save_schema_change(self):
-        self.assertIn("const APP_VERSION = '8.6.43';", APP)
-        self.assertIn("const APP_VERSION = '8.6.43';", (ROOT / "service-worker.js").read_text())
-        self.assertIn('<div class="version">V8.6.43</div>', (ROOT / "index.html").read_text())
-        self.assertTrue((ROOT / "README.md").read_text().startswith('# Tomb World Solo Guide v8.6.43'))
+        self.assertIn("const APP_VERSION = '8.6.44';", APP)
+        self.assertIn("const APP_VERSION = '8.6.44';", (ROOT / "service-worker.js").read_text())
+        self.assertIn('<div class="version">V8.6.44</div>', (ROOT / "index.html").read_text())
+        self.assertTrue((ROOT / "README.md").read_text().startswith('# Tomb World Solo Guide v8.6.44'))
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
 
 

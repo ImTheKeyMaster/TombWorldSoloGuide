@@ -17,13 +17,13 @@ def section(start, end):
 
 class SetupDesktopBackgroundTests(unittest.TestCase):
     def test_version_and_release_notes(self):
-        self.assertIn("const APP_VERSION = '8.6.43';", APP)
-        self.assertIn("const APP_VERSION = '8.6.43';", WORKER)
-        self.assertIn("V8.6.43", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.43"))
+        self.assertIn("const APP_VERSION = '8.6.44';", APP)
+        self.assertIn("const APP_VERSION = '8.6.44';", WORKER)
+        self.assertIn("V8.6.44", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.44"))
         self.assertIn("## v8.6.25", README)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.43", INDEX)
+            self.assertIn(f"{asset}?v=8.6.44", INDEX)
 
     def test_new_setup_selects_saves_then_renders(self):
         start = section("function startNewGameSetup(){", "function confirmNewGame")
@@ -92,7 +92,7 @@ class SetupDesktopBackgroundTests(unittest.TestCase):
         self.assertIn("radial-gradient(circle at 80% 0,#123326 0,transparent 32%),var(--bg)", STYLES)
         combined = APP + INDEX + STYLES + WORKER
         self.assertNotIn("Portrait-", combined)
-        self.assertNotIn("orientationchange", APP)
+        self.assertIn("orientationchange", APP)
 
     def test_save_schema_is_unchanged(self):
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)

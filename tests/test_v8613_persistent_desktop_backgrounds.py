@@ -18,9 +18,9 @@ BACKGROUND_DIR = ROOT / "Assets" / "Images" / "Backgrounds"
 
 class PersistentDesktopBackgroundTests(unittest.TestCase):
     def test_version_and_save_schema(self):
-        self.assertIn("const APP_VERSION = '8.6.43';", APP)
-        self.assertIn("V8.6.43", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.43"))
+        self.assertIn("const APP_VERSION = '8.6.44';", APP)
+        self.assertIn("V8.6.44", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.44"))
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
     def test_manifest_matches_current_landscape_images_in_natural_order(self):
@@ -78,7 +78,7 @@ class PersistentDesktopBackgroundTests(unittest.TestCase):
         self.assertIn("radial-gradient(circle at 80% 0,#123326 0,transparent 32%),var(--bg)", STYLES)
         combined = APP + INDEX + STYLES + WORKER
         self.assertNotRegex(combined, r"Portrait-\d")
-        self.assertNotIn("orientationchange", APP)
+        self.assertIn("orientationchange", APP)
 
     def test_offline_cache_is_generated_from_the_manifest(self):
         self.assertIn("'./Assets/Images/Backgrounds/manifest.json'", WORKER)
