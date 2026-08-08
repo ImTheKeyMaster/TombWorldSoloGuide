@@ -256,6 +256,11 @@ html.desktop-game-background #gameBackground{opacity:1}
 
 /* v1.3.4: guided-flow navigation */
 .header-actions{display:flex;align-items:center;gap:10px}
+.operative-status-toggle{display:grid;place-items:center;width:38px;height:38px;padding:7px;border:1px solid var(--line);border-radius:11px;background:#0a1812;color:var(--muted);cursor:pointer}
+.operative-status-toggle svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8}
+.operative-status-toggle:hover,.operative-status-toggle:focus-visible,.operative-status-toggle.active{border-color:var(--green);color:var(--green)}
+.operative-status-toggle.active{background:rgba(118,245,168,.12);box-shadow:0 0 0 2px rgba(118,245,168,.1)}
+.operative-status-toggle[hidden]{display:none}
 .header-menu-btn{
   border:1px solid var(--line);
   border-radius:11px;
@@ -309,6 +314,43 @@ html.desktop-game-background #gameBackground{opacity:1}
   .game-menu-grid,.game-menu-session{grid-template-columns:1fr}
   .game-menu-grid .btn:first-child,.game-menu-session .danger{grid-column:auto}
 }
+
+/* v8.6.44 optional large-screen operative status */
+.game-workspace{position:relative;min-width:0}
+.operative-status-panel[hidden]{display:none}
+@media (min-width:900px) and (orientation:landscape), (min-width:900px) and (hover:hover) and (pointer:fine){
+  .game-workspace.operative-status-visible{display:grid;grid-template-columns:minmax(320px,390px) minmax(0,1fr);align-items:start;max-width:1600px;margin:0 auto}
+  .game-workspace.operative-status-visible .app-shell{width:100%;min-width:0;margin:0;max-width:1000px}
+  .operative-status-panel{position:sticky;top:71px;display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);height:calc(100dvh - 71px);margin:0 0 0 18px;border:1px solid var(--line);border-radius:0 0 18px 18px;background:linear-gradient(145deg,rgba(11,27,20,.97),rgba(6,17,13,.97));box-shadow:var(--shadow);overflow:hidden}
+  .operative-status-section{display:flex;min-height:0;flex-direction:column;padding:12px}
+  .operative-status-section+.operative-status-section{border-top:1px solid var(--line)}
+  .operative-status-section h2{flex:0 0 auto;margin:0 0 8px;color:var(--green);font-size:clamp(.72rem,.9vw,.86rem);letter-spacing:.13em;text-transform:uppercase}
+  .operative-status-list{display:grid;flex:1 1 auto;grid-template-columns:minmax(0,1fr);align-content:start;min-height:0;gap:4px;overflow:hidden}
+  .operative-status-row{min-width:0;padding:5px 7px;border-left:3px solid transparent;border-radius:0 7px 7px 0;background:rgba(7,20,15,.82);font-size:clamp(.69rem,.82vw,.78rem);line-height:1.18}
+  .operative-status-row>strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(.72rem,.88vw,.82rem);letter-spacing:.025em;text-transform:uppercase}
+  .operative-status-row>div{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:7px;margin-top:2px;color:var(--muted)}
+  .operative-status-type{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .operative-status-wounds{display:inline-flex;color:var(--muted);font-variant-numeric:tabular-nums}
+  .operative-status-current{color:var(--text)}
+  .operative-status-current.wounded{color:#c19b42}
+  .operative-status-current.severe{color:#b94b50}
+  .operative-status-value{min-width:5.8em;text-align:right;font-size:.68rem;font-weight:900;letter-spacing:.035em}
+  .operative-status-row.active{border-left-color:var(--green);background:rgba(53,202,120,.13)}
+  .operative-status-row.active .operative-status-value{color:var(--green)}
+  .operative-status-section.two-column .operative-status-list{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(var(--status-column-rows),auto);grid-auto-flow:column;column-gap:5px}
+  .operative-status-section.two-column .operative-status-row>div{gap:4px}
+  .operative-status-section.two-column .operative-status-value{min-width:0;font-size:.65rem}
+  .operative-status-section.extra-compact{padding-block:8px}
+  .operative-status-section.extra-compact .operative-status-list{gap:2px}
+  .operative-status-section.extra-compact .operative-status-row{padding-block:3px;line-height:1.1}
+  .operative-status-section.allow-scroll .operative-status-list{overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--green2) transparent}
+}
+@media (min-width:900px) and (max-width:1100px) and (orientation:landscape), (min-width:900px) and (max-width:1100px) and (hover:hover) and (pointer:fine){
+  .game-workspace.operative-status-visible{grid-template-columns:minmax(300px,34vw) minmax(0,1fr)}
+  .operative-status-panel{margin-left:12px}
+  .game-workspace.operative-status-visible .app-shell{padding-inline:12px}
+}
+@media (max-width:899px), (orientation:portrait) and (hover:none), (orientation:portrait) and (pointer:coarse){.operative-status-toggle,.operative-status-panel{display:none!important}}
 
 
 /* v1.3.5b: Player operative activation indicators */

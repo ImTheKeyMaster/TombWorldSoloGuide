@@ -99,7 +99,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertIn("Assets/Images/${resultClass}.png", self.app)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = "8.6.43"
+        expected = "8.6.44"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         index = (ROOT / "index.html").read_text()
         self.assertIn(f"styles.css?v={expected}", index)
