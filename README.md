@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.48
+# Tomb World Solo Guide v8.6.49
+
+## v8.6.49
+
+**Version 8.6.49 - Restore Split-Pane Toggle Off Appearance**
+
+- Kept the split-pane toggle's dim border and icon colors while it is off, including after pointer clicks and repeated toggles.
+- Preserved an accessible keyboard-only focus outline without making the off state look enabled.
+- Updated visible, internal, cache-busting, and service-worker cache versions to v8.6.49.
 
 ## v8.6.48
 
