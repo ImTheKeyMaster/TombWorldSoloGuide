@@ -27,10 +27,10 @@ class TargetReticleTests(unittest.TestCase):
         self.assertIn("if(type==='command')return npoIcon('radar');", APP)
 
     def test_release_version_is_current_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.6.42';", APP)
-        self.assertIn("const APP_VERSION = '8.6.42';", SERVICE_WORKER)
-        self.assertIn('<div class="version">V8.6.42</div>', INDEX)
-        self.assertIn("# Tomb World Solo Guide v8.6.42", README)
+        self.assertIn("const APP_VERSION = '8.6.43';", APP)
+        self.assertIn("const APP_VERSION = '8.6.43';", SERVICE_WORKER)
+        self.assertIn('<div class="version">V8.6.43</div>', INDEX)
+        self.assertIn("# Tomb World Solo Guide v8.6.43", README)
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
 

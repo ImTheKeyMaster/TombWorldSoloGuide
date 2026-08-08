@@ -17,13 +17,13 @@ def section(start, end):
 
 class SetupDesktopBackgroundTests(unittest.TestCase):
     def test_version_and_release_notes(self):
-        self.assertIn("const APP_VERSION = '8.6.42';", APP)
-        self.assertIn("const APP_VERSION = '8.6.42';", WORKER)
-        self.assertIn("V8.6.42", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.42"))
+        self.assertIn("const APP_VERSION = '8.6.43';", APP)
+        self.assertIn("const APP_VERSION = '8.6.43';", WORKER)
+        self.assertIn("V8.6.43", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.43"))
         self.assertIn("## v8.6.25", README)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.42", INDEX)
+            self.assertIn(f"{asset}?v=8.6.43", INDEX)
 
     def test_new_setup_selects_saves_then_renders(self):
         start = section("function startNewGameSetup(){", "function confirmNewGame")

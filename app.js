@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.42';
+  const APP_VERSION = '8.6.43';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -595,7 +595,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const eventDefinitions = {
     'subjugation-glyphs':{title:'Subjugation Glyphs',text:'Randomly test eligible Player operatives without replacement. If a D6 is higher than an operative’s effective APL, subtract 1 from its APL.',execution:{type:'subjugation-glyphs'},lifecycle:'immediate',duration:'persistent',handlerId:'subjugation-glyphs',gameplayHooks:['effectivePlayerApl'],automationType:'automatic',priority:10},
     'transdimensional-relocation':{title:'Transdimensional Relocation',text:'Randomly select two Player operatives and swap their positions.',execution:{type:'transdimensional-relocation'},duration:'immediate',redrawIfImpossible:true},
-    'my-will-be-done':{title:'My Will Be Done',text:'Until the end of the turning point, while an NPO is in the same room as the sarcophagus, its weapons have Accurate 1.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'my-will-be-done',gameplayHooks:['effectiveWeapon'],automationType:'tabletop-answer',priority:20},
+    'my-will-be-done':{title:'My Will Be Done',text:'Until the end of the turning point, while an NPO is in the same room as the sarcophagus, its weapons have Accurate 1.',resultText:'Effect active until the end of this Turning Point. When an NPO attacks, the app will ask whether it is in the same room as the sarcophagus and automatically apply Accurate 1 if applicable.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'my-will-be-done',gameplayHooks:['effectiveWeapon'],automationType:'tabletop-answer',priority:20},
     'reanimation-protocols':{title:'Reanimation Protocols',text:'Until the end of the turning point, the first time each NPO would be incapacitated, roll one D6. On 4+, it reanimates with 1 wound.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'reanimation-protocols',gameplayHooks:['incapacitationCandidates'],automationType:'automatic',priority:10},
     'dark-of-the-tomb':{title:'Dark of the Tomb',text:'Until the end of the turning point, Player Shoot attack dice cannot be rerolled when the target is more than 8 inches away.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'dark-of-the-tomb',gameplayHooks:['attackRerolls'],automationType:'tabletop-answer',priority:10},
     'countertemporal-shifting':{title:'Countertemporal Shifting',text:'Until the end of the turning point, when an attack die would inflict 3 or more damage on an NPO, roll one D6. On 5+, subtract 1 damage from that die.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'countertemporal-shifting',gameplayHooks:['damagePackets'],automationType:'automatic',priority:30},
@@ -3126,7 +3126,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         const definition=eventDefinitions[event.definitionId];
         state.eventState.active.push({...event,lifecycle:definition.lifecycle,handlerId:definition.handlerId,gameplayHooks:[...definition.gameplayHooks],automationType:definition.automationType,priority:definition.priority,startedTurningPoint:state.turningPoint,expiresAfterTurningPoint:state.turningPoint,status:'active'});
       }
-      completeCurrentEvent('Effect active until the end of this Turning Point.');
+      completeCurrentEvent(eventDefinitions[event.definitionId]?.resultText||'Effect active until the end of this Turning Point.');
       return;
     }
     if(type==='chittering-drone'){
