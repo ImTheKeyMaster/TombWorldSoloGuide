@@ -36,13 +36,13 @@ process.stdout.write(JSON.stringify([{','.join(expressions)}]));
 
 class V866NpoRepositionDistanceTests(unittest.TestCase):
     def test_version_and_release_notes(self):
-        self.assertIn("const APP_VERSION = '8.6.49';", APP)
-        self.assertIn("const APP_VERSION = '8.6.49';", WORKER)
-        self.assertIn('V8.6.49', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.49'))
+        self.assertIn("const APP_VERSION = '8.6.50';", APP)
+        self.assertIn("const APP_VERSION = '8.6.50';", WORKER)
+        self.assertIn('V8.6.50', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.50'))
         self.assertIn('Version 8.6.6 - Show Reposition Distance in NPO Guidance', README)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.49', INDEX)
+            self.assertIn(f'{asset}?v=8.6.50', INDEX)
 
     def test_distance_uses_current_npo_move_then_definition(self):
         helper = section('function npoRepositionDistance', 'function formatMovementDistance')

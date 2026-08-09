@@ -55,11 +55,11 @@ class OperativeStatusToggleStateTests(unittest.TestCase):
         self.assertIn('@media (max-width:899px), (orientation:portrait) and (hover:none), (orientation:portrait) and (pointer:coarse)', CSS)
 
     def test_release_version_and_save_version(self):
-        self.assertIn("const APP_VERSION = '8.6.49';", APP)
-        self.assertIn("const APP_VERSION = '8.6.49';", SERVICE_WORKER)
-        self.assertIn('V8.6.49', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.49'))
-        self.assertIn('## v8.6.49', README)
+        self.assertIn("const APP_VERSION = '8.6.50';", APP)
+        self.assertIn("const APP_VERSION = '8.6.50';", SERVICE_WORKER)
+        self.assertIn('V8.6.50', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.50'))
+        self.assertIn('## v8.6.50', README)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
 

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.49';
+  const APP_VERSION = '8.6.50';
   const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
@@ -1459,8 +1459,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function operativeStatusRow({name,type,current,maximum,status,side}){
     const eliminated=status==='ELIMINATED';
     const active=!eliminated&&status==='ACTIVE';
+    const wounded=!eliminated&&current>0&&current<maximum;
     const eliminationIcon=eliminated?`<span class="operative-status-elimination-icon ${side}" aria-hidden="true">${side==='player'?'☠':''}</span>`:'';
-    return `<div class="operative-status-row${eliminated?' eliminated':active?' active':''}">${eliminationIcon}<strong>${escapeHtml(name)}</strong>${statusWoundsHtml(current,maximum)}<span class="operative-status-type">${escapeHtml(type)}</span><span class="operative-status-value">${status}</span></div>`;
+    return `<div class="operative-status-row${eliminated?' eliminated':''}${active?' active':''}${wounded?' wounded':''}">${eliminationIcon}<strong>${escapeHtml(name)}</strong>${statusWoundsHtml(current,maximum)}<span class="operative-status-type">${escapeHtml(type)}</span><span class="operative-status-value">${status}</span></div>`;
   }
   function renderOperativeStatusPanel(activePlayerId=null){
     const eligible=state.screen==='game'&&operativeStatusMedia.matches;

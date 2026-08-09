@@ -40,10 +40,10 @@ class PlayerTeamLoadRaceTests(unittest.TestCase):
             self.assertIn(rule, APP)
     def test_23_numbering_remains_present(self): self.assertIn("assignPlayerDisplayNumbers();", APP)
     def test_24_current_version_is_763(self):
-        self.assertIn("const APP_VERSION = '8.6.49';", APP)
-        self.assertIn("const APP_VERSION = '8.6.49';", WORKER)
-        self.assertIn("V8.6.49", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.49"))
+        self.assertIn("const APP_VERSION = '8.6.50';", APP)
+        self.assertIn("const APP_VERSION = '8.6.50';", WORKER)
+        self.assertIn("V8.6.50", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.50"))
     def test_25_loading_and_error_are_accessible(self):
         self.assertIn('role="status"', APP)
         self.assertIn('role="alert"', APP)
