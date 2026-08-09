@@ -58,12 +58,12 @@ class SimplifyBreachNavigationV861Tests(unittest.TestCase):
         self.assertIn(".wizard-actions.breach-navigation .btn{width:100%}", STYLES)
 
     def test_release_version_and_save_schema(self):
-        self.assertIn("const APP_VERSION = '8.6.49';", APP)
-        self.assertIn("const APP_VERSION = '8.6.49';", WORKER)
-        self.assertIn("V8.6.49", INDEX)
+        self.assertIn("const APP_VERSION = '8.6.50';", APP)
+        self.assertIn("const APP_VERSION = '8.6.50';", WORKER)
+        self.assertIn("V8.6.50", INDEX)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.49", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.49"))
+            self.assertIn(f"{asset}?v=8.6.50", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.50"))
         self.assertIn("Version 8.6.1 - Simplify Breach Navigation", README)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
 

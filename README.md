@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.49
+# Tomb World Solo Guide v8.6.50
+
+## v8.6.50
+
+**Version 8.6.50 - Highlight Wounded Operatives**
+
+- Added a 2px #f5ff5b border to wounded living operatives in the Operative Status panel.
+- Preserved the existing red eliminated treatment for operatives at zero wounds.
+- Kept wound counts and existing status-panel layout behavior unchanged.
 
 ## v8.6.49
 

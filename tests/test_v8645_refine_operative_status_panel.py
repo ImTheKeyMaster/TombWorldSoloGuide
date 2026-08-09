@@ -45,7 +45,7 @@ class RefinedOperativeStatusPanelTests(unittest.TestCase):
     def test_eliminated_precedes_active_and_living_active_is_emphasized(self):
         row = APP[APP.index('function operativeStatusRow'):APP.index('function renderOperativeStatusPanel')]
         self.assertIn("const active=!eliminated&&status==='ACTIVE'", row)
-        self.assertIn("eliminated?' eliminated':active?' active':''", row)
+        self.assertIn("${eliminated?' eliminated':''}${active?' active':''}", row)
         self.assertIn('.operative-status-row.active{border-color:var(--green)', CSS)
 
     def test_fit_modes_preserve_wound_prominence(self):
@@ -57,7 +57,7 @@ class RefinedOperativeStatusPanelTests(unittest.TestCase):
         self.assertIn('overflow:hidden', re.search(r'\.operative-status-panel\{([^}]+)\}', CSS).group(1))
 
     def test_release_does_not_change_save_schema(self):
-        self.assertIn("const APP_VERSION = '8.6.49';", APP)
+        self.assertIn("const APP_VERSION = '8.6.50';", APP)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
 

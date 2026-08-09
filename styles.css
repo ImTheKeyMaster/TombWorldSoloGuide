@@ -333,6 +333,7 @@ html.desktop-game-background #gameBackground{opacity:1}
   .operative-status-wounds{align-self:start;min-width:4.7em;color:var(--text);text-align:right;font-size:clamp(1rem,1.35vw,1.22rem);font-weight:950;font-variant-numeric:tabular-nums;letter-spacing:.01em;white-space:nowrap}
   .operative-status-value{align-self:end;text-align:right;font-size:.68rem;font-weight:900;letter-spacing:.035em;white-space:nowrap}
   .operative-status-row.active{border-color:var(--green);background:rgba(53,202,120,.13)}
+  .operative-status-row.wounded{border:2px solid #f5ff5b}
   .operative-status-row.active .operative-status-value{color:var(--green)}
   .operative-status-row.eliminated{padding-left:28px;background:rgba(125,25,25,.2);color:var(--danger);opacity:.72}
   .operative-status-row.eliminated>strong,.operative-status-row.eliminated .operative-status-value{color:var(--danger)}
