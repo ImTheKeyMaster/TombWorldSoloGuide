@@ -65,8 +65,8 @@ class CanoptekIntegrationTests(unittest.TestCase):
         self.assertIn("Roll Damage", APP)
 
     def test_version_matrix_and_portrait_constraints(self):
-        self.assertIn("const APP_VERSION = '8.6.51';", APP)
-        self.assertIn("V8.6.51", (ROOT / "index.html").read_text())
+        self.assertIn("const APP_VERSION = '8.6.52';", APP)
+        self.assertIn("V8.6.52", (ROOT / "index.html").read_text())
         self.assertNotIn("obelisk node matrix support", APP.lower())
         self.assertNotIn("npoPortrait", APP)
 

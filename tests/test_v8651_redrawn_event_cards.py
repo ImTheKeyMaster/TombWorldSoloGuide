@@ -12,8 +12,8 @@ class RedrawnEventCardTests(unittest.TestCase):
         self.assertIn("event.status==='redrawn'?' tomb-world-event-card--redrawn':''", event_html)
         self.assertIn("tomb-world-event-card${cardStatusClass}", event_html)
 
-    def test_redrawn_card_is_dimmed_with_a_diagonal_overlay(self):
-        self.assertIn(".tomb-world-event-card--redrawn{filter:brightness(.82)", CSS)
+    def test_redrawn_card_is_dimmed_by_twenty_five_percent_with_a_diagonal_overlay(self):
+        self.assertIn(".tomb-world-event-card--redrawn{filter:brightness(.75)", CSS)
         self.assertIn(".tomb-world-event-card--redrawn::after", CSS)
         self.assertIn("linear-gradient(135deg", CSS)
 
