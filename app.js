@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.53';
+  const APP_VERSION = '8.6.54';
   const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
@@ -4085,6 +4085,8 @@ function showPlayerActivation(stage={}){
 
   function showActivationFeatureTargetSelection(stage,action){
     const isHatch=action==='operate-hatch',featureType=isHatch?'hatchway':'breach-point';
+    const targetLabel=isHatch?'Hatchway':'Breach point';
+    const targetPlaceholder=isHatch?'Select hatchway…':'Select breach point…';
     const targetKey=isHatch?'hatchTargetId':'breachTargetId';
     const typeKey=isHatch?'hatchFeatureType':'breachFeatureType';
     const transactionKey=isHatch?'hatchTransactionId':'breachTransactionId';
@@ -4098,7 +4100,7 @@ function showPlayerActivation(stage={}){
       $('#returnFromBreachTarget').onclick=()=>showPlayerActivation(stage);
       return;
     }
-    showModal(`Select ${actionLabel} Target`,`<p>Choose the ${isHatch?'hatchway':'breach point'} this operative successfully opened. Mission progress changes only when the entire activation is completed.</p><div class="field"><label for="activationBreachTarget">Target feature</label><select id="activationBreachTarget"><option value="">Select target…</option>${available.map(feature=>`<option value="${escapeHtml(feature.id)}" ${feature.id===pendingId?'selected':''}>${escapeHtml(feature.label)}</option>`).join('')}</select></div><div class="wizard-actions"><button class="btn ghost" id="cancelActivationBreach">Back</button><button class="btn primary" id="confirmActivationBreach" ${pendingId?'':'disabled'}>Confirm Target</button></div>`,undefined,'activation-breach-target');
+    showModal(`Select ${actionLabel} Target`,`<p>Choose the ${isHatch?'hatchway':'breach point'} this operative successfully opened. Mission progress changes only when the entire activation is completed.</p><div class="field"><label for="activationBreachTarget">${targetLabel}</label><select id="activationBreachTarget"><option value="">${targetPlaceholder}</option>${available.map(feature=>`<option value="${escapeHtml(feature.id)}" ${feature.id===pendingId?'selected':''}>${escapeHtml(feature.label)}</option>`).join('')}</select></div><div class="wizard-actions"><button class="btn ghost" id="cancelActivationBreach">Back</button><button class="btn primary" id="confirmActivationBreach" ${pendingId?'':'disabled'}>Confirm Target</button></div>`,undefined,'activation-breach-target');
     const select=$('#activationBreachTarget'),confirm=$('#confirmActivationBreach');
     select.onchange=()=>{confirm.disabled=!available.some(feature=>feature.id===select.value);};
     $('#cancelActivationBreach').onclick=()=>showPlayerActivation(stage);

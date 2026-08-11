@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.53
+# Tomb World Solo Guide v8.6.54
+
+## v8.6.54
+
+**Version 8.6.54 - Clarify Breach and Hatch Target Selectors**
+
+- Renamed the Breach target field to "Breach point" and clarified its selection prompt.
+- Renamed the Operate Hatch target field to "Hatchway" and clarified its selection prompt.
+- Preserved target availability, filtering, action resolution, AP costs, mission progress, and save compatibility.
 
 ## v8.6.53
 
