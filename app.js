@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.50';
+  const APP_VERSION = '8.6.51';
   const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
@@ -2900,7 +2900,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const statusLabel=statusLabels[event.status]||escapeHtml(event.status).toUpperCase();
     const resolvedHeadingId=isRelocation&&event.status==='resolved'?' id="resolved-transdimensional-relocation-heading"':'';
     const eventDetails=`${eventHeader}<div class="tomb-world-event-heading"><h3 class="tomb-world-event-title"${resolvedHeadingId}>${escapeHtml(title)}</h3><span class="strategy-event-status" data-event-status="${escapeHtml(event.status)}"${activeEffect?` data-event-active="true" aria-label="${activeLabel}"`:''}>${statusLabel}</span></div><div class="tomb-world-event-effect"><div class="tomb-world-event-effect-label">Effect</div><p class="tomb-world-event-description">${escapeHtml(description)}</p></div>`;
-    if(event.status!=='drawn')return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite">${eventDetails}<div class="event-resolution">${escapeHtml(event.result||'Complete')}</div></div>`;
+    if(event.status!=='drawn'){
+      const cardStatusClass=event.status==='redrawn'?' tomb-world-event-card--redrawn':'';
+      return `<div class="summary-box strategy-event tomb-world-event-card${cardStatusClass}" aria-live="polite">${eventDetails}<div class="event-resolution">${escapeHtml(event.result||'Complete')}</div></div>`;
+    }
     if(isRelocation){
       const selected=event.resolution?.playerOperativeIds||[];
       if(selected.length!==2)return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite">${eventDetails}<div class="event-resolution">Another event card is being drawn because fewer than two Player operatives are on the battlefield.</div></div>`;
