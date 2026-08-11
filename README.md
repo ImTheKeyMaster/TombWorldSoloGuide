@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.52
+# Tomb World Solo Guide v8.6.53
+
+## v8.6.53
+
+**Version 8.6.53 - Further Dim Redrawn Tomb World Event Cards**
+
+- Further dimmed only redrawn Tomb World event cards by changing their brightness from 75% to 37.5%.
+- Kept resolved, active, and pending Tomb World event cards visually unchanged.
+- Preserved all card content, layout, gameplay behavior, and save compatibility.
 
 ## v8.6.52
 

@@ -165,13 +165,13 @@ class TurningPointLimitTests(unittest.TestCase):
         self.assertIn("createPersistedSave(state)", function_body("exportSave"))
 
     def test_30_application_displays_version_756(self):
-        self.assertIn("const APP_VERSION = '8.6.52';", APP)
-        self.assertIn("const APP_VERSION = '8.6.52';", WORKER)
-        self.assertIn("V8.6.52", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.52"))
+        self.assertIn("const APP_VERSION = '8.6.53';", APP)
+        self.assertIn("const APP_VERSION = '8.6.53';", WORKER)
+        self.assertIn("V8.6.53", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.53"))
         self.assertIn("## v8.6.25", README)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.52", INDEX)
+            self.assertIn(f"{asset}?v=8.6.53", INDEX)
 
 
 if __name__ == "__main__":
