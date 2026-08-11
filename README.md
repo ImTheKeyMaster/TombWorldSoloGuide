@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.51
+# Tomb World Solo Guide v8.6.52
+
+## v8.6.52
+
+**Version 8.6.52 - Dim Redrawn Tomb World Event Cards**
+
+- Dimmed only redrawn Tomb World event cards by 25% while keeping their text and REDRAWN badges readable.
+- Kept resolved, active, and pending Tomb World event cards visually unchanged.
+- Preserved gameplay logic and save compatibility.
 
 ## v8.6.51
 

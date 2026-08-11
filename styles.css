@@ -1221,7 +1221,7 @@ button.tracker-operative:hover{
 
 .tomb-world-event-card{--event-stripe-bright:var(--accent);--event-stripe-dark:var(--panel);position:relative;overflow:hidden;padding-top:27px;border-color:rgba(118,245,168,.65);background:var(--panel)}
 .tomb-world-event-card::before{content:"";position:absolute;inset:0 0 auto;height:10px;background:repeating-linear-gradient(135deg,var(--event-stripe-bright) 0,var(--event-stripe-bright) 12px,var(--event-stripe-dark) 12px,var(--event-stripe-dark) 24px)}
-.tomb-world-event-card--redrawn{filter:brightness(.82);border-color:rgba(118,245,168,.38)}
+.tomb-world-event-card--redrawn{filter:brightness(.75);border-color:rgba(118,245,168,.38)}
 .tomb-world-event-card--redrawn::after{content:"";position:absolute;z-index:0;inset:0;pointer-events:none;background:linear-gradient(135deg,transparent 47.5%,rgba(118,245,168,.18) 48%,rgba(118,245,168,.18) 49%,transparent 49.5%)}
 .tomb-world-event-card--redrawn>*{position:relative;z-index:1}
 .tomb-world-event-card--redrawn .strategy-event-status{background:rgba(7,20,15,.88);color:var(--accent)}
