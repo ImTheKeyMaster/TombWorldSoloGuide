@@ -93,14 +93,14 @@ assert.equal(inlineOperativeList([
         self.assertIn("$('#checkAllDeployment')?.addEventListener('click'", APP)
 
     def test_08_application_displays_version_763(self):
-        self.assertIn("const APP_VERSION = '8.6.60';", APP)
-        self.assertIn("const APP_VERSION = '8.6.60';", WORKER)
-        self.assertIn("V8.6.60", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.60"))
+        self.assertIn("const APP_VERSION = '8.6.61';", APP)
+        self.assertIn("const APP_VERSION = '8.6.61';", WORKER)
+        self.assertIn("V8.6.61", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.61"))
         self.assertIn("## v8.6.25", README)
         for asset in ("styles.css", "mission-engine.js", "persistence.js",
                       "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.60", INDEX)
+            self.assertIn(f"{asset}?v=8.6.61", INDEX)
 
 
 if __name__ == "__main__":
