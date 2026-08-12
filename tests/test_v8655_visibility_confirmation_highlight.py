@@ -30,12 +30,12 @@ class RequiredConfirmationHighlightTests(unittest.TestCase):
         self.assertIn("$('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked;});", APP)
 
     def test_release_versions_are_current_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.6.61';", APP)
-        self.assertIn("const APP_VERSION = '8.6.61';", WORKER)
-        self.assertIn('<div class="version">V8.6.61</div>', INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.61"))
+        self.assertIn("const APP_VERSION = '8.6.62';", APP)
+        self.assertIn("const APP_VERSION = '8.6.62';", WORKER)
+        self.assertIn('<div class="version">V8.6.62</div>', INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.62"))
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.61", INDEX)
+            self.assertIn(f"{asset}?v=8.6.62", INDEX)
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
 
