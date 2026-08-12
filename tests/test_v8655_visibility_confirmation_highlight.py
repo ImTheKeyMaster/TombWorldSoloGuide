@@ -11,38 +11,31 @@ README = (ROOT / "README.md").read_text()
 PERSISTENCE = (ROOT / "persistence.js").read_text()
 
 
-class VisibilityConfirmationHighlightTests(unittest.TestCase):
-    def test_confirmation_row_has_dedicated_semantic_class(self):
-        row = re.search(
-            r'<label class="([^"]+)"><input id="tabletopCheckConfirmed"[^>]*>'
-            r'<span>I have confirmed visibility and distance on the tabletop\.</span></label>',
-            APP,
-        )
-        self.assertIsNotNone(row)
-        self.assertIn("check-row", row.group(1).split())
-        self.assertIn("tabletop-confirmation-row", row.group(1).split())
+class RequiredConfirmationHighlightTests(unittest.TestCase):
+    def test_confirmations_share_required_state_class(self):
+        self.assertRegex(APP, r'class="check-row required-confirmation-row"><input id="tabletopCheckConfirmed"')
+        self.assertRegex(APP, r'class="check-row required-confirmation-row"><input id="endChecked"')
+        self.assertIn("check.id==='breach-points'?'required-confirmation-row':''", APP)
 
-    def test_highlight_is_independent_of_checkbox_state(self):
-        rule = re.search(r"\.tabletop-confirmation-row\{([^}]*)\}", STYLES)
+    def test_highlight_only_applies_while_checkbox_is_unchecked(self):
+        rule = re.search(r"\.required-confirmation-row:has\(input:not\(:checked\)\)\{([^}]*)\}", STYLES)
         self.assertIsNotNone(rule)
-        self.assertIn("background:", rule.group(1))
+        self.assertIn("background:rgba(41,127,78,.28)", rule.group(1))
         self.assertIn("border-color:#5de799", rule.group(1))
-        self.assertNotIn(":checked", rule.group(0))
+        self.assertNotIn("tabletop-confirmation-row", STYLES)
 
-    def test_base_checkbox_style_and_other_rows_remain_generic(self):
-        self.assertIn(
-            ".check-row input{width:22px;height:22px;accent-color:var(--green);flex:0 0 auto}",
-            STYLES,
-        )
-        self.assertEqual(APP.count("tabletop-confirmation-row"), 1)
+    def test_base_checkbox_style_and_validation_remain_unchanged(self):
+        self.assertIn(".check-row input{width:22px;height:22px;accent-color:var(--green);flex:0 0 auto}", STYLES)
+        self.assertIn("confirmation.onchange=()=>{persistStep();$('#confirmSecondaryTargets').disabled=!confirmation.checked;};", APP)
+        self.assertIn("$('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked;});", APP)
 
     def test_release_versions_are_current_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.6.55';", APP)
-        self.assertIn("const APP_VERSION = '8.6.55';", WORKER)
-        self.assertIn('<div class="version">V8.6.55</div>', INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.55"))
+        self.assertIn("const APP_VERSION = '8.6.56';", APP)
+        self.assertIn("const APP_VERSION = '8.6.56';", WORKER)
+        self.assertIn('<div class="version">V8.6.56</div>', INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.56"))
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.55", INDEX)
+            self.assertIn(f"{asset}?v=8.6.56", INDEX)
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
 

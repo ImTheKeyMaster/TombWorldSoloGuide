@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.55
+# Tomb World Solo Guide v8.6.56
+
+## v8.6.56
+
+**Version 8.6.56 - Extend Required Confirmation Highlighting**
+
+- Centralized the green required-confirmation treatment and limited it to unchecked confirmation rows.
+- Extended the shared treatment to the end-of-turn completion and Breach Points setup confirmations.
+- Preserved checkbox validation, button availability, layout, and save compatibility.
 
 ## v8.6.55
 
