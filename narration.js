@@ -5,6 +5,7 @@
   const ENABLED_KEY = 'tombWorldSoloGuide.narrationEnabled';
   const VOLUME_KEY = 'tombWorldSoloGuide.narrationVolume';
   const DEFAULT_VOLUME = 0.8;
+  const SILENT_UNLOCK_AUDIO = 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQIAAAAAAA==';
   const missionNumbers = {
     'shifting-labyrinth': '01',
     'demolition-protocol': '02',
@@ -18,6 +19,7 @@
   let manifest = null;
   let initialization = null;
   let lastEntry = null;
+  let audioUnlocked = false;
   const automaticPlayback = new Set();
 
   function readPreference(key) {
@@ -62,6 +64,50 @@
       audio.removeAttribute('src');
       audio.load();
     } catch { /* Audio cleanup must never affect gameplay. */ }
+  }
+
+  function unlock() {
+    if (audioUnlocked || lastEntry) {
+      audioUnlocked = true;
+      return Promise.resolve(true);
+    }
+    if (!isEnabled()) return Promise.resolve(false);
+    const player = ensureAudio();
+    if (!player) return Promise.resolve(false);
+    try {
+      player.volume = 0;
+      player.src = SILENT_UNLOCK_AUDIO;
+      const playback = player.play();
+      if (!playback || typeof playback.then !== 'function') {
+        audioUnlocked = true;
+        player.volume = getVolume();
+        return Promise.resolve(true);
+      }
+      return playback.then(() => {
+        audioUnlocked = true;
+        player.volume = getVolume();
+        return true;
+      }, () => {
+        audioUnlocked = false;
+        player.volume = getVolume();
+        return false;
+      });
+    } catch {
+      audioUnlocked = false;
+      player.volume = getVolume();
+      return Promise.resolve(false);
+    }
+  }
+
+  function installUnlockOnGesture() {
+    const doc = global.document;
+    if (!doc || typeof doc.addEventListener !== 'function') return;
+    const onGesture = () => {
+      void unlock().then(unlocked => {
+        if (unlocked && typeof doc.removeEventListener === 'function') doc.removeEventListener('click', onGesture, true);
+      });
+    };
+    doc.addEventListener('click', onGesture, true);
   }
 
   function init() {
@@ -133,8 +179,10 @@
   }
 
   global.TombWorldNarration = Object.freeze({
-    init, playMissionIntro, playEvent, playOutcome, replayLast, stop,
+    init, unlock, playMissionIntro, playEvent, playOutcome, replayLast, stop,
     setEnabled, setVolume, isEnabled, getVolume,
     canReplay: () => Boolean(lastEntry)
   });
+
+  installUnlockOnGesture();
 })(typeof window === 'undefined' ? globalThis : window);
