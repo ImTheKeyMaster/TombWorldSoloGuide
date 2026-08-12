@@ -18,10 +18,10 @@ def function_source(name):
 
 class V8629PlayerMultiTargetCombatResumeTests(unittest.TestCase):
     def test_01_active_version_is_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.57';", APP)
-        self.assertIn("const APP_VERSION = '8.6.57';", WORKER)
-        self.assertIn("V8.6.57", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.57"))
+        self.assertIn("const APP_VERSION = '8.6.58';", APP)
+        self.assertIn("const APP_VERSION = '8.6.58';", WORKER)
+        self.assertIn("V8.6.58", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.58"))
 
     def test_02_canonical_identity_is_deterministic_and_nonempty(self):
         source = function_source("canonicalPlayerWeaponIdentity")

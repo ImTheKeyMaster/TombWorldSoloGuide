@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v8.6.57
+# Tomb World Solo Guide v8.6.58
+
+## v8.6.58
+
+**Version 8.6.58 - Add Windows Narration Producer**
+
+- Adds a secure, localhost-only Windows Narration Producer with dry-run, approval, and explicit generation safeguards.
+- Restores the canonical reviewed narration scripts. This release does not add or generate any narration audio.
 
 ## v8.6.57
 

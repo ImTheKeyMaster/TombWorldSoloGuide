@@ -18,10 +18,10 @@ def source(start, end):
 
 class NarrationIntegrationTests(unittest.TestCase):
     def test_release_version_changes_without_save_schema_change(self):
-        self.assertIn("const APP_VERSION = '8.6.57';", APP)
-        self.assertIn("const APP_VERSION = '8.6.57';", WORKER)
+        self.assertIn("const APP_VERSION = '8.6.58';", APP)
+        self.assertIn("const APP_VERSION = '8.6.58';", WORKER)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
-        self.assertIn('narration.js?v=8.6.57', INDEX)
+        self.assertIn('narration.js?v=8.6.58', INDEX)
 
     def test_intro_only_runs_from_new_game_transition(self):
         begin = source("$('#beginGame')", "function runStartingNpoGeneration")
@@ -75,7 +75,8 @@ class NarrationManifestTests(unittest.TestCase):
         for name in ('missions.json', 'events.json', 'outcomes.json'):
             records.extend(json.loads((ROOT / 'Narration/scripts' / name).read_text())['scripts'])
         self.assertEqual(len(records), 29)
-        self.assertTrue(all(item['status'] == 'approved' for item in records))
+        self.assertEqual(28, sum(item['status'] == 'approved' for item in records))
+        self.assertEqual(['mission.04.intro'], [item['id'] for item in records if item['status'] == 'draft'])
         reanimation = next(item for item in records if item['id'] == 'event.reanimation-protocols')
         self.assertEqual(reanimation['script'], "The fallen begin to move.\n\nEmerald light returns to darkened eyes. Bodies that should lie silent rise again, driven by ancient systems that refuse to accept their destruction.\n\nFor a time, death may not be enough to stop the tomb’s defenders.")
 
