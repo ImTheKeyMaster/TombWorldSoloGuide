@@ -13,10 +13,10 @@ PERSISTENCE = (ROOT / "persistence.js").read_text()
 
 class NonFocusableTitleTests(unittest.TestCase):
     def test_01_version_is_8622(self):
-        self.assertIn("const APP_VERSION = '8.6.55';", APP)
-        self.assertIn("const APP_VERSION = '8.6.55';", WORKER)
-        self.assertIn("V8.6.55", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.55"))
+        self.assertIn("const APP_VERSION = '8.6.56';", APP)
+        self.assertIn("const APP_VERSION = '8.6.56';", WORKER)
+        self.assertIn("V8.6.56", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.56"))
 
     def test_02_select_npo_uses_shared_semantic_title(self):
         self.assertIn("showModal('Select NPO to Activate'", APP)
