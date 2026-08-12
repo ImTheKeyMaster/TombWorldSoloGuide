@@ -1,0 +1,24 @@
+name: Verify PR 249 final narration fix
+
+on:
+  push:
+    branches:
+      - codex/fix-consecutive-tomb-event-narration-queue
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax
+        run: node --check narration.js
+      - name: Consecutive event queue regression
+        run: python -m unittest tests.test_v8663_consecutive_event_narration
+      - name: Queue preemption regression
+        run: python -m unittest tests.test_v8664_narration_queue_preemption
+      - name: Narration framework regression
+        run: python -m unittest tests.test_v8657_narration_framework
+      - name: Mission narration timing regression
+        run: python -m unittest tests.test_v8660_mission_narration_timing
+      - name: Mobile offline narration regression
+        run: python -m unittest tests.test_v8659_narration_mobile_offline
