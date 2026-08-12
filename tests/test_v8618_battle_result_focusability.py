@@ -29,12 +29,12 @@ class BattleResultFocusabilityTests(unittest.TestCase):
         cls.completed = cls.render[:cls.render.index("if(state.finalResolution?.pending")]
 
     def test_01_application_displays_version_8618(self):
-        self.assertIn("const APP_VERSION = '8.6.54';", APP)
-        self.assertIn("const APP_VERSION = '8.6.54';", WORKER)
-        self.assertIn("V8.6.54", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.54"))
+        self.assertIn("const APP_VERSION = '8.6.55';", APP)
+        self.assertIn("const APP_VERSION = '8.6.55';", WORKER)
+        self.assertIn("V8.6.55", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.55"))
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.54", INDEX)
+            self.assertIn(f"{asset}?v=8.6.55", INDEX)
 
     def test_02_victory_is_semantic_non_interactive_content(self):
         self.assertIn("const resultLabel=victory?'Victory':'Defeat'", self.completed)

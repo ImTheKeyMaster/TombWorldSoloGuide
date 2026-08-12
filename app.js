@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.54';
+  const APP_VERSION = '8.6.55';
   const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
@@ -4993,7 +4993,7 @@ function showPlayerActivation(stage={}){
     const automaticallySelected=ruleId==='torrent'&&attackerSide==='npo';
     const saved=state.weaponRuleResolution;
     const sameStep=saved?.ruleId===ruleId&&saved?.primaryTargetId===primaryTargetId&&saved?.profileKey===profileKey;
-    showModal(ruleId[0].toUpperCase()+ruleId.slice(1),`<p id="secondaryTargetHelp">${escapeHtml(question)}</p><p class="muted">${escapeHtml(help)}</p><div class="checklist" aria-describedby="secondaryTargetHelp">${eligible.length?eligible.map(weaponRuleTargetOption).join(''):'<p class="muted">No other operatives are available.</p>'}</div><label class="check-row"><input id="tabletopCheckConfirmed" type="checkbox"><span>I have confirmed visibility and distance on the tabletop.</span></label><div class="wizard-actions"><button class="btn ghost" id="secondaryTargetsBack">Back</button><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmSecondaryTargets" disabled>Continue</button></div>`);
+    showModal(ruleId[0].toUpperCase()+ruleId.slice(1),`<p id="secondaryTargetHelp">${escapeHtml(question)}</p><p class="muted">${escapeHtml(help)}</p><div class="checklist" aria-describedby="secondaryTargetHelp">${eligible.length?eligible.map(weaponRuleTargetOption).join(''):'<p class="muted">No other operatives are available.</p>'}</div><label class="check-row tabletop-confirmation-row"><input id="tabletopCheckConfirmed" type="checkbox"><span>I have confirmed visibility and distance on the tabletop.</span></label><div class="wizard-actions"><button class="btn ghost" id="secondaryTargetsBack">Back</button><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmSecondaryTargets" disabled>Continue</button></div>`);
     $$('[data-weapon-rule-target]').forEach(input=>{input.checked=sameStep?(saved.secondaryTargetIds||[]).includes(input.value):automaticallySelected;});
     const confirmation=$('#tabletopCheckConfirmed');
     confirmation.checked=Boolean(sameStep&&saved.tabletopCheckConfirmed);

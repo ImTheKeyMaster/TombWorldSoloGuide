@@ -57,7 +57,7 @@ class RefinedOperativeStatusPanelTests(unittest.TestCase):
         self.assertIn('overflow:hidden', re.search(r'\.operative-status-panel\{([^}]+)\}', CSS).group(1))
 
     def test_release_does_not_change_save_schema(self):
-        self.assertIn("const APP_VERSION = '8.6.54';", APP)
+        self.assertIn("const APP_VERSION = '8.6.55';", APP)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
 

@@ -47,10 +47,10 @@ class MoveToShootIconTests(unittest.TestCase):
         self.assertIn("'./Assets/Icons/move-to-shoot.svg'", SERVICE_WORKER)
 
     def test_release_version_is_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.54';", APP)
-        self.assertIn("const APP_VERSION = '8.6.54';", SERVICE_WORKER)
-        self.assertIn('<div class="version">V8.6.54</div>', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.54'))
+        self.assertIn("const APP_VERSION = '8.6.55';", APP)
+        self.assertIn("const APP_VERSION = '8.6.55';", SERVICE_WORKER)
+        self.assertIn('<div class="version">V8.6.55</div>', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.55'))
 
 
 if __name__ == "__main__":

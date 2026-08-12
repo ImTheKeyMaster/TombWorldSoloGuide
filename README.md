@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v8.6.54
+# Tomb World Solo Guide v8.6.55
+
+## v8.6.55
+
+**Version 8.6.55 - Highlight Visibility Confirmation**
+
+- Highlighted the required tabletop visibility and distance confirmation row with a green-tinted background and bright green border.
+- Preserved the existing checkbox styling and behavior, operative selection row styling, combat flow, and save compatibility.
 
 ## v8.6.54
 
