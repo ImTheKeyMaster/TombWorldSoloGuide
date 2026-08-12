@@ -11,7 +11,7 @@ from mutagen.mp3 import MP3
 HERE=Path(__file__).resolve().parent; ROOT=HERE.parents[1]
 SCRIPTS=ROOT/'Narration'/'scripts'; SETTINGS=ROOT/'Narration'/'producer-settings.json'
 AUDIO=ROOT/'Assets'/'Audio'/'Narration'; MANIFEST=AUDIO/'narration-manifest.json'
-API='https://api.elevenlabs.io/v1'; ALLOWED={SCRIPTS.resolve(),AUDIO.resolve(),SETTINGS.resolve()}
+API='https://api.elevenlabs.io/v1'; ALLOWED_ROOTS=(SCRIPTS.resolve(),AUDIO.resolve())
 app=Flask(__name__,static_folder='static',static_url_path='')
 
 def normalize(text): return text.replace('\r\n','\n').replace('\r','\n').strip()
@@ -26,8 +26,12 @@ def safe(path,root):
  p=(root/path).resolve()
  if p!=root.resolve() and root.resolve() not in p.parents: raise ValueError('The requested path is not allowed.')
  return p
+def allowed_write(path):
+ p=path.resolve()
+ if p==SETTINGS.resolve() or any(p==root or root in p.parents for root in ALLOWED_ROOTS): return p
+ raise ValueError('The requested write location is not allowed.')
 def atomic_json(path,data):
- safe(path.relative_to(ROOT),ROOT)
+ allowed_write(path)
  fd,tmp=tempfile.mkstemp(dir=path.parent,prefix='.producer-',suffix='.tmp')
  try:
   with os.fdopen(fd,'w',encoding='utf8') as f: json.dump(data,f,indent=2,ensure_ascii=False); f.write('\n')
@@ -85,22 +89,37 @@ def voice_settings(voice_id):
 @app.post('/api/settings')
 def save_settings():
  data=request.get_json(force=True)
- if any('key' in k.lower() for k in data): return jsonify(error='API keys cannot be saved in Producer settings.'),400
+ def contains_secret(value):
+  if isinstance(value,dict): return any('key' in str(k).lower() or contains_secret(v) for k,v in value.items())
+  if isinstance(value,list): return any(contains_secret(v) for v in value)
+  return False
+ if contains_secret(data): return jsonify(error='API keys cannot be saved in Producer settings.'),400
+ if not valid_settings(data,voice_required=False): return jsonify(error='The generation settings are not valid.'),400
  data['schemaVersion']=1; atomic_json(SETTINGS,data); return jsonify(ok=True)
+def valid_settings(settings,voice_required=True):
+ voice=settings.get('voiceId'); model=settings.get('modelId'); output=settings.get('outputFormat'); values=settings.get('voiceSettings')
+ if voice_required and (not isinstance(voice,str) or not voice.strip()): return False
+ if not isinstance(model,str) or not model or not isinstance(output,str) or not output.startswith('mp3_'): return False
+ if not isinstance(values,dict): return False
+ stability=values.get('stability'); similarity=values.get('similarity_boost'); style=values.get('style'); speed=values.get('speed')
+ numeric=(stability,similarity,style,speed)
+ return (all(isinstance(v,(int,float)) and not isinstance(v,bool) for v in numeric)
+         and 0<=stability<=1 and 0<=similarity<=1 and 0<=style<=1 and .7<=speed<=1.2
+         and isinstance(values.get('use_speaker_boost'),bool))
 def plan(ids,settings):
- sth=settings_hash(settings); rows=[]
+ sth=settings_hash(settings) if valid_settings(settings) else None; rows=[]
  for rec in library():
   if rec['id'] not in ids: continue
   gh=generation_hash(rec['scriptHash'],sth); output=safe(Path(rec['outputFile']),AUDIO)
   approved=rec['status'] in ('approved','generated') and not rec['reviewRequired']; up=False
   if approved and gh==rec.get('generationHash') and output.exists() and rec.get('audioHash'): up=digest(output.read_bytes())==rec['audioHash']
   reason='Up to date.' if up else ('Script approval is required.' if not approved else ('Generation settings are incomplete.' if not sth else 'Would generate.'))
-  rows.append({**{k:rec.get(k) for k in ('id','status','characterCount','outputFile','scriptHash')},'settingsHash':sth,'generationHash':gh,'blocked':not approved or not sth,'wouldGenerate':approved and bool(sth) and not up,'wouldSkip':up,'reason':reason})
+  rows.append({**{k:rec.get(k) for k in ('id','status','characterCount','outputFile','scriptHash')},'approved':approved,'settingsHash':sth,'generationHash':gh,'blocked':not approved or not sth,'wouldGenerate':approved and bool(sth) and not up,'wouldSkip':up,'reason':reason})
  return rows
 @app.post('/api/dry-run')
 def dry_run():
  body=request.get_json(force=True); rows=plan(set(body.get('ids',[])),body.get('settings',{}))
- return jsonify(items=rows,totals={'selected':len(rows),'approved':sum(not r['blocked'] for r in rows),'blocked':sum(r['blocked'] for r in rows),'wouldGenerate':sum(r['wouldGenerate'] for r in rows),'wouldSkip':sum(r['wouldSkip'] for r in rows),'totalCharacters':sum(r['characterCount'] for r in rows)})
+ return jsonify(items=rows,totals={'selected':len(rows),'approved':sum(r['approved'] for r in rows),'blocked':sum(r['blocked'] for r in rows),'wouldGenerate':sum(r['wouldGenerate'] for r in rows),'wouldSkip':sum(r['wouldSkip'] for r in rows),'totalCharacters':sum(r['characterCount'] for r in rows)})
 @app.post('/api/scripts/<path:script_id>/approve')
 def approve(script_id):
  for path in SCRIPTS.glob('*.json'):
@@ -122,7 +141,9 @@ def generate():
  if body.get('confirmation') is not True: return jsonify(error='Generation requires explicit credit confirmation.'),400
  if body.get('force') and body.get('forceConfirmation') is not True: return jsonify(error='Force Regenerate requires explicit confirmation.'),400
  if not key(): return jsonify(error='Configure the API key before generating.'),400
- settings=body.get('settings',{}); results=[]
+ settings=body.get('settings',{})
+ if not valid_settings(settings): return jsonify(error='Choose a voice, model, output format, and valid voice settings before generating.'),400
+ results=[]
  for row in plan(set(body.get('ids',[])),settings):
   if row['blocked']: results.append({'id':row['id'],'status':'blocked','message':row['reason']}); continue
   if row['wouldSkip'] and not body.get('force'): results.append({'id':row['id'],'status':'skipped'}); continue
@@ -132,12 +153,23 @@ def generate():
    payload={'text':normalize(rec['script']),'model_id':settings['modelId'],'voice_settings':settings['voiceSettings']}
    response=requests.post(f"{API}/text-to-speech/{quote(settings['voiceId'],safe='')}",params={'output_format':settings['outputFormat']},headers={**headers(),'Accept':'audio/mpeg','Content-Type':'application/json'},json=payload,timeout=120)
    if not response.ok: raise ValueError(friendly(response))
-   tmp.write_bytes(response.content); duration=validate_audio(tmp); ah=digest(response.content); os.replace(tmp,dest)
-   manifest=json.loads(MANIFEST.read_text()); entry=manifest['entries'][rec['id']]; entry.update(file=rec['outputFile'],available=True,scriptHash=rec['scriptHash'],settingsHash=row['settingsHash'],generationHash=row['generationHash'],audioHash=ah,durationMs=duration); atomic_json(MANIFEST,manifest)
-   source=SCRIPTS/rec['fileSource']; data=json.loads(source.read_text())
-   target=next(x for x in data['scripts'] if x['id']==rec['id']); target.update(status='generated',settingsHash=row['settingsHash'],generationHash=row['generationHash'],audioHash=ah,voiceId=settings['voiceId'],modelId=settings['modelId']); atomic_json(source,data)
+   tmp.write_bytes(response.content); duration=validate_audio(tmp); ah=digest(response.content)
+   source=SCRIPTS/rec['fileSource']; old_manifest=json.loads(MANIFEST.read_text()); old_source=json.loads(source.read_text())
+   manifest=json.loads(json.dumps(old_manifest)); entry=manifest['entries'][rec['id']]; entry.update(file=rec['outputFile'],available=True,scriptHash=rec['scriptHash'],settingsHash=row['settingsHash'],generationHash=row['generationHash'],audioHash=ah,durationMs=duration)
+   data=json.loads(json.dumps(old_source))
+   target=next(x for x in data['scripts'] if x['id']==rec['id']); target.update(status='generated',settingsHash=row['settingsHash'],generationHash=row['generationHash'],audioHash=ah,voiceId=settings['voiceId'],modelId=settings['modelId'])
+   backup=dest.read_bytes() if dest.exists() else None
+   try:
+    os.replace(tmp,dest); atomic_json(source,data); atomic_json(MANIFEST,manifest)
+   except Exception:
+    if backup is None:
+     if dest.exists(): dest.unlink()
+    else: dest.write_bytes(backup)
+    atomic_json(source,old_source); atomic_json(MANIFEST,old_manifest)
+    raise
    results.append({'id':rec['id'],'status':'generated','durationMs':duration})
-  except (ValueError,requests.RequestException) as e: results.append({'id':rec['id'],'status':'failed','message':str(e)})
+  except ValueError as e: results.append({'id':rec['id'],'status':'failed','message':str(e)})
+  except Exception: results.append({'id':rec['id'],'status':'failed','message':'The narration file could not be generated or safely saved. The existing audio, if any, was preserved.'})
   finally:
    if tmp.exists(): tmp.unlink()
  return jsonify(results=results)

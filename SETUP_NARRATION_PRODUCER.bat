@@ -13,7 +13,7 @@ if errorlevel 1 (echo The private environment could not be created.& pause & exi
 "%TOOL%\.venv\Scripts\python.exe" -m pip install -r "%TOOL%\requirements.txt"
 if errorlevel 1 (echo Requirements could not be installed. Check your internet connection.& pause & exit /b 1)
 if not exist "%TOOL%\.env" copy "%TOOL%\.env.example" "%TOOL%\.env" >nul
-findstr /R /C:"ELEVENLABS_API_KEY=.$" "%TOOL%\.env" >nul || (
+findstr /X /C:"ELEVENLABS_API_KEY=" "%TOOL%\.env" >nul && (
  echo Paste your key after the equals sign exactly like this: ELEVENLABS_API_KEY=...
  start "" notepad.exe "%TOOL%\.env"
 )
