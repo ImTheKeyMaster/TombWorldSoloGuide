@@ -12,12 +12,12 @@ WORKER = (ROOT / "service-worker.js").read_text()
 
 class NpoHistoryIconColorTests(unittest.TestCase):
     def test_release_version_references_are_current(self):
-        self.assertIn("const APP_VERSION = '8.6.62';", APP)
-        self.assertIn("const APP_VERSION = '8.6.62';", WORKER)
-        self.assertIn('<div class="version">V8.6.62</div>', INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.62"))
+        self.assertIn("const APP_VERSION = '8.6.63';", APP)
+        self.assertIn("const APP_VERSION = '8.6.63';", WORKER)
+        self.assertIn('<div class="version">V8.6.63</div>', INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.63"))
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.62", INDEX)
+            self.assertIn(f"{asset}?v=8.6.63", INDEX)
 
     def test_history_icons_use_the_history_text_color(self):
         self.assertIn(
