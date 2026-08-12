@@ -1,0 +1,93 @@
+name: Finalize PR 249 release metadata
+
+on:
+  push:
+    branches:
+      - codex/fix-consecutive-tomb-event-narration-queue
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply v8.6.64 release metadata
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import textwrap
+
+          p = Path('app.js')
+          s = p.read_text(encoding='utf-8')
+          assert "const APP_VERSION = '8.6.63';" in s
+          p.write_text(s.replace("const APP_VERSION = '8.6.63';", "const APP_VERSION = '8.6.64';", 1), encoding='utf-8')
+
+          p = Path('service-worker.js')
+          s = p.read_text(encoding='utf-8')
+          assert "const CACHE = 'tomb-world-solo-guide-v8.6.63';" in s
+          p.write_text(s.replace("const CACHE = 'tomb-world-solo-guide-v8.6.63';", "const CACHE = 'tomb-world-solo-guide-v8.6.64';", 1), encoding='utf-8')
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          assert '8.6.63' in s
+          p.write_text(s.replace('8.6.63', '8.6.64'), encoding='utf-8')
+
+          p = Path('README.md')
+          s = p.read_text(encoding='utf-8')
+          marker = '# Tomb World Solo Guide v8.6.63\n\n## v8.6.63\n'
+          assert marker in s
+          replacement = textwrap.dedent('''\
+          # Tomb World Solo Guide v8.6.64
+
+          ## v8.6.64
+
+          **Version 8.6.64 - Consecutive Tomb Event Narration Queue**
+
+          - Queues consecutive automatic Tomb Event narration so every event plays in order without overlap.
+          - Clears pending Tomb Event narration when mission narration or Replay Last preempts playback.
+          - Preserves the v8.6.63 production Tomb Event audio, manifest-driven offline caching, and save compatibility.
+
+          ## v8.6.63
+          ''')
+          p.write_text(s.replace(marker, replacement, 1), encoding='utf-8')
+          PY
+
+      - name: Validate
+        shell: bash
+        run: |
+          node --check narration.js
+          python -m unittest \
+            tests.test_v8663_consecutive_event_narration \
+            tests.test_v8664_narration_queue_preemption \
+            tests.test_v8657_narration_framework \
+            tests.test_v8660_mission_narration_timing \
+            tests.test_v8659_narration_mobile_offline
+          git diff --check
+          grep -q "const APP_VERSION = '8.6.64';" app.js
+          grep -q "const SAVE_VERSION = 3;" app.js
+          grep -q "tomb-world-solo-guide-v8.6.64" service-worker.js
+          ! grep -q '8.6.63' index.html
+          grep -q 'styles.css?v=8.6.64' index.html
+          grep -q 'mission-engine.js?v=8.6.64' index.html
+          grep -q 'persistence.js?v=8.6.64' index.html
+          grep -q 'deadly-encounters.js?v=8.6.64' index.html
+          grep -q 'event-effects.js?v=8.6.64' index.html
+          grep -q 'narration.js?v=8.6.64' index.html
+          grep -q 'app.js?v=8.6.64' index.html
+          grep -q 'V8.6.64' index.html
+          grep -q '^# Tomb World Solo Guide v8.6.64$' README.md
+
+      - name: Commit changes
+        shell: bash
+        run: |
+          git config user.name 'chatgpt-pr-fix'
+          git config user.email 'actions@users.noreply.github.com'
+          git add app.js service-worker.js index.html README.md
+          git commit -m 'Bump narration queue fix to v8.6.64'
+          git push origin HEAD:codex/fix-consecutive-tomb-event-narration-queue
