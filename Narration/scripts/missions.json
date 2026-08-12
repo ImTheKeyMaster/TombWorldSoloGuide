@@ -4,13 +4,15 @@
     {
       "id": "mission.01.intro",
       "category": "mission-intro",
-      "status": "approved",
+      "status": "generated",
       "script": "The tomb awakens.\n\nAncient mechanisms grind to life beneath your feet. Walls that have stood unmoving for millennia begin to shift, sealing passages and opening others deeper within the crypt.\n\nSomewhere beyond this maze of living metal lies your escape.\n\nMove quickly.\n\nThe tomb is already changing around you.",
       "scriptHash": "4bed65b0fd7fe482f55b3c8058ae645d93b1d09405d975b89b165a94bf6011c6",
       "outputFile": "missions/01-shifting-labyrinth-intro.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "55d8f3ece9dc64b5635d796b88862910152c6e992be9fd4ca3ab5407a09fb5bf",
+      "audioHash": "1fb93f8b6b71bf0be35705b7f11cf06b50521fa62148a0302a368c079dd35f22",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "mission.02.intro",

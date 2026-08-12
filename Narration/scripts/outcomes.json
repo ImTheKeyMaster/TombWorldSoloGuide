@@ -70,24 +70,28 @@
     {
       "id": "outcome.04.victory",
       "category": "outcome",
-      "status": "approved",
+      "status": "generated",
       "script": "The final breach tears through the sarcophagus.\n\nLiving metal splits beneath cascading emerald energy as the stasis systems collapse. Across the chamber, ancient mechanisms flicker and die.\n\nWhatever was meant to awaken here will remain entombed.\n\nMission accomplished.",
       "scriptHash": "5c62a613e8de5361545d0d4efe21a55a3c262d576e11b18548ff15b5178e4a7a",
       "outputFile": "outcomes/04-destroy-sarcophagus-victory.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "ad2c6645674b116c5e8828b10c882541602f818582c62898b07e8138024dc3d5",
+      "audioHash": "c170930f197372644b47a4257ffaee0868274bd8ca7b310aacc8466f0827af1c",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "outcome.04.defeat",
       "category": "outcome",
-      "status": "approved",
+      "status": "generated",
       "script": "The sarcophagus endures.\n\nFractures begin to close as living metal flows back across its surface. One by one, damaged systems stabilize and the chamber falls into an unnatural calm.\n\nThe opportunity is gone.\n\nThe tomb has preserved what sleeps within.",
       "scriptHash": "056f69fbb318e5484335030f7c2a6d7debad7894f50eec7a40e2a5a0fdbae14a",
       "outputFile": "outcomes/04-destroy-sarcophagus-defeat.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "1bb20f2cd5da2546f39c9e19117e440a78e957f3a250329f443fa82c55545791",
+      "audioHash": "71f6ff9f48281accb63b1e5f35deccf355ec37ec5f21d018a83949f513340ce9",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "outcome.05.victory",

@@ -4,8 +4,13 @@
     "mission.01.intro": {
       "category": "mission-intro",
       "missionId": "shifting-labyrinth",
-      "file": null,
-      "available": false
+      "file": "missions/01-shifting-labyrinth-intro.mp3",
+      "available": true,
+      "scriptHash": "4bed65b0fd7fe482f55b3c8058ae645d93b1d09405d975b89b165a94bf6011c6",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "55d8f3ece9dc64b5635d796b88862910152c6e992be9fd4ca3ab5407a09fb5bf",
+      "audioHash": "1fb93f8b6b71bf0be35705b7f11cf06b50521fa62148a0302a368c079dd35f22",
+      "durationMs": 23249
     },
     "mission.02.intro": {
       "category": "mission-intro",
@@ -46,8 +51,13 @@
     "event.transdimensional-relocation": {
       "category": "event",
       "eventDefinitionId": "transdimensional-relocation",
-      "file": null,
-      "available": false
+      "file": "events/transdimensional-relocation.mp3",
+      "available": true,
+      "scriptHash": "78d15757c56db8dc76c2c53d19efe672adc854545154eb409ac77c3013ed8b1b",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "be3addea5157af386ea1f2dfe1f4f59b65f3f7adc31f3757a4132dcf0aaf7075",
+      "audioHash": "6c4fa0066f63dc21bdb63eb78928111b42a38c2ce7cfe0b486c721559a8ef144",
+      "durationMs": 16718
     },
     "event.my-will-be-done": {
       "category": "event",
@@ -70,8 +80,13 @@
     "event.countertemporal-shifting": {
       "category": "event",
       "eventDefinitionId": "countertemporal-shifting",
-      "file": null,
-      "available": false
+      "file": "events/countertemporal-shifting.mp3",
+      "available": true,
+      "scriptHash": "79d46d89cd883cf06ffe22686de7b9f921eaa6610f6a93423a0403dcafc518e8",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "20a21dd9ba6d073c0ce849916c328b1a7a6f153f4224219b9870cbcaf26e1327",
+      "audioHash": "c8d88871e1a3d57c2aa9c32baa1a27441bd1e7780bc5d70a17a0259fecf01d59",
+      "durationMs": 15778
     },
     "event.living-metal-flux": {
       "category": "event",
@@ -149,15 +164,25 @@
       "category": "outcome",
       "missionId": "destroy-sarcophagus",
       "outcome": "victory",
-      "file": null,
-      "available": false
+      "file": "outcomes/04-destroy-sarcophagus-victory.mp3",
+      "available": true,
+      "scriptHash": "5c62a613e8de5361545d0d4efe21a55a3c262d576e11b18548ff15b5178e4a7a",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "ad2c6645674b116c5e8828b10c882541602f818582c62898b07e8138024dc3d5",
+      "audioHash": "c170930f197372644b47a4257ffaee0868274bd8ca7b310aacc8466f0827af1c",
+      "durationMs": 20924
     },
     "outcome.04.defeat": {
       "category": "outcome",
       "missionId": "destroy-sarcophagus",
       "outcome": "defeat",
-      "file": null,
-      "available": false
+      "file": "outcomes/04-destroy-sarcophagus-defeat.mp3",
+      "available": true,
+      "scriptHash": "056f69fbb318e5484335030f7c2a6d7debad7894f50eec7a40e2a5a0fdbae14a",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "1bb20f2cd5da2546f39c9e19117e440a78e957f3a250329f443fa82c55545791",
+      "audioHash": "71f6ff9f48281accb63b1e5f35deccf355ec37ec5f21d018a83949f513340ce9",
+      "durationMs": 19644
     },
     "outcome.05.victory": {
       "category": "outcome",

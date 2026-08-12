@@ -15,13 +15,15 @@
     {
       "id": "event.transdimensional-relocation",
       "category": "event",
-      "status": "approved",
+      "status": "generated",
       "script": "Reality buckles.\n\nTwo warriors flicker out of existence and reappear where the other had been standing.\n\nNo movement. No warning.\n\nThe tomb has simply exchanged their positions.\n\nSwap the two selected operatives on the battlefield.",
       "scriptHash": "78d15757c56db8dc76c2c53d19efe672adc854545154eb409ac77c3013ed8b1b",
       "outputFile": "events/transdimensional-relocation.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "be3addea5157af386ea1f2dfe1f4f59b65f3f7adc31f3757a4132dcf0aaf7075",
+      "audioHash": "6c4fa0066f63dc21bdb63eb78928111b42a38c2ce7cfe0b486c721559a8ef144",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "event.my-will-be-done",
@@ -38,7 +40,7 @@
       "id": "event.reanimation-protocols",
       "category": "event",
       "status": "approved",
-      "script": "The fallen begin to move.\n\nEmerald light returns to darkened eyes. Bodies that should lie silent rise again, driven by ancient systems that refuse to accept their destruction.\n\nFor a time, death may not be enough to stop the tomb’s defenders.",
+      "script": "The fallen begin to move.\n\nEmerald light returns to darkened eyes. Bodies that should lie silent rise again, driven by ancient systems that refuse to accept their destruction.\n\nFor a time, death may not be enough to stop the tombÃ¢â‚¬â„¢s defenders.",
       "scriptHash": "4b1d78ac90110d38893bb20ba528cd168d26db7e96ff69cf50ec95542b882dfe",
       "outputFile": "events/reanimation-protocols.mp3",
       "settingsHash": null,
@@ -59,13 +61,15 @@
     {
       "id": "event.countertemporal-shifting",
       "category": "event",
-      "status": "approved",
+      "status": "generated",
       "script": "Something is wrong.\n\nFor an instant, time fractures. Impacts seem to reverse before they fully occur. Living metal twists back toward shapes it held only moments before.\n\nThe tomb is rewriting the damage as it happens.",
       "scriptHash": "79d46d89cd883cf06ffe22686de7b9f921eaa6610f6a93423a0403dcafc518e8",
       "outputFile": "events/countertemporal-shifting.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "20a21dd9ba6d073c0ce849916c328b1a7a6f153f4224219b9870cbcaf26e1327",
+      "audioHash": "c8d88871e1a3d57c2aa9c32baa1a27441bd1e7780bc5d70a17a0259fecf01d59",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "event.living-metal-flux",
