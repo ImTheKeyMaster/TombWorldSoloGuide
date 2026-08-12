@@ -2,7 +2,10 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.56';
+  const APP_VERSION = '8.6.57';
+  const TombWorldNarration=window.TombWorldNarration||Object.freeze({
+    init:()=>Promise.resolve(),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},setEnabled:()=>{},setVolume:()=>{},isEnabled:()=>true,getVolume:()=>0.8,canReplay:()=>false
+  });
   const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
@@ -40,6 +43,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const app = $('#app');
   const gameMenuBtn = $('#gameMenuBtn');
+  window.addEventListener('tombworldnarrationchange',()=>{
+    const replay=$('#replayNarration');
+    if(replay)replay.disabled=!TombWorldNarration.canReplay();
+  });
   const gameWorkspace = $('#gameWorkspace');
   const operativeStatusPanel = $('#operativeStatusPanel');
   const operativeStatusToggle = $('#operativeStatusToggle');
@@ -1623,6 +1630,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       }
       state.finalResolution.battleEndHookComplete=true;
     }
+    void TombWorldNarration.playOutcome(state.missionId,outcome);
     const engine=missionEngine();
     if(!state.finalResolution.resultLogged){
       log(`${mission().name}: ${outcome}. ${outcome==='victory'?engine?.success:engine?.failure}`);
@@ -2314,7 +2322,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       ensureGameBackgroundSelection();
       objectiveEngine?.refreshMissionContext(missionLifecycleContext());
       if(!state.playerWounds||Object.keys(state.playerWounds).length===0)initializePlayerWounds();
-      state.roster.forEach(n=>n.ready=false);log(`Mission started: ${mission().name}.`);if(state.deadlyEncountersEnabled)log('Deadly Encounters: Tomb Worlds enabled (official PvE expansion, White Dwarf 521).');startTurningPoint();
+      state.roster.forEach(n=>n.ready=false);log(`Mission started: ${mission().name}.`);if(state.deadlyEncountersEnabled)log('Deadly Encounters: Tomb Worlds enabled (official PvE expansion, White Dwarf 521).');void TombWorldNarration.playMissionIntro(state.missionId);startTurningPoint();
     });
   }
 
@@ -3219,6 +3227,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         return;
       }
       d.eventPending=true;
+      void TombWorldNarration.playEvent(event.definitionId,event.instanceId);
       save();
       return;
     }
@@ -3284,11 +3293,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
     if(type==='awakened-warrior'&&(activeNpos().length>=MAX_NPOS||!npoInventory()['Necron Warrior'].remaining)){redrawCurrentEvent('No Necron Warrior could be set up.');return;}
     d.eventPending=true;
+    void TombWorldNarration.playEvent(event.definitionId,event.instanceId);
   }
 
   function completeCurrentEvent(result){
     const d=state.strategyData,event=currentEvent();
     if(!event)return;
+    void TombWorldNarration.playEvent(event.definitionId,event.instanceId);
     event.status='resolved';event.result=result;
     d.eventAction={eventId:event.instanceId,result};
     d.eventIndex=(d.eventIndex||0)+1;
@@ -7407,6 +7418,13 @@ function showPlayerActivation(stage={}){
         ${canOpenHelp()?'<button class="btn secondary" id="menuHelp" type="button">Help</button>':''}
         <button class="btn secondary" id="menuAbout" type="button">About</button>
       </div>
+      <fieldset class="narration-settings">
+        <legend>Narration</legend>
+        <label class="narration-toggle"><input id="narrationEnabled" type="checkbox" ${TombWorldNarration.isEnabled()?'checked':''}><span>Dungeon Master Narration <strong>${TombWorldNarration.isEnabled()?'On':'Off'}</strong></span></label>
+        <label for="narrationVolume">Volume <output id="narrationVolumeValue">${Math.round(TombWorldNarration.getVolume()*100)}%</output></label>
+        <input id="narrationVolume" type="range" min="0" max="1" step="0.05" value="${TombWorldNarration.getVolume()}" aria-label="Narration volume">
+        <button class="btn ghost" id="replayNarration" type="button" ${TombWorldNarration.canReplay()?'':'disabled'}>Replay Last Narration</button>
+      </fieldset>
       <div class="game-menu-session">
         <button class="btn ghost" id="menuExportSave">Export Save</button>
         <button class="btn ghost" id="menuImportSave">Import Save</button>
@@ -7422,6 +7440,9 @@ function showPlayerActivation(stage={}){
       $('#menuDeadlyEncounters').onclick=showDeadlyEncountersPanel;
     }
     if(canOpenHelp())$('#menuHelp').onclick=openHelpFromGameMenu;
+    $('#narrationEnabled').onchange=event=>{TombWorldNarration.setEnabled(event.target.checked);showGameMenu();};
+    $('#narrationVolume').oninput=event=>{TombWorldNarration.setVolume(event.target.value);$('#narrationVolumeValue').textContent=`${Math.round(event.target.value*100)}%`;};
+    $('#replayNarration').onclick=()=>{void TombWorldNarration.replayLast();};
     $('#menuAbout').onclick=showAbout;
     $('#menuExportSave').onclick=exportSave;
     $('#menuImportSave').onclick=()=>importInput.click();
@@ -7516,6 +7537,7 @@ function showPlayerActivation(stage={}){
     const versionBadge=$('.version');
     if(versionBadge) versionBadge.textContent=`v${APP_VERSION}`;
     gameMenuBtn.onclick=showGameMenu;
+    void TombWorldNarration.init();
   }
 
   function renderStartupRecovery(error){

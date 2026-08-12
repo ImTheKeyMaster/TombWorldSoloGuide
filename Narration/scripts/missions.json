@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "scripts": [
+    {
+      "id": "mission.01.intro",
+      "category": "mission-intro",
+      "status": "approved",
+      "script": "The tomb shifts around you. Ancient passages grind into new alignments, sealing familiar routes and opening paths into darkness. Find your way through the labyrinth before it closes around you.",
+      "scriptHash": "8977ee8d2081369fe8b2ea18f85c5eae43e0fa88184ae2c67c50559844d957d9",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "mission.02.intro",
+      "category": "mission-intro",
+      "status": "approved",
+      "script": "The demolition charges are armed, but the tomb will not surrender its secrets willingly. Reach the designated sites, place the explosives, and withdraw before the awakened defenders overwhelm you.",
+      "scriptHash": "765be719b429931f57d6b9fcda65e7ac787cf2daf29518e8ed913657b4cd04f5",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "mission.03.intro",
+      "category": "mission-intro",
+      "status": "approved",
+      "script": "A transponder signal flickers somewhere in the buried complex. Recover the device and carry it beyond the tomb before its guardians silence the signal forever.",
+      "scriptHash": "5f11029e662a167bae3d38652aaa98a551b7340fae6357a18dbb5278ed760f6a",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "mission.04.intro",
+      "category": "mission-intro",
+      "status": "approved",
+      "script": "At the heart of this chamber stands an ancient sarcophagus, pulsing with dormant power. Break its defenses and destroy it before the tomb fully awakens.",
+      "scriptHash": "6c76bdb0e78ddc6f75884a6c6637ff7fa69265ecebf2d287b0164d8df1a89b42",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "mission.05.intro",
+      "category": "mission-intro",
+      "status": "approved",
+      "script": "The sub-crypt lies ahead, unmapped and watchful. Advance through its chambers, record what waits within, and survive long enough to bring that knowledge home.",
+      "scriptHash": "65dd025a617b41d257573f3e06a770956a2f33c567613536f74fd09c7ccbefe7",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "mission.06.intro",
+      "category": "mission-intro",
+      "status": "approved",
+      "script": "The expedition is scattered and the tomb closes in. Regroup under fire, reach the extraction zone together, and leave no survivor behind.",
+      "scriptHash": "acf56c739bf133fed68c3b18a8a4b8d52e0bde2eb1c5dc799017e16f1b765e70",
+      "generationHash": null,
+      "audioHash": null
+    }
+  ]
+}

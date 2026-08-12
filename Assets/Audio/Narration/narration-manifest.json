@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "entries": {
+    "mission.01.intro": {
+      "category": "mission-intro",
+      "missionId": "shifting-labyrinth",
+      "file": null,
+      "available": false
+    },
+    "mission.02.intro": {
+      "category": "mission-intro",
+      "missionId": "demolition-protocol",
+      "file": null,
+      "available": false
+    },
+    "mission.03.intro": {
+      "category": "mission-intro",
+      "missionId": "recover-transponder",
+      "file": null,
+      "available": false
+    },
+    "mission.04.intro": {
+      "category": "mission-intro",
+      "missionId": "destroy-sarcophagus",
+      "file": null,
+      "available": false
+    },
+    "mission.05.intro": {
+      "category": "mission-intro",
+      "missionId": "scout-sub-crypt",
+      "file": null,
+      "available": false
+    },
+    "mission.06.intro": {
+      "category": "mission-intro",
+      "missionId": "regroup",
+      "file": null,
+      "available": false
+    },
+    "event.subjugation-glyphs": {
+      "category": "event",
+      "eventDefinitionId": "subjugation-glyphs",
+      "file": null,
+      "available": false
+    },
+    "event.transdimensional-relocation": {
+      "category": "event",
+      "eventDefinitionId": "transdimensional-relocation",
+      "file": null,
+      "available": false
+    },
+    "event.my-will-be-done": {
+      "category": "event",
+      "eventDefinitionId": "my-will-be-done",
+      "file": null,
+      "available": false
+    },
+    "event.reanimation-protocols": {
+      "category": "event",
+      "eventDefinitionId": "reanimation-protocols",
+      "file": null,
+      "available": false
+    },
+    "event.dark-of-the-tomb": {
+      "category": "event",
+      "eventDefinitionId": "dark-of-the-tomb",
+      "file": null,
+      "available": false
+    },
+    "event.countertemporal-shifting": {
+      "category": "event",
+      "eventDefinitionId": "countertemporal-shifting",
+      "file": null,
+      "available": false
+    },
+    "event.living-metal-flux": {
+      "category": "event",
+      "eventDefinitionId": "living-metal-flux",
+      "file": null,
+      "available": false
+    },
+    "event.maze-reforms": {
+      "category": "event",
+      "eventDefinitionId": "maze-reforms",
+      "file": null,
+      "available": false
+    },
+    "event.stirrings-of-horror": {
+      "category": "event",
+      "eventDefinitionId": "stirrings-of-horror",
+      "file": null,
+      "available": false
+    },
+    "event.chittering-drone": {
+      "category": "event",
+      "eventDefinitionId": "chittering-drone",
+      "file": null,
+      "available": false
+    },
+    "event.awakened-warrior": {
+      "category": "event",
+      "eventDefinitionId": "awakened-warrior",
+      "file": null,
+      "available": false
+    },
+    "outcome.01.victory": {
+      "category": "outcome",
+      "missionId": "shifting-labyrinth",
+      "outcome": "victory",
+      "file": null,
+      "available": false
+    },
+    "outcome.01.defeat": {
+      "category": "outcome",
+      "missionId": "shifting-labyrinth",
+      "outcome": "defeat",
+      "file": null,
+      "available": false
+    },
+    "outcome.02.victory": {
+      "category": "outcome",
+      "missionId": "demolition-protocol",
+      "outcome": "victory",
+      "file": null,
+      "available": false
+    },
+    "outcome.02.defeat": {
+      "category": "outcome",
+      "missionId": "demolition-protocol",
+      "outcome": "defeat",
+      "file": null,
+      "available": false
+    },
+    "outcome.03.victory": {
+      "category": "outcome",
+      "missionId": "recover-transponder",
+      "outcome": "victory",
+      "file": null,
+      "available": false
+    },
+    "outcome.03.defeat": {
+      "category": "outcome",
+      "missionId": "recover-transponder",
+      "outcome": "defeat",
+      "file": null,
+      "available": false
+    },
+    "outcome.04.victory": {
+      "category": "outcome",
+      "missionId": "destroy-sarcophagus",
+      "outcome": "victory",
+      "file": null,
+      "available": false
+    },
+    "outcome.04.defeat": {
+      "category": "outcome",
+      "missionId": "destroy-sarcophagus",
+      "outcome": "defeat",
+      "file": null,
+      "available": false
+    },
+    "outcome.05.victory": {
+      "category": "outcome",
+      "missionId": "scout-sub-crypt",
+      "outcome": "victory",
+      "file": null,
+      "available": false
+    },
+    "outcome.05.defeat": {
+      "category": "outcome",
+      "missionId": "scout-sub-crypt",
+      "outcome": "defeat",
+      "file": null,
+      "available": false
+    },
+    "outcome.06.victory": {
+      "category": "outcome",
+      "missionId": "regroup",
+      "outcome": "victory",
+      "file": null,
+      "available": false
+    },
+    "outcome.06.defeat": {
+      "category": "outcome",
+      "missionId": "regroup",
+      "outcome": "defeat",
+      "file": null,
+      "available": false
+    }
+  }
+}

@@ -127,12 +127,12 @@ console.log(JSON.stringify({{rows:trackerNpos().map(npo=>({{id:npo.id,...npoTrac
         self.assertNotIn("npoRows.length", tracker)
 
     def test_current_version_is_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.56';", APP)
-        self.assertIn("const APP_VERSION = '8.6.56';", WORKER)
-        self.assertIn("V8.6.56", INDEX)
+        self.assertIn("const APP_VERSION = '8.6.57';", APP)
+        self.assertIn("const APP_VERSION = '8.6.57';", WORKER)
+        self.assertIn("V8.6.57", INDEX)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.56", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.56"))
+            self.assertIn(f"{asset}?v=8.6.57", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.57"))
 
 
 if __name__ == "__main__":

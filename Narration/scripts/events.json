@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "scripts": [
+    {
+      "id": "event.subjugation-glyphs",
+      "category": "event",
+      "status": "approved",
+      "script": "Symbols of command flare across the tomb walls. Their cold authority presses against every living mind, demanding obedience to a dynasty dead for millennia.",
+      "scriptHash": "e8bdfef79b55eae29a5a473bd0df5b65fd8050362ee48719232762850944c28d",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "event.transdimensional-relocation",
+      "category": "event",
+      "status": "approved",
+      "script": "Reality folds without warning. Space twists, distance loses meaning, and warriors vanish only to reappear where the tomb has chosen.",
+      "scriptHash": "ab0bef410e2eed9c4f34ed556650435181cfb6f73c47913a2232d60a2842ae95",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "event.my-will-be-done",
+      "category": "event",
+      "status": "approved",
+      "script": "An imperious command rolls through the crypt. The awakened legions answer as one, driven onward by a will that permits neither hesitation nor failure.",
+      "scriptHash": "77900a5ecf5f9beb2cb29403c6b901458faf435db0252be0ab574e54e6a7fe28",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "event.reanimation-protocols",
+      "category": "event",
+      "status": "approved",
+      "script": "The fallen begin to move.\n\nEmerald light returns to darkened eyes. Bodies that should lie silent rise again, driven by ancient systems that refuse to accept their destruction.\n\nFor a time, death may not be enough to stop the tomb’s defenders.",
+      "scriptHash": "4b1d78ac90110d38893bb20ba528cd168d26db7e96ff69cf50ec95542b882dfe",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "event.dark-of-the-tomb",
+      "category": "event",
+      "status": "approved",
+      "script": "The tomb drinks the light. Shadows deepen into absolute darkness, and the corridors seem to hold their breath around you.",
+      "scriptHash": "88d9a5c7987f608e2740bdbdcf7d664d6606b45c80a3e772eac2189f6484cccb",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "event.countertemporal-shifting",
+      "category": "event",
+      "status": "approved",
+      "script": "Time stutters. Moments repeat out of sequence as the tomb reaches backward, reclaiming instants that should already be gone.",
+      "scriptHash": "c5e75c6211ddce10c24f30d2b66e7fdd3e4b0153ea2dfcf96981adb48705baf0",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "event.living-metal-flux",
+      "category": "event",
+      "status": "approved",
+      "script": "Silver bodies ripple like liquid beneath an emerald glow. Rent armor seals, broken limbs reform, and ancient warriors rise renewed.",
+      "scriptHash": "a5680d59f7908beea9f9114108ad108322bbd6a6e9cdfdbe050ad46101694595",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "event.maze-reforms",
+      "category": "event",
+      "status": "approved",
+      "script": "Stone screams against stone. Walls slide, hatchways close, and the maze reforms itself with patient, mechanical purpose.",
+      "scriptHash": "4da89bd1861e6b03f9b3b8cce0afde3141e543ccd2c9a13423e6d73b5fe34cd7",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "event.stirrings-of-horror",
+      "category": "event",
+      "status": "approved",
+      "script": "Something vast stirs beneath the chambers. The tremor passes, but the sense of an approaching horror remains.",
+      "scriptHash": "5816c2168e6d01aca6c9e74075af65a8444f841ec3528ee4fd93fd3763f78fa9",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "event.chittering-drone",
+      "category": "event",
+      "status": "approved",
+      "script": "A metallic chittering swells through the passageways. Countless small limbs scrape closer from somewhere beyond sight.",
+      "scriptHash": "14a816b51d94d18927328c689a598371c00a5b2e26c4bf51b0f8f6e41c6e84e0",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "event.awakened-warrior",
+      "category": "event",
+      "status": "approved",
+      "script": "A burial alcove opens with a hiss of ancient air. Emerald eyes ignite, and another warrior steps forward to defend the tomb.",
+      "scriptHash": "600416716a994ffe411594fd20dffae2fc8968e6d2fb5714863e64cbb090f443",
+      "generationHash": null,
+      "audioHash": null
+    }
+  ]
+}
