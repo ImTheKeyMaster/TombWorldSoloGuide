@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v8.6.60
+# Tomb World Solo Guide v8.6.61
+
+## v8.6.61
+
+**Version 8.6.61 - Prepare Narration Pipeline for Full Production Rollout**
+
+- Adds manifest-driven offline caching for every available narration recording.
+- Adds production-scale narration validation and approved-entry selection in the local Producer.
 
 ## v8.6.60
 

@@ -45,8 +45,6 @@ class ProducerStaticTests(unittest.TestCase):
     def test_canonical_library_and_hashes(self):
         scripts = records()
         self.assertEqual(29, len(scripts))
-        self.assertEqual(23, sum(item["status"] == "approved" for item in scripts))
-        self.assertEqual(5, sum(item["status"] == "generated" for item in scripts))
         self.assertEqual(["mission.04.intro"], [item["id"] for item in scripts if item["status"] == "draft"])
         for item in scripts:
             normalized = item["script"].replace("\r\n", "\n").replace("\r", "\n").strip()
@@ -55,18 +53,36 @@ class ProducerStaticTests(unittest.TestCase):
         self.assertIn("For a time, death may not be enough", reanimation["script"])
         self.assertNotIn("The mission is won. You have overcome", " ".join(item["script"] for item in scripts))
 
-    def test_pilot_activates_exactly_five_manifest_entries_and_mp3s(self):
+    def test_generated_sources_manifest_metadata_and_audio_stay_synchronized(self):
+        scripts = {item["id"]: item for item in records()}
         entries = json.loads((ROOT / "Assets/Audio/Narration/narration-manifest.json").read_text())["entries"]
         self.assertEqual(29, len(entries))
-        available = {key for key, item in entries.items() if item["available"]}
-        self.assertEqual({
-            "mission.01.intro",
-            "event.countertemporal-shifting",
-            "event.transdimensional-relocation",
-            "outcome.04.victory",
-            "outcome.04.defeat",
-        }, available)
-        self.assertEqual(5, len(list((ROOT / "Assets/Audio/Narration").rglob("*.mp3"))))
+        self.assertEqual(set(scripts), set(entries))
+        for script_id, item in scripts.items():
+            entry = entries[script_id]
+            generated = item["status"] == "generated"
+            self.assertEqual(generated, entry.get("available"), script_id)
+            if not generated:
+                self.assertIsNone(entry.get("file"), script_id)
+                continue
+            self.assertTrue(item.get("outputFile"), script_id)
+            self.assertEqual(item["outputFile"], entry.get("file"), script_id)
+            audio = ROOT / "Assets" / "Audio" / "Narration" / item["outputFile"]
+            self.assertTrue(audio.is_file() and audio.stat().st_size > 0, script_id)
+            for key in ("scriptHash", "settingsHash", "generationHash", "audioHash"):
+                self.assertTrue(item.get(key), f"{script_id}: source {key}")
+                self.assertEqual(item[key], entry.get(key), f"{script_id}: manifest {key}")
+            self.assertTrue(item.get("voiceId"), script_id)
+            self.assertTrue(item.get("modelId"), script_id)
+            self.assertGreater(entry.get("durationMs", 0), 0, script_id)
+            self.assertEqual(hashlib.sha256(audio.read_bytes()).hexdigest(), item["audioHash"], script_id)
+
+    def test_producer_selection_is_approval_driven_not_pilot_id_driven(self):
+        browser = (TOOL / "static" / "producer.js").read_text(encoding="utf-8")
+        markup = (TOOL / "static" / "index.html").read_text(encoding="utf-8")
+        self.assertIn("x.status==='approved'&&!x.reviewRequired", browser)
+        self.assertIn('id="approved">Select Approved', markup)
+        self.assertNotIn("Select Pilot Batch", markup)
 
     def test_browser_has_no_secret_or_direct_tts_call(self):
         browser = (TOOL / "static" / "producer.js").read_text(encoding="utf-8")

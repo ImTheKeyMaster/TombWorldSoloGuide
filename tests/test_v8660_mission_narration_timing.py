@@ -1,4 +1,3 @@
-import json
 import subprocess
 import unittest
 from pathlib import Path
@@ -54,20 +53,18 @@ class MissionNarrationTimingTests(unittest.TestCase):
             self.assertIn(control, menu)
 
     def test_release_and_save_versions(self):
-        self.assertIn("const APP_VERSION = '8.6.60';", APP)
-        self.assertIn("const APP_VERSION = '8.6.60';", WORKER)
-        self.assertIn('<div class="version">V8.6.60</div>', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.60'))
+        self.assertIn("const APP_VERSION = '8.6.61';", APP)
+        self.assertIn("const APP_VERSION = '8.6.61';", WORKER)
+        self.assertIn('<div class="version">V8.6.61</div>', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.61'))
         self.assertIn('const SAVE_VERSION = 3;', (ROOT / 'persistence.js').read_text())
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'narration.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.60', INDEX)
+            self.assertIn(f'{asset}?v=8.6.61', INDEX)
 
-    def test_five_existing_mp3s_remain_precached(self):
-        manifest = json.loads((ROOT / 'Assets/Audio/Narration/narration-manifest.json').read_text())['entries']
-        available = [entry['file'] for entry in manifest.values() if entry.get('available')]
-        self.assertEqual(5, len(available))
-        for relative in available:
-            self.assertIn(f"'./Assets/Audio/Narration/{relative}'", WORKER)
+    def test_available_mp3s_are_discovered_from_the_manifest(self):
+        self.assertIn("Object.values(manifest.entries||{})", WORKER)
+        self.assertIn("entry?.available===true", WORKER)
+        self.assertIn("`./Assets/Audio/Narration/${entry.file}`", WORKER)
 
     def test_restart_runtime_stops_and_replays_from_start(self):
         script = r"""

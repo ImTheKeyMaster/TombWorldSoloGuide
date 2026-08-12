@@ -1,17 +1,12 @@
 'use strict';
 
-const APP_VERSION = '8.6.60';
+const APP_VERSION = '8.6.61';
 const CACHE_PREFIX = 'tomb-world-solo-guide-';
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 const APP_SHELL = './index.html';
+const NARRATION_MANIFEST = './Assets/Audio/Narration/narration-manifest.json';
 const PRECACHE_ASSETS = [
   './', APP_SHELL, `./event-effects.js?v=${APP_VERSION}`, `./narration.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`,
-  './Assets/Audio/Narration/narration-manifest.json',
-  './Assets/Audio/Narration/missions/01-shifting-labyrinth-intro.mp3',
-  './Assets/Audio/Narration/events/countertemporal-shifting.mp3',
-  './Assets/Audio/Narration/events/transdimensional-relocation.mp3',
-  './Assets/Audio/Narration/outcomes/04-destroy-sarcophagus-victory.mp3',
-  './Assets/Audio/Narration/outcomes/04-destroy-sarcophagus-defeat.mp3',
   './manifest.webmanifest', './Assets/icon.svg', './Assets/Icons/move-to-shoot.svg',
   './Assets/Images/Backgrounds/manifest.json',
   './Assets/Images/defeat.png', './Assets/Images/victory.png',
@@ -28,9 +23,29 @@ const PRECACHE_ASSETS = [
 
 const canCache = response => response && response.ok && response.type === 'basic';
 
+async function precacheNarration(cache) {
+  try {
+    const response=await cache.match(NARRATION_MANIFEST);
+    const manifest=await response.json();
+    const files=Object.values(manifest.entries||{})
+      .filter(entry=>entry?.available===true&&typeof entry.file==='string'&&/^(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$)).+\.mp3$/i.test(entry.file))
+      .map(entry=>`./Assets/Audio/Narration/${entry.file}`);
+    const uniqueFiles=[...new Set(files)];
+    if(uniqueFiles.length)await cache.addAll(uniqueFiles);
+  } catch (error) {
+    console.warn('Narration precache skipped because its manifest could not be read.',error);
+  }
+}
+
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(async cache => {
     await cache.addAll(PRECACHE_ASSETS);
+    try {
+      await cache.add(NARRATION_MANIFEST);
+    } catch (error) {
+      console.warn('Narration manifest precache failed; the app shell remains available offline.',error);
+    }
+    await precacheNarration(cache);
     const response=await cache.match('./Assets/Images/Backgrounds/manifest.json');
     const manifest=await response.json();
     const backgrounds=(manifest.landscape||[]).map(filename=>`./Assets/Images/Backgrounds/${filename}`);
