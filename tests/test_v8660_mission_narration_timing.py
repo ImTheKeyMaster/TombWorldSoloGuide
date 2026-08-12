@@ -53,13 +53,13 @@ class MissionNarrationTimingTests(unittest.TestCase):
             self.assertIn(control, menu)
 
     def test_release_and_save_versions(self):
-        self.assertIn("const APP_VERSION = '8.6.61';", APP)
-        self.assertIn("const APP_VERSION = '8.6.61';", WORKER)
-        self.assertIn('<div class="version">V8.6.61</div>', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.61'))
+        self.assertIn("const APP_VERSION = '8.6.62';", APP)
+        self.assertIn("const APP_VERSION = '8.6.62';", WORKER)
+        self.assertIn('<div class="version">V8.6.62</div>', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.62'))
         self.assertIn('const SAVE_VERSION = 3;', (ROOT / 'persistence.js').read_text())
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'narration.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.61', INDEX)
+            self.assertIn(f'{asset}?v=8.6.62', INDEX)
 
     def test_available_mp3s_are_discovered_from_the_manifest(self):
         self.assertIn("Object.values(manifest.entries||{})", WORKER)

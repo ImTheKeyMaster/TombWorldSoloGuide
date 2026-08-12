@@ -77,6 +77,12 @@ class ProducerStaticTests(unittest.TestCase):
             self.assertGreater(entry.get("durationMs", 0), 0, script_id)
             self.assertEqual(hashlib.sha256(audio.read_bytes()).hexdigest(), item["audioHash"], script_id)
 
+        newly_generated = {"mission.02.intro", "mission.03.intro", "mission.05.intro", "mission.06.intro"}
+        self.assertTrue(all(scripts[script_id]["status"] == "generated" for script_id in newly_generated))
+        self.assertTrue(all(entries[script_id]["available"] is True for script_id in newly_generated))
+        self.assertEqual("draft", scripts["mission.04.intro"]["status"])
+        self.assertFalse(entries["mission.04.intro"]["available"])
+
     def test_producer_selection_is_approval_driven_not_pilot_id_driven(self):
         browser = (TOOL / "static" / "producer.js").read_text(encoding="utf-8")
         markup = (TOOL / "static" / "index.html").read_text(encoding="utf-8")

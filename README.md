@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v8.6.61
+# Tomb World Solo Guide v8.6.62
+
+## v8.6.62
+
+**Version 8.6.62 - Add Production Mission Intro Narration**
+
+- Adds production narration for Mission 02, Mission 03, Mission 05, and Mission 06 introductions.
+- Expands mission briefing narration while preserving manifest-driven offline audio caching.
 
 ## v8.6.61
 
