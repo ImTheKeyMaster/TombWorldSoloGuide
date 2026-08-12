@@ -1,2 +1,6 @@
 __pycache__/
 *.py[cod]
+tools/narration-producer/.env
+tools/narration-producer/.venv/
+tools/narration-producer/__pycache__/
+tools/narration-producer/*.tmp

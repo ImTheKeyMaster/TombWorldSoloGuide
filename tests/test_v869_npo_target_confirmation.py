@@ -20,10 +20,10 @@ class V869NpoTargetConfirmationTests(unittest.TestCase):
         self.render = section("function renderNpoDecisionResult", "async function completeNpoActivation")
 
     def test_01_version_8610_is_displayed(self):
-        self.assertIn("const APP_VERSION = '8.6.57';", APP)
-        self.assertIn("const APP_VERSION = '8.6.57';", WORKER)
-        self.assertIn("V8.6.57", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.57"))
+        self.assertIn("const APP_VERSION = '8.6.58';", APP)
+        self.assertIn("const APP_VERSION = '8.6.58';", WORKER)
+        self.assertIn("V8.6.58", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.58"))
 
     def test_02_direct_shoot_yes_opens_selection(self): self.assertIn("resolveNpo(n,{...nextAnswers,action},nextHistory)", APP)
     def test_03_direct_shoot_confirmation_advances(self): self.assertIn("openNpoCombat(n,decision,[],state.lastActivation.answers||{})", self.confirm)
