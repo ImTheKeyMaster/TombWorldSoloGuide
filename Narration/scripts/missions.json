@@ -17,24 +17,28 @@
     {
       "id": "mission.02.intro",
       "category": "mission-intro",
-      "status": "approved",
+      "status": "generated",
       "script": "The way forward is sealed.\n\nAncient hatchways and reinforced breach points divide the crypt into a maze of locked chambers. Somewhere beyond them, the tomb continues to awaken.\n\nYou will have to make your own path.\n\nBreak open enough of the sealed network to force a route through.\n\nAnd do it before the tomb closes around you.",
       "scriptHash": "455e190b42d5dc728f7e4055ecde8f2d7c0e606edfd29b59d40967d0814c36f0",
       "outputFile": "missions/02-demolition-protocol-intro.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "6bcc5c490facf78b6bcbcf7db6b8e9106f7878343ed0be15063e257c7fe14dca",
+      "audioHash": "c4ad176719ac1ebd2f5cdd7217c1e813111a279e47a367bf7b863ba8b4fe3062",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "mission.03.intro",
       "category": "mission-intro",
-      "status": "approved",
+      "status": "generated",
       "script": "A signal flickers somewhere within the crypt.\n\nWeak. Intermittent. Buried beneath layers of living metal and ancient interference.\n\nSeveral locations could conceal the transponder, but only one contains what you came for.\n\nFind it.\n\nThen get the carrier out of the Tomb World before the signal disappears with them.",
       "scriptHash": "af4dd73c044703dfe644005609fdd6f99583a9b6faf7b168caabd19bc84ab0ba",
       "outputFile": "missions/03-recover-transponder-intro.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "31d104d5c7ac0fab447a5e35b4ab39a43883c145a55100b224870ab6ff0d80e5",
+      "audioHash": "efb852c5bbdade967d115078d880a9ae8c4d1f1a387d39aef8dac39e86fa2085",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "mission.04.intro",
@@ -50,24 +54,28 @@
     {
       "id": "mission.05.intro",
       "category": "mission-intro",
-      "status": "approved",
+      "status": "generated",
       "script": "The sub-crypt is silent.\n\nNo movement. No active defenders. Only sealed chambers stretching away into the darkness.\n\nBut the silence feels deliberate.\n\nEvery unopened room may conceal systems that have not yet realized you are here.\n\nPush deeper. Clear the chambers. Learn what lies beneath the tomb.\n\nAnd be ready when it notices you.",
       "scriptHash": "6b78a95b917e46d6e6279442aca478f3bccf62e4dc75f9cc5e5560684daad3cc",
       "outputFile": "missions/05-scout-sub-crypt-intro.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "0ad847b115c33d7707940c3abd03637f5e25fcbc60e6ec9782f1eb2902799983",
+      "audioHash": "52ccc4450a49297668026afddf88b88030f92373d46b9cc3f80823388bb23152",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "mission.06.intro",
       "category": "mission-intro",
-      "status": "approved",
+      "status": "generated",
       "script": "The tomb has broken your formation.\n\nPhasing pathways twist through the complex, carrying warriors through impossible routes and depositing them far from where they intended to go.\n\nYour team is scattered.\n\nNavigate the shifting network. Reach the far side of the crypt.\n\nThen bring the survivors back together before the tomb isolates them for good.",
       "scriptHash": "e39765dc7802af04bd904b0f22d6e57ee7e0486feaa10f795d49ccb1342e1834",
       "outputFile": "missions/06-regroup-intro.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "82753ee957e5ea4f4ffdf641c7312ff910c140aa348b228b5a4c277503fac212",
+      "audioHash": "06f1064b2f6f8ae6687c29c60dd9078b46342f538edb69ed715275cd85c02848",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     }
   ]
 }
