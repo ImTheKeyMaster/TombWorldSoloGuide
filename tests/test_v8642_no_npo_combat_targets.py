@@ -61,7 +61,7 @@ class V8642NoNpoCombatTargetsTests(unittest.TestCase):
         self.assertNotIn("state.", helper)
 
     def test_version_and_save_version(self):
-        self.assertIn("const APP_VERSION = '8.6.59';", APP)
+        self.assertIn("const APP_VERSION = '8.6.60';", APP)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
 
 

@@ -20,6 +20,7 @@
   let initialization = null;
   let lastEntry = null;
   let audioUnlocked = false;
+  let playbackRequest = 0;
   const automaticPlayback = new Set();
 
   function readPreference(key) {
@@ -57,13 +58,18 @@
     return audio;
   }
 
-  function stop() {
+  function stopAudio() {
     if (!audio) return;
     try {
       audio.pause();
       audio.removeAttribute('src');
       audio.load();
     } catch { /* Audio cleanup must never affect gameplay. */ }
+  }
+
+  function stop() {
+    playbackRequest += 1;
+    stopAudio();
   }
 
   function unlock() {
@@ -124,12 +130,14 @@
     if (!isEnabled()) return false;
     if (!manual && automaticPlayback.has(duplicateKey)) return false;
     if (!manual) automaticPlayback.add(duplicateKey);
+    const request = ++playbackRequest;
     await init();
+    if (request !== playbackRequest) return false;
     const entry = manifest?.entries?.[id];
     if (!entry?.available || !entry.file) return false;
     const player = ensureAudio();
     if (!player) return false;
-    stop();
+    stopAudio();
     player.volume = getVolume();
     player.src = new URL(entry.file, new URL(MANIFEST_URL, global.location?.href || 'http://localhost/')).href;
     try {
@@ -142,8 +150,9 @@
     }
   }
 
-  function playMissionIntro(missionId) {
+  function playMissionIntro(missionId, restart = false) {
     const number = missionNumbers[missionId];
+    if (restart) automaticPlayback.delete(`mission:${missionId}`);
     return number ? playEntry(`mission.${number}.intro`, `mission:${missionId}`, false) : Promise.resolve(false);
   }
 

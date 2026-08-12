@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.59';
+  const APP_VERSION = '8.6.60';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
     init:()=>Promise.resolve(),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},setEnabled:()=>{},setVolume:()=>{},isEnabled:()=>true,getVolume:()=>0.8,canReplay:()=>false
   });
@@ -2266,9 +2266,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function bindSetup(stepId){
-    $$('.mission-choice').forEach(b=>b.onclick=()=>{const missionId=b.dataset.mission;state.missionId=missionId;state.missionState=freshMissionState(mission());state.missionRuntime=null;state.tracker=0;state.setupChecks={};state.roster=[];state.startingNpoGeneration=null;save();render();setTimeout(()=>loadObjectiveMission(missionId).then(()=>{if(state.missionId===missionId)save();}),0);});
+    $$('.mission-choice').forEach(b=>b.onclick=()=>{TombWorldNarration.stop();const missionId=b.dataset.mission;state.missionId=missionId;state.missionState=freshMissionState(mission());state.missionRuntime=null;state.tracker=0;state.setupChecks={};state.roster=[];state.startingNpoGeneration=null;save();render();setTimeout(()=>loadObjectiveMission(missionId).then(()=>{if(state.missionId===missionId)save();}),0);});
     $('#setupHome')?.addEventListener('click',()=>{state.screen='home';save();render();});
-    $('#setupBack')?.addEventListener('click',()=>{state.setupStep=Math.max(0,state.setupStep-1);save();render();});
+    $('#setupBack')?.addEventListener('click',()=>{if(stepId==='killzone')TombWorldNarration.stop();state.setupStep=Math.max(0,state.setupStep-1);save();render();});
     $('#setupNext')?.addEventListener('click',()=>{
       if(setupNavigationInProgress)return;
       if(currentSetupStepId()!==stepId)return;
@@ -2276,6 +2276,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       setupNavigationInProgress=true;
       if(stepId==='playerRoster')assignPlayerDisplayNumbers();
       const steps=activeSetupSteps();state.setupStep=Math.min(steps.length-1,state.setupStep+1);save();render();
+      if(stepId==='mission')void TombWorldNarration.playMissionIntro(state.missionId,true);
       setupNavigationInProgress=false;
     });
     $$('[data-player-team]').forEach(button=>button.onclick=()=>selectPlayerTeam(button.dataset.playerTeam));
@@ -2322,7 +2323,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       ensureGameBackgroundSelection();
       objectiveEngine?.refreshMissionContext(missionLifecycleContext());
       if(!state.playerWounds||Object.keys(state.playerWounds).length===0)initializePlayerWounds();
-      state.roster.forEach(n=>n.ready=false);log(`Mission started: ${mission().name}.`);if(state.deadlyEncountersEnabled)log('Deadly Encounters: Tomb Worlds enabled (official PvE expansion, White Dwarf 521).');void TombWorldNarration.playMissionIntro(state.missionId);startTurningPoint();
+      state.roster.forEach(n=>n.ready=false);log(`Mission started: ${mission().name}.`);if(state.deadlyEncountersEnabled)log('Deadly Encounters: Tomb Worlds enabled (official PvE expansion, White Dwarf 521).');startTurningPoint();
     });
   }
 
@@ -7424,7 +7425,7 @@ function showPlayerActivation(stage={}){
       </div>
       <fieldset class="narration-settings">
         <legend>Narration</legend>
-        <label class="narration-toggle"><input id="narrationEnabled" type="checkbox" ${TombWorldNarration.isEnabled()?'checked':''}><span>Dungeon Master Narration <strong>${TombWorldNarration.isEnabled()?'On':'Off'}</strong></span></label>
+        <label class="narration-toggle"><input id="narrationEnabled" type="checkbox" ${TombWorldNarration.isEnabled()?'checked':''}><span>Narration <strong>${TombWorldNarration.isEnabled()?'On':'Off'}</strong></span></label>
         <label for="narrationVolume">Volume <output id="narrationVolumeValue">${Math.round(TombWorldNarration.getVolume()*100)}%</output></label>
         <input id="narrationVolume" type="range" min="0" max="1" step="0.05" value="${TombWorldNarration.getVolume()}" aria-label="Narration volume">
         <button class="btn ghost" id="replayNarration" type="button" ${TombWorldNarration.canReplay()?'':'disabled'}>Replay Last Narration</button>

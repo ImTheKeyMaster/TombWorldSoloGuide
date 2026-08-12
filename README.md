@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.59
+# Tomb World Solo Guide v8.6.60
+
+## v8.6.60
+
+**Version 8.6.60 - Improve Mission Narration Timing**
+
+- Mission narration now begins while viewing the mission map during board setup.
+- Narration stops when returning to mission selection, ready to restart for the next selected mission.
+- Simplifies the Game Menu terminology to “Narration”.
 
 ## v8.6.59
 
