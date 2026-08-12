@@ -18,10 +18,10 @@ def source(start, end):
 
 class NarrationIntegrationTests(unittest.TestCase):
     def test_release_version_changes_without_save_schema_change(self):
-        self.assertIn("const APP_VERSION = '8.6.58';", APP)
-        self.assertIn("const APP_VERSION = '8.6.58';", WORKER)
+        self.assertIn("const APP_VERSION = '8.6.59';", APP)
+        self.assertIn("const APP_VERSION = '8.6.59';", WORKER)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
-        self.assertIn('narration.js?v=8.6.58', INDEX)
+        self.assertIn('narration.js?v=8.6.59', INDEX)
 
     def test_intro_only_runs_from_new_game_transition(self):
         begin = source("$('#beginGame')", "function runStartingNpoGeneration")
@@ -55,7 +55,7 @@ class NarrationIntegrationTests(unittest.TestCase):
 
 
 class NarrationManifestTests(unittest.TestCase):
-    def test_manifest_has_exactly_the_unavailable_approved_ids(self):
+    def test_manifest_has_exactly_the_five_available_pilot_ids(self):
         manifest = json.loads((ROOT / 'Assets/Audio/Narration/narration-manifest.json').read_text())
         entries = manifest['entries']
         self.assertEqual(len(entries), 29)
@@ -63,19 +63,29 @@ class NarrationManifestTests(unittest.TestCase):
         self.assertEqual(sum(key.startswith('mission.') for key in entries), 6)
         self.assertEqual(sum(key.startswith('event.') for key in entries), 11)
         self.assertEqual(sum(key.startswith('outcome.') for key in entries), 12)
-        self.assertTrue(all(not entry['available'] and entry['file'] is None for entry in entries.values()))
+        available = {key for key, entry in entries.items() if entry['available']}
+        self.assertEqual(available, {
+            'mission.01.intro',
+            'event.countertemporal-shifting',
+            'event.transdimensional-relocation',
+            'outcome.04.victory',
+            'outcome.04.defeat',
+        })
+        self.assertTrue(all(entry['file'] is not None for key, entry in entries.items() if key in available))
+        self.assertTrue(all(entry['file'] is None for key, entry in entries.items() if key not in available))
 
     def test_both_awakened_warriors_share_one_manifest_entry(self):
         entries = json.loads((ROOT / 'Assets/Audio/Narration/narration-manifest.json').read_text())['entries']
         self.assertIn('event.awakened-warrior', entries)
         self.assertEqual(sum(key == 'event.awakened-warrior' for key in entries), 1)
 
-    def test_all_production_scripts_are_approved(self):
+    def test_production_scripts_track_generated_pilot_and_draft(self):
         records = []
         for name in ('missions.json', 'events.json', 'outcomes.json'):
             records.extend(json.loads((ROOT / 'Narration/scripts' / name).read_text())['scripts'])
         self.assertEqual(len(records), 29)
-        self.assertEqual(28, sum(item['status'] == 'approved' for item in records))
+        self.assertEqual(23, sum(item['status'] == 'approved' for item in records))
+        self.assertEqual(5, sum(item['status'] == 'generated' for item in records))
         self.assertEqual(['mission.04.intro'], [item['id'] for item in records if item['status'] == 'draft'])
         reanimation = next(item for item in records if item['id'] == 'event.reanimation-protocols')
         self.assertEqual(reanimation['script'], "The fallen begin to move.\n\nEmerald light returns to darkened eyes. Bodies that should lie silent rise again, driven by ancient systems that refuse to accept their destruction.\n\nFor a time, death may not be enough to stop the tomb’s defenders.")

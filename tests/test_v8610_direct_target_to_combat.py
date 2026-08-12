@@ -22,10 +22,10 @@ class V8610DirectTargetToCombatTests(unittest.TestCase):
         self.render = section("function renderNpoDecisionResult", "async function completeNpoActivation")
 
     def test_01_version_displays_8610(self):
-        self.assertIn("const APP_VERSION = '8.6.58';", APP)
-        self.assertIn("const APP_VERSION = '8.6.58';", WORKER)
-        self.assertIn("V8.6.58", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.58"))
+        self.assertIn("const APP_VERSION = '8.6.59';", APP)
+        self.assertIn("const APP_VERSION = '8.6.59';", WORKER)
+        self.assertIn("V8.6.59", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.59"))
 
     def test_02_confirm_target_immediately_opens_combat(self):
         self.assertIn("openNpoCombat(n,decision,[]", self.confirm)

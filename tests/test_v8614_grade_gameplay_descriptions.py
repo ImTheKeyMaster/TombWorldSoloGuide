@@ -16,10 +16,10 @@ def function_source(name, next_name):
 
 class GradeGameplayDescriptionTests(unittest.TestCase):
     def test_01_version_and_save_version(self):
-        self.assertIn("const APP_VERSION = '8.6.58';", APP)
-        self.assertIn("const APP_VERSION = '8.6.58';", WORKER)
-        self.assertIn("V8.6.58", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.58"))
+        self.assertIn("const APP_VERSION = '8.6.59';", APP)
+        self.assertIn("const APP_VERSION = '8.6.59';", WORKER)
+        self.assertIn("V8.6.59", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.59"))
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
     def test_02_every_grade_uses_one_canonical_configuration(self):
@@ -102,7 +102,7 @@ class GradeGameplayDescriptionTests(unittest.TestCase):
 
     def test_11_release_assets_and_notes(self):
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f'{asset}?v=8.6.58', INDEX)
+            self.assertIn(f'{asset}?v=8.6.59', INDEX)
         self.assertIn("## v8.6.25", README)
         self.assertIn("**Version 8.6.14 - Explain Grade Gameplay Changes**", README)
 

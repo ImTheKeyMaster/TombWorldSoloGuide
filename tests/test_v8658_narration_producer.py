@@ -45,7 +45,8 @@ class ProducerStaticTests(unittest.TestCase):
     def test_canonical_library_and_hashes(self):
         scripts = records()
         self.assertEqual(29, len(scripts))
-        self.assertEqual(28, sum(item["status"] == "approved" for item in scripts))
+        self.assertEqual(23, sum(item["status"] == "approved" for item in scripts))
+        self.assertEqual(5, sum(item["status"] == "generated" for item in scripts))
         self.assertEqual(["mission.04.intro"], [item["id"] for item in scripts if item["status"] == "draft"])
         for item in scripts:
             normalized = item["script"].replace("\r\n", "\n").replace("\r", "\n").strip()
@@ -54,11 +55,18 @@ class ProducerStaticTests(unittest.TestCase):
         self.assertIn("For a time, death may not be enough", reanimation["script"])
         self.assertNotIn("The mission is won. You have overcome", " ".join(item["script"] for item in scripts))
 
-    def test_phase_leaves_manifest_unavailable_and_has_no_mp3(self):
+    def test_pilot_activates_exactly_five_manifest_entries_and_mp3s(self):
         entries = json.loads((ROOT / "Assets/Audio/Narration/narration-manifest.json").read_text())["entries"]
         self.assertEqual(29, len(entries))
-        self.assertTrue(all(not item["available"] for item in entries.values()))
-        self.assertFalse(list((ROOT / "Assets/Audio/Narration").rglob("*.mp3")))
+        available = {key for key, item in entries.items() if item["available"]}
+        self.assertEqual({
+            "mission.01.intro",
+            "event.countertemporal-shifting",
+            "event.transdimensional-relocation",
+            "outcome.04.victory",
+            "outcome.04.defeat",
+        }, available)
+        self.assertEqual(5, len(list((ROOT / "Assets/Audio/Narration").rglob("*.mp3"))))
 
     def test_browser_has_no_secret_or_direct_tts_call(self):
         browser = (TOOL / "static" / "producer.js").read_text(encoding="utf-8")

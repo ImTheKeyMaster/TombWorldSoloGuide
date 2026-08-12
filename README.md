@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v8.6.58
+# Tomb World Solo Guide v8.6.59
+
+## v8.6.59
+
+**Version 8.6.59 - Add Dungeon Master Narration Pilot Audio**
+
+- Adds five Dungeon Master Narration pilot recordings and activates their manifest metadata.
+- Uses the selected Tomb World Narrator voice for the pilot recordings.
 
 ## v8.6.58
 

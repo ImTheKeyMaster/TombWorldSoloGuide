@@ -48,9 +48,9 @@ class OperativeStatusReadabilityTests(unittest.TestCase):
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
     def test_release_versions_are_current(self):
-        self.assertIn("const APP_VERSION = '8.6.58';", APP)
-        self.assertIn("const APP_VERSION = '8.6.58';", SERVICE_WORKER)
-        self.assertIn('V8.6.58', INDEX)
+        self.assertIn("const APP_VERSION = '8.6.59';", APP)
+        self.assertIn("const APP_VERSION = '8.6.59';", SERVICE_WORKER)
+        self.assertIn('V8.6.59', INDEX)
         self.assertNotIn('v=8.6.45', INDEX)
 
 
