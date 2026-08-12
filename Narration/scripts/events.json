@@ -40,7 +40,7 @@
       "id": "event.reanimation-protocols",
       "category": "event",
       "status": "approved",
-      "script": "The fallen begin to move.\n\nEmerald light returns to darkened eyes. Bodies that should lie silent rise again, driven by ancient systems that refuse to accept their destruction.\n\nFor a time, death may not be enough to stop the tombÃ¢â‚¬â„¢s defenders.",
+      "script": "The fallen begin to move.\n\nEmerald light returns to darkened eyes. Bodies that should lie silent rise again, driven by ancient systems that refuse to accept their destruction.\n\nFor a time, death may not be enough to stop the tomb’s defenders.",
       "scriptHash": "4b1d78ac90110d38893bb20ba528cd168d26db7e96ff69cf50ec95542b882dfe",
       "outputFile": "events/reanimation-protocols.mp3",
       "settingsHash": null,
