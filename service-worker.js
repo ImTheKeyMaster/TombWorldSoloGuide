@@ -1,11 +1,12 @@
 'use strict';
 
-const APP_VERSION = '8.6.56';
+const APP_VERSION = '8.6.57';
 const CACHE_PREFIX = 'tomb-world-solo-guide-';
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 const APP_SHELL = './index.html';
 const PRECACHE_ASSETS = [
-  './', APP_SHELL, `./event-effects.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`,
+  './', APP_SHELL, `./event-effects.js?v=${APP_VERSION}`, `./narration.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`,
+  './Assets/Audio/Narration/narration-manifest.json',
   './manifest.webmanifest', './Assets/icon.svg', './Assets/Icons/move-to-shoot.svg',
   './Assets/Images/Backgrounds/manifest.json',
   './Assets/Images/defeat.png', './Assets/Images/victory.png',
@@ -89,7 +90,7 @@ self.addEventListener('fetch', event => {
     event.respondWith(networkFirst(request));
     return;
   }
-  if (/\.(?:png|svg|jpe?g|gif|webp|ico|pdf)$/i.test(url.pathname)) {
+  if (/\.(?:png|svg|jpe?g|gif|webp|ico|pdf|mp3)$/i.test(url.pathname)) {
     event.respondWith(cacheFirst(request));
   }
 });

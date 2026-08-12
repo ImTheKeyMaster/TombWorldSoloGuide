@@ -286,6 +286,7 @@ html.desktop-game-background #gameBackground{opacity:1}
 .reference-return small{color:var(--muted);line-height:1.35}
 .game-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:18px 0}
 .game-menu-grid .btn:first-child{grid-column:1/-1}
+.narration-settings{display:grid;gap:10px;margin:18px 0;padding:14px;border:1px solid var(--line);border-radius:14px}.narration-settings legend{padding:0 6px;font-weight:850}.narration-settings label{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:.85rem;font-weight:800}.narration-settings input[type="range"]{width:100%;min-height:44px;accent-color:var(--green)}.narration-toggle{align-items:center}.narration-toggle input{width:22px;height:22px;accent-color:var(--green)}.narration-toggle span{flex:1}.narration-toggle strong{color:var(--text)}
 .game-menu-session{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));

@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.56
+# Tomb World Solo Guide v8.6.57
+
+## v8.6.57
+
+**Version 8.6.57 - Add Dungeon Master Narration Framework**
+
+- Added optional, device-local narration preferences and compact Game Menu controls with replay support.
+- Added semantic narration hooks for new mission introductions, accepted Tomb World Events, and successfully finalized mission outcomes without changing gameplay or save data.
+- Added the 29-entry unavailable-audio manifest, approved production scripts, and offline-ready runtime structure; no narration audio or voice-service integration is included.
 
 ## v8.6.56
 

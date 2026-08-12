@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "scripts": [
+    {
+      "id": "outcome.01.victory",
+      "category": "outcome",
+      "status": "approved",
+      "script": "The mission is won. You have overcome the shifting labyrinth, and the tomb falls silent behind the survivors.",
+      "scriptHash": "e1332ed13595343ed2d24e9692a41f0beab546ff02473a3386786cf145a56155",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "outcome.01.defeat",
+      "category": "outcome",
+      "status": "approved",
+      "script": "The mission is lost. The shifting labyrinth remains in the tomb’s grasp as its ancient defenses close around the fallen.",
+      "scriptHash": "2575ce14f3a0d90e0c1420c7ed58cdf0bd5e61ca33048794f0e0dde0351b9b84",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "outcome.02.victory",
+      "category": "outcome",
+      "status": "approved",
+      "script": "The mission is won. You have overcome the demolition protocol, and the tomb falls silent behind the survivors.",
+      "scriptHash": "8edcfc40055f4f6399a5a9ec80b9f8df3b446d63787e48cb6931b941ce01e0e5",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "outcome.02.defeat",
+      "category": "outcome",
+      "status": "approved",
+      "script": "The mission is lost. The demolition protocol remains in the tomb’s grasp as its ancient defenses close around the fallen.",
+      "scriptHash": "bf307a2bb9f1cfe9b8346f8aa3b3c58cb2889387677a02bd52c347c7546203fe",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "outcome.03.victory",
+      "category": "outcome",
+      "status": "approved",
+      "script": "The mission is won. You have overcome the recover transponder, and the tomb falls silent behind the survivors.",
+      "scriptHash": "a89c25581ef8d2351b421ace1f113fb075ca56f91cdeb6c1522f09340d2730f4",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "outcome.03.defeat",
+      "category": "outcome",
+      "status": "approved",
+      "script": "The mission is lost. The recover transponder remains in the tomb’s grasp as its ancient defenses close around the fallen.",
+      "scriptHash": "a26fddab5edb005ff832295cbfa0fac882a753e915c6aaec5740f535407c1fc4",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "outcome.04.victory",
+      "category": "outcome",
+      "status": "approved",
+      "script": "The mission is won. You have overcome the destroy sarcophagus, and the tomb falls silent behind the survivors.",
+      "scriptHash": "1bd522aa107c21c3f5044b376f15e3d8768f8d4e5c84b0143e79c5bc6450b550",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "outcome.04.defeat",
+      "category": "outcome",
+      "status": "approved",
+      "script": "The mission is lost. The destroy sarcophagus remains in the tomb’s grasp as its ancient defenses close around the fallen.",
+      "scriptHash": "b3336b5beb17f6b2f9e5217626125bc8de2f8b61c572b74542a7a9ebbe951e1b",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "outcome.05.victory",
+      "category": "outcome",
+      "status": "approved",
+      "script": "The mission is won. You have overcome the scout sub crypt, and the tomb falls silent behind the survivors.",
+      "scriptHash": "563dc4a032e93e3de71664f9bc0a144d4617338ffa18370c52ccbe1b4ef5964c",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "outcome.05.defeat",
+      "category": "outcome",
+      "status": "approved",
+      "script": "The mission is lost. The scout sub crypt remains in the tomb’s grasp as its ancient defenses close around the fallen.",
+      "scriptHash": "9d138f7a757762b14bebf446b4bf2625b2b6fa030ffc52817b4b9361592a779d",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "outcome.06.victory",
+      "category": "outcome",
+      "status": "approved",
+      "script": "The mission is won. You have overcome the regroup, and the tomb falls silent behind the survivors.",
+      "scriptHash": "313bcc74aa5ed2fa4bb561c7eae7ad9ab7ad48cb1c6985f2b1213b9e816bb79f",
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "outcome.06.defeat",
+      "category": "outcome",
+      "status": "approved",
+      "script": "The mission is lost. The regroup remains in the tomb’s grasp as its ancient defenses close around the fallen.",
+      "scriptHash": "9fe10f8e9a1203c42af5daab8c13753a3b6e4818cd355d0611d7a7162626e8f9",
+      "generationHash": null,
+      "audioHash": null
+    }
+  ]
+}
