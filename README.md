@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.62
+# Tomb World Solo Guide v8.6.63
+
+## v8.6.63
+
+**Version 8.6.63 - Add Production Tomb Event Narration**
+
+- Adds production narration for the remaining nine Tomb Events.
+- Completes narrated coverage for all Tomb Events.
+- Preserves manifest-driven offline narration caching.
 
 ## v8.6.62
 
