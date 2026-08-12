@@ -29,10 +29,10 @@ class MobileOperativePickerCloseTests(unittest.TestCase):
         ).group()
 
     def test_01_application_displays_version_8624(self):
-        self.assertIn("const APP_VERSION = '8.6.54';", APP)
-        self.assertIn("const APP_VERSION = '8.6.54';", WORKER)
-        self.assertIn("V8.6.54", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.54"))
+        self.assertIn("const APP_VERSION = '8.6.55';", APP)
+        self.assertIn("const APP_VERSION = '8.6.55';", WORKER)
+        self.assertIn("V8.6.55", INDEX)
+        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.55"))
 
     def test_02_player_selection_has_one_canonical_change_handler(self):
         self.assertEqual(self.activation.count("operativeSelect?.addEventListener('change'"), 1)
