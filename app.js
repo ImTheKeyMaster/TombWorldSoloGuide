@@ -3211,6 +3211,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function currentEvent(){return state.strategyData?.events?.[state.strategyData.eventIndex||0]||null;}
 
+  function narrateAcceptedEvent(event){
+    void TombWorldNarration.playEvent(event.definitionId,event.instanceId);
+  }
+
   function beginCurrentEvent(){
     const d=state.strategyData,event=currentEvent();
     d.event=event;
@@ -3227,7 +3231,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         return;
       }
       d.eventPending=true;
-      void TombWorldNarration.playEvent(event.definitionId,event.instanceId);
+      narrateAcceptedEvent(event);
       save();
       return;
     }
@@ -3284,7 +3288,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(type==='chittering-drone'){
       const wounded=activeNpos().filter(npo=>npo.type==='Canoptek Scarab Swarm'&&npo.wounds<npo.maxWounds);
       if(wounded.length===1){wounded[0].wounds=wounded[0].maxWounds;completeCurrentEvent(`${npoName(wounded[0])} regained all lost wounds.`);return;}
-      if(wounded.length>1){event.eligibleNpoIds=wounded.map(npo=>npo.id);d.eventPending=true;return;}
+      if(wounded.length>1){event.eligibleNpoIds=wounded.map(npo=>npo.id);d.eventPending=true;narrateAcceptedEvent(event);return;}
       if(activeNpos().length>=MAX_NPOS||!npoInventory()['Canoptek Scarab Swarm'].remaining){redrawCurrentEvent('No Scarab Swarm could be set up.');return;}
     }
     if(type==='maze-reforms'){
@@ -3293,7 +3297,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
     if(type==='awakened-warrior'&&(activeNpos().length>=MAX_NPOS||!npoInventory()['Necron Warrior'].remaining)){redrawCurrentEvent('No Necron Warrior could be set up.');return;}
     d.eventPending=true;
-    void TombWorldNarration.playEvent(event.definitionId,event.instanceId);
+    narrateAcceptedEvent(event);
   }
 
   function completeCurrentEvent(result){

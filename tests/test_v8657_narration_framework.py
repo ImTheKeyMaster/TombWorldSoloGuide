@@ -31,8 +31,9 @@ class NarrationIntegrationTests(unittest.TestCase):
         self.assertNotIn('playMissionIntro', source('function render()', 'function renderHome'))
 
     def test_accepted_events_use_definition_and_instance_identity(self):
-        begin = source('function beginCurrentEvent', 'function redrawCurrentEvent')
+        begin = source('function narrateAcceptedEvent', 'function redrawCurrentEvent')
         self.assertIn('TombWorldNarration.playEvent(event.definitionId,event.instanceId)', begin)
+        self.assertRegex(begin, r"if\(wounded\.length>1\).*narrateAcceptedEvent\(event\).*return;")
         redraw = source('function redrawCurrentEvent', 'function resolveStrategyEvent')
         self.assertNotIn('TombWorldNarration', redraw)
         self.assertIn("{instanceId:'awakened-warrior-1',definitionId:'awakened-warrior'}", APP)
@@ -109,6 +110,16 @@ if(calls.filter(x=>x==='pause').length<2)throw Error('new playback did not stop 
 
     def test_missing_manifest_entry_fails_silently(self):
         self.run_node("""if(await n.playEvent('not-generated','copy-2'))throw Error('missing entry played');""")
+
+    def test_blocked_preference_storage_fails_silently(self):
+        script = """
+const fs=require('fs'),vm=require('vm');
+const context={Audio:function(){throw Error('audio blocked')},fetch:async()=>{throw Error('offline')},localStorage:{getItem(){throw Error('blocked')},setItem(){throw Error('blocked')}}};
+context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
+(async()=>{const n=context.TombWorldNarration;n.setEnabled(false);n.setVolume(.5);await n.init();await n.playMissionIntro('shifting-labyrinth');n.stop();})().catch(error=>{console.error(error);process.exit(1)});
+"""
+        result = subprocess.run(['node', '-e', script], cwd=ROOT, text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
 
 
 if __name__ == '__main__':

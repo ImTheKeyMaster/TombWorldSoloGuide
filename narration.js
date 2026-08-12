@@ -20,17 +20,21 @@
   let lastEntry = null;
   const automaticPlayback = new Set();
 
-  function storage() {
-    try { return global.localStorage; } catch { return null; }
+  function readPreference(key) {
+    try { return global.localStorage?.getItem(key) ?? null; } catch { return null; }
+  }
+
+  function writePreference(key, value) {
+    try { global.localStorage?.setItem(key, value); } catch { /* Preferences are optional. */ }
   }
 
   function isEnabled() {
-    const saved = storage()?.getItem(ENABLED_KEY);
+    const saved = readPreference(ENABLED_KEY);
     return saved === null ? true : saved !== 'false';
   }
 
   function getVolume() {
-    const saved = Number(storage()?.getItem(VOLUME_KEY));
+    const saved = Number(readPreference(VOLUME_KEY));
     return Number.isFinite(saved) && saved >= 0 && saved <= 1 ? saved : DEFAULT_VOLUME;
   }
 
@@ -42,18 +46,22 @@
 
   function ensureAudio() {
     if (!audio && typeof global.Audio === 'function') {
-      audio = new global.Audio();
-      audio.preload = 'none';
-      audio.volume = getVolume();
+      try {
+        audio = new global.Audio();
+        audio.preload = 'none';
+        audio.volume = getVolume();
+      } catch { audio = null; }
     }
     return audio;
   }
 
   function stop() {
     if (!audio) return;
-    audio.pause();
-    audio.removeAttribute('src');
-    audio.load();
+    try {
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+    } catch { /* Audio cleanup must never affect gameplay. */ }
   }
 
   function init() {
@@ -111,7 +119,7 @@
   }
 
   function setEnabled(enabled) {
-    storage()?.setItem(ENABLED_KEY, String(Boolean(enabled)));
+    writePreference(ENABLED_KEY, String(Boolean(enabled)));
     if (!enabled) stop();
     notify();
   }
@@ -119,7 +127,7 @@
   function setVolume(volume) {
     const normalized = Math.min(1, Math.max(0, Number(volume)));
     if (!Number.isFinite(normalized)) return;
-    storage()?.setItem(VOLUME_KEY, String(normalized));
+    writePreference(VOLUME_KEY, String(normalized));
     if (audio) audio.volume = normalized;
     notify();
   }
