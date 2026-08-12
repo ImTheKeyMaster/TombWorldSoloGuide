@@ -30,8 +30,8 @@ jobs:
 
           p = Path('service-worker.js')
           s = p.read_text(encoding='utf-8')
-          assert "const CACHE = 'tomb-world-solo-guide-v8.6.63';" in s
-          p.write_text(s.replace("const CACHE = 'tomb-world-solo-guide-v8.6.63';", "const CACHE = 'tomb-world-solo-guide-v8.6.64';", 1), encoding='utf-8')
+          assert "const APP_VERSION = '8.6.63';" in s
+          p.write_text(s.replace("const APP_VERSION = '8.6.63';", "const APP_VERSION = '8.6.64';", 1), encoding='utf-8')
 
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
@@ -71,7 +71,7 @@ jobs:
           git diff --check
           grep -q "const APP_VERSION = '8.6.64';" app.js
           grep -q "const SAVE_VERSION = 3;" app.js
-          grep -q "tomb-world-solo-guide-v8.6.64" service-worker.js
+          grep -q "const APP_VERSION = '8.6.64';" service-worker.js
           ! grep -q '8.6.63' index.html
           grep -q 'styles.css?v=8.6.64' index.html
           grep -q 'mission-engine.js?v=8.6.64' index.html
