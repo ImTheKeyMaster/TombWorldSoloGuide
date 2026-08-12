@@ -11,8 +11,8 @@ PERSISTENCE = (ROOT / 'persistence.js').read_text()
 
 class OperativeStatusPanelTests(unittest.TestCase):
     def test_version_and_save_schema(self):
-        self.assertIn("const APP_VERSION = '8.6.59';", APP)
-        self.assertIn('V8.6.59', INDEX)
+        self.assertIn("const APP_VERSION = '8.6.60';", APP)
+        self.assertIn('V8.6.60', INDEX)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
     def test_central_accessible_read_only_panel(self):

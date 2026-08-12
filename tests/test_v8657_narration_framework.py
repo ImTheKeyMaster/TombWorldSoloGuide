@@ -18,15 +18,16 @@ def source(start, end):
 
 class NarrationIntegrationTests(unittest.TestCase):
     def test_release_version_changes_without_save_schema_change(self):
-        self.assertIn("const APP_VERSION = '8.6.59';", APP)
-        self.assertIn("const APP_VERSION = '8.6.59';", WORKER)
+        self.assertIn("const APP_VERSION = '8.6.60';", APP)
+        self.assertIn("const APP_VERSION = '8.6.60';", WORKER)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
-        self.assertIn('narration.js?v=8.6.59', INDEX)
+        self.assertIn('narration.js?v=8.6.60', INDEX)
 
-    def test_intro_only_runs_from_new_game_transition(self):
+    def test_intro_only_runs_from_mission_to_killzone_transition(self):
         begin = source("$('#beginGame')", "function runStartingNpoGeneration")
-        self.assertIn('TombWorldNarration.playMissionIntro(state.missionId)', begin)
-        self.assertLess(begin.index('playMissionIntro'), begin.index('startTurningPoint()'))
+        transition = source("$('#setupNext')", "$$('[data-player-team]')")
+        self.assertNotIn('playMissionIntro', begin)
+        self.assertIn("if(stepId==='mission')void TombWorldNarration.playMissionIntro(state.missionId,true);", transition)
         self.assertEqual(APP.count('playMissionIntro('), 1)
         self.assertNotIn('playMissionIntro', source('function render()', 'function renderHome'))
 
