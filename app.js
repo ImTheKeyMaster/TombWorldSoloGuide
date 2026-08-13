@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.68';
+  const APP_VERSION = '8.6.69';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
     init:()=>Promise.resolve(),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},pauseNarration:()=>false,resumeNarration:()=>Promise.resolve(false),setEnabled:()=>{},isEnabled:()=>true,canReplay:()=>false
   });
@@ -48,7 +48,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const enabled=TombWorldNarration.isEnabled();
     narrationSpeakerBtn.classList.toggle('is-muted',!enabled);
     narrationSpeakerBtn.querySelector('.narration-icon-enabled').hidden=!enabled;
-    narrationSpeakerBtn.querySelector('.narration-icon-muted').hidden=enabled;
+    narrationSpeakerBtn.querySelector('.narration-icon-disabled').hidden=enabled;
     narrationSpeakerBtn.setAttribute('aria-label',`Narration ${enabled?'on':'off'}`);
     narrationSpeakerBtn.setAttribute('aria-pressed',String(enabled));
     narrationSpeakerBtn.title=`Narration ${enabled?'on':'off'}`;
@@ -2277,20 +2277,22 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return `<h3>Mission Briefing</h3><div class="mission-briefing"><div class="mission-briefing-section mission-heading"><span>Mission</span><strong>${escapeHtml(m.number)} · ${escapeHtml(m.name)}</strong></div><div class="mission-briefing-section"><h4>Objective</h4><p>${escapeHtml(m.objective)}</p></div><div class="mission-briefing-section"><h4>Special Rules</h4>${rules||`<p>${escapeHtml(missionSpecial())}</p>`}</div><div class="mission-briefing-section optional-rules"><h4>Optional Rules</h4><label class="check-row restless-tomb-option"><input id="restlessTombEnabled" type="checkbox" ${state.restlessTombEnabled?'checked':''}><span><strong>Restless Tomb</strong><span class="rule-classification">House Rule</span><small>Beginning with Turning Point 2, resolve at least one Tomb World event during each Strategy Phase, regardless of Threat Grade. Turning Point 1 is unaffected, and standard event rules may require additional events at higher Threat. This optional house rule increases activity and difficulty.</small></span></label><label class="check-row deadly-encounters-option"><input id="deadlyEncountersEnabled" type="checkbox" ${state.deadlyEncountersEnabled?'checked':''}><span><strong>Deadly Encounters: Tomb Worlds</strong><span class="rule-classification official">Official Expansion - White Dwarf 521</span><small>Reveal persistent Room and Objective Features using the official D33 tables when Player operatives explore the tomb. PvE Player actions reveal features; NPOs never reveal them, but revealed features can affect NPOs. This independent expansion increases battlefield complexity and danger.</small></span></label></div></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
   }
 
+  function advanceSetupStep(stepId){
+    if(setupNavigationInProgress)return;
+    if(currentSetupStepId()!==stepId)return;
+    if(stepId==='team'&&!canBuildPlayerRoster()){showToast('Wait for the selected Kill Team to finish loading.');return;}
+    setupNavigationInProgress=true;
+    if(stepId==='playerRoster')assignPlayerDisplayNumbers();
+    const steps=activeSetupSteps();state.setupStep=Math.min(steps.length-1,state.setupStep+1);save();render();
+    if(stepId==='mission')void TombWorldNarration.playMissionIntro(state.missionId,true);
+    setupNavigationInProgress=false;
+  }
+
   function bindSetup(stepId){
-    $$('.mission-choice').forEach(b=>b.onclick=()=>{TombWorldNarration.stop();const missionId=b.dataset.mission;state.missionId=missionId;state.missionState=freshMissionState(mission());state.missionRuntime=null;state.tracker=0;state.setupChecks={};state.roster=[];state.startingNpoGeneration=null;save();render();setTimeout(()=>loadObjectiveMission(missionId).then(()=>{if(state.missionId===missionId)save();}),0);});
+    $$('.mission-choice').forEach(b=>b.onclick=()=>{const missionId=b.dataset.mission;state.missionId=missionId;state.missionState=freshMissionState(mission());state.missionRuntime=null;state.tracker=0;state.setupChecks={};state.roster=[];state.startingNpoGeneration=null;save();render();setTimeout(()=>loadObjectiveMission(missionId).then(()=>{if(state.missionId===missionId)save();}),0);});
     $('#setupHome')?.addEventListener('click',()=>{state.screen='home';save();render();});
     $('#setupBack')?.addEventListener('click',()=>{if(stepId==='killzone')TombWorldNarration.stop();state.setupStep=Math.max(0,state.setupStep-1);save();render();});
-    $('#setupNext')?.addEventListener('click',()=>{
-      if(setupNavigationInProgress)return;
-      if(currentSetupStepId()!==stepId)return;
-      if(stepId==='team'&&!canBuildPlayerRoster()){showToast('Wait for the selected Kill Team to finish loading.');return;}
-      setupNavigationInProgress=true;
-      if(stepId==='playerRoster')assignPlayerDisplayNumbers();
-      const steps=activeSetupSteps();state.setupStep=Math.min(steps.length-1,state.setupStep+1);save();render();
-      if(stepId==='mission')void TombWorldNarration.playMissionIntro(state.missionId,true);
-      setupNavigationInProgress=false;
-    });
+    $('#setupNext')?.addEventListener('click',()=>advanceSetupStep(stepId));
     $$('[data-player-team]').forEach(button=>button.onclick=()=>selectPlayerTeam(button.dataset.playerTeam));
     $$('[data-check]').forEach(c=>c.onchange=()=>{state.setupChecks[c.dataset.check]=c.checked;save();render();});
     $('#checkAllSetup')?.addEventListener('click',()=>{missionSetupChecks('killzone').forEach(check=>{state.setupChecks[check.id]=true;});save();render();});

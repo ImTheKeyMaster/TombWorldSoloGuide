@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.68
+# Tomb World Solo Guide v8.6.69
+
+## v8.6.69
+
+**Version 8.6.69 - Restore Mission Narration and Refine Speaker State**
+
+- Restores Mission Intro playback when Board Setup appears after advancing from Mission Selection.
+- Guarantees narration defaults to On when no preference has ever been stored, while preserving explicit On/Off choices.
+- Replaces the disabled speaker graphic with an outlined speaker and a clear X.
 
 ## v8.6.68
 

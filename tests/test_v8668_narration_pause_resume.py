@@ -11,11 +11,11 @@ NARRATION = (ROOT / "narration.js").read_text()
 
 
 class NarrationPauseResumeTests(unittest.TestCase):
-    def test_header_uses_distinct_wave_and_single_slash_icons(self):
+    def test_header_uses_wave_and_outline_speaker_x_icons(self):
         self.assertIn('id="narrationSpeakerBtn"', INDEX)
         self.assertRegex(INDEX, r'narration-icon-enabled[^>]*>.*M16 8\.5.*M19 6')
-        self.assertRegex(INDEX, r'narration-icon-muted[^>]*>.*M3 3l18 18')
-        self.assertNotIn('m16 9 5 6m0-6-5 6', INDEX)
+        self.assertRegex(INDEX, r'narration-icon-disabled[^>]*>.*fill="none".*stroke-width="1\.8".*m16 9 5 6m0-6-5 6')
+        self.assertNotIn('M3 3l18 18', INDEX)
         self.assertIn("stroke-width:2.4", CSS)
         self.assertIn("aria-pressed", INDEX)
 

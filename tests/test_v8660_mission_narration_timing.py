@@ -19,7 +19,7 @@ def source(start, end):
 class MissionNarrationTimingTests(unittest.TestCase):
     def test_intro_moves_from_begin_game_to_explicit_mission_next(self):
         begin_game = source("$('#beginGame')", 'function runStartingNpoGeneration')
-        setup_next = source("$('#setupNext')", "$$('[data-player-team]')")
+        setup_next = source('function advanceSetupStep', 'function bindSetup')
         self.assertNotIn('playMissionIntro', begin_game)
         self.assertIn("if(stepId==='mission')void TombWorldNarration.playMissionIntro(state.missionId,true);", setup_next)
         self.assertEqual(1, APP.count('playMissionIntro('))
@@ -35,7 +35,50 @@ class MissionNarrationTimingTests(unittest.TestCase):
         setup_back = source("$('#setupBack')", "$('#setupNext')")
         mission_choice = source("$$('.mission-choice')", "$('#setupHome')")
         self.assertIn("if(stepId==='killzone')TombWorldNarration.stop()", setup_back)
-        self.assertIn('TombWorldNarration.stop()', mission_choice)
+        self.assertNotIn('TombWorldNarration.stop()', mission_choice)
+
+    def test_missing_preference_defaults_on_and_board_transition_plays_once(self):
+        advance_setup = source('function advanceSetupStep', 'function bindSetup')
+        script = f"""
+const fs=require('fs'),vm=require('vm');
+const calls=[],store=new Map();
+class Audio {{
+  constructor(){{this.src='';this.paused=true;this.ended=false;Audio.instance=this;}}
+  pause(){{this.paused=true;calls.push('pause')}}
+  removeAttribute(){{this.src=''}} load(){{}}
+  play(){{this.paused=false;calls.push('play:'+this.src);return Promise.resolve()}}
+}}
+const context={{Audio,URL,location:{{href:'https://example.test/app/'}},
+  fetch:async()=>({{ok:true,json:async()=>({{entries:{{'mission.01.intro':{{available:true,file:'missions/01.mp3'}}}}}})}}),
+  localStorage:{{getItem:key=>store.has(key)?store.get(key):null,setItem:(key,value)=>store.set(key,value)}},
+  dispatchEvent:()=>{{}},CustomEvent:function(){{}},calls,store}};
+context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
+vm.runInContext(`
+let setupNavigationInProgress=false;
+const state={{setupStep:0,missionId:'shifting-labyrinth'}};
+const currentSetupStepId=()=>state.setupStep===0?'mission':'killzone';
+const activeSetupSteps=()=>['mission','killzone'];
+const canBuildPlayerRoster=()=>true,showToast=()=>{{}},assignPlayerDisplayNumbers=()=>{{}},save=()=>{{}};
+const render=()=>calls.push('render:'+currentSetupStepId());
+{advance_setup}
+globalThis.runTransition=()=>advanceSetupStep('mission');`,context);
+(async()=>{{
+  const n=context.TombWorldNarration;
+  if(!n.isEnabled())throw Error('missing preference was not enabled');
+  if(store.has('tombWorldSoloGuide.narrationEnabled'))throw Error('startup wrote a preference');
+  store.set('tombWorldSoloGuide.narrationEnabled','false');if(n.isEnabled())throw Error('false preference was enabled');
+  store.set('tombWorldSoloGuide.narrationEnabled','true');if(!n.isEnabled())throw Error('true preference was disabled');
+  store.delete('tombWorldSoloGuide.narrationEnabled');
+  await n.init();context.runTransition();await new Promise(resolve=>setTimeout(resolve,0));
+  const plays=calls.filter(call=>call.includes('missions/01.mp3'));
+  if(plays.length!==1)throw Error('Board Setup intro play count was '+plays.length);
+  if(calls.indexOf('render:killzone')>calls.indexOf(plays[0]))throw Error('intro started before Board Setup rendered');
+  context.runTransition();await new Promise(resolve=>setTimeout(resolve,0));
+  if(calls.filter(call=>call.includes('missions/01.mp3')).length!==1)throw Error('ordinary Board Setup transition replayed intro');
+}})().catch(error=>{{console.error(error);process.exit(1)}});
+"""
+        result = subprocess.run(['node', '-e', script], cwd=ROOT, text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
 
     def test_restart_allows_same_intro_after_back(self):
         self.assertIn('function playMissionIntro(missionId, restart = false)', NARRATION)
