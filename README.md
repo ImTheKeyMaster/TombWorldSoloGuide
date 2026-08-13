@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.72
+# Tomb World Solo Guide v8.6.73
+
+## v8.6.73
+
+**Version 8.6.73 - Deadly Encounters Narration Runtime Support**
+
+- Automatically narrates newly committed room and objective feature discoveries.
+- Plays both real features resolved by an Unusual result sequentially in determination order, without replaying duplicate discoveries.
+- Advances the app cache so all available Deadly Encounters narration is precached through the existing manifest-driven service worker flow.
+- Preserves narration controls, event/mission/outcome behavior, Safari audio unlock priming, and save schema version 3.
 
 ## v8.6.72
 
