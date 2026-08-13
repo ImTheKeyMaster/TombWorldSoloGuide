@@ -1,4 +1,5 @@
 import re
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -20,19 +21,41 @@ class HeaderNarrationControlTests(unittest.TestCase):
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "narration.js", "app.js"):
             self.assertIn(f'{asset}?v={CURRENT_APP_VERSION}', INDEX)
 
-    def test_header_has_accessible_enabled_and_muted_speaker_states(self):
+    def test_header_has_accessible_enabled_and_disabled_speaker_states(self):
         self.assertIn('id="narrationSpeakerBtn"', INDEX)
         self.assertIn('class="narration-icon-enabled"', INDEX)
-        self.assertIn('class="narration-icon-muted"', INDEX)
+        self.assertIn('class="narration-icon-disabled"', INDEX)
         self.assertIn("narrationSpeakerBtn.querySelector('.narration-icon-enabled').hidden=!enabled", APP)
-        self.assertIn("narrationSpeakerBtn.querySelector('.narration-icon-muted').hidden=enabled", APP)
+        self.assertIn("narrationSpeakerBtn.querySelector('.narration-icon-disabled').hidden=enabled", APP)
         self.assertIn("narrationSpeakerBtn.setAttribute('aria-label',`Narration ${enabled?'on':'off'}`)", APP)
+        self.assertIn("narrationSpeakerBtn.setAttribute('aria-pressed',String(enabled))", APP)
         self.assertIn("narrationSpeakerBtn.title=`Narration ${enabled?'on':'off'}`", APP)
 
     def test_header_button_directly_toggles_existing_enabled_state(self):
         self.assertIn("narrationSpeakerBtn.addEventListener('click',()=>TombWorldNarration.setEnabled(!TombWorldNarration.isEnabled()))", APP)
         self.assertIn("window.addEventListener('tombworldnarrationchange'", APP)
         self.assertIn("syncNarrationControls();", APP)
+
+    def test_control_visibility_and_accessibility_follow_enabled_state(self):
+        sync_source = APP[APP.index('function syncNarrationControls()'):APP.index("narrationSpeakerBtn.addEventListener", APP.index('function syncNarrationControls()'))]
+        script = f"""
+let enabled=true;
+const icons={{'.narration-icon-enabled':{{hidden:null}},'.narration-icon-disabled':{{hidden:null}}}};
+const attributes={{}};
+const narrationSpeakerBtn={{classList:{{toggle:(name,value)=>attributes[name]=value}},querySelector:selector=>icons[selector],setAttribute:(name,value)=>attributes[name]=value,title:''}};
+const TombWorldNarration={{isEnabled:()=>enabled}};
+{sync_source}
+function verify(expectedEnabled){{
+  syncNarrationControls();
+  if(icons['.narration-icon-enabled'].hidden!==!expectedEnabled)throw Error('enabled icon visibility mismatch');
+  if(icons['.narration-icon-disabled'].hidden!==expectedEnabled)throw Error('disabled icon visibility mismatch');
+  const word=expectedEnabled?'on':'off';
+  if(attributes['aria-label']!==`Narration ${{word}}`||attributes['aria-pressed']!==String(expectedEnabled)||narrationSpeakerBtn.title!==`Narration ${{word}}`)throw Error('accessible state mismatch');
+}}
+verify(true);enabled=false;verify(false);
+"""
+        result = subprocess.run(['node', '-e', script], cwd=ROOT, text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
 
     def test_popover_and_volume_controls_are_removed(self):
         for source in (INDEX, APP, CSS):

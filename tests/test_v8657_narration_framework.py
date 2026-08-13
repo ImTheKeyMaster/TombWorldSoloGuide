@@ -26,7 +26,7 @@ class NarrationIntegrationTests(unittest.TestCase):
 
     def test_intro_only_runs_from_mission_to_killzone_transition(self):
         begin = source("$('#beginGame')", "function runStartingNpoGeneration")
-        transition = source("$('#setupNext')", "$$('[data-player-team]')")
+        transition = source('function advanceSetupStep', 'function bindSetup')
         self.assertNotIn('playMissionIntro', begin)
         self.assertIn("if(stepId==='mission')void TombWorldNarration.playMissionIntro(state.missionId,true);", transition)
         self.assertEqual(APP.count('playMissionIntro('), 1)
