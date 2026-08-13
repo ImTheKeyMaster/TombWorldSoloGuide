@@ -13,7 +13,10 @@ SEMANTIC_VERSION = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
 
 def read_app_version(app_path=ROOT / "app.js"):
     """Return app.js's single, well-formed APP_VERSION declaration."""
-    declarations = [match.group("version") for match in APP_VERSION_DECLARATION.finditer(app_path.read_text())]
+    declarations = [
+        match.group("version")
+        for match in APP_VERSION_DECLARATION.finditer(app_path.read_text(encoding="utf-8"))
+    ]
     if len(declarations) != 1:
         raise RuntimeError(
             f"Expected exactly one APP_VERSION declaration in {app_path}; found {len(declarations)}."
