@@ -43,6 +43,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const app = $('#app');
   const gameMenuBtn = $('#gameMenuBtn');
+  const narrationHeaderControl=$('.narration-header-control');
   const narrationSpeakerBtn=$('#narrationSpeakerBtn');
   const narrationPopover=$('#narrationPopover');
   const headerNarrationEnabled=$('#headerNarrationEnabled');
@@ -65,13 +66,17 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       const menuState=typeof menuEnabled.closest==='function'?menuEnabled.closest('label')?.querySelector('strong'):null;
       if(menuState)menuState.textContent=enabled?'On':'Off';
     }
-    if(menuVolume){menuVolume.value=String(volume/100);$('#narrationVolumeValue').textContent=`${volume}%`;}
+    if(menuVolume){
+      menuVolume.value=String(volume/100);
+      const menuVolumeValue=$('#narrationVolumeValue');
+      if(menuVolumeValue)menuVolumeValue.textContent=`${volume}%`;
+    }
   }
   function closeNarrationPopover(){narrationPopover.hidden=true;narrationSpeakerBtn.setAttribute('aria-expanded','false');}
   narrationSpeakerBtn.addEventListener('click',()=>{const opening=narrationPopover.hidden;narrationPopover.hidden=!opening;narrationSpeakerBtn.setAttribute('aria-expanded',String(opening));if(opening)headerNarrationEnabled.focus({preventScroll:true});});
   headerNarrationEnabled.addEventListener('change',event=>TombWorldNarration.setEnabled(event.target.checked));
   headerNarrationVolume.addEventListener('input',event=>TombWorldNarration.setVolume(Number(event.target.value)/100));
-  document.addEventListener('click',event=>{if(!narrationPopover.hidden&&!event.target.closest('.narration-header-control'))closeNarrationPopover();});
+  document.addEventListener('click',event=>{if(!narrationPopover.hidden&&!narrationHeaderControl.contains(event.target))closeNarrationPopover();});
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!narrationPopover.hidden){closeNarrationPopover();narrationSpeakerBtn.focus();}});
   window.addEventListener('tombworldnarrationchange',()=>{
     syncNarrationControls();

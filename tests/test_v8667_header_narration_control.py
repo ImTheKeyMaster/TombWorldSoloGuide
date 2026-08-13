@@ -31,7 +31,7 @@ class HeaderNarrationControlTests(unittest.TestCase):
     def test_popover_opens_and_closes_by_button_outside_click_and_escape(self):
         self.assertRegex(INDEX, r'id="narrationPopover"[^>]* hidden')
         self.assertIn("narrationPopover.hidden=!opening", APP)
-        self.assertIn("!event.target.closest('.narration-header-control')", APP)
+        self.assertIn("!narrationHeaderControl.contains(event.target)", APP)
         self.assertIn("event.key==='Escape'", APP)
         self.assertIn("closeNarrationPopover()", APP)
 
@@ -46,6 +46,7 @@ class HeaderNarrationControlTests(unittest.TestCase):
         self.assertIn("window.addEventListener('tombworldnarrationchange'", APP)
         self.assertIn("syncNarrationControls();", APP)
         self.assertIn("headerNarrationEnabled.setAttribute('aria-label',`Narration ${enabled?'on':'off'}`)", APP)
+        self.assertIn('id="headerNarrationState" aria-live="polite"', INDEX)
 
     def test_existing_unversioned_preferences_remain_the_only_source_of_truth(self):
         self.assertEqual(NARRATION.count("tombWorldSoloGuide.narrationEnabled"), 1)
