@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.73
+# Tomb World Solo Guide v8.6.74
+
+## v8.6.74
+
+**Version 8.6.74 - Tomb Event Narration Timing**
+
+- Defers accepted Tomb World Event narration until the Strategy Phase Events view containing the event is rendered and visible.
+- Preserves gameplay order for consecutive accepted events while preventing rejected, redrawn, or previously requested event instances from being narrated.
+- Preserves narration queuing and non-overlap, speaker pause/resume, Replay Last, New Game cancellation, Deadly Encounter narration, Safari audio unlock, mission intros, outcomes, and save schema version 3.
 
 ## v8.6.73
 

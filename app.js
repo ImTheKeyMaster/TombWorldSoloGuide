@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.73';
+  const APP_VERSION = '8.6.74';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
     init:()=>Promise.resolve(),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},pauseNarration:()=>false,resumeNarration:()=>Promise.resolve(false),setEnabled:()=>Promise.resolve(false),isEnabled:()=>true,canReplay:()=>false
   });
@@ -2652,6 +2652,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const milestone=gradeDescription?`<section class="grade-milestone" role="dialog" aria-labelledby="grade-milestone-heading" aria-describedby="grade-milestone-description"><div><small>THREAT ESCALATION</small><h2 id="grade-milestone-heading">Grade ${gradeDescription.grade}: ${escapeHtml(gradeDescription.name)}</h2><span>${escapeHtml(gradeDescription.threatRange)}</span><section id="grade-milestone-description" class="grade-gameplay-changes" aria-labelledby="grade-gameplay-heading"><h3 id="grade-gameplay-heading">GAMEPLAY CHANGES</h3><ul>${gradeDescription.effects.map(effect=>`<li>${escapeHtml(effect.text)}</li>`).join('')}</ul></section></div><button class="btn ghost compact" id="dismissGradeMilestone">Dismiss</button></section>`:'';
     app.innerHTML=hud()+milestone+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${state.phase!=='strategy'?activeEventEffectsHtml():''}${nextStepCard()}${state.phase==='firefight'?activationTracker():''}`;
     bindPlay();
+    requestAnimationFrame(narrateVisibleStrategyEvents);
     if(gradeDescription)requestAnimationFrame(()=>$('#dismissGradeMilestone')?.focus({preventScroll:true}));
   }
 
@@ -3251,6 +3252,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     void TombWorldNarration.playEvent(event.definitionId,event.instanceId);
   }
 
+  function narrateVisibleStrategyEvents(){
+    const d=state.strategyData;
+    if(state.phase!=='strategy'||state.strategyStage!=='summary'||strategyViewStep(d)!=='events'||!$('.strategy-event'))return;
+    const events=Array.isArray(d?.events)?d.events:[];
+    const acceptedCount=Math.min(events.length,(d.eventIndex||0)+(d.eventPending?1:0));
+    events.slice(0,acceptedCount).filter(event=>event.status!=='redrawn').forEach(narrateAcceptedEvent);
+  }
+
   function beginCurrentEvent(){
     const d=state.strategyData,event=currentEvent();
     d.event=event;
@@ -3267,7 +3276,6 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
         return;
       }
       d.eventPending=true;
-      narrateAcceptedEvent(event);
       save();
       return;
     }
@@ -3324,7 +3332,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(type==='chittering-drone'){
       const wounded=activeNpos().filter(npo=>npo.type==='Canoptek Scarab Swarm'&&npo.wounds<npo.maxWounds);
       if(wounded.length===1){wounded[0].wounds=wounded[0].maxWounds;completeCurrentEvent(`${npoName(wounded[0])} regained all lost wounds.`);return;}
-      if(wounded.length>1){event.eligibleNpoIds=wounded.map(npo=>npo.id);d.eventPending=true;narrateAcceptedEvent(event);return;}
+      if(wounded.length>1){event.eligibleNpoIds=wounded.map(npo=>npo.id);d.eventPending=true;return;}
       if(activeNpos().length>=MAX_NPOS||!npoInventory()['Canoptek Scarab Swarm'].remaining){redrawCurrentEvent('No Scarab Swarm could be set up.');return;}
     }
     if(type==='maze-reforms'){
@@ -3333,13 +3341,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     }
     if(type==='awakened-warrior'&&(activeNpos().length>=MAX_NPOS||!npoInventory()['Necron Warrior'].remaining)){redrawCurrentEvent('No Necron Warrior could be set up.');return;}
     d.eventPending=true;
-    narrateAcceptedEvent(event);
   }
 
   function completeCurrentEvent(result){
     const d=state.strategyData,event=currentEvent();
     if(!event)return;
-    void TombWorldNarration.playEvent(event.definitionId,event.instanceId);
     event.status='resolved';event.result=result;
     d.eventAction={eventId:event.instanceId,result};
     d.eventIndex=(d.eventIndex||0)+1;
