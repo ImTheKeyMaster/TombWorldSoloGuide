@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.71
+# Tomb World Solo Guide v8.6.72
+
+## v8.6.72
+
+**Version 8.6.72 - Restore Narration Playback After New Game**
+
+- Fixes a regression where starting a new game could invalidate the Safari/iPhone audio unlock and prevent narration from playing.
+- Continues to destructively stop real active or paused narration when a new game is confirmed.
+- Preserves Board Setup Mission Intro playback, speaker pause/resume, and the outlined speaker-with-X disabled icon.
 
 ## v8.6.71
 

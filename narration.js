@@ -79,7 +79,11 @@
   function stop() {
     clearEventQueue();
     playbackRequest += 1;
-    stopAudio();
+    if (activePlayback) stopAudio();
+    else {
+      activePlayback = false;
+      pausedByToggle = false;
+    }
   }
 
   function pauseNarration() {
@@ -175,6 +179,11 @@
     player.src = new URL(entry.file, new URL(MANIFEST_URL, global.location?.href || 'http://localhost/')).href;
     activePlayback = true;
     pausedByToggle = false;
+    player.onended = () => {
+      if (request !== playbackRequest) return;
+      activePlayback = false;
+      pausedByToggle = false;
+    };
     try {
       await player.play();
       if (!isEnabled()) pauseNarration();
