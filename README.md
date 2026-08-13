@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.65
+# Tomb World Solo Guide v8.6.66
+
+## v8.6.66
+
+**Version 8.6.66 - Complete Production Mission Intro Narration**
+
+- Adds production Mission Intro narration for Mission 04: Destroy the Sarcophagus.
+- Completes production narration coverage for all six mission intros.
+- Preserves existing narration behavior and save compatibility.
+
 
 ## v8.6.65
 
