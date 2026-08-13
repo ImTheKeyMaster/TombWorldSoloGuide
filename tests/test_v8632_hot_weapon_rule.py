@@ -11,7 +11,7 @@ PERSISTENCE=(ROOT/'persistence.js').read_text()
 HOT=APP[APP.index('function normalizeEffectiveHit'):APP.index('function createWeaponRuleResolution')]
 
 class HotWeaponRuleTests(unittest.TestCase):
-    def test_01_version(self): self.assertIn("const APP_VERSION = '8.6.63';",APP); self.assertIn('V8.6.63',INDEX)
+    def test_01_version(self): self.assertIn("const APP_VERSION = '8.6.64';",APP); self.assertIn('V8.6.64',INDEX)
     def test_02_handler(self): self.assertIn("hot:{mode:'automatic',phase:'after-weapon-use'}",APP)
     def test_03_automatic(self): self.assertIn("hot:{mode:'automatic'",APP)
     def test_04_supported(self): self.assertNotIn('Hot is not yet supported by the Guide.',APP)
@@ -54,7 +54,7 @@ class HotWeaponRuleTests(unittest.TestCase):
     def test_41_single_unchanged_guard(self): self.assertIn("const result=shootResults[0]",APP)
     def test_42_multi_completed(self): self.assertIn('completed:orderedTargetIds.length===0',APP); self.assertIn('finishWeaponUse',APP)
     def test_43_save_version(self): self.assertIn('const SAVE_VERSION = 3;',PERSISTENCE)
-    def test_44_release(self): self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.63')); self.assertIn("const APP_VERSION = '8.6.63';",WORKER)
+    def test_44_release(self): self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.64')); self.assertIn("const APP_VERSION = '8.6.64';",WORKER)
     def test_45_history_uses_transaction_id(self): self.assertIn('entry.transactionId===record.id',HOT); self.assertIn('transactionId:record.id',HOT)
     def test_46_npo_recovery_commits_pending_action(self): self.assertIn('function resumePersistedHotContinuation',HOT); self.assertIn('commitNpoAction({actionId:pending.id',HOT)
     def test_47_npo_recovery_clears_completed_sequence(self): self.assertIn('state.weaponRuleResolution=null;',HOT)
