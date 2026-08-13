@@ -32,7 +32,10 @@ class HeaderNarrationControlTests(unittest.TestCase):
         self.assertIn("narrationSpeakerBtn.title=`Narration ${enabled?'on':'off'}`", APP)
 
     def test_header_button_directly_toggles_existing_enabled_state(self):
-        self.assertIn("narrationSpeakerBtn.addEventListener('click',()=>TombWorldNarration.setEnabled(!TombWorldNarration.isEnabled()))", APP)
+        button = APP[APP.index("narrationSpeakerBtn.addEventListener('click'"):APP.index('function handleNarrationChange')]
+        self.assertIn('const enabled=!TombWorldNarration.isEnabled()', button)
+        self.assertIn('const resumed=await TombWorldNarration.setEnabled(enabled)', button)
+        self.assertIn('if(enabled&&!resumed)playPendingBoardSetupMissionIntro()', button)
         self.assertIn("window.addEventListener('tombworldnarrationchange'", APP)
         self.assertIn("syncNarrationControls();", APP)
 

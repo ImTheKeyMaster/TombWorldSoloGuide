@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.69
+# Tomb World Solo Guide v8.6.70
+
+## v8.6.70
+
+**Version 8.6.70 - Refine Board Setup Narration Toggle Behavior**
+
+- Starts a pending Mission Intro when narration is enabled after entering Board Setup with narration disabled.
+- Preserves pause and resume from the same playback position when narration is toggled during playback.
+- Refines the disabled header speaker to an outlined speaker with an X replacing the sound waves.
 
 ## v8.6.69
 

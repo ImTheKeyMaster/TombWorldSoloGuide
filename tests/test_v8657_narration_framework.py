@@ -28,7 +28,8 @@ class NarrationIntegrationTests(unittest.TestCase):
         begin = source("$('#beginGame')", "function runStartingNpoGeneration")
         transition = source('function advanceSetupStep', 'function bindSetup')
         self.assertNotIn('playMissionIntro', begin)
-        self.assertIn("if(stepId==='mission')void TombWorldNarration.playMissionIntro(state.missionId,true);", transition)
+        self.assertIn("if(stepId==='mission')enterBoardSetup();", transition)
+        self.assertIn('function playPendingBoardSetupMissionIntro()', APP)
         self.assertEqual(APP.count('playMissionIntro('), 1)
         self.assertNotIn('playMissionIntro', source('function render()', 'function renderHome'))
 

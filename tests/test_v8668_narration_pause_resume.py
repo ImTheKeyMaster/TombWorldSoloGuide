@@ -1,5 +1,6 @@
 import subprocess
 import unittest
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 
@@ -8,13 +9,24 @@ INDEX = (ROOT / "index.html").read_text()
 APP = (ROOT / "app.js").read_text()
 CSS = (ROOT / "styles.css").read_text()
 NARRATION = (ROOT / "narration.js").read_text()
+DISABLED_ICON = ROOT / "Assets/Icons/narration-icon-disabled.svg"
 
 
 class NarrationPauseResumeTests(unittest.TestCase):
     def test_header_uses_wave_and_outline_speaker_x_icons(self):
         self.assertIn('id="narrationSpeakerBtn"', INDEX)
         self.assertRegex(INDEX, r'narration-icon-enabled[^>]*>.*M16 8\.5.*M19 6')
-        self.assertRegex(INDEX, r'narration-icon-disabled[^>]*>.*fill="none".*stroke-width="1\.8".*m16 9 5 6m0-6-5 6')
+        disabled = ET.parse(DISABLED_ICON).getroot()
+        paths = disabled.findall('{http://www.w3.org/2000/svg}path')
+        self.assertEqual('0 0 24 24', disabled.attrib['viewBox'])
+        self.assertEqual('M4 9v6h4l5 4V5L8 9H4z', paths[0].attrib['d'])
+        self.assertEqual('none', paths[0].attrib['fill'])
+        self.assertEqual('1.8', paths[0].attrib['stroke-width'])
+        self.assertEqual(['M16 9 L21 15', 'M21 9 L16 15'], [path.attrib['d'] for path in paths[1:]])
+        self.assertTrue(all(path.attrib['stroke-width'] == '2.4' for path in paths[1:]))
+        self.assertNotRegex(' '.join(path.attrib['d'] for path in paths), r'M3 3|18 18|8\.5|M19 6')
+        for path in paths:
+            self.assertIn(f'd="{path.attrib["d"]}"', INDEX)
         self.assertNotIn('M3 3l18 18', INDEX)
         self.assertIn("stroke-width:2.4", CSS)
         self.assertIn("aria-pressed", INDEX)

@@ -250,9 +250,9 @@
     const nextEnabled = Boolean(enabled);
     const change = ++enabledChange;
     writePreference(ENABLED_KEY, String(nextEnabled));
-    if (nextEnabled) void resumeNarration(change);
-    else pauseNarration();
+    const playbackChange = nextEnabled ? resumeNarration(change) : Promise.resolve(pauseNarration());
     notify();
+    return playbackChange;
   }
 
   global.TombWorldNarration = Object.freeze({
