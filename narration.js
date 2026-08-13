@@ -30,6 +30,7 @@
   let activePlayback = false;
   let pausedByToggle = false;
   let enabledChange = 0;
+  let notifiedPlaybackActivity = false;
 
   function readPreference(key) {
     try { return global.localStorage?.getItem(key) ?? null; } catch { return null; }
@@ -47,6 +48,15 @@
   function notify() {
     if (typeof global.dispatchEvent === 'function' && typeof global.CustomEvent === 'function') {
       global.dispatchEvent(new global.CustomEvent('tombworldnarrationchange', { detail: { canReplay: Boolean(lastEntry) } }));
+    }
+  }
+
+  function notifyPlaybackActivity(active) {
+    const nextActive = Boolean(active);
+    if (nextActive === notifiedPlaybackActivity) return;
+    notifiedPlaybackActivity = nextActive;
+    if (typeof global.dispatchEvent === 'function' && typeof global.CustomEvent === 'function') {
+      global.dispatchEvent(new global.CustomEvent('tombworldnarrationactivity', { detail: { active: nextActive } }));
     }
   }
 
@@ -94,6 +104,7 @@
       activePlayback = false;
       pausedByToggle = false;
     }
+    notifyPlaybackActivity(false);
   }
 
   function pauseNarration() {
@@ -102,6 +113,7 @@
     try {
       player.pause();
       pausedByToggle = true;
+      notifyPlaybackActivity(false);
       return true;
     } catch { return false; }
   }
@@ -114,6 +126,7 @@
       if (change !== enabledChange || !isEnabled()) return false;
       pausedByToggle = false;
       activePlayback = true;
+      notifyPlaybackActivity(true);
       return true;
     } catch { return false; }
   }
@@ -196,15 +209,20 @@
       if (request !== playbackRequest) return;
       activePlayback = false;
       pausedByToggle = false;
+      notifyPlaybackActivity(false);
     };
     try {
       await player.play();
       if (!isEnabled()) pauseNarration();
+      else notifyPlaybackActivity(true);
       lastEntry = { id, duplicateKey };
       notify();
       return true;
     } catch {
-      if (request === playbackRequest) activePlayback = false;
+      if (request === playbackRequest) {
+        activePlayback = false;
+        notifyPlaybackActivity(false);
+      }
       return false;
     }
   }
@@ -239,6 +257,7 @@
       if (playbackRequest !== requestBeforePlayback + 1) break;
     }
     if (generation === eventQueueGeneration) eventQueueRunning = false;
+    if (!activePlayback && !deadlyEncounterQueueRunning) notifyPlaybackActivity(false);
   }
 
   function playMissionIntro(missionId, restart = false) {
@@ -313,6 +332,7 @@
     if (generation === deadlyEncounterGeneration) {
       deadlyEncounterQueueRunning = false;
       if (eventQueue.length && !eventQueueRunning) void drainEventQueue(eventQueueGeneration);
+      else if (!activePlayback) notifyPlaybackActivity(false);
     }
   }
 

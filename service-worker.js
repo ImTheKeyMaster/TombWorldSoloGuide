@@ -1,12 +1,13 @@
 'use strict';
 
-const APP_VERSION = '8.6.74';
+const APP_VERSION = '8.6.75';
 const CACHE_PREFIX = 'tomb-world-solo-guide-';
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 const APP_SHELL = './index.html';
 const NARRATION_MANIFEST = './Assets/Audio/Narration/narration-manifest.json';
+const AMBIENT_CONFIG = './Assets/Audio/Narration/ambient-config.json';
 const PRECACHE_ASSETS = [
-  './', APP_SHELL, `./event-effects.js?v=${APP_VERSION}`, `./narration.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`,
+  './', APP_SHELL, `./event-effects.js?v=${APP_VERSION}`, `./narration.js?v=${APP_VERSION}`, `./ambient.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`,
   './manifest.webmanifest', './Assets/icon.svg', './Assets/Icons/move-to-shoot.svg',
   './Assets/Images/Backgrounds/manifest.json',
   './Assets/Images/defeat.png', './Assets/Images/victory.png',
@@ -37,6 +38,18 @@ async function precacheNarration(cache) {
   }
 }
 
+async function precacheAmbient(cache) {
+  try {
+    const response = await cache.match(AMBIENT_CONFIG);
+    const config = await response.json();
+    const file = config?.file;
+    if (config?.schemaVersion !== 1 || typeof file !== 'string' || !/^(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$))Ambient\/[A-Za-z0-9._-]+\.(?:mp3|ogg)$/i.test(file)) return;
+    await cache.add(`./Assets/Audio/Narration/${file}`);
+  } catch (error) {
+    console.warn('Ambient precache skipped because its configuration could not be read.', error);
+  }
+}
+
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(async cache => {
     await cache.addAll(PRECACHE_ASSETS);
@@ -46,6 +59,12 @@ self.addEventListener('install', event => {
       console.warn('Narration manifest precache failed; the app shell remains available offline.',error);
     }
     await precacheNarration(cache);
+    try {
+      await cache.add(AMBIENT_CONFIG);
+      await precacheAmbient(cache);
+    } catch (error) {
+      console.warn('Ambient configuration precache failed; gameplay and narration remain available offline.', error);
+    }
     const response=await cache.match('./Assets/Images/Backgrounds/manifest.json');
     const manifest=await response.json();
     const backgrounds=(manifest.landscape||[]).map(filename=>`./Assets/Images/Backgrounds/${filename}`);
@@ -110,7 +129,7 @@ self.addEventListener('fetch', event => {
     event.respondWith(networkFirst(request));
     return;
   }
-  if (/\.(?:png|svg|jpe?g|gif|webp|ico|pdf|mp3)$/i.test(url.pathname)) {
+  if (/\.(?:png|svg|jpe?g|gif|webp|ico|pdf|mp3|ogg)$/i.test(url.pathname)) {
     event.respondWith(cacheFirst(request));
   }
 });
