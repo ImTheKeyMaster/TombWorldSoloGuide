@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.71';
+  const APP_VERSION = '8.6.72';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
     init:()=>Promise.resolve(),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},pauseNarration:()=>false,resumeNarration:()=>Promise.resolve(false),setEnabled:()=>Promise.resolve(false),isEnabled:()=>true,canReplay:()=>false
   });

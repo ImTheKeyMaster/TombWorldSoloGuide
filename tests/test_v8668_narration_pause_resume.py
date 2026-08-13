@@ -98,6 +98,8 @@ const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
   if(!await first||!await second)throw Error('queued narration result changed');
   if(calls.some(call=>call.includes('events/ignored.mp3')))throw Error('disabled event accumulated');
 
+  void n.playEvent('ignored','event-stop');
+  await flush();
   n.stop();
   if(player.src)throw Error('explicit stop did not remove source');
   if(player.currentTime!==0)throw Error('explicit stop did not reset playback');
