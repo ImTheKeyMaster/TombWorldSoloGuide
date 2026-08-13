@@ -34,9 +34,15 @@ class NarrationIntegrationTests(unittest.TestCase):
         self.assertNotIn('playMissionIntro', source('function render()', 'function renderHome'))
 
     def test_accepted_events_use_definition_and_instance_identity(self):
-        begin = source('function narrateAcceptedEvent', 'function redrawCurrentEvent')
-        self.assertIn('TombWorldNarration.playEvent(event.definitionId,event.instanceId)', begin)
-        self.assertRegex(begin, r"if\(wounded\.length>1\).*narrateAcceptedEvent\(event\).*return;")
+        visibility = source('function narrateAcceptedEvent', 'function beginCurrentEvent')
+        self.assertIn('TombWorldNarration.playEvent(event.definitionId,event.instanceId)', visibility)
+        self.assertIn("strategyViewStep(d)!=='events'", visibility)
+        self.assertIn("event.status!=='redrawn'", visibility)
+        begin = source('function beginCurrentEvent', 'function completeCurrentEvent')
+        self.assertNotIn('narrateAcceptedEvent', begin)
+        self.assertNotIn('TombWorldNarration', begin)
+        completion = source('function completeCurrentEvent', 'function redrawCurrentEvent')
+        self.assertNotIn('TombWorldNarration', completion)
         redraw = source('function redrawCurrentEvent', 'function resolveStrategyEvent')
         self.assertNotIn('TombWorldNarration', redraw)
         self.assertIn("{instanceId:'awakened-warrior-1',definitionId:'awakened-warrior'}", APP)
