@@ -24,6 +24,8 @@
   let eventQueueRunning = false;
   let eventQueueGeneration = 0;
   let finishActiveEvent = null;
+  const deadlyEncounterQueue = [];
+  let deadlyEncounterQueueRunning = false;
   let deadlyEncounterGeneration = 0;
   let activePlayback = false;
   let pausedByToggle = false;
@@ -77,9 +79,15 @@
     eventQueueRunning = false;
   }
 
+  function clearDeadlyEncounterQueue() {
+    deadlyEncounterGeneration += 1;
+    deadlyEncounterQueue.splice(0).forEach(item => item.resolve(false));
+    deadlyEncounterQueueRunning = false;
+  }
+
   function stop() {
     clearEventQueue();
-    deadlyEncounterGeneration += 1;
+    clearDeadlyEncounterQueue();
     playbackRequest += 1;
     if (activePlayback) stopAudio();
     else {
@@ -164,11 +172,14 @@
     return initialization;
   }
 
-  async function playEntry(id, duplicateKey, manual, preemptEventQueue = true) {
+  async function playEntry(id, duplicateKey, manual, preemptQueues = true) {
     if (!isEnabled()) return false;
     if (!manual && automaticPlayback.has(duplicateKey)) return false;
     if (!manual) automaticPlayback.add(duplicateKey);
-    if (preemptEventQueue) clearEventQueue();
+    if (preemptQueues) {
+      clearEventQueue();
+      clearDeadlyEncounterQueue();
+    }
     const request = ++playbackRequest;
     await init();
     if (request !== playbackRequest) return false;
@@ -242,7 +253,7 @@
     if (automaticPlayback.has(duplicateKey)) return Promise.resolve(false);
     automaticPlayback.add(duplicateKey);
     const result = new Promise(resolve => eventQueue.push({ id: `event.${definitionId}`, duplicateKey, resolve }));
-    if (!eventQueueRunning) void drainEventQueue(eventQueueGeneration);
+    if (!eventQueueRunning && !deadlyEncounterQueueRunning) void drainEventQueue(eventQueueGeneration);
     return result;
   }
 
@@ -259,47 +270,59 @@
     )?.[0] || null;
   }
 
-  async function playDeadlyEncounter(featureIds, discoveryKey) {
+  async function drainDeadlyEncounterQueue(generation) {
+    deadlyEncounterQueueRunning = true;
+    await init();
+    while (generation === deadlyEncounterGeneration && deadlyEncounterQueue.length) {
+      const item = deadlyEncounterQueue.shift();
+      const entryIds = item.featureIds.map(deadlyEncounterEntryId);
+      let played = false;
+      if (!entryIds.some(id => !id)) {
+        for (const id of entryIds) {
+          if (generation !== deadlyEncounterGeneration) break;
+          const requestBeforePlayback = playbackRequest;
+          const started = await playEntry(id, item.duplicateKey, true, false);
+          if (!started) continue;
+          played = true;
+          await new Promise(resolve => {
+            let finished = false;
+            finishActiveEvent = () => {
+              if (finished) return;
+              finished = true;
+              if (audio) {
+                audio.onended = null;
+                audio.onerror = null;
+              }
+              finishActiveEvent = null;
+              activePlayback = false;
+              pausedByToggle = false;
+              resolve();
+            };
+            audio.onended = finishActiveEvent;
+            audio.onerror = finishActiveEvent;
+          });
+          if (generation !== deadlyEncounterGeneration || playbackRequest !== requestBeforePlayback + 1) break;
+        }
+      }
+      item.resolve(played);
+    }
+    if (generation === deadlyEncounterGeneration) {
+      deadlyEncounterQueueRunning = false;
+      if (eventQueue.length && !eventQueueRunning) void drainEventQueue(eventQueueGeneration);
+    }
+  }
+
+  function playDeadlyEncounter(featureIds, discoveryKey) {
     const orderedFeatureIds = (Array.isArray(featureIds) ? featureIds : [featureIds])
       .filter(featureId => typeof featureId === 'string' && featureId !== 'unusual');
-    if (!orderedFeatureIds.length || !discoveryKey || !isEnabled()) return false;
+    if (!orderedFeatureIds.length || !discoveryKey || !isEnabled()) return Promise.resolve(false);
     const duplicateKey = `deadly:${discoveryKey}`;
-    if (automaticPlayback.has(duplicateKey)) return false;
+    if (automaticPlayback.has(duplicateKey)) return Promise.resolve(false);
     automaticPlayback.add(duplicateKey);
-    const generation = ++deadlyEncounterGeneration;
-    clearEventQueue();
-    await init();
-    if (generation !== deadlyEncounterGeneration) return false;
-    const entryIds = orderedFeatureIds.map(deadlyEncounterEntryId);
-    if (entryIds.some(id => !id)) return false;
-
-    let played = false;
-    for (const id of entryIds) {
-      if (generation !== deadlyEncounterGeneration) break;
-      const requestBeforePlayback = playbackRequest;
-      const started = await playEntry(id, duplicateKey, true, false);
-      if (!started) continue;
-      played = true;
-      await new Promise(resolve => {
-        let finished = false;
-        finishActiveEvent = () => {
-          if (finished) return;
-          finished = true;
-          if (audio) {
-            audio.onended = null;
-            audio.onerror = null;
-          }
-          finishActiveEvent = null;
-          activePlayback = false;
-          pausedByToggle = false;
-          resolve();
-        };
-        audio.onended = finishActiveEvent;
-        audio.onerror = finishActiveEvent;
-      });
-      if (generation !== deadlyEncounterGeneration || playbackRequest !== requestBeforePlayback + 1) break;
-    }
-    return played;
+    if (!deadlyEncounterQueueRunning) clearEventQueue();
+    const result = new Promise(resolve => deadlyEncounterQueue.push({ featureIds: orderedFeatureIds, duplicateKey, resolve }));
+    if (!deadlyEncounterQueueRunning) void drainDeadlyEncounterQueue(deadlyEncounterGeneration);
+    return result;
   }
 
   function replayLast() {
