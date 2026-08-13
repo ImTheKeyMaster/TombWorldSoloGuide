@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v8.6.75
+# Tomb World Solo Guide v8.6.76
+
+## v8.6.76
+
+**Version 8.6.76 - Unified Game Audio Menu Control**
+
+- Replaced the undersized narration replay control with a full-width game-menu button and speaker icon.
+- The control now starts or stops both ambient audio and narration, with a label that reflects the current playback setting.
 
 ## v8.6.75
 

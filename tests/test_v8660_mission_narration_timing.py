@@ -114,10 +114,11 @@ if(calls.filter(call=>call.startsWith('play:')).length!==3)throw Error('stale pe
         self.assertIn('TombWorldNarration.playEvent(event.definitionId,event.instanceId)', APP)
         self.assertIn('TombWorldNarration.playOutcome(state.missionId,outcome)', APP)
 
-    def test_menu_keeps_replay_and_removes_duplicate_preference_controls(self):
+    def test_menu_uses_unified_audio_toggle_without_duplicate_preference_controls(self):
         menu = source('function showGameMenu()', 'function showAbout()')
         self.assertNotIn('Dungeon Master Narration', menu)
-        self.assertIn('replayNarration', menu)
+        self.assertIn('gameAudioToggle', menu)
+        self.assertIn('Stop Game Audio', menu)
         self.assertNotIn('narrationEnabled', menu)
         self.assertNotIn('narrationVolume', menu)
 

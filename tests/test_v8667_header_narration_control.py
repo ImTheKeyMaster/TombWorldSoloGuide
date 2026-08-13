@@ -77,9 +77,10 @@ verify(true);enabled=false;verify(false);
         for attribute in ('aria-haspopup', 'aria-expanded', 'aria-controls'):
             self.assertNotIn(attribute, INDEX)
 
-    def test_game_menu_keeps_replay_without_duplicate_preferences(self):
+    def test_game_menu_uses_audio_toggle_without_duplicate_preferences(self):
         menu = APP[APP.index('function showGameMenu()'):APP.index('function showAbout()')]
-        self.assertIn('id="replayNarration"', menu)
+        self.assertIn('id="gameAudioToggle"', menu)
+        self.assertIn('aria-pressed=', menu)
         self.assertNotIn('id="narrationEnabled"', menu)
         self.assertNotIn('id="narrationVolume"', menu)
         self.assertNotIn('narrationVolumeValue', menu)
