@@ -65,8 +65,13 @@
     "event.subjugation-glyphs": {
       "category": "event",
       "eventDefinitionId": "subjugation-glyphs",
-      "file": null,
-      "available": false
+      "file": "events/subjugation-glyphs.mp3",
+      "available": true,
+      "scriptHash": "474e37c49599c8df411454775dda23a8f04a3ea95573fa26211b76adc13aa8f3",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "e8759b1bc200ee69e1917b03cdf8ac93fa0d0bb9d82dbb9df5983ad989de1cd8",
+      "audioHash": "15c17b3481188bc7192d27033ce29fd38e9d423dcaffc4f666c9fa404046f128",
+      "durationMs": 15647
     },
     "event.transdimensional-relocation": {
       "category": "event",
@@ -82,20 +87,35 @@
     "event.my-will-be-done": {
       "category": "event",
       "eventDefinitionId": "my-will-be-done",
-      "file": null,
-      "available": false
+      "file": "events/my-will-be-done.mp3",
+      "available": true,
+      "scriptHash": "076b0ffbeb64f818b1ebaa66fc33012c88514a82c897b03ca615b829d410d1eb",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "d70816f838323a7f1d7ca0ac7e48c1a7d068b40446811a645117ec56d9e696ac",
+      "audioHash": "9a72840b755acfce0054415dbdbddbe5f82d1a332d449b1df203c28cdea0ec24",
+      "durationMs": 19304
     },
     "event.reanimation-protocols": {
       "category": "event",
       "eventDefinitionId": "reanimation-protocols",
-      "file": null,
-      "available": false
+      "file": "events/reanimation-protocols.mp3",
+      "available": true,
+      "scriptHash": "4b1d78ac90110d38893bb20ba528cd168d26db7e96ff69cf50ec95542b882dfe",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "b84d8460005eedccdf7d703e0f03f250d7e92c385107f2e12e450890b683ddb8",
+      "audioHash": "eaef1827ca16d225e7ba89edbea46eb4962ca7eb7cb0ee381127d439f98bec36",
+      "durationMs": 18390
     },
     "event.dark-of-the-tomb": {
       "category": "event",
       "eventDefinitionId": "dark-of-the-tomb",
-      "file": null,
-      "available": false
+      "file": "events/dark-of-the-tomb.mp3",
+      "available": true,
+      "scriptHash": "592b4fbd01e8f9fa17381b22ac4ca5b9b265a7a0fd07db6be6f61d1578426ee4",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "898213c152bb6a56217a27b30fca2c087ec129f2a93dbd647e4ef4cae171b58a",
+      "audioHash": "4ec1770ce37884b6ef639b0d601c6c01b26345ff04baba289b20a96f5eb7ea0d",
+      "durationMs": 16144
     },
     "event.countertemporal-shifting": {
       "category": "event",
@@ -111,32 +131,57 @@
     "event.living-metal-flux": {
       "category": "event",
       "eventDefinitionId": "living-metal-flux",
-      "file": null,
-      "available": false
+      "file": "events/living-metal-flux.mp3",
+      "available": true,
+      "scriptHash": "8d0a11d95ed60566d5ec4af2bef41a75a33f8be24b279032c22541b2fa4b29e2",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "a228833e07f8c04516b3ec96f1441e25d7c9019e4f93bda93412fcc3fe54da45",
+      "audioHash": "abd9d4ef3570ceefdb407f3e048ea313e3be266c55ffae803beb1f4078af8be4",
+      "durationMs": 14655
     },
     "event.maze-reforms": {
       "category": "event",
       "eventDefinitionId": "maze-reforms",
-      "file": null,
-      "available": false
+      "file": "events/maze-reforms.mp3",
+      "available": true,
+      "scriptHash": "6130047b7c4a63d808ed91f70a97552235e06034295f44b6e8e357ab8c8c3bd9",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "0ddcf6c206b66535b9815bd12a6ab3b2ab84482d43872b7fff4ba7cbe7fd0dbc",
+      "audioHash": "e332bd0ddd584789a68fecbc21e0d8c7322e20bf8b86dcacd9d99aef8583377d",
+      "durationMs": 18625
     },
     "event.stirrings-of-horror": {
       "category": "event",
       "eventDefinitionId": "stirrings-of-horror",
-      "file": null,
-      "available": false
+      "file": "events/stirrings-of-horror.mp3",
+      "available": true,
+      "scriptHash": "3f9d3655b74a209a8974bac70e01cb2dfa8ff29ac3f92f9cf22de0d85ef69c4d",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "f68d18951baf6d6710cf238d03f4519f4e1cad0bb88995f306cb07f63997c6d9",
+      "audioHash": "434165fad3f1bac7d86b5c2409188f2f17714ff0b77b07174b25cd03b01d0c47",
+      "durationMs": 19827
     },
     "event.chittering-drone": {
       "category": "event",
       "eventDefinitionId": "chittering-drone",
-      "file": null,
-      "available": false
+      "file": "events/chittering-drone.mp3",
+      "available": true,
+      "scriptHash": "acf391b4475d129353f8967bba924a4a3042dab34c784cfe2a8cdbebb9ffeefc",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "6edd10366661db8aacd17037d579165e353825d14f2d6e8b361a89ef19a9b5bc",
+      "audioHash": "7dda83e549ee924d668f543b2edaba14a983e4b29cae0ee5df79adb266bf4c11",
+      "durationMs": 15229
     },
     "event.awakened-warrior": {
       "category": "event",
       "eventDefinitionId": "awakened-warrior",
-      "file": null,
-      "available": false
+      "file": "events/awakened-warrior.mp3",
+      "available": true,
+      "scriptHash": "f41dfdf6ed39a3a9f05b28dd3b05ee35326e96d84fe6132bcc504dcbef2aa13d",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "531acd886368d734a1438f99808c3cc7b89995fa0f5357761986d8284b0f8704",
+      "audioHash": "eb33075a6bd8e6ea97ee95e586caa69d2fd93a22ffb56622461238af5fada25f",
+      "durationMs": 17215
     },
     "outcome.01.victory": {
       "category": "outcome",

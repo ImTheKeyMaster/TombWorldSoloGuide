@@ -4,13 +4,15 @@
     {
       "id": "event.subjugation-glyphs",
       "category": "event",
-      "status": "approved",
+      "status": "generated",
       "script": "Symbols ignite across the walls.\n\nTheir shapes seem to shift whenever you look directly at them. A crushing pressure settles over the strike team, slowing thought and movement alike.\n\nThe tomb is imposing its will upon the living.",
       "scriptHash": "474e37c49599c8df411454775dda23a8f04a3ea95573fa26211b76adc13aa8f3",
       "outputFile": "events/subjugation-glyphs.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "e8759b1bc200ee69e1917b03cdf8ac93fa0d0bb9d82dbb9df5983ad989de1cd8",
+      "audioHash": "15c17b3481188bc7192d27033ce29fd38e9d423dcaffc4f666c9fa404046f128",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "event.transdimensional-relocation",
@@ -28,35 +30,41 @@
     {
       "id": "event.my-will-be-done",
       "category": "event",
-      "status": "approved",
+      "status": "generated",
       "script": "A pulse rolls outward from the sarcophagus.\n\nNearby constructs turn almost as one, their movements suddenly precise, their weapons tracking with unnatural certainty.\n\nWhatever sleeps within the crypt is not entirely silent.\n\nIts will is reaching beyond the grave.",
       "scriptHash": "076b0ffbeb64f818b1ebaa66fc33012c88514a82c897b03ca615b829d410d1eb",
       "outputFile": "events/my-will-be-done.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "d70816f838323a7f1d7ca0ac7e48c1a7d068b40446811a645117ec56d9e696ac",
+      "audioHash": "9a72840b755acfce0054415dbdbddbe5f82d1a332d449b1df203c28cdea0ec24",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "event.reanimation-protocols",
       "category": "event",
-      "status": "approved",
+      "status": "generated",
       "script": "The fallen begin to move.\n\nEmerald light returns to darkened eyes. Bodies that should lie silent rise again, driven by ancient systems that refuse to accept their destruction.\n\nFor a time, death may not be enough to stop the tomb’s defenders.",
       "scriptHash": "4b1d78ac90110d38893bb20ba528cd168d26db7e96ff69cf50ec95542b882dfe",
       "outputFile": "events/reanimation-protocols.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "b84d8460005eedccdf7d703e0f03f250d7e92c385107f2e12e450890b683ddb8",
+      "audioHash": "eaef1827ca16d225e7ba89edbea46eb4962ca7eb7cb0ee381127d439f98bec36",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "event.dark-of-the-tomb",
       "category": "event",
-      "status": "approved",
+      "status": "generated",
       "script": "The darkness deepens.\n\nDistant chambers seem to recede as the tomb swallows light, range and perspective alike.\n\nTargets beyond the nearest passages become uncertain shapes in the black.\n\nAt distance, every shot becomes harder to correct.",
       "scriptHash": "592b4fbd01e8f9fa17381b22ac4ca5b9b265a7a0fd07db6be6f61d1578426ee4",
       "outputFile": "events/dark-of-the-tomb.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "898213c152bb6a56217a27b30fca2c087ec129f2a93dbd647e4ef4cae171b58a",
+      "audioHash": "4ec1770ce37884b6ef639b0d601c6c01b26345ff04baba289b20a96f5eb7ea0d",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "event.countertemporal-shifting",
@@ -74,57 +82,67 @@
     {
       "id": "event.living-metal-flux",
       "category": "event",
-      "status": "approved",
+      "status": "generated",
       "script": "The damaged constructs begin to change.\n\nLiving metal flows across broken armor like liquid mercury, filling fractures and rebuilding what your weapons tore away.\n\nAcross the crypt, the tomb's wounded defenders are repairing themselves.",
       "scriptHash": "8d0a11d95ed60566d5ec4af2bef41a75a33f8be24b279032c22541b2fa4b29e2",
       "outputFile": "events/living-metal-flux.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "a228833e07f8c04516b3ec96f1441e25d7c9019e4f93bda93412fcc3fe54da45",
+      "audioHash": "abd9d4ef3570ceefdb407f3e048ea313e3be266c55ffae803beb1f4078af8be4",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "event.maze-reforms",
       "category": "event",
-      "status": "approved",
+      "status": "generated",
       "script": "The chamber shudders.\n\nWalls slide across one another with impossible precision. A route you forced open begins sealing itself while other passages grind apart elsewhere in the crypt.\n\nThe maze has changed again.\n\nAdjust the battlefield to match the new configuration.",
       "scriptHash": "6130047b7c4a63d808ed91f70a97552235e06034295f44b6e8e357ab8c8c3bd9",
       "outputFile": "events/maze-reforms.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "0ddcf6c206b66535b9815bd12a6ab3b2ab84482d43872b7fff4ba7cbe7fd0dbc",
+      "audioHash": "e332bd0ddd584789a68fecbc21e0d8c7322e20bf8b86dcacd9d99aef8583377d",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "event.stirrings-of-horror",
       "category": "event",
-      "status": "approved",
+      "status": "generated",
       "script": "Something moves far below.\n\nThe vibration is almost too faint to feel, but the tomb responds immediately. Systems awaken. Signals spread. Ancient machinery begins preparing for something deeper within the complex.\n\nThe Tomb World has become more dangerous.",
       "scriptHash": "3f9d3655b74a209a8974bac70e01cb2dfa8ff29ac3f92f9cf22de0d85ef69c4d",
       "outputFile": "events/stirrings-of-horror.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "f68d18951baf6d6710cf238d03f4519f4e1cad0bb88995f306cb07f63997c6d9",
+      "audioHash": "434165fad3f1bac7d86b5c2409188f2f17714ff0b77b07174b25cd03b01d0c47",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "event.chittering-drone",
       "category": "event",
-      "status": "approved",
+      "status": "generated",
       "script": "A mechanical chittering rises from inside the walls.\n\nTiny metallic forms gather in the darkness, converging on damaged machinery or spilling from seams that were empty moments before.\n\nThe scarabs are moving again.",
       "scriptHash": "acf391b4475d129353f8967bba924a4a3042dab34c784cfe2a8cdbebb9ffeefc",
       "outputFile": "events/chittering-drone.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "6edd10366661db8aacd17037d579165e353825d14f2d6e8b361a89ef19a9b5bc",
+      "audioHash": "7dda83e549ee924d668f543b2edaba14a983e4b29cae0ee5df79adb266bf4c11",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "event.awakened-warrior",
       "category": "event",
-      "status": "approved",
+      "status": "generated",
       "script": "A figure moves in the darkness.\n\nAncient joints unlock. Emerald light burns behind a motionless face as a warrior that has stood silent for millennia steps forward.\n\nAnother guardian has awakened.\n\nThe tomb has called it to war.",
       "scriptHash": "f41dfdf6ed39a3a9f05b28dd3b05ee35326e96d84fe6132bcc504dcbef2aa13d",
       "outputFile": "events/awakened-warrior.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "531acd886368d734a1438f99808c3cc7b89995fa0f5357761986d8284b0f8704",
+      "audioHash": "eb33075a6bd8e6ea97ee95e586caa69d2fd93a22ffb56622461238af5fada25f",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     }
   ]
 }

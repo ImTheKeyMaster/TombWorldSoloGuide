@@ -46,11 +46,18 @@ class ProducerStaticTests(unittest.TestCase):
         scripts = records()
         self.assertEqual(29, len(scripts))
         self.assertEqual(["mission.04.intro"], [item["id"] for item in scripts if item["status"] == "draft"])
+        mojibake_markers = ("â€™", "Ã", "Â", "â€œ", "â€")
         for item in scripts:
             normalized = item["script"].replace("\r\n", "\n").replace("\r", "\n").strip()
             self.assertEqual(hashlib.sha256(normalized.encode()).hexdigest(), item["scriptHash"])
+            self.assertFalse(any(marker in item["script"] for marker in mojibake_markers), item["id"])
         reanimation = next(item for item in scripts if item["id"] == "event.reanimation-protocols")
-        self.assertIn("For a time, death may not be enough", reanimation["script"])
+        self.assertEqual(
+            "The fallen begin to move.\n\n"
+            "Emerald light returns to darkened eyes. Bodies that should lie silent rise again, driven by ancient systems that refuse to accept their destruction.\n\n"
+            "For a time, death may not be enough to stop the tomb’s defenders.",
+            reanimation["script"],
+        )
         self.assertNotIn("The mission is won. You have overcome", " ".join(item["script"] for item in scripts))
 
     def test_generated_sources_manifest_metadata_and_audio_stay_synchronized(self):
@@ -82,6 +89,11 @@ class ProducerStaticTests(unittest.TestCase):
         self.assertTrue(all(entries[script_id]["available"] is True for script_id in newly_generated))
         self.assertEqual("draft", scripts["mission.04.intro"]["status"])
         self.assertFalse(entries["mission.04.intro"]["available"])
+
+        events = {script_id: item for script_id, item in scripts.items() if script_id.startswith("event.")}
+        self.assertEqual(11, len(events))
+        self.assertTrue(all(item["status"] == "generated" for item in events.values()))
+        self.assertTrue(all(entries[script_id]["available"] is True for script_id in events))
 
     def test_producer_selection_is_approval_driven_not_pilot_id_driven(self):
         browser = (TOOL / "static" / "producer.js").read_text(encoding="utf-8")

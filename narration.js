@@ -22,6 +22,10 @@
   let audioUnlocked = false;
   let playbackRequest = 0;
   const automaticPlayback = new Set();
+  const eventQueue = [];
+  let eventQueueRunning = false;
+  let eventQueueGeneration = 0;
+  let finishActiveEvent = null;
 
   function readPreference(key) {
     try { return global.localStorage?.getItem(key) ?? null; } catch { return null; }
@@ -59,6 +63,7 @@
   }
 
   function stopAudio() {
+    if (finishActiveEvent) finishActiveEvent();
     if (!audio) return;
     try {
       audio.pause();
@@ -67,7 +72,14 @@
     } catch { /* Audio cleanup must never affect gameplay. */ }
   }
 
+  function clearEventQueue() {
+    eventQueueGeneration += 1;
+    eventQueue.splice(0).forEach(item => item.resolve(false));
+    eventQueueRunning = false;
+  }
+
   function stop() {
+    clearEventQueue();
     playbackRequest += 1;
     stopAudio();
   }
@@ -126,10 +138,11 @@
     return initialization;
   }
 
-  async function playEntry(id, duplicateKey, manual) {
+  async function playEntry(id, duplicateKey, manual, preemptEventQueue = true) {
     if (!isEnabled()) return false;
     if (!manual && automaticPlayback.has(duplicateKey)) return false;
     if (!manual) automaticPlayback.add(duplicateKey);
+    if (preemptEventQueue) clearEventQueue();
     const request = ++playbackRequest;
     await init();
     if (request !== playbackRequest) return false;
@@ -150,6 +163,36 @@
     }
   }
 
+  async function drainEventQueue(generation) {
+    eventQueueRunning = true;
+    while (generation === eventQueueGeneration && eventQueue.length) {
+      const item = eventQueue.shift();
+      const requestBeforePlayback = playbackRequest;
+      const started = await playEntry(item.id, item.duplicateKey, true, false);
+      item.resolve(started);
+      if (!started) continue;
+
+      await new Promise(resolve => {
+        let finished = false;
+        finishActiveEvent = () => {
+          if (finished) return;
+          finished = true;
+          if (audio) {
+            audio.onended = null;
+            audio.onerror = null;
+          }
+          finishActiveEvent = null;
+          resolve();
+        };
+        audio.onended = finishActiveEvent;
+        audio.onerror = finishActiveEvent;
+      });
+
+      if (playbackRequest !== requestBeforePlayback + 1) break;
+    }
+    if (generation === eventQueueGeneration) eventQueueRunning = false;
+  }
+
   function playMissionIntro(missionId, restart = false) {
     const number = missionNumbers[missionId];
     if (restart) automaticPlayback.delete(`mission:${missionId}`);
@@ -157,9 +200,13 @@
   }
 
   function playEvent(definitionId, instanceId) {
-    return definitionId && instanceId
-      ? playEntry(`event.${definitionId}`, `event:${instanceId}`, false)
-      : Promise.resolve(false);
+    if (!definitionId || !instanceId || !isEnabled()) return Promise.resolve(false);
+    const duplicateKey = `event:${instanceId}`;
+    if (automaticPlayback.has(duplicateKey)) return Promise.resolve(false);
+    automaticPlayback.add(duplicateKey);
+    const result = new Promise(resolve => eventQueue.push({ id: `event.${definitionId}`, duplicateKey, resolve }));
+    if (!eventQueueRunning) void drainEventQueue(eventQueueGeneration);
+    return result;
   }
 
   function playOutcome(missionId, outcome) {

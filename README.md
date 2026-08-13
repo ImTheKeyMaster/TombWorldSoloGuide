@@ -1,4 +1,20 @@
-# Tomb World Solo Guide v8.6.62
+# Tomb World Solo Guide v8.6.64
+
+## v8.6.64
+
+**Version 8.6.64 - Consecutive Tomb Event Narration Queue**
+
+- Queues consecutive automatic Tomb Event narration so every event plays in order without overlap.
+- Clears pending Tomb Event narration when mission narration or Replay Last preempts playback.
+- Preserves the v8.6.63 production Tomb Event audio, manifest-driven offline caching, and save compatibility.
+
+## v8.6.63
+
+**Version 8.6.63 - Add Production Tomb Event Narration**
+
+- Adds production narration for the remaining nine Tomb Events.
+- Completes narrated coverage for all Tomb Events.
+- Preserves manifest-driven offline narration caching.
 
 ## v8.6.62
 
