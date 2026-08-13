@@ -99,6 +99,46 @@ const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
         result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
         self.assertEqual(0, result.returncode, result.stderr)
 
+    def test_toggle_races_do_not_lose_the_paused_session(self):
+        script = r"""
+const fs=require('fs'),vm=require('vm');
+let resolvePlay;
+class Audio {
+  constructor(){this.src='';this.currentTime=0;this.volume=1;this.paused=true;this.ended=false;Audio.instance=this;}
+  pause(){this.paused=true;}
+  removeAttribute(){this.src='';}
+  load(){}
+  play(){this.paused=false;return new Promise(resolve=>{resolvePlay=resolve;});}
+}
+const context={Audio,URL,location:{href:'https://example.test/'},fetch:async()=>({ok:true,json:async()=>({entries:{'mission.01.intro':{available:true,file:'intro.mp3'}}})}),
+  localStorage:{value:null,getItem(){return this.value},setItem(key,value){this.value=value}},dispatchEvent:()=>{},CustomEvent:function(){}};
+context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
+const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
+(async()=>{
+  const n=context.TombWorldNarration;
+  await n.init();
+  const started=n.playMissionIntro('shifting-labyrinth');
+  await flush();
+  const player=Audio.instance;
+  player.currentTime=7;
+  n.setEnabled(false);
+  if(!player.paused)throw Error('pending play was not paused');
+  resolvePlay();
+  if(!await started)throw Error('play request did not finish');
+  n.setEnabled(true);
+  n.setEnabled(false);
+  resolvePlay();
+  await flush();
+  if(!player.paused)throw Error('stale resume overrode a later OFF toggle');
+  n.setEnabled(true);
+  if(player.paused)throw Error('later ON did not retain a resumable session');
+  if(player.currentTime!==7)throw Error('race reset playback position');
+  resolvePlay();
+})().catch(error=>{console.error(error);process.exit(1)});
+"""
+        result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

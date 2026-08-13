@@ -26,6 +26,7 @@
   let finishActiveEvent = null;
   let activePlayback = false;
   let pausedByToggle = false;
+  let enabledChange = 0;
 
   function readPreference(key) {
     try { return global.localStorage?.getItem(key) ?? null; } catch { return null; }
@@ -91,11 +92,12 @@
     } catch { return false; }
   }
 
-  async function resumeNarration() {
+  async function resumeNarration(change = enabledChange) {
     const player = audio;
     if (!pausedByToggle || !player || !player.src) return false;
     try {
       await player.play();
+      if (change !== enabledChange || !isEnabled()) return false;
       pausedByToggle = false;
       activePlayback = true;
       return true;
@@ -171,14 +173,16 @@
     stopAudio();
     player.volume = 1;
     player.src = new URL(entry.file, new URL(MANIFEST_URL, global.location?.href || 'http://localhost/')).href;
+    activePlayback = true;
+    pausedByToggle = false;
     try {
       await player.play();
-      activePlayback = true;
-      pausedByToggle = false;
+      if (!isEnabled()) pauseNarration();
       lastEntry = { id, duplicateKey };
       notify();
       return true;
     } catch {
+      if (request === playbackRequest) activePlayback = false;
       return false;
     }
   }
@@ -244,8 +248,9 @@
 
   function setEnabled(enabled) {
     const nextEnabled = Boolean(enabled);
+    const change = ++enabledChange;
     writePreference(ENABLED_KEY, String(nextEnabled));
-    if (nextEnabled) void resumeNarration();
+    if (nextEnabled) void resumeNarration(change);
     else pauseNarration();
     notify();
   }
