@@ -1,6 +1,7 @@
 import hashlib
 import importlib.util
 import json
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -25,8 +26,8 @@ else:
 
 def records():
     result = []
-    for name in ("missions.json", "events.json", "outcomes.json"):
-        result.extend(json.loads((ROOT / "Narration" / "scripts" / name).read_text(encoding="utf-8"))["scripts"])
+    for path in (ROOT / "Narration" / "scripts").glob("*.json"):
+        result.extend(json.loads(path.read_text(encoding="utf-8"))["scripts"])
     return result
 
 
@@ -44,7 +45,6 @@ class ProducerStaticTests(unittest.TestCase):
 
     def test_canonical_library_and_hashes(self):
         scripts = records()
-        self.assertEqual(29, len(scripts))
         self.assertEqual([], [item["id"] for item in scripts if item["status"] == "draft"])
         mojibake_markers = ("â€™", "Ã", "Â", "â€œ", "â€")
         for item in scripts:
@@ -63,14 +63,13 @@ class ProducerStaticTests(unittest.TestCase):
     def test_generated_sources_manifest_metadata_and_audio_stay_synchronized(self):
         scripts = {item["id"]: item for item in records()}
         entries = json.loads((ROOT / "Assets/Audio/Narration/narration-manifest.json").read_text(encoding="utf-8"))["entries"]
-        self.assertEqual(29, len(entries))
         self.assertEqual(set(scripts), set(entries))
         for script_id, item in scripts.items():
             entry = entries[script_id]
             generated = item["status"] == "generated"
             self.assertEqual(generated, entry.get("available"), script_id)
             if not generated:
-                self.assertIsNone(entry.get("file"), script_id)
+                self.assertEqual(item["outputFile"], entry.get("file"), script_id)
                 continue
             self.assertTrue(item.get("outputFile"), script_id)
             self.assertEqual(item["outputFile"], entry.get("file"), script_id)
@@ -104,6 +103,42 @@ class ProducerStaticTests(unittest.TestCase):
         self.assertIn("x.status==='approved'&&!x.reviewRequired", browser)
         self.assertIn('id="approved">Select Approved', markup)
         self.assertNotIn("Select Pilot Batch", markup)
+
+        approved = [item["id"] for item in records() if item["status"] == "approved"]
+        deadly = [item["id"] for item in records() if item["category"] == "deadly-encounter"]
+        self.assertEqual(deadly, approved)
+        self.assertEqual(16, len(approved))
+
+    def test_deadly_encounter_filter_and_library_placeholders(self):
+        markup = (TOOL / "static" / "index.html").read_text(encoding="utf-8")
+        browser = (TOOL / "static" / "producer.js").read_text(encoding="utf-8")
+        self.assertIn('<option value="deadly-encounter">Deadly Encounters</option>', markup)
+        self.assertIn("filter==='all'||x.category===filter", browser)
+
+        deadly = [item for item in records() if item["category"] == "deadly-encounter"]
+        self.assertEqual(16, len(deadly))
+        self.assertEqual(8, sum(item["id"].startswith("deadly.room-") for item in deadly))
+        self.assertEqual(8, sum(item["id"].startswith("deadly.objective-") for item in deadly))
+        self.assertEqual(16, len({item["outputFile"] for item in deadly}))
+        self.assertTrue(all(item["status"] == "approved" for item in deadly))
+        self.assertNotIn("deadly.unusual", {item["id"] for item in deadly})
+
+        definitions = (ROOT / "deadly-encounters.js").read_text(encoding="utf-8")
+        feature_ids = set(re.findall(r"feature\('((?:room|objective)-[^']+)'", definitions))
+        narration_features = {item["id"].removeprefix("deadly.") for item in deadly}
+        self.assertEqual(feature_ids - {"unusual"}, narration_features)
+
+        entries = json.loads((ROOT / "Assets/Audio/Narration/narration-manifest.json").read_text(encoding="utf-8"))["entries"]
+        for item in deadly:
+            normalized = item["script"].replace("\r\n", "\n").replace("\r", "\n").strip()
+            self.assertEqual(hashlib.sha256(normalized.encode("utf-8")).hexdigest(), item["scriptHash"])
+            entry = entries[item["id"]]
+            self.assertFalse(entry["available"])
+            self.assertEqual(item["outputFile"], entry["file"])
+            self.assertEqual(item["scriptHash"], entry["scriptHash"])
+            self.assertEqual(item["id"].removeprefix("deadly."), entry["deadlyEncounterFeatureId"])
+            for key in ("settingsHash", "generationHash", "audioHash", "durationMs"):
+                self.assertIsNone(entry[key], f"{item['id']}: {key}")
 
     def test_browser_has_no_secret_or_direct_tts_call(self):
         browser = (TOOL / "static" / "producer.js").read_text(encoding="utf-8")
@@ -150,6 +185,23 @@ class ProducerApiTests(unittest.TestCase):
         self.assertEqual(1, data["totals"]["blocked"])
         self.assertEqual(2, data["totals"]["approved"] + data["totals"]["blocked"])
         self.assertGreater(data["totals"]["totalCharacters"], 0)
+
+    def test_deadly_encounters_are_all_approved_and_would_generate(self):
+        chosen = json.loads((ROOT / "Narration/producer-settings.json").read_text(encoding="utf-8"))
+        deadly_ids = [item["id"] for item in server.library() if item["category"] == "deadly-encounter"]
+
+        with mock.patch.object(server.requests, "post") as tts:
+            data = self.client.post(
+                "/api/dry-run",
+                json={"ids": deadly_ids, "settings": chosen},
+            ).get_json()
+
+        tts.assert_not_called()
+        self.assertEqual(16, data["totals"]["selected"])
+        self.assertEqual(16, data["totals"]["approved"])
+        self.assertEqual(16, data["totals"]["wouldGenerate"])
+        self.assertEqual(0, data["totals"]["blocked"])
+        self.assertEqual(0, data["totals"]["wouldSkip"])
 
     def test_generation_and_force_generation_require_confirmation(self):
         self.assertEqual(400, self.client.post("/api/generate", json={"ids": []}).status_code)

@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 1,
+  "scripts": [
+    {
+      "id": "deadly.room-collapsed-ceiling",
+      "category": "deadly-encounter",
+      "status": "approved",
+      "script": "Stone and metal have collapsed across the chamber.\n\nBroken slabs hang at impossible angles while debris chokes the passages beneath them. Every step must be chosen carefully, and what remains of the ceiling offers uncertain shelter from incoming fire.\n\nMovement through this room will be slower.",
+      "scriptHash": "d39c6191766986acc9dae88f909942352fe83f79310bc6f01cd522b3a725bc66",
+      "outputFile": "deadly-encounters/rooms/collapsed-ceiling.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "deadly.room-darkness",
+      "category": "deadly-encounter",
+      "status": "approved",
+      "script": "The light dies as you enter.\n\nBeyond a few meters, the chamber disappears into absolute black. Shapes become shadows, distances become uncertain, and even the tomb’s metallic walls seem to vanish into the void.\n\nWhatever waits beyond the darkness is hidden from sight.",
+      "scriptHash": "4bac901e3342a99407687917fde561774540dff5498c4f872c0a5f0cd23b2478",
+      "outputFile": "deadly-encounters/rooms/darkness.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "deadly.room-corrosive-fluid-leak",
+      "category": "deadly-encounter",
+      "status": "approved",
+      "script": "Something is leaking into the chamber.\n\nHissing liquid spills from ruptured conduits and spreads across the floor, eating into anything it touches. Only the shelter of the walls offers any protection from the corrosive spray.\n\nRemaining exposed here will be dangerous.",
+      "scriptHash": "2da6e6ae256c1111144f0655aa33b0ad5be0cf9b15fdfe921298cd1c46e08061",
+      "outputFile": "deadly-encounters/rooms/corrosive-fluid-leak.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "deadly.room-energy-rupture",
+      "category": "deadly-encounter",
+      "status": "approved",
+      "script": "Emerald energy arcs across the chamber.\n\nAncient conduits have split open, sending violent discharges crawling through the walls. The closer you move to the surrounding structure, the more violently the energy responds.\n\nThe room itself has become a weapon.",
+      "scriptHash": "8a9a74cc1cac0489640a237a2824bf8295f7a5ad20a5d285496bbe7a0ab04c3c",
+      "outputFile": "deadly-encounters/rooms/energy-rupture.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "deadly.room-airborne-virus",
+      "category": "deadly-encounter",
+      "status": "approved",
+      "script": "Warning indicators flare.\n\nAn invisible contaminant hangs in the air, released from systems sealed for untold millennia. Breathing becomes difficult. Muscles hesitate. Even simple actions demand an effort they did not moments before.\n\nSomething in this room is fighting you from within.",
+      "scriptHash": "e29abc20a0480b9a25fb73d1eac3ceb74679af003d80fb4f9000605cb81c9648",
+      "outputFile": "deadly-encounters/rooms/airborne-virus.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "deadly.room-accelerated-decelerated-time",
+      "category": "deadly-encounter",
+      "status": "approved",
+      "script": "Time shifts.\n\nFor a moment, movement across the chamber becomes impossible to judge. Warriors seem to lurch forward between heartbeats, then hang motionless as the world crawls around them.\n\nThe flow of time here is no longer constant.",
+      "scriptHash": "3b7abecb57b159757d39d8c02e1b70b860845fc4af8cff9c4db75b4bface381e",
+      "outputFile": "deadly-encounters/rooms/accelerated-decelerated-time.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "deadly.room-crumbling-floor",
+      "category": "deadly-encounter",
+      "status": "approved",
+      "script": "The floor gives way beneath you.\n\nAncient plates crack and collapse into the darkness below. Every sudden movement sends another section breaking loose, forcing the strike team to move with deliberate care.\n\nSpeed is a luxury this chamber will not allow.",
+      "scriptHash": "4819e62b09a050712724096f501855bb74f9578fd8d4f52508bfad0f498d2589",
+      "outputFile": "deadly-encounters/rooms/crumbling-floor.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "deadly.room-gravitic-anomaly",
+      "category": "deadly-encounter",
+      "status": "approved",
+      "script": "Gravity twists.\n\nArmor suddenly feels lighter. Bodies move farther with every step, yet weapons strike with strangely diminished force as the chamber’s distorted field pulls at everything within it.\n\nThe laws of weight and momentum have changed here.",
+      "scriptHash": "8cf47716cad63ed1183cb05c38af3bb692be6651135365898047eb34228688f4",
+      "outputFile": "deadly-encounters/rooms/gravitic-anomaly.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "deadly.objective-quantum-shield",
+      "category": "deadly-encounter",
+      "status": "approved",
+      "script": "An emerald field snaps into existence around the objective.\n\nLight bends across its surface as the air shimmers with contained energy. Shots passing close to the device distort, their trajectories pulled aside by an invisible barrier.\n\nThe tomb is protecting anything that fights beneath its shield.",
+      "scriptHash": "190cca7363b6744818e1aba4bd66779bb8bbe7ef2b2148d0217ea3c2875435b3",
+      "outputFile": "deadly-encounters/objectives/quantum-shield.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "deadly.objective-tesla-device",
+      "category": "deadly-encounter",
+      "status": "approved",
+      "script": "Electrical charge builds around the ancient device.\n\nArcs of energy crawl across the floor, searching for movement. The moment something crosses its influence, the chamber answers with a violent discharge.\n\nEvery sudden move risks awakening the storm.",
+      "scriptHash": "b1d299bce550fa75150b0cc1cf06f1c590888730cb404d3b69b0926382ec0410",
+      "outputFile": "deadly-encounters/objectives/tesla-device.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "deadly.objective-teleportation-device",
+      "category": "deadly-encounter",
+      "status": "approved",
+      "script": "Space folds around the objective.\n\nFor an instant, the chamber seems to exist in two places at once. Distance loses meaning as matter flickers between points that should be separated by meters of stone and metal.\n\nThe tomb has opened a path through space itself.",
+      "scriptHash": "fe0cc1f17a80cde03f22f29203f86f2e99be10f0210d0614573f6ab65b7639d3",
+      "outputFile": "deadly-encounters/objectives/teleportation-device.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "deadly.objective-control-node",
+      "category": "deadly-encounter",
+      "status": "approved",
+      "script": "The dormant console awakens.\n\nStreams of emerald symbols race across its surface as ancient command channels come back online. Somewhere deeper in the complex, systems begin responding to whoever controls this position.\n\nThis node offers access to the tomb’s command network.",
+      "scriptHash": "490f2375ebae09f0e595658c6c5be9b96822b99db77184f3f2766ab1bd03b9d9",
+      "outputFile": "deadly-encounters/objectives/control-node.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "deadly.objective-temporal-sphere",
+      "category": "deadly-encounter",
+      "status": "approved",
+      "script": "Time thickens around the sphere.\n\nMovement becomes strangely uneven. A warrior seems to surge forward between heartbeats, then hang motionless while the rest of the chamber continues around them.\n\nControl of this device means control over the sequence of time itself.",
+      "scriptHash": "992ce9cf662caeaf7eb39d27740787fdd336cc9a718ab0fb3b9f8df13feec13b",
+      "outputFile": "deadly-encounters/objectives/temporal-sphere.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "deadly.objective-hyperphase-aura",
+      "category": "deadly-encounter",
+      "status": "approved",
+      "script": "The air around the objective begins to shimmer.\n\nEdges sharpen. Blades hum. Matter seems less certain here, as though the boundary between solid metal and empty space has begun to weaken.\n\nWeapons carried into the field suddenly feel far more dangerous.",
+      "scriptHash": "d400712ed428fd5a531d53f07cc12dbf834439f7224f255da22f6c01cc12c8ca",
+      "outputFile": "deadly-encounters/objectives/hyperphase-aura.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "deadly.objective-regeneration-sphere",
+      "category": "deadly-encounter",
+      "status": "approved",
+      "script": "Emerald light spills outward from the sphere.\n\nDamaged armor begins knitting together. Failing systems stabilize. Wounds that should have been fatal seem to hesitate at the edge of death.\n\nSomething within this field refuses to let the fallen die.",
+      "scriptHash": "bd48d32da9f3f9dc0712026a95d5cb80cd883ca62232995b02edca04e2aac73a",
+      "outputFile": "deadly-encounters/objectives/regeneration-sphere.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "deadly.objective-amplification-matrix",
+      "category": "deadly-encounter",
+      "status": "approved",
+      "script": "The matrix erupts with power.\n\nEnergy races outward and gathers around nearby weapons, feeding them far beyond their normal limits. Barrels glow. Blades crackle. Every strike promises devastating force.\n\nBut power drawn from the tomb is never without risk.",
+      "scriptHash": "5e09bc5a2a292de581ec9f63856b96f179f3500d21820f3eb0246433a4a666fb",
+      "outputFile": "deadly-encounters/objectives/amplification-matrix.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    }
+  ]
+}

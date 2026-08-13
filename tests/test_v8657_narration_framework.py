@@ -61,19 +61,18 @@ class NarrationManifestTests(unittest.TestCase):
     def test_manifest_availability_matches_generated_source_status(self):
         manifest = json.loads((ROOT / 'Assets/Audio/Narration/narration-manifest.json').read_text(encoding="utf-8"))
         entries = manifest['entries']
-        self.assertEqual(len(entries), 29)
-        self.assertEqual(len(set(entries)), 29)
+        self.assertEqual(len(entries), len(set(entries)))
         self.assertEqual(sum(key.startswith('mission.') for key in entries), 6)
         self.assertEqual(sum(key.startswith('event.') for key in entries), 11)
         self.assertEqual(sum(key.startswith('outcome.') for key in entries), 12)
         records = {}
-        for name in ('missions.json', 'events.json', 'outcomes.json'):
-            records.update((item['id'], item) for item in json.loads((ROOT / 'Narration/scripts' / name).read_text(encoding="utf-8"))['scripts'])
+        for path in (ROOT / 'Narration/scripts').glob('*.json'):
+            records.update((item['id'], item) for item in json.loads(path.read_text(encoding="utf-8"))['scripts'])
         self.assertEqual(set(records), set(entries))
         for script_id, entry in entries.items():
             generated = records[script_id]['status'] == 'generated'
             self.assertEqual(generated, entry['available'], script_id)
-            self.assertEqual(records[script_id]['outputFile'] if generated else None, entry['file'], script_id)
+            self.assertEqual(records[script_id]['outputFile'], entry['file'], script_id)
 
     def test_both_awakened_warriors_share_one_manifest_entry(self):
         entries = json.loads((ROOT / 'Assets/Audio/Narration/narration-manifest.json').read_text(encoding="utf-8"))['entries']
@@ -82,9 +81,8 @@ class NarrationManifestTests(unittest.TestCase):
 
     def test_production_scripts_preserve_entry_count_generation_and_approved_copy(self):
         records = []
-        for name in ('missions.json', 'events.json', 'outcomes.json'):
-            records.extend(json.loads((ROOT / 'Narration/scripts' / name).read_text(encoding="utf-8"))['scripts'])
-        self.assertEqual(len(records), 29)
+        for path in (ROOT / 'Narration/scripts').glob('*.json'):
+            records.extend(json.loads(path.read_text(encoding="utf-8"))['scripts'])
         self.assertEqual([], [item['id'] for item in records if item['status'] == 'draft'])
 
         mission_intros = [item for item in records if item['id'].startswith('mission.')]
