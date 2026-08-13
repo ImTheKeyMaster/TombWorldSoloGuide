@@ -106,10 +106,11 @@ class ProducerStaticTests(unittest.TestCase):
 
         approved = [item["id"] for item in records() if item["status"] == "approved"]
         deadly = [item["id"] for item in records() if item["category"] == "deadly-encounter"]
-        self.assertEqual(deadly, approved)
-        self.assertEqual(16, len(approved))
+        self.assertEqual([], approved)
+        self.assertEqual(16, len(deadly))
+        self.assertTrue(all(item["status"] == "generated" for item in records() if item["category"] == "deadly-encounter"))
 
-    def test_deadly_encounter_filter_and_library_placeholders(self):
+    def test_deadly_encounter_filter_and_generated_library(self):
         markup = (TOOL / "static" / "index.html").read_text(encoding="utf-8")
         browser = (TOOL / "static" / "producer.js").read_text(encoding="utf-8")
         self.assertIn('<option value="deadly-encounter">Deadly Encounters</option>', markup)
@@ -120,7 +121,7 @@ class ProducerStaticTests(unittest.TestCase):
         self.assertEqual(8, sum(item["id"].startswith("deadly.room-") for item in deadly))
         self.assertEqual(8, sum(item["id"].startswith("deadly.objective-") for item in deadly))
         self.assertEqual(16, len({item["outputFile"] for item in deadly}))
-        self.assertTrue(all(item["status"] == "approved" for item in deadly))
+        self.assertTrue(all(item["status"] == "generated" for item in deadly))
         self.assertNotIn("deadly.unusual", {item["id"] for item in deadly})
 
         definitions = (ROOT / "deadly-encounters.js").read_text(encoding="utf-8")
@@ -129,16 +130,37 @@ class ProducerStaticTests(unittest.TestCase):
         self.assertEqual(feature_ids - {"unusual"}, narration_features)
 
         entries = json.loads((ROOT / "Assets/Audio/Narration/narration-manifest.json").read_text(encoding="utf-8"))["entries"]
+        expected_settings_hash = "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f"
         for item in deadly:
             normalized = item["script"].replace("\r\n", "\n").replace("\r", "\n").strip()
             self.assertEqual(hashlib.sha256(normalized.encode("utf-8")).hexdigest(), item["scriptHash"])
             entry = entries[item["id"]]
-            self.assertFalse(entry["available"])
+            self.assertTrue(entry["available"])
             self.assertEqual(item["outputFile"], entry["file"])
             self.assertEqual(item["scriptHash"], entry["scriptHash"])
             self.assertEqual(item["id"].removeprefix("deadly."), entry["deadlyEncounterFeatureId"])
-            for key in ("settingsHash", "generationHash", "audioHash", "durationMs"):
-                self.assertIsNone(entry[key], f"{item['id']}: {key}")
+            audio = ROOT / "Assets" / "Audio" / "Narration" / entry["file"]
+            self.assertTrue(audio.is_file(), item["id"])
+            self.assertEqual(hashlib.sha256(audio.read_bytes()).hexdigest(), entry["audioHash"])
+            self.assertGreater(entry["durationMs"], 0)
+            for key in ("settingsHash", "generationHash", "audioHash"):
+                self.assertEqual(item[key], entry[key], f"{item['id']}: {key}")
+            self.assertEqual(expected_settings_hash, item["settingsHash"])
+            self.assertEqual(
+                hashlib.sha256(f"{item['scriptHash']}:{item['settingsHash']}".encode("utf-8")).hexdigest(),
+                item["generationHash"],
+            )
+            self.assertEqual("keNGlRe631vnQRvGXasN", item["voiceId"])
+            self.assertEqual("eleven_multilingual_v2", item["modelId"])
+            if server is not None:
+                self.assertEqual(server.validate_audio(audio), entry["durationMs"])
+
+        expected_scripts = {
+            "deadly.room-darkness": "The light dies as you enter.\n\nBeyond a few meters, the chamber disappears into absolute black. Shapes become shadows, distances become uncertain, and even the metallic walls of the tomb seem to vanish into the void.\n\nWhatever waits beyond the darkness is hidden from sight.",
+            "deadly.room-gravitic-anomaly": "Gravity twists.\n\nArmor suddenly feels lighter. Bodies move farther with every step, yet weapons strike with strangely diminished force as a distorted field pulls at everything within the chamber.\n\nThe laws of weight and momentum have changed here.",
+            "deadly.objective-control-node": "The dormant console awakens.\n\nStreams of emerald symbols race across its surface as ancient command channels come back online. Somewhere deeper in the complex, systems begin responding to whoever controls this position.\n\nThis node offers access to the ancient command network.",
+        }
+        self.assertEqual(expected_scripts, {item["id"]: item["script"] for item in deadly if item["id"] in expected_scripts})
 
     def test_browser_has_no_secret_or_direct_tts_call(self):
         browser = (TOOL / "static" / "producer.js").read_text(encoding="utf-8")
@@ -186,7 +208,7 @@ class ProducerApiTests(unittest.TestCase):
         self.assertEqual(2, data["totals"]["approved"] + data["totals"]["blocked"])
         self.assertGreater(data["totals"]["totalCharacters"], 0)
 
-    def test_deadly_encounters_are_all_approved_and_would_generate(self):
+    def test_deadly_encounters_are_generated_and_up_to_date(self):
         chosen = json.loads((ROOT / "Narration/producer-settings.json").read_text(encoding="utf-8"))
         deadly_ids = [item["id"] for item in server.library() if item["category"] == "deadly-encounter"]
 
@@ -199,9 +221,9 @@ class ProducerApiTests(unittest.TestCase):
         tts.assert_not_called()
         self.assertEqual(16, data["totals"]["selected"])
         self.assertEqual(16, data["totals"]["approved"])
-        self.assertEqual(16, data["totals"]["wouldGenerate"])
+        self.assertEqual(0, data["totals"]["wouldGenerate"])
         self.assertEqual(0, data["totals"]["blocked"])
-        self.assertEqual(0, data["totals"]["wouldSkip"])
+        self.assertEqual(16, data["totals"]["wouldSkip"])
 
     def test_generation_and_force_generation_require_confirmation(self):
         self.assertEqual(400, self.client.post("/api/generate", json={"ids": []}).status_code)
