@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.69';
+  const APP_VERSION = '8.6.70';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
     init:()=>Promise.resolve(),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},pauseNarration:()=>false,resumeNarration:()=>Promise.resolve(false),setEnabled:()=>{},isEnabled:()=>true,canReplay:()=>false
   });
@@ -44,6 +44,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const app = $('#app');
   const gameMenuBtn = $('#gameMenuBtn');
   const narrationSpeakerBtn=$('#narrationSpeakerBtn');
+  let pendingBoardSetupMissionIntro=null;
   function syncNarrationControls(){
     const enabled=TombWorldNarration.isEnabled();
     narrationSpeakerBtn.classList.toggle('is-muted',!enabled);
@@ -53,12 +54,26 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     narrationSpeakerBtn.setAttribute('aria-pressed',String(enabled));
     narrationSpeakerBtn.title=`Narration ${enabled?'on':'off'}`;
   }
+  function playPendingBoardSetupMissionIntro(){
+    if(!pendingBoardSetupMissionIntro||state.screen!=='setup'||currentSetupStepId()!=='killzone'||!TombWorldNarration.isEnabled())return false;
+    const missionId=pendingBoardSetupMissionIntro;
+    pendingBoardSetupMissionIntro=null;
+    void TombWorldNarration.playMissionIntro(missionId,true);
+    return true;
+  }
+  function clearPendingBoardSetupMissionIntro(){pendingBoardSetupMissionIntro=null;}
+  function enterBoardSetup(){
+    pendingBoardSetupMissionIntro=state.missionId;
+    playPendingBoardSetupMissionIntro();
+  }
   narrationSpeakerBtn.addEventListener('click',()=>TombWorldNarration.setEnabled(!TombWorldNarration.isEnabled()));
-  window.addEventListener('tombworldnarrationchange',()=>{
+  function handleNarrationChange(){
     syncNarrationControls();
+    if(TombWorldNarration.isEnabled())playPendingBoardSetupMissionIntro();
     const replay=$('#replayNarration');
     if(replay)replay.disabled=!TombWorldNarration.canReplay();
-  });
+  }
+  window.addEventListener('tombworldnarrationchange',handleNarrationChange);
   const gameWorkspace = $('#gameWorkspace');
   const operativeStatusPanel = $('#operativeStatusPanel');
   const operativeStatusToggle = $('#operativeStatusToggle');
@@ -2283,15 +2298,16 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(stepId==='team'&&!canBuildPlayerRoster()){showToast('Wait for the selected Kill Team to finish loading.');return;}
     setupNavigationInProgress=true;
     if(stepId==='playerRoster')assignPlayerDisplayNumbers();
+    if(stepId==='killzone')clearPendingBoardSetupMissionIntro();
     const steps=activeSetupSteps();state.setupStep=Math.min(steps.length-1,state.setupStep+1);save();render();
-    if(stepId==='mission')void TombWorldNarration.playMissionIntro(state.missionId,true);
+    if(stepId==='mission')enterBoardSetup();
     setupNavigationInProgress=false;
   }
 
   function bindSetup(stepId){
     $$('.mission-choice').forEach(b=>b.onclick=()=>{const missionId=b.dataset.mission;state.missionId=missionId;state.missionState=freshMissionState(mission());state.missionRuntime=null;state.tracker=0;state.setupChecks={};state.roster=[];state.startingNpoGeneration=null;save();render();setTimeout(()=>loadObjectiveMission(missionId).then(()=>{if(state.missionId===missionId)save();}),0);});
     $('#setupHome')?.addEventListener('click',()=>{state.screen='home';save();render();});
-    $('#setupBack')?.addEventListener('click',()=>{if(stepId==='killzone')TombWorldNarration.stop();state.setupStep=Math.max(0,state.setupStep-1);save();render();});
+    $('#setupBack')?.addEventListener('click',()=>{if(stepId==='killzone'){clearPendingBoardSetupMissionIntro();TombWorldNarration.stop();}state.setupStep=Math.max(0,state.setupStep-1);save();render();});
     $('#setupNext')?.addEventListener('click',()=>advanceSetupStep(stepId));
     $$('[data-player-team]').forEach(button=>button.onclick=()=>selectPlayerTeam(button.dataset.playerTeam));
     $$('[data-check]').forEach(c=>c.onchange=()=>{state.setupChecks[c.dataset.check]=c.checked;save();render();});

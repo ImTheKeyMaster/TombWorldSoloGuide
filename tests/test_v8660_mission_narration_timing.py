@@ -21,7 +21,8 @@ class MissionNarrationTimingTests(unittest.TestCase):
         begin_game = source("$('#beginGame')", 'function runStartingNpoGeneration')
         setup_next = source('function advanceSetupStep', 'function bindSetup')
         self.assertNotIn('playMissionIntro', begin_game)
-        self.assertIn("if(stepId==='mission')void TombWorldNarration.playMissionIntro(state.missionId,true);", setup_next)
+        self.assertIn("if(stepId==='mission')enterBoardSetup();", setup_next)
+        self.assertIn('function playPendingBoardSetupMissionIntro()', APP)
         self.assertEqual(1, APP.count('playMissionIntro('))
 
     def test_render_and_killzone_controls_do_not_start_intro(self):
@@ -34,7 +35,7 @@ class MissionNarrationTimingTests(unittest.TestCase):
     def test_back_stops_current_audio_without_stopping_mission_selection(self):
         setup_back = source("$('#setupBack')", "$('#setupNext')")
         mission_choice = source("$$('.mission-choice')", "$('#setupHome')")
-        self.assertIn("if(stepId==='killzone')TombWorldNarration.stop()", setup_back)
+        self.assertIn("if(stepId==='killzone'){clearPendingBoardSetupMissionIntro();TombWorldNarration.stop();}", setup_back)
         self.assertNotIn('TombWorldNarration.stop()', mission_choice)
 
     def test_preference_values_preserve_enabled_semantics(self):
@@ -52,40 +53,44 @@ store.set('tombWorldSoloGuide.narrationEnabled','true');if(!n.isEnabled())throw 
         result = subprocess.run(['node', '-e', script], cwd=ROOT, text=True, capture_output=True)
         self.assertEqual(0, result.returncode, result.stderr)
 
-    def test_missing_preference_allows_board_transition_playback_once(self):
+    def test_board_setup_intro_pending_toggle_and_navigation_behavior(self):
+        board_intro = source('function playPendingBoardSetupMissionIntro', "narrationSpeakerBtn.addEventListener")
         advance_setup = source('function advanceSetupStep', 'function bindSetup')
+        narration_change = source('function handleNarrationChange', "window.addEventListener('tombworldnarrationchange'")
+        setup_back = source("$('#setupBack')", "$('#setupNext')")
         script = f"""
-const fs=require('fs'),vm=require('vm');
-const calls=[],store=new Map();
-class Audio {{
-  constructor(){{this.src='';this.paused=true;this.ended=false;Audio.instance=this;}}
-  pause(){{this.paused=true;calls.push('pause')}}
-  removeAttribute(){{this.src=''}} load(){{}}
-  play(){{this.paused=false;calls.push('play:'+this.src);return Promise.resolve()}}
-}}
-const context={{Audio,URL,location:{{href:'https://example.test/app/'}},
-  fetch:async()=>({{ok:true,json:async()=>({{entries:{{'mission.01.intro':{{available:true,file:'missions/01.mp3'}}}}}})}}),
-  localStorage:{{getItem:key=>store.has(key)?store.get(key):null,setItem:(key,value)=>store.set(key,value)}},
-  dispatchEvent:()=>{{}},CustomEvent:function(){{}},calls,store}};
-context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
-vm.runInContext(`
+const calls=[];
 let setupNavigationInProgress=false;
-const state={{setupStep:0,missionId:'shifting-labyrinth'}};
+const state={{screen:'setup',setupStep:0,missionId:'shifting-labyrinth'}};
+let enabled=true;
+const TombWorldNarration={{isEnabled:()=>enabled,playMissionIntro:(id,restart)=>calls.push(`play:${{id}}:${{restart}}`),stop:()=>calls.push('stop'),canReplay:()=>false}};
 const currentSetupStepId=()=>state.setupStep===0?'mission':'killzone';
 const activeSetupSteps=()=>['mission','killzone'];
 const canBuildPlayerRoster=()=>true,showToast=()=>{{}},assignPlayerDisplayNumbers=()=>{{}},save=()=>{{}};
 const render=()=>calls.push('render:'+currentSetupStepId());
+const syncNarrationControls=()=>{{}},$=()=>null;
+let pendingBoardSetupMissionIntro=null;
+{board_intro}
+{narration_change}
 {advance_setup}
-globalThis.runTransition=()=>advanceSetupStep('mission');`,context);
-(async()=>{{
-  const n=context.TombWorldNarration;
-  await n.init();context.runTransition();await new Promise(resolve=>setTimeout(resolve,0));
-  const plays=calls.filter(call=>call.includes('missions/01.mp3'));
-  if(plays.length!==1)throw Error('Board Setup intro play count was '+plays.length);
-  if(calls.indexOf('render:killzone')>calls.indexOf(plays[0]))throw Error('intro started before Board Setup rendered');
-  vm.runInContext('render()',context);await new Promise(resolve=>setTimeout(resolve,0));
-  if(calls.filter(call=>call.includes('missions/01.mp3')).length!==1)throw Error('ordinary Board Setup transition replayed intro');
-}})().catch(error=>{{console.error(error);process.exit(1)}});
+advanceSetupStep('mission');
+if(calls.filter(call=>call.startsWith('play:')).length!==1)throw Error('enabled entry did not play once');
+render();handleNarrationChange();
+if(calls.filter(call=>call.startsWith('play:')).length!==1)throw Error('rerender or change replayed completed intro');
+
+state.setupStep=0;enabled=false;advanceSetupStep('mission');
+if(calls.filter(call=>call.startsWith('play:')).length!==1||pendingBoardSetupMissionIntro!=='shifting-labyrinth')throw Error('disabled entry was not pending');
+enabled=true;handleNarrationChange();handleNarrationChange();
+if(calls.filter(call=>call.startsWith('play:')).length!==2||pendingBoardSetupMissionIntro!==null)throw Error('pending intro did not start exactly once');
+
+state.setupStep=0;enabled=false;advanceSetupStep('mission');
+if(!pendingBoardSetupMissionIntro)throw Error('new disabled visit was not pending');
+const stepId='killzone';
+const setupBack={{addEventListener:(event,handler)=>handler()}};
+eval(`const $=selector=>selector==='#setupBack'?setupBack:null;{setup_back}`);
+if(pendingBoardSetupMissionIntro!==null||!calls.includes('stop')||state.setupStep!==0)throw Error('Back did not clear and stop Board Setup narration');
+enabled=true;handleNarrationChange();
+if(calls.filter(call=>call.startsWith('play:')).length!==2)throw Error('stale pending intro played after Back');
 """
         result = subprocess.run(['node', '-e', script], cwd=ROOT, text=True, capture_output=True)
         self.assertEqual(0, result.returncode, result.stderr)
