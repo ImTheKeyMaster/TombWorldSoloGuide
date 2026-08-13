@@ -79,16 +79,24 @@ class NarrationManifestTests(unittest.TestCase):
         self.assertIn('event.awakened-warrior', entries)
         self.assertEqual(sum(key == 'event.awakened-warrior' for key in entries), 1)
 
-    def test_production_scripts_preserve_entry_count_draft_and_approved_copy(self):
+    def test_production_scripts_preserve_entry_count_generation_and_approved_copy(self):
         records = []
         for name in ('missions.json', 'events.json', 'outcomes.json'):
             records.extend(json.loads((ROOT / 'Narration/scripts' / name).read_text())['scripts'])
         self.assertEqual(len(records), 29)
-        self.assertEqual(['mission.04.intro'], [item['id'] for item in records if item['status'] == 'draft'])
-        draft = next(item for item in records if item['id'] == 'mission.04.intro')
-        self.assertFalse(any(draft.get(key) for key in ('settingsHash', 'generationHash', 'audioHash', 'voiceId', 'modelId')))
+        self.assertEqual([], [item['id'] for item in records if item['status'] == 'draft'])
+
+        mission_intros = [item for item in records if item['id'].startswith('mission.')]
+        self.assertEqual(6, len(mission_intros))
+        self.assertTrue(all(item['status'] == 'generated' for item in mission_intros))
+
         reanimation = next(item for item in records if item['id'] == 'event.reanimation-protocols')
-        self.assertEqual(reanimation['script'], "The fallen begin to move.\n\nEmerald light returns to darkened eyes. Bodies that should lie silent rise again, driven by ancient systems that refuse to accept their destruction.\n\nFor a time, death may not be enough to stop the tomb’s defenders.")
+        self.assertEqual(
+            reanimation['script'],
+            "The fallen begin to move.\n\n"
+            "Emerald light returns to darkened eyes. Bodies that should lie silent rise again, driven by ancient systems that refuse to accept their destruction.\n\n"
+            "For a time, death may not be enough to stop the tomb’s defenders."
+        )
 
 
 class NarrationManagerRuntimeTests(unittest.TestCase):
