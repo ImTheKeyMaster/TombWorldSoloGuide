@@ -55,33 +55,43 @@ store.set('tombWorldSoloGuide.narrationEnabled','true');if(!n.isEnabled())throw 
 
     def test_board_setup_intro_pending_toggle_and_navigation_behavior(self):
         board_intro = source('function playPendingBoardSetupMissionIntro', "narrationSpeakerBtn.addEventListener")
+        speaker_toggle = source("narrationSpeakerBtn.addEventListener('click'", 'function handleNarrationChange')
         advance_setup = source('function advanceSetupStep', 'function bindSetup')
-        narration_change = source('function handleNarrationChange', "window.addEventListener('tombworldnarrationchange'")
         setup_back = source("$('#setupBack')", "$('#setupNext')")
         script = f"""
 const calls=[];
 let setupNavigationInProgress=false;
 const state={{screen:'setup',setupStep:0,missionId:'shifting-labyrinth'}};
 let enabled=true;
-const TombWorldNarration={{isEnabled:()=>enabled,playMissionIntro:(id,restart)=>calls.push(`play:${{id}}:${{restart}}`),stop:()=>calls.push('stop'),canReplay:()=>false}};
+let resumeNext=false;
+const TombWorldNarration={{isEnabled:()=>enabled,setEnabled:async value=>{{enabled=value;return resumeNext;}},playMissionIntro:(id,restart)=>calls.push(`play:${{id}}:${{restart}}`),stop:()=>calls.push('stop')}};
 const currentSetupStepId=()=>state.setupStep===0?'mission':'killzone';
 const activeSetupSteps=()=>['mission','killzone'];
 const canBuildPlayerRoster=()=>true,showToast=()=>{{}},assignPlayerDisplayNumbers=()=>{{}},save=()=>{{}};
 const render=()=>calls.push('render:'+currentSetupStepId());
-const syncNarrationControls=()=>{{}},$=()=>null;
+let speakerClick;
+const narrationSpeakerBtn={{addEventListener:(event,handler)=>{{speakerClick=handler;}}}};
+const $=()=>null;
 let pendingBoardSetupMissionIntro=null;
 {board_intro}
-{narration_change}
+{speaker_toggle}
 {advance_setup}
+(async()=>{{
 advanceSetupStep('mission');
 if(calls.filter(call=>call.startsWith('play:')).length!==1)throw Error('enabled entry did not play once');
-render();handleNarrationChange();
-if(calls.filter(call=>call.startsWith('play:')).length!==1)throw Error('rerender or change replayed completed intro');
+render();
+if(calls.filter(call=>call.startsWith('play:')).length!==1)throw Error('rerender replayed completed intro');
 
 state.setupStep=0;enabled=false;advanceSetupStep('mission');
 if(calls.filter(call=>call.startsWith('play:')).length!==1||pendingBoardSetupMissionIntro!=='shifting-labyrinth')throw Error('disabled entry was not pending');
-enabled=true;handleNarrationChange();handleNarrationChange();
+resumeNext=false;await speakerClick();
 if(calls.filter(call=>call.startsWith('play:')).length!==2||pendingBoardSetupMissionIntro!==null)throw Error('pending intro did not start exactly once');
+
+state.setupStep=0;enabled=false;advanceSetupStep('mission');
+resumeNext=true;await speakerClick();
+if(calls.filter(call=>call.startsWith('play:')).length!==2||pendingBoardSetupMissionIntro!=='shifting-labyrinth')throw Error('pending intro preempted resumed narration');
+enabled=false;resumeNext=false;await speakerClick();
+if(calls.filter(call=>call.startsWith('play:')).length!==3||pendingBoardSetupMissionIntro!==null)throw Error('pending intro did not start after no narration resumed');
 
 state.setupStep=0;enabled=false;advanceSetupStep('mission');
 if(!pendingBoardSetupMissionIntro)throw Error('new disabled visit was not pending');
@@ -89,8 +99,9 @@ const stepId='killzone';
 const setupBack={{addEventListener:(event,handler)=>handler()}};
 eval(`const $=selector=>selector==='#setupBack'?setupBack:null;{setup_back}`);
 if(pendingBoardSetupMissionIntro!==null||!calls.includes('stop')||state.setupStep!==0)throw Error('Back did not clear and stop Board Setup narration');
-enabled=true;handleNarrationChange();
-if(calls.filter(call=>call.startsWith('play:')).length!==2)throw Error('stale pending intro played after Back');
+resumeNext=false;await speakerClick();
+if(calls.filter(call=>call.startsWith('play:')).length!==3)throw Error('stale pending intro played after Back');
+}})().catch(error=>{{console.error(error);process.exit(1)}});
 """
         result = subprocess.run(['node', '-e', script], cwd=ROOT, text=True, capture_output=True)
         self.assertEqual(0, result.returncode, result.stderr)

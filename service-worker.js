@@ -7,7 +7,7 @@ const APP_SHELL = './index.html';
 const NARRATION_MANIFEST = './Assets/Audio/Narration/narration-manifest.json';
 const PRECACHE_ASSETS = [
   './', APP_SHELL, `./event-effects.js?v=${APP_VERSION}`, `./narration.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`,
-  './manifest.webmanifest', './Assets/icon.svg', './Assets/Icons/move-to-shoot.svg', './Assets/Icons/narration-icon-disabled.svg',
+  './manifest.webmanifest', './Assets/icon.svg', './Assets/Icons/move-to-shoot.svg',
   './Assets/Images/Backgrounds/manifest.json',
   './Assets/Images/defeat.png', './Assets/Images/victory.png',
   './Assets/Maps/mission-01.png', './Assets/Maps/mission-02.png', './Assets/Maps/mission-03.png',
