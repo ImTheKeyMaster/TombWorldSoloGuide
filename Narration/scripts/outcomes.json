@@ -4,68 +4,80 @@
     {
       "id": "outcome.01.victory",
       "category": "outcome",
-      "status": "approved",
+      "status": "generated",
       "script": "The surviving warriors cross the boundary as the labyrinth shifts behind them.\n\nPassages fold closed. Walls grind together, swallowing the route you used only moments before.\n\nEnough of the team made it through.\n\nThe tomb tried to seal you inside.\n\nIt failed.\n\nMission accomplished.",
       "scriptHash": "ad80ec5db78182d309093bfd83c08a81f8ad5dac11e0137c04317e86414e0400",
       "outputFile": "outcomes/01-shifting-labyrinth-victory.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "547a4d7d153bee0f64139f57c9c8834754f4499cd24782187290d92d69b959d1",
+      "audioHash": "4f09040b7af2704dfcc3f897258ad762c38590b0eb4d30ef02a356e634c31833",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "outcome.01.defeat",
       "category": "outcome",
-      "status": "approved",
+      "status": "generated",
       "script": "The last routes begin to close.\n\nOne passage after another vanishes behind walls of living metal until the labyrinth becomes silent once more.\n\nToo few escaped before the tomb completed its transformation.\n\nThe survivors are scattered.\n\nThe mission is lost.",
       "scriptHash": "388bbce7e2db26c0dec543e7ca7f2ca49bce94d4a7fc93be51da41d085fe9742",
       "outputFile": "outcomes/01-shifting-labyrinth-defeat.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "0b27432c8cc6ef7976dcdaf1c4cdfc3aa2556e5e48cbc2494586f96b98397940",
+      "audioHash": "1520f19bc21a80d00c43d0583eb8a5af9c254a1eb54afcf2850d72aec900e84c",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "outcome.02.victory",
       "category": "outcome",
-      "status": "approved",
+      "status": "generated",
       "script": "Another sealed access point gives way.\n\nAcross the crypt, forced hatchways and shattered breach points now form a path through defenses never meant to be opened from within.\n\nThe tomb can no longer contain the route.\n\nThe way forward is open.\n\nMission accomplished.",
       "scriptHash": "85d83a4418e088f523c96444bcff8c25ce2942aff6b3505370bf2e6a1a54a8a6",
       "outputFile": "outcomes/02-demolition-protocol-victory.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "1ac0c08a2eed90dfcc28a992d2b93cd3ee2e444c4c7260653c69b2cdb1398a96",
+      "audioHash": "0fa89484b9ebad348e5a767e56167ac467c943c63078d22e6d624ef68b0c9666",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "outcome.02.defeat",
       "category": "outcome",
-      "status": "approved",
+      "status": "generated",
       "script": "The sealed network holds.\n\nThe openings you forced are not enough. Beyond them, ancient barriers remain intact as the tomb begins securing the damaged passages.\n\nThe route was never fully broken.\n\nThe way forward remains closed.\n\nMission failed.",
       "scriptHash": "2409cbd0cef8ac318c6dcfdc474b6a5eeaed5170ba27766de6d6fc6a750e56e0",
       "outputFile": "outcomes/02-demolition-protocol-defeat.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "8e1ab7bcfcaeae6aedb220134af65e1bcab3ad19caef65a1f471237c748db20b",
+      "audioHash": "e6ca3587099139616fd488a1be0274a67ce67552848d76a543794de374c13617",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "outcome.03.victory",
       "category": "outcome",
-      "status": "approved",
+      "status": "generated",
       "script": "The carrier crosses the boundary with the transponder still in hand.\n\nBehind them, the signal fades beneath layers of stone and living metal, but this time it is leaving the crypt with you.\n\nThe device is secure.\n\nExtraction successful.\n\nMission accomplished.",
       "scriptHash": "30cf70d309c196ee14524ff45b6d467b2994b8dc5bba284c058e4be1fa662371",
       "outputFile": "outcomes/03-recover-transponder-victory.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "6bac00e1d375bf6dc93c8084275624dd688a085ba339a71c27f2493d6fc678cf",
+      "audioHash": "bd76a4af2d9838e6c1e8f23f1ef6fd744c260b9381878aaf5a1b079b455378ee",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "outcome.03.defeat",
       "category": "outcome",
-      "status": "approved",
+      "status": "generated",
       "script": "The signal fades.\n\nWhether buried somewhere within the crypt or lost with those who tried to recover it, the transponder remains beyond reach.\n\nStatic fills the channel.\n\nThen nothing.\n\nWhatever information it carried will remain inside the Tomb World.\n\nMission failed.",
       "scriptHash": "2d7005f6931154f59b4c4862a4cea514e921bd064cc42977909f3d87ad2ba76f",
       "outputFile": "outcomes/03-recover-transponder-defeat.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "09ccdb1aa65813b8ea44301abab798d7c2e6d02d6048b26e47428b35bc0bce5b",
+      "audioHash": "398d0361aa75207c9c60e7c10ffe349681912e0a7b40e98eb7bec95b8871023d",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "outcome.04.victory",
@@ -96,46 +108,54 @@
     {
       "id": "outcome.05.victory",
       "category": "outcome",
-      "status": "approved",
+      "status": "generated",
       "script": "Another chamber falls silent.\n\nEnough of the sub-crypt has now been opened, cleared and mapped to reveal the shape of what lies beneath the Tomb World.\n\nThe darkness still holds many secrets.\n\nBut not these.\n\nThe reconnaissance is complete.\n\nMission accomplished.",
       "scriptHash": "e3c61ba9824472b20524d5deee776f4fc1755a6cf5772d14ad986b548f0594c9",
       "outputFile": "outcomes/05-scout-sub-crypt-victory.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "05a556727c642d7e3feca3481f8c30ae2364de57e2dcd2652dbb37ca83cfdd4f",
+      "audioHash": "b084115ff562534319a4c9d0d4c97c62d70af676b87efd8bca1061925569a98d",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "outcome.05.defeat",
       "category": "outcome",
-      "status": "approved",
+      "status": "generated",
       "script": "The exploration ends here.\n\nBeyond the chambers you reached, sealed rooms continue into the darkness, their contents unknown and their guardians undisturbed.\n\nToo much of the sub-crypt remains hidden.\n\nThe tomb keeps its secrets.\n\nMission failed.",
       "scriptHash": "6f86d5744e97679db54ae932adf50b7bea6a98d9b8e97f74ed40bcd5fec5b961",
       "outputFile": "outcomes/05-scout-sub-crypt-defeat.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "3fefacf8cfa7cb62d1fdf389cc6edc71d9eb038ea08ccb9052828ce2f736133c",
+      "audioHash": "d223e3c35a21daf1496ac784690fdd6ea5932819ff783f99b1a0fc5770f9d94a",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "outcome.06.victory",
       "category": "outcome",
-      "status": "approved",
+      "status": "generated",
       "script": "One by one, the survivors emerge from the tomb's phasing routes.\n\nScattered warriors become a formation again, gathering together beyond the maze of impossible passages.\n\nThe tomb divided you.\n\nIt could not keep you apart.\n\nThe team is reunited.\n\nMission accomplished.",
       "scriptHash": "d246ed5d2d2d35b3f191e9699fb162e83475cf4a60d1e998a976430c596e3242",
       "outputFile": "outcomes/06-regroup-victory.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "a17ba596b2fb9f9422d428060c36dbd33f3f6af4c820e089687b9590889e7c4d",
+      "audioHash": "1c2458f7bc06ad5f5a6bd9ee795e44771f11b957235f8a99cc414b0281f40690",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "outcome.06.defeat",
       "category": "outcome",
-      "status": "approved",
+      "status": "generated",
       "script": "The phasing routes never bring the team back together.\n\nWarriors remain separated by chambers, sealed passages and distances that refuse to behave as they should.\n\nThe tomb has divided the survivors and denied them any chance to reform.\n\nThe regroup has failed.",
       "scriptHash": "20ff564ccb4a3b75bef6edf2cca3beebdaa48c7eb3e81301f5ea7c15889c5b04",
       "outputFile": "outcomes/06-regroup-defeat.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "c467dc47f67152c0af257fe9c9cdd60f0a613e04fcc8ec2c634a664d80b55ef6",
+      "audioHash": "febe6eada3df80d99cbee572ad3489b950b4644d0bb0a0d319da64797be2ca7e",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     }
   ]
 }
