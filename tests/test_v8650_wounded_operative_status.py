@@ -51,7 +51,7 @@ class WoundedOperativeStatusTests(unittest.TestCase):
         self.assertNotRegex(self.row, r'<(?:button|input|select)')
 
     def test_release_updates_app_but_not_save_version(self):
-        self.assertIn("const APP_VERSION = '8.6.63';", APP)
+        self.assertIn("const APP_VERSION = '8.6.64';", APP)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
 

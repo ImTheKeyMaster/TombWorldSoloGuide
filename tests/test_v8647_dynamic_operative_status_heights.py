@@ -55,10 +55,10 @@ class DynamicOperativeStatusHeightTests(unittest.TestCase):
             self.assertIn(selector, CSS)
 
     def test_release_version_and_save_schema(self):
-        self.assertIn("const APP_VERSION = '8.6.63';", APP)
-        self.assertIn("const APP_VERSION = '8.6.63';", SERVICE_WORKER)
-        self.assertIn('V8.6.63', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.63'))
+        self.assertIn("const APP_VERSION = '8.6.64';", APP)
+        self.assertIn("const APP_VERSION = '8.6.64';", SERVICE_WORKER)
+        self.assertIn('V8.6.64', INDEX)
+        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.64'))
         self.assertIn('## v8.6.47', README)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
