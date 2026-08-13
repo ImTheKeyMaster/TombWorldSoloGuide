@@ -13,6 +13,46 @@ MANIFEST_PATH = ROOT / "Assets/Audio/Narration/narration-manifest.json"
 
 
 class DeadlyEncounterNarrationTests(unittest.TestCase):
+    def test_event_queued_between_deadly_encounters_plays_after_both_once(self):
+        script = r"""
+const fs=require('fs'),vm=require('vm');
+const calls=[];
+let active=false;
+class Audio {
+  constructor(){this.src='';this.onended=null;this.onerror=null;Audio.instance=this;}
+  pause(){active=false;}
+  removeAttribute(name){if(name==='src')this.src='';}
+  load(){}
+  play(){if(active)throw Error('narration tracks overlapped');active=true;calls.push(this.src);return Promise.resolve();}
+  end(){active=false;const ended=this.onended;if(ended)ended();}
+}
+const entries={
+  first:{category:'deadly-encounter',deadlyEncounterFeatureId:'room-darkness',available:true,file:'deadly/room-darkness.mp3'},
+  second:{category:'deadly-encounter',deadlyEncounterFeatureId:'objective-control-node',available:true,file:'deadly/objective-control-node.mp3'},
+  'event.pending':{available:true,file:'events/pending.mp3'}
+};
+const context={Audio,URL,location:{href:'https://example.test/app/'},fetch:async()=>({ok:true,json:async()=>({entries})}),
+ localStorage:{getItem:()=>null,setItem:()=>{}},dispatchEvent:()=>{},CustomEvent:function(){}};
+context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
+const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
+(async()=>{
+ const n=context.TombWorldNarration;await n.init();
+ const first=n.playDeadlyEncounter('room-darkness','discovery-1');await flush();
+ const event=n.playEvent('pending','event-1');
+ const second=n.playDeadlyEncounter('objective-control-node','discovery-2');await flush();
+ if(calls.length!==1||!calls[0].endsWith('room-darkness.mp3'))throw Error('first discovery was interrupted');
+ Audio.instance.end();await flush();
+ if(calls.length!==2||!calls[1].endsWith('objective-control-node.mp3'))throw Error('second discovery did not play next');
+ Audio.instance.end();await flush();
+ if(calls.length!==3||!calls[2].endsWith('events/pending.mp3'))throw Error('pending event did not play after discoveries');
+ Audio.instance.end();
+ if(!await first||!await second||!await event)throw Error('queued narration was not reported');
+ if(calls.filter(src=>src.endsWith('events/pending.mp3')).length!==1)throw Error('pending event did not play exactly once');
+})().catch(error=>{console.error(error);process.exit(1)});
+"""
+        result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+
     def test_consecutive_discoveries_wait_and_play_every_feature_once_in_order(self):
         script = r"""
 const fs=require('fs'),vm=require('vm');

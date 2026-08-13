@@ -319,7 +319,7 @@
     const duplicateKey = `deadly:${discoveryKey}`;
     if (automaticPlayback.has(duplicateKey)) return Promise.resolve(false);
     automaticPlayback.add(duplicateKey);
-    clearEventQueue();
+    if (!deadlyEncounterQueueRunning) clearEventQueue();
     const result = new Promise(resolve => deadlyEncounterQueue.push({ featureIds: orderedFeatureIds, duplicateKey, resolve }));
     if (!deadlyEncounterQueueRunning) void drainDeadlyEncounterQueue(deadlyEncounterGeneration);
     return result;
