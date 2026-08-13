@@ -31,13 +31,28 @@ class MissionNarrationTimingTests(unittest.TestCase):
         check_handlers = source("$$('[data-check]')", "$('#randomPlayerTeam')")
         self.assertNotIn('playMissionIntro', check_handlers)
 
-    def test_back_and_mission_change_stop_current_audio(self):
+    def test_back_stops_current_audio_without_stopping_mission_selection(self):
         setup_back = source("$('#setupBack')", "$('#setupNext')")
         mission_choice = source("$$('.mission-choice')", "$('#setupHome')")
         self.assertIn("if(stepId==='killzone')TombWorldNarration.stop()", setup_back)
         self.assertNotIn('TombWorldNarration.stop()', mission_choice)
 
-    def test_missing_preference_defaults_on_and_board_transition_plays_once(self):
+    def test_preference_values_preserve_enabled_semantics(self):
+        script = r"""
+const fs=require('fs'),vm=require('vm');
+const store=new Map();
+const context={localStorage:{getItem:key=>store.has(key)?store.get(key):null,setItem:(key,value)=>store.set(key,value)}};
+context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
+const n=context.TombWorldNarration;
+if(!n.isEnabled())throw Error('missing preference was not enabled');
+if(store.has('tombWorldSoloGuide.narrationEnabled'))throw Error('startup wrote a preference');
+store.set('tombWorldSoloGuide.narrationEnabled','false');if(n.isEnabled())throw Error('false preference was enabled');
+store.set('tombWorldSoloGuide.narrationEnabled','true');if(!n.isEnabled())throw Error('true preference was disabled');
+"""
+        result = subprocess.run(['node', '-e', script], cwd=ROOT, text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_missing_preference_allows_board_transition_playback_once(self):
         advance_setup = source('function advanceSetupStep', 'function bindSetup')
         script = f"""
 const fs=require('fs'),vm=require('vm');
@@ -64,16 +79,11 @@ const render=()=>calls.push('render:'+currentSetupStepId());
 globalThis.runTransition=()=>advanceSetupStep('mission');`,context);
 (async()=>{{
   const n=context.TombWorldNarration;
-  if(!n.isEnabled())throw Error('missing preference was not enabled');
-  if(store.has('tombWorldSoloGuide.narrationEnabled'))throw Error('startup wrote a preference');
-  store.set('tombWorldSoloGuide.narrationEnabled','false');if(n.isEnabled())throw Error('false preference was enabled');
-  store.set('tombWorldSoloGuide.narrationEnabled','true');if(!n.isEnabled())throw Error('true preference was disabled');
-  store.delete('tombWorldSoloGuide.narrationEnabled');
   await n.init();context.runTransition();await new Promise(resolve=>setTimeout(resolve,0));
   const plays=calls.filter(call=>call.includes('missions/01.mp3'));
   if(plays.length!==1)throw Error('Board Setup intro play count was '+plays.length);
   if(calls.indexOf('render:killzone')>calls.indexOf(plays[0]))throw Error('intro started before Board Setup rendered');
-  context.runTransition();await new Promise(resolve=>setTimeout(resolve,0));
+  vm.runInContext('render()',context);await new Promise(resolve=>setTimeout(resolve,0));
   if(calls.filter(call=>call.includes('missions/01.mp3')).length!==1)throw Error('ordinary Board Setup transition replayed intro');
 }})().catch(error=>{{console.error(error);process.exit(1)}});
 """
