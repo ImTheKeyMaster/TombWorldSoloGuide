@@ -53,7 +53,7 @@ class NarrationIntegrationTests(unittest.TestCase):
         self.assertNotIn('narrationEnabled', persistence)
         self.assertNotIn('narrationVolume', persistence)
         self.assertIn('tombWorldSoloGuide.narrationEnabled', NARRATION)
-        self.assertIn('tombWorldSoloGuide.narrationVolume', NARRATION)
+        self.assertNotIn('tombWorldSoloGuide.narrationVolume', NARRATION)
 
 
 class NarrationManifestTests(unittest.TestCase):
@@ -104,7 +104,7 @@ class NarrationManagerRuntimeTests(unittest.TestCase):
         script = f"""
 const fs=require('fs'),vm=require('vm');
 const store=new Map(), calls=[];
-class Audio {{ constructor(){{this.src='';this.volume=0;}} pause(){{calls.push('pause')}} removeAttribute(){{this.src=''}} load(){{}} play(){{calls.push('play:'+this.src);return this.fail?Promise.reject(new Error('missing')):Promise.resolve();}} }}
+class Audio {{ constructor(){{this.src='';this.volume=0;Audio.instance=this;}} pause(){{calls.push('pause')}} removeAttribute(){{this.src=''}} load(){{}} play(){{calls.push('play:'+this.src);return this.fail?Promise.reject(new Error('missing')):Promise.resolve();}} }}
 const entries={{
   'mission.01.intro':{{available:true,file:'missions/01.mp3'}},
   'event.awakened-warrior':{{available:true,file:'events/awakened.mp3'}}
@@ -116,11 +116,12 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
         result = subprocess.run(['node', '-e', script], cwd=ROOT, text=True, capture_output=True)
         self.assertEqual(result.returncode, 0, result.stderr)
 
-    def test_disabled_volume_overlap_deduplication_and_replay(self):
+    def test_disabled_full_volume_overlap_deduplication_and_replay(self):
         self.run_node("""
 n.setEnabled(false);if(await n.playMissionIntro('shifting-labyrinth'))throw Error('disabled played');
-n.setEnabled(true);n.setVolume(.35);if(n.getVolume()!==.35)throw Error('volume did not persist');
+n.setEnabled(true);store.set('tombWorldSoloGuide.narrationVolume','0');
 if(!await n.playEvent('awakened-warrior','copy-1'))throw Error('first play failed');
+if(Audio.instance?.volume!==1)throw Error('legacy volume affected playback');
 if(await n.playEvent('awakened-warrior','copy-1'))throw Error('duplicate played');
 if(!await n.replayLast())throw Error('replay failed');
 if(calls.filter(x=>x.startsWith('play:')).length!==2)throw Error('unexpected play count');
@@ -130,12 +131,21 @@ if(calls.filter(x=>x==='pause').length<2)throw Error('new playback did not stop 
     def test_missing_manifest_entry_fails_silently(self):
         self.run_node("""if(await n.playEvent('not-generated','copy-2'))throw Error('missing entry played');""")
 
+    def test_enabled_preference_persists_without_starting_playback(self):
+        self.run_node("""
+n.setEnabled(false);
+if(store.get('tombWorldSoloGuide.narrationEnabled')!=='false')throw Error('disabled state did not persist');
+n.setEnabled(true);
+if(store.get('tombWorldSoloGuide.narrationEnabled')!=='true')throw Error('enabled state did not persist');
+if(calls.some(x=>x.startsWith('play:')))throw Error('enabling narration started playback');
+""")
+
     def test_blocked_preference_storage_fails_silently(self):
         script = """
 const fs=require('fs'),vm=require('vm');
 const context={Audio:function(){throw Error('audio blocked')},fetch:async()=>{throw Error('offline')},localStorage:{getItem(){throw Error('blocked')},setItem(){throw Error('blocked')}}};
 context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
-(async()=>{const n=context.TombWorldNarration;n.setEnabled(false);n.setVolume(.5);await n.init();await n.playMissionIntro('shifting-labyrinth');n.stop();})().catch(error=>{console.error(error);process.exit(1)});
+(async()=>{const n=context.TombWorldNarration;n.setEnabled(false);await n.init();await n.playMissionIntro('shifting-labyrinth');n.stop();})().catch(error=>{console.error(error);process.exit(1)});
 """
         result = subprocess.run(['node', '-e', script], cwd=ROOT, text=True, capture_output=True)
         self.assertEqual(result.returncode, 0, result.stderr)

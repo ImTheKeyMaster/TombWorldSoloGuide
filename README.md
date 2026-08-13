@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.67
+# Tomb World Solo Guide v8.6.68
+
+## v8.6.68
+
+**Version 8.6.68 - Simplified Narration Controls**
+
+- Simplifies the header speaker to a direct Narration On/Off toggle.
+- Removes narration volume controls and relies on physical device/system volume.
+- Removes duplicate Narration controls from the Game Menu while preserving persistent On/Off state.
 
 ## v8.6.67
 
