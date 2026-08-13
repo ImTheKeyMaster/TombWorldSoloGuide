@@ -25,8 +25,10 @@ class HeaderNarrationControlTests(unittest.TestCase):
         self.assertIn('id="narrationSpeakerBtn"', INDEX)
         self.assertIn('class="narration-icon-enabled"', INDEX)
         self.assertIn('class="narration-icon-disabled"', INDEX)
-        self.assertIn("narrationSpeakerBtn.querySelector('.narration-icon-enabled').hidden=!enabled", APP)
-        self.assertIn("narrationSpeakerBtn.querySelector('.narration-icon-disabled').hidden=enabled", APP)
+        self.assertIn("enabledIcon.toggleAttribute('hidden',!enabled)", APP)
+        self.assertIn("disabledIcon.toggleAttribute('hidden',enabled)", APP)
+        self.assertNotIn(".querySelector('.narration-icon-enabled').hidden", APP)
+        self.assertNotIn(".querySelector('.narration-icon-disabled').hidden", APP)
         self.assertIn("narrationSpeakerBtn.setAttribute('aria-label',`Narration ${enabled?'on':'off'}`)", APP)
         self.assertIn("narrationSpeakerBtn.setAttribute('aria-pressed',String(enabled))", APP)
         self.assertIn("narrationSpeakerBtn.title=`Narration ${enabled?'on':'off'}`", APP)
@@ -43,15 +45,23 @@ class HeaderNarrationControlTests(unittest.TestCase):
         sync_source = APP[APP.index('function syncNarrationControls()'):APP.index("narrationSpeakerBtn.addEventListener", APP.index('function syncNarrationControls()'))]
         script = f"""
 let enabled=true;
-const icons={{'.narration-icon-enabled':{{hidden:null}},'.narration-icon-disabled':{{hidden:null}}}};
+const makeIcon=()=>{{
+  const attributes=new Set();
+  return {{
+    hasAttribute:name=>attributes.has(name),
+    toggleAttribute:(name,force)=>force?attributes.add(name):attributes.delete(name)
+  }};
+}};
+const icons={{'.narration-icon-enabled':makeIcon(),'.narration-icon-disabled':makeIcon()}};
 const attributes={{}};
 const narrationSpeakerBtn={{classList:{{toggle:(name,value)=>attributes[name]=value}},querySelector:selector=>icons[selector],setAttribute:(name,value)=>attributes[name]=value,title:''}};
 const TombWorldNarration={{isEnabled:()=>enabled}};
 {sync_source}
 function verify(expectedEnabled){{
   syncNarrationControls();
-  if(icons['.narration-icon-enabled'].hidden!==!expectedEnabled)throw Error('enabled icon visibility mismatch');
-  if(icons['.narration-icon-disabled'].hidden!==expectedEnabled)throw Error('disabled icon visibility mismatch');
+  if(icons['.narration-icon-enabled'].hasAttribute('hidden')===expectedEnabled)throw Error('enabled icon visibility mismatch');
+  if(icons['.narration-icon-disabled'].hasAttribute('hidden')!==expectedEnabled)throw Error('disabled icon visibility mismatch');
+  if(attributes['is-muted']!==!expectedEnabled)throw Error('muted class mismatch');
   const word=expectedEnabled?'on':'off';
   if(attributes['aria-label']!==`Narration ${{word}}`||attributes['aria-pressed']!==String(expectedEnabled)||narrationSpeakerBtn.title!==`Narration ${{word}}`)throw Error('accessible state mismatch');
 }}

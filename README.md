@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.70
+# Tomb World Solo Guide v8.6.71
+
+## v8.6.71
+
+**Version 8.6.71 - Correct Narration Icon State and New Game Audio Cleanup**
+
+- Corrects the disabled narration control so it displays the outlined speaker with an X instead of the enabled wave icon.
+- Stops and clears active or paused narration when a new game is actually started.
+- Preserves speaker-toggle pause/resume behavior and the user's Narration On/Off preference.
 
 ## v8.6.70
 

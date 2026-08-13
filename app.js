@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.70';
+  const APP_VERSION = '8.6.71';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
     init:()=>Promise.resolve(),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},pauseNarration:()=>false,resumeNarration:()=>Promise.resolve(false),setEnabled:()=>Promise.resolve(false),isEnabled:()=>true,canReplay:()=>false
   });
@@ -48,8 +48,10 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   function syncNarrationControls(){
     const enabled=TombWorldNarration.isEnabled();
     narrationSpeakerBtn.classList.toggle('is-muted',!enabled);
-    narrationSpeakerBtn.querySelector('.narration-icon-enabled').hidden=!enabled;
-    narrationSpeakerBtn.querySelector('.narration-icon-disabled').hidden=enabled;
+    const enabledIcon=narrationSpeakerBtn.querySelector('.narration-icon-enabled');
+    const disabledIcon=narrationSpeakerBtn.querySelector('.narration-icon-disabled');
+    enabledIcon.toggleAttribute('hidden',!enabled);
+    disabledIcon.toggleAttribute('hidden',enabled);
     narrationSpeakerBtn.setAttribute('aria-label',`Narration ${enabled?'on':'off'}`);
     narrationSpeakerBtn.setAttribute('aria-pressed',String(enabled));
     narrationSpeakerBtn.title=`Narration ${enabled?'on':'off'}`;
@@ -7504,6 +7506,8 @@ function showPlayerActivation(stage={}){
   }
 
   function startNewGameSetup(){
+    TombWorldNarration.stop();
+    clearPendingBoardSetupMissionIntro();
     document.documentElement.classList.remove('desktop-game-background');
     gameBackground.style.backgroundImage='none';
     loadedBackgroundFilename=null;
