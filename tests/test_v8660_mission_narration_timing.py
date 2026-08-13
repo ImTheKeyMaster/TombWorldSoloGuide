@@ -54,7 +54,7 @@ store.set('tombWorldSoloGuide.narrationEnabled','true');if(!n.isEnabled())throw 
         self.assertEqual(0, result.returncode, result.stderr)
 
     def test_board_setup_intro_pending_toggle_and_navigation_behavior(self):
-        board_intro = source('function playPendingBoardSetupMissionIntro', "narrationSpeakerBtn.addEventListener")
+        board_intro = source('async function setGameAudioEnabled', "narrationSpeakerBtn.addEventListener")
         speaker_toggle = source("narrationSpeakerBtn.addEventListener('click'", 'function handleNarrationChange')
         advance_setup = source('function advanceSetupStep', 'function bindSetup')
         setup_back = source("$('#setupBack')", "$('#setupNext')")
@@ -65,6 +65,8 @@ const state={{screen:'setup',setupStep:0,missionId:'shifting-labyrinth'}};
 let enabled=true;
 let resumeNext=false;
 const TombWorldNarration={{isEnabled:()=>enabled,setEnabled:async value=>{{enabled=value;return resumeNext;}},playMissionIntro:(id,restart)=>calls.push(`play:${{id}}:${{restart}}`),stop:()=>calls.push('stop')}};
+const TombWorldAmbient={{unlock:async()=>true,setActive:value=>calls.push(`ambient:${{value}}`),stop:()=>calls.push('ambient:stop')}};
+const syncNarrationControls=()=>{{}};
 const currentSetupStepId=()=>state.setupStep===0?'mission':'killzone';
 const activeSetupSteps=()=>['mission','killzone'];
 const canBuildPlayerRoster=()=>true,showToast=()=>{{}},assignPlayerDisplayNumbers=()=>{{}},save=()=>{{}};
@@ -114,10 +116,11 @@ if(calls.filter(call=>call.startsWith('play:')).length!==3)throw Error('stale pe
         self.assertIn('TombWorldNarration.playEvent(event.definitionId,event.instanceId)', APP)
         self.assertIn('TombWorldNarration.playOutcome(state.missionId,outcome)', APP)
 
-    def test_menu_keeps_replay_and_removes_duplicate_preference_controls(self):
+    def test_menu_uses_unified_audio_toggle_without_duplicate_preference_controls(self):
         menu = source('function showGameMenu()', 'function showAbout()')
         self.assertNotIn('Dungeon Master Narration', menu)
-        self.assertIn('replayNarration', menu)
+        self.assertIn('gameAudioToggle', menu)
+        self.assertIn('Stop Game Audio', menu)
         self.assertNotIn('narrationEnabled', menu)
         self.assertNotIn('narrationVolume', menu)
 

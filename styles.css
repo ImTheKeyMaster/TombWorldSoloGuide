@@ -287,6 +287,9 @@ html.desktop-game-background #gameBackground{opacity:1}
 .reference-return small{color:var(--muted);line-height:1.35}
 .game-menu-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:18px 0}
 .game-menu-grid .btn:first-child{grid-column:1/-1}
+.game-audio-btn{display:flex;align-items:center;justify-content:center;gap:10px}
+.game-audio-btn svg{width:24px;height:24px;flex:0 0 auto;fill:currentColor}
+.game-audio-btn svg path+path{fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
 .game-menu-session{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));

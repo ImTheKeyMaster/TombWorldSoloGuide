@@ -33,11 +33,12 @@ class HeaderNarrationControlTests(unittest.TestCase):
         self.assertIn("narrationSpeakerBtn.setAttribute('aria-pressed',String(enabled))", APP)
         self.assertIn("narrationSpeakerBtn.title=`Narration ${enabled?'on':'off'}`", APP)
 
-    def test_header_button_directly_toggles_existing_enabled_state(self):
+    def test_header_button_uses_shared_game_audio_toggle(self):
         button = APP[APP.index("narrationSpeakerBtn.addEventListener('click'"):APP.index('function handleNarrationChange')]
         self.assertIn('const enabled=!TombWorldNarration.isEnabled()', button)
-        self.assertIn('const resumed=await TombWorldNarration.setEnabled(enabled)', button)
-        self.assertIn('if(enabled&&!resumed)playPendingBoardSetupMissionIntro()', button)
+        self.assertIn('await setGameAudioEnabled(enabled)', button)
+        self.assertIn('const resumed=await TombWorldNarration.setEnabled(enabled)', APP)
+        self.assertIn('if(!resumed)playPendingBoardSetupMissionIntro()', APP)
         self.assertIn("window.addEventListener('tombworldnarrationchange'", APP)
         self.assertIn("syncNarrationControls();", APP)
 
@@ -77,9 +78,10 @@ verify(true);enabled=false;verify(false);
         for attribute in ('aria-haspopup', 'aria-expanded', 'aria-controls'):
             self.assertNotIn(attribute, INDEX)
 
-    def test_game_menu_keeps_replay_without_duplicate_preferences(self):
+    def test_game_menu_uses_audio_toggle_without_duplicate_preferences(self):
         menu = APP[APP.index('function showGameMenu()'):APP.index('function showAbout()')]
-        self.assertIn('id="replayNarration"', menu)
+        self.assertIn('id="gameAudioToggle"', menu)
+        self.assertIn('aria-pressed=', menu)
         self.assertNotIn('id="narrationEnabled"', menu)
         self.assertNotIn('id="narrationVolume"', menu)
         self.assertNotIn('narrationVolumeValue', menu)

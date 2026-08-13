@@ -41,7 +41,8 @@ class NarrationPauseResumeTests(unittest.TestCase):
         self.assertNotIn('type="range"', INDEX)
         menu = APP[APP.index("function showGameMenu()"):APP.index("function showAbout()")]
         self.assertNotIn('<legend>Narration</legend>', menu)
-        self.assertIn('Replay Last Narration', menu)
+        self.assertIn('Start Game Audio', menu)
+        self.assertIn('Stop Game Audio', menu)
 
     def test_pause_resume_queue_persistence_and_destructive_stop(self):
         script = r"""
