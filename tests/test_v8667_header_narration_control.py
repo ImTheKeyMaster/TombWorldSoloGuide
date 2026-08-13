@@ -26,39 +26,38 @@ class HeaderNarrationControlTests(unittest.TestCase):
         self.assertIn('class="narration-icon-muted"', INDEX)
         self.assertIn("narrationSpeakerBtn.querySelector('.narration-icon-enabled').hidden=!enabled", APP)
         self.assertIn("narrationSpeakerBtn.querySelector('.narration-icon-muted').hidden=enabled", APP)
-        self.assertIn("`Narration ${enabled?'on':'off'}. Open volume controls`", APP)
+        self.assertIn("narrationSpeakerBtn.setAttribute('aria-label',`Narration ${enabled?'on':'off'}`)", APP)
+        self.assertIn("narrationSpeakerBtn.title=`Narration ${enabled?'on':'off'}`", APP)
 
-    def test_popover_opens_and_closes_by_button_outside_click_and_escape(self):
-        self.assertRegex(INDEX, r'id="narrationPopover"[^>]* hidden')
-        self.assertIn("narrationPopover.hidden=!opening", APP)
-        self.assertIn("!narrationHeaderControl.contains(event.target)", APP)
-        self.assertIn("event.key==='Escape'", APP)
-        self.assertIn("closeNarrationPopover()", APP)
-
-    def test_slider_initializes_from_and_writes_to_narration_api(self):
-        self.assertIn('id="headerNarrationVolume" type="range" min="0" max="100"', INDEX)
-        self.assertIn('aria-label="Narration volume"', INDEX)
-        self.assertIn("Math.round(TombWorldNarration.getVolume()*100)", APP)
-        self.assertIn("TombWorldNarration.setVolume(Number(event.target.value)/100)", APP)
-
-    def test_toggle_uses_existing_api_and_change_event_keeps_ui_synced(self):
-        self.assertIn("TombWorldNarration.setEnabled(event.target.checked)", APP)
+    def test_header_button_directly_toggles_existing_enabled_state(self):
+        self.assertIn("narrationSpeakerBtn.addEventListener('click',()=>TombWorldNarration.setEnabled(!TombWorldNarration.isEnabled()))", APP)
         self.assertIn("window.addEventListener('tombworldnarrationchange'", APP)
         self.assertIn("syncNarrationControls();", APP)
-        self.assertIn("headerNarrationEnabled.setAttribute('aria-label',`Narration ${enabled?'on':'off'}`)", APP)
-        self.assertIn('id="headerNarrationState" aria-live="polite"', INDEX)
 
-    def test_existing_unversioned_preferences_remain_the_only_source_of_truth(self):
+    def test_popover_and_volume_controls_are_removed(self):
+        for source in (INDEX, APP, CSS):
+            for removed in ('narrationPopover', 'headerNarrationVolume', 'headerNarrationVolumeValue', 'headerNarrationEnabled'):
+                self.assertNotIn(removed, source)
+        for attribute in ('aria-haspopup', 'aria-expanded', 'aria-controls'):
+            self.assertNotIn(attribute, INDEX)
+
+    def test_game_menu_keeps_replay_without_duplicate_preferences(self):
+        menu = APP[APP.index('function showGameMenu()'):APP.index('function showAbout()')]
+        self.assertIn('id="replayNarration"', menu)
+        self.assertNotIn('id="narrationEnabled"', menu)
+        self.assertNotIn('id="narrationVolume"', menu)
+        self.assertNotIn('narrationVolumeValue', menu)
+
+    def test_existing_unversioned_enabled_preference_is_the_only_source_of_truth(self):
         self.assertEqual(NARRATION.count("tombWorldSoloGuide.narrationEnabled"), 1)
-        self.assertEqual(NARRATION.count("tombWorldSoloGuide.narrationVolume"), 1)
+        self.assertNotIn("tombWorldSoloGuide.narrationVolume", NARRATION)
         for source in (INDEX, APP, CSS, PERSISTENCE):
             self.assertNotIn("tombWorldSoloGuide.narrationEnabled", source)
             self.assertNotIn("tombWorldSoloGuide.narrationVolume", source)
-        self.assertNotRegex(NARRATION, r"narration(?:Enabled|Volume).*APP_VERSION")
+        self.assertNotRegex(NARRATION, r"narrationEnabled.*APP_VERSION")
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
-    def test_mobile_popover_stays_within_viewport_without_taller_header(self):
-        self.assertIn("width:min(280px,calc(100vw - 24px))", CSS)
+    def test_mobile_header_keeps_compact_touch_target_without_taller_header(self):
         self.assertIn("width:40px;height:40px", CSS)
         header_rule = re.search(r"\.app-header\{[^}]+\}", CSS).group(0)
         self.assertNotIn("height:", header_rule)

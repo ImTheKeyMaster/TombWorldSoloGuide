@@ -45,13 +45,12 @@ class MissionNarrationTimingTests(unittest.TestCase):
         self.assertIn('TombWorldNarration.playEvent(event.definitionId,event.instanceId)', APP)
         self.assertIn('TombWorldNarration.playOutcome(state.missionId,outcome)', APP)
 
-    def test_menu_uses_simplified_active_copy_and_controls_remain(self):
+    def test_menu_keeps_replay_and_removes_duplicate_preference_controls(self):
         menu = source('function showGameMenu()', 'function showAbout()')
-        self.assertIn('<legend>Narration</legend>', menu)
-        self.assertIn('<span>Narration <strong>', menu)
         self.assertNotIn('Dungeon Master Narration', menu)
-        for control in ('narrationEnabled', 'narrationVolume', 'replayNarration'):
-            self.assertIn(control, menu)
+        self.assertIn('replayNarration', menu)
+        self.assertNotIn('narrationEnabled', menu)
+        self.assertNotIn('narrationVolume', menu)
 
     def test_release_and_save_versions(self):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)

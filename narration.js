@@ -3,8 +3,6 @@
 
   const MANIFEST_URL = 'Assets/Audio/Narration/narration-manifest.json';
   const ENABLED_KEY = 'tombWorldSoloGuide.narrationEnabled';
-  const VOLUME_KEY = 'tombWorldSoloGuide.narrationVolume';
-  const DEFAULT_VOLUME = 0.8;
   const SILENT_UNLOCK_AUDIO = 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQIAAAAAAA==';
   const missionNumbers = {
     'shifting-labyrinth': '01',
@@ -40,11 +38,6 @@
     return saved === null ? true : saved !== 'false';
   }
 
-  function getVolume() {
-    const saved = Number(readPreference(VOLUME_KEY));
-    return Number.isFinite(saved) && saved >= 0 && saved <= 1 ? saved : DEFAULT_VOLUME;
-  }
-
   function notify() {
     if (typeof global.dispatchEvent === 'function' && typeof global.CustomEvent === 'function') {
       global.dispatchEvent(new global.CustomEvent('tombworldnarrationchange', { detail: { canReplay: Boolean(lastEntry) } }));
@@ -56,7 +49,7 @@
       try {
         audio = new global.Audio();
         audio.preload = 'none';
-        audio.volume = getVolume();
+        audio.volume = 1;
       } catch { audio = null; }
     }
     return audio;
@@ -93,26 +86,26 @@
     const player = ensureAudio();
     if (!player) return Promise.resolve(false);
     try {
-      player.volume = 0;
+      player.volume = 1;
       player.src = SILENT_UNLOCK_AUDIO;
       const playback = player.play();
       if (!playback || typeof playback.then !== 'function') {
         audioUnlocked = true;
-        player.volume = getVolume();
+        player.volume = 1;
         return Promise.resolve(true);
       }
       return playback.then(() => {
         audioUnlocked = true;
-        player.volume = getVolume();
+        player.volume = 1;
         return true;
       }, () => {
         audioUnlocked = false;
-        player.volume = getVolume();
+        player.volume = 1;
         return false;
       });
     } catch {
       audioUnlocked = false;
-      player.volume = getVolume();
+      player.volume = 1;
       return Promise.resolve(false);
     }
   }
@@ -151,7 +144,7 @@
     const player = ensureAudio();
     if (!player) return false;
     stopAudio();
-    player.volume = getVolume();
+    player.volume = 1;
     player.src = new URL(entry.file, new URL(MANIFEST_URL, global.location?.href || 'http://localhost/')).href;
     try {
       await player.play();
@@ -226,17 +219,9 @@
     notify();
   }
 
-  function setVolume(volume) {
-    const normalized = Math.min(1, Math.max(0, Number(volume)));
-    if (!Number.isFinite(normalized)) return;
-    writePreference(VOLUME_KEY, String(normalized));
-    if (audio) audio.volume = normalized;
-    notify();
-  }
-
   global.TombWorldNarration = Object.freeze({
     init, unlock, playMissionIntro, playEvent, playOutcome, replayLast, stop,
-    setEnabled, setVolume, isEnabled, getVolume,
+    setEnabled, isEnabled,
     canReplay: () => Boolean(lastEntry)
   });
 
