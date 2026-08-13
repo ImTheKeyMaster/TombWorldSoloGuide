@@ -13,6 +13,45 @@ MANIFEST_PATH = ROOT / "Assets/Audio/Narration/narration-manifest.json"
 
 
 class DeadlyEncounterNarrationTests(unittest.TestCase):
+    def test_consecutive_discoveries_wait_and_play_every_feature_once_in_order(self):
+        script = r"""
+const fs=require('fs'),vm=require('vm');
+const calls=[];
+let active=false;
+class Audio {
+  constructor(){this.src='';this.onended=null;this.onerror=null;Audio.instance=this;}
+  pause(){active=false;}
+  removeAttribute(name){if(name==='src')this.src='';}
+  load(){}
+  play(){if(active)throw Error('narration tracks overlapped');active=true;calls.push(this.src);return Promise.resolve();}
+  end(){active=false;const ended=this.onended;if(ended)ended();}
+}
+const entries={
+  first:{category:'deadly-encounter',deadlyEncounterFeatureId:'room-darkness',available:true,file:'deadly/room-darkness.mp3'},
+  unusualFirst:{category:'deadly-encounter',deadlyEncounterFeatureId:'room-crumbling-floor',available:true,file:'deadly/room-crumbling-floor.mp3'},
+  unusualSecond:{category:'deadly-encounter',deadlyEncounterFeatureId:'objective-control-node',available:true,file:'deadly/objective-control-node.mp3'}
+};
+const context={Audio,URL,location:{href:'https://example.test/app/'},fetch:async()=>({ok:true,json:async()=>({entries})}),
+ localStorage:{getItem:()=>null,setItem:()=>{}},dispatchEvent:()=>{},CustomEvent:function(){}};
+context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
+const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
+(async()=>{
+ const n=context.TombWorldNarration;await n.init();
+ const first=n.playDeadlyEncounter(['room-darkness'],'discovery-1');await flush();
+ const second=n.playDeadlyEncounter(['room-crumbling-floor','objective-control-node'],'discovery-2');await flush();
+ if(calls.length!==1||!calls[0].endsWith('room-darkness.mp3'))throw Error('second discovery interrupted the first');
+ Audio.instance.end();await flush();
+ if(calls.length!==2||!calls[1].endsWith('room-crumbling-floor.mp3'))throw Error('second discovery did not wait its turn');
+ Audio.instance.end();await flush();
+ if(calls.length!==3||!calls[2].endsWith('objective-control-node.mp3'))throw Error('Unusual feature order changed');
+ Audio.instance.end();
+ if(!await first||!await second)throw Error('queued discovery playback was not reported');
+ if(new Set(calls).size!==3)throw Error('a discovery clip played more than once');
+})().catch(error=>{console.error(error);process.exit(1)});
+"""
+        result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+
     def test_runtime_sequence_deduplication_controls_and_cancellation(self):
         script = r"""
 const fs=require('fs'),vm=require('vm');
