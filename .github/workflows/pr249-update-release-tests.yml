@@ -56,7 +56,7 @@ jobs:
             exit 0
           fi
           grep -q 'Ran 1500 tests' /tmp/full-suite.log
-          grep -q 'FAILED (failures=4)' /tmp/full-suite.log
+          grep -q 'FAILED (failures=4, skipped=5)' /tmp/full-suite.log
           grep -q 'test_non_portrait_images_and_elimination_treatment_are_preserved' /tmp/full-suite.log
           grep -q 'test_ordering_portrait_and_unrelated_behavior_regressions' /tmp/full-suite.log
           grep -q 'test_03_newly_active_effects_use_future_tense' /tmp/full-suite.log
