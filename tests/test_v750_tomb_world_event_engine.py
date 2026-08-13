@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import json
 import subprocess
 import unittest
@@ -113,9 +114,9 @@ class TombWorldEventEngineTests(unittest.TestCase):
     def test_compatibility_surfaces_and_version(self):
         self.assertIn("function normalStrategyEventCount", APP)
         self.assertIn("DeadlyEncounters", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("V8.6.64", INDEX)
-        self.assertIn("event-effects.js?v=8.6.64", INDEX)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
+        self.assertIn(f"event-effects.js?v={CURRENT_APP_VERSION}", INDEX)
 
 
 if __name__ == "__main__":

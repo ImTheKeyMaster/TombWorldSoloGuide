@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import re
 import unittest
 from pathlib import Path
@@ -84,11 +85,11 @@ class NpoPortraitRemovalTests(unittest.TestCase):
             self.assertIn(f"id:'{type_id}'", CATALOG)
 
     def test_offline_shell_and_release_versions_are_synchronized(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
-        self.assertIn("V8.6.64", INDEX)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
         for asset in ("app.js", "mission-engine.js", "persistence.js", "styles.css"):
-            self.assertIn(f"{asset}?v=8.6.64", INDEX)
+            self.assertIn(f"{asset}?v={CURRENT_APP_VERSION}", INDEX)
         self.assertIn("cache.addAll(PRECACHE_ASSETS)", WORKER)
 
     def test_matrix_interface_remains_excluded(self):

@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import json
 import subprocess
 import unittest
@@ -62,12 +63,12 @@ def severe(dice, profile):
 
 class SevereWeaponRuleTests(unittest.TestCase):
     def test_version_850_is_consistent_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
-        self.assertIn('V8.6.64', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.64'))
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
+        self.assertIn(f'V{CURRENT_APP_VERSION}', INDEX)
+        self.assertTrue(README.startswith(f'# Tomb World Solo Guide v{CURRENT_APP_VERSION}'))
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.64', INDEX)
+            self.assertIn(f'{asset}?v={CURRENT_APP_VERSION}', INDEX)
         self.assertNotIn('8.4.2', APP + INDEX + WORKER)
         self.assertIn('## v8.6.25', README)
 

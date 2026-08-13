@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import json
 import re
 import subprocess
@@ -18,10 +19,10 @@ def source(start, end):
 
 class NarrationIntegrationTests(unittest.TestCase):
     def test_release_version_changes_without_save_schema_change(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
-        self.assertIn('narration.js?v=8.6.64', INDEX)
+        self.assertIn(f'narration.js?v={CURRENT_APP_VERSION}', INDEX)
 
     def test_intro_only_runs_from_mission_to_killzone_transition(self):
         begin = source("$('#beginGame')", "function runStartingNpoGeneration")

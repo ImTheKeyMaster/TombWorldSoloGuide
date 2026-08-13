@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import re
 import unittest
 from pathlib import Path
@@ -20,11 +21,11 @@ def css_rule(selector):
 
 class V8612CombatSummaryWrappingTests(unittest.TestCase):
     def test_01_version_references_are_current(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
-        self.assertIn("V8.6.64", INDEX)
-        self.assertIn("styles.css?v=8.6.64", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.64"))
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
+        self.assertIn(f"styles.css?v={CURRENT_APP_VERSION}", INDEX)
+        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
 
     def test_02_summary_values_wrap_words_normally(self):
         rule = css_rule(".combat-summary-value")

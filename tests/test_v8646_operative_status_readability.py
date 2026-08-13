@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import re
 import unittest
 from pathlib import Path
@@ -48,9 +49,9 @@ class OperativeStatusReadabilityTests(unittest.TestCase):
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
     def test_release_versions_are_current(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", SERVICE_WORKER)
-        self.assertIn('V8.6.64', INDEX)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", SERVICE_WORKER)
+        self.assertIn(f'V{CURRENT_APP_VERSION}', INDEX)
         self.assertNotIn('v=8.6.45', INDEX)
 
 

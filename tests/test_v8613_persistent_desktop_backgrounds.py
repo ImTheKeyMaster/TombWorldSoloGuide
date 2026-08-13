@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import importlib.util
 import json
 import re
@@ -18,9 +19,9 @@ BACKGROUND_DIR = ROOT / "Assets" / "Images" / "Backgrounds"
 
 class PersistentDesktopBackgroundTests(unittest.TestCase):
     def test_version_and_save_schema(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("V8.6.64", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.64"))
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
+        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
     def test_manifest_matches_current_landscape_images_in_natural_order(self):

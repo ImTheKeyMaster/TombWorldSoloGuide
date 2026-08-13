@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import re
 import unittest
 from pathlib import Path
@@ -16,10 +17,10 @@ CATEGORY_CSS = CSS[CSS.index("/* v3.3.0 categorized Player roster selection */")
 
 class ConsistentOperativeCardWidthsV8620Tests(unittest.TestCase):
     def test_01_application_displays_version_8620(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
-        self.assertIn("V8.6.64", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.64"))
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
+        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
 
     def test_02_every_category_uses_the_shared_grid_component(self):
         section = re.search(r"return `<section class=\"roster-category\"[\s\S]+?`;", ROSTER_RENDERER).group(0)
@@ -86,7 +87,7 @@ class ConsistentOperativeCardWidthsV8620Tests(unittest.TestCase):
 
     def test_15_release_assets_and_notes_are_current(self):
         for asset in ("styles.css", "app.js", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js"):
-            self.assertIn(f"{asset}?v=8.6.64", INDEX)
+            self.assertIn(f"{asset}?v={CURRENT_APP_VERSION}", INDEX)
         self.assertIn("## v8.6.25", README)
         self.assertIn("Keep Operative Cards Consistent Across Roster Groups", README)
 

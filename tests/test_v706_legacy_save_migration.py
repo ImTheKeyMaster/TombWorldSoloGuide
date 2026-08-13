@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import subprocess
 import unittest
 from pathlib import Path
@@ -67,7 +68,7 @@ assert.equal(p.migrateSaveDetailed(exported,catalog).report.outcome,'current');
         self.assertNotIn("TODO(v7 legacy-save migration)", app)
         self.assertIn("const RETIRED_NPO_TYPES = Object.freeze([])", persistence)
         self.assertEqual(persistence.count("'canoptek macrocyte':"), 1)
-        self.assertIn("const APP_VERSION = '8.6.64';", app)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", app)
 
 
 if __name__ == "__main__":

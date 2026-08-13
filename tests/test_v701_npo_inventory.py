@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from versioning import CURRENT_APP_VERSION
 import re
 import unittest
 from pathlib import Path
@@ -104,8 +105,8 @@ class V701NpoInventoryTests(unittest.TestCase):
         self.assertGreaterEqual(generation.count("state.roster=previousRoster"), 2)
 
     def test_version_and_release_notes_are_701(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("V8.6.64", (ROOT / "index.html").read_text())
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", (ROOT / "index.html").read_text())
         self.assertIn("## v7.0.4", (ROOT / "README.md").read_text())
 
 

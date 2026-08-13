@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import re
 import unittest
 from pathlib import Path
@@ -57,7 +58,7 @@ class RefinedOperativeStatusPanelTests(unittest.TestCase):
         self.assertIn('overflow:hidden', re.search(r'\.operative-status-panel\{([^}]+)\}', CSS).group(1))
 
     def test_release_does_not_change_save_schema(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
 

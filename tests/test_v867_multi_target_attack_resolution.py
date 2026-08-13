@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import unittest
 from pathlib import Path
 
@@ -14,8 +15,8 @@ class MultiTargetAttackResolutionTests(unittest.TestCase):
             self.assertIn(needle, APP)
 
     def test_01_version(self):
-        self.assert_app("const APP_VERSION = '8.6.64';")
-        self.assertIn("V8.6.64", INDEX); self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
+        self.assert_app(f"const APP_VERSION = '{CURRENT_APP_VERSION}';")
+        self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX); self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
     def test_02_primary_first(self): self.assert_app("[primaryTargetId,...secondaryTargetIds]")
     def test_03_duplicate_ids_removed(self): self.assert_app("const orderedTargetIds=[...new Set")
     def test_04_primary_advances(self): self.assert_app("findIndex(id=>!completedTargetIds.includes(id))")

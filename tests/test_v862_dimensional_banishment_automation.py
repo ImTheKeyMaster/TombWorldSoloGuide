@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from versioning import CURRENT_APP_VERSION
 import json
 import subprocess
 import unittest
@@ -36,13 +37,13 @@ console.log(JSON.stringify({{result,unchanged:snapshot===JSON.stringify(original
         return combat
 
     def test_version_and_release_notes(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
-        self.assertIn("V8.6.64", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.64"))
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
+        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
         self.assertIn("Version 8.6.2 - Automate Dimensional Banishment", README)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.64", INDEX)
+            self.assertIn(f"{asset}?v={CURRENT_APP_VERSION}", INDEX)
 
     def test_damage_or_critical_triggers_only_for_surviving_target(self):
         self.assertTrue(self.run_resolver(self.base_combat(), [5, 6])["result"]["dimensionalBanishmentTriggered"])

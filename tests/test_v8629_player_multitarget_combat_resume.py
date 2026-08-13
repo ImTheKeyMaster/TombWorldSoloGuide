@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import unittest
 from pathlib import Path
 
@@ -18,10 +19,10 @@ def function_source(name):
 
 class V8629PlayerMultiTargetCombatResumeTests(unittest.TestCase):
     def test_01_active_version_is_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
-        self.assertIn("V8.6.64", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.64"))
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
+        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
 
     def test_02_canonical_identity_is_deterministic_and_nonempty(self):
         source = function_source("canonicalPlayerWeaponIdentity")

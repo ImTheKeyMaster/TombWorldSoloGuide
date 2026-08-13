@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import re
 import unittest
 from pathlib import Path
@@ -55,11 +56,11 @@ class OperativeStatusToggleStateTests(unittest.TestCase):
         self.assertIn('@media (max-width:899px), (orientation:portrait) and (hover:none), (orientation:portrait) and (pointer:coarse)', CSS)
 
     def test_release_version_and_save_version(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", SERVICE_WORKER)
-        self.assertIn('V8.6.64', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.64'))
-        self.assertIn('## v8.6.64', README)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", SERVICE_WORKER)
+        self.assertIn(f'V{CURRENT_APP_VERSION}', INDEX)
+        self.assertTrue(README.startswith(f'# Tomb World Solo Guide v{CURRENT_APP_VERSION}'))
+        self.assertIn(f'## v{CURRENT_APP_VERSION}', README)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
 

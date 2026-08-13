@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import json
 import re
 import subprocess
@@ -65,11 +66,11 @@ const definition=JSON.parse(fs.readFileSync('Missions/definition-04-destroy-sarc
         worker = (ROOT / "service-worker.js").read_text()
         manifest = json.loads((ROOT / "Missions/manifest.json").read_text())
 
-        self.assertIn("const APP_VERSION = '8.6.64'", app)
-        self.assertIn("const APP_VERSION = '8.6.64'", worker)
-        self.assertIn("V8.6.64", index)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}'", app)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}'", worker)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", index)
         for asset in ("app.js", "mission-engine.js", "persistence.js", "styles.css"):
-            self.assertIn(f"{asset}?v=8.6.64", index)
+            self.assertIn(f"{asset}?v={CURRENT_APP_VERSION}", index)
         for asset in (
             "Missions/manifest.json",
             "Missions/mission.schema.json",

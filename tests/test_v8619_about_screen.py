@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import re
 import unittest
 from pathlib import Path
@@ -15,8 +16,8 @@ MENU = APP[APP.index("function showGameMenu()") : APP.index("function showAbout(
 
 class AboutScreenV8619Tests(unittest.TestCase):
     def test_01_application_displays_version_8619(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("V8.6.64", INDEX)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
 
     def test_02_game_menu_contains_about_button(self):
         self.assertIn('id="menuAbout" type="button">About</button>', MENU)
@@ -128,11 +129,11 @@ class AboutScreenV8619Tests(unittest.TestCase):
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
     def test_33_release_version_references_are_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.64"))
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
+        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
         self.assertIn("## v8.6.25", README)
         for asset in ("styles.css", "app.js", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js"):
-            self.assertIn(f"{asset}?v=8.6.64", INDEX)
+            self.assertIn(f"{asset}?v={CURRENT_APP_VERSION}", INDEX)
 
     def test_34_about_uses_semantic_sections_and_readable_text(self):
         for heading in ("Project Status", "Games Workshop Notice", "Official Rules and Materials", "Project Content", "Software Disclaimer", "User Responsibility", "Privacy", "Contact"):

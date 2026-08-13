@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import unittest
 from pathlib import Path
 
@@ -22,10 +23,10 @@ class V8610DirectTargetToCombatTests(unittest.TestCase):
         self.render = section("function renderNpoDecisionResult", "async function completeNpoActivation")
 
     def test_01_version_displays_8610(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
-        self.assertIn("V8.6.64", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.64"))
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
+        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
 
     def test_02_confirm_target_immediately_opens_combat(self):
         self.assertIn("openNpoCombat(n,decision,[]", self.confirm)

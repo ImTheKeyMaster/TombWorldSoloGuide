@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import unittest
 from pathlib import Path
 
@@ -65,8 +66,8 @@ class CanoptekIntegrationTests(unittest.TestCase):
         self.assertIn("Roll Damage", APP)
 
     def test_version_matrix_and_portrait_constraints(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("V8.6.64", (ROOT / "index.html").read_text())
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", (ROOT / "index.html").read_text())
         self.assertNotIn("obelisk node matrix support", APP.lower())
         self.assertNotIn("npoPortrait", APP)
 

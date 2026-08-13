@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import json
 import re
 import subprocess
@@ -98,8 +99,8 @@ class CanoptekProfileTests(unittest.TestCase):
         self.assertIn("Gameplay profile", APP)
         self.assertIn("Operative actions", APP)
         self.assertIn("Passive rules", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("V8.6.64", (ROOT / "index.html").read_text())
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", (ROOT / "index.html").read_text())
         self.assertNotIn("npoPortrait", APP)
 
 
