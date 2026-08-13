@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.76';
+  const APP_VERSION = '8.6.77';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
     init:()=>Promise.resolve(),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},pauseNarration:()=>false,resumeNarration:()=>Promise.resolve(false),setEnabled:()=>Promise.resolve(false),isEnabled:()=>true,canReplay:()=>false
   });
@@ -58,10 +58,21 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     narrationSpeakerBtn.title=`Narration ${enabled?'on':'off'}`;
     const gameAudioBtn=globalThis.document?.querySelector('#gameAudioToggle');
     if(gameAudioBtn){
-      gameAudioBtn.classList.toggle('is-playing',enabled);
       gameAudioBtn.setAttribute('aria-pressed',String(enabled));
       gameAudioBtn.querySelector('.game-audio-label').textContent=enabled?'Stop Game Audio':'Start Game Audio';
     }
+  }
+  async function setGameAudioEnabled(enabled){
+    const resumed=await TombWorldNarration.setEnabled(enabled);
+    if(enabled){
+      await TombWorldAmbient.unlock();
+      TombWorldAmbient.setActive(Boolean(state.missionId)&&['setup','game'].includes(state.screen));
+      if(!resumed)playPendingBoardSetupMissionIntro();
+    }else{
+      TombWorldNarration.stop();
+      TombWorldAmbient.stop();
+    }
+    syncNarrationControls();
   }
   function playPendingBoardSetupMissionIntro(){
     if(!pendingBoardSetupMissionIntro||state.screen!=='setup'||currentSetupStepId()!=='killzone'||!TombWorldNarration.isEnabled())return false;
@@ -77,8 +88,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
   narrationSpeakerBtn.addEventListener('click',async()=>{
     const enabled=!TombWorldNarration.isEnabled();
-    const resumed=await TombWorldNarration.setEnabled(enabled);
-    if(enabled&&!resumed)playPendingBoardSetupMissionIntro();
+    await setGameAudioEnabled(enabled);
   });
   function handleNarrationChange(){
     syncNarrationControls();
@@ -7493,16 +7503,7 @@ function showPlayerActivation(stage={}){
     if(canOpenHelp())$('#menuHelp').onclick=openHelpFromGameMenu;
     $('#gameAudioToggle').onclick=async()=>{
       const enabled=!TombWorldNarration.isEnabled();
-      await TombWorldNarration.setEnabled(enabled);
-      if(enabled){
-        await TombWorldAmbient.unlock();
-        TombWorldAmbient.setActive(Boolean(state.missionId)&&['setup','game'].includes(state.screen));
-        playPendingBoardSetupMissionIntro();
-      }else{
-        TombWorldNarration.stop();
-        TombWorldAmbient.stop();
-      }
-      syncNarrationControls();
+      await setGameAudioEnabled(enabled);
     };
     $('#menuAbout').onclick=showAbout;
     $('#menuExportSave').onclick=exportSave;

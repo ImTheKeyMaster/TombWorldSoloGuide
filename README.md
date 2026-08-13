@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v8.6.76
+# Tomb World Solo Guide v8.6.77
+
+## v8.6.77
+
+**Version 8.6.77 - Consistent Game Audio Toggle**
+
+- Routes both speaker controls through the same start and stop behavior for ambient audio and narration.
+- Avoids restarting pending narration when existing narration successfully resumes.
 
 ## v8.6.76
 

@@ -19,10 +19,13 @@ class GameAudioMenuTests(unittest.TestCase):
 
     def test_audio_toggle_labels_and_controls_both_audio_sources(self):
         self.assertIn("enabled?'Stop Game Audio':'Start Game Audio'", APP)
+        self.assertIn('async function setGameAudioEnabled(enabled)', APP)
         self.assertIn('await TombWorldNarration.setEnabled(enabled);', APP)
         self.assertIn('TombWorldNarration.stop();', APP)
         self.assertIn('TombWorldAmbient.stop();', APP)
         self.assertIn('TombWorldAmbient.setActive(Boolean(state.missionId)', APP)
+        self.assertIn('if(!resumed)playPendingBoardSetupMissionIntro();', APP)
+        self.assertEqual(APP.count('await setGameAudioEnabled(enabled);'), 2)
 
     def test_release_version_is_current(self):
         index = (ROOT / "index.html").read_text(encoding="utf-8")
