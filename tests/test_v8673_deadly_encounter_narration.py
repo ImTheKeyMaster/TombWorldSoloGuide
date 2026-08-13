@@ -13,6 +13,50 @@ MANIFEST_PATH = ROOT / "Assets/Audio/Narration/narration-manifest.json"
 
 
 class DeadlyEncounterNarrationTests(unittest.TestCase):
+    def test_pending_play_is_cancelled_cleanly_by_stop_or_priority_narration(self):
+        script = r"""
+const fs=require('fs'),vm=require('vm');
+const pending=[];
+class Audio {
+  constructor(){this.src='';this.onended=null;this.onerror=null;Audio.instance=this;}
+  pause(){}
+  removeAttribute(name){if(name==='src')this.src='';}
+  load(){}
+  play(){return new Promise(resolve=>pending.push({src:this.src,resolve}));}
+}
+const entries={
+  deadly:{category:'deadly-encounter',deadlyEncounterFeatureId:'room-darkness',available:true,file:'deadly/room-darkness.mp3'},
+  'mission.01.intro':{available:true,file:'missions/01.mp3'}
+};
+const context={Audio,URL,location:{href:'https://example.test/app/'},fetch:async()=>({ok:true,json:async()=>({entries})}),
+ localStorage:{getItem:()=>null,setItem:()=>{}},dispatchEvent:()=>{},CustomEvent:function(){}};
+context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
+const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
+const settles=promise=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(Error('cancelled discovery remained pending')),100))]);
+(async()=>{
+ const n=context.TombWorldNarration;await n.init();
+ const stopped=n.playDeadlyEncounter('room-darkness','stopped');await flush();
+ if(pending.length!==1)throw Error('stopped discovery did not reach pending play');
+ const stoppedHandler=Audio.instance.onended;
+ n.stop();pending.shift().resolve();
+ if(await settles(stopped)!==false)throw Error('stop did not cancel pending discovery');
+ if(Audio.instance.onended!==stoppedHandler)throw Error('stop installed a stale completion handler');
+
+ const preempted=n.playDeadlyEncounter('room-darkness','preempted');await flush();
+ if(pending.length!==1)throw Error('preempted discovery did not reach pending play');
+ const intro=n.playMissionIntro('shifting-labyrinth',true);await flush();
+ if(pending.length!==2||!pending[1].src.endsWith('missions/01.mp3'))throw Error('priority narration did not preempt');
+ const introHandler=Audio.instance.onended;
+ pending.shift().resolve();
+ if(await settles(preempted)!==false)throw Error('priority narration did not cancel pending discovery');
+ if(Audio.instance.onended!==introHandler)throw Error('preempted discovery replaced the priority completion handler');
+ pending.shift().resolve();
+ if(!await intro)throw Error('priority narration did not complete');
+})().catch(error=>{console.error(error);process.exit(1)});
+"""
+        result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+
     def test_event_queued_between_deadly_encounters_plays_after_both_once(self):
         script = r"""
 const fs=require('fs'),vm=require('vm');

@@ -283,6 +283,10 @@
           const requestBeforePlayback = playbackRequest;
           const started = await playEntry(id, item.duplicateKey, true, false);
           if (!started) continue;
+          if (generation !== deadlyEncounterGeneration || playbackRequest !== requestBeforePlayback + 1) {
+            item.resolve(false);
+            return;
+          }
           played = true;
           await new Promise(resolve => {
             let finished = false;
