@@ -331,6 +331,182 @@
       "generationHash": "c467dc47f67152c0af257fe9c9cdd60f0a613e04fcc8ec2c634a664d80b55ef6",
       "audioHash": "febe6eada3df80d99cbee572ad3489b950b4644d0bb0a0d319da64797be2ca7e",
       "durationMs": 16980
+    },
+    "deadly.room-collapsed-ceiling": {
+      "category": "deadly-encounter",
+      "deadlyEncounterFeatureId": "room-collapsed-ceiling",
+      "file": "deadly-encounters/rooms/collapsed-ceiling.mp3",
+      "available": false,
+      "scriptHash": "d39c6191766986acc9dae88f909942352fe83f79310bc6f01cd522b3a725bc66",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
+    },
+    "deadly.room-darkness": {
+      "category": "deadly-encounter",
+      "deadlyEncounterFeatureId": "room-darkness",
+      "file": "deadly-encounters/rooms/darkness.mp3",
+      "available": false,
+      "scriptHash": "4bac901e3342a99407687917fde561774540dff5498c4f872c0a5f0cd23b2478",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
+    },
+    "deadly.room-corrosive-fluid-leak": {
+      "category": "deadly-encounter",
+      "deadlyEncounterFeatureId": "room-corrosive-fluid-leak",
+      "file": "deadly-encounters/rooms/corrosive-fluid-leak.mp3",
+      "available": false,
+      "scriptHash": "2da6e6ae256c1111144f0655aa33b0ad5be0cf9b15fdfe921298cd1c46e08061",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
+    },
+    "deadly.room-energy-rupture": {
+      "category": "deadly-encounter",
+      "deadlyEncounterFeatureId": "room-energy-rupture",
+      "file": "deadly-encounters/rooms/energy-rupture.mp3",
+      "available": false,
+      "scriptHash": "8a9a74cc1cac0489640a237a2824bf8295f7a5ad20a5d285496bbe7a0ab04c3c",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
+    },
+    "deadly.room-airborne-virus": {
+      "category": "deadly-encounter",
+      "deadlyEncounterFeatureId": "room-airborne-virus",
+      "file": "deadly-encounters/rooms/airborne-virus.mp3",
+      "available": false,
+      "scriptHash": "e29abc20a0480b9a25fb73d1eac3ceb74679af003d80fb4f9000605cb81c9648",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
+    },
+    "deadly.room-accelerated-decelerated-time": {
+      "category": "deadly-encounter",
+      "deadlyEncounterFeatureId": "room-accelerated-decelerated-time",
+      "file": "deadly-encounters/rooms/accelerated-decelerated-time.mp3",
+      "available": false,
+      "scriptHash": "3b7abecb57b159757d39d8c02e1b70b860845fc4af8cff9c4db75b4bface381e",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
+    },
+    "deadly.room-crumbling-floor": {
+      "category": "deadly-encounter",
+      "deadlyEncounterFeatureId": "room-crumbling-floor",
+      "file": "deadly-encounters/rooms/crumbling-floor.mp3",
+      "available": false,
+      "scriptHash": "4819e62b09a050712724096f501855bb74f9578fd8d4f52508bfad0f498d2589",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
+    },
+    "deadly.room-gravitic-anomaly": {
+      "category": "deadly-encounter",
+      "deadlyEncounterFeatureId": "room-gravitic-anomaly",
+      "file": "deadly-encounters/rooms/gravitic-anomaly.mp3",
+      "available": false,
+      "scriptHash": "8cf47716cad63ed1183cb05c38af3bb692be6651135365898047eb34228688f4",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
+    },
+    "deadly.objective-quantum-shield": {
+      "category": "deadly-encounter",
+      "deadlyEncounterFeatureId": "objective-quantum-shield",
+      "file": "deadly-encounters/objectives/quantum-shield.mp3",
+      "available": false,
+      "scriptHash": "190cca7363b6744818e1aba4bd66779bb8bbe7ef2b2148d0217ea3c2875435b3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
+    },
+    "deadly.objective-tesla-device": {
+      "category": "deadly-encounter",
+      "deadlyEncounterFeatureId": "objective-tesla-device",
+      "file": "deadly-encounters/objectives/tesla-device.mp3",
+      "available": false,
+      "scriptHash": "b1d299bce550fa75150b0cc1cf06f1c590888730cb404d3b69b0926382ec0410",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
+    },
+    "deadly.objective-teleportation-device": {
+      "category": "deadly-encounter",
+      "deadlyEncounterFeatureId": "objective-teleportation-device",
+      "file": "deadly-encounters/objectives/teleportation-device.mp3",
+      "available": false,
+      "scriptHash": "fe0cc1f17a80cde03f22f29203f86f2e99be10f0210d0614573f6ab65b7639d3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
+    },
+    "deadly.objective-control-node": {
+      "category": "deadly-encounter",
+      "deadlyEncounterFeatureId": "objective-control-node",
+      "file": "deadly-encounters/objectives/control-node.mp3",
+      "available": false,
+      "scriptHash": "490f2375ebae09f0e595658c6c5be9b96822b99db77184f3f2766ab1bd03b9d9",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
+    },
+    "deadly.objective-temporal-sphere": {
+      "category": "deadly-encounter",
+      "deadlyEncounterFeatureId": "objective-temporal-sphere",
+      "file": "deadly-encounters/objectives/temporal-sphere.mp3",
+      "available": false,
+      "scriptHash": "992ce9cf662caeaf7eb39d27740787fdd336cc9a718ab0fb3b9f8df13feec13b",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
+    },
+    "deadly.objective-hyperphase-aura": {
+      "category": "deadly-encounter",
+      "deadlyEncounterFeatureId": "objective-hyperphase-aura",
+      "file": "deadly-encounters/objectives/hyperphase-aura.mp3",
+      "available": false,
+      "scriptHash": "d400712ed428fd5a531d53f07cc12dbf834439f7224f255da22f6c01cc12c8ca",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
+    },
+    "deadly.objective-regeneration-sphere": {
+      "category": "deadly-encounter",
+      "deadlyEncounterFeatureId": "objective-regeneration-sphere",
+      "file": "deadly-encounters/objectives/regeneration-sphere.mp3",
+      "available": false,
+      "scriptHash": "bd48d32da9f3f9dc0712026a95d5cb80cd883ca62232995b02edca04e2aac73a",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
+    },
+    "deadly.objective-amplification-matrix": {
+      "category": "deadly-encounter",
+      "deadlyEncounterFeatureId": "objective-amplification-matrix",
+      "file": "deadly-encounters/objectives/amplification-matrix.mp3",
+      "available": false,
+      "scriptHash": "5e09bc5a2a292de581ec9f63856b96f179f3500d21820f3eb0246433a4a666fb",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
     }
   }
 }
