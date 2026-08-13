@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.64
+# Tomb World Solo Guide v8.6.65
+
+## v8.6.65
+
+**Version 8.6.65 - Complete Production Mission Outcome Narration**
+
+- Adds the remaining production Mission Outcome narration for Missions 01, 02, 03, 05, and 06.
+- Adds Victory and Defeat narration for each mission, for 10 new outcome clips total.
+- Preserves existing narration behavior and save compatibility.
+
 
 ## v8.6.64
 
