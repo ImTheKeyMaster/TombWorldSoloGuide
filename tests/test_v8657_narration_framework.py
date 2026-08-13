@@ -7,10 +7,10 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-APP = (ROOT / "app.js").read_text()
-INDEX = (ROOT / "index.html").read_text()
-NARRATION = (ROOT / "narration.js").read_text()
-WORKER = (ROOT / "service-worker.js").read_text()
+APP = (ROOT / "app.js").read_text(encoding="utf-8")
+INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
+NARRATION = (ROOT / "narration.js").read_text(encoding="utf-8")
+WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 
 
 def source(start, end):
@@ -21,7 +21,7 @@ class NarrationIntegrationTests(unittest.TestCase):
     def test_release_version_changes_without_save_schema_change(self):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
-        self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
+        self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text(encoding="utf-8"))
         self.assertIn(f'narration.js?v={CURRENT_APP_VERSION}', INDEX)
 
     def test_intro_only_runs_from_mission_to_killzone_transition(self):
@@ -49,7 +49,7 @@ class NarrationIntegrationTests(unittest.TestCase):
         self.assertIn('TombWorldNarration.playOutcome(state.missionId,outcome)', finalization)
 
     def test_preferences_are_not_game_save_fields(self):
-        persistence = (ROOT / 'persistence.js').read_text()
+        persistence = (ROOT / 'persistence.js').read_text(encoding="utf-8")
         self.assertNotIn('narrationEnabled', persistence)
         self.assertNotIn('narrationVolume', persistence)
         self.assertIn('tombWorldSoloGuide.narrationEnabled', NARRATION)
@@ -58,7 +58,7 @@ class NarrationIntegrationTests(unittest.TestCase):
 
 class NarrationManifestTests(unittest.TestCase):
     def test_manifest_availability_matches_generated_source_status(self):
-        manifest = json.loads((ROOT / 'Assets/Audio/Narration/narration-manifest.json').read_text())
+        manifest = json.loads((ROOT / 'Assets/Audio/Narration/narration-manifest.json').read_text(encoding="utf-8"))
         entries = manifest['entries']
         self.assertEqual(len(entries), 29)
         self.assertEqual(len(set(entries)), 29)
@@ -67,7 +67,7 @@ class NarrationManifestTests(unittest.TestCase):
         self.assertEqual(sum(key.startswith('outcome.') for key in entries), 12)
         records = {}
         for name in ('missions.json', 'events.json', 'outcomes.json'):
-            records.update((item['id'], item) for item in json.loads((ROOT / 'Narration/scripts' / name).read_text())['scripts'])
+            records.update((item['id'], item) for item in json.loads((ROOT / 'Narration/scripts' / name).read_text(encoding="utf-8"))['scripts'])
         self.assertEqual(set(records), set(entries))
         for script_id, entry in entries.items():
             generated = records[script_id]['status'] == 'generated'
@@ -75,14 +75,14 @@ class NarrationManifestTests(unittest.TestCase):
             self.assertEqual(records[script_id]['outputFile'] if generated else None, entry['file'], script_id)
 
     def test_both_awakened_warriors_share_one_manifest_entry(self):
-        entries = json.loads((ROOT / 'Assets/Audio/Narration/narration-manifest.json').read_text())['entries']
+        entries = json.loads((ROOT / 'Assets/Audio/Narration/narration-manifest.json').read_text(encoding="utf-8"))['entries']
         self.assertIn('event.awakened-warrior', entries)
         self.assertEqual(sum(key == 'event.awakened-warrior' for key in entries), 1)
 
     def test_production_scripts_preserve_entry_count_generation_and_approved_copy(self):
         records = []
         for name in ('missions.json', 'events.json', 'outcomes.json'):
-            records.extend(json.loads((ROOT / 'Narration/scripts' / name).read_text())['scripts'])
+            records.extend(json.loads((ROOT / 'Narration/scripts' / name).read_text(encoding="utf-8"))['scripts'])
         self.assertEqual(len(records), 29)
         self.assertEqual([], [item['id'] for item in records if item['status'] == 'draft'])
 
