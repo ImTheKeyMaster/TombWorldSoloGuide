@@ -62,7 +62,7 @@ class ProducerStaticTests(unittest.TestCase):
 
     def test_generated_sources_manifest_metadata_and_audio_stay_synchronized(self):
         scripts = {item["id"]: item for item in records()}
-        entries = json.loads((ROOT / "Assets/Audio/Narration/narration-manifest.json").read_text())["entries"]
+        entries = json.loads((ROOT / "Assets/Audio/Narration/narration-manifest.json").read_text(encoding="utf-8"))["entries"]
         self.assertEqual(29, len(entries))
         self.assertEqual(set(scripts), set(entries))
         for script_id, item in scripts.items():
@@ -124,7 +124,7 @@ class ProducerApiTests(unittest.TestCase):
         self.assertIn('"apiKeyConfigured":true', body)
 
     def test_dry_run_never_calls_tts_and_blocks_draft_without_key(self):
-        chosen = json.loads((ROOT / "Narration/producer-settings.json").read_text())
+        chosen = json.loads((ROOT / "Narration/producer-settings.json").read_text(encoding="utf-8"))
         chosen["voiceId"] = "test-voice"
 
         current = server.library()
