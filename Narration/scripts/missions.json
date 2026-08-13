@@ -43,13 +43,15 @@
     {
       "id": "mission.04.intro",
       "category": "mission-intro",
-      "status": "draft",
-      "script": "At the heart of the crypt, the sarcophagus pulses with dormant power.\n\nDamage already scars its surface, but the tomb is repairing what has been broken. Living metal flows across ancient wounds as systems buried beneath the chamber stir to life.\n\nDestroy it before the crypt can restore itself.\n\nWhatever sleeps inside must never awaken.",
-      "scriptHash": "57ded7f57c0a88c6f0ca6caaa12f2b1bed246c671c7960b600c34c5db80e12d6",
+      "status": "generated",
+      "script": "At the heart of the crypt, the sarcophagus pulses with dormant power.\n\nThe sarcophagus is already damaged, but the tomb is repairing it. Living metal flows across its fractured surface as ancient systems buried beneath the chamber stir to life.\n\nDestroy it before the crypt can make it whole again.\n\nWhatever sleeps inside must never awaken.",
+      "scriptHash": "7a3dcc523b54a13e4143b41fc829c4fdcd1df6f983d16ba3eb1d34b3d839d711",
       "outputFile": "missions/04-destroy-sarcophagus-intro.mp3",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "7958ded3ed7f6c21b7cfe0b1cc383df10bba487620913e65b5134d197698f519",
+      "audioHash": "bcd95522cc1db66203b0aee86ff28caedd2b006e38c3c49e1bfa28e53eb4b5bd",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     },
     {
       "id": "mission.05.intro",

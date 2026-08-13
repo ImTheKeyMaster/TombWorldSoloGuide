@@ -37,8 +37,13 @@
     "mission.04.intro": {
       "category": "mission-intro",
       "missionId": "destroy-sarcophagus",
-      "file": null,
-      "available": false
+      "file": "missions/04-destroy-sarcophagus-intro.mp3",
+      "available": true,
+      "scriptHash": "7a3dcc523b54a13e4143b41fc829c4fdcd1df6f983d16ba3eb1d34b3d839d711",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "7958ded3ed7f6c21b7cfe0b1cc383df10bba487620913e65b5134d197698f519",
+      "audioHash": "bcd95522cc1db66203b0aee86ff28caedd2b006e38c3c49e1bfa28e53eb4b5bd",
+      "durationMs": 24189
     },
     "mission.05.intro": {
       "category": "mission-intro",
