@@ -24,6 +24,7 @@
   let eventQueueRunning = false;
   let eventQueueGeneration = 0;
   let finishActiveEvent = null;
+  let deadlyEncounterGeneration = 0;
   let activePlayback = false;
   let pausedByToggle = false;
   let enabledChange = 0;
@@ -78,6 +79,7 @@
 
   function stop() {
     clearEventQueue();
+    deadlyEncounterGeneration += 1;
     playbackRequest += 1;
     if (activePlayback) stopAudio();
     else {
@@ -251,6 +253,55 @@
       : Promise.resolve(false);
   }
 
+  function deadlyEncounterEntryId(featureId) {
+    return Object.entries(manifest?.entries || {}).find(([, entry]) =>
+      entry?.category === 'deadly-encounter' && entry.deadlyEncounterFeatureId === featureId
+    )?.[0] || null;
+  }
+
+  async function playDeadlyEncounter(featureIds, discoveryKey) {
+    const orderedFeatureIds = (Array.isArray(featureIds) ? featureIds : [featureIds])
+      .filter(featureId => typeof featureId === 'string' && featureId !== 'unusual');
+    if (!orderedFeatureIds.length || !discoveryKey || !isEnabled()) return false;
+    const duplicateKey = `deadly:${discoveryKey}`;
+    if (automaticPlayback.has(duplicateKey)) return false;
+    automaticPlayback.add(duplicateKey);
+    const generation = ++deadlyEncounterGeneration;
+    clearEventQueue();
+    await init();
+    if (generation !== deadlyEncounterGeneration) return false;
+    const entryIds = orderedFeatureIds.map(deadlyEncounterEntryId);
+    if (entryIds.some(id => !id)) return false;
+
+    let played = false;
+    for (const id of entryIds) {
+      if (generation !== deadlyEncounterGeneration) break;
+      const requestBeforePlayback = playbackRequest;
+      const started = await playEntry(id, duplicateKey, true, false);
+      if (!started) continue;
+      played = true;
+      await new Promise(resolve => {
+        let finished = false;
+        finishActiveEvent = () => {
+          if (finished) return;
+          finished = true;
+          if (audio) {
+            audio.onended = null;
+            audio.onerror = null;
+          }
+          finishActiveEvent = null;
+          activePlayback = false;
+          pausedByToggle = false;
+          resolve();
+        };
+        audio.onended = finishActiveEvent;
+        audio.onerror = finishActiveEvent;
+      });
+      if (generation !== deadlyEncounterGeneration || playbackRequest !== requestBeforePlayback + 1) break;
+    }
+    return played;
+  }
+
   function replayLast() {
     return lastEntry ? playEntry(lastEntry.id, lastEntry.duplicateKey, true) : Promise.resolve(false);
   }
@@ -265,7 +316,7 @@
   }
 
   global.TombWorldNarration = Object.freeze({
-    init, unlock, playMissionIntro, playEvent, playOutcome, replayLast, stop, pauseNarration, resumeNarration,
+    init, unlock, playMissionIntro, playEvent, playOutcome, playDeadlyEncounter, replayLast, stop, pauseNarration, resumeNarration,
     setEnabled, isEnabled,
     canReplay: () => Boolean(lastEntry)
   });
