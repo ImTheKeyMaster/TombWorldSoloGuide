@@ -24,6 +24,8 @@
   let eventQueueRunning = false;
   let eventQueueGeneration = 0;
   let finishActiveEvent = null;
+  let activePlayback = false;
+  let pausedByToggle = false;
 
   function readPreference(key) {
     try { return global.localStorage?.getItem(key) ?? null; } catch { return null; }
@@ -57,6 +59,8 @@
 
   function stopAudio() {
     if (finishActiveEvent) finishActiveEvent();
+    activePlayback = false;
+    pausedByToggle = false;
     if (!audio) return;
     try {
       audio.pause();
@@ -75,6 +79,27 @@
     clearEventQueue();
     playbackRequest += 1;
     stopAudio();
+  }
+
+  function pauseNarration() {
+    const player = audio;
+    if (!player || !activePlayback || player.ended || player.paused === true) return false;
+    try {
+      player.pause();
+      pausedByToggle = true;
+      return true;
+    } catch { return false; }
+  }
+
+  async function resumeNarration() {
+    const player = audio;
+    if (!pausedByToggle || !player || !player.src) return false;
+    try {
+      await player.play();
+      pausedByToggle = false;
+      activePlayback = true;
+      return true;
+    } catch { return false; }
   }
 
   function unlock() {
@@ -148,6 +173,8 @@
     player.src = new URL(entry.file, new URL(MANIFEST_URL, global.location?.href || 'http://localhost/')).href;
     try {
       await player.play();
+      activePlayback = true;
+      pausedByToggle = false;
       lastEntry = { id, duplicateKey };
       notify();
       return true;
@@ -175,6 +202,8 @@
             audio.onerror = null;
           }
           finishActiveEvent = null;
+          activePlayback = false;
+          pausedByToggle = false;
           resolve();
         };
         audio.onended = finishActiveEvent;
@@ -214,13 +243,15 @@
   }
 
   function setEnabled(enabled) {
-    writePreference(ENABLED_KEY, String(Boolean(enabled)));
-    if (!enabled) stop();
+    const nextEnabled = Boolean(enabled);
+    writePreference(ENABLED_KEY, String(nextEnabled));
+    if (nextEnabled) void resumeNarration();
+    else pauseNarration();
     notify();
   }
 
   global.TombWorldNarration = Object.freeze({
-    init, unlock, playMissionIntro, playEvent, playOutcome, replayLast, stop,
+    init, unlock, playMissionIntro, playEvent, playOutcome, replayLast, stop, pauseNarration, resumeNarration,
     setEnabled, isEnabled,
     canReplay: () => Boolean(lastEntry)
   });

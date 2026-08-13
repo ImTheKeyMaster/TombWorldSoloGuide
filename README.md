@@ -2,9 +2,10 @@
 
 ## v8.6.68
 
-**Version 8.6.68 - Simplified Narration Controls**
+**Version 8.6.68 - Simplified Narration Playback Control**
 
 - Simplifies the header speaker to a direct Narration On/Off toggle.
+- Pauses active narration when turned off and resumes from the same position when turned back on.
 - Removes narration volume controls and relies on physical device/system volume.
 - Removes duplicate Narration controls from the Game Menu while preserving persistent On/Off state.
 

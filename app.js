@@ -4,7 +4,7 @@
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
   const APP_VERSION = '8.6.68';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
-    init:()=>Promise.resolve(),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},setEnabled:()=>{},isEnabled:()=>true,canReplay:()=>false
+    init:()=>Promise.resolve(),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},pauseNarration:()=>false,resumeNarration:()=>Promise.resolve(false),setEnabled:()=>{},isEnabled:()=>true,canReplay:()=>false
   });
   const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
@@ -50,6 +50,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     narrationSpeakerBtn.querySelector('.narration-icon-enabled').hidden=!enabled;
     narrationSpeakerBtn.querySelector('.narration-icon-muted').hidden=enabled;
     narrationSpeakerBtn.setAttribute('aria-label',`Narration ${enabled?'on':'off'}`);
+    narrationSpeakerBtn.setAttribute('aria-pressed',String(enabled));
     narrationSpeakerBtn.title=`Narration ${enabled?'on':'off'}`;
   }
   narrationSpeakerBtn.addEventListener('click',()=>TombWorldNarration.setEnabled(!TombWorldNarration.isEnabled()));

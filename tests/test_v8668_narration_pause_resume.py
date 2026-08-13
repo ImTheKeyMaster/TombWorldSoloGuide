@@ -1,0 +1,104 @@
+import subprocess
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+INDEX = (ROOT / "index.html").read_text()
+APP = (ROOT / "app.js").read_text()
+CSS = (ROOT / "styles.css").read_text()
+NARRATION = (ROOT / "narration.js").read_text()
+
+
+class NarrationPauseResumeTests(unittest.TestCase):
+    def test_header_uses_distinct_wave_and_single_slash_icons(self):
+        self.assertIn('id="narrationSpeakerBtn"', INDEX)
+        self.assertRegex(INDEX, r'narration-icon-enabled[^>]*>.*M16 8\.5.*M19 6')
+        self.assertRegex(INDEX, r'narration-icon-muted[^>]*>.*M3 3l18 18')
+        self.assertNotIn('m16 9 5 6m0-6-5 6', INDEX)
+        self.assertIn("stroke-width:2.4", CSS)
+        self.assertIn("aria-pressed", INDEX)
+
+    def test_removed_volume_and_duplicate_menu_controls_do_not_return(self):
+        for source in (INDEX, APP, CSS, NARRATION):
+            for obsolete in (
+                "narrationPopover", "headerNarrationEnabled", "headerNarrationVolume",
+                "headerNarrationVolumeValue", "narrationVolumeValue", "getVolume", "setVolume",
+            ):
+                self.assertNotIn(obsolete, source)
+        self.assertNotIn('type="range"', INDEX)
+        menu = APP[APP.index("function showGameMenu()"):APP.index("function showAbout()")]
+        self.assertNotIn('<legend>Narration</legend>', menu)
+        self.assertIn('Replay Last Narration', menu)
+
+    def test_pause_resume_queue_persistence_and_destructive_stop(self):
+        script = r"""
+const fs=require('fs'),vm=require('vm');
+const store=new Map([['tombWorldSoloGuide.narrationVolume','0']]);
+const calls=[];
+class Audio {
+  constructor(){this.src='';this.currentTime=0;this.volume=.2;this.paused=true;this.ended=false;this.onended=null;this.onerror=null;Audio.instance=this;}
+  pause(){calls.push('pause');this.paused=true;}
+  removeAttribute(name){if(name==='src')this.src='';}
+  load(){calls.push('load');this.currentTime=0;}
+  play(){calls.push('play:'+this.src+':'+this.currentTime);this.paused=false;this.ended=false;return Promise.resolve();}
+  end(){this.paused=true;this.ended=true;if(this.onended)this.onended();}
+}
+const entries={
+  'event.first':{available:true,file:'events/first.mp3'},
+  'event.second':{available:true,file:'events/second.mp3'},
+  'event.ignored':{available:true,file:'events/ignored.mp3'}
+};
+const context={Audio,URL,location:{href:'https://example.test/'},fetch:async()=>({ok:true,json:async()=>({entries})}),
+  localStorage:{getItem:key=>store.has(key)?store.get(key):null,setItem:(key,value)=>store.set(key,value)},
+  dispatchEvent:()=>{},CustomEvent:function(){}};
+context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
+const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
+(async()=>{
+  const n=context.TombWorldNarration;
+  await n.init();
+  const first=n.playEvent('first','event-1');
+  const second=n.playEvent('second','event-2');
+  await flush();
+  const player=Audio.instance;
+  if(player.volume!==1)throw Error('legacy volume changed media volume');
+  player.currentTime=12.5;
+  const src=player.src;
+  const loadCount=calls.filter(call=>call==='load').length;
+  n.setEnabled(false);
+  if(store.get('tombWorldSoloGuide.narrationEnabled')!=='false')throw Error('off preference missing');
+  if(!player.paused)throw Error('active narration was not paused');
+  if(player.src!==src)throw Error('pause removed the source');
+  if(player.currentTime!==12.5)throw Error('pause reset playback position');
+  if(!n.canReplay())throw Error('pause removed Replay Last state');
+  if(calls.filter(call=>call==='load').length!==loadCount)throw Error('pause used destructive stop cleanup');
+  if(await n.playEvent('ignored','event-off'))throw Error('disabled event was accepted');
+
+  n.setEnabled(true);
+  await flush();
+  if(store.get('tombWorldSoloGuide.narrationEnabled')!=='true')throw Error('on preference missing');
+  if(player.paused)throw Error('paused narration did not resume');
+  if(!calls.includes('play:'+src+':12.5'))throw Error('narration restarted instead of resuming');
+  player.end();
+  await flush();
+  if(!player.src.endsWith('events/second.mp3'))throw Error('existing queue did not survive pause');
+  player.end();
+  if(!await first||!await second)throw Error('queued narration result changed');
+  if(calls.some(call=>call.includes('events/ignored.mp3')))throw Error('disabled event accumulated');
+
+  n.stop();
+  if(player.src)throw Error('explicit stop did not remove source');
+  if(player.currentTime!==0)throw Error('explicit stop did not reset playback');
+  const playCount=calls.filter(call=>call.startsWith('play:')).length;
+  n.setEnabled(false);
+  n.setEnabled(true);
+  await flush();
+  if(calls.filter(call=>call.startsWith('play:')).length!==playCount)throw Error('enabling without a pause started playback');
+})().catch(error=>{console.error(error);process.exit(1)});
+"""
+        result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+
+
+if __name__ == "__main__":
+    unittest.main()
