@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.74
+# Tomb World Solo Guide v8.6.75
+
+## v8.6.75
+
+**Version 8.6.75 - Seamless Ambient Audio and Narration Ducking**
+
+- Adds a configuration-driven, seamless Web Audio ambient bed during mission setup and active battles, controlled by the existing master speaker and stopped by New Game.
+- Automatically ducks and smoothly restores ambient gain around all centralized narration, including consecutive queues and narration preemption.
+- Precaches the ambient configuration and its validated selected track for offline/PWA play while preserving narration caching and save schema version 3.
 
 ## v8.6.74
 

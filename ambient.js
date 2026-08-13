@@ -1,0 +1,174 @@
+(function (global) {
+  'use strict';
+
+  const CONFIG_URL = 'Assets/Audio/Narration/ambient-config.json';
+  const AUDIO_ROOT_URL = 'Assets/Audio/Narration/';
+  const AudioContext = global.AudioContext || global.webkitAudioContext;
+  let context = null;
+  let gainNode = null;
+  let buffer = null;
+  let config = null;
+  let initialization = null;
+  let source = null;
+  let stopTimer = null;
+  let unlocked = false;
+  let activeBattle = false;
+  let narrationActive = false;
+  let generation = 0;
+
+  function ensureContext() {
+    if (!context && AudioContext) context = new AudioContext();
+    return context;
+  }
+
+  function masterEnabled() {
+    try { return global.TombWorldNarration?.isEnabled() !== false; } catch { return true; }
+  }
+
+  function validConfig(value) {
+    const file = value?.file;
+    const gainsValid = ['normalGain', 'duckGain'].every(key => Number.isFinite(value?.[key]) && value[key] >= 0);
+    const timesValid = ['fadeInMs', 'fadeOutMs', 'duckAttackMs', 'duckReleaseMs'].every(key => Number.isFinite(value?.[key]) && value[key] >= 0);
+    return value?.schemaVersion === 1 && typeof file === 'string'
+      && /^(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$))Ambient\/[A-Za-z0-9._-]+\.(?:mp3|ogg)$/i.test(file)
+      && gainsValid && timesValid && Number.isFinite(value.loopStartSeconds) && value.loopStartSeconds >= 0
+      && (value.loopEndSeconds === null || (Number.isFinite(value.loopEndSeconds) && value.loopEndSeconds > value.loopStartSeconds));
+  }
+
+  async function init() {
+    if (initialization) return initialization;
+    initialization = (async () => {
+      if (!AudioContext || typeof global.fetch !== 'function') return false;
+      try {
+        const response = await global.fetch(CONFIG_URL);
+        const value = response.ok ? await response.json() : null;
+        if (!validConfig(value)) return false;
+        const audioResponse = await global.fetch(new URL(value.file, new URL(AUDIO_ROOT_URL, global.location?.href || 'http://localhost/')).href);
+        if (!audioResponse.ok) return false;
+        ensureContext();
+        gainNode = context.createGain();
+        gainNode.gain.value = 0;
+        gainNode.connect(context.destination);
+        buffer = await context.decodeAudioData(await audioResponse.arrayBuffer());
+        const loopEnd = value.loopEndSeconds === null ? buffer.duration : value.loopEndSeconds;
+        if (!(loopEnd > value.loopStartSeconds) || loopEnd > buffer.duration) return false;
+        config = { ...value, loopEndSeconds: loopEnd };
+        return true;
+      } catch { return false; }
+    })();
+    return initialization;
+  }
+
+  function rampTo(value, milliseconds) {
+    if (!context || !gainNode) return;
+    const now = context.currentTime;
+    const gain = gainNode.gain;
+    gain.cancelScheduledValues(now);
+    gain.setValueAtTime(gain.value, now);
+    gain.linearRampToValueAtTime(value, now + milliseconds / 1000);
+  }
+
+  function stopSource(expectedGeneration, delayMs) {
+    global.clearTimeout(stopTimer);
+    stopTimer = global.setTimeout(() => {
+      if (expectedGeneration !== generation || !source) return;
+      try { source.stop(); } catch { /* The source may already have stopped. */ }
+      source.disconnect();
+      source = null;
+      stopTimer = null;
+    }, delayMs);
+  }
+
+  function fadeOutAndStop() {
+    if (!source || !config) return;
+    const expectedGeneration = generation;
+    rampTo(0, config.fadeOutMs);
+    stopSource(expectedGeneration, config.fadeOutMs + 25);
+  }
+
+  function startSource() {
+    if (source || !context || !gainNode || !buffer || !config) return;
+    global.clearTimeout(stopTimer);
+    stopTimer = null;
+    generation += 1;
+    source = context.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+    source.loopStart = config.loopStartSeconds;
+    source.loopEnd = config.loopEndSeconds;
+    source.connect(gainNode);
+    gainNode.gain.cancelScheduledValues(context.currentTime);
+    gainNode.gain.setValueAtTime(0, context.currentTime);
+    source.start(0, config.loopStartSeconds);
+    rampTo(narrationActive ? config.duckGain : config.normalGain, config.fadeInMs);
+  }
+
+  async function reconcile() {
+    const token = generation;
+    const ready = await init();
+    if (!ready || token !== generation) return false;
+    if (activeBattle && unlocked && masterEnabled()) {
+      if (context.state === 'suspended') {
+        try { await context.resume(); } catch { return false; }
+      }
+      if (!activeBattle || !masterEnabled()) return false;
+      if (source) {
+        global.clearTimeout(stopTimer);
+        stopTimer = null;
+        generation += 1;
+        rampTo(narrationActive ? config.duckGain : config.normalGain, config.fadeInMs);
+      } else startSource();
+      return Boolean(source);
+    }
+    fadeOutAndStop();
+    return false;
+  }
+
+  async function unlock() {
+    // Construct and resume from the shared click gesture for Safari/PWA audio permission.
+    ensureContext();
+    if (context?.state === 'suspended') {
+      try { await context.resume(); } catch { /* Initialization below remains safely retryable. */ }
+    }
+    await init();
+    if (!context) return false;
+    try {
+      await context.resume();
+      unlocked = context.state === 'running';
+    } catch { unlocked = false; }
+    if (unlocked) void reconcile();
+    return unlocked;
+  }
+
+  function setActive(isActive) {
+    activeBattle = Boolean(isActive);
+    void reconcile();
+  }
+
+  function stop() {
+    activeBattle = false;
+    generation += 1;
+    global.clearTimeout(stopTimer);
+    stopTimer = null;
+    if (source) {
+      rampTo(0, config?.fadeOutMs || 0);
+      const oldSource = source;
+      source = null;
+      global.setTimeout(() => { try { oldSource.stop(); oldSource.disconnect(); } catch {} }, (config?.fadeOutMs || 0) + 25);
+    }
+  }
+
+  function onNarrationActivity(event) {
+    narrationActive = event.detail?.active === true;
+    if (source && masterEnabled() && config) {
+      rampTo(narrationActive ? config.duckGain : config.normalGain, narrationActive ? config.duckAttackMs : config.duckReleaseMs);
+    }
+  }
+
+  function onMasterChange() { void reconcile(); }
+  global.addEventListener?.('tombworldnarrationactivity', onNarrationActivity);
+  global.addEventListener?.('tombworldnarrationchange', onMasterChange);
+  global.document?.addEventListener?.('click', () => { void unlock(); }, true);
+
+  global.TombWorldAmbient = Object.freeze({ init, unlock, setActive, stop });
+})(typeof window === 'undefined' ? globalThis : window);

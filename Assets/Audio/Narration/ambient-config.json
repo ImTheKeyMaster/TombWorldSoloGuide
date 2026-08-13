@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "file": "Ambient/Forgoten_tombs.mp3",
+  "normalGain": 0.22,
+  "duckGain": 0.055,
+  "fadeInMs": 1500,
+  "fadeOutMs": 800,
+  "duckAttackMs": 250,
+  "duckReleaseMs": 700,
+  "loopStartSeconds": 0,
+  "loopEndSeconds": null
+}

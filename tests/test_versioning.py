@@ -19,6 +19,7 @@ class VersioningTests(unittest.TestCase):
         self.assertIn(f'<div class="version">V{CURRENT_APP_VERSION}</div>', index)
         for asset in (
             "app.js",
+            "ambient.js",
             "deadly-encounters.js",
             "event-effects.js",
             "mission-engine.js",

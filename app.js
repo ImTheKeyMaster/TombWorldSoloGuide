@@ -2,10 +2,11 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.74';
+  const APP_VERSION = '8.6.75';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
     init:()=>Promise.resolve(),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},pauseNarration:()=>false,resumeNarration:()=>Promise.resolve(false),setEnabled:()=>Promise.resolve(false),isEnabled:()=>true,canReplay:()=>false
   });
+  const TombWorldAmbient=window.TombWorldAmbient||Object.freeze({init:()=>Promise.resolve(false),unlock:()=>Promise.resolve(false),setActive:()=>{},stop:()=>{}});
   const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
@@ -1941,6 +1942,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     bindCommon();
     updateGameBackground();
     renderOperativeStatusPanel();
+    TombWorldAmbient.setActive(Boolean(state.missionId)&&['setup','game'].includes(state.screen));
 
     if(state.hotResolution&&!state.hotResolution.acknowledged&&!modal.open){
       showHotResult(state.hotResolution,()=>resumePersistedHotContinuation(state.hotResolution));
@@ -7513,6 +7515,7 @@ function showPlayerActivation(stage={}){
 
   function startNewGameSetup(){
     TombWorldNarration.stop();
+    TombWorldAmbient.stop();
     clearPendingBoardSetupMissionIntro();
     document.documentElement.classList.remove('desktop-game-background');
     gameBackground.style.backgroundImage='none';
@@ -7579,6 +7582,7 @@ function showPlayerActivation(stage={}){
     gameMenuBtn.onclick=showGameMenu;
     syncNarrationControls();
     void TombWorldNarration.init();
+    void TombWorldAmbient.init();
   }
 
   function renderStartupRecovery(error){
