@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import json
 import re
 import subprocess
@@ -159,7 +160,7 @@ if(restored.playerTeamId!=='spectre-squad'||restored.playerWounds.sharpshooter!=
         self.assertNotIn("state.playerTeamId==='spectre-squad'", self.app)
 
     def test_version_consistency(self):
-        expected = "8.6.64"
+        expected = f"{CURRENT_APP_VERSION}"
         self.assertIn(f"const APP_VERSION = '{expected}'", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}'", (ROOT / "service-worker.js").read_text())
         index = (ROOT / "index.html").read_text()

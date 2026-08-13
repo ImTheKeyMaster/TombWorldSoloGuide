@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import unittest
 from pathlib import Path
 
@@ -61,7 +62,7 @@ class V8642NoNpoCombatTargetsTests(unittest.TestCase):
         self.assertNotIn("state.", helper)
 
     def test_version_and_save_version(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
 
 

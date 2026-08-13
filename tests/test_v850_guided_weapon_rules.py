@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import unittest
 from pathlib import Path
 
@@ -9,7 +10,7 @@ README=(ROOT/'README.md').read_text()
 
 class GuidedWeaponRuleTests(unittest.TestCase):
     def test_01_version_850(self):
-        self.assertIn("const APP_VERSION = '8.6.64';",APP); self.assertIn("const APP_VERSION = '8.6.64';",WORKER); self.assertIn('V8.6.64',INDEX)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';",APP); self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';",WORKER); self.assertIn(f'V{CURRENT_APP_VERSION}',INDEX)
     def test_02_no_manual_heading(self): self.assertNotIn('<strong>Manual tabletop resolution</strong>',APP)
     def test_03_no_generic_core_instruction(self): self.assertNotIn('using the Core rules and confirm any required tabletop',APP)
     def test_04_to_07_piercing_crits(self):

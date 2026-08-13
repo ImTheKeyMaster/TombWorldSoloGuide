@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import json
 import re
 import subprocess
@@ -164,25 +165,26 @@ const dispatch=async name=>{
 (async()=>{
   await dispatch('install');
   assert.equal(added.length,2);
-  assert.equal(added[0].name,'tomb-world-solo-guide-8.6.64');
+  assert.equal(added[0].name,'tomb-world-solo-guide-__CURRENT_APP_VERSION__');
   assert.ok(added[0].assets.includes('./index.html'));
-  assert.ok(added[0].assets.includes('./app.js?v=8.6.64'));
+  assert.ok(added[0].assets.includes('./app.js?v=__CURRENT_APP_VERSION__'));
   assert.deepEqual(added[1].assets,['./Assets/Images/Backgrounds/Landscape-01.png']);
   await dispatch('activate');
   assert.deepEqual(deleted,['tomb-world-solo-guide-7.0.6']);
 })().catch(error=>{console.error(error);process.exitCode=1;});
 """
+        script = script.replace("__CURRENT_APP_VERSION__", CURRENT_APP_VERSION)
         result = subprocess.run(
             ["node", "-e", script], cwd=ROOT, text=True, capture_output=True
         )
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
 
     def test_release_version_help_and_accessible_elimination_text_are_current(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
-        self.assertIn("V8.6.64", INDEX)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
         for asset in ("app.js", "mission-engine.js", "persistence.js", "styles.css"):
-            self.assertIn(f"{asset}?v=8.6.64", INDEX)
+            self.assertIn(f"{asset}?v={CURRENT_APP_VERSION}", INDEX)
         self.assertIn("Tomb World NPO roster", APP)
         self.assertIn("NPO portraits are intentionally not displayed", APP)
         roster_card = APP.split("function npoRosterCard", 1)[1].split("function operativeCard", 1)[0]

@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import re
 import unittest
 from pathlib import Path
@@ -51,7 +52,7 @@ class WoundedOperativeStatusTests(unittest.TestCase):
         self.assertNotRegex(self.row, r'<(?:button|input|select)')
 
     def test_release_updates_app_but_not_save_version(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
 

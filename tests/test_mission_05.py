@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import json
 import subprocess
 import unittest
@@ -81,9 +82,9 @@ assert.equal(engine.getMissionRuntime().history.length,0);assert.equal(engine.ge
         self.assertIn("setThreat(gradeFloor-state.threat,'Scout Room')",app)
         self.assertIn("stage.hatch&&state.missionId!=='scout-sub-crypt'",app)
         self.assertIn("'./Missions/definition-05-scout-sub-crypt.json'",worker)
-        self.assertIn("const APP_VERSION = '8.6.64'",app)
-        self.assertIn("const APP_VERSION = '8.6.64'",worker)
-        self.assertIn('V8.6.64',index)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}'",app)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}'",worker)
+        self.assertIn(f'V{CURRENT_APP_VERSION}',index)
 
 
 if __name__ == '__main__':

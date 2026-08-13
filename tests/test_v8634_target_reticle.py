@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import pathlib
 import unittest
 
@@ -27,10 +28,10 @@ class TargetReticleTests(unittest.TestCase):
         self.assertIn("if(type==='command')return npoIcon('radar');", APP)
 
     def test_release_version_is_current_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", SERVICE_WORKER)
-        self.assertIn('<div class="version">V8.6.64</div>', INDEX)
-        self.assertIn("# Tomb World Solo Guide v8.6.64", README)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", SERVICE_WORKER)
+        self.assertIn(f'<div class="version">V{CURRENT_APP_VERSION}</div>', INDEX)
+        self.assertIn(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}", README)
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
 

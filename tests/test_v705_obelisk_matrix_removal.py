@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import json
 import subprocess
 import unittest
@@ -105,12 +106,12 @@ class ObeliskMatrixRemovalTests(unittest.TestCase):
         self.assertEqual(result["npoRuleState"]["aplModifiers"], [])
 
     def test_release_and_offline_assets_are_synchronized(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
-        self.assertIn("V8.6.64", INDEX)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
         for asset in ("app.js", "mission-engine.js", "persistence.js", "styles.css"):
-            self.assertIn(f"{asset}?v=8.6.64", INDEX)
+            self.assertIn(f"{asset}?v={CURRENT_APP_VERSION}", INDEX)
         self.assertNotRegex(WORKER, r"(?i)(?:obelisk|matrix)[^\n]*(?:png|svg|jpe?g|webp)")
 
     def test_ordering_portrait_and_unrelated_behavior_regressions(self):

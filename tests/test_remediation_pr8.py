@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from versioning import CURRENT_APP_VERSION
 import json
 import unittest
 from pathlib import Path
@@ -99,7 +100,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertIn("Assets/Images/${resultClass}.png", self.app)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = "8.6.64"
+        expected = f"{CURRENT_APP_VERSION}"
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         index = (ROOT / "index.html").read_text()
         self.assertIn(f"styles.css?v={expected}", index)

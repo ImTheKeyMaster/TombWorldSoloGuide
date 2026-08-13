@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from versioning import CURRENT_APP_VERSION
 import json
 import re
 import unittest
@@ -66,7 +67,7 @@ class UiUxPhase1Tests(unittest.TestCase):
             self.assertIsNone(re.search(r"\bPlayer [AB]\b", content), path)
 
     def test_release_versions_and_description_are_synchronized(self):
-        version = "8.6.64"
+        version = f"{CURRENT_APP_VERSION}"
         self.assertIn(f"const APP_VERSION = '{version}'", self.app)
         self.assertIn(f"V{version}", (ROOT / "index.html").read_text())
         self.assertIn(f"const APP_VERSION = '{version}'", (ROOT / "service-worker.js").read_text())

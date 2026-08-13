@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import json
 import unittest
 from pathlib import Path
@@ -13,10 +14,10 @@ MISSION = json.loads((ROOT / "Missions/02-demolition-protocol.json").read_text()
 
 class TestV8625ActivationBreachMissionSync(unittest.TestCase):
     def test_01_version(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("V8.6.64", INDEX)
-        self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.64"))
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
+        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
 
     def test_02_one_canonical_updater(self):
         self.assertEqual(APP.count("function commitMissionFeatureOpened("), 1)

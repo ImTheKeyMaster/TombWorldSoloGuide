@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import re
 import subprocess
 import unittest
@@ -87,9 +88,9 @@ assert.deepEqual(strategyEventPresentation(data),{{required:0,cardsDrawn:0,resol
         self.assertNotIn('position:absolute', STYLES.split('.strategy-actions-section', 1)[1].split('\n', 1)[0])
 
     def test_release_version_and_notes_are_consistent(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn('V8.6.64', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.64'))
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f'V{CURRENT_APP_VERSION}', INDEX)
+        self.assertTrue(README.startswith(f'# Tomb World Solo Guide v{CURRENT_APP_VERSION}'))
         self.assertIn('Version 7.4.0 - Reorganize Strategy Phase Results', README)
         self.assertNotIn('portrait', EVENT_HTML.lower())
         self.assertNotIn('obelisk', EVENT_HTML.lower())

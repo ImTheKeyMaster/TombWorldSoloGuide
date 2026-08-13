@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import json
 import pathlib
 import re
@@ -175,11 +176,11 @@ class DeadlyEncounterIntegration(unittest.TestCase):
         self.assertIn('feature-status',APP)
 
     def test_release_version_and_precache(self):
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.64'));self.assertIn('## v8.6.40',README)
-        self.assertIn("const APP_VERSION = '8.6.64';",APP);self.assertIn("const APP_VERSION = '8.6.64';",WORKER);self.assertIn('V8.6.64',INDEX)
+        self.assertTrue(README.startswith(f'# Tomb World Solo Guide v{CURRENT_APP_VERSION}'));self.assertIn('## v8.6.40',README)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';",APP);self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';",WORKER);self.assertIn(f'V{CURRENT_APP_VERSION}',INDEX)
         self.assertIn('./deadly-encounters.js?v=${APP_VERSION}',WORKER)
         for asset in ['styles.css','mission-engine.js','persistence.js','deadly-encounters.js','app.js']:
-            self.assertIn(f'{asset}?v=8.6.64',INDEX)
+            self.assertIn(f'{asset}?v={CURRENT_APP_VERSION}',INDEX)
 
 
 def _feature_test(feature_id, tokens):

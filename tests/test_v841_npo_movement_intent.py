@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import unittest
 from pathlib import Path
 
@@ -72,13 +73,13 @@ class V841NpoMovementIntentTests(unittest.TestCase):
         self.assertIn('canCommitNpoAction(pending.id,pending.apCost)', combat)
 
     def test_version_and_release_notes(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
-        self.assertIn('V8.6.64', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.64'))
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
+        self.assertIn(f'V{CURRENT_APP_VERSION}', INDEX)
+        self.assertTrue(README.startswith(f'# Tomb World Solo Guide v{CURRENT_APP_VERSION}'))
         self.assertIn('## v8.6.25', README)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.64', INDEX)
+            self.assertIn(f'{asset}?v={CURRENT_APP_VERSION}', INDEX)
 
 
 if __name__ == '__main__':

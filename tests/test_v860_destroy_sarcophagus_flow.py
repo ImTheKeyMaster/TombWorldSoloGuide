@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import json
 import subprocess
 import unittest
@@ -12,9 +13,9 @@ DEFINITION = json.loads((ROOT / "Missions/definition-04-destroy-sarcophagus.json
 
 class DestroySarcophagusV860Tests(unittest.TestCase):
     def test_version_and_definition(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
-        self.assertIn("V8.6.64", INDEX)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
         self.assertTrue(DEFINITION["completion"]["endsBattle"])
         self.assertEqual(DEFINITION["actions"][0]["oncePer"], "activation")
         self.assertEqual(DEFINITION["dialogs"]["objectiveComplete"]["message"], "The sarcophagus has been destroyed. The Player team is victorious.")

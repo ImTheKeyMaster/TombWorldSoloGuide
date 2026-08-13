@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from versioning import CURRENT_APP_VERSION
 import re
 import unittest
 from pathlib import Path
@@ -71,7 +72,7 @@ class RemediationPr4Tests(unittest.TestCase):
         self.assertIn('if(state.lastActivation?.committed)return', commit)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
-        expected = '8.6.64'
+        expected = f'{CURRENT_APP_VERSION}'
         self.assertIn(f"const APP_VERSION = '{expected}';", self.app)
         self.assertIn(f"const APP_VERSION = '{expected}';", (ROOT / 'service-worker.js').read_text())
         index = (ROOT / 'index.html').read_text()

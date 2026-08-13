@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import json
 import re
 import subprocess
@@ -139,10 +140,10 @@ class StrategyEventDeduplicationTests(unittest.TestCase):
         self.assertIn("Math.max(normalCount,1)", counts)
         self.assertIn("1 event required by Restless Tomb.", render_strategy([self.resolved], [self.active]))
         self.assertIn("ACTIVE TOMB WORLD", APP.split("function activeEventEffectsHtml", 1)[1].split("function nextStepCard", 1)[0])
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
-        self.assertIn("V8.6.64", INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.64"))
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
+        self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
+        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
         self.assertIn("## v8.6.25", README)
         self.assertNotIn("portrait", EVENT_HTML.lower())
         self.assertNotIn("obelisk", EVENT_HTML.lower())

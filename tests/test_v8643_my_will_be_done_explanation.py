@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import re
 import unittest
 from pathlib import Path
@@ -36,10 +37,10 @@ class MyWillBeDoneExplanationTests(unittest.TestCase):
         self.assertIn("profile.rules.push('Accurate 1')", engine)
 
     def test_release_version_is_consistent_without_save_schema_change(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", (ROOT / "service-worker.js").read_text())
-        self.assertIn('<div class="version">V8.6.64</div>', (ROOT / "index.html").read_text())
-        self.assertTrue((ROOT / "README.md").read_text().startswith('# Tomb World Solo Guide v8.6.64'))
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", (ROOT / "service-worker.js").read_text())
+        self.assertIn(f'<div class="version">V{CURRENT_APP_VERSION}</div>', (ROOT / "index.html").read_text())
+        self.assertTrue((ROOT / "README.md").read_text().startswith(f'# Tomb World Solo Guide v{CURRENT_APP_VERSION}'))
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
 
 

@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import pathlib
 import unittest
 
@@ -28,10 +29,10 @@ class DashChargeMovementIconTests(unittest.TestCase):
         self.assertIn('focusable="false"', icon)
 
     def test_release_version_is_current_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", SERVICE_WORKER)
-        self.assertIn('<div class="version">V8.6.64</div>', INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.64"))
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", SERVICE_WORKER)
+        self.assertIn(f'<div class="version">V{CURRENT_APP_VERSION}</div>', INDEX)
+        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
 

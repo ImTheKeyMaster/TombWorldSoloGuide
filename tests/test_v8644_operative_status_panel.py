@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import re
 import unittest
 from pathlib import Path
@@ -11,8 +12,8 @@ PERSISTENCE = (ROOT / 'persistence.js').read_text()
 
 class OperativeStatusPanelTests(unittest.TestCase):
     def test_version_and_save_schema(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn('V8.6.64', INDEX)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f'V{CURRENT_APP_VERSION}', INDEX)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 
     def test_central_accessible_read_only_panel(self):

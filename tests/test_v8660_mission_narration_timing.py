@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import subprocess
 import unittest
 from pathlib import Path
@@ -53,13 +54,13 @@ class MissionNarrationTimingTests(unittest.TestCase):
             self.assertIn(control, menu)
 
     def test_release_and_save_versions(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
-        self.assertIn('<div class="version">V8.6.64</div>', INDEX)
-        self.assertTrue(README.startswith('# Tomb World Solo Guide v8.6.64'))
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
+        self.assertIn(f'<div class="version">V{CURRENT_APP_VERSION}</div>', INDEX)
+        self.assertTrue(README.startswith(f'# Tomb World Solo Guide v{CURRENT_APP_VERSION}'))
         self.assertIn('const SAVE_VERSION = 3;', (ROOT / 'persistence.js').read_text())
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'narration.js', 'app.js'):
-            self.assertIn(f'{asset}?v=8.6.64', INDEX)
+            self.assertIn(f'{asset}?v={CURRENT_APP_VERSION}', INDEX)
 
     def test_available_mp3s_are_discovered_from_the_manifest(self):
         self.assertIn("Object.values(manifest.entries||{})", WORKER)

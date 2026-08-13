@@ -1,3 +1,4 @@
+from versioning import CURRENT_APP_VERSION
 import re
 import unittest
 from pathlib import Path
@@ -30,12 +31,12 @@ class RequiredConfirmationHighlightTests(unittest.TestCase):
         self.assertIn("$('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked;});", APP)
 
     def test_release_versions_are_current_and_save_version_is_unchanged(self):
-        self.assertIn("const APP_VERSION = '8.6.64';", APP)
-        self.assertIn("const APP_VERSION = '8.6.64';", WORKER)
-        self.assertIn('<div class="version">V8.6.64</div>', INDEX)
-        self.assertTrue(README.startswith("# Tomb World Solo Guide v8.6.64"))
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
+        self.assertIn(f'<div class="version">V{CURRENT_APP_VERSION}</div>', INDEX)
+        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
-            self.assertIn(f"{asset}?v=8.6.64", INDEX)
+            self.assertIn(f"{asset}?v={CURRENT_APP_VERSION}", INDEX)
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
 
