@@ -45,7 +45,7 @@ class ProducerStaticTests(unittest.TestCase):
     def test_canonical_library_and_hashes(self):
         scripts = records()
         self.assertEqual(29, len(scripts))
-        self.assertEqual(["mission.04.intro"], [item["id"] for item in scripts if item["status"] == "draft"])
+        self.assertEqual([], [item["id"] for item in scripts if item["status"] == "draft"])
         mojibake_markers = ("â€™", "Ã", "Â", "â€œ", "â€")
         for item in scripts:
             normalized = item["script"].replace("\r\n", "\n").replace("\r", "\n").strip()
@@ -62,7 +62,7 @@ class ProducerStaticTests(unittest.TestCase):
 
     def test_generated_sources_manifest_metadata_and_audio_stay_synchronized(self):
         scripts = {item["id"]: item for item in records()}
-        entries = json.loads((ROOT / "Assets/Audio/Narration/narration-manifest.json").read_text())["entries"]
+        entries = json.loads((ROOT / "Assets/Audio/Narration/narration-manifest.json").read_text(encoding="utf-8"))["entries"]
         self.assertEqual(29, len(entries))
         self.assertEqual(set(scripts), set(entries))
         for script_id, item in scripts.items():
@@ -84,11 +84,14 @@ class ProducerStaticTests(unittest.TestCase):
             self.assertGreater(entry.get("durationMs", 0), 0, script_id)
             self.assertEqual(hashlib.sha256(audio.read_bytes()).hexdigest(), item["audioHash"], script_id)
 
-        newly_generated = {"mission.02.intro", "mission.03.intro", "mission.05.intro", "mission.06.intro"}
-        self.assertTrue(all(scripts[script_id]["status"] == "generated" for script_id in newly_generated))
-        self.assertTrue(all(entries[script_id]["available"] is True for script_id in newly_generated))
-        self.assertEqual("draft", scripts["mission.04.intro"]["status"])
-        self.assertFalse(entries["mission.04.intro"]["available"])
+        mission_intros = {
+            script_id: item
+            for script_id, item in scripts.items()
+            if script_id.startswith("mission.")
+        }
+        self.assertEqual(6, len(mission_intros))
+        self.assertTrue(all(item["status"] == "generated" for item in mission_intros.values()))
+        self.assertTrue(all(entries[script_id]["available"] is True for script_id in mission_intros))
 
         events = {script_id: item for script_id, item in scripts.items() if script_id.startswith("event.")}
         self.assertEqual(11, len(events))
@@ -121,10 +124,27 @@ class ProducerApiTests(unittest.TestCase):
         self.assertIn('"apiKeyConfigured":true', body)
 
     def test_dry_run_never_calls_tts_and_blocks_draft_without_key(self):
-        chosen = json.loads((ROOT / "Narration/producer-settings.json").read_text())
+        chosen = json.loads((ROOT / "Narration/producer-settings.json").read_text(encoding="utf-8"))
         chosen["voiceId"] = "test-voice"
-        with mock.patch.object(server.requests, "post") as tts:
-            data = self.client.post("/api/dry-run", json={"ids": ["mission.01.intro", "mission.04.intro"], "settings": chosen}).get_json()
+
+        current = server.library()
+        generated = next(item for item in current if item["id"] == "mission.01.intro")
+        draft = dict(
+            next(item for item in current if item["id"] == "mission.04.intro"),
+            status="draft",
+            reviewRequired=False,
+        )
+
+        with mock.patch.object(server, "library", return_value=[generated, draft]):
+            with mock.patch.object(server.requests, "post") as tts:
+                data = self.client.post(
+                    "/api/dry-run",
+                    json={
+                        "ids": ["mission.01.intro", "mission.04.intro"],
+                        "settings": chosen,
+                    },
+                ).get_json()
+
         tts.assert_not_called()
         self.assertEqual(2, data["totals"]["selected"])
         self.assertEqual(1, data["totals"]["blocked"])
