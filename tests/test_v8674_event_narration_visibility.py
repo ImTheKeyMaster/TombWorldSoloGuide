@@ -25,12 +25,13 @@ class EventNarrationVisibilityTests(unittest.TestCase):
         self.assertNotIn("TombWorldNarration", self.complete)
 
     def test_rendered_events_view_is_the_only_app_level_trigger(self):
-        self.assertLess(self.render_play.index("app.innerHTML="), self.render_play.index("narrateVisibleStrategyEvents();"))
-        self.assertLess(self.render_play.index("bindPlay();"), self.render_play.index("narrateVisibleStrategyEvents();"))
+        trigger = "requestAnimationFrame(narrateVisibleStrategyEvents);"
+        self.assertLess(self.render_play.index("app.innerHTML="), self.render_play.index(trigger))
+        self.assertLess(self.render_play.index("bindPlay();"), self.render_play.index(trigger))
         self.assertIn("state.phase!=='strategy'", self.visibility)
         self.assertIn("state.strategyStage!=='summary'", self.visibility)
         self.assertIn("strategyViewStep(d)!=='events'", self.visibility)
-        self.assertIn("!$('#strategy-step-heading')", self.visibility)
+        self.assertIn("!$('.strategy-event')", self.visibility)
 
     def test_all_accepted_events_are_requested_once_in_gameplay_order(self):
         self.assertIn("events.slice(0,acceptedCount)", self.visibility)
@@ -48,7 +49,7 @@ class EventNarrationVisibilityTests(unittest.TestCase):
         self.assertNotIn("narrateAcceptedEvent", redraw)
 
     def test_rerender_and_back_forward_rely_on_instance_deduplication(self):
-        self.assertEqual(self.render_play.count("narrateVisibleStrategyEvents();"), 1)
+        self.assertEqual(self.render_play.count("requestAnimationFrame(narrateVisibleStrategyEvents);"), 1)
         self.assertIn("event.instanceId", source("function narrateAcceptedEvent", "function narrateVisibleStrategyEvents"))
         navigation = source("function showStrategyViewStep", "function strategyActionsStepHtml")
         self.assertIn("save();render();", navigation)

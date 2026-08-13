@@ -2652,7 +2652,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const milestone=gradeDescription?`<section class="grade-milestone" role="dialog" aria-labelledby="grade-milestone-heading" aria-describedby="grade-milestone-description"><div><small>THREAT ESCALATION</small><h2 id="grade-milestone-heading">Grade ${gradeDescription.grade}: ${escapeHtml(gradeDescription.name)}</h2><span>${escapeHtml(gradeDescription.threatRange)}</span><section id="grade-milestone-description" class="grade-gameplay-changes" aria-labelledby="grade-gameplay-heading"><h3 id="grade-gameplay-heading">GAMEPLAY CHANGES</h3><ul>${gradeDescription.effects.map(effect=>`<li>${escapeHtml(effect.text)}</li>`).join('')}</ul></section></div><button class="btn ghost compact" id="dismissGradeMilestone">Dismiss</button></section>`:'';
     app.innerHTML=hud()+milestone+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${state.phase!=='strategy'?activeEventEffectsHtml():''}${nextStepCard()}${state.phase==='firefight'?activationTracker():''}`;
     bindPlay();
-    narrateVisibleStrategyEvents();
+    requestAnimationFrame(narrateVisibleStrategyEvents);
     if(gradeDescription)requestAnimationFrame(()=>$('#dismissGradeMilestone')?.focus({preventScroll:true}));
   }
 
@@ -3254,7 +3254,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function narrateVisibleStrategyEvents(){
     const d=state.strategyData;
-    if(state.phase!=='strategy'||state.strategyStage!=='summary'||strategyViewStep(d)!=='events'||!$('#strategy-step-heading'))return;
+    if(state.phase!=='strategy'||state.strategyStage!=='summary'||strategyViewStep(d)!=='events'||!$('.strategy-event'))return;
     const events=Array.isArray(d?.events)?d.events:[];
     const acceptedCount=Math.min(events.length,(d.eventIndex||0)+(d.eventPending?1:0));
     events.slice(0,acceptedCount).filter(event=>event.status!=='redrawn').forEach(narrateAcceptedEvent);
