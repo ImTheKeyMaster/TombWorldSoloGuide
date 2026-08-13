@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.66';
+  const APP_VERSION = '8.6.67';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
     init:()=>Promise.resolve(),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},setEnabled:()=>{},setVolume:()=>{},isEnabled:()=>true,getVolume:()=>0.8,canReplay:()=>false
   });
@@ -43,7 +43,43 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const app = $('#app');
   const gameMenuBtn = $('#gameMenuBtn');
+  const narrationHeaderControl=$('.narration-header-control');
+  const narrationSpeakerBtn=$('#narrationSpeakerBtn');
+  const narrationPopover=$('#narrationPopover');
+  const headerNarrationEnabled=$('#headerNarrationEnabled');
+  const headerNarrationVolume=$('#headerNarrationVolume');
+  function syncNarrationControls(){
+    const enabled=TombWorldNarration.isEnabled(),volume=Math.round(TombWorldNarration.getVolume()*100);
+    narrationSpeakerBtn.classList.toggle('is-muted',!enabled);
+    narrationSpeakerBtn.querySelector('.narration-icon-enabled').hidden=!enabled;
+    narrationSpeakerBtn.querySelector('.narration-icon-muted').hidden=enabled;
+    narrationSpeakerBtn.setAttribute('aria-label',`Narration ${enabled?'on':'off'}. Open volume controls`);
+    narrationSpeakerBtn.title=`Narration ${enabled?'on':'off'}`;
+    headerNarrationEnabled.checked=enabled;
+    headerNarrationEnabled.setAttribute('aria-label',`Narration ${enabled?'on':'off'}`);
+    headerNarrationVolume.value=String(volume);
+    $('#headerNarrationState').textContent=enabled?'On':'Off';
+    $('#headerNarrationVolumeValue').textContent=`${volume}%`;
+    const menuEnabled=$('#narrationEnabled'),menuVolume=$('#narrationVolume');
+    if(menuEnabled){
+      menuEnabled.checked=enabled;
+      const menuState=typeof menuEnabled.closest==='function'?menuEnabled.closest('label')?.querySelector('strong'):null;
+      if(menuState)menuState.textContent=enabled?'On':'Off';
+    }
+    if(menuVolume){
+      menuVolume.value=String(volume/100);
+      const menuVolumeValue=$('#narrationVolumeValue');
+      if(menuVolumeValue)menuVolumeValue.textContent=`${volume}%`;
+    }
+  }
+  function closeNarrationPopover(){narrationPopover.hidden=true;narrationSpeakerBtn.setAttribute('aria-expanded','false');}
+  narrationSpeakerBtn.addEventListener('click',()=>{const opening=narrationPopover.hidden;narrationPopover.hidden=!opening;narrationSpeakerBtn.setAttribute('aria-expanded',String(opening));if(opening)headerNarrationEnabled.focus({preventScroll:true});});
+  headerNarrationEnabled.addEventListener('change',event=>TombWorldNarration.setEnabled(event.target.checked));
+  headerNarrationVolume.addEventListener('input',event=>TombWorldNarration.setVolume(Number(event.target.value)/100));
+  document.addEventListener('click',event=>{if(!narrationPopover.hidden&&!narrationHeaderControl.contains(event.target))closeNarrationPopover();});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!narrationPopover.hidden){closeNarrationPopover();narrationSpeakerBtn.focus();}});
   window.addEventListener('tombworldnarrationchange',()=>{
+    syncNarrationControls();
     const replay=$('#replayNarration');
     if(replay)replay.disabled=!TombWorldNarration.canReplay();
   });
@@ -7445,7 +7481,7 @@ function showPlayerActivation(stage={}){
       $('#menuDeadlyEncounters').onclick=showDeadlyEncountersPanel;
     }
     if(canOpenHelp())$('#menuHelp').onclick=openHelpFromGameMenu;
-    $('#narrationEnabled').onchange=event=>{TombWorldNarration.setEnabled(event.target.checked);showGameMenu();};
+    $('#narrationEnabled').onchange=event=>{TombWorldNarration.setEnabled(event.target.checked);};
     $('#narrationVolume').oninput=event=>{TombWorldNarration.setVolume(event.target.value);$('#narrationVolumeValue').textContent=`${Math.round(event.target.value*100)}%`;};
     $('#replayNarration').onclick=()=>{void TombWorldNarration.replayLast();};
     $('#menuAbout').onclick=showAbout;
@@ -7542,6 +7578,7 @@ function showPlayerActivation(stage={}){
     const versionBadge=$('.version');
     if(versionBadge) versionBadge.textContent=`v${APP_VERSION}`;
     gameMenuBtn.onclick=showGameMenu;
+    syncNarrationControls();
     void TombWorldNarration.init();
   }
 

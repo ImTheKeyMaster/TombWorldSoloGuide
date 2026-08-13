@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.66
+# Tomb World Solo Guide v8.6.67
+
+## v8.6.67
+
+**Version 8.6.67 - Header Narration Volume Control**
+
+- Adds a persistent speaker control to the application header.
+- Adds quick narration enable/disable control and a dropdown volume slider.
+- Preserves narration enabled state and volume across reloads, PWA restarts, and application updates.
+
 
 ## v8.6.66
 
