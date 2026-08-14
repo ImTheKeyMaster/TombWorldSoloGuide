@@ -40,7 +40,9 @@ class RemoveUiSfxTests(unittest.TestCase):
 
     def test_narration_ambient_ducking_and_game_audio_remain_integrated(self):
         self.assertIn("doc.addEventListener('click', onGesture, true)", NARRATION)
-        self.assertIn("global.document?.addEventListener?.('click', () => { void unlock(); }, true)", AMBIENT)
+        self.assertNotIn("global.document?.addEventListener?.('click', () => { void unlock(); }, true)", AMBIENT)
+        self.assertIn("global.document?.addEventListener?.('click', onFirstAudioGesture, true)", AMBIENT)
+        self.assertIn("global.document?.removeEventListener?.('click', onFirstAudioGesture, true)", AMBIENT)
         self.assertIn("global.addEventListener?.('tombworldnarrationactivity', onNarrationActivity)", AMBIENT)
         self.assertIn("await TombWorldAmbient.unlock()", APP)
         self.assertIn("TombWorldAmbient.setActive", APP)
