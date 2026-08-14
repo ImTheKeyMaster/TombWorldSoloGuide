@@ -26,7 +26,7 @@ class WoundedOperativeStatusTests(unittest.TestCase):
         for current, maximum in ((6, 7), (8, 9), (13, 15), (1, 9)):
             self.assertTrue(not (current <= 0) and current > 0 and current < maximum)
         rule = re.search(r'\.operative-status-row\.wounded\{([^}]+)\}', CSS).group(1)
-        self.assertIn('border:2px solid #f5ff5b', rule)
+        self.assertEqual(rule, 'border:2px solid #ffd35bb0')
 
     def test_eliminated_rows_remain_red_and_cannot_be_wounded(self):
         self.assertIn("const eliminated=status==='ELIMINATED'", self.row)
@@ -47,7 +47,7 @@ class WoundedOperativeStatusTests(unittest.TestCase):
     def test_wound_text_and_panel_scope_remain_unchanged(self):
         wounds_rule = re.search(r'\.operative-status-wounds\{([^}]+)\}', CSS).group(1)
         self.assertIn('color:var(--text)', wounds_rule)
-        self.assertNotIn('#f5ff5b', wounds_rule)
+        self.assertNotIn('#ffd35bb0', wounds_rule)
         self.assertIn('@media (min-width:900px)', CSS[:CSS.index('.operative-status-row.wounded{')])
         self.assertNotRegex(self.row, r'<(?:button|input|select)')
 
