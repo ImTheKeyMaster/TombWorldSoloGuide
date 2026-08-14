@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v8.6.83
+# Tomb World Solo Guide v8.6.84
+
+## v8.6.84
+
+**Version 8.6.84 - Remove UI Click Audio**
+
+- Removes button and dropdown click sound playback, configuration, and offline precaching.
+- Keeps buttons and dropdowns functional while preserving narration, ambient audio, ducking, Game Audio controls, and save schema version 3.
 
 ## v8.6.83
 
