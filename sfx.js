@@ -78,6 +78,14 @@
     void play();
   }
 
+  function onDocumentChange(event) {
+    if (!event.target || typeof event.target.closest !== 'function') return;
+    const select = event.target.closest('select');
+    if (!select || select.disabled) return;
+    void play();
+  }
+
   global.document?.addEventListener?.('click', onDocumentClick);
+  global.document?.addEventListener?.('change', onDocumentChange);
   global.TombWorldSfx = Object.freeze({ init, unlock, play });
 })(typeof window === 'undefined' ? globalThis : window);

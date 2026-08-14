@@ -12,7 +12,7 @@ class ButtonSfxTests(unittest.TestCase):
         config = json.loads((ROOT / "Assets/Audio/Narration/sfx-config.json").read_text())
         self.assertEqual(1, config["schemaVersion"])
         self.assertEqual("SFX/Btn_Click.wav", config["buttonClick"])
-        self.assertEqual(0.175, config["buttonClickGain"])
+        self.assertEqual(0.0875, config["buttonClickGain"])
         self.assertTrue((ROOT / "Assets/Audio/Narration" / config["buttonClick"]).is_file())
 
         worker = (ROOT / "service-worker.js").read_text()
@@ -43,6 +43,7 @@ const context={AudioContext,URL,location:{href:'https://example.test/app/'},docu
 context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('sfx.js','utf8'),context);
 const button=(id='ordinary')=>({id,disabled:false,closest:selector=>selector==='button'?button.current:null});
 const click=target=>listeners.click.fn({target});
+const change=target=>listeners.change.fn({target});
 const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve();await new Promise(resolve=>setImmediate(resolve));};
 (async()=>{
  const first=button();button.current=first;click(first);await flush();
@@ -52,15 +53,27 @@ const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve();await new Pro
  const disabled=button();disabled.disabled=true;button.current=disabled;click(disabled);await flush();
  click({closest:()=>null});await flush();
  if(sources.length!==2)throw Error('disabled or non-button click played SFX');
+ const select={disabled:false,closest:selector=>selector==='select'?select:null};
+ change(select);await flush();
+ if(sources.length!==3)throw Error('enabled select change did not play exactly once');
+ click(select);await flush();
+ if(sources.length!==3)throw Error('opening or cancelling a select played SFX');
+ const disabledSelect={disabled:true,closest:selector=>selector==='select'?disabledSelect:null};
+ change(disabledSelect);await flush();
+ if(sources.length!==3)throw Error('disabled select played SFX');
+ const dynamicSelect={disabled:false,closest:selector=>selector==='select'?dynamicSelect:null};
+ change(dynamicSelect);await flush();
+ if(sources.length!==4)throw Error('dynamic select change did not play exactly once');
  const dynamic=button('dynamic');button.current=dynamic;click(dynamic);click(dynamic);await flush();
- if(sources.length!==4)throw Error('rapid/dynamic button clicks did not create overlapping sources');
+ if(sources.length!==6)throw Error('rapid/dynamic button clicks did not create overlapping sources');
  if(decodeCalls!==1||fetches.filter(url=>url.includes('Btn_Click.wav')).length!==1)throw Error('WAV was not decoded exactly once');
  enabled=false;click(dynamic);await flush();
- if(sources.length!==4)throw Error('Game Audio off did not suppress SFX');
+ change(dynamicSelect);await flush();
+ if(sources.length!==6)throw Error('Game Audio off did not suppress button or select SFX');
  const start=button('gameAudioToggle');button.current=start;enabled=true;click(start);await flush();
- if(sources.length!==5)throw Error('Game Audio on did not restore SFX after unlock');
+ if(sources.length!==7)throw Error('Game Audio on did not restore SFX after unlock');
  const stop=button('gameAudioToggle');button.current=stop;enabled=false;click(stop);await flush();
- if(sources.length!==5)throw Error('Game Audio off control double-played or left stale SFX behavior');
+ if(sources.length!==7)throw Error('Game Audio off control double-played or left stale SFX behavior');
  if(narrationEvents||ambientCalls)throw Error('SFX affected narration or ambient');
  if(resumeCalls<1)throw Error('Safari/PWA Web Audio unlock was not attempted from click');
 })().catch(e=>{console.error(e);process.exit(1)});
@@ -85,13 +98,14 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
         script = r"""
 const fs=require('fs'),vm=require('vm');
 class AudioContext {constructor(){throw Error('Web Audio unavailable');}}
-let clickHandler;
-const context={AudioContext,TombWorldNarration:{isEnabled:()=>true},document:{addEventListener:(type,fn)=>clickHandler=fn}};
+const listeners={};
+const context={AudioContext,TombWorldNarration:{isEnabled:()=>true},document:{addEventListener:(type,fn)=>listeners[type]=fn}};
 context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('sfx.js','utf8'),context);
 (async()=>{
  if(await context.TombWorldSfx.unlock())throw Error('unavailable context unlocked');
  if(await context.TombWorldSfx.play())throw Error('unavailable context played');
- clickHandler({target:{disabled:false,closest:()=>({disabled:false})}});
+ listeners.click({target:{disabled:false,closest:()=>({disabled:false})}});
+ listeners.change({target:{disabled:false,closest:selector=>selector==='select'?{disabled:false}:null}});
  await Promise.resolve();
 })().catch(e=>{console.error(e);process.exit(1)});
 """
@@ -104,7 +118,9 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
         self.assertNotIn("TombWorldAmbient", runtime)
         self.assertNotIn("new global.Audio", runtime)
         self.assertEqual(1, runtime.count("document?.addEventListener?.('click'"))
+        self.assertEqual(1, runtime.count("document?.addEventListener?.('change'"))
         self.assertIn("event.target.closest('button')", runtime)
+        self.assertIn("event.target.closest('select')", runtime)
 
 
 if __name__ == "__main__":

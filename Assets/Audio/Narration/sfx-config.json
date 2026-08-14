@@ -1,5 +1,5 @@
 {
   "schemaVersion": 1,
   "buttonClick": "SFX/Btn_Click.wav",
-  "buttonClickGain": 0.175
+  "buttonClickGain": 0.0875
 }
