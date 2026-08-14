@@ -24,10 +24,10 @@ class AmbientInteractionIdempotencyTests(unittest.TestCase):
         script = r"""
 const fs=require('fs'),vm=require('vm');
 const windowEvents={},documentEvents={},ramps=[],sources=[],timers=new Map();
-let enabled=true,timerId=0,resumeCalls=0;
+let enabled=true,timerId=0,resumeCalls=0,audioContext=null;
 class CustomEvent { constructor(type,options={}){this.type=type;this.detail=options.detail;} }
 class AudioContext {
-  constructor(){this.currentTime=2;this.state='suspended';this.destination={};}
+  constructor(){this.currentTime=2;this.state='suspended';this.destination={};audioContext=this;}
   createGain(){return {gain:{value:0,cancelCalls:0,cancelScheduledValues(){this.cancelCalls++;},setValueAtTime(v){this.value=v;},linearRampToValueAtTime(v,t){this.value=v;ramps.push([v,t]);}},connect(){}};}
   createBufferSource(){const node={connect(){},disconnect(){},startCalls:[],stopCalls:0,start(...args){this.startCalls.push(args);},stop(){this.stopCalls++;}};sources.push(node);return node;}
   decodeAudioData(){return Promise.resolve({duration:120});}
@@ -56,7 +56,7 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
  document.dispatchEvent({type:'click',target:{tagName:'BUTTON'}});await flush();
  if(sources.length!==1||sources[0].startCalls.length!==1)throw Error('first valid gesture did not unlock and start ambient');
  if(documentEvents.click)throw Error('fallback gesture listener remained after successful unlock');
- if(resumeCalls<1)throw Error('Safari AudioContext was not resumed');
+ if(resumeCalls!==1)throw Error('first gesture did not resume the Safari AudioContext exactly once');
 
  const originalSource=sources[0], baselineRamps=ramps.length, baselineGain=ramps.at(-1)[0], baselineResumes=resumeCalls;
  await ambient.unlock();await ambient.unlock();await flush();
@@ -64,6 +64,12 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
  if(sources.length!==1||sources[0]!==originalSource||originalSource.startCalls.length!==1)throw Error('no-op unlock/render replaced or restarted source');
  if(ramps.length!==baselineRamps||ramps.at(-1)[0]!==baselineGain)throw Error('no-op unlock/render scheduled a gain ramp');
  if(resumeCalls!==baselineResumes)throw Error('already-running unlock resumed context again');
+
+ // A genuine browser suspension is the only redundant-looking unlock that may resume audio.
+ audioContext.state='suspended';
+ await ambient.unlock();await flush();
+ if(audioContext.state!=='running'||resumeCalls!==baselineResumes+1)throw Error('genuinely suspended context was not resumed');
+ if(sources.length!==1||sources[0]!==originalSource||ramps.length!==baselineRamps)throw Error('context resume disturbed the running source or gain');
 
  // Ordinary delegated UI events have no ambient listener and cannot reconcile playback.
  document.dispatchEvent({type:'click',target:{tagName:'BUTTON'}});

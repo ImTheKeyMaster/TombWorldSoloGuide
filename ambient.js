@@ -112,7 +112,7 @@
       if (context.state === 'suspended') {
         try { await context.resume(); } catch { return false; }
       }
-      if (!activeBattle || !masterEnabled()) return false;
+      if (context.state !== 'running' || !activeBattle || !masterEnabled()) return false;
       if (source) {
         if (!stopTimer) return true;
         global.clearTimeout(stopTimer);
@@ -135,10 +135,10 @@
     }
     await init();
     if (!context) return false;
-    try {
-      await context.resume();
-      unlocked = context.state === 'running';
-    } catch { unlocked = false; }
+    if (context.state === 'suspended') {
+      try { await context.resume(); } catch { /* A later user gesture may retry permission. */ }
+    }
+    unlocked = context.state === 'running';
     if (unlocked) {
       global.document?.removeEventListener?.('click', onFirstAudioGesture, true);
       void reconcile();
