@@ -12,7 +12,7 @@ class ButtonSfxTests(unittest.TestCase):
         config = json.loads((ROOT / "Assets/Audio/Narration/sfx-config.json").read_text())
         self.assertEqual(1, config["schemaVersion"])
         self.assertEqual("SFX/Btn_Click.wav", config["buttonClick"])
-        self.assertEqual(0.35, config["buttonClickGain"])
+        self.assertEqual(0.175, config["buttonClickGain"])
         self.assertTrue((ROOT / "Assets/Audio/Narration" / config["buttonClick"]).is_file())
 
         worker = (ROOT / "service-worker.js").read_text()

@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v8.6.80
+# Tomb World Solo Guide v8.6.81
+
+## v8.6.81
+
+**Version 8.6.81 - Quieter Button Clicks**
+
+- Reduces the global button click sound gain by 50% for less intrusive UI feedback.
+- Updates visible, internal, cache-busting, and service-worker cache versions to v8.6.81.
 
 ## v8.6.80
 
