@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.82
+# Tomb World Solo Guide v8.6.83
+
+## v8.6.83
+
+**Version 8.6.83 - Dropdown Click Audio**
+
+- Reduces the button click sound gain to `0.0875`, half of its previous level.
+- Plays the same click sound once when an enabled native dropdown selection changes, including dynamically rendered selects.
+- Keeps button and dropdown SFX under the Game Audio master control without affecting narration, ambient playback, ducking, or save schema version 3.
 
 ## v8.6.82
 
