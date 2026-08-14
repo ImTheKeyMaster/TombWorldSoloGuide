@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v8.6.78
+# Tomb World Solo Guide v8.6.79
+
+## v8.6.79
+
+**Version 8.6.79 - Refine Wounded Operative Border Color**
+
+- Changes only the wounded operative status row border color to `#ffd35bb0`.
+- Preserves wounded row backgrounds, text colors, wound indicators, dimensions, opacity, all other operative-status styling, and save schema version 3.
 
 ## v8.6.78
 
