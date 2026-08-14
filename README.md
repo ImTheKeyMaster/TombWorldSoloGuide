@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v8.6.81
+# Tomb World Solo Guide v8.6.82
+
+## v8.6.82
+
+**Version 8.6.82 - Refresh Button Click Audio Cache**
+
+- Bumps only the application and cache versions so clients, including iPhone/PWA installs, fetch the replaced button click audio file.
+- Preserves gameplay, SFX behavior, narration, ambient audio, styling, and save schema version 3.
 
 ## v8.6.81
 
