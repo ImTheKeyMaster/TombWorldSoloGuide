@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.77
+# Tomb World Solo Guide v8.6.78
+
+## v8.6.78
+
+**Version 8.6.78 - Normalize Board Setup Checklist Highlighting**
+
+- Removes the unintended required-confirmation emphasis from the breach-points Board Setup checklist item.
+- Keeps every Board Setup checklist item on the normal check-row appearance without changing completion, Board Ready, persistence, or navigation behavior.
+- Preserves emphasized required confirmations in tabletop and end-of-turn confirmation flows, along with save schema version 3.
 
 ## v8.6.77
 

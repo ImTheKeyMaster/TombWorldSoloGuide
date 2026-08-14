@@ -16,7 +16,7 @@ class RequiredConfirmationHighlightTests(unittest.TestCase):
     def test_confirmations_share_required_state_class(self):
         self.assertRegex(APP, r'class="check-row required-confirmation-row"><input id="tabletopCheckConfirmed"')
         self.assertRegex(APP, r'class="check-row required-confirmation-row"><input id="endChecked"')
-        self.assertIn("check.id==='breach-points'?'required-confirmation-row':''", APP)
+        self.assertNotIn("check.id==='breach-points'?'required-confirmation-row':''", APP)
 
     def test_highlight_only_applies_while_checkbox_is_unchecked(self):
         rule = re.search(r"\.required-confirmation-row:has\(input:not\(:checked\)\)\{([^}]*)\}", STYLES)
