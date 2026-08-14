@@ -21,7 +21,9 @@
   }
 
   function ensureContext() {
-    if (!context && AudioContext) context = new AudioContext();
+    if (!context && AudioContext) {
+      try { context = new AudioContext(); } catch { context = null; }
+    }
     return context;
   }
 
@@ -70,15 +72,12 @@
   }
 
   function onDocumentClick(event) {
-    const button = event.target?.closest?.('button');
+    if (!event.target || typeof event.target.closest !== 'function') return;
+    const button = event.target.closest('button');
     if (!button || button.disabled) return;
-    if (masterEnabled()) void play();
-    else if (button.id === 'narrationSpeakerBtn' || button.id === 'gameAudioToggle') {
-      // The target handler synchronously enables the master while this gesture unlocks Web Audio.
-      void unlock().then(() => play());
-    }
+    void play();
   }
 
-  global.document?.addEventListener?.('click', onDocumentClick, true);
+  global.document?.addEventListener?.('click', onDocumentClick);
   global.TombWorldSfx = Object.freeze({ init, unlock, play });
 })(typeof window === 'undefined' ? globalThis : window);

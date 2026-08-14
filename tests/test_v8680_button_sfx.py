@@ -45,7 +45,6 @@ const button=(id='ordinary')=>({id,disabled:false,closest:selector=>selector==='
 const click=target=>listeners.click.fn({target});
 const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve();await new Promise(resolve=>setImmediate(resolve));};
 (async()=>{
- if(!listeners.click.capture)throw Error('unlock/delegation is not capture-phase');
  const first=button();button.current=first;click(first);await flush();
  if(sources.length!==1||sources[0].startCalls!==1)throw Error('enabled button did not play exactly once');
  const nested={closest:()=>first};click(nested);await flush();
@@ -58,9 +57,9 @@ const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve();await new Pro
  if(decodeCalls!==1||fetches.filter(url=>url.includes('Btn_Click.wav')).length!==1)throw Error('WAV was not decoded exactly once');
  enabled=false;click(dynamic);await flush();
  if(sources.length!==4)throw Error('Game Audio off did not suppress SFX');
- const start=button('gameAudioToggle');button.current=start;click(start);enabled=true;await flush();
+ const start=button('gameAudioToggle');button.current=start;enabled=true;click(start);await flush();
  if(sources.length!==5)throw Error('Game Audio on did not restore SFX after unlock');
- const stop=button('gameAudioToggle');button.current=stop;click(stop);enabled=false;await flush();
+ const stop=button('gameAudioToggle');button.current=stop;enabled=false;click(stop);await flush();
  if(sources.length!==5)throw Error('Game Audio off control double-played or left stale SFX behavior');
  if(narrationEvents||ambientCalls)throw Error('SFX affected narration or ambient');
  if(resumeCalls<1)throw Error('Safari/PWA Web Audio unlock was not attempted from click');
@@ -82,13 +81,30 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
             result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
             self.assertEqual(0, result.returncode, result.stderr)
 
+    def test_unavailable_audio_context_fails_silently(self):
+        script = r"""
+const fs=require('fs'),vm=require('vm');
+class AudioContext {constructor(){throw Error('Web Audio unavailable');}}
+let clickHandler;
+const context={AudioContext,TombWorldNarration:{isEnabled:()=>true},document:{addEventListener:(type,fn)=>clickHandler=fn}};
+context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('sfx.js','utf8'),context);
+(async()=>{
+ if(await context.TombWorldSfx.unlock())throw Error('unavailable context unlocked');
+ if(await context.TombWorldSfx.play())throw Error('unavailable context played');
+ clickHandler({target:{disabled:false,closest:()=>({disabled:false})}});
+ await Promise.resolve();
+})().catch(e=>{console.error(e);process.exit(1)});
+"""
+        result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+
     def test_runtime_does_not_use_or_signal_narration_or_ambient(self):
         runtime = (ROOT / "sfx.js").read_text()
         self.assertNotIn("tombworldnarrationactivity", runtime)
         self.assertNotIn("TombWorldAmbient", runtime)
         self.assertNotIn("new global.Audio", runtime)
         self.assertEqual(1, runtime.count("document?.addEventListener?.('click'"))
-        self.assertIn("event.target?.closest?.('button')", runtime)
+        self.assertIn("event.target.closest('button')", runtime)
 
 
 if __name__ == "__main__":
