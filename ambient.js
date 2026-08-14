@@ -15,6 +15,7 @@
   let activeBattle = false;
   let narrationActive = false;
   let generation = 0;
+  let gestureUnlocking = false;
 
   function ensureContext() {
     if (!context && AudioContext) context = new AudioContext();
@@ -113,6 +114,7 @@
       }
       if (!activeBattle || !masterEnabled()) return false;
       if (source) {
+        if (!stopTimer) return true;
         global.clearTimeout(stopTimer);
         stopTimer = null;
         generation += 1;
@@ -125,6 +127,7 @@
   }
 
   async function unlock() {
+    if (unlocked && context?.state === 'running') return true;
     // Construct and resume from the shared click gesture for Safari/PWA audio permission.
     ensureContext();
     if (context?.state === 'suspended') {
@@ -136,13 +139,24 @@
       await context.resume();
       unlocked = context.state === 'running';
     } catch { unlocked = false; }
-    if (unlocked) void reconcile();
+    if (unlocked) {
+      global.document?.removeEventListener?.('click', onFirstAudioGesture, true);
+      void reconcile();
+    }
     return unlocked;
   }
 
   function setActive(isActive) {
-    activeBattle = Boolean(isActive);
+    const nextActive = Boolean(isActive);
+    if (nextActive === activeBattle) return;
+    activeBattle = nextActive;
     void reconcile();
+  }
+
+  async function onFirstAudioGesture() {
+    if (unlocked || gestureUnlocking) return;
+    gestureUnlocking = true;
+    try { await unlock(); } finally { gestureUnlocking = false; }
   }
 
   function stop() {
@@ -168,7 +182,7 @@
   function onMasterChange() { void reconcile(); }
   global.addEventListener?.('tombworldnarrationactivity', onNarrationActivity);
   global.addEventListener?.('tombworldnarrationchange', onMasterChange);
-  global.document?.addEventListener?.('click', () => { void unlock(); }, true);
+  global.document?.addEventListener?.('click', onFirstAudioGesture, true);
 
   global.TombWorldAmbient = Object.freeze({ init, unlock, setActive, stop });
 })(typeof window === 'undefined' ? globalThis : window);

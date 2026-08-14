@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v8.6.84
+# Tomb World Solo Guide v8.6.85
+
+## v8.6.85
+
+**Version 8.6.85 - Uninterrupted Ambient Audio**
+
+- Makes ambient unlock, active-state updates, and playback reconciliation idempotent so ordinary UI interaction, renders, and navigation do not disturb an already-playing ambient source or its gain.
+- Retains a one-time Safari/iPhone/PWA gesture fallback that removes itself after successful audio permission, while preserving narration ducking, Game Audio transitions, New Game cleanup, and save schema version 3.
 
 ## v8.6.84
 
