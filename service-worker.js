@@ -1,13 +1,14 @@
 'use strict';
 
-const APP_VERSION = '8.6.79';
+const APP_VERSION = '8.6.80';
 const CACHE_PREFIX = 'tomb-world-solo-guide-';
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 const APP_SHELL = './index.html';
 const NARRATION_MANIFEST = './Assets/Audio/Narration/narration-manifest.json';
 const AMBIENT_CONFIG = './Assets/Audio/Narration/ambient-config.json';
+const SFX_CONFIG = './Assets/Audio/Narration/sfx-config.json';
 const PRECACHE_ASSETS = [
-  './', APP_SHELL, `./event-effects.js?v=${APP_VERSION}`, `./narration.js?v=${APP_VERSION}`, `./ambient.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`,
+  './', APP_SHELL, `./event-effects.js?v=${APP_VERSION}`, `./narration.js?v=${APP_VERSION}`, `./ambient.js?v=${APP_VERSION}`, `./sfx.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`,
   './manifest.webmanifest', './Assets/icon.svg', './Assets/Icons/move-to-shoot.svg',
   './Assets/Images/Backgrounds/manifest.json',
   './Assets/Images/defeat.png', './Assets/Images/victory.png',
@@ -50,6 +51,18 @@ async function precacheAmbient(cache) {
   }
 }
 
+async function precacheSfx(cache) {
+  try {
+    const response = await cache.match(SFX_CONFIG);
+    const config = await response.json();
+    const file = config?.buttonClick;
+    if (config?.schemaVersion !== 1 || typeof file !== 'string' || !/^(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$))SFX\/[A-Za-z0-9._-]+\.wav$/i.test(file)) return;
+    await cache.add(`./Assets/Audio/Narration/${file}`);
+  } catch (error) {
+    console.warn('SFX precache skipped because its configuration could not be read.', error);
+  }
+}
+
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(async cache => {
     await cache.addAll(PRECACHE_ASSETS);
@@ -64,6 +77,12 @@ self.addEventListener('install', event => {
       await precacheAmbient(cache);
     } catch (error) {
       console.warn('Ambient configuration precache failed; gameplay and narration remain available offline.', error);
+    }
+    try {
+      await cache.add(SFX_CONFIG);
+      await precacheSfx(cache);
+    } catch (error) {
+      console.warn('SFX configuration precache failed; gameplay remains available offline.', error);
     }
     const response=await cache.match('./Assets/Images/Backgrounds/manifest.json');
     const manifest=await response.json();
@@ -129,7 +148,7 @@ self.addEventListener('fetch', event => {
     event.respondWith(networkFirst(request));
     return;
   }
-  if (/\.(?:png|svg|jpe?g|gif|webp|ico|pdf|mp3|ogg)$/i.test(url.pathname)) {
+  if (/\.(?:png|svg|jpe?g|gif|webp|ico|pdf|mp3|ogg|wav)$/i.test(url.pathname)) {
     event.respondWith(cacheFirst(request));
   }
 });

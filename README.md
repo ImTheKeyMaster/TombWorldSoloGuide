@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.79
+# Tomb World Solo Guide v8.6.80
+
+## v8.6.80
+
+**Version 8.6.80 - Add Global Button Click Sound**
+
+- Adds a low-latency, configuration-driven click sound to every enabled HTML button through one delegated handler, including dynamically rendered controls.
+- Keeps button SFX under the existing Game Audio master control without interrupting narration, ambient playback, or ambient ducking.
+- Precaches the validated SFX configuration and selected WAV for offline/PWA use while preserving save schema version 3.
 
 ## v8.6.79
 
