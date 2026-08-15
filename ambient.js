@@ -179,7 +179,7 @@
 
   function onNarrationActivity(event) {
     narrationActive = event.detail?.active === true;
-    if (source && masterEnabled() && config) {
+    if (source && activeBattle && masterEnabled() && config) {
       rampTo(narrationActive ? config.duckGain : config.normalGain, narrationActive ? config.duckAttackMs : config.duckReleaseMs);
     }
   }

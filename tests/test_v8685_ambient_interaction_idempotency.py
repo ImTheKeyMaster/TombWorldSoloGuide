@@ -86,6 +86,13 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
  context.dispatchEvent(new CustomEvent('tombworldnarrationactivity',{detail:{active:false}}));
  if(ramps.at(-1)[0]!==config.normalGain)throw Error('narration completion did not restore ambient');
 
+ ambient.setActive(false);await flush();
+ const ambientOffRampCount=ramps.length;
+ context.dispatchEvent(new CustomEvent('tombworldnarrationactivity',{detail:{active:true}}));
+ context.dispatchEvent(new CustomEvent('tombworldnarrationactivity',{detail:{active:false}}));
+ if(ramps.length!==ambientOffRampCount||ramps.at(-1)[0]!==0)throw Error('narration disturbed the Ambient Noise OFF fade');
+ ambient.setActive(true);await flush();
+
  enabled=false;context.dispatchEvent(new CustomEvent('tombworldnarrationchange'));await flush();
  if(ramps.at(-1)[0]!==0||timers.size!==1)throw Error('Game Audio OFF did not fade and schedule a stop');
  for(const [id,fn] of [...timers]){timers.delete(id);fn();}

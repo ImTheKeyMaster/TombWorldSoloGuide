@@ -47,7 +47,7 @@ sandbox.window=sandbox;vm.createContext(sandbox);vm.runInContext(fs.readFileSync
         self.assertEqual(0, result.returncode, result.stderr)
 
     def test_off_state_ignores_narration_and_active_reconciliation(self):
-        self.assertIn("if (source && masterEnabled() && config)", AMBIENT)
+        self.assertIn("if (source && activeBattle && masterEnabled() && config)", AMBIENT)
         self.assertIn("ambientEnabled&&TombWorldNarration.isEnabled()", APP)
         self.assertIn("if(ambientEnabled&&shouldAmbientBeActive())await TombWorldAmbient.unlock();", APP)
 
