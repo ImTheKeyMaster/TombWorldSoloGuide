@@ -77,6 +77,45 @@ if(!n.isPlaybackEnabled())throw Error('master cycle did not apply latest narrati
         result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
         self.assertEqual(0, result.returncode, result.stderr)
 
+    def test_explicit_narration_unlock_removes_gesture_fallback(self):
+        script = r"""
+const fs=require('fs'),vm=require('vm');
+const listeners=new Map();let plays=0,removals=0;
+class Audio{constructor(){this.src='';}play(){plays++;return Promise.resolve();}pause(){}removeAttribute(){}load(){}}
+const document={
+ addEventListener:(type,handler)=>listeners.set(type,handler),
+ removeEventListener:(type,handler)=>{if(listeners.get(type)===handler){listeners.delete(type);removals++;}}
+};
+const context={Audio,URL,document,location:{href:'https://example.test/'},localStorage:{getItem:()=>null,setItem(){}},fetch:async()=>({ok:false})};
+context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
+(async()=>{const n=context.TombWorldNarration;
+if(typeof listeners.get('click')!=='function')throw Error('gesture fallback was not installed');
+await n.unlock();
+if(plays!==1||removals!==1||listeners.has('click'))throw Error('explicit unlock left the every-click fallback installed');
+await n.unlock();
+if(plays!==1||removals!==1)throw Error('unlocked narration retried gesture work');
+})().catch(error=>{console.error(error);process.exit(1)});
+"""
+        result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_master_off_cancels_inflight_narration_without_reporting_playback(self):
+        script = r"""
+const fs=require('fs'),vm=require('vm');let resolvePlay;
+class CustomEvent{constructor(type,options={}){this.type=type;this.detail=options.detail;}}
+class Audio{constructor(){this.paused=false;this.ended=false;this.src='';}play(){return new Promise(resolve=>resolvePlay=resolve);}pause(){this.paused=true;}removeAttribute(){this.src='';}load(){}}
+const context={Audio,CustomEvent,URL,document:{addEventListener(){},removeEventListener(){}},location:{href:'https://example.test/'},localStorage:{getItem:()=>null,setItem(){}},dispatchEvent(){},fetch:async()=>({ok:true,json:async()=>({entries:{'mission.01.intro':{available:true,file:'intro.mp3'}}})})};
+context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
+(async()=>{const n=context.TombWorldNarration;await n.init();
+const pending=n.playMissionIntro('shifting-labyrinth');while(!resolvePlay)await Promise.resolve();
+n.setMasterEnabled(false);resolvePlay();
+if(await pending)throw Error('cancelled narration reported successful playback');
+if(n.canReplay())throw Error('cancelled narration became replayable');
+})().catch(error=>{console.error(error);process.exit(1)});
+"""
+        result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+
     def test_ambient_asset_unlock_and_ducking_contract_remains(self):
         config = (ROOT / "Assets/Audio/Narration/ambient-config.json").read_text(encoding="utf-8")
         worker = (ROOT / "service-worker.js").read_text(encoding="utf-8")

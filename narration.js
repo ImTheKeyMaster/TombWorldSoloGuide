@@ -30,6 +30,7 @@
   let deadlyEncounterGeneration = 0;
   let activePlayback = false;
   let notifiedPlaybackActivity = false;
+  let gestureUnlockHandler = null;
   let masterEnabled = readPreference(MASTER_ENABLED_KEY) !== 'false';
   let appliedPreferenceEnabled = masterEnabled && isPreferenceEnabled();
 
@@ -124,9 +125,16 @@
     } catch { return false; }
   }
 
+  function removeGestureUnlockHandler() {
+    if (!gestureUnlockHandler) return;
+    global.document?.removeEventListener?.('click', gestureUnlockHandler, true);
+    gestureUnlockHandler = null;
+  }
+
   function unlock() {
     if (audioUnlocked || lastEntry) {
       audioUnlocked = true;
+      removeGestureUnlockHandler();
       return Promise.resolve(true);
     }
     if (!isPlaybackEnabled()) return Promise.resolve(false);
@@ -139,11 +147,13 @@
       if (!playback || typeof playback.then !== 'function') {
         audioUnlocked = true;
         player.volume = 1;
+        removeGestureUnlockHandler();
         return Promise.resolve(true);
       }
       return playback.then(() => {
         audioUnlocked = true;
         player.volume = 1;
+        removeGestureUnlockHandler();
         return true;
       }, () => {
         audioUnlocked = false;
@@ -159,14 +169,12 @@
 
   function installUnlockOnGesture() {
     const doc = global.document;
-    if (!doc || typeof doc.addEventListener !== 'function') return;
-    const onGesture = event => {
+    if (!doc || typeof doc.addEventListener !== 'function' || gestureUnlockHandler) return;
+    gestureUnlockHandler = event => {
       if (event?.target?.closest?.('.ambient-toggle')) return;
-      void unlock().then(unlocked => {
-        if (unlocked && typeof doc.removeEventListener === 'function') doc.removeEventListener('click', onGesture, true);
-      });
+      void unlock();
     };
-    doc.addEventListener('click', onGesture, true);
+    doc.addEventListener('click', gestureUnlockHandler, true);
   }
 
   function init() {
@@ -205,8 +213,8 @@
     };
     try {
       await player.play();
-      if (!isPlaybackEnabled()) stopAudio();
-      else notifyPlaybackActivity(true);
+      if (request !== playbackRequest || !isPlaybackEnabled()) return false;
+      notifyPlaybackActivity(true);
       lastEntry = { id, duplicateKey };
       notify();
       return true;
