@@ -10,15 +10,18 @@ STYLES = (ROOT / "styles.css").read_text(encoding="utf-8")
 
 
 class GameAudioMenuTests(unittest.TestCase):
-    def test_menu_uses_full_size_audio_toggle_with_speaker_icon(self):
+    def test_menu_uses_ambient_style_narration_toggle_without_speaker_icon(self):
         self.assertIn('id="gameAudioToggle"', APP)
-        self.assertIn('class="btn ghost game-audio-btn"', APP)
-        self.assertIn('class="game-audio-label"', APP)
-        self.assertIn('.game-audio-btn{display:flex', STYLES)
-        self.assertIn('.game-audio-btn svg{width:24px;height:24px', STYLES)
+        self.assertIn('<span id="narrationLabel">Narration</span>', APP)
+        self.assertIn('class="ambient-toggle" id="gameAudioToggle"', APP)
+        self.assertIn('role="switch" aria-labelledby="narrationLabel" aria-checked=', APP)
+        self.assertEqual(APP.count('class="ambient-toggle-row"'), 2)
+        self.assertNotIn('game-audio-btn', APP + STYLES)
+        self.assertNotIn('game-audio-label', APP)
 
     def test_audio_toggle_labels_and_controls_both_audio_sources(self):
-        self.assertIn("enabled?'Stop Game Audio':'Start Game Audio'", APP)
+        self.assertIn("gameAudioBtn.setAttribute('aria-checked',String(enabled))", APP)
+        self.assertIn("gameAudioBtn.querySelector('.ambient-toggle-state').textContent=enabled?'On':'Off'", APP)
         self.assertIn('async function setGameAudioEnabled(enabled)', APP)
         self.assertIn('await TombWorldNarration.setEnabled(enabled);', APP)
         self.assertIn('TombWorldNarration.stop();', APP)

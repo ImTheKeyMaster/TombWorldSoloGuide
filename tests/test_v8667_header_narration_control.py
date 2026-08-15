@@ -81,7 +81,7 @@ verify(true);enabled=false;verify(false);
     def test_game_menu_uses_audio_toggle_without_duplicate_preferences(self):
         menu = APP[APP.index('function showGameMenu()'):APP.index('function showAbout()')]
         self.assertIn('id="gameAudioToggle"', menu)
-        self.assertIn('aria-pressed=', menu)
+        self.assertIn('role="switch" aria-labelledby="narrationLabel" aria-checked=', menu)
         self.assertNotIn('id="narrationEnabled"', menu)
         self.assertNotIn('id="narrationVolume"', menu)
         self.assertNotIn('narrationVolumeValue', menu)
