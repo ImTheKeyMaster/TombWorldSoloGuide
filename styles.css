@@ -290,6 +290,14 @@ html.desktop-game-background #gameBackground{opacity:1}
 .game-audio-btn{display:flex;align-items:center;justify-content:center;gap:10px}
 .game-audio-btn svg{width:24px;height:24px;flex:0 0 auto;fill:currentColor}
 .game-audio-btn svg path+path{fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
+.ambient-toggle-row{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:48px;padding:8px 12px;border:1px solid var(--line);border-radius:13px;background:#08150f;font-weight:850}
+.ambient-toggle{display:flex;align-items:center;gap:9px;min-height:40px;padding:4px;border:0;background:transparent;color:var(--muted);font-weight:850;cursor:pointer;touch-action:manipulation}
+.ambient-toggle-track{position:relative;width:44px;height:24px;border:1px solid #42604f;border-radius:999px;background:#14251c;transition:background .15s,border-color .15s}
+.ambient-toggle-track span{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--muted);transition:transform .15s,background .15s}
+.ambient-toggle[aria-checked="true"]{color:var(--green)}
+.ambient-toggle[aria-checked="true"] .ambient-toggle-track{border-color:var(--green);background:#173a28}
+.ambient-toggle[aria-checked="true"] .ambient-toggle-track span{transform:translateX(20px);background:var(--green)}
+.ambient-toggle:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:8px}
 .game-menu-session{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));

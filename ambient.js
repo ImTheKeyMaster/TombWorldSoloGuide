@@ -11,7 +11,7 @@
   let initialization = null;
   let source = null;
   let stopTimer = null;
-  let unlocked = false;
+  let contextUnlocked = false;
   let activeBattle = false;
   let narrationActive = false;
   let generation = 0;
@@ -38,7 +38,7 @@
 
   async function init() {
     if (initialization) return initialization;
-    initialization = (async () => {
+    const attempt = (async () => {
       if (!AudioContext || typeof global.fetch !== 'function') return false;
       try {
         const response = await global.fetch(CONFIG_URL);
@@ -46,18 +46,23 @@
         if (!validConfig(value)) return false;
         const audioResponse = await global.fetch(new URL(value.file, new URL(AUDIO_ROOT_URL, global.location?.href || 'http://localhost/')).href);
         if (!audioResponse.ok) return false;
-        ensureContext();
-        gainNode = context.createGain();
-        gainNode.gain.value = 0;
-        gainNode.connect(context.destination);
-        buffer = await context.decodeAudioData(await audioResponse.arrayBuffer());
-        const loopEnd = value.loopEndSeconds === null ? buffer.duration : value.loopEndSeconds;
-        if (!(loopEnd > value.loopStartSeconds) || loopEnd > buffer.duration) return false;
+        const audioContext = ensureContext();
+        const decodedBuffer = await audioContext.decodeAudioData(await audioResponse.arrayBuffer());
+        const loopEnd = value.loopEndSeconds === null ? decodedBuffer.duration : value.loopEndSeconds;
+        if (!(loopEnd > value.loopStartSeconds) || loopEnd > decodedBuffer.duration) return false;
+        const ambientGain = audioContext.createGain();
+        ambientGain.gain.value = 0;
+        ambientGain.connect(audioContext.destination);
+        buffer = decodedBuffer;
+        gainNode = ambientGain;
         config = { ...value, loopEndSeconds: loopEnd };
         return true;
       } catch { return false; }
     })();
-    return initialization;
+    initialization = attempt;
+    const ready = await attempt;
+    if (!ready && initialization === attempt) initialization = null;
+    return ready;
   }
 
   function rampTo(value, milliseconds) {
@@ -108,7 +113,7 @@
     const token = generation;
     const ready = await init();
     if (!ready || token !== generation) return false;
-    if (activeBattle && unlocked && masterEnabled()) {
+    if (activeBattle && contextUnlocked && masterEnabled()) {
       if (context.state === 'suspended') {
         try { await context.resume(); } catch { return false; }
       }
@@ -127,23 +132,23 @@
   }
 
   async function unlock() {
-    if (unlocked && context?.state === 'running') return true;
+    if (contextUnlocked && context?.state === 'running' && buffer && config && gainNode) return true;
     // Construct and resume from the shared click gesture for Safari/PWA audio permission.
     ensureContext();
     if (context?.state === 'suspended') {
       try { await context.resume(); } catch { /* Initialization below remains safely retryable. */ }
     }
-    await init();
+    const ready = await init();
     if (!context) return false;
     if (context.state === 'suspended') {
       try { await context.resume(); } catch { /* A later user gesture may retry permission. */ }
     }
-    unlocked = context.state === 'running';
-    if (unlocked) {
+    contextUnlocked = context.state === 'running';
+    if (contextUnlocked && ready) {
       global.document?.removeEventListener?.('click', onFirstAudioGesture, true);
       void reconcile();
     }
-    return unlocked;
+    return contextUnlocked && ready;
   }
 
   function setActive(isActive) {
@@ -154,7 +159,7 @@
   }
 
   async function onFirstAudioGesture() {
-    if (unlocked || gestureUnlocking) return;
+    if ((contextUnlocked && buffer && config && gainNode) || gestureUnlocking) return;
     gestureUnlocking = true;
     try { await unlock(); } finally { gestureUnlocking = false; }
   }

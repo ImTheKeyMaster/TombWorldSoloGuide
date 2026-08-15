@@ -23,7 +23,7 @@ class GameAudioMenuTests(unittest.TestCase):
         self.assertIn('await TombWorldNarration.setEnabled(enabled);', APP)
         self.assertIn('TombWorldNarration.stop();', APP)
         self.assertIn('TombWorldAmbient.stop();', APP)
-        self.assertIn('TombWorldAmbient.setActive(Boolean(state.missionId)', APP)
+        self.assertIn('reconcileAmbientActiveState();', APP)
         self.assertIn('if(!resumed)playPendingBoardSetupMissionIntro();', APP)
         self.assertEqual(APP.count('await setGameAudioEnabled(enabled);'), 2)
 
