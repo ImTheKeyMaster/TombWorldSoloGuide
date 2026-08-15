@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.86';
+  const APP_VERSION = '8.6.87';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
     init:()=>Promise.resolve(),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},pauseNarration:()=>false,resumeNarration:()=>Promise.resolve(false),setEnabled:()=>Promise.resolve(false),isEnabled:()=>true,canReplay:()=>false
   });
@@ -64,8 +64,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     narrationSpeakerBtn.title=`Narration ${enabled?'on':'off'}`;
     const gameAudioBtn=globalThis.document?.querySelector('#gameAudioToggle');
     if(gameAudioBtn){
-      gameAudioBtn.setAttribute('aria-pressed',String(enabled));
-      gameAudioBtn.querySelector('.game-audio-label').textContent=enabled?'Stop Game Audio':'Start Game Audio';
+      gameAudioBtn.setAttribute('aria-checked',String(enabled));
+      gameAudioBtn.querySelector('.ambient-toggle-state').textContent=enabled?'On':'Off';
     }
     const ambientToggle=globalThis.document?.querySelector('#ambientNoiseToggle');
     if(ambientToggle){
@@ -7492,10 +7492,12 @@ function showPlayerActivation(stage={}){
         <button class="btn secondary" data-game-view="journal">Battle Journal</button>`:''}
         ${canOpenHelp()?'<button class="btn secondary" id="menuHelp" type="button">Help</button>':''}
         <button class="btn secondary" id="menuAbout" type="button">About</button>
-        <button class="btn ghost game-audio-btn" id="gameAudioToggle" type="button" aria-pressed="${TombWorldNarration.isEnabled()}">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9v6h4l5 4V5L8 9H4z"></path><path d="M16 8.5c1.3 1.8 1.3 5.2 0 7M19 6c2.7 3.2 2.7 8.8 0 12"></path></svg>
-          <span class="game-audio-label">${TombWorldNarration.isEnabled()?'Stop Game Audio':'Start Game Audio'}</span>
-        </button>
+        <div class="ambient-toggle-row">
+          <span id="narrationLabel">Narration</span>
+          <button class="ambient-toggle" id="gameAudioToggle" type="button" role="switch" aria-labelledby="narrationLabel" aria-checked="${TombWorldNarration.isEnabled()}">
+            <span class="ambient-toggle-state">${TombWorldNarration.isEnabled()?'On':'Off'}</span><span class="ambient-toggle-track" aria-hidden="true"><span></span></span>
+          </button>
+        </div>
         <div class="ambient-toggle-row">
           <span id="ambientNoiseLabel">Ambient Noise</span>
           <button class="ambient-toggle" id="ambientNoiseToggle" type="button" role="switch" aria-labelledby="ambientNoiseLabel" aria-checked="${ambientEnabled}">

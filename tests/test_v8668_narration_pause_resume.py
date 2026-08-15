@@ -41,8 +41,8 @@ class NarrationPauseResumeTests(unittest.TestCase):
         self.assertNotIn('type="range"', INDEX)
         menu = APP[APP.index("function showGameMenu()"):APP.index("function showAbout()")]
         self.assertNotIn('<legend>Narration</legend>', menu)
-        self.assertIn('Start Game Audio', menu)
-        self.assertIn('Stop Game Audio', menu)
+        self.assertIn('<span id="narrationLabel">Narration</span>', menu)
+        self.assertIn("TombWorldNarration.isEnabled()?'On':'Off'", menu)
 
     def test_pause_resume_queue_persistence_and_destructive_stop(self):
         script = r"""

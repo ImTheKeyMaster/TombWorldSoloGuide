@@ -1,4 +1,11 @@
-# Tomb World Solo Guide v8.6.86
+# Tomb World Solo Guide v8.6.87
+
+## v8.6.87
+
+**Version 8.6.87 - Narration Menu Toggle**
+
+- Replaces the Game Menu audio button with a Narration switch matching the existing Ambient Noise control.
+- Preserves the existing narration and ambient master-control behavior while displaying the current Narration On/Off state.
 
 ## v8.6.86
 

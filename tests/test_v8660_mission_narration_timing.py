@@ -123,7 +123,8 @@ if(calls.filter(call=>call.startsWith('play:')).length!==3)throw Error('stale pe
         menu = source('function showGameMenu()', 'function showAbout()')
         self.assertNotIn('Dungeon Master Narration', menu)
         self.assertIn('gameAudioToggle', menu)
-        self.assertIn('Stop Game Audio', menu)
+        self.assertIn('<span id="narrationLabel">Narration</span>', menu)
+        self.assertIn('role="switch" aria-labelledby="narrationLabel"', menu)
         self.assertNotIn('narrationEnabled', menu)
         self.assertNotIn('narrationVolume', menu)
 
