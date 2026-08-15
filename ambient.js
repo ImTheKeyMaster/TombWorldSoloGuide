@@ -23,7 +23,7 @@
   }
 
   function masterEnabled() {
-    try { return global.TombWorldNarration?.isEnabled() !== false; } catch { return true; }
+    try { return global.TombWorldNarration?.isMasterEnabled() !== false; } catch { return true; }
   }
 
   function validConfig(value) {
@@ -158,7 +158,8 @@
     void reconcile();
   }
 
-  async function onFirstAudioGesture() {
+  async function onFirstAudioGesture(event) {
+    if (event?.target?.closest?.('.ambient-toggle')) return;
     if ((contextUnlocked && buffer && config && gainNode) || gestureUnlocking) return;
     gestureUnlocking = true;
     try { await unlock(); } finally { gestureUnlocking = false; }
@@ -184,9 +185,7 @@
     }
   }
 
-  function onMasterChange() { void reconcile(); }
   global.addEventListener?.('tombworldnarrationactivity', onNarrationActivity);
-  global.addEventListener?.('tombworldnarrationchange', onMasterChange);
   global.document?.addEventListener?.('click', onFirstAudioGesture, true);
 
   global.TombWorldAmbient = Object.freeze({ init, unlock, setActive, stop });

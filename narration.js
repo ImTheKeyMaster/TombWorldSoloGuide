@@ -3,6 +3,7 @@
 
   const MANIFEST_URL = 'Assets/Audio/Narration/narration-manifest.json';
   const ENABLED_KEY = 'tombWorldSoloGuide.narrationEnabled';
+  const MASTER_ENABLED_KEY = 'tombWorldSoloGuide.gameAudioEnabled';
   const SILENT_UNLOCK_AUDIO = 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQIAAAAAAA==';
   const missionNumbers = {
     'shifting-labyrinth': '01',
@@ -28,9 +29,9 @@
   let deadlyEncounterQueueRunning = false;
   let deadlyEncounterGeneration = 0;
   let activePlayback = false;
-  let pausedByToggle = false;
-  let enabledChange = 0;
   let notifiedPlaybackActivity = false;
+  let masterEnabled = readPreference(MASTER_ENABLED_KEY) !== 'false';
+  let appliedPreferenceEnabled = masterEnabled && isPreferenceEnabled();
 
   function readPreference(key) {
     try { return global.localStorage?.getItem(key) ?? null; } catch { return null; }
@@ -40,9 +41,17 @@
     try { global.localStorage?.setItem(key, value); } catch { /* Preferences are optional. */ }
   }
 
-  function isEnabled() {
+  function isPreferenceEnabled() {
     const saved = readPreference(ENABLED_KEY);
     return saved === null ? true : saved !== 'false';
+  }
+
+  function isMasterEnabled() {
+    return masterEnabled;
+  }
+
+  function isPlaybackEnabled() {
+    return masterEnabled && appliedPreferenceEnabled;
   }
 
   function notify() {
@@ -74,7 +83,6 @@
   function stopAudio() {
     if (finishActiveEvent) finishActiveEvent();
     activePlayback = false;
-    pausedByToggle = false;
     if (!audio) return;
     try {
       audio.pause();
@@ -102,7 +110,6 @@
     if (activePlayback) stopAudio();
     else {
       activePlayback = false;
-      pausedByToggle = false;
     }
     notifyPlaybackActivity(false);
   }
@@ -112,21 +119,7 @@
     if (!player || !activePlayback || player.ended || player.paused === true) return false;
     try {
       player.pause();
-      pausedByToggle = true;
       notifyPlaybackActivity(false);
-      return true;
-    } catch { return false; }
-  }
-
-  async function resumeNarration(change = enabledChange) {
-    const player = audio;
-    if (!pausedByToggle || !player || !player.src) return false;
-    try {
-      await player.play();
-      if (change !== enabledChange || !isEnabled()) return false;
-      pausedByToggle = false;
-      activePlayback = true;
-      notifyPlaybackActivity(true);
       return true;
     } catch { return false; }
   }
@@ -136,7 +129,7 @@
       audioUnlocked = true;
       return Promise.resolve(true);
     }
-    if (!isEnabled()) return Promise.resolve(false);
+    if (!isPlaybackEnabled()) return Promise.resolve(false);
     const player = ensureAudio();
     if (!player) return Promise.resolve(false);
     try {
@@ -167,7 +160,8 @@
   function installUnlockOnGesture() {
     const doc = global.document;
     if (!doc || typeof doc.addEventListener !== 'function') return;
-    const onGesture = () => {
+    const onGesture = event => {
+      if (event?.target?.closest?.('.ambient-toggle')) return;
       void unlock().then(unlocked => {
         if (unlocked && typeof doc.removeEventListener === 'function') doc.removeEventListener('click', onGesture, true);
       });
@@ -186,7 +180,7 @@
   }
 
   async function playEntry(id, duplicateKey, manual, preemptQueues = true) {
-    if (!isEnabled()) return false;
+    if (!isPlaybackEnabled()) return false;
     if (!manual && automaticPlayback.has(duplicateKey)) return false;
     if (!manual) automaticPlayback.add(duplicateKey);
     if (preemptQueues) {
@@ -204,16 +198,14 @@
     player.volume = 1;
     player.src = new URL(entry.file, new URL(MANIFEST_URL, global.location?.href || 'http://localhost/')).href;
     activePlayback = true;
-    pausedByToggle = false;
     player.onended = () => {
       if (request !== playbackRequest) return;
       activePlayback = false;
-      pausedByToggle = false;
       notifyPlaybackActivity(false);
     };
     try {
       await player.play();
-      if (!isEnabled()) pauseNarration();
+      if (!isPlaybackEnabled()) stopAudio();
       else notifyPlaybackActivity(true);
       lastEntry = { id, duplicateKey };
       notify();
@@ -247,7 +239,6 @@
           }
           finishActiveEvent = null;
           activePlayback = false;
-          pausedByToggle = false;
           resolve();
         };
         audio.onended = finishActiveEvent;
@@ -267,7 +258,7 @@
   }
 
   function playEvent(definitionId, instanceId) {
-    if (!definitionId || !instanceId || !isEnabled()) return Promise.resolve(false);
+    if (!definitionId || !instanceId || !isPlaybackEnabled()) return Promise.resolve(false);
     const duplicateKey = `event:${instanceId}`;
     if (automaticPlayback.has(duplicateKey)) return Promise.resolve(false);
     automaticPlayback.add(duplicateKey);
@@ -318,7 +309,6 @@
               }
               finishActiveEvent = null;
               activePlayback = false;
-              pausedByToggle = false;
               resolve();
             };
             audio.onended = finishActiveEvent;
@@ -339,7 +329,7 @@
   function playDeadlyEncounter(featureIds, discoveryKey) {
     const orderedFeatureIds = (Array.isArray(featureIds) ? featureIds : [featureIds])
       .filter(featureId => typeof featureId === 'string' && featureId !== 'unusual');
-    if (!orderedFeatureIds.length || !discoveryKey || !isEnabled()) return Promise.resolve(false);
+    if (!orderedFeatureIds.length || !discoveryKey || !isPlaybackEnabled()) return Promise.resolve(false);
     const duplicateKey = `deadly:${discoveryKey}`;
     if (automaticPlayback.has(duplicateKey)) return Promise.resolve(false);
     automaticPlayback.add(duplicateKey);
@@ -353,18 +343,22 @@
     return lastEntry ? playEntry(lastEntry.id, lastEntry.duplicateKey, true) : Promise.resolve(false);
   }
 
-  function setEnabled(enabled) {
-    const nextEnabled = Boolean(enabled);
-    const change = ++enabledChange;
-    writePreference(ENABLED_KEY, String(nextEnabled));
-    const playbackChange = nextEnabled ? resumeNarration(change) : Promise.resolve(pauseNarration());
+  function setPreferenceEnabled(enabled) {
+    writePreference(ENABLED_KEY, String(Boolean(enabled)));
     notify();
-    return playbackChange;
+  }
+
+  function setMasterEnabled(enabled) {
+    masterEnabled = Boolean(enabled);
+    writePreference(MASTER_ENABLED_KEY, String(masterEnabled));
+    appliedPreferenceEnabled = masterEnabled && isPreferenceEnabled();
+    if (!masterEnabled) stop();
+    notify();
   }
 
   global.TombWorldNarration = Object.freeze({
-    init, unlock, playMissionIntro, playEvent, playOutcome, playDeadlyEncounter, replayLast, stop, pauseNarration, resumeNarration,
-    setEnabled, isEnabled,
+    init, unlock, playMissionIntro, playEvent, playOutcome, playDeadlyEncounter, replayLast, stop, pauseNarration,
+    setPreferenceEnabled, isPreferenceEnabled, setMasterEnabled, isMasterEnabled, isPlaybackEnabled,
     canReplay: () => Boolean(lastEntry)
   });
 

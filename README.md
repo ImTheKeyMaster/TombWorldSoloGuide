@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.87
+# Tomb World Solo Guide v8.6.88
+
+## v8.6.88
+
+**Version 8.6.88 - Independent Audio Settings and Master Control**
+
+- Separates the sticky Narration and Ambient Noise settings from the header speaker's independently persisted master audio state.
+- Applies the latest stored category settings only when master audio is enabled, so changing either Game Menu switch never disturbs live playback.
+- Preserves ambient looping, narration ducking, one-time Safari/PWA audio unlock behavior, New Game preference persistence, and save schema version 3.
 
 ## v8.6.87
 
