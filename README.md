@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.89
+# Tomb World Solo Guide v8.6.90
+
+## v8.6.90
+
+**Version 8.6.90 - iOS Ambient Foreground Recovery**
+
+- Re-primes the ambient audio session on the next valid gesture after foregrounding, including when iOS incorrectly reports its interrupted audio context as running.
+- Replaces the stale ambient loop with exactly one fresh source while preserving master audio, Ambient, Narration, ducking, and save preferences.
+- Keeps failed WebKit recovery attempts bounded and eligible for another user-gesture retry.
 
 ## v8.6.89
 

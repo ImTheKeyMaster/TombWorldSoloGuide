@@ -16,7 +16,7 @@ def run_node(script):
 
 class MasterAudioRecoveryTests(unittest.TestCase):
     def test_release_and_parallel_unlock_contract(self):
-        self.assertEqual((8, 6, 89), tuple(map(int, CURRENT_APP_VERSION.split("."))))
+        self.assertEqual((8, 6, 90), tuple(map(int, CURRENT_APP_VERSION.split("."))))
         master = APP[APP.index("async function setGameAudioEnabled") : APP.index("function playPendingBoardSetupMissionIntro")]
         narration_call = master.index("TombWorldNarration.unlock({force:true})")
         ambient_call = master.index("TombWorldAmbient.unlock()")
@@ -101,8 +101,8 @@ async function scenario(initial,canRecover){
 
     def test_visibility_recovery_is_guarded_and_listener_is_unique(self):
         self.assertIn("document?.visibilityState !== 'visible'", AMBIENT)
-        self.assertIn("context?.state === 'running'", AMBIENT)
-        self.assertIn("resumeContextFromGesture(false)", AMBIENT)
+        self.assertIn("recoveryRequired = true", AMBIENT)
+        self.assertIn("if (activeBattle && masterEnabled()) armGestureUnlock()", AMBIENT)
         self.assertIn("if (gestureUnlockHandlerInstalled", AMBIENT)
         self.assertEqual(1, AMBIENT.count("global.document.addEventListener('click', onFirstAudioGesture, true)"))
 

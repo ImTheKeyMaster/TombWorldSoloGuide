@@ -17,22 +17,38 @@
   let generation = 0;
   let gestureUnlocking = false;
   let gestureUnlockHandlerInstalled = false;
+  let recoveryRequired = false;
+  let unlockAttempt = null;
+
+  const RECOVERY_TIMEOUT_MS = 1500;
 
   function ensureContext() {
     if (!context && AudioContext) context = new AudioContext();
     return context;
   }
 
-  async function resumeContextFromGesture(allowInterruptedRecovery = true) {
+  async function settleWithTimeout(work) {
+    let timer = null;
+    try {
+      return await Promise.race([
+        Promise.resolve(work).then(() => true, () => false),
+        new Promise(resolve => { timer = global.setTimeout(() => resolve(false), RECOVERY_TIMEOUT_MS); })
+      ]);
+    } catch { return false; }
+    finally { if (timer !== null) global.clearTimeout(timer); }
+  }
+
+  async function resumeContextFromGesture(forceRecovery = false) {
     if (!context || context.state === 'closed') return false;
-    if (context.state === 'running') return true;
-    try { await context.resume(); } catch { /* A later gesture may retry. */ }
-    if (context.state === 'running') return true;
-    if (allowInterruptedRecovery && context.state === 'interrupted') {
-      try { await context.suspend(); } catch { /* WebKit may reject this transition. */ }
-      try { await context.resume(); } catch { /* A later gesture may retry. */ }
+    if (context.state === 'running' && !forceRecovery) return true;
+    if (forceRecovery && typeof context.suspend === 'function') {
+      await settleWithTimeout(context.suspend());
+    } else if (context.state === 'interrupted' && typeof context.suspend === 'function') {
+      await settleWithTimeout(context.suspend());
     }
-    return context.state === 'running';
+    if (typeof context.resume !== 'function') return context.state === 'running';
+    const resumed = await settleWithTimeout(context.resume());
+    return resumed && context.state === 'running';
   }
 
   function armGestureUnlock() {
@@ -134,6 +150,16 @@
     rampTo(narrationActive ? config.duckGain : config.normalGain, config.fadeInMs);
   }
 
+  function discardStaleSource() {
+    global.clearTimeout(stopTimer);
+    stopTimer = null;
+    generation += 1;
+    if (!source) return;
+    try { source.stop(); } catch { /* The interrupted source may already be stopped. */ }
+    try { source.disconnect(); } catch { /* WebKit may have already disconnected it. */ }
+    source = null;
+  }
+
   async function reconcile() {
     const token = generation;
     const ready = await init();
@@ -154,20 +180,38 @@
     return false;
   }
 
-  async function unlock() {
-    if (contextUnlocked && context?.state === 'running' && buffer && config && gainNode) return true;
-    // Construct and resume from the shared click gesture for Safari/PWA audio permission.
-    ensureContext();
-    const resumePromise = resumeContextFromGesture();
-    const ready = await init();
-    if (!context) return false;
-    contextUnlocked = await resumePromise;
-    if (!contextUnlocked) contextUnlocked = await resumeContextFromGesture();
-    if (contextUnlocked && ready) {
-      removeGestureUnlock();
-      void reconcile();
-    } else armGestureUnlock();
-    return contextUnlocked && ready;
+  function unlock() {
+    if (unlockAttempt) return unlockAttempt;
+    if (contextUnlocked && !recoveryRequired && context?.state === 'running' && buffer && config && gainNode) return Promise.resolve(true);
+    unlockAttempt = (async () => {
+      // Construct and resume from the shared click gesture for Safari/PWA audio permission.
+      ensureContext();
+      const recovering = recoveryRequired;
+      const resumePromise = resumeContextFromGesture(recovering);
+      const ready = await init();
+      if (!context) return false;
+      const recovered = await resumePromise;
+      contextUnlocked = recovered;
+      if (!recovered && !recovering) contextUnlocked = await resumeContextFromGesture();
+      if (contextUnlocked && ready) {
+        if (recovering) {
+          discardStaleSource();
+          recoveryRequired = false;
+        }
+        removeGestureUnlock();
+        void reconcile();
+      } else {
+        if (recovering) recoveryRequired = true;
+        armGestureUnlock();
+      }
+      return contextUnlocked && ready;
+    })().catch(() => {
+      contextUnlocked = false;
+      recoveryRequired = true;
+      armGestureUnlock();
+      return false;
+    }).finally(() => { unlockAttempt = null; });
+    return unlockAttempt;
   }
 
   function setActive(isActive) {
@@ -180,14 +224,18 @@
   async function onFirstAudioGesture(event) {
     if (event?.target?.closest?.('.ambient-toggle')) return;
     if (!activeBattle || !masterEnabled()) return;
-    if ((contextUnlocked && buffer && config && gainNode) || gestureUnlocking) return;
+    if ((contextUnlocked && !recoveryRequired && buffer && config && gainNode) || gestureUnlocking) return;
     gestureUnlocking = true;
     try { await unlock(); } finally { gestureUnlocking = false; }
   }
 
-  async function onVisibilityChange() {
-    if (global.document?.visibilityState !== 'visible' || !activeBattle || !masterEnabled() || context?.state === 'running') return;
-    if (!await resumeContextFromGesture(false)) armGestureUnlock();
+  function onVisibilityChange() {
+    if (global.document?.visibilityState !== 'visible') {
+      recoveryRequired = true;
+      return;
+    }
+    recoveryRequired = true;
+    if (activeBattle && masterEnabled()) armGestureUnlock();
   }
 
   function stop() {
