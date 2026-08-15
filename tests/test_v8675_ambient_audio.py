@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class AmbientAudioTests(unittest.TestCase):
     def test_configuration_selects_track_without_ui_and_offline_cache_is_config_driven(self):
         config = json.loads((ROOT / "Assets/Audio/Narration/ambient-config.json").read_text())
-        self.assertEqual("Ambient/Forgoten_tombs.mp3", config["file"])
+        self.assertEqual("Ambient/caverns.ogg", config["file"])
         self.assertTrue((ROOT / "Assets/Audio/Narration" / config["file"]).is_file())
         index = (ROOT / "index.html").read_text()
         self.assertIn("ambient.js?v=", index)
@@ -34,7 +34,7 @@ class AudioContext {
   decodeAudioData(){return Promise.resolve({duration:123});}
   resume(){this.state='running';return Promise.resolve();}
 }
-const config={schemaVersion:1,file:'Ambient/Forgoten_tombs.mp3',normalGain:.22,duckGain:.055,fadeInMs:1500,fadeOutMs:800,duckAttackMs:250,duckReleaseMs:700,loopStartSeconds:0,loopEndSeconds:null};
+const config={schemaVersion:1,file:'Ambient/caverns.ogg',normalGain:.22,duckGain:.055,fadeInMs:1500,fadeOutMs:800,duckAttackMs:250,duckReleaseMs:700,loopStartSeconds:0,loopEndSeconds:null};
 const context={AudioContext,CustomEvent,URL,location:{href:'https://example.test/app/'},TombWorldNarration:{isEnabled:()=>enabled},
  fetch:async url=>{fetches.push(String(url));return String(url).includes('ambient-config')?{ok:true,json:async()=>config}:{ok:true,arrayBuffer:async()=>new ArrayBuffer(1)};},
  addEventListener:(type,fn)=>events[type]=fn,dispatchEvent:event=>events[event.type]?.(event),document:{addEventListener:(type,fn)=>events['document:'+type]=fn},
@@ -66,7 +66,7 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
  if(sources.length!==1)throw Error('speaker on restarted source before fade completed');
  ambient.stop();
  if(ramps.at(-1)[0]!==0)throw Error('New Game did not cancel ambient');
- if(fetches.filter(url=>url.includes('Forgoten_tombs.mp3')).length!==1)throw Error('ambient track was not decoded exactly once');
+ if(fetches.filter(url=>url.includes('caverns.ogg')).length!==1)throw Error('ambient track was not decoded exactly once');
 })().catch(e=>{console.error(e);process.exit(1)});
 """
         result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)

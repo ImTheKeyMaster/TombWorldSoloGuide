@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.85
+# Tomb World Solo Guide v8.6.86
+
+## v8.6.86
+
+**Version 8.6.86 - Reliable Ambient Playback and Persistent Control**
+
+- Makes ambient initialization failures retryable and keeps Safari/iPhone/PWA audio permission separate from successful configuration and audio decoding.
+- Adds a persistent, accessible Ambient Noise switch to the Game Menu while retaining Game Audio as the narration-and-ambient master control.
+- Keeps `Ambient/caverns.ogg` config-driven and offline precached, with seamless looping, narration ducking, and uninterrupted playback across ordinary UI interaction.
 
 ## v8.6.85
 

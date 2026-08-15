@@ -2,12 +2,13 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.85';
+  const APP_VERSION = '8.6.86';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
     init:()=>Promise.resolve(),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},pauseNarration:()=>false,resumeNarration:()=>Promise.resolve(false),setEnabled:()=>Promise.resolve(false),isEnabled:()=>true,canReplay:()=>false
   });
   const TombWorldAmbient=window.TombWorldAmbient||Object.freeze({init:()=>Promise.resolve(false),unlock:()=>Promise.resolve(false),setActive:()=>{},stop:()=>{}});
   const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
+  const AMBIENT_ENABLED_PREFERENCE_KEY = 'tombWorldSoloGuide.ambientEnabled';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -46,6 +47,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const gameMenuBtn = $('#gameMenuBtn');
   const narrationSpeakerBtn=$('#narrationSpeakerBtn');
   let pendingBoardSetupMissionIntro=null;
+  let ambientEnabled=localStorage.getItem(AMBIENT_ENABLED_PREFERENCE_KEY)!=='false';
+  function shouldAmbientBeActive(){
+    return ambientEnabled&&TombWorldNarration.isEnabled()&&Boolean(state.missionId)&&['setup','game'].includes(state.screen);
+  }
+  function reconcileAmbientActiveState(){TombWorldAmbient.setActive(shouldAmbientBeActive());}
   function syncNarrationControls(){
     const enabled=TombWorldNarration.isEnabled();
     narrationSpeakerBtn.classList.toggle('is-muted',!enabled);
@@ -61,12 +67,17 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       gameAudioBtn.setAttribute('aria-pressed',String(enabled));
       gameAudioBtn.querySelector('.game-audio-label').textContent=enabled?'Stop Game Audio':'Start Game Audio';
     }
+    const ambientToggle=globalThis.document?.querySelector('#ambientNoiseToggle');
+    if(ambientToggle){
+      ambientToggle.setAttribute('aria-checked',String(ambientEnabled));
+      ambientToggle.querySelector('.ambient-toggle-state').textContent=ambientEnabled?'On':'Off';
+    }
   }
   async function setGameAudioEnabled(enabled){
     const resumed=await TombWorldNarration.setEnabled(enabled);
     if(enabled){
-      await TombWorldAmbient.unlock();
-      TombWorldAmbient.setActive(Boolean(state.missionId)&&['setup','game'].includes(state.screen));
+      if(shouldAmbientBeActive())await TombWorldAmbient.unlock();
+      reconcileAmbientActiveState();
       if(!resumed)playPendingBoardSetupMissionIntro();
     }else{
       TombWorldNarration.stop();
@@ -1958,7 +1969,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     bindCommon();
     updateGameBackground();
     renderOperativeStatusPanel();
-    TombWorldAmbient.setActive(Boolean(state.missionId)&&['setup','game'].includes(state.screen));
+    reconcileAmbientActiveState();
 
     if(state.hotResolution&&!state.hotResolution.acknowledged&&!modal.open){
       showHotResult(state.hotResolution,()=>resumePersistedHotContinuation(state.hotResolution));
@@ -7485,6 +7496,12 @@ function showPlayerActivation(stage={}){
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9v6h4l5 4V5L8 9H4z"></path><path d="M16 8.5c1.3 1.8 1.3 5.2 0 7M19 6c2.7 3.2 2.7 8.8 0 12"></path></svg>
           <span class="game-audio-label">${TombWorldNarration.isEnabled()?'Stop Game Audio':'Start Game Audio'}</span>
         </button>
+        <div class="ambient-toggle-row">
+          <span id="ambientNoiseLabel">Ambient Noise</span>
+          <button class="ambient-toggle" id="ambientNoiseToggle" type="button" role="switch" aria-labelledby="ambientNoiseLabel" aria-checked="${ambientEnabled}">
+            <span class="ambient-toggle-state">${ambientEnabled?'On':'Off'}</span><span class="ambient-toggle-track" aria-hidden="true"><span></span></span>
+          </button>
+        </div>
       </div>
       <div class="game-menu-session">
         <button class="btn ghost" id="menuExportSave">Export Save</button>
@@ -7504,6 +7521,13 @@ function showPlayerActivation(stage={}){
     $('#gameAudioToggle').onclick=async()=>{
       const enabled=!TombWorldNarration.isEnabled();
       await setGameAudioEnabled(enabled);
+    };
+    $('#ambientNoiseToggle').onclick=async()=>{
+      ambientEnabled=!ambientEnabled;
+      localStorage.setItem(AMBIENT_ENABLED_PREFERENCE_KEY,String(ambientEnabled));
+      syncNarrationControls();
+      if(ambientEnabled&&shouldAmbientBeActive())await TombWorldAmbient.unlock();
+      reconcileAmbientActiveState();
     };
     $('#menuAbout').onclick=showAbout;
     $('#menuExportSave').onclick=exportSave;
@@ -7604,7 +7628,6 @@ function showPlayerActivation(stage={}){
     gameMenuBtn.onclick=showGameMenu;
     syncNarrationControls();
     void TombWorldNarration.init();
-    void TombWorldAmbient.init();
   }
 
   function renderStartupRecovery(error){
