@@ -38,7 +38,7 @@ const listeners={},sources=[];let attempts=0,decodeAttempts=0,context;
 class AudioContext{constructor(){this.state='suspended';this.currentTime=0;this.destination={};context=this}resume(){this.state='running';return Promise.resolve()}createGain(){return {gain:{value:0,cancelScheduledValues(){},setValueAtTime(v){this.value=v},linearRampToValueAtTime(v){this.value=v}},connect(){}}}createBufferSource(){const s={connect(){},disconnect(){},start(){},stop(){}};sources.push(s);return s}decodeAudioData(){decodeAttempts++;return decodeAttempts===1?Promise.reject(Error('decode')):Promise.resolve({duration:60})}}
 const config={schemaVersion:1,file:'Ambient/caverns.ogg',normalGain:.22,duckGain:.055,fadeInMs:1500,fadeOutMs:800,duckAttackMs:250,duckReleaseMs:700,loopStartSeconds:0,loopEndSeconds:null};
 const document={addEventListener:(t,f)=>listeners[t]=f,removeEventListener:(t,f)=>{if(listeners[t]===f)delete listeners[t]}};
-const sandbox={AudioContext,URL,location:{href:'https://example.test/'},document,TombWorldNarration:{isEnabled:()=>true},addEventListener(){},setTimeout,clearTimeout,
+const sandbox={AudioContext,URL,location:{href:'https://example.test/'},document,TombWorldNarration:{isMasterEnabled:()=>true},addEventListener(){},setTimeout,clearTimeout,
 fetch:async url=>{if(String(url).includes('ambient-config')){attempts++;if(attempts===1)throw Error('offline');return {ok:true,json:async()=>config}}return {ok:true,arrayBuffer:async()=>new ArrayBuffer(1)}}};
 sandbox.window=sandbox;vm.createContext(sandbox);vm.runInContext(fs.readFileSync('ambient.js','utf8'),sandbox);
 (async()=>{const a=sandbox.TombWorldAmbient;a.setActive(true);for(let i=0;i<8;i++)await Promise.resolve();if(!listeners.click)throw Error('fallback removed after fetch failure');await a.unlock();if(!listeners.click)throw Error('fallback removed after decode failure');if(await a.unlock()!==true)throw Error('later retry did not initialize');for(let i=0;i<8;i++)await Promise.resolve();if(listeners.click)throw Error('fallback retained after full success');if(sources.length!==1)throw Error('successful retry did not play exactly once')})().catch(e=>{console.error(e);process.exit(1)});
@@ -48,8 +48,8 @@ sandbox.window=sandbox;vm.createContext(sandbox);vm.runInContext(fs.readFileSync
 
     def test_off_state_ignores_narration_and_active_reconciliation(self):
         self.assertIn("if (source && activeBattle && masterEnabled() && config)", AMBIENT)
-        self.assertIn("ambientEnabled&&TombWorldNarration.isEnabled()", APP)
-        self.assertIn("if(ambientEnabled&&shouldAmbientBeActive())await TombWorldAmbient.unlock();", APP)
+        self.assertIn("TombWorldNarration.isMasterEnabled()&&appliedAmbientEnabled", APP)
+        self.assertIn("const ambientUnlockPromise=shouldAmbientBeActive()", APP)
 
 
 if __name__ == "__main__":

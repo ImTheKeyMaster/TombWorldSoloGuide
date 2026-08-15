@@ -131,8 +131,9 @@
     gestureUnlockHandler = null;
   }
 
-  function unlock() {
-    if (audioUnlocked || lastEntry) {
+  function unlock(options = {}) {
+    const force = options?.force === true;
+    if (!force && audioUnlocked) {
       audioUnlocked = true;
       removeGestureUnlockHandler();
       return Promise.resolve(true);
@@ -158,11 +159,13 @@
       }, () => {
         audioUnlocked = false;
         player.volume = 1;
+        installUnlockOnGesture();
         return false;
       });
     } catch {
       audioUnlocked = false;
       player.volume = 1;
+      installUnlockOnGesture();
       return Promise.resolve(false);
     }
   }
@@ -360,7 +363,12 @@
     masterEnabled = Boolean(enabled);
     writePreference(MASTER_ENABLED_KEY, String(masterEnabled));
     appliedPreferenceEnabled = masterEnabled && isPreferenceEnabled();
-    if (!masterEnabled) stop();
+    if (!masterEnabled) {
+      stop();
+      stopAudio();
+      audioUnlocked = false;
+      installUnlockOnGesture();
+    }
     notify();
   }
 

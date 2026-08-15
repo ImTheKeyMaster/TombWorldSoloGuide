@@ -16,10 +16,35 @@
   let narrationActive = false;
   let generation = 0;
   let gestureUnlocking = false;
+  let gestureUnlockHandlerInstalled = false;
 
   function ensureContext() {
     if (!context && AudioContext) context = new AudioContext();
     return context;
+  }
+
+  async function resumeContextFromGesture(allowInterruptedRecovery = true) {
+    if (!context || context.state === 'closed') return false;
+    if (context.state === 'running') return true;
+    try { await context.resume(); } catch { /* A later gesture may retry. */ }
+    if (context.state === 'running') return true;
+    if (allowInterruptedRecovery && context.state === 'interrupted') {
+      try { await context.suspend(); } catch { /* WebKit may reject this transition. */ }
+      try { await context.resume(); } catch { /* A later gesture may retry. */ }
+    }
+    return context.state === 'running';
+  }
+
+  function armGestureUnlock() {
+    if (gestureUnlockHandlerInstalled || typeof global.document?.addEventListener !== 'function') return;
+    global.document.addEventListener('click', onFirstAudioGesture, true);
+    gestureUnlockHandlerInstalled = true;
+  }
+
+  function removeGestureUnlock() {
+    if (!gestureUnlockHandlerInstalled) return;
+    global.document?.removeEventListener?.('click', onFirstAudioGesture, true);
+    gestureUnlockHandlerInstalled = false;
   }
 
   function masterEnabled() {
@@ -114,9 +139,7 @@
     const ready = await init();
     if (!ready || token !== generation) return false;
     if (activeBattle && contextUnlocked && masterEnabled()) {
-      if (context.state === 'suspended') {
-        try { await context.resume(); } catch { return false; }
-      }
+      if (!await resumeContextFromGesture()) return false;
       if (context.state !== 'running' || !activeBattle || !masterEnabled()) return false;
       if (source) {
         if (!stopTimer) return true;
@@ -135,19 +158,15 @@
     if (contextUnlocked && context?.state === 'running' && buffer && config && gainNode) return true;
     // Construct and resume from the shared click gesture for Safari/PWA audio permission.
     ensureContext();
-    if (context?.state === 'suspended') {
-      try { await context.resume(); } catch { /* Initialization below remains safely retryable. */ }
-    }
+    const resumePromise = resumeContextFromGesture();
     const ready = await init();
     if (!context) return false;
-    if (context.state === 'suspended') {
-      try { await context.resume(); } catch { /* A later user gesture may retry permission. */ }
-    }
-    contextUnlocked = context.state === 'running';
+    contextUnlocked = await resumePromise;
+    if (!contextUnlocked) contextUnlocked = await resumeContextFromGesture();
     if (contextUnlocked && ready) {
-      global.document?.removeEventListener?.('click', onFirstAudioGesture, true);
+      removeGestureUnlock();
       void reconcile();
-    }
+    } else armGestureUnlock();
     return contextUnlocked && ready;
   }
 
@@ -163,6 +182,11 @@
     if ((contextUnlocked && buffer && config && gainNode) || gestureUnlocking) return;
     gestureUnlocking = true;
     try { await unlock(); } finally { gestureUnlocking = false; }
+  }
+
+  async function onVisibilityChange() {
+    if (global.document?.visibilityState !== 'visible' || !activeBattle || !masterEnabled() || context?.state === 'running') return;
+    if (!await resumeContextFromGesture(false)) armGestureUnlock();
   }
 
   function stop() {
@@ -186,7 +210,8 @@
   }
 
   global.addEventListener?.('tombworldnarrationactivity', onNarrationActivity);
-  global.document?.addEventListener?.('click', onFirstAudioGesture, true);
+  global.document?.addEventListener?.('visibilitychange', onVisibilityChange);
+  armGestureUnlock();
 
   global.TombWorldAmbient = Object.freeze({ init, unlock, setActive, stop });
 })(typeof window === 'undefined' ? globalThis : window);
