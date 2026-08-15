@@ -12,7 +12,7 @@ AMBIENT = (ROOT / "ambient.js").read_text(encoding="utf-8")
 
 class AudioSettingsMasterTests(unittest.TestCase):
     def test_release_metadata_and_save_version(self):
-        self.assertEqual((8, 6, 89), tuple(map(int, CURRENT_APP_VERSION.split("."))))
+        self.assertEqual((8, 6, 90), tuple(map(int, CURRENT_APP_VERSION.split("."))))
         index = (ROOT / "index.html").read_text(encoding="utf-8")
         worker = (ROOT / "service-worker.js").read_text(encoding="utf-8")
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "narration.js", "ambient.js", "app.js"):
