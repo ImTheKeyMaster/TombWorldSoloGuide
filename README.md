@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.88
+# Tomb World Solo Guide v8.6.89
+
+## v8.6.89
+
+**Version 8.6.89 - Reliable Master Audio Re-enable**
+
+- Freshly primes selected narration whenever the master speaker is re-enabled, while leaving failed attempts retryable.
+- Starts required narration and ambient unlock attempts together from the master-speaker gesture without changing settings-only behavior.
+- Recovers suspended or interrupted ambient audio contexts and adds lightweight PWA visibility recovery while preserving `Ambient/caverns.ogg`, narration ducking, and save schema version 3.
 
 ## v8.6.88
 

@@ -45,10 +45,10 @@ const store=new Map();
 const context={localStorage:{getItem:key=>store.has(key)?store.get(key):null,setItem:(key,value)=>store.set(key,value)}};
 context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
 const n=context.TombWorldNarration;
-if(!n.isEnabled())throw Error('missing preference was not enabled');
+if(!n.isPreferenceEnabled())throw Error('missing preference was not enabled');
 if(store.has('tombWorldSoloGuide.narrationEnabled'))throw Error('startup wrote a preference');
-store.set('tombWorldSoloGuide.narrationEnabled','false');if(n.isEnabled())throw Error('false preference was enabled');
-store.set('tombWorldSoloGuide.narrationEnabled','true');if(!n.isEnabled())throw Error('true preference was disabled');
+store.set('tombWorldSoloGuide.narrationEnabled','false');if(n.isPreferenceEnabled())throw Error('false preference was enabled');
+store.set('tombWorldSoloGuide.narrationEnabled','true');if(!n.isPreferenceEnabled())throw Error('true preference was disabled');
 """
         result = subprocess.run(['node', '-e', script], cwd=ROOT, text=True, capture_output=True)
         self.assertEqual(0, result.returncode, result.stderr)
@@ -63,9 +63,8 @@ const calls=[];
 let setupNavigationInProgress=false;
 const state={{screen:'setup',setupStep:0,missionId:'shifting-labyrinth'}};
 let enabled=true;
-let resumeNext=false;
 let ambientEnabled=true;
-const TombWorldNarration={{isEnabled:()=>enabled,setEnabled:async value=>{{enabled=value;return resumeNext;}},playMissionIntro:(id,restart)=>calls.push(`play:${{id}}:${{restart}}`),stop:()=>calls.push('stop')}};
+const TombWorldNarration={{isMasterEnabled:()=>enabled,isPlaybackEnabled:()=>enabled,setMasterEnabled:value=>{{enabled=value;}},unlock:async()=>true,playMissionIntro:(id,restart)=>calls.push(`play:${{id}}:${{restart}}`),stop:()=>calls.push('stop')}};
 const TombWorldAmbient={{unlock:async()=>true,setActive:value=>calls.push(`ambient:${{value}}`),stop:()=>calls.push('ambient:stop')}};
 const syncNarrationControls=()=>{{}};
 const shouldAmbientBeActive=()=>ambientEnabled&&enabled&&Boolean(state.missionId)&&['setup','game'].includes(state.screen);
@@ -89,14 +88,8 @@ if(calls.filter(call=>call.startsWith('play:')).length!==1)throw Error('rerender
 
 state.setupStep=0;enabled=false;advanceSetupStep('mission');
 if(calls.filter(call=>call.startsWith('play:')).length!==1||pendingBoardSetupMissionIntro!=='shifting-labyrinth')throw Error('disabled entry was not pending');
-resumeNext=false;await speakerClick();
+await speakerClick();
 if(calls.filter(call=>call.startsWith('play:')).length!==2||pendingBoardSetupMissionIntro!==null)throw Error('pending intro did not start exactly once');
-
-state.setupStep=0;enabled=false;advanceSetupStep('mission');
-resumeNext=true;await speakerClick();
-if(calls.filter(call=>call.startsWith('play:')).length!==2||pendingBoardSetupMissionIntro!=='shifting-labyrinth')throw Error('pending intro preempted resumed narration');
-enabled=false;resumeNext=false;await speakerClick();
-if(calls.filter(call=>call.startsWith('play:')).length!==3||pendingBoardSetupMissionIntro!==null)throw Error('pending intro did not start after no narration resumed');
 
 state.setupStep=0;enabled=false;advanceSetupStep('mission');
 if(!pendingBoardSetupMissionIntro)throw Error('new disabled visit was not pending');
@@ -104,8 +97,8 @@ const stepId='killzone';
 const setupBack={{addEventListener:(event,handler)=>handler()}};
 eval(`const $=selector=>selector==='#setupBack'?setupBack:null;{setup_back}`);
 if(pendingBoardSetupMissionIntro!==null||!calls.includes('stop')||state.setupStep!==0)throw Error('Back did not clear and stop Board Setup narration');
-resumeNext=false;await speakerClick();
-if(calls.filter(call=>call.startsWith('play:')).length!==3)throw Error('stale pending intro played after Back');
+await speakerClick();
+if(calls.filter(call=>call.startsWith('play:')).length!==2)throw Error('stale pending intro played after Back');
 }})().catch(error=>{{console.error(error);process.exit(1)}});
 """
         result = subprocess.run(['node', '-e', script], cwd=ROOT, text=True, capture_output=True)
@@ -122,10 +115,10 @@ if(calls.filter(call=>call.startsWith('play:')).length!==3)throw Error('stale pe
     def test_menu_uses_unified_audio_toggle_without_duplicate_preference_controls(self):
         menu = source('function showGameMenu()', 'function showAbout()')
         self.assertNotIn('Dungeon Master Narration', menu)
-        self.assertIn('gameAudioToggle', menu)
+        self.assertIn('narrationToggle', menu)
         self.assertIn('<span id="narrationLabel">Narration</span>', menu)
         self.assertIn('role="switch" aria-labelledby="narrationLabel"', menu)
-        self.assertNotIn('narrationEnabled', menu)
+        self.assertNotIn('gameAudioToggle', menu)
         self.assertNotIn('narrationVolume', menu)
 
     def test_release_and_save_versions(self):

@@ -85,12 +85,13 @@ async function scenario(paused){
   await new Promise(resolve=>setTimeout(resolve,0));
   const player=Audio.instance;
   player.currentTime=8;
-  if(paused)await narration.setEnabled(false);
+  if(paused)narration.pauseNarration();
   narration.stop();
   if(player.src||player.currentTime!==0)throw Error('old real narration was not destroyed');
   const oldPlayCount=calls.filter(call=>call.includes('events/old.mp3')).length;
   if(paused){
-    await narration.setEnabled(true);
+    narration.setMasterEnabled(false);
+    narration.setMasterEnabled(true);
     if(calls.filter(call=>call.includes('events/old.mp3')).length!==oldPlayCount)throw Error('old paused narration resumed');
   }
   if(!await narration.playMissionIntro('shifting-labyrinth',true))throw Error('new game narration was unusable');

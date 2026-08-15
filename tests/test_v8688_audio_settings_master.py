@@ -12,7 +12,7 @@ AMBIENT = (ROOT / "ambient.js").read_text(encoding="utf-8")
 
 class AudioSettingsMasterTests(unittest.TestCase):
     def test_release_metadata_and_save_version(self):
-        self.assertEqual("8.6.88", CURRENT_APP_VERSION)
+        self.assertEqual((8, 6, 89), tuple(map(int, CURRENT_APP_VERSION.split("."))))
         index = (ROOT / "index.html").read_text(encoding="utf-8")
         worker = (ROOT / "service-worker.js").read_text(encoding="utf-8")
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "narration.js", "ambient.js", "app.js"):
@@ -124,7 +124,7 @@ if(n.canReplay())throw Error('cancelled narration became replayable');
         self.assertIn("tombworldnarrationactivity", AMBIENT)
         self.assertIn("duckGain", AMBIENT)
         self.assertNotIn("tombworldnarrationchange", AMBIENT)
-        self.assertEqual(1, AMBIENT.count("addEventListener?.('click', onFirstAudioGesture, true)"))
+        self.assertEqual(1, AMBIENT.count("global.document.addEventListener('click', onFirstAudioGesture, true)"))
 
 
 if __name__ == "__main__":

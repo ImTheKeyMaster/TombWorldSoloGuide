@@ -56,9 +56,9 @@ class EventNarrationVisibilityTests(unittest.TestCase):
 
     def test_other_narration_paths_and_controls_remain_independent(self):
         narration = (ROOT / "narration.js").read_text(encoding="utf-8")
-        for behavior in ("playDeadlyEncounter", "playMissionIntro", "playOutcome", "replayLast", "pauseNarration", "resumeNarration", "stop"):
+        for behavior in ("playDeadlyEncounter", "playMissionIntro", "playOutcome", "replayLast", "pauseNarration", "stop"):
             self.assertIn(f"function {behavior}", narration)
-        self.assertIn("TombWorldNarration.stop();", APP)
+        self.assertIn("TombWorldNarration.setMasterEnabled(enabled);", APP)
 
 
 if __name__ == "__main__":

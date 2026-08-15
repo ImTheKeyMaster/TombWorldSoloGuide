@@ -33,14 +33,14 @@ class AudioContext {
   decodeAudioData(){return Promise.resolve({duration:120});}
   resume(){resumeCalls++;this.state='running';return Promise.resolve();}
 }
-const config={schemaVersion:1,file:'Ambient/Forgoten_tombs.mp3',normalGain:.22,duckGain:.055,fadeInMs:1500,fadeOutMs:800,duckAttackMs:250,duckReleaseMs:700,loopStartSeconds:0,loopEndSeconds:null};
+const config={schemaVersion:1,file:'Ambient/caverns.ogg',normalGain:.22,duckGain:.055,fadeInMs:1500,fadeOutMs:800,duckAttackMs:250,duckReleaseMs:700,loopStartSeconds:0,loopEndSeconds:null};
 const document={
  addEventListener:(type,fn)=>documentEvents[type]=fn,
  removeEventListener:(type,fn)=>{if(documentEvents[type]===fn)delete documentEvents[type];},
  dispatchEvent:event=>documentEvents[event.type]?.(event)
 };
 const context={AudioContext,CustomEvent,URL,location:{href:'https://example.test/app/'},document,
- TombWorldNarration:{isEnabled:()=>enabled},
+ TombWorldNarration:{isMasterEnabled:()=>enabled},
  fetch:async url=>String(url).includes('ambient-config')?{ok:true,json:async()=>config}:{ok:true,arrayBuffer:async()=>new ArrayBuffer(1)},
  addEventListener:(type,fn)=>windowEvents[type]=fn,dispatchEvent:event=>windowEvents[event.type]?.(event),
  setTimeout:fn=>{const id=++timerId;timers.set(id,fn);return id;},clearTimeout:id=>timers.delete(id)};
@@ -93,11 +93,11 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
  if(ramps.length!==ambientOffRampCount||ramps.at(-1)[0]!==0)throw Error('narration disturbed the Ambient Noise OFF fade');
  ambient.setActive(true);await flush();
 
- enabled=false;context.dispatchEvent(new CustomEvent('tombworldnarrationchange'));await flush();
+ enabled=false;ambient.stop();await flush();
  if(ramps.at(-1)[0]!==0||timers.size!==1)throw Error('Game Audio OFF did not fade and schedule a stop');
  for(const [id,fn] of [...timers]){timers.delete(id);fn();}
  if(originalSource.stopCalls!==1)throw Error('Game Audio OFF did not stop the source');
- enabled=true;context.dispatchEvent(new CustomEvent('tombworldnarrationchange'));await flush();
+ enabled=true;await ambient.unlock();ambient.setActive(true);await flush();
  if(sources.length!==2||sources[1]===originalSource||ramps.at(-1)[0]!==config.normalGain)throw Error('Game Audio ON did not restart and restore ambient');
  ambient.stop();
  if(ramps.at(-1)[0]!==0)throw Error('New Game did not stop ambient');

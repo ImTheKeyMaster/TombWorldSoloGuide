@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.88';
+  const APP_VERSION = '8.6.89';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
     init:()=>Promise.resolve(),unlock:()=>Promise.resolve(false),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},setPreferenceEnabled:()=>{},isPreferenceEnabled:()=>true,setMasterEnabled:()=>{},isMasterEnabled:()=>true,isPlaybackEnabled:()=>true,canReplay:()=>false
   });
@@ -79,8 +79,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     TombWorldNarration.setMasterEnabled(enabled);
     if(enabled){
       appliedAmbientEnabled=ambientEnabled;
-      await TombWorldNarration.unlock();
-      if(shouldAmbientBeActive())await TombWorldAmbient.unlock();
+      const narrationUnlockPromise=TombWorldNarration.isPlaybackEnabled()
+        ?TombWorldNarration.unlock({force:true})
+        :Promise.resolve(false);
+      const ambientUnlockPromise=shouldAmbientBeActive()
+        ?TombWorldAmbient.unlock()
+        :Promise.resolve(false);
+      await Promise.allSettled([narrationUnlockPromise,ambientUnlockPromise]);
       reconcileAmbientActiveState();
       playPendingBoardSetupMissionIntro();
     }else{
