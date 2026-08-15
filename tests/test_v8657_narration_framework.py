@@ -123,8 +123,8 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
 
     def test_disabled_full_volume_overlap_deduplication_and_replay(self):
         self.run_node("""
-n.setEnabled(false);if(await n.playMissionIntro('shifting-labyrinth'))throw Error('disabled played');
-n.setEnabled(true);store.set('tombWorldSoloGuide.narrationVolume','0');
+n.setPreferenceEnabled(false);n.setMasterEnabled(false);n.setMasterEnabled(true);if(await n.playMissionIntro('shifting-labyrinth'))throw Error('disabled played');
+n.setPreferenceEnabled(true);n.setMasterEnabled(false);n.setMasterEnabled(true);store.set('tombWorldSoloGuide.narrationVolume','0');
 if(!await n.playEvent('awakened-warrior','copy-1'))throw Error('first play failed');
 if(Audio.instance?.volume!==1)throw Error('legacy volume affected playback');
 if(await n.playEvent('awakened-warrior','copy-1'))throw Error('duplicate played');
@@ -138,9 +138,9 @@ if(calls.filter(x=>x==='pause').length<2)throw Error('new playback did not stop 
 
     def test_enabled_preference_persists_without_starting_playback(self):
         self.run_node("""
-n.setEnabled(false);
+n.setPreferenceEnabled(false);
 if(store.get('tombWorldSoloGuide.narrationEnabled')!=='false')throw Error('disabled state did not persist');
-n.setEnabled(true);
+n.setPreferenceEnabled(true);
 if(store.get('tombWorldSoloGuide.narrationEnabled')!=='true')throw Error('enabled state did not persist');
 if(calls.some(x=>x.startsWith('play:')))throw Error('enabling narration started playback');
 """)
@@ -150,7 +150,7 @@ if(calls.some(x=>x.startsWith('play:')))throw Error('enabling narration started 
 const fs=require('fs'),vm=require('vm');
 const context={Audio:function(){throw Error('audio blocked')},fetch:async()=>{throw Error('offline')},localStorage:{getItem(){throw Error('blocked')},setItem(){throw Error('blocked')}}};
 context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
-(async()=>{const n=context.TombWorldNarration;n.setEnabled(false);await n.init();await n.playMissionIntro('shifting-labyrinth');n.stop();})().catch(error=>{console.error(error);process.exit(1)});
+(async()=>{const n=context.TombWorldNarration;n.setPreferenceEnabled(false);await n.init();await n.playMissionIntro('shifting-labyrinth');n.stop();})().catch(error=>{console.error(error);process.exit(1)});
 """
         result = subprocess.run(['node', '-e', script], cwd=ROOT, text=True, capture_output=True)
         self.assertEqual(result.returncode, 0, result.stderr)

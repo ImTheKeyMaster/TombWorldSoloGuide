@@ -25,20 +25,20 @@ class HeaderNarrationControlTests(unittest.TestCase):
         self.assertIn('id="narrationSpeakerBtn"', INDEX)
         self.assertIn('class="narration-icon-enabled"', INDEX)
         self.assertIn('class="narration-icon-disabled"', INDEX)
-        self.assertIn("enabledIcon.toggleAttribute('hidden',!enabled)", APP)
-        self.assertIn("disabledIcon.toggleAttribute('hidden',enabled)", APP)
+        self.assertIn("enabledIcon.toggleAttribute('hidden',!masterEnabled)", APP)
+        self.assertIn("disabledIcon.toggleAttribute('hidden',masterEnabled)", APP)
         self.assertNotIn(".querySelector('.narration-icon-enabled').hidden", APP)
         self.assertNotIn(".querySelector('.narration-icon-disabled').hidden", APP)
-        self.assertIn("narrationSpeakerBtn.setAttribute('aria-label',`Narration ${enabled?'on':'off'}`)", APP)
-        self.assertIn("narrationSpeakerBtn.setAttribute('aria-pressed',String(enabled))", APP)
-        self.assertIn("narrationSpeakerBtn.title=`Narration ${enabled?'on':'off'}`", APP)
+        self.assertIn("narrationSpeakerBtn.setAttribute('aria-label',`Master audio ${masterEnabled?'on':'off'}`)", APP)
+        self.assertIn("narrationSpeakerBtn.setAttribute('aria-pressed',String(masterEnabled))", APP)
+        self.assertIn("narrationSpeakerBtn.title=`Master audio ${masterEnabled?'on':'off'}`", APP)
 
     def test_header_button_uses_shared_game_audio_toggle(self):
         button = APP[APP.index("narrationSpeakerBtn.addEventListener('click'"):APP.index('function handleNarrationChange')]
-        self.assertIn('const enabled=!TombWorldNarration.isEnabled()', button)
+        self.assertIn('const enabled=!TombWorldNarration.isMasterEnabled()', button)
         self.assertIn('await setGameAudioEnabled(enabled)', button)
-        self.assertIn('const resumed=await TombWorldNarration.setEnabled(enabled)', APP)
-        self.assertIn('if(!resumed)playPendingBoardSetupMissionIntro()', APP)
+        self.assertIn('TombWorldNarration.setMasterEnabled(enabled)', APP)
+        self.assertIn('playPendingBoardSetupMissionIntro()', APP)
         self.assertIn("window.addEventListener('tombworldnarrationchange'", APP)
         self.assertIn("syncNarrationControls();", APP)
 
@@ -56,7 +56,9 @@ const makeIcon=()=>{{
 const icons={{'.narration-icon-enabled':makeIcon(),'.narration-icon-disabled':makeIcon()}};
 const attributes={{}};
 const narrationSpeakerBtn={{classList:{{toggle:(name,value)=>attributes[name]=value}},querySelector:selector=>icons[selector],setAttribute:(name,value)=>attributes[name]=value,title:''}};
-const TombWorldNarration={{isEnabled:()=>enabled}};
+const globalThis={{document:{{querySelector:()=>null}}}};
+const TombWorldNarration={{isMasterEnabled:()=>enabled,isPreferenceEnabled:()=>true}};
+let ambientEnabled=true;
 {sync_source}
 function verify(expectedEnabled){{
   syncNarrationControls();
@@ -64,7 +66,7 @@ function verify(expectedEnabled){{
   if(icons['.narration-icon-disabled'].hasAttribute('hidden')!==expectedEnabled)throw Error('disabled icon visibility mismatch');
   if(attributes['is-muted']!==!expectedEnabled)throw Error('muted class mismatch');
   const word=expectedEnabled?'on':'off';
-  if(attributes['aria-label']!==`Narration ${{word}}`||attributes['aria-pressed']!==String(expectedEnabled)||narrationSpeakerBtn.title!==`Narration ${{word}}`)throw Error('accessible state mismatch');
+  if(attributes['aria-label']!==`Master audio ${{word}}`||attributes['aria-pressed']!==String(expectedEnabled)||narrationSpeakerBtn.title!==`Master audio ${{word}}`)throw Error('accessible state mismatch');
 }}
 verify(true);enabled=false;verify(false);
 """
@@ -80,9 +82,9 @@ verify(true);enabled=false;verify(false);
 
     def test_game_menu_uses_audio_toggle_without_duplicate_preferences(self):
         menu = APP[APP.index('function showGameMenu()'):APP.index('function showAbout()')]
-        self.assertIn('id="gameAudioToggle"', menu)
+        self.assertIn('id="narrationToggle"', menu)
         self.assertIn('role="switch" aria-labelledby="narrationLabel" aria-checked=', menu)
-        self.assertNotIn('id="narrationEnabled"', menu)
+        self.assertNotIn('id="gameAudioToggle"', menu)
         self.assertNotIn('id="narrationVolume"', menu)
         self.assertNotIn('narrationVolumeValue', menu)
 

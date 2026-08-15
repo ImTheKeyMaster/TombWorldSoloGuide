@@ -104,11 +104,11 @@
     deadlyEncounterQueueRunning = false;
   }
 
-  function stop() {
+  function stop(resetAudio = false) {
     clearEventQueue();
     clearDeadlyEncounterQueue();
     playbackRequest += 1;
-    if (activePlayback) stopAudio();
+    if (activePlayback || resetAudio) stopAudio();
     else {
       activePlayback = false;
     }
@@ -364,8 +364,7 @@
     writePreference(MASTER_ENABLED_KEY, String(masterEnabled));
     appliedPreferenceEnabled = masterEnabled && isPreferenceEnabled();
     if (!masterEnabled) {
-      stop();
-      stopAudio();
+      stop(true);
       audioUnlocked = false;
       installUnlockOnGesture();
     }

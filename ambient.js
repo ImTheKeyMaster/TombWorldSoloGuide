@@ -179,6 +179,7 @@
 
   async function onFirstAudioGesture(event) {
     if (event?.target?.closest?.('.ambient-toggle')) return;
+    if (!activeBattle || !masterEnabled()) return;
     if ((contextUnlocked && buffer && config && gainNode) || gestureUnlocking) return;
     gestureUnlocking = true;
     try { await unlock(); } finally { gestureUnlocking = false; }

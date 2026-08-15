@@ -42,7 +42,7 @@ class NarrationPauseResumeTests(unittest.TestCase):
         menu = APP[APP.index("function showGameMenu()"):APP.index("function showAbout()")]
         self.assertNotIn('<legend>Narration</legend>', menu)
         self.assertIn('<span id="narrationLabel">Narration</span>', menu)
-        self.assertIn("TombWorldNarration.isEnabled()?'On':'Off'", menu)
+        self.assertIn("TombWorldNarration.isPreferenceEnabled()?'On':'Off'", menu)
 
     def test_pause_resume_queue_persistence_and_destructive_stop(self):
         script = r"""
@@ -78,20 +78,17 @@ const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
   player.currentTime=12.5;
   const src=player.src;
   const loadCount=calls.filter(call=>call==='load').length;
-  n.setEnabled(false);
+  n.setPreferenceEnabled(false);
   if(store.get('tombWorldSoloGuide.narrationEnabled')!=='false')throw Error('off preference missing');
-  if(!player.paused)throw Error('active narration was not paused');
+  if(player.paused)throw Error('preference toggle paused active narration');
   if(player.src!==src)throw Error('pause removed the source');
   if(player.currentTime!==12.5)throw Error('pause reset playback position');
   if(!n.canReplay())throw Error('pause removed Replay Last state');
   if(calls.filter(call=>call==='load').length!==loadCount)throw Error('pause used destructive stop cleanup');
-  if(await n.playEvent('ignored','event-off'))throw Error('disabled event was accepted');
-
-  n.setEnabled(true);
+  n.setPreferenceEnabled(true);
   await flush();
   if(store.get('tombWorldSoloGuide.narrationEnabled')!=='true')throw Error('on preference missing');
-  if(player.paused)throw Error('paused narration did not resume');
-  if(!calls.includes('play:'+src+':12.5'))throw Error('narration restarted instead of resuming');
+  if(player.paused||player.src!==src||player.currentTime!==12.5)throw Error('preference toggle disturbed playback');
   player.end();
   await flush();
   if(!player.src.endsWith('events/second.mp3'))throw Error('existing queue did not survive pause');
@@ -105,8 +102,8 @@ const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
   if(player.src)throw Error('explicit stop did not remove source');
   if(player.currentTime!==0)throw Error('explicit stop did not reset playback');
   const playCount=calls.filter(call=>call.startsWith('play:')).length;
-  n.setEnabled(false);
-  n.setEnabled(true);
+  n.setPreferenceEnabled(false);
+  n.setPreferenceEnabled(true);
   await flush();
   if(calls.filter(call=>call.startsWith('play:')).length!==playCount)throw Error('enabling without a pause started playback');
 })().catch(error=>{console.error(error);process.exit(1)});
@@ -122,7 +119,7 @@ class Audio {
   constructor(){this.src='';this.currentTime=0;this.volume=1;this.paused=true;this.ended=false;Audio.instance=this;}
   pause(){this.paused=true;}
   removeAttribute(){this.src='';}
-  load(){}
+      load(){this.currentTime=0;}
   play(){this.paused=false;return new Promise(resolve=>{resolvePlay=resolve;});}
 }
 const context={Audio,URL,location:{href:'https://example.test/'},fetch:async()=>({ok:true,json:async()=>({entries:{'mission.01.intro':{available:true,file:'intro.mp3'}}})}),
@@ -136,19 +133,12 @@ const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
   await flush();
   const player=Audio.instance;
   player.currentTime=7;
-  n.setEnabled(false);
-  if(!player.paused)throw Error('pending play was not paused');
+  n.setMasterEnabled(false);
+  if(!player.paused||player.src||player.currentTime!==0)throw Error('master OFF was not destructive');
   resolvePlay();
-  if(!await started)throw Error('play request did not finish');
-  n.setEnabled(true);
-  n.setEnabled(false);
-  resolvePlay();
-  await flush();
-  if(!player.paused)throw Error('stale resume overrode a later OFF toggle');
-  n.setEnabled(true);
-  if(player.paused)throw Error('later ON did not retain a resumable session');
-  if(player.currentTime!==7)throw Error('race reset playback position');
-  resolvePlay();
+  if(await started)throw Error('cancelled play request reported success');
+  n.setMasterEnabled(true);
+  if(!player.paused||player.src||player.currentTime!==0)throw Error('master ON resumed stale narration');
 })().catch(error=>{console.error(error);process.exit(1)});
 """
         result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)

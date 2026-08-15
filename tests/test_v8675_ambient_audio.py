@@ -35,7 +35,7 @@ class AudioContext {
   resume(){this.state='running';return Promise.resolve();}
 }
 const config={schemaVersion:1,file:'Ambient/caverns.ogg',normalGain:.22,duckGain:.055,fadeInMs:1500,fadeOutMs:800,duckAttackMs:250,duckReleaseMs:700,loopStartSeconds:0,loopEndSeconds:null};
-const context={AudioContext,CustomEvent,URL,location:{href:'https://example.test/app/'},TombWorldNarration:{isEnabled:()=>enabled},
+const context={AudioContext,CustomEvent,URL,location:{href:'https://example.test/app/'},TombWorldNarration:{isMasterEnabled:()=>enabled},
  fetch:async url=>{fetches.push(String(url));return String(url).includes('ambient-config')?{ok:true,json:async()=>config}:{ok:true,arrayBuffer:async()=>new ArrayBuffer(1)};},
  addEventListener:(type,fn)=>events[type]=fn,dispatchEvent:event=>events[event.type]?.(event),document:{addEventListener:(type,fn)=>events['document:'+type]=fn},
  setTimeout:fn=>{context.pendingTimer=fn;return ++timerId;},clearTimeout:()=>{context.pendingTimer=null;}};
@@ -60,10 +60,10 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
  context.dispatchEvent(new CustomEvent('tombworldnarrationactivity',{detail:{active:true}}));
  context.dispatchEvent(new CustomEvent('tombworldnarrationactivity',{detail:{active:true}}));
  if(ramps.slice(-2).some(r=>r[0]!==.055))throw Error('consecutive narration restored between clips');
- enabled=false;context.dispatchEvent(new CustomEvent('tombworldnarrationchange',{detail:{}}));await flush();
+ enabled=false;ambient.stop();await flush();
  if(ramps.at(-1)[0]!==0)throw Error('speaker off did not fade ambient to silence');
- enabled=true;context.dispatchEvent(new CustomEvent('tombworldnarrationchange',{detail:{}}));await flush();
- if(sources.length!==1)throw Error('speaker on restarted source before fade completed');
+ enabled=true;await ambient.unlock();ambient.setActive(true);await flush();
+ if(sources.length!==2)throw Error('speaker on did not start a fresh source');
  ambient.stop();
  if(ramps.at(-1)[0]!==0)throw Error('New Game did not cancel ambient');
  if(fetches.filter(url=>url.includes('caverns.ogg')).length!==1)throw Error('ambient track was not decoded exactly once');
@@ -75,7 +75,7 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
     def test_missing_configuration_fails_silently(self):
         script = r"""
 const fs=require('fs'),vm=require('vm');
-const context={fetch:async()=>{throw Error('offline')},AudioContext:class{},addEventListener(){},document:{addEventListener(){}},TombWorldNarration:{isEnabled:()=>true},setTimeout,clearTimeout};
+const context={fetch:async()=>{throw Error('offline')},AudioContext:class{},addEventListener(){},document:{addEventListener(){}},TombWorldNarration:{isMasterEnabled:()=>true},setTimeout,clearTimeout};
 context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('ambient.js','utf8'),context);
 (async()=>{if(await context.TombWorldAmbient.init())throw Error('bad config initialized');context.TombWorldAmbient.setActive(true);context.TombWorldAmbient.stop();})().catch(e=>{console.error(e);process.exit(1)});
 """

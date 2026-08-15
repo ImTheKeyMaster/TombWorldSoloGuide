@@ -39,15 +39,15 @@ class RemoveUiSfxTests(unittest.TestCase):
         self.assertIn("weaponSelect.addEventListener('change',renderChoices)", APP)
 
     def test_narration_ambient_ducking_and_game_audio_remain_integrated(self):
-        self.assertIn("doc.addEventListener('click', onGesture, true)", NARRATION)
+        self.assertIn("doc.addEventListener('click', gestureUnlockHandler, true)", NARRATION)
         self.assertNotIn("global.document?.addEventListener?.('click', () => { void unlock(); }, true)", AMBIENT)
-        self.assertIn("global.document?.addEventListener?.('click', onFirstAudioGesture, true)", AMBIENT)
+        self.assertIn("global.document.addEventListener('click', onFirstAudioGesture, true)", AMBIENT)
         self.assertIn("global.document?.removeEventListener?.('click', onFirstAudioGesture, true)", AMBIENT)
         self.assertIn("global.addEventListener?.('tombworldnarrationactivity', onNarrationActivity)", AMBIENT)
-        self.assertIn("await TombWorldAmbient.unlock()", APP)
+        self.assertIn("TombWorldAmbient.unlock()", APP)
         self.assertIn("TombWorldAmbient.setActive", APP)
         self.assertIn("TombWorldAmbient.stop()", APP)
-        self.assertIn("const resumed=await TombWorldNarration.setEnabled(enabled)", APP)
+        self.assertIn("TombWorldNarration.setMasterEnabled(enabled)", APP)
 
     def test_release_and_save_versions(self):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)

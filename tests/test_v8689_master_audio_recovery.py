@@ -106,6 +106,9 @@ async function scenario(initial,canRecover){
         self.assertIn("if (gestureUnlockHandlerInstalled", AMBIENT)
         self.assertEqual(1, AMBIENT.count("global.document.addEventListener('click', onFirstAudioGesture, true)"))
 
+    def test_fallback_gesture_does_no_work_when_ambient_is_not_active(self):
+        self.assertIn("if (!activeBattle || !masterEnabled()) return;", AMBIENT)
+
 
 if __name__ == "__main__":
     unittest.main()
