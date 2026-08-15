@@ -27,11 +27,11 @@
     return context;
   }
 
-  async function settleWithTimeout(work) {
+  async function settleWithTimeout(operation) {
     let timer = null;
     try {
       return await Promise.race([
-        Promise.resolve(work).then(() => true, () => false),
+        Promise.resolve().then(operation).then(() => true, () => false),
         new Promise(resolve => { timer = global.setTimeout(() => resolve(false), RECOVERY_TIMEOUT_MS); })
       ]);
     } catch { return false; }
@@ -42,12 +42,12 @@
     if (!context || context.state === 'closed') return false;
     if (context.state === 'running' && !forceRecovery) return true;
     if (forceRecovery && typeof context.suspend === 'function') {
-      await settleWithTimeout(context.suspend());
+      await settleWithTimeout(() => context.suspend());
     } else if (context.state === 'interrupted' && typeof context.suspend === 'function') {
-      await settleWithTimeout(context.suspend());
+      await settleWithTimeout(() => context.suspend());
     }
     if (typeof context.resume !== 'function') return context.state === 'running';
-    const resumed = await settleWithTimeout(context.resume());
+    const resumed = await settleWithTimeout(() => context.resume());
     return resumed && context.state === 'running';
   }
 
@@ -197,9 +197,17 @@
         if (recovering) {
           discardStaleSource();
           recoveryRequired = false;
+          const playbackRecovered = await reconcile();
+          if (activeBattle && masterEnabled() && !playbackRecovered) {
+            contextUnlocked = false;
+            recoveryRequired = true;
+            armGestureUnlock();
+            return false;
+          }
+        } else {
+          void reconcile();
         }
         removeGestureUnlock();
-        void reconcile();
       } else {
         if (recovering) recoveryRequired = true;
         armGestureUnlock();
