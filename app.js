@@ -2,14 +2,14 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.92';
+  const APP_VERSION = '8.6.93';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
-    init:()=>Promise.resolve(),unlock:()=>Promise.resolve(false),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},setPreferenceEnabled:()=>{},isPreferenceEnabled:()=>true,setMasterEnabled:()=>{},isMasterEnabled:()=>true,isPlaybackEnabled:()=>true,canReplay:()=>false
+    init:()=>Promise.resolve(),unlock:()=>Promise.resolve(false),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},setPreferenceEnabled:()=>{},isPreferenceEnabled:()=>true,setMasterEnabled:()=>{},isMasterEnabled:()=>true,isPlaybackEnabled:()=>true,setVolumeMultiplier:()=>{},canReplay:()=>false
   });
-  const TombWorldAmbient=window.TombWorldAmbient||Object.freeze({init:()=>Promise.resolve(false),playFromGesture:()=>Promise.resolve(false),setActive:()=>{},stop:()=>{},reset:()=>{},removeGestureRecovery:()=>{}});
-  void TombWorldAmbient.init();
+  const TombWorldAmbient=window.TombWorldAmbient||Object.freeze({init:()=>Promise.resolve(false),playFromGesture:()=>Promise.resolve(false),setActive:()=>{},setVolumeMultiplier:()=>{},stop:()=>{},reset:()=>{},removeGestureRecovery:()=>{}});
   const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
   const AMBIENT_ENABLED_PREFERENCE_KEY = 'tombWorldSoloGuide.ambientEnabled';
+  const GAME_VOLUME_PREFERENCE_KEY = 'tombWorldSoloGuide.gameVolume';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -49,6 +49,20 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const narrationSpeakerBtn=$('#narrationSpeakerBtn');
   let pendingBoardSetupMissionIntro=null;
   let ambientEnabled=localStorage.getItem(AMBIENT_ENABLED_PREFERENCE_KEY)!=='false';
+  function readPreferredGameVolume(){
+    try{
+      const saved=Number(localStorage.getItem(GAME_VOLUME_PREFERENCE_KEY));
+      return Number.isFinite(saved)&&saved>=0.01&&saved<=1?saved:1;
+    }catch{return 1;}
+  }
+  function writePreferredGameVolume(){
+    try{localStorage.setItem(GAME_VOLUME_PREFERENCE_KEY,String(preferredGameVolume));}
+    catch{/* Live volume control remains available when preference storage is unavailable. */}
+  }
+  let preferredGameVolume=readPreferredGameVolume();
+  TombWorldNarration.setVolumeMultiplier(preferredGameVolume);
+  TombWorldAmbient.setVolumeMultiplier(preferredGameVolume);
+  void TombWorldAmbient.init();
   let appliedAmbientEnabled=TombWorldNarration.isMasterEnabled()&&ambientEnabled;
   let needsAudioGestureRecovery=false;
   let narrationGestureRecoveryRequired=false;
@@ -110,6 +124,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(ambientToggle){
       ambientToggle.setAttribute('aria-checked',String(ambientEnabled));
       ambientToggle.querySelector('.ambient-toggle-state').textContent=ambientEnabled?'On':'Off';
+    }
+    const volumeSlider=globalThis.document?.querySelector('#gameVolume');
+    if(volumeSlider){
+      const percentage=masterEnabled?Math.round(preferredGameVolume*100):0;
+      volumeSlider.value=String(percentage);
+      volumeSlider.setAttribute('aria-valuetext',percentage===0?'Muted':`${percentage} percent`);
+      volumeSlider.style?.setProperty?.('--volume-percent',`${percentage}%`);
     }
   }
   async function setGameAudioEnabled(enabled){
@@ -7550,6 +7571,14 @@ function showPlayerActivation(stage={}){
             <span class="ambient-toggle-state">${ambientEnabled?'On':'Off'}</span><span class="ambient-toggle-track" aria-hidden="true"><span></span></span>
           </button>
         </div>
+        <div class="game-volume-row">
+          <label for="gameVolume">Volume</label>
+          <div class="game-volume-control">
+            <svg class="game-volume-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9v6h4l5 4V5L8 9H4z"></path><path d="M16 9 L21 15 M21 9 L16 15"></path></svg>
+            <input id="gameVolume" type="range" min="0" max="100" step="1" value="${TombWorldNarration.isMasterEnabled()?Math.round(preferredGameVolume*100):0}" aria-valuetext="${TombWorldNarration.isMasterEnabled()?`${Math.round(preferredGameVolume*100)} percent`:'Muted'}" style="--volume-percent:${TombWorldNarration.isMasterEnabled()?Math.round(preferredGameVolume*100):0}%">
+            <svg class="game-volume-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9v6h4l5 4V5L8 9H4z"></path><path d="M16 8.5c1.3 1.8 1.3 5.2 0 7M19 6c2.7 3.2 2.7 8.8 0 12"></path></svg>
+          </div>
+        </div>
       </div>
       <div class="game-menu-session">
         <button class="btn ghost" id="menuExportSave">Export Save</button>
@@ -7574,6 +7603,20 @@ function showPlayerActivation(stage={}){
       ambientEnabled=!ambientEnabled;
       localStorage.setItem(AMBIENT_ENABLED_PREFERENCE_KEY,String(ambientEnabled));
       syncNarrationControls();
+    };
+    $('#gameVolume').oninput=event=>{
+      const percentage=Number(event.currentTarget.value);
+      if(percentage===0){
+        if(TombWorldNarration.isMasterEnabled())void setGameAudioEnabled(false);
+        else syncNarrationControls();
+        return;
+      }
+      preferredGameVolume=percentage/100;
+      TombWorldNarration.setVolumeMultiplier(preferredGameVolume);
+      TombWorldAmbient.setVolumeMultiplier(preferredGameVolume);
+      writePreferredGameVolume();
+      if(!TombWorldNarration.isMasterEnabled())void setGameAudioEnabled(true);
+      else syncNarrationControls();
     };
     $('#menuAbout').onclick=showAbout;
     $('#menuExportSave').onclick=exportSave;

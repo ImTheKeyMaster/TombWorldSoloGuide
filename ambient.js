@@ -14,6 +14,11 @@
   let rampFrame = null;
   let pauseTimer = null;
   let recoveryHandler = null;
+  let volumeMultiplier = 1;
+
+  function effectiveVolume(gain) {
+    return gain * volumeMultiplier;
+  }
 
   function validConfig(value) {
     const file = value?.file;
@@ -103,7 +108,7 @@
     }
     return Promise.resolve(result).then(() => {
       removeGestureRecovery();
-      rampTo(narrationActive ? config.duckGain : config.normalGain, config.fadeInMs);
+      rampTo(effectiveVolume(narrationActive ? config.duckGain : config.normalGain), config.fadeInMs);
       return true;
     }, () => {
       armGestureRecovery();
@@ -114,6 +119,13 @@
   function setActive(isActive) {
     desiredActive = Boolean(isActive);
     if (!desiredActive) removeGestureRecovery();
+  }
+
+  function setVolumeMultiplier(value) {
+    volumeMultiplier = Math.min(1, Math.max(0, Number.isFinite(Number(value)) ? Number(value) : 1));
+    if (config && desiredActive && !audio.paused) {
+      rampTo(effectiveVolume(narrationActive ? config.duckGain : config.normalGain), 0);
+    }
   }
 
   function stop() {
@@ -143,7 +155,7 @@
   function onNarrationActivity(event) {
     narrationActive = event.detail?.active === true;
     if (!config || !desiredActive || audio.paused) return;
-    rampTo(narrationActive ? config.duckGain : config.normalGain, narrationActive ? config.duckAttackMs : config.duckReleaseMs);
+    rampTo(effectiveVolume(narrationActive ? config.duckGain : config.normalGain), narrationActive ? config.duckAttackMs : config.duckReleaseMs);
   }
 
   function enforceCustomLoop(event) {
@@ -161,5 +173,5 @@
   global.addEventListener?.('tombworldnarrationactivity', onNarrationActivity);
   global.document?.addEventListener?.('visibilitychange', onVisibilityChange);
 
-  global.TombWorldAmbient = Object.freeze({ init, playFromGesture, setActive, stop, reset, removeGestureRecovery });
+  global.TombWorldAmbient = Object.freeze({ init, playFromGesture, setActive, setVolumeMultiplier, stop, reset, removeGestureRecovery });
 })(typeof window === 'undefined' ? globalThis : window);

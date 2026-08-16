@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.92
+# Tomb World Solo Guide v8.6.93
+
+## v8.6.93
+
+**Version 8.6.93 - Persistent Master Volume**
+
+- Adds a compact, accessible master-volume slider to the Game Menu with live narration and ambient level adjustment.
+- Preserves the last non-muted volume independently from the header speaker mute state and restores it across reloads, PWA relaunches, and New Game.
+- Scales narration and configured ambient normal/duck levels without restarting media, changing playback position, or changing category settings; save schema remains version 3.
 
 ## v8.6.92
 
