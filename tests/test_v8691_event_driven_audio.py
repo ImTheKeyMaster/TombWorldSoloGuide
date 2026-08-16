@@ -32,6 +32,40 @@ class EventDrivenAudioLifecycleTests(unittest.TestCase):
         self.assertNotIn("addEventListener('click'", AMBIENT)
         self.assertEqual(1, APP.count("document.addEventListener('click',audioRecoveryHandler,true)"))
         self.assertIn("void applySelectedAudioFromGesture()", APP[APP.index("$$('.mission-choice')"):APP.index("$('#setupHome')")])
+        self.assertIn("await applySelectedAudioFromGesture(true)", APP)
+
+    def test_real_narration_success_clears_only_its_pending_recovery(self):
+        self.assertIn("new global.CustomEvent('tombworldnarrationusable')", NARRATION)
+        self.assertIn("window.addEventListener('tombworldnarrationusable',handleNarrationUsable)", APP)
+        handler = APP[APP.index("function handleNarrationUsable") : APP.index("function syncNarrationControls")]
+        self.assertIn("narrationGestureRecoveryRequired=false", handler)
+        self.assertIn("if(!ambientGestureRecoveryRequired)removeAudioGestureRecovery()", handler)
+        coordinator = APP[APP.index("async function applySelectedAudioFromGesture") : APP.index("function handleNarrationUsable")]
+        self.assertIn("!recoveryOnly||narrationGestureRecoveryRequired", coordinator)
+        self.assertIn("!recoveryOnly||ambientGestureRecoveryRequired", coordinator)
+
+    def test_successful_real_narration_removes_narration_only_recovery_listener(self):
+        functions = APP[APP.index("function removeAudioGestureRecovery") : APP.index("function syncNarrationControls")]
+        script = f"""
+const listeners=new Map();let unlocks=0,active=true;
+const document={{addEventListener:(type,handler)=>listeners.set(type,handler),removeEventListener:(type,handler)=>{{if(listeners.get(type)===handler)listeners.delete(type);}}}};
+const TombWorldNarration={{isMasterEnabled:()=>true,isPlaybackEnabled:()=>true,unlock:async()=>{{unlocks++;return false;}}}};
+const TombWorldAmbient={{unlock:async()=>true,setActive:()=>{{}}}};
+const shouldAmbientBeActive=()=>false;
+const reconcileAmbientActiveState=()=>{{}};
+let needsAudioGestureRecovery=false,narrationGestureRecoveryRequired=false,ambientGestureRecoveryRequired=false,audioRecoveryHandler=null;
+{functions}
+(async()=>{{
+ await applySelectedAudioFromGesture();
+ if(!listeners.has('click')||!narrationGestureRecoveryRequired)throw Error('blocked narration did not arm one recovery listener');
+ handleNarrationUsable();
+ if(listeners.has('click')||needsAudioGestureRecovery||narrationGestureRecoveryRequired)throw Error('real narration success left recovery armed');
+ const before=unlocks;listeners.get('click')?.();await Promise.resolve();
+ if(unlocks!==before)throw Error('ordinary click retried healthy narration');
+}})().catch(error=>{{console.error(error);process.exit(1)}});
+"""
+        result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
 
     def test_game_menu_cannot_disturb_any_production_narration(self):
         script = r"""

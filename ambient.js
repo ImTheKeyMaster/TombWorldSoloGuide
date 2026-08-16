@@ -216,7 +216,7 @@
     }
     recoveryRequired = true;
     if (activeBattle && masterEnabled() && typeof global.dispatchEvent === 'function' && typeof global.CustomEvent === 'function') {
-      global.dispatchEvent(new global.CustomEvent('tombworldaudiorecoveryrequired'));
+      global.dispatchEvent(new global.CustomEvent('tombworldaudiorecoveryrequired', { detail: { category: 'ambient' } }));
     }
   }
 

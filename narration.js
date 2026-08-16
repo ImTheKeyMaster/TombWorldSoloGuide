@@ -203,6 +203,9 @@
       if (request !== playbackRequest || !isPlaybackEnabled()) return false;
       audioUnlocked = true;
       notifyPlaybackActivity(true);
+      if (typeof global.dispatchEvent === 'function' && typeof global.CustomEvent === 'function') {
+        global.dispatchEvent(new global.CustomEvent('tombworldnarrationusable'));
+      }
       lastEntry = { id, duplicateKey };
       notify();
       return true;
