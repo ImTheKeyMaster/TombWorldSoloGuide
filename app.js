@@ -50,8 +50,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   let pendingBoardSetupMissionIntro=null;
   let ambientEnabled=localStorage.getItem(AMBIENT_ENABLED_PREFERENCE_KEY)!=='false';
   function readPreferredGameVolume(){
-    const saved=Number(localStorage.getItem(GAME_VOLUME_PREFERENCE_KEY));
-    return Number.isFinite(saved)&&saved>=0.01&&saved<=1?saved:1;
+    try{
+      const saved=Number(localStorage.getItem(GAME_VOLUME_PREFERENCE_KEY));
+      return Number.isFinite(saved)&&saved>=0.01&&saved<=1?saved:1;
+    }catch{return 1;}
+  }
+  function writePreferredGameVolume(){
+    try{localStorage.setItem(GAME_VOLUME_PREFERENCE_KEY,String(preferredGameVolume));}
+    catch{/* Live volume control remains available when preference storage is unavailable. */}
   }
   let preferredGameVolume=readPreferredGameVolume();
   TombWorldNarration.setVolumeMultiplier(preferredGameVolume);
@@ -7606,9 +7612,9 @@ function showPlayerActivation(stage={}){
         return;
       }
       preferredGameVolume=percentage/100;
-      localStorage.setItem(GAME_VOLUME_PREFERENCE_KEY,String(preferredGameVolume));
       TombWorldNarration.setVolumeMultiplier(preferredGameVolume);
       TombWorldAmbient.setVolumeMultiplier(preferredGameVolume);
+      writePreferredGameVolume();
       if(!TombWorldNarration.isMasterEnabled())void setGameAudioEnabled(true);
       else syncNarrationControls();
     };

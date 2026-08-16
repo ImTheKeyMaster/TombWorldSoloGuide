@@ -17,6 +17,7 @@ class MasterVolumeTests(unittest.TestCase):
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
         self.assertIn("tombWorldSoloGuide.gameVolume", APP)
         self.assertIn("return Number.isFinite(saved)&&saved>=0.01&&saved<=1?saved:1", APP)
+        self.assertIn("catch{return 1;}", APP)
         self.assertNotIn("GAME_VOLUME_PREFERENCE_KEY", (ROOT / "persistence.js").read_text())
         new_game = APP[APP.index("function startNewGameSetup") : APP.index("function confirmNewGame")]
         self.assertNotIn("GAME_VOLUME_PREFERENCE_KEY", new_game)
@@ -39,7 +40,8 @@ class MasterVolumeTests(unittest.TestCase):
         handler = APP[APP.index("$('#gameVolume').oninput") : APP.index("$('#menuAbout').onclick")]
         self.assertIn("if(percentage===0)", handler)
         self.assertIn("setGameAudioEnabled(false)", handler)
-        self.assertIn("localStorage.setItem(GAME_VOLUME_PREFERENCE_KEY", handler)
+        self.assertIn("writePreferredGameVolume()", handler)
+        self.assertLess(handler.index("TombWorldAmbient.setVolumeMultiplier"), handler.index("writePreferredGameVolume()"))
         self.assertIn("if(!TombWorldNarration.isMasterEnabled())void setGameAudioEnabled(true)", handler)
         self.assertNotIn("setPreferenceEnabled", handler)
         self.assertNotIn("AMBIENT_ENABLED_PREFERENCE_KEY", handler)
