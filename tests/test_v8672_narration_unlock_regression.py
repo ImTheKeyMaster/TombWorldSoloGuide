@@ -37,17 +37,17 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
 (async()=>{
   const narration=context.TombWorldNarration;
   await narration.init();
-  if(typeof captureClick!=='function')throw Error('capture-phase unlock listener missing');
+  if(typeof captureClick==='function')throw Error('global capture-phase unlock listener installed');
 
   // The first New Game click reaches the capture listener before startNewGameSetup calls stop().
-  captureClick();
+  const unlockPromise=narration.unlock();
   const player=Audio.instance;
   if(!player.src.startsWith('data:audio/wav'))throw Error('first gesture did not begin silent unlock');
   narration.stop();
   if(!player.src.startsWith('data:audio/wav'))throw Error('New Game destroyed silent unlock source');
   if(calls.includes('pause')||calls.includes('load')||calls.includes('remove:src'))throw Error('silent unlock was destructively reset');
   resolveUnlock();
-  await Promise.resolve();
+  await unlockPromise;
 
   // Mission Selection -> Next -> Board Setup requests the Mission Intro.
   if(!await narration.playMissionIntro('shifting-labyrinth',true))throw Error('Board Setup Mission Intro failed');

@@ -52,10 +52,9 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
  // A battle render may mark ambient active before Safari grants audio permission.
  ambient.setActive(true);await flush();
  if(sources.length)throw Error('ambient started without a user gesture');
- if(typeof documentEvents.click!=='function')throw Error('one-time Safari gesture fallback was not installed');
- document.dispatchEvent({type:'click',target:{tagName:'BUTTON'}});await flush();
- if(sources.length!==1||sources[0].startCalls.length!==1)throw Error('first valid gesture did not unlock and start ambient');
- if(documentEvents.click)throw Error('fallback gesture listener remained after successful unlock');
+ if(documentEvents.click)throw Error('ambient installed a global click listener');
+ await ambient.unlock();await flush();
+ if(sources.length!==1||sources[0].startCalls.length!==1)throw Error('explicit gesture activation did not unlock and start ambient');
  if(resumeCalls!==1)throw Error('first gesture did not resume the Safari AudioContext exactly once');
 
  const originalSource=sources[0], baselineRamps=ramps.length, baselineGain=ramps.at(-1)[0], baselineResumes=resumeCalls;

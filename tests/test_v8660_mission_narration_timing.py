@@ -69,6 +69,7 @@ const TombWorldAmbient={{unlock:async()=>true,setActive:value=>calls.push(`ambie
 const syncNarrationControls=()=>{{}};
 const shouldAmbientBeActive=()=>ambientEnabled&&enabled&&Boolean(state.missionId)&&['setup','game'].includes(state.screen);
 const reconcileAmbientActiveState=()=>TombWorldAmbient.setActive(shouldAmbientBeActive());
+const applySelectedAudioFromGesture=async()=>{{await TombWorldNarration.unlock();await TombWorldAmbient.unlock();reconcileAmbientActiveState();return true;}};
 const currentSetupStepId=()=>state.setupStep===0?'mission':'killzone';
 const activeSetupSteps=()=>['mission','killzone'];
 const canBuildPlayerRoster=()=>true,showToast=()=>{{}},assignPlayerDisplayNumbers=()=>{{}},save=()=>{{}};
