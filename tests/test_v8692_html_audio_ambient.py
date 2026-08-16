@@ -13,7 +13,7 @@ AMBIENT = (ROOT / "ambient.js").read_text(encoding="utf-8")
 
 class HtmlAudioAmbientTests(unittest.TestCase):
     def test_release_source_and_web_audio_removal(self):
-        self.assertEqual((8, 6, 94), tuple(map(int, CURRENT_APP_VERSION.split("."))))
+        self.assertEqual((8, 6, 95), tuple(map(int, CURRENT_APP_VERSION.split("."))))
         for forbidden in ("AudioContext", "webkitAudioContext", "decodeAudioData", "createBufferSource", "createGain"):
             self.assertNotIn(forbidden, AMBIENT)
         self.assertEqual(1, AMBIENT.count("new global.Audio()"))

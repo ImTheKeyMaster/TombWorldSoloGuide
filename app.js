@@ -2,9 +2,9 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.94';
+  const APP_VERSION = '8.6.95';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
-    init:()=>Promise.resolve(),unlock:()=>Promise.resolve(false),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},setPreferenceEnabled:()=>{},isPreferenceEnabled:()=>true,setMasterEnabled:()=>{},isMasterEnabled:()=>true,isPlaybackEnabled:()=>true,setVolumeMultiplier:()=>{},canReplay:()=>false
+    init:()=>Promise.resolve(),unlock:()=>Promise.resolve(false),activateFromGesture:()=>Promise.resolve(false),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},setPreferenceEnabled:()=>{},isPreferenceEnabled:()=>true,setMasterEnabled:()=>{},isMasterEnabled:()=>true,isPlaybackEnabled:()=>true,setVolumeMultiplier:()=>{},canReplay:()=>false
   });
   const TombWorldAmbient=window.TombWorldAmbient||Object.freeze({init:()=>Promise.resolve(false),playFromGesture:()=>Promise.resolve(false),setActive:()=>{},setVolumeMultiplier:()=>{},stop:()=>{},reset:()=>{},removeGestureRecovery:()=>{}});
   const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
@@ -90,7 +90,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   async function applySelectedAudioFromGesture(recoveryOnly=false){
     if(!TombWorldNarration.isMasterEnabled()){removeAudioGestureRecovery();return false;}
     const attempts=[];
-    if(TombWorldNarration.isPlaybackEnabled()&&(!recoveryOnly||narrationGestureRecoveryRequired))attempts.push({category:'narration',promise:TombWorldNarration.unlock({force:true})});
+    if(TombWorldNarration.isPlaybackEnabled()&&(!recoveryOnly||narrationGestureRecoveryRequired))attempts.push({category:'narration',promise:TombWorldNarration.activateFromGesture()});
     const results=await Promise.allSettled(attempts.map(attempt=>attempt.promise));
     reconcileAmbientActiveState();
     results.forEach((result,index)=>{
@@ -2419,7 +2419,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       save();
 
       const narrationUnlock=TombWorldNarration.isPlaybackEnabled()
-        ? TombWorldNarration.unlock({force:true})
+        ? TombWorldNarration.activateFromGesture()
         : Promise.resolve(false);
       reconcileAmbientActiveState();
       const ambientPlayback=shouldAmbientBeActive()
@@ -7596,14 +7596,14 @@ function showPlayerActivation(stage={}){
             <span class="ambient-toggle-state">${ambientEnabled?'On':'Off'}</span><span class="ambient-toggle-track" aria-hidden="true"><span></span></span>
           </button>
         </div>
-        <div class="game-volume-row">
-          ${supportsInAppVolumeControl()?'<label for="gameVolume">Volume</label>':'<span class="game-volume-label">Volume</span>'}
+        ${supportsInAppVolumeControl()?`<div class="game-volume-row">
+          <label for="gameVolume">Volume</label>
           <div class="game-volume-control">
             <svg class="game-volume-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9v6h4l5 4V5L8 9H4z"></path><path d="M16 9 L21 15 M21 9 L16 15"></path></svg>
-            ${supportsInAppVolumeControl()?`<input id="gameVolume" type="range" min="0" max="100" step="1" value="${TombWorldNarration.isMasterEnabled()?Math.round(preferredGameVolume*100):0}" aria-valuetext="${TombWorldNarration.isMasterEnabled()?`${Math.round(preferredGameVolume*100)} percent`:'Muted'}" style="--volume-percent:${TombWorldNarration.isMasterEnabled()?Math.round(preferredGameVolume*100):0}%">`:'<span class="game-volume-device-message">Use device volume buttons</span>'}
+            <input id="gameVolume" type="range" min="0" max="100" step="1" value="${TombWorldNarration.isMasterEnabled()?Math.round(preferredGameVolume*100):0}" aria-valuetext="${TombWorldNarration.isMasterEnabled()?`${Math.round(preferredGameVolume*100)} percent`:'Muted'}" style="--volume-percent:${TombWorldNarration.isMasterEnabled()?Math.round(preferredGameVolume*100):0}%">
             <svg class="game-volume-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9v6h4l5 4V5L8 9H4z"></path><path d="M16 8.5c1.3 1.8 1.3 5.2 0 7M19 6c2.7 3.2 2.7 8.8 0 12"></path></svg>
           </div>
-        </div>
+        </div>`:''}
       </div>
       <div class="game-menu-session">
         <button class="btn ghost" id="menuExportSave">Export Save</button>

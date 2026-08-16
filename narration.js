@@ -30,6 +30,7 @@
   let deadlyEncounterQueueRunning = false;
   let deadlyEncounterGeneration = 0;
   let activePlayback = false;
+  let pausedByMaster = false;
   let notifiedPlaybackActivity = false;
   let volumeMultiplier = 1;
   let masterEnabled = readPreference(MASTER_ENABLED_KEY) !== 'false';
@@ -89,6 +90,7 @@
   function stopAudio() {
     if (finishActiveEvent) finishActiveEvent();
     activePlayback = false;
+    pausedByMaster = false;
     if (!audio) return;
     try {
       audio.pause();
@@ -133,6 +135,51 @@
       notifyPlaybackActivity(false);
       return true;
     } catch { return false; }
+  }
+
+  function pauseForMasterMute() {
+    const player = audio;
+    if (!player || !activePlayback || player.ended) {
+      pausedByMaster = false;
+      notifyPlaybackActivity(false);
+      return false;
+    }
+    try {
+      if (!player.paused) player.pause();
+      pausedByMaster = true;
+      notifyPlaybackActivity(false);
+      return true;
+    } catch { return false; }
+  }
+
+  function activateFromGesture() {
+    if (!isPlaybackEnabled()) {
+      if (pausedByMaster) stopAudio();
+      return Promise.resolve(false);
+    }
+    const player = audio;
+    if (pausedByMaster && player && activePlayback && !player.ended && player.src) {
+      let playback;
+      try { playback = player.play(); }
+      catch {
+        audioUnlocked = false;
+        return Promise.resolve(false);
+      }
+      notifyPlaybackActivity(true);
+      return Promise.resolve(playback).then(() => {
+        pausedByMaster = false;
+        audioUnlocked = true;
+        if (typeof global.dispatchEvent === 'function' && typeof global.CustomEvent === 'function') {
+          global.dispatchEvent(new global.CustomEvent('tombworldnarrationusable'));
+        }
+        return true;
+      }, () => {
+        audioUnlocked = false;
+        notifyPlaybackActivity(false);
+        return false;
+      });
+    }
+    return unlock({ force: true });
   }
 
   function unlock(options = {}) {
@@ -206,6 +253,7 @@
     player.onended = () => {
       if (request !== playbackRequest) return;
       activePlayback = false;
+      pausedByMaster = false;
       notifyPlaybackActivity(false);
     };
     try {
@@ -362,14 +410,14 @@
     writePreference(MASTER_ENABLED_KEY, String(masterEnabled));
     appliedPreferenceEnabled = masterEnabled && isPreferenceEnabled();
     if (!masterEnabled) {
-      stop(true);
+      pauseForMasterMute();
       audioUnlocked = false;
     }
     notify();
   }
 
   global.TombWorldNarration = Object.freeze({
-    init, unlock, playMissionIntro, playEvent, playOutcome, playDeadlyEncounter, replayLast, stop, pauseNarration,
+    init, unlock, activateFromGesture, playMissionIntro, playEvent, playOutcome, playDeadlyEncounter, replayLast, stop, pauseNarration,
     setPreferenceEnabled, isPreferenceEnabled, setMasterEnabled, isMasterEnabled, isPlaybackEnabled, setVolumeMultiplier,
     canReplay: () => Boolean(lastEntry)
   });
