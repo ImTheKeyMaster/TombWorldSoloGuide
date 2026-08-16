@@ -13,7 +13,7 @@ AMBIENT = (ROOT / "ambient.js").read_text(encoding="utf-8")
 
 class MasterVolumeTests(unittest.TestCase):
     def test_release_storage_and_save_contract(self):
-        self.assertEqual(".".join(map(str, (8, 6, 93))), CURRENT_APP_VERSION)
+        self.assertEqual(".".join(map(str, (8, 6, 94))), CURRENT_APP_VERSION)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
         self.assertIn("tombWorldSoloGuide.gameVolume", APP)
         self.assertIn("return Number.isFinite(saved)&&saved>=0.01&&saved<=1?saved:1", APP)
@@ -37,7 +37,7 @@ class MasterVolumeTests(unittest.TestCase):
         sync = APP[APP.index("function syncNarrationControls") : APP.index("async function setGameAudioEnabled")]
         self.assertIn("masterEnabled?Math.round(preferredGameVolume*100):0", sync)
         self.assertIn("percentage===0?'Muted':`${percentage} percent`", sync)
-        handler = APP[APP.index("$('#gameVolume').oninput") : APP.index("$('#menuAbout').onclick")]
+        handler = APP[APP.index("const gameVolume=$('#gameVolume')") : APP.index("$('#menuAbout').onclick")]
         self.assertIn("if(percentage===0)", handler)
         self.assertIn("setGameAudioEnabled(false)", handler)
         self.assertIn("writePreferredGameVolume()", handler)

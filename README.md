@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.93
+# Tomb World Solo Guide v8.6.94
+
+## v8.6.94
+
+**Version 8.6.94 - Reliable iOS Narration and Honest Volume Controls**
+
+- Restores narration priming directly from mission selection so iPhone/PWA Mission Intro playback does not require a speaker cycle or unrelated follow-up click.
+- Keeps the desktop master-volume slider while replacing it on iPhone and iPad with device-volume guidance, preserving the stored desktop preference.
+- Avoids ineffective production-media volume writes and ambient volume ramps on iOS while preserving HTML audio playback, master mute/unmute, offline caching, and save schema version 3.
 
 ## v8.6.93
 

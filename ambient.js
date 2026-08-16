@@ -16,6 +16,10 @@
   let recoveryHandler = null;
   let volumeMultiplier = 1;
 
+  function supportsInAppVolumeControl() {
+    return global.TombWorldAudioCapabilities?.supportsInAppVolumeControl() !== false;
+  }
+
   function effectiveVolume(gain) {
     return gain * volumeMultiplier;
   }
@@ -42,7 +46,7 @@
         audio.src = new URL(value.file, new URL(AUDIO_ROOT_URL, global.location?.href || 'http://localhost/')).href;
         audio.loop = value.loopEndSeconds === null;
         audio.preload = 'auto';
-        audio.volume = 0;
+        if (supportsInAppVolumeControl()) audio.volume = 0;
         audio.load();
         return true;
       } catch { return false; }
@@ -59,6 +63,7 @@
 
   function rampTo(target, duration, onComplete) {
     cancelRamp();
+    if (!supportsInAppVolumeControl()) { onComplete?.(); return; }
     const startVolume = audio.volume;
     if (!duration || typeof global.requestAnimationFrame !== 'function') {
       audio.volume = target;
@@ -108,7 +113,7 @@
     }
     return Promise.resolve(result).then(() => {
       removeGestureRecovery();
-      rampTo(effectiveVolume(narrationActive ? config.duckGain : config.normalGain), config.fadeInMs);
+      if (supportsInAppVolumeControl()) rampTo(effectiveVolume(narrationActive ? config.duckGain : config.normalGain), config.fadeInMs);
       return true;
     }, () => {
       armGestureRecovery();
@@ -123,7 +128,7 @@
 
   function setVolumeMultiplier(value) {
     volumeMultiplier = Math.min(1, Math.max(0, Number.isFinite(Number(value)) ? Number(value) : 1));
-    if (config && desiredActive && !audio.paused) {
+    if (supportsInAppVolumeControl() && config && desiredActive && !audio.paused) {
       rampTo(effectiveVolume(narrationActive ? config.duckGain : config.normalGain), 0);
     }
   }
@@ -133,7 +138,8 @@
     removeGestureRecovery();
     global.clearTimeout(pauseTimer);
     pauseTimer = null;
-    if (!config || audio.paused) { cancelRamp(); audio.volume = 0; return; }
+    if (!config || audio.paused) { cancelRamp(); if (supportsInAppVolumeControl()) audio.volume = 0; return; }
+    if (!supportsInAppVolumeControl()) { cancelRamp(); audio.pause(); return; }
     rampTo(0, config.fadeOutMs);
     pauseTimer = global.setTimeout(() => {
       pauseTimer = null;
@@ -148,13 +154,13 @@
     global.clearTimeout(pauseTimer);
     pauseTimer = null;
     audio.pause();
-    audio.volume = 0;
+    if (supportsInAppVolumeControl()) audio.volume = 0;
     try { audio.currentTime = config?.loopStartSeconds || 0; } catch { /* Metadata may not be loaded yet. */ }
   }
 
   function onNarrationActivity(event) {
     narrationActive = event.detail?.active === true;
-    if (!config || !desiredActive || audio.paused) return;
+    if (!supportsInAppVolumeControl() || !config || !desiredActive || audio.paused) return;
     rampTo(effectiveVolume(narrationActive ? config.duckGain : config.normalGain), narrationActive ? config.duckAttackMs : config.duckReleaseMs);
   }
 
