@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.94
+# Tomb World Solo Guide v8.6.95
+
+## v8.6.95
+
+**Version 8.6.95 - Resumable Master Audio and Cleaner iOS Settings**
+
+- Makes the header speaker pause active narration non-destructively and resume the same production audio element, source, playback position, handlers, dedupe state, and queued narration from a direct user gesture.
+- Keeps failed narration resumes retryable and cancels a master-paused clip instead of resuming it when Narration was disabled while muted.
+- Completely omits the unsupported Volume row on iPhone and iPad while preserving the persistent native range control and live volume behavior on supported desktop platforms.
+- Preserves mission-selection narration priming, HTML audio ambient playback from `Ambient/caverns.ogg`, narration ducking, and save schema version 3.
 
 ## v8.6.94
 

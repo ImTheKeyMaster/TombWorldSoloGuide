@@ -14,12 +14,12 @@ CAPABILITIES = (ROOT / "audio-capabilities.js").read_text(encoding="utf-8")
 
 class IosAudioRegressionTests(unittest.TestCase):
     def test_release_and_save_version(self):
-        self.assertEqual(".".join(map(str, (8, 6, 94))), CURRENT_APP_VERSION)
+        self.assertEqual(".".join(map(str, (8, 6, 95))), CURRENT_APP_VERSION)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
 
     def test_mission_choice_primes_selected_audio_synchronously(self):
         handler = APP[APP.index("$$('.mission-choice')") : APP.index("$('#setupHome')")]
-        unlock = "TombWorldNarration.unlock({force:true})"
+        unlock = "TombWorldNarration.activateFromGesture()"
         self.assertIn("TombWorldNarration.isPlaybackEnabled()", handler)
         self.assertIn(unlock, handler)
         self.assertLess(handler.index(unlock), handler.index("reconcileAmbientActiveState()"))
@@ -59,11 +59,11 @@ for(const navigator of [
         result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
         self.assertEqual(0, result.returncode, result.stderr)
 
-    def test_game_menu_uses_device_guidance_without_fake_ios_range(self):
+    def test_game_menu_omits_unsupported_ios_volume_row(self):
         menu = APP[APP.index("function showGameMenu") : APP.index("function showAbout")]
         self.assertIn("supportsInAppVolumeControl()?", menu)
         self.assertIn('id="gameVolume" type="range" min="0" max="100" step="1"', menu)
-        self.assertIn("Use device volume buttons", menu)
+        self.assertNotIn("Use device volume buttons", menu)
         self.assertIn("if(gameVolume)gameVolume.oninput", menu)
         self.assertNotIn("game-volume-device-message\">${", menu)
 
