@@ -136,7 +136,7 @@
   }
 
   function unlock(options = {}) {
-    if (audioUnlocked) {
+    if (audioUnlocked && !options.force) {
       audioUnlocked = true;
       return Promise.resolve(true);
     }

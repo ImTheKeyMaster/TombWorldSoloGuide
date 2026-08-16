@@ -2407,7 +2407,31 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function bindSetup(stepId){
-    $$('.mission-choice').forEach(b=>b.onclick=()=>{const missionId=b.dataset.mission;state.missionId=missionId;state.missionState=freshMissionState(mission());state.missionRuntime=null;state.tracker=0;state.setupChecks={};state.roster=[];state.startingNpoGeneration=null;save();const narrationUnlock=TombWorldNarration.isPlaybackEnabled()?TombWorldNarration.unlock({force:true}):Promise.resolve(false);reconcileAmbientActiveState();const ambientPlayback=shouldAmbientBeActive()?TombWorldAmbient.playFromGesture():Promise.resolve(false);render();void Promise.allSettled([narrationUnlock,ambientPlayback]);setTimeout(()=>loadObjectiveMission(missionId).then(()=>{if(state.missionId===missionId)save();}),0);});
+    $$('.mission-choice').forEach(button=>button.onclick=()=>{
+      const missionId=button.dataset.mission;
+      state.missionId=missionId;
+      state.missionState=freshMissionState(mission());
+      state.missionRuntime=null;
+      state.tracker=0;
+      state.setupChecks={};
+      state.roster=[];
+      state.startingNpoGeneration=null;
+      save();
+
+      const narrationUnlock=TombWorldNarration.isPlaybackEnabled()
+        ? TombWorldNarration.unlock({force:true})
+        : Promise.resolve(false);
+      reconcileAmbientActiveState();
+      const ambientPlayback=shouldAmbientBeActive()
+        ? TombWorldAmbient.playFromGesture()
+        : Promise.resolve(false);
+
+      render();
+      void Promise.allSettled([narrationUnlock,ambientPlayback]);
+      setTimeout(()=>loadObjectiveMission(missionId).then(()=>{
+        if(state.missionId===missionId)save();
+      }),0);
+    });
     $('#setupHome')?.addEventListener('click',()=>{state.screen='home';save();render();});
     $('#setupBack')?.addEventListener('click',()=>{if(stepId==='killzone'){clearPendingBoardSetupMissionIntro();TombWorldNarration.stop();}state.setupStep=Math.max(0,state.setupStep-1);save();render();});
     $('#setupNext')?.addEventListener('click',()=>advanceSetupStep(stepId));

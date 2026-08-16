@@ -19,7 +19,8 @@ class IosAudioRegressionTests(unittest.TestCase):
 
     def test_mission_choice_primes_selected_audio_synchronously(self):
         handler = APP[APP.index("$$('.mission-choice')") : APP.index("$('#setupHome')")]
-        unlock = "TombWorldNarration.isPlaybackEnabled()?TombWorldNarration.unlock({force:true})"
+        unlock = "TombWorldNarration.unlock({force:true})"
+        self.assertIn("TombWorldNarration.isPlaybackEnabled()", handler)
         self.assertIn(unlock, handler)
         self.assertLess(handler.index(unlock), handler.index("reconcileAmbientActiveState()"))
         self.assertLess(handler.index(unlock), handler.index("TombWorldAmbient.playFromGesture()"))
@@ -27,6 +28,16 @@ class IosAudioRegressionTests(unittest.TestCase):
         self.assertLess(handler.index("render()"), handler.index("Promise.allSettled"))
         self.assertLess(handler.index("Promise.allSettled"), handler.index("setTimeout"))
         self.assertNotIn("await", handler)
+
+    def test_forced_unlock_replays_the_dedicated_silent_player(self):
+        script = r"""
+const fs=require('fs'),vm=require('vm');let plays=0;
+class Audio{constructor(){this.paused=true;this.ended=false;this.src=''}play(){plays++;return Promise.resolve()}pause(){}removeAttribute(){}load(){}}
+const s={Audio,URL,location:{href:'https://example.test/'},document:{},localStorage:{getItem:()=>null,setItem(){}},fetch:async()=>({ok:true,json:async()=>({entries:{}})})};s.window=s;vm.createContext(s);vm.runInContext(fs.readFileSync('narration.js','utf8'),s);
+(async()=>{const n=s.TombWorldNarration;if(!await n.unlock())throw Error('initial unlock failed');if(!await n.unlock({force:true}))throw Error('forced unlock failed');if(plays!==2)throw Error(`forced unlock did not replay: ${plays}`)})().catch(e=>{console.error(e);process.exit(1)});
+"""
+        result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
 
     def test_ios_detection_includes_touch_capable_ipados_macs(self):
         self.assertIn("iPhone|iPad|iPod", CAPABILITIES)

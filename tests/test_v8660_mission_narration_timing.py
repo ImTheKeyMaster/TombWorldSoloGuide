@@ -65,7 +65,7 @@ const state={{screen:'setup',setupStep:0,missionId:'shifting-labyrinth'}};
 let enabled=true;
 let ambientEnabled=true;
 const TombWorldNarration={{isMasterEnabled:()=>enabled,isPlaybackEnabled:()=>enabled,setMasterEnabled:value=>{{enabled=value;}},unlock:async()=>true,playMissionIntro:(id,restart)=>calls.push(`play:${{id}}:${{restart}}`),stop:()=>calls.push('stop')}};
-const TombWorldAmbient={{unlock:async()=>true,setActive:value=>calls.push(`ambient:${{value}}`),stop:()=>calls.push('ambient:stop')}};
+const TombWorldAmbient={{unlock:async()=>true,playFromGesture:async()=>true,setActive:value=>calls.push(`ambient:${{value}}`),stop:()=>calls.push('ambient:stop')}};
 const syncNarrationControls=()=>{{}};
 const shouldAmbientBeActive=()=>ambientEnabled&&enabled&&Boolean(state.missionId)&&['setup','game'].includes(state.screen);
 const reconcileAmbientActiveState=()=>TombWorldAmbient.setActive(shouldAmbientBeActive());
