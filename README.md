@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.91
+# Tomb World Solo Guide v8.6.92
+
+## v8.6.92
+
+**Version 8.6.92 - Reliable iOS Ambient Audio**
+
+- Replaces the ambient Web Audio state machine with one persistent, preloaded HTML audio element using the configured `Ambient/caverns.ogg` source.
+- Starts or resumes eligible ambient playback directly from speaker and mission-selection gestures, with temporary retry handling for iPhone/PWA playback restrictions.
+- Preserves settings-only menu toggles, narration ducking, smooth master fades, playback position across master mute, offline caching, narration isolation, and save schema version 3.
 
 ## v8.6.91
 
