@@ -60,9 +60,10 @@
       onComplete?.();
       return;
     }
-    const started = global.performance?.now?.() || Date.now();
+    const started = global.performance?.now?.() ?? Date.now();
     const step = now => {
-      const progress = Math.min(1, ((now || Date.now()) - started) / duration);
+      const current = now ?? global.performance?.now?.() ?? Date.now();
+      const progress = Math.min(1, (current - started) / duration);
       audio.volume = startVolume + (target - startVolume) * progress;
       if (progress < 1) rampFrame = global.requestAnimationFrame(step);
       else { rampFrame = null; onComplete?.(); }
@@ -79,11 +80,18 @@
     if (recoveryHandler || !desiredActive) return;
     recoveryHandler = () => { void playFromGesture(); };
     global.document?.addEventListener('click', recoveryHandler, true);
-    global.dispatchEvent?.(new global.CustomEvent('tombworldaudiorecoveryrequired', { detail: { category: 'ambient' } }));
+    if (typeof global.dispatchEvent === 'function' && typeof global.CustomEvent === 'function') {
+      global.dispatchEvent(new global.CustomEvent('tombworldaudiorecoveryrequired', { detail: { category: 'ambient' } }));
+    }
   }
 
   function playFromGesture() {
-    if (!config || !desiredActive) return Promise.resolve(false);
+    if (!desiredActive) return Promise.resolve(false);
+    if (!config) {
+      void init();
+      armGestureRecovery();
+      return Promise.resolve(false);
+    }
     global.clearTimeout(pauseTimer);
     pauseTimer = null;
     let result;
@@ -138,8 +146,8 @@
     rampTo(narrationActive ? config.duckGain : config.normalGain, narrationActive ? config.duckAttackMs : config.duckReleaseMs);
   }
 
-  function enforceCustomLoop() {
-    if (!config || config.loopEndSeconds === null || audio.currentTime < config.loopEndSeconds) return;
+  function enforceCustomLoop(event) {
+    if (!config || config.loopEndSeconds === null || (event?.type !== 'ended' && audio.currentTime < config.loopEndSeconds)) return;
     audio.currentTime = config.loopStartSeconds;
     if (desiredActive && audio.paused) armGestureRecovery();
   }

@@ -21,6 +21,7 @@ class HtmlAudioAmbientTests(unittest.TestCase):
         self.assertEqual("Ambient/caverns.ogg", config["file"])
         self.assertIn("audio.loop = true", AMBIENT)
         self.assertIn("audio.preload = 'auto'", AMBIENT)
+        self.assertIn("void TombWorldAmbient.init();", APP)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
 
     def test_gesture_calls_are_synchronous_and_menu_is_settings_only(self):
@@ -46,6 +47,18 @@ const document={visibilityState:'visible',addEventListener:(t,h)=>handlers[t]=h,
 const config={schemaVersion:1,file:'Ambient/caverns.ogg',normalGain:.22,duckGain:.055,fadeInMs:1500,fadeOutMs:800,duckAttackMs:250,duckReleaseMs:700,loopStartSeconds:0,loopEndSeconds:null};
 const s={Audio,URL,location:{href:'https://example.test/'},document,performance:{now:()=>now},requestAnimationFrame:h=>{now+=2000;h(now);return ++now},cancelAnimationFrame(){},setTimeout:h=>{timers.push(h);return timers.length},clearTimeout(){},fetch:async()=>({ok:true,json:async()=>config}),addEventListener:(t,h)=>handlers[t]=h,dispatchEvent(){},CustomEvent:class{constructor(t,o){this.type=t;this.detail=o.detail}}};s.window=s;vm.createContext(s);vm.runInContext(fs.readFileSync('ambient.js','utf8'),s);
 (async()=>{const a=s.TombWorldAmbient,x=Audio.instance,near=(a,b)=>Math.abs(a-b)<1e-9;if(!await a.init()||loads!==1||plays)throw Error('init playback');a.setActive(true);if(!await a.playFromGesture()||plays!==1||!near(x.volume,.22))throw Error('initial play');handlers.tombworldnarrationactivity({detail:{active:true}});if(!near(x.volume,.055))throw Error('duck');handlers.tombworldnarrationactivity({detail:{active:false}});if(!near(x.volume,.22))throw Error('restore');a.stop();if(!near(x.volume,0)||pauses)throw Error('fade');a.setActive(true);await a.playFromGesture();timers.forEach(h=>h());if(x.paused||plays!==2)throw Error('stale pause');a.stop();timers.at(-1)();if(!x.paused)throw Error('pause');a.setActive(true);await a.playFromGesture();if(plays!==3)throw Error('resume');fail=true;await a.playFromGesture();await a.playFromGesture();if(typeof handlers.click!=='function')throw Error('recovery missing');const recovery=handlers.click;fail=false;recovery();await new Promise(resolve=>setImmediate(resolve));if(handlers.click||plays!==6)throw Error('recovery cleanup');a.reset();if(x.currentTime!==0||!x.paused)throw Error('reset');})().catch(e=>{console.error(e);process.exit(1)});
+"""
+        result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_preparation_race_and_custom_loop_remain_recoverable(self):
+        script = r"""
+const fs=require('fs'),vm=require('vm');let resolveFetch,plays=0;const handlers={};
+class Audio{constructor(){Audio.instance=this;this.volume=0;this.paused=true;this.currentTime=9;this.listeners={}}addEventListener(t,h){this.listeners[t]=h}load(){}play(){plays++;this.paused=false;return Promise.resolve()}pause(){this.paused=true}}
+const config={schemaVersion:1,file:'Ambient/caverns.ogg',normalGain:.22,duckGain:.055,fadeInMs:0,fadeOutMs:0,duckAttackMs:0,duckReleaseMs:0,loopStartSeconds:2,loopEndSeconds:8};
+const document={visibilityState:'visible',addEventListener:(t,h)=>handlers[t]=h,removeEventListener:(t,h)=>{if(handlers[t]===h)delete handlers[t]}};
+const s={Audio,URL,location:{href:'https://example.test/'},document,performance:{now:()=>0},fetch:()=>new Promise(r=>resolveFetch=r),setTimeout,clearTimeout,addEventListener:(t,h)=>handlers[t]=h,dispatchEvent(){},CustomEvent:class{constructor(t,o){this.type=t;this.detail=o.detail}}};s.window=s;vm.createContext(s);vm.runInContext(fs.readFileSync('ambient.js','utf8'),s);
+(async()=>{const a=s.TombWorldAmbient,x=Audio.instance;a.setActive(true);if(await a.playFromGesture()||plays||typeof handlers.click!=='function')throw Error('early gesture was not retained for recovery');resolveFetch({ok:true,json:async()=>config});await new Promise(resolve=>setImmediate(resolve));handlers.click();await new Promise(resolve=>setImmediate(resolve));if(plays!==1||handlers.click)throw Error('prepared player did not recover');x.currentTime=4;x.listeners.ended({type:'ended'});if(x.currentTime!==2)throw Error('custom ended loop did not reset');})().catch(e=>{console.error(e);process.exit(1)});
 """
         result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
         self.assertEqual(0, result.returncode, result.stderr)
