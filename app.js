@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.90';
+  const APP_VERSION = '8.6.91';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
     init:()=>Promise.resolve(),unlock:()=>Promise.resolve(false),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},setPreferenceEnabled:()=>{},isPreferenceEnabled:()=>true,setMasterEnabled:()=>{},isMasterEnabled:()=>true,isPlaybackEnabled:()=>true,canReplay:()=>false
   });
@@ -49,10 +49,49 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   let pendingBoardSetupMissionIntro=null;
   let ambientEnabled=localStorage.getItem(AMBIENT_ENABLED_PREFERENCE_KEY)!=='false';
   let appliedAmbientEnabled=TombWorldNarration.isMasterEnabled()&&ambientEnabled;
+  let needsAudioGestureRecovery=false;
+  let narrationGestureRecoveryRequired=false;
+  let ambientGestureRecoveryRequired=false;
+  let audioRecoveryHandler=null;
   function shouldAmbientBeActive(){
     return TombWorldNarration.isMasterEnabled()&&appliedAmbientEnabled&&Boolean(state.missionId)&&['setup','game'].includes(state.screen);
   }
   function reconcileAmbientActiveState(){TombWorldAmbient.setActive(shouldAmbientBeActive());}
+  function removeAudioGestureRecovery(){
+    if(audioRecoveryHandler)document.removeEventListener('click',audioRecoveryHandler,true);
+    audioRecoveryHandler=null;
+    needsAudioGestureRecovery=false;
+  }
+  function armAudioGestureRecovery(event){
+    if(event?.detail?.category==='ambient')ambientGestureRecoveryRequired=true;
+    needsAudioGestureRecovery=true;
+    if(audioRecoveryHandler)return;
+    audioRecoveryHandler=async()=>{
+      if(!needsAudioGestureRecovery||!TombWorldNarration.isMasterEnabled()){removeAudioGestureRecovery();return;}
+      await applySelectedAudioFromGesture(true);
+    };
+    document.addEventListener('click',audioRecoveryHandler,true);
+  }
+  async function applySelectedAudioFromGesture(recoveryOnly=false){
+    if(!TombWorldNarration.isMasterEnabled()){removeAudioGestureRecovery();return false;}
+    const attempts=[];
+    if(TombWorldNarration.isPlaybackEnabled()&&(!recoveryOnly||narrationGestureRecoveryRequired))attempts.push({category:'narration',promise:TombWorldNarration.unlock({force:true})});
+    if(shouldAmbientBeActive()&&(!recoveryOnly||ambientGestureRecoveryRequired))attempts.push({category:'ambient',promise:TombWorldAmbient.unlock()});
+    const results=await Promise.allSettled(attempts.map(attempt=>attempt.promise));
+    reconcileAmbientActiveState();
+    results.forEach((result,index)=>{
+      const required=!(result.status==='fulfilled'&&result.value===true);
+      if(attempts[index].category==='narration')narrationGestureRecoveryRequired=required;
+      else ambientGestureRecoveryRequired=required;
+    });
+    if(!narrationGestureRecoveryRequired&&!ambientGestureRecoveryRequired)removeAudioGestureRecovery();
+    else if(attempts.length)armAudioGestureRecovery();
+    return !narrationGestureRecoveryRequired&&!ambientGestureRecoveryRequired;
+  }
+  function handleNarrationUsable(){
+    narrationGestureRecoveryRequired=false;
+    if(!ambientGestureRecoveryRequired)removeAudioGestureRecovery();
+  }
   function syncNarrationControls(){
     const masterEnabled=TombWorldNarration.isMasterEnabled();
     const narrationEnabled=TombWorldNarration.isPreferenceEnabled();
@@ -79,18 +118,14 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     TombWorldNarration.setMasterEnabled(enabled);
     if(enabled){
       appliedAmbientEnabled=ambientEnabled;
-      const narrationUnlockPromise=TombWorldNarration.isPlaybackEnabled()
-        ?TombWorldNarration.unlock({force:true})
-        :Promise.resolve(false);
-      const ambientUnlockPromise=shouldAmbientBeActive()
-        ?TombWorldAmbient.unlock()
-        :Promise.resolve(false);
-      await Promise.allSettled([narrationUnlockPromise,ambientUnlockPromise]);
-      reconcileAmbientActiveState();
+      await applySelectedAudioFromGesture();
       playPendingBoardSetupMissionIntro();
     }else{
       appliedAmbientEnabled=false;
       TombWorldAmbient.stop();
+      narrationGestureRecoveryRequired=false;
+      ambientGestureRecoveryRequired=false;
+      removeAudioGestureRecovery();
     }
     syncNarrationControls();
   }
@@ -116,6 +151,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     if(replay)replay.disabled=!TombWorldNarration.canReplay();
   }
   window.addEventListener('tombworldnarrationchange',handleNarrationChange);
+  window.addEventListener('tombworldnarrationusable',handleNarrationUsable);
+  window.addEventListener('tombworldaudiorecoveryrequired',armAudioGestureRecovery);
   const gameWorkspace = $('#gameWorkspace');
   const operativeStatusPanel = $('#operativeStatusPanel');
   const operativeStatusToggle = $('#operativeStatusToggle');
@@ -1978,7 +2015,6 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     bindCommon();
     updateGameBackground();
     renderOperativeStatusPanel();
-    reconcileAmbientActiveState();
 
     if(state.hotResolution&&!state.hotResolution.acknowledged&&!modal.open){
       showHotResult(state.hotResolution,()=>resumePersistedHotContinuation(state.hotResolution));
@@ -2348,7 +2384,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
 
   function bindSetup(stepId){
-    $$('.mission-choice').forEach(b=>b.onclick=()=>{const missionId=b.dataset.mission;state.missionId=missionId;state.missionState=freshMissionState(mission());state.missionRuntime=null;state.tracker=0;state.setupChecks={};state.roster=[];state.startingNpoGeneration=null;save();render();setTimeout(()=>loadObjectiveMission(missionId).then(()=>{if(state.missionId===missionId)save();}),0);});
+    $$('.mission-choice').forEach(b=>b.onclick=()=>{const missionId=b.dataset.mission;state.missionId=missionId;state.missionState=freshMissionState(mission());state.missionRuntime=null;state.tracker=0;state.setupChecks={};state.roster=[];state.startingNpoGeneration=null;save();render();void applySelectedAudioFromGesture();setTimeout(()=>loadObjectiveMission(missionId).then(()=>{if(state.missionId===missionId)save();}),0);});
     $('#setupHome')?.addEventListener('click',()=>{state.screen='home';save();render();});
     $('#setupBack')?.addEventListener('click',()=>{if(stepId==='killzone'){clearPendingBoardSetupMissionIntro();TombWorldNarration.stop();}state.setupStep=Math.max(0,state.setupStep-1);save();render();});
     $('#setupNext')?.addEventListener('click',()=>advanceSetupStep(stepId));

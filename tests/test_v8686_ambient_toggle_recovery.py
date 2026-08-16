@@ -41,7 +41,7 @@ const document={addEventListener:(t,f)=>listeners[t]=f,removeEventListener:(t,f)
 const sandbox={AudioContext,URL,location:{href:'https://example.test/'},document,TombWorldNarration:{isMasterEnabled:()=>true},addEventListener(){},setTimeout,clearTimeout,
 fetch:async url=>{if(String(url).includes('ambient-config')){attempts++;if(attempts===1)throw Error('offline');return {ok:true,json:async()=>config}}return {ok:true,arrayBuffer:async()=>new ArrayBuffer(1)}}};
 sandbox.window=sandbox;vm.createContext(sandbox);vm.runInContext(fs.readFileSync('ambient.js','utf8'),sandbox);
-(async()=>{const a=sandbox.TombWorldAmbient;a.setActive(true);for(let i=0;i<8;i++)await Promise.resolve();if(!listeners.click)throw Error('fallback removed after fetch failure');await a.unlock();if(!listeners.click)throw Error('fallback removed after decode failure');if(await a.unlock()!==true)throw Error('later retry did not initialize');for(let i=0;i<8;i++)await Promise.resolve();if(listeners.click)throw Error('fallback retained after full success');if(sources.length!==1)throw Error('successful retry did not play exactly once')})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{const a=sandbox.TombWorldAmbient;a.setActive(true);for(let i=0;i<8;i++)await Promise.resolve();if(listeners.click)throw Error('ambient installed a global click fallback');await a.unlock();if(listeners.click)throw Error('decode failure installed a global click fallback');if(await a.unlock()!==true)throw Error('later explicit retry did not initialize');for(let i=0;i<8;i++)await Promise.resolve();if(listeners.click)throw Error('global fallback appeared after success');if(sources.length!==1)throw Error('successful retry did not play exactly once')})().catch(e=>{console.error(e);process.exit(1)});
 """
         result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
         self.assertEqual(0, result.returncode, result.stderr)
@@ -49,7 +49,7 @@ sandbox.window=sandbox;vm.createContext(sandbox);vm.runInContext(fs.readFileSync
     def test_off_state_ignores_narration_and_active_reconciliation(self):
         self.assertIn("if (source && activeBattle && masterEnabled() && config)", AMBIENT)
         self.assertIn("TombWorldNarration.isMasterEnabled()&&appliedAmbientEnabled", APP)
-        self.assertIn("const ambientUnlockPromise=shouldAmbientBeActive()", APP)
+        self.assertIn("if(shouldAmbientBeActive()&&(!recoveryOnly||ambientGestureRecoveryRequired))", APP)
 
 
 if __name__ == "__main__":

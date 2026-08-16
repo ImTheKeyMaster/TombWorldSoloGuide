@@ -78,10 +78,10 @@ const document={
 const context={Audio,URL,document,location:{href:'https://example.test/app/'},fetch:async()=>({ok:true,json:async()=>({entries})}),localStorage:{getItem:()=>null,setItem:()=>{}},dispatchEvent:()=>{},CustomEvent:function(){}};
 context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
 (async()=>{
-  if(typeof listeners.click!=='function')throw Error('click unlock listener missing');
-  await listeners.click();
+  if(listeners.click)throw Error('global click unlock listener was installed');
+  await context.TombWorldNarration.unlock();
   await new Promise(resolve=>setTimeout(resolve,0));
-  if(!calls.some(x=>x.startsWith('play:data:audio/wav')))throw Error('gesture did not unlock audio');
+  if(!calls.some(x=>x.startsWith('play:data:audio/wav')))throw Error('explicit gesture did not unlock audio');
   await context.TombWorldNarration.init();
   if(!await context.TombWorldNarration.playOutcome('destroy-sarcophagus','victory'))throw Error('outcome playback failed after unlock');
   if(!calls.some(x=>x.includes('outcomes/04-victory.mp3')))throw Error('outcome audio was not played');

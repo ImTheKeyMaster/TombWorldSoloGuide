@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.90
+# Tomb World Solo Guide v8.6.91
+
+## v8.6.91
+
+**Version 8.6.91 - Event-Driven Audio Lifecycle**
+
+- Centralizes live audio activation on the master speaker, mission selection, and explicitly armed one-time browser recovery gestures; ordinary UI interaction and rendering remain audio-neutral.
+- Isolates Safari narration priming in a dedicated unlock-only audio element so Game Menu and other controls cannot replace, pause, reload, or invalidate production narration.
+- Restores selected ambient audio directly from the speaker gesture after master audio is re-enabled while preserving the caverns loop, configured gains, narration ducking, and save schema version 3.
 
 ## v8.6.90
 

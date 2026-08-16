@@ -15,6 +15,7 @@
   };
 
   let audio = null;
+  let unlockAudio = null;
   let manifest = null;
   let initialization = null;
   let lastEntry = null;
@@ -30,7 +31,6 @@
   let deadlyEncounterGeneration = 0;
   let activePlayback = false;
   let notifiedPlaybackActivity = false;
-  let gestureUnlockHandler = null;
   let masterEnabled = readPreference(MASTER_ENABLED_KEY) !== 'false';
   let appliedPreferenceEnabled = masterEnabled && isPreferenceEnabled();
 
@@ -125,21 +125,19 @@
     } catch { return false; }
   }
 
-  function removeGestureUnlockHandler() {
-    if (!gestureUnlockHandler) return;
-    global.document?.removeEventListener?.('click', gestureUnlockHandler, true);
-    gestureUnlockHandler = null;
-  }
-
   function unlock(options = {}) {
-    const force = options?.force === true;
-    if (!force && audioUnlocked) {
+    if (audioUnlocked) {
       audioUnlocked = true;
-      removeGestureUnlockHandler();
       return Promise.resolve(true);
     }
     if (!isPlaybackEnabled()) return Promise.resolve(false);
-    const player = ensureAudio();
+    let player = unlockAudio;
+    if (!player && typeof global.Audio === 'function') {
+      try {
+        player = unlockAudio = new global.Audio();
+        player.preload = 'none';
+      } catch { player = null; }
+    }
     if (!player) return Promise.resolve(false);
     try {
       player.volume = 1;
@@ -148,36 +146,22 @@
       if (!playback || typeof playback.then !== 'function') {
         audioUnlocked = true;
         player.volume = 1;
-        removeGestureUnlockHandler();
         return Promise.resolve(true);
       }
       return playback.then(() => {
         audioUnlocked = true;
         player.volume = 1;
-        removeGestureUnlockHandler();
         return true;
       }, () => {
         audioUnlocked = false;
         player.volume = 1;
-        installUnlockOnGesture();
         return false;
       });
     } catch {
       audioUnlocked = false;
       player.volume = 1;
-      installUnlockOnGesture();
       return Promise.resolve(false);
     }
-  }
-
-  function installUnlockOnGesture() {
-    const doc = global.document;
-    if (!doc || typeof doc.addEventListener !== 'function' || gestureUnlockHandler) return;
-    gestureUnlockHandler = event => {
-      if (event?.target?.closest?.('.ambient-toggle')) return;
-      void unlock();
-    };
-    doc.addEventListener('click', gestureUnlockHandler, true);
   }
 
   function init() {
@@ -217,7 +201,11 @@
     try {
       await player.play();
       if (request !== playbackRequest || !isPlaybackEnabled()) return false;
+      audioUnlocked = true;
       notifyPlaybackActivity(true);
+      if (typeof global.dispatchEvent === 'function' && typeof global.CustomEvent === 'function') {
+        global.dispatchEvent(new global.CustomEvent('tombworldnarrationusable'));
+      }
       lastEntry = { id, duplicateKey };
       notify();
       return true;
@@ -366,7 +354,6 @@
     if (!masterEnabled) {
       stop(true);
       audioUnlocked = false;
-      installUnlockOnGesture();
     }
     notify();
   }
@@ -376,6 +363,4 @@
     setPreferenceEnabled, isPreferenceEnabled, setMasterEnabled, isMasterEnabled, isPlaybackEnabled,
     canReplay: () => Boolean(lastEntry)
   });
-
-  installUnlockOnGesture();
 })(typeof window === 'undefined' ? globalThis : window);

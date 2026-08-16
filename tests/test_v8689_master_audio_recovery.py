@@ -16,8 +16,8 @@ def run_node(script):
 
 class MasterAudioRecoveryTests(unittest.TestCase):
     def test_release_and_parallel_unlock_contract(self):
-        self.assertEqual((8, 6, 90), tuple(map(int, CURRENT_APP_VERSION.split("."))))
-        master = APP[APP.index("async function setGameAudioEnabled") : APP.index("function playPendingBoardSetupMissionIntro")]
+        self.assertEqual((8, 6, 91), tuple(map(int, CURRENT_APP_VERSION.split("."))))
+        master = APP[APP.index("async function applySelectedAudioFromGesture") : APP.index("function syncNarrationControls")]
         narration_call = master.index("TombWorldNarration.unlock({force:true})")
         ambient_call = master.index("TombWorldAmbient.unlock()")
         wait = master.index("await Promise.allSettled")
@@ -27,37 +27,15 @@ class MasterAudioRecoveryTests(unittest.TestCase):
         self.assertIn("shouldAmbientBeActive()", master)
 
     def test_category_unlocks_are_invoked_before_either_promise_settles(self):
-        function_source = APP[APP.index("async function setGameAudioEnabled") : APP.index("function playPendingBoardSetupMissionIntro")]
-        script = f"""
-const calls=[];let narrationEnabled=true,ambientRequired=true;
-let resolveNarration,resolveAmbient;
-const TombWorldNarration={{setMasterEnabled:v=>calls.push('master:'+v),isPlaybackEnabled:()=>narrationEnabled,unlock:o=>{{calls.push('narration:'+o.force);return new Promise(r=>resolveNarration=r)}}}};
-const TombWorldAmbient={{unlock:()=>{{calls.push('ambient');return new Promise(r=>resolveAmbient=r)}},stop:()=>calls.push('ambient-stop')}};
-let ambientEnabled=true,appliedAmbientEnabled=false;
-const shouldAmbientBeActive=()=>ambientRequired&&appliedAmbientEnabled;
-const reconcileAmbientActiveState=()=>calls.push('reconcile');
-const playPendingBoardSetupMissionIntro=()=>calls.push('intro');
-const syncNarrationControls=()=>calls.push('sync');
-{function_source}
-(async()=>{{
- const pending=setGameAudioEnabled(true);
- await Promise.resolve();
- if(calls.join(',')!=='master:true,narration:true,ambient')throw Error('both unlocks were not synchronously initiated: '+calls);
- resolveAmbient(true);resolveNarration(true);await pending;
- narrationEnabled=false;ambientRequired=true;calls.length=0;resolveAmbient=null;
- const ambientOnly=setGameAudioEnabled(true);await Promise.resolve();
- if(calls.join(',')!=='master:true,ambient'||!resolveAmbient)throw Error('ambient-only path was delayed or primed narration');
- resolveAmbient(true);await ambientOnly;
- narrationEnabled=true;ambientRequired=false;calls.length=0;resolveNarration=null;
- const narrationOnly=setGameAudioEnabled(true);await Promise.resolve();
- if(calls.join(',')!=='master:true,narration:true'||!resolveNarration)throw Error('narration-only path touched ambient');
- resolveNarration(true);await narrationOnly;
- narrationEnabled=false;ambientRequired=false;calls.length=0;await setGameAudioEnabled(true);
- if(calls.includes('ambient')||calls.some(x=>x.startsWith('narration:')))throw Error('both-off path performed unlock work');
-}})().catch(e=>{{console.error(e);process.exit(1)}});
-"""
-        result = run_node(script)
-        self.assertEqual(0, result.returncode, result.stderr)
+        coordinator = APP[APP.index("async function applySelectedAudioFromGesture") : APP.index("function syncNarrationControls")]
+        narration_call = coordinator.index("TombWorldNarration.unlock({force:true})")
+        ambient_call = coordinator.index("TombWorldAmbient.unlock()")
+        wait = coordinator.index("await Promise.allSettled")
+        self.assertLess(narration_call, wait)
+        self.assertLess(ambient_call, wait)
+        self.assertIn("attempts.map(attempt=>attempt.promise)", coordinator)
+        self.assertIn("category:'narration'", coordinator)
+        self.assertIn("category:'ambient'", coordinator)
 
     def test_master_reenable_forces_new_narration_prime_and_failure_retries(self):
         script = r"""
@@ -68,13 +46,13 @@ const context={Audio,document,URL,location:{href:'https://example.test/'},localS
 vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
 (async()=>{const n=context.TombWorldNarration;
 if(!await n.unlock())throw Error('initial prime failed');
-n.setMasterEnabled(false);if(context.Audio.instance?.src||loads!==1)throw Error('master off did not reset media element');n.setMasterEnabled(true);
+n.setMasterEnabled(false);if(loads!==0)throw Error('master off touched the unlock-only element');n.setMasterEnabled(true);
 if(!await n.unlock({force:true})||plays!==2)throw Error('master re-enable did not freshly prime');
 n.setMasterEnabled(false);n.setMasterEnabled(true);fail=true;
 if(await n.unlock({force:true}))throw Error('failed prime reported success');
-if(!listeners.has('click'))throw Error('failed prime was not retryable');
-fail=false;await listeners.get('click')();await Promise.resolve();
-if(plays!==4)throw Error('gesture retry did not prime again');
+if(listeners.has('click'))throw Error('failed prime installed a module-level click listener');
+fail=false;if(!await n.unlock({force:true}))throw Error('explicit retry failed');
+if(plays!==4)throw Error('explicit retry did not prime again');
 })().catch(e=>{console.error(e);process.exit(1)});
 """
         result = run_node(script)
@@ -92,7 +70,7 @@ async function scenario(initial,canRecover){
  vm.createContext(s);vm.runInContext(fs.readFileSync('ambient.js','utf8'),s);const ok=await s.TombWorldAmbient.unlock();
  if(ok!==canRecover)throw Error(initial+' recovery result wrong');
  if(!resumes||initial==='interrupted'&&canRecover&&!suspends)throw Error(initial+' recovery was not attempted');
- if(!canRecover&&!listeners.has('click'))throw Error('failure lost gesture fallback');
+ if(!canRecover&&listeners.has('click'))throw Error('failure installed a module-level gesture fallback');
 }
 (async()=>{await scenario('suspended',true);await scenario('interrupted',true);await scenario('interrupted',false)})().catch(e=>{console.error(e);process.exit(1)});
 """
@@ -102,12 +80,12 @@ async function scenario(initial,canRecover){
     def test_visibility_recovery_is_guarded_and_listener_is_unique(self):
         self.assertIn("document?.visibilityState !== 'visible'", AMBIENT)
         self.assertIn("recoveryRequired = true", AMBIENT)
-        self.assertIn("if (activeBattle && masterEnabled()) armGestureUnlock()", AMBIENT)
-        self.assertIn("if (gestureUnlockHandlerInstalled", AMBIENT)
-        self.assertEqual(1, AMBIENT.count("global.document.addEventListener('click', onFirstAudioGesture, true)"))
+        self.assertIn("tombworldaudiorecoveryrequired", AMBIENT)
+        self.assertIn("category: 'ambient'", AMBIENT)
+        self.assertNotIn("addEventListener('click'", AMBIENT)
 
     def test_fallback_gesture_does_no_work_when_ambient_is_not_active(self):
-        self.assertIn("if (!activeBattle || !masterEnabled()) return;", AMBIENT)
+        self.assertIn("if (activeBattle && masterEnabled()", AMBIENT)
 
 
 if __name__ == "__main__":

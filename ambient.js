@@ -15,8 +15,6 @@
   let activeBattle = false;
   let narrationActive = false;
   let generation = 0;
-  let gestureUnlocking = false;
-  let gestureUnlockHandlerInstalled = false;
   let recoveryRequired = false;
   let unlockAttempt = null;
 
@@ -49,18 +47,6 @@
     if (typeof context.resume !== 'function') return context.state === 'running';
     const resumed = await settleWithTimeout(() => context.resume());
     return resumed && context.state === 'running';
-  }
-
-  function armGestureUnlock() {
-    if (gestureUnlockHandlerInstalled || typeof global.document?.addEventListener !== 'function') return;
-    global.document.addEventListener('click', onFirstAudioGesture, true);
-    gestureUnlockHandlerInstalled = true;
-  }
-
-  function removeGestureUnlock() {
-    if (!gestureUnlockHandlerInstalled) return;
-    global.document?.removeEventListener?.('click', onFirstAudioGesture, true);
-    gestureUnlockHandlerInstalled = false;
   }
 
   function masterEnabled() {
@@ -201,22 +187,16 @@
           if (activeBattle && masterEnabled() && !playbackRecovered) {
             contextUnlocked = false;
             recoveryRequired = true;
-            armGestureUnlock();
             return false;
           }
         } else {
           void reconcile();
         }
-        removeGestureUnlock();
-      } else {
-        if (recovering) recoveryRequired = true;
-        armGestureUnlock();
-      }
+      } else if (recovering) recoveryRequired = true;
       return contextUnlocked && ready;
     })().catch(() => {
       contextUnlocked = false;
       recoveryRequired = true;
-      armGestureUnlock();
       return false;
     }).finally(() => { unlockAttempt = null; });
     return unlockAttempt;
@@ -229,25 +209,21 @@
     void reconcile();
   }
 
-  async function onFirstAudioGesture(event) {
-    if (event?.target?.closest?.('.ambient-toggle')) return;
-    if (!activeBattle || !masterEnabled()) return;
-    if ((contextUnlocked && !recoveryRequired && buffer && config && gainNode) || gestureUnlocking) return;
-    gestureUnlocking = true;
-    try { await unlock(); } finally { gestureUnlocking = false; }
-  }
-
   function onVisibilityChange() {
     if (global.document?.visibilityState !== 'visible') {
       recoveryRequired = true;
       return;
     }
     recoveryRequired = true;
-    if (activeBattle && masterEnabled()) armGestureUnlock();
+    if (activeBattle && masterEnabled() && typeof global.dispatchEvent === 'function' && typeof global.CustomEvent === 'function') {
+      global.dispatchEvent(new global.CustomEvent('tombworldaudiorecoveryrequired', { detail: { category: 'ambient' } }));
+    }
   }
 
   function stop() {
     activeBattle = false;
+    contextUnlocked = false;
+    recoveryRequired = true;
     generation += 1;
     global.clearTimeout(stopTimer);
     stopTimer = null;
@@ -268,7 +244,6 @@
 
   global.addEventListener?.('tombworldnarrationactivity', onNarrationActivity);
   global.document?.addEventListener?.('visibilitychange', onVisibilityChange);
-  armGestureUnlock();
 
   global.TombWorldAmbient = Object.freeze({ init, unlock, setActive, stop });
 })(typeof window === 'undefined' ? globalThis : window);
