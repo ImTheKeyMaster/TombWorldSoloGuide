@@ -35,6 +35,10 @@
   let masterEnabled = readPreference(MASTER_ENABLED_KEY) !== 'false';
   let appliedPreferenceEnabled = masterEnabled && isPreferenceEnabled();
 
+  function supportsInAppVolumeControl() {
+    return global.TombWorldAudioCapabilities?.supportsInAppVolumeControl() !== false;
+  }
+
   function readPreference(key) {
     try { return global.localStorage?.getItem(key) ?? null; } catch { return null; }
   }
@@ -76,7 +80,7 @@
       try {
         audio = new global.Audio();
         audio.preload = 'none';
-        audio.volume = volumeMultiplier;
+        if (supportsInAppVolumeControl()) audio.volume = volumeMultiplier;
       } catch { audio = null; }
     }
     return audio;
@@ -95,7 +99,7 @@
 
   function setVolumeMultiplier(value) {
     volumeMultiplier = Math.min(1, Math.max(0, Number.isFinite(Number(value)) ? Number(value) : 1));
-    if (audio) audio.volume = volumeMultiplier;
+    if (audio && supportsInAppVolumeControl()) audio.volume = volumeMultiplier;
   }
 
   function clearEventQueue() {
@@ -132,7 +136,7 @@
   }
 
   function unlock(options = {}) {
-    if (audioUnlocked) {
+    if (audioUnlocked && !options.force) {
       audioUnlocked = true;
       return Promise.resolve(true);
     }
@@ -196,7 +200,7 @@
     const player = ensureAudio();
     if (!player) return false;
     stopAudio();
-    player.volume = volumeMultiplier;
+    if (supportsInAppVolumeControl()) player.volume = volumeMultiplier;
     player.src = new URL(entry.file, new URL(MANIFEST_URL, global.location?.href || 'http://localhost/')).href;
     activePlayback = true;
     player.onended = () => {
