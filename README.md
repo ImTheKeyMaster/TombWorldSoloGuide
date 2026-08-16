@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.96
+# Tomb World Solo Guide v8.6.97
+
+## v8.6.97
+
+**Version 8.6.97 - Further Attenuated Caverns Ambience**
+
+- Uses the supplied `Ambient/caverns_25.ogg` track, attenuated to 25% of the original amplitude, without additional audio processing.
+- Precaches the newly configured ambience for offline/PWA use while retaining both `Ambient/caverns.ogg` and `Ambient/caverns_50.ogg`.
+- Preserves the v8.6.96 narration controls, platform-specific Volume UI, HTML audio ambient behavior, settings-only audio toggles, and save schema version 3.
 
 ## v8.6.96
 
