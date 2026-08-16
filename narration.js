@@ -31,6 +31,7 @@
   let deadlyEncounterGeneration = 0;
   let activePlayback = false;
   let notifiedPlaybackActivity = false;
+  let volumeMultiplier = 1;
   let masterEnabled = readPreference(MASTER_ENABLED_KEY) !== 'false';
   let appliedPreferenceEnabled = masterEnabled && isPreferenceEnabled();
 
@@ -75,7 +76,7 @@
       try {
         audio = new global.Audio();
         audio.preload = 'none';
-        audio.volume = 1;
+        audio.volume = volumeMultiplier;
       } catch { audio = null; }
     }
     return audio;
@@ -90,6 +91,11 @@
       audio.removeAttribute('src');
       audio.load();
     } catch { /* Audio cleanup must never affect gameplay. */ }
+  }
+
+  function setVolumeMultiplier(value) {
+    volumeMultiplier = Math.min(1, Math.max(0, Number.isFinite(Number(value)) ? Number(value) : 1));
+    if (audio) audio.volume = volumeMultiplier;
   }
 
   function clearEventQueue() {
@@ -190,7 +196,7 @@
     const player = ensureAudio();
     if (!player) return false;
     stopAudio();
-    player.volume = 1;
+    player.volume = volumeMultiplier;
     player.src = new URL(entry.file, new URL(MANIFEST_URL, global.location?.href || 'http://localhost/')).href;
     activePlayback = true;
     player.onended = () => {
@@ -360,7 +366,7 @@
 
   global.TombWorldNarration = Object.freeze({
     init, unlock, playMissionIntro, playEvent, playOutcome, playDeadlyEncounter, replayLast, stop, pauseNarration,
-    setPreferenceEnabled, isPreferenceEnabled, setMasterEnabled, isMasterEnabled, isPlaybackEnabled,
+    setPreferenceEnabled, isPreferenceEnabled, setMasterEnabled, isMasterEnabled, isPlaybackEnabled, setVolumeMultiplier,
     canReplay: () => Boolean(lastEntry)
   });
 })(typeof window === 'undefined' ? globalThis : window);
