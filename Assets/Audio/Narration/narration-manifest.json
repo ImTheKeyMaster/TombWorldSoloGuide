@@ -512,34 +512,34 @@
       "category": "grade",
       "grade": 1,
       "file": "grades/01-stirring.mp3",
-      "available": false,
+      "available": true,
       "scriptHash": "8a9e871f85aa052fc6907d158b6dd1005731bf5d6c55f13c3062d79a696150b5",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null,
-      "durationMs": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "acb902100f53ebc9bc85a51bd53ffff20ee83ce342255134f679d0cf288188b1",
+      "audioHash": "a844c18b634c42a901ca6f6e9fabfe122503435986e8b09b46d7075ce1f5b46f",
+      "durationMs": 15491
     },
     "grade.2.awakened": {
       "category": "grade",
       "grade": 2,
       "file": "grades/02-awakened.mp3",
-      "available": false,
+      "available": true,
       "scriptHash": "168b3783534ee4bc3d539231668814ab4deda6750d2c1414ebaee0cb29e24c13",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null,
-      "durationMs": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "8005e2a0b6b1305de13f2e9448dedbf7d604407b5394eefd9ac142281736724c",
+      "audioHash": "1c6727990e812a779deb3d146c35012849947c997e7204933155e7f9e006b67b",
+      "durationMs": 16013
     },
     "grade.3.overrun": {
       "category": "grade",
       "grade": 3,
       "file": "grades/03-overrun.mp3",
-      "available": false,
+      "available": true,
       "scriptHash": "b662bdc1a453c77194a3e38b223132a56760dc0d34f007067c07f72ee84494d7",
-      "settingsHash": null,
-      "generationHash": null,
-      "audioHash": null,
-      "durationMs": null
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "0a9e255c2e15b4057c047d141648eb52feebee2442f6ee4bdc52e50c7355acc5",
+      "audioHash": "647afaec31cac61032bb5331f2466e9554c38545ffe4642c37100ea05823b19d",
+      "durationMs": 19043
     }
   }
 }

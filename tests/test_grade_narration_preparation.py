@@ -59,7 +59,7 @@ class GradeNarrationPreparationTests(unittest.TestCase):
         self.assertEqual(1, self.source["schemaVersion"])
         self.assertEqual(list(APPROVED_SCRIPTS), [item["id"] for item in self.grades])
         self.assertEqual({"grade"}, {item["category"] for item in self.grades})
-        self.assertEqual({"approved"}, {item["status"] for item in self.grades})
+        self.assertEqual({"generated"}, {item["status"] for item in self.grades})
         self.assertEqual(APPROVED_SCRIPTS, {item["id"]: item["script"] for item in self.grades})
         self.assertEqual(3, len({item["outputFile"] for item in self.grades}))
 
@@ -69,25 +69,38 @@ class GradeNarrationPreparationTests(unittest.TestCase):
             all_grades.extend(item for item in records if item["category"] == "grade")
         self.assertEqual(list(APPROVED_SCRIPTS), [item["id"] for item in all_grades])
 
-    def test_hashes_and_unavailable_manifest_placeholders_match(self):
+    def test_generated_metadata_and_manifest_match_exact_audio(self):
+        settings = json.loads((ROOT / "Narration" / "producer-settings.json").read_text(encoding="utf-8"))
+        expected_settings_hash = server.settings_hash(settings) if server else "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f"
         for grade, item in enumerate(self.grades, 1):
             normalized = item["script"].replace("\r\n", "\n").replace("\r", "\n").strip()
-            expected_hash = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
-            self.assertEqual(expected_hash, item["scriptHash"])
-            self.assertNotIn("voiceId", item)
-            self.assertNotIn("modelId", item)
-            self.assertTrue(all(item[key] is None for key in ("settingsHash", "generationHash", "audioHash")))
+            expected_script_hash = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+            expected_generation_hash = hashlib.sha256(
+                f"{expected_script_hash}:{expected_settings_hash}".encode("utf-8")
+            ).hexdigest()
+            audio = ROOT / "Assets" / "Audio" / "Narration" / item["outputFile"]
+            expected_audio_hash = hashlib.sha256(audio.read_bytes()).hexdigest()
+
+            self.assertEqual("generated", item["status"])
+            self.assertEqual(expected_script_hash, item["scriptHash"])
+            self.assertEqual(expected_settings_hash, item["settingsHash"])
+            self.assertEqual(expected_generation_hash, item["generationHash"])
+            self.assertEqual(expected_audio_hash, item["audioHash"])
+            self.assertEqual(settings["voiceId"], item["voiceId"])
+            self.assertEqual(settings["modelId"], item["modelId"])
+            self.assertTrue(audio.is_file())
+            self.assertGreater(audio.stat().st_size, 0)
 
             entry = self.manifest[item["id"]]
             self.assertEqual("grade", entry["category"])
             self.assertEqual(grade, entry["grade"])
             self.assertEqual(item["outputFile"], entry["file"])
-            self.assertFalse(entry["available"])
-            self.assertEqual(expected_hash, entry["scriptHash"])
-            self.assertTrue(
-                all(entry[key] is None for key in ("settingsHash", "generationHash", "audioHash", "durationMs"))
-            )
-            self.assertFalse((ROOT / "Assets" / "Audio" / "Narration" / entry["file"]).exists())
+            self.assertTrue(entry["available"])
+            for key in ("scriptHash", "settingsHash", "generationHash", "audioHash"):
+                self.assertEqual(item[key], entry[key])
+            self.assertGreater(entry["durationMs"], 0)
+            if server:
+                self.assertEqual(server.validate_audio(audio), entry["durationMs"])
 
     def test_producer_filter_and_generic_library_discovery(self):
         markup = (TOOL / "static" / "index.html").read_text(encoding="utf-8")
@@ -106,18 +119,18 @@ class GradeNarrationPreparationTests(unittest.TestCase):
         self.assertEqual(list(APPROVED_SCRIPTS), [item["id"] for item in rows])
         self.assertTrue(all(item["approved"] for item in rows))
         self.assertTrue(all(not item["blocked"] for item in rows))
-        self.assertTrue(all(item["wouldGenerate"] for item in rows))
-        self.assertTrue(all(item["reason"] == "Would generate." for item in rows))
+        self.assertTrue(all(item["wouldSkip"] for item in rows))
+        self.assertTrue(all(item["reason"] == "Up to date." for item in rows))
 
     def test_runtime_and_versions_remain_unchanged(self):
         runtime = "\n".join(
             path.read_text(encoding="utf-8")
             for path in ROOT.glob("*.js")
         )
-        self.assertNotIn("playGradeEscalation", runtime)
+        self.assertIn("playGradeEscalation", runtime)
         app = (ROOT / "app.js").read_text(encoding="utf-8")
         persistence = (ROOT / "persistence.js").read_text(encoding="utf-8")
-        self.assertEqual((8, 6, 97), tuple(map(int, CURRENT_APP_VERSION.split("."))))
+        self.assertEqual((8, 6, 98), tuple(map(int, CURRENT_APP_VERSION.split("."))))
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", app)
         self.assertEqual("3", re.search(r"SAVE_VERSION = (\d+)", persistence).group(1))
 

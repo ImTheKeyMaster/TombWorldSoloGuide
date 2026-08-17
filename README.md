@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.97
+# Tomb World Solo Guide v8.6.98
+
+## v8.6.98
+
+**Version 8.6.98 - Threat Escalation Narration**
+
+- Adds production narration for Threat Escalation Grades 1–3, played once when each newly-created milestone card first appears.
+- Persists each card occurrence's consumed narration state so re-renders and restores do not replay it.
+- Preserves the existing shared HTML audio, narration queue, ambient ducking, speaker pause/resume, and Replay Last architecture.
+- Keeps save schema version 3 with backward-compatible normalization for older milestone cards.
 
 ## v8.6.97
 

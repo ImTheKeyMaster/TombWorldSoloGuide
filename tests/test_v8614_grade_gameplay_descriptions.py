@@ -93,7 +93,7 @@ class GradeGameplayDescriptionTests(unittest.TestCase):
         render = function_source("renderPlay", "activeEventEffectsHtml")
         self.assertIn("state.gradeMilestone", render)
         self.assertIn("gradeGameplayDescription", render)
-        for mutation in ("setThreat(", "processReinforcementStage(", "processEventStage(", "log(", "save()"):
+        for mutation in ("setThreat(", "processReinforcementStage(", "processEventStage(", "log("):
             self.assertNotIn(mutation, render)
 
     def test_10_no_vague_placeholder_replaces_gameplay_effects(self):
