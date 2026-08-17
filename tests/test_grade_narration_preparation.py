@@ -6,6 +6,8 @@ import sys
 import unittest
 from pathlib import Path
 
+from versioning import CURRENT_APP_VERSION
+
 
 ROOT = Path(__file__).parents[1]
 TOOL = ROOT / "tools" / "narration-producer"
@@ -31,18 +33,18 @@ APPROVED_SCRIPTS = {
 }
 
 
-def load_server():
-    try:
-        spec = importlib.util.spec_from_file_location("grade_producer_server", TOOL / "server.py")
-        module = importlib.util.module_from_spec(spec)
-        sys.modules["grade_producer_server"] = module
-        spec.loader.exec_module(module)
-        return module
-    except ModuleNotFoundError:
-        return None
-
-
-server = load_server()
+try:
+    import dotenv  # noqa: F401
+    import flask  # noqa: F401
+    import mutagen  # noqa: F401
+    import requests  # noqa: F401
+except ModuleNotFoundError:
+    server = None
+else:
+    spec = importlib.util.spec_from_file_location("grade_producer_server", TOOL / "server.py")
+    server = importlib.util.module_from_spec(spec)
+    sys.modules["grade_producer_server"] = server
+    spec.loader.exec_module(server)
 
 
 class GradeNarrationPreparationTests(unittest.TestCase):
@@ -60,6 +62,12 @@ class GradeNarrationPreparationTests(unittest.TestCase):
         self.assertEqual({"approved"}, {item["status"] for item in self.grades})
         self.assertEqual(APPROVED_SCRIPTS, {item["id"]: item["script"] for item in self.grades})
         self.assertEqual(3, len({item["outputFile"] for item in self.grades}))
+
+        all_grades = []
+        for path in (ROOT / "Narration" / "scripts").glob("*.json"):
+            records = json.loads(path.read_text(encoding="utf-8"))["scripts"]
+            all_grades.extend(item for item in records if item["category"] == "grade")
+        self.assertEqual(list(APPROVED_SCRIPTS), [item["id"] for item in all_grades])
 
     def test_hashes_and_unavailable_manifest_placeholders_match(self):
         for grade, item in enumerate(self.grades, 1):
@@ -109,7 +117,8 @@ class GradeNarrationPreparationTests(unittest.TestCase):
         self.assertNotIn("playGradeEscalation", runtime)
         app = (ROOT / "app.js").read_text(encoding="utf-8")
         persistence = (ROOT / "persistence.js").read_text(encoding="utf-8")
-        self.assertEqual((8, 6, 97), tuple(map(int, re.search(r"APP_VERSION = '([^']+)'", app).group(1).split("."))))
+        self.assertEqual((8, 6, 97), tuple(map(int, CURRENT_APP_VERSION.split("."))))
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", app)
         self.assertEqual("3", re.search(r"SAVE_VERSION = (\d+)", persistence).group(1))
 
 
