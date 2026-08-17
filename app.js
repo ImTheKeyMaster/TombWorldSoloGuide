@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.98';
+  const APP_VERSION = '8.6.99';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
     init:()=>Promise.resolve(),unlock:()=>Promise.resolve(false),activateFromGesture:()=>Promise.resolve(false),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playGradeEscalation:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},setPreferenceEnabled:()=>{},isPreferenceEnabled:()=>true,setMasterEnabled:()=>{},isMasterEnabled:()=>true,isPlaybackEnabled:()=>true,setVolumeMultiplier:()=>{},canReplay:()=>false
   });
@@ -13,6 +13,7 @@
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
+    'dimensional-banishment':{mode:'automatic',phase:'after-attack'},
     hot:{mode:'automatic',phase:'after-weapon-use'},
     severe:{mode:'automatic',phase:'after-attack-roll'},
     'piercing-crits':{mode:'automatic',phase:'before-defense-roll'},
@@ -4909,6 +4910,7 @@ function showPlayerActivation(stage={}){
       return {id:'piercing',label:'Piercing: Handled automatically.'};
     }
     if(id==='hot')return {id,label:"Hot: After this weapon is used, the Guide will roll one D6. If the result is lower than the weapon's Hit stat, the attacker suffers twice the result in damage. Handled automatically."};
+    if(id==='dimensional-banishment')return {id,label:'Dimensional Banishment: After this attack, if the rule triggers and the target survives, the Guide rolls 2D6. If the total exceeds the target’s remaining wounds, it is incapacitated. Handled automatically.'};
     if(handler.mode==='automatic')return {id,label:`${rule}: Handled automatically.`};
     if(id==='range')return {id:`${id}-${weaponRuleValue(profile,id)}`,label:`${rule}: target distance checked before combat`};
     if(id==='blast'||id==='torrent')return {id:`${id}-${weaponRuleValue(profile,id)}`,label:`${rule}: additional targets will be selected next`};
