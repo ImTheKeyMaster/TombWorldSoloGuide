@@ -973,6 +973,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     merged.gradeMilestoneSequence=Math.max(0,Math.trunc(Number(raw.gradeMilestoneSequence)||0));
     if(isRecord(raw.gradeMilestone)){
       const tracked=typeof raw.gradeMilestone.instanceId==='string'&&typeof raw.gradeMilestone.narrationSeen==='boolean';
+      const trackedSequence=tracked?Number(raw.gradeMilestone.instanceId.match(/^grade:\d+:(\d+)$/)?.[1]):0;
+      merged.gradeMilestoneSequence=Math.max(merged.gradeMilestoneSequence,Math.trunc(trackedSequence)||0);
       merged.gradeMilestone={...raw.gradeMilestone,
         instanceId:tracked?raw.gradeMilestone.instanceId:`grade:${raw.gradeMilestone.grade}:legacy`,
         narrationSeen:tracked?raw.gradeMilestone.narrationSeen:true};
@@ -2780,7 +2782,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const milestone=state.gradeMilestone;
     if(!milestone||milestone.narrationSeen||!$('.grade-milestone'))return;
     milestone.narrationSeen=true;
-    save();
+    if(!save())return;
     if(TombWorldNarration.isPlaybackEnabled())void TombWorldNarration.playGradeEscalation(milestone.grade,milestone.instanceId);
   }
 
