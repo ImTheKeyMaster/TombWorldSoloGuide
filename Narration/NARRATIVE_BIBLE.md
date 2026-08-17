@@ -6,7 +6,9 @@ Dungeon Master Narration is optional, sparse cinematic audio that adds atmospher
 
 ## Approved scope
 
-Narration is limited to mission introductions, accepted Tomb World Events, and mission-specific victory or defeat. It does not describe UI controls, phases, activations, movement, attacks, dice, action points, or routine game operations.
+Narration is limited to mission introductions, accepted Tomb World Events, mission-specific victory or defeat, and Threat Escalation / Grade milestones. It does not describe UI controls, phases, activations, movement, attacks, dice, action points, or routine game operations.
+
+Grade narration is sparse cinematic atmosphere accompanying the first visible appearance of each new upward Threat Escalation milestone. It does not replace or recite the gameplay changes shown on the Threat Escalation card; the visible card remains authoritative for mechanics. Grade narration must preserve the same restrained, ominous storyteller style.
 
 ## Voice and delivery
 

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "scripts": [
+    {
+      "id": "grade.1.stirring",
+      "category": "grade",
+      "status": "approved",
+      "script": "Deep within the crypt, dormant systems answer the intrusion.\n\nEmerald lights flicker into life. Ancient machines begin to move, slow and deliberate, as the tomb turns its attention toward the living.\n\nThe awakening has begun.",
+      "scriptHash": "8a9e871f85aa052fc6907d158b6dd1005731bf5d6c55f13c3062d79a696150b5",
+      "outputFile": "grades/01-stirring.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "grade.2.awakened",
+      "category": "grade",
+      "status": "approved",
+      "script": "The signal spreads through the tomb.\n\nMore systems come online. More guardians rise. The silence of the crypt gives way to the measured rhythm of a war machine returning to life.\n\nThe Tomb World is awake.",
+      "scriptHash": "168b3783534ee4bc3d539231668814ab4deda6750d2c1414ebaee0cb29e24c13",
+      "outputFile": "grades/02-awakened.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    },
+    {
+      "id": "grade.3.overrun",
+      "category": "grade",
+      "status": "approved",
+      "script": "The tomb answers in force.\n\nAncient defenses converge through every passage as the crypt pulses with hostile purpose. What began as an intrusion has become open war.\n\nThe Tomb World is fully awake.\n\nThere will be no silence now. Only war.",
+      "scriptHash": "b662bdc1a453c77194a3e38b223132a56760dc0d34f007067c07f72ee84494d7",
+      "outputFile": "grades/03-overrun.mp3",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null
+    }
+  ]
+}

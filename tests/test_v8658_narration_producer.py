@@ -106,7 +106,10 @@ class ProducerStaticTests(unittest.TestCase):
 
         approved = [item["id"] for item in records() if item["status"] == "approved"]
         deadly = [item["id"] for item in records() if item["category"] == "deadly-encounter"]
-        self.assertEqual([], approved)
+        self.assertEqual(
+            ["grade.1.stirring", "grade.2.awakened", "grade.3.overrun"],
+            approved,
+        )
         self.assertEqual(16, len(deadly))
         self.assertTrue(all(item["status"] == "generated" for item in records() if item["category"] == "deadly-encounter"))
 

@@ -507,6 +507,39 @@
       "generationHash": "5e8cae55df50ebf2703686161419448e822c9d0fa35a6a4bbd4dbec48313a04a",
       "audioHash": "2f693381b56bcf6ce44ecfc0eb579d816a8abda1c0af1bc349cde3a46c88db34",
       "durationMs": 18704
+    },
+    "grade.1.stirring": {
+      "category": "grade",
+      "grade": 1,
+      "file": "grades/01-stirring.mp3",
+      "available": false,
+      "scriptHash": "8a9e871f85aa052fc6907d158b6dd1005731bf5d6c55f13c3062d79a696150b5",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
+    },
+    "grade.2.awakened": {
+      "category": "grade",
+      "grade": 2,
+      "file": "grades/02-awakened.mp3",
+      "available": false,
+      "scriptHash": "168b3783534ee4bc3d539231668814ab4deda6750d2c1414ebaee0cb29e24c13",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
+    },
+    "grade.3.overrun": {
+      "category": "grade",
+      "grade": 3,
+      "file": "grades/03-overrun.mp3",
+      "available": false,
+      "scriptHash": "b662bdc1a453c77194a3e38b223132a56760dc0d34f007067c07f72ee84494d7",
+      "settingsHash": null,
+      "generationHash": null,
+      "audioHash": null,
+      "durationMs": null
     }
   }
 }
