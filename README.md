@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.98
+# Tomb World Solo Guide v8.6.99
+
+## v8.6.99
+
+**Version 8.6.99 - Clarify Dimensional Banishment Automation**
+
+- Corrects the weapon-rule summary so Dimensional Banishment is identified as automatically handled by the Guide rather than unsupported.
+- Preserves the existing automatic 2D6 resolution, remaining-wounds comparison, incapacitation, persistence, animation, journal, and multi-target behavior.
+- Keeps save schema version 3 and adds regression coverage preventing the presentation layer from diverging from the existing combat implementation.
 
 ## v8.6.98
 
