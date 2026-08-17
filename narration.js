@@ -255,6 +255,7 @@
       activePlayback = false;
       pausedByMaster = false;
       notifyPlaybackActivity(false);
+      if (eventQueue.length && !eventQueueRunning && !deadlyEncounterQueueRunning) void drainEventQueue(eventQueueGeneration);
     };
     try {
       await player.play();
@@ -321,6 +322,18 @@
     automaticPlayback.add(duplicateKey);
     const result = new Promise(resolve => eventQueue.push({ id: `event.${definitionId}`, duplicateKey, resolve }));
     if (!eventQueueRunning && !deadlyEncounterQueueRunning) void drainEventQueue(eventQueueGeneration);
+    return result;
+  }
+
+  function playGradeEscalation(grade, occurrenceId) {
+    const ids = { 1: 'grade.1.stirring', 2: 'grade.2.awakened', 3: 'grade.3.overrun' };
+    const id = ids[grade];
+    if (!id || !occurrenceId || !isPlaybackEnabled()) return Promise.resolve(false);
+    const duplicateKey = `grade:${occurrenceId}`;
+    if (automaticPlayback.has(duplicateKey)) return Promise.resolve(false);
+    automaticPlayback.add(duplicateKey);
+    const result = new Promise(resolve => eventQueue.push({ id, duplicateKey, resolve }));
+    if (!eventQueueRunning && !deadlyEncounterQueueRunning && !activePlayback) void drainEventQueue(eventQueueGeneration);
     return result;
   }
 
@@ -417,7 +430,7 @@
   }
 
   global.TombWorldNarration = Object.freeze({
-    init, unlock, activateFromGesture, playMissionIntro, playEvent, playOutcome, playDeadlyEncounter, replayLast, stop, pauseNarration,
+    init, unlock, activateFromGesture, playMissionIntro, playEvent, playGradeEscalation, playOutcome, playDeadlyEncounter, replayLast, stop, pauseNarration,
     setPreferenceEnabled, isPreferenceEnabled, setMasterEnabled, isMasterEnabled, isPlaybackEnabled, setVolumeMultiplier,
     canReplay: () => Boolean(lastEntry)
   });

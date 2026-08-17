@@ -2,9 +2,9 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.97';
+  const APP_VERSION = '8.6.98';
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
-    init:()=>Promise.resolve(),unlock:()=>Promise.resolve(false),activateFromGesture:()=>Promise.resolve(false),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},setPreferenceEnabled:()=>{},isPreferenceEnabled:()=>true,setMasterEnabled:()=>{},isMasterEnabled:()=>true,isPlaybackEnabled:()=>true,setVolumeMultiplier:()=>{},canReplay:()=>false
+    init:()=>Promise.resolve(),unlock:()=>Promise.resolve(false),activateFromGesture:()=>Promise.resolve(false),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playGradeEscalation:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},setPreferenceEnabled:()=>{},isPreferenceEnabled:()=>true,setMasterEnabled:()=>{},isMasterEnabled:()=>true,isPlaybackEnabled:()=>true,setVolumeMultiplier:()=>{},canReplay:()=>false
   });
   const TombWorldAmbient=window.TombWorldAmbient||Object.freeze({init:()=>Promise.resolve(false),playFromGesture:()=>Promise.resolve(false),setActive:()=>{},setVolumeMultiplier:()=>{},stop:()=>{},reset:()=>{},removeGestureRecovery:()=>{}});
   const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
@@ -838,7 +838,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
     strategyStage:null, strategyData:null, strategyPipeline:null, missionReadyContext:{sarcophagusControllers:0}, activationNumber:0,totalActivationsThisTP:0, playerActivated:0, npoActivated:0,
     activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], playerWounds:{}, playerOperativeStates:{}, reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0,blockedByCapacity:0,blockedByInventory:0},
-    gradeMilestone:null, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0,
+    gradeMilestone:null, gradeMilestoneSequence:0, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0,
     npoAttackTargetId:null,
     npoAttackSummary:null, combatState:null, weaponRuleResolution:null, hotResolution:null, missionState:null, missionRuntime:null, missionActionContext:null, startingNpoGeneration:null,
     npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[]},
@@ -970,6 +970,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       if(!validation.valid)throw new Error(`Saved NPO roster is invalid: ${validation.errors.join(' ')}`);
     }
     const base=initialState(), merged={...base,...raw};
+    merged.gradeMilestoneSequence=Math.max(0,Math.trunc(Number(raw.gradeMilestoneSequence)||0));
+    if(isRecord(raw.gradeMilestone)){
+      const tracked=typeof raw.gradeMilestone.instanceId==='string'&&typeof raw.gradeMilestone.narrationSeen==='boolean';
+      merged.gradeMilestone={...raw.gradeMilestone,
+        instanceId:tracked?raw.gradeMilestone.instanceId:`grade:${raw.gradeMilestone.grade}:legacy`,
+        narrationSeen:tracked?raw.gradeMilestone.narrationSeen:true};
+    }else merged.gradeMilestone=null;
     if(!['home','help','setup','game'].includes(merged.screen))merged.screen='home';
     if(!['play','mission','roster','player-roster','journal','help'].includes(merged.tab))merged.tab='play';
     const beyondTurningPointLimit=Number(raw.turningPoint)>MAX_TURNING_POINTS;
@@ -1936,7 +1943,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const afterGrade=threatGrade();
     if(state.threat!==before) log(`Threat ${before} → ${state.threat}: ${reason}`);
     if(afterGrade>beforeGrade){
-      state.gradeMilestone={grade:afterGrade,threat:state.threat,label:threatLabel()};
+      state.gradeMilestoneSequence=(state.gradeMilestoneSequence||0)+1;
+      state.gradeMilestone={grade:afterGrade,threat:state.threat,label:threatLabel(),instanceId:`grade:${afterGrade}:${state.gradeMilestoneSequence}`,narrationSeen:false};
       log(`Threat reached Grade ${afterGrade}: ${threatLabel()}.`);
     }
   }
@@ -2768,12 +2776,21 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     });
   }
 
+  function narrateVisibleGradeMilestone(){
+    const milestone=state.gradeMilestone;
+    if(!milestone||milestone.narrationSeen||!$('.grade-milestone'))return;
+    milestone.narrationSeen=true;
+    save();
+    if(TombWorldNarration.isPlaybackEnabled())void TombWorldNarration.playGradeEscalation(milestone.grade,milestone.instanceId);
+  }
+
   function renderPlay(){
     const gradeDescription=state.gradeMilestone?gradeGameplayDescription(state.gradeMilestone.grade,{threat:state.gradeMilestone.threat,turningPoint:Math.max(2,state.turningPoint),suggestedInitiative:state.strategyData?.suggestedInitiative,restlessTombEnabled:state.restlessTombEnabled}):null;
     const milestone=gradeDescription?`<section class="grade-milestone" role="dialog" aria-labelledby="grade-milestone-heading" aria-describedby="grade-milestone-description"><div><small>THREAT ESCALATION</small><h2 id="grade-milestone-heading">Grade ${gradeDescription.grade}: ${escapeHtml(gradeDescription.name)}</h2><span>${escapeHtml(gradeDescription.threatRange)}</span><section id="grade-milestone-description" class="grade-gameplay-changes" aria-labelledby="grade-gameplay-heading"><h3 id="grade-gameplay-heading">GAMEPLAY CHANGES</h3><ul>${gradeDescription.effects.map(effect=>`<li>${escapeHtml(effect.text)}</li>`).join('')}</ul></section></div><button class="btn ghost compact" id="dismissGradeMilestone">Dismiss</button></section>`:'';
     app.innerHTML=hud()+milestone+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${state.phase!=='strategy'?activeEventEffectsHtml():''}${nextStepCard()}${state.phase==='firefight'?activationTracker():''}`;
     bindPlay();
     requestAnimationFrame(narrateVisibleStrategyEvents);
+    requestAnimationFrame(narrateVisibleGradeMilestone);
     if(gradeDescription)requestAnimationFrame(()=>$('#dismissGradeMilestone')?.focus({preventScroll:true}));
   }
 
