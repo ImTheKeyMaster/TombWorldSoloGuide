@@ -3,14 +3,15 @@
 
   const PREFERENCE_KEY = 'tombWorldSoloGuide.diceRollEnabled';
   const DICE_ROLL_SOURCE = 'Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3';
-  const audio = typeof Audio === 'function' ? new Audio() : null;
+  const diceAudioPlayers = typeof Audio === 'function' ? [new Audio(), new Audio()] : [];
+  let nextPlayerIndex = 0;
   let preferenceEnabled = readPreference();
   let masterEnabled = true;
 
-  if (audio) {
+  diceAudioPlayers.forEach(audio => {
     audio.preload = 'auto';
     audio.src = DICE_ROLL_SOURCE;
-  }
+  });
 
   function readPreference() {
     try { return localStorage.getItem(PREFERENCE_KEY) !== 'false'; }
@@ -18,16 +19,25 @@
   }
 
   function init() {
-    try { audio?.load(); }
-    catch { return Promise.resolve(false); }
-    return Promise.resolve(Boolean(audio));
+    let initialized = diceAudioPlayers.length === 2;
+    diceAudioPlayers.forEach(audio => {
+      try { audio.load(); }
+      catch { initialized = false; }
+    });
+    return Promise.resolve(initialized);
   }
 
   function play() {
-    if (!audio || !masterEnabled || !preferenceEnabled) return Promise.resolve(false);
+    if (!diceAudioPlayers.length || !masterEnabled || !preferenceEnabled) return Promise.resolve(false);
+    const audio = diceAudioPlayers[nextPlayerIndex];
+    try { audio.currentTime = 0; }
+    catch { return Promise.resolve(false); }
+    let request;
     try {
-      audio.currentTime = 0;
-      const request = audio.play();
+      request = audio.play();
+    } catch { return Promise.resolve(false); }
+    finally { nextPlayerIndex = (nextPlayerIndex + 1) % diceAudioPlayers.length; }
+    try {
       return request && typeof request.then === 'function'
         ? request.then(() => true).catch(() => false)
         : Promise.resolve(true);
@@ -47,15 +57,22 @@
   }
 
   function setVolumeMultiplier(value) {
-    if (!audio || window.TombWorldAudioCapabilities?.supportsInAppVolumeControl() === false) return;
-    try { audio.volume = Math.max(0, Math.min(1, Number(value) || 0)); }
-    catch { /* Dice audio remains at its source level if volume writes are rejected. */ }
+    if (!diceAudioPlayers.length || window.TombWorldAudioCapabilities?.supportsInAppVolumeControl() === false) return;
+    const volume = Math.max(0, Math.min(1, Number(value) || 0));
+    diceAudioPlayers.forEach(audio => {
+      try { audio.volume = volume; }
+      catch { /* This player remains at its source level if the volume write is rejected. */ }
+    });
   }
 
   function stop() {
-    if (!audio) return;
-    try { audio.pause(); audio.currentTime = 0; }
-    catch { /* Stopping dice audio must never interrupt New Game. */ }
+    if (!diceAudioPlayers.length) return;
+    diceAudioPlayers.forEach(audio => {
+      try { audio.pause(); }
+      catch { /* Continue resetting this player and stopping the other player. */ }
+      try { audio.currentTime = 0; }
+      catch { /* Stopping dice audio must never interrupt New Game. */ }
+    });
   }
 
   window.TombWorldDiceSfx = Object.freeze({
