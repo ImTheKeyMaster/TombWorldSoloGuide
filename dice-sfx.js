@@ -19,18 +19,25 @@
   }
 
   function init() {
-    try { diceAudioPlayers.forEach(audio => audio.load()); }
-    catch { return Promise.resolve(false); }
-    return Promise.resolve(diceAudioPlayers.length === 2);
+    let initialized = diceAudioPlayers.length === 2;
+    diceAudioPlayers.forEach(audio => {
+      try { audio.load(); }
+      catch { initialized = false; }
+    });
+    return Promise.resolve(initialized);
   }
 
   function play() {
     if (!diceAudioPlayers.length || !masterEnabled || !preferenceEnabled) return Promise.resolve(false);
     const audio = diceAudioPlayers[nextPlayerIndex];
+    try { audio.currentTime = 0; }
+    catch { return Promise.resolve(false); }
+    let request;
     try {
-      audio.currentTime = 0;
-      const request = audio.play();
-      nextPlayerIndex = (nextPlayerIndex + 1) % diceAudioPlayers.length;
+      request = audio.play();
+    } catch { return Promise.resolve(false); }
+    finally { nextPlayerIndex = (nextPlayerIndex + 1) % diceAudioPlayers.length; }
+    try {
       return request && typeof request.then === 'function'
         ? request.then(() => true).catch(() => false)
         : Promise.resolve(true);
@@ -51,14 +58,21 @@
 
   function setVolumeMultiplier(value) {
     if (!diceAudioPlayers.length || window.TombWorldAudioCapabilities?.supportsInAppVolumeControl() === false) return;
-    try { diceAudioPlayers.forEach(audio => { audio.volume = Math.max(0, Math.min(1, Number(value) || 0)); }); }
-    catch { /* Dice audio remains at its source level if volume writes are rejected. */ }
+    const volume = Math.max(0, Math.min(1, Number(value) || 0));
+    diceAudioPlayers.forEach(audio => {
+      try { audio.volume = volume; }
+      catch { /* This player remains at its source level if the volume write is rejected. */ }
+    });
   }
 
   function stop() {
     if (!diceAudioPlayers.length) return;
-    try { diceAudioPlayers.forEach(audio => { audio.pause(); audio.currentTime = 0; }); }
-    catch { /* Stopping dice audio must never interrupt New Game. */ }
+    diceAudioPlayers.forEach(audio => {
+      try { audio.pause(); }
+      catch { /* Continue resetting this player and stopping the other player. */ }
+      try { audio.currentTime = 0; }
+      catch { /* Stopping dice audio must never interrupt New Game. */ }
+    });
   }
 
   window.TombWorldDiceSfx = Object.freeze({

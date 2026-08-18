@@ -100,6 +100,10 @@ class DiceRollAudioReleaseTests(unittest.TestCase):
         start = APP.index("function runAutomaticCombatRolls")
         end = APP.index("\n  function retainedDiceTotals", start)
         function_source = APP[start:end]
+        settle_combat_start = APP.index("function settleCombatDice")
+        settle_combat_source = APP[settle_combat_start:APP.index("\n  function settleAnimatedDice", settle_combat_start)]
+        settle_animated_start = APP.index("function settleAnimatedDice")
+        settle_animated_source = APP[settle_animated_start:APP.index("\n  function ", settle_animated_start + 10)]
         script = f"""
 const events=[];
 let scheduled=null;
@@ -118,12 +122,24 @@ const rolledCombatDice=()=>[{{value:4}}];
 const automaticWeaponRuleMessages=()=>[];
 const severeAppliedHtml=()=>'';
 const escapeHtml=value=>value;
-const settleCombatDice=(combat,onComplete)=>{{events.push('settle-called');void TombWorldDiceSfx.play();onComplete();return ()=>{{}};}};
+let attackRow=null,defenseRow=null;
+const makeRow=animated=>({{classList:{{contains:value=>animated&&value==='animated-roll',replace:()=>{{}}}},innerHTML:''}});
+const $=(selector,root)=>selector.includes('attack')?attackRow:defenseRow;
+Object.defineProperty(container,'innerHTML',{{get(){{return this._html;}},set(value){{
+  this._html=value;
+  const attack=value.includes('Rolling after the attack');
+  events.push(attack?'attack-animation':'defense-animation');
+  attackRow=makeRow(attack); defenseRow=makeRow(!attack);
+}}}});
+{settle_combat_source}
+{settle_animated_source}
 {function_source}
 runAutomaticCombatRolls({{container,profile:{{}},defenseSave:3,rolledAttackDice:[{{value:5}}],rolledDefenseDice:[{{value:4}}],onComplete:()=>events.push('complete')}});
 if(events.join()!=='attack-animation,sfx'||typeof scheduled!=='function')process.exit(1);
 scheduled();
-if(events.join()!=='attack-animation,sfx,defense-animation,settle-called,sfx,complete')process.exit(1);
+if(events.join()!=='attack-animation,sfx,defense-animation,sfx'||typeof scheduled!=='function')process.exit(1);
+scheduled();
+if(events.join()!=='attack-animation,sfx,defense-animation,sfx,complete')process.exit(1);
 """
         subprocess.run(["node", "-e", script], check=True, cwd=ROOT)
 
@@ -172,6 +188,29 @@ const s=context.window.TombWorldDiceSfx;
   if(!vm.runInNewContext('window.TombWorldDiceSfx',context)||context.window.TombWorldNarration!==narration||context.window.TombWorldAmbient!==ambient)process.exit(1);
   if(narration.src!=='narration.mp3'||narration.currentTime!==42||narration.queue.join()!=='event'||narration.pauses!==0)process.exit(1);
   if(ambient.src!=='ambient.ogg'||ambient.currentTime!==17||ambient.pauses!==0)process.exit(1);
+}})();
+"""
+        subprocess.run(["node", "-e", script], check=True, cwd=ROOT)
+
+    def test_synchronous_player_failure_does_not_block_alternation_or_cleanup(self):
+        script = f"""
+const fs=require('fs'),vm=require('vm');
+const players=[];
+class FakeAudio {{
+  constructor(){{this.id=players.length;this.pauses=0;this.resets=0;players.push(this);}}
+  load(){{}}
+  play(){{if(this.id===0)throw new Error('blocked');return Promise.resolve();}}
+  pause(){{this.pauses++;if(this.id===0)throw new Error('pause rejected');}}
+  set currentTime(value){{if(value!==0)process.exit(1);this.resets++;}}
+}}
+const context={{Audio:FakeAudio,Promise,localStorage:{{getItem:()=>null,setItem:()=>{{}}}},window:{{TombWorldAudioCapabilities:{{supportsInAppVolumeControl:()=>true}}}}}};
+context.window.window=context.window; context.window.Audio=FakeAudio; context.window.localStorage=context.localStorage;
+vm.runInNewContext(fs.readFileSync({str(ROOT / 'dice-sfx.js')!r},'utf8'),context);
+const s=context.window.TombWorldDiceSfx;
+(async()=>{{
+  if(await s.play()!==false||await s.play()!==true)process.exit(1);
+  s.stop();
+  if(players.length!==2||players.some(player=>player.pauses!==1||player.resets!==2))process.exit(1);
 }})();
 """
         subprocess.run(["node", "-e", script], check=True, cwd=ROOT)
