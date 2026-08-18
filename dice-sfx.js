@@ -2,7 +2,7 @@
   'use strict';
 
   const PREFERENCE_KEY = 'tombWorldSoloGuide.diceRollEnabled';
-  const DICE_ROLL_SOURCE = 'Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms.mp3';
+  const DICE_ROLL_SOURCE = 'Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3';
   const audio = typeof Audio === 'function' ? new Audio() : null;
   let preferenceEnabled = readPreference();
   let masterEnabled = true;

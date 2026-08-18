@@ -1,3 +1,4 @@
+import hashlib
 import re
 import subprocess
 import unittest
@@ -15,20 +16,25 @@ WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 class DiceRollAudioReleaseTests(unittest.TestCase):
     def test_release_asset_and_offline_wiring(self):
         self.assertEqual((8, 6, 101), tuple(map(int, CURRENT_APP_VERSION.split("."))))
-        asset = ROOT / "Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms.mp3"
+        asset = ROOT / "Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3"
         self.assertTrue(asset.is_file())
         self.assertGreater(asset.stat().st_size, 0)
-        self.assertIn("'./Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms.mp3'", WORKER)
+        self.assertEqual(
+            "30b23dd163cfdbeaa4cbc436e5ce436e576c88fd41ed980ed8514dabcb953e40",
+            hashlib.sha256(asset.read_bytes()).hexdigest(),
+        )
+        self.assertIn("'./Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3'", WORKER)
         self.assertIn(f'dice-sfx.js?v={CURRENT_APP_VERSION}', INDEX)
         self.assertLess(INDEX.index("dice-sfx.js"), INDEX.index("app.js"))
         runtime = "\n".join((APP, INDEX, SFX, WORKER))
+        self.assertNotIn("dice-roll-flem0527-750ms.mp3", runtime)
         self.assertNotIn("Btn_Click.wav", runtime)
         self.assertFalse((ROOT / "Assets/Audio/Narration/SFX/sfx-config.json").exists())
 
     def test_module_uses_one_persistent_html_audio_element(self):
         self.assertEqual(1, len(re.findall(r"\bnew Audio\s*\(", SFX)))
         self.assertIn("audio.preload = 'auto'", SFX)
-        self.assertIn("dice-roll-flem0527-750ms.mp3", SFX)
+        self.assertIn("dice-roll-flem0527-750ms-50.mp3", SFX)
         for forbidden in ("AudioContext", "webkitAudioContext", "GainNode", "MediaElementAudioSourceNode"):
             self.assertNotIn(forbidden, SFX)
         play_body = SFX[SFX.index("function play()") : SFX.index("function setPreferenceEnabled")]
