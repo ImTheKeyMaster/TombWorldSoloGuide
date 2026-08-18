@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.101
+# Tomb World Solo Guide v8.6.102
+
+## v8.6.102
+
+**Version 8.6.102 - Improve iPhone Dice Audio Timing**
+
+- Uses alternating persistent Dice SFX players to reduce iPhone/WebKit restart latency during consecutive rolls such as Attack and Defense.
+- Preserves synchronized 750 ms visual dice timing and the attenuated production Dice Roll sound.
+- Publishes the attenuated Dice SFX under a new application/service-worker cache version so installed clients receive a consistent build.
+- Preserves narration, ambient playback, user audio preferences, and save schema version 3.
 
 ## v8.6.101
 

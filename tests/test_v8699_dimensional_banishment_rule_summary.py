@@ -42,7 +42,7 @@ class DimensionalBanishmentRuleSummaryTests(unittest.TestCase):
         cls.result = evaluate_summary()
 
     def test_version_metadata_and_save_schema(self):
-        self.assertEqual((8, 6, 101), tuple(map(int, CURRENT_APP_VERSION.split("."))))
+        self.assertEqual((8, 6, 102), tuple(map(int, CURRENT_APP_VERSION.split("."))))
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
         self.assertIn(f'<div class="version">V{CURRENT_APP_VERSION}</div>', INDEX)
         self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
