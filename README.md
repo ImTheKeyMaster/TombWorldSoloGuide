@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.104
+# Tomb World Solo Guide v8.6.105
+
+## v8.6.105
+
+**Version 8.6.105 - Desktop Sidebar Scrollbar Fix**
+
+- Removes the phantom desktop page scrollbar caused by Operative Status sidebar viewport-height geometry.
+- Synchronizes the sidebar with the actual rendered application-header height instead of relying on a fragile fixed offset.
+- Preserves normal page scrolling when content genuinely exceeds the viewport and existing internal operative-list scrolling.
+- Preserves save schema version 3.
 
 ## v8.6.104
 
