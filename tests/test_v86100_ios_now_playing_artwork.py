@@ -1,5 +1,6 @@
 import json
 import re
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -33,13 +34,32 @@ class IosNowPlayingArtworkTests(unittest.TestCase):
         ], icons)
 
     def test_media_session_metadata_is_passive_and_feature_detected(self):
-        self.assertIn("'mediaSession' in navigator && 'MediaMetadata' in window", APP)
-        self.assertIn("navigator.mediaSession.metadata = new MediaMetadata({", APP)
+        self.assertIn("typeof navigator !== 'undefined'", APP)
+        self.assertIn("'mediaSession' in navigator", APP)
+        self.assertIn("typeof window.MediaMetadata === 'function'", APP)
+        self.assertIn("navigator.mediaSession.metadata = new window.MediaMetadata({", APP)
         self.assertIn("title: 'Tomb World Solo Guide'", APP)
         for size in (192, 512, 1024):
             self.assertIn(f"src:'Assets/icon-{size}.png',sizes:'{size}x{size}',type:'image/png'", APP)
         self.assertIn("catch (error)", APP)
         self.assertNotIn("setActionHandler", APP)
+
+    def test_media_session_initialization_is_safe_when_unavailable_or_rejected(self):
+        metadata = APP[APP.index("  if (typeof navigator"):APP.index("  const TombWorldNarration")]
+        script = f"""
+const vm = require('vm');
+const source = {json.dumps(metadata)};
+for (const context of [
+  {{window: {{}}}},
+  {{window: {{}}, navigator: {{}}}},
+  {{window: {{MediaMetadata: function() {{ throw new Error('rejected'); }}}}, navigator: {{mediaSession: {{}}}}, console: {{warn() {{}}}}}}
+]) {{
+  vm.createContext(context);
+  vm.runInContext(source, context);
+}}
+"""
+        result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
 
     def test_audio_architecture_remains_html_audio_only(self):
         runtime = "\n".join((ROOT / filename).read_text(encoding="utf-8") for filename in ("app.js", "narration.js", "ambient.js"))

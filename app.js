@@ -3,9 +3,9 @@
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
   const APP_VERSION = '8.6.100';
-  if ('mediaSession' in navigator && 'MediaMetadata' in window) {
+  if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
-      navigator.mediaSession.metadata = new MediaMetadata({
+      navigator.mediaSession.metadata = new window.MediaMetadata({
         title: 'Tomb World Solo Guide',
         artwork: [
           {src:'Assets/icon-192.png',sizes:'192x192',type:'image/png'},
