@@ -2,7 +2,8 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.100';
+  const APP_VERSION = '8.6.101';
+  const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
       navigator.mediaSession.metadata = new window.MediaMetadata({
@@ -21,6 +22,22 @@
     init:()=>Promise.resolve(),unlock:()=>Promise.resolve(false),activateFromGesture:()=>Promise.resolve(false),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playGradeEscalation:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},setPreferenceEnabled:()=>{},isPreferenceEnabled:()=>true,setMasterEnabled:()=>{},isMasterEnabled:()=>true,isPlaybackEnabled:()=>true,setVolumeMultiplier:()=>{},canReplay:()=>false
   });
   const TombWorldAmbient=window.TombWorldAmbient||Object.freeze({init:()=>Promise.resolve(false),playFromGesture:()=>Promise.resolve(false),setActive:()=>{},setVolumeMultiplier:()=>{},stop:()=>{},reset:()=>{},removeGestureRecovery:()=>{}});
+  function createDiceSfxFallback(){
+    const preferenceKey='tombWorldSoloGuide.diceRollEnabled';
+    let preferenceEnabled=true;
+    try{preferenceEnabled=localStorage.getItem(preferenceKey)!=='false';}
+    catch{/* Missing storage keeps the documented default-on behavior. */}
+    return Object.freeze({
+      init:()=>Promise.resolve(false),play:()=>Promise.resolve(false),
+      setPreferenceEnabled:enabled=>{
+        preferenceEnabled=Boolean(enabled);
+        try{localStorage.setItem(preferenceKey,String(preferenceEnabled));}
+        catch{/* The fallback preference remains active for this session. */}
+      },
+      isPreferenceEnabled:()=>preferenceEnabled,setMasterEnabled:()=>{},setVolumeMultiplier:()=>{},stop:()=>{}
+    });
+  }
+  const TombWorldDiceSfx=window.TombWorldDiceSfx||createDiceSfxFallback();
   const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
   const AMBIENT_ENABLED_PREFERENCE_KEY = 'tombWorldSoloGuide.ambientEnabled';
   const GAME_VOLUME_PREFERENCE_KEY = 'tombWorldSoloGuide.gameVolume';
@@ -78,6 +95,9 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   let preferredGameVolume=readPreferredGameVolume();
   TombWorldNarration.setVolumeMultiplier(preferredGameVolume);
   TombWorldAmbient.setVolumeMultiplier(preferredGameVolume);
+  TombWorldDiceSfx.setMasterEnabled(TombWorldNarration.isMasterEnabled());
+  TombWorldDiceSfx.setVolumeMultiplier(preferredGameVolume);
+  void TombWorldDiceSfx.init();
   void TombWorldAmbient.init();
   let appliedAmbientEnabled=TombWorldNarration.isMasterEnabled()&&ambientEnabled;
   let needsAudioGestureRecovery=false;
@@ -141,6 +161,12 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       ambientToggle.setAttribute('aria-checked',String(ambientEnabled));
       ambientToggle.querySelector('.ambient-toggle-state').textContent=ambientEnabled?'On':'Off';
     }
+    const diceRollToggle=globalThis.document?.querySelector('#diceRollToggle');
+    if(diceRollToggle){
+      const diceRollEnabled=TombWorldDiceSfx.isPreferenceEnabled();
+      diceRollToggle.setAttribute('aria-checked',String(diceRollEnabled));
+      diceRollToggle.querySelector('.ambient-toggle-state').textContent=diceRollEnabled?'On':'Off';
+    }
     const volumeSlider=globalThis.document?.querySelector('#gameVolume');
     if(volumeSlider){
       const percentage=masterEnabled?Math.round(preferredGameVolume*100):0;
@@ -151,6 +177,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
   async function setGameAudioEnabled(enabled){
     TombWorldNarration.setMasterEnabled(enabled);
+    TombWorldDiceSfx.setMasterEnabled(enabled);
     if(enabled){
       appliedAmbientEnabled=ambientEnabled;
       reconcileAmbientActiveState();
@@ -4194,6 +4221,7 @@ function showPlayerActivation(stage={}){
   }
 
   function settleAnimatedDice(rows,onSettled=()=>{}){
+    if(rows.some(({row,dice})=>row?.classList.contains('animated-roll')&&dice.length))void TombWorldDiceSfx.play();
     const timer=setTimeout(()=>{
       rows.forEach(({row,dice})=>{
         if(!row)return;
@@ -4201,7 +4229,7 @@ function showPlayerActivation(stage={}){
         row.classList.replace('animated-roll','settled');
       });
       onSettled();
-    },700);
+    },DICE_ROLL_ANIMATION_MS);
     return ()=>clearTimeout(timer);
   }
 
@@ -4450,6 +4478,7 @@ function showPlayerActivation(stage={}){
     save();
     missionDialogLocked=true;
     showModal('Aggressive Defence',`<p><strong>${escapeHtml(npoName(target))}</strong> was incapacitated by an enemy operative within 2 inches.</p><p>Roll one D3 before removing it.</p><section class="combat-stage" aria-label="Aggressive Defence roll"><div class="dice-row animated-roll" id="aggressiveDefenseDie">${rollingDieHtml()}</div><div id="aggressiveDefenseResult" aria-live="polite"></div></section><div class="wizard-actions"><button class="btn primary" id="continueAggressiveDefense" disabled>Continue</button></div>`);
+    void TombWorldDiceSfx.play();
     const button=$('#continueAggressiveDefense');
     const die=$('#aggressiveDefenseDie');
     setTimeout(()=>{
@@ -4458,7 +4487,7 @@ function showPlayerActivation(stage={}){
       die.classList.replace('animated-roll','settled');
       $('#aggressiveDefenseResult').innerHTML=`<strong>D3 Roll: ${retaliation.roll}</strong><p>${pending.aggressiveDefenseDamage?'The attacking operative suffers 1 damage.':'The attacking operative suffers no damage.'}</p>`;
       button.disabled=false;
-    },700);
+    },DICE_ROLL_ANIMATION_MS);
     button.onclick=()=>{
       if(button.disabled||pending.aggressiveDefenseResolved)return;
       pending.aggressiveDefenseResolved=true;
@@ -5046,13 +5075,18 @@ function showPlayerActivation(stage={}){
       const outcome=record.incapacitated?`${escapeHtml(name)} is incapacitated by Hot.`:record.damage?`${escapeHtml(name)} suffers ${record.damage} damage.<br>Wounds: ${record.woundsBefore} -&gt; ${record.woundsAfter}`:'No damage.';
       const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
       const die=reducedMotion?dieHtml({value:record.roll,ariaLabel:`Hot roll: ${record.roll}`}):rollingDieHtml();
-      showModal('HOT',`<section class="combat-stage" aria-label="Hot result"><div class="dice-row ${reducedMotion?'settled':'animated-roll'}" id="hotRollDie">${die}</div><p><strong>Hot roll: ${record.roll}</strong><br>Hit stat: ${record.effectiveHit}+</p><p>${escapeHtml(comparison)}</p><strong>${outcome}</strong></section><div class="wizard-actions"><button class="btn primary" id="continueHot">Continue</button></div>`,undefined,`hot:${record.id}`);
-      if(!reducedMotion)setTimeout(()=>{
-        const rollDie=$('#hotRollDie');
-        if(!rollDie?.isConnected)return;
-        rollDie.innerHTML=dieHtml({value:record.roll,ariaLabel:`Hot roll: ${record.roll}`});
-        rollDie.classList.replace('animated-roll','settled');
-      },700);
+      showModal('HOT',`<section class="combat-stage" aria-label="Hot result"><div class="dice-row ${reducedMotion?'settled':'animated-roll'}" id="hotRollDie">${die}</div><div id="hotRollResult" ${reducedMotion?'':'hidden'}><p><strong>Hot roll: ${record.roll}</strong><br>Hit stat: ${record.effectiveHit}+</p><p>${escapeHtml(comparison)}</p><strong>${outcome}</strong></div></section><div class="wizard-actions"><button class="btn primary" id="continueHot" ${reducedMotion?'':'disabled'}>Continue</button></div>`,undefined,`hot:${record.id}`);
+      if(!reducedMotion){
+        void TombWorldDiceSfx.play();
+        setTimeout(()=>{
+          const rollDie=$('#hotRollDie');
+          if(!rollDie?.isConnected)return;
+          rollDie.innerHTML=dieHtml({value:record.roll,ariaLabel:`Hot roll: ${record.roll}`});
+          rollDie.classList.replace('animated-roll','settled');
+          $('#hotRollResult').hidden=false;
+          $('#continueHot').disabled=false;
+        },DICE_ROLL_ANIMATION_MS);
+      }
     }
     const button=$('#continueHot');button.focus({preventScroll:true});
     button.onclick=()=>{
@@ -5276,6 +5310,7 @@ function showPlayerActivation(stage={}){
       ? applySevereToAttackDice(retainSuccessfulDice(rolledAttackDice),profile).dice
       : rolledAttackDiceForProfile(profile);
     container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row animated-roll">${attackDice.map(()=>rollingDieHtml()).join('')}</div></section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row"><span class="muted">Rolling after the attack…</span></div></section>`;
+    if(attackDice.length)void TombWorldDiceSfx.play();
     timer=setTimeout(()=>{
       if(!container.isConnected)return;
       const defenseCount=effectiveDefenseDiceCount(profile,attackDice,3);
@@ -5286,7 +5321,7 @@ function showPlayerActivation(stage={}){
         timer=null;
         if(container.isConnected)onComplete(attackDice,defenseDice);
       },container);
-    },700);
+    },DICE_ROLL_ANIMATION_MS);
     return ()=>{
       if(typeof timer==='function')timer();
       else if(timer)clearTimeout(timer);
@@ -7187,6 +7222,7 @@ function showPlayerActivation(stage={}){
       const dice=Array.isArray(supplied)&&supplied.length===operation.dice.count?supplied:Array.from({length:operation.dice.count},()=>roll(operation.dice.sides));
       let settled=false;
       showModal(operation.label||'Mission Roll',`<div class="dice-row animated-roll" id="missionDiceRoll">${dice.map(()=>rollingDieHtml()).join('')}</div><p>Rolling ${operation.dice.count}D${operation.dice.sides}…</p>`,()=>{if(!settled)reject(new TombWorldMissionEngine.MissionEngineError('DICE_CANCELLED','Mission dice roll was cancelled.'));});
+      if(dice.length)void TombWorldDiceSfx.play();
       missionDialogLocked=true;
       setTimeout(()=>{
         if(!modal.open)return;
@@ -7195,7 +7231,7 @@ function showPlayerActivation(stage={}){
         $('#missionDiceRoll').innerHTML=dice.map(value=>dieHtml({value})).join('');
         modalBody.querySelector('p').textContent=`Dice: ${dice.join(' + ')} · Total: ${dice.reduce((sum,value)=>sum+value,0)}`;
         setTimeout(()=>{missionDialogLocked=false;closeModal();resolve({dice,total:dice.reduce((sum,value)=>sum+value,0)});},450);
-      },700);
+      },DICE_ROLL_ANIMATION_MS);
     });
   }
 
@@ -7631,6 +7667,12 @@ function showPlayerActivation(stage={}){
             <span class="ambient-toggle-state">${ambientEnabled?'On':'Off'}</span><span class="ambient-toggle-track" aria-hidden="true"><span></span></span>
           </button>
         </div>
+        <div class="ambient-toggle-row">
+          <span id="diceRollLabel">Dice Roll</span>
+          <button class="ambient-toggle" id="diceRollToggle" type="button" role="switch" aria-labelledby="diceRollLabel" aria-checked="${TombWorldDiceSfx.isPreferenceEnabled()}">
+            <span class="ambient-toggle-state">${TombWorldDiceSfx.isPreferenceEnabled()?'On':'Off'}</span><span class="ambient-toggle-track" aria-hidden="true"><span></span></span>
+          </button>
+        </div>
         ${supportsInAppVolumeControl()?`<div class="game-volume-row">
           <label for="gameVolume">Volume</label>
           <div class="game-volume-control">
@@ -7664,6 +7706,10 @@ function showPlayerActivation(stage={}){
       localStorage.setItem(AMBIENT_ENABLED_PREFERENCE_KEY,String(ambientEnabled));
       syncNarrationControls();
     };
+    $('#diceRollToggle').onclick=()=>{
+      TombWorldDiceSfx.setPreferenceEnabled(!TombWorldDiceSfx.isPreferenceEnabled());
+      syncNarrationControls();
+    };
     const gameVolume=$('#gameVolume');
     if(gameVolume)gameVolume.oninput=event=>{
       const percentage=Number(event.currentTarget.value);
@@ -7675,6 +7721,7 @@ function showPlayerActivation(stage={}){
       preferredGameVolume=percentage/100;
       TombWorldNarration.setVolumeMultiplier(preferredGameVolume);
       TombWorldAmbient.setVolumeMultiplier(preferredGameVolume);
+      TombWorldDiceSfx.setVolumeMultiplier(preferredGameVolume);
       writePreferredGameVolume();
       if(!TombWorldNarration.isMasterEnabled())void setGameAudioEnabled(true);
       else syncNarrationControls();
@@ -7712,6 +7759,7 @@ function showPlayerActivation(stage={}){
   function startNewGameSetup(){
     TombWorldNarration.stop();
     TombWorldAmbient.reset();
+    TombWorldDiceSfx.stop();
     clearPendingBoardSetupMissionIntro();
     document.documentElement.classList.remove('desktop-game-background');
     gameBackground.style.backgroundImage='none';

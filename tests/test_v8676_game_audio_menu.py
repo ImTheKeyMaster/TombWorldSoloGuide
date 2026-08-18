@@ -15,7 +15,7 @@ class GameAudioMenuTests(unittest.TestCase):
         self.assertIn('<span id="narrationLabel">Narration</span>', APP)
         self.assertIn('class="ambient-toggle" id="narrationToggle"', APP)
         self.assertIn('role="switch" aria-labelledby="narrationLabel" aria-checked=', APP)
-        self.assertEqual(APP.count('class="ambient-toggle-row"'), 2)
+        self.assertEqual(APP.count('class="ambient-toggle-row"'), 3)
         self.assertNotIn('game-audio-btn', APP + STYLES)
         self.assertNotIn('game-audio-label', APP)
 
