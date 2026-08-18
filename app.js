@@ -179,7 +179,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     TombWorldNarration.setMasterEnabled(enabled);
     TombWorldDiceSfx.setMasterEnabled(enabled);
     if(enabled){
-      const diceActivation=globalThis.TombWorldDiceSfx?.activateFromGesture?.()??Promise.resolve(false);
+      const diceActivation=TombWorldDiceSfx.activateFromGesture();
       appliedAmbientEnabled=ambientEnabled;
       reconcileAmbientActiveState();
       const narrationUnlock=applySelectedAudioFromGesture();
@@ -204,7 +204,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
   function clearPendingBoardSetupMissionIntro(){pendingBoardSetupMissionIntro=null;}
   function enterBoardSetup(){
-    void globalThis.TombWorldDiceSfx?.activateFromGesture?.();
+    void TombWorldDiceSfx.activateFromGesture();
     pendingBoardSetupMissionIntro=state.missionId;
     playPendingBoardSetupMissionIntro();
   }

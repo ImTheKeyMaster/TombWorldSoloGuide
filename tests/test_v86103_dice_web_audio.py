@@ -37,7 +37,7 @@ class DiceWebAudioReleaseTests(unittest.TestCase):
 
     def test_early_initialization_and_silent_gesture_activation(self):
         self.assertIn("void TombWorldDiceSfx.init();", APP)
-        self.assertIn("TombWorldDiceSfx?.activateFromGesture?.()", APP)
+        self.assertIn("TombWorldDiceSfx.activateFromGesture()", APP)
         activation = SFX[SFX.index("function activateFromGesture") : SFX.index("function setPreferenceEnabled")]
         self.assertIn("context.resume()", activation)
         self.assertNotIn("startSource", activation)
@@ -57,7 +57,7 @@ class DiceWebAudioReleaseTests(unittest.TestCase):
     def test_runtime_buffer_reuse_overlap_gain_master_toggle_stop_and_failures(self):
         script = f"""
 const fs=require('fs'),vm=require('vm');
-let fetches=0,decodes=0,resumes=0,stored=null;
+let fetches=0,decodes=0,resumes=0,stored=null,gainNode=null;
 const sources=[];
 class Source {{
   constructor(){{this.stopped=false;sources.push(this)}}
@@ -65,7 +65,7 @@ class Source {{
 }}
 class Context {{
   constructor(){{this.state='suspended';this.destination={{}};Context.instances++}}
-  createGain(){{return {{gain:{{value:1}},connect(){{}}}}}}
+  createGain(){{gainNode={{gain:{{value:1}},connect(){{}}}};return gainNode}}
   createBufferSource(){{return new Source()}}
   decodeAudioData(){{decodes++;return Context.decodeFails?Promise.reject(Error('decode')):Promise.resolve({{buffer:true}})}}
   resume(){{resumes++;if(Context.resumeFails)return Promise.reject(Error('resume'));this.state='running';return Promise.resolve()}}
@@ -80,24 +80,26 @@ const s=context.window.TombWorldDiceSfx;
   if(!await s.activateFromGesture()||sources.length!==0||resumes!==1)process.exit(2);
   if(!await s.play()||!await s.play()||sources.length!==2||fetches!==1||decodes!==1)process.exit(3);
   s.setVolumeMultiplier(.25);
+  if(gainNode.gain.value!==.25)process.exit(9);
   s.setMasterEnabled(false);
   if(!sources.every(x=>x.stopped)||await s.play())process.exit(4);
   s.setMasterEnabled(true);s.setPreferenceEnabled(false);if(await s.play())process.exit(5);
   s.setPreferenceEnabled(true);if(!await s.play()||Context.instances!==1||fetches!==1)process.exit(6);
   Source.throwStart=true;if(await s.play())process.exit(7);Source.throwStart=false;
-  context.window.AudioContext.prototype.state='suspended';
-  context.window.TombWorldDiceSfx.stop();
+  s.stop();
+  const before=sources.length;
+  if(!await s.play()||sources.length!==before+1||fetches!==1||decodes!==1||stored!=='true')process.exit(10);
 }})().catch(()=>process.exit(8));
 """
         subprocess.run(["node", "-e", script], cwd=ROOT, check=True)
 
     def test_resume_failure_is_nonfatal(self):
         script = f"""
-const fs=require('fs'),vm=require('vm');
-class C{{constructor(){{this.state='suspended';this.destination={{}}}}createGain(){{return{{gain:{{}},connect(){{}}}}}}resume(){{return Promise.reject(Error('blocked'))}}}}
+const fs=require('fs'),vm=require('vm');let blocked=true,starts=0;
+class C{{constructor(){{this.state='suspended';this.destination={{}}}}createGain(){{return{{gain:{{}},connect(){{}}}}}}createBufferSource(){{return{{connect(){{}},start(){{starts++}}}}}}decodeAudioData(){{return Promise.resolve({{buffer:true}})}}resume(){{if(blocked)return Promise.reject(Error('blocked'));this.state='running';return Promise.resolve()}}}}
 const context={{Promise,Set,fetch:()=>Promise.reject(Error('offline')),localStorage:{{getItem:()=>null,setItem(){{}}}},window:{{AudioContext:C}}}};Object.assign(context.window,{{window:context.window,fetch:context.fetch,localStorage:context.localStorage}});
 vm.runInNewContext(fs.readFileSync({str(ROOT / 'dice-sfx.js')!r},'utf8'),context);
-(async()=>{{if(await context.window.TombWorldDiceSfx.play()!==false)process.exit(1)}})().catch(()=>process.exit(2));
+(async()=>{{const s=context.window.TombWorldDiceSfx;if(await s.play()!==false)process.exit(1);blocked=false;context.fetch=()=>Promise.resolve({{ok:true,arrayBuffer:()=>Promise.resolve(new ArrayBuffer(1))}});context.window.fetch=context.fetch;if(!await s.play()||starts!==1)process.exit(3)}})().catch(()=>process.exit(2));
 """
         subprocess.run(["node", "-e", script], cwd=ROOT, check=True)
 
