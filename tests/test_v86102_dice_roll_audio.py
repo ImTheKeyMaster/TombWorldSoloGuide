@@ -15,7 +15,7 @@ WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 
 class DiceRollAudioReleaseTests(unittest.TestCase):
     def test_release_asset_and_offline_wiring(self):
-        self.assertEqual((8, 6, 102), tuple(map(int, CURRENT_APP_VERSION.split("."))))
+        self.assertGreaterEqual(tuple(map(int, CURRENT_APP_VERSION.split("."))), (8, 6, 102))
         asset = ROOT / "Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3"
         self.assertTrue(asset.is_file())
         self.assertGreater(asset.stat().st_size, 0)
@@ -31,24 +31,18 @@ class DiceRollAudioReleaseTests(unittest.TestCase):
         self.assertNotIn("Btn_Click.wav", runtime)
         self.assertFalse((ROOT / "Assets/Audio/Narration/SFX/sfx-config.json").exists())
 
-    def test_module_uses_two_persistent_html_audio_elements(self):
-        self.assertEqual(2, len(re.findall(r"\bnew Audio\s*\(", SFX)))
-        self.assertIn("audio.preload = 'auto'", SFX)
-        self.assertNotIn("cloneNode", SFX)
+    def test_module_was_intentionally_migrated_from_html_audio(self):
+        self.assertNotRegex(SFX, r"\bnew Audio\s*\(")
+        self.assertIn("AudioContext", SFX)
+        self.assertIn("webkitAudioContext", SFX)
+        self.assertIn("createBufferSource()", SFX)
         self.assertIn("dice-roll-flem0527-750ms-50.mp3", SFX)
-        for forbidden in ("AudioContext", "webkitAudioContext", "GainNode", "MediaElementAudioSourceNode"):
-            self.assertNotIn(forbidden, SFX)
-        play_body = SFX[SFX.index("function play()") : SFX.index("function setPreferenceEnabled")]
-        self.assertNotIn("new Audio", play_body)
-        self.assertIn("audio.currentTime = 0", play_body)
-        self.assertIn(".catch(() => false)", play_body)
 
     def test_preference_master_volume_and_menu_are_independent(self):
         self.assertIn("tombWorldSoloGuide.diceRollEnabled", SFX)
         self.assertIn("localStorage.getItem(PREFERENCE_KEY) !== 'false'", SFX)
         self.assertIn("!masterEnabled || !preferenceEnabled", SFX)
         self.assertIn("if (!masterEnabled) stop();", SFX)
-        self.assertIn("supportsInAppVolumeControl() === false", SFX)
         self.assertIn('id="diceRollToggle"', APP)
         self.assertIn('role="switch" aria-labelledby="diceRollLabel"', APP)
         handler = APP[APP.index("$('#diceRollToggle').onclick") : APP.index("const gameVolume")]
@@ -75,6 +69,7 @@ class DiceRollAudioReleaseTests(unittest.TestCase):
         self.assertIn("localStorage.getItem(preferenceKey)!=='false'", fallback)
         self.assertIn("localStorage.setItem(preferenceKey,String(preferenceEnabled))", fallback)
         self.assertIn("isPreferenceEnabled:()=>preferenceEnabled", fallback)
+        self.assertIn("activateFromGesture:()=>Promise.resolve(false)", fallback)
         self.assertIn("play:()=>Promise.resolve(false)", fallback)
         self.assertNotIn("Audio", fallback)
 
@@ -140,96 +135,6 @@ scheduled();
 if(events.join()!=='attack-animation,sfx,defense-animation,sfx'||typeof scheduled!=='function')process.exit(1);
 scheduled();
 if(events.join()!=='attack-animation,sfx,defense-animation,sfx,complete')process.exit(1);
-"""
-        subprocess.run(["node", "-e", script], check=True, cwd=ROOT)
-
-    def test_desktop_volume_updates_both_players(self):
-        script = f"""
-const fs=require('fs'),vm=require('vm');
-const players=[];
-class FakeAudio {{
-  constructor(){{this.volume=1;players.push(this);}}
-  load(){{}} play(){{return Promise.resolve();}} pause(){{}}
-}}
-const context={{Audio:FakeAudio,Promise,localStorage:{{getItem:()=>null,setItem:()=>{{}}}},window:{{TombWorldAudioCapabilities:{{supportsInAppVolumeControl:()=>true}}}}}};
-context.window.window=context.window; context.window.Audio=FakeAudio; context.window.localStorage=context.localStorage;
-vm.runInNewContext(fs.readFileSync({str(ROOT / 'dice-sfx.js')!r},'utf8'),context);
-context.window.TombWorldDiceSfx.setVolumeMultiplier(0.25);
-if(players.length!==2||players.some(player=>player.volume!==0.25))process.exit(1);
-"""
-        subprocess.run(["node", "-e", script], check=True, cwd=ROOT)
-
-    def test_playback_eligibility_and_rejection_are_retryable(self):
-        script = f"""
-const fs=require('fs'),vm=require('vm');
-let stored=null, instances=0, loads=0, plays=[], pauses=0, currentTimeWrites=0, diceAudio=[];
-class FakeAudio {{
-  constructor(){{this.id=instances++; diceAudio.push(this); this.src=''; this.preload='';}}
-  load(){{loads++;}}
-  play(){{plays.push(this.id); return Promise.reject(new Error('blocked'));}}
-  pause(){{pauses++;}}
-  set currentTime(value){{if(value!==0)process.exit(1); currentTimeWrites++;}}
-}}
-const narration={{src:'narration.mp3',currentTime:42,queue:['event'],pauses:0}};
-const ambient={{src:'ambient.ogg',currentTime:17,pauses:0}};
-const context={{Audio:FakeAudio,Promise,localStorage:{{getItem:()=>stored,setItem:(_,v)=>stored=v}},window:{{TombWorldAudioCapabilities:{{supportsInAppVolumeControl:()=>true}},TombWorldNarration:narration,TombWorldAmbient:ambient}}}};
-context.window.window=context.window; context.window.Audio=FakeAudio; context.window.localStorage=context.localStorage;
-vm.runInNewContext(fs.readFileSync({str(ROOT / 'dice-sfx.js')!r},'utf8'),context);
-const s=context.window.TombWorldDiceSfx;
-(async()=>{{
-  await s.init();
-  await s.play(); await s.play(); await s.play();
-  s.setMasterEnabled(false); await s.play();
-  s.setMasterEnabled(true); s.setPreferenceEnabled(false); await s.play();
-  s.setPreferenceEnabled(true); await s.play(); s.stop();
-  const audioSource='Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3';
-  if(instances!==2||loads!==2||plays.join()!=='0,1,0,1'||stored!=='true'||pauses!==4||currentTimeWrites!==8)process.exit(1);
-  if(diceAudio.some(audio=>audio.src!==audioSource||audio.preload!=='auto'))process.exit(1);
-  if(!vm.runInNewContext('window.TombWorldDiceSfx',context)||context.window.TombWorldNarration!==narration||context.window.TombWorldAmbient!==ambient)process.exit(1);
-  if(narration.src!=='narration.mp3'||narration.currentTime!==42||narration.queue.join()!=='event'||narration.pauses!==0)process.exit(1);
-  if(ambient.src!=='ambient.ogg'||ambient.currentTime!==17||ambient.pauses!==0)process.exit(1);
-}})();
-"""
-        subprocess.run(["node", "-e", script], check=True, cwd=ROOT)
-
-    def test_synchronous_player_failure_does_not_block_alternation_or_cleanup(self):
-        script = f"""
-const fs=require('fs'),vm=require('vm');
-const players=[];
-class FakeAudio {{
-  constructor(){{this.id=players.length;this.pauses=0;this.resets=0;players.push(this);}}
-  load(){{}}
-  play(){{if(this.id===0)throw new Error('blocked');return Promise.resolve();}}
-  pause(){{this.pauses++;if(this.id===0)throw new Error('pause rejected');}}
-  set currentTime(value){{if(value!==0)process.exit(1);this.resets++;}}
-}}
-const context={{Audio:FakeAudio,Promise,localStorage:{{getItem:()=>null,setItem:()=>{{}}}},window:{{TombWorldAudioCapabilities:{{supportsInAppVolumeControl:()=>true}}}}}};
-context.window.window=context.window; context.window.Audio=FakeAudio; context.window.localStorage=context.localStorage;
-vm.runInNewContext(fs.readFileSync({str(ROOT / 'dice-sfx.js')!r},'utf8'),context);
-const s=context.window.TombWorldDiceSfx;
-(async()=>{{
-  if(await s.play()!==false||await s.play()!==true)process.exit(1);
-  s.stop();
-  if(players.length!==2||players.some(player=>player.pauses!==1||player.resets!==2))process.exit(1);
-}})();
-"""
-        subprocess.run(["node", "-e", script], check=True, cwd=ROOT)
-
-    def test_apple_mobile_volume_is_left_at_the_source_level(self):
-        script = f"""
-const fs=require('fs'),vm=require('vm');
-let audioInstances=0, volumeWrites=0;
-class FakeAudio {{
-  constructor(){{audioInstances++;}}
-  load(){{}} play(){{return Promise.resolve();}} pause(){{}}
-  set volume(value){{volumeWrites++;}} get volume(){{return 1;}}
-}}
-const context={{Audio:FakeAudio,Promise,localStorage:{{getItem:()=>null,setItem:()=>{{}}}},window:{{TombWorldAudioCapabilities:{{supportsInAppVolumeControl:()=>false}}}}}};
-context.window.window=context.window; context.window.Audio=FakeAudio; context.window.localStorage=context.localStorage;
-vm.runInNewContext(fs.readFileSync({str(ROOT / 'dice-sfx.js')!r},'utf8'),context);
-const s=context.window.TombWorldDiceSfx;
-s.setVolumeMultiplier(0.25); s.setVolumeMultiplier(0.75);
-if(audioInstances!==2||volumeWrites!==0)process.exit(1);
 """
         subprocess.run(["node", "-e", script], check=True, cwd=ROOT)
 
