@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.99
+# Tomb World Solo Guide v8.6.100
+
+## v8.6.100
+
+**Version 8.6.100 - iOS Now Playing Artwork**
+
+- Adds dedicated PNG application artwork for Apple touch icons, the PWA manifest, and iOS/Safari Media Session surfaces.
+- Provides explicit Tomb World artwork to Control Center, Dynamic Island, and other Now Playing interfaces while audio is active.
+- Preserves the existing narration and ambient HTML audio architecture and save schema version 3.
 
 ## v8.6.99
 
