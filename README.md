@@ -4,10 +4,10 @@
 
 **Version 8.6.101 - Synchronized Dice Roll Audio**
 
-- Adds a dedicated dice-roll sound synchronized with visible animated dice, beginning with the tumble and settling with the final clatter.
+- Adds an intentionally attenuated dice-roll sound synchronized with visible animated dice, beginning with the tumble and completing as the dice settle.
 - Adds a persistent Dice Roll toggle to the Game Menu and integrates dice audio with the existing master speaker and supported desktop volume control.
 - Keeps dice audio independent from narration and ambient playback so narration continues uninterrupted while dice clatter plays.
-- Preserves the HTMLAudioElement architecture and save schema version 3.
+- Preserves the existing iOS-safe HTML audio architecture, ambient lifecycle, and save schema version 3.
 
 ## v8.6.100
 

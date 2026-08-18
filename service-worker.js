@@ -11,7 +11,7 @@ const PRECACHE_ASSETS = [
   './manifest.webmanifest', './Assets/icon.svg', './Assets/icon-180.png', './Assets/icon-192.png', './Assets/icon-512.png', './Assets/icon-1024.png', './Assets/Icons/move-to-shoot.svg',
   './Assets/Images/Backgrounds/manifest.json',
   './Assets/Images/defeat.png', './Assets/Images/victory.png',
-  './Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms.mp3',
+  './Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3',
   './Assets/Maps/mission-01.png', './Assets/Maps/mission-02.png', './Assets/Maps/mission-03.png',
   './Assets/Maps/mission-04.png', './Assets/Maps/mission-05.png', './Assets/Maps/mission-06.png',
   './Assets/Tomb-World-Mission-Pack.pdf', './Missions/manifest.json',
