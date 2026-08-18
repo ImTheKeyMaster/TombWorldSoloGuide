@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '8.6.99';
+const APP_VERSION = '8.6.100';
 const CACHE_PREFIX = 'tomb-world-solo-guide-';
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 const APP_SHELL = './index.html';
@@ -8,7 +8,7 @@ const NARRATION_MANIFEST = './Assets/Audio/Narration/narration-manifest.json';
 const AMBIENT_CONFIG = './Assets/Audio/Narration/ambient-config.json';
 const PRECACHE_ASSETS = [
   './', APP_SHELL, `./event-effects.js?v=${APP_VERSION}`, `./audio-capabilities.js?v=${APP_VERSION}`, `./narration.js?v=${APP_VERSION}`, `./ambient.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`,
-  './manifest.webmanifest', './Assets/icon.svg', './Assets/Icons/move-to-shoot.svg',
+  './manifest.webmanifest', './Assets/icon.svg', './Assets/icon-180.png', './Assets/icon-192.png', './Assets/icon-512.png', './Assets/icon-1024.png', './Assets/Icons/move-to-shoot.svg',
   './Assets/Images/Backgrounds/manifest.json',
   './Assets/Images/defeat.png', './Assets/Images/victory.png',
   './Assets/Maps/mission-01.png', './Assets/Maps/mission-02.png', './Assets/Maps/mission-03.png',
