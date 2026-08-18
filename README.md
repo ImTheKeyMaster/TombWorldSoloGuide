@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.102
+# Tomb World Solo Guide v8.6.103
+
+## v8.6.103
+
+**Version 8.6.103 - Low-Latency iPhone Dice Audio**
+
+- Moves Dice Roll SFX to an isolated predecoded Web Audio buffer to reduce iPhone/WebKit start latency.
+- Keeps narration and ambient audio on their existing reliable HTMLAudioElement architecture.
+- Preserves synchronized 750 ms dice animation, the attenuated Dice Roll asset, master audio behavior, and the Dice Roll preference.
+- Keeps save schema version 3 unchanged.
 
 ## v8.6.102
 

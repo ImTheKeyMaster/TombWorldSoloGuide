@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.102';
+  const APP_VERSION = '8.6.103';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -28,7 +28,7 @@
     try{preferenceEnabled=localStorage.getItem(preferenceKey)!=='false';}
     catch{/* Missing storage keeps the documented default-on behavior. */}
     return Object.freeze({
-      init:()=>Promise.resolve(false),play:()=>Promise.resolve(false),
+      init:()=>Promise.resolve(false),activateFromGesture:()=>Promise.resolve(false),play:()=>Promise.resolve(false),
       setPreferenceEnabled:enabled=>{
         preferenceEnabled=Boolean(enabled);
         try{localStorage.setItem(preferenceKey,String(preferenceEnabled));}
@@ -179,12 +179,13 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     TombWorldNarration.setMasterEnabled(enabled);
     TombWorldDiceSfx.setMasterEnabled(enabled);
     if(enabled){
+      const diceActivation=globalThis.TombWorldDiceSfx?.activateFromGesture?.()??Promise.resolve(false);
       appliedAmbientEnabled=ambientEnabled;
       reconcileAmbientActiveState();
       const narrationUnlock=applySelectedAudioFromGesture();
       const ambientPlayback=shouldAmbientBeActive()?TombWorldAmbient.playFromGesture():Promise.resolve(false);
       playPendingBoardSetupMissionIntro();
-      void Promise.allSettled([narrationUnlock,ambientPlayback]);
+      void Promise.allSettled([diceActivation,narrationUnlock,ambientPlayback]);
     }else{
       appliedAmbientEnabled=false;
       TombWorldAmbient.stop();
@@ -203,6 +204,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   }
   function clearPendingBoardSetupMissionIntro(){pendingBoardSetupMissionIntro=null;}
   function enterBoardSetup(){
+    void globalThis.TombWorldDiceSfx?.activateFromGesture?.();
     pendingBoardSetupMissionIntro=state.missionId;
     playPendingBoardSetupMissionIntro();
   }

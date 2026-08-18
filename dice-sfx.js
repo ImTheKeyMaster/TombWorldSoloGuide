@@ -3,45 +3,102 @@
 
   const PREFERENCE_KEY = 'tombWorldSoloGuide.diceRollEnabled';
   const DICE_ROLL_SOURCE = 'Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3';
-  const diceAudioPlayers = typeof Audio === 'function' ? [new Audio(), new Audio()] : [];
-  let nextPlayerIndex = 0;
+  let diceAudioContext = null;
+  let diceGainNode = null;
+  let decodedDiceBuffer = null;
+  let bufferInitialization = null;
   let preferenceEnabled = readPreference();
   let masterEnabled = true;
-
-  diceAudioPlayers.forEach(audio => {
-    audio.preload = 'auto';
-    audio.src = DICE_ROLL_SOURCE;
-  });
+  let volumeMultiplier = 1;
+  const activeSources = new Set();
 
   function readPreference() {
     try { return localStorage.getItem(PREFERENCE_KEY) !== 'false'; }
     catch { return true; }
   }
 
+  function ensureAudioContext() {
+    if (diceAudioContext) return diceAudioContext;
+    const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+    if (typeof AudioContextConstructor !== 'function') return null;
+    try {
+      diceAudioContext = new AudioContextConstructor();
+      diceGainNode = diceAudioContext.createGain();
+      diceGainNode.gain.value = volumeMultiplier;
+      diceGainNode.connect(diceAudioContext.destination);
+      return diceAudioContext;
+    } catch { return null; }
+  }
+
+  function initializeBuffer() {
+    const context = ensureAudioContext();
+    if (!context) return Promise.resolve(false);
+    if (decodedDiceBuffer) return Promise.resolve(true);
+    if (bufferInitialization) return bufferInitialization;
+    bufferInitialization = fetch(DICE_ROLL_SOURCE)
+      .then(response => {
+        if (!response.ok) throw new Error('Dice SFX fetch failed');
+        return response.arrayBuffer();
+      })
+      .then(data => context.decodeAudioData(data))
+      .then(buffer => {
+        decodedDiceBuffer = buffer;
+        return true;
+      })
+      .catch(() => false)
+      .then(initialized => {
+        bufferInitialization = null;
+        return initialized;
+      });
+    return bufferInitialization;
+  }
+
   function init() {
-    let initialized = diceAudioPlayers.length === 2;
-    diceAudioPlayers.forEach(audio => {
-      try { audio.load(); }
-      catch { initialized = false; }
-    });
-    return Promise.resolve(initialized);
+    return initializeBuffer();
+  }
+
+  function startSource() {
+    if (!decodedDiceBuffer || !diceAudioContext || !diceGainNode || !masterEnabled || !preferenceEnabled) return false;
+    let source;
+    try {
+      source = diceAudioContext.createBufferSource();
+      source.buffer = decodedDiceBuffer;
+      source.connect(diceGainNode);
+      source.onended = () => activeSources.delete(source);
+      activeSources.add(source);
+      source.start(0);
+      return true;
+    } catch {
+      if (source) activeSources.delete(source);
+      return false;
+    }
+  }
+
+  function resumeThenStart(context) {
+    let resumeRequest;
+    try { resumeRequest = context.resume(); }
+    catch { return Promise.resolve(false); }
+    return Promise.resolve(resumeRequest)
+      .then(() => decodedDiceBuffer ? startSource() : initializeBuffer().then(startSource))
+      .catch(() => false);
   }
 
   function play() {
-    if (!diceAudioPlayers.length || !masterEnabled || !preferenceEnabled) return Promise.resolve(false);
-    const audio = diceAudioPlayers[nextPlayerIndex];
-    try { audio.currentTime = 0; }
+    if (!masterEnabled || !preferenceEnabled) return Promise.resolve(false);
+    const context = ensureAudioContext();
+    if (!context) return Promise.resolve(false);
+    if (context.state === 'suspended') return resumeThenStart(context);
+    if (decodedDiceBuffer) return Promise.resolve(startSource());
+    return initializeBuffer().then(initialized => initialized && startSource()).catch(() => false);
+  }
+
+  function activateFromGesture() {
+    const context = ensureAudioContext();
+    if (!context) return Promise.resolve(false);
+    void initializeBuffer();
+    if (context.state !== 'suspended') return Promise.resolve(true);
+    try { return Promise.resolve(context.resume()).then(() => true).catch(() => false); }
     catch { return Promise.resolve(false); }
-    let request;
-    try {
-      request = audio.play();
-    } catch { return Promise.resolve(false); }
-    finally { nextPlayerIndex = (nextPlayerIndex + 1) % diceAudioPlayers.length; }
-    try {
-      return request && typeof request.then === 'function'
-        ? request.then(() => true).catch(() => false)
-        : Promise.resolve(true);
-    } catch { return Promise.resolve(false); }
   }
 
   function setPreferenceEnabled(enabled) {
@@ -57,25 +114,20 @@
   }
 
   function setVolumeMultiplier(value) {
-    if (!diceAudioPlayers.length || window.TombWorldAudioCapabilities?.supportsInAppVolumeControl() === false) return;
-    const volume = Math.max(0, Math.min(1, Number(value) || 0));
-    diceAudioPlayers.forEach(audio => {
-      try { audio.volume = volume; }
-      catch { /* This player remains at its source level if the volume write is rejected. */ }
-    });
+    volumeMultiplier = Math.max(0, Math.min(1, Number(value) || 0));
+    if (diceGainNode) diceGainNode.gain.value = volumeMultiplier;
   }
 
   function stop() {
-    if (!diceAudioPlayers.length) return;
-    diceAudioPlayers.forEach(audio => {
-      try { audio.pause(); }
-      catch { /* Continue resetting this player and stopping the other player. */ }
-      try { audio.currentTime = 0; }
-      catch { /* Stopping dice audio must never interrupt New Game. */ }
+    activeSources.forEach(source => {
+      try { source.stop(); }
+      catch { /* Continue stopping the remaining one-shot sources. */ }
     });
+    activeSources.clear();
   }
 
   window.TombWorldDiceSfx = Object.freeze({
-    init, play, setPreferenceEnabled, isPreferenceEnabled, setMasterEnabled, setVolumeMultiplier, stop
+    init, activateFromGesture, play, setPreferenceEnabled, isPreferenceEnabled,
+    setMasterEnabled, setVolumeMultiplier, stop
   });
 })();
