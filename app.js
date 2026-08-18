@@ -5064,13 +5064,13 @@ function showPlayerActivation(stage={}){
       if(!reducedMotion){
         void TombWorldDiceSfx.play();
         setTimeout(()=>{
-        const rollDie=$('#hotRollDie');
-        if(!rollDie?.isConnected)return;
-        rollDie.innerHTML=dieHtml({value:record.roll,ariaLabel:`Hot roll: ${record.roll}`});
-        rollDie.classList.replace('animated-roll','settled');
-        $('#hotRollResult').hidden=false;
-        $('#continueHot').disabled=false;
-      },DICE_ROLL_ANIMATION_MS);
+          const rollDie=$('#hotRollDie');
+          if(!rollDie?.isConnected)return;
+          rollDie.innerHTML=dieHtml({value:record.roll,ariaLabel:`Hot roll: ${record.roll}`});
+          rollDie.classList.replace('animated-roll','settled');
+          $('#hotRollResult').hidden=false;
+          $('#continueHot').disabled=false;
+        },DICE_ROLL_ANIMATION_MS);
       }
     }
     const button=$('#continueHot');button.focus({preventScroll:true});

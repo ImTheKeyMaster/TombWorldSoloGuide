@@ -41,7 +41,10 @@
   }
 
   function isPreferenceEnabled() { return preferenceEnabled; }
-  function setMasterEnabled(enabled) { masterEnabled = Boolean(enabled); }
+  function setMasterEnabled(enabled) {
+    masterEnabled = Boolean(enabled);
+    if (!masterEnabled) stop();
+  }
 
   function setVolumeMultiplier(value) {
     if (!audio || window.TombWorldAudioCapabilities?.supportsInAppVolumeControl() === false) return;

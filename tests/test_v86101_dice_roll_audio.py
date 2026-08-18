@@ -40,6 +40,7 @@ class DiceRollAudioReleaseTests(unittest.TestCase):
         self.assertIn("tombWorldSoloGuide.diceRollEnabled", SFX)
         self.assertIn("localStorage.getItem(PREFERENCE_KEY) !== 'false'", SFX)
         self.assertIn("!masterEnabled || !preferenceEnabled", SFX)
+        self.assertIn("if (!masterEnabled) stop();", SFX)
         self.assertIn("supportsInAppVolumeControl() === false", SFX)
         self.assertIn('id="diceRollToggle"', APP)
         self.assertIn('role="switch" aria-labelledby="diceRollLabel"', APP)
@@ -52,6 +53,13 @@ class DiceRollAudioReleaseTests(unittest.TestCase):
         self.assertIn("TombWorldDiceSfx.stop()", new_game)
         self.assertNotIn("diceRollEnabled", new_game)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
+
+    def test_module_does_not_touch_narration_or_ambient_lifecycle(self):
+        for production_api in (
+            "TombWorldNarration", "TombWorldAmbient", "tombworldnarrationactivity",
+            "dispatchEvent", "addEventListener",
+        ):
+            self.assertNotIn(production_api, SFX)
 
     def test_visible_rolls_share_750ms_timing_and_batch_triggers(self):
         self.assertIn("const DICE_ROLL_ANIMATION_MS = 750;", APP)
@@ -83,7 +91,7 @@ const s=context.window.TombWorldDiceSfx;
   s.setMasterEnabled(false); await s.play();
   s.setMasterEnabled(true); s.setPreferenceEnabled(false); await s.play();
   s.setPreferenceEnabled(true); await s.play(); s.stop();
-  if(plays!==3||stored!=='true'||pauses!==1)process.exit(1);
+  if(plays!==3||stored!=='true'||pauses!==2)process.exit(1);
 }})();
 """
         subprocess.run(["node", "-e", script], check=True, cwd=ROOT)
