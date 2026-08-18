@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.103
+# Tomb World Solo Guide v8.6.104
+
+## v8.6.104
+
+**Version 8.6.104 - Player Activation Cancel Fix**
+
+- Keeps Cancel available immediately when opening Player Activation, even before an operative is selected.
+- Preserves inactive operative controls and keeps Complete Activation disabled until an operative is selected.
+- Preserves transactional activation behavior and save schema version 3.
 
 ## v8.6.103
 

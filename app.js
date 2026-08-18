@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.103';
+  const APP_VERSION = '8.6.104';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3904,8 +3904,8 @@ function showPlayerActivation(stage={}){
             </div>
           </section>
         </div>
-        <div class="wizard-actions"><button class="btn ghost" id="cancelPlayerActivation">Cancel</button><button class="btn primary" id="confirmPlayer">Complete Activation</button></div>
-      </fieldset>`,undefined,'player-activation');
+      </fieldset>
+      <div class="wizard-actions"><button class="btn ghost" id="cancelPlayerActivation">Cancel</button><button class="btn primary" id="confirmPlayer" ${selectedId?'':'disabled'}>Complete Activation</button></div>`,undefined,'player-activation');
     renderOperativeStatusPanel(selectedId);
 
     const operativeSelect=$('#playerOperativeSelect');
@@ -3938,7 +3938,7 @@ function showPlayerActivation(stage={}){
         warning.textContent=messages.join(' ');
         warning.classList.toggle('hidden',messages.length===0);
       }
-      $('#confirmPlayer').disabled=used>apl || conflicts.length>0;
+      $('#confirmPlayer').disabled=!current.playerOperativeId || used>apl || conflicts.length>0;
 
       // Disable unchecked actions that would exceed APL if added.
       const map={
