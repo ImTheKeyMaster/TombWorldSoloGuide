@@ -22,7 +22,22 @@
     init:()=>Promise.resolve(),unlock:()=>Promise.resolve(false),activateFromGesture:()=>Promise.resolve(false),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playGradeEscalation:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},setPreferenceEnabled:()=>{},isPreferenceEnabled:()=>true,setMasterEnabled:()=>{},isMasterEnabled:()=>true,isPlaybackEnabled:()=>true,setVolumeMultiplier:()=>{},canReplay:()=>false
   });
   const TombWorldAmbient=window.TombWorldAmbient||Object.freeze({init:()=>Promise.resolve(false),playFromGesture:()=>Promise.resolve(false),setActive:()=>{},setVolumeMultiplier:()=>{},stop:()=>{},reset:()=>{},removeGestureRecovery:()=>{}});
-  const TombWorldDiceSfx=window.TombWorldDiceSfx||Object.freeze({init:()=>Promise.resolve(false),play:()=>Promise.resolve(false),setPreferenceEnabled:()=>{},isPreferenceEnabled:()=>true,setMasterEnabled:()=>{},setVolumeMultiplier:()=>{},stop:()=>{}});
+  function createDiceSfxFallback(){
+    const preferenceKey='tombWorldSoloGuide.diceRollEnabled';
+    let preferenceEnabled=true;
+    try{preferenceEnabled=localStorage.getItem(preferenceKey)!=='false';}
+    catch{/* Missing storage keeps the documented default-on behavior. */}
+    return Object.freeze({
+      init:()=>Promise.resolve(false),play:()=>Promise.resolve(false),
+      setPreferenceEnabled:enabled=>{
+        preferenceEnabled=Boolean(enabled);
+        try{localStorage.setItem(preferenceKey,String(preferenceEnabled));}
+        catch{/* The fallback preference remains active for this session. */}
+      },
+      isPreferenceEnabled:()=>preferenceEnabled,setMasterEnabled:()=>{},setVolumeMultiplier:()=>{},stop:()=>{}
+    });
+  }
+  const TombWorldDiceSfx=window.TombWorldDiceSfx||createDiceSfxFallback();
   const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
   const AMBIENT_ENABLED_PREFERENCE_KEY = 'tombWorldSoloGuide.ambientEnabled';
   const GAME_VOLUME_PREFERENCE_KEY = 'tombWorldSoloGuide.gameVolume';

@@ -61,6 +61,16 @@ class DiceRollAudioReleaseTests(unittest.TestCase):
         ):
             self.assertNotIn(production_api, SFX)
 
+    def test_app_fallback_keeps_the_menu_preference_functional(self):
+        start = APP.index("function createDiceSfxFallback")
+        fallback = APP[start : APP.index("const TombWorldDiceSfx", start)]
+        self.assertIn("tombWorldSoloGuide.diceRollEnabled", fallback)
+        self.assertIn("localStorage.getItem(preferenceKey)!=='false'", fallback)
+        self.assertIn("localStorage.setItem(preferenceKey,String(preferenceEnabled))", fallback)
+        self.assertIn("isPreferenceEnabled:()=>preferenceEnabled", fallback)
+        self.assertIn("play:()=>Promise.resolve(false)", fallback)
+        self.assertNotIn("Audio", fallback)
+
     def test_visible_rolls_share_750ms_timing_and_batch_triggers(self):
         self.assertIn("const DICE_ROLL_ANIMATION_MS = 750;", APP)
         self.assertNotRegex(APP, r"(?:,|\))700\)")
