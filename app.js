@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.104';
+  const APP_VERSION = '8.6.105';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -77,6 +77,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const app = $('#app');
+  const appHeader = $('.app-header');
   const gameMenuBtn = $('#gameMenuBtn');
   const narrationSpeakerBtn=$('#narrationSpeakerBtn');
   const supportsInAppVolumeControl=()=>window.TombWorldAudioCapabilities?.supportsInAppVolumeControl()!==false;
@@ -1750,6 +1751,15 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     clearTimeout(operativeStatusResizeTimer);
     operativeStatusResizeTimer=setTimeout(()=>{renderOperativeStatusPanel();},120);
   }
+  function syncAppHeaderHeight(){
+    document.documentElement.style.setProperty('--app-header-height',`${appHeader.getBoundingClientRect().height}px`);
+  }
+  syncAppHeaderHeight();
+  const appHeaderResizeObserver=typeof ResizeObserver==='function'?new ResizeObserver(()=>{
+    syncAppHeaderHeight();
+    scheduleOperativeStatusLayout();
+  }):null;
+  appHeaderResizeObserver?.observe(appHeader);
   operativeStatusToggle.addEventListener('click',()=>{
     showOperativeStatusPreference=!showOperativeStatusPreference;
     localStorage.setItem(OPERATIVE_STATUS_PREFERENCE_KEY,String(showOperativeStatusPreference));
@@ -1757,8 +1767,8 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
   });
   if(operativeStatusMedia.addEventListener)operativeStatusMedia.addEventListener('change',scheduleOperativeStatusLayout);
   else operativeStatusMedia.addListener?.(scheduleOperativeStatusLayout);
-  window.addEventListener('resize',scheduleOperativeStatusLayout);
-  window.addEventListener('orientationchange',scheduleOperativeStatusLayout);
+  window.addEventListener('resize',()=>{syncAppHeaderHeight();scheduleOperativeStatusLayout();});
+  window.addEventListener('orientationchange',()=>{syncAppHeaderHeight();scheduleOperativeStatusLayout();});
 
   function normalizeSarcophagusControllers(value,max=livingPlayerOperativeCount()){
     const limit=Math.max(0,Math.round(Number(max)||0));

@@ -333,7 +333,7 @@ html.desktop-game-background #gameBackground{opacity:1}
 @media (min-width:900px) and (orientation:landscape), (min-width:900px) and (hover:hover) and (pointer:fine){
   .game-workspace.operative-status-visible{display:grid;grid-template-columns:clamp(360px,28vw,540px) minmax(0,1fr);align-items:start;max-width:1600px;margin:0 auto}
   .game-workspace.operative-status-visible .app-shell{width:100%;min-width:0;margin:0;max-width:1000px}
-  .operative-status-panel{position:sticky;top:71px;display:grid;grid-template-rows:minmax(0,var(--status-npo-height,1fr)) minmax(0,var(--status-player-height,1fr));height:calc(100dvh - 71px);margin:0 0 0 18px;border:1px solid var(--line);border-radius:0 0 18px 18px;background:linear-gradient(145deg,rgba(11,27,20,.97),rgba(6,17,13,.97));box-shadow:var(--shadow);overflow:hidden}
+  .operative-status-panel{position:sticky;top:var(--app-header-height);display:grid;grid-template-rows:minmax(0,var(--status-npo-height,1fr)) minmax(0,var(--status-player-height,1fr));height:calc(100dvh - var(--app-header-height));max-height:calc(100dvh - var(--app-header-height));margin:0 0 0 18px;border:1px solid var(--line);border-radius:0 0 18px 18px;background:linear-gradient(145deg,rgba(11,27,20,.97),rgba(6,17,13,.97));box-shadow:var(--shadow);overflow:hidden}
   .operative-status-section{display:flex;min-height:0;flex-direction:column;padding:12px}
   .operative-status-section+.operative-status-section{border-top:1px solid var(--line)}
   .operative-status-section h2{flex:0 0 auto;margin:0 0 8px;color:var(--green);font-size:clamp(.72rem,.9vw,.86rem);letter-spacing:.13em;text-transform:uppercase}
