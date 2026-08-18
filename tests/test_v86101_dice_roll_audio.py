@@ -98,18 +98,32 @@ class DiceRollAudioReleaseTests(unittest.TestCase):
     def test_playback_eligibility_and_rejection_are_retryable(self):
         script = f"""
 const fs=require('fs'),vm=require('vm');
-let stored=null, plays=0, pauses=0;
-class FakeAudio {{ load(){{}} play(){{plays++; return Promise.reject(new Error('blocked'));}} pause(){{pauses++;}} }}
-const context={{Audio:FakeAudio,Promise,localStorage:{{getItem:()=>stored,setItem:(_,v)=>stored=v}},window:{{TombWorldAudioCapabilities:{{supportsInAppVolumeControl:()=>true}}}}}};
+let stored=null, instances=0, loads=0, plays=0, pauses=0, currentTimeWrites=0, diceAudio=null;
+class FakeAudio {{
+  constructor(){{instances++; diceAudio=this; this.src=''; this.preload='';}}
+  load(){{loads++;}}
+  play(){{plays++; return Promise.reject(new Error('blocked'));}}
+  pause(){{pauses++;}}
+  set currentTime(value){{if(value!==0)process.exit(1); currentTimeWrites++;}}
+}}
+const narration={{src:'narration.mp3',currentTime:42,queue:['event'],pauses:0}};
+const ambient={{src:'ambient.ogg',currentTime:17,pauses:0}};
+const context={{Audio:FakeAudio,Promise,localStorage:{{getItem:()=>stored,setItem:(_,v)=>stored=v}},window:{{TombWorldAudioCapabilities:{{supportsInAppVolumeControl:()=>true}},TombWorldNarration:narration,TombWorldAmbient:ambient}}}};
 context.window.window=context.window; context.window.Audio=FakeAudio; context.window.localStorage=context.localStorage;
 vm.runInNewContext(fs.readFileSync({str(ROOT / 'dice-sfx.js')!r},'utf8'),context);
 const s=context.window.TombWorldDiceSfx;
 (async()=>{{
+  await s.init();
   await s.play(); await s.play();
   s.setMasterEnabled(false); await s.play();
   s.setMasterEnabled(true); s.setPreferenceEnabled(false); await s.play();
   s.setPreferenceEnabled(true); await s.play(); s.stop();
-  if(plays!==3||stored!=='true'||pauses!==2)process.exit(1);
+  const audioSource='Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3';
+  if(instances!==1||loads!==1||plays!==3||stored!=='true'||pauses!==2||currentTimeWrites!==5)process.exit(1);
+  if(diceAudio.src!==audioSource||diceAudio.preload!=='auto')process.exit(1);
+  if(!vm.runInNewContext('window.TombWorldDiceSfx',context)||context.window.TombWorldNarration!==narration||context.window.TombWorldAmbient!==ambient)process.exit(1);
+  if(narration.src!=='narration.mp3'||narration.currentTime!==42||narration.queue.join()!=='event'||narration.pauses!==0)process.exit(1);
+  if(ambient.src!=='ambient.ogg'||ambient.currentTime!==17||ambient.pauses!==0)process.exit(1);
 }})();
 """
         subprocess.run(["node", "-e", script], check=True, cwd=ROOT)
