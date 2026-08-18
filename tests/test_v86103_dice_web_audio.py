@@ -101,6 +101,33 @@ vm.runInNewContext(fs.readFileSync({str(ROOT / 'dice-sfx.js')!r},'utf8'),context
 """
         subprocess.run(["node", "-e", script], cwd=ROOT, check=True)
 
+    def test_fetch_and_decode_failures_are_nonfatal_and_retryable(self):
+        script = f"""
+const fs=require('fs'),vm=require('vm');
+const source=fs.readFileSync({str(ROOT / 'dice-sfx.js')!r},'utf8');
+async function scenario(failure){{
+  let fetches=0,decodes=0,fail=true;
+  class C{{
+    constructor(){{this.state='running';this.destination={{}}}}
+    createGain(){{return{{gain:{{value:1}},connect(){{}}}}}}
+    createBufferSource(){{return{{connect(){{}},start(){{}}}}}}
+    decodeAudioData(){{decodes++;return failure==='decode'&&fail?Promise.reject(Error('decode')):Promise.resolve({{buffer:true}})}}
+  }}
+  const fetch=()=>{{fetches++;if(failure==='fetch-sync'&&fail)throw Error('fetch');if(failure==='fetch'&&fail)return Promise.reject(Error('fetch'));return Promise.resolve({{ok:true,arrayBuffer:()=>Promise.resolve(new ArrayBuffer(1))}})}};
+  const context={{Promise,Set,fetch,localStorage:{{getItem:()=>null,setItem(){{}}}},window:{{AudioContext:C}}}};
+  Object.assign(context.window,{{window:context.window,fetch,localStorage:context.localStorage}});
+  vm.runInNewContext(source,context);
+  const s=context.window.TombWorldDiceSfx;
+  if(await s.init())throw Error(failure+' unexpectedly initialized');
+  fail=false;
+  if(!await s.play())throw Error(failure+' did not retry');
+  if(fetches!==2)throw Error(failure+' fetch count '+fetches);
+  if(decodes!==(failure==='decode'?2:1))throw Error(failure+' decode count '+decodes);
+}}
+(async()=>{{for(const failure of ['fetch-sync','fetch','decode'])await scenario(failure)}})().catch(error=>{{console.error(error);process.exit(1)}});
+"""
+        subprocess.run(["node", "-e", script], cwd=ROOT, check=True)
+
 
 if __name__ == "__main__":
     unittest.main()

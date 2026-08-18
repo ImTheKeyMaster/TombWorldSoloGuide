@@ -22,10 +22,12 @@
     const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
     if (typeof AudioContextConstructor !== 'function') return null;
     try {
-      diceAudioContext = new AudioContextConstructor();
-      diceGainNode = diceAudioContext.createGain();
-      diceGainNode.gain.value = volumeMultiplier;
-      diceGainNode.connect(diceAudioContext.destination);
+      const context = new AudioContextConstructor();
+      const gainNode = context.createGain();
+      gainNode.gain.value = volumeMultiplier;
+      gainNode.connect(context.destination);
+      diceAudioContext = context;
+      diceGainNode = gainNode;
       return diceAudioContext;
     } catch { return null; }
   }
@@ -35,7 +37,10 @@
     if (!context) return Promise.resolve(false);
     if (decodedDiceBuffer) return Promise.resolve(true);
     if (bufferInitialization) return bufferInitialization;
-    bufferInitialization = fetch(DICE_ROLL_SOURCE)
+    let fetchRequest;
+    try { fetchRequest = fetch(DICE_ROLL_SOURCE); }
+    catch { return Promise.resolve(false); }
+    bufferInitialization = Promise.resolve(fetchRequest)
       .then(response => {
         if (!response.ok) throw new Error('Dice SFX fetch failed');
         return response.arrayBuffer();
@@ -115,7 +120,8 @@
 
   function setVolumeMultiplier(value) {
     volumeMultiplier = Math.max(0, Math.min(1, Number(value) || 0));
-    if (diceGainNode) diceGainNode.gain.value = volumeMultiplier;
+    try { if (diceGainNode) diceGainNode.gain.value = volumeMultiplier; }
+    catch { /* Dice playback remains nonfatal if a platform rejects the gain write. */ }
   }
 
   function stop() {
