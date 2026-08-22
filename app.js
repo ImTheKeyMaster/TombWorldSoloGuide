@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.106';
+  const APP_VERSION = '8.6.107';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -71,7 +71,12 @@
   const EventEffects=TombWorldEventEffects;
 
 let lastTouchEnd=0;
-document.addEventListener('touchend',function(e){const now=Date.now();if(now-lastTouchEnd<=300){e.preventDefault();}lastTouchEnd=now;},{passive:false});
+document.addEventListener('touchend',function(e){
+  if(e.target?.closest?.('button, input, select, textarea, a, label, summary, [role="button"], [role="link"], [role="checkbox"], [role="radio"], [role="switch"], [role="tab"], [role="menuitem"]'))return;
+  const now=Date.now();
+  if(now-lastTouchEnd<=300)e.preventDefault();
+  lastTouchEnd=now;
+},{passive:false});
   const MAX_NPOS = 10;
   const MAX_TURNING_POINTS = 4;
   const $ = (sel, root = document) => root.querySelector(sel);
@@ -3168,7 +3173,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       if(selected.length!==2)return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite">${eventDetails}<div class="event-resolution">Another event card is being drawn because fewer than two Player operatives are on the battlefield.</div></div>`;
       const names=selected.map(playerName);
       const accessibleNames=names.join(' and ');
-      return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite" aria-label="Transdimensional Relocation. Operatives to swap: ${escapeHtml(accessibleNames)}.">${eventDetails}<div class="event-resolution"><h4 id="transdimensional-relocation-selection-heading">OPERATIVES TO SWAP</h4><ol>${names.map(name=>`<li>${escapeHtml(name)}</li>`).join('')}</ol><p>Remove both operatives from the killzone. Set each operative up in the other operative’s previous position.</p><p>Keep their wounds, order, Ready or Expended state, and all other statuses unchanged.</p></div><div class="event-controls"><button class="btn primary" id="resolveStrategyEvent" aria-label="Confirm positions swapped for ${escapeHtml(accessibleNames)}">Confirm Positions Swapped</button></div></div>`;
+      return `<div class="summary-box strategy-event tomb-world-event-card" aria-live="polite" aria-label="Transdimensional Relocation. Operatives to swap: ${escapeHtml(accessibleNames)}.">${eventDetails}<div class="event-resolution"><h4 id="transdimensional-relocation-selection-heading">OPERATIVES TO SWAP</h4><ol>${names.map(name=>`<li>${escapeHtml(name)}</li>`).join('')}</ol><p>Remove both operatives from the killzone. Set each operative up in the other operative’s previous position.</p><p>Keep their wounds, order, Ready or Expended state, and all other statuses unchanged.</p></div><div class="event-controls"><button type="button" class="btn primary" id="resolveStrategyEvent" aria-label="Confirm positions swapped for ${escapeHtml(accessibleNames)}">Confirm Positions Swapped</button></div></div>`;
     }
     const labels={
       'awakened-warrior':'Confirm Necron Warrior Placement',
@@ -3178,7 +3183,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     const scarabChoices=event.execution.type==='chittering-drone'&&Array.isArray(event.eligibleNpoIds)&&event.eligibleNpoIds.length>1
       ? `<div class="field"><label for="eventNpoSelect">Wounded Scarab Swarm</label><select id="eventNpoSelect"><option value="">Select a Scarab Swarm...</option>${sortedNposForDisplay(event.eligibleNpoIds.map(id=>activeNpos().find(item=>item.id===id)).filter(Boolean)).map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(npoName(n))} — ${n.wounds} of ${n.maxWounds} wounds</option>`).join('')}</select></div>`:'';
     const impossibleControl=event.execution.type==='maze-reforms'?'<button type="button" class="btn secondary" id="redrawStrategyEvent" aria-label="No valid terrain changes are possible; draw another Tomb World event card">No Valid Changes · Draw Again</button>':'';
-    return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}<div class="event-controls">${scarabChoices}<button class="btn primary" id="resolveStrategyEvent" ${scarabChoices?'disabled':''}>${labels[event.definitionId]||labels[event.execution.type]||'Resolve Event'}</button>${impossibleControl}</div></div>`;
+    return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}<div class="event-controls">${scarabChoices}<button type="button" class="btn primary" id="resolveStrategyEvent" ${scarabChoices?'disabled':''}>${labels[event.definitionId]||labels[event.execution.type]||'Resolve Event'}</button>${impossibleControl}</div></div>`;
   }
 
   function activationTracker(){
