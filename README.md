@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.106
+# Tomb World Solo Guide v8.6.107
+
+## v8.6.107
+
+**Version 8.6.107 - iPhone Strategy Event Tap Fix**
+
+- Keeps accidental double-tap zoom prevention on noninteractive page areas without suppressing taps on buttons, links, form controls, or ARIA interactive controls.
+- Makes Tomb World event action buttons explicit non-submit buttons so The Maze Reforms resolves or redraws immediately and exactly once from a normal iPhone tap.
+- Preserves event transactions, Strategy Phase navigation, saved-game compatibility, and save schema version 3.
 
 ## v8.6.106
 
