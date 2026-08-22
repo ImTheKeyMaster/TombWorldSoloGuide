@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.105';
+  const APP_VERSION = '8.6.106';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2956,6 +2956,25 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
     return !d.eventPending&&(d.events||[])[d.eventIndex||0]?.status!=='drawn'&&!strategyRequiredRedrawPending();
   }
 
+  function strategyHasNoDownstreamWork(){
+    const d=state.strategyData||{},reinforcements=state.reinforcementState||{};
+    const presentation=strategyEventPresentation(d);
+    const reinforcementProcessed=reinforcements.turningPoint===state.turningPoint
+      &&state.strategyPipeline?.completed?.includes('reinforcement');
+    return presentation.required===0
+      &&!d.eventPending
+      &&!presentation.events.some(event=>event.status==='drawn')
+      &&!strategyRequiredRedrawPending()
+      &&canLeaveStrategyEvents()
+      &&reinforcementProcessed
+      &&reinforcements.status==='complete'
+      &&!(reinforcements.operativeIds||[]).length
+      &&!(Number(reinforcements.blocked)||0)
+      &&!(Number(reinforcements.blockedByCapacity)||0)
+      &&!(Number(reinforcements.blockedByInventory)||0)
+      &&!(Number(d.blocked)||0);
+  }
+
   function canCompleteStrategyPhase(){
     return state.phase==='strategy'&&state.strategyStage==='summary'&&canLeaveStrategyActions()&&canLeaveStrategyEvents()&&state.reinforcementState.status!=='placement';
   }
@@ -2977,10 +2996,11 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
 
   function strategyActionsStepHtml(d){
     const missionPending=missionStrategyPending();
+    const completeFromActions=strategyHasNoDownstreamWork();
     const scuttlingEligible=ceaselessScuttlingEligible()&&d.ceaselessScuttlingTurningPoint!==state.turningPoint;
     const scuttlingCard=state.turningPoint>1?`<section class="card reinforcement-card"><p class="eyebrow">STRATEGIC GAMBIT</p><h3>A Ceaseless Scuttling</h3><p>${scuttlingEligible?'Fewer than three Macrocyte Warriors remain. You may reuse an incapacitated miniature to set up a new operative instance.':'Unavailable: three Warriors remain, or this gambit was already resolved this turning point.'}</p><button class="btn secondary" id="ceaselessScuttling" ${scuttlingEligible?'':'disabled'}>Use A Ceaseless Scuttling</button></section>`:'';
     const actionsHtml=`${missionStrategyPromptHtml()}${factionGuidanceHtml('gambits')}${scuttlingCard}`;
-    return `${strategyProgressHtml('actions')}<h2 id="strategy-step-heading">Resolve Strategy Phase Actions</h2><div class="strategy-phase-guide"><h3>Strategy Phase Checklist</h3><ol><li>Generate Command Points as required.</li><li>Play any Strategic Ploys.</li><li>Resolve abilities and mission rules.</li><li>Review optional Strategic Gambits.</li></ol></div>${actionsHtml||'<p class="strategy-empty-message">No additional guided Strategy Phase actions are required.</p>'}${strategyNavigationHtml({continueId:'continueStrategyEvents',continueLabel:'Continue to Tomb World Events',disabled:missionPending,disabledReason:missionPending?'Resolve the mandatory mission Strategy Phase rule before continuing.':''})}`;
+    return `${completeFromActions?'':strategyProgressHtml('actions')}<h2 id="strategy-step-heading">Resolve Strategy Phase Actions</h2><div class="strategy-phase-guide"><h3>Strategy Phase Checklist</h3><ol><li>Generate Command Points as required.</li><li>Play any Strategic Ploys.</li><li>Resolve abilities and mission rules.</li><li>Review optional Strategic Gambits.</li></ol></div>${actionsHtml||'<p class="strategy-empty-message">No additional guided Strategy Phase actions are required.</p>'}${strategyNavigationHtml({continueId:completeFromActions?'completeStrategyFromActions':'continueStrategyEvents',continueLabel:completeFromActions?'Strategy Phase Complete':'Continue to Tomb World Events',disabled:missionPending,disabledReason:missionPending?'Resolve the mandatory mission Strategy Phase rule before continuing.':''})}`;
   }
 
   function strategyEventsStepHtml(d){
@@ -3258,6 +3278,7 @@ document.addEventListener('touchend',function(e){const now=Date.now();if(now-las
       if(!redrawCurrentEvent('No breach or open hatchway could be changed.'))button.disabled=false;
     });
     $('#continueStrategyEvents')?.addEventListener('click',()=>showStrategyViewStep('events','actions'));
+    $('#completeStrategyFromActions')?.addEventListener('click',()=>{if(!strategyHasNoDownstreamWork()||!canCompleteStrategyPhase())return;beginFirefight(state.strategyData?.suggestedInitiative==='npo'?'npo':'player');});
     $('#backStrategyActions')?.addEventListener('click',()=>showStrategyViewStep('actions','events'));
     $('#continueStrategyReview')?.addEventListener('click',()=>showStrategyViewStep('review','events'));
     $('#backStrategyEvents')?.addEventListener('click',()=>showStrategyViewStep('events','review'));

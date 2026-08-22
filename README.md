@@ -1,4 +1,13 @@
-# Tomb World Solo Guide v8.6.105
+# Tomb World Solo Guide v8.6.106
+
+## v8.6.106
+
+**Version 8.6.106 - Streamlined Empty Strategy Phase**
+
+- Lets Strategy Phase Actions complete the phase directly when no Tomb World Events or Reinforcements require review.
+- Removes the unnecessary three-step progress indicator in this single-screen Strategy flow.
+- Preserves the full Events and Reinforcement workflow whenever either contains meaningful work.
+- Preserves mission Strategy requirements, blocked-reinforcement reporting, Firefight initialization, and save schema version 3.
 
 ## v8.6.105
 
