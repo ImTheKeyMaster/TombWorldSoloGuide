@@ -1,4 +1,12 @@
-# Tomb World Solo Guide v8.6.107
+# Tomb World Solo Guide v8.6.108
+
+## v8.6.108
+
+**Version 8.6.108 - Clarify Chittering Drone Guide Actions**
+
+- Explains whether A Chittering Drone requires an automatic Guide restoration or tabletop Scarab placement without changing the official event effect text.
+- Labels the multiple-wounded action as Restore Selected Scarab Swarm and makes resolved healing messages explicitly identify the Guide's automatic wound change.
+- Preserves event resolution, redraw, inventory, battlefield-capacity, Battle Record, navigation, persistence, and save schema version 3.
 
 ## v8.6.107
 
