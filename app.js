@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldSoloGuide.v1';
-  const APP_VERSION = '8.6.107';
+  const APP_VERSION = '8.6.108';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3180,10 +3180,14 @@ document.addEventListener('touchend',function(e){
       'chittering-drone':'Confirm Scarab Placement',
       'maze-reforms':'Confirm Terrain Changes'
     };
-    const scarabChoices=event.execution.type==='chittering-drone'&&Array.isArray(event.eligibleNpoIds)&&event.eligibleNpoIds.length>1
+    const hasScarabChoices=event.execution.type==='chittering-drone'&&Array.isArray(event.eligibleNpoIds)&&event.eligibleNpoIds.length>1;
+    const scarabGuide=event.execution.type==='chittering-drone'
+      ? `<div class="event-resolution event-guide-action"><h4>GUIDE ACTION</h4><p>${hasScarabChoices?'Multiple wounded Canoptek Scarab Swarms are eligible. Choose one below. The Guide will automatically restore the selected swarm to full wounds.':`No wounded Canoptek Scarab Swarms are currently on the battlefield. Set up one Ready Canoptek Scarab Swarm with a Conceal order using the event card's placement instructions, then confirm below.`}</p></div>`:'';
+    const scarabChoices=hasScarabChoices
       ? `<div class="field"><label for="eventNpoSelect">Wounded Scarab Swarm</label><select id="eventNpoSelect"><option value="">Select a Scarab Swarm...</option>${sortedNposForDisplay(event.eligibleNpoIds.map(id=>activeNpos().find(item=>item.id===id)).filter(Boolean)).map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(npoName(n))} — ${n.wounds} of ${n.maxWounds} wounds</option>`).join('')}</select></div>`:'';
+    if(hasScarabChoices)labels['chittering-drone']='Restore Selected Scarab Swarm';
     const impossibleControl=event.execution.type==='maze-reforms'?'<button type="button" class="btn secondary" id="redrawStrategyEvent" aria-label="No valid terrain changes are possible; draw another Tomb World event card">No Valid Changes · Draw Again</button>':'';
-    return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}<div class="event-controls">${scarabChoices}<button type="button" class="btn primary" id="resolveStrategyEvent" ${scarabChoices?'disabled':''}>${labels[event.definitionId]||labels[event.execution.type]||'Resolve Event'}</button>${impossibleControl}</div></div>`;
+    return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}${scarabGuide}<div class="event-controls">${scarabChoices}<button type="button" class="btn primary" id="resolveStrategyEvent" ${scarabChoices?'disabled':''}>${labels[event.definitionId]||labels[event.execution.type]||'Resolve Event'}</button>${impossibleControl}</div></div>`;
   }
 
   function activationTracker(){
@@ -3551,7 +3555,7 @@ document.addEventListener('touchend',function(e){
     }
     if(type==='chittering-drone'){
       const wounded=activeNpos().filter(npo=>npo.type==='Canoptek Scarab Swarm'&&npo.wounds<npo.maxWounds);
-      if(wounded.length===1){wounded[0].wounds=wounded[0].maxWounds;completeCurrentEvent(`${npoName(wounded[0])} regained all lost wounds.`);return;}
+      if(wounded.length===1){const before=wounded[0].wounds;wounded[0].wounds=wounded[0].maxWounds;completeCurrentEvent(`The Guide automatically restored ${npoName(wounded[0])} to full wounds (${before} → ${wounded[0].maxWounds}).`);return;}
       if(wounded.length>1){event.eligibleNpoIds=wounded.map(npo=>npo.id);d.eventPending=true;return;}
       if(activeNpos().length>=MAX_NPOS||!npoInventory()['Canoptek Scarab Swarm'].remaining){redrawCurrentEvent('No Scarab Swarm could be set up.');return;}
     }
@@ -3725,8 +3729,9 @@ document.addEventListener('touchend',function(e){
       const operativeId=$('#eventNpoSelect')?.value;
       const n=activeNpos().find(item=>item.id===operativeId&&event.eligibleNpoIds.includes(item.id)&&item.wounds<item.maxWounds);
       if(!n)return;
+      const before=n.wounds;
       n.wounds=n.maxWounds;
-      result=`${npoName(n)} regained all lost wounds.`;
+      result=`The Guide automatically restored ${npoName(n)} to full wounds (${before} → ${n.maxWounds}).`;
     }else if(event.execution.type==='chittering-drone'||event.execution.type==='awakened-warrior'){
       const type=event.execution.type==='chittering-drone'?'Canoptek Scarab Swarm':'Necron Warrior';
       if(activeNpos().length>=MAX_NPOS||!npoInventory()[type]?.remaining){redrawCurrentEvent(`${type} could not be set up.`);return;}
