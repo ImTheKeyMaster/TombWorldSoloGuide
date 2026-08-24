@@ -38,6 +38,17 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
         self.assertIn("recommendedNpoActions", solo)
         self.assertIn("runNpoPrompt", solo)
 
+    def test_self_incapacitated_pvp_necron_completes_before_stale_cleanup(self):
+        human = self.section("function continueHumanNecronActivation", "function continueSoloNpoActivation")
+        completion = self.section("async function completeNpoActivation", "function applyNpoAttackDamage")
+        incapacitated = "if(n.wounds<=0){completeNpoActivation();return;}"
+        stale = "if(n.battlefieldState!=='deployed'||n.dormant||!n.ready)"
+        self.assertIn(incapacitated, human)
+        self.assertIn(stale, human)
+        self.assertLess(human.index(incapacitated), human.index(stale))
+        for lifecycle_step in ("if(state.lastActivation?.committed)return", "state.npoActivated++", "state.activationHistory.unshift", "advanceAfterActivation('npo')", "onNpoActivationCompleted"):
+            self.assertIn(lifecycle_step, completion)
+
     def test_human_catalog_is_separate_from_ai_priority(self):
         catalog = self.section("function supportedHumanNpoActions", "function legalHumanNpoActions")
         legality = self.section("function legalHumanNpoActions", "function filterLegalNpoActions")

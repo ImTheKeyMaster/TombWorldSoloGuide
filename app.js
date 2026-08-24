@@ -6656,10 +6656,13 @@ function showPlayerActivation(stage={}){
   function continueHumanNecronActivation(){
     const activation=state.lastActivation,n=state.roster.find(item=>item.id===activation?.npoId);
     if(!activation||activation.committed)return;
-    if(!n||n.battlefieldState!=='deployed'||n.dormant||!n.ready){
+    if(!n){
       state.activeNpoId=null;state.lastActivation=null;save();closeModal();render();return;
     }
     if(n.wounds<=0){completeNpoActivation();return;}
+    if(n.battlefieldState!=='deployed'||n.dormant||!n.ready){
+      state.activeNpoId=null;state.lastActivation=null;save();closeModal();render();return;
+    }
     if(activation.awaitingActionResult){renderNpoActionResult(n,activation.awaitingActionResult,Boolean(activation.awaitingActionResult.endsActivation));return;}
     if(activation.pendingAction){resolveNpoAction(n,activation.pendingAction);return;}
     if(activation.remainingAp<=0){completeNpoActivation();return;}
