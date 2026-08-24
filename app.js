@@ -1305,7 +1305,7 @@ document.addEventListener('touchend',function(e){
         committed:Boolean(merged.lastActivation.committed),completed:Boolean(merged.lastActivation.completed||merged.lastActivation.committed)
       };
     }
-    if(merged.phase==='strategy'&&merged.strategyStage==='initiative'){
+    if(merged.phase==='strategy'&&merged.strategyStage==='initiative'&&merged.strategyData?.initiativeMode!=='pending'){
       const resolvedSide=merged.strategyData?.suggestedInitiative==='npo'?'npo':'player';
       merged.initiative=resolvedSide;
       merged.phase='firefight';
@@ -3186,6 +3186,7 @@ document.addEventListener('touchend',function(e){
   function strategyCard(){
     const d=state.strategyData||{};
     if(state.strategyStage==='mission-ready')return `<section class="next-card"><span class="phase">STRATEGY PHASE · READY STEP</span><h2>Mission event pending</h2><p>Complete the mission Ready-step event before initiative is determined.</p><button class="btn primary big-action" id="retryMissionReady">Continue Mission Event</button></section>`;
+    if(['initiative','event'].includes(state.strategyStage))return `<section class="next-card"><span class="phase">STRATEGY PHASE</span><h2>Dice resolution interrupted</h2><p>Continue from the last fully committed result. No committed dice will be rerolled.</p><button class="btn primary big-action" id="retryStrategyDice">Continue Strategy Phase</button></section>`;
     if(state.strategyStage!=='summary')return '';
     const step=strategyViewStep(d);
     return `<section class="next-card strategy-step">${step==='actions'?strategyActionsStepHtml(d):step==='events'?strategyEventsStepHtml(d):strategyReviewStepHtml(d)}</section>`;
@@ -3397,8 +3398,8 @@ document.addEventListener('touchend',function(e){
     $('#resolveStrategyEvent')?.addEventListener('click',event=>{
       const button=event.currentTarget;
       if(button.disabled)return;
-      if(currentEvent()?.definitionId==='transdimensional-relocation')button.disabled=true;
-      resolveStrategyEvent(button);
+      button.disabled=true;
+      void resolveStrategyEvent(button).catch(error=>console.error('[Strategy Event]',error)).finally(()=>{if(button.isConnected&&state.strategyData?.eventPending)button.disabled=false;});
     });
     const pendingRelocation=currentEvent();
     const relocationVisible=strategyViewStep(state.strategyData)==='events'&&pendingRelocation?.definitionId==='transdimensional-relocation'&&pendingRelocation.status==='drawn';
@@ -3425,6 +3426,7 @@ document.addEventListener('touchend',function(e){
     $('#continueStrategy')?.addEventListener('click',()=>{if(!canCompleteStrategyPhase())return;beginFirefight(state.strategyData?.suggestedInitiative==='npo'?'npo':'player');});
     $('#ceaselessScuttling')?.addEventListener('click',showCeaselessScuttling);
     $('#retryMissionReady')?.addEventListener('click',continueTurningPointStart);
+    $('#retryStrategyDice')?.addEventListener('click',finishTurningPointStart);
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
     $('#npoActivation')?.addEventListener('click',showNpoSelection);
     $('#missionHud')?.addEventListener('click',showMissionDetails);
@@ -3502,8 +3504,16 @@ document.addEventListener('touchend',function(e){
 
   async function finishTurningPointStart(){
     try{
-      await determineInitiative();
-      await processEventStage();
+      if(state.strategyPipeline.current==='initiative'){
+        state.phase='strategy';state.strategyStage='initiative';state.nextSide='player';state.activeNpoId=null;
+        state.strategyData.initiativeMode='pending';save();
+        await determineInitiative();
+      }
+      if(state.strategyPipeline.current==='event'){
+        state.phase='strategy';state.strategyStage='event';save();
+        if(Array.isArray(state.strategyData.events))await beginCurrentEvent();
+        else await processEventStage();
+      }
     }catch(error){
       console.error('[Strategy Dice]',error);
       save();render();
@@ -3555,6 +3565,7 @@ document.addEventListener('touchend',function(e){
       if(event){event.requiredBy=i>=d.normalEventCount?'restless-tomb':'standard';d.eventSlotsDrawn++;}
     }
     d.event=d.events[0]||null;
+    save();
     if(d.event){await beginCurrentEvent();return;}
     completeStrategyStage('event','reinforcement');
   }
@@ -3653,6 +3664,7 @@ document.addEventListener('touchend',function(e){
           const [die]=await requestDiceResults({count:1,sides:6,title:'SUBJUGATION GLYPHS',instruction:'Roll 1D6 on the tabletop and enter the result.',rollerLabel:playerName(operativeId)});
           const baseApl=Number(playerDefinition(operativeId)?.apl||3),apl=effectivePlayerApl(operativeId,baseApl);
           transaction.selections.push(operativeId);transaction.rolls.push(die);
+          save();
           if(die>apl){
             const modifierId=`subjugation-glyphs:${event.instanceId}:${operativeId}`;
             if(!state.eventState.playerAplModifiers.some(item=>item.id===modifierId))state.eventState.playerAplModifiers.push({id:modifierId,sourceId:event.instanceId,targetId:operativeId,ruleId:'subjugation-glyphs',amount:-1,expires:null});
@@ -3676,6 +3688,7 @@ document.addEventListener('touchend',function(e){
         if(!Number.isInteger(die)){
           [die]=await requestDiceResults({count:1,sides:3,title:'LIVING METAL FLUX',instruction:'Roll 1D3. This model regains D3 + 2 wounds.',rollerLabel:npoName(npo)});
           transaction.selections.push(npo.id);transaction.rolls.push(die);
+          save();
         }
         committed.push({npo,die});
       }
@@ -3716,6 +3729,7 @@ document.addEventListener('touchend',function(e){
       if(!Number.isInteger(transaction.rolls[0])){
         const [die]=await requestDiceResults({count:1,sides:3,title:'THE MAZE REFORMS',instruction:'Roll 1D3 on the tabletop and enter the result.'});
         transaction.rolls=[die];
+        save();
       }
       event.openHatchwayLimit=transaction.rolls[0];
       event.text=`Close one breach and up to ${event.openHatchwayLimit} open hatchway${event.openHatchwayLimit===1?'':'s'}. If this cannot be resolved, draw another event card.`;
@@ -3733,6 +3747,7 @@ document.addEventListener('touchend',function(e){
     d.eventPending=false;
     const source=event.requiredBy==='restless-tomb'?'Restless Tomb minimum':'standard rules';
     log(`Turning Point ${state.turningPoint} · ${event.title} (${source}): ${result}`);
+    save();
     await beginCurrentEvent();
   }
 
@@ -4802,6 +4817,7 @@ function showPlayerActivation(stage={}){
         for(const check of missingThreatChecks){
           const [die]=await requestDiceResults({count:1,sides:6,title:check.title,instruction:check.instruction,rollerLabel:playerName(operativeId)});
           stage.threatRolls[check.id]=die;
+          state.combatState={side:'player',stage:{...stage}};save();
         }
       }catch(error){
         console.error('[Player Activation Threat Dice]',error);
@@ -6930,10 +6946,19 @@ function showPlayerActivation(stage={}){
         const targets=selected.map(id=>id.startsWith('player:')?livePlayerOperative(id.slice(7)):state.roster.find(item=>item.id===id)).filter(Boolean);
         let committedRolls;
         try{
+          const pendingAction=state.lastActivation?.pendingAction;
+          const savedRolls=pendingAction?.diceResults&&typeof pendingAction.diceResults==='object'?pendingAction.diceResults:{};
           committedRolls=[];
           for(const target of targets){
-            const label=selected[targets.indexOf(target)].startsWith('player:')?playerName(target.id):npoName(target);
-            committedRolls.push(await requestDiceResults({count:2,sides:6,title:'GEOMANTIC DISTURBANCE',instruction:'Roll 2D6 for this operative and enter both results.',rollerLabel:label}));
+            const targetId=selected[targets.indexOf(target)],label=targetId.startsWith('player:')?playerName(target.id):npoName(target);
+            let dice=savedRolls[targetId];
+            if(!Array.isArray(dice)||dice.length!==2||dice.some(value=>!Number.isInteger(value)||value<1||value>6)){
+              dice=await requestDiceResults({count:2,sides:6,title:'GEOMANTIC DISTURBANCE',instruction:'Roll 2D6 for this operative and enter both results.',rollerLabel:label});
+              savedRolls[targetId]=dice;
+              if(pendingAction)pendingAction.diceResults=savedRolls;
+              save();
+            }
+            committedRolls.push(dice);
           }
         }catch(error){
           console.error('[Geomantic Disturbance Dice]',error);
@@ -7756,7 +7781,7 @@ function showPlayerActivation(stage={}){
       instruction:`Roll ${operation.dice.count}D${operation.dice.sides} on the tabletop and enter each result.`
     });
     const result={dice,total:dice.reduce((sum,value)=>sum+value,0)};
-    if(isPvpMode()||suppliedDice)return result;
+    if(isPvpMode())return result;
     return new Promise((resolve,reject)=>{
       let settled=false;
       showModal(operation.label||'Mission Roll',`<div class="dice-row animated-roll" id="missionDiceRoll">${dice.map(()=>rollingDieHtml()).join('')}</div><p>Rolling ${operation.dice.count}D${operation.dice.sides}…</p>`,()=>{if(!settled)reject(new TombWorldMissionEngine.MissionEngineError('DICE_CANCELLED','Mission dice roll was cancelled.'));});

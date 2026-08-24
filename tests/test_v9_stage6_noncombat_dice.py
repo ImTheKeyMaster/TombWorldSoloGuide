@@ -25,11 +25,20 @@ class Stage6NoncombatDiceTests(unittest.TestCase):
         self.assertIn("await processEventStage()", flow)
         self.assertLess(flow.index("await determineInitiative()"), flow.index("await processEventStage()"))
         self.assertLess(flow.index("await processEventStage()"), flow.index("processReinforcementStage()"))
+        self.assertIn("if(Array.isArray(state.strategyData.events))await beginCurrentEvent()", flow)
+
+    def test_interrupted_strategy_dice_have_a_safe_idempotent_retry(self):
+        normalization = self.section("function normalizeState", "function npoDefinition")
+        card = self.section("function strategyCard", "function strategyEventHtml")
+        bindings = self.section("function bindPlay", "async function startTurningPoint")
+        self.assertIn("merged.strategyData?.initiativeMode!=='pending'", normalization)
+        self.assertIn("id=\"retryStrategyDice\"", card)
+        self.assertIn("$('#retryStrategyDice')?.addEventListener('click',finishTurningPointStart)", bindings)
 
     def test_mission_adapter_uses_provider_but_preserves_solo_animation_and_audio(self):
         flow = self.section("async function animateMissionDice", "function requestMissionNumber")
         self.assertIn("suppliedDice||await requestDiceResults", flow)
-        self.assertIn("if(isPvpMode()||suppliedDice)return result", flow)
+        self.assertIn("if(isPvpMode())return result", flow)
         self.assertIn("animated-roll", flow)
         self.assertIn("TombWorldDiceSfx.play()", flow)
         self.assertIn("return new Promise", flow)
@@ -59,6 +68,7 @@ class Stage6NoncombatDiceTests(unittest.TestCase):
         self.assertIn("title:'THE MAZE REFORMS'", flow)
         self.assertIn("sortedNposForDisplay(activeNpos().filter", flow)
         self.assertIn("transaction.rolls=[die]", flow)
+        self.assertGreaterEqual(flow.count("save();"), 3)
         self.assertNotIn("const die=roll()", flow)
         self.assertNotIn("openHatchwayLimit=rollD3()", flow)
 
@@ -94,7 +104,8 @@ class Stage6NoncombatDiceTests(unittest.TestCase):
         self.assertIn("for(const target of targets)", flow)
         self.assertIn("count:2,sides:6,title:'GEOMANTIC DISTURBANCE'", flow)
         self.assertIn("committedRolls[targets.indexOf(operative)]", flow)
-        self.assertLess(flow.index("committedRolls.push(await requestDiceResults"), flow.index("results.forEach"))
+        self.assertLess(flow.index("dice=await requestDiceResults"), flow.index("results.forEach"))
+        self.assertIn("pendingAction.diceResults=savedRolls", flow)
         helper = self.section("function resolveGeomanticDisturbance", "function markerControlApl")
         self.assertIn("damage:Math.max(0,total-operative.wounds)", helper)
 

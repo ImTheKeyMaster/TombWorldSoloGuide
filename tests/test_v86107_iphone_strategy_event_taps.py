@@ -76,7 +76,7 @@ const render=()=>{{renders++;}};
         self.assertEqual(result["result"], "Breach and hatchway changes completed on the tabletop.")
         self.assertFalse(result["pending"])
         self.assertEqual(result["renders"], 1)
-        self.assertEqual(result["saves"], 1)
+        self.assertEqual(result["saves"], 2)
         self.assertEqual(result["eventIndex"], 1)
         self.assertEqual(len(result["journal"]), 1)
         self.assertIn("Turning Point 4 · The Maze Reforms (standard rules)", result["journal"][0])
