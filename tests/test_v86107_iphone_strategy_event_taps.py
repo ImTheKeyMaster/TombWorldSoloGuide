@@ -52,7 +52,7 @@ process.stdout.write(JSON.stringify({{
         self.assertIn("e.target?.closest?", touch_setup)
 
     def test_maze_confirm_resolves_once_renders_immediately_and_logs_once(self):
-        complete = source("async function completeCurrentEvent", "  function redrawCurrentEvent")
+        complete = source("async function completeCurrentEvent", "  async function redrawCurrentEvent")
         resolve = source("async function resolveStrategyEvent", "  function randomReinforcement")
         result = run_node(f"""
 const maze={{instanceId:'maze-1',definitionId:'maze-reforms',type:'tomb-world-event',title:'The Maze Reforms',
@@ -89,10 +89,10 @@ const render=()=>{{renders++;}};
         self.assertIn("$('#resolveStrategyEvent')?.addEventListener('click'", bindings)
         self.assertIn("$('#redrawStrategyEvent')?.addEventListener('click'", bindings)
         self.assertIn("button.disabled=true", bindings)
-        self.assertIn("if(!redrawCurrentEvent", bindings)
+        self.assertIn("if(!await redrawCurrentEvent", bindings)
 
     def test_one_redraw_commits_one_replacement_and_preserves_reason(self):
-        redraw = source("function redrawCurrentEvent", "  function processReinforcementStage")
+        redraw = source("async function redrawCurrentEvent", "  function processReinforcementStage")
         result = run_node(f"""
 const maze={{instanceId:'maze-1',definitionId:'maze-reforms',title:'The Maze Reforms',status:'drawn',requiredBy:'standard'}};
 const replacement={{instanceId:'next-1',definitionId:'dark-of-the-tomb',title:'Dark of the Tomb',status:'drawn'}};
@@ -103,9 +103,11 @@ const drawReplacementEvent=()=>{{draws++;return replacement;}};
 const beginCurrentEvent=()=>{{}}; const log=text=>logs.push(text); const save=()=>{{}}; const render=()=>{{renders++;}};
 const showModal=()=>{{}};
 {redraw}
-const first=redrawCurrentEvent('No breach or open hatchway could be changed.');
-process.stdout.write(JSON.stringify({{first,draws,renders,status:maze.status,result:maze.result,
-  current:state.strategyData.event.instanceId,transactions:Object.values(state.eventState.transactions),logs}}));
+(async()=>{{
+  const first=await redrawCurrentEvent('No breach or open hatchway could be changed.');
+  process.stdout.write(JSON.stringify({{first,draws,renders,status:maze.status,result:maze.result,
+    current:state.strategyData.event.instanceId,transactions:Object.values(state.eventState.transactions),logs}}));
+}})();
 """)
         self.assertTrue(result["first"])
         self.assertEqual(result["draws"], 1)

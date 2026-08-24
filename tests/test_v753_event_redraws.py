@@ -19,8 +19,8 @@ class EventRedrawTests(unittest.TestCase):
         self.button = source("const impossibleControl=", "return `<div class=\"summary-box strategy-event")
         self.binding = source("$('#redrawStrategyEvent')", "$('#continueStrategy')")
         self.helper = source("function drawReplacementEvent", "function currentEvent")
-        self.redraw = source("function redrawCurrentEvent", "function processReinforcementStage")
-        self.begin = source("function beginCurrentEvent", "function completeCurrentEvent")
+        self.redraw = source("async function redrawCurrentEvent", "function processReinforcementStage")
+        self.begin = source("async function beginCurrentEvent", "async function completeCurrentEvent")
 
     def test_maze_reforms_has_idle_accessible_redraw_button(self):
         self.assertIn("No Valid Changes · Draw Again", self.button)
@@ -31,7 +31,7 @@ class EventRedrawTests(unittest.TestCase):
     def test_button_locks_immediately_and_reenables_after_failure(self):
         self.assertLess(self.binding.index("button.disabled=true"), self.binding.index("redrawCurrentEvent("))
         self.assertIn("if(button.disabled)return", self.binding)
-        self.assertIn("if(!redrawCurrentEvent", self.binding)
+        self.assertIn("if(!await redrawCurrentEvent", self.binding)
         self.assertIn("button.disabled=false", self.binding)
         self.assertIn("eventRedrawsInProgress.has(transactionId)", self.redraw)
 
@@ -90,15 +90,15 @@ class EventRedrawTests(unittest.TestCase):
         self.assertEqual(self.redraw.count("Another event card was drawn."), 1)
 
     def test_replacement_runs_normal_flow_and_blocks_strategy(self):
-        self.assertIn("beginCurrentEvent();", self.redraw)
+        self.assertIn("await beginCurrentEvent();", self.redraw)
         strategy = source("function strategyProgressHtml", "function strategyEventHtml")
         self.assertIn("!d.eventPending", strategy)
         self.assertIn("strategyRequiredRedrawPending()", strategy)
 
     def test_all_impossible_events_share_centralized_redraw(self):
-        self.assertIn("if(state.threat===15){redrawCurrentEvent('Threat was already 15.');return;}", self.begin)
-        self.assertIn("redrawCurrentEvent('No Scarab Swarm could be set up.');return;", self.begin)
-        self.assertIn("redrawCurrentEvent('No Necron Warrior could be set up.');return;", self.begin)
+        self.assertIn("if(state.threat===15){await redrawCurrentEvent('Threat was already 15.');return;}", self.begin)
+        self.assertIn("await redrawCurrentEvent('No Scarab Swarm could be set up.');return;", self.begin)
+        self.assertIn("await redrawCurrentEvent('No Necron Warrior could be set up.');return;", self.begin)
         definitions = source("const eventDefinitions = {", "const eventDeck = [")
         for definition_id in ("maze-reforms", "stirrings-of-horror", "chittering-drone", "awakened-warrior"):
             definition = next(line for line in definitions.splitlines() if line.strip().startswith(f"'{definition_id}':"))

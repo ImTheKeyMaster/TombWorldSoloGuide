@@ -31,7 +31,10 @@ class Stage6NoncombatDiceTests(unittest.TestCase):
         normalization = self.section("function normalizeState", "function npoDefinition")
         card = self.section("function strategyCard", "function strategyEventHtml")
         bindings = self.section("function bindPlay", "async function startTurningPoint")
+        combat_restore = self.section("merged.combatState=", "merged.weaponRuleResolution=")
+        self.assertIn("['rolled','automatic','pending'].includes(raw.strategyData.initiativeMode)", normalization)
         self.assertIn("merged.strategyData?.initiativeMode!=='pending'", normalization)
+        self.assertIn("threatDiceResolving:false", combat_restore)
         self.assertIn("id=\"retryStrategyDice\"", card)
         self.assertIn("$('#retryStrategyDice')?.addEventListener('click',finishTurningPointStart)", bindings)
 
@@ -71,6 +74,14 @@ class Stage6NoncombatDiceTests(unittest.TestCase):
         self.assertGreaterEqual(flow.count("save();"), 3)
         self.assertNotIn("const die=roll()", flow)
         self.assertNotIn("openHatchwayLimit=rollD3()", flow)
+
+    def test_event_redraw_awaits_replacement_dice_and_routes_failures_to_retry(self):
+        redraw = self.section("async function redrawCurrentEvent", "function processReinforcementStage")
+        bindings = self.section("function bindPlay", "async function startTurningPoint")
+        self.assertIn("await beginCurrentEvent()", redraw)
+        self.assertLess(redraw.index("save();", redraw.index("status:'committed'")), redraw.index("await beginCurrentEvent()"))
+        self.assertIn("if(!await redrawCurrentEvent", bindings)
+        self.assertIn("state.strategyStage='event';save();render();", bindings)
 
     def test_administrative_event_selection_remains_automatic(self):
         draw = self.section("function drawEvent", "function drawReplacementEvent")

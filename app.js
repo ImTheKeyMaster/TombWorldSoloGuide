@@ -1147,7 +1147,7 @@ document.addEventListener('touchend',function(e){
     merged.playerCasualtyIds=Array.isArray(raw?.playerCasualtyIds)?raw.playerCasualtyIds:[];
     merged.playerWounds=raw?.playerWounds&&typeof raw.playerWounds==='object'?{...raw.playerWounds}:{};
     merged.combatState=isRecord(raw.combatState)&&raw.combatState.side==='player'&&isRecord(raw.combatState.stage)
-      ? {side:'player',stage:normalizePendingAttackResultLists(raw.combatState.stage)}
+      ? {side:'player',stage:{...normalizePendingAttackResultLists(raw.combatState.stage),threatDiceResolving:false}}
       : null;
     merged.weaponRuleResolution=normalizeMultiTargetAttackSequence(raw.weaponRuleResolution,
       raw.lastActivation?.combatDraft?.profile||raw.combatState?.stage?.shootCombatDraft?.profile);
@@ -1206,7 +1206,7 @@ document.addEventListener('touchend',function(e){
         event,
         events:Array.isArray(raw.strategyData.events)?raw.strategyData.events:(event?[{...event,status:raw.strategyData.eventPending?'drawn':'resolved'}]:[]),
         eventIndex:Number.isInteger(raw.strategyData.eventIndex)?raw.strategyData.eventIndex:0,
-        initiativeMode:raw.strategyData.initiativeMode==='rolled'||raw.strategyData.initiativeMode==='automatic'
+        initiativeMode:['rolled','automatic','pending'].includes(raw.strategyData.initiativeMode)
           ? raw.strategyData.initiativeMode
           : hasRolledInitiative?'rolled':'automatic',
         initiativeReason:raw.strategyData.initiativeReason||(raw?.turningPoint===1?'Turning Point 1':'Threat was 0 when initiative was determined'),
@@ -3399,7 +3399,7 @@ document.addEventListener('touchend',function(e){
       const button=event.currentTarget;
       if(button.disabled)return;
       button.disabled=true;
-      void resolveStrategyEvent(button).catch(error=>console.error('[Strategy Event]',error)).finally(()=>{if(button.isConnected&&state.strategyData?.eventPending)button.disabled=false;});
+      void resolveStrategyEvent(button).catch(error=>{console.error('[Strategy Event]',error);state.strategyStage='event';save();render();}).finally(()=>{if(button.isConnected&&state.strategyData?.eventPending)button.disabled=false;});
     });
     const pendingRelocation=currentEvent();
     const relocationVisible=strategyViewStep(state.strategyData)==='events'&&pendingRelocation?.definitionId==='transdimensional-relocation'&&pendingRelocation.status==='drawn';
@@ -3410,13 +3410,14 @@ document.addEventListener('touchend',function(e){
           requestAnimationFrame(()=>focusInitialDialogControl(app));
         }
       }
-      else setTimeout(()=>redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.'),0);
+      else setTimeout(()=>{void redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.').catch(error=>{console.error('[Strategy Event Redraw]',error);state.strategyStage='event';save();render();});},0);
     }else focusedRelocationInstanceId=null;
-    $('#redrawStrategyEvent')?.addEventListener('click',event=>{
+    $('#redrawStrategyEvent')?.addEventListener('click',async event=>{
       const button=event.currentTarget;
       if(button.disabled)return;
       button.disabled=true;
-      if(!redrawCurrentEvent('No breach or open hatchway could be changed.'))button.disabled=false;
+      try{if(!await redrawCurrentEvent('No breach or open hatchway could be changed.'))button.disabled=false;}
+      catch(error){console.error('[Strategy Event Redraw]',error);state.strategyStage='event';save();render();}
     });
     $('#continueStrategyEvents')?.addEventListener('click',()=>showStrategyViewStep('events','actions'));
     $('#completeStrategyFromActions')?.addEventListener('click',()=>{if(!strategyHasNoDownstreamWork()||!canCompleteStrategyPhase())return;beginFirefight(state.strategyData?.suggestedInitiative==='npo'?'npo':'player');});
@@ -3646,7 +3647,7 @@ document.addEventListener('touchend',function(e){
     const type=event.execution.type;
     if(type==='transdimensional-relocation'){
       if(!prepareTransdimensionalRelocation(event)){
-        redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.');
+        await redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.');
         return;
       }
       d.eventPending=true;
@@ -3705,7 +3706,7 @@ document.addEventListener('touchend',function(e){
       return;
     }
     if(type==='stirrings'){
-      if(state.threat===15){redrawCurrentEvent('Threat was already 15.');return;}
+      if(state.threat===15){await redrawCurrentEvent('Threat was already 15.');return;}
       setThreat(1,event.title);
       await completeCurrentEvent(`Threat increased to ${state.threat}.`);
       return;
@@ -3722,7 +3723,7 @@ document.addEventListener('touchend',function(e){
       const wounded=activeNpos().filter(npo=>npo.type==='Canoptek Scarab Swarm'&&npo.wounds<npo.maxWounds);
       if(wounded.length===1){const before=wounded[0].wounds;wounded[0].wounds=wounded[0].maxWounds;await completeCurrentEvent(`The Guide automatically restored ${npoName(wounded[0])} to full wounds (${before} → ${wounded[0].maxWounds}).`);return;}
       if(wounded.length>1){event.eligibleNpoIds=wounded.map(npo=>npo.id);d.eventPending=true;return;}
-      if(activeNpos().length>=MAX_NPOS||!npoInventory()['Canoptek Scarab Swarm'].remaining){redrawCurrentEvent('No Scarab Swarm could be set up.');return;}
+      if(activeNpos().length>=MAX_NPOS||!npoInventory()['Canoptek Scarab Swarm'].remaining){await redrawCurrentEvent('No Scarab Swarm could be set up.');return;}
     }
     if(type==='maze-reforms'){
       const transaction=eventTransaction(`event:${event.instanceId}:${state.turningPoint}`,{definitionId:event.definitionId,rolls:[]});
@@ -3734,7 +3735,7 @@ document.addEventListener('touchend',function(e){
       event.openHatchwayLimit=transaction.rolls[0];
       event.text=`Close one breach and up to ${event.openHatchwayLimit} open hatchway${event.openHatchwayLimit===1?'':'s'}. If this cannot be resolved, draw another event card.`;
     }
-    if(type==='awakened-warrior'&&(activeNpos().length>=MAX_NPOS||!npoInventory()['Necron Warrior'].remaining)){redrawCurrentEvent('No Necron Warrior could be set up.');return;}
+    if(type==='awakened-warrior'&&(activeNpos().length>=MAX_NPOS||!npoInventory()['Necron Warrior'].remaining)){await redrawCurrentEvent('No Necron Warrior could be set up.');return;}
     d.eventPending=true;
   }
 
@@ -3751,7 +3752,7 @@ document.addEventListener('touchend',function(e){
     await beginCurrentEvent();
   }
 
-  function redrawCurrentEvent(reason){
+  async function redrawCurrentEvent(reason){
     const data=state.strategyData,event=currentEvent();
     if(!data||!event||event.status!=='drawn')return false;
     const eventIndex=data.eventIndex||0;
@@ -3794,7 +3795,8 @@ document.addEventListener('touchend',function(e){
       replacementInstanceId:replacement.instanceId,reason,status:'committed',committed:true
     };
     log(`${event.title}: ${reason} Another event card was drawn.`);
-    beginCurrentEvent();
+    save();
+    await beginCurrentEvent();
     save();
     eventRedrawsInProgress.delete(transactionId);
     render();
@@ -3899,7 +3901,7 @@ document.addEventListener('touchend',function(e){
     if(event.execution.type==='transdimensional-relocation'){
       if(event.status!=='drawn'||event.resolution?.confirmed){if(button)button.disabled=false;return;}
       if(!validTransdimensionalRelocationSelection(event)){
-        if(!prepareTransdimensionalRelocation(event))redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.');
+        if(!prepareTransdimensionalRelocation(event))await redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.');
         else render();
         return;
       }
@@ -3915,10 +3917,10 @@ document.addEventListener('touchend',function(e){
       result=`The Guide automatically restored ${npoName(n)} to full wounds (${before} → ${n.maxWounds}).`;
     }else if(event.execution.type==='chittering-drone'||event.execution.type==='awakened-warrior'){
       const type=event.execution.type==='chittering-drone'?'Canoptek Scarab Swarm':'Necron Warrior';
-      if(activeNpos().length>=MAX_NPOS||!npoInventory()[type]?.remaining){redrawCurrentEvent(`${type} could not be set up.`);return;}
+      if(activeNpos().length>=MAX_NPOS||!npoInventory()[type]?.remaining){await redrawCurrentEvent(`${type} could not be set up.`);return;}
       const n=createNpo(type,`${type} E${state.turningPoint}`,{order:'Conceal'});
       n.ready=true;n.dormant=false;
-      if(!commitNpoRoster([...state.roster,n],'resolve that event')){redrawCurrentEvent(`${type} could not be set up.`);return;}
+      if(!commitNpoRoster([...state.roster,n],'resolve that event')){await redrawCurrentEvent(`${type} could not be set up.`);return;}
       state.newIds.push(n.id);
       result=`${npoName(n)} was set up Ready with a Conceal order using the event card’s placement instructions.`;
     }
