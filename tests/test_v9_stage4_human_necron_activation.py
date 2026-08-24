@@ -69,6 +69,12 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
         self.assertIn("End Activation", picker)
         self.assertNotIn("checkbox", picker)
 
+    def test_activation_header_shows_fixed_or_selected_weapon(self):
+        header = self.section("function renderNpoActivationHeader", "function renderNpoGuideFooter")
+        self.assertIn("definition.loadoutOptions?.find", header)
+        self.assertIn("||npoWeapon(definition,n.weaponId)?.name", header)
+        self.assertIn("${loadout?", header)
+
     def test_activation_tracker_marks_selected_necron_active(self):
         tracker_status = self.section("function npoTrackerStatus", "function npoStatus")
         active_check = "npo.id===state.activeNpoId&&state.lastActivation?.npoId===npo.id&&!state.lastActivation?.committed"
