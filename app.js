@@ -5681,7 +5681,7 @@ function showPlayerActivation(stage={}){
     const draft=stage[`${attackType}CombatDraft`];
     if(draft){
       showPlayerCombatResolution(stage,attackType,draft.targetId,draft.weaponIndex,onResolved,onCancel,draft.rolling
-        ? {animate:false,committedAttackDice:draft.attackDice}
+        ? {animate:false,committedAttackDice:draft.attackDice,committedDefenseDice:draft.saveDice}
         : {result:draft,animate:false});
       return;
     }
@@ -5763,7 +5763,7 @@ function showPlayerActivation(stage={}){
     if(!isPvpMode()&&singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte Warrior'&&!darkDistance&&!requiresTabletopCheck)showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
   }
 
-  function showPlayerCombatResolution(stage,attackType,targetId,weaponIndex,onResolved,onCancel,{result=null,animate=true,moreThanEight=false,deferRoll=false,committedAttackDice=null}={}){
+  function showPlayerCombatResolution(stage,attackType,targetId,weaponIndex,onResolved,onCancel,{result=null,animate=true,moreThanEight=false,deferRoll=false,committedAttackDice=null,committedDefenseDice=null}={}){
     let sequence=state.weaponRuleResolution;
     const legacyIdentity=normalizeLegacyPlayerMultiTargetIdentity(sequence,stage.playerOperativeId);
     sequence=legacyIdentity.sequence;
@@ -5845,7 +5845,7 @@ function showPlayerActivation(stage={}){
       if(rollStarted)return;
       rollStarted=true;
       runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,attackerLabel:playerName(stage.playerOperativeId),defenderLabel:targetName,
-        rolledAttackDice:committedAttackDice,
+        rolledAttackDice:committedAttackDice,rolledDefenseDice:committedDefenseDice,
         onAttackComplete:attackDice=>{
           diceDraft.attackDice=attackDice.map(die=>({...die}));
           stage[`${attackType}CombatDraft`]={rolling:true,attackType,targetId,targetName,weaponIndex,profile,attackDice:diceDraft.attackDice};
@@ -5855,6 +5855,10 @@ function showPlayerActivation(stage={}){
         },onComplete:(attackDice,defenseDice)=>{
         diceDraft.attackDice=attackDice;
         diceDraft.defenseDice=defenseDice;
+        stage[`${attackType}CombatDraft`]={rolling:true,attackType,targetId,targetName,weaponIndex,profile,
+          attackDice:attackDice.map(die=>({...die})),saveDice:defenseDice.map(die=>({...die}))};
+        state.combatState={side:'player',stage:{...stage}};
+        save();
         void previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft,{targetId,weaponIndex,targetSide}).catch(error=>{rollStarted=false;console.error('[Combat] Combat-triggered dice request failed. No combat result was committed.',error);});
       },onError:()=>{rollStarted=false;}});
     };

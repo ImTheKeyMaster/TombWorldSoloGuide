@@ -56,6 +56,16 @@ class Stage5FullPvpCombatTests(unittest.TestCase):
         self.assertIn("rolledAttackDice:committedAttackDice", combat)
         self.assertIn("rolledAttackDice", self.section("function runAutomaticCombatRolls", "function retainedDiceTotals"))
 
+    def test_committed_defense_resumes_without_another_defense_request(self):
+        wizard = self.section("function showPendingPlayerAttackWizard", "function showPlayerCombatResolution")
+        combat = self.section("function showPlayerCombatResolution", "async function previewPendingPlayerAttack")
+        shared = self.section("function runAutomaticCombatRolls", "function retainedDiceTotals")
+        self.assertIn("committedDefenseDice:draft.saveDice", wizard)
+        self.assertIn("rolledDefenseDice:committedDefenseDice", combat)
+        self.assertIn("saveDice:defenseDice.map", combat)
+        self.assertLess(combat.index("saveDice:defenseDice.map"), combat.index("previewPendingPlayerAttack"))
+        self.assertIn("rolledDefenseDice||await requestDefenseDice", shared)
+
     def test_pvp_necron_profile_change_invalidates_confirmation(self):
         wizard = self.section("function showNpoAttackWizard", "function spinnerField")
         profile_change = wizard.split("$('#npoCombatProfile')?.addEventListener", 1)[1]
