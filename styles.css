@@ -889,7 +889,8 @@ button.tracker-operative:hover{
   color:var(--green);
   font-size:.68rem;
 }
-.tracker-operative.activated{
+.tracker-operative.activated,
+.tracker-operative.active{
   border-color:var(--green);
   background:rgba(92,245,157,.09);
 }

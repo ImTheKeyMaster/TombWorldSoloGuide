@@ -68,6 +68,14 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
         self.assertIn("End Activation", picker)
         self.assertNotIn("checkbox", picker)
 
+    def test_activation_tracker_marks_selected_necron_active(self):
+        tracker_status = self.section("function npoTrackerStatus", "function npoStatus")
+        active_check = "npo.id===state.activeNpoId&&state.lastActivation?.npoId===npo.id&&!state.lastActivation?.committed"
+        self.assertIn(active_check, tracker_status)
+        self.assertLess(tracker_status.index(active_check), tracker_status.index("npo.ready"))
+        self.assertIn("{status:'ACTIVE',className:'active'}", tracker_status)
+        self.assertIn(".tracker-operative.active", CSS)
+
     def test_movement_commits_only_from_confirmation_and_never_forces_follow_up(self):
         resolver = self.section("function resolveNpoAction", "function initiativeSummary")
         before_handler, handler = resolver.split("$('#confirmNpoMovement').onclick", 1)

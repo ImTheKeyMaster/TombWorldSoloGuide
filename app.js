@@ -1734,6 +1734,7 @@ document.addEventListener('touchend',function(e){
     if(npo.wounds<=0||npo.battlefieldState==='out-of-action')return {status:'ELIMINATED',className:'eliminated'};
     if(npo.battlefieldState==='reserve')return {status:'RESERVE',className:'reserve'};
     if(npo.battlefieldState==='deployed'&&npo.dormant)return {status:'DORMANT',className:'dormant'};
+    if(npo.id===state.activeNpoId&&state.lastActivation?.npoId===npo.id&&!state.lastActivation?.committed)return {status:'ACTIVE',className:'active'};
     if(npo.battlefieldState==='deployed'&&npo.ready)return {status:'READY',className:'ready'};
     if(npo.battlefieldState==='deployed'&&state.npoActivated>0)return {status:'ACTIVATED',className:'activated'};
     if(npo.battlefieldState==='deployed')return {status:'READY',className:'ready'};
