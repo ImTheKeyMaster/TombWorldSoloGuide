@@ -51,10 +51,10 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         self.assertIn("state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat}", wizard)
         self.assertIn("save();", wizard)
         self.assertIn("const savedCombat=saved&&saved.targetId===target.id&&saved.attackType===attackType", wizard)
-        self.assertIn("if(sameCombat)displayCombat(saved,animateCombat)", wizard)
+        self.assertIn("if(sameCombat)void displayCombat(saved,animateCombat)", wizard)
         self.assertIn("displaySharedCombatResult(resolvedCombat", wizard)
         self.assertIn("const banishmentAnimating=resolvedCombat.dimensionalBanishmentTriggered", wizard)
-        self.assertIn("resolveAutomaticDimensionalBanishment(combat)", wizard)
+        self.assertIn("await requestDimensionalBanishment(combat,npoName(n))", wizard)
 
     def test_cancel_discards_a_new_automatic_result(self):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
@@ -76,7 +76,7 @@ class AutomaticNpoCombatTests(unittest.TestCase):
 
     def test_unselected_multiple_profile_attack_restores_without_rolling(self):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
-        ending = wizard.split("    if(sameCombat)displayCombat(saved,animateCombat)", 1)[1]
+        ending = wizard.split("    if(sameCombat)void displayCombat(saved,animateCombat)", 1)[1]
         self.assertIn("else if(availableProfiles.length===1&&!resumeGuided)startAutomaticCombat()", ending)
         self.assertIn("else if(selectingCombat){", ending)
         self.assertNotIn("else startAutomaticCombat()", ending)

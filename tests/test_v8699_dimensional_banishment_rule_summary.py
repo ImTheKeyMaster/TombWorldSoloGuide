@@ -66,11 +66,11 @@ class DimensionalBanishmentRuleSummaryTests(unittest.TestCase):
         self.assertEqual(1, html.count("<li>"))
         self.assertNotRegex(html, r"tabindex|<button|<a\\b")
 
-    def test_existing_automatic_resolver_remains_automatic(self):
-        automatic = APP.split("function resolveAutomaticDimensionalBanishment", 1)[1].split("function rolledCombatDice", 1)[0]
-        resolver = APP.split("function resolveDimensionalBanishment", 1)[1].split("function resolveAutomaticDimensionalBanishment", 1)[0]
-        self.assertIn("rollDice(2,6)", automatic)
-        self.assertEqual(1, automatic.count("rollDice(2,6)"))
+    def test_existing_resolver_reuses_only_committed_results(self):
+        automatic = APP.split("function reuseCommittedDimensionalBanishment", 1)[1].split("function rolledCombatDice", 1)[0]
+        resolver = APP.split("function resolveDimensionalBanishment", 1)[1].split("function reuseCommittedDimensionalBanishment", 1)[0]
+        self.assertNotIn("rollDice(2,6)", automatic)
+        self.assertIn("requestDiceResults({count:2,sides:6", APP)
         self.assertIn("if(combat.dimensionalBanishmentResolved)return {...combat}", resolver)
         self.assertIn("total>normalAfter", resolver)
         for manual_text in ("Dimensional Banishment 2D6 result (0 if not triggered)", "Roll 2D6 physically", 'id="dimensionalBanishmentRoll"', "dimensionalBanishmentField"):

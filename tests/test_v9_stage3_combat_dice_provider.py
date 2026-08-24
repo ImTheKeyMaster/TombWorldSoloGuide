@@ -56,7 +56,7 @@ class Stage3CombatDiceProviderTests(unittest.TestCase):
 
     def test_committed_combat_is_reused_and_deferred_systems_remain_automatic(self):
         npo = self.section("function showNpoAttackWizard", "function spinnerField")
-        self.assertIn("if(sameCombat)displayCombat(saved,animateCombat)", npo)
+        self.assertIn("if(sameCombat)void displayCombat(saved,animateCombat)", npo)
         initiative = self.section("function rollInitiative", "function beginFirefight")
         self.assertIn("const p=roll(),n=roll()", initiative)
         self.assertNotIn("requestDiceResults", initiative)

@@ -18,7 +18,7 @@ class DimensionalBanishmentAutomationTests(unittest.TestCase):
 
     def run_resolver(self, combat, dice):
         resolver = "function resolveDimensionalBanishment" + self.section(
-            "function resolveDimensionalBanishment", "function resolveAutomaticDimensionalBanishment"
+            "function resolveDimensionalBanishment", "function reuseCommittedDimensionalBanishment"
         )
         script = f"""
 const combatAbilityHandlers={{'dimensional-banishment':({{criticalSuccesses,damage,targetIncapacitated}})=>!targetIncapacitated&&(damage>0||criticalSuccesses>0)}};
@@ -65,10 +65,10 @@ console.log(JSON.stringify({{result,unchanged:snapshot===JSON.stringify(original
             self.assertFalse(result["dimensionalBanishmentIncapacitated"])
             self.assertEqual(result["after"], 9)
 
-    def test_automatic_resolution_rolls_exactly_two_d6_and_is_idempotent(self):
-        automatic = self.section("function resolveAutomaticDimensionalBanishment", "function rolledCombatDice")
-        self.assertIn("rollDice(2,6)", automatic)
-        resolver = self.section("function resolveDimensionalBanishment", "function resolveAutomaticDimensionalBanishment")
+    def test_committed_resolution_does_not_generate_dice_and_is_idempotent(self):
+        automatic = self.section("function reuseCommittedDimensionalBanishment", "function rolledCombatDice")
+        self.assertNotIn("rollDice(2,6)", automatic)
+        resolver = self.section("function resolveDimensionalBanishment", "function reuseCommittedDimensionalBanishment")
         self.assertIn("if(combat.dimensionalBanishmentResolved)return {...combat}", resolver)
         self.assertIn("dimensionalBanishmentDice:values", resolver)
         self.assertIn("dimensionalBanishmentRemainingWounds:normalAfter", resolver)

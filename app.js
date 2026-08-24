@@ -5003,14 +5003,12 @@ function showPlayerActivation(stage={}){
       after:incapacitated?0:normalAfter};
   }
 
-  function resolveAutomaticDimensionalBanishment(combat){
+  function reuseCommittedDimensionalBanishment(combat){
     if(combat.dimensionalBanishmentResolved)return {...combat};
     if(Number.isInteger(combat.dimensionalBanishmentRoll)&&combat.dimensionalBanishmentRoll>0){
       return resolveDimensionalBanishment(combat,[]);
     }
-    const triggered=combat.profile?.weaponId==='transdimensional-isolator'
-      &&combatAbilityHandlers['dimensional-banishment']({criticalSuccesses:combat.critRemaining,damage:combat.damage,targetIncapacitated:combat.after<=0});
-    return resolveDimensionalBanishment(combat,triggered?rollDice(2,6):[]);
+    return {...combat};
   }
 
   async function requestDimensionalBanishment(combat,rollerLabel){
@@ -7106,7 +7104,7 @@ function showPlayerActivation(stage={}){
       resolutionCommitted=true;
       const complete=$('#completeNpoCombat');
       complete.disabled=true;
-      const resolvedCombat=resolveAutomaticDimensionalBanishment(combat);
+      const resolvedCombat=reuseCommittedDimensionalBanishment(combat);
       state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat};
       save();
       let summary={...resolvedCombat,side:targetSide};
@@ -7150,8 +7148,10 @@ function showPlayerActivation(stage={}){
         if(onDone)onDone(hot?{...summary,hot:{roll:hot.roll,damage:hot.damage,woundsBefore:hot.woundsBefore,woundsAfter:hot.woundsAfter,incapacitated:hot.incapacitated}}:summary);
       });
     };
-    const displayCombat=(combat,animate=false)=>{
-      const resolvedCombat=resolveAutomaticDimensionalBanishment(combat);
+    const displayCombat=async(combat,animate=false)=>{
+      let resolvedCombat;
+      try{resolvedCombat=await requestDimensionalBanishment(combat,npoName(n));}
+      catch(error){console.error('[Dimensional Banishment] Dice request failed. No combat result was committed.',error);return;}
       const banishmentAnimating=resolvedCombat.dimensionalBanishmentTriggered&&!resolvedCombat.dimensionalBanishmentAnimationShown;
       if(resolvedCombat!==combat){
         state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat};
@@ -7190,7 +7190,7 @@ function showPlayerActivation(stage={}){
       if(stun.message)resolvedCombat.eventMessages.push(stun.message);
       state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat};
       save();
-      displayCombat(resolvedCombat,false);
+      void displayCombat(resolvedCombat,false);
     };
     let rollStarted=false;
     const startAutomaticCombat=(restoredRoll=null,guidedConfirmed=false)=>{
@@ -7275,7 +7275,7 @@ function showPlayerActivation(stage={}){
       screen.continueButton.disabled=false;
       screen.continueButton.onclick=()=>startAutomaticCombat();
     });
-    if(sameCombat)displayCombat(saved,animateCombat);
+    if(sameCombat)void displayCombat(saved,animateCombat);
     else if(rollingCombat)startAutomaticCombat(saved);
     else if(availableProfiles.length===1&&willBeDone){
       screen.continueButton.disabled=false;
