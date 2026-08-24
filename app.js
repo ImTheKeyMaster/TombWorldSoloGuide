@@ -6082,7 +6082,7 @@ function showPlayerActivation(stage={}){
       if(id==='shoot'&&!(definition.rangedWeapons||[]).length)return false;
       if(id==='fight'&&!(definition.meleeWeapons||[]).length)return false;
       if((id==='shoot'&&completed.has('fight'))||(id==='fight'&&completed.has('shoot')))return false;
-      if(id==='charge'&&['reposition','fall-back'].some(done=>completed.has(done)))return false;
+      if(id==='charge'&&['reposition','dash','fall-back'].some(done=>completed.has(done)))return false;
       if(['reposition','dash','fall-back'].includes(id)&&completed.has('charge'))return false;
       if(id==='fall-back'&&['reposition','charge'].some(done=>completed.has(done)))return false;
       if(context.inEnemyControlRange&&profileAction?.restrictions?.actorOutsideEnemyControlRange)return false;

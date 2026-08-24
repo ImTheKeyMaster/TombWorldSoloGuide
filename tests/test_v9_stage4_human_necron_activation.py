@@ -53,7 +53,7 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
         self.assertIn("cost>remainingAp||completed.has(id)", rules)
         self.assertIn("id==='shoot'&&completed.has('fight')", rules)
         self.assertIn("id==='fight'&&completed.has('shoot')", rules)
-        self.assertIn("id==='charge'", rules)
+        self.assertIn("id==='charge'&&['reposition','dash','fall-back']", rules)
         self.assertIn("id==='fall-back'", rules)
         self.assertIn("oncePerTurningPoint", rules)
         self.assertIn("ordersExcluded", rules)
