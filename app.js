@@ -427,6 +427,11 @@ document.addEventListener('touchend',function(e){
   function playerTeamEntry(teamId=state.playerTeamId){
     return playerManifest?.teams?.find(team=>team.id===teamId)||null;
   }
+  function isPvpMode(){return state.gameMode==='pvp';}
+  function selectedPlayerTeamName(){return playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team';}
+  function playerSideLabel(){return isPvpMode()?selectedPlayerTeamName():'Player';}
+  function opponentSingularLabel(){return isPvpMode()?'Necron':'NPO';}
+  function opponentPluralLabel(){return isPvpMode()?'Necrons':'NPOs';}
   function canBuildPlayerRoster(){
     return Boolean(state.playerTeamId&&playerTeamLoadStatus==='loaded'&&loadedPlayerTeamId===state.playerTeamId&&playerTeamData);
   }
@@ -881,7 +886,7 @@ document.addEventListener('touchend',function(e){
   }
 
   const initialState = () => ({
-    version:APP_VERSION, saveVersion:currentSaveVersion(), screen:'home', tab:'play', setupStep:0, missionId:null,
+    version:APP_VERSION, saveVersion:currentSaveVersion(), gameMode:null, screen:'home', tab:'play', setupStep:0, missionId:null,
     backgroundSelection:null,
     setupChecks:{}, restlessTombEnabled:false, deadlyEncountersEnabled:false, deadlyEncountersState:DeadlyEncounters.emptyState(), roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerDisplayNumbers:{}, playerRosterInitializedForTeamId:'', playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
@@ -1020,6 +1025,7 @@ document.addEventListener('touchend',function(e){
       if(!validation.valid)throw new Error(`Saved NPO roster is invalid: ${validation.errors.join(' ')}`);
     }
     const base=initialState(), merged={...base,...raw};
+    merged.gameMode=raw.gameMode===null?null:(raw.gameMode==='pvp'?'pvp':'solo');
     merged.gradeMilestoneSequence=Math.max(0,Math.trunc(Number(raw.gradeMilestoneSequence)||0));
     if(isRecord(raw.gradeMilestone)){
       const tracked=typeof raw.gradeMilestone.instanceId==='string'&&typeof raw.gradeMilestone.narrationSeen==='boolean';
@@ -2301,6 +2307,7 @@ document.addEventListener('touchend',function(e){
     return steps[state.setupStep];
   }
   function renderSetup(){
+    if(!state.gameMode){renderGameModeSelection();return;}
     const steps=activeSetupSteps();
     const stepId=currentSetupStepId();
     if(stepId==='playerRoster'){
@@ -2333,6 +2340,18 @@ document.addEventListener('touchend',function(e){
     const details=setupStepDefinitions[stepId];
     app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>${details.title}</h2><p>${details.subtitle}</p></div><div class="step-count">${state.setupStep+1} / ${steps.length}</div></div><div class="progress-bar"><span style="width:${((state.setupStep+1)/steps.length)*100}%"></span></div><section class="wizard-card"${stepId==='team'?` aria-busy="${playerTeamLoadStatus==='loading'}"`:''}>${setupContent(stepId)}</section></div>`;
     bindSetup(stepId);
+  }
+  function renderGameModeSelection(){
+    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Choose Game Mode</h2><p>Choose who will control the Necrons for this battle.</p></div></div><section class="wizard-card"><div class="team-select-grid game-mode-grid">
+      <button type="button" class="team-select-card" data-game-mode="solo" aria-label="Solo: play your Kill Team against Necrons controlled by the Guide"><div class="team-select-card-head"><div><strong>Solo</strong><small>Guide-controlled Necrons</small></div></div><p>Play your Kill Team against Necrons controlled by the Guide.</p></button>
+      <button type="button" class="team-select-card" data-game-mode="pvp" aria-label="Player vs. Player: one player controls the selected Kill Team and the second player controls the Necrons"><div class="team-select-card-head"><div><strong>Player vs. Player</strong><small>Two players</small></div></div><p>One player controls the selected Kill Team. The second player controls the Necrons.</p></button>
+      </div><div class="wizard-actions"><button class="btn ghost" id="gameModeBack" type="button">Back</button></div></section></div>`;
+    $('#gameModeBack').onclick=()=>{state.screen='home';save();render();};
+    $$('[data-game-mode]').forEach(button=>button.onclick=()=>{
+      if(state.gameMode)return;
+      state.gameMode=button.dataset.gameMode;
+      save();render();
+    });
   }
   function missionSetupChecks(stage){
     const checks=Array.isArray(mission().setupChecks)?mission().setupChecks:[];
@@ -2501,7 +2520,7 @@ document.addEventListener('touchend',function(e){
         if(state.missionId===missionId)save();
       }),0);
     });
-    $('#setupHome')?.addEventListener('click',()=>{state.screen='home';save();render();});
+    $('#setupHome')?.addEventListener('click',()=>{state.gameMode=null;save();render();});
     $('#setupBack')?.addEventListener('click',()=>{if(stepId==='killzone'){clearPendingBoardSetupMissionIntro();TombWorldNarration.stop();}state.setupStep=Math.max(0,state.setupStep-1);save();render();});
     $('#setupNext')?.addEventListener('click',()=>advanceSetupStep(stepId));
     $$('[data-player-team]').forEach(button=>button.onclick=()=>selectPlayerTeam(button.dataset.playerTeam));
@@ -2620,7 +2639,7 @@ document.addEventListener('touchend',function(e){
     return `<button class="hud-cell mission-hud" id="missionHud" type="button" aria-label="Mission details, ${escapeHtml(name)}, ${escapeHtml(status)}"><small>${escapeHtml(label)}</small><strong>${completeMark}${escapeHtml(value)}</strong></button>`;
   }
 
-  function hud(){return `<div class="hud"><div><small>Turning<span class="portrait-break"><br></span> Point</small><strong>${state.turningPoint||'Setup'}</strong></div><button class="hud-cell hud-threat" id="threatHudToggle" type="button" aria-expanded="${threatAdjustOpen}" aria-controls="threatAdjuster"><small>Threat<span class="portrait-break"><br></span> Level</small><strong>${state.threat}</strong></button><div><small>Grade<span class="portrait-break"><br></span> Level</small><strong>${threatGrade()}</strong></div><div><small>Player<span class="portrait-break"><br></span> Ready</small><strong>${state.playerReady}</strong></div><div><small>NPO<span class="portrait-break"><br></span> Ready</small><strong>${readyNpos().length}</strong></div>${missionHudHtml()}</div><div class="threat-strip ${threatAdjustOpen?'':'hidden'}" id="threatAdjuster"><div><strong>THREAT LEVEL: ${threatLabel()}</strong><small>${threatGrade()===3?'Maximum Grade':`Next Grade at Threat Level ${nextGradeThreat()}`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
+  function hud(){return `<div class="hud"><div><small>Turning<span class="portrait-break"><br></span> Point</small><strong>${state.turningPoint||'Setup'}</strong></div><button class="hud-cell hud-threat" id="threatHudToggle" type="button" aria-expanded="${threatAdjustOpen}" aria-controls="threatAdjuster"><small>Threat<span class="portrait-break"><br></span> Level</small><strong>${state.threat}</strong></button><div><small>Grade<span class="portrait-break"><br></span> Level</small><strong>${threatGrade()}</strong></div><div><small>${escapeHtml(playerSideLabel())}<span class="portrait-break"><br></span> Ready</small><strong>${state.playerReady}</strong></div><div><small>${escapeHtml(opponentSingularLabel())}<span class="portrait-break"><br></span> Ready</small><strong>${readyNpos().length}</strong></div>${missionHudHtml()}</div><div class="threat-strip ${threatAdjustOpen?'':'hidden'}" id="threatAdjuster"><div><strong>THREAT LEVEL: ${threatLabel()}</strong><small>${threatGrade()===3?'Maximum Grade':`Next Grade at Threat Level ${nextGradeThreat()}`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
 
   function livingPlayerOptions(selected=''){
     return inPlayPlayerOperativeIds().filter(id=>!state.playerCasualtyIds.includes(id)).map(id=>`<option value="${escapeHtml(id)}" ${id===selected?'selected':''}>${escapeHtml(playerName(id))}</option>`).join('');
@@ -2884,8 +2903,8 @@ document.addEventListener('touchend',function(e){
     }
     setNextActivation(state.nextSide || state.initiative || 'player');
     if(state.phase==='end'){save();return nextStepCard();}
-    if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>Player Activation</h2><p>Activate one Player operative on the tabletop. After it completes, the Guide will alternate to an NPO if one is ready.</p><button class="btn primary big-action" id="playerActivation">Activate an Operative</button></section>`;
-    if(state.nextSide==='npo' && readyNpos().length>0)return `<section class="next-card npo-activation-card"><span class="phase">NPO ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">NPO Activation</h2><p class="npo-activation-meta">Identify the next ready NPO using the Threat Principle.</p><button class="btn primary big-action" id="npoActivation">Activate NPO</button></section>`;
+    if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>${escapeHtml(playerSideLabel())} Activation</h2><p>Activate one ${escapeHtml(playerSideLabel())} operative on the tabletop. After it completes, the Guide will alternate to a ${escapeHtml(opponentSingularLabel())} if one is ready.</p><button class="btn primary big-action" id="playerActivation">Activate an Operative</button></section>`;
+    if(state.nextSide==='npo' && readyNpos().length>0)return `<section class="next-card npo-activation-card"><span class="phase">${escapeHtml(opponentSingularLabel().toUpperCase())} ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">${escapeHtml(opponentSingularLabel())} Activation</h2><p class="npo-activation-meta">Identify the next ready ${escapeHtml(opponentSingularLabel())} using the Threat Principle.</p><button class="btn primary big-action" id="npoActivation">Activate ${escapeHtml(opponentSingularLabel())}</button></section>`;
     setNextActivation(state.nextSide==='player'?'npo':'player');
     save();
     return nextStepCard();
@@ -3211,13 +3230,13 @@ document.addEventListener('touchend',function(e){
       <summary><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div></summary>
       <div class="activation-details-content">
       <div class="tracker-section">
-        <small>${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} operatives</small>
-        <p class="muted compact-copy">All selected operatives are listed, including eliminated operatives. Select a Player operative to mark it eliminated or restore it.</p>
+        <small>${escapeHtml(playerSideLabel())} operatives</small>
+        <p class="muted compact-copy">All selected operatives are listed, including eliminated operatives. Select a ${escapeHtml(playerSideLabel())} operative to mark it eliminated or restore it.</p>
         <div class="tracker-operative-grid">${playerRows||'<span class="muted">No player operatives selected</span>'}</div>
       </div>
       <div class="tracker-section">
-        <small>NPOs</small>
-        <div class="tracker-operative-grid">${npoRows||'<span class="muted">No NPO operatives generated</span>'}</div>
+        <small>${escapeHtml(opponentPluralLabel())}</small>
+        <div class="tracker-operative-grid">${npoRows||`<span class="muted">No ${escapeHtml(opponentSingularLabel())} operatives generated</span>`}</div>
       </div>
       </div>
     </details></section>`;
@@ -3230,7 +3249,7 @@ document.addEventListener('touchend',function(e){
     const eliminated=casualties.has(operativeId);
     const operativeName=playerName(operativeId);
     showModal(operativeName,`
-      <p>This status carries across Turning Points and is reflected in the activation tracker and Player Ready count.</p>
+      <p>This status carries across Turning Points and is reflected in the activation tracker and ${escapeHtml(playerSideLabel())} Ready count.</p>
       <div class="summary-box"><strong>Current status:</strong> ${eliminated?'Eliminated':'Active'}</div>
       <div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn ${eliminated?'secondary':'danger'}" id="togglePlayerCasualty">${eliminated?'Restore Operative':'Mark Eliminated'}</button></div>`);
     $('#togglePlayerCasualty').onclick=()=>{
@@ -3774,7 +3793,7 @@ document.addEventListener('touchend',function(e){
     const candidates=readyNpos();
     if(candidates.length===1){state.activeNpoId=candidates[0].id;beginNpoActivation(candidates[0]);return;}
     const options=sortedNposForDisplay(candidates).map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(npoName(n))}</option>`).join('');
-    showModal('Select NPO to Activate',`<p>Use the Threat Principle in order. Select an NPO that:</p><ol><li>has an ability, or is a threat, to Shoot or Fight a Player operative;</li><li>is not in cover;</li><li>is closest to a Player operative.</li></ol><p class="muted">If more than one NPO is still tied, determine one at random on the tabletop.</p><div class="field"><label for="officialNpoSelection">Next ready NPO</label><select id="officialNpoSelection" data-dialog-focus><option value="">Select matching NPO</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmNpoSelection" disabled>Continue</button></div>`);
+    showModal(`Select ${opponentSingularLabel()} to Activate`,`<p>Use the Threat Principle in order. Select a ${escapeHtml(opponentSingularLabel())} that:</p><ol><li>has an ability, or is a threat, to Shoot or Fight a ${escapeHtml(playerSideLabel())} operative;</li><li>is not in cover;</li><li>is closest to a ${escapeHtml(playerSideLabel())} operative.</li></ol><p class="muted">If more than one ${escapeHtml(opponentSingularLabel())} is still tied, determine one at random on the tabletop.</p><div class="field"><label for="officialNpoSelection">Next ready ${escapeHtml(opponentSingularLabel())}</label><select id="officialNpoSelection" data-dialog-focus><option value="">Select matching ${escapeHtml(opponentSingularLabel())}</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmNpoSelection" disabled>Continue</button></div>`);
     $('#officialNpoSelection').onchange=()=>{$('#confirmNpoSelection').disabled=!$('#officialNpoSelection').value;};
     $('#confirmNpoSelection').onclick=()=>{const n=candidates.find(item=>item.id===$('#officialNpoSelection').value);if(n)beginNpoActivation(n);};
   }
@@ -6258,7 +6277,7 @@ function showPlayerActivation(stage={}){
     const definition=npoDefinition(n.type),modifiers=(state.npoRuleState.aplModifiers||[]).filter(item=>item.targetId===n.id);
     const pendingBreach=(state.npoRuleState.pendingMovementEffects||[]).some(item=>item.targetId===n.id&&item.ruleId==='molecular-breach');
     const loadout=definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name,effective=effectiveApl(n.id,definition.apl);
-    return `<h2 id="activeNpoQuestionHeading">NPO Activation: ${escapeHtml(npoName(n))}</h2><div class="activation-profile-strip" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>APL ${definition.apl}${effective===definition.apl?'':` (${effective} AP this activation)`}</span><span>Order: ${escapeHtml(n.order)}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Next movement uses Molecular Breach</span>':''}</div>${renderNpoActionProgress()}`;
+    return `<h2 id="activeNpoQuestionHeading">${escapeHtml(opponentSingularLabel())} Activation: ${escapeHtml(npoName(n))}</h2><div class="activation-profile-strip" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>APL ${definition.apl}${effective===definition.apl?'':` (${effective} AP this activation)`}</span><span>Order: ${escapeHtml(n.order)}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Next movement uses Molecular Breach</span>':''}</div>${renderNpoActionProgress()}`;
   }
 
   function renderNpoGuideFooter({backDisabled=false}={}){
@@ -7113,7 +7132,7 @@ function showPlayerActivation(stage={}){
       <section class="card"><h3>Mission rules</h3><div class="mission-rules">${rules}</div></section>
       <section class="card"><h3>Victory</h3><p><strong>Win:</strong> ${escapeHtml(m.victory?.win||'See mission rules.')}</p><p><strong>Lose:</strong> ${escapeHtml(m.victory?.lose||'See mission rules.')}</p></section>${missionProgressHtml()}`;
   }
-  function renderRoster(){const available=Object.values(npoInventory()).reduce((sum,item)=>sum+item.remaining,0);app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">NPO ROSTER</p><h2>${activeNpos().length} active NPOs</h2><p>${available} of ${MAX_PHYSICAL_NPOS} physical models remain available. Activation status is tracked automatically.</p></div><button class="btn secondary" id="addNpo" ${available?'':'disabled'}>Add NPO</button></div><div class="player-roster-grid npo-roster-grid">${state.roster.length?sortedNposForDisplay(state.roster).map(n=>npoRosterCard(n,n.battlefieldState==='deployed'||n.wounds<=0)).join(''):'<div class="card empty">No NPOs are currently on the battlefield.</div>'}</div>`;$('#addNpo').onclick=showAddNpo;$$('[data-wound]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.wound,-1));$$('[data-heal]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.heal,1));$$('[data-delete]').forEach(b=>b.onclick=()=>deleteNpo(b.dataset.delete));$$('[data-npo-loadout]').forEach(select=>select.onchange=()=>changeNpoLoadout(select.dataset.npoLoadout,select.value));}
+  function renderRoster(){const available=Object.values(npoInventory()).reduce((sum,item)=>sum+item.remaining,0);app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">${escapeHtml(opponentSingularLabel().toUpperCase())} ROSTER</p><h2>${activeNpos().length} active ${escapeHtml(opponentPluralLabel())}</h2><p>${available} of ${MAX_PHYSICAL_NPOS} physical models remain available. Activation status is tracked automatically.</p></div><button class="btn secondary" id="addNpo" ${available?'':'disabled'}>Add NPO</button></div><div class="player-roster-grid npo-roster-grid">${state.roster.length?sortedNposForDisplay(state.roster).map(n=>npoRosterCard(n,n.battlefieldState==='deployed'||n.wounds<=0)).join(''):'<div class="card empty">No NPOs are currently on the battlefield.</div>'}</div>`;$('#addNpo').onclick=showAddNpo;$$('[data-wound]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.wound,-1));$$('[data-heal]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.heal,1));$$('[data-delete]').forEach(b=>b.onclick=()=>deleteNpo(b.dataset.delete));$$('[data-npo-loadout]').forEach(select=>select.onchange=()=>changeNpoLoadout(select.dataset.npoLoadout,select.value));}
   function renderPlayerRoster(){
     const casualties=new Set(state.playerCasualtyIds||[]);
     const activated=new Set(state.playerActivatedIds||[]);
@@ -7129,8 +7148,8 @@ function showPlayerActivation(stage={}){
       const wounds=playerCurrentWounds(id), maxWounds=Number(playerDefinition(id)?.wounds??operative.wounds);
       return `<article class="operative-card roster-operative-card ${eliminated?'dead':''}"><div class="operative-card-header"><div class="operative-identity"><h4>${escapeHtml(playerName(id))}</h4><p>${escapeHtml(operative.role||'Operative')}</p></div><span class="operative-status-badge ${status.toLowerCase().replace(' ','-')}">${status}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${operative.apl??'—'}</b></span><span><small>MOVE</small><b>${operative.move??'—'}"</b></span><span><small>SAVE</small><b>${operative.save??'—'}+</b></span><span><small>WOUNDS</small><b class="${wounds===0?'zero-wounds':''}">${wounds}/${maxWounds}</b></span></div>${weaponNames?`<p class="player-roster-weapons"><strong>Weapons:</strong> ${weaponNames}</p>`:''}${abilityGuidance}<div class="wound-controls"><button class="btn ghost" data-player-wound="${id}" ${wounds<=0||operativeState.inPlay===false?'disabled':''}>− Wound</button><button class="btn ghost" data-player-heal="${id}" ${wounds>=maxWounds||operativeState.inPlay===false?'disabled':''}>+ Heal</button></div></article>`;
     }).join('');
-    const teamName=playerTeamData?.teamName||playerTeamEntry()?.name||'Player';
-    app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">PLAYER ROSTER</p><h2>${escapeHtml(teamName)}</h2><p>${inPlayPlayerOperativeIds().filter(id=>!casualties.has(id)).length} active on the battlefield of ${(state.playerRoster||[]).length} selected operatives.</p></div></div>${factionGuidanceHtml()}<div class="roster-grid">${cards||'<div class="card empty">No Player operatives were selected for this game.</div>'}</div>`;
+    const teamName=selectedPlayerTeamName();
+    app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">${escapeHtml(playerSideLabel().toUpperCase())} ROSTER</p><h2>${escapeHtml(teamName)}</h2><p>${inPlayPlayerOperativeIds().filter(id=>!casualties.has(id)).length} active on the battlefield of ${(state.playerRoster||[]).length} selected operatives.</p></div></div>${factionGuidanceHtml()}<div class="roster-grid">${cards||'<div class="card empty">No Player operatives were selected for this game.</div>'}</div>`;
     $$('[data-player-wound]').forEach(button=>button.onclick=()=>adjustPlayerWounds(button.dataset.playerWound,-1));
     $$('[data-player-heal]').forEach(button=>button.onclick=()=>adjustPlayerWounds(button.dataset.playerHeal,1));
   }
@@ -7693,8 +7712,8 @@ function showPlayerActivation(stage={}){
         ${inGame?`<button class="btn secondary" id="menuMissionDetails">Mission Details</button>
         <button class="btn secondary" id="menuDeadlyEncounters">Deadly Encounters</button>
         <button class="btn secondary" data-game-view="mission">Mission & Map</button>
-        <button class="btn secondary" data-game-view="roster">NPO Roster</button>
-        <button class="btn secondary" data-game-view="player-roster">Player Roster</button>
+        <button class="btn secondary" data-game-view="roster">${escapeHtml(opponentSingularLabel())} Roster</button>
+        <button class="btn secondary" data-game-view="player-roster">${escapeHtml(playerSideLabel())} Roster</button>
         <button class="btn secondary" data-game-view="journal">Battle Journal</button>`:''}
         ${canOpenHelp()?'<button class="btn secondary" id="menuHelp" type="button">Help</button>':''}
         <button class="btn secondary" id="menuAbout" type="button">About</button>
