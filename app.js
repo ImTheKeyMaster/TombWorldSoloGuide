@@ -4320,7 +4320,7 @@ function showPlayerActivation(stage={}){
     window.scrollTo({top:0,left:0,behavior:'auto'});
     modal.scrollTop=0;
     modalBody.scrollTop=0;
-    return {dice:$('#automaticCombat'),results:$('#combatResults'),continueButton:$(`#${continueId}`)};
+    return {dice:$('#automaticCombat'),results:$('#combatResults'),cancelButton:$(`#${cancelId}`),continueButton:$(`#${continueId}`)};
   }
 
   function showCombatResumeRecovery(onReturn){
@@ -4966,6 +4966,7 @@ function showPlayerActivation(stage={}){
   }
 
   function npoCombatGuidanceHtml(npo,{attackType,profile}={}){
+    if(isPvpMode())return '';
     const definition=npoDefinition(npo?.type);
     const weaponSentinel=(definition?.abilities||[]).find(ability=>ability.id==='weapon-sentinel');
     const rawGuidance=definition?.behavior?.weaponGuidance;
@@ -5140,7 +5141,7 @@ function showPlayerActivation(stage={}){
   }
 
   function showGuidedShockStep(combat,onContinue,onBack){
-    showModal('Shock',`<p id="shockHelp">Did this NPO just strike with its first critical success?</p><p class="muted">Check the unresolved successes in this Fight sequence. Shock triggers only once.</p><div class="wizard-actions"><button class="btn ghost" id="shockBack">Back</button><button class="btn ghost" data-close>Close Guide</button><button class="btn secondary" id="shockNo">No</button><button class="btn primary" id="shockYes">Yes</button></div>`);
+    showModal('Shock',`<p id="shockHelp">Did ${isPvpMode()?'the attacking Necron':'this NPO'} just strike with its first critical success?</p><p class="muted">Check the unresolved successes in this Fight sequence. Shock triggers only once.</p><div class="wizard-actions"><button class="btn ghost" id="shockBack">Back</button><button class="btn ghost" data-close>Close Guide</button><button class="btn secondary" id="shockNo">No</button><button class="btn primary" id="shockYes">Yes</button></div>`);
     $('#shockBack').onclick=onBack;
     $('#shockNo').onclick=()=>onContinue({...combat,shockResolved:true,shockApplied:false});
     $('#shockYes').onclick=()=>{
@@ -5464,7 +5465,7 @@ function showPlayerActivation(stage={}){
     const help=isBlast
       ? `Blast attacks every other operative visible to and within ${distance} inches of the primary target, including friendly operatives.`
       : `Torrent attacks each selected valid enemy target within ${distance} inches of the primary target.`;
-    const automaticallySelected=ruleId==='torrent'&&attackerSide==='npo';
+    const automaticallySelected=!isPvpMode()&&ruleId==='torrent'&&attackerSide==='npo';
     const saved=state.weaponRuleResolution;
     const sameStep=saved?.ruleId===ruleId&&saved?.primaryTargetId===primaryTargetId&&saved?.profileKey===profileKey;
     showModal(ruleId[0].toUpperCase()+ruleId.slice(1),`<p id="secondaryTargetHelp">${escapeHtml(question)}</p><p class="muted">${escapeHtml(help)}</p><div class="checklist" aria-describedby="secondaryTargetHelp">${eligible.length?eligible.map(weaponRuleTargetOption).join(''):'<p class="muted">No other operatives are available.</p>'}</div><label class="check-row required-confirmation-row"><input id="tabletopCheckConfirmed" type="checkbox"><span>I have confirmed visibility and distance on the tabletop.</span></label><div class="wizard-actions"><button class="btn ghost" id="secondaryTargetsBack">Back</button><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmSecondaryTargets" disabled>Continue</button></div>`);
@@ -5531,7 +5532,7 @@ function showPlayerActivation(stage={}){
       : '';
   }
 
-  function runAutomaticCombatRolls({container,profile,defenseSave,attackerLabel='',defenderLabel='',rolledAttackDice=null,rolledDefenseDice=null,onComplete,onError}){
+  function runAutomaticCombatRolls({container,profile,defenseSave,attackerLabel='',defenderLabel='',rolledAttackDice=null,rolledDefenseDice=null,onAttackComplete,onComplete,onError}){
     let timer=null;
     let cancelled=false;
     const run=async()=>{
@@ -5540,6 +5541,7 @@ function showPlayerActivation(stage={}){
           ? applySevereToAttackDice(retainSuccessfulDice(rolledAttackDice),profile).dice
           : await requestAttackDiceForProfile(profile,{rollerLabel:attackerLabel});
         if(cancelled||!container.isConnected)return;
+        if(isPvpMode()&&!rolledAttackDice&&onAttackComplete)onAttackComplete(attackDice);
         const animate=!isPvpMode()&&!rolledAttackDice;
         container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}">${animate?attackDice.map(()=>rollingDieHtml()).join(''):attackDice.map(dieHtml).join('')}</div></section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row"><span class="muted">Rolling after the attack…</span></div></section>`;
         if(animate&&attackDice.length)void TombWorldDiceSfx.play();
@@ -5676,7 +5678,9 @@ function showPlayerActivation(stage={}){
 
     const draft=stage[`${attackType}CombatDraft`];
     if(draft){
-      showPlayerCombatResolution(stage,attackType,draft.targetId,draft.weaponIndex,onResolved,onCancel,{result:draft,animate:false});
+      showPlayerCombatResolution(stage,attackType,draft.targetId,draft.weaponIndex,onResolved,onCancel,draft.rolling
+        ? {animate:false,committedAttackDice:draft.attackDice}
+        : {result:draft,animate:false});
       return;
     }
 
@@ -5701,6 +5705,7 @@ function showPlayerActivation(stage={}){
       ${targetControl}
       ${weaponControl}
       ${darkDistance}
+      ${isPvpMode()?`<label class="check-row compact-check" for="playerTabletopTargetConfirmed"><input type="checkbox" id="playerTabletopTargetConfirmed"><span><strong>Confirm tabletop target legality</strong><small>${attackType==='shoot'?'I confirm that the selected Necron is a valid target for this shooting attack, including visibility, range, and other applicable targeting requirements.':'I confirm that the selected Necron is within control range and is a valid target for this Fight action.'}</small></span></label>`:''}
       <div class="summary-box" id="playerWeaponSummary"><strong>Weapon:</strong> —</div>
       <div id="aggressiveDefenseFields"></div>
       <div id="weaponRules"></div>
@@ -5717,12 +5722,16 @@ function showPlayerActivation(stage={}){
       $('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target);
       const weaponIndex=weapon?weapons.indexOf(weapon):-1;
       $('#weaponRules').innerHTML=weaponRulesHtml(weapon?playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex}):null);
-      $('#openCombatResolution').disabled=!target||!weapon;
+      const tabletopConfirmed=!isPvpMode()||Boolean($('#playerTabletopTargetConfirmed')?.checked);
+      $('#openCombatResolution').disabled=!target||!weapon||!tabletopConfirmed;
     };
-    targetSelect.addEventListener('change',renderChoices);
-    weaponSelect.addEventListener('change',renderChoices);
+    const resetTabletopConfirmation=()=>{const confirmation=$('#playerTabletopTargetConfirmed');if(confirmation)confirmation.checked=false;renderChoices();};
+    targetSelect.addEventListener('change',resetTabletopConfirmation);
+    weaponSelect.addEventListener('change',resetTabletopConfirmation);
+    $('#playerTabletopTargetConfirmed')?.addEventListener('change',renderChoices);
     $('#cancelPendingAttack').onclick=()=>cancelPendingPlayerCombat(stage,attackType,onCancel);
     $('#openCombatResolution').onclick=()=>{
+      if(isPvpMode()&&!$('#playerTabletopTargetConfirmed')?.checked)return;
       const target=activeNpos().find(n=>n.id===targetSelect.value);
       const weaponIndex=Number(weaponSelect.value);
       const weapon=weapons[weaponIndex],profile=playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex});
@@ -5749,10 +5758,10 @@ function showPlayerActivation(stage={}){
     renderChoices();
     const singleProfile=weapons.length===1?playerWeaponProfile(weapons[0],{operativeId:stage.playerOperativeId,attackType,weaponIndex:0}):null;
     const requiresTabletopCheck=singleProfile&&['seek-light','blast','torrent'].some(ruleId=>weaponHasRule(singleProfile,ruleId));
-    if(singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte Warrior'&&!darkDistance&&!requiresTabletopCheck)showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
+    if(!isPvpMode()&&singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte Warrior'&&!darkDistance&&!requiresTabletopCheck)showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
   }
 
-  function showPlayerCombatResolution(stage,attackType,targetId,weaponIndex,onResolved,onCancel,{result=null,animate=true,moreThanEight=false,deferRoll=false}={}){
+  function showPlayerCombatResolution(stage,attackType,targetId,weaponIndex,onResolved,onCancel,{result=null,animate=true,moreThanEight=false,deferRoll=false,committedAttackDice=null}={}){
     let sequence=state.weaponRuleResolution;
     const legacyIdentity=normalizeLegacyPlayerMultiTargetIdentity(sequence,stage.playerOperativeId);
     sequence=legacyIdentity.sequence;
@@ -5814,6 +5823,7 @@ function showPlayerActivation(stage={}){
       if(sequence)showPlayerActivation(stage);
       else showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel);
     };
+    if(committedAttackDice)screen.cancelButton.disabled=true;
 
     if(result){
       displayPendingPlayerCombat(stage,attackType,result,onResolved,onCancel,false);
@@ -5832,7 +5842,15 @@ function showPlayerActivation(stage={}){
     const startRoll=()=>{
       if(rollStarted)return;
       rollStarted=true;
-      runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,attackerLabel:playerSideLabel(),defenderLabel:targetName,onComplete:(attackDice,defenseDice)=>{
+      runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,attackerLabel:playerName(stage.playerOperativeId),defenderLabel:targetName,
+        rolledAttackDice:committedAttackDice,
+        onAttackComplete:attackDice=>{
+          diceDraft.attackDice=attackDice.map(die=>({...die}));
+          stage[`${attackType}CombatDraft`]={rolling:true,attackType,targetId,targetName,weaponIndex,profile,attackDice:diceDraft.attackDice};
+          state.combatState={side:'player',stage:{...stage}};
+          screen.cancelButton.disabled=true;
+          save();
+        },onComplete:(attackDice,defenseDice)=>{
         diceDraft.attackDice=attackDice;
         diceDraft.defenseDice=defenseDice;
         void previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft,{targetId,weaponIndex,targetSide}).catch(error=>{rollStarted=false;console.error('[Combat] Combat-triggered dice request failed. No combat result was committed.',error);});
@@ -5889,7 +5907,7 @@ function showPlayerActivation(stage={}){
     result.damage=result.damagePackets.reduce((total,packet)=>total+packet.finalDamage,0);
     result.after=Math.max(0,result.before-result.damage);
     result.aggressiveDefenseDamage=0;
-    const resolvedResult=await requestDimensionalBanishment(result,playerSideLabel());
+    const resolvedResult=await requestDimensionalBanishment(result,playerName(stage.playerOperativeId));
     const stun=applyStunForAttack({profile,attackDice:diceDraft.attackDice,sourceAttackId:diceDraft.transactionId,targetId:n.id,targetName,targetSide});
     if(stun.message)resolvedResult.eventMessages.push(stun.message);
     stage[`${attackType}CombatDraft`]=resolvedResult;
@@ -7213,7 +7231,7 @@ function showPlayerActivation(stage={}){
       ? `<div class="field compact-combat-choice"><label for="npoCombatProfile">Choose Weapon Profile</label><select id="npoCombatProfile"><option value="" ${selectedProfileIndex<0?'selected ':''}disabled>Choose a profile...</option>${availableProfiles.map((profile,index)=>`<option value="${index}" ${index===selectedProfileIndex?'selected':''}>${escapeHtml(canonicalAttackProfile(profile).name)}</option>`).join('')}</select></div>`
       : '';
     const willBeDone=tombWorldEventActive('my-will-be-done')&&!sameCombat&&!rollingCombat
-      ? '<label class="check-row compact-check" for="sameRoomAsC1"><input type="checkbox" id="sameRoomAsC1"><span><strong>Is this NPO in the same room as the sarcophagus?</strong><small>This matters only while My Will Be Done is active.</small></span></label>'
+      ? `<label class="check-row compact-check" for="sameRoomAsC1"><input type="checkbox" id="sameRoomAsC1"><span><strong>Is this ${isPvpMode()?'Necron':'NPO'} in the same room as the sarcophagus?</strong><small>This matters only while My Will Be Done is active.</small></span></label>`
       : '';
     const tabletopTargetConfirmation=isPvpMode()&&!sameCombat&&!rollingCombat
       ? `<label class="check-row compact-check" for="npoTabletopTargetConfirmed"><input type="checkbox" id="npoTabletopTargetConfirmed" ${savedCombat&&saved.tabletopTargetConfirmed?'checked':''}><span><strong>Confirm tabletop target legality</strong><small>${attackType==='shoot'?'I confirm that the selected operative is a valid target for this shooting attack, including visibility, range, and other applicable targeting requirements.':'I confirm that the selected operative is within control range and is a valid target for this Fight action.'}</small></span></label>`
@@ -7234,6 +7252,7 @@ function showPlayerActivation(stage={}){
       if(onCancel)onCancel();
     };
     $('#cancelNpoAttack').onclick=cancel;
+    if(rollingCombat)screen.cancelButton.disabled=true;
 
     let combatTimer=null;
     let resolutionCommitted=false;
@@ -7391,6 +7410,14 @@ function showPlayerActivation(stage={}){
       const restoredDefenseDice=restoredRoll?.saveDice||null;
       combatTimer=runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,
         attackerLabel:npoName(n),defenderLabel:targetName,rolledAttackDice:restoredAttackDice,rolledDefenseDice:restoredDefenseDice,
+        onAttackComplete:completedAttackDice=>{
+          state.lastActivation={...state.lastActivation,dice:attackDice.map(d=>({...d})),targetConfirmed:true,combatDraft:{
+            rolling:true,attackType,targetId:target.id,targetName:targetName,profile,attackDice:completedAttackDice.map(die=>({...die})),
+            severeApplied:completedAttackDice.some(die=>die.severeConverted)
+          }};
+          screen.cancelButton.disabled=true;
+          save();
+        },
         onComplete:(completedAttackDice,completedDefenseDice)=>{
         state.lastActivation={...state.lastActivation,dice:attackDice.map(d=>({...d})),targetConfirmed:true,combatDraft:{
           rolling:true,attackType,targetId:target.id,targetName:targetName,profile,attackDice:completedAttackDice,saveDice:completedDefenseDice,

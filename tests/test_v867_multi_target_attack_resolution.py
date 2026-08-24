@@ -24,7 +24,7 @@ class MultiTargetAttackResolutionTests(unittest.TestCase):
     def test_06_complete_after_all_targets(self): self.assert_app("completed:nextIndex<0")
     def test_07_repeat_replaces_result(self): self.assert_app("filter(item=>item.targetId!==completedTargetId)")
     def test_08_npo_torrent_primary(self): self.assert_app("primaryTargetId:target.id", "attackerSide==='npo'")
-    def test_09_npo_torrent_secondaries(self): self.assert_app("automaticallySelected=ruleId==='torrent'&&attackerSide==='npo'")
+    def test_09_npo_torrent_secondaries(self): self.assert_app("automaticallySelected=!isPvpMode()&&ruleId==='torrent'&&attackerSide==='npo'")
     def test_10_npo_damage_once(self): self.assert_app("committedTargetIds", "applyNpoAttackDamage(n,target,summary)")
     def test_11_npo_ap_once(self): self.assert_app("showMultiTargetAttackSummary(completed,'npo'", "if(onDone)onDone(summary,completed.sequenceResults)")
     def test_12_sweeping_uses_torrent(self): self.assert_app("weaponHasRule(baseProfile,'torrent')")
