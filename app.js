@@ -231,6 +231,15 @@ document.addEventListener('touchend',function(e){
   const operativeStatusToggle = $('#operativeStatusToggle');
   const modal = $('#modal');
   const modalBody = $('#modalBody');
+  const diceEntryDialog = $('#diceEntryDialog');
+  const diceEntryTitle = $('#diceEntryTitle');
+  const diceEntryRoller = $('#diceEntryRoller');
+  const diceEntryInstruction = $('#diceEntryInstruction');
+  const diceEntryResults = $('#diceEntryResults');
+  const diceEntryProgress = $('#diceEntryProgress');
+  const diceEntryKeypad = $('#diceEntryKeypad');
+  const diceEntryUndo = $('#diceEntryUndo');
+  const diceEntryCommit = $('#diceEntryCommit');
   const toast = $('#toast');
   const importInput = $('#importInput');
   const updateNotice = $('#updateNotice');
@@ -1454,6 +1463,94 @@ document.addEventListener('touchend',function(e){
   function roll(sides=6){ return Math.floor(Math.random()*sides)+1; }
   function rollD3(){ return roll(3); }
   function rollDice(count,sides){return Array.from({length:count},()=>roll(sides));}
+
+  let activeManualDiceRequest=null;
+  function validateDiceRequest(request){
+    if(!request||typeof request!=='object')throw new TypeError('Dice request must be an object.');
+    const {count,sides}=request;
+    if(!Number.isInteger(count)||count<=0)throw new RangeError('Dice request count must be a positive integer.');
+    if(!Number.isInteger(sides)||sides<2||sides>6)throw new RangeError('Dice request sides must be an integer from 2 through 6.');
+    const title=typeof request.title==='string'&&request.title.trim()?request.title.trim():'Enter Dice Results';
+    const instruction=typeof request.instruction==='string'&&request.instruction.trim()
+      ?request.instruction.trim()
+      :`Roll ${count}D${sides} on the tabletop and enter each result.`;
+    const rollerLabel=typeof request.rollerLabel==='string'?request.rollerLabel.trim():'';
+    return {count,sides,title,instruction,rollerLabel};
+  }
+  function renderManualDiceEntry(){
+    const active=activeManualDiceRequest;
+    if(!active)return;
+    const complete=active.values.length===active.request.count;
+    diceEntryResults.innerHTML=active.values.map((value,index)=>dieHtml({value,ariaLabel:`Die ${index+1}: ${value}`})).join('');
+    diceEntryProgress.textContent=`${active.values.length} of ${active.request.count} entered`;
+    diceEntryUndo.disabled=active.values.length===0||active.committed;
+    diceEntryCommit.disabled=!complete||active.committed;
+    $$('button',diceEntryKeypad).forEach(button=>button.disabled=complete||active.committed);
+  }
+  function enterManualDie(value){
+    const active=activeManualDiceRequest;
+    if(!active||active.committed||!Number.isInteger(value)||value<1||value>active.request.sides||active.values.length>=active.request.count)return false;
+    active.values.push(value);
+    renderManualDiceEntry();
+    return true;
+  }
+  function undoManualDie(){
+    const active=activeManualDiceRequest;
+    if(!active||active.committed||!active.values.length)return false;
+    active.values.pop();
+    renderManualDiceEntry();
+    return true;
+  }
+  function commitManualDiceResults(){
+    const active=activeManualDiceRequest;
+    if(!active||active.committed||active.values.length!==active.request.count)return false;
+    active.committed=true;
+    renderManualDiceEntry();
+    const results=active.values.slice(),resolve=active.resolve,returnFocus=active.returnFocus;
+    activeManualDiceRequest=null;
+    diceEntryDialog.close();
+    if(returnFocus?.isConnected)try{returnFocus.focus({preventScroll:true});}catch{returnFocus.focus();}
+    resolve(results);
+    return true;
+  }
+  function requestManualDiceResults(request){
+    if(activeManualDiceRequest)return Promise.reject(new Error('A manual dice request is already active.'));
+    return new Promise(resolve=>{
+      activeManualDiceRequest={request,values:[],resolve,committed:false,returnFocus:document.activeElement};
+      diceEntryTitle.textContent=request.title;
+      diceEntryInstruction.textContent=request.instruction;
+      diceEntryRoller.textContent=request.rollerLabel;
+      diceEntryRoller.hidden=!request.rollerLabel;
+      diceEntryKeypad.innerHTML=Array.from({length:request.sides},(_,index)=>{
+        const value=index+1;
+        return `<button class="btn secondary" type="button" data-die-value="${value}" aria-label="Enter ${value}">${value}</button>`;
+      }).join('');
+      $$('[data-die-value]',diceEntryKeypad).forEach(button=>button.onclick=()=>enterManualDie(Number(button.dataset.dieValue)));
+      renderManualDiceEntry();
+      try{diceEntryDialog.showModal();}
+      catch(error){activeManualDiceRequest=null;throw error;}
+      requestAnimationFrame(()=>diceEntryKeypad.querySelector('button')?.focus({preventScroll:true}));
+    });
+  }
+  async function requestDiceResults(request){
+    const validatedRequest=validateDiceRequest(request);
+    if(!isPvpMode())return rollDice(validatedRequest.count,validatedRequest.sides);
+    return requestManualDiceResults(validatedRequest);
+  }
+  diceEntryUndo.addEventListener('click',undoManualDie);
+  diceEntryCommit.addEventListener('click',commitManualDiceResults);
+  diceEntryDialog.addEventListener('cancel',event=>event.preventDefault());
+  diceEntryDialog.addEventListener('keydown',event=>{
+    if(!activeManualDiceRequest)return;
+    const value=Number(event.key);
+    if(Number.isInteger(value)&&value>=1&&value<=activeManualDiceRequest.request.sides){event.preventDefault();enterManualDie(value);}
+    else if(event.key==='Backspace'){event.preventDefault();undoManualDie();}
+    else if(event.key==='Enter'){
+      event.preventDefault();
+      if(!diceEntryCommit.disabled)commitManualDiceResults();
+    }
+  });
+  window.TombWorldDiceProvider=Object.freeze({requestDiceResults});
   function selectRandomDistinctPlayerOperatives(operativeIds,count=2){
     const available=[...new Set(operativeIds)];
     for(let index=available.length-1;index>0;index--){

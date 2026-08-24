@@ -53,7 +53,9 @@ assert.equal(p.resetActiveBattle(base).gameMode,'solo');
             self.assertIn(identity, APP)
         mode_checks = APP.count("state.gameMode==='pvp'")
         self.assertEqual(mode_checks, 1)
-        self.assertNotIn("manualDice", APP)
+        provider = APP[APP.index("async function requestDiceResults") : APP.index("diceEntryUndo.addEventListener")]
+        self.assertNotIn("requestDiceResults(", APP[:APP.index("async function requestDiceResults")])
+        self.assertIn("if(!isPvpMode())", provider)
 
     def test_true_new_game_uses_fresh_unselected_state(self):
         new_game = APP.split("function startNewGameSetup()", 1)[1].split("function confirmNewGame", 1)[0]
