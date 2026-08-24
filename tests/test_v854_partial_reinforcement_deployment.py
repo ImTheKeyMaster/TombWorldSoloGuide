@@ -22,14 +22,14 @@ CONFIRMATION = APP.split("function confirmReinforcementPlacement", 1)[1].split(
 
 class PartialReinforcementDeploymentTests(unittest.TestCase):
     def test_partial_result_separates_deployable_and_blocked_counts(self):
-        self.assertIn("Deploy ${pendingNpos.length} NPO", REVIEW)
+        self.assertIn("Deploy ${pendingNpos.length} ${escapeHtml(pendingNpos.length===1?opponentSingularLabel():opponentPluralLabel())}", REVIEW)
         self.assertIn("additional reinforcement${blockedCount===1?'':'s'} could not be deployed", REVIEW)
         self.assertNotIn("Unable to Deploy", REVIEW)
         self.assertIn("data-reinforcement-placement", REVIEW)
         self.assertNotIn("blockedOperativeIds.map", REVIEW)
 
     def test_confirmation_changes_heading_and_keeps_blocked_result(self):
-        self.assertIn("${deployedNpos.length} NPO${deployedNpos.length===1?'':'s'} deployed", REVIEW)
+        self.assertIn("${deployedNpos.length} ${escapeHtml(deployedNpos.length===1?opponentSingularLabel():opponentPluralLabel())} deployed", REVIEW)
         self.assertIn("blockedCount?`<div class=", REVIEW)
         self.assertIn("placementConfirmed", REVIEW)
         self.assertIn("save();render();", CONFIRMATION)

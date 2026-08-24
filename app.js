@@ -428,10 +428,17 @@ document.addEventListener('touchend',function(e){
     return playerManifest?.teams?.find(team=>team.id===teamId)||null;
   }
   function isPvpMode(){return state.gameMode==='pvp';}
-  function selectedPlayerTeamName(){return playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team';}
+  function selectedPlayerTeamName(fallback='Kill Team'){return playerTeamData?.teamName||playerTeamEntry()?.name||fallback;}
   function playerSideLabel(){return isPvpMode()?selectedPlayerTeamName():'Player';}
   function opponentSingularLabel(){return isPvpMode()?'Necron':'NPO';}
   function opponentPluralLabel(){return isPvpMode()?'Necrons':'NPOs';}
+  function presentSideTerminology(text){
+    if(!isPvpMode())return text;
+    return String(text)
+      .replace(/NPOs\b/g,()=>opponentPluralLabel())
+      .replace(/NPO\b/g,()=>opponentSingularLabel())
+      .replace(/Player\b/g,()=>playerSideLabel());
+  }
   function canBuildPlayerRoster(){
     return Boolean(state.playerTeamId&&playerTeamLoadStatus==='loaded'&&loadedPlayerTeamId===state.playerTeamId&&playerTeamData);
   }
@@ -1681,7 +1688,7 @@ document.addEventListener('touchend',function(e){
       const definition=playerDefinition(id),maximum=Number(definition?.wounds||0);
       return operativeStatusRow({name:playerName(id),type:definition?.role||'Operative',current:Math.max(0,playerCurrentWounds(id)),maximum,status:playerStatus(id,activePlayerId),side:'player'});
     }).join('');
-    operativeStatusPanel.innerHTML=`<section class="operative-status-section npo"><h2>NPO Operatives</h2><div class="operative-status-list">${npoRows||'<p class="muted">No NPO operatives</p>'}</div></section><section class="operative-status-section player"><h2>Player Operatives</h2><div class="operative-status-list">${playerRows||'<p class="muted">No Player operatives</p>'}</div></section>`;
+    operativeStatusPanel.innerHTML=`<section class="operative-status-section npo"><h2>${escapeHtml(opponentSingularLabel())} Operatives</h2><div class="operative-status-list">${npoRows||`<p class="muted">No ${escapeHtml(opponentSingularLabel())} operatives</p>`}</div></section><section class="operative-status-section player"><h2>${escapeHtml(playerSideLabel())} Operatives</h2><div class="operative-status-list">${playerRows||`<p class="muted">No ${escapeHtml(playerSideLabel())} operatives</p>`}</div></section>`;
     requestAnimationFrame(fitOperativeStatusPanel);
   }
   function fitOperativeStatusPanel(){
@@ -2169,7 +2176,7 @@ document.addEventListener('touchend',function(e){
     </section>`;
 
     const quick=`<section class="help-section quick-reference-grid">
-      <article><h4>Player</h4><p>Your solo kill-team operatives.</p></article>
+      <article><h4>Player</h4><p>${isPvpMode()?'The selected Kill Team operatives.':'Your solo kill-team operatives.'}</p></article>
       <article><h4>NPO</h4><p>A non-player operative controlled by the Guide.</p></article>
       <article><h4>APL</h4><p>The number of action points an operative may spend during its activation.</p></article>
       <article><h4>THREAT LEVEL</h4><p>A 0–15 alert meter. Higher grades generate more reinforcements and events.</p></article>
@@ -2177,8 +2184,8 @@ document.addEventListener('touchend',function(e){
       <article><h4>Expended</h4><p>The operative has activated or is otherwise unavailable.</p></article>
     </section>`;
 
-    if(full) return overview+npoRoster+flow+ai+combat+quick;
-    return npoRoster+ai+quick;
+    if(full)return presentSideTerminology(overview+npoRoster+flow+ai+combat+quick);
+    return presentSideTerminology(npoRoster+ai+quick);
   }
 
   function renderHome(){
@@ -2475,7 +2482,7 @@ document.addEventListener('touchend',function(e){
       const allPlacementChecked=requiredPlacementChecks.every(check=>state.setupChecks[check.id]);
       const {minRoster,maxRoster}=playerRosterLimits();
       const playerValid=playerRosterValidation().valid;
-      return `<h3>Deploy Kill Teams</h3><p>Place the generated NPO roster and selected Player roster, then confirm every mission deployment requirement.</p>${missionRoll}${factionGuidanceHtml()}${hasStartingNpos?`<div class="setup-bulk-row"><button class="btn secondary" id="checkAllDeployment" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'disabled':''}>Check All</button></div>`:''}<div class="checklist deployment-checklist">${deploymentRow}${setupChecklistHtml(otherPlacementChecks)}<label class="check-row deployment-check"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${playerValid?'':'disabled'}><span><strong>Deploy ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Player')} Kill Team</strong>${playerRosterHtml}<small>All selected Player operatives are on the battlefield.</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'':'disabled'}>Deployment Complete</button></div>`;
+      return `<h3>Deploy Kill Teams</h3><p>Place the generated ${escapeHtml(opponentSingularLabel())} roster and selected ${escapeHtml(playerSideLabel())} roster, then confirm every mission deployment requirement.</p>${missionRoll}${factionGuidanceHtml()}${hasStartingNpos?`<div class="setup-bulk-row"><button class="btn secondary" id="checkAllDeployment" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'disabled':''}>Check All</button></div>`:''}<div class="checklist deployment-checklist">${deploymentRow}${setupChecklistHtml(otherPlacementChecks)}<label class="check-row deployment-check"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${playerValid?'':'disabled'}><span><strong>Deploy ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||(isPvpMode()?'Kill Team':'Player'))} Kill Team</strong>${playerRosterHtml}<small>All selected ${escapeHtml(playerSideLabel())} operatives are on the battlefield.</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'':'disabled'}>Deployment Complete</button></div>`;
     }
     const m=mission();
     const rules=(m.rules||[]).map(rule=>`<div class="mission-rule"><strong>${escapeHtml(rule.name||'Special Rule')}</strong>${rule.timing?`<small>${escapeHtml(rule.timing)}</small>`:''}<p>${escapeHtml(rule.summary||'')}</p></div>`).join('');
@@ -2899,7 +2906,7 @@ document.addEventListener('touchend',function(e){
       const playerLosses=Math.max(0,(state.playerCasualtyIds||[]).length-(state.tpStartPlayerCasualties||0));
       const threatChanged=state.threat!==(state.tpStartThreat??state.threat);
       const gradeChanged=threatGrade()!==(state.tpStartGrade??threatGrade());
-      return `<section class="next-card"><span class="phase">TURNING POINT ${state.turningPoint} COMPLETE</span><h2>Battle summary</h2><div class="turn-summary-grid"><div><small>Threat</small><strong>${state.tpStartThreat??state.threat} → ${state.threat}</strong><span>${threatChanged?'Changed this Turning Point':'No change'}</span></div><div><small>Grade</small><strong>${state.tpStartGrade??threatGrade()} → ${threatGrade()}</strong><span>${gradeChanged?'Grade increased':'Grade unchanged'}</span></div><div><small>NPOs destroyed</small><strong>${npoLosses}</strong><span>This Turning Point</span></div><div><small>Player casualties</small><strong>${playerLosses}</strong><span>This Turning Point</span></div></div><h3>Score and clean up</h3><p>Score mission objectives, resolve end-of-turn effects, and confirm all temporary markers have been cleared.</p>${missionProgressHtml()}<div class="checklist"><label class="check-row required-confirmation-row"><input id="endChecked" type="checkbox"><span><strong>End-of-turn steps complete</strong><small>Objectives scored, temporary effects resolved, and physical tokens cleaned up.</small></span></label></div><button class="btn primary big-action" id="finishTp" disabled>Finish Turning Point</button></section>`;
+      return `<section class="next-card"><span class="phase">TURNING POINT ${state.turningPoint} COMPLETE</span><h2>Battle summary</h2><div class="turn-summary-grid"><div><small>Threat</small><strong>${state.tpStartThreat??state.threat} → ${state.threat}</strong><span>${threatChanged?'Changed this Turning Point':'No change'}</span></div><div><small>Grade</small><strong>${state.tpStartGrade??threatGrade()} → ${threatGrade()}</strong><span>${gradeChanged?'Grade increased':'Grade unchanged'}</span></div><div><small>${escapeHtml(opponentPluralLabel())} destroyed</small><strong>${npoLosses}</strong><span>This Turning Point</span></div><div><small>${escapeHtml(playerSideLabel())} casualties</small><strong>${playerLosses}</strong><span>This Turning Point</span></div></div><h3>Score and clean up</h3><p>Score mission objectives, resolve end-of-turn effects, and confirm all temporary markers have been cleared.</p>${missionProgressHtml()}<div class="checklist"><label class="check-row required-confirmation-row"><input id="endChecked" type="checkbox"><span><strong>End-of-turn steps complete</strong><small>Objectives scored, temporary effects resolved, and physical tokens cleaned up.</small></span></label></div><button class="btn primary big-action" id="finishTp" disabled>Finish Turning Point</button></section>`;
     }
     setNextActivation(state.nextSide || state.initiative || 'player');
     if(state.phase==='end'){save();return nextStepCard();}
@@ -3047,8 +3054,8 @@ document.addEventListener('touchend',function(e){
     const capacityBlocked=state.reinforcementState.blockedByCapacity||0;
     const inventoryBlocked=state.reinforcementState.blockedByInventory||0;
     const blockedReason=reinforcementBlockedReason(capacityBlocked,inventoryBlocked,blockedCount);
-    const deployedSection=deployedNpos.length?`<div class="reinforcement-deployed"><h3>${deployedNpos.length} NPO${deployedNpos.length===1?'':'s'} deployed</h3><ul class="reinforcement-list">${deployedNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul></div>`:'';
-    const pendingSection=pendingNpos.length?`<div class="reinforcement-pending"><h3>Deploy ${pendingNpos.length} NPO${pendingNpos.length===1?'':'s'}</h3><ul class="reinforcement-list">${pendingNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul><p>Deploy ${pendingNpos.length===1?'this NPO':'these NPOs'} onto the battlefield using the Tomb World reinforcement rules.</p></div>`:'';
+    const deployedSection=deployedNpos.length?`<div class="reinforcement-deployed"><h3>${deployedNpos.length} ${escapeHtml(deployedNpos.length===1?opponentSingularLabel():opponentPluralLabel())} deployed</h3><ul class="reinforcement-list">${deployedNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul></div>`:'';
+    const pendingSection=pendingNpos.length?`<div class="reinforcement-pending"><h3>Deploy ${pendingNpos.length} ${escapeHtml(pendingNpos.length===1?opponentSingularLabel():opponentPluralLabel())}</h3><ul class="reinforcement-list">${pendingNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul><p>Deploy ${pendingNpos.length===1?`this ${escapeHtml(opponentSingularLabel())}`:`these ${escapeHtml(opponentPluralLabel())}`} onto the battlefield using the Tomb World reinforcement rules.</p></div>`:'';
     const reinforcementCard=deployingNpos.length||blockedCount
       ? `<section class="card reinforcement-card" aria-live="polite"><p class="eyebrow">REINFORCEMENTS</p>${deployedSection}${pendingSection}${blockedCount?`<div class="reinforcement-blocked" role="status"><h3>${deployingNpos.length?`${blockedCount} additional reinforcement${blockedCount===1?'':'s'} could not be deployed`:'No reinforcements could be deployed'}</h3><p>${blockedReason}</p></div>`:''}</section>`
       : '<div class="summary-box strategy-empty-message">No reinforcements were generated this Turning Point.</div>';
@@ -3056,7 +3063,7 @@ document.addEventListener('touchend',function(e){
     const showStatTooltips=!window.matchMedia('(max-width:600px)').matches;
     const tooltipAttrs=text=>showStatTooltips?` tabindex="0" data-tooltip="${text}"`:'';
     const infoDot=showStatTooltips?'<span class="info-dot">i</span>':'';
-    const battlefield=`<section class="battlefield-state-section" aria-labelledby="battlefield-state-heading"><h3 id="battlefield-state-heading" class="strategy-section-heading">Current Battlefield State</h3><div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat"${tooltipAttrs('Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events.')}><small>THREAT LEVEL ${infoDot}</small><strong>${state.threat}</strong></div><div class="stat tooltip-stat"${tooltipAttrs('Grade 0–3 is derived from Threat and determines reinforcement pressure and some events.')}><small>GRADE LEVEL ${infoDot}</small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat"${tooltipAttrs('The number of living NPOs that are Ready and may still activate during this Turning Point.')}><small>NPOs Ready ${infoDot}</small><strong>${readyNpos().length}</strong></div></div></section>`;
+    const battlefield=`<section class="battlefield-state-section" aria-labelledby="battlefield-state-heading"><h3 id="battlefield-state-heading" class="strategy-section-heading">Current Battlefield State</h3><div class="stat-grid strategy-stat-grid"><div class="stat tooltip-stat"${tooltipAttrs('Threat rises from loud or aggressive actions. Higher Threat can increase the Grade, reinforcements, and Tomb World events.')}><small>THREAT LEVEL ${infoDot}</small><strong>${state.threat}</strong></div><div class="stat tooltip-stat"${tooltipAttrs('Grade 0–3 is derived from Threat and determines reinforcement pressure and some events.')}><small>GRADE LEVEL ${infoDot}</small><strong>${threatGrade()}</strong></div><div class="stat tooltip-stat"${tooltipAttrs(`The number of living ${opponentPluralLabel()} that are Ready and may still activate during this Turning Point.`)}><small>${escapeHtml(opponentPluralLabel())} Ready ${infoDot}</small><strong>${readyNpos().length}</strong></div></div></section>`;
     const unresolved=!canLeaveStrategyEvents();
     const blocked=!canCompleteStrategyPhase();
     const warning=unresolved?'<div class="summary-box strategy-warning"><strong>Event resolution is incomplete.</strong><p>Return to Tomb World Events and finish the required event transaction.</p></div>':'';
@@ -7148,7 +7155,7 @@ function showPlayerActivation(stage={}){
       const wounds=playerCurrentWounds(id), maxWounds=Number(playerDefinition(id)?.wounds??operative.wounds);
       return `<article class="operative-card roster-operative-card ${eliminated?'dead':''}"><div class="operative-card-header"><div class="operative-identity"><h4>${escapeHtml(playerName(id))}</h4><p>${escapeHtml(operative.role||'Operative')}</p></div><span class="operative-status-badge ${status.toLowerCase().replace(' ','-')}">${status}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${operative.apl??'—'}</b></span><span><small>MOVE</small><b>${operative.move??'—'}"</b></span><span><small>SAVE</small><b>${operative.save??'—'}+</b></span><span><small>WOUNDS</small><b class="${wounds===0?'zero-wounds':''}">${wounds}/${maxWounds}</b></span></div>${weaponNames?`<p class="player-roster-weapons"><strong>Weapons:</strong> ${weaponNames}</p>`:''}${abilityGuidance}<div class="wound-controls"><button class="btn ghost" data-player-wound="${id}" ${wounds<=0||operativeState.inPlay===false?'disabled':''}>− Wound</button><button class="btn ghost" data-player-heal="${id}" ${wounds>=maxWounds||operativeState.inPlay===false?'disabled':''}>+ Heal</button></div></article>`;
     }).join('');
-    const teamName=selectedPlayerTeamName();
+    const teamName=selectedPlayerTeamName(isPvpMode()?'Kill Team':'Player');
     app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">${escapeHtml(playerSideLabel().toUpperCase())} ROSTER</p><h2>${escapeHtml(teamName)}</h2><p>${inPlayPlayerOperativeIds().filter(id=>!casualties.has(id)).length} active on the battlefield of ${(state.playerRoster||[]).length} selected operatives.</p></div></div>${factionGuidanceHtml()}<div class="roster-grid">${cards||'<div class="card empty">No Player operatives were selected for this game.</div>'}</div>`;
     $$('[data-player-wound]').forEach(button=>button.onclick=()=>adjustPlayerWounds(button.dataset.playerWound,-1));
     $$('[data-player-heal]').forEach(button=>button.onclick=()=>adjustPlayerWounds(button.dataset.playerHeal,1));
@@ -7179,16 +7186,16 @@ function showPlayerActivation(stage={}){
     </article>`;
   }
   function operativeCard(n,controls){return npoRosterCard(n,controls);}
-  function renderJournal(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">JOURNAL</p><h2>Battle Record</h2><p>Automatic game-state and Threat history.</p></div><button class="btn ghost" id="clearJournal">Clear</button></div><section class="card"><ol class="activity-log">${state.journal.length?state.journal.map(j=>`<li><time>${new Date(j.time).toLocaleString()}</time>${escapeHtml(j.text)}</li>`).join(''):'<li>No events recorded.</li>'}</ol></section>`;$('#clearJournal').onclick=()=>{state.journal=[];save();render();};}
-  function renderHelp(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">FIELD HELP</p><h2>Instructions & quick reference</h2><p>Review the NPO decision process and common gameplay terms without changing the current game.</p></div></div>${guideInstructionsHtml(false)}<section class="card help-list">
+  function renderJournal(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">JOURNAL</p><h2>Battle Record</h2><p>Automatic game-state and Threat history.</p></div><button class="btn ghost" id="clearJournal">Clear</button></div><section class="card"><ol class="activity-log">${state.journal.length?state.journal.map(j=>`<li><time>${new Date(j.time).toLocaleString()}</time>${escapeHtml(presentSideTerminology(j.text))}</li>`).join(''):'<li>No events recorded.</li>'}</ol></section>`;$('#clearJournal').onclick=()=>{state.journal=[];save();render();};}
+  function renderHelp(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">FIELD HELP</p><h2>Instructions & quick reference</h2><p>Review the ${escapeHtml(opponentSingularLabel())} decision process and common gameplay terms without changing the current game.</p></div></div>${guideInstructionsHtml(false)}<section class="card help-list">
     <details><summary>Deadly Encounters: Tomb Worlds</summary><p>This is the official optional expansion from White Dwarf 521, February 2026. The Guide implements only its PvE solo method. Player operatives reveal persistent features; NPOs never reveal them, although revealed features can affect NPOs. Rooms and eligible markers use separate D33 tables, and every feature rule is unique across the battle. Deadly Encounters is independent from Restless Tomb. Consult the official publication for authoritative wording.</p></details>
-    <details><summary>What does Player mean?</summary><p>Your solo player-controlled Kill Team operatives.</p></details>
-    <details><summary>What is an NPO?</summary><p>A non-player operative controlled by the Guide’s decision tree.</p></details>
+    <details><summary>What does ${escapeHtml(playerSideLabel())} mean?</summary><p>${isPvpMode()?'The operatives from the selected player-controlled Kill Team.':'Your solo player-controlled Kill Team operatives.'}</p></details>
+    <details><summary>What is a ${escapeHtml(opponentSingularLabel())}?</summary><p>A ${isPvpMode()?'Necron':'non-player'} operative currently controlled by the Guide’s decision tree.</p></details>
     <details><summary>What is Threat Level?</summary><p>A 0–15 alert meter that rises from loud or destructive actions. Higher Threat produces higher grades, more reinforcements, and eventually Tomb World events.</p></details>
     <details><summary>What is Threat Grade?</summary><p>Grade 0 at Threat 0, Grade 1 at 1–5, Grade 2 at 6–10, and Grade 3 at 11–15. Reinforcements normally equal the current grade after Turning Point 1.</p></details>
-    <details><summary>How does alternating activation work?</summary><p>The side with initiative activates first. The Guide then alternates Player and NPO activations whenever both sides still have ready operatives. If one side runs out, the other finishes its remaining activations.</p></details>
+    <details><summary>How does alternating activation work?</summary><p>The side with initiative activates first. The Guide then alternates ${escapeHtml(playerSideLabel())} and ${escapeHtml(opponentSingularLabel())} activations whenever both sides still have ready operatives. If one side runs out, the other finishes its remaining activations.</p></details>
     <details><summary>What happens during the Strategy Phase?</summary><p>The Guide readies operatives, applies mission Ready rules, determines initiative, then processes Tomb World events and reinforcements.</p></details>
-    <details><summary>How are saves and damage handled?</summary><p>Roll physical dice and resolve retained successes with the current Core rules. The Guide shows the canonical profile and records the resulting damage; Player damage remains pending until the whole activation is confirmed.</p></details>
+    <details><summary>How are saves and damage handled?</summary><p>Roll physical dice and resolve retained successes with the current Core rules. The Guide shows the canonical profile and records the resulting damage; ${escapeHtml(playerSideLabel())} damage remains pending until the whole activation is confirmed.</p></details>
   </section>`;}
 
 

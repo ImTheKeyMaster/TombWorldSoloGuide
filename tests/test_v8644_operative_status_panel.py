@@ -19,8 +19,8 @@ class OperativeStatusPanelTests(unittest.TestCase):
     def test_central_accessible_read_only_panel(self):
         self.assertIn('id="operativeStatusPanel"', INDEX)
         self.assertIn('aria-label="Operative status"', INDEX)
-        self.assertIn('<h2>NPO Operatives</h2>', APP)
-        self.assertIn('<h2>Player Operatives</h2>', APP)
+        self.assertIn('<h2>${escapeHtml(opponentSingularLabel())} Operatives</h2>', APP)
+        self.assertIn('<h2>${escapeHtml(playerSideLabel())} Operatives</h2>', APP)
         self.assertNotRegex(APP, r'operative-status-row[^`]*<(?:button|input|select)')
 
     def test_toggle_accessibility_and_persistence(self):

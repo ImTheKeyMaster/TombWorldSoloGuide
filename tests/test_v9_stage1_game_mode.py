@@ -26,6 +26,9 @@ class Stage1GameModeTests(unittest.TestCase):
         self.assertIn("${escapeHtml(opponentSingularLabel())}<span", APP)
         self.assertIn("${escapeHtml(opponentSingularLabel())} Roster", APP)
         self.assertIn("${escapeHtml(playerSideLabel())} Roster", APP)
+        self.assertIn("${escapeHtml(opponentSingularLabel())} Operatives", APP)
+        self.assertIn("presentSideTerminology(j.text)", APP)
+        self.assertIn("presentSideTerminology(overview+npoRoster+flow+ai+combat+quick)", APP)
 
     def test_mode_persistence_backward_compatibility_and_reset(self):
         script = r'''
@@ -38,7 +41,8 @@ assert.equal(p.migrateSave({...base,gameMode:'pvp'}).gameMode,'pvp');
 assert.equal(p.migrateSave({...base,gameMode:null}).gameMode,null);
 assert.equal(p.migrateSave(base).setupStep,3);
 assert.equal(p.createPersistedSave({...base,gameMode:'pvp'}).gameMode,'pvp');
-assert.equal(p.resetActiveBattle({...base,gameMode:'pvp'}).gameMode,null);
+assert.equal(p.resetActiveBattle({...base,gameMode:'pvp'}).gameMode,'pvp');
+assert.equal(p.resetActiveBattle(base).gameMode,'solo');
 '''
         result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
         self.assertEqual(result.returncode, 0, result.stderr or result.stdout)
