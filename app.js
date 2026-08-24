@@ -5435,7 +5435,8 @@ function showPlayerActivation(stage={}){
   }
 
   function showMultiTargetProfileRecovery(attackerSide,onReturn){
-    showModal('Attack profile unavailable',`<div class="modal-inner"><div class="summary-box"><strong>Attack profile unavailable</strong><p>The weapon selected for this multi-target attack could not be restored. Completed target results were preserved.</p></div><div class="wizard-actions"><button class="btn primary" id="returnFromMissingProfile">Return to ${attackerSide==='npo'?'NPO':'Player'} Activation</button></div></div>`);
+    const attackerLabel=attackerSide==='npo'?(isPvpMode()?'Necron':'NPO'):playerSideLabel();
+    showModal('Attack profile unavailable',`<div class="modal-inner"><div class="summary-box"><strong>Attack profile unavailable</strong><p>The weapon selected for this multi-target attack could not be restored. Completed target results were preserved.</p></div><div class="wizard-actions"><button class="btn primary" id="returnFromMissingProfile">Return to ${escapeHtml(attackerLabel)} Activation</button></div></div>`);
     $('#returnFromMissingProfile').onclick=onReturn;
   }
 
@@ -5661,9 +5662,10 @@ function showPlayerActivation(stage={}){
   }
 
   function showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel,preferredTargetId=''){
+    const targetSideLabel=isPvpMode()?'Necron':'NPO';
     const targets=sortedNposForDisplay(activeNpos().filter(n=>projectedNpoWounds(n.id,stage)>0));
     if(!targets.length){
-      showToast('No active NPO is available as a target.');
+      showToast(`No active ${targetSideLabel} is available as a target.`);
       showPlayerActivation(normalizeImpossiblePlayerCombat(stage));
       return;
     }
@@ -5686,8 +5688,8 @@ function showPlayerActivation(stage={}){
 
     const singleTarget=targets.length===1?targets[0]:null;
     const targetControl=singleTarget
-      ? `<div class="field"><label>Target NPO</label><div class="readonly-select">${escapeHtml(npoName(singleTarget))} · Wounds ${projectedNpoWounds(singleTarget.id,stage)}/${singleTarget.maxWounds} · Save ${singleTarget.save}+</div><input type="hidden" id="combatTarget" value="${singleTarget.id}"></div>`
-      : `<div class="field"><label>Target NPO</label><select id="combatTarget"><option value="">Select a target NPO...</option>${targets.map(n=>`<option value="${n.id}"${n.id===preferredTargetId?' selected':''}>${escapeHtml(npoName(n))} · Wounds ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} · Save ${n.save}+</option>`).join('')}</select></div>`;
+      ? `<div class="field"><label>Target ${targetSideLabel}</label><div class="readonly-select">${escapeHtml(npoName(singleTarget))} · Wounds ${projectedNpoWounds(singleTarget.id,stage)}/${singleTarget.maxWounds} · Save ${singleTarget.save}+</div><input type="hidden" id="combatTarget" value="${singleTarget.id}"></div>`
+      : `<div class="field"><label for="combatTarget">Target ${targetSideLabel}</label><select id="combatTarget"><option value="">Select a target ${targetSideLabel}...</option>${targets.map(n=>`<option value="${n.id}"${n.id===preferredTargetId?' selected':''}>${escapeHtml(npoName(n))} · Wounds ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} · Save ${n.save}+</option>`).join('')}</select></div>`;
     const weaponControl=weapons.length===1
       ? `<div class="field"><label>Weapon</label><div class="readonly-select">${escapeHtml(weapons[0].name)}</div><input type="hidden" id="playerWeaponSelect" value="0"></div>`
       : `<div class="field"><label>Weapon</label><select id="playerWeaponSelect"><option value="">Select a weapon...</option>${weapons.map((weapon,index)=>`<option value="${index}">${escapeHtml(weapon.name)}</option>`).join('')}</select></div>`;

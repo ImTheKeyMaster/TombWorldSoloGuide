@@ -23,6 +23,14 @@ class Stage5FullPvpCombatTests(unittest.TestCase):
         self.assertIn("resetTabletopConfirmation", wizard)
         self.assertIn("if(!isPvpMode()&&singleTarget", wizard)
 
+    def test_player_target_controls_use_necron_terminology_in_pvp(self):
+        wizard = self.section("function showPendingPlayerAttackWizard", "function showPlayerCombatResolution")
+        recovery = self.section("function showMultiTargetProfileRecovery", "function weaponRuleTargetOption")
+        self.assertIn("const targetSideLabel=isPvpMode()?'Necron':'NPO'", wizard)
+        self.assertIn("Target ${targetSideLabel}", wizard)
+        self.assertIn("Select a target ${targetSideLabel}", wizard)
+        self.assertIn("isPvpMode()?'Necron':'NPO'", recovery)
+
     def test_both_sides_use_specific_operative_dice_labels(self):
         player = self.section("function showPlayerCombatResolution", "async function previewPendingPlayerAttack")
         npo = self.section("function showNpoAttackWizard", "function spinnerField")
