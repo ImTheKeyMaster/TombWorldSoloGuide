@@ -73,6 +73,8 @@ class Stage2DiceProviderTests(unittest.TestCase):
         self.assertIn("button.onclick=()=>enterManualDie", manual)
         self.assertIn("event.key==='Backspace'", keyboard)
         self.assertIn("event.key==='Enter'", keyboard)
+        enter_handler = keyboard[keyboard.index("else if(event.key==='Enter')") :]
+        self.assertLess(enter_handler.index("event.preventDefault()"), enter_handler.index("if(!diceEntryCommit.disabled)"))
         self.assertNotIn("roll(", manual)
         self.assertNotIn("rollDice(", manual)
         self.assertNotIn("TombWorldDiceSfx", manual)
@@ -131,6 +133,7 @@ Object.defineProperty(diceEntryKeypad,'innerHTML',{{set(html){{
     def test_concurrency_required_dialog_and_focus_are_protected(self):
         manual = APP[APP.index("function requestManualDiceResults") : APP.index("async function requestDiceResults")]
         self.assertIn("if(activeManualDiceRequest)return Promise.reject", manual)
+        self.assertIn("catch(error){activeManualDiceRequest=null;throw error;}", manual)
         self.assertIn("diceEntryDialog.showModal()", manual)
         self.assertIn("returnFocus:document.activeElement", manual)
         self.assertIn("querySelector('button')?.focus", manual)
@@ -164,7 +167,7 @@ Object.defineProperty(diceEntryKeypad,'innerHTML',{{set(html){{
         self.assertIn("min-height:52px", STYLES)
         self.assertIn("touch-action:manipulation", STYLES)
         self.assertIn("max-height:calc(100dvh - 20px)", STYLES)
-        self.assertIn("env(safe-area-inset-bottom)", STYLES)
+        self.assertIn("calc(18px + env(safe-area-inset-bottom))", STYLES)
         self.assertRegex(STYLES.replace(" ", ""), re.compile(r"@media\(max-width:390px\).*?\.dice-entry-dialog", re.S))
 
 

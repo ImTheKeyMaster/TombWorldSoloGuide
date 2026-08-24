@@ -1527,7 +1527,8 @@ document.addEventListener('touchend',function(e){
       }).join('');
       $$('[data-die-value]',diceEntryKeypad).forEach(button=>button.onclick=()=>enterManualDie(Number(button.dataset.dieValue)));
       renderManualDiceEntry();
-      diceEntryDialog.showModal();
+      try{diceEntryDialog.showModal();}
+      catch(error){activeManualDiceRequest=null;throw error;}
       requestAnimationFrame(()=>diceEntryKeypad.querySelector('button')?.focus({preventScroll:true}));
     });
   }
@@ -1544,7 +1545,10 @@ document.addEventListener('touchend',function(e){
     const value=Number(event.key);
     if(Number.isInteger(value)&&value>=1&&value<=activeManualDiceRequest.request.sides){event.preventDefault();enterManualDie(value);}
     else if(event.key==='Backspace'){event.preventDefault();undoManualDie();}
-    else if(event.key==='Enter'&&!diceEntryCommit.disabled){event.preventDefault();commitManualDiceResults();}
+    else if(event.key==='Enter'){
+      event.preventDefault();
+      if(!diceEntryCommit.disabled)commitManualDiceResults();
+    }
   });
   window.TombWorldDiceProvider=Object.freeze({requestDiceResults});
   function selectRandomDistinctPlayerOperatives(operativeIds,count=2){
