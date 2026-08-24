@@ -3237,7 +3237,7 @@ document.addEventListener('touchend',function(e){
       <summary><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div></summary>
       <div class="activation-details-content">
       <div class="tracker-section">
-        <small>${escapeHtml(playerSideLabel())} operatives</small>
+        <small>${escapeHtml(selectedPlayerTeamName('Player'))} operatives</small>
         <p class="muted compact-copy">All selected operatives are listed, including eliminated operatives. Select a ${escapeHtml(playerSideLabel())} operative to mark it eliminated or restore it.</p>
         <div class="tracker-operative-grid">${playerRows||'<span class="muted">No player operatives selected</span>'}</div>
       </div>

@@ -29,6 +29,7 @@ class Stage1GameModeTests(unittest.TestCase):
         self.assertIn("${escapeHtml(opponentSingularLabel())} Operatives", APP)
         self.assertIn("presentSideTerminology(j.text)", APP)
         self.assertIn("presentSideTerminology(overview+npoRoster+flow+ai+combat+quick)", APP)
+        self.assertIn("${escapeHtml(selectedPlayerTeamName('Player'))} operatives", APP)
 
     def test_mode_persistence_backward_compatibility_and_reset(self):
         script = r'''
@@ -53,6 +54,12 @@ assert.equal(p.resetActiveBattle(base).gameMode,'solo');
         mode_checks = APP.count("state.gameMode==='pvp'")
         self.assertEqual(mode_checks, 1)
         self.assertNotIn("manualDice", APP)
+
+    def test_true_new_game_uses_fresh_unselected_state(self):
+        new_game = APP.split("function startNewGameSetup()", 1)[1].split("function confirmNewGame", 1)[0]
+        self.assertIn("state=initialState();", new_game)
+        self.assertIn("state.screen='setup';", new_game)
+        self.assertLess(new_game.index("state=initialState();"), new_game.index("save();"))
 
     def test_mobile_chooser_uses_existing_touch_friendly_components(self):
         self.assertIn('class="team-select-grid game-mode-grid"', APP)
