@@ -18,6 +18,8 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
         self.assertNotIn("Threat Principle", pvp)
         self.assertIn("const n=readyNpos().find", pvp)
         self.assertNotIn("const n=candidates.find", pvp)
+        self.assertIn("That Necron is no longer Ready", pvp)
+        self.assertIn("closeModal();render();showToast", pvp)
         self.assertIn("Use the Threat Principle", selection)
         self.assertIn("if(candidates.length===1)", selection)
 

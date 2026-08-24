@@ -3901,7 +3901,11 @@ document.addEventListener('touchend',function(e){
     if(isPvpMode()){
       showModal('Necron Activation',`<p>Choose a Ready Necron to activate.</p><div class="field"><label for="officialNpoSelection">Ready Necron</label><select id="officialNpoSelection" data-dialog-focus><option value="">Select a Ready Necron</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmNpoSelection" disabled>Continue</button></div>`);
       $('#officialNpoSelection').onchange=()=>{$('#confirmNpoSelection').disabled=!$('#officialNpoSelection').value;};
-      $('#confirmNpoSelection').onclick=()=>{const n=readyNpos().find(item=>item.id===$('#officialNpoSelection').value);if(n)beginNpoActivation(n);};
+      $('#confirmNpoSelection').onclick=()=>{
+        const n=readyNpos().find(item=>item.id===$('#officialNpoSelection').value);
+        if(n)beginNpoActivation(n);
+        else{closeModal();render();showToast('That Necron is no longer Ready. Choose another Ready Necron.');}
+      };
       return;
     }
     showModal(`Select ${opponentSingularLabel()} to Activate`,`<p>Use the Threat Principle in order. Select a ${escapeHtml(opponentSingularLabel())} that:</p><ol><li>has an ability, or is a threat, to Shoot or Fight a ${escapeHtml(playerSideLabel())} operative;</li><li>is not in cover;</li><li>is closest to a ${escapeHtml(playerSideLabel())} operative.</li></ol><p class="muted">If more than one ${escapeHtml(opponentSingularLabel())} is still tied, determine one at random on the tabletop.</p><div class="field"><label for="officialNpoSelection">Next ready ${escapeHtml(opponentSingularLabel())}</label><select id="officialNpoSelection" data-dialog-focus><option value="">Select matching ${escapeHtml(opponentSingularLabel())}</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmNpoSelection" disabled>Continue</button></div>`);
