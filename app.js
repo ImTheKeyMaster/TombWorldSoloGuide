@@ -6064,7 +6064,7 @@ function showPlayerActivation(stage={}){
       return ids.map(id=>({id,name:playerName(id),side:'enemy'})).filter(target=>!isPvpMode()||action.id!=='cranial-overload'
         ||!state.npoRuleState.aplModifiers.some(item=>item.sourceId===n.id&&item.targetId===target.id&&item.ruleId==='cranial-overload'));
     }
-    return sortedNposForDisplay(activeNpos().filter(target=>(action.id==='nanoscarab-beam'||target.id!==n.id)
+    return sortedNposForDisplay(activeNpos().filter(target=>(action.target?.excludeSelf!==true||target.id!==n.id)
       &&(!action.target?.keywordsAll||action.target.keywordsAll.every(keyword=>npoDefinition(target.type)?.keywords.includes(keyword)))
       &&(action.id!=='nanoscarab-beam'||target.wounds<target.maxWounds&&!state.npoRuleState.reanimatedTargetIds.includes(target.id))
       &&(!isPvpMode()||action.id!=='overcharge'||!state.npoRuleState.aplModifiers.some(item=>item.sourceId===n.id&&item.targetId===target.id&&item.ruleId==='overcharge'))

@@ -76,6 +76,26 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
         self.assertIn("effect.targetId===target.id&&effect.ruleId==='molecular-breach'", targets)
         self.assertEqual(targets.count("!isPvpMode()||action.id!="), 3)
 
+    def test_special_action_self_targeting_uses_definition_metadata(self):
+        targets = self.section("function eligibleNpoSpecialActionTargets", "function legalHumanNpoActions")
+        definitions = self.section("const npoDefinitions", "const npoGenerationTable")
+        self.assertIn("action.target?.excludeSelf!==true||target.id!==n.id", targets)
+        self.assertNotIn("action.id==='nanoscarab-beam'||target.id!==n.id", targets)
+        molecular = definitions.split("{id:'molecular-breach'", 1)[1].split("}", 1)[0]
+        overcharge = definitions.split("{id:'overcharge'", 1)[1].split("}", 1)[0]
+        self.assertNotIn("excludeSelf", molecular)
+        self.assertIn("excludeSelf:true", overcharge)
+        self.assertIn("keywordsAll:['Canoptek Circle']", molecular)
+        self.assertIn("keywordsAll:['Canoptek Circle','Canoptek']", overcharge)
+
+    def test_self_target_change_preserves_other_friendly_and_duplicate_filters(self):
+        targets = self.section("function eligibleNpoSpecialActionTargets", "function legalHumanNpoActions")
+        self.assertIn("action.target.keywordsAll.every", targets)
+        self.assertIn("target.wounds<target.maxWounds", targets)
+        self.assertIn("reanimatedTargetIds.includes(target.id)", targets)
+        self.assertIn("item.ruleId==='overcharge'", targets)
+        self.assertIn("effect.ruleId==='molecular-breach'", targets)
+
     def test_failed_pvp_persistent_effect_returns_without_committing_ap(self):
         resolver = self.section("function resolveNpoSpecialAction", "function finishNpoSpecialAction")
         guard_index = resolver.index("if(result?.applied===false)")
