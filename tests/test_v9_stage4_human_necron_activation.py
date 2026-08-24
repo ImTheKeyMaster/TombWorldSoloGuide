@@ -33,6 +33,8 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
             self.assertNotIn(ai_function, human)
         self.assertIn("n.battlefieldState!=='deployed'||n.dormant||!n.ready", human)
         self.assertNotIn("!n.deployed", human)
+        self.assertIn("state.activeNpoId=null;state.lastActivation=null;save();closeModal();render();return", human)
+        self.assertIn("if(n.wounds<=0){completeNpoActivation();return;}", human)
         self.assertIn("recommendedNpoActions", solo)
         self.assertIn("runNpoPrompt", solo)
 
