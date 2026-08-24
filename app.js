@@ -6053,14 +6053,20 @@ function showPlayerActivation(stage={}){
       ...(definition.actions||[]).map(action=>action.name)
     ];
   }
+  function eligibleNpoSpecialActionTargets(n,action){
+    if(action.target?.side==='enemy'){
+      const ids=isPvpMode()?inPlayLivingPlayerOperativeIds():remainingPlayerOperatives();
+      return ids.map(id=>({id,name:playerName(id),side:'enemy'}));
+    }
+    return sortedNposForDisplay(activeNpos().filter(target=>(action.id==='nanoscarab-beam'||target.id!==n.id)
+      &&(!action.target?.keywordsAll||action.target.keywordsAll.every(keyword=>npoDefinition(target.type)?.keywords.includes(keyword)))
+      &&(action.id!=='nanoscarab-beam'||target.wounds<target.maxWounds&&!state.npoRuleState.reanimatedTargetIds.includes(target.id))));
+  }
   function legalHumanNpoActions(n,context={}){
     return filterLegalNpoActions(n,supportedHumanNpoActions(n),context).filter(actionName=>{
       const action=npoSpecialAction(n,actionName);
       if(!action||action.id==='geomantic-disturbance')return true;
-      if(action.target?.side==='enemy')return inPlayLivingPlayerOperativeIds().length>0;
-      return activeNpos().some(target=>(action.id==='nanoscarab-beam'||target.id!==n.id)
-        &&(!action.target?.keywordsAll||action.target.keywordsAll.every(keyword=>npoDefinition(target.type)?.keywords.includes(keyword)))
-        &&(action.id!=='nanoscarab-beam'||target.wounds<target.maxWounds&&!state.npoRuleState.reanimatedTargetIds.includes(target.id)));
+      return eligibleNpoSpecialActionTargets(n,action).length>0;
     });
   }
   function filterLegalNpoActions(n,actionCatalog,context={}){
@@ -6801,11 +6807,9 @@ function showPlayerActivation(stage={}){
   function resolveNpoSpecialAction(n,decision,answers,questionHistory){
     const action=npoSpecialAction(n,decision.action);
     if(!action){completeNpoActivation();return;}
-    const friendlies=sortedNposForDisplay(activeNpos().filter(target=>(action.id==='nanoscarab-beam'||target.id!==n.id)
-      &&(!action.target?.keywordsAll||action.target.keywordsAll.every(keyword=>npoDefinition(target.type)?.keywords.includes(keyword)))
-      &&(action.id!=='nanoscarab-beam'||target.wounds<target.maxWounds&&!state.npoRuleState.reanimatedTargetIds.includes(target.id))));
+    const friendlies=action.target?.side==='enemy'?[]:eligibleNpoSpecialActionTargets(n,action);
     const friendlyOptions=friendlies.map(target=>`<option value="${escapeHtml(target.id)}">${escapeHtml(npoName(target))}</option>`).join('');
-    const enemyOptions=remainingPlayerOperatives().map(id=>`<option value="${escapeHtml(id)}">${escapeHtml(playerTargetLabel(id))}</option>`).join('');
+    const enemyOptions=(action.target?.side==='enemy'?eligibleNpoSpecialActionTargets(n,action):[]).map(target=>`<option value="${escapeHtml(target.id)}">${escapeHtml(playerTargetLabel(target.id))}</option>`).join('');
     const targetOptions=action.target?.side==='enemy'?enemyOptions:friendlyOptions;
     const targetLabel=action.target?.side==='enemy'?(isPvpMode()?`${playerSideLabel()} operative`:'Player operative'):(isPvpMode()?`Friendly ${opponentSingularLabel()}`:'Friendly NPO');
     if(action.id==='geomantic-disturbance'){
@@ -6829,7 +6833,7 @@ function showPlayerActivation(stage={}){
       };
       return;
     }
-    const confirmation=action.id==='molecular-breach'?'I confirmed that this NPO can be placed as instructed.':'I confirmed that this target is visible and within range.';
+    const confirmation=action.id==='molecular-breach'?`I confirmed that this ${opponentSingularLabel()} can be placed as instructed.`:'I confirmed that this target is visible and within range.';
     const buttonLabels={'canoptek-control':'Use Canoptek Control','molecular-breach':'Apply Molecular Breach',overcharge:'Use Overcharge','cranial-overload':'Use Cranial Overload','nanoscarab-beam':'Roll Healing'};
     showModal(action.name,`${npoSpecialActionDescription(action)}<div class="field"><label for="specialActionTarget">${targetLabel}</label><select id="specialActionTarget"><option value="">Select operative…</option>${targetOptions}</select></div>${action.id==='canoptek-control'?'<div class="field"><label for="freeActionChoice">Choose the free 1 AP action</label><select id="freeActionChoice"><option>Reposition</option><option>Dash</option><option>Charge</option><option>Shoot</option><option>Fight</option><option>Mission action</option></select></div>':''}<label class="check-row" for="specialRangeConfirmed"><input id="specialRangeConfirmed" type="checkbox"><span>${escapeHtml(confirmation)}</span></label><div class="wizard-actions"><button class="btn ghost" id="cancelSpecialAction">Cancel</button><button class="btn primary" id="confirmSpecialAction" disabled>${escapeHtml(buttonLabels[action.id]||`Use ${action.name}`)}</button></div>`);
     const update=()=>{$('#confirmSpecialAction').disabled=!$('#specialActionTarget').value||!$('#specialRangeConfirmed').checked;};
@@ -6958,7 +6962,7 @@ function showPlayerActivation(stage={}){
     console.error('[NPO Target] Target confirmation failed because the pending attack was not preserved.',{
       npoId:n.id,pendingAction:activation?.pendingAction,targetId:state.npoAttackTargetId
     });
-    modalBody.innerHTML=`<div class="modal-inner"><h2>Target could not be confirmed</h2><div class="summary-box">The attack state was not preserved. No AP, dice, or damage were committed.</div><div class="wizard-actions"><button class="btn primary" id="recoverNpoActivation">Return to NPO Activation</button></div></div>`;
+    modalBody.innerHTML=`<div class="modal-inner"><h2>Target could not be confirmed</h2><div class="summary-box">The attack state was not preserved. No AP, dice, or damage were committed.</div><div class="wizard-actions"><button class="btn primary" id="recoverNpoActivation">Return to ${escapeHtml(opponentSingularLabel())} Activation</button></div></div>`;
     if(!modal.open)modal.showModal();
     $('#recoverNpoActivation').onclick=()=>{
       const current=state.lastActivation;
@@ -6977,7 +6981,7 @@ function showPlayerActivation(stage={}){
       state.npoAttackSummary=null;
       save();
       renderNpoDecisionResult(n,decision,[],state.lastActivation?.answers||{},false,false,true,false,state.lastActivation?.questionHistory||[]);
-      showToast('That Player operative is no longer an eligible target. Select another target.');
+      showToast(`That ${playerSideLabel()} operative is no longer an eligible target. Select another target.`);
       return false;
     }
     const activation=state.lastActivation,pendingAction=activation?.pendingAction;
@@ -7042,9 +7046,9 @@ function showPlayerActivation(stage={}){
       ${attackRequired&&!targetConfirmed&&(isPvpMode()||eligibleTargetIds.length>1)?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
       ${attackRequired&&!targetConfirmed&&!isPvpMode()&&eligibleTargetIds.length===1?`<button class="btn secondary big-action" id="resolveNpoTarget">Resolve Combat</button>`:''}
       ${attackSummary?`${renderEliminationSummary(attackSummary)}<section class="card npo-attack-summary">
-        <p class="eyebrow">NPO ATTACK SUMMARY</p>
+        <p class="eyebrow">${escapeHtml(opponentSingularLabel().toUpperCase())} ATTACK SUMMARY</p>
         ${renderAttackSummary(attackSummary)}
-        <div class="combat-stage"><small>PLAYER SAVE ROLL</small><div class="dice-row settled">${attackSummary.saveDice.length?attackSummary.saveDice.map(dieHtml).join(''):'<span class="muted">No save dice rolled</span>'}</div></div>
+        <div class="combat-stage"><small>${escapeHtml(playerSideLabel().toUpperCase())} SAVE ROLL</small><div class="dice-row settled">${attackSummary.saveDice.length?attackSummary.saveDice.map(dieHtml).join(''):'<span class="muted">No save dice rolled</span>'}</div></div>
         <div class="damage-summary">
           <div><small>Unsaved normal hits</small><strong>${attackSummary.normalRemaining}</strong></div>
           <div><small>Unsaved critical hits</small><strong>${attackSummary.critRemaining}</strong></div>
@@ -7158,7 +7162,7 @@ function showPlayerActivation(stage={}){
       else finish();
       return;
     }
-    if(!target){showToast('Select the targeted Player operative first.');if(onCancel)onCancel();return;}
+    if(!target){showToast(`Select the targeted ${playerSideLabel()} operative first.`);if(onCancel)onCancel();return;}
     const targetSide=state.weaponRuleResolution?.orderedTargets?.find(item=>item.targetId===target.id)?.targetSide||'player';
     const targetName=targetSide==='npo'?npoName(target):playerName(target.id);
     const attackType=state.lastActivation?.action?.includes('Fight')?'melee':'shoot';
@@ -7176,7 +7180,7 @@ function showPlayerActivation(stage={}){
     const sameCombat=savedCombat&&!rollingCombat&&!selectingCombat;
     if(!availableProfiles.length){
       const weaponType=attackType==='shoot'?'shooting':'melee';
-      showModal('Unable to Resolve Combat',`<div class="modal-inner"><div class="summary-box"><strong>This NPO has no weapon it can use for this ${weaponType} attack.</strong></div><div class="wizard-actions"><button class="btn ghost" id="cancelNpoAttack">Back</button></div></div>`);
+      showModal('Unable to Resolve Combat',`<div class="modal-inner"><div class="summary-box"><strong>This ${escapeHtml(opponentSingularLabel())} has no weapon it can use for this ${weaponType} attack.</strong></div><div class="wizard-actions"><button class="btn ghost" id="cancelNpoAttack">Back</button></div></div>`);
       $('#cancelNpoAttack').onclick=()=>{if(onCancel)onCancel();};
       return;
     }

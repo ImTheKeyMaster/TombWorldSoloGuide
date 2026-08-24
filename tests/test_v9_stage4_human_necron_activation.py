@@ -41,6 +41,13 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
         self.assertIn("filterLegalNpoActions", legality)
         self.assertIn("rankLegalNpoActions(n,legalNpoActions", ai)
 
+    def test_pvp_special_actions_can_target_activated_living_operatives(self):
+        targets = self.section("function eligibleNpoSpecialActionTargets", "function legalHumanNpoActions")
+        resolver = self.section("function resolveNpoSpecialAction", "function finishNpoSpecialAction")
+        self.assertIn("isPvpMode()?inPlayLivingPlayerOperativeIds():remainingPlayerOperatives()", targets)
+        self.assertIn("eligibleNpoSpecialActionTargets(n,action)", resolver)
+        self.assertNotIn("const enemyOptions=remainingPlayerOperatives()", resolver)
+
     def test_shared_legality_keeps_ap_repeat_combat_and_movement_rules(self):
         rules = self.section("function filterLegalNpoActions", "function rankLegalNpoActions")
         self.assertIn("cost>remainingAp||completed.has(id)", rules)
@@ -81,6 +88,15 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
         decision = self.section("function humanNpoDecision", "function renderHumanNpoActionPicker")
         self.assertIn("target:[]", decision)
         self.assertNotIn("Most likely", decision)
+
+    def test_pvp_attack_surfaces_use_presentation_terminology(self):
+        result = self.section("function showNpoTargetRecovery", "async function completeNpoActivation")
+        combat = self.section("function showNpoAttackWizard", "function spinnerField")
+        self.assertIn("opponentSingularLabel()", result)
+        self.assertIn("playerSideLabel()", result)
+        self.assertIn("playerSideLabel()", combat)
+        self.assertNotIn("Return to NPO Activation", result)
+        self.assertNotIn("That Player operative is no longer", result)
 
     def test_end_with_ap_requires_deliberate_confirmation(self):
         ending = self.section("function confirmEndHumanNpoActivation", "function renderNpoGuideFooter")
