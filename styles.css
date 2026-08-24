@@ -1422,6 +1422,13 @@ button.tracker-operative:hover{
   font-size: .78rem;
 }
 .npo-action-progress{margin:-.35rem 0 .85rem;color:var(--green)!important;font-size:.82rem;font-weight:800;line-height:1.35}
+.human-npo-action-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.human-npo-action{min-height:58px;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;white-space:normal}
+.human-npo-action strong{min-width:0;overflow-wrap:anywhere}
+.human-npo-action span{flex:0 0 auto;color:var(--muted);font-size:.72rem;font-weight:800}
+.human-npo-action:disabled span{color:inherit}
+.human-npo-completed{margin:.5rem 0 0;padding-left:1.2rem}
+@media(max-width:520px){.human-npo-action-list{grid-template-columns:1fr}.human-npo-action{width:100%}}
 
 .optional-rules{display:grid;gap:12px}
 .optional-rules h4{margin-bottom:0}

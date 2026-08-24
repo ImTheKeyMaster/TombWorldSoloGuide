@@ -3008,7 +3008,7 @@ document.addEventListener('touchend',function(e){
     setNextActivation(state.nextSide || state.initiative || 'player');
     if(state.phase==='end'){save();return nextStepCard();}
     if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>${escapeHtml(playerSideLabel())} Activation</h2><p>Activate one ${escapeHtml(playerSideLabel())} operative on the tabletop. After it completes, the Guide will alternate to a ${escapeHtml(opponentSingularLabel())} if one is ready.</p><button class="btn primary big-action" id="playerActivation">Activate an Operative</button></section>`;
-    if(state.nextSide==='npo' && readyNpos().length>0)return `<section class="next-card npo-activation-card"><span class="phase">${escapeHtml(opponentSingularLabel().toUpperCase())} ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">${escapeHtml(opponentSingularLabel())} Activation</h2><p class="npo-activation-meta">Identify the next ready ${escapeHtml(opponentSingularLabel())} using the Threat Principle.</p><button class="btn primary big-action" id="npoActivation">Activate ${escapeHtml(opponentSingularLabel())}</button></section>`;
+    if(state.nextSide==='npo' && readyNpos().length>0)return `<section class="next-card npo-activation-card"><span class="phase">${escapeHtml(opponentSingularLabel().toUpperCase())} ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">${escapeHtml(opponentSingularLabel())} Activation</h2><p class="npo-activation-meta">${isPvpMode()?`Choose a Ready ${escapeHtml(opponentSingularLabel())} to activate.`:`Identify the next ready ${escapeHtml(opponentSingularLabel())} using the Threat Principle.`}</p><button class="btn primary big-action" id="npoActivation">Activate ${escapeHtml(opponentSingularLabel())}</button></section>`;
     setNextActivation(state.nextSide==='player'?'npo':'player');
     save();
     return nextStepCard();
@@ -3897,6 +3897,12 @@ document.addEventListener('touchend',function(e){
     const candidates=readyNpos();
     if(candidates.length===1){state.activeNpoId=candidates[0].id;beginNpoActivation(candidates[0]);return;}
     const options=sortedNposForDisplay(candidates).map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(npoName(n))}</option>`).join('');
+    if(isPvpMode()){
+      showModal('Necron Activation',`<p>Choose a Ready Necron to activate.</p><div class="field"><label for="officialNpoSelection">Ready Necron</label><select id="officialNpoSelection" data-dialog-focus><option value="">Select a Ready Necron</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmNpoSelection" disabled>Continue</button></div>`);
+      $('#officialNpoSelection').onchange=()=>{$('#confirmNpoSelection').disabled=!$('#officialNpoSelection').value;};
+      $('#confirmNpoSelection').onclick=()=>{const n=candidates.find(item=>item.id===$('#officialNpoSelection').value);if(n&&n.ready&&n.deployed&&n.wounds>0)beginNpoActivation(n);};
+      return;
+    }
     showModal(`Select ${opponentSingularLabel()} to Activate`,`<p>Use the Threat Principle in order. Select a ${escapeHtml(opponentSingularLabel())} that:</p><ol><li>has an ability, or is a threat, to Shoot or Fight a ${escapeHtml(playerSideLabel())} operative;</li><li>is not in cover;</li><li>is closest to a ${escapeHtml(playerSideLabel())} operative.</li></ol><p class="muted">If more than one ${escapeHtml(opponentSingularLabel())} is still tied, determine one at random on the tabletop.</p><div class="field"><label for="officialNpoSelection">Next ready ${escapeHtml(opponentSingularLabel())}</label><select id="officialNpoSelection" data-dialog-focus><option value="">Select matching ${escapeHtml(opponentSingularLabel())}</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmNpoSelection" disabled>Continue</button></div>`);
     $('#officialNpoSelection').onchange=()=>{$('#confirmNpoSelection').disabled=!$('#officialNpoSelection').value;};
     $('#confirmNpoSelection').onclick=()=>{const n=candidates.find(item=>item.id===$('#officialNpoSelection').value);if(n)beginNpoActivation(n);};
@@ -6035,12 +6041,35 @@ function showPlayerActivation(stage={}){
     return action.id==='fall-back'?'Fall Back':action.id[0].toUpperCase()+action.id.slice(1);
   }
   function legalNpoActions(n,context={}){
+    return filterLegalNpoActions(n,npoBehavior(n)?.actions||[],context);
+  }
+  function supportedHumanNpoActions(n){
+    const definition=npoDefinition(n?.type);
+    if(!definition)return [];
+    return [
+      'Reposition','Dash','Charge','Fall Back',
+      ...(definition.rangedWeapons||[]).length?['Shoot']:[],
+      ...(definition.meleeWeapons||[]).length?['Fight']:[],
+      ...(definition.actions||[]).map(action=>action.name)
+    ];
+  }
+  function legalHumanNpoActions(n,context={}){
+    return filterLegalNpoActions(n,supportedHumanNpoActions(n),context).filter(actionName=>{
+      const action=npoSpecialAction(n,actionName);
+      if(!action||action.id==='geomantic-disturbance')return true;
+      if(action.target?.side==='enemy')return inPlayLivingPlayerOperativeIds().length>0;
+      return activeNpos().some(target=>(action.id==='nanoscarab-beam'||target.id!==n.id)
+        &&(!action.target?.keywordsAll||action.target.keywordsAll.every(keyword=>npoDefinition(target.type)?.keywords.includes(keyword)))
+        &&(action.id!=='nanoscarab-beam'||target.wounds<target.maxWounds&&!state.npoRuleState.reanimatedTargetIds.includes(target.id)));
+    });
+  }
+  function filterLegalNpoActions(n,actionCatalog,context={}){
     const definition=npoDefinition(n?.type);
     if(!definition||n.wounds<=0||!n.ready)return [];
     const activation=state.lastActivation?.npoId===n.id?state.lastActivation:null;
     const remainingAp=Number.isFinite(context.remainingAp)?context.remainingAp:Number(activation?.remainingAp??effectiveApl(n.id,definition.apl));
     const completed=new Set(context.completedActionIds||activation?.completedActionIds||[]);
-    return (npoBehavior(n)?.actions||[]).filter(actionName=>{
+    return actionCatalog.filter(actionName=>{
       const id=npoActionId(actionName),profileAction=(definition.actions||[]).find(action=>action.id===id),cost=npoActionCost(n,id);
       if(cost===null||cost>remainingAp||completed.has(id))return false;
       if(['shoot','fight','charge'].includes(id)&&!inPlayLivingPlayerOperativeIds().length)return false;
@@ -6449,11 +6478,69 @@ function showPlayerActivation(stage={}){
 
   function titleCaseRuleId(ruleId){return String(ruleId).split('-').map(word=>word[0]?.toUpperCase()+word.slice(1)).join(' ');}
 
+  function humanNpoDecision(n,actionName){
+    const id=npoActionId(actionName),distance=id==='dash'?3:id==='charge'?npoDefinition(n.type).move+2:npoDefinition(n.type).move;
+    const movementInstructions={
+      reposition:`Move ${npoName(n)} up to ${distance} inches following the normal Reposition rules.`,
+      dash:`Move ${npoName(n)} up to 3 inches following the normal Dash rules.`,
+      charge:`Charge with ${npoName(n)} following the normal Charge rules, then confirm the move was completed legally.`,
+      'fall-back':`Fall Back with ${npoName(n)} following the normal tabletop requirements, finishing outside enemy control range.`
+    };
+    return {action:actionName,target:[],stance:'Engage',threat:['shoot','fight'].includes(id)?1:0,reason:movementInstructions[id]||`Resolve ${actionName}.`,path:[actionName]};
+  }
+
+  function renderHumanNpoActionPicker(n){
+    const activation=state.lastActivation,legal=new Set(legalHumanNpoActions(n,activation.currentContext||{}).map(npoActionId));
+    const completed=new Set(activation.completedActionIds||[]),definition=npoDefinition(n.type);
+    const catalog=supportedHumanNpoActions(n).map(name=>({name,id:npoActionId(name),cost:npoActionCost(n,npoActionId(name))}));
+    const groups=[
+      ['Movement',['reposition','dash','charge','fall-back']],
+      ['Combat',['shoot','fight']],
+      ['Special Actions',(definition.actions||[]).map(action=>action.id)]
+    ];
+    const groupHtml=groups.map(([label,ids])=>{
+      const actions=catalog.filter(action=>ids.includes(action.id));
+      if(!actions.length)return '';
+      return `<section class="activation-group human-npo-action-group"><div class="activation-group-title"><div><strong>${label}</strong></div></div><div class="human-npo-action-list">${actions.map(action=>{
+        const used=completed.has(action.id),available=legal.has(action.id);
+        const status=used?'Used':available?`${action.cost} AP`:'Unavailable';
+        return `<button type="button" class="btn secondary human-npo-action" data-human-npo-action="${escapeHtml(action.id)}" ${available?'':'disabled'} aria-label="${escapeHtml(action.name)}, ${action.cost} AP, ${status}"><strong>${escapeHtml(action.name)}</strong><span>${escapeHtml(status)}</span></button>`;
+      }).join('')}</div></section>`;
+    }).join('');
+    const completedNames=(activation.resolvedActions||[]).map(action=>`<li>✓ ${escapeHtml(conciseNpoActionName(action))}</li>`).join('');
+    modalBody.innerHTML=`<div class="modal-inner human-npo-activation">${renderNpoActivationHeader(n)}${completedNames?`<div class="summary-box"><strong>Completed actions</strong><ul class="human-npo-completed">${completedNames}</ul></div>`:''}<div class="activation-groups">${groupHtml}</div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="endHumanNpoActivation">End Activation</button></div></div>`;
+    if(!modal.open)modal.showModal();
+    modal.setAttribute('aria-labelledby','activeNpoQuestionHeading');
+    $('[data-close]',modal).onclick=closeModal;
+    $$('[data-human-npo-action]',modal).forEach(button=>button.onclick=()=>selectHumanNpoAction(n,button.dataset.humanNpoAction));
+    $('#endHumanNpoActivation').onclick=()=>confirmEndHumanNpoActivation(n);
+    renderOperativeStatusPanel();
+    requestAnimationFrame(()=>focusInitialDialogControl(modal));
+  }
+
+  function selectHumanNpoAction(n,actionId){
+    const actionName=supportedHumanNpoActions(n).find(name=>npoActionId(name)===actionId);
+    if(!actionName||!legalHumanNpoActions(n,state.lastActivation.currentContext||{}).some(name=>npoActionId(name)===actionId)){showToast('That action is no longer legal.');renderHumanNpoActionPicker(n);return;}
+    const decision=humanNpoDecision(n,actionName),cost=npoActionCost(n,actionId);
+    state.npoAttackTargetId=null;
+    state.lastActivation={...state.lastActivation,...decision,answers:{action:actionName},questionHistory:[],pendingFollowUpAction:null,movementIntent:null,pendingAction:{id:actionId,name:actionName,apCost:cost,decisionPass:state.lastActivation.decisionPass},committed:false};
+    save();resolveNpoAction(n,state.lastActivation.pendingAction);
+  }
+
+  function confirmEndHumanNpoActivation(n){
+    const remaining=state.lastActivation.remainingAp;
+    if(remaining<=0){completeNpoActivation();return;}
+    showModal('End Activation?',`<p>${escapeHtml(npoName(n))} still has ${remaining} AP remaining.</p><div class="wizard-actions"><button class="btn ghost" id="continueHumanNpoActivation">Continue Activation</button><button class="btn primary" id="confirmEndHumanNpoActivation">End Activation</button></div>`);
+    $('#continueHumanNpoActivation').onclick=()=>renderHumanNpoActionPicker(n);
+    $('#confirmEndHumanNpoActivation').onclick=()=>completeNpoActivation();
+  }
+
+
   function renderNpoActivationHeader(n){
     const definition=npoDefinition(n.type),modifiers=(state.npoRuleState.aplModifiers||[]).filter(item=>item.targetId===n.id);
     const pendingBreach=(state.npoRuleState.pendingMovementEffects||[]).some(item=>item.targetId===n.id&&item.ruleId==='molecular-breach');
     const loadout=definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name,effective=effectiveApl(n.id,definition.apl);
-    return `<h2 id="activeNpoQuestionHeading">${escapeHtml(opponentSingularLabel())} Activation: ${escapeHtml(npoName(n))}</h2><div class="activation-profile-strip" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>APL ${definition.apl}${effective===definition.apl?'':` (${effective} AP this activation)`}</span><span>Order: ${escapeHtml(n.order)}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Next movement uses Molecular Breach</span>':''}</div>${renderNpoActionProgress()}`;
+    return `<h2 id="activeNpoQuestionHeading">${escapeHtml(opponentSingularLabel())} Activation: ${escapeHtml(npoName(n))}</h2><div class="activation-profile-strip" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>APL ${definition.apl}${effective===definition.apl?'':` (${effective} AP this activation)`}</span><span>AP remaining: ${state.lastActivation.remainingAp}/${state.lastActivation.startingAp}</span><span>Order: ${escapeHtml(n.order)}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Next movement uses Molecular Breach</span>':''}</div>${renderNpoActionProgress()}`;
   }
 
   function renderNpoGuideFooter({backDisabled=false}={}){
@@ -6548,6 +6635,24 @@ function showPlayerActivation(stage={}){
   }
 
   function continueNpoActivation(){
+    if(isPvpMode()){
+      continueHumanNecronActivation();
+      return;
+    }
+    continueSoloNpoActivation();
+  }
+
+  function continueHumanNecronActivation(){
+    const activation=state.lastActivation,n=state.roster.find(item=>item.id===activation?.npoId);
+    if(!activation||activation.committed)return;
+    if(!n||n.wounds<=0||!n.deployed||!n.ready){completeNpoActivation();return;}
+    if(activation.awaitingActionResult){renderNpoActionResult(n,activation.awaitingActionResult,Boolean(activation.awaitingActionResult.endsActivation));return;}
+    if(activation.pendingAction){resolveNpoAction(n,activation.pendingAction);return;}
+    if(activation.remainingAp<=0){completeNpoActivation();return;}
+    renderHumanNpoActionPicker(n);
+  }
+
+  function continueSoloNpoActivation(){
     const activation=state.lastActivation,n=state.roster.find(item=>item.id===activation?.npoId);
     if(!activation||activation.committed)return;
     if(activation.pendingFollowUpAction?.movementCommitted){continueGuaranteedNpoFollowUp();return;}
@@ -6691,7 +6796,7 @@ function showPlayerActivation(stage={}){
       'cranial-overload':['Choose a visible Player operative within 3 inches. It gets 1 fewer AP in its next activation, to a minimum of 1 (-1 APL).','Cannot be used while the Accelerator is in enemy control range.'],
       'nanoscarab-beam':['Choose a visible wounded Canoptek Circle NPO within 6 inches. Roll 3D3 and restore that many wounds, up to its maximum.','It cannot target an incapacitated NPO or one saved by Reanimate this turning point.']
     };
-    return (paragraphs[action.id]||[action.description]).map(text=>`<p>${escapeHtml(text)}</p>`).join('');
+    return (paragraphs[action.id]||[action.description]).map(text=>`<p>${escapeHtml(isPvpMode()?text.replaceAll('Player operative',`${playerSideLabel()} operative`).replaceAll('NPO','Necron'):text)}</p>`).join('');
   }
   function resolveNpoSpecialAction(n,decision,answers,questionHistory){
     const action=npoSpecialAction(n,decision.action);
@@ -6702,11 +6807,11 @@ function showPlayerActivation(stage={}){
     const friendlyOptions=friendlies.map(target=>`<option value="${escapeHtml(target.id)}">${escapeHtml(npoName(target))}</option>`).join('');
     const enemyOptions=remainingPlayerOperatives().map(id=>`<option value="${escapeHtml(id)}">${escapeHtml(playerTargetLabel(id))}</option>`).join('');
     const targetOptions=action.target?.side==='enemy'?enemyOptions:friendlyOptions;
-    const targetLabel=action.target?.side==='enemy'?'Player operative':'Friendly NPO';
+    const targetLabel=action.target?.side==='enemy'?(isPvpMode()?`${playerSideLabel()} operative`:'Player operative'):(isPvpMode()?`Friendly ${opponentSingularLabel()}`:'Friendly NPO');
     if(action.id==='geomantic-disturbance'){
       const affected=[...sortedNposForDisplay(activeNpos()),...inPlayLivingPlayerOperativeIds().map(id=>({id:`player:${id}`,label:playerTargetLabel(id),ariaLabel:playerTargetAriaLabel(id)}))];
       showModal(action.name,`<p>Choose a visible terrain point within 8 inches, then select every operative within 2 inches of it.</p><div class="checklist">${affected.map(target=>`<label class="check-row"><input type="checkbox" data-disturbance-target="${escapeHtml(target.id)}"${target.ariaLabel?` aria-label="${escapeHtml(target.ariaLabel)}"`:''}><span>${escapeHtml(target.label||npoName(target))}</span></label>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="cancelSpecialAction">Cancel</button><button class="btn primary" id="confirmSpecialAction">Roll Damage</button></div>`);
-      $('#cancelSpecialAction').onclick=()=>resolveNpoAction(n,state.lastActivation.pendingAction);
+      $('#cancelSpecialAction').onclick=()=>{if(isPvpMode()){state.lastActivation.pendingAction=null;save();renderHumanNpoActionPicker(n);}else resolveNpoAction(n,state.lastActivation.pendingAction);};
       $('#confirmSpecialAction').onclick=()=>{
         const button=$('#confirmSpecialAction');
         if(!canCommitNpoAction(action.id,npoActionCost(n,action.id)))return;
@@ -6729,7 +6834,7 @@ function showPlayerActivation(stage={}){
     showModal(action.name,`${npoSpecialActionDescription(action)}<div class="field"><label for="specialActionTarget">${targetLabel}</label><select id="specialActionTarget"><option value="">Select operative…</option>${targetOptions}</select></div>${action.id==='canoptek-control'?'<div class="field"><label for="freeActionChoice">Choose the free 1 AP action</label><select id="freeActionChoice"><option>Reposition</option><option>Dash</option><option>Charge</option><option>Shoot</option><option>Fight</option><option>Mission action</option></select></div>':''}<label class="check-row" for="specialRangeConfirmed"><input id="specialRangeConfirmed" type="checkbox"><span>${escapeHtml(confirmation)}</span></label><div class="wizard-actions"><button class="btn ghost" id="cancelSpecialAction">Cancel</button><button class="btn primary" id="confirmSpecialAction" disabled>${escapeHtml(buttonLabels[action.id]||`Use ${action.name}`)}</button></div>`);
     const update=()=>{$('#confirmSpecialAction').disabled=!$('#specialActionTarget').value||!$('#specialRangeConfirmed').checked;};
     $('#specialActionTarget').onchange=update;$('#specialRangeConfirmed').onchange=update;
-    $('#cancelSpecialAction').onclick=()=>resolveNpoAction(n,state.lastActivation.pendingAction);
+    $('#cancelSpecialAction').onclick=()=>{if(isPvpMode()){state.lastActivation.pendingAction=null;save();renderHumanNpoActionPicker(n);}else resolveNpoAction(n,state.lastActivation.pendingAction);};
     $('#confirmSpecialAction').onclick=()=>{
       const button=$('#confirmSpecialAction');
       if(!canCommitNpoAction(action.id,npoActionCost(n,action.id)))return;
@@ -6767,6 +6872,11 @@ function showPlayerActivation(stage={}){
   }
 
   function backFromNpoMovementConfirmation(n){
+    if(isPvpMode()){
+      state.lastActivation.pendingAction=null;
+      save();renderHumanNpoActionPicker(n);
+      return;
+    }
     const activation=state.lastActivation,history=activation?.questionHistory||[];
     const selected=history[history.length-1],previous=history[history.length-2];
     if(!activation?.pendingAction||selected?.type!=='selected'||!previous||previous.answer!==true)return;
@@ -6783,6 +6893,12 @@ function showPlayerActivation(stage={}){
   }
 
   function backFromNpoAttackSelection(n){
+    if(isPvpMode()){
+      state.lastActivation={...state.lastActivation,pendingAction:null,targetConfirmed:false,attackRequired:false,attackResolved:false,combatDraft:null};
+      state.npoAttackTargetId=null;state.npoAttackSummary=null;
+      save();renderHumanNpoActionPicker(n);
+      return;
+    }
     const activation=state.lastActivation,history=activation?.questionHistory||[];
     const selected=history[history.length-1],previous=history[history.length-2];
     if(!activation?.pendingAction||selected?.type!=='selected'||!previous||previous.answer!==true)return;
@@ -6809,14 +6925,14 @@ function showPlayerActivation(stage={}){
 
   function resolveNpoAction(n,pendingAction){
     if(!pendingAction||state.lastActivation?.pendingAction?.id!==pendingAction.id)return;
-    if(normalizeUnknownAttackMovement(state.lastActivation)){
+    if(!isPvpMode()&&normalizeUnknownAttackMovement(state.lastActivation)){
       save();runNpoPrompt(n,0,{},state.lastActivation.questionHistory||[]);return;
     }
-    const decision=chooseNpoDecision(n,{action:pendingAction.name});
+    const decision=isPvpMode()?humanNpoDecision(n,pendingAction.name):chooseNpoDecision(n,{action:pendingAction.name});
     if(npoSpecialAction(n,pendingAction.name)){resolveNpoSpecialAction(n,decision,state.lastActivation.answers||{},state.lastActivation.questionHistory||[]);return;}
     if(npoActionChangesContext(pendingAction.id)){
       renderNpoMovementConfirmation(n,pendingAction,decision);
-      $('#confirmNpoMovement').onclick=()=>{const button=$('#confirmNpoMovement');if(!canCommitNpoAction(pendingAction.id,pendingAction.apCost))return;button.disabled=true;const effect=consumeMolecularBreach(n.id,pendingAction.id==='fall-back'?'Fall Back':pendingAction.name.split(' ')[0]);const finalApDash=pendingAction.id==='dash'&&state.lastActivation.remainingAp===pendingAction.apCost&&!state.lastActivation.pendingFollowUpAction;commitNpoAction({actionId:pendingAction.id,actionName:pendingAction.name,apCost:pendingAction.apCost,result:effect||decision.reason,changesPosition:true,endsActivation:finalApDash,transitionMode:finalApDash?NPO_ACTION_TRANSITIONS.COMPLETE_ACTIVATION:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});};
+      $('#confirmNpoMovement').onclick=()=>{const button=$('#confirmNpoMovement');if(!canCommitNpoAction(pendingAction.id,pendingAction.apCost))return;button.disabled=true;const effect=consumeMolecularBreach(n.id,pendingAction.id==='fall-back'?'Fall Back':pendingAction.name.split(' ')[0]);const finalApDash=pendingAction.id==='dash'&&state.lastActivation.remainingAp===pendingAction.apCost&&!state.lastActivation.pendingFollowUpAction&&!isPvpMode();commitNpoAction({actionId:pendingAction.id,actionName:pendingAction.name,apCost:pendingAction.apCost,result:effect||decision.reason,changesPosition:true,endsActivation:finalApDash,transitionMode:finalApDash?NPO_ACTION_TRANSITIONS.COMPLETE_ACTIVATION:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});};
       return;
     }
     const activation=state.lastActivation;
@@ -6848,7 +6964,7 @@ function showPlayerActivation(stage={}){
       const current=state.lastActivation;
       state.npoAttackTargetId=null;state.npoAttackSummary=null;state.weaponRuleResolution=null;
       state.lastActivation={...current,pendingAction:null,targetConfirmed:false,attackRequired:false,attackResolved:false,combatDraft:null};
-      save();runNpoPrompt(n,0,current?.answers||{},current?.questionHistory||[]);
+      save();isPvpMode()?renderHumanNpoActionPicker(n):runNpoPrompt(n,0,current?.answers||{},current?.questionHistory||[]);
     };
   }
 
@@ -6901,7 +7017,7 @@ function showPlayerActivation(stage={}){
       attackResolved=false;
       targetConfirmed=false;
     }
-    if(!targetConfirmed&&eligibleTargetIds.length===1)state.npoAttackTargetId=eligibleTargetIds[0];
+    if(!isPvpMode()&&!targetConfirmed&&eligibleTargetIds.length===1)state.npoAttackTargetId=eligibleTargetIds[0];
     state.lastActivation={...state.lastActivation,name:npoName(n),...decision,dice,answers,questionHistory,attackResolved,attackRequired,targetConfirmed};save();
     if(attackRequired&&targetConfirmed&&!attackResolved){
       openNpoCombat(n,decision,dice,answers);
@@ -6909,10 +7025,10 @@ function showPlayerActivation(stage={}){
     }
     const targetOptions=eligibleTargetIds.map(id=>`<option value="${escapeHtml(id)}" ${state.npoAttackTargetId===id?'selected':''}>${escapeHtml(playerTargetLabel(id))}</option>`).join('');
     const targetName=state.npoAttackTargetId?playerTargetLabel(state.npoAttackTargetId):'';
-    const targetField=targetConfirmed||eligibleTargetIds.length===1
+    const targetField=targetConfirmed||(!isPvpMode()&&eligibleTargetIds.length===1)
       ? `<input id="npoPriorityTarget" value="${escapeHtml(targetName)}" readonly>`
-      : `<select id="npoPriorityTarget" ${attackResolved?'disabled':''}><option value="" ${state.npoAttackTargetId?'':'selected'}>Select the first operative that matches the priority above.</option>${targetOptions}</select>`;
-    const targetPriority=decision.target.length?`<p>Choose the target in this order:</p><ol>${decision.target.map(item=>`<li>${escapeHtml(item)}</li>`).join('')}</ol><p>Randomize only if still tied.</p>`:'';
+      : `<select id="npoPriorityTarget" ${attackResolved?'disabled':''}><option value="" ${state.npoAttackTargetId?'':'selected'}>${isPvpMode()?'Choose an eligible target.':'Select the first operative that matches the priority above.'}</option>${targetOptions}</select>`;
+    const targetPriority=!isPvpMode()&&decision.target.length?`<p>Choose the target in this order:</p><ol>${decision.target.map(item=>`<li>${escapeHtml(item)}</li>`).join('')}</ol><p>Randomize only if still tied.</p>`:'';
     const attackSummary=attackResolved&&state.npoAttackSummary?{
       ...state.npoAttackSummary,
       side:'player',
@@ -6922,9 +7038,9 @@ function showPlayerActivation(stage={}){
     modalBody.innerHTML=`<div class="modal-inner ai-result">
       <div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div>
       ${attackRequired&&questionHistory.length?`<div class="npo-question-flow">${renderCompletedNpoQuestions(questionHistory.filter(item=>item.type!=='selected'))}</div>`:''}
-      <div class="npo-result-card">${npoIcon(iconForNpoDecision(attackRequired,targetConfirmed))}<div><small>NEXT ACTION</small><strong>${escapeHtml(decision.action)}</strong><p>${escapeHtml(decision.reason)}</p><div class="npo-target-priority"><small>TARGET PRIORITY</small>${targetPriority}${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Select Target</label>${targetField}</div>`:''}</div></div></div>
-      ${attackRequired&&!targetConfirmed&&eligibleTargetIds.length>1?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
-      ${attackRequired&&!targetConfirmed&&eligibleTargetIds.length===1?`<button class="btn secondary big-action" id="resolveNpoTarget">Resolve Combat</button>`:''}
+      <div class="npo-result-card">${npoIcon(iconForNpoDecision(attackRequired,targetConfirmed))}<div><small>${isPvpMode()?'SELECTED ACTION':'NEXT ACTION'}</small><strong>${escapeHtml(decision.action)}</strong><p>${escapeHtml(decision.reason)}</p><div class="npo-target-priority">${isPvpMode()?'':`<small>TARGET PRIORITY</small>`}${targetPriority}${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Select Target</label>${targetField}</div>`:''}</div></div></div>
+      ${attackRequired&&!targetConfirmed&&(isPvpMode()||eligibleTargetIds.length>1)?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
+      ${attackRequired&&!targetConfirmed&&!isPvpMode()&&eligibleTargetIds.length===1?`<button class="btn secondary big-action" id="resolveNpoTarget">Resolve Combat</button>`:''}
       ${attackSummary?`${renderEliminationSummary(attackSummary)}<section class="card npo-attack-summary">
         <p class="eyebrow">NPO ATTACK SUMMARY</p>
         ${renderAttackSummary(attackSummary)}
