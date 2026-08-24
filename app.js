@@ -6065,7 +6065,9 @@ function showPlayerActivation(stage={}){
     }
     return sortedNposForDisplay(activeNpos().filter(target=>(action.id==='nanoscarab-beam'||target.id!==n.id)
       &&(!action.target?.keywordsAll||action.target.keywordsAll.every(keyword=>npoDefinition(target.type)?.keywords.includes(keyword)))
-      &&(action.id!=='nanoscarab-beam'||target.wounds<target.maxWounds&&!state.npoRuleState.reanimatedTargetIds.includes(target.id))));
+      &&(action.id!=='nanoscarab-beam'||target.wounds<target.maxWounds&&!state.npoRuleState.reanimatedTargetIds.includes(target.id))
+      &&(!isPvpMode()||action.id!=='overcharge'||!state.npoRuleState.aplModifiers.some(item=>item.sourceId===n.id&&item.targetId===target.id&&item.ruleId==='overcharge'))
+      &&(!isPvpMode()||action.id!=='molecular-breach'||!state.npoRuleState.pendingMovementEffects.some(effect=>effect.targetId===target.id&&effect.ruleId==='molecular-breach'))));
   }
   function legalHumanNpoActions(n,context={}){
     return filterLegalNpoActions(n,supportedHumanNpoActions(n),context).filter(actionName=>{
@@ -6867,6 +6869,11 @@ function showPlayerActivation(stage={}){
       if(action.id==='cranial-overload')result.applied=applyTemporaryAplModifier({sourceId:n.id,targetId:target.id,ruleId:'cranial-overload',amount:-1});
       if(action.id==='nanoscarab-beam')result=useNanoscarabBeam(target);
       if(!result){button.disabled=false;showToast('That action is no longer legal.');return;}
+      if(isPvpMode()&&['overcharge','molecular-breach'].includes(action.id)&&result.applied===false){
+        state.lastActivation.pendingAction=null;save();
+        showToast(`${action.name} is already affecting that target. No AP was spent.`);
+        renderHumanNpoActionPicker(n);return;
+      }
       const targetName=action.target?.side==='enemy'?playerName(targetId):npoName(target);
       log(`${npoName(n)} used ${action.name} on ${targetName}${action.id==='canoptek-control'?` for a free ${result.freeAction} (maximum 2 inches of movement)`:''}.`);
       finishNpoSpecialAction(n,action,result,decision,answers,questionHistory);
