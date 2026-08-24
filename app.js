@@ -6656,7 +6656,7 @@ function showPlayerActivation(stage={}){
   function continueHumanNecronActivation(){
     const activation=state.lastActivation,n=state.roster.find(item=>item.id===activation?.npoId);
     if(!activation||activation.committed)return;
-    if(!n||n.wounds<=0||!n.deployed||!n.ready){completeNpoActivation();return;}
+    if(!n||n.wounds<=0||n.battlefieldState!=='deployed'||n.dormant||!n.ready){completeNpoActivation();return;}
     if(activation.awaitingActionResult){renderNpoActionResult(n,activation.awaitingActionResult,Boolean(activation.awaitingActionResult.endsActivation));return;}
     if(activation.pendingAction){resolveNpoAction(n,activation.pendingAction);return;}
     if(activation.remainingAp<=0){completeNpoActivation();return;}

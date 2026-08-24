@@ -31,6 +31,8 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
         self.assertIn("continueHumanNecronActivation", dispatcher)
         for ai_function in ("recommendedNpoActions", "runNpoPrompt", "chooseNpoDecision", "continueGuaranteedNpoFollowUp"):
             self.assertNotIn(ai_function, human)
+        self.assertIn("n.battlefieldState!=='deployed'||n.dormant||!n.ready", human)
+        self.assertNotIn("!n.deployed", human)
         self.assertIn("recommendedNpoActions", solo)
         self.assertIn("runNpoPrompt", solo)
 
