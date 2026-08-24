@@ -6061,7 +6061,8 @@ function showPlayerActivation(stage={}){
   function eligibleNpoSpecialActionTargets(n,action){
     if(action.target?.side==='enemy'){
       const ids=isPvpMode()?inPlayLivingPlayerOperativeIds():remainingPlayerOperatives();
-      return ids.map(id=>({id,name:playerName(id),side:'enemy'}));
+      return ids.map(id=>({id,name:playerName(id),side:'enemy'})).filter(target=>!isPvpMode()||action.id!=='cranial-overload'
+        ||!state.npoRuleState.aplModifiers.some(item=>item.sourceId===n.id&&item.targetId===target.id&&item.ruleId==='cranial-overload'));
     }
     return sortedNposForDisplay(activeNpos().filter(target=>(action.id==='nanoscarab-beam'||target.id!==n.id)
       &&(!action.target?.keywordsAll||action.target.keywordsAll.every(keyword=>npoDefinition(target.type)?.keywords.includes(keyword)))
@@ -6869,10 +6870,11 @@ function showPlayerActivation(stage={}){
       if(action.id==='cranial-overload')result.applied=applyTemporaryAplModifier({sourceId:n.id,targetId:target.id,ruleId:'cranial-overload',amount:-1});
       if(action.id==='nanoscarab-beam')result=useNanoscarabBeam(target);
       if(!result){button.disabled=false;showToast('That action is no longer legal.');return;}
-      if(isPvpMode()&&['overcharge','molecular-breach'].includes(action.id)&&result.applied===false){
-        state.lastActivation.pendingAction=null;save();
-        showToast(`${action.name} is already affecting that target. No AP was spent.`);
-        renderHumanNpoActionPicker(n);return;
+      if(result?.applied===false){
+        button.disabled=false;
+        showToast(`${action.name} could not be applied. No AP was spent.`);
+        if(isPvpMode()){state.lastActivation.pendingAction=null;save();renderHumanNpoActionPicker(n);}
+        return;
       }
       const targetName=action.target?.side==='enemy'?playerName(targetId):npoName(target);
       log(`${npoName(n)} used ${action.name} on ${targetName}${action.id==='canoptek-control'?` for a free ${result.freeAction} (maximum 2 inches of movement)`:''}.`);

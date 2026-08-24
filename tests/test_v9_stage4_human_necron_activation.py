@@ -68,34 +68,50 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
 
     def test_pvp_persistent_special_action_targets_exclude_duplicate_effects(self):
         targets = self.section("function eligibleNpoSpecialActionTargets", "function legalHumanNpoActions")
+        self.assertIn("action.id!=='cranial-overload'", targets)
+        self.assertIn("item.sourceId===n.id&&item.targetId===target.id&&item.ruleId==='cranial-overload'", targets)
         self.assertIn("action.id!=='overcharge'||!state.npoRuleState.aplModifiers.some", targets)
         self.assertIn("item.sourceId===n.id&&item.targetId===target.id&&item.ruleId==='overcharge'", targets)
         self.assertIn("action.id!=='molecular-breach'||!state.npoRuleState.pendingMovementEffects.some", targets)
         self.assertIn("effect.targetId===target.id&&effect.ruleId==='molecular-breach'", targets)
-        self.assertEqual(targets.count("!isPvpMode()||action.id!="), 2)
+        self.assertEqual(targets.count("!isPvpMode()||action.id!="), 3)
 
     def test_failed_pvp_persistent_effect_returns_without_committing_ap(self):
         resolver = self.section("function resolveNpoSpecialAction", "function finishNpoSpecialAction")
-        failure = resolver.split("result.applied===false", 1)[1].split("const targetName", 1)[0]
-        self.assertIn("state.lastActivation.pendingAction=null;save()", failure)
+        guard_index = resolver.index("if(result?.applied===false)")
+        for application in (
+            "result.applied=applyMolecularBreach",
+            "result.applied=applyTemporaryAplModifier({sourceId:n.id,targetId:target.id,ruleId:'overcharge'",
+            "result.applied=applyTemporaryAplModifier({sourceId:n.id,targetId:target.id,ruleId:'cranial-overload'",
+        ):
+            self.assertLess(resolver.index(application), guard_index)
+        failure = resolver.split("result?.applied===false", 1)[1].split("const targetName", 1)[0]
+        self.assertIn("if(isPvpMode()){state.lastActivation.pendingAction=null;save();renderHumanNpoActionPicker(n);}", failure)
         self.assertIn("No AP was spent", failure)
-        self.assertIn("renderHumanNpoActionPicker(n);return", failure)
+        self.assertIn("return", failure)
         self.assertNotIn("finishNpoSpecialAction", failure)
         self.assertNotIn("commitNpoAction", failure)
+        self.assertNotIn("log(", failure)
+        self.assertNotIn("completedActionIds", failure)
+        self.assertNotIn("resolvedActions", failure)
 
     def test_valid_persistent_effects_still_apply_and_commit_once(self):
         resolver = self.section("function resolveNpoSpecialAction", "function finishNpoSpecialAction")
         finish = self.section("function finishNpoSpecialAction", "function resolveNpo")
         self.assertEqual(resolver.count("applyMolecularBreach(n.id,target.id)"), 1)
         self.assertEqual(resolver.count("applyTemporaryAplModifier({sourceId:n.id,targetId:target.id,ruleId:'overcharge',amount:1})"), 1)
+        self.assertEqual(resolver.count("applyTemporaryAplModifier({sourceId:n.id,targetId:target.id,ruleId:'cranial-overload',amount:-1})"), 1)
         self.assertEqual(resolver.count("finishNpoSpecialAction(n,action,result,decision,answers,questionHistory)"), 1)
         self.assertEqual(finish.count("commitNpoAction("), 1)
 
     def test_duplicate_effect_guards_do_not_change_solo_resolution(self):
         targets = self.section("function eligibleNpoSpecialActionTargets", "function legalHumanNpoActions")
         resolver = self.section("function resolveNpoSpecialAction", "function finishNpoSpecialAction")
-        self.assertEqual(targets.count("!isPvpMode()||action.id!="), 2)
-        self.assertIn("if(isPvpMode()&&['overcharge','molecular-breach'].includes(action.id)&&result.applied===false)", resolver)
+        self.assertEqual(targets.count("!isPvpMode()||action.id!="), 3)
+        self.assertIn("if(result?.applied===false)", resolver)
+        failure = resolver.split("if(result?.applied===false)", 1)[1].split("const targetName", 1)[0]
+        self.assertIn("button.disabled=false", failure)
+        self.assertIn("if(isPvpMode())", failure)
 
     def test_shared_legality_keeps_ap_repeat_combat_and_movement_rules(self):
         rules = self.section("function filterLegalNpoActions", "function rankLegalNpoActions")
