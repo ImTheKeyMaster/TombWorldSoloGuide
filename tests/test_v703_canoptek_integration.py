@@ -35,7 +35,7 @@ class CanoptekIntegrationTests(unittest.TestCase):
         self.assertIn("function npoAttackProfiles", APP)
         self.assertIn("(definition.rangedWeapons||[]).filter(weapon=>weapon.id===npo.weaponId)", APP)
         self.assertIn("availableProfiles.map", APP)
-        self.assertIn("resolveAutomaticDimensionalBanishment(combat)", APP)
+        self.assertIn("requestDimensionalBanishment(combat", APP)
 
     def test_reanimate_is_offered_before_damage_commit(self):
         application = APP.index("function applyPendingPlayerDamage")

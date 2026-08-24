@@ -151,13 +151,13 @@ Object.defineProperty(diceEntryKeypad,'innerHTML',{{set(html){{
         self.assertNotIn("modalBody", manual)
         self.assertIn("diceEntryDialog.showModal()", manual)
 
-    def test_manual_request_is_transient_and_existing_gameplay_is_not_routed(self):
+    def test_manual_request_is_transient_and_stage3_gameplay_is_routed(self):
         initial_state = APP[APP.index("const initialState") : APP.index("const loadedSave")]
         self.assertNotIn("dice", initial_state.lower())
         self.assertEqual(APP.count("async function requestDiceResults"), 1)
         before_provider, after_provider = APP.split("async function requestDiceResults", 1)
         self.assertNotIn("requestDiceResults(", before_provider)
-        self.assertNotIn("requestDiceResults(", after_provider)
+        self.assertIn("requestDiceResults(", after_provider)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
 

@@ -18,9 +18,9 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         shared = self.source("function runAutomaticCombatRolls", "function retainedDiceTotals")
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
         self.assertIn("runAutomaticCombatRolls", wizard)
-        self.assertIn("rolledAttackDiceForProfile(profile)", shared)
+        self.assertIn("requestAttackDiceForProfile(profile", shared)
         self.assertIn("effectiveDefenseDiceCount(profile,attackDice,3)", shared)
-        self.assertEqual(shared.count("timer=setTimeout"), 1)
+        self.assertIn("timer=setTimeout", shared)
         self.assertIn("timer=settleCombatDice", shared)
         self.assertIn("rollingDieHtml()", shared)
         self.assertIn("animated-roll", shared)
@@ -51,10 +51,10 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         self.assertIn("state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat}", wizard)
         self.assertIn("save();", wizard)
         self.assertIn("const savedCombat=saved&&saved.targetId===target.id&&saved.attackType===attackType", wizard)
-        self.assertIn("if(sameCombat)displayCombat(saved,animateCombat)", wizard)
+        self.assertIn("if(sameCombat)void displayCombat(saved,animateCombat)", wizard)
         self.assertIn("displaySharedCombatResult(resolvedCombat", wizard)
         self.assertIn("const banishmentAnimating=resolvedCombat.dimensionalBanishmentTriggered", wizard)
-        self.assertIn("resolveAutomaticDimensionalBanishment(combat)", wizard)
+        self.assertIn("await requestDimensionalBanishment(combat,npoName(n))", wizard)
 
     def test_cancel_discards_a_new_automatic_result(self):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
@@ -69,14 +69,14 @@ class AutomaticNpoCombatTests(unittest.TestCase):
         self.assertIn("profileSelect.disabled=true", wizard)
         self.assertIn("rolling:true,attackType,targetId:target.id", wizard)
         self.assertIn("else if(rollingCombat)startAutomaticCombat(saved)", wizard)
-        self.assertIn("rolledAttackDice=restoredRoll?.attackDice||", wizard)
-        self.assertIn("rolledDefenseDice=restoredRoll?.saveDice||", wizard)
+        self.assertIn("restoredAttackDice=restoredRoll?.attackDice||null", wizard)
+        self.assertIn("restoredDefenseDice=restoredRoll?.saveDice||null", wizard)
         self.assertIn("applySevereToAttackDice(retainSuccessfulDice(rolledAttackDice),profile).dice", shared)
-        self.assertIn("rolledDefenseDice||retainSuccessfulDice", shared)
+        self.assertIn("rolledDefenseDice||await requestDefenseDice", shared)
 
     def test_unselected_multiple_profile_attack_restores_without_rolling(self):
         wizard = self.source("function showNpoAttackWizard", "function spinnerField")
-        ending = wizard.split("    if(sameCombat)displayCombat(saved,animateCombat)", 1)[1]
+        ending = wizard.split("    if(sameCombat)void displayCombat(saved,animateCombat)", 1)[1]
         self.assertIn("else if(availableProfiles.length===1&&!resumeGuided)startAutomaticCombat()", ending)
         self.assertIn("else if(selectingCombat){", ending)
         self.assertNotIn("else startAutomaticCombat()", ending)
@@ -91,7 +91,7 @@ class AutomaticNpoCombatTests(unittest.TestCase):
     def test_aggressive_defense_rolls_without_a_manual_button(self):
         preview = self.source("function applyPendingPlayerDamage", "function offerReanimateForPendingDamage")
         roll_ui = self.source("function aggressiveDefenseRollHtml", "function combatAbilityReminder")
-        self.assertIn("Math.ceil(roll()/2)", preview)
+        self.assertIn("sides:3,title:'AGGRESSIVE DEFENCE'", preview)
         self.assertIn("eventTransaction(`aggressive-defence:${incapacitationId}`)", preview)
         self.assertIn("aggressiveDefenseDamage(retaliation.roll)", preview)
         self.assertNotIn("rollAggressiveDefense", preview + roll_ui)

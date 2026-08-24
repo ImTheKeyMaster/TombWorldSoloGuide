@@ -4591,7 +4591,17 @@ function showPlayerActivation(stage={}){
         }
         if(eventEligible){
           const transaction=eventTransaction(`incapacitation:${incapacitationId}:reanimation-protocols`,{definitionId:'reanimation-protocols',npoId:n.id});
-          if(!Number.isInteger(transaction.roll))transaction.roll=roll();
+          if(!Number.isInteger(transaction.roll)){
+            if(!transaction.requesting){
+              transaction.requesting=true;
+              void requestDiceResults({count:1,sides:6,title:'REANIMATION PROTOCOLS',rollerLabel:npoName(n),
+                instruction:'Roll 1D6 for Reanimation Protocols and enter the result.'}).then(([value])=>{
+                transaction.roll=value;delete transaction.requesting;save();
+                if(!applyPendingPlayerDamage(stage))finishPlayerAttackResolution(stage);
+              }).catch(error=>{delete transaction.requesting;console.error('[Reanimation Protocols] Dice request failed. No combat consequence was applied.',error);});
+            }
+            return true;
+          }
           state.eventState.reanimationAttempts[eventAttemptKey]={roll:transaction.roll,transactionId:transaction.id,consumed:true};
           transaction.committed=true;
           state.npoRuleState.incapacitationTriggers.push(incapacitationId);
@@ -4634,20 +4644,26 @@ function showPlayerActivation(stage={}){
     return false;
   }
 
-  function showAggressiveDefenseResolution(stage,pending,target,incapacitationId){
+  async function showAggressiveDefenseResolution(stage,pending,target,incapacitationId){
     const retaliation=eventTransaction(`aggressive-defence:${incapacitationId}`);
-    if(!Number.isInteger(retaliation.roll))retaliation.roll=Math.ceil(roll()/2);
+    if(!Number.isInteger(retaliation.roll)){
+      try{
+        [retaliation.roll]=await requestDiceResults({count:1,sides:3,title:'AGGRESSIVE DEFENCE',rollerLabel:npoName(target),
+          instruction:'Roll 1D3 on the tabletop and enter the result.'});
+      }catch(error){console.error('[Aggressive Defence] Dice request failed. No retaliation damage was applied.',error);return;}
+    }
     pending.aggressiveDefenseRoll=retaliation.roll;
     pending.aggressiveDefenseDamage=aggressiveDefenseDamage(retaliation.roll);
     retaliation.committed=true;
     state.combatState={side:'player',stage:{...stage}};
     save();
     missionDialogLocked=true;
-    showModal('Aggressive Defence',`<p><strong>${escapeHtml(npoName(target))}</strong> was incapacitated by an enemy operative within 2 inches.</p><p>Roll one D3 before removing it.</p><section class="combat-stage" aria-label="Aggressive Defence roll"><div class="dice-row animated-roll" id="aggressiveDefenseDie">${rollingDieHtml()}</div><div id="aggressiveDefenseResult" aria-live="polite"></div></section><div class="wizard-actions"><button class="btn primary" id="continueAggressiveDefense" disabled>Continue</button></div>`);
-    void TombWorldDiceSfx.play();
+    const animate=!isPvpMode();
+    showModal('Aggressive Defence',`<p><strong>${escapeHtml(npoName(target))}</strong> was incapacitated by an enemy operative within 2 inches.</p><section class="combat-stage" aria-label="Aggressive Defence roll"><div class="dice-row ${animate?'animated-roll':'settled'}" id="aggressiveDefenseDie">${animate?rollingDieHtml():dieHtml({value:retaliation.roll,kind:'hit',retained:true})}</div><div id="aggressiveDefenseResult" aria-live="polite" ${animate?'hidden':''}><strong>D3 Roll: ${retaliation.roll}</strong><p>${pending.aggressiveDefenseDamage?'The attacking operative suffers 1 damage.':'The attacking operative suffers no damage.'}</p></div></section><div class="wizard-actions"><button class="btn primary" id="continueAggressiveDefense" ${animate?'disabled':''}>Continue</button></div>`);
+    if(animate)void TombWorldDiceSfx.play();
     const button=$('#continueAggressiveDefense');
     const die=$('#aggressiveDefenseDie');
-    setTimeout(()=>{
+    if(animate)setTimeout(()=>{
       if(!button?.isConnected)return;
       die.innerHTML=dieHtml({value:retaliation.roll,kind:'hit',retained:true});
       die.classList.replace('animated-roll','settled');
@@ -4987,21 +5003,29 @@ function showPlayerActivation(stage={}){
       after:incapacitated?0:normalAfter};
   }
 
-  function resolveAutomaticDimensionalBanishment(combat){
+  function reuseCommittedDimensionalBanishment(combat){
     if(combat.dimensionalBanishmentResolved)return {...combat};
     if(Number.isInteger(combat.dimensionalBanishmentRoll)&&combat.dimensionalBanishmentRoll>0){
       return resolveDimensionalBanishment(combat,[]);
     }
-    const triggered=combat.profile?.weaponId==='transdimensional-isolator'
-      &&combatAbilityHandlers['dimensional-banishment']({criticalSuccesses:combat.critRemaining,damage:combat.damage,targetIncapacitated:combat.after<=0});
-    return resolveDimensionalBanishment(combat,triggered?rollDice(2,6):[]);
+    return {...combat};
   }
 
+  async function requestDimensionalBanishment(combat,rollerLabel){
+    if(combat.dimensionalBanishmentResolved)return {...combat};
+    if(Number.isInteger(combat.dimensionalBanishmentRoll)&&combat.dimensionalBanishmentRoll>0)return resolveDimensionalBanishment(combat,[]);
+    const triggered=combat.profile?.weaponId==='transdimensional-isolator'
+      &&combatAbilityHandlers['dimensional-banishment']({criticalSuccesses:combat.critRemaining,damage:combat.damage,targetIncapacitated:combat.after<=0});
+    const dice=triggered?await requestDiceResults({count:2,sides:6,title:'DIMENSIONAL BANISHMENT',rollerLabel,
+      instruction:'Roll 2D6 on the tabletop and enter each result.'}):[];
+    return resolveDimensionalBanishment(combat,dice);
+  }
+
+  function classifyCombatDice(values,threshold,critThreshold=6){
+    return values.map(value=>({value,kind:value>=critThreshold?'crit':value>=threshold?'hit':'miss',retained:false}));
+  }
   function rolledCombatDice(count,threshold,critThreshold=6){
-    return Array.from({length:Math.max(0,count)},()=>{
-      const value=roll();
-      return {value,kind:value>=critThreshold?'crit':value>=threshold?'hit':'miss',retained:false};
-    });
+    return classifyCombatDice(rollDice(Math.max(0,count),6),threshold,critThreshold);
   }
   function rolledAttackDiceForProfile(profile){
     const accurate=Math.min(Number(profile?.accurate||0),Math.max(0,Number(profile?.dice||0)));
@@ -5010,6 +5034,28 @@ function showPlayerActivation(stage={}){
       ...rolledCombatDice(Math.max(0,Number(profile.dice||0)-accurate),profile.hit,profile.critThreshold)
     ]);
     return applySevereToAttackDice(retainedDice,profile).dice;
+  }
+
+  async function requestAttackDiceForProfile(profile,{rollerLabel=''}={}){
+    const total=Math.max(0,Number(profile?.dice||0));
+    const accurate=Math.min(Number(profile?.accurate||0),total);
+    const rolledCount=total-accurate;
+    const values=rolledCount?await requestDiceResults({
+      count:rolledCount,sides:6,title:'ATTACK ROLL',rollerLabel,
+      instruction:`Roll ${rolledCount}D6 on the tabletop and enter each result.${accurate?` Accurate ${accurate} already retained ${accurate===1?'one normal success':`${accurate} normal successes`}.`:''}`
+    }):[];
+    const dice=retainSuccessfulDice([
+      ...Array.from({length:accurate},()=>({value:Number(profile.hit||2),kind:'hit',retained:true,automatic:'Accurate 1'})),
+      ...classifyCombatDice(values,profile.hit,profile.critThreshold)
+    ]);
+    return applySevereToAttackDice(dice,profile).dice;
+  }
+
+  async function requestDefenseDice(count,threshold,{rollerLabel=''}={}){
+    if(count<=0)return [];
+    const values=await requestDiceResults({count,sides:6,title:'DEFENSE ROLL',rollerLabel,
+      instruction:`Roll ${count}D6 on the tabletop and enter each result.`});
+    return retainSuccessfulDice(classifyCombatDice(values,Number(threshold)||3));
   }
 
   function retainSuccessfulDice(dice=[]){
@@ -5194,14 +5240,17 @@ function showPlayerActivation(stage={}){
     return {...record,damage,woundsBefore:before,woundsAfter:after,incapacitated,applied:true};
   }
 
-  function resolveHotTransaction(record){
+  async function resolveHotTransaction(record){
     if(record.acknowledged)return record;
     if(!record.effectiveHit){
       console.warn('[Hot] Effective Hit stat is unavailable.',{attackerId:record.attackerId,weaponId:record.weaponId,profileId:record.profileId,storedHit:record.effectiveHit});
       return {...record,status:'error',damage:0,applied:true};
     }
     if(!Number.isInteger(record.roll)){
-      record={...record,roll:roll()};
+      const name=record.attackerSide==='player'?playerName(record.attackerId):npoName(state.roster.find(npo=>npo.id===record.attackerId));
+      const [value]=await requestDiceResults({count:1,sides:6,title:'HOT TEST',rollerLabel:name,
+        instruction:`Roll 1D6 for ${record.weaponName||'this weapon'} and enter the result.`});
+      record={...record,roll:value};
       state.hotResolution=record;
       save();
     }
@@ -5229,8 +5278,9 @@ function showPlayerActivation(stage={}){
     return record;
   }
 
-  function showHotResult(record,onContinue){
-    record=resolveHotTransaction(record);
+  async function showHotResult(record,onContinue){
+    try{record=await resolveHotTransaction(record);}
+    catch(error){console.error('[Hot] Dice request failed. No Hot damage was applied.',error);return;}
     state.hotResolution=record;save();
     missionDialogLocked=true;
     if(record.status==='error'){
@@ -5239,7 +5289,7 @@ function showPlayerActivation(stage={}){
       const name=record.attackerSide==='player'?playerName(record.attackerId):npoName(state.roster.find(npo=>npo.id===record.attackerId));
       const comparison=record.damage?`${record.roll} is lower than ${record.effectiveHit}.`:`The result is not lower than the weapon's Hit stat.`;
       const outcome=record.incapacitated?`${escapeHtml(name)} is incapacitated by Hot.`:record.damage?`${escapeHtml(name)} suffers ${record.damage} damage.<br>Wounds: ${record.woundsBefore} -&gt; ${record.woundsAfter}`:'No damage.';
-      const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const reducedMotion=isPvpMode()||matchMedia('(prefers-reduced-motion: reduce)').matches;
       const die=reducedMotion?dieHtml({value:record.roll,ariaLabel:`Hot roll: ${record.roll}`}):rollingDieHtml();
       showModal('HOT',`<section class="combat-stage" aria-label="Hot result"><div class="dice-row ${reducedMotion?'settled':'animated-roll'}" id="hotRollDie">${die}</div><div id="hotRollResult" ${reducedMotion?'':'hidden'}><p><strong>Hot roll: ${record.roll}</strong><br>Hit stat: ${record.effectiveHit}+</p><p>${escapeHtml(comparison)}</p><strong>${outcome}</strong></div></section><div class="wizard-actions"><button class="btn primary" id="continueHot" ${reducedMotion?'':'disabled'}>Continue</button></div>`,undefined,`hot:${record.id}`);
       if(!reducedMotion){
@@ -5269,7 +5319,7 @@ function showPlayerActivation(stage={}){
     const record=createHotResolution(hotContext);
     state.hotResolution=record;save();
     if(record.acknowledged){onContinue();return;}
-    showHotResult(record,onContinue);
+    void showHotResult(record,onContinue);
   }
 
   function resumePersistedHotContinuation(record){
@@ -5470,25 +5520,37 @@ function showPlayerActivation(stage={}){
       : '';
   }
 
-  function runAutomaticCombatRolls({container,profile,defenseSave,rolledAttackDice=null,rolledDefenseDice=null,onComplete}){
+  function runAutomaticCombatRolls({container,profile,defenseSave,attackerLabel='',defenderLabel='',rolledAttackDice=null,rolledDefenseDice=null,onComplete,onError}){
     let timer=null;
-    const attackDice=rolledAttackDice
-      ? applySevereToAttackDice(retainSuccessfulDice(rolledAttackDice),profile).dice
-      : rolledAttackDiceForProfile(profile);
-    container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row animated-roll">${attackDice.map(()=>rollingDieHtml()).join('')}</div></section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row"><span class="muted">Rolling after the attack…</span></div></section>`;
-    if(attackDice.length)void TombWorldDiceSfx.play();
-    timer=setTimeout(()=>{
-      if(!container.isConnected)return;
-      const defenseCount=effectiveDefenseDiceCount(profile,attackDice,3);
-      const defenseDice=rolledDefenseDice||retainSuccessfulDice(rolledCombatDice(defenseCount,Number(defenseSave)||3));
-      const automaticMessages=automaticWeaponRuleMessages(profile,attackDice);
-      container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row settled" data-combat-attack-dice>${attackDice.map(dieHtml).join('')}</div>${severeAppliedHtml(attackDice)}${automaticMessages.map(message=>`<p role="status">${escapeHtml(message)}</p>`).join('')}</section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row animated-roll" data-combat-save-dice>${defenseDice.length?defenseDice.map(()=>rollingDieHtml()).join(''):'<span class="muted">No defense dice rolled</span>'}</div></section>`;
-      timer=settleCombatDice({attackDice,saveDice:defenseDice},()=>{
-        timer=null;
-        if(container.isConnected)onComplete(attackDice,defenseDice);
-      },container);
-    },DICE_ROLL_ANIMATION_MS);
+    let cancelled=false;
+    const run=async()=>{
+      try{
+        const attackDice=rolledAttackDice
+          ? applySevereToAttackDice(retainSuccessfulDice(rolledAttackDice),profile).dice
+          : await requestAttackDiceForProfile(profile,{rollerLabel:attackerLabel});
+        if(cancelled||!container.isConnected)return;
+        const animate=!isPvpMode()&&!rolledAttackDice;
+        container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}">${animate?attackDice.map(()=>rollingDieHtml()).join(''):attackDice.map(dieHtml).join('')}</div></section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row"><span class="muted">Rolling after the attack…</span></div></section>`;
+        if(animate&&attackDice.length)void TombWorldDiceSfx.play();
+        if(animate)await new Promise(resolve=>{timer=setTimeout(resolve,DICE_ROLL_ANIMATION_MS);});
+        if(cancelled||!container.isConnected)return;
+        const defenseCount=effectiveDefenseDiceCount(profile,attackDice,3);
+        const defenseDice=rolledDefenseDice||await requestDefenseDice(defenseCount,defenseSave,{rollerLabel:defenderLabel});
+        if(cancelled||!container.isConnected)return;
+        const animateDefense=!isPvpMode()&&!rolledDefenseDice;
+        const automaticMessages=automaticWeaponRuleMessages(profile,attackDice);
+        container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row settled" data-combat-attack-dice>${attackDice.map(dieHtml).join('')}</div>${severeAppliedHtml(attackDice)}${automaticMessages.map(message=>`<p role="status">${escapeHtml(message)}</p>`).join('')}</section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row ${animateDefense?'animated-roll':'settled'}" data-combat-save-dice>${defenseDice.length?(animateDefense?defenseDice.map(()=>rollingDieHtml()).join(''):defenseDice.map(dieHtml).join('')):'<span class="muted">No defense dice rolled</span>'}</div></section>`;
+        if(animateDefense){
+          timer=settleCombatDice({attackDice,saveDice:defenseDice},()=>{timer=null;if(container.isConnected)onComplete(attackDice,defenseDice);},container);
+        }else onComplete(attackDice,defenseDice);
+      }catch(error){
+        console.error('[Combat] Dice request failed. No combat result was committed.',error);
+        if(onError)onError(error);
+      }
+    };
+    void run();
     return ()=>{
+      cancelled=true;
       if(typeof timer==='function')timer();
       else if(timer)clearTimeout(timer);
       timer=null;
@@ -5759,17 +5821,17 @@ function showPlayerActivation(stage={}){
     const startRoll=()=>{
       if(rollStarted)return;
       rollStarted=true;
-      runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,onComplete:(attackDice,defenseDice)=>{
+      runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,attackerLabel:playerSideLabel(),defenderLabel:targetName,onComplete:(attackDice,defenseDice)=>{
         diceDraft.attackDice=attackDice;
         diceDraft.defenseDice=defenseDice;
-        previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft,{targetId,weaponIndex,targetSide});
-      }});
+        void previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft,{targetId,weaponIndex,targetSide}).catch(error=>{rollStarted=false;console.error('[Combat] Combat-triggered dice request failed. No combat result was committed.',error);});
+      },onError:()=>{rollStarted=false;}});
     };
     if(!deferRoll)startRoll();
     return {...screen,startRoll};
   }
 
-  function previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft,selection={}){
+  async function previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft,selection={}){
     const targetId=selection.targetId||$('#combatTarget')?.value;
     const targetSide=selection.targetSide||state.weaponRuleResolution?.orderedTargets?.find(item=>item.targetId===targetId)?.targetSide||'npo';
     const n=targetSide==='player'?livePlayerOperative(targetId):state.roster.find(x=>x.id===targetId);
@@ -5788,7 +5850,6 @@ function showPlayerActivation(stage={}){
       targetId:n.id,targetName,side:targetSide,weaponName:weapon.name,weaponIndex,
       severeApplied:diceDraft.attackDice.some(die=>die.severeConverted)
     };
-    const stun=applyStunForAttack({profile,attackDice:diceDraft.attackDice,sourceAttackId:diceDraft.transactionId,targetId:n.id,targetName,targetSide});
     result.rolledAttackDice=diceDraft.attackDice.map(die=>({...die}));
     result.rolledDefenseDice=diceDraft.defenseDice.map(die=>({...die}));
     result.attackDice=result.rolledAttackDice;
@@ -5801,14 +5862,25 @@ function showPlayerActivation(stage={}){
     result.transactionId=diceDraft.transactionId;
     const transaction=eventTransaction(result.transactionId,{definitionAnswers:{}});
     const packets=EventEffects.damagePackets(resolution.normal,resolution.critical,profile);
-    result.damagePackets=EventEffects.resolveCountertemporalPackets(state,packets,{turningPoint:state.turningPoint,attackerSide:'player',defenderSide:'npo',attackType,savedRolls:transaction.countertemporalRolls,rollD6:()=>roll()});
+    const savedCountertemporal=transaction.countertemporalRolls||[];
+    const qualifyingIndexes=packets.map((packet,index)=>Number(packet.damage)>=3&&!Number.isInteger(savedCountertemporal[index])?index:-1).filter(index=>index>=0);
+    const countertemporalValues=qualifyingIndexes.length&&tombWorldEventActive('countertemporal-shifting')
+      ? await requestDiceResults({count:qualifyingIndexes.length,sides:6,title:'COUNTERTEMPORAL SHIFTING',rollerLabel:targetName,
+        instruction:`Roll ${qualifyingIndexes.length}D6 for Countertemporal Shifting and enter each result.`})
+      : [];
+    const suppliedRolls=[...savedCountertemporal];
+    qualifyingIndexes.forEach((packetIndex,index)=>{suppliedRolls[packetIndex]=countertemporalValues[index];});
+    let countertemporalIndex=0;
+    result.damagePackets=EventEffects.resolveCountertemporalPackets(state,packets,{turningPoint:state.turningPoint,attackerSide:'player',defenderSide:'npo',attackType,savedRolls:suppliedRolls,rollD6:()=>countertemporalValues[countertemporalIndex++]});
     transaction.countertemporalRolls=result.damagePackets.map(packet=>Number.isInteger(packet.countertemporalRoll)?packet.countertemporalRoll:null);
-    result.eventMessages=[...(diceDraft.rerolls.messages||[]),...(stun.message?[stun.message]:[])];
+    result.eventMessages=[...(diceDraft.rerolls.messages||[])];
     if(result.damagePackets.some(packet=>Number.isInteger(packet.countertemporalRoll)))result.eventMessages.push('Countertemporal Shifting: Resolved one D6 for each qualifying attack die.');
     result.damage=result.damagePackets.reduce((total,packet)=>total+packet.finalDamage,0);
     result.after=Math.max(0,result.before-result.damage);
     result.aggressiveDefenseDamage=0;
-    const resolvedResult=resolveAutomaticDimensionalBanishment(result);
+    const resolvedResult=await requestDimensionalBanishment(result,playerSideLabel());
+    const stun=applyStunForAttack({profile,attackDice:diceDraft.attackDice,sourceAttackId:diceDraft.transactionId,targetId:n.id,targetName,targetSide});
+    if(stun.message)resolvedResult.eventMessages.push(stun.message);
     stage[`${attackType}CombatDraft`]=resolvedResult;
     state.combatState={side:'player',stage:{...stage}};
     save();
@@ -7032,7 +7104,7 @@ function showPlayerActivation(stage={}){
       resolutionCommitted=true;
       const complete=$('#completeNpoCombat');
       complete.disabled=true;
-      const resolvedCombat=resolveAutomaticDimensionalBanishment(combat);
+      const resolvedCombat=reuseCommittedDimensionalBanishment(combat);
       state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat};
       save();
       let summary={...resolvedCombat,side:targetSide};
@@ -7076,8 +7148,10 @@ function showPlayerActivation(stage={}){
         if(onDone)onDone(hot?{...summary,hot:{roll:hot.roll,damage:hot.damage,woundsBefore:hot.woundsBefore,woundsAfter:hot.woundsAfter,incapacitated:hot.incapacitated}}:summary);
       });
     };
-    const displayCombat=(combat,animate=false)=>{
-      const resolvedCombat=resolveAutomaticDimensionalBanishment(combat);
+    const displayCombat=async(combat,animate=false)=>{
+      let resolvedCombat;
+      try{resolvedCombat=await requestDimensionalBanishment(combat,npoName(n));}
+      catch(error){console.error('[Dimensional Banishment] Dice request failed. No combat result was committed.',error);return;}
       const banishmentAnimating=resolvedCombat.dimensionalBanishmentTriggered&&!resolvedCombat.dimensionalBanishmentAnimationShown;
       if(resolvedCombat!==combat){
         state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat};
@@ -7098,8 +7172,7 @@ function showPlayerActivation(stage={}){
         });
       }
     };
-    const finishAutomaticCombat=(profile,rolledAttackDice,rolledDefenseDice)=>{
-      const stun=applyStunForAttack({profile,attackDice:rolledAttackDice,sourceAttackId:`attack:${state.turningPoint}:${state.activationNumber}:npo:${n.id}:${target.id}`,targetId:target.id,targetName:targetName,targetSide});
+    const finishAutomaticCombat=async(profile,rolledAttackDice,rolledDefenseDice)=>{
       const resolution=resolveRetainedCombat(rolledAttackDice,rolledDefenseDice,profile);
       const combat={
         ...recordedCombat({attackerName:npoName(n),defenderName:targetName,attackType,attackerSide:'npo',defenderSide:targetSide,profile,before:target.wounds||10,
@@ -7109,11 +7182,15 @@ function showPlayerActivation(stage={}){
         recordedOutcome:false,targetId:target.id,targetName:targetName,
         severeApplied:rolledAttackDice.some(die=>die.severeConverted)
       };
-      combat.eventMessages=stun.message?[stun.message]:[];
-      const resolvedCombat=resolveAutomaticDimensionalBanishment(combat);
+      combat.eventMessages=[];
+      let resolvedCombat;
+      try{resolvedCombat=await requestDimensionalBanishment(combat,npoName(n));}
+      catch(error){console.error('[Dimensional Banishment] Dice request failed. No combat result was committed.',error);rollStarted=false;return;}
+      const stun=applyStunForAttack({profile,attackDice:rolledAttackDice,sourceAttackId:`attack:${state.turningPoint}:${state.activationNumber}:npo:${n.id}:${target.id}`,targetId:target.id,targetName:targetName,targetSide});
+      if(stun.message)resolvedCombat.eventMessages.push(stun.message);
       state.lastActivation={...state.lastActivation,combatDraft:resolvedCombat};
       save();
-      displayCombat(resolvedCombat,false);
+      void displayCombat(resolvedCombat,false);
     };
     let rollStarted=false;
     const startAutomaticCombat=(restoredRoll=null,guidedConfirmed=false)=>{
@@ -7166,17 +7243,19 @@ function showPlayerActivation(stage={}){
       combatResults.replaceChildren();
       completeButton.disabled=true;
       completeButton.textContent='Rolling…';
-      const rolledAttackDice=restoredRoll?.attackDice||rolledAttackDiceForProfile(profile);
-      const rolledDefenseDice=restoredRoll?.saveDice||retainSuccessfulDice(rolledCombatDice(effectiveDefenseDiceCount(profile,rolledAttackDice,3),Number(target.save)||3));
-      state.lastActivation={...state.lastActivation,dice:attackDice.map(d=>({...d})),targetConfirmed:true,combatDraft:{
-        rolling:true,attackType,targetId:target.id,targetName:targetName,profile,attackDice:rolledAttackDice,saveDice:rolledDefenseDice,
-        severeApplied:rolledAttackDice.some(die=>die.severeConverted)
-      }};
-      save();
-      combatTimer=runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,rolledAttackDice,rolledDefenseDice,onComplete:(completedAttackDice,completedDefenseDice)=>{
+      const restoredAttackDice=restoredRoll?.attackDice||null;
+      const restoredDefenseDice=restoredRoll?.saveDice||null;
+      combatTimer=runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,
+        attackerLabel:npoName(n),defenderLabel:targetName,rolledAttackDice:restoredAttackDice,rolledDefenseDice:restoredDefenseDice,
+        onComplete:(completedAttackDice,completedDefenseDice)=>{
+        state.lastActivation={...state.lastActivation,dice:attackDice.map(d=>({...d})),targetConfirmed:true,combatDraft:{
+          rolling:true,attackType,targetId:target.id,targetName:targetName,profile,attackDice:completedAttackDice,saveDice:completedDefenseDice,
+          severeApplied:completedAttackDice.some(die=>die.severeConverted)
+        }};
+        save();
         combatTimer=null;
-        finishAutomaticCombat(profile,completedAttackDice,completedDefenseDice);
-      }});
+        void finishAutomaticCombat(profile,completedAttackDice,completedDefenseDice);
+      },onError:()=>{rollStarted=false;}});
     };
     $('#npoCombatProfile')?.addEventListener('change',event=>{
       const profileIndex=Number(event.currentTarget.value);
@@ -7196,7 +7275,7 @@ function showPlayerActivation(stage={}){
       screen.continueButton.disabled=false;
       screen.continueButton.onclick=()=>startAutomaticCombat();
     });
-    if(sameCombat)displayCombat(saved,animateCombat);
+    if(sameCombat)void displayCombat(saved,animateCombat);
     else if(rollingCombat)startAutomaticCombat(saved);
     else if(availableProfiles.length===1&&willBeDone){
       screen.continueButton.disabled=false;
