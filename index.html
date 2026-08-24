@@ -43,6 +43,20 @@
 
 
   <dialog id="modal" class="modal" aria-modal="true"><div id="modalBody"></div></dialog>
+  <dialog id="diceEntryDialog" class="modal dice-entry-dialog" aria-modal="true" aria-labelledby="diceEntryTitle" aria-describedby="diceEntryInstruction">
+    <div class="modal-inner dice-entry-inner">
+      <h2 id="diceEntryTitle">Enter Dice Results</h2>
+      <p id="diceEntryRoller" class="dice-entry-roller" hidden></p>
+      <p id="diceEntryInstruction"></p>
+      <div id="diceEntryResults" class="dice-row dice-entry-results" aria-label="Entered dice"></div>
+      <p id="diceEntryProgress" class="dice-entry-progress" role="status" aria-live="polite">0 of 0 entered</p>
+      <div id="diceEntryKeypad" class="dice-entry-keypad" aria-label="Die results"></div>
+      <div class="wizard-actions dice-entry-actions">
+        <button class="btn ghost" id="diceEntryUndo" type="button" disabled>Undo</button>
+        <button class="btn primary" id="diceEntryCommit" type="button" disabled>Commit Results</button>
+      </div>
+    </div>
+  </dialog>
   <div id="toast" class="toast" hidden></div>
   <div id="updateNotice" class="update-notice" role="status" hidden>
     <span>A new version is available.</span>
