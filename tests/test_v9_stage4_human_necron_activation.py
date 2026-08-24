@@ -16,7 +16,8 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
         pvp = selection.split("if(isPvpMode())", 1)[1].split("return;", 1)[0]
         self.assertIn("Choose a Ready Necron to activate", pvp)
         self.assertNotIn("Threat Principle", pvp)
-        self.assertIn("n.ready&&n.deployed&&n.wounds>0", pvp)
+        self.assertIn("const n=readyNpos().find", pvp)
+        self.assertNotIn("const n=candidates.find", pvp)
         self.assertIn("Use the Threat Principle", selection)
         self.assertIn("if(candidates.length===1)", selection)
 
