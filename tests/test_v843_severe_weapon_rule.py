@@ -121,7 +121,7 @@ class SevereWeaponRuleTests(unittest.TestCase):
         self.assertLess(roller.index('accurate'), roller.index('applySevereToAttackDice'))
         self.assertIn("automatic:'Accurate 1'", roller)
         self.assertIn('applySevereToAttackDice(retainSuccessfulDice(rolledAttackDice),profile).dice', shared)
-        self.assertIn(': rolledAttackDiceForProfile(profile)', shared)
+        self.assertIn(': await requestAttackDiceForProfile(profile', shared)
         self.assertNotIn('profile.accurate\n      ?', shared)
 
     def test_severe_is_resolved_before_cancellation_damage_and_persistence(self):
