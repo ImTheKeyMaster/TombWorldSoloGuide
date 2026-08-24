@@ -152,6 +152,48 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
         self.assertIn("target:[]", decision)
         self.assertNotIn("Most likely", decision)
 
+    def test_pvp_shoot_and_fight_require_tabletop_target_confirmation(self):
+        wizard = self.section("function showNpoAttackWizard", "function spinnerField")
+        self.assertIn("id=\"npoTabletopTargetConfirmed\"", wizard)
+        self.assertIn("valid target for this shooting attack, including visibility, range, and other applicable targeting requirements", wizard)
+        self.assertIn("within control range and is a valid target for this Fight action", wizard)
+        guard = "if(isPvpMode()&&!restoredRoll&&!state.lastActivation?.combatDraft?.tabletopTargetConfirmed)return;"
+        self.assertIn(guard, wizard)
+        self.assertLess(wizard.index(guard), wizard.index("runAutomaticCombatRolls({"))
+
+    def test_pvp_target_confirmation_gates_dice_ap_damage_and_completion(self):
+        wizard = self.section("function showNpoAttackWizard", "function spinnerField")
+        self.assertIn("tabletopTargetConfirmed:event.currentTarget.checked", wizard)
+        self.assertIn("screen.continueButton.disabled=!event.currentTarget.checked||!profile", wizard)
+        start = wizard.split("const startAutomaticCombat", 1)[1]
+        guard = "if(isPvpMode()&&!restoredRoll&&!state.lastActivation?.combatDraft?.tabletopTargetConfirmed)return;"
+        self.assertLess(start.index(guard), start.index("combatTimer=runAutomaticCombatRolls({"))
+
+    def test_confirmed_pvp_attacks_use_existing_stage3_dice_flow(self):
+        wizard = self.section("function showNpoAttackWizard", "function spinnerField")
+        combat = self.section("function runAutomaticCombatRolls", "function retainedDiceTotals")
+        self.assertIn("attackType==='shoot'", wizard)
+        self.assertIn("attackType==='melee'", wizard)
+        self.assertIn("runAutomaticCombatRolls({", wizard)
+        self.assertIn("await requestAttackDiceForProfile", combat)
+        self.assertIn("await requestDefenseDice", combat)
+
+    def test_cancel_before_tabletop_confirmation_spends_no_ap(self):
+        wizard = self.section("function showNpoAttackWizard", "function spinnerField")
+        cancel = wizard.split("const cancel=()=>", 1)[1].split("let combatTimer", 1)[0]
+        self.assertIn("combatDraft:null", cancel)
+        self.assertIn("if(onCancel)onCancel()", cancel)
+        self.assertNotIn("commitNpoAction", cancel)
+        self.assertNotIn("applyNpoAttackDamage", cancel)
+
+    def test_solo_attack_target_and_dice_flow_remain_automatic(self):
+        wizard = self.section("function showNpoAttackWizard", "function spinnerField")
+        self.assertIn("else if(availableProfiles.length===1&&!resumeGuided)startAutomaticCombat()", wizard)
+        self.assertIn("else if(locked&&!resumeGuided)startAutomaticCombat()", wizard)
+        result = self.section("function renderNpoDecisionResult", "async function completeNpoActivation")
+        self.assertIn("!isPvpMode()&&!targetConfirmed&&eligibleTargetIds.length===1", result)
+        self.assertIn("!isPvpMode()&&decision.target.length", result)
+
     def test_pvp_attack_surfaces_use_presentation_terminology(self):
         result = self.section("function showNpoTargetRecovery", "async function completeNpoActivation")
         combat = self.section("function showNpoAttackWizard", "function spinnerField")

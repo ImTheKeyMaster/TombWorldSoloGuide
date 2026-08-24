@@ -7213,11 +7213,14 @@ function showPlayerActivation(stage={}){
     const willBeDone=tombWorldEventActive('my-will-be-done')&&!sameCombat&&!rollingCombat
       ? '<label class="check-row compact-check" for="sameRoomAsC1"><input type="checkbox" id="sameRoomAsC1"><span><strong>Is this NPO in the same room as the sarcophagus?</strong><small>This matters only while My Will Be Done is active.</small></span></label>'
       : '';
+    const tabletopTargetConfirmation=isPvpMode()&&!sameCombat&&!rollingCombat
+      ? `<label class="check-row compact-check" for="npoTabletopTargetConfirmed"><input type="checkbox" id="npoTabletopTargetConfirmed" ${savedCombat&&saved.tabletopTargetConfirmed?'checked':''}><span><strong>Confirm tabletop target legality</strong><small>${attackType==='shoot'?'I confirm that the selected operative is a valid target for this shooting attack, including visibility, range, and other applicable targeting requirements.':'I confirm that the selected operative is within control range and is a valid target for this Fight action.'}</small></span></label>`
+      : '';
     const guidance=npoCombatGuidanceHtml(n,{attackType,profile:initialProfile});
     const screen=showSharedCombatResolutionScreen({
       title:'Resolve Combat',attackerName:npoName(n),defenderName:targetName,attackType,
       weaponName:initialProfile?.name||'—',attackLabel:initialProfile?combatAttackLabel(initialProfile):'—',defenseLabel:`3 dice · ${target.save||3}+`,
-      cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',extraHtml:`<div id="npoCombatGuidance">${guidance}</div>${profileControl}${willBeDone}`,
+      cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',extraHtml:`<div id="npoCombatGuidance">${guidance}</div>${profileControl}${willBeDone}${tabletopTargetConfirmation}`,
       detailsHtml:`${weaponRuleSequenceProgress(sequence,targetName,`${target.wounds}/${target.maxWounds||playerDefinition(target.id)?.wounds||0} wounds`)}<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`
     });
     const cancel=()=>{
@@ -7338,6 +7341,7 @@ function showPlayerActivation(stage={}){
         : locked?availableProfiles.findIndex(profile=>canonicalAttackProfile(profile).weaponId===sequence.weaponId&&canonicalAttackProfile(profile).profileId===sequence.profileKey)
         : availableProfiles.length===1?0:selectedProfileIndex;
       if(profileIndex<0||!Number.isInteger(profileIndex))return;
+      if(isPvpMode()&&!restoredRoll&&!state.lastActivation?.combatDraft?.tabletopTargetConfirmed)return;
       const baseProfile=canonicalAttackProfile(availableProfiles[profileIndex]);
       if(!restoredRoll&&!guidedConfirmed&&!state.weaponRuleResolution?.continueConfirmed){
         const back=()=>{rollStarted=false;showNpoAttackWizard(n,attackDice,onDone,onCancel,false);};
@@ -7400,8 +7404,10 @@ function showPlayerActivation(stage={}){
       if(event.currentTarget.value===''||!Number.isInteger(profileIndex)||!availableProfiles[profileIndex])return;
       const profile=canonicalAttackProfile(availableProfiles[profileIndex]);
       selectedProfileIndex=profileIndex;
-      state.lastActivation={...state.lastActivation,combatDraft:{selecting:true,attackType,targetId:target.id,targetName:targetName,profile}};
+      state.lastActivation={...state.lastActivation,combatDraft:{selecting:true,attackType,targetId:target.id,targetName:targetName,profile,tabletopTargetConfirmed:false}};
       save();
+      const confirmation=$('#npoTabletopTargetConfirmed');
+      if(confirmation)confirmation.checked=false;
       const weapon=$('.compact-combat-profile div:nth-child(4) strong');
       if(weapon)weapon.textContent=profile.name;
       const attack=$('.compact-combat-profile div:nth-child(5) strong');
@@ -7410,13 +7416,28 @@ function showPlayerActivation(stage={}){
       if(rules)rules.innerHTML=weaponRulesHtml(profile);
       const guidance=$('#npoCombatGuidance');
       if(guidance)guidance.innerHTML=npoCombatGuidanceHtml(n,{attackType,profile});
-      screen.continueButton.disabled=false;
+      if(isPvpMode())screen.continueButton.disabled=true;
+      else screen.continueButton.disabled=false;
+      screen.continueButton.onclick=()=>startAutomaticCombat();
+    });
+    $('#npoTabletopTargetConfirmed')?.addEventListener('change',event=>{
+      const profileIndex=$('#npoCombatProfile')?.value===''?-1:locked?availableProfiles.findIndex(profile=>canonicalAttackProfile(profile).weaponId===sequence.weaponId&&canonicalAttackProfile(profile).profileId===sequence.profileKey):availableProfiles.length===1?0:selectedProfileIndex;
+      const profile=profileIndex>=0?canonicalAttackProfile(availableProfiles[profileIndex]):null;
+      state.lastActivation={...state.lastActivation,combatDraft:{selecting:true,attackType,targetId:target.id,targetName,profile,tabletopTargetConfirmed:event.currentTarget.checked}};
+      save();
+      screen.continueButton.disabled=!event.currentTarget.checked||!profile;
+      screen.continueButton.textContent='Roll Attack';
       screen.continueButton.onclick=()=>startAutomaticCombat();
     });
     if(sameCombat)void displayCombat(saved,animateCombat);
     else if(rollingCombat)startAutomaticCombat(saved);
     else if(availableProfiles.length===1&&willBeDone){
-      screen.continueButton.disabled=false;
+      screen.continueButton.disabled=isPvpMode()&&!state.lastActivation?.combatDraft?.tabletopTargetConfirmed;
+      screen.continueButton.textContent='Roll Attack';
+      screen.continueButton.onclick=()=>startAutomaticCombat();
+    }
+    else if(isPvpMode()&&!resumeGuided&&(availableProfiles.length===1||locked)){
+      screen.continueButton.disabled=!state.lastActivation?.combatDraft?.tabletopTargetConfirmed;
       screen.continueButton.textContent='Roll Attack';
       screen.continueButton.onclick=()=>startAutomaticCombat();
     }
@@ -7424,7 +7445,8 @@ function showPlayerActivation(stage={}){
     else if(locked&&!resumeGuided)startAutomaticCombat();
     else if(selectingCombat){
       if(!resumeGuided){
-        screen.continueButton.disabled=false;
+        if(isPvpMode())screen.continueButton.disabled=!saved.tabletopTargetConfirmed;
+        else screen.continueButton.disabled=false;
         screen.continueButton.onclick=()=>startAutomaticCombat();
       }
     }
