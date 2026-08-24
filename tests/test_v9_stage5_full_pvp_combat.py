@@ -95,10 +95,8 @@ class Stage5FullPvpCombatTests(unittest.TestCase):
         self.assertIn("the attacking Necron", shock)
         self.assertIn("isPvpMode()?'Necron':'NPO'", npo)
 
-    def test_version_and_deferred_dice_work_are_unchanged(self):
+    def test_version_remains_unchanged_for_staged_v9_development(self):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
-        initiative = self.section("function rollInitiative", "function beginFirefight")
-        self.assertNotIn("requestDiceResults", initiative)
 
 
 if __name__ == "__main__":

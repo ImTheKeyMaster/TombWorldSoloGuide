@@ -54,17 +54,12 @@ class Stage3CombatDiceProviderTests(unittest.TestCase):
                 self.assertIn("requestDiceResults", nearby)
                 self.assertIn(request, nearby)
 
-    def test_committed_combat_is_reused_and_deferred_systems_remain_automatic(self):
+    def test_committed_combat_is_reused_and_administrative_generation_remains_automatic(self):
         npo = self.section("function showNpoAttackWizard", "function spinnerField")
         self.assertIn("if(sameCombat)void displayCombat(saved,animateCombat)", npo)
-        initiative = self.section("function rollInitiative", "function beginFirefight")
-        self.assertIn("const p=roll(),n=roll()", initiative)
-        self.assertNotIn("requestDiceResults", initiative)
         generation = self.section("function rollNpo", "function availableGenerationResult")
         self.assertIn("roll(6)", generation)
         self.assertNotIn("requestDiceResults", generation)
-        mission = self.section("function animateMissionDice", "function rollingDieHtml")
-        self.assertNotIn("requestDiceResults", mission)
 
     def test_provider_failures_do_not_fallback_to_random_combat_dice(self):
         combat = self.section("function runAutomaticCombatRolls", "function retainedDiceTotals")

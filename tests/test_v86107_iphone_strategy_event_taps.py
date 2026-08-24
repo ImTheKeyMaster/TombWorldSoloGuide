@@ -52,8 +52,8 @@ process.stdout.write(JSON.stringify({{
         self.assertIn("e.target?.closest?", touch_setup)
 
     def test_maze_confirm_resolves_once_renders_immediately_and_logs_once(self):
-        complete = source("function completeCurrentEvent", "  function redrawCurrentEvent")
-        resolve = source("function resolveStrategyEvent", "  function randomReinforcement")
+        complete = source("async function completeCurrentEvent", "  function redrawCurrentEvent")
+        resolve = source("async function resolveStrategyEvent", "  function randomReinforcement")
         result = run_node(f"""
 const maze={{instanceId:'maze-1',definitionId:'maze-reforms',type:'tomb-world-event',title:'The Maze Reforms',
   text:'Close one breach.',execution:{{type:'maze-reforms'}},status:'drawn'}};
@@ -66,9 +66,11 @@ const save=()=>{{saves++;}};
 const render=()=>{{renders++;}};
 {complete}
 {resolve}
-resolveStrategyEvent(); resolveStrategyEvent();
-process.stdout.write(JSON.stringify({{status:maze.status,result:maze.result,pending:state.strategyData.eventPending,
-  renders,saves,journal:state.journal,eventIndex:state.strategyData.eventIndex}}));
+(async()=>{{
+  await resolveStrategyEvent(); await resolveStrategyEvent();
+  process.stdout.write(JSON.stringify({{status:maze.status,result:maze.result,pending:state.strategyData.eventPending,
+    renders,saves,journal:state.journal,eventIndex:state.strategyData.eventIndex}}));
+}})();
 """)
         self.assertEqual(result["status"], "resolved")
         self.assertEqual(result["result"], "Breach and hatchway changes completed on the tabletop.")
