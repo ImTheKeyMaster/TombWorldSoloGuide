@@ -4378,6 +4378,7 @@ document.addEventListener('touchend',function(e){
     if(!activation)return;
     if(activation.committed){
       if(!activation.completionHookPending)return;
+      closeModal();
       await executeMissionLifecycleHook('onPlayerActivationCompleted',{activationId:activation.activationId,operativeId:activation.operativeId});
       activation.completionHookPending=false;save();
       if(!checkGameEnd())render();
@@ -7465,6 +7466,7 @@ function showPlayerActivation(){
     const activation=state.lastActivation;
     if(activation?.committed){
       if(!activation.completionHookPending)return;
+      closeModal();
       await executeMissionLifecycleHook('onNpoActivationCompleted',{activationId:activation.activationId,operativeId:activation.npoId});
       activation.completionHookPending=false;save();
       if(!checkGameEnd())render();

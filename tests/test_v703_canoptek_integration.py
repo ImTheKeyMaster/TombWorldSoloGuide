@@ -56,7 +56,7 @@ class CanoptekIntegrationTests(unittest.TestCase):
     def test_reviewed_reanimate_and_modifier_regressions(self):
         self.assertIn("protectedForAction=n.preventIncapacitationActionId===state.activationNumber", APP)
         self.assertIn("!pending.aggressiveDefenseDamageApplied", APP)
-        self.assertIn("apl=effectiveApl(current.playerOperativeId,baseApl)", APP)
+        self.assertIn("apl=effectiveApl(operativeId,baseApl)", APP)
         self.assertIn("Continue Activation", APP)
         self.assertIn("consumeMolecularBreach(target.id,freeAction)", APP)
 

@@ -24,15 +24,13 @@ class V8642NoNpoCombatTargetsTests(unittest.TestCase):
         self.assertIn("activeNpos().some", helper)
         self.assertIn("projectedNpoWounds", helper)
 
-    def test_activation_hides_both_combat_actions_without_targets(self):
-        source = function_source("showPlayerActivation")
-        self.assertIn("normalizeImpossiblePlayerCombat(stage)", source)
-        self.assertIn("const combatTargetsAvailable=hasValidPlayerCombatTargets(stage)", source)
-        combat_gate = source.index("${combatTargetsAvailable?")
-        self.assertGreater(source.index('id="eaShoot"'), combat_gate)
-        self.assertGreater(source.index('id="eaMelee"'), combat_gate)
-        self.assertIn('id="eaMove"', source)
-        self.assertIn('id="confirmPlayer"', source)
+    def test_activation_marks_both_combat_actions_unavailable_without_targets(self):
+        catalog = function_source("playerHumanActionCatalog")
+        legality = function_source("playerHumanActionState")
+        self.assertIn("name:'Shoot'", catalog)
+        self.assertIn("name:'Fight'", catalog)
+        self.assertIn("!hasValidPlayerCombatTargets({})", legality)
+        self.assertIn("reason:'No valid target'", legality)
 
     def test_unresolved_stale_combat_is_cleared_without_refunding_resolved_actions(self):
         source = function_source("normalizeImpossiblePlayerCombat")

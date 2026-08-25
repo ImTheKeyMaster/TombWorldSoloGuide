@@ -60,8 +60,8 @@ class OperativeStatusPanelTests(unittest.TestCase):
 
     def test_active_player_is_rendered_without_mutating_game_state(self):
         self.assertIn('function renderOperativeStatusPanel(activePlayerId=null)', APP)
-        self.assertIn('renderOperativeStatusPanel(selectedId);', APP)
-        activation = APP[APP.index('function showPlayerActivation'):APP.index('function readPlayerActivationStage')]
+        self.assertIn('renderOperativeStatusPanel(activation.operativeId);', APP)
+        activation = APP[APP.index('function renderHumanPlayerActionPicker'):APP.index('function playerSequentialStage')]
         self.assertNotIn('state.activePlayer', activation)
 
 

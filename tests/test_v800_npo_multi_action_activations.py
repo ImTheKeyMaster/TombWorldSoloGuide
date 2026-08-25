@@ -126,7 +126,9 @@ class V800NpoMultiActionActivationTests(unittest.TestCase):
 
     def test_26_mission_hooks_once(self):
         self.assertEqual(self.source('beginNpoActivation', 'showNpoSelection').count("notifyMissionActivationStarted('npo'"), 1)
-        self.assertEqual(self.source('completeNpoActivation', 'applyNpoAttackDamage').count("executeMissionLifecycleHook('onNpoActivationCompleted'"), 1)
+        completion = self.source('completeNpoActivation', 'applyNpoAttackDamage')
+        self.assertEqual(completion.count("executeMissionLifecycleHook('onNpoActivationCompleted'"), 2)
+        self.assertIn('completionHookPending', completion)
 
     def test_27_threat_uses_complete_sequence_flag(self):
         commit = self.source('completeNpoActivation', 'applyNpoAttackDamage')
