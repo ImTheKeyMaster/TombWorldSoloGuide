@@ -1,5 +1,7 @@
 from pathlib import Path
 import re
+import json
+import subprocess
 
 from versioning import CURRENT_APP_VERSION
 
@@ -65,6 +67,15 @@ def test_ap_commit_is_guarded_and_exactly_once():
     assert "activation.pendingAction=null" in commit
 
 
+def test_player_combat_request_identity_uses_durable_activation_and_action_sequence():
+    identity = source("playerActionTransactionIdentity", "showPendingPlayerAttackWizard")
+    combat = source("showPlayerCombatResolution", "previewPendingPlayerAttack")
+    assert "activation.activationId" in identity
+    assert "pending.actionSequence" in identity
+    assert "actionIdentity.activationId" in combat
+    assert "actionIdentity.actionId" in combat
+
+
 def test_failed_or_cancelled_action_spends_no_ap():
     cancel = source("cancelCurrentHumanPlayerAction", "selectHumanPlayerAction")
     assert "remainingAp" not in cancel
@@ -100,6 +111,24 @@ def test_reload_restores_active_player_ap_history_and_lock():
     assert "if(activePlayerActivation()){renderHumanPlayerActionPicker();return true;}" in APP
 
 
+def test_persistence_validation_does_not_discard_a_player_activation():
+    script = r"""
+const p=require('./persistence.js');
+const catalog={warrior:{id:'warrior',type:'Warrior',name:'Warrior',physicalQuantity:1,wounds:8,move:5,apl:2,save:3,baseSize:32,defaultWeaponId:'blade'}};
+const save={saveVersion:3,gameMode:'pvp',roster:[],playerRoster:['player-one'],playerOperativeStates:{'player-one':{inPlay:true}},
+ lastActivation:{side:'player',operativeId:'player-one',activationId:'1:1:player:player-one',startingAp:3,remainingAp:2,
+ completedActionIds:['move'],resolvedActions:[{id:'move',name:'Reposition'}],committed:false}};
+const result=p.migrateSaveDetailed(save,catalog);
+console.log(JSON.stringify({activation:result.state.lastActivation,cleared:result.report.pendingStateCleared}));
+"""
+    result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True, check=True)
+    restored = json.loads(result.stdout)
+    assert restored["activation"]["operativeId"] == "player-one"
+    assert restored["activation"]["remainingAp"] == 2
+    assert restored["activation"]["completedActionIds"] == ["move"]
+    assert "lastActivation" not in restored["cleared"]
+
+
 def test_pending_dice_recovery_remains_integrated():
     assert "resumePendingDiceWorkflow" in APP
     assert "pendingDiceContextIsCurrent" in APP
@@ -133,6 +162,15 @@ def test_completion_counters_hook_and_side_advance_are_once_guarded():
     assert "state.activationNumber++" in completion
     assert "advanceAfterActivation('player')" in completion
     assert "onPlayerActivationCompleted" in completion
+
+
+def test_completion_hook_checkpoint_resumes_without_repeating_bookkeeping():
+    completion = source("completeHumanPlayerActivation", "randomReinforcement")
+    resume = source("resumeCheckpointedGameplayContext", "missionDiceTotal")
+    assert "if(activation.committed)" in completion
+    assert "completionHookPending" in completion
+    assert "state.activationNumber++" not in completion.split("if(activation.committed)", 1)[1].split("activation.committed=true", 1)[0]
+    assert "completionHookPending){await completeHumanPlayerActivation()" in resume
 
 
 def test_mobile_and_accessible_action_contract():

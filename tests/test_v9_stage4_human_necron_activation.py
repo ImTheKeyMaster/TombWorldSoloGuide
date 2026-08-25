@@ -46,7 +46,7 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
         self.assertIn(incapacitated, human)
         self.assertIn(stale, human)
         self.assertLess(human.index(incapacitated), human.index(stale))
-        for lifecycle_step in ("if(state.lastActivation?.committed)return", "state.npoActivated++", "state.activationHistory.unshift", "advanceAfterActivation('npo')", "onNpoActivationCompleted"):
+        for lifecycle_step in ("if(activation?.committed)", "completionHookPending", "state.npoActivated++", "state.activationHistory.unshift", "advanceAfterActivation('npo')", "onNpoActivationCompleted"):
             self.assertIn(lifecycle_step, completion)
 
     def test_human_catalog_is_separate_from_ai_priority(self):
@@ -242,7 +242,8 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
 
     def test_end_with_ap_requires_deliberate_confirmation(self):
         ending = self.section("function confirmEndHumanNpoActivation", "function renderNpoGuideFooter")
-        self.assertIn("still has ${remaining} AP remaining", ending)
+        self.assertIn("${remaining} AP remain", ending)
+        self.assertIn("This operative has not performed any actions.", ending)
         self.assertIn("Continue Activation", ending)
         self.assertIn("End Activation", ending)
         self.assertIn("completeNpoActivation", ending)

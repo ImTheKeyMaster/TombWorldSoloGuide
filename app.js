@@ -1703,6 +1703,8 @@ document.addEventListener('touchend',function(e){
   }
   async function resumeCheckpointedGameplayContext(){
     if(await resumeMissionActionContext())return true;
+    if(state.lastActivation?.side==='player'&&state.lastActivation.committed&&state.lastActivation.completionHookPending){await completeHumanPlayerActivation();return true;}
+    if(state.lastActivation?.npoId&&state.lastActivation.committed&&state.lastActivation.completionHookPending){await completeNpoActivation();return true;}
     if(isPvpMode()&&Boolean(state.lastActivation?.pendingAction?.diceResults||state.lastActivation?.pendingAction?.resolvedResult))return resumeNpoSpecialActionContext();
     if(state.combatState?.side==='player'){resolvePendingPlayerAttacks({...state.combatState.stage});return true;}
     if(activePlayerActivation()){renderHumanPlayerActionPicker();return true;}
@@ -4301,6 +4303,7 @@ document.addEventListener('touchend',function(e){
       completedActions:activation.resolvedActions||[],actions,onAction:selectHumanPlayerAction,
       onEnd:confirmEndHumanPlayerActivation
     });
+    renderOperativeStatusPanel(activation.operativeId);
   }
 
   function playerSequentialStage(action){
@@ -4371,9 +4374,17 @@ document.addEventListener('touchend',function(e){
   }
 
   async function completeHumanPlayerActivation(){
-    const activation=activePlayerActivation();
-    if(!activation||activation.committed)return;
+    const activation=state.lastActivation?.side==='player'?state.lastActivation:null;
+    if(!activation)return;
+    if(activation.committed){
+      if(!activation.completionHookPending)return;
+      await executeMissionLifecycleHook('onPlayerActivationCompleted',{activationId:activation.activationId,operativeId:activation.operativeId});
+      activation.completionHookPending=false;save();
+      if(!checkGameEnd())render();
+      return;
+    }
     activation.committed=true;activation.completed=true;
+    activation.completionHookPending=true;
     const operativeId=activation.operativeId,activationId=activation.activationId;
     if(!state.playerActivatedIds.includes(operativeId))state.playerActivatedIds.push(operativeId);
     state.playerReady=playerOperativesRemaining();state.playerActivated=state.playerActivatedIds.length;state.activationNumber++;
@@ -4384,6 +4395,7 @@ document.addEventListener('touchend',function(e){
     log(`${playerName(operativeId)} completed activation: ${summary}.`);
     state.combatState=null;state.missionActionContext=null;save();closeModal();
     await executeMissionLifecycleHook('onPlayerActivationCompleted',{activationId,operativeId});
+    activation.completionHookPending=false;save();
     if(!checkGameEnd())render();
   }
 
@@ -4867,7 +4879,7 @@ function showPlayerActivation(){
         log(`${playerName(stage.playerOperativeId)} rolled ${pending.dimensionalBanishmentRoll} for Dimensional Banishment against ${npoName(n)}. ${outcome}`);
         pending.dimensionalBanishmentJournaled=true;
       }
-      if(checkGameEnd())return true;
+      if(checkGameEnd()&&!stage.sequential)return true;
     }
     return false;
   }
@@ -5724,7 +5736,7 @@ function showPlayerActivation(){
     $('#seekLightYes').onclick=()=>answer('yes');
   }
 
-  function showSecondaryTargetCheck({ruleId,distance,attackerSide,attackerId,primaryTargetId,targets,weaponId,weaponName,profileKey,profileName,weaponRules,onContinue,onBack}){
+  function showSecondaryTargetCheck({ruleId,distance,attackerSide,attackerId,activationId=null,actionId=null,primaryTargetId,targets,weaponId,weaponName,profileKey,profileName,weaponRules,onContinue,onBack}){
     const isBlast=ruleId==='blast';
     const eligible=(targets||[]).filter(target=>target.id!==attackerId&&target.id!==primaryTargetId&&target.inPlay!==false&&Number(target.wounds)>0);
     const question=isBlast
@@ -5745,7 +5757,7 @@ function showPlayerActivation(){
       const seekLightAnswer=state.weaponRuleResolution?.primaryTargetId===primaryTargetId?state.weaponRuleResolution.seekLightAnswer:null;
       const selectedTargets=[{id:primaryTargetId,targetSide:attackerSide==='player'?'npo':'player'},...eligible.filter(target=>secondaryTargetIds.includes(target.id))];
       const targetDescriptors=selectedTargets.map(target=>({targetId:target.id,targetSide:target.targetSide||(attackerSide==='player'?'npo':'player')}));
-      const resolution=createWeaponRuleResolution({activationId:`${state.turningPoint}:${state.activationNumber}`,actionId:attackerSide==='npo'?'npo-attack':'player-attack',attackerSide,attackerId,weaponId,weaponName,profileKey,profileName,weaponRules,ruleId,primaryTargetId,secondaryTargetIds,targetDescriptors});
+      const resolution=createWeaponRuleResolution({activationId:activationId||`${state.turningPoint}:${state.activationNumber}`,actionId:actionId||(attackerSide==='npo'?'npo-attack':'player-attack'),attackerSide,attackerId,weaponId,weaponName,profileKey,profileName,weaponRules,ruleId,primaryTargetId,secondaryTargetIds,targetDescriptors});
       if(!resolution)return;
       state.weaponRuleResolution={...resolution,tabletopCheckConfirmed:confirmation.checked,continueConfirmed:false,...(seekLightAnswer?{seekLightAnswer}:{})};
       save();
@@ -5928,12 +5940,21 @@ function showPlayerActivation(){
     onCancel();
   }
 
+  function playerActionTransactionIdentity(stage,attackType){
+    const activation=activePlayerActivation(),pending=activation?.pendingAction;
+    if(stage?.sequential&&activation&&pending){
+      return {activationId:activation.activationId,actionId:`${stage.humanActionId||attackType}:${pending.actionSequence}`};
+    }
+    return {activationId:`${state.turningPoint}:${state.activationNumber}`,actionId:attackType};
+  }
+
   function showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel,preferredTargetId=''){
     const targetSideLabel=isPvpMode()?'Necron':'NPO';
     const targets=sortedNposForDisplay(activeNpos().filter(n=>projectedNpoWounds(n.id,stage)>0));
     if(!targets.length){
       showToast(`No active ${targetSideLabel} is available as a target.`);
-      showPlayerActivation(normalizeImpossiblePlayerCombat(stage));
+      if(stage.sequential)onCancel();
+      else showPlayerActivation(normalizeImpossiblePlayerCombat(stage));
       return;
     }
 
@@ -5941,7 +5962,8 @@ function showPlayerActivation(){
     const weapons=playerAttackWeapons(stage.playerOperativeId,attackType);
     if(!weapons.length){
       showToast(`${playerName(stage.playerOperativeId)} has no ${attackType==='shoot'?'ranged':'melee'} weapon in its roster profile.`);
-      showPlayerActivation(stage);
+      if(stage.sequential)onCancel();
+      else showPlayerActivation(stage);
       return;
     }
 
@@ -6014,12 +6036,13 @@ function showPlayerActivation(){
       };
       const back=()=>showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel);
       const ruleId=weaponHasRule(profile,'blast')?'blast':weaponHasRule(profile,'torrent')?'torrent':null;
-      const resolutionKey=`player:${state.turningPoint}:${state.activationNumber}:${stage.playerOperativeId}:${target.id}:${profile.weaponId}`;
+      const actionIdentity=playerActionTransactionIdentity(stage,attackType);
+      const resolutionKey=`player:${actionIdentity.activationId}:${actionIdentity.actionId}:${stage.playerOperativeId}:${target.id}:${profile.weaponId}`;
       const selectSecondaryTargets=()=>{
         if(!ruleId){proceed();return;}
         const playerTargets=(state.playerRoster||[]).map(id=>({id,targetSide:'player',label:playerTargetLabel(id),ariaLabel:playerTargetAriaLabel(id),wounds:playerCurrentWounds(id),inPlay:state.playerOperativeStates?.[id]?.inPlay!==false}));
         const npoTargets=activeNpos().map(npo=>({id:npo.id,targetSide:'npo',label:npoName(npo),wounds:npo.wounds,inPlay:npo.battlefieldState==='deployed'}));
-        showSecondaryTargetCheck({ruleId,distance:weaponRuleValue(profile,ruleId),attackerSide:'player',attackerId:stage.playerOperativeId,primaryTargetId:target.id,targets:ruleId==='blast'?[...playerTargets,...npoTargets]:npoTargets,weaponId:profile.weaponId,weaponName:profile.weaponName,profileKey:profile.profileId,profileName:profile.profileName,weaponRules:profile.rules,onContinue:proceed,onBack:back});return;
+        showSecondaryTargetCheck({ruleId,distance:weaponRuleValue(profile,ruleId),attackerSide:'player',attackerId:stage.playerOperativeId,activationId:actionIdentity.activationId,actionId:actionIdentity.actionId,primaryTargetId:target.id,targets:ruleId==='blast'?[...playerTargets,...npoTargets]:npoTargets,weaponId:profile.weaponId,weaponName:profile.weaponName,profileKey:profile.profileId,profileName:profile.profileName,weaponRules:profile.rules,onContinue:proceed,onBack:back});return;
       };
       if(weaponHasRule(profile,'seek-light')&&target.order==='Conceal'){showSeekLightCheck({target,resolutionKey,onContinue:selectSecondaryTargets,onBack:back});return;}
       selectSecondaryTargets();
@@ -6049,7 +6072,7 @@ function showPlayerActivation(){
     const target=targetSide==='player'?livePlayerOperative(targetId):activeNpos().find(n=>n.id===targetId);
     const locked=sequence?.orderedTargetIds?.length>1?lockedMultiTargetProfile(sequence,stage.playerOperativeId):null;
     if(sequence?.orderedTargetIds?.length>1&&!locked){
-      showMultiTargetProfileRecovery('player',()=>{state.weaponRuleResolution=null;state.combatState={side:'player',stage:{...stage,[`${attackType}CombatDraft`]:null}};save();showPlayerActivation(stage);});
+      showMultiTargetProfileRecovery('player',()=>{state.weaponRuleResolution=null;state.combatState={side:'player',stage:{...stage,[`${attackType}CombatDraft`]:null}};save();if(stage.sequential)cancelCurrentHumanPlayerAction();else showPlayerActivation(stage);});
       return;
     }
     const weapons=playerAttackWeapons(stage.playerOperativeId,attackType);
@@ -6089,7 +6112,7 @@ function showPlayerActivation(){
       }
       state.combatState=null;
       save();
-      if(sequence)showPlayerActivation(stage);
+      if(sequence){if(stage.sequential)cancelCurrentHumanPlayerAction();else showPlayerActivation(stage);}
       else showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel);
     };
     if(committedAttackDice)screen.cancelButton.disabled=true;
@@ -6099,7 +6122,8 @@ function showPlayerActivation(){
       return;
     }
 
-    const transactionId=`attack:${state.turningPoint}:${state.activationNumber}:${attackType}:${stage.playerOperativeId}:${targetId}`;
+    const actionIdentity=playerActionTransactionIdentity(stage,attackType);
+    const transactionId=`attack:${actionIdentity.activationId}:${actionIdentity.actionId}:${stage.playerOperativeId}:${targetId}`;
     const transaction=eventTransaction(transactionId,{definitionAnswers:{}});
     transaction.definitionAnswers.attackerWithinTwo=attackerWithinTwo;
     if(result?.moreThanEight!==undefined)transaction.definitionAnswers.moreThanEight=result.moreThanEight;
@@ -6827,9 +6851,12 @@ function showPlayerActivation(){
   }
 
   function confirmEndHumanNpoActivation(n){
-    const remaining=state.lastActivation.remainingAp;
+    const activation=state.lastActivation,remaining=activation.remainingAp;
     if(remaining<=0){completeNpoActivation();return;}
-    showModal('End Activation?',`<p>${escapeHtml(npoName(n))} still has ${remaining} AP remaining.</p><div class="wizard-actions"><button class="btn ghost" id="continueHumanNpoActivation">Continue Activation</button><button class="btn primary" id="confirmEndHumanNpoActivation">End Activation</button></div>`);
+    const message=(activation.resolvedActions||[]).length
+      ?`${remaining} AP remain${remaining===1?'s':''}.`
+      :'This operative has not performed any actions.';
+    showModal('End Activation?',`<p>${escapeHtml(message)}</p><div class="wizard-actions"><button class="btn ghost" id="continueHumanNpoActivation">Continue Activation</button><button class="btn primary" id="confirmEndHumanNpoActivation">End Activation</button></div>`);
     $('#continueHumanNpoActivation').onclick=()=>renderHumanNpoActionPicker(n);
     $('#confirmEndHumanNpoActivation').onclick=()=>completeNpoActivation();
   }
@@ -7435,10 +7462,17 @@ function showPlayerActivation(){
   }
 
   async function completeNpoActivation(){
-    if(state.lastActivation?.committed)return;
-    const n=state.roster.find(item=>item.id===state.lastActivation?.npoId);
+    const activation=state.lastActivation;
+    if(activation?.committed){
+      if(!activation.completionHookPending)return;
+      await executeMissionLifecycleHook('onNpoActivationCompleted',{activationId:activation.activationId,operativeId:activation.npoId});
+      activation.completionHookPending=false;save();
+      if(!checkGameEnd())render();
+      return;
+    }
+    const n=state.roster.find(item=>item.id===activation?.npoId);
     if(!n)return;
-    state.lastActivation.committed=true;state.lastActivation.completed=true;
+    state.lastActivation.committed=true;state.lastActivation.completed=true;state.lastActivation.completionHookPending=true;
     if(state.lastActivation.attackPerformed)setThreat(1,`${npoName(n)} Shoot or Fight`);
     const activationId=state.lastActivation.activationId||missionActivationId('npo',n.id);
     n.ready=false;state.npoActivated++;state.activationNumber++;
@@ -7453,6 +7487,7 @@ function showPlayerActivation(){
     save();
     closeModal();
     await executeMissionLifecycleHook('onNpoActivationCompleted',{activationId,operativeId:n.id});
+    state.lastActivation.completionHookPending=false;save();
     const gameEnded=checkGameEnd();
     if(!gameEnded)render();
   }
@@ -8162,6 +8197,7 @@ function showPlayerActivation(){
   }
 
   function clearPendingBreach(stage){
+    if(stage.sequential){cancelCurrentHumanPlayerAction();return;}
     state.missionActionContext=null;
     state.combatState={side:'player',stage:{...stage}};
     save();
@@ -8173,9 +8209,9 @@ function showPlayerActivation(){
     const activationId=missionActivationId('player',operativeId);
     const apCost=breachSarcophagusApCost(operativeId);
     const remainingAp=Number(stage.apl||3)-playerActionCost(stage);
-    if(!canOfferBreachSarcophagus(stage,operativeId))return;
-    if(remainingAp<apCost){showToast('Not enough AP to Breach the sarcophagus.');return;}
-    if(apCost===1&&(stage.shoot||stage.charge)){showToast('The Breach reduction cannot be combined with Shoot or Charge in this activation.');return;}
+    if(!canOfferBreachSarcophagus(stage,operativeId)){if(stage.sequential)cancelCurrentHumanPlayerAction();return;}
+    if(remainingAp<apCost){showToast('Not enough AP to Breach the sarcophagus.');if(stage.sequential)cancelCurrentHumanPlayerAction();return;}
+    if(apCost===1&&(stage.shoot||stage.charge)){showToast('The Breach reduction cannot be combined with Shoot or Charge in this activation.');if(stage.sequential)cancelCurrentHumanPlayerAction();return;}
     state.combatState={side:'player',stage:{...stage}};
     state.missionActionContext={missionId:'04',actionId:'breachSarcophagus',side:'player',operativeId,activationId,apCost,remainingAp,step:'control-range',controlRangeConfirmed:null,enemyControlRangeConfirmed:null,committed:false,diceRolled:false,dice:[],previousTotal:null,newTotal:null,victoryCommitted:false};
     save();renderBreachSarcophagusStep(stage);
@@ -8183,9 +8219,9 @@ function showPlayerActivation(){
 
   function renderBreachSarcophagusStep(stage){
     const context=state.missionActionContext;
-    if(!context||context.missionId!=='04'||context.actionId!=='breachSarcophagus')return showPlayerActivation(stage);
+    if(!context||context.missionId!=='04'||context.actionId!=='breachSarcophagus')return stage.sequential?cancelCurrentHumanPlayerAction():showPlayerActivation(stage);
     if(context.operativeId!==stage.playerOperativeId||context.activationId!==missionActivationId('player',stage.playerOperativeId)){
-      state.missionActionContext=null;save();showToast('The active operative changed. Breach was not performed.');showPlayerActivation(stage);return;
+      state.missionActionContext=null;save();showToast('The active operative changed. Breach was not performed.');if(stage.sequential)cancelCurrentHumanPlayerAction();else showPlayerActivation(stage);return;
     }
     if(context.committed&&context.diceRolled&&!context.newTotal){performBreachSarcophagus(stage,true);return;}
     if(context.step==='control-range'){
@@ -8244,8 +8280,11 @@ function showPlayerActivation(){
       save();
     }
     showModal(won?'MISSION OBJECTIVE COMPLETE':'BREACH SARCOPHAGUS',`<div class="mission-roll-result"><div class="dice-row settled">${context.dice.map(value=>dieHtml({value})).join('')}</div><p>Dice: ${context.dice.join(' + ')} · Total: ${context.dice.reduce((sum,value)=>sum+value,0)}</p><p>Destruction Points added: ${change.after-change.before}</p><div class="summary-box"><strong>Progress: ${change.after} / 20 Destruction Points</strong></div>${won?'<p>The sarcophagus has been destroyed. The Player team is victorious.</p>':''}</div><div class="wizard-actions"><button class="btn primary" id="breachResultContinue">${won?'View Victory':'Return to Activation'}</button></div>`);
-    $('#breachResultContinue').onclick=()=>{
-      if(won){void finalizeMissionCompletion('victory',context.previousPhase||'firefight');}
+    $('#breachResultContinue').onclick=async()=>{
+      if(won){
+        if(stage.sequential){commitHumanPlayerAction(stage);await completeHumanPlayerActivation();}
+        void finalizeMissionCompletion('victory',context.previousPhase||'firefight');
+      }
       else if(stage.sequential){completePlayerActivation(stage);}
       else {state.missionActionContext=null;save();showPlayerActivation(stage);}
     };
