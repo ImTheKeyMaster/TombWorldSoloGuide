@@ -38,6 +38,14 @@ def test_player_movement_actions_commit_sequentially():
     assert "Movement Complete" in source("selectHumanPlayerAction", "commitHumanPlayerAction")
 
 
+def test_sequential_legality_preserves_bidirectional_movement_conflicts():
+    legality = source("playerHumanActionState", "renderHumanActivationShell")
+    assert "action.id==='fallBack'&&completed.has('move')" in legality
+    assert "action.id==='move'&&completed.has('fallBack')" in legality
+    assert "Unavailable after Reposition" in legality
+    assert "Unavailable after Fall Back" in legality
+
+
 def test_player_combat_actions_commit_sequentially_and_keep_transaction_state():
     picker = source("selectHumanPlayerAction", "commitHumanPlayerAction")
     assert "showPendingPlayerAttackWizard" in picker
@@ -95,6 +103,13 @@ def test_operate_hatch_breach_and_sarcophagus_are_sequential_actions():
     assert "Operate Hatch" in catalog and "Breach Sarcophagus" in catalog
     assert "showActivationFeatureTargetSelection" in source("selectHumanPlayerAction", "commitHumanPlayerAction")
     assert "completePlayerActivation(stage)" in source("performBreachSarcophagus", "confirmMissionAction")
+
+
+def test_discounted_breach_sarcophagus_restriction_is_bidirectional():
+    legality = source("playerHumanActionState", "renderHumanActivationShell")
+    assert "record.id==='breachSarcophagus'&&record.apCost===1" in legality
+    assert "discountedBreachCompleted&&['shoot','charge'].includes(action.id)" in legality
+    assert "action.cost===1&&(completed.has('shoot')||completed.has('charge'))" in legality
 
 
 def test_threat_commits_per_action_with_idempotency_key():

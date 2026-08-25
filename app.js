@@ -4253,6 +4253,7 @@ document.addEventListener('touchend',function(e){
 
   function playerHumanActionState(action,activation=activePlayerActivation()){
     const completed=new Set(activation?.completedActionIds||[]),remaining=Number(activation?.remainingAp||0);
+    const discountedBreachCompleted=(activation?.resolvedActions||[]).some(record=>record.id==='breachSarcophagus'&&record.apCost===1);
     if(completed.has(action.id))return {status:'Used',disabled:true,reason:'Used'};
     if(action.cost>remaining)return {status:'Insufficient AP',disabled:true,reason:`Needs ${action.cost} AP`};
     if(action.id==='shoot'&&completed.has('melee'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Fight'};
@@ -4260,6 +4261,8 @@ document.addEventListener('touchend',function(e){
     if(action.id==='charge'&&['move','dash','fallBack'].some(id=>completed.has(id)))return {status:'Unavailable',disabled:true,reason:'Unavailable after movement'};
     if(['move','dash','fallBack'].includes(action.id)&&completed.has('charge'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Charge'};
     if(action.id==='fallBack'&&completed.has('move'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Reposition'};
+    if(action.id==='move'&&completed.has('fallBack'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Fall Back'};
+    if(discountedBreachCompleted&&['shoot','charge'].includes(action.id))return {status:'Unavailable',disabled:true,reason:'Unavailable after Breach Sarcophagus'};
     if(action.id==='shoot'&&!playerAttackWeapons(activation.operativeId,'shoot').length)return {status:'Unavailable',disabled:true,reason:'No ranged weapon'};
     if(action.id==='melee'&&!playerAttackWeapons(activation.operativeId,'melee').length)return {status:'Unavailable',disabled:true,reason:'No melee weapon'};
     if(['shoot','melee'].includes(action.id)&&!hasValidPlayerCombatTargets({}))return {status:'Unavailable',disabled:true,reason:'No valid target'};
