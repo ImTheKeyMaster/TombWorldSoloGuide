@@ -75,6 +75,7 @@ process.stdout.write(JSON.stringify({valid,supportedD4,old:old.pendingDice,saved
         self.assertIn("state.missionActionContext?.missionId!==state.missionId", resume)
         self.assertIn("missionActivationId('player',operativeId)!==data.activationId", resume)
         self.assertIn("state.missionActionContext.actionId!==expectedAction", resume)
+        self.assertIn("state.pendingDice=null;save();\n      return resumeCheckpointedGameplayContext()", resume)
         startup_resume = APP[APP.index("async function resumeMissionActionContext") : APP.index("async function missionDiceTotal")]
         self.assertIn("performLocateItem(context.siteId,context.operativeId)", startup_resume)
         self.assertIn("performAwakenRoom(context.roomId)", startup_resume)

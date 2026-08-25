@@ -1622,7 +1622,10 @@ document.addEventListener('touchend',function(e){
   async function resumePendingDiceWorkflow(){
     const pending=state.pendingDice;
     if(!pending)return false;
-    if(!pendingDiceContextIsCurrent(pending)){state.pendingDice=null;save();return false;}
+    if(!pendingDiceContextIsCurrent(pending)){
+      state.pendingDice=null;save();
+      return resumeCheckpointedGameplayContext();
+    }
     const data=pending.resumeData||{};
     if(pending.resumeKind==='strategy'){await finishTurningPointStart();return true;}
     if(pending.resumeKind==='event'){await beginCurrentEvent();return true;}
