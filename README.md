@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.0.0
+# Tomb World Battle Guide v9.0.1
+
+## v9.0.1
+
+**Version 9.0.1 - Reliable Grade Narration**
+
+- Fixes intermittent Grade escalation narration by marking narration complete only after playback successfully starts.
+- Allows failed or blocked Grade narration attempts to retry while preserving duplicate suppression after successful playback.
+- Preserves Solo and Player vs. Player gameplay behavior, audio preferences, ambient audio, Dice SFX, and save schema version 3.
 
 ## v9.0.0
 

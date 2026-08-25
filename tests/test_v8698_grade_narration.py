@@ -32,8 +32,10 @@ class GradeNarrationReleaseTests(unittest.TestCase):
         self.assertIn("narrationSeen:false", threat)
         self.assertNotIn("playGradeEscalation", threat)
         self.assertIn("!$('.grade-milestone')", visible)
-        self.assertLess(visible.index("milestone.narrationSeen=true"), visible.index("if(!save())return"))
-        self.assertLess(visible.index("if(!save())return"), visible.index("playGradeEscalation"))
+        self.assertLess(visible.index("playGradeEscalation"), visible.index("currentMilestone.narrationSeen=true"))
+        self.assertIn("gradeNarrationInFlight.has(instanceId)", visible)
+        self.assertIn("gradeNarrationInFlight.delete(instanceId)", visible)
+        self.assertIn("currentMilestone?.instanceId===instanceId", visible)
         self.assertIn("isPlaybackEnabled()", visible)
         self.assertLess(render.index("app.innerHTML="), render.index("requestAnimationFrame(narrateVisibleGradeMilestone)"))
 
@@ -54,7 +56,8 @@ const c={Audio,URL,location:{href:'https://example.test/'},fetch:async()=>({ok:t
 const event=n.playEvent('e','event-1');await tick();const grade=n.playGradeEscalation(2,'occurrence-1');await tick();if(calls.length!==1)throw Error('grade interrupted event');Audio.instance.end();await event;await tick();if(!calls.at(-1).endsWith('grades/2.mp3')||calls.length!==2)throw Error('queued grade missing');if(await n.playGradeEscalation(2,'occurrence-1'))throw Error('duplicate played');
 n.setMasterEnabled(false);if(!Audio.instance.paused)throw Error('mute did not pause');n.setMasterEnabled(true);if(!await n.activateFromGesture())throw Error('unmute did not resume');if(!await n.replayLast())throw Error('replay failed');if(!calls.at(-1).endsWith('grades/2.mp3'))throw Error('grade not Replay Last');
 const queued=n.playGradeEscalation(3,'stale');n.stop();if(await queued)throw Error('stale grade survived stop');
-for(const [g,file] of [[1,'grades/1.mp3'],[3,'grades/3.mp3']]){const p=n.playGradeEscalation(g,'fresh-'+g);await tick();if(!calls.at(-1).endsWith(file))throw Error('mapping '+g);Audio.instance.end();await p;await tick()}
+const retry=n.playGradeEscalation(3,'stale');await tick();if(!calls.at(-1).endsWith('grades/3.mp3'))throw Error('stale grade was not retryable');Audio.instance.end();if(!await retry)throw Error('stale retry failed');
+for(const [g,file] of [[1,'grades/1.mp3'],[2,'grades/2.mp3'],[3,'grades/3.mp3']]){const p=n.playGradeEscalation(g,'fresh-'+g);await tick();if(!calls.at(-1).endsWith(file))throw Error('mapping '+g);Audio.instance.end();await p;await tick()}
 })().catch(e=>{console.error(e);process.exit(1)});
 """
         result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
