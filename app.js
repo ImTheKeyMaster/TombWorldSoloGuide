@@ -1496,11 +1496,14 @@ document.addEventListener('touchend',function(e){
     return Boolean(pending&&request.requestKey&&pending.requestKey===request.requestKey&&pending.count===request.count&&pending.sides===request.sides);
   }
   function persistManualDice(active,status='collecting'){
-    if(!active.request.requestKey||!active.request.resumeKind)return;
+    if(!active.request.requestKey||!active.request.resumeKind)return true;
+    const previousPending=state.pendingDice;
     state.pendingDice={version:1,requestKey:active.request.requestKey,status,count:active.request.count,sides:active.request.sides,
       title:active.request.title,instruction:active.request.instruction,rollerLabel:active.request.rollerLabel,values:active.values.slice(),
       resumeKind:active.request.resumeKind,resumeData:cloneDiceData(active.request.resumeData)};
-    save();
+    if(save())return true;
+    state.pendingDice=previousPending;
+    return false;
   }
   function acknowledgeDiceRequest(requestKey){
     if(!requestKey||state.pendingDice?.requestKey!==requestKey||state.pendingDice.status!=='committed')return false;
@@ -1521,15 +1524,15 @@ document.addEventListener('touchend',function(e){
     const active=activeManualDiceRequest;
     if(!active||active.committed||!Number.isInteger(value)||value<1||value>active.request.sides||active.values.length>=active.request.count)return false;
     active.values.push(value);
-    persistManualDice(active);
+    if(!persistManualDice(active)){active.values.pop();return false;}
     renderManualDiceEntry();
     return true;
   }
   function undoManualDie(){
     const active=activeManualDiceRequest;
     if(!active||active.committed||!active.values.length)return false;
-    active.values.pop();
-    persistManualDice(active);
+    const value=active.values.pop();
+    if(!persistManualDice(active)){active.values.push(value);return false;}
     renderManualDiceEntry();
     return true;
   }
@@ -1537,7 +1540,7 @@ document.addEventListener('touchend',function(e){
     const active=activeManualDiceRequest;
     if(!active||active.committed||active.values.length!==active.request.count)return false;
     active.committed=true;
-    persistManualDice(active,'committed');
+    if(!persistManualDice(active,'committed')){active.committed=false;renderManualDiceEntry();return false;}
     renderManualDiceEntry();
     const results=active.values.slice(),resolve=active.resolve,returnFocus=active.returnFocus;
     activeManualDiceRequest=null;
@@ -1552,7 +1555,7 @@ document.addEventListener('touchend',function(e){
     const promise=new Promise(resolve=>{resolveRequest=resolve;});
     try{
       activeManualDiceRequest={request,values:restoredValues.slice(),resolve:resolveRequest,promise,committed:false,returnFocus:document.activeElement};
-      persistManualDice(activeManualDiceRequest);
+      if(!persistManualDice(activeManualDiceRequest))throw new Error('The manual dice request could not be saved.');
       diceEntryTitle.textContent=request.title;
       diceEntryInstruction.textContent=request.instruction;
       diceEntryRoller.textContent=request.rollerLabel;
