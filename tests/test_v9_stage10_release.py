@@ -11,7 +11,7 @@ INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
 PERSISTENCE = (ROOT / "persistence.js").read_text(encoding="utf-8")
 README = (ROOT / "README.md").read_text(encoding="utf-8")
 WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
-EXPECTED_RELEASE = '.'.join(('9', '0', '1'))
+EXPECTED_RELEASE = '.'.join(('9', '1', '0'))
 
 
 class Stage10ReleaseTests(unittest.TestCase):

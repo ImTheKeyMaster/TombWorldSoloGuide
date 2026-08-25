@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v9.0.1
+# Tomb World Battle Guide v9.1.0
+
+## v9.1.0
+
+**Version 9.1.0 - Universal Human Activations**
+
+- Adds one sequential activation system for human-controlled Kill Team operatives and PvP Necrons.
+- Resolves Kill Team actions one at a time, with AP and Completed Actions remaining visible throughout the activation.
+- Reevaluates action legality after each committed action and replaces Player batch planning and Pass with explicit End Activation.
+- Preserves the existing Guide-controlled Solo Necron AI decision flow and save schema version 3.
 
 ## v9.0.1
 
