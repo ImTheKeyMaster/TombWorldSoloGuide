@@ -150,7 +150,7 @@ const context={
       add:async()=>{},
       match:async path=>new Response(JSON.stringify(path.includes('narration-manifest')?{entries:{}}:{landscape:['Landscape-01.png']}),{status:200})
     }),
-    keys:async()=>['tomb-world-solo-guide-7.0.6','unrelated-cache'],
+    keys:async()=>['tomb-world-solo-guide-7.0.6','tomb-world-battle-guide-8.6.108','unrelated-cache'],
     delete:async name=>{deleted.push(name);return true;},
     match:async()=>undefined
   },
@@ -165,12 +165,12 @@ const dispatch=async name=>{
 (async()=>{
   await dispatch('install');
   assert.equal(added.length,2);
-  assert.equal(added[0].name,'tomb-world-solo-guide-__CURRENT_APP_VERSION__');
+  assert.equal(added[0].name,'tomb-world-battle-guide-__CURRENT_APP_VERSION__');
   assert.ok(added[0].assets.includes('./index.html'));
   assert.ok(added[0].assets.includes('./app.js?v=__CURRENT_APP_VERSION__'));
   assert.deepEqual(added[1].assets,['./Assets/Images/Backgrounds/Landscape-01.png']);
   await dispatch('activate');
-  assert.deepEqual(deleted,['tomb-world-solo-guide-7.0.6']);
+  assert.deepEqual(deleted,['tomb-world-solo-guide-7.0.6','tomb-world-battle-guide-8.6.108']);
 })().catch(error=>{console.error(error);process.exitCode=1;});
 """
         script = script.replace("__CURRENT_APP_VERSION__", CURRENT_APP_VERSION)

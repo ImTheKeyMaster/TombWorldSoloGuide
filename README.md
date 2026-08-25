@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v8.6.108
+# Tomb World Battle Guide v9.0.0
+
+## v9.0.0
+
+**Version 9.0.0 - Tomb World Battle Guide**
+
+- Adds Solo / Player vs. Player mode selection. Solo retains Guide-controlled Necrons and automatic dice; PvP gives a second player control of Necron actions, targets, and weapon/profile choices through the shared rules engine and mode-aware terminology.
+- Adds physical PvP dice entry for attack, defense, initiative, mission, Tomb World Event, Threat, and Necron special-action rolls, including persistent partial entry and resumable committed results.
+- Renames the product to Tomb World Battle Guide and uses the `tombWorldBattleGuide.v1` runtime namespace. Pre-v9 saved battles and preferences are intentionally not migrated; the save schema remains version 3.
+- Keeps Deadly Encounters Solo-only and rolls the PWA cache to `tomb-world-battle-guide-`, cleaning obsolete Tomb World application caches without affecting unrelated origin caches.
 
 ## v8.6.108
 
@@ -1787,7 +1796,7 @@ python3 -m unittest discover -s tests -v
 
 The Guide stores current battles under the `tombWorldBattleGuide.v1` browser-storage key. The pre-v9 Tomb World Solo Guide namespace is intentionally ignored; new Solo and PvP battles use the current namespace and save schema.
 
-The service-worker cache prefix remains `tomb-world-solo-guide-` until the Stage 10 v9.0.0 release rollover. Stage 10 must change it to `tomb-world-battle-guide-` and remove obsolete caches from both app prefixes while retaining the current cache.
+The service-worker cache prefix is `tomb-world-battle-guide-`. During activation, v9 removes obsolete caches from both Tomb World cache namespaces while retaining the current cache and unrelated origin caches.
 
 ### Installing the app
 
