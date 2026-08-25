@@ -1,7 +1,8 @@
 'use strict';
 
-const APP_VERSION = '8.6.108';
-const CACHE_PREFIX = 'tomb-world-solo-guide-';
+const APP_VERSION = '9.0.0';
+const CACHE_PREFIX = 'tomb-world-battle-guide-';
+const LEGACY_CACHE_PREFIXES = ['tomb-world-solo-guide-'];
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
 const APP_SHELL = './index.html';
 const NARRATION_MANIFEST = './Assets/Audio/Narration/narration-manifest.json';
@@ -77,7 +78,10 @@ self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
       .then(names => Promise.all(names
-        .filter(name => name.startsWith(CACHE_PREFIX) && name !== CACHE_NAME)
+        .filter(name => (
+          name.startsWith(CACHE_PREFIX) ||
+          LEGACY_CACHE_PREFIXES.some(prefix => name.startsWith(prefix))
+        ) && name !== CACHE_NAME)
         .map(name => caches.delete(name))))
       .then(() => self.clients.claim())
   );
