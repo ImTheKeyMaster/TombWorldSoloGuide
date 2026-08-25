@@ -1604,13 +1604,18 @@ document.addEventListener('touchend',function(e){
     if(pending.resumeKind==='strategy'&&state.phase!=='strategy')return false;
     if(pending.resumeKind==='combat'&&!state.combatState&&!state.lastActivation?.combatDraft&&!state.hotResolution)return false;
     if(pending.resumeKind==='hot'&&(state.hotResolution?.id!==data.hotResolutionId||state.hotResolution.acknowledged))return false;
-    if(pending.resumeKind==='player-activation'&&state.combatState?.side!=='player')return false;
+    if(pending.resumeKind==='player-activation'){
+      const operativeId=state.combatState?.stage?.playerOperativeId;
+      if(state.combatState?.side!=='player'||operativeId!==data.operativeId||missionActivationId('player',operativeId)!==data.activationId)return false;
+    }
     if(pending.resumeKind==='npo-special-action'&&(state.lastActivation?.npoId!==data.npoId||!state.lastActivation.pendingAction||state.lastActivation.pendingAction.id!==data.actionId))return false;
     if(pending.resumeKind==='breach-sarcophagus'&&state.missionActionContext?.activationId!==data.activationId)return false;
     if(pending.resumeKind==='mission'){
       const operationId=data.operationId||data.resultId;
       if(operationId==='repairRoll')return state.phase==='strategy'&&state.strategyPipeline?.current==='mission-ready-hooks'&&state.missionReadyContext?.turningPoint===state.turningPoint;
       if(!['searchRoll','awakenRoll','directionRoll','distanceRoll'].includes(operationId)||state.missionActionContext?.missionId!==state.missionId)return false;
+      const expectedAction={searchRoll:'searchTransponder',awakenRoll:missionEngine()?.actions?.awakenRoom,directionRoll:'auspexCalibration',distanceRoll:'auspexCalibration'}[operationId];
+      if(state.missionActionContext.actionId!==expectedAction)return false;
     }
     return true;
   }
