@@ -1,112 +1,100 @@
-from versioning import CURRENT_APP_VERSION
-import re
-import unittest
+"""The v8.6.24 touch regression adapted to the separated v9.1 picker."""
 from pathlib import Path
+import unittest
 
-ROOT = Path(__file__).resolve().parents[1]
-APP = (ROOT / "app.js").read_text()
-INDEX = (ROOT / "index.html").read_text()
-STYLES = (ROOT / "styles.css").read_text()
-WORKER = (ROOT / "service-worker.js").read_text()
-README = (ROOT / "README.md").read_text()
-PERSISTENCE = (ROOT / "persistence.js").read_text()
+from versioning import CURRENT_APP_VERSION
+
+ROOT=Path(__file__).resolve().parents[1]
+APP=(ROOT/'app.js').read_text()
+INDEX=(ROOT/'index.html').read_text()
+STYLES=(ROOT/'styles.css').read_text()
+WORKER=(ROOT/'service-worker.js').read_text()
+README=(ROOT/'README.md').read_text()
+PERSISTENCE=(ROOT/'persistence.js').read_text()
+
+
+def section(start,end): return APP.split(start,1)[1].split(end,1)[0]
 
 
 class MobileOperativePickerCloseTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.activation = re.search(
-            r"function showPlayerActivation\(stage=\{\}\).*?\n  function readPlayerActivationStage",
-            APP,
-            re.S,
-        ).group()
-        cls.handler = re.search(
-            r"operativeSelect\?\.addEventListener\('change',event=>\{.*?\n    \}\);",
-            cls.activation,
-            re.S,
-        ).group()
-        cls.close_helper = re.search(
-            r"function closeTouchSelectAfterCommit\(select,onComplete\)\{.*?\n  \}", APP, re.S
-        ).group()
+        cls.selection=section('function showPlayerActivation()','function playerActivationSummary')
+        cls.begin=section('function beginPlayerActivation','function playerHumanActionCatalog')
+        cls.picker=section('function renderHumanPlayerActionPicker','function playerSequentialStage')
+        cls.shell=section('function renderHumanActivationShell','function renderHumanPlayerActionPicker')
+        cls.touch=section('function closeTouchSelectAfterCommit','let modalFocusSequence')
 
-    def test_01_application_displays_version_8624(self):
-        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
-        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
-        self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
-        self.assertTrue(README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
+    def test_01_release_surfaces_are_current(self):
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';",APP)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';",WORKER)
+        self.assertIn(f'V{CURRENT_APP_VERSION}',INDEX)
+        self.assertTrue(README.startswith(f'# Tomb World Battle Guide v{CURRENT_APP_VERSION}'))
 
-    def test_02_player_selection_has_one_canonical_change_handler(self):
-        self.assertEqual(self.activation.count("operativeSelect?.addEventListener('change'"), 1)
-        self.assertNotIn("operativeSelect?.addEventListener('input'", self.activation)
+    def test_02_selection_is_separate_from_actions(self):
+        self.assertIn('Choose a Ready operative',self.selection)
+        self.assertNotIn('data-human-action',self.selection)
 
-    def test_03_valid_selection_commits_once(self):
-        self.assertEqual(self.handler.count("selectOperative(stage,operativeId)"), 1)
-        self.assertEqual(self.handler.count("showPlayerActivation(selectedStage)"), 1)
+    def test_03_selection_has_one_commit_handler(self):
+        self.assertEqual(self.selection.count("beginPlayerActivation($('#humanPlayerSelection').value)"),1)
 
-    def test_04_selection_does_not_rerun_initial_focus(self):
-        self.assertNotIn("focusInitialDialogControl", self.handler)
-        self.assertIn("modal._skipFocusRestoreId=select.id", self.handler)
+    def test_04_placeholder_cannot_continue(self):
+        self.assertIn('id="confirmHumanPlayerSelection" disabled',self.selection)
+        self.assertIn("disabled=!$('#humanPlayerSelection').value",self.selection)
 
-    def test_05_selector_is_not_refocused_after_rerender(self):
-        self.assertIn("const shouldRestoreFocus=modal._skipFocusRestoreId!==activeControlId;", APP)
-        self.assertIn("else if(shouldRestoreFocus)restoreDialogControlFocus", APP)
-        self.assertNotRegex(self.handler, r"\.focus\(")
+    def test_05_selection_uses_one_change_handler(self):
+        self.assertEqual(self.selection.count("$('#humanPlayerSelection').onchange"),1)
+        self.assertNotIn("addEventListener('input'",self.selection)
 
-    def test_06_coarse_pointer_releases_focus_after_commit(self):
-        self.assertIn("window.matchMedia('(hover: none) and (pointer: coarse)').matches", self.close_helper)
-        self.assertIn("if(document.activeElement===select)select.blur();", self.close_helper)
-        self.assertIn("closeTouchSelectAfterCommit(select,()=>showPlayerActivation(selectedStage))", self.handler)
-        self.assertLess(self.close_helper.index("select.blur()"), self.close_helper.rindex("onComplete()"))
+    def test_06_begin_validates_ready_operative(self):
+        self.assertIn('remainingPlayerOperatives().includes(operativeId)',self.begin)
 
-    def test_07_value_is_captured_before_blur(self):
-        self.assertLess(self.handler.index("const operativeId=select.value"), self.handler.index("closeTouchSelectAfterCommit(select"))
+    def test_07_begin_persists_before_rendering_picker(self):
+        self.assertLess(self.begin.index('save()'),self.begin.index('renderHumanPlayerActionPicker()'))
 
-    def test_08_keyboard_selection_is_not_unconditionally_blurred(self):
-        self.assertIn("if(!coarsePointer){onComplete();return;}", self.close_helper)
-        self.assertLess(self.close_helper.index("if(!coarsePointer)"), self.close_helper.index("select.blur()"))
+    def test_08_selected_operative_is_locked(self):
+        self.assertIn('activation.operativeId',self.picker)
+        self.assertNotIn('humanPlayerSelection',self.picker)
 
-    def test_09_selected_operative_remains_displayed(self):
-        self.assertIn("selectedId===id?'selected':''", self.activation)
-        self.assertIn("playerOperativeId:id||''", self.activation)
+    def test_09_closing_guide_does_not_cancel_activation(self):
+        self.assertIn('Close Guide',self.shell)
+        self.assertNotIn('cancelCurrentHumanPlayerAction',self.shell)
 
-    def test_10_ap_is_preserved_during_selection(self):
-        self.assertIn("baseApl,apl:id?effectiveApl(id,baseApl):baseApl", self.activation)
-        self.assertNotRegex(self.handler, r"playerActionCost|apl\s*[-+]=|spend")
+    def test_10_reopen_uses_existing_activation(self):
+        self.assertIn('if(active){void resumeCheckpointedGameplayContext();return;}',self.selection)
 
-    def test_11_available_actions_update_for_selected_operative(self):
-        self.assertIn("const moveDistance=Number(selectedOperative?.move||6)", self.activation)
-        self.assertIn("updatePlayerActionAvailability", self.activation)
+    def test_11_numeric_ap_remains_visible(self):
+        self.assertIn('${remainingAp} / ${startingAp} AP remaining',self.shell)
 
-    def test_12_placeholder_does_not_commit(self):
-        self.assertIn("if(!operativeId)return;", self.handler)
+    def test_12_long_labels_can_wrap(self):
+        self.assertIn('overflow-wrap:anywhere',STYLES)
+        self.assertIn('white-space:normal',STYLES)
 
-    def test_13_no_duplicate_input_and_change_commits(self):
-        self.assertNotRegex(self.activation, r"operativeSelect.*addEventListener\('input'")
-        self.assertEqual(self.handler.count("selectOperative(stage,operativeId)"), 1)
+    def test_13_touch_targets_remain_large(self):
+        self.assertIn('min-height:56px',STYLES)
 
-    def test_14_refresh_preserves_selected_operative(self):
-        self.assertIn("state.combatState?.side==='player'", self.activation)
-        self.assertIn("stage={...state.combatState.stage}", self.activation)
+    def test_14_narrow_layout_uses_one_action_column(self):
+        self.assertIn('@media(max-width:520px)',STYLES)
+        self.assertIn('grid-template-columns:1fr',STYLES)
 
-    def test_15_update_preserves_selected_operative(self):
-        self.assertIn("const stagedId=String(stage.playerOperativeId||'')", self.activation)
-        self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
+    def test_15_320_width_action_content_stacks(self):
+        self.assertIn('@media(max-width:340px)',STYLES)
+        self.assertIn('flex-direction:column',STYLES)
 
-    def test_16_npo_selection_remains_functional(self):
-        self.assertIn("$('#officialNpoSelection').onchange", APP)
-        self.assertIn("$('#npoPriorityTarget')?.addEventListener('change'", APP)
+    def test_16_coarse_pointer_helper_still_releases_select_focus(self):
+        self.assertIn("(hover: none) and (pointer: coarse)",self.touch)
+        self.assertIn('select.blur()',self.touch)
 
-    def test_17_real_controls_keep_visible_keyboard_focus(self):
-        self.assertIn(".btn:focus-visible", STYLES)
-        self.assertNotRegex(STYLES, r"select:focus(?:-visible)?\s*\{\s*outline\s*:\s*none")
+    def test_17_keyboard_focus_is_not_suppressed(self):
+        self.assertIn('.btn:focus-visible',STYLES)
+        self.assertNotRegex(STYLES,r'select:focus(?:-visible)?\s*\{\s*outline\s*:\s*none')
 
-    def test_18_save_version_remains_unchanged(self):
-        self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
+    def test_18_accessible_action_name_contains_cost_and_status(self):
+        self.assertIn('`${action.name}, ${action.cost} AP, ${status}${detail}, ${remainingAp} AP remaining`',self.shell)
+        self.assertIn('aria-description',self.shell)
 
-    def test_19_release_notes_are_present(self):
-        self.assertIn("## v8.6.25", README)
-        self.assertIn("Version 8.6.24 - Close Player Operative Picker After Selection", README)
+    def test_19_save_version_remains_unchanged(self):
+        self.assertIn('const SAVE_VERSION = 3;',PERSISTENCE)
 
 
-if __name__ == "__main__":
-    unittest.main()
+if __name__=='__main__': unittest.main()

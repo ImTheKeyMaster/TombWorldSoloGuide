@@ -1,142 +1,98 @@
-from versioning import CURRENT_APP_VERSION
-import re
-import unittest
+"""Picker reopen safety coverage adapted to the v9.1 locked activation."""
 from pathlib import Path
+import unittest
 
-ROOT = Path(__file__).resolve().parents[1]
-APP = (ROOT / "app.js").read_text()
-INDEX = (ROOT / "index.html").read_text()
-README = (ROOT / "README.md").read_text()
-WORKER = (ROOT / "service-worker.js").read_text()
-PERSISTENCE = (ROOT / "persistence.js").read_text()
-STYLES = (ROOT / "styles.css").read_text()
+from versioning import CURRENT_APP_VERSION
+
+ROOT=Path(__file__).resolve().parents[1]
+APP=(ROOT/'app.js').read_text()
+INDEX=(ROOT/'index.html').read_text()
+STYLES=(ROOT/'styles.css').read_text()
+PERSISTENCE=(ROOT/'persistence.js').read_text()
+README=(ROOT/'README.md').read_text()
+
+
+def section(start,end): return APP.split(start,1)[1].split(end,1)[0]
 
 
 class PlayerActivationReopenSelectTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.activation = re.search(
-            r"function showPlayerActivation\(stage=\{\}\).*?\n  function readPlayerActivationStage",
-            APP,
-            re.S,
-        ).group()
-        cls.handler = re.search(
-            r"operativeSelect\?\.addEventListener\('change',event=>\{.*?\n    \}\);",
-            cls.activation,
-            re.S,
-        ).group()
-        cls.focus = re.search(
-            r"let modalFocusGeneration=0;.*?\n  modal\.addEventListener\('cancel'",
-            APP,
-            re.S,
-        ).group()
-        cls.close_helper = re.search(
-            r"function closeTouchSelectAfterCommit\(select,onComplete\)\{.*?\n  \}",
-            APP,
-            re.S,
-        ).group()
+        cls.selection=section('function showPlayerActivation()','function playerActivationSummary')
+        cls.active=section('function activePlayerActivation','function beginPlayerActivation')
+        cls.begin=section('function beginPlayerActivation','function playerHumanActionCatalog')
+        cls.picker=section('function renderHumanPlayerActionPicker','function playerSequentialStage')
+        cls.shell=section('function renderHumanActivationShell','function renderHumanPlayerActionPicker')
 
-    def test_01_application_displays_version_8631(self):
-        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
-        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
-        self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
-        self.assertTrue(README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
+    def test_01_application_displays_current_version(self):
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';",APP)
+        self.assertIn(f'V{CURRENT_APP_VERSION}',INDEX)
 
-    def test_02_selector_never_uses_pointer_events_none(self):
-        self.assertNotRegex(self.activation, r"pointerEvents\s*=\s*['\"]none")
-        self.assertNotRegex(self.activation, r"pointer-events\s*:\s*none")
-        self.assertNotIn("operativeSelect?.style", self.activation)
+    def test_02_selector_never_disables_pointer_events(self):
+        self.assertNotRegex(STYLES,r'#humanPlayerSelection[^}]*pointer-events\s*:\s*none')
 
     def test_03_no_animation_frame_disables_selector(self):
-        frames = re.findall(r"requestAnimationFrame\(.*?\);", self.activation, re.S)
-        self.assertFalse(any("pointer" in frame for frame in frames))
+        self.assertNotIn('requestAnimationFrame',self.selection)
 
-    def test_04_selector_is_outside_inactive_action_fieldset(self):
-        select_end = self.activation.index('</select>')
-        fieldset_start = self.activation.index('<fieldset id="playerActivationControls"')
-        self.assertLess(select_end, fieldset_start)
-        self.assertIn("class=\"${selectedId?'':'inactive'}\"", self.activation)
+    def test_04_selection_is_outside_action_shell(self):
+        self.assertNotIn('data-human-action',self.selection)
+        self.assertNotIn('humanPlayerSelection',self.picker)
 
-    def test_05_cancel_does_not_complete_activation(self):
-        self.assertIn("$('#cancelPlayerActivation').onclick=()=>{closeModal();render();};", self.activation)
-        cancel = self.activation.split("$('#cancelPlayerActivation').onclick=", 1)[1].split("$('#confirmPlayer').onclick=", 1)[0]
-        self.assertNotRegex(cancel, r"complete|confirm|resolvePendingPlayerAttacks")
+    def test_05_close_does_not_complete_activation(self):
+        self.assertIn('Close Guide',self.shell)
+        self.assertNotIn('completeHumanPlayerActivation',self.shell)
 
-    def test_06_cancel_does_not_decrement_player_ready(self):
-        cancel = self.activation.split("$('#cancelPlayerActivation').onclick=", 1)[1].split("$('#confirmPlayer').onclick=", 1)[0]
-        self.assertNotIn("playerReady", cancel)
+    def test_06_close_does_not_decrement_player_ready(self):
+        self.assertNotIn('playerReady=',self.shell)
 
-    def test_07_cancel_does_not_increment_activation_count(self):
-        cancel = self.activation.split("$('#cancelPlayerActivation').onclick=", 1)[1].split("$('#confirmPlayer').onclick=", 1)[0]
-        self.assertNotRegex(cancel, r"activationCount|completedActivations|activationNumber")
+    def test_07_close_does_not_increment_activation_count(self):
+        self.assertNotIn('activationNumber++',self.shell)
 
-    def test_08_reopen_builds_a_fresh_enabled_selector(self):
-        self.assertIn('<select id="playerOperativeSelect">', self.activation)
-        opening_tag = self.activation.split('<select id="playerOperativeSelect"', 1)[1].split('>', 1)[0]
-        self.assertNotIn('disabled', opening_tag)
-        self.assertIn("modalBody.innerHTML=", self.focus)
+    def test_08_reopen_uses_locked_picker(self):
+        self.assertIn('if(active){void resumeCheckpointedGameplayContext();return;}',self.selection)
 
-    def test_09_reopen_has_placeholder_without_pending_activation(self):
-        self.assertIn('<option value="">Select a Player operative...</option>', self.activation)
-        self.assertIn("const stagedId=String(stage.playerOperativeId||'')", self.activation)
+    def test_09_fresh_selection_has_placeholder(self):
+        self.assertIn('<option value="">Select a Ready operative</option>',self.selection)
 
-    def test_10_selector_remains_touch_interactive_after_reopen(self):
-        self.assertNotIn("operativeSelect.style.pointerEvents", self.activation)
-        self.assertNotRegex(STYLES, r"#playerOperativeSelect[^}]*pointer-events\s*:\s*none")
+    def test_10_selector_remains_touch_interactive(self):
+        self.assertNotIn('disabled>',self.selection.split('id="humanPlayerSelection"',1)[1].split('</select>',1)[0])
 
-    def test_11_coarse_pointer_focus_does_not_target_select(self):
-        self.assertIn("focusContainerOnTouch&&coarsePointer?dialog", self.focus)
-        self.assertIn("data-touch-dialog-focus-container", self.activation)
+    def test_11_touch_focus_uses_dialog_focus_marker(self):
+        self.assertIn('data-dialog-focus',self.selection)
 
-    def test_12_coarse_pointer_focus_uses_safe_dialog_container(self):
-        self.assertIn("window.matchMedia('(hover: none) and (pointer: coarse)').matches", self.focus)
-        self.assertIn("modal.setAttribute('tabindex','-1')", self.focus)
-        self.assertRegex(STYLES, r"\.modal:focus\{\s*outline:none;")
+    def test_12_shell_close_is_a_real_button(self):
+        self.assertIn('<button class="btn ghost" data-close>Close Guide</button>',self.shell)
 
-    def test_13_desktop_keyboard_focus_can_reach_selector(self):
-        self.assertIn("select:not([disabled])", self.focus)
-        self.assertIn("select:not([disabled])", self.focus.split("modal.addEventListener('keydown'", 1)[-1] if "modal.addEventListener('keydown'" in self.focus else APP)
-        self.assertNotRegex(STYLES, r"select:focus(?:-visible)?\s*\{\s*outline\s*:\s*none")
+    def test_13_desktop_keyboard_can_reach_selector(self):
+        self.assertIn('<select id="humanPlayerSelection"',self.selection)
+        self.assertNotIn('tabindex="-1"',self.selection)
 
     def test_14_selection_commits_exactly_once(self):
-        self.assertEqual(self.handler.count("selectOperative(stage,operativeId)"), 1)
-        self.assertEqual(self.handler.count("showPlayerActivation(selectedStage)"), 1)
-        self.assertEqual(self.activation.count("operativeSelect?.addEventListener('change'"), 1)
+        self.assertEqual(self.selection.count("beginPlayerActivation($('#humanPlayerSelection').value)"),1)
 
-    def test_15_selected_operative_enables_legal_actions(self):
-        self.assertIn("class=\"${selectedId?'':'inactive'}\"", self.activation)
-        self.assertIn("updatePlayerActionAvailability();", self.activation)
-        self.assertIn("box.disabled=", self.activation)
+    def test_15_selected_operative_gets_effective_ap(self):
+        self.assertIn('apl=effectiveApl(operativeId,baseApl)',self.begin)
 
-    def test_16_touch_picker_closing_behavior_remains(self):
-        self.assertIn("if(document.activeElement===select)select.blur();", self.close_helper)
-        self.assertLess(self.close_helper.index("select.blur()"), self.close_helper.rindex("onComplete()"))
-        self.assertIn("closeTouchSelectAfterCommit(select,()=>showPlayerActivation(selectedStage))", self.handler)
-        self.assertIn("focusGeneration!==modalFocusGeneration||!modal.open", self.close_helper)
+    def test_16_touch_exemption_remains(self):
+        self.assertIn("window.matchMedia('(hover: none) and (pointer: coarse)').matches",APP)
 
-    def test_17_close_clears_modal_focus_suppression_state(self):
-        close = self.focus.split("function closeModal(){", 1)[1]
-        for state in ("_skipFocusRestoreId", "_focusKey", "_onClose", "_returnFocus"):
-            self.assertIn(f"modal.{state}=null", close)
-        self.assertIn("document.getElementById(returnFocusId)", close)
+    def test_17_close_uses_shared_modal_behavior(self):
+        self.assertIn("$$('[data-human-action]',modalBody)",self.shell)
+        self.assertIn('data-close',self.shell)
 
-    def test_18_stale_focus_frames_are_generation_guarded(self):
-        self.assertIn("const focusGeneration=++modalFocusGeneration;", self.focus)
-        self.assertGreaterEqual(self.focus.count("focusGeneration!==modalFocusGeneration"), 3)
+    def test_18_stale_active_activation_is_guarded(self):
+        self.assertIn("state.lastActivation?.side==='player'",self.active)
+        self.assertIn('!state.lastActivation.committed',self.active)
 
-    def test_19_rapid_cancel_activate_cannot_disable_selector(self):
-        self.assertIn("const focusGeneration=++modalFocusGeneration;", self.focus.split("function closeModal(){", 1)[1])
-        self.assertNotIn("style.pointerEvents", self.activation)
-        self.assertNotIn("setTimeout", self.activation.split("const operativeSelect", 1)[1].split("const actionIds", 1)[0])
+    def test_19_rapid_reopen_does_not_create_second_activation(self):
+        self.assertLess(self.selection.index('if(active)'),self.selection.index('const candidates='))
 
     def test_20_save_version_is_unchanged(self):
-        self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
+        self.assertIn('const SAVE_VERSION = 3;',PERSISTENCE)
 
     def test_21_release_notes_are_present(self):
-        self.assertIn("## v8.6.31", README)
-        self.assertIn("Version 8.6.31 - Fix Player Operative Selector After Cancel", README)
-        self.assertIn("## v8.6.30", README)
+        self.assertIn(f'## v{CURRENT_APP_VERSION}',README)
+        self.assertIn('Universal Human Activations',README)
 
 
-if __name__ == "__main__":
-    unittest.main()
+if __name__=='__main__': unittest.main()

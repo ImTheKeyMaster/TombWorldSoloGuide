@@ -21,7 +21,7 @@ class DestroySarcophagusV860Tests(unittest.TestCase):
         self.assertEqual(DEFINITION["dialogs"]["objectiveComplete"]["message"], "The sarcophagus has been destroyed. The Player team is victorious.")
 
     def test_activation_only_guided_presentation(self):
-        self.assertIn("Breach Sarcophagus (${breachCost} AP)", APP)
+        self.assertIn("name:'Breach Sarcophagus',group:'mission',cost:breachSarcophagusApCost(operativeId)", APP)
         self.assertIn("Is this operative within the sarcophagus’s control range?", APP)
         self.assertIn("Is this operative outside the control range of every NPO?", APP)
         self.assertIn("Not enough AP to Breach the sarcophagus.", APP)

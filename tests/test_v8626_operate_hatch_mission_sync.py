@@ -31,7 +31,7 @@ class TestV8626OperateHatchMissionSync(unittest.TestCase):
 
     def test_03_breach_only_closed_breach_points(self):
         self.assertIn("closedMissionFeatures('breach-point')", APP)
-        self.assertIn("showActivationFeatureTargetSelection(finalStage,'breach')", APP)
+        self.assertIn("showActivationFeatureTargetSelection(stage,'breach')", APP)
 
     def test_04_distinct_target_fields(self):
         self.assertIn("isHatch?'hatchTargetId':'breachTargetId'", APP)
@@ -74,9 +74,9 @@ class TestV8626OperateHatchMissionSync(unittest.TestCase):
         self.assertIn("missionStateSnapshot", complete)
 
     def test_13_refresh_preserves_pending_without_commit(self):
-        reader = self.function("readPlayerActivationStage")
+        selector = self.function("showActivationFeatureTargetSelection")
         for field in ("hatchTargetId", "hatchFeatureType", "hatchTransactionId"):
-            self.assertIn(field, reader)
+            self.assertIn(field, selector)
         self.assertIn("state.combatState={side:'player',stage:nextStage};\n      save();", APP)
 
     def test_14_refresh_after_commit_does_not_recommit(self):
@@ -97,7 +97,9 @@ class TestV8626OperateHatchMissionSync(unittest.TestCase):
         self.assertIn("already-open", updater)
 
     def test_18_no_targets_disable_actions(self):
-        self.assertIn("!closedMissionFeatures('hatchway').length?'disabled':''", APP)
+        legality = self.function("playerHumanActionState")
+        self.assertIn("!closedMissionFeatures('hatchway').length", legality)
+        self.assertIn("reason:'No closed hatchway'", legality)
         self.assertIn("No closed ${isHatch?'hatchways':'breach points'} remain", APP)
 
     def test_19_existing_breach_behavior_uses_shared_path(self):

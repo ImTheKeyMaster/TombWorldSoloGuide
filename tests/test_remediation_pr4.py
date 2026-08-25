@@ -69,7 +69,8 @@ class RemediationPr4Tests(unittest.TestCase):
         commit = self.function_source('completeNpoActivation', 'applyNpoAttackDamage')
         for mutation in ('n.ready=false', 'state.npoActivated++', 'state.activationNumber++', 'advanceAfterActivation', 'setThreat('):
             self.assertIn(mutation, commit)
-        self.assertIn('if(state.lastActivation?.committed)return', commit)
+        self.assertIn('if(activation?.committed)', commit)
+        self.assertIn('if(!activation.completionHookPending)return', commit)
 
     def test_version_and_cache_identifiers_are_synchronized(self):
         expected = f'{CURRENT_APP_VERSION}'

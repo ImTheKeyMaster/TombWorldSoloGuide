@@ -93,7 +93,9 @@ process.stdout.write(JSON.stringify({valid,supportedD4,schemaDefaultPendingDice:
         self.assertIn("discardActiveManualDiceRequest()", new_game)
         self.assertIn("resumeNpoSpecialActionContext()", APP)
         checkpointed = APP[APP.index("async function resumeCheckpointedGameplayContext") : APP.index("async function missionDiceTotal")]
-        self.assertIn("resolvePendingPlayerAttacks({...state.combatState.stage})", checkpointed)
+        self.assertIn("const stage={...state.combatState.stage}", checkpointed)
+        self.assertIn("if(stage.sequential&&!resumableSequentialAction){cancelCurrentHumanPlayerAction();return true;}", checkpointed)
+        self.assertIn("resolvePendingPlayerAttacks(stage)", checkpointed)
         self.assertIn("continueHumanNecronActivation()", checkpointed)
         self.assertIn("pendingAction?.diceResults", checkpointed)
         self.assertIn("['initiative','event'].includes(state.strategyPipeline?.current)", checkpointed)

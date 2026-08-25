@@ -46,7 +46,7 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
         self.assertIn(incapacitated, human)
         self.assertIn(stale, human)
         self.assertLess(human.index(incapacitated), human.index(stale))
-        for lifecycle_step in ("if(state.lastActivation?.committed)return", "state.npoActivated++", "state.activationHistory.unshift", "advanceAfterActivation('npo')", "onNpoActivationCompleted"):
+        for lifecycle_step in ("if(activation?.committed)", "completionHookPending", "state.npoActivated++", "state.activationHistory.unshift", "advanceAfterActivation('npo')", "onNpoActivationCompleted"):
             self.assertIn(lifecycle_step, completion)
 
     def test_human_catalog_is_separate_from_ai_priority(self):
@@ -145,12 +145,13 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
 
     def test_picker_is_sequential_accessible_and_shows_progress(self):
         picker = self.section("function renderHumanNpoActionPicker", "function selectHumanNpoAction")
-        self.assertIn("data-human-npo-action", picker)
-        self.assertIn("disabled", picker)
-        self.assertIn("aria-label", picker)
-        self.assertIn("AP remaining", self.section("function renderNpoActivationHeader", "function renderNpoGuideFooter"))
-        self.assertIn("Completed actions", picker)
-        self.assertIn("End Activation", picker)
+        shell = self.section("function renderHumanActivationShell", "function renderHumanPlayerActionPicker")
+        self.assertIn("renderHumanActivationShell", picker)
+        self.assertIn("disabled:!available", picker)
+        self.assertIn("aria-label", shell)
+        self.assertIn("AP remaining", shell)
+        self.assertIn("Completed Actions", shell)
+        self.assertIn("End Activation", shell)
         self.assertNotIn("checkbox", picker)
 
     def test_activation_header_shows_fixed_or_selected_weapon(self):
@@ -241,7 +242,8 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
 
     def test_end_with_ap_requires_deliberate_confirmation(self):
         ending = self.section("function confirmEndHumanNpoActivation", "function renderNpoGuideFooter")
-        self.assertIn("still has ${remaining} AP remaining", ending)
+        self.assertIn("${remaining} AP remain", ending)
+        self.assertIn("This operative has not performed any actions.", ending)
         self.assertIn("Continue Activation", ending)
         self.assertIn("End Activation", ending)
         self.assertIn("completeNpoActivation", ending)

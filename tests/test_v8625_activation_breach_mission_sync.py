@@ -36,7 +36,12 @@ class TestV8625ActivationBreachMissionSync(unittest.TestCase):
     def test_13_rapid_commit_progress_dedup(self): self.assertIn("progress.featureTransactions[transactionKey]", APP)
     def test_14_rapid_commit_history_dedup(self): self.assertIn("history.some(entry=>entry.id===historyId)", APP)
     def test_15_selection_does_not_commit(self): self.assertNotIn("commitMissionFeatureOpened", self._function("showActivationBreachTargetSelection"))
-    def test_16_cancel_returns_without_commit(self): self.assertIn("cancelActivationBreach').onclick=()=>showPlayerActivation", APP)
+    def test_16_cancel_returns_without_commit(self):
+        selector = self._function("showActivationFeatureTargetSelection")
+        self.assertIn("stage.sequential?cancelCurrentHumanPlayerAction():showPlayerActivation(stage)", selector)
+        cancel = self._function("cancelCurrentHumanPlayerAction")
+        self.assertNotIn("remainingAp", cancel)
+        self.assertNotIn("resolvedActions", cancel)
     def test_17_close_preserves_pending_stage(self): self.assertIn("state.combatState={side:'player',stage:{...stage,[targetKey]:pendingId,[typeKey]:featureType}}", APP)
     def test_18_commit_at_activation_completion(self):
         activation = self._function("completePlayerActivation")
@@ -47,8 +52,13 @@ class TestV8625ActivationBreachMissionSync(unittest.TestCase):
         self.assertIn("runtimeSnapshot", updater)
         self.assertIn("restoreMissionRuntime", updater)
         self.assertIn("target unavailable", APP)
-    def test_20_refresh_before_commit(self): self.assertIn("breachTargetId:previous.breachTargetId||null", APP)
-    def test_21_refresh_after_commit(self): self.assertIn("missionFeatureCommitted:Boolean(previous.missionFeatureCommitted)", APP)
+    def test_20_refresh_before_commit(self):
+        self.assertIn("state.combatState={side:'player',stage:{...stage,[targetKey]:pendingId,[typeKey]:featureType}}", APP)
+        self.assertIn("breachTargetId", self._function("showActivationFeatureTargetSelection"))
+    def test_21_refresh_after_commit(self):
+        complete = self._function("completePlayerActivation")
+        self.assertIn("stage.missionFeatureCommitted=true", complete)
+        self.assertIn("missionFeatureCommittedActions", complete)
     def test_22_update_app_uses_persisted_state(self): self.assertIn("waitingWorker.postMessage({type:'SKIP_WAITING'})", APP)
     def test_23_manual_map_uses_shared_helper(self): self.assertIn("source:'mission-map'", APP)
     def test_24_manual_correction_decrements_once(self): self.assertIn("delta:-1", APP)
