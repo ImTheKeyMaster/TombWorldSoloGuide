@@ -1147,7 +1147,7 @@ document.addEventListener('touchend',function(e){
     merged.playerCasualtyIds=Array.isArray(raw?.playerCasualtyIds)?raw.playerCasualtyIds:[];
     merged.playerWounds=raw?.playerWounds&&typeof raw.playerWounds==='object'?{...raw.playerWounds}:{};
     merged.combatState=isRecord(raw.combatState)&&raw.combatState.side==='player'&&isRecord(raw.combatState.stage)
-      ? {side:'player',stage:normalizePendingAttackResultLists(raw.combatState.stage)}
+      ? {side:'player',stage:{...normalizePendingAttackResultLists(raw.combatState.stage),threatDiceResolving:false}}
       : null;
     merged.weaponRuleResolution=normalizeMultiTargetAttackSequence(raw.weaponRuleResolution,
       raw.lastActivation?.combatDraft?.profile||raw.combatState?.stage?.shootCombatDraft?.profile);
@@ -1206,7 +1206,7 @@ document.addEventListener('touchend',function(e){
         event,
         events:Array.isArray(raw.strategyData.events)?raw.strategyData.events:(event?[{...event,status:raw.strategyData.eventPending?'drawn':'resolved'}]:[]),
         eventIndex:Number.isInteger(raw.strategyData.eventIndex)?raw.strategyData.eventIndex:0,
-        initiativeMode:raw.strategyData.initiativeMode==='rolled'||raw.strategyData.initiativeMode==='automatic'
+        initiativeMode:['rolled','automatic','pending'].includes(raw.strategyData.initiativeMode)
           ? raw.strategyData.initiativeMode
           : hasRolledInitiative?'rolled':'automatic',
         initiativeReason:raw.strategyData.initiativeReason||(raw?.turningPoint===1?'Turning Point 1':'Threat was 0 when initiative was determined'),
@@ -1305,7 +1305,7 @@ document.addEventListener('touchend',function(e){
         committed:Boolean(merged.lastActivation.committed),completed:Boolean(merged.lastActivation.completed||merged.lastActivation.committed)
       };
     }
-    if(merged.phase==='strategy'&&merged.strategyStage==='initiative'){
+    if(merged.phase==='strategy'&&merged.strategyStage==='initiative'&&merged.strategyData?.initiativeMode!=='pending'){
       const resolvedSide=merged.strategyData?.suggestedInitiative==='npo'?'npo':'player';
       merged.initiative=resolvedSide;
       merged.phase='firefight';
@@ -1536,6 +1536,12 @@ document.addEventListener('touchend',function(e){
     const validatedRequest=validateDiceRequest(request);
     if(!isPvpMode())return rollDice(validatedRequest.count,validatedRequest.sides);
     return requestManualDiceResults(validatedRequest);
+  }
+  async function missionDiceTotal(outcome,resultId,{count=1,sides=3,title='MISSION ROLL'}={}){
+    const supplied=outcome?.results?.[resultId]?.dice;
+    if(Array.isArray(supplied)&&supplied.length===count&&supplied.every(value=>Number.isInteger(value)&&value>=1&&value<=sides))return supplied.reduce((sum,value)=>sum+value,0);
+    const dice=await requestDiceResults({count,sides,title,instruction:`Roll ${count}D${sides} on the tabletop and enter each result.`});
+    return dice.reduce((sum,value)=>sum+value,0);
   }
   diceEntryUndo.addEventListener('click',undoManualDie);
   diceEntryCommit.addEventListener('click',commitManualDiceResults);
@@ -2901,7 +2907,7 @@ document.addEventListener('touchend',function(e){
       const otherRemaining=missionEngine().sites.filter(site=>site.id!==button.dataset.searchSite&&!progress.sites[site.id]).length;
       const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('searchTransponder',{...missionLifecycleContext(),operativeId:carrier})):null;
       if(objectiveEngine&&!outcome)return;
-      const result=outcome?.results?.searchRoll?.total??rollD3(), found=result>otherRemaining;
+      const result=await missionDiceTotal(outcome,'searchRoll',{title:'LOCATE ITEM'}),found=result>otherRemaining;
       progress.sites[button.dataset.searchSite]=found?'found':'empty';
       if(found)progress.carrierId=carrier;
       progress.lastRoll={siteId:button.dataset.searchSite,roll:result,result:found?'transponder found':'marker removed'};
@@ -2920,7 +2926,8 @@ document.addEventListener('touchend',function(e){
       const actionId=missionEngine().actions?.awakenRoom;
       const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction(actionId,missionLifecycleContext())):null;
       if(objectiveEngine&&!outcome)return;
-      const count=Math.min(5,(outcome?.results?.awakenRoll?.total??rollD3())+threatGrade()), ids=[];
+      const awakenRoll=await missionDiceTotal(outcome,'awakenRoll',{title:'AWAKEN ROOM'});
+      const count=Math.min(5,awakenRoll+threatGrade()),ids=[];
       for(let i=0;i<count&&activeNpos().length<MAX_NPOS;i++){
         const result=availableGenerationResult();if(!result)break;
         const n=createNpo(result.type,`${result.type} ${button.dataset.awakenRoom}`,{weaponId:result.weaponId,ready:true,dormant:false,deployed:false,order:'Conceal'});
@@ -3179,6 +3186,7 @@ document.addEventListener('touchend',function(e){
   function strategyCard(){
     const d=state.strategyData||{};
     if(state.strategyStage==='mission-ready')return `<section class="next-card"><span class="phase">STRATEGY PHASE · READY STEP</span><h2>Mission event pending</h2><p>Complete the mission Ready-step event before initiative is determined.</p><button class="btn primary big-action" id="retryMissionReady">Continue Mission Event</button></section>`;
+    if(['initiative','event'].includes(state.strategyStage))return `<section class="next-card"><span class="phase">STRATEGY PHASE</span><h2>Dice resolution interrupted</h2><p>Continue from the last fully committed result. No committed dice will be rerolled.</p><button class="btn primary big-action" id="retryStrategyDice">Continue Strategy Phase</button></section>`;
     if(state.strategyStage!=='summary')return '';
     const step=strategyViewStep(d);
     return `<section class="next-card strategy-step">${step==='actions'?strategyActionsStepHtml(d):step==='events'?strategyEventsStepHtml(d):strategyReviewStepHtml(d)}</section>`;
@@ -3390,8 +3398,8 @@ document.addEventListener('touchend',function(e){
     $('#resolveStrategyEvent')?.addEventListener('click',event=>{
       const button=event.currentTarget;
       if(button.disabled)return;
-      if(currentEvent()?.definitionId==='transdimensional-relocation')button.disabled=true;
-      resolveStrategyEvent(button);
+      button.disabled=true;
+      void resolveStrategyEvent(button).catch(error=>{console.error('[Strategy Event]',error);state.strategyStage='event';save();render();}).finally(()=>{if(button.isConnected&&state.strategyData?.eventPending)button.disabled=false;});
     });
     const pendingRelocation=currentEvent();
     const relocationVisible=strategyViewStep(state.strategyData)==='events'&&pendingRelocation?.definitionId==='transdimensional-relocation'&&pendingRelocation.status==='drawn';
@@ -3402,13 +3410,14 @@ document.addEventListener('touchend',function(e){
           requestAnimationFrame(()=>focusInitialDialogControl(app));
         }
       }
-      else setTimeout(()=>redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.'),0);
+      else setTimeout(()=>{void redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.').catch(error=>{console.error('[Strategy Event Redraw]',error);state.strategyStage='event';save();render();});},0);
     }else focusedRelocationInstanceId=null;
-    $('#redrawStrategyEvent')?.addEventListener('click',event=>{
+    $('#redrawStrategyEvent')?.addEventListener('click',async event=>{
       const button=event.currentTarget;
       if(button.disabled)return;
       button.disabled=true;
-      if(!redrawCurrentEvent('No breach or open hatchway could be changed.'))button.disabled=false;
+      try{if(!await redrawCurrentEvent('No breach or open hatchway could be changed.'))button.disabled=false;}
+      catch(error){console.error('[Strategy Event Redraw]',error);state.strategyStage='event';save();render();}
     });
     $('#continueStrategyEvents')?.addEventListener('click',()=>showStrategyViewStep('events','actions'));
     $('#completeStrategyFromActions')?.addEventListener('click',()=>{if(!strategyHasNoDownstreamWork()||!canCompleteStrategyPhase())return;beginFirefight(state.strategyData?.suggestedInitiative==='npo'?'npo':'player');});
@@ -3418,6 +3427,7 @@ document.addEventListener('touchend',function(e){
     $('#continueStrategy')?.addEventListener('click',()=>{if(!canCompleteStrategyPhase())return;beginFirefight(state.strategyData?.suggestedInitiative==='npo'?'npo':'player');});
     $('#ceaselessScuttling')?.addEventListener('click',showCeaselessScuttling);
     $('#retryMissionReady')?.addEventListener('click',continueTurningPointStart);
+    $('#retryStrategyDice')?.addEventListener('click',finishTurningPointStart);
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
     $('#npoActivation')?.addEventListener('click',showNpoSelection);
     $('#missionHud')?.addEventListener('click',showMissionDetails);
@@ -3425,7 +3435,8 @@ document.addEventListener('touchend',function(e){
     $('#resolveAuspexCalibration')?.addEventListener('click',async()=>{
       const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('auspexCalibration',missionLifecycleContext())):null;
       if(objectiveEngine&&!outcome)return;
-      const directionRoll=outcome?.results?.directionRoll?.total||rollD3(),distance=(outcome?.results?.distanceRoll?.total||rollD3())+3;
+      const directionRoll=await missionDiceTotal(outcome,'directionRoll',{title:'AUSPEX CALIBRATION - ESCAPE MARKER DIRECTION'});
+      const distanceRoll=await missionDiceTotal(outcome,'distanceRoll',{title:'AUSPEX CALIBRATION - ESCAPE MARKER DISTANCE'}),distance=distanceRoll+3;
       const instruction=directionRoll===1?`Move the Escape marker ${distance} inches left.`:directionRoll===2?'Do not move the Escape marker.':`Move the Escape marker ${distance} inches right.`;
       state.missionState.auspexCalibrations[state.turningPoint]={directionRoll,distance,instruction};
       log(`Auspex Calibration: ${instruction}`);save();render();
@@ -3484,22 +3495,37 @@ document.addEventListener('touchend',function(e){
       state.phase='strategy';state.strategyStage='mission-ready';state.nextSide='player';state.activeNpoId=null;
       save();render();return;
     }
-    finishTurningPointStart();
+    await finishTurningPointStart();
   }
 
   async function continueTurningPointStart(){
     if(!await applyMissionReadyHooks())return;
-    finishTurningPointStart();
+    await finishTurningPointStart();
   }
 
-  function finishTurningPointStart(){
-    determineInitiative();
-    processEventStage();
+  async function finishTurningPointStart(){
+    try{
+      if(state.strategyPipeline.current==='initiative'){
+        state.phase='strategy';state.strategyStage='initiative';state.nextSide='player';state.activeNpoId=null;
+        state.strategyData.initiativeMode='pending';save();
+        await determineInitiative();
+      }
+      if(state.strategyPipeline.current==='event'){
+        state.phase='strategy';state.strategyStage='event';save();
+        if(Array.isArray(state.strategyData.events))await beginCurrentEvent();
+        else await processEventStage();
+      }
+    }catch(error){
+      console.error('[Strategy Dice]',error);
+      save();render();
+      return false;
+    }
     if(!state.strategyData.eventPending)processReinforcementStage();
     const {grade,reinforcements}=state.strategyData;
     state.phase='strategy';state.strategyStage='summary';state.nextSide='player';state.activeNpoId=null;
     log(`Turning Point ${state.turningPoint} started. Grade ${grade}; ${state.strategyData.eventPending?'reinforcements await event resolution':`${reinforcements.length} reinforcement(s)`}.`);
     save();render();
+    return true;
   }
 
   function completeStrategyStage(stage,next){
@@ -3522,12 +3548,12 @@ document.addEventListener('touchend',function(e){
     return true;
   }
 
-  function determineInitiative(){
-    rollInitiative();
+  async function determineInitiative(){
+    await rollInitiative();
     completeStrategyStage('initiative','event');
   }
 
-  function processEventStage(){
+  async function processEventStage(){
     const d=state.strategyData;
     d.events=[];
     d.eventIndex=0;
@@ -3540,7 +3566,8 @@ document.addEventListener('touchend',function(e){
       if(event){event.requiredBy=i>=d.normalEventCount?'restless-tomb':'standard';d.eventSlotsDrawn++;}
     }
     d.event=d.events[0]||null;
-    if(d.event){beginCurrentEvent();return;}
+    save();
+    if(d.event){await beginCurrentEvent();return;}
     completeStrategyStage('event','reinforcement');
   }
 
@@ -3608,7 +3635,7 @@ document.addEventListener('touchend',function(e){
     events.slice(0,acceptedCount).filter(event=>event.status!=='redrawn').forEach(narrateAcceptedEvent);
   }
 
-  function beginCurrentEvent(){
+  async function beginCurrentEvent(){
     const d=state.strategyData,event=currentEvent();
     d.event=event;
     if(!event){
@@ -3620,7 +3647,7 @@ document.addEventListener('touchend',function(e){
     const type=event.execution.type;
     if(type==='transdimensional-relocation'){
       if(!prepareTransdimensionalRelocation(event)){
-        redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.');
+        await redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.');
         return;
       }
       d.eventPending=true;
@@ -3631,12 +3658,14 @@ document.addEventListener('touchend',function(e){
       const transaction=eventTransaction(`event:${event.instanceId}:${state.turningPoint}`,{definitionId:event.definitionId,selections:[],rolls:[]});
       if(!transaction.committed){
         const eligible=(state.playerRoster||[]).filter(id=>!state.playerCasualtyIds.includes(id)&&playerOperativeState(id).inPlay!==false);
-        const remaining=[...eligible];
+        const remaining=eligible.filter(id=>!transaction.selections.includes(id));
         while(remaining.length){
           const selectedIndex=roll(remaining.length)-1;
           const operativeId=remaining.splice(selectedIndex,1)[0];
-          const die=roll(),baseApl=Number(playerDefinition(operativeId)?.apl||3),apl=effectivePlayerApl(operativeId,baseApl);
+          const [die]=await requestDiceResults({count:1,sides:6,title:'SUBJUGATION GLYPHS',instruction:'Roll 1D6 on the tabletop and enter the result.',rollerLabel:playerName(operativeId)});
+          const baseApl=Number(playerDefinition(operativeId)?.apl||3),apl=effectivePlayerApl(operativeId,baseApl);
           transaction.selections.push(operativeId);transaction.rolls.push(die);
+          save();
           if(die>apl){
             const modifierId=`subjugation-glyphs:${event.instanceId}:${operativeId}`;
             if(!state.eventState.playerAplModifiers.some(item=>item.id===modifierId))state.eventState.playerAplModifiers.push({id:modifierId,sourceId:event.instanceId,targetId:operativeId,ruleId:'subjugation-glyphs',amount:-1,expires:null});
@@ -3647,26 +3676,39 @@ document.addEventListener('touchend',function(e){
         transaction.committed=true;
       }
       const tested=transaction.selections.map((id,index)=>`${playerName(id)} rolled ${transaction.rolls[index]}`).join('; ');
-      completeCurrentEvent(`${tested||'No eligible operatives.'}${transaction.affectedOperativeId?`; ${playerName(transaction.affectedOperativeId)} suffers -1 APL.`:'; no operative was affected.'}`);
+      await completeCurrentEvent(`${tested||'No eligible operatives.'}${transaction.affectedOperativeId?`; ${playerName(transaction.affectedOperativeId)} suffers -1 APL.`:'; no operative was affected.'}`);
       return;
     }
     if(type==='living-metal-flux'){
-      const restored=[];
-      activeNpos().filter(npo=>npo.wounds<npo.maxWounds).forEach(npo=>{
-        const amount=rollD3()+2,before=npo.wounds;
+      const restored=[],wounded=sortedNposForDisplay(activeNpos().filter(npo=>npo.wounds<npo.maxWounds));
+      const transaction=eventTransaction(`event:${event.instanceId}:${state.turningPoint}`,{definitionId:event.definitionId,selections:[],rolls:[]});
+      const committed=[];
+      for(const npo of wounded){
+        const committedIndex=transaction.selections.indexOf(npo.id);
+        let die=transaction.rolls[committedIndex];
+        if(!Number.isInteger(die)){
+          [die]=await requestDiceResults({count:1,sides:3,title:'LIVING METAL FLUX',instruction:'Roll 1D3. This model regains D3 + 2 wounds.',rollerLabel:npoName(npo)});
+          transaction.selections.push(npo.id);transaction.rolls.push(die);
+          save();
+        }
+        committed.push({npo,die});
+      }
+      committed.forEach(({npo,die})=>{
+        const amount=die+2,before=npo.wounds;
         npo.wounds=Math.min(npo.maxWounds,npo.wounds+amount);
-        restored.push({npo,result:`${npoName(npo)} ${before}→${npo.wounds}`});
+        restored.push({npo,die,result:`${npoName(npo)} rolled ${die}: ${before}→${npo.wounds}`});
       });
       const summary=sortedNposForDisplay(restored.map(entry=>entry.npo))
         .map(npo=>restored.find(entry=>entry.npo===npo).result)
         .join('; ');
-      completeCurrentEvent(summary||'No wounded NPOs.');
+      transaction.committed=true;
+      await completeCurrentEvent(summary||'No wounded NPOs.');
       return;
     }
     if(type==='stirrings'){
-      if(state.threat===15){redrawCurrentEvent('Threat was already 15.');return;}
+      if(state.threat===15){await redrawCurrentEvent('Threat was already 15.');return;}
       setThreat(1,event.title);
-      completeCurrentEvent(`Threat increased to ${state.threat}.`);
+      await completeCurrentEvent(`Threat increased to ${state.threat}.`);
       return;
     }
     if(type==='activate'){
@@ -3674,24 +3716,30 @@ document.addEventListener('touchend',function(e){
         const definition=eventDefinitions[event.definitionId];
         state.eventState.active.push({...event,lifecycle:definition.lifecycle,handlerId:definition.handlerId,gameplayHooks:[...definition.gameplayHooks],automationType:definition.automationType,priority:definition.priority,startedTurningPoint:state.turningPoint,expiresAfterTurningPoint:state.turningPoint,status:'active'});
       }
-      completeCurrentEvent(eventDefinitions[event.definitionId]?.resultText||'Effect active until the end of this Turning Point.');
+      await completeCurrentEvent(eventDefinitions[event.definitionId]?.resultText||'Effect active until the end of this Turning Point.');
       return;
     }
     if(type==='chittering-drone'){
       const wounded=activeNpos().filter(npo=>npo.type==='Canoptek Scarab Swarm'&&npo.wounds<npo.maxWounds);
-      if(wounded.length===1){const before=wounded[0].wounds;wounded[0].wounds=wounded[0].maxWounds;completeCurrentEvent(`The Guide automatically restored ${npoName(wounded[0])} to full wounds (${before} → ${wounded[0].maxWounds}).`);return;}
+      if(wounded.length===1){const before=wounded[0].wounds;wounded[0].wounds=wounded[0].maxWounds;await completeCurrentEvent(`The Guide automatically restored ${npoName(wounded[0])} to full wounds (${before} → ${wounded[0].maxWounds}).`);return;}
       if(wounded.length>1){event.eligibleNpoIds=wounded.map(npo=>npo.id);d.eventPending=true;return;}
-      if(activeNpos().length>=MAX_NPOS||!npoInventory()['Canoptek Scarab Swarm'].remaining){redrawCurrentEvent('No Scarab Swarm could be set up.');return;}
+      if(activeNpos().length>=MAX_NPOS||!npoInventory()['Canoptek Scarab Swarm'].remaining){await redrawCurrentEvent('No Scarab Swarm could be set up.');return;}
     }
     if(type==='maze-reforms'){
-      event.openHatchwayLimit=rollD3();
+      const transaction=eventTransaction(`event:${event.instanceId}:${state.turningPoint}`,{definitionId:event.definitionId,rolls:[]});
+      if(!Number.isInteger(transaction.rolls[0])){
+        const [die]=await requestDiceResults({count:1,sides:3,title:'THE MAZE REFORMS',instruction:'Roll 1D3 on the tabletop and enter the result.'});
+        transaction.rolls=[die];
+        save();
+      }
+      event.openHatchwayLimit=transaction.rolls[0];
       event.text=`Close one breach and up to ${event.openHatchwayLimit} open hatchway${event.openHatchwayLimit===1?'':'s'}. If this cannot be resolved, draw another event card.`;
     }
-    if(type==='awakened-warrior'&&(activeNpos().length>=MAX_NPOS||!npoInventory()['Necron Warrior'].remaining)){redrawCurrentEvent('No Necron Warrior could be set up.');return;}
+    if(type==='awakened-warrior'&&(activeNpos().length>=MAX_NPOS||!npoInventory()['Necron Warrior'].remaining)){await redrawCurrentEvent('No Necron Warrior could be set up.');return;}
     d.eventPending=true;
   }
 
-  function completeCurrentEvent(result){
+  async function completeCurrentEvent(result){
     const d=state.strategyData,event=currentEvent();
     if(!event)return;
     event.status='resolved';event.result=result;
@@ -3700,10 +3748,11 @@ document.addEventListener('touchend',function(e){
     d.eventPending=false;
     const source=event.requiredBy==='restless-tomb'?'Restless Tomb minimum':'standard rules';
     log(`Turning Point ${state.turningPoint} · ${event.title} (${source}): ${result}`);
-    beginCurrentEvent();
+    save();
+    await beginCurrentEvent();
   }
 
-  function redrawCurrentEvent(reason){
+  async function redrawCurrentEvent(reason){
     const data=state.strategyData,event=currentEvent();
     if(!data||!event||event.status!=='drawn')return false;
     const eventIndex=data.eventIndex||0;
@@ -3746,7 +3795,8 @@ document.addEventListener('touchend',function(e){
       replacementInstanceId:replacement.instanceId,reason,status:'committed',committed:true
     };
     log(`${event.title}: ${reason} Another event card was drawn.`);
-    beginCurrentEvent();
+    save();
+    await beginCurrentEvent();
     save();
     eventRedrawsInProgress.delete(transactionId);
     render();
@@ -3807,7 +3857,7 @@ document.addEventListener('touchend',function(e){
     save();render();
   }
 
-  function rollInitiative(){
+  async function rollInitiative(){
     if(!state.strategyData)state.strategyData={};
     if(state.turningPoint===1||state.threat===0){
       state.strategyData.playerRoll=null;
@@ -3817,7 +3867,16 @@ document.addEventListener('touchend',function(e){
       state.strategyData.initiativeReason=state.turningPoint===1?'Turning Point 1':'Threat was 0 when initiative was determined';
       return;
     }
-    const p=roll(),n=roll();
+    const playerLabel=selectedPlayerTeamName();
+    let p=state.strategyData.playerRoll,n=state.strategyData.npoRoll;
+    if(!Number.isInteger(p)){
+      [p]=await requestDiceResults({count:1,sides:6,title:'INITIATIVE',instruction:'Roll 1D6 and enter the result.',rollerLabel:playerLabel});
+      state.strategyData.playerRoll=p;save();
+    }
+    if(!Number.isInteger(n)){
+      [n]=await requestDiceResults({count:1,sides:6,title:'INITIATIVE',instruction:'Roll 1D6 and enter the result.',rollerLabel:'Necrons'});
+      state.strategyData.npoRoll=n;save();
+    }
     state.strategyData.playerRoll=p;
     state.strategyData.npoRoll=n;
     state.strategyData.suggestedInitiative=n>p?'npo':'player';
@@ -3835,14 +3894,14 @@ document.addEventListener('touchend',function(e){
     render();
   }
 
-  function resolveStrategyEvent(button=null){
+  async function resolveStrategyEvent(button=null){
     const event=currentEvent();
     if(state.phase!=='strategy'||state.strategyStage!=='summary'||!event||!state.strategyData.eventPending)return;
     let result='Tabletop effect confirmed.';
     if(event.execution.type==='transdimensional-relocation'){
       if(event.status!=='drawn'||event.resolution?.confirmed){if(button)button.disabled=false;return;}
       if(!validTransdimensionalRelocationSelection(event)){
-        if(!prepareTransdimensionalRelocation(event))redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.');
+        if(!prepareTransdimensionalRelocation(event))await redrawCurrentEvent('Transdimensional Relocation could not be resolved because fewer than two Player operatives were on the battlefield.');
         else render();
         return;
       }
@@ -3858,15 +3917,15 @@ document.addEventListener('touchend',function(e){
       result=`The Guide automatically restored ${npoName(n)} to full wounds (${before} → ${n.maxWounds}).`;
     }else if(event.execution.type==='chittering-drone'||event.execution.type==='awakened-warrior'){
       const type=event.execution.type==='chittering-drone'?'Canoptek Scarab Swarm':'Necron Warrior';
-      if(activeNpos().length>=MAX_NPOS||!npoInventory()[type]?.remaining){redrawCurrentEvent(`${type} could not be set up.`);return;}
+      if(activeNpos().length>=MAX_NPOS||!npoInventory()[type]?.remaining){await redrawCurrentEvent(`${type} could not be set up.`);return;}
       const n=createNpo(type,`${type} E${state.turningPoint}`,{order:'Conceal'});
       n.ready=true;n.dormant=false;
-      if(!commitNpoRoster([...state.roster,n],'resolve that event')){redrawCurrentEvent(`${type} could not be set up.`);return;}
+      if(!commitNpoRoster([...state.roster,n],'resolve that event')){await redrawCurrentEvent(`${type} could not be set up.`);return;}
       state.newIds.push(n.id);
       result=`${npoName(n)} was set up Ready with a Conceal order using the event card’s placement instructions.`;
     }
     if(event.execution.type==='maze-reforms')result='Breach and hatchway changes completed on the tabletop.';
-    completeCurrentEvent(result);
+    await completeCurrentEvent(result);
     save();render();
     if(event.definitionId==='transdimensional-relocation')requestAnimationFrame(()=>focusInitialDialogControl(app));
   }
@@ -4746,6 +4805,33 @@ function showPlayerActivation(stage={}){
         return;
       }
     }
+    const requiredThreatChecks=[
+      ...(stage.hatch&&state.missionId!=='scout-sub-crypt'?[{id:'operateHatch',title:'OPERATE HATCH - THREAT CHECK',instruction:'Roll 1D6. On 4+, Threat increases by 1.'}]:[]),
+      ...(stage.breach?[{id:'breach',title:'BREACH - THREAT CHECK',instruction:'Roll 1D6. On 4+, Threat increases by an additional 1.'}]:[])
+    ];
+    stage.threatRolls=stage.threatRolls&&typeof stage.threatRolls==='object'?stage.threatRolls:{};
+    if(stage.threatDiceResolving)return false;
+    const missingThreatChecks=requiredThreatChecks.filter(check=>!Number.isInteger(stage.threatRolls[check.id]));
+    if(missingThreatChecks.length){
+      stage.threatDiceResolving=true;
+      state.combatState={side:'player',stage:{...stage}};
+      try{
+        for(const check of missingThreatChecks){
+          const [die]=await requestDiceResults({count:1,sides:6,title:check.title,instruction:check.instruction,rollerLabel:playerName(operativeId)});
+          stage.threatRolls[check.id]=die;
+          state.combatState={side:'player',stage:{...stage}};save();
+        }
+      }catch(error){
+        console.error('[Player Activation Threat Dice]',error);
+        stage.threatDiceResolving=false;
+        state.combatState={side:'player',stage:{...stage}};
+        save();
+        return false;
+      }
+      stage.threatDiceResolving=false;
+      state.combatState={side:'player',stage:{...stage}};
+      save();
+    }
     const activationId=missionActivationId('player',operativeId);
     const missionFeatureActions=[
       ...(stage.hatch?[{action:'operate-hatch',targetKey:'hatchTargetId',typeKey:'hatchFeatureType',transactionKey:'hatchTransactionId',featureType:'hatchway'}]:[]),
@@ -4800,12 +4886,12 @@ function showPlayerActivation(stage={}){
     if(stage.melee)inc++;
     if(stage.damage)inc++;
     if(stage.hatch&&state.missionId!=='scout-sub-crypt'){
-      const r=roll();
+      const r=stage.threatRolls.operateHatch;
       if(r>=4)inc++;
     }
     if(stage.breach){
       inc++;
-      const r=roll();
+      const r=stage.threatRolls.breach;
       if(r>=4)inc++;
     }
     if(inc)setThreat(inc,'Player activation');
@@ -6854,13 +6940,34 @@ function showPlayerActivation(stage={}){
       const affected=[...sortedNposForDisplay(activeNpos()),...inPlayLivingPlayerOperativeIds().map(id=>({id:`player:${id}`,label:playerTargetLabel(id),ariaLabel:playerTargetAriaLabel(id)}))];
       showModal(action.name,`<p>Choose a visible terrain point within 8 inches, then select every operative within 2 inches of it.</p><div class="checklist">${affected.map(target=>`<label class="check-row"><input type="checkbox" data-disturbance-target="${escapeHtml(target.id)}"${target.ariaLabel?` aria-label="${escapeHtml(target.ariaLabel)}"`:''}><span>${escapeHtml(target.label||npoName(target))}</span></label>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="cancelSpecialAction">Cancel</button><button class="btn primary" id="confirmSpecialAction">Roll Damage</button></div>`);
       $('#cancelSpecialAction').onclick=()=>{if(isPvpMode()){state.lastActivation.pendingAction=null;save();renderHumanNpoActionPicker(n);}else resolveNpoAction(n,state.lastActivation.pendingAction);};
-      $('#confirmSpecialAction').onclick=()=>{
+      $('#confirmSpecialAction').onclick=async()=>{
         const button=$('#confirmSpecialAction');
         if(!canCommitNpoAction(action.id,npoActionCost(n,action.id)))return;
         button.disabled=true;
         const selected=$$('[data-disturbance-target]:checked').map(input=>input.dataset.disturbanceTarget);
         const targets=selected.map(id=>id.startsWith('player:')?livePlayerOperative(id.slice(7)):state.roster.find(item=>item.id===id)).filter(Boolean);
-        const results=resolveGeomanticDisturbance(targets);
+        let committedRolls;
+        try{
+          const pendingAction=state.lastActivation?.pendingAction;
+          const savedRolls=pendingAction?.diceResults&&typeof pendingAction.diceResults==='object'?pendingAction.diceResults:{};
+          committedRolls=[];
+          for(const target of targets){
+            const targetId=selected[targets.indexOf(target)],label=targetId.startsWith('player:')?playerName(target.id):npoName(target);
+            let dice=savedRolls[targetId];
+            if(!Array.isArray(dice)||dice.length!==2||dice.some(value=>!Number.isInteger(value)||value<1||value>6)){
+              dice=await requestDiceResults({count:2,sides:6,title:'GEOMANTIC DISTURBANCE',instruction:'Roll 2D6 for this operative and enter both results.',rollerLabel:label});
+              savedRolls[targetId]=dice;
+              if(pendingAction)pendingAction.diceResults=savedRolls;
+              save();
+            }
+            committedRolls.push(dice);
+          }
+        }catch(error){
+          console.error('[Geomantic Disturbance Dice]',error);
+          button.disabled=false;
+          return;
+        }
+        const results=resolveGeomanticDisturbance(targets,operative=>committedRolls[targets.indexOf(operative)]);
         results.forEach(result=>{
           const targetId=selected[results.indexOf(result)],target=targets[results.indexOf(result)],before=target.wounds;
           if(targetId.startsWith('player:'))state.playerWounds[target.id]=Math.max(0,before-result.damage);
@@ -6877,7 +6984,7 @@ function showPlayerActivation(stage={}){
     const update=()=>{$('#confirmSpecialAction').disabled=!$('#specialActionTarget').value||!$('#specialRangeConfirmed').checked;};
     $('#specialActionTarget').onchange=update;$('#specialRangeConfirmed').onchange=update;
     $('#cancelSpecialAction').onclick=()=>{if(isPvpMode()){state.lastActivation.pendingAction=null;save();renderHumanNpoActionPicker(n);}else resolveNpoAction(n,state.lastActivation.pendingAction);};
-    $('#confirmSpecialAction').onclick=()=>{
+    $('#confirmSpecialAction').onclick=async()=>{
       const button=$('#confirmSpecialAction');
       if(!canCommitNpoAction(action.id,npoActionCost(n,action.id)))return;
       button.disabled=true;
@@ -6892,7 +6999,16 @@ function showPlayerActivation(stage={}){
       if(action.id==='molecular-breach')result.applied=applyMolecularBreach(n.id,target.id);
       if(action.id==='overcharge')result.applied=applyTemporaryAplModifier({sourceId:n.id,targetId:target.id,ruleId:'overcharge',amount:1});
       if(action.id==='cranial-overload')result.applied=applyTemporaryAplModifier({sourceId:n.id,targetId:target.id,ruleId:'cranial-overload',amount:-1});
-      if(action.id==='nanoscarab-beam')result=useNanoscarabBeam(target);
+      if(action.id==='nanoscarab-beam'){
+        try{
+          const dice=await requestDiceResults({count:3,sides:3,title:'NANOSCARAB BEAM',instruction:'Roll 3D3 on the tabletop and enter each result.',rollerLabel:npoName(target)});
+          result=useNanoscarabBeam(target,dice);
+        }catch(error){
+          console.error('[Nanoscarab Beam Dice]',error);
+          button.disabled=false;
+          return;
+        }
+      }
       if(!result){button.disabled=false;showToast('That action is no longer legal.');return;}
       if(result?.applied===false){
         button.disabled=false;
@@ -7656,10 +7772,19 @@ function showPlayerActivation(stage={}){
     save();render();
   }
 
-  function animateMissionDice(operation,context={}){
+  async function animateMissionDice(operation,context={}){
+    const supplied=context.missionDice;
+    const suppliedDice=Array.isArray(supplied)&&supplied.length===operation.dice.count
+      &&supplied.every(value=>Number.isInteger(value)&&value>=1&&value<=operation.dice.sides)?supplied.slice():null;
+    const dice=suppliedDice||await requestDiceResults({
+      count:operation.dice.count,
+      sides:operation.dice.sides,
+      title:operation.label||'MISSION ROLL',
+      instruction:`Roll ${operation.dice.count}D${operation.dice.sides} on the tabletop and enter each result.`
+    });
+    const result={dice,total:dice.reduce((sum,value)=>sum+value,0)};
+    if(isPvpMode())return result;
     return new Promise((resolve,reject)=>{
-      const supplied=context.missionDice;
-      const dice=Array.isArray(supplied)&&supplied.length===operation.dice.count?supplied:Array.from({length:operation.dice.count},()=>roll(operation.dice.sides));
       let settled=false;
       showModal(operation.label||'Mission Roll',`<div class="dice-row animated-roll" id="missionDiceRoll">${dice.map(()=>rollingDieHtml()).join('')}</div><p>Rolling ${operation.dice.count}D${operation.dice.sides}…</p>`,()=>{if(!settled)reject(new TombWorldMissionEngine.MissionEngineError('DICE_CANCELLED','Mission dice roll was cancelled.'));});
       if(dice.length)void TombWorldDiceSfx.play();
@@ -7670,7 +7795,7 @@ function showPlayerActivation(stage={}){
         $('#missionDiceRoll').className='dice-row settled';
         $('#missionDiceRoll').innerHTML=dice.map(value=>dieHtml({value})).join('');
         modalBody.querySelector('p').textContent=`Dice: ${dice.join(' + ')} · Total: ${dice.reduce((sum,value)=>sum+value,0)}`;
-        setTimeout(()=>{missionDialogLocked=false;closeModal();resolve({dice,total:dice.reduce((sum,value)=>sum+value,0)});},450);
+        setTimeout(()=>{missionDialogLocked=false;closeModal();resolve(result);},450);
       },DICE_ROLL_ANIMATION_MS);
     });
   }
@@ -7879,7 +8004,14 @@ function showPlayerActivation(stage={}){
     if(!context.controlRangeConfirmed||!context.enemyControlRangeConfirmed)return clearPendingBreach(stage);
     if(!context.committed){
       if(Number(stage.apl||3)-playerActionCost(stage)<context.apCost){showToast('Not enough AP to Breach the sarcophagus.');return clearPendingBreach(stage);}
-      context.committed=true;context.diceRolled=true;context.dice=[roll(),roll()];context.step='result';
+      try{
+        context.dice=await requestDiceResults({count:2,sides:6,title:'BREACH SARCOPHAGUS',instruction:'Roll 2D6 on the tabletop and enter each result.',rollerLabel:playerName(context.operativeId)});
+      }catch(error){
+        if(button)button.disabled=false;
+        console.error('[Breach Sarcophagus Dice]',error);
+        return;
+      }
+      context.committed=true;context.diceRolled=true;context.step='result';
       stage.missionBreachCommitted=true;stage.missionBreachCost=context.apCost;
       state.combatState={side:'player',stage:{...stage}};save();
     }

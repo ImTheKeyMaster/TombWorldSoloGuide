@@ -96,7 +96,8 @@ for(const expression of [
         self.assertIn("executeMissionAction('auspexCalibration'", app)
         self.assertIn('playerOperativeCount:Array.isArray(state.playerRoster)?state.playerRoster.length:0', app)
         self.assertEqual(app.count('objectiveEngine?.refreshMissionContext(missionLifecycleContext())'), 3)
-        self.assertIn('Array.from({length:operation.dice.count},()=>roll(operation.dice.sides))', app)
+        self.assertIn('suppliedDice||await requestDiceResults', app)
+        self.assertIn('if(isPvpMode())return result', app)
         self.assertIn("new TombWorldMissionEngine.MissionEngineError('DICE_CANCELLED'", app)
         self.assertIn("'./Missions/definition-01-shifting-labyrinth.json'", worker)
         for hook in ('onMissionInitialized','onStrategyPhaseReadyStep','onPlayerActivationStarted','onPlayerActivationCompleted','onNpoActivationStarted','onNpoActivationCompleted','onTurningPointEnded','onBattleEnded'):
