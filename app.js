@@ -4452,7 +4452,7 @@ document.addEventListener('touchend',function(e){
 
 function showPlayerActivation(){
     const active=activePlayerActivation();
-    if(active){renderHumanPlayerActionPicker();return;}
+    if(active){void resumeCheckpointedGameplayContext();return;}
     const candidates=remainingPlayerOperatives();
     if(!candidates.length){state.playerReady=0;setNextActivation('npo');save();render();return;}
     const options=candidates.map(id=>`<option value="${escapeHtml(id)}">${escapeHtml(playerName(id))}</option>`).join('');

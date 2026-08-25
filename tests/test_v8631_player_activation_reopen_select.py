@@ -49,7 +49,7 @@ class PlayerActivationReopenSelectTests(unittest.TestCase):
         self.assertNotIn('activationNumber++',self.shell)
 
     def test_08_reopen_uses_locked_picker(self):
-        self.assertIn('if(active){renderHumanPlayerActionPicker();return;}',self.selection)
+        self.assertIn('if(active){void resumeCheckpointedGameplayContext();return;}',self.selection)
 
     def test_09_fresh_selection_has_placeholder(self):
         self.assertIn('<option value="">Select a Ready operative</option>',self.selection)

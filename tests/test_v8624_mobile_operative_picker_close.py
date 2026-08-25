@@ -61,7 +61,7 @@ class MobileOperativePickerCloseTests(unittest.TestCase):
         self.assertNotIn('cancelCurrentHumanPlayerAction',self.shell)
 
     def test_10_reopen_uses_existing_activation(self):
-        self.assertIn('if(active){renderHumanPlayerActionPicker();return;}',self.selection)
+        self.assertIn('if(active){void resumeCheckpointedGameplayContext();return;}',self.selection)
 
     def test_11_numeric_ap_remains_visible(self):
         self.assertIn('${remainingAp} / ${startingAp} AP remaining',self.shell)

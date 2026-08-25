@@ -216,6 +216,25 @@ resumeCheckpointedGameplayContext().then(value=>console.log(JSON.stringify({valu
     assert result == {"value": True, "cancelled": 0, "resolved": 1}
 
 
+def test_reopening_player_activation_resumes_pending_result_before_picker_behaviorally():
+    result = run_node(r"""
+const fs=require('fs'),app=fs.readFileSync('app.js','utf8');
+const start=app.indexOf('function showPlayerActivation');
+const fn=app.slice(start,app.indexOf('function playerActivationSummary',start));
+const state={missionActionContext:{actionId:'breachSarcophagus',newTotal:12},combatState:{side:'player',stage:{sequential:true,missionBreachCommitted:true}},
+ lastActivation:{side:'player',committed:false,pendingAction:{actionId:'breachSarcophagus'}}};
+let resumed=0,pickers=0;
+const activePlayerActivation=()=>state.lastActivation;
+const resumeCheckpointedGameplayContext=async()=>{resumed++;return true};
+const renderHumanPlayerActionPicker=()=>{pickers++};
+const remainingPlayerOperatives=()=>[],setNextActivation=()=>{},save=()=>{},render=()=>{};
+eval(fn);
+showPlayerActivation();
+setTimeout(()=>console.log(JSON.stringify({resumed,pickers,pendingAction:state.lastActivation.pendingAction.actionId,newTotal:state.missionActionContext.newTotal})),0);
+""")
+    assert result == {"resumed": 1, "pickers": 0, "pendingAction": "breachSarcophagus", "newTotal": 12}
+
+
 def test_persistence_validation_does_not_discard_a_player_activation():
     script = r"""
 const p=require('./persistence.js');
