@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.0.0';
+  const APP_VERSION = '9.0.1';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -109,6 +109,7 @@ document.addEventListener('touchend',function(e){
   let needsAudioGestureRecovery=false;
   let narrationGestureRecoveryRequired=false;
   let audioRecoveryHandler=null;
+  const gradeNarrationInFlight=new Set();
   function shouldAmbientBeActive(){
     return TombWorldNarration.isMasterEnabled()&&appliedAmbientEnabled&&Boolean(state.missionId)&&['setup','game'].includes(state.screen);
   }
@@ -140,11 +141,13 @@ document.addEventListener('touchend',function(e){
     });
     if(!narrationGestureRecoveryRequired)removeAudioGestureRecovery();
     else if(attempts.length)armAudioGestureRecovery();
+    if(!narrationGestureRecoveryRequired)void narrateVisibleGradeMilestone();
     return !narrationGestureRecoveryRequired;
   }
   function handleNarrationUsable(){
     narrationGestureRecoveryRequired=false;
     removeAudioGestureRecovery();
+    void narrateVisibleGradeMilestone();
   }
   function syncNarrationControls(){
     const masterEnabled=TombWorldNarration.isMasterEnabled();
@@ -3158,12 +3161,26 @@ document.addEventListener('touchend',function(e){
     });
   }
 
-  function narrateVisibleGradeMilestone(){
+  async function narrateVisibleGradeMilestone(){
     const milestone=state.gradeMilestone;
-    if(!milestone||milestone.narrationSeen||!$('.grade-milestone'))return;
-    milestone.narrationSeen=true;
-    if(!save())return;
-    if(TombWorldNarration.isPlaybackEnabled())void TombWorldNarration.playGradeEscalation(milestone.grade,milestone.instanceId);
+    if(!milestone||milestone.narrationSeen||!$('.grade-milestone')||!TombWorldNarration.isPlaybackEnabled())return false;
+    const instanceId=milestone.instanceId;
+    if(gradeNarrationInFlight.has(instanceId))return false;
+    gradeNarrationInFlight.add(instanceId);
+    try{
+      const started=await TombWorldNarration.playGradeEscalation(milestone.grade,instanceId);
+      const currentMilestone=state.gradeMilestone;
+      if(started&&currentMilestone?.instanceId===instanceId){
+        currentMilestone.narrationSeen=true;
+        save();
+      }else if(!started&&currentMilestone?.instanceId===instanceId){
+        narrationGestureRecoveryRequired=true;
+        armAudioGestureRecovery();
+      }
+      return started;
+    }finally{
+      gradeNarrationInFlight.delete(instanceId);
+    }
   }
 
   function renderPlay(){

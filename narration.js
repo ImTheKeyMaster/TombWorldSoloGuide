@@ -334,7 +334,10 @@
     automaticPlayback.add(duplicateKey);
     const result = new Promise(resolve => eventQueue.push({ id, duplicateKey, resolve }));
     if (!eventQueueRunning && !deadlyEncounterQueueRunning && !activePlayback) void drainEventQueue(eventQueueGeneration);
-    return result;
+    return result.then(started => {
+      if (!started) automaticPlayback.delete(duplicateKey);
+      return started;
+    });
   }
 
   function playOutcome(missionId, outcome) {
