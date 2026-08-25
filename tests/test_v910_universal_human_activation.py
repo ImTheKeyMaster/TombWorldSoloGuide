@@ -129,6 +129,21 @@ console.log(JSON.stringify({activation:result.state.lastActivation,cleared:resul
     assert "lastActivation" not in restored["cleared"]
 
 
+def test_persistence_validation_does_not_accept_player_id_as_npo_id():
+    script = r"""
+const p=require('./persistence.js');
+const catalog={warrior:{id:'warrior',type:'Warrior',name:'Warrior',physicalQuantity:1,wounds:8,move:5,apl:2,save:3,baseSize:32,defaultWeaponId:'blade'}};
+const save={saveVersion:3,gameMode:'pvp',roster:[],playerRoster:['player-one'],
+ lastActivation:{side:'npo',npoId:'player-one',activationId:'1:1:npo:player-one',committed:false}};
+const result=p.migrateSaveDetailed(save,catalog);
+console.log(JSON.stringify({activation:result.state.lastActivation,cleared:result.report.pendingStateCleared}));
+"""
+    result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True, check=True)
+    restored = json.loads(result.stdout)
+    assert restored["activation"] is None
+    assert "lastActivation" in restored["cleared"]
+
+
 def test_pending_dice_recovery_remains_integrated():
     assert "resumePendingDiceWorkflow" in APP
     assert "pendingDiceContextIsCurrent" in APP

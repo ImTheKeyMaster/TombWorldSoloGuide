@@ -184,7 +184,8 @@
     const npoIds=new Set(roster.map(npo=>npo.id));
     const playerIds=new Set(strings(save.playerRoster));
     const knownOperative=id=>npoIds.has(id)||playerIds.has(String(id).replace(/^player:/,''));
-    const unsafe=(value)=>isRecord(value)&&['npoId','targetId','sourceId','operativeId'].some(field=>value[field]&&!knownOperative(value[field]));
+    const invalidReference=(field,id)=>field==='npoId'?!npoIds.has(id):!knownOperative(id);
+    const unsafe=(value)=>isRecord(value)&&['npoId','targetId','sourceId','operativeId'].some(field=>value[field]&&invalidReference(field,value[field]));
     ['lastActivation','npoAttackSummary','combatState'].forEach(field=>{
       if(unsafe(save[field])){save[field]=null;report.pendingStateCleared.push(field);}
     });
