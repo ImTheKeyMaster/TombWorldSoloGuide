@@ -153,6 +153,12 @@ process.stdout.write(JSON.stringify({valid,supportedD4,old:old.pendingDice,saved
         self.assertNotIn("animated-roll", provider)
         self.assertIn("pendingDice:null", APP[APP.index("const initialState") : APP.index("const loadedSave")])
 
+    def test_export_preserves_checkpointed_mission_dice(self):
+        export_save = APP[APP.index("function exportSave") : APP.index("async function commitImported")]
+        self.assertIn("const pendingDiceResults=state.missionRuntime?.pendingDiceResults", export_save)
+        self.assertIn("state.missionRuntime.pendingDiceResults=pendingDiceResults", export_save)
+        self.assertLess(export_save.index("state.missionRuntime.pendingDiceResults=pendingDiceResults"), export_save.index("createPersistedSave(state)"))
+
 
 if __name__ == "__main__":
     unittest.main()
