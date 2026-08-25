@@ -1603,9 +1603,15 @@ document.addEventListener('touchend',function(e){
     if(data.eventInstanceId&&!state.strategyData?.events?.some(event=>event.instanceId===data.eventInstanceId&&event.status!=='resolved'))return false;
     if(pending.resumeKind==='strategy'&&state.phase!=='strategy')return false;
     if(pending.resumeKind==='combat'&&!state.combatState&&!state.lastActivation?.combatDraft&&!state.hotResolution)return false;
+    if(pending.resumeKind==='hot'&&(state.hotResolution?.id!==data.hotResolutionId||state.hotResolution.acknowledged))return false;
     if(pending.resumeKind==='player-activation'&&state.combatState?.side!=='player')return false;
-    if(pending.resumeKind==='npo-special-action'&&state.lastActivation?.npoId!==data.npoId)return false;
+    if(pending.resumeKind==='npo-special-action'&&(state.lastActivation?.npoId!==data.npoId||!state.lastActivation.pendingAction||state.lastActivation.pendingAction.id!==data.actionId))return false;
     if(pending.resumeKind==='breach-sarcophagus'&&state.missionActionContext?.activationId!==data.activationId)return false;
+    if(pending.resumeKind==='mission'){
+      const operationId=data.operationId||data.resultId;
+      if(operationId==='repairRoll')return state.phase==='strategy'&&state.strategyPipeline?.current==='mission-ready-hooks'&&state.missionReadyContext?.turningPoint===state.turningPoint;
+      if(!['searchRoll','awakenRoll','directionRoll','distanceRoll'].includes(operationId)||state.missionActionContext?.missionId!==state.missionId)return false;
+    }
     return true;
   }
   async function resumePendingDiceWorkflow(){
@@ -1624,10 +1630,9 @@ document.addEventListener('touchend',function(e){
     if(pending.resumeKind==='player-activation'){await completePlayerActivation({...state.combatState.stage,threatDiceResolving:false});return true;}
     if(pending.resumeKind==='breach-sarcophagus'){await performBreachSarcophagus({...state.combatState.stage},true);return true;}
     if(pending.resumeKind==='mission'){
-      if(data.operationId==='searchRoll'){await performLocateItem(data.siteId,data.operativeId);return true;}
-      if(data.operationId==='awakenRoll'){await performAwakenRoom(data.roomId);return true;}
-      if(['directionRoll','distanceRoll'].includes(data.operationId)){await performAuspexCalibration();return true;}
-      if(data.operationId==='repairRoll'){await continueTurningPointStart();return true;}
+      const operationId=data.operationId||data.resultId;
+      if(['searchRoll','awakenRoll','directionRoll','distanceRoll'].includes(operationId))return resumeMissionActionContext();
+      if(operationId==='repairRoll'){await continueTurningPointStart();return true;}
       return false;
     }
     if(pending.resumeKind==='npo-special-action'){
