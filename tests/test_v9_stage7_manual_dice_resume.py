@@ -24,7 +24,7 @@ const p=require('./persistence.js');
 const partial={version:1,requestKey:'combat:a:attack',status:'collecting',count:4,sides:6,title:'ATTACK ROLL',instruction:'Roll 4D6',rollerLabel:'Deathwatch',values:[6,3],resumeKind:'combat',resumeData:{activationId:'a'}};
 const valid=p.normalizePendingDice(partial,'pvp');
 const supportedD4=p.normalizePendingDice({...partial,count:2,sides:4,values:[4]},'pvp');
-const old=p.migrateSave({saveVersion:3,gameMode:'pvp',roster:[],playerRoster:[]});
+const schemaDefaults=p.migrateSave({saveVersion:3,gameMode:'pvp',roster:[],playerRoster:[]});
 const saved=p.createPersistedSave({saveVersion:3,gameMode:'pvp',pendingDice:partial,roster:[]});
 const reset=p.resetActiveBattle({gameMode:'pvp',pendingDice:partial,roster:[],journal:[]});
 const malformed=[
@@ -32,11 +32,11 @@ const malformed=[
   {...partial,values:[-1]}, {...partial,values:[1.5]}, {...partial,status:'committed'},
   {...partial,requestKey:''}, {...partial,sides:8}, {...partial,resumeKind:'unknown'}
 ].map(value=>p.normalizePendingDice(value,'pvp'));
-process.stdout.write(JSON.stringify({valid,supportedD4,old:old.pendingDice,saved:saved.pendingDice,reset:reset.pendingDice,malformed,solo:p.normalizePendingDice(partial,'solo'),version:p.currentSaveVersion()}));
+process.stdout.write(JSON.stringify({valid,supportedD4,schemaDefaultPendingDice:schemaDefaults.pendingDice,saved:saved.pendingDice,reset:reset.pendingDice,malformed,solo:p.normalizePendingDice(partial,'solo'),version:p.currentSaveVersion()}));
 """)
         self.assertEqual(result["valid"]["values"], [6, 3])
         self.assertEqual(result["supportedD4"]["values"], [4])
-        self.assertIsNone(result["old"])
+        self.assertIsNone(result["schemaDefaultPendingDice"])
         self.assertEqual(result["saved"]["values"], [6, 3])
         self.assertIsNone(result["reset"])
         self.assertEqual(result["malformed"], [None] * 9)

@@ -46,7 +46,11 @@ class Stage9ProductNamespaceTests(unittest.TestCase):
         self.assertIn("state=initialState()", new_game)
         self.assertIn("state.screen='setup'", new_game)
         initial_state = APP[APP.index("const initialState") : APP.index("const loadedSave")]
-        for default in ("gameMode:null", "missionId:null", "pendingDice:null"):
+        for default in (
+            "gameMode:null", "missionId:null", "backgroundSelection:null", "roster:[]",
+            "playerTeamId:''", "playerRoster:[]", "restlessTombEnabled:false",
+            "deadlyEncountersEnabled:false", "pendingDice:null",
+        ):
             self.assertIn(default, initial_state)
 
     def test_stage7_resume_remains_on_shared_new_save_path(self):
