@@ -1706,7 +1706,12 @@ document.addEventListener('touchend',function(e){
     if(state.lastActivation?.side==='player'&&state.lastActivation.committed&&state.lastActivation.completionHookPending){await completeHumanPlayerActivation();return true;}
     if(state.lastActivation?.npoId&&state.lastActivation.committed&&state.lastActivation.completionHookPending){await completeNpoActivation();return true;}
     if(isPvpMode()&&Boolean(state.lastActivation?.pendingAction?.diceResults||state.lastActivation?.pendingAction?.resolvedResult))return resumeNpoSpecialActionContext();
-    if(state.combatState?.side==='player'){resolvePendingPlayerAttacks({...state.combatState.stage});return true;}
+    if(state.combatState?.side==='player'){
+      const stage={...state.combatState.stage};
+      const resumableSequentialAction=stage.shoot||stage.melee||stage.missionFeatureCommitted||stage.missionBreachCommitted||Object.keys(stage.threatRolls||{}).length>0;
+      if(stage.sequential&&!resumableSequentialAction){cancelCurrentHumanPlayerAction();return true;}
+      resolvePendingPlayerAttacks(stage);return true;
+    }
     if(activePlayerActivation()){renderHumanPlayerActionPicker();return true;}
     if(isPvpMode()&&state.lastActivation?.npoId&&!state.lastActivation.committed){continueHumanNecronActivation();return true;}
     if(state.phase==='strategy'&&state.strategyPipeline?.current==='mission-ready-hooks'){await continueTurningPointStart();return true;}
@@ -4278,11 +4283,13 @@ document.addEventListener('touchend',function(e){
       if(!items.length)return '';
       return `<section class="activation-group human-action-group" aria-labelledby="human-group-${group.id}"><div class="activation-group-title"><div><strong id="human-group-${group.id}">${escapeHtml(group.label.toUpperCase())}</strong></div></div><div class="human-npo-action-list">${items.map(action=>{
         const stateInfo=action.state;
-        const accessible=`${action.name}, ${action.cost} AP, ${stateInfo.reason}`;
+        const status=stateInfo.status||(stateInfo.disabled?'Unavailable':'Available');
+        const detail=stateInfo.reason&&stateInfo.reason!==status?`, ${stateInfo.reason}`:'';
+        const accessible=`${action.name}, ${action.cost} AP, ${status}${detail}, ${remainingAp} AP remaining`;
         return `<button type="button" class="btn secondary human-npo-action" data-human-action="${escapeHtml(action.id)}" ${stateInfo.disabled?'disabled':''} aria-label="${escapeHtml(accessible)}"${stateInfo.disabled?` aria-disabled="true" aria-description="${escapeHtml(stateInfo.reason)}"`:''}><span><strong>${escapeHtml(action.name)}</strong><small>${action.cost} AP</small></span><small class="human-action-status">${escapeHtml(stateInfo.reason)}</small></button>`;
       }).join('')}</div></section>`;
     }).filter(Boolean).join('');
-    const history=completedActions.length?`<section class="summary-box human-completed-actions" aria-live="polite"><strong>Completed Actions</strong><ul>${completedActions.map(action=>`<li>✓ ${escapeHtml(action.summary||action.name)}</li>`).join('')}</ul></section>`:'';
+    const history=completedActions.length?`<section class="summary-box human-completed-actions"><strong>Completed Actions</strong><ul>${completedActions.map(action=>`<li>✓ ${escapeHtml(action.summary||action.name)}</li>`).join('')}</ul></section>`:'';
     showModal(title,`<div class="human-activation-shell"><h2>${escapeHtml(name)}</h2><div class="activation-profile-strip" role="status" aria-label="Activation profile"><span>Wounds: ${wounds}/${maxWounds}</span><span>APL ${baseApl}${effectiveAp===baseApl?'':` · Effective AP ${effectiveAp}`}</span><span><strong>${remainingAp} / ${startingAp} AP remaining</strong></span><span>Order: ${escapeHtml(order||'—')}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${effects.map(effect=>`<span>${escapeHtml(effect)}</span>`).join('')}</div>${history}<div class="activation-groups">${groups}</div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="endHumanActivation">End Activation</button></div></div>`,undefined,'human-activation');
     $$('[data-human-action]',modalBody).forEach(button=>button.onclick=()=>onAction(button.dataset.humanAction));
     $('#endHumanActivation').onclick=onEnd;
@@ -6833,7 +6840,7 @@ function showPlayerActivation(){
       let reason=used?'Used':available?'Available':cost>activation.remainingAp?`Needs ${cost} AP`:'Unavailable';
       if(id==='fight'&&completed.has('shoot'))reason='Unavailable after Shoot';
       if(id==='shoot'&&completed.has('fight'))reason='Unavailable after Fight';
-      return {name,id,cost,group:['reposition','dash','charge','fall-back'].includes(id)?'movement':['shoot','fight'].includes(id)?'combat':'special',state:{disabled:!available,reason}};
+      return {name,id,cost,group:['reposition','dash','charge','fall-back'].includes(id)?'movement':['shoot','fight'].includes(id)?'combat':'special',state:{status:used?'Used':available?'Available':cost>activation.remainingAp?'Insufficient AP':'Unavailable',disabled:!available,reason}};
     });
     const modifiers=(state.npoRuleState.aplModifiers||[]).filter(item=>item.targetId===n.id).map(item=>`${item.amount>0?'+':''}${item.amount} AP (${titleCaseRuleId(item.ruleId)})`);
     if((state.npoRuleState.pendingMovementEffects||[]).some(item=>item.targetId===n.id&&item.ruleId==='molecular-breach'))modifiers.push('Next movement uses Molecular Breach');

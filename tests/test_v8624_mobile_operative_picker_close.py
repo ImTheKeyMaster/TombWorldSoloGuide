@@ -90,7 +90,7 @@ class MobileOperativePickerCloseTests(unittest.TestCase):
         self.assertNotRegex(STYLES,r'select:focus(?:-visible)?\s*\{\s*outline\s*:\s*none')
 
     def test_18_accessible_action_name_contains_cost_and_status(self):
-        self.assertIn('`${action.name}, ${action.cost} AP, ${stateInfo.reason}`',self.shell)
+        self.assertIn('`${action.name}, ${action.cost} AP, ${status}${detail}, ${remainingAp} AP remaining`',self.shell)
         self.assertIn('aria-description',self.shell)
 
     def test_19_save_version_remains_unchanged(self):

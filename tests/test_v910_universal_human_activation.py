@@ -18,6 +18,11 @@ def source(name, next_name):
     return APP.split(f"function {name}", 1)[1].split(f"function {next_name}", 1)[0]
 
 
+def run_node(script):
+    result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True, check=True)
+    return json.loads(result.stdout)
+
+
 def test_shared_shell_is_used_by_player_and_pvp_necron():
     assert "function renderHumanActivationShell" in APP
     assert "renderHumanActivationShell({" in source("renderHumanPlayerActionPicker", "playerSequentialStage")
@@ -67,12 +72,59 @@ def test_cancel_only_discards_current_uncommitted_action():
     assert "remainingAp" not in cancel
 
 
+def test_cancel_after_committed_reposition_preserves_authoritative_state_behaviorally():
+    result = run_node(r"""
+const fs=require('fs'),app=fs.readFileSync('app.js','utf8');
+const extract=(start,end)=>app.slice(app.indexOf(start),app.indexOf(end,app.indexOf(start)));
+const state={lastActivation:{side:'player',committed:false,operativeId:'p1',remainingAp:2,startingAp:3,
+ completedActionIds:['move'],resolvedActions:[{id:'move',name:'Reposition',apCost:1}],pendingAction:{actionId:'shoot'}},
+ combatState:{side:'player'},missionActionContext:{actionId:'shoot'},weaponRuleResolution:{ruleId:'blast'}};
+const activePlayerActivation=()=>state.lastActivation.side==='player'&&!state.lastActivation.committed?state.lastActivation:null;
+let saves=0,renders=0;const save=()=>{saves++},renderHumanPlayerActionPicker=()=>{renders++};
+eval(extract('function cancelCurrentHumanPlayerAction','function selectHumanPlayerAction'));
+cancelCurrentHumanPlayerAction();
+console.log(JSON.stringify({remainingAp:state.lastActivation.remainingAp,completedActionIds:state.lastActivation.completedActionIds,
+ resolvedActions:state.lastActivation.resolvedActions,pendingAction:state.lastActivation.pendingAction,
+ combatState:state.combatState,missionActionContext:state.missionActionContext,weaponRuleResolution:state.weaponRuleResolution,saves,renders}));
+""")
+    assert result == {"remainingAp": 2, "completedActionIds": ["move"],
+                      "resolvedActions": [{"id": "move", "name": "Reposition", "apCost": 1}],
+                      "pendingAction": None, "combatState": None, "missionActionContext": None,
+                      "weaponRuleResolution": None, "saves": 1, "renders": 1}
+
+
 def test_ap_commit_is_guarded_and_exactly_once():
     commit = source("commitHumanPlayerAction", "confirmEndHumanPlayerActivation")
     assert "completedActionIds||[]).includes(pending.actionId)" in commit
     assert "pending.cost>before" in commit
     assert "activation.remainingAp=before-pending.cost" in commit
     assert "activation.pendingAction=null" in commit
+
+
+def test_action_commit_spends_ap_and_records_order_exactly_once_behaviorally():
+    result = run_node(r"""
+const fs=require('fs'),app=fs.readFileSync('app.js','utf8');
+const extract=(start,end)=>app.slice(app.indexOf(start),app.indexOf(end,app.indexOf(start)));
+const state={lastActivation:{side:'player',committed:false,activationId:'a1',operativeId:'p1',remainingAp:2,startingAp:3,
+ actionSequence:1,completedActionIds:['move'],resolvedActions:[{sequence:1,id:'move',name:'Reposition'}],
+ pendingAction:{activationId:'a1',actionId:'shoot',actionSequence:2,cost:1}},combatState:{},missionActionContext:{}};
+const activePlayerActivation=()=>state.lastActivation.side==='player'&&!state.lastActivation.committed?state.lastActivation:null;
+const pendingAttackResults=(stage,type)=>type==='shoot'?[{targetId:'n1',targetName:'Warrior 1',before:8,after:3,damage:5,attackType:'shoot'}]:[];
+const log=()=>{},save=()=>true,acknowledgeCurrentDiceRequest=()=>{},playerCurrentWounds=()=>8;
+let renders=0;const renderHumanPlayerActionPicker=()=>{renders++},completeHumanPlayerActivation=()=>{};
+const playerName=()=> 'Operative';
+eval(extract('function commitHumanPlayerAction','function confirmEndHumanPlayerActivation'));
+const stage={humanActionId:'shoot',humanActionName:'Shoot'};
+const first=commitHumanPlayerAction(stage),second=commitHumanPlayerAction(stage);
+console.log(JSON.stringify({first,second,remainingAp:state.lastActivation.remainingAp,completedActionIds:state.lastActivation.completedActionIds,
+ resolvedActions:state.lastActivation.resolvedActions.map(x=>({sequence:x.sequence,id:x.id,name:x.name,summary:x.summary})),renders}));
+""")
+    assert result["first"] is True and result["second"] is False
+    assert result["remainingAp"] == 1
+    assert result["completedActionIds"] == ["move", "shoot"]
+    assert [action["id"] for action in result["resolvedActions"]] == ["move", "shoot"]
+    assert result["resolvedActions"][1]["summary"] == "Shoot · Warrior 1 · 5 damage"
+    assert result["renders"] == 1
 
 
 def test_player_combat_request_identity_uses_durable_activation_and_action_sequence():
@@ -124,6 +176,44 @@ def test_reload_restores_active_player_ap_history_and_lock():
     for field in ("activationId", "remainingAp", "startingAp", "completedActionIds", "resolvedActions", "pendingAction"):
         assert field in restore
     assert "if(activePlayerActivation()){renderHumanPlayerActionPicker();return true;}" in APP
+
+
+def test_reload_during_unconfirmed_routine_action_returns_to_picker_behaviorally():
+    result = run_node(r"""
+const fs=require('fs'),app=fs.readFileSync('app.js','utf8');
+const start=app.indexOf('async function resumeCheckpointedGameplayContext');
+const fn=app.slice(start,app.indexOf('async function missionDiceTotal',start));
+const state={lastActivation:{side:'player',committed:false,operativeId:'p1',remainingAp:2,completedActionIds:['move'],
+ resolvedActions:[{id:'move',name:'Reposition'}],pendingAction:{actionId:'dash'}},combatState:{side:'player',stage:{sequential:true,humanActionId:'dash',dash:true}}};
+let cancelled=0,resolved=0;
+const resumeMissionActionContext=async()=>false,isPvpMode=()=>false,resumeNpoSpecialActionContext=()=>{},
+ cancelCurrentHumanPlayerAction=()=>{cancelled++;state.lastActivation.pendingAction=null;state.combatState=null},
+ resolvePendingPlayerAttacks=()=>{resolved++},activePlayerActivation=()=>state.lastActivation,
+ renderHumanPlayerActionPicker=()=>{},continueHumanNecronActivation=()=>{},continueTurningPointStart=()=>{},finishTurningPointStart=()=>{},
+ completeHumanPlayerActivation=()=>{},completeNpoActivation=()=>{};
+eval(fn);
+resumeCheckpointedGameplayContext().then(value=>console.log(JSON.stringify({value,cancelled,resolved,remainingAp:state.lastActivation.remainingAp,
+ completedActionIds:state.lastActivation.completedActionIds,pendingAction:state.lastActivation.pendingAction,combatState:state.combatState})));
+""")
+    assert result == {"value": True, "cancelled": 1, "resolved": 0, "remainingAp": 2,
+                      "completedActionIds": ["move"], "pendingAction": None, "combatState": None}
+
+
+def test_reload_during_combat_keeps_durable_combat_resume_path_behaviorally():
+    result = run_node(r"""
+const fs=require('fs'),app=fs.readFileSync('app.js','utf8');
+const start=app.indexOf('async function resumeCheckpointedGameplayContext');
+const fn=app.slice(start,app.indexOf('async function missionDiceTotal',start));
+const state={lastActivation:{side:'player',committed:false},combatState:{side:'player',stage:{sequential:true,humanActionId:'shoot',shoot:true}}};
+let cancelled=0,resolved=0;
+const resumeMissionActionContext=async()=>false,isPvpMode=()=>false,resumeNpoSpecialActionContext=()=>{},cancelCurrentHumanPlayerAction=()=>{cancelled++},
+ resolvePendingPlayerAttacks=stage=>{resolved+=stage.shoot?1:100},activePlayerActivation=()=>state.lastActivation,
+ renderHumanPlayerActionPicker=()=>{},continueHumanNecronActivation=()=>{},continueTurningPointStart=()=>{},finishTurningPointStart=()=>{},
+ completeHumanPlayerActivation=()=>{},completeNpoActivation=()=>{};
+eval(fn);
+resumeCheckpointedGameplayContext().then(value=>console.log(JSON.stringify({value,cancelled,resolved})));
+""")
+    assert result == {"value": True, "cancelled": 0, "resolved": 1}
 
 
 def test_persistence_validation_does_not_discard_a_player_activation():
