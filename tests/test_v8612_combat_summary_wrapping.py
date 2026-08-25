@@ -25,7 +25,7 @@ class V8612CombatSummaryWrappingTests(unittest.TestCase):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
         self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
         self.assertIn(f"styles.css?v={CURRENT_APP_VERSION}", INDEX)
-        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
+        self.assertTrue(README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
 
     def test_02_summary_values_wrap_words_normally(self):
         rule = css_rule(".combat-summary-value")

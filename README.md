@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v8.6.108
+# Tomb World Battle Guide v8.6.108
 
 ## v8.6.108
 
@@ -1785,7 +1785,7 @@ Run the focused rules-engine, mission, combat, event, reinforcement, and save-co
 python3 -m unittest discover -s tests -v
 ```
 
-The Guide preserves the existing `tombWorldSoloGuide.v1` browser-storage key. Current, legacy, and partially upgraded saves are normalized on load; malformed optional fields fall back to safe defaults without clearing the stored game.
+The Guide stores current battles under the `tombWorldBattleGuide.v1` browser-storage key. The pre-v9 Tomb World Solo Guide namespace is intentionally ignored; new Solo and PvP battles use the current namespace and save schema.
 
 ### Installing the app
 

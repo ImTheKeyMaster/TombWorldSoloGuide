@@ -59,8 +59,8 @@ class NarrationIntegrationTests(unittest.TestCase):
         persistence = (ROOT / 'persistence.js').read_text(encoding="utf-8")
         self.assertNotIn('narrationEnabled', persistence)
         self.assertNotIn('narrationVolume', persistence)
-        self.assertIn('tombWorldSoloGuide.narrationEnabled', NARRATION)
-        self.assertNotIn('tombWorldSoloGuide.narrationVolume', NARRATION)
+        self.assertIn('tombWorldBattleGuide.narrationEnabled', NARRATION)
+        self.assertNotIn('tombWorldBattleGuide.narrationVolume', NARRATION)
 
 
 class NarrationManifestTests(unittest.TestCase):
@@ -124,7 +124,7 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
     def test_disabled_full_volume_overlap_deduplication_and_replay(self):
         self.run_node("""
 n.setPreferenceEnabled(false);n.setMasterEnabled(false);n.setMasterEnabled(true);if(await n.playMissionIntro('shifting-labyrinth'))throw Error('disabled played');
-n.setPreferenceEnabled(true);n.setMasterEnabled(false);n.setMasterEnabled(true);store.set('tombWorldSoloGuide.narrationVolume','0');
+n.setPreferenceEnabled(true);n.setMasterEnabled(false);n.setMasterEnabled(true);store.set('tombWorldBattleGuide.narrationVolume','0');
 if(!await n.playEvent('awakened-warrior','copy-1'))throw Error('first play failed');
 if(Audio.instance?.volume!==1)throw Error('legacy volume affected playback');
 if(await n.playEvent('awakened-warrior','copy-1'))throw Error('duplicate played');
@@ -139,9 +139,9 @@ if(calls.filter(x=>x==='pause').length<2)throw Error('new playback did not stop 
     def test_enabled_preference_persists_without_starting_playback(self):
         self.run_node("""
 n.setPreferenceEnabled(false);
-if(store.get('tombWorldSoloGuide.narrationEnabled')!=='false')throw Error('disabled state did not persist');
+if(store.get('tombWorldBattleGuide.narrationEnabled')!=='false')throw Error('disabled state did not persist');
 n.setPreferenceEnabled(true);
-if(store.get('tombWorldSoloGuide.narrationEnabled')!=='true')throw Error('enabled state did not persist');
+if(store.get('tombWorldBattleGuide.narrationEnabled')!=='true')throw Error('enabled state did not persist');
 if(calls.some(x=>x.startsWith('play:')))throw Error('enabling narration started playback');
 """)
 

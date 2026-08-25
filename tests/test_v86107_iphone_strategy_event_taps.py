@@ -136,7 +136,7 @@ const showModal=()=>{{}};
         self.assertIn("max-width:100%", styles.replace(" ", ""))
 
     def test_release_version_is_consistent_without_save_migration(self):
-        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}"))
+        self.assertTrue(README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}"))
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
         self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
         self.assertEqual(APP.count(f"const APP_VERSION = '{CURRENT_APP_VERSION}';"), 1)

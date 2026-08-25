@@ -130,7 +130,7 @@ class AboutScreenV8619Tests(unittest.TestCase):
 
     def test_33_release_version_references_are_consistent(self):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
-        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
+        self.assertTrue(README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
         self.assertIn("## v8.6.25", README)
         for asset in ("styles.css", "app.js", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js"):
             self.assertIn(f"{asset}?v={CURRENT_APP_VERSION}", INDEX)

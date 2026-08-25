@@ -120,7 +120,7 @@ class GradeDescriptionClarityTests(unittest.TestCase):
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
     def test_21_release_assets_and_notes_are_current(self):
-        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
+        self.assertTrue(README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
         self.assertIn("**Version 8.6.16 - Clarify Grade Gameplay Changes**", README)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "app.js"):
             self.assertIn(f"{asset}?v={CURRENT_APP_VERSION}", INDEX)

@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const PREFERENCE_KEY = 'tombWorldSoloGuide.diceRollEnabled';
+  const PREFERENCE_KEY = 'tombWorldBattleGuide.diceRollEnabled';
   const DICE_ROLL_SOURCE = 'Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3';
   let diceAudioContext = null;
   let diceGainNode = null;

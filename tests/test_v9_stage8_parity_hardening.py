@@ -13,8 +13,8 @@ class Stage8ModeAndOwnershipTests(unittest.TestCase):
     def test_versions_and_branding_remain_at_stage8_boundary(self):
         self.assertRegex(APP, r"const APP_VERSION = '[0-9]+\.[0-9]+\.[0-9]+';")
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
-        self.assertIn("Tomb World Solo Guide", APP)
-        self.assertNotIn("Tomb World Battle Guide", APP)
+        self.assertIn("Tomb World Battle Guide", APP)
+        self.assertNotIn("Tomb World Solo Guide", APP)
 
     def test_mode_defaults_and_import_normalization_remain_compatible(self):
         self.assertIn("const gameMode=save.gameMode==='pvp'?'pvp':'solo';", PERSISTENCE)

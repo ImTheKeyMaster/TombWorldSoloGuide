@@ -22,7 +22,7 @@ class V8629PlayerMultiTargetCombatResumeTests(unittest.TestCase):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
         self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
-        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
+        self.assertTrue(README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
 
     def test_02_canonical_identity_is_deterministic_and_nonempty(self):
         source = function_source("canonicalPlayerWeaponIdentity")

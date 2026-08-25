@@ -25,7 +25,7 @@ class OperativeStatusPanelTests(unittest.TestCase):
 
     def test_toggle_accessibility_and_persistence(self):
         self.assertIn('aria-label="Show operative status" aria-pressed="false"', INDEX)
-        self.assertIn("'tombWorldSoloGuide.showOperativeStatus'", APP)
+        self.assertIn("'tombWorldBattleGuide.showOperativeStatus'", APP)
         self.assertIn("setAttribute('aria-pressed',String(visible))", APP)
         self.assertIn("visible?'Hide operative status':'Show operative status'", APP)
         self.assertIn("localStorage.setItem(OPERATIVE_STATUS_PREFERENCE_KEY", APP)

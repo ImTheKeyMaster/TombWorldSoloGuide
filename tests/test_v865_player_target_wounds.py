@@ -15,7 +15,7 @@ PERSISTENCE = (ROOT / "persistence.js").read_text()
 
 class PlayerTargetWoundLabelsTests(unittest.TestCase):
     def test_release_version_is_consistent(self):
-        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
+        self.assertTrue(README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
         self.assertIn("Version 8.6.5 - Show Player Wounds in Target Selection", README)
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)

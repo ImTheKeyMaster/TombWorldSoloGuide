@@ -1,8 +1,8 @@
-# Tomb World Solo Guide
+# Tomb World Battle Guide
 
 ## Project Overview
 
-The Tomb World Solo Guide is a mobile-first web application that assists players in running solo Kill Team games.
+The Tomb World Battle Guide is a mobile-first web application that assists players in running solo and two-player Kill Team games.
 
 The application is intentionally built as a lightweight static web application and is hosted through GitHub Pages.
 

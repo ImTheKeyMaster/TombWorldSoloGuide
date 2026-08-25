@@ -101,7 +101,7 @@ class SetupGameMenuHelpV8621Tests(unittest.TestCase):
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
     def test_22_release_references_and_notes_are_consistent(self):
-        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
+        self.assertTrue(README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
         self.assertIn("## v8.6.25", README)
         for asset in ("styles.css", "app.js", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js"):
             self.assertIn(f"{asset}?v={CURRENT_APP_VERSION}", INDEX)

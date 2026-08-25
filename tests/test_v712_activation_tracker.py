@@ -133,7 +133,7 @@ console.log(JSON.stringify({{rows:trackerNpos().map(npo=>({{id:npo.id,...npoTrac
         self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "app.js"):
             self.assertIn(f"{asset}?v={CURRENT_APP_VERSION}", INDEX)
-        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
+        self.assertTrue(README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
 
 
 if __name__ == "__main__":

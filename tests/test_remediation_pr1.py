@@ -81,7 +81,7 @@ class RemediationPr1Tests(unittest.TestCase):
         self.assertIn("state.turningPoint++;", self.app)
         self.assertIn("if(state.turningPoint===1||state.threat===0)", self.app)
         self.assertTrue(all(m["firstTurningPointInitiative"] == "player" for m in self.missions.values()))
-        self.assertIn("const STORAGE_KEY = 'tombWorldSoloGuide.v1';", self.app)
+        self.assertIn("const STORAGE_KEY = 'tombWorldBattleGuide.v1';", self.app)
 
     def test_version_and_cache_busters_match(self):
         expected = f"{CURRENT_APP_VERSION}"
@@ -91,7 +91,7 @@ class RemediationPr1Tests(unittest.TestCase):
         self.assertIn(f"styles.css?v={expected}", index)
         self.assertIn(f"app.js?v={expected}", index)
         self.assertIn(f"V{expected}", index)
-        self.assertTrue((ROOT / "README.md").read_text().startswith(f"# Tomb World Solo Guide v{expected}"))
+        self.assertTrue((ROOT / "README.md").read_text().startswith(f"# Tomb World Battle Guide v{expected}"))
 
 
 if __name__ == "__main__":

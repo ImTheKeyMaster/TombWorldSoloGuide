@@ -2,8 +2,8 @@
   'use strict';
 
   const MANIFEST_URL = 'Assets/Audio/Narration/narration-manifest.json';
-  const ENABLED_KEY = 'tombWorldSoloGuide.narrationEnabled';
-  const MASTER_ENABLED_KEY = 'tombWorldSoloGuide.gameAudioEnabled';
+  const ENABLED_KEY = 'tombWorldBattleGuide.narrationEnabled';
+  const MASTER_ENABLED_KEY = 'tombWorldBattleGuide.gameAudioEnabled';
   const SILENT_UNLOCK_AUDIO = 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQIAAAAAAA==';
   const missionNumbers = {
     'shifting-labyrinth': '01',

@@ -29,7 +29,7 @@ class VersioningTests(unittest.TestCase):
         ):
             self.assertIn(f"{asset}?v={CURRENT_APP_VERSION}", index)
         self.assertIn(f"const CACHE_NAME = `${{CACHE_PREFIX}}${{APP_VERSION}}`;", worker)
-        self.assertTrue(readme.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
+        self.assertTrue(readme.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
 
     def test_app_version_parser_rejects_missing_duplicate_and_malformed_declarations(self):
         invalid_sources = (

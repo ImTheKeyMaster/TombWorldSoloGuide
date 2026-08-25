@@ -48,7 +48,7 @@ class RemediationPr9StabilizationTests(unittest.TestCase):
         self.assertIn("normalizeIdList(raw.scoutedRoomIds", normalize)
 
     def test_persistence_keeps_the_legacy_key_and_handles_storage_failures(self):
-        self.assertIn("const STORAGE_KEY = 'tombWorldSoloGuide.v1'", self.app)
+        self.assertIn("const STORAGE_KEY = 'tombWorldBattleGuide.v1'", self.app)
         save = self.source("function save()", "function load()")
         self.assertIn("localStorage.setItem(STORAGE_KEY,JSON.stringify(createPersistedSave(state)))", save)
         self.assertIn("The game could not be saved", save)

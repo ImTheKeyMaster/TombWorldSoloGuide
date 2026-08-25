@@ -1,7 +1,7 @@
 {
-  "name": "Tomb World Solo Guide",
+  "name": "Tomb World Battle Guide",
   "short_name": "Tomb World Guide",
-  "description": "A guided solo-play companion for Kill Team Tomb World missions.",
+  "description": "A guided solo and two-player companion for Kill Team Tomb World missions.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

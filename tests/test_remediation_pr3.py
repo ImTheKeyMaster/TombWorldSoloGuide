@@ -120,7 +120,7 @@ class RemediationPr3Tests(unittest.TestCase):
         self.assertIn(f"styles.css?v={expected}", index)
         self.assertIn(f"app.js?v={expected}", index)
         self.assertIn(f"V{expected}", index)
-        self.assertTrue((ROOT / "README.md").read_text().startswith(f"# Tomb World Solo Guide v{expected}"))
+        self.assertTrue((ROOT / "README.md").read_text().startswith(f"# Tomb World Battle Guide v{expected}"))
 
 if __name__ == "__main__":
     unittest.main()

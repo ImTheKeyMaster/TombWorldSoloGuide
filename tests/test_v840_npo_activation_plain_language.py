@@ -20,7 +20,7 @@ class V840NpoActivationPlainLanguageTests(unittest.TestCase):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
         self.assertIn(f'V{CURRENT_APP_VERSION}', INDEX)
-        self.assertTrue(README.startswith(f'# Tomb World Solo Guide v{CURRENT_APP_VERSION}'))
+        self.assertTrue(README.startswith(f'# Tomb World Battle Guide v{CURRENT_APP_VERSION}'))
         self.assertIn('## v8.6.25', README)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'app.js'):

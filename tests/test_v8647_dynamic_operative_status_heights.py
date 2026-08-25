@@ -59,7 +59,7 @@ class DynamicOperativeStatusHeightTests(unittest.TestCase):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", SERVICE_WORKER)
         self.assertIn(f'V{CURRENT_APP_VERSION}', INDEX)
-        self.assertTrue(README.startswith(f'# Tomb World Solo Guide v{CURRENT_APP_VERSION}'))
+        self.assertTrue(README.startswith(f'# Tomb World Battle Guide v{CURRENT_APP_VERSION}'))
         self.assertIn('## v8.6.47', README)
         self.assertIn('const SAVE_VERSION = 3;', PERSISTENCE)
 

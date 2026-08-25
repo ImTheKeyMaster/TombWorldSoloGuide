@@ -33,7 +33,7 @@ Mission 04 uses only `onStrategyPhaseReadyStep` for Nanoscarab Repair. Execution
 
 ## Save and migration behavior
 
-- Saves retain the existing `tombWorldSoloGuide.v1` browser key and add the current integer `saveVersion` without deleting unknown harmless fields.
+- New saves use the `tombWorldBattleGuide.v1` browser key and include the current integer `saveVersion` without deleting unknown harmless fields.
 - Unversioned/schema-zero saves migrate sequentially to the current schema and normalization is idempotent.
 - Missing `missionState`, `reinforcementState`, or `missionRuntime` values receive safe defaults. Invalid roster and reinforcement references are removed.
 - A partial or malformed Mission 04 runtime is normalized against the current definition; unrecoverable mission data resets only mission automation rather than the whole game.
