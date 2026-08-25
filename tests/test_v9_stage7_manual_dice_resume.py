@@ -61,6 +61,9 @@ process.stdout.write(JSON.stringify({valid,old:old.pendingDice,saved:saved.pendi
         for entry in ("finishTurningPointStart()", "beginCurrentEvent()", "completePlayerActivation", "performBreachSarcophagus", "resolveNpoSpecialAction"):
             self.assertIn(entry, resume)
         self.assertIn("if(state.pendingDice)await resumePendingDiceWorkflow()", APP)
+        self.assertIn("performLocateItem(data.siteId,data.operativeId)", resume)
+        self.assertIn("performAwakenRoom(data.roomId)", resume)
+        self.assertIn("['directionRoll','distanceRoll','repairRoll']", resume)
 
     def test_every_gameplay_request_has_stable_identity_and_resume_metadata(self):
         calls = []
@@ -88,6 +91,22 @@ process.stdout.write(JSON.stringify({valid,old:old.pendingDice,saved:saved.pendi
             self.assertIn(marker, APP)
         self.assertGreaterEqual(APP.count("acknowledgeDiceRequest("), 10)
         self.assertGreaterEqual(APP.count("acknowledgeCurrentDiceRequest()"), 5)
+
+    def test_reviewed_sequence_keys_and_checkpoint_order_are_safe(self):
+        combat = APP[APP.index("function runAutomaticCombatRolls") : APP.index("function retainedDiceTotals")]
+        self.assertIn("requestKeyBase", combat)
+        self.assertIn("acknowledgeDiceRequest(`${requestKeyBase}:attack`)", combat)
+        self.assertIn("acknowledgeDiceRequest(`${requestKeyBase}:defense`)", combat)
+        npo = APP[APP.index("function showNpoAttackWizard") : APP.index("async function animateMissionDice")]
+        self.assertIn(":${n.id}:${target.id}:${profile.weaponId}:${profile.profileId}`", npo)
+        breach = APP[APP.index("async function performBreachSarcophagus") : APP.index("function confirmMissionAction")]
+        self.assertLess(breach.index("context.committed=true"), breach.index("acknowledgeDiceRequest(requestKey)"))
+        mission = APP[APP.index("async function performLocateItem") : APP.index("function missionFeatureIdentity")]
+        self.assertIn("siteId,operativeId:carrierId", mission)
+        self.assertIn("actionId,roomId", mission)
+        mission_number = APP[APP.index("function requestMissionNumber") : APP.index("async function runMissionEvent")]
+        self.assertIn("state.missionReadyContext?.turningPoint===state.turningPoint", mission_number)
+        self.assertIn("sarcophagusControllers:value", mission_number)
 
     def test_versions_and_existing_silent_mobile_dialog_are_preserved(self):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)

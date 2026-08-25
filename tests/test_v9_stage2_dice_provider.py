@@ -132,12 +132,11 @@ Object.defineProperty(diceEntryKeypad,'innerHTML',{{set(html){{
 
     def test_concurrency_required_dialog_and_focus_are_protected(self):
         manual = APP[APP.index("function requestManualDiceResults") : APP.index("async function requestDiceResults")]
-        self.assertIn("return activeManualDiceRequest.promise", manual)
-        self.assertIn("return Promise.reject(new Error('A manual dice request is already active.'))", manual)
+        self.assertIn("if(activeManualDiceRequest)return Promise.reject", manual)
         self.assertIn("catch(error){activeManualDiceRequest=null;throw error;}", manual)
         self.assertIn("diceEntryDialog.showModal()", manual)
         self.assertIn("returnFocus:document.activeElement", manual)
-        self.assertIn("querySelector('button')?.focus", manual)
+        self.assertIn("querySelector('button:not(:disabled)')||diceEntryCommit", manual)
         self.assertIn("diceEntryDialog.addEventListener('cancel',event=>event.preventDefault())", APP)
         self.assertIn("returnFocus?.isConnected", APP)
         self.assertNotIn("diceEntryDialog.close()", APP[APP.index("function requestManualDiceResults") :])
