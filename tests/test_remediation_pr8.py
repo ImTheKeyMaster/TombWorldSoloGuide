@@ -42,7 +42,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertIn("completedFeatureIds", self.app)
 
     def test_mission_three_uses_official_search_threshold_and_carrier_escape(self):
-        handler = self.source("$$('[data-search-site]')", "$('#transponderEscape')")
+        handler = self.source("async function performLocateItem", "async function performAwakenRoom")
         self.assertIn("result>otherRemaining", handler)
         self.assertIn("progress.carrierId=carrier", handler)
         evaluator = self.source("transponder:(engine,progress,timing)", "destruction:(engine,progress,timing)")

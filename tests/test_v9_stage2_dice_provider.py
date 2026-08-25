@@ -41,7 +41,7 @@ class Stage2DiceProviderTests(unittest.TestCase):
         provider = APP[APP.index("async function requestDiceResults") : APP.index("diceEntryUndo.addEventListener")]
         self.assertIn("if(!isPvpMode())return rollDice(validatedRequest.count,validatedRequest.sides)", provider)
         self.assertIn("return requestManualDiceResults(validatedRequest)", provider)
-        self.assertIn("window.TombWorldDiceProvider=Object.freeze({requestDiceResults})", APP)
+        self.assertIn("window.TombWorldDiceProvider=Object.freeze({requestDiceResults,acknowledgeDiceRequest,resumePendingDiceWorkflow})", APP)
 
     def test_manual_entry_is_raw_immediate_and_ordered(self):
         render = APP[APP.index("function renderManualDiceEntry") : APP.index("function requestManualDiceResults")]
@@ -136,7 +136,7 @@ Object.defineProperty(diceEntryKeypad,'innerHTML',{{set(html){{
         self.assertIn("catch(error){activeManualDiceRequest=null;throw error;}", manual)
         self.assertIn("diceEntryDialog.showModal()", manual)
         self.assertIn("returnFocus:document.activeElement", manual)
-        self.assertIn("querySelector('button')?.focus", manual)
+        self.assertIn("querySelector('button:not(:disabled)')||diceEntryCommit", manual)
         self.assertIn("diceEntryDialog.addEventListener('cancel',event=>event.preventDefault())", APP)
         self.assertIn("returnFocus?.isConnected", APP)
         self.assertNotIn("diceEntryDialog.close()", APP[APP.index("function requestManualDiceResults") :])
@@ -151,9 +151,13 @@ Object.defineProperty(diceEntryKeypad,'innerHTML',{{set(html){{
         self.assertNotIn("modalBody", manual)
         self.assertIn("diceEntryDialog.showModal()", manual)
 
-    def test_manual_request_is_transient_and_stage3_gameplay_is_routed(self):
+    def test_manual_request_is_serializable_and_stage3_gameplay_is_routed(self):
         initial_state = APP[APP.index("const initialState") : APP.index("const loadedSave")]
-        self.assertNotIn("dice", initial_state.lower())
+        self.assertIn("pendingDice:null", initial_state)
+        provider = APP[APP.index("let activeManualDiceRequest") : APP.index("diceEntryUndo.addEventListener")]
+        self.assertIn("values:active.values.slice()", provider)
+        for unsafe in ("returnFocus", "resolve", "document.activeElement"):
+            self.assertNotIn(unsafe, provider[provider.index("state.pendingDice={") : provider.index("save();", provider.index("state.pendingDice={"))])
         self.assertEqual(APP.count("async function requestDiceResults"), 1)
         before_provider, after_provider = APP.split("async function requestDiceResults", 1)
         self.assertNotIn("requestDiceResults(", before_provider)
