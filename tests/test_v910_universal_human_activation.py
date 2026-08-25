@@ -142,6 +142,23 @@ def test_failed_or_cancelled_action_spends_no_ap():
     assert "No action was spent" in source("showActivationFeatureTargetSelection", "showActivationBreachTargetSelection")
 
 
+def test_cancel_before_attack_commit_spends_no_ap_and_causes_no_damage_behaviorally():
+    result = run_node(r"""
+const fs=require('fs'),app=fs.readFileSync('app.js','utf8');
+const extract=(start,end)=>app.slice(app.indexOf(start),app.indexOf(end,app.indexOf(start)));
+const state={lastActivation:{side:'player',remainingAp:2},combatState:{side:'player'},
+ roster:[{id:'n1',wounds:8}],playerWounds:{p1:7}};
+const stage={sequential:true,shootCombatDraft:{targetId:'n1',damage:5}};
+let saves=0,cancels=0;const save=()=>{saves++};
+eval(extract('function cancelPendingPlayerCombat','function playerActionTransactionIdentity'));
+cancelPendingPlayerCombat(stage,'shoot',()=>{cancels++});
+console.log(JSON.stringify({remainingAp:state.lastActivation.remainingAp,npoWounds:state.roster[0].wounds,
+ playerWounds:state.playerWounds.p1,draft:stage.shootCombatDraft,combatState:state.combatState,saves,cancels}));
+""")
+    assert result == {"remainingAp": 2, "npoWounds": 8, "playerWounds": 7,
+                      "draft": None, "combatState": None, "saves": 1, "cancels": 1}
+
+
 def test_pvp_necron_catalog_special_actions_and_targeting_are_retained():
     assert "function legalHumanNpoActions" in APP
     assert "function supportedHumanNpoActions" in APP

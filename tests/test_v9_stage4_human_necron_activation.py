@@ -189,22 +189,18 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
         self.assertIn("target:[]", decision)
         self.assertNotIn("Most likely", decision)
 
-    def test_pvp_shoot_and_fight_require_tabletop_target_confirmation(self):
+    def test_pvp_shoot_and_fight_have_no_generic_target_confirmation(self):
         wizard = self.section("function showNpoAttackWizard", "function spinnerField")
-        self.assertIn("id=\"npoTabletopTargetConfirmed\"", wizard)
-        self.assertIn("valid target for this shooting attack, including visibility, range, and other applicable targeting requirements", wizard)
-        self.assertIn("within control range and is a valid target for this Fight action", wizard)
-        guard = "if(isPvpMode()&&!restoredRoll&&!state.lastActivation?.combatDraft?.tabletopTargetConfirmed)return;"
-        self.assertIn(guard, wizard)
-        self.assertLess(wizard.index(guard), wizard.index("runAutomaticCombatRolls({"))
+        self.assertNotIn("npoTabletopTargetConfirmed", wizard)
+        self.assertNotIn("Confirm tabletop target legality", wizard)
+        self.assertNotIn("tabletopTargetConfirmed", wizard)
 
-    def test_pvp_target_confirmation_gates_dice_ap_damage_and_completion(self):
+    def test_pvp_target_and_profile_are_sufficient_to_start_dice_flow(self):
         wizard = self.section("function showNpoAttackWizard", "function spinnerField")
-        self.assertIn("tabletopTargetConfirmed:event.currentTarget.checked", wizard)
-        self.assertIn("screen.continueButton.disabled=!event.currentTarget.checked||!profile", wizard)
-        start = wizard.split("const startAutomaticCombat", 1)[1]
-        guard = "if(isPvpMode()&&!restoredRoll&&!state.lastActivation?.combatDraft?.tabletopTargetConfirmed)return;"
-        self.assertLess(start.index(guard), start.index("combatTimer=runAutomaticCombatRolls({"))
+        profile_change = wizard.split("$('#npoCombatProfile')?.addEventListener", 1)[1]
+        self.assertIn("screen.continueButton.disabled=false", profile_change)
+        self.assertIn("screen.continueButton.onclick=()=>startAutomaticCombat()", profile_change)
+        self.assertIn("else if(isPvpMode()&&!resumeGuided&&(availableProfiles.length===1||locked))", wizard)
 
     def test_confirmed_pvp_attacks_use_existing_stage3_dice_flow(self):
         wizard = self.section("function showNpoAttackWizard", "function spinnerField")

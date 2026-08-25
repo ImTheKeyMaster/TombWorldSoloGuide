@@ -11,17 +11,21 @@ class Stage5FullPvpCombatTests(unittest.TestCase):
     def section(self, start, end):
         return APP.split(start, 1)[1].split(end, 1)[0]
 
-    def test_player_combat_requires_human_target_profile_and_legality(self):
+    def test_player_shoot_and_fight_require_target_and_profile_without_generic_legality(self):
         wizard = self.section("function showPendingPlayerAttackWizard", "function showPlayerCombatResolution")
         self.assertIn('id="combatTarget"', wizard)
         self.assertIn('id="playerWeaponSelect"', wizard)
-        self.assertIn('id="playerTabletopTargetConfirmed"', wizard)
-        self.assertIn("valid target for this shooting attack, including visibility, range", wizard)
-        self.assertIn("within control range and is a valid target for this Fight action", wizard)
-        self.assertIn("!target||!weapon||!tabletopConfirmed", wizard)
-        self.assertIn("if(isPvpMode()&&!$('#playerTabletopTargetConfirmed')?.checked)return", wizard)
-        self.assertIn("resetTabletopConfirmation", wizard)
+        self.assertNotIn('playerTabletopTargetConfirmed', wizard)
+        self.assertNotIn("Confirm tabletop target legality", wizard)
+        self.assertIn("disabled=!target||!weapon", wizard)
         self.assertIn("if(!isPvpMode()&&singleTarget", wizard)
+
+    def test_rule_specific_player_tabletop_questions_remain(self):
+        wizard = self.section("function showPendingPlayerAttackWizard", "function showPlayerCombatResolution")
+        self.assertIn('id="darkOfTombDistance"', wizard)
+        self.assertIn("Target is more than 8 inches away", wizard)
+        self.assertIn("showSeekLightCheck", wizard)
+        self.assertIn("showSecondaryTargetCheck", wizard)
 
     def test_player_target_controls_use_necron_terminology_in_pvp(self):
         wizard = self.section("function showPendingPlayerAttackWizard", "function showPlayerCombatResolution")
@@ -66,12 +70,12 @@ class Stage5FullPvpCombatTests(unittest.TestCase):
         self.assertLess(combat.index("saveDice:defenseDice.map"), combat.index("previewPendingPlayerAttack"))
         self.assertIn("rolledDefenseDice||await requestDefenseDice", shared)
 
-    def test_pvp_necron_profile_change_invalidates_confirmation(self):
+    def test_pvp_necron_profile_selection_enables_progression_without_confirmation(self):
         wizard = self.section("function showNpoAttackWizard", "function spinnerField")
         profile_change = wizard.split("$('#npoCombatProfile')?.addEventListener", 1)[1]
-        self.assertIn("tabletopTargetConfirmed:false", profile_change)
-        self.assertIn("confirmation.checked=false", profile_change)
-        self.assertIn("screen.continueButton.disabled=true", profile_change)
+        self.assertNotIn("tabletopTargetConfirmed", wizard)
+        self.assertNotIn("npoTabletopTargetConfirmed", wizard)
+        self.assertIn("screen.continueButton.disabled=false", profile_change)
 
     def test_ai_guidance_and_torrent_auto_selection_are_solo_only(self):
         guidance = self.section("function npoCombatGuidanceHtml", "function recordedCombat")
