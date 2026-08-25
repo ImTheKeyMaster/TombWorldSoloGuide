@@ -29,10 +29,12 @@
   function normalizePendingDice(value,gameMode){
     if(gameMode!=='pvp'||!isRecord(value)||value.version!==1)return null;
     const {requestKey,status,count,sides,values}=value;
+    const resumeKinds=new Set(['strategy','event','combat','hot','player-activation','npo-special-action','mission','breach-sarcophagus']);
     if(typeof requestKey!=='string'||!requestKey.trim()||!['collecting','committed'].includes(status))return null;
     if(!Number.isInteger(count)||count<=0||![3,6].includes(sides)||!Array.isArray(values)||values.length>count)return null;
     if(!values.every(result=>Number.isInteger(result)&&result>=1&&result<=sides))return null;
     if(status==='committed'&&values.length!==count)return null;
+    if(typeof value.resumeKind!=='string'||!resumeKinds.has(value.resumeKind))return null;
     const text=field=>typeof value[field]==='string'?value[field]:'';
     let resumeData={};
     if(value.resumeData!==undefined){

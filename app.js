@@ -1469,6 +1469,10 @@ document.addEventListener('touchend',function(e){
   function rollDice(count,sides){return Array.from({length:count},()=>roll(sides));}
 
   let activeManualDiceRequest=null;
+  function discardActiveManualDiceRequest(){
+    activeManualDiceRequest=null;
+    if(diceEntryDialog.open)diceEntryDialog.close();
+  }
   const cloneDiceData=value=>JSON.parse(JSON.stringify(value||{}));
   function diceRequestKey(kind,...parts){
     return [kind,`tp${state.turningPoint}`,`activation${state.activationNumber}`,...parts].filter(part=>part!==undefined&&part!==null&&String(part)!=='').map(String).join(':');
@@ -1492,7 +1496,7 @@ document.addEventListener('touchend',function(e){
     return Boolean(pending&&request.requestKey&&pending.requestKey===request.requestKey&&pending.count===request.count&&pending.sides===request.sides);
   }
   function persistManualDice(active,status='collecting'){
-    if(!active.request.requestKey)return;
+    if(!active.request.requestKey||!active.request.resumeKind)return;
     state.pendingDice={version:1,requestKey:active.request.requestKey,status,count:active.request.count,sides:active.request.sides,
       title:active.request.title,instruction:active.request.instruction,rollerLabel:active.request.rollerLabel,values:active.values.slice(),
       resumeKind:active.request.resumeKind,resumeData:cloneDiceData(active.request.resumeData)};
@@ -1584,7 +1588,18 @@ document.addEventListener('touchend',function(e){
     if(Number.isInteger(data.turningPoint)&&data.turningPoint!==state.turningPoint)return false;
     if(data.missionId&&data.missionId!==state.missionId)return false;
     if(data.npoId&&!state.roster.some(npo=>npo.id===data.npoId&&npo.wounds>0))return false;
-    if(data.operativeId&&!state.playerRoster.includes(data.operativeId)&&!state.roster.some(npo=>npo.id===data.operativeId))return false;
+    if(data.operativeId){
+      const playerId=String(data.operativeId).replace(/^player:/,'');
+      const livingPlayer=state.playerRoster.includes(playerId)&&!state.playerCasualtyIds.includes(playerId)&&playerOperativeState(playerId).inPlay!==false;
+      const livingNpo=state.roster.some(npo=>npo.id===data.operativeId&&npo.wounds>0);
+      if(!livingPlayer&&!livingNpo)return false;
+    }
+    if(data.targetId){
+      const playerId=String(data.targetId).replace(/^player:/,'');
+      const livingPlayer=state.playerRoster.includes(playerId)&&!state.playerCasualtyIds.includes(playerId)&&playerOperativeState(playerId).inPlay!==false;
+      const livingNpo=state.roster.some(npo=>npo.id===data.targetId&&npo.wounds>0);
+      if(!livingPlayer&&!livingNpo)return false;
+    }
     if(data.eventInstanceId&&!state.strategyData?.events?.some(event=>event.instanceId===data.eventInstanceId&&event.status!=='resolved'))return false;
     if(pending.resumeKind==='strategy'&&state.phase!=='strategy')return false;
     if(pending.resumeKind==='combat'&&!state.combatState&&!state.lastActivation?.combatDraft&&!state.hotResolution)return false;
@@ -1620,6 +1635,14 @@ document.addEventListener('touchend',function(e){
     }
     render();
     return true;
+  }
+  async function resumeMissionActionContext(){
+    const context=state.missionActionContext;
+    if(!context||context.missionId!==state.missionId)return false;
+    if(context.actionId==='searchTransponder'){await performLocateItem(context.siteId,context.operativeId);return true;}
+    if(context.actionId===missionEngine()?.actions?.awakenRoom){await performAwakenRoom(context.roomId);return true;}
+    if(context.actionId==='auspexCalibration'){await performAuspexCalibration();return true;}
+    return false;
   }
   async function missionDiceTotal(outcome,resultId,{count=1,sides=3,title='MISSION ROLL'}={}){
     const requestKey=diceRequestKey('mission-result',state.missionId,resultId);
@@ -8488,6 +8511,7 @@ function showPlayerActivation(stage={}){
   }
 
   function startNewGameSetup(){
+    discardActiveManualDiceRequest();
     TombWorldNarration.stop();
     TombWorldAmbient.reset();
     TombWorldDiceSfx.stop();
@@ -8528,8 +8552,20 @@ function showPlayerActivation(stage={}){
   }
   async function commitImported(candidate,report){
     const previous=state;
-    try{state=normalizeState(candidate);state.screen=report.requiresRegeneration?'setup':'game';await loadObjectiveMission();ensureGameBackgroundSelection();if(!save())throw new Error('Browser storage rejected the migrated save.');render();return true;}
-    catch(error){state=previous;await loadObjectiveMission();console.warn('[Persistence] Migrated import was not committed.',error);showToast('The imported save could not be committed; the current game is unchanged.');return false;}
+    try{
+      discardActiveManualDiceRequest();
+      state=normalizeState(candidate);state.screen=report.requiresRegeneration?'setup':'game';await loadObjectiveMission();ensureGameBackgroundSelection();
+      if(!save())throw new Error('Browser storage rejected the migrated save.');
+      render();
+      if(state.pendingDice)await resumePendingDiceWorkflow();
+      else await resumeMissionActionContext();
+      return true;
+    }
+    catch(error){
+      state=previous;await loadObjectiveMission();render();
+      if(state.pendingDice)await resumePendingDiceWorkflow();
+      console.warn('[Persistence] Migrated import was not committed.',error);showToast('The imported save could not be committed; the current game is unchanged.');return false;
+    }
   }
   function showRegenerationNotice(migration,source){
     const causes=[...migration.report.unsupportedRetiredTypes,...migration.report.invalidPhysicalLimits,...migration.report.errors];
@@ -8597,6 +8633,10 @@ function showPlayerActivation(stage={}){
       if(state.finalResolution?.invalidSaveCorrected&&state.finalResolution.pending)await resolveTurningPointLimit();
       else render();
       if(state.pendingDice)await resumePendingDiceWorkflow();
+      else{
+        const missionActionResumed=await resumeMissionActionContext();
+        if(!missionActionResumed&&state.phase==='strategy'&&state.strategyPipeline?.current==='mission-ready-hooks')await continueTurningPointStart();
+      }
       if(pendingStoredMigration)showRegenerationNotice(pendingStoredMigration,'storage');
       else if(!storedMigrationNoticeShown&&hasMeaningfulMigrationChanges(loadedSave?.report)){
         if(save()){storedMigrationNoticeShown=true;showMigrationNotice(loadedSave.report);}

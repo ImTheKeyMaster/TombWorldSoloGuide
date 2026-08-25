@@ -29,7 +29,7 @@ const reset=p.resetActiveBattle({gameMode:'pvp',pendingDice:partial,roster:[],jo
 const malformed=[
   {...partial,values:[1,2,3,4,5]}, {...partial,values:[7]}, {...partial,sides:3,values:[4]},
   {...partial,values:[-1]}, {...partial,values:[1.5]}, {...partial,status:'committed'},
-  {...partial,requestKey:''}, {...partial,sides:8}
+  {...partial,requestKey:''}, {...partial,sides:8}, {...partial,resumeKind:'unknown'}
 ].map(value=>p.normalizePendingDice(value,'pvp'));
 process.stdout.write(JSON.stringify({valid,old:old.pendingDice,saved:saved.pendingDice,reset:reset.pendingDice,malformed,solo:p.normalizePendingDice(partial,'solo'),version:p.currentSaveVersion()}));
 """)
@@ -37,7 +37,7 @@ process.stdout.write(JSON.stringify({valid,old:old.pendingDice,saved:saved.pendi
         self.assertIsNone(result["old"])
         self.assertEqual(result["saved"]["values"], [6, 3])
         self.assertIsNone(result["reset"])
-        self.assertEqual(result["malformed"], [None] * 8)
+        self.assertEqual(result["malformed"], [None] * 9)
         self.assertIsNone(result["solo"])
         self.assertEqual(result["version"], 3)
 
@@ -66,6 +66,17 @@ process.stdout.write(JSON.stringify({valid,old:old.pendingDice,saved:saved.pendi
         self.assertIn("['directionRoll','distanceRoll']", resume)
         self.assertIn("performAuspexCalibration()", resume)
         self.assertIn("data.operationId==='repairRoll'", resume)
+        startup_resume = APP[APP.index("async function resumeMissionActionContext") : APP.index("async function missionDiceTotal")]
+        self.assertIn("performLocateItem(context.siteId,context.operativeId)", startup_resume)
+        self.assertIn("performAwakenRoom(context.roomId)", startup_resume)
+        self.assertIn("performAuspexCalibration()", startup_resume)
+        self.assertIn("state.strategyPipeline?.current==='mission-ready-hooks'", APP)
+        self.assertIn("if(data.targetId)", resume)
+        self.assertIn("state.playerCasualtyIds.includes(playerId)", resume)
+        imported = APP[APP.index("async function commitImported") : APP.index("function showRegenerationNotice")]
+        self.assertIn("if(state.pendingDice)await resumePendingDiceWorkflow()", imported)
+        new_game = APP[APP.index("function startNewGameSetup") : APP.index("function confirmNewGame")]
+        self.assertIn("discardActiveManualDiceRequest()", new_game)
 
     def test_every_gameplay_request_has_stable_identity_and_resume_metadata(self):
         calls = []
