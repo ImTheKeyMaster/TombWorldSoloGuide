@@ -63,7 +63,9 @@ process.stdout.write(JSON.stringify({valid,old:old.pendingDice,saved:saved.pendi
         self.assertIn("if(state.pendingDice)await resumePendingDiceWorkflow()", APP)
         self.assertIn("performLocateItem(data.siteId,data.operativeId)", resume)
         self.assertIn("performAwakenRoom(data.roomId)", resume)
-        self.assertIn("['directionRoll','distanceRoll','repairRoll']", resume)
+        self.assertIn("['directionRoll','distanceRoll']", resume)
+        self.assertIn("performAuspexCalibration()", resume)
+        self.assertIn("data.operationId==='repairRoll'", resume)
 
     def test_every_gameplay_request_has_stable_identity_and_resume_metadata(self):
         calls = []
@@ -107,6 +109,9 @@ process.stdout.write(JSON.stringify({valid,old:old.pendingDice,saved:saved.pendi
         mission_number = APP[APP.index("function requestMissionNumber") : APP.index("async function runMissionEvent")]
         self.assertIn("state.missionReadyContext?.turningPoint===state.turningPoint", mission_number)
         self.assertIn("sarcophagusControllers:value", mission_number)
+        mission_dice = APP[APP.index("async function animateMissionDice") : APP.index("function requestMissionNumber")]
+        self.assertIn("previousPending.requestKey!==requestKey", mission_dice)
+        self.assertNotIn("save();acknowledgeDiceRequest(requestKey)", mission_dice)
 
     def test_versions_and_existing_silent_mobile_dialog_are_preserved(self):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)

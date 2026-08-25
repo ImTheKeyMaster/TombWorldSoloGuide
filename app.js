@@ -1605,7 +1605,8 @@ document.addEventListener('touchend',function(e){
     if(pending.resumeKind==='mission'){
       if(data.operationId==='searchRoll'){await performLocateItem(data.siteId,data.operativeId);return true;}
       if(data.operationId==='awakenRoll'){await performAwakenRoom(data.roomId);return true;}
-      if(['directionRoll','distanceRoll','repairRoll'].includes(data.operationId)){await finishTurningPointStart();return true;}
+      if(['directionRoll','distanceRoll'].includes(data.operationId)){await performAuspexCalibration();return true;}
+      if(data.operationId==='repairRoll'){await finishTurningPointStart();return true;}
       return false;
     }
     if(pending.resumeKind==='npo-special-action'){
@@ -2903,7 +2904,8 @@ document.addEventListener('touchend',function(e){
   }
 
   async function performLocateItem(siteId,carrierId){
-    if(!siteId||!carrierId||state.missionState?.sites?.[siteId])return;
+    if(!siteId||!carrierId)return;
+    if(state.missionState?.sites?.[siteId]){state.missionActionContext=null;acknowledgeCurrentDiceRequest();return;}
     state.missionActionContext={missionId:state.missionId,actionId:'searchTransponder',siteId,operativeId:carrierId};save();
     const progress=state.missionState;
     const otherRemaining=missionEngine().sites.filter(site=>site.id!==siteId&&!progress.sites[site.id]).length;
@@ -2914,11 +2916,13 @@ document.addEventListener('touchend',function(e){
     if(found)progress.carrierId=carrierId;
     progress.lastRoll={siteId,roll:result,result:found?'transponder found':'marker removed'};
     state.missionActionContext=null;
+    save();acknowledgeCurrentDiceRequest();
     updateMissionProgress(`searched ${siteId}, rolled ${result}, and ${found?'found the transponder':'removed the marker'}.`);
   }
 
   async function performAwakenRoom(roomId){
-    if(!roomId||state.missionState?.awakenedRooms?.[roomId])return;
+    if(!roomId)return;
+    if(state.missionState?.awakenedRooms?.[roomId]){state.missionActionContext=null;acknowledgeCurrentDiceRequest();return;}
     const actionId=missionEngine().actions?.awakenRoom;
     state.missionActionContext={missionId:state.missionId,actionId,roomId};save();
     const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction(actionId,{...missionLifecycleContext(),roomId})):null;
@@ -2932,7 +2936,20 @@ document.addEventListener('touchend',function(e){
     }
     state.missionState.awakenedRooms[roomId]={count:ids.length,operativeIds:ids,placementConfirmed:false};
     state.missionActionContext=null;
+    save();acknowledgeCurrentDiceRequest();
     updateMissionProgress(`${roomId} awakened; generated ${ids.length} ready NPO(s) with Conceal orders for tabletop placement.`);
+  }
+
+  async function performAuspexCalibration(){
+    if(state.missionState?.auspexCalibrations?.[state.turningPoint]){state.missionActionContext=null;acknowledgeCurrentDiceRequest();return;}
+    state.missionActionContext={missionId:state.missionId,actionId:'auspexCalibration',turningPoint:state.turningPoint};save();
+    const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('auspexCalibration',missionLifecycleContext())):null;
+    if(objectiveEngine&&!outcome)return;
+    const directionRoll=await missionDiceTotal(outcome,'directionRoll',{title:'AUSPEX CALIBRATION - ESCAPE MARKER DIRECTION'});
+    const distanceRoll=await missionDiceTotal(outcome,'distanceRoll',{title:'AUSPEX CALIBRATION - ESCAPE MARKER DISTANCE'}),distance=distanceRoll+3;
+    const instruction=directionRoll===1?`Move the Escape marker ${distance} inches left.`:directionRoll===2?'Do not move the Escape marker.':`Move the Escape marker ${distance} inches right.`;
+    state.missionState.auspexCalibrations[state.turningPoint]={directionRoll,distance,instruction};
+    state.missionActionContext=null;log(`Auspex Calibration: ${instruction}`);save();acknowledgeCurrentDiceRequest();render();
   }
 
   function missionFeatureIdentity(feature){
@@ -3529,15 +3546,7 @@ document.addEventListener('touchend',function(e){
     $('#npoActivation')?.addEventListener('click',showNpoSelection);
     $('#missionHud')?.addEventListener('click',showMissionDetails);
     bindMissionProgressControls();
-    $('#resolveAuspexCalibration')?.addEventListener('click',async()=>{
-      const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('auspexCalibration',missionLifecycleContext())):null;
-      if(objectiveEngine&&!outcome)return;
-      const directionRoll=await missionDiceTotal(outcome,'directionRoll',{title:'AUSPEX CALIBRATION - ESCAPE MARKER DIRECTION'});
-      const distanceRoll=await missionDiceTotal(outcome,'distanceRoll',{title:'AUSPEX CALIBRATION - ESCAPE MARKER DISTANCE'}),distance=distanceRoll+3;
-      const instruction=directionRoll===1?`Move the Escape marker ${distance} inches left.`:directionRoll===2?'Do not move the Escape marker.':`Move the Escape marker ${distance} inches right.`;
-      state.missionState.auspexCalibrations[state.turningPoint]={directionRoll,distance,instruction};
-      log(`Auspex Calibration: ${instruction}`);save();render();
-    });
+    $('#resolveAuspexCalibration')?.addEventListener('click',performAuspexCalibration);
     $('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked;});
     $('#finishTp')?.addEventListener('click',async()=>{
       if(state.turningPoint>=MAX_TURNING_POINTS){await resolveTurningPointLimit();return;}
@@ -3641,7 +3650,7 @@ document.addEventListener('touchend',function(e){
     const outcomes=await executeMissionLifecycleHook('onStrategyPhaseReadyStep',{phase:'strategy-ready'});
     if(outcomes===null)return false;
     if(outcomes)state.strategyData.missionReadyHooks.push(...outcomes.filter(outcome=>outcome.status==='completed'));
-    completeStrategyStage('mission-ready-hooks','initiative');
+    completeStrategyStage('mission-ready-hooks','initiative');save();acknowledgeCurrentDiceRequest();
     return true;
   }
 
@@ -7906,6 +7915,10 @@ function showPlayerActivation(stage={}){
   async function animateMissionDice(operation,context={}){
     const supplied=context.missionDice;
     const requestKey=diceRequestKey('mission',state.missionId,context.activationId||context.operativeId||state.missionActionContext?.operativeId,context.siteId||context.roomId||state.missionActionContext?.siteId||state.missionActionContext?.roomId,operation.id);
+    const previousPending=state.pendingDice;
+    if(previousPending?.status==='committed'&&previousPending.requestKey!==requestKey&&state.missionRuntime?.pendingDiceResults?.[previousPending.requestKey]){
+      acknowledgeDiceRequest(previousPending.requestKey);
+    }
     const saved=state.missionRuntime?.pendingDiceResults?.[requestKey];
     const candidate=Array.isArray(supplied)?supplied:saved;
     const suppliedDice=Array.isArray(candidate)&&candidate.length===operation.dice.count
@@ -7920,7 +7933,7 @@ function showPlayerActivation(stage={}){
     if(isPvpMode()){
       state.missionRuntime=state.missionRuntime||{};
       state.missionRuntime.pendingDiceResults={...(state.missionRuntime.pendingDiceResults||{}),[requestKey]:[...dice]};
-      save();acknowledgeDiceRequest(requestKey);
+      save();
     }
     if(isPvpMode())return result;
     return new Promise((resolve,reject)=>{
