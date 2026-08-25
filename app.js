@@ -1639,6 +1639,9 @@ document.addEventListener('touchend',function(e){
   async function resumeMissionActionContext(){
     const context=state.missionActionContext;
     if(!context||context.missionId!==state.missionId)return false;
+    if(context.actionId==='breachSarcophagus'&&state.combatState?.side==='player'){
+      await performBreachSarcophagus({...state.combatState.stage},true);return true;
+    }
     if(context.actionId==='searchTransponder'){await performLocateItem(context.siteId,context.operativeId);return true;}
     if(context.actionId===missionEngine()?.actions?.awakenRoom){await performAwakenRoom(context.roomId);return true;}
     if(context.actionId==='auspexCalibration'){await performAuspexCalibration();return true;}

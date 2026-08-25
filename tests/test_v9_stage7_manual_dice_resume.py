@@ -72,6 +72,7 @@ process.stdout.write(JSON.stringify({valid,old:old.pendingDice,saved:saved.pendi
         self.assertIn("performLocateItem(context.siteId,context.operativeId)", startup_resume)
         self.assertIn("performAwakenRoom(context.roomId)", startup_resume)
         self.assertIn("performAuspexCalibration()", startup_resume)
+        self.assertIn("performBreachSarcophagus({...state.combatState.stage},true)", startup_resume)
         self.assertIn("state.strategyPipeline?.current==='mission-ready-hooks'", APP)
         self.assertIn("if(data.targetId)", resume)
         self.assertIn("state.playerCasualtyIds.includes(playerId)", resume)
