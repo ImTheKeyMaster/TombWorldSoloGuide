@@ -123,7 +123,8 @@ class DeadlyEncounterBriefingAndPersistence(unittest.TestCase):
         self.assertRegex(APP,r"#restlessTombEnabled[^\n]+state\.restlessTombEnabled")
 
     def test_active_game_settings_are_read_only(self):
-        self.assertIn("<strong>Deadly Encounters:</strong> ${state.deadlyEncountersEnabled?'On':'Off'}",APP)
+        self.assertIn("<strong>Deadly Encounters:</strong> ${deadlyEncountersStatusLabel()}",APP)
+        self.assertIn("function deadlyEncountersActive(){return !isPvpMode()&&state.deadlyEncountersEnabled===true;}",APP)
         self.assertNotIn('id="deadlyEncountersEnabled"',APP.split("function showDeadlyEncountersPanel",1)[1])
 
     def test_older_save_defaults_disabled_and_empty(self):
@@ -169,7 +170,7 @@ class DeadlyEncounterIntegration(unittest.TestCase):
     def test_help_is_pve_only_and_authoritative(self):
         help_section=APP.split('<summary>Deadly Encounters: Tomb Worlds</summary>',1)[1].split('</details>',1)[0]
         self.assertIn('PvE solo method',help_section);self.assertIn('official publication',help_section)
-        self.assertNotIn('PvP',help_section)
+        self.assertIn('unavailable and its effects do not apply in PvP',help_section)
 
     def test_accessible_d33_text_and_mobile_layout(self):
         self.assertIn('aria-label="D33 results',APP);self.assertIn('.d33-result',STYLES);self.assertIn('@media(max-width:390px)',STYLES)
