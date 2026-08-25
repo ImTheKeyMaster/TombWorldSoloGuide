@@ -18,7 +18,7 @@ def node(script):
 
 
 class Stage7ManualDiceResumeTests(unittest.TestCase):
-    def test_pending_dice_normalization_persistence_reset_and_old_saves(self):
+    def test_pending_dice_normalization_persistence_reset_and_schema_defaults(self):
         result = node("""
 const p=require('./persistence.js');
 const partial={version:1,requestKey:'combat:a:attack',status:'collecting',count:4,sides:6,title:'ATTACK ROLL',instruction:'Roll 4D6',rollerLabel:'Deathwatch',values:[6,3],resumeKind:'combat',resumeData:{activationId:'a'}};

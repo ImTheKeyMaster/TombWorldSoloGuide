@@ -10,7 +10,7 @@ INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
 
 
 class Stage8ModeAndOwnershipTests(unittest.TestCase):
-    def test_versions_and_branding_remain_at_stage8_boundary(self):
+    def test_version_schema_and_current_branding_are_preserved(self):
         self.assertRegex(APP, r"const APP_VERSION = '[0-9]+\.[0-9]+\.[0-9]+';")
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
         self.assertIn("Tomb World Battle Guide", APP)
