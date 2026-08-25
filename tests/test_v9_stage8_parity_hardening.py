@@ -70,9 +70,13 @@ class Stage8TerminologyTests(unittest.TestCase):
         self.assertNotIn("<strong>NPO deployment:</strong>", APP)
 
     def test_mission_event_and_journal_text_translate_only_at_rendering(self):
+        self.assertIn("presentSideTerminology(check.label)", APP)
+        self.assertIn("presentSideTerminology(m.brief)", APP)
         self.assertIn("presentSideTerminology(event.text)", APP)
         self.assertIn("presentSideTerminology(description)", APP)
+        self.assertIn("presentSideTerminology(event.result", APP)
         self.assertIn("presentSideTerminology(m.victory?.win", APP)
+        self.assertIn("presentSideTerminology(missionHistoryText(entry))", APP)
         self.assertIn("presentSideTerminology(j.text)", APP)
 
     def test_help_is_conceptually_mode_specific(self):
@@ -81,6 +85,7 @@ class Stage8TerminologyTests(unittest.TestCase):
         self.assertIn("A non-player operative controlled by the Guide’s decision tree.", APP)
         self.assertIn("The Guide rolls gameplay dice automatically.", APP)
         self.assertIn("Roll physical dice and enter each result when prompted.", APP)
+        self.assertIn("its effects do not apply in PvP", APP)
 
 
 class Stage8DeadlyEncountersTests(unittest.TestCase):
