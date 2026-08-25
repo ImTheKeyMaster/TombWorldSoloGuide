@@ -1615,23 +1615,23 @@ document.addEventListener('touchend',function(e){
     const data=pending.resumeData||{};
     if(pending.resumeKind==='strategy'){await finishTurningPointStart();return true;}
     if(pending.resumeKind==='event'){await beginCurrentEvent();return true;}
+    if(pending.resumeKind==='combat'){
+      if(state.combatState?.side==='player'){resolvePendingPlayerAttacks({...state.combatState.stage});return true;}
+      if(state.lastActivation?.npoId){continueHumanNecronActivation();return true;}
+      render();return true;
+    }
+    if(pending.resumeKind==='hot'){render();return true;}
     if(pending.resumeKind==='player-activation'){await completePlayerActivation({...state.combatState.stage,threatDiceResolving:false});return true;}
     if(pending.resumeKind==='breach-sarcophagus'){await performBreachSarcophagus({...state.combatState.stage},true);return true;}
     if(pending.resumeKind==='mission'){
       if(data.operationId==='searchRoll'){await performLocateItem(data.siteId,data.operativeId);return true;}
       if(data.operationId==='awakenRoll'){await performAwakenRoom(data.roomId);return true;}
       if(['directionRoll','distanceRoll'].includes(data.operationId)){await performAuspexCalibration();return true;}
-      if(data.operationId==='repairRoll'){await finishTurningPointStart();return true;}
+      if(data.operationId==='repairRoll'){await continueTurningPointStart();return true;}
       return false;
     }
     if(pending.resumeKind==='npo-special-action'){
-      const n=state.roster.find(npo=>npo.id===data.npoId),activation=state.lastActivation;
-      if(!n||!activation?.pendingAction)return false;
-      resolveNpoSpecialAction(n,activation,activation.answers||{},activation.questionHistory||[]);
-      if(data.actionId==='geomantic-disturbance'){
-        (activation.pendingAction.selectedTargets||[]).forEach(id=>{const input=$(`[data-disturbance-target="${CSS.escape(id)}"]`);if(input)input.checked=true;});
-      }else if(data.targetId){const select=$('#specialActionTarget');if(select){select.value=data.targetId;select.dispatchEvent(new Event('change'));}}
-      $('#confirmSpecialAction')?.click();return true;
+      return resumeNpoSpecialActionContext(data);
     }
     render();
     return true;
@@ -1642,6 +1642,33 @@ document.addEventListener('touchend',function(e){
     if(context.actionId==='searchTransponder'){await performLocateItem(context.siteId,context.operativeId);return true;}
     if(context.actionId===missionEngine()?.actions?.awakenRoom){await performAwakenRoom(context.roomId);return true;}
     if(context.actionId==='auspexCalibration'){await performAuspexCalibration();return true;}
+    return false;
+  }
+  function resumeNpoSpecialActionContext(data={}){
+    const activation=state.lastActivation,n=state.roster.find(npo=>npo.id===(data.npoId||activation?.npoId));
+    if(!n||!activation?.pendingAction)return false;
+    const actionId=data.actionId||activation.pendingAction.id;
+    if(activation.pendingAction.resolvedResult){
+      const action=npoSpecialAction(n,activation.pendingAction.name);
+      if(action)finishNpoSpecialAction(n,action,activation.pendingAction.resolvedResult,activation,activation.answers||{},activation.questionHistory||[]);
+      return Boolean(action);
+    }
+    resolveNpoSpecialAction(n,activation,activation.answers||{},activation.questionHistory||[]);
+    if(actionId==='geomantic-disturbance'){
+      (activation.pendingAction.selectedTargets||[]).forEach(id=>{const input=$(`[data-disturbance-target="${CSS.escape(id)}"]`);if(input)input.checked=true;});
+    }else{
+      const targetId=data.targetId||activation.pendingAction.targetId;
+      const select=$('#specialActionTarget');if(select&&targetId){select.value=targetId;select.dispatchEvent(new Event('change'));}
+    }
+    $('#confirmSpecialAction')?.click();return true;
+  }
+  async function resumeCheckpointedGameplayContext(){
+    if(await resumeMissionActionContext())return true;
+    if(isPvpMode()&&Boolean(state.lastActivation?.pendingAction?.diceResults||state.lastActivation?.pendingAction?.resolvedResult))return resumeNpoSpecialActionContext();
+    if(state.combatState?.side==='player'){resolvePendingPlayerAttacks({...state.combatState.stage});return true;}
+    if(isPvpMode()&&state.lastActivation?.npoId&&!state.lastActivation.committed){continueHumanNecronActivation();return true;}
+    if(state.phase==='strategy'&&state.strategyPipeline?.current==='mission-ready-hooks'){await continueTurningPointStart();return true;}
+    if(state.phase==='strategy'&&['initiative','event'].includes(state.strategyPipeline?.current)){await finishTurningPointStart();return true;}
     return false;
   }
   async function missionDiceTotal(outcome,resultId,{count=1,sides=3,title='MISSION ROLL'}={}){
@@ -3793,11 +3820,11 @@ document.addEventListener('touchend',function(e){
           if(!operativeId){const selectedIndex=roll(remaining.length)-1;operativeId=remaining.splice(selectedIndex,1)[0];}
           transaction.pendingOperativeId=operativeId;save();
           const requestKey=diceRequestKey('event',event.instanceId,'subjugation-glyphs',operativeId);
+          if(state.pendingDice?.status==='committed'&&state.pendingDice.requestKey!==requestKey)acknowledgeCurrentDiceRequest();
           const [die]=await requestDiceResults({count:1,sides:6,title:'SUBJUGATION GLYPHS',instruction:'Roll 1D6 on the tabletop and enter the result.',rollerLabel:playerName(operativeId),requestKey,resumeKind:'event',resumeData:{eventInstanceId:event.instanceId,operativeId}});
           const baseApl=Number(playerDefinition(operativeId)?.apl||3),apl=effectivePlayerApl(operativeId,baseApl);
           transaction.selections.push(operativeId);transaction.rolls.push(die);delete transaction.pendingOperativeId;
           save();
-          acknowledgeDiceRequest(requestKey);
           if(die>apl){
             const modifierId=`subjugation-glyphs:${event.instanceId}:${operativeId}`;
             if(!state.eventState.playerAplModifiers.some(item=>item.id===modifierId))state.eventState.playerAplModifiers.push({id:modifierId,sourceId:event.instanceId,targetId:operativeId,ruleId:'subjugation-glyphs',amount:-1,expires:null});
@@ -3805,7 +3832,7 @@ document.addEventListener('touchend',function(e){
             break;
           }
         }
-        transaction.committed=true;
+        transaction.committed=true;save();acknowledgeCurrentDiceRequest();
       }
       const tested=transaction.selections.map((id,index)=>`${playerName(id)} rolled ${transaction.rolls[index]}`).join('; ');
       await completeCurrentEvent(`${tested||'No eligible operatives.'}${transaction.affectedOperativeId?`; ${playerName(transaction.affectedOperativeId)} suffers -1 APL.`:'; no operative was affected.'}`);
@@ -3820,10 +3847,10 @@ document.addEventListener('touchend',function(e){
         let die=transaction.rolls[committedIndex];
         if(!Number.isInteger(die)){
           const requestKey=diceRequestKey('event',event.instanceId,'living-metal-flux',npo.id);
+          if(state.pendingDice?.status==='committed'&&state.pendingDice.requestKey!==requestKey)acknowledgeCurrentDiceRequest();
           [die]=await requestDiceResults({count:1,sides:3,title:'LIVING METAL FLUX',instruction:'Roll 1D3. This model regains D3 + 2 wounds.',rollerLabel:npoName(npo),requestKey,resumeKind:'event',resumeData:{eventInstanceId:event.instanceId,npoId:npo.id}});
           transaction.selections.push(npo.id);transaction.rolls.push(die);
           save();
-          acknowledgeDiceRequest(requestKey);
         }
         committed.push({npo,die});
       }
@@ -3835,7 +3862,7 @@ document.addEventListener('touchend',function(e){
       const summary=sortedNposForDisplay(restored.map(entry=>entry.npo))
         .map(npo=>restored.find(entry=>entry.npo===npo).result)
         .join('; ');
-      transaction.committed=true;
+      transaction.committed=true;save();acknowledgeCurrentDiceRequest();
       await completeCurrentEvent(summary||'No wounded NPOs.');
       return;
     }
@@ -3865,8 +3892,7 @@ document.addEventListener('touchend',function(e){
         const requestKey=diceRequestKey('event',event.instanceId,'maze-reforms');
         const [die]=await requestDiceResults({count:1,sides:3,title:'THE MAZE REFORMS',instruction:'Roll 1D3 on the tabletop and enter the result.',requestKey,resumeKind:'event',resumeData:{eventInstanceId:event.instanceId}});
         transaction.rolls=[die];
-        save();
-        acknowledgeDiceRequest(requestKey);
+        transaction.committed=true;save();acknowledgeDiceRequest(requestKey);
       }
       event.openHatchwayLimit=transaction.rolls[0];
       event.text=`Close one breach and up to ${event.openHatchwayLimit} open hatchway${event.openHatchwayLimit===1?'':'s'}. If this cannot be resolved, draw another event card.`;
@@ -4962,10 +4988,10 @@ function showPlayerActivation(stage={}){
       try{
         for(const check of missingThreatChecks){
           const requestKey=diceRequestKey('player-activation',operativeId,'threat',check.id);
+          if(state.pendingDice?.status==='committed'&&state.pendingDice.requestKey!==requestKey)acknowledgeCurrentDiceRequest();
           const [die]=await requestDiceResults({count:1,sides:6,title:check.title,instruction:check.instruction,rollerLabel:playerName(operativeId),requestKey,resumeKind:'player-activation',resumeData:{activationId:missionActivationId('player',operativeId),operativeId,checkId:check.id}});
           stage.threatRolls[check.id]=die;
           state.combatState={side:'player',stage:{...stage}};save();
-          acknowledgeDiceRequest(requestKey);
         }
       }catch(error){
         console.error('[Player Activation Threat Dice]',error);
@@ -5061,6 +5087,7 @@ function showPlayerActivation(stage={}){
     if(stage.missionFeatureCommitted)checkGameEnd();
     closeModal();
     save();
+    acknowledgeCurrentDiceRequest();
     render();
     await executeMissionLifecycleHook('onPlayerActivationCompleted',{activationId,operativeId});
   }
@@ -7100,6 +7127,8 @@ function showPlayerActivation(stage={}){
         button.disabled=true;
         const selected=$$('[data-disturbance-target]:checked').map(input=>input.dataset.disturbanceTarget);
         if(state.lastActivation?.pendingAction){state.lastActivation.pendingAction.selectedTargets=[...selected];save();}
+        const restoredResolution=state.lastActivation?.pendingAction?.resolvedResult;
+        if(restoredResolution){finishNpoSpecialAction(n,action,restoredResolution,decision,answers,questionHistory);return;}
         const targets=selected.map(id=>id.startsWith('player:')?livePlayerOperative(id.slice(7)):state.roster.find(item=>item.id===id)).filter(Boolean);
         let committedRolls;
         try{
@@ -7111,11 +7140,11 @@ function showPlayerActivation(stage={}){
             let dice=savedRolls[targetId];
             if(!Array.isArray(dice)||dice.length!==2||dice.some(value=>!Number.isInteger(value)||value<1||value>6)){
               const requestKey=diceRequestKey('npo-activation',n.id,'geomantic-disturbance',targetId);
+              if(state.pendingDice?.status==='committed'&&state.pendingDice.requestKey!==requestKey)acknowledgeCurrentDiceRequest();
               dice=await requestDiceResults({count:2,sides:6,title:'GEOMANTIC DISTURBANCE',instruction:'Roll 2D6 for this operative and enter both results.',rollerLabel:label,requestKey,resumeKind:'npo-special-action',resumeData:{npoId:n.id,actionId:action.id,targetId}});
               savedRolls[targetId]=dice;
               if(pendingAction)pendingAction.diceResults=savedRolls;
               save();
-              acknowledgeDiceRequest(requestKey);
             }
             committedRolls.push(dice);
           }
@@ -7131,7 +7160,10 @@ function showPlayerActivation(stage={}){
           else {target.wounds=Math.max(0,before-result.damage);if(!target.wounds){target.ready=false;target.deployed=false;target.battlefieldState='out-of-action';}}
           log(`${npoName(n)} used Geomantic Disturbance on ${targetId.startsWith('player:')?playerName(target.id):npoName(target)}: ${result.dice.join('+')}=${result.total}; ${result.damage} damage.`);
         });
-        finishNpoSpecialAction(n,action,{targets:selected,results},decision,answers,questionHistory);
+        const resolvedResult={targets:selected,results};
+        if(state.lastActivation?.pendingAction)state.lastActivation.pendingAction.resolvedResult=resolvedResult;
+        save();acknowledgeCurrentDiceRequest();
+        finishNpoSpecialAction(n,action,resolvedResult,decision,answers,questionHistory);
       };
       return;
     }
@@ -7158,11 +7190,15 @@ function showPlayerActivation(stage={}){
       if(action.id==='cranial-overload')result.applied=applyTemporaryAplModifier({sourceId:n.id,targetId:target.id,ruleId:'cranial-overload',amount:-1});
       if(action.id==='nanoscarab-beam'){
         try{
-          if(state.lastActivation?.pendingAction){state.lastActivation.pendingAction.targetId=targetId;save();}
-          const requestKey=diceRequestKey('npo-activation',n.id,'nanoscarab-beam',targetId);
-          const dice=await requestDiceResults({count:3,sides:3,title:'NANOSCARAB BEAM',instruction:'Roll 3D3 on the tabletop and enter each result.',rollerLabel:npoName(target),requestKey,resumeKind:'npo-special-action',resumeData:{npoId:n.id,actionId:action.id,targetId}});
-          result=useNanoscarabBeam(target,dice);
-          if(result){state.lastActivation.pendingAction.diceResults={healing:[...dice]};save();acknowledgeDiceRequest(requestKey);}
+          const pendingAction=state.lastActivation?.pendingAction;
+          if(pendingAction){pendingAction.targetId=targetId;save();}
+          if(pendingAction?.resolvedResult)result=pendingAction.resolvedResult;
+          else{
+            const requestKey=diceRequestKey('npo-activation',n.id,'nanoscarab-beam',targetId);
+            const dice=await requestDiceResults({count:3,sides:3,title:'NANOSCARAB BEAM',instruction:'Roll 3D3 on the tabletop and enter each result.',rollerLabel:npoName(target),requestKey,resumeKind:'npo-special-action',resumeData:{npoId:n.id,actionId:action.id,targetId}});
+            result=useNanoscarabBeam(target,dice);
+            if(result){pendingAction.diceResults={healing:[...dice]};pendingAction.resolvedResult=result;save();acknowledgeDiceRequest(requestKey);}
+          }
         }catch(error){
           console.error('[Nanoscarab Beam Dice]',error);
           button.disabled=false;
@@ -8554,16 +8590,16 @@ function showPlayerActivation(stage={}){
     const previous=state;
     try{
       discardActiveManualDiceRequest();
-      state=normalizeState(candidate);state.screen=report.requiresRegeneration?'setup':'game';await loadObjectiveMission();ensureGameBackgroundSelection();
-      if(!save())throw new Error('Browser storage rejected the migrated save.');
+      state=normalizeState(candidate);state.screen=report.requiresRegeneration?'setup':'game';await loadObjectiveMission();ensureGameBackgroundSelection();if(!save())throw new Error('Browser storage rejected the migrated save.');
       render();
       if(state.pendingDice)await resumePendingDiceWorkflow();
-      else await resumeMissionActionContext();
+      else await resumeCheckpointedGameplayContext();
       return true;
     }
     catch(error){
       state=previous;await loadObjectiveMission();render();
       if(state.pendingDice)await resumePendingDiceWorkflow();
+      else await resumeCheckpointedGameplayContext();
       console.warn('[Persistence] Migrated import was not committed.',error);showToast('The imported save could not be committed; the current game is unchanged.');return false;
     }
   }
@@ -8633,10 +8669,7 @@ function showPlayerActivation(stage={}){
       if(state.finalResolution?.invalidSaveCorrected&&state.finalResolution.pending)await resolveTurningPointLimit();
       else render();
       if(state.pendingDice)await resumePendingDiceWorkflow();
-      else{
-        const missionActionResumed=await resumeMissionActionContext();
-        if(!missionActionResumed&&state.phase==='strategy'&&state.strategyPipeline?.current==='mission-ready-hooks')await continueTurningPointStart();
-      }
+      else await resumeCheckpointedGameplayContext();
       if(pendingStoredMigration)showRegenerationNotice(pendingStoredMigration,'storage');
       else if(!storedMigrationNoticeShown&&hasMeaningfulMigrationChanges(loadedSave?.report)){
         if(save()){storedMigrationNoticeShown=true;showMigrationNotice(loadedSave.report);}

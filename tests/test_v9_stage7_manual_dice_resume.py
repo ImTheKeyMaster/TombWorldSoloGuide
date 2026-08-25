@@ -60,12 +60,14 @@ process.stdout.write(JSON.stringify({valid,old:old.pendingDice,saved:saved.pendi
             self.assertIn(f"pending.resumeKind==='{kind}'", resume)
         for entry in ("finishTurningPointStart()", "beginCurrentEvent()", "completePlayerActivation", "performBreachSarcophagus", "resolveNpoSpecialAction"):
             self.assertIn(entry, resume)
+        self.assertIn("resolvePendingPlayerAttacks({...state.combatState.stage})", resume)
+        self.assertIn("continueHumanNecronActivation()", resume)
         self.assertIn("if(state.pendingDice)await resumePendingDiceWorkflow()", APP)
         self.assertIn("performLocateItem(data.siteId,data.operativeId)", resume)
         self.assertIn("performAwakenRoom(data.roomId)", resume)
         self.assertIn("['directionRoll','distanceRoll']", resume)
         self.assertIn("performAuspexCalibration()", resume)
-        self.assertIn("data.operationId==='repairRoll'", resume)
+        self.assertIn("data.operationId==='repairRoll'){await continueTurningPointStart()", resume)
         startup_resume = APP[APP.index("async function resumeMissionActionContext") : APP.index("async function missionDiceTotal")]
         self.assertIn("performLocateItem(context.siteId,context.operativeId)", startup_resume)
         self.assertIn("performAwakenRoom(context.roomId)", startup_resume)
@@ -77,6 +79,12 @@ process.stdout.write(JSON.stringify({valid,old:old.pendingDice,saved:saved.pendi
         self.assertIn("if(state.pendingDice)await resumePendingDiceWorkflow()", imported)
         new_game = APP[APP.index("function startNewGameSetup") : APP.index("function confirmNewGame")]
         self.assertIn("discardActiveManualDiceRequest()", new_game)
+        self.assertIn("resumeNpoSpecialActionContext()", APP)
+        checkpointed = APP[APP.index("async function resumeCheckpointedGameplayContext") : APP.index("async function missionDiceTotal")]
+        self.assertIn("resolvePendingPlayerAttacks({...state.combatState.stage})", checkpointed)
+        self.assertIn("continueHumanNecronActivation()", checkpointed)
+        self.assertIn("pendingAction?.diceResults", checkpointed)
+        self.assertIn("['initiative','event'].includes(state.strategyPipeline?.current)", checkpointed)
 
     def test_every_gameplay_request_has_stable_identity_and_resume_metadata(self):
         calls = []
@@ -123,6 +131,10 @@ process.stdout.write(JSON.stringify({valid,old:old.pendingDice,saved:saved.pendi
         mission_dice = APP[APP.index("async function animateMissionDice") : APP.index("function requestMissionNumber")]
         self.assertIn("previousPending.requestKey!==requestKey", mission_dice)
         self.assertNotIn("save();acknowledgeDiceRequest(requestKey)", mission_dice)
+        special = APP[APP.index("function resolveNpoSpecialAction") : APP.index("function finishNpoSpecialAction")]
+        self.assertIn("pendingAction.resolvedResult=resolvedResult", special)
+        self.assertIn("pendingAction.resolvedResult=result", special)
+        self.assertIn("previousPending.requestKey!==requestKey", mission_dice)
 
     def test_versions_and_existing_silent_mobile_dialog_are_preserved(self):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
