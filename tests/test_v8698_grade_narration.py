@@ -16,7 +16,7 @@ def section(source, start, end):
 
 class GradeNarrationReleaseTests(unittest.TestCase):
     def test_version_schema_and_persisted_first_visible_lifecycle(self):
-        self.assertIn(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}", (ROOT / "README.md").read_text())
+        self.assertIn(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}", (ROOT / "README.md").read_text())
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
         initial = section(APP, "const initialState", "let state;")
         normalize = section(APP, "function normalizeState", "function npoDefinition")

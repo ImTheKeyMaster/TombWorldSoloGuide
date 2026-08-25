@@ -42,7 +42,7 @@ class OperativeStatusReadabilityTests(unittest.TestCase):
             self.assertIn(declaration, rule)
 
     def test_existing_state_behavior_and_save_schema_are_unchanged(self):
-        self.assertIn("'tombWorldSoloGuide.showOperativeStatus'", APP)
+        self.assertIn("'tombWorldBattleGuide.showOperativeStatus'", APP)
         self.assertNotRegex(APP, r'operative-status-row[^`]*<(?:button|input|select)')
         self.assertIn('.operative-status-row.eliminated', CSS)
         self.assertIn('.operative-status-row.active', CSS)

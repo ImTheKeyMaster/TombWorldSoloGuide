@@ -39,7 +39,7 @@ class DiceRollAudioReleaseTests(unittest.TestCase):
         self.assertIn("dice-roll-flem0527-750ms-50.mp3", SFX)
 
     def test_preference_master_volume_and_menu_are_independent(self):
-        self.assertIn("tombWorldSoloGuide.diceRollEnabled", SFX)
+        self.assertIn("tombWorldBattleGuide.diceRollEnabled", SFX)
         self.assertIn("localStorage.getItem(PREFERENCE_KEY) !== 'false'", SFX)
         self.assertIn("!masterEnabled || !preferenceEnabled", SFX)
         self.assertIn("if (!masterEnabled) stop();", SFX)
@@ -65,7 +65,7 @@ class DiceRollAudioReleaseTests(unittest.TestCase):
     def test_app_fallback_keeps_the_menu_preference_functional(self):
         start = APP.index("function createDiceSfxFallback")
         fallback = APP[start : APP.index("const TombWorldDiceSfx", start)]
-        self.assertIn("tombWorldSoloGuide.diceRollEnabled", fallback)
+        self.assertIn("tombWorldBattleGuide.diceRollEnabled", fallback)
         self.assertIn("localStorage.getItem(preferenceKey)!=='false'", fallback)
         self.assertIn("localStorage.setItem(preferenceKey,String(preferenceEnabled))", fallback)
         self.assertIn("isPreferenceEnabled:()=>preferenceEnabled", fallback)

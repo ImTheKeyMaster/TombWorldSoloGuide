@@ -17,7 +17,7 @@ Future implementation PRs must:
 
 1. Use the official PDF as the rules authority and cite the exact viewer page/rule in code-review notes and tests.
 2. Make the smallest necessary change; avoid unrelated cleanup, formatting, architectural changes, frameworks, dependencies, and refactoring.
-3. Preserve localStorage key `tombWorldSoloGuide.v1` and saved-game compatibility where practical. Add defaults/migrations in `normalizeState()` rather than clearing user data.
+3. Store v9 application state under `tombWorldBattleGuide.v1`. The pre-v9 namespace is intentionally ignored; do not add migration, dual-read, or dual-write behavior.
 4. Avoid duplicate rule logic. One typed page-5 NPO roll table must serve setup and reinforcement; one Threat mutation path and one mission evaluator layer must serve all screens.
 5. Centralize shared calculations when setup, Strategy, activation, combat, mission, and end-of-turn screens depend on the same value.
 6. Keep mission-specific rules data-driven where practical, but do not force genuinely procedural mission behavior into an opaque generic abstraction.

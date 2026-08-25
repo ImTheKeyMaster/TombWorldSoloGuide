@@ -17,7 +17,7 @@ README = (ROOT / "README.md").read_text(encoding="utf-8")
 class HeaderNarrationControlTests(unittest.TestCase):
     def test_release_metadata_uses_central_version(self):
         self.assertIn(f'<div class="version">V{CURRENT_APP_VERSION}</div>', INDEX)
-        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
+        self.assertTrue(README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "narration.js", "app.js"):
             self.assertIn(f'{asset}?v={CURRENT_APP_VERSION}', INDEX)
 
@@ -89,11 +89,11 @@ verify(true);enabled=false;verify(false);
         self.assertNotIn('narrationVolumeValue', menu)
 
     def test_existing_unversioned_enabled_preference_is_the_only_source_of_truth(self):
-        self.assertEqual(NARRATION.count("tombWorldSoloGuide.narrationEnabled"), 1)
-        self.assertNotIn("tombWorldSoloGuide.narrationVolume", NARRATION)
+        self.assertEqual(NARRATION.count("tombWorldBattleGuide.narrationEnabled"), 1)
+        self.assertNotIn("tombWorldBattleGuide.narrationVolume", NARRATION)
         for source in (INDEX, APP, CSS, PERSISTENCE):
-            self.assertNotIn("tombWorldSoloGuide.narrationEnabled", source)
-            self.assertNotIn("tombWorldSoloGuide.narrationVolume", source)
+            self.assertNotIn("tombWorldBattleGuide.narrationEnabled", source)
+            self.assertNotIn("tombWorldBattleGuide.narrationVolume", source)
         self.assertNotRegex(NARRATION, r"narrationEnabled.*APP_VERSION")
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 

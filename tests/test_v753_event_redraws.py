@@ -128,7 +128,7 @@ class EventRedrawTests(unittest.TestCase):
         self.assertIn("retaliation.committed=true", APP)
 
     def test_version_753_is_consistent_without_save_schema_change(self):
-        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
+        self.assertTrue(README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
         self.assertIn("## v8.6.25", README)
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)

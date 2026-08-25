@@ -26,7 +26,7 @@ class V8610DirectTargetToCombatTests(unittest.TestCase):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
         self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
-        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
+        self.assertTrue(README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
 
     def test_02_confirm_target_immediately_opens_combat(self):
         self.assertIn("openNpoCombat(n,decision,[]", self.confirm)

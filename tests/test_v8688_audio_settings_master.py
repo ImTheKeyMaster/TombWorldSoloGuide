@@ -21,7 +21,7 @@ class AudioSettingsMasterTests(unittest.TestCase):
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text(encoding="utf-8"))
 
     def test_preferences_master_and_applied_state_are_separate(self):
-        self.assertIn("const MASTER_ENABLED_KEY = 'tombWorldSoloGuide.gameAudioEnabled';", NARRATION)
+        self.assertIn("const MASTER_ENABLED_KEY = 'tombWorldBattleGuide.gameAudioEnabled';", NARRATION)
         self.assertIn("setPreferenceEnabled, isPreferenceEnabled, setMasterEnabled, isMasterEnabled, isPlaybackEnabled", NARRATION)
         self.assertIn("let appliedAmbientEnabled=TombWorldNarration.isMasterEnabled()&&ambientEnabled", APP)
         self.assertIn("return TombWorldNarration.isMasterEnabled()&&appliedAmbientEnabled", APP)
@@ -61,13 +61,13 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
 if(!n.isPreferenceEnabled()||!n.isMasterEnabled()||!n.isPlaybackEnabled())throw Error('missing values did not default on');
 await n.playMissionIntro('shifting-labyrinth');const playingPauses=pauses;
 n.setPreferenceEnabled(false);
-if(store.get('tombWorldSoloGuide.narrationEnabled')!=='false'||pauses!==playingPauses||!n.isPlaybackEnabled())throw Error('preference off altered live playback');
+if(store.get('tombWorldBattleGuide.narrationEnabled')!=='false'||pauses!==playingPauses||!n.isPlaybackEnabled())throw Error('preference off altered live playback');
 n.setPreferenceEnabled(true);
 if(plays!==1||!n.isPlaybackEnabled())throw Error('preference on started playback');
 n.setMasterEnabled(false);
-if(store.get('tombWorldSoloGuide.gameAudioEnabled')!=='false'||store.get('tombWorldSoloGuide.narrationEnabled')!=='true'||n.isPlaybackEnabled()||pauses===playingPauses)throw Error('master off was not independent/destructive');
+if(store.get('tombWorldBattleGuide.gameAudioEnabled')!=='false'||store.get('tombWorldBattleGuide.narrationEnabled')!=='true'||n.isPlaybackEnabled()||pauses===playingPauses)throw Error('master off was not independent/destructive');
 n.setPreferenceEnabled(false);n.setMasterEnabled(true);
-if(!n.isMasterEnabled()||n.isPlaybackEnabled()||store.get('tombWorldSoloGuide.narrationEnabled')!=='false')throw Error('master on did not apply latest preference');
+if(!n.isMasterEnabled()||n.isPlaybackEnabled()||store.get('tombWorldBattleGuide.narrationEnabled')!=='false')throw Error('master on did not apply latest preference');
 n.setPreferenceEnabled(true);
 if(n.isPlaybackEnabled())throw Error('stored preference leaked into applied state');
 n.setMasterEnabled(false);n.setMasterEnabled(true);

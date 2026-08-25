@@ -83,7 +83,7 @@ const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
       narration.setPreferenceEnabled(true);
   await flush();
   if(calls.filter(call=>call.startsWith('play:')).length!==playsBeforeStop)throw Error('old narration resumed after New Game cleanup');
-  if(store.get('tombWorldSoloGuide.narrationEnabled')!=='true')throw Error('stop changed the narration preference');
+  if(store.get('tombWorldBattleGuide.narrationEnabled')!=='true')throw Error('stop changed the narration preference');
   await first;
 })().catch(error=>{console.error(error);process.exit(1)});
 """

@@ -78,7 +78,7 @@ class PlayerActivationCancelTests(unittest.TestCase):
         self.assertEqual((8, 6, 104), tuple(map(int, CURRENT_APP_VERSION.split("."))))
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
         self.assertIn(f'<div class="version">V{CURRENT_APP_VERSION}</div>', INDEX)
-        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
+        self.assertTrue(README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
         self.assertIn(
             f"Version {CURRENT_APP_VERSION} - Player Activation Cancel Fix", README
         )

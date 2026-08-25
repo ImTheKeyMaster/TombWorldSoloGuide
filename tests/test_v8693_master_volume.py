@@ -15,7 +15,7 @@ class MasterVolumeTests(unittest.TestCase):
     def test_release_storage_and_save_contract(self):
         self.assertEqual(".".join(map(str, (8, 6, 94))), CURRENT_APP_VERSION)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
-        self.assertIn("tombWorldSoloGuide.gameVolume", APP)
+        self.assertIn("tombWorldBattleGuide.gameVolume", APP)
         self.assertIn("return Number.isFinite(saved)&&saved>=0.01&&saved<=1?saved:1", APP)
         self.assertIn("catch{return 1;}", APP)
         self.assertNotIn("GAME_VOLUME_PREFERENCE_KEY", (ROOT / "persistence.js").read_text())

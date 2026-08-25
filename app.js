@@ -1,13 +1,13 @@
 (() => {
   'use strict';
 
-  const STORAGE_KEY = 'tombWorldSoloGuide.v1';
+  const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const APP_VERSION = '8.6.108';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
       navigator.mediaSession.metadata = new window.MediaMetadata({
-        title: 'Tomb World Solo Guide',
+        title: 'Tomb World Battle Guide',
         artwork: [
           {src:'Assets/icon-192.png',sizes:'192x192',type:'image/png'},
           {src:'Assets/icon-512.png',sizes:'512x512',type:'image/png'},
@@ -23,7 +23,7 @@
   });
   const TombWorldAmbient=window.TombWorldAmbient||Object.freeze({init:()=>Promise.resolve(false),playFromGesture:()=>Promise.resolve(false),setActive:()=>{},setVolumeMultiplier:()=>{},stop:()=>{},reset:()=>{},removeGestureRecovery:()=>{}});
   function createDiceSfxFallback(){
-    const preferenceKey='tombWorldSoloGuide.diceRollEnabled';
+    const preferenceKey='tombWorldBattleGuide.diceRollEnabled';
     let preferenceEnabled=true;
     try{preferenceEnabled=localStorage.getItem(preferenceKey)!=='false';}
     catch{/* Missing storage keeps the documented default-on behavior. */}
@@ -38,9 +38,9 @@
     });
   }
   const TombWorldDiceSfx=window.TombWorldDiceSfx||createDiceSfxFallback();
-  const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldSoloGuide.showOperativeStatus';
-  const AMBIENT_ENABLED_PREFERENCE_KEY = 'tombWorldSoloGuide.ambientEnabled';
-  const GAME_VOLUME_PREFERENCE_KEY = 'tombWorldSoloGuide.gameVolume';
+  const OPERATIVE_STATUS_PREFERENCE_KEY = 'tombWorldBattleGuide.showOperativeStatus';
+  const AMBIENT_ENABLED_PREFERENCE_KEY = 'tombWorldBattleGuide.ambientEnabled';
+  const GAME_VOLUME_PREFERENCE_KEY = 'tombWorldBattleGuide.gameVolume';
   const BACKGROUND_MANIFEST_PATH = 'Assets/Images/Backgrounds/manifest.json';
   const BACKGROUND_IMAGE_PATH = 'Assets/Images/Backgrounds/';
   const WEAPON_RULE_HANDLERS = Object.freeze({
@@ -2398,7 +2398,7 @@ document.addEventListener('touchend',function(e){
   function guideInstructionsHtml(full=false){
     const overview=`<section class="help-section">
       <h3>What the Guide does</h3>
-      <p>Tomb World Solo Guide walks you through setup, Turning Points, alternating Player and NPO activations, Threat, reinforcements, combat, and the battle record. ${isPvpMode()?'The second player chooses Necron actions and targets while the Guide handles legal choices, rules, state, and bookkeeping.':'The Guide controls NPO decisions while you control your Kill Team.'} You still move models, measure distances, determine line of sight, and apply any operative-specific rules on the tabletop.</p>
+      <p>Tomb World Battle Guide walks you through setup, Turning Points, alternating Player and NPO activations, Threat, reinforcements, combat, and the battle record. ${isPvpMode()?'The second player chooses Necron actions and targets while the Guide handles legal choices, rules, state, and bookkeeping.':'The Guide controls NPO decisions while you control your Kill Team.'} You still move models, measure distances, determine line of sight, and apply any operative-specific rules on the tabletop.</p>
     </section>`;
 
     const flow=`<section class="help-section">
@@ -8550,19 +8550,19 @@ function showPlayerActivation(stage={}){
 
   function showAbout(){
     showModal('About',`<div class="about-intro">
-        <p class="about-app-name">Tomb World Solo Guide</p>
+        <p class="about-app-name">Tomb World Battle Guide</p>
         <p class="screen-version">Version ${APP_VERSION}</p>
         <p><strong>Created by J.R. Benning</strong></p>
-        <p>Tomb World Solo Guide is a free, unofficial, fan-created companion for managing solo tabletop play. It is not a replacement for the official rules, publications, miniatures, terrain, cards, or other materials required to play.</p>
+        <p>Tomb World Battle Guide is a free, unofficial, fan-created companion for managing solo and two-player tabletop play. It is not a replacement for the official rules, publications, miniatures, terrain, cards, or other materials required to play.</p>
       </div>
       <div class="about-content">
         <section><h3>Project Status</h3><p>This project is provided without charge and is not operated for commercial gain.</p></section>
-        <section><h3>Games Workshop Notice</h3><p>Tomb World Solo Guide is an unofficial fan-created project. It is not affiliated with, endorsed by, sponsored by, licensed by, or approved by Games Workshop Limited or any of its affiliates.</p><p>Games Workshop, Warhammer, Warhammer 40,000, Kill Team, Necron, Tomb World, and all associated names, logos, characters, factions, settings, artwork, and distinctive likenesses are trademarks, copyrights, or other intellectual property of Games Workshop Limited and/or its licensors.</p><p>All such intellectual property remains the property of its respective owners. No challenge to any ownership, trademark, copyright, or other proprietary right is intended.</p></section>
+        <section><h3>Games Workshop Notice</h3><p>Tomb World Battle Guide is an unofficial fan-created project. It is not affiliated with, endorsed by, sponsored by, licensed by, or approved by Games Workshop Limited or any of its affiliates.</p><p>Games Workshop, Warhammer, Warhammer 40,000, Kill Team, Necron, Tomb World, and all associated names, logos, characters, factions, settings, artwork, and distinctive likenesses are trademarks, copyrights, or other intellectual property of Games Workshop Limited and/or its licensors.</p><p>All such intellectual property remains the property of its respective owners. No challenge to any ownership, trademark, copyright, or other proprietary right is intended.</p></section>
         <section><h3>Official Rules and Materials</h3><p>This application is intended only as an organizational and gameplay aid for players who own or otherwise have lawful access to the required official products and rules.</p><p>It does not grant access to, replace, or authorize reproduction of any Games Workshop rulebook, publication, data card, mission pack, image, artwork, model, terrain component, or other official material.</p><p>Players are responsible for consulting the current official rules, errata, balance updates, and publications. If this application conflicts with an official Games Workshop source, the official source controls.</p><p>No part of this application should be interpreted as legal permission to copy, distribute, publish, or commercially exploit Games Workshop intellectual property.</p></section>
         <section><h3>Project Content</h3><p>Original application code, interface design, and original project content are created by J.R. Benning except where otherwise stated.</p><p>Third-party names and references are used solely to identify the games, products, rules, and fictional elements with which this unofficial companion is intended to be used.</p><p>Any third-party material remains subject to the rights and terms of its respective owner.</p></section>
         <section><h3>Software Disclaimer</h3><p>This application is provided &quot;as is&quot; and &quot;as available,&quot; without warranties of any kind, express or implied, including warranties of accuracy, completeness, reliability, merchantability, fitness for a particular purpose, availability, compatibility, or non-infringement.</p><p>Use of this application is at the user’s own risk. The author does not guarantee that the application is error-free, that its interpretation of any rule is correct, or that saved data will always remain available or compatible.</p><p>To the fullest extent permitted by applicable law, the author will not be liable for any direct, indirect, incidental, consequential, special, exemplary, or other damages arising from use of, inability to use, or reliance on this application.</p><p>Nothing in this notice excludes or limits liability where doing so would be prohibited by applicable law.</p></section>
         <section><h3>User Responsibility</h3><p>Users are responsible for verifying gameplay decisions against the official rules and for ensuring that their use of this application and any related materials complies with applicable laws and the terms imposed by the relevant rights holders.</p></section>
-        <section><h3>Privacy</h3><p>Tomb World Solo Guide does not intentionally collect or transmit personal information. Game state and preferences are stored locally in the user’s browser unless the user explicitly exports or shares them.</p><p class="muted">The app is hosted on GitHub Pages, whose server request logs are governed by GitHub’s own practices. The app uses no analytics, advertising, tracking, cookies, external fonts, or third-party APIs.</p></section>
+        <section><h3>Privacy</h3><p>Tomb World Battle Guide does not intentionally collect or transmit personal information. Game state and preferences are stored locally in the user’s browser unless the user explicitly exports or shares them.</p><p class="muted">The app is hosted on GitHub Pages, whose server request logs are governed by GitHub’s own practices. The app uses no analytics, advertising, tracking, cookies, external fonts, or third-party APIs.</p></section>
         <section><h3>Contact</h3><p>Questions, corrections, attribution concerns, or rights-holder requests may be submitted through the project’s GitHub repository.</p><p>The author intends to address good-faith attribution, ownership, or rights-holder concerns promptly.</p><a class="btn secondary external-link" href="https://github.com/ImTheKeyMaster/TombWorldSoloGuide" target="_blank" rel="noopener noreferrer">Open Project Repository <span aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a></section>
       </div>
       <div class="wizard-actions about-footer"><button class="btn primary" id="aboutBack" type="button">Back</button></div>`);
@@ -8602,7 +8602,7 @@ function showPlayerActivation(stage={}){
       state.missionRuntime=objectiveEngine.getMissionRuntime();
       if(pendingDiceResults)state.missionRuntime.pendingDiceResults=pendingDiceResults;
     }
-    const blob=new Blob([JSON.stringify(createPersistedSave(state),null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tomb-world-solo-guide-save.json';a.click();URL.revokeObjectURL(a.href);
+    const blob=new Blob([JSON.stringify(createPersistedSave(state),null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tomb-world-battle-guide-save.json';a.click();URL.revokeObjectURL(a.href);
   }
   function migrationDetails(report){
     const details=[];
@@ -8652,7 +8652,7 @@ function showPlayerActivation(stage={}){
       if(await commitImported(migration.state,migration.report)){
         if(hasMeaningfulMigrationChanges(migration.report))showMigrationNotice(migration.report);else showToast('Save imported.');
       }
-    }catch(error){console.warn('[Persistence] Imported save could not be migrated; browser progress was left unchanged.',error);showToast(error.message?.includes('newer than supported')?'That save was created by a newer unsupported version.':'That file is not a valid Tomb World Solo Guide save.');}
+    }catch(error){console.warn('[Persistence] Imported save could not be migrated; browser progress was left unchanged.',error);showToast(error.message?.includes('newer than supported')?'That save was created by a newer unsupported version.':'That file is not a valid Tomb World Battle Guide save.');}
     finally{importInput.value='';}
   });
 
@@ -8672,7 +8672,7 @@ function showPlayerActivation(stage={}){
       const stored=localStorage.getItem(STORAGE_KEY);
       if(!stored){showToast('No stored save is available to export.');return;}
       const blob=new Blob([stored],{type:'application/json'}),link=document.createElement('a');
-      link.href=URL.createObjectURL(blob);link.download='tomb-world-solo-guide-recovery-save.json';link.click();URL.revokeObjectURL(link.href);
+      link.href=URL.createObjectURL(blob);link.download='tomb-world-battle-guide-recovery-save.json';link.click();URL.revokeObjectURL(link.href);
     };
     bindCommon();
   }

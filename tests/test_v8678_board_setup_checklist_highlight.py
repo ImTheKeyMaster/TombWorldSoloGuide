@@ -64,7 +64,7 @@ class BoardSetupChecklistHighlightTests(unittest.TestCase):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", worker)
         self.assertIn(f'<div class="version">V{CURRENT_APP_VERSION}</div>', index)
-        self.assertTrue(readme.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
+        self.assertTrue(readme.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
 
 

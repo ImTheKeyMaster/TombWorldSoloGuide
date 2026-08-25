@@ -40,7 +40,7 @@ class MyWillBeDoneExplanationTests(unittest.TestCase):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", (ROOT / "service-worker.js").read_text())
         self.assertIn(f'<div class="version">V{CURRENT_APP_VERSION}</div>', (ROOT / "index.html").read_text())
-        self.assertTrue((ROOT / "README.md").read_text().startswith(f'# Tomb World Solo Guide v{CURRENT_APP_VERSION}'))
+        self.assertTrue((ROOT / "README.md").read_text().startswith(f'# Tomb World Battle Guide v{CURRENT_APP_VERSION}'))
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
 
 

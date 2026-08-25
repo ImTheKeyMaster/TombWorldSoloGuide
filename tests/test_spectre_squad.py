@@ -166,7 +166,7 @@ if(restored.playerTeamId!=='spectre-squad'||restored.playerWounds.sharpshooter!=
         index = (ROOT / "index.html").read_text()
         self.assertIn(f"V{expected}", index)
         self.assertEqual(set(re.findall(r"\?v=(\d+\.\d+\.\d+)", index)), {expected})
-        self.assertTrue((ROOT / "README.md").read_text().startswith(f"# Tomb World Solo Guide v{expected}"))
+        self.assertTrue((ROOT / "README.md").read_text().startswith(f"# Tomb World Battle Guide v{expected}"))
 
 
 if __name__ == "__main__":

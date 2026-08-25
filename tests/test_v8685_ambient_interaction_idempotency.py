@@ -17,7 +17,7 @@ class AmbientInteractionIdempotencyTests(unittest.TestCase):
             self.assertIn(f'{asset}?v={CURRENT_APP_VERSION}', index)
         self.assertIn(f'<div class="version">V{CURRENT_APP_VERSION}</div>', index)
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", worker)
-        self.assertTrue(readme.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
+        self.assertTrue(readme.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text(encoding="utf-8"))
 
     def test_ui_interaction_does_not_reconcile_or_modify_playing_ambient(self):

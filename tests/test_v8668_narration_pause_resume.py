@@ -47,7 +47,7 @@ class NarrationPauseResumeTests(unittest.TestCase):
     def test_pause_resume_queue_persistence_and_destructive_stop(self):
         script = r"""
 const fs=require('fs'),vm=require('vm');
-const store=new Map([['tombWorldSoloGuide.narrationVolume','0']]);
+const store=new Map([['tombWorldBattleGuide.narrationVolume','0']]);
 const calls=[];
 class Audio {
   constructor(){this.src='';this.currentTime=0;this.volume=.2;this.paused=true;this.ended=false;this.onended=null;this.onerror=null;Audio.instance=this;}
@@ -79,7 +79,7 @@ const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
   const src=player.src;
   const loadCount=calls.filter(call=>call==='load').length;
   n.setPreferenceEnabled(false);
-  if(store.get('tombWorldSoloGuide.narrationEnabled')!=='false')throw Error('off preference missing');
+  if(store.get('tombWorldBattleGuide.narrationEnabled')!=='false')throw Error('off preference missing');
   if(player.paused)throw Error('preference toggle paused active narration');
   if(player.src!==src)throw Error('pause removed the source');
   if(player.currentTime!==12.5)throw Error('pause reset playback position');
@@ -87,7 +87,7 @@ const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
   if(calls.filter(call=>call==='load').length!==loadCount)throw Error('pause used destructive stop cleanup');
   n.setPreferenceEnabled(true);
   await flush();
-  if(store.get('tombWorldSoloGuide.narrationEnabled')!=='true')throw Error('on preference missing');
+  if(store.get('tombWorldBattleGuide.narrationEnabled')!=='true')throw Error('on preference missing');
   if(player.paused||player.src!==src||player.currentTime!==12.5)throw Error('preference toggle disturbed playback');
   player.end();
   await flush();

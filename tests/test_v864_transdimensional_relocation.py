@@ -16,7 +16,7 @@ def source(start, end):
 
 class TransdimensionalRelocationTests(unittest.TestCase):
     def test_version_864_is_consistent_without_save_schema_change(self):
-        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
+        self.assertTrue(README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
         self.assertIn("Version 8.6.5 - Show Player Wounds in Target Selection", README)
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)

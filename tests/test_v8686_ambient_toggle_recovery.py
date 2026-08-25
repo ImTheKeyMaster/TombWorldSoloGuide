@@ -19,7 +19,7 @@ class AmbientToggleRecoveryTests(unittest.TestCase):
         self.assertEqual("Ambient/caverns.ogg", config["file"])
         self.assertIn("precacheAmbient(cache)", worker)
         self.assertNotIn("Forgoten_tombs.mp3", worker)
-        self.assertIn("const AMBIENT_ENABLED_PREFERENCE_KEY = 'tombWorldSoloGuide.ambientEnabled';", APP)
+        self.assertIn("const AMBIENT_ENABLED_PREFERENCE_KEY = 'tombWorldBattleGuide.ambientEnabled';", APP)
         self.assertIn("localStorage.getItem(AMBIENT_ENABLED_PREFERENCE_KEY)!=='false'", APP)
         self.assertIn("localStorage.setItem(AMBIENT_ENABLED_PREFERENCE_KEY,String(ambientEnabled))", APP)
         self.assertIn('role="switch"', APP)

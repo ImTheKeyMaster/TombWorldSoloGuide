@@ -105,7 +105,7 @@ console.log(JSON.stringify(cases.map(item=>{{state=item;return strategyHasNoDown
         self.assertEqual((8, 6, 106), tuple(map(int, CURRENT_APP_VERSION.split("."))))
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
         self.assertIn(f"<div class=\"version\">V{CURRENT_APP_VERSION}</div>", INDEX)
-        self.assertTrue(README.startswith(f"# Tomb World Solo Guide v{CURRENT_APP_VERSION}"))
+        self.assertTrue(README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}"))
         for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js",
                       "event-effects.js", "audio-capabilities.js", "narration.js", "ambient.js",
                       "dice-sfx.js", "app.js"):

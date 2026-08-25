@@ -46,9 +46,9 @@ const context={localStorage:{getItem:key=>store.has(key)?store.get(key):null,set
 context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
 const n=context.TombWorldNarration;
 if(!n.isPreferenceEnabled())throw Error('missing preference was not enabled');
-if(store.has('tombWorldSoloGuide.narrationEnabled'))throw Error('startup wrote a preference');
-store.set('tombWorldSoloGuide.narrationEnabled','false');if(n.isPreferenceEnabled())throw Error('false preference was enabled');
-store.set('tombWorldSoloGuide.narrationEnabled','true');if(!n.isPreferenceEnabled())throw Error('true preference was disabled');
+if(store.has('tombWorldBattleGuide.narrationEnabled'))throw Error('startup wrote a preference');
+store.set('tombWorldBattleGuide.narrationEnabled','false');if(n.isPreferenceEnabled())throw Error('false preference was enabled');
+store.set('tombWorldBattleGuide.narrationEnabled','true');if(!n.isPreferenceEnabled())throw Error('true preference was disabled');
 """
         result = subprocess.run(['node', '-e', script], cwd=ROOT, text=True, capture_output=True)
         self.assertEqual(0, result.returncode, result.stderr)
@@ -126,7 +126,7 @@ if(calls.filter(call=>call.startsWith('play:')).length!==2)throw Error('stale pe
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
         self.assertIn(f'<div class="version">V{CURRENT_APP_VERSION}</div>', INDEX)
-        self.assertTrue(README.startswith(f'# Tomb World Solo Guide v{CURRENT_APP_VERSION}'))
+        self.assertTrue(README.startswith(f'# Tomb World Battle Guide v{CURRENT_APP_VERSION}'))
         self.assertIn('const SAVE_VERSION = 3;', (ROOT / 'persistence.js').read_text())
         for asset in ('styles.css', 'mission-engine.js', 'persistence.js', 'deadly-encounters.js', 'event-effects.js', 'narration.js', 'app.js'):
             self.assertIn(f'{asset}?v={CURRENT_APP_VERSION}', INDEX)

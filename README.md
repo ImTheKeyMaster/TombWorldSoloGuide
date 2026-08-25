@@ -1,4 +1,4 @@
-# Tomb World Solo Guide v8.6.108
+# Tomb World Battle Guide v8.6.108
 
 ## v8.6.108
 
@@ -1779,13 +1779,15 @@ Then open `http://localhost:8000`. Load the app once while online so its local g
 
 ## Automated testing
 
-Run the focused rules-engine, mission, combat, event, reinforcement, and save-compatibility regression suite from the repository root:
+Run the focused rules-engine, mission, combat, event, reinforcement, and save-persistence regression suite from the repository root:
 
 ```sh
 python3 -m unittest discover -s tests -v
 ```
 
-The Guide preserves the existing `tombWorldSoloGuide.v1` browser-storage key. Current, legacy, and partially upgraded saves are normalized on load; malformed optional fields fall back to safe defaults without clearing the stored game.
+The Guide stores current battles under the `tombWorldBattleGuide.v1` browser-storage key. The pre-v9 Tomb World Solo Guide namespace is intentionally ignored; new Solo and PvP battles use the current namespace and save schema.
+
+The service-worker cache prefix remains `tomb-world-solo-guide-` until the Stage 10 v9.0.0 release rollover. Stage 10 must change it to `tomb-world-battle-guide-` and remove obsolete caches from both app prefixes while retaining the current cache.
 
 ### Installing the app
 
