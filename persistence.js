@@ -26,6 +26,21 @@
   const normalizedName = value => String(value||'').trim().replace(/\s+/g,' ').toLocaleLowerCase('en');
 
   function currentSaveVersion(){return SAVE_VERSION;}
+  function normalizePendingDice(value,gameMode){
+    if(gameMode!=='pvp'||!isRecord(value)||value.version!==1)return null;
+    const {requestKey,status,count,sides,values}=value;
+    if(typeof requestKey!=='string'||!requestKey.trim()||!['collecting','committed'].includes(status))return null;
+    if(!Number.isInteger(count)||count<=0||![3,6].includes(sides)||!Array.isArray(values)||values.length>count)return null;
+    if(!values.every(result=>Number.isInteger(result)&&result>=1&&result<=sides))return null;
+    if(status==='committed'&&values.length!==count)return null;
+    const text=field=>typeof value[field]==='string'?value[field]:'';
+    let resumeData={};
+    if(value.resumeData!==undefined){
+      if(!isRecord(value.resumeData))return null;
+      try{resumeData=clone(value.resumeData);}catch{return null;}
+    }
+    return {version:1,requestKey:requestKey.trim(),status,count,sides,title:text('title'),instruction:text('instruction'),rollerLabel:text('rollerLabel'),values:[...values],resumeKind:text('resumeKind'),resumeData};
+  }
   function migrate0to1(save){return {...save,saveVersion:1};}
 
   const matrixRule = value => typeof value==='string'&&/(?:obelisk|matrix|node-control)/i.test(value);
@@ -174,13 +189,14 @@
   function resetActiveBattle(save){
     const completedJournal=save.completed||save.gameEnd?records(save.journal):[];
     const gameMode=save.gameMode==='pvp'?'pvp':'solo';
-    return {...save,gameMode,screen:'setup',tab:'play',setupStep:0,setupChecks:{},backgroundSelection:null,restlessTombEnabled:false,deadlyEncountersEnabled:false,deadlyEncountersState:null,roster:[],playerRosterInitializedForTeamId:'',turningPoint:0,threat:0,tracker:0,phase:'setup',initiative:'player',nextSide:'player',playerDeployed:false,playerActivatedIds:[],playerCasualtyIds:[],playerWounds:{},playerOperativeStates:{},playerReady:0,activeNpoId:null,lastActivation:null,npoAttackTargetId:null,npoAttackSummary:null,combatState:null,journal:completedJournal,activationHistory:[],activationNumber:0,totalActivationsThisTP:0,playerActivated:0,npoActivated:0,reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0},strategyStage:null,strategyData:null,strategyPipeline:null,missionState:null,missionRuntime:null,missionActionContext:null,missionReadyContext:{sarcophagusControllers:0},npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[]},startingNpoGeneration:null,eventState:{},gameEnd:null,completed:false};
+    return {...save,gameMode,screen:'setup',tab:'play',setupStep:0,setupChecks:{},backgroundSelection:null,restlessTombEnabled:false,deadlyEncountersEnabled:false,deadlyEncountersState:null,roster:[],playerRosterInitializedForTeamId:'',turningPoint:0,threat:0,tracker:0,phase:'setup',initiative:'player',nextSide:'player',playerDeployed:false,playerActivatedIds:[],playerCasualtyIds:[],playerWounds:{},playerOperativeStates:{},playerReady:0,activeNpoId:null,lastActivation:null,npoAttackTargetId:null,npoAttackSummary:null,combatState:null,pendingDice:null,journal:completedJournal,activationHistory:[],activationNumber:0,totalActivationsThisTP:0,playerActivated:0,npoActivated:0,reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0},strategyStage:null,strategyData:null,strategyPipeline:null,missionState:null,missionRuntime:null,missionActionContext:null,missionReadyContext:{sarcophagusControllers:0},npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[]},startingNpoGeneration:null,eventState:{},gameEnd:null,completed:false};
   }
 
   function normalizeSave(save){
     save=stripObsoleteMatrixState(save);
     const normalized={...save};
     normalized.gameMode=save.gameMode===null?null:(save.gameMode==='pvp'?'pvp':'solo');
+    normalized.pendingDice=normalizePendingDice(save.pendingDice,normalized.gameMode);
     normalized.restlessTombEnabled=save.restlessTombEnabled===true;
     normalized.deadlyEncountersEnabled=save.deadlyEncountersEnabled===true;
     normalized.deadlyEncountersState=isRecord(save.deadlyEncountersState)?clone(save.deadlyEncountersState):null;
@@ -233,6 +249,6 @@
     return {...cleaned,saveVersion:SAVE_VERSION};
   }
 
-  const api={currentSaveVersion,migrateSave,migrateSaveDetailed,createPersistedSave,resetActiveBattle,resolveLegacyNpoType,LEGACY_TYPE_ALIASES,RETIRED_NPO_TYPES,migrations};
+  const api={currentSaveVersion,migrateSave,migrateSaveDetailed,createPersistedSave,resetActiveBattle,normalizePendingDice,resolveLegacyNpoType,LEGACY_TYPE_ALIASES,RETIRED_NPO_TYPES,migrations};
   root.TombWorldPersistence=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

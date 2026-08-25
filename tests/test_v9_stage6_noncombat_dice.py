@@ -41,7 +41,7 @@ class Stage6NoncombatDiceTests(unittest.TestCase):
     def test_mission_adapter_uses_provider_but_preserves_solo_animation_and_audio(self):
         flow = self.section("async function animateMissionDice", "function requestMissionNumber")
         self.assertIn("suppliedDice||await requestDiceResults", flow)
-        self.assertIn("if(isPvpMode())return result", flow)
+        self.assertIn("if(isPvpMode())", flow)
         self.assertIn("animated-roll", flow)
         self.assertIn("TombWorldDiceSfx.play()", flow)
         self.assertIn("return new Promise", flow)
@@ -129,10 +129,10 @@ class Stage6NoncombatDiceTests(unittest.TestCase):
         self.assertIn("randomReinforcement()", reinforcement)
         self.assertNotIn("requestDiceResults", starting + generation + reinforcement)
 
-    def test_version_and_stage7_boundary_are_unchanged(self):
+    def test_version_is_unchanged_and_stage7_state_is_additive(self):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
         initial = self.section("const initialState", "const loadedSave")
-        self.assertNotIn("pendingDice", initial)
+        self.assertIn("pendingDice:null", initial)
         self.assertNotIn("diceEntry", initial)
 
 

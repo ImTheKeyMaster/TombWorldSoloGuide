@@ -1,0 +1,102 @@
+import json
+import subprocess
+import unittest
+from pathlib import Path
+from versioning import CURRENT_APP_VERSION
+
+
+ROOT = Path(__file__).resolve().parents[1]
+APP = (ROOT / "app.js").read_text()
+PERSISTENCE = (ROOT / "persistence.js").read_text()
+
+
+def node(script):
+    result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
+    if result.returncode:
+        raise AssertionError(result.stderr or result.stdout)
+    return json.loads(result.stdout)
+
+
+class Stage7ManualDiceResumeTests(unittest.TestCase):
+    def test_pending_dice_normalization_persistence_reset_and_old_saves(self):
+        result = node("""
+const p=require('./persistence.js');
+const partial={version:1,requestKey:'combat:a:attack',status:'collecting',count:4,sides:6,title:'ATTACK ROLL',instruction:'Roll 4D6',rollerLabel:'Deathwatch',values:[6,3],resumeKind:'combat',resumeData:{activationId:'a'}};
+const valid=p.normalizePendingDice(partial,'pvp');
+const old=p.migrateSave({saveVersion:3,gameMode:'pvp',roster:[],playerRoster:[]});
+const saved=p.createPersistedSave({saveVersion:3,gameMode:'pvp',pendingDice:partial,roster:[]});
+const reset=p.resetActiveBattle({gameMode:'pvp',pendingDice:partial,roster:[],journal:[]});
+const malformed=[
+  {...partial,values:[1,2,3,4,5]}, {...partial,values:[7]}, {...partial,sides:3,values:[4]},
+  {...partial,values:[-1]}, {...partial,values:[1.5]}, {...partial,status:'committed'},
+  {...partial,requestKey:''}, {...partial,sides:8}
+].map(value=>p.normalizePendingDice(value,'pvp'));
+process.stdout.write(JSON.stringify({valid,old:old.pendingDice,saved:saved.pendingDice,reset:reset.pendingDice,malformed,solo:p.normalizePendingDice(partial,'solo'),version:p.currentSaveVersion()}));
+""")
+        self.assertEqual(result["valid"]["values"], [6, 3])
+        self.assertIsNone(result["old"])
+        self.assertEqual(result["saved"]["values"], [6, 3])
+        self.assertIsNone(result["reset"])
+        self.assertEqual(result["malformed"], [None] * 8)
+        self.assertIsNone(result["solo"])
+        self.assertEqual(result["version"], 3)
+
+    def test_provider_has_two_phase_exact_buffer_lifecycle(self):
+        provider = APP[APP.index("let activeManualDiceRequest") : APP.index("diceEntryUndo.addEventListener")]
+        self.assertIn("status='collecting'", provider)
+        self.assertIn("persistManualDice(active,'committed')", provider)
+        self.assertLess(provider.index("persistManualDice(active,'committed')"), provider.index("resolve(results)"))
+        self.assertIn("active.values.push(value);\n    persistManualDice(active);", provider)
+        self.assertIn("active.values.pop();\n    persistManualDice(active);", provider)
+        self.assertIn("requestManualDiceResults(validatedRequest,pending.values)", provider)
+        self.assertIn("if(pending.status==='committed')return pending.values.slice()", provider)
+        self.assertIn("pending.count===request.count&&pending.sides===request.sides", provider)
+        self.assertIn("A different manual dice request is already pending", provider)
+        self.assertIn("state.pendingDice=null;save();return true", provider)
+
+    def test_restoration_dispatches_to_existing_workflows(self):
+        resume = APP[APP.index("function pendingDiceContextIsCurrent") : APP.index("async function missionDiceTotal")]
+        for kind in ("strategy", "event", "player-activation", "breach-sarcophagus", "npo-special-action"):
+            self.assertIn(f"pending.resumeKind==='{kind}'", resume)
+        for entry in ("finishTurningPointStart()", "beginCurrentEvent()", "completePlayerActivation", "performBreachSarcophagus", "resolveNpoSpecialAction"):
+            self.assertIn(entry, resume)
+        self.assertIn("if(state.pendingDice)await resumePendingDiceWorkflow()", APP)
+
+    def test_every_gameplay_request_has_stable_identity_and_resume_metadata(self):
+        calls = []
+        cursor = APP.index("async function missionDiceTotal")
+        while True:
+            index = APP.find("requestDiceResults({", cursor)
+            if index < 0:
+                break
+            end = APP.find("})", index)
+            calls.append(APP[index:end + 2])
+            cursor = end + 2
+        self.assertGreaterEqual(len(calls), 18)
+        for call in calls:
+            self.assertIn("requestKey", call)
+            self.assertIn("resumeKind", call)
+            self.assertIn("resumeData", call)
+
+    def test_required_consumers_are_keyed_and_checkpointed(self):
+        for marker in (
+            "subjugation-glyphs", "living-metal-flux", "maze-reforms", "initiative:tp",
+            "reanimation-protocols", "aggressive-defence", "threat", "dimensional-banishment",
+            "'attack'", "'defense'", "HOT TEST", "countertemporal-shifting",
+            "geomantic-disturbance", "nanoscarab-beam", "breach-sarcophagus"
+        ):
+            self.assertIn(marker, APP)
+        self.assertGreaterEqual(APP.count("acknowledgeDiceRequest("), 10)
+        self.assertGreaterEqual(APP.count("acknowledgeCurrentDiceRequest()"), 5)
+
+    def test_versions_and_existing_silent_mobile_dialog_are_preserved(self):
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
+        self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)
+        provider = APP[APP.index("let activeManualDiceRequest") : APP.index("diceEntryUndo.addEventListener")]
+        self.assertNotIn("TombWorldDiceSfx", provider)
+        self.assertNotIn("animated-roll", provider)
+        self.assertIn("pendingDice:null", APP[APP.index("const initialState") : APP.index("const loadedSave")])
+
+
+if __name__ == "__main__":
+    unittest.main()
