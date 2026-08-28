@@ -1,4 +1,5 @@
 import re
+import subprocess
 from pathlib import Path
 from versioning import CURRENT_APP_VERSION
 
@@ -9,6 +10,15 @@ APP = (ROOT / "app.js").read_text(encoding="utf-8")
 
 def section(start, end):
     return APP.split(start, 1)[1].split(end, 1)[0]
+
+
+def function_source(name, next_name):
+    body = re.sub(r"\s*async\s*$", "", section(f"function {name}", f"function {next_name}"))
+    return f"function {name}" + body
+
+
+def run_node(script):
+    return subprocess.run(["node", "-e", script], cwd=ROOT, check=True, capture_output=True, text=True).stdout
 
 
 CATALOG = section("const tombsBeyondCountingNpoDefinitions", "// Official NPO datacards")
@@ -195,3 +205,38 @@ def test_existing_lethal_piercing_range_and_torrent_paths_are_reused():
         assert re.search(rf"\b{rule}:\{{", handlers)
     assert "runAutomaticCombatRolls" in APP
     assert "attackType" in section("function runAutomaticCombatRolls", "function retainedDiceTotals")
+
+
+def test_rending_and_devastating_execute_with_retained_pool_semantics():
+    script = "\n".join((
+        function_source("weaponHasRule", "normalizedWeaponRuleId"),
+        function_source("applyRendingToAttackDice", "applyAttackSuccessConversions"),
+        function_source("retainedDiceTotals", "devastatingDamageForAttack"),
+        function_source("normalizedWeaponRuleId", "normalizedWeaponRuleWarningKey"),
+        function_source("weaponRuleValue", "effectiveDefenseDiceCount"),
+        function_source("devastatingDamageForAttack", "resolveRetainedCombat"),
+        "const profile={rules:['Rending','Devastating 2'],ruleIds:['rending','devastating']};",
+        "const none=applyRendingToAttackDice([{value:4,kind:'hit',retained:true}],profile);",
+        "const converted=applyRendingToAttackDice([{value:6,kind:'crit',retained:true},{value:4,kind:'hit',retained:true},{value:5,kind:'hit',retained:true}],profile);",
+        "if(none.applied||converted.dice.filter(d=>d.kind==='crit').length!==2||converted.dice.filter(d=>d.kind==='hit').length!==1)process.exit(1);",
+        "if(devastatingDamageForAttack(converted.dice,profile)!==4)process.exit(2);",
+    ))
+    run_node(script)
+
+
+def test_automatic_reroll_choices_and_completion_execute_deterministically():
+    script = "\n".join((
+        function_source("weaponHasRule", "normalizedWeaponRuleId"),
+        function_source("beneficialRerollChoice", "chooseHumanWeaponReroll"),
+        function_source("markWeaponRerollResolved", "weaponRuleRerollsComplete"),
+        function_source("weaponRuleRerollsComplete", "applyWeaponRuleRerolls"),
+        "const dice=[{value:2,kind:'miss'},{value:2,kind:'miss'},{value:1,kind:'miss'},{value:5,kind:'hit'},{value:6,kind:'crit'}];",
+        "if(beneficialRerollChoice(dice,{},'balanced')!==2)process.exit(1);",
+        "if(beneficialRerollChoice(dice,{},'ceaseless')!==2)process.exit(2);",
+        "const profile={rules:['Balanced','Ceaseless'],ruleIds:['balanced','ceaseless']};",
+        "const balanced=markWeaponRerollResolved(dice,'balanced');",
+        "if(weaponRuleRerollsComplete(balanced,profile))process.exit(3);",
+        "const complete=markWeaponRerollResolved(balanced,'ceaseless');",
+        "if(!weaponRuleRerollsComplete(complete,profile))process.exit(4);",
+    ))
+    run_node(script)
