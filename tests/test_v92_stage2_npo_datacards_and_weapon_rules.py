@@ -61,14 +61,14 @@ def test_exact_royal_warden_datacard():
 
 def test_exact_lychguard_datacard_and_exclusive_loadout():
     card = definition("Lychguard")
-    assert "move:5,apl:2,save:3,wounds:13,baseSize:32" in card
+    assert "move:5,apl:2,save:3,wounds:13,baseSize:32,exclusiveMeleeLoadout:true" in card
     assert "loadoutOptions:[{id:'hyperphase-sword',name:'Hyperphase sword'},{id:'warscythe',name:'Warscythe'}]" in card
     assert "name:'Hyperphase sword',type:'melee',attacks:4,hit:3,damage:{normal:4,critical:6}" in card
     assert "rules:['Lethal 5+','Shield*']" in card and "deferredRules:['Shield']" in card
     assert "name:'Warscythe',type:'melee',attacks:4,hit:3,damage:{normal:5,critical:7}" in card
     profiles = section("function npoAttackProfiles", "function canonicalAttackProfile")
     assert "weapon.id===npo.weaponId" in profiles
-    assert "definition.loadoutOptions.every" in profiles
+    assert "definition.exclusiveMeleeLoadout" in profiles
 
 
 def test_expansion_catalog_is_hidden_from_standard_inventory_generation_and_add_npo():
@@ -120,6 +120,15 @@ def test_balanced_and_ceaseless_use_optional_shared_dice_provider_flow():
     assert "rerolledBy:ruleId" in rerolls
     assert "die.value===Number(choice)" in rerolls
     assert "value===1" not in rerolls
+
+
+def test_pvp_initial_attack_request_is_acknowledged_before_a_reroll_request():
+    attack = section("async function requestAttackDiceForProfile", "async function requestDefenseDice")
+    checkpoint = attack.index("if(onInitialRoll)onInitialRoll(dice)")
+    acknowledge = attack.index("if(isPvpMode())acknowledgeDiceRequest(requestKey)")
+    reroll = attack.index("await applyWeaponRuleRerolls")
+    assert checkpoint < acknowledge < reroll
+    assert "resumeKind:'combat'" in attack
 
 
 def test_rending_devastating_and_saturate_are_shared_and_ordered():

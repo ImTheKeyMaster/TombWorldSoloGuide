@@ -745,7 +745,7 @@ document.addEventListener('touchend',function(e){
       actions:[],passiveRules:[],abilities:[{id:'engrammatic-logic',name:'Engrammatic Logic',deferred:true}],strategicRules:[],behavior:null
     },
     'Lychguard': {
-      id:'lychguard',name:'Lychguard',type:'Lychguard',faction:'Necron',move:5,apl:2,save:3,wounds:13,baseSize:32,
+      id:'lychguard',name:'Lychguard',type:'Lychguard',faction:'Necron',move:5,apl:2,save:3,wounds:13,baseSize:32,exclusiveMeleeLoadout:true,
       keywords:['Necron','Lychguard'],compatibilityBehavior:null,compatibilityAttack:{dice:4,hit:3,normal:4,crit:6},defaultWeaponId:'hyperphase-sword',loadoutOptions:[{id:'hyperphase-sword',name:'Hyperphase sword'},{id:'warscythe',name:'Warscythe'}],
       rangedWeapons:[],meleeWeapons:[
         {id:'hyperphase-sword',name:'Hyperphase sword',type:'melee',attacks:4,hit:3,damage:{normal:4,critical:6},rules:['Lethal 5+','Shield*'],ruleIds:['lethal'],lethal:5,deferredRules:['Shield']},
@@ -1501,9 +1501,7 @@ document.addEventListener('touchend',function(e){
     if(!definition)return [];
     const weapons=attackType==='shoot'
       ? (definition.rangedWeapons||[]).filter(weapon=>weapon.id===npo.weaponId)
-      : (definition.meleeWeapons||[]).filter(weapon=>!definition.loadoutOptions
-        ||!definition.loadoutOptions.every(option=>(definition.meleeWeapons||[]).some(melee=>melee.id===option.id))
-        ||weapon.id===npo.weaponId);
+      : (definition.meleeWeapons||[]).filter(weapon=>!definition.exclusiveMeleeLoadout||weapon.id===npo.weaponId);
     return weapons.flatMap(weaponProfiles);
   }
   function canonicalAttackProfile(profile){
@@ -5448,6 +5446,7 @@ function showPlayerActivation(){
       ...classifyCombatDice(values,profile.hit,profile.critThreshold)
     ]);
     if(onInitialRoll)onInitialRoll(dice);
+    if(isPvpMode())acknowledgeDiceRequest(requestKey);
     const rerolled=await applyWeaponRuleRerolls(dice,profile,{attackerSide,container,rollerLabel,requestKeyBase});
     const severe=applySevereToAttackDice(retainSuccessfulDice(rerolled),profile);
     return applyRendingToAttackDice(severe.dice,profile).dice;
