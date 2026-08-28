@@ -202,6 +202,7 @@
   function normalizeSave(save){
     save=stripObsoleteMatrixState(save);
     const normalized={...save};
+    const predatesOptionalRulesStep=save.tombWorldVariant===undefined;
     normalized.gameMode=save.gameMode===null?null:(save.gameMode==='pvp'?'pvp':'solo');
     normalized.pendingDice=normalizePendingDice(save.pendingDice,normalized.gameMode);
     normalized.restlessTombEnabled=save.restlessTombEnabled===true;
@@ -215,6 +216,7 @@
     normalized.playerActivatedIds=strings(save.playerActivatedIds).filter(id=>normalized.playerRoster.includes(id));normalized.playerCasualtyIds=strings(save.playerCasualtyIds).filter(id=>normalized.playerRoster.includes(id));
     normalized.playerWounds=isRecord(save.playerWounds)?{...save.playerWounds}:{};normalized.setupChecks=isRecord(save.setupChecks)?{...save.setupChecks}:{};normalized.missionState=isRecord(save.missionState)?{...save.missionState}:{};normalized.missionRuntime=isRecord(save.missionRuntime)?{...save.missionRuntime}:null;normalized.strategyData=isRecord(save.strategyData)?{...save.strategyData}:null;normalized.eventState=isRecord(save.eventState)?{...save.eventState}:{};normalized.reinforcementState=isRecord(save.reinforcementState)?{...save.reinforcementState}:{};
     ['setupStep','playerCount','playerReady','turningPoint','threat','tracker','activationNumber','totalActivationsThisTP','playerActivated','npoActivated','tpStartThreat','tpStartGrade','tpStartDestroyedNpos','tpStartPlayerCasualties'].forEach(field=>{normalized[field]=integer(save[field]);});
+    if(predatesOptionalRulesStep&&normalized.screen==='setup'&&normalized.setupStep>=4)normalized.setupStep++;
     const rosterIds=new Set(normalized.roster.map(item=>item.id).filter(id=>typeof id==='string'&&id));normalized.newIds=strings(save.newIds).filter(id=>rosterIds.has(id));normalized.reinforcementState.operativeIds=strings(normalized.reinforcementState.operativeIds).filter(id=>rosterIds.has(id));normalized.reinforcementState.blockedOperativeIds=strings(normalized.reinforcementState.blockedOperativeIds).filter(id=>rosterIds.has(id)&&!normalized.reinforcementState.operativeIds.includes(id));
     return normalized;
   }

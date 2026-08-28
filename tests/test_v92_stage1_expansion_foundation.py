@@ -66,6 +66,8 @@ def test_variant_helpers_and_all_stage_one_hooks_are_centralized_and_inert():
         assert f"function {helper}" in registry
     assert "tombWorldVariantHook('startingRosterGeneration'" in APP
     assert "tombWorldVariantHook('reinforcementGeneration'" in APP
+    assert "function replaceEventGeneratedNpo(request)" in registry
+    assert "function replaceMissionRequestedNpo(request)" in registry
 
 
 def test_variant_change_invalidates_only_generated_npo_setup():
@@ -93,6 +95,10 @@ for(const variant of ['standard','flayer-curse','destroyer-cult','crownworld']){
   if(p.migrateSaveDetailed(JSON.parse(JSON.stringify(saved)),catalog).state.tombWorldVariant!==variant)process.exit(1);
 }
 if(p.migrateSaveDetailed(base,catalog).state.tombWorldVariant!=='standard')process.exit(2);
+const oldDeploy=p.migrateSaveDetailed({...base,screen:'setup',setupStep:4},catalog).state;
+if(oldDeploy.setupStep!==5||oldDeploy.tombWorldVariant!=='standard')process.exit(3);
+const currentDeploy=p.migrateSaveDetailed({...base,screen:'setup',setupStep:5,tombWorldVariant:'standard'},catalog).state;
+if(currentDeploy.setupStep!==5)process.exit(4);
 """
     subprocess.run(["node", "-e", script], cwd=ROOT, check=True)
 

@@ -928,6 +928,8 @@ document.addEventListener('touchend',function(e){
     return typeof hook==='function'?hook(value):value;
   }
   function tombWorldEventDeckAdditions(){return tombWorldVariantHook('eventDeckAdditions',undefined);}
+  function replaceEventGeneratedNpo(request){return tombWorldVariantHook('eventGeneratedNpoReplacement',request);}
+  function replaceMissionRequestedNpo(request){return tombWorldVariantHook('missionRequestedNpoReplacement',request);}
 
   const initialState = () => ({
     version:APP_VERSION, saveVersion:currentSaveVersion(), gameMode:null, screen:'home', tab:'play', setupStep:0, missionId:null,
@@ -2694,9 +2696,12 @@ document.addEventListener('touchend',function(e){
     delete state.setupChecks['starting-npos'];
   }
   function setTombWorldVariant(variantId){
-    if(!TOMB_WORLD_VARIANTS[variantId]||variantId===state.tombWorldVariant)return false;
+    if(state.screen!=='setup'||!TOMB_WORLD_VARIANTS[variantId]||variantId===state.tombWorldVariant)return false;
     state.tombWorldVariant=variantId;
     invalidateStartingNpoSetup();
+    state.eventState.available=[...eventDeck,...tombWorldEventDeckAdditions()].map(card=>card.instanceId);
+    state.eventState.used=[];
+    state.eventState.active=[];
     return true;
   }
   function satisfyEmptyStartingNpoDeployment(){
