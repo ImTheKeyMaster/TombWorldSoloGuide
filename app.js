@@ -6048,11 +6048,12 @@ function showPlayerActivation(){
         const defenseDice=devastatingIncapacitated?[]:rolledDefenseDice||await requestDefenseDice(defenseCount,defenseSave,{rollerLabel:defenderLabel,requestKeyBase});
         if(cancelled||!container.isConnected)return;
         const animateDefense=!isPvpMode()&&!rolledDefenseDice;
+        const showDefenseAnimation=!devastatingIncapacitated&&animateDefense;
         const automaticMessages=automaticWeaponRuleMessages(profile,attackDice);
         const saturateMessage=attackType==='shoot'&&weaponHasRule(profile,'saturate')?'<p role="status">Saturate: cover saves cannot be retained.</p>':'';
-        container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row settled" data-combat-attack-dice>${attackDice.map(dieHtml).join('')}</div>${severeAppliedHtml(attackDice)}${attackRuleAppliedHtml(attackDice)}${automaticMessages.map(message=>`<p role="status">${escapeHtml(message)}</p>`).join('')}</section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row ${animateDefense?'animated-roll':'settled'}" data-combat-save-dice>${defenseDice.length?(animateDefense?defenseDice.map(()=>rollingDieHtml()).join(''):defenseDice.map(dieHtml).join('')):'<span class="muted">No defense dice rolled</span>'}</div>${saturateMessage}</section>`;
+        container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row settled" data-combat-attack-dice>${attackDice.map(dieHtml).join('')}</div>${severeAppliedHtml(attackDice)}${attackRuleAppliedHtml(attackDice)}${automaticMessages.map(message=>`<p role="status">${escapeHtml(message)}</p>`).join('')}</section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row ${showDefenseAnimation?'animated-roll':'settled'}" data-combat-save-dice>${defenseDice.length?(showDefenseAnimation?defenseDice.map(()=>rollingDieHtml()).join(''):defenseDice.map(dieHtml).join('')):'<span class="muted">No defense dice rolled</span>'}</div>${saturateMessage}</section>`;
         attackDice.immediateEffects={devastatingDamage,devastatingIncapacitated};
-        if(animateDefense){
+        if(showDefenseAnimation){
           timer=settleCombatDice({attackDice,saveDice:defenseDice},()=>{timer=null;if(container.isConnected)onComplete(attackDice,defenseDice);},container);
         }else {onComplete(attackDice,defenseDice);if(isPvpMode()&&!rolledDefenseDice&&!devastatingIncapacitated&&defenseCount>0)acknowledgeDiceRequest(`${requestKeyBase}:defense`);}
       }catch(error){

@@ -176,6 +176,7 @@ def test_lethal_devastating_stops_before_defense_and_normal_resolution():
     shared = section("function runAutomaticCombatRolls", "function retainedDiceTotals")
     assert "devastatingDamage>=Number(defenderWounds)" in shared
     assert "const defenseDice=devastatingIncapacitated?[]:" in shared
+    assert "const showDefenseAnimation=!devastatingIncapacitated&&animateDefense" in shared
     assert "{devastatingDamage,devastatingIncapacitated}" in shared
     player = section("async function previewPendingPlayerAttack", "function npoBehavior")
     assert "diceDraft.devastatingIncapacitated?{normal:0,critical:0,damage:0}" in player
