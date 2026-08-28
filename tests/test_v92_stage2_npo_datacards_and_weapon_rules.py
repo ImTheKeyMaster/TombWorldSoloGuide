@@ -119,6 +119,7 @@ def test_balanced_and_ceaseless_use_optional_shared_dice_provider_flow():
     assert "resumeKind:'combat'" in rerolls
     assert "rerolledBy:ruleId" in rerolls
     assert "markWeaponRerollResolved(updated,ruleId)" in rerolls
+    assert "if(onCheckpoint)onCheckpoint(updated)" in rerolls
     assert "die.value===Number(choice)" in rerolls
     assert "value===1" not in rerolls
 
@@ -143,6 +144,18 @@ def test_skipped_and_restored_rerolls_are_checkpointed_once():
     acknowledge = "state.pendingDice?.requestKey===`${requestKeyBase}:attack`"
     assert acknowledge in shared
     assert "const needsRerollResume=!weaponRuleRerollsComplete(rolledAttackDice,profile)" in shared
+
+
+def test_each_rule_is_checkpointed_before_the_next_rule_can_open():
+    attack = section("async function requestAttackDiceForProfile", "async function requestDefenseDice")
+    assert "onCheckpoint:onInitialRoll" in attack
+    rerolls = section("async function applyWeaponRuleRerolls", "function weaponHasRule")
+    replacement = rerolls.index("indexes.forEach((index,replacementIndex)")
+    checkpoint = rerolls.index("if(onCheckpoint)onCheckpoint(updated)", replacement)
+    next_iteration = rerolls.index("if(isPvpMode())acknowledgeDiceRequest(requestKey)", checkpoint)
+    assert replacement < checkpoint < next_iteration
+    shared = section("function runAutomaticCombatRolls", "function retainedDiceTotals")
+    assert "onCheckpoint:onAttackComplete" in shared
 
 
 def test_rending_devastating_and_saturate_are_shared_and_ordered():
