@@ -118,6 +118,7 @@ def test_balanced_and_ceaseless_use_optional_shared_dice_provider_flow():
     assert ":reroll:${ruleId}:1" in rerolls
     assert "resumeKind:'combat'" in rerolls
     assert "rerolledBy:ruleId" in rerolls
+    assert "markWeaponRerollResolved(updated,ruleId)" in rerolls
     assert "die.value===Number(choice)" in rerolls
     assert "value===1" not in rerolls
 
@@ -129,6 +130,19 @@ def test_pvp_initial_attack_request_is_acknowledged_before_a_reroll_request():
     reroll = attack.index("await applyWeaponRuleRerolls")
     assert checkpoint < acknowledge < reroll
     assert "resumeKind:'combat'" in attack
+
+
+def test_skipped_and_restored_rerolls_are_checkpointed_once():
+    helpers = section("function markWeaponRerollResolved", "async function applyWeaponRuleRerolls")
+    assert "rerollRulesResolved" in helpers
+    assert "rules.every" in helpers
+    rerolls = section("async function applyWeaponRuleRerolls", "function weaponHasRule")
+    assert "updated.every(die=>(die.rerollRulesResolved||[]).includes(ruleId))" in rerolls
+    assert rerolls.count("updated=markWeaponRerollResolved(updated,ruleId)") == 3
+    shared = section("function runAutomaticCombatRolls", "function retainedDiceTotals")
+    acknowledge = "state.pendingDice?.requestKey===`${requestKeyBase}:attack`"
+    assert acknowledge in shared
+    assert "const needsRerollResume=!weaponRuleRerollsComplete(rolledAttackDice,profile)" in shared
 
 
 def test_rending_devastating_and_saturate_are_shared_and_ordered():

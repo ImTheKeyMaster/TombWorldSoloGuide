@@ -5502,26 +5502,40 @@ function showPlayerActivation(){
     });
   }
 
+  function markWeaponRerollResolved(dice,ruleId){
+    return (dice||[]).map(die=>({...die,rerollRulesResolved:[...new Set([...(die.rerollRulesResolved||[]),ruleId])]}));
+  }
+
+  function weaponRuleRerollsComplete(dice,profile){
+    const rules=['balanced','ceaseless'].filter(ruleId=>weaponHasRule(profile,ruleId));
+    return rules.every(ruleId=>(dice||[]).every(die=>(die.rerollRulesResolved||[]).includes(ruleId)));
+  }
+
   async function applyWeaponRuleRerolls(dice,profile,{attackerSide='npo',container,rollerLabel='',requestKeyBase=''}={}){
     let updated=(dice||[]).map(die=>({...die}));
     const humanControlled=attackerSide==='player'||isPvpMode();
     for(const ruleId of ['balanced','ceaseless']){
       if(!weaponHasRule(profile,ruleId))continue;
+      if(updated.every(die=>(die.rerollRulesResolved||[]).includes(ruleId)))continue;
       const requestKey=`${requestKeyBase||diceRequestKey('combat',profile.weaponId,profile.profileId)}:reroll:${ruleId}:1`;
       const resumedIndexes=state.pendingDice?.requestKey===requestKey&&state.pendingDice?.resumeData?.ruleId===ruleId
         ? state.pendingDice.resumeData.selectedIndexes : null;
       const choice=Array.isArray(resumedIndexes)?null:humanControlled?await chooseHumanWeaponReroll(container,updated,ruleId):beneficialRerollChoice(updated,profile,ruleId);
-      if(!Array.isArray(resumedIndexes)&&(choice===null||choice===undefined))continue;
+      if(!Array.isArray(resumedIndexes)&&(choice===null||choice===undefined)){
+        updated=markWeaponRerollResolved(updated,ruleId);
+        continue;
+      }
       const indexes=Array.isArray(resumedIndexes)
         ? resumedIndexes.filter(index=>Number.isInteger(index)&&updated[index]&&!updated[index].automatic)
         : ruleId==='balanced'
           ? [Number(choice)].filter(index=>Number.isInteger(index)&&updated[index]&&!updated[index].automatic)
           : updated.map((die,index)=>!die.automatic&&die.value===Number(choice)?index:-1).filter(index=>index>=0);
-      if(!indexes.length)continue;
+      if(!indexes.length){updated=markWeaponRerollResolved(updated,ruleId);continue;}
       const replacements=await requestDiceResults({requestKey,resumeKind:'combat',resumeData:{phase:'attack-reroll',ruleId,weaponId:profile.weaponId,profileId:profile.profileId,selectedIndexes:indexes},count:indexes.length,sides:6,title:`${ruleId.toUpperCase()} REROLL`,rollerLabel,
         instruction:`Reroll ${indexes.length===1?`the selected die (${updated[indexes[0]].value})`:`all ${updated[indexes[0]].value}s (${indexes.length} dice)`} and enter ${indexes.length===1?'its result':'each result'}.`,
       });
-      indexes.forEach((index,replacementIndex)=>{updated[index]={...classifyCombatDice([replacements[replacementIndex]],profile.hit,profile.critThreshold)[0],rerolledBy:ruleId};});
+      indexes.forEach((index,replacementIndex)=>{updated[index]={...updated[index],...classifyCombatDice([replacements[replacementIndex]],profile.hit,profile.critThreshold)[0],rerolledBy:ruleId};});
+      updated=markWeaponRerollResolved(updated,ruleId);
       if(isPvpMode())acknowledgeDiceRequest(requestKey);
     }
     return updated;
@@ -6011,7 +6025,8 @@ function showPlayerActivation(){
       try{
         let attackDice;
         if(rolledAttackDice){
-          const needsRerollResume=['balanced','ceaseless'].some(ruleId=>weaponHasRule(profile,ruleId))&&!rolledAttackDice.some(die=>die.rerolledBy);
+          if(isPvpMode()&&state.pendingDice?.requestKey===`${requestKeyBase}:attack`)acknowledgeDiceRequest(state.pendingDice.requestKey);
+          const needsRerollResume=!weaponRuleRerollsComplete(rolledAttackDice,profile);
           const resumedDice=needsRerollResume
             ? await applyWeaponRuleRerolls(rolledAttackDice,profile,{attackerSide,container,rollerLabel:attackerLabel,requestKeyBase})
             : rolledAttackDice;
