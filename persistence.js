@@ -23,6 +23,8 @@
   const integer = (value,fallback=0) => Number.isFinite(Number(value))?Math.max(0,Math.round(Number(value))):fallback;
   const records = value => Array.isArray(value)?value.filter(isRecord):[];
   const strings = value => Array.isArray(value)?[...new Set(value.filter(item=>typeof item==='string'&&item))]:[];
+  const TOMB_WORLD_VARIANT_IDS = new Set(['standard','flayer-curse','destroyer-cult','crownworld']);
+  const normalizeTombWorldVariant = value => TOMB_WORLD_VARIANT_IDS.has(value)?value:'standard';
   const normalizedName = value => String(value||'').trim().replace(/\s+/g,' ').toLocaleLowerCase('en');
 
   function currentSaveVersion(){return SAVE_VERSION;}
@@ -194,7 +196,7 @@
   function resetActiveBattle(save){
     const completedJournal=save.completed||save.gameEnd?records(save.journal):[];
     const gameMode=save.gameMode==='pvp'?'pvp':'solo';
-    return {...save,gameMode,screen:'setup',tab:'play',setupStep:0,setupChecks:{},backgroundSelection:null,restlessTombEnabled:false,deadlyEncountersEnabled:false,deadlyEncountersState:null,roster:[],playerRosterInitializedForTeamId:'',turningPoint:0,threat:0,tracker:0,phase:'setup',initiative:'player',nextSide:'player',playerDeployed:false,playerActivatedIds:[],playerCasualtyIds:[],playerWounds:{},playerOperativeStates:{},playerReady:0,activeNpoId:null,lastActivation:null,npoAttackTargetId:null,npoAttackSummary:null,combatState:null,pendingDice:null,journal:completedJournal,activationHistory:[],activationNumber:0,totalActivationsThisTP:0,playerActivated:0,npoActivated:0,reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0},strategyStage:null,strategyData:null,strategyPipeline:null,missionState:null,missionRuntime:null,missionActionContext:null,missionReadyContext:{turningPoint:null,sarcophagusControllers:0},npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[]},startingNpoGeneration:null,eventState:{},gameEnd:null,completed:false};
+    return {...save,gameMode,screen:'setup',tab:'play',setupStep:0,setupChecks:{},backgroundSelection:null,restlessTombEnabled:false,deadlyEncountersEnabled:false,deadlyEncountersState:null,tombWorldVariant:'standard',roster:[],playerRosterInitializedForTeamId:'',turningPoint:0,threat:0,tracker:0,phase:'setup',initiative:'player',nextSide:'player',playerDeployed:false,playerActivatedIds:[],playerCasualtyIds:[],playerWounds:{},playerOperativeStates:{},playerReady:0,activeNpoId:null,lastActivation:null,npoAttackTargetId:null,npoAttackSummary:null,combatState:null,pendingDice:null,journal:completedJournal,activationHistory:[],activationNumber:0,totalActivationsThisTP:0,playerActivated:0,npoActivated:0,reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0},strategyStage:null,strategyData:null,strategyPipeline:null,missionState:null,missionRuntime:null,missionActionContext:null,missionReadyContext:{turningPoint:null,sarcophagusControllers:0},npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[]},startingNpoGeneration:null,eventState:{},gameEnd:null,completed:false};
   }
 
   function normalizeSave(save){
@@ -205,6 +207,7 @@
     normalized.restlessTombEnabled=save.restlessTombEnabled===true;
     normalized.deadlyEncountersEnabled=save.deadlyEncountersEnabled===true;
     normalized.deadlyEncountersState=isRecord(save.deadlyEncountersState)?clone(save.deadlyEncountersState):null;
+    normalized.tombWorldVariant=normalizeTombWorldVariant(save.tombWorldVariant);
     normalized.roster=records(save.roster);normalized.playerRoster=strings(save.playerRoster);
     const importedPlayerStates=isRecord(save.playerOperativeStates)?save.playerOperativeStates:{};
     normalized.playerOperativeStates=Object.fromEntries(normalized.playerRoster.map(id=>{const value=isRecord(importedPlayerStates[id])?importedPlayerStates[id]:{};return [id,{...value,inPlay:value.inPlay!==false,...(typeof value.offBoardReason==='string'&&value.offBoardReason?{offBoardReason:value.offBoardReason}:{})}];}));
