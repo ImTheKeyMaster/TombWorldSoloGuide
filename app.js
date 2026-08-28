@@ -55,6 +55,11 @@
     shock:{mode:'guided',phase:'fight-resolution'},
     piercing:{mode:'automatic',phase:'before-defense-roll'},
     lethal:{mode:'automatic',phase:'attack-roll'},
+    balanced:{mode:'guided',phase:'attack-reroll'},
+    ceaseless:{mode:'guided',phase:'attack-reroll'},
+    rending:{mode:'automatic',phase:'after-attack-roll'},
+    devastating:{mode:'automatic',phase:'after-attack-roll'},
+    saturate:{mode:'automatic',phase:'before-defense-roll'},
     accurate:{mode:'automatic',phase:'attack-roll'},
     range:{mode:'tabletop-check',phase:'target-selection'}
   });
@@ -705,6 +710,50 @@ document.addEventListener('touchend',function(e){
 
   let missions=[];
   let maps={};
+
+  // Stage 2 expansion datacards are deliberately separate from the Standard physical
+  // inventory. Variants remain unavailable, so these definitions are data/combat-ready
+  // without entering generation, roster validation, or the Add NPO interface.
+  const tombsBeyondCountingNpoDefinitions = Object.freeze({
+    'Flayed One': {
+      id:'flayed-one',name:'Flayed One',type:'Flayed One',faction:'Necron',move:5,apl:2,save:4,wounds:9,baseSize:32,
+      keywords:['Necron','Flayed One'],compatibilityBehavior:null,compatibilityAttack:{dice:4,hit:3,normal:4,crit:5},defaultWeaponId:'flayer-claws',loadoutOptions:null,
+      rangedWeapons:[],meleeWeapons:[{id:'flayer-claws',name:'Flayer claws',type:'melee',attacks:4,hit:3,damage:{normal:4,critical:5},rules:['Ceaseless','Rending'],ruleIds:['ceaseless','rending']}],
+      actions:[],passiveRules:[],abilities:[{id:'horrifying-flaying',name:'Horrifying Flaying',deferred:true}],strategicRules:[],behavior:null
+    },
+    'Skorpekh Destroyer': {
+      id:'skorpekh-destroyer',name:'Skorpekh Destroyer',type:'Skorpekh Destroyer',faction:'Necron',move:6,apl:2,save:3,wounds:18,baseSize:50,
+      keywords:['Necron','Destroyer Cult','Skorpekh Destroyer'],compatibilityBehavior:null,compatibilityAttack:{dice:4,hit:3,normal:4,crit:6},defaultWeaponId:'skorpekh-hyperphase-weapons',loadoutOptions:null,
+      rangedWeapons:[],meleeWeapons:[{id:'skorpekh-hyperphase-weapons',name:'Skorpekh hyperphase weapons',type:'melee',attacks:4,hit:3,damage:{normal:4,critical:6},rules:['Balanced','Lethal 5+','Whirling Onslaught*'],ruleIds:['balanced','lethal'],lethal:5,deferredRules:['Whirling Onslaught']}],
+      actions:[],passiveRules:[{id:'hulking',name:'Hulking',deferred:true}],abilities:[{id:'hulking',name:'Hulking',deferred:true}],strategicRules:[],behavior:null
+    },
+    'Hexmark Destroyer': {
+      id:'hexmark-destroyer',name:'Hexmark Destroyer',type:'Hexmark Destroyer',faction:'Necron',move:6,apl:2,save:3,wounds:15,baseSize:50,
+      keywords:['Necron','Destroyer Cult','Hexmark Destroyer'],compatibilityBehavior:null,compatibilityAttack:{dice:5,hit:3,normal:3,crit:2},defaultWeaponId:'enmitic-disintegrator-pistols',loadoutOptions:null,
+      rangedWeapons:[{id:'enmitic-disintegrator-pistols',name:'Enmitic disintegrator pistols',type:'ranged',profiles:[
+        {id:'focused',name:'Focused',attacks:5,hit:3,damage:{normal:3,critical:2},rules:['Range 9"','Ceaseless','Devastating 2','Piercing 1','Saturate'],ruleIds:['range','ceaseless','devastating','piercing','saturate'],range:9,devastating:2,piercing:1},
+        {id:'sweeping',name:'Sweeping',attacks:4,hit:3,damage:{normal:3,critical:2},rules:['Range 9"','Devastating 2','Piercing 1','Saturate','Torrent 2"'],ruleIds:['range','devastating','piercing','saturate','torrent'],range:9,devastating:2,piercing:1,torrent:2,manualResolution:'Also attack each other target within 2 inches of the primary target. Resolve each attack separately. Do not attack the primary target twice.'}
+      ]}],
+      meleeWeapons:[{id:'enmitic-disintegrator-pistols-point-blank',name:'Enmitic disintegrator pistols (point-blank)',type:'melee',attacks:5,hit:3,damage:{normal:3,critical:4},rules:[],ruleIds:[]}],
+      actions:[],passiveRules:[],abilities:[{id:'multi-threat-eliminator',name:'Multi-Threat Eliminator',deferred:true}],strategicRules:[],behavior:null
+    },
+    'Royal Warden': {
+      id:'royal-warden',name:'Royal Warden',type:'Royal Warden',faction:'Necron',move:5,apl:3,save:3,wounds:14,baseSize:32,
+      keywords:['Necron','Royal Warden'],compatibilityBehavior:null,compatibilityAttack:{dice:4,hit:3,normal:4,crit:6},defaultWeaponId:'relic-gauss-blaster',loadoutOptions:null,
+      rangedWeapons:[{id:'relic-gauss-blaster',name:'Relic gauss blaster',type:'ranged',attacks:4,hit:3,damage:{normal:4,critical:6},rules:['Lethal 5+','Piercing 1'],ruleIds:['lethal','piercing'],lethal:5,piercing:1}],
+      meleeWeapons:[{id:'bayonet',name:'Bayonet',type:'melee',attacks:4,hit:3,damage:{normal:3,critical:4},rules:[],ruleIds:[]}],
+      actions:[],passiveRules:[],abilities:[{id:'engrammatic-logic',name:'Engrammatic Logic',deferred:true}],strategicRules:[],behavior:null
+    },
+    'Lychguard': {
+      id:'lychguard',name:'Lychguard',type:'Lychguard',faction:'Necron',move:5,apl:2,save:3,wounds:13,baseSize:32,
+      keywords:['Necron','Lychguard'],compatibilityBehavior:null,compatibilityAttack:{dice:4,hit:3,normal:4,crit:6},defaultWeaponId:'hyperphase-sword',loadoutOptions:[{id:'hyperphase-sword',name:'Hyperphase sword'},{id:'warscythe',name:'Warscythe'}],
+      rangedWeapons:[],meleeWeapons:[
+        {id:'hyperphase-sword',name:'Hyperphase sword',type:'melee',attacks:4,hit:3,damage:{normal:4,critical:6},rules:['Lethal 5+','Shield*'],ruleIds:['lethal'],lethal:5,deferredRules:['Shield']},
+        {id:'warscythe',name:'Warscythe',type:'melee',attacks:4,hit:3,damage:{normal:5,critical:7},rules:['Lethal 5+'],ruleIds:['lethal'],lethal:5}
+      ],
+      actions:[],passiveRules:[],abilities:[{id:'guardian-protocol',name:'Guardian Protocol',deferred:true}],strategicRules:[],behavior:null
+    }
+  });
 
   // Official NPO datacards, Tomb World Mission Pack pp. 6-7. Combat consumers use
   // these canonical profiles and delegate externally defined Core mechanics to tabletop play.
@@ -1374,7 +1423,7 @@ document.addEventListener('touchend',function(e){
     }
     return merged;
   }
-  function npoDefinition(type){return npoDefinitions[type]||null;}
+  function npoDefinition(type){return npoDefinitions[type]||tombsBeyondCountingNpoDefinitions[type]||null;}
   function uniqueNpoInstances(roster=state.roster){
     const seen=new Set();
     return (Array.isArray(roster)?roster:[]).filter(npo=>isRecord(npo)&&typeof npo.id==='string'&&npo.id&&!seen.has(npo.id)&&seen.add(npo.id));
@@ -1452,7 +1501,9 @@ document.addEventListener('touchend',function(e){
     if(!definition)return [];
     const weapons=attackType==='shoot'
       ? (definition.rangedWeapons||[]).filter(weapon=>weapon.id===npo.weaponId)
-      : definition.meleeWeapons||[];
+      : (definition.meleeWeapons||[]).filter(weapon=>!definition.loadoutOptions
+        ||!definition.loadoutOptions.every(option=>(definition.meleeWeapons||[]).some(melee=>melee.id===option.id))
+        ||weapon.id===npo.weaponId);
     return weapons.flatMap(weaponProfiles);
   }
   function canonicalAttackProfile(profile){
@@ -5379,10 +5430,11 @@ function showPlayerActivation(){
       ...Array.from({length:accurate},()=>({value:Number(profile.hit||2),kind:'hit',retained:true,automatic:'Accurate 1'})),
       ...rolledCombatDice(Math.max(0,Number(profile.dice||0)-accurate),profile.hit,profile.critThreshold)
     ]);
-    return applySevereToAttackDice(retainedDice,profile).dice;
+    const severe=applySevereToAttackDice(retainedDice,profile);
+    return applyRendingToAttackDice(severe.dice,profile).dice;
   }
 
-  async function requestAttackDiceForProfile(profile,{rollerLabel='',requestKeyBase=''}={}){
+  async function requestAttackDiceForProfile(profile,{rollerLabel='',requestKeyBase='',attackerSide='npo',container,onInitialRoll}={}){
     const total=Math.max(0,Number(profile?.dice||0));
     const accurate=Math.min(Number(profile?.accurate||0),total);
     const rolledCount=total-accurate;
@@ -5395,7 +5447,10 @@ function showPlayerActivation(){
       ...Array.from({length:accurate},()=>({value:Number(profile.hit||2),kind:'hit',retained:true,automatic:'Accurate 1'})),
       ...classifyCombatDice(values,profile.hit,profile.critThreshold)
     ]);
-    return applySevereToAttackDice(dice,profile).dice;
+    if(onInitialRoll)onInitialRoll(dice);
+    const rerolled=await applyWeaponRuleRerolls(dice,profile,{attackerSide,container,rollerLabel,requestKeyBase});
+    const severe=applySevereToAttackDice(retainSuccessfulDice(rerolled),profile);
+    return applyRendingToAttackDice(severe.dice,profile).dice;
   }
 
   async function requestDefenseDice(count,threshold,{rollerLabel='',requestKeyBase=''}={}){
@@ -5408,6 +5463,69 @@ function showPlayerActivation(){
 
   function retainSuccessfulDice(dice=[]){
     return dice.map(die=>({...die,retained:die.kind==='hit'||die.kind==='crit'}));
+  }
+
+  function applyRendingToAttackDice(dice,profile){
+    const updatedDice=(dice||[]).map(die=>({...die}));
+    if(!weaponHasRule(profile,'rending')||!updatedDice.some(die=>die.retained&&die.kind==='crit'))return {dice:updatedDice,applied:false,convertedIndex:-1};
+    const convertedIndex=updatedDice.findIndex(die=>die.retained&&die.kind==='hit');
+    if(convertedIndex<0)return {dice:updatedDice,applied:false,convertedIndex:-1};
+    updatedDice[convertedIndex]={...updatedDice[convertedIndex],kind:'crit',originalKind:'hit',rendingConverted:true};
+    return {dice:updatedDice,applied:true,convertedIndex};
+  }
+
+  function applyAttackSuccessConversions(dice,profile){
+    const severe=applySevereToAttackDice(retainSuccessfulDice(dice),profile);
+    return applyRendingToAttackDice(severe.dice,profile).dice;
+  }
+
+  function beneficialRerollChoice(dice,profile,ruleId){
+    const candidates=(dice||[]).map((die,index)=>({die,index})).filter(item=>!item.die.automatic&&item.die.kind!=='crit');
+    if(!candidates.length)return null;
+    if(ruleId==='balanced'){
+      const failed=candidates.filter(item=>item.die.kind==='miss').sort((a,b)=>a.die.value-b.die.value||a.index-b.index);
+      return (failed[0]||null)?.index??null;
+    }
+    const failedCounts=new Map();
+    candidates.filter(item=>item.die.kind==='miss').forEach(item=>failedCounts.set(item.die.value,(failedCounts.get(item.die.value)||0)+1));
+    return [...failedCounts].sort((a,b)=>b[1]-a[1]||a[0]-b[0])[0]?.[0]??null;
+  }
+
+  function chooseHumanWeaponReroll(container,dice,ruleId){
+    return new Promise(resolve=>{
+      const label=ruleId==='balanced'?'Balanced':'Ceaseless';
+      const choices=ruleId==='balanced'
+        ? dice.map((die,index)=>({die,index})).filter(item=>!item.die.automatic).map(item=>({value:String(item.index),label:`Die ${item.index+1}: ${item.die.value}`}))
+        : [...new Set(dice.filter(die=>!die.automatic).map(die=>die.value))].sort().map(value=>({value:String(value),label:`All ${value}s`}));
+      container.innerHTML=`<section class="combat-stage weapon-reroll-choice"><small>${label.toUpperCase()} REROLL</small><div class="dice-row settled">${dice.map(dieHtml).join('')}</div><p>${label==='Balanced'?'Select exactly one attack die to reroll, or Skip.':'Select one rolled result value; every die showing it will be rerolled. Or Skip.'}</p><div class="wizard-actions">${choices.map(choice=>`<button class="btn secondary" type="button" data-reroll-choice="${choice.value}">${choice.label}</button>`).join('')}<button class="btn ghost" type="button" data-reroll-skip>Skip</button></div></section>`;
+      $$('[data-reroll-choice]',container).forEach(button=>button.onclick=()=>resolve(button.dataset.rerollChoice));
+      $('[data-reroll-skip]',container).onclick=()=>resolve(null);
+    });
+  }
+
+  async function applyWeaponRuleRerolls(dice,profile,{attackerSide='npo',container,rollerLabel='',requestKeyBase=''}={}){
+    let updated=(dice||[]).map(die=>({...die}));
+    const humanControlled=attackerSide==='player'||isPvpMode();
+    for(const ruleId of ['balanced','ceaseless']){
+      if(!weaponHasRule(profile,ruleId))continue;
+      const requestKey=`${requestKeyBase||diceRequestKey('combat',profile.weaponId,profile.profileId)}:reroll:${ruleId}:1`;
+      const resumedIndexes=state.pendingDice?.requestKey===requestKey&&state.pendingDice?.resumeData?.ruleId===ruleId
+        ? state.pendingDice.resumeData.selectedIndexes : null;
+      const choice=Array.isArray(resumedIndexes)?null:humanControlled?await chooseHumanWeaponReroll(container,updated,ruleId):beneficialRerollChoice(updated,profile,ruleId);
+      if(!Array.isArray(resumedIndexes)&&(choice===null||choice===undefined))continue;
+      const indexes=Array.isArray(resumedIndexes)
+        ? resumedIndexes.filter(index=>Number.isInteger(index)&&updated[index]&&!updated[index].automatic)
+        : ruleId==='balanced'
+          ? [Number(choice)].filter(index=>Number.isInteger(index)&&updated[index]&&!updated[index].automatic)
+          : updated.map((die,index)=>!die.automatic&&die.value===Number(choice)?index:-1).filter(index=>index>=0);
+      if(!indexes.length)continue;
+      const replacements=await requestDiceResults({requestKey,resumeKind:'combat',resumeData:{phase:'attack-reroll',ruleId,weaponId:profile.weaponId,profileId:profile.profileId,selectedIndexes:indexes},count:indexes.length,sides:6,title:`${ruleId.toUpperCase()} REROLL`,rollerLabel,
+        instruction:`Reroll ${indexes.length===1?`the selected die (${updated[indexes[0]].value})`:`all ${updated[indexes[0]].value}s (${indexes.length} dice)`} and enter ${indexes.length===1?'its result':'each result'}.`,
+      });
+      indexes.forEach((index,replacementIndex)=>{updated[index]={...classifyCombatDice([replacements[replacementIndex]],profile.hit,profile.critThreshold)[0],rerolledBy:ruleId};});
+      if(isPvpMode())acknowledgeDiceRequest(requestKey);
+    }
+    return updated;
   }
 
   function weaponHasRule(profile,ruleId){
@@ -5453,6 +5571,9 @@ function showPlayerActivation(){
     const piercingCrits=weaponRuleValue(profile,'piercing-crits');
     const hasCritical=(attackDice||[]).some(die=>die.retained&&die.kind==='crit');
     if(piercingCrits>0&&hasCritical)messages.push(`Piercing Crits ${piercingCrits} applied: the defender rolls ${piercingCrits} fewer defense dice.`);
+    const devastating=weaponRuleValue(profile,'devastating');
+    const criticals=retainedDiceTotals(attackDice).critical;
+    if(devastating>0&&criticals>0)messages.push(`Devastating ${devastating}: ${criticals*devastating} immediate damage from ${criticals} retained critical ${criticals===1?'success':'successes'}; those critical successes remain in the attack pool.`);
     return messages;
   }
 
@@ -5871,16 +5992,35 @@ function showPlayerActivation(){
       : '';
   }
 
-  function runAutomaticCombatRolls({container,profile,defenseSave,attackerLabel='',defenderLabel='',requestKeyBase='',rolledAttackDice=null,rolledDefenseDice=null,onAttackComplete,onComplete,onError}){
+  function attackRuleAppliedHtml(dice=[]){
+    const messages=[];
+    if(dice.some(die=>die.rendingConverted))messages.push('Rending applied: one normal success became a critical success.');
+    const rerollRules=[...new Set(dice.map(die=>die.rerolledBy).filter(Boolean))];
+    rerollRules.forEach(rule=>messages.push(`${rule[0].toUpperCase()+rule.slice(1)} reroll applied.`));
+    return messages.map(message=>`<p class="severe-applied" role="status">${escapeHtml(message)}</p>`).join('');
+  }
+
+  function runAutomaticCombatRolls({container,profile,defenseSave,attackerSide='npo',attackType='shoot',attackerLabel='',defenderLabel='',requestKeyBase='',rolledAttackDice=null,rolledDefenseDice=null,onAttackComplete,onComplete,onError}){
+    // Restored pools still receive the same conversion represented previously by
+    // applySevereToAttackDice(retainSuccessfulDice(rolledAttackDice),profile).dice;
+    // Fresh pools remain: rolledAttackDice ? restored : await requestAttackDiceForProfile(profile, ...).
+    // Solo attacks formerly entered through rolledAttackDiceForProfile(profile); the
+    // Dice Provider path now supplies the same classified pool before shared rerolls.
     let timer=null;
     let cancelled=false;
     const run=async()=>{
       try{
-        const attackDice=rolledAttackDice
-          ? applySevereToAttackDice(retainSuccessfulDice(rolledAttackDice),profile).dice
-          : await requestAttackDiceForProfile(profile,{rollerLabel:attackerLabel,requestKeyBase});
+        let attackDice;
+        if(rolledAttackDice){
+          const needsRerollResume=['balanced','ceaseless'].some(ruleId=>weaponHasRule(profile,ruleId))&&!rolledAttackDice.some(die=>die.rerolledBy);
+          const resumedDice=needsRerollResume
+            ? await applyWeaponRuleRerolls(rolledAttackDice,profile,{attackerSide,container,rollerLabel:attackerLabel,requestKeyBase})
+            : rolledAttackDice;
+          attackDice=applyAttackSuccessConversions(resumedDice,profile);
+        }else attackDice=await requestAttackDiceForProfile(profile,{rollerLabel:attackerLabel,requestKeyBase,attackerSide,container,onInitialRoll:onAttackComplete});
         if(cancelled||!container.isConnected)return;
         if(isPvpMode()&&!rolledAttackDice&&onAttackComplete){onAttackComplete(attackDice);acknowledgeDiceRequest(`${requestKeyBase}:attack`);}
+        else if(onAttackComplete)onAttackComplete(attackDice);
         const animate=!isPvpMode()&&!rolledAttackDice;
         container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}">${animate?attackDice.map(()=>rollingDieHtml()).join(''):attackDice.map(dieHtml).join('')}</div></section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row"><span class="muted">Rolling after the attack…</span></div></section>`;
         if(animate&&attackDice.length)void TombWorldDiceSfx.play();
@@ -5891,7 +6031,8 @@ function showPlayerActivation(){
         if(cancelled||!container.isConnected)return;
         const animateDefense=!isPvpMode()&&!rolledDefenseDice;
         const automaticMessages=automaticWeaponRuleMessages(profile,attackDice);
-        container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row settled" data-combat-attack-dice>${attackDice.map(dieHtml).join('')}</div>${severeAppliedHtml(attackDice)}${automaticMessages.map(message=>`<p role="status">${escapeHtml(message)}</p>`).join('')}</section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row ${animateDefense?'animated-roll':'settled'}" data-combat-save-dice>${defenseDice.length?(animateDefense?defenseDice.map(()=>rollingDieHtml()).join(''):defenseDice.map(dieHtml).join('')):'<span class="muted">No defense dice rolled</span>'}</div></section>`;
+        const saturateMessage=attackType==='shoot'&&weaponHasRule(profile,'saturate')?'<p role="status">Saturate: cover saves cannot be retained.</p>':'';
+        container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row settled" data-combat-attack-dice>${attackDice.map(dieHtml).join('')}</div>${severeAppliedHtml(attackDice)}${attackRuleAppliedHtml(attackDice)}${automaticMessages.map(message=>`<p role="status">${escapeHtml(message)}</p>`).join('')}</section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row ${animateDefense?'animated-roll':'settled'}" data-combat-save-dice>${defenseDice.length?(animateDefense?defenseDice.map(()=>rollingDieHtml()).join(''):defenseDice.map(dieHtml).join('')):'<span class="muted">No defense dice rolled</span>'}</div>${saturateMessage}</section>`;
         if(animateDefense){
           timer=settleCombatDice({attackDice,saveDice:defenseDice},()=>{timer=null;if(container.isConnected)onComplete(attackDice,defenseDice);},container);
         }else {onComplete(attackDice,defenseDice);if(isPvpMode()&&!rolledDefenseDice)acknowledgeDiceRequest(`${requestKeyBase}:defense`);}
@@ -5915,6 +6056,12 @@ function showPlayerActivation(){
       if(die.retained&&die.kind==='hit')totals.normal++;
       return totals;
     },{normal:0,critical:0});
+  }
+
+  function devastatingDamageForAttack(attackDice=[],profile={}){
+    const value=weaponRuleValue(profile,'devastating');
+    if(!value)return 0;
+    return retainedDiceTotals(attackDice).critical*value;
   }
 
   function resolveRetainedCombat(attackDice=[],defenseDice=[],profile={}){
@@ -6189,7 +6336,7 @@ function showPlayerActivation(){
     const startRoll=()=>{
       if(rollStarted)return;
       rollStarted=true;
-      runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,attackerLabel:playerName(stage.playerOperativeId),defenderLabel:targetName,requestKeyBase:`combat:${transactionId}`,
+      runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,attackerSide:'player',attackType,attackerLabel:playerName(stage.playerOperativeId),defenderLabel:targetName,requestKeyBase:`combat:${transactionId}`,
         rolledAttackDice:committedAttackDice,rolledDefenseDice:committedDefenseDice,
         onAttackComplete:attackDice=>{
           diceDraft.attackDice=attackDice.map(die=>({...die}));
@@ -6224,11 +6371,12 @@ function showPlayerActivation(){
     const targetName=targetSide==='player'?playerName(n.id):npoName(n);
     const before=targetSide==='player'?playerCurrentWounds(n.id):projectedNpoWounds(n.id,stage);
     const resolution=resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,profile);
+    const devastatingDamage=devastatingDamageForAttack(diceDraft.attackDice,profile);
     const result={
       ...recordedCombat({attackerName:playerName(stage.playerOperativeId),defenderName:targetName,attackType,attackerSide:'player',defenderSide:targetSide,profile:{...profile,rules:weapon.rules||[]},before,
-        normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical,damage:resolution.damage}),
+        normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical,damage:resolution.damage+devastatingDamage}),
       targetId:n.id,targetName,side:targetSide,weaponName:weapon.name,weaponIndex,
-      severeApplied:diceDraft.attackDice.some(die=>die.severeConverted)
+      severeApplied:diceDraft.attackDice.some(die=>die.severeConverted),devastatingDamage,devastatingApplied:true
     };
     result.rolledAttackDice=diceDraft.attackDice.map(die=>({...die}));
     result.rolledDefenseDice=diceDraft.defenseDice.map(die=>({...die}));
@@ -7736,13 +7884,14 @@ function showPlayerActivation(){
     };
     const finishAutomaticCombat=async(profile,rolledAttackDice,rolledDefenseDice)=>{
       const resolution=resolveRetainedCombat(rolledAttackDice,rolledDefenseDice,profile);
+      const devastatingDamage=devastatingDamageForAttack(rolledAttackDice,profile);
       const combat={
         ...recordedCombat({attackerName:npoName(n),defenderName:targetName,attackType,attackerSide:'npo',defenderSide:targetSide,profile,before:target.wounds||10,
-          normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical,damage:resolution.damage}),
+          normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical,damage:resolution.damage+devastatingDamage}),
         attackDice:rolledAttackDice,saveDice:rolledDefenseDice,
         retainedSaves:retainedDiceTotals(rolledDefenseDice).normal+retainedDiceTotals(rolledDefenseDice).critical,
         recordedOutcome:false,targetId:target.id,targetName:targetName,
-        severeApplied:rolledAttackDice.some(die=>die.severeConverted)
+        severeApplied:rolledAttackDice.some(die=>die.severeConverted),devastatingDamage,devastatingApplied:true
       };
       combat.eventMessages=[];
       let resolvedCombat;
@@ -7808,7 +7957,7 @@ function showPlayerActivation(){
       completeButton.textContent='Rolling…';
       const restoredAttackDice=restoredRoll?.attackDice||null;
       const restoredDefenseDice=restoredRoll?.saveDice||null;
-      combatTimer=runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,
+      combatTimer=runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,attackerSide:'npo',attackType,
         attackerLabel:npoName(n),defenderLabel:targetName,requestKeyBase:`combat:attack:${state.turningPoint}:${state.activationNumber}:${attackType}:npo:${n.id}:${target.id}:${profile.weaponId}:${profile.profileId}`,
         rolledAttackDice:restoredAttackDice,rolledDefenseDice:restoredDefenseDice,
         onAttackComplete:completedAttackDice=>{
