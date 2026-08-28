@@ -95,10 +95,15 @@ for(const variant of ['standard','flayer-curse','destroyer-cult','crownworld']){
   if(p.migrateSaveDetailed(JSON.parse(JSON.stringify(saved)),catalog).state.tombWorldVariant!==variant)process.exit(1);
 }
 if(p.migrateSaveDetailed(base,catalog).state.tombWorldVariant!=='standard')process.exit(2);
-const oldDeploy=p.migrateSaveDetailed({...base,screen:'setup',setupStep:4},catalog).state;
-if(oldDeploy.setupStep!==5||oldDeploy.tombWorldVariant!=='standard')process.exit(3);
+const generated={dice:[1],missionRoll:1,deploymentCount:1,availableNpos:0,deployedNpoIds:[],reserveNpoIds:[]};
+const oldDeployWithTeam=p.migrateSaveDetailed({...base,screen:'setup',setupStep:4,startingNpoGeneration:generated},catalog).state;
+if(oldDeployWithTeam.setupStep!==5||oldDeployWithTeam.tombWorldVariant!=='standard')process.exit(3);
+const oldDeployWithoutTeam=p.migrateSaveDetailed({...base,screen:'setup',setupStep:3,startingNpoGeneration:generated},catalog).state;
+if(oldDeployWithoutTeam.setupStep!==4||oldDeployWithoutTeam.tombWorldVariant!=='standard')process.exit(4);
 const currentDeploy=p.migrateSaveDetailed({...base,screen:'setup',setupStep:5,tombWorldVariant:'standard'},catalog).state;
-if(currentDeploy.setupStep!==5)process.exit(4);
+if(currentDeploy.setupStep!==5)process.exit(5);
+const oldPlayerRoster=p.migrateSaveDetailed({...base,screen:'setup',setupStep:3},catalog).state;
+if(oldPlayerRoster.setupStep!==3)process.exit(6);
 """
     subprocess.run(["node", "-e", script], cwd=ROOT, check=True)
 
