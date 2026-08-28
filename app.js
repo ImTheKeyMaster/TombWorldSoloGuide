@@ -6015,7 +6015,7 @@ function showPlayerActivation(){
     return messages.map(message=>`<p class="severe-applied" role="status">${escapeHtml(message)}</p>`).join('');
   }
 
-  function runAutomaticCombatRolls({container,profile,defenseSave,attackerSide='npo',attackType='shoot',attackerLabel='',defenderLabel='',requestKeyBase='',rolledAttackDice=null,rolledDefenseDice=null,onAttackComplete,onComplete,onError}){
+  function runAutomaticCombatRolls({container,profile,defenseSave,defenderWounds=0,attackerSide='npo',attackType='shoot',attackerLabel='',defenderLabel='',requestKeyBase='',rolledAttackDice=null,rolledDefenseDice=null,onAttackComplete,onComplete,onError}){
     // Restored pools still receive the same conversion represented previously by
     // applySevereToAttackDice(retainSuccessfulDice(rolledAttackDice),profile).dice;
     // Fresh pools remain: rolledAttackDice ? restored : await requestAttackDiceForProfile(profile, ...).
@@ -6042,16 +6042,19 @@ function showPlayerActivation(){
         if(animate&&attackDice.length)void TombWorldDiceSfx.play();
         if(animate)await new Promise(resolve=>{timer=setTimeout(resolve,DICE_ROLL_ANIMATION_MS);});
         if(cancelled||!container.isConnected)return;
+        const devastatingDamage=devastatingDamageForAttack(attackDice,profile);
+        const devastatingIncapacitated=Number(defenderWounds)>0&&devastatingDamage>=Number(defenderWounds);
         const defenseCount=effectiveDefenseDiceCount(profile,attackDice,3);
-        const defenseDice=rolledDefenseDice||await requestDefenseDice(defenseCount,defenseSave,{rollerLabel:defenderLabel,requestKeyBase});
+        const defenseDice=devastatingIncapacitated?[]:rolledDefenseDice||await requestDefenseDice(defenseCount,defenseSave,{rollerLabel:defenderLabel,requestKeyBase});
         if(cancelled||!container.isConnected)return;
         const animateDefense=!isPvpMode()&&!rolledDefenseDice;
         const automaticMessages=automaticWeaponRuleMessages(profile,attackDice);
         const saturateMessage=attackType==='shoot'&&weaponHasRule(profile,'saturate')?'<p role="status">Saturate: cover saves cannot be retained.</p>':'';
         container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row settled" data-combat-attack-dice>${attackDice.map(dieHtml).join('')}</div>${severeAppliedHtml(attackDice)}${attackRuleAppliedHtml(attackDice)}${automaticMessages.map(message=>`<p role="status">${escapeHtml(message)}</p>`).join('')}</section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row ${animateDefense?'animated-roll':'settled'}" data-combat-save-dice>${defenseDice.length?(animateDefense?defenseDice.map(()=>rollingDieHtml()).join(''):defenseDice.map(dieHtml).join('')):'<span class="muted">No defense dice rolled</span>'}</div>${saturateMessage}</section>`;
+        attackDice.immediateEffects={devastatingDamage,devastatingIncapacitated};
         if(animateDefense){
           timer=settleCombatDice({attackDice,saveDice:defenseDice},()=>{timer=null;if(container.isConnected)onComplete(attackDice,defenseDice);},container);
-        }else {onComplete(attackDice,defenseDice);if(isPvpMode()&&!rolledDefenseDice)acknowledgeDiceRequest(`${requestKeyBase}:defense`);}
+        }else {onComplete(attackDice,defenseDice);if(isPvpMode()&&!rolledDefenseDice&&!devastatingIncapacitated&&defenseCount>0)acknowledgeDiceRequest(`${requestKeyBase}:defense`);}
       }catch(error){
         console.error('[Combat] Dice request failed. No combat result was committed.',error);
         if(onError)onError(error);
@@ -6352,7 +6355,7 @@ function showPlayerActivation(){
     const startRoll=()=>{
       if(rollStarted)return;
       rollStarted=true;
-      runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,attackerSide:'player',attackType,attackerLabel:playerName(stage.playerOperativeId),defenderLabel:targetName,requestKeyBase:`combat:${transactionId}`,
+      runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,defenderWounds:targetSide==='player'?playerCurrentWounds(target.id):projectedNpoWounds(target.id,stage),attackerSide:'player',attackType,attackerLabel:playerName(stage.playerOperativeId),defenderLabel:targetName,requestKeyBase:`combat:${transactionId}`,
         rolledAttackDice:committedAttackDice,rolledDefenseDice:committedDefenseDice,
         onAttackComplete:attackDice=>{
           diceDraft.attackDice=attackDice.map(die=>({...die}));
@@ -6361,10 +6364,12 @@ function showPlayerActivation(){
           screen.cancelButton.disabled=true;
           save();
         },onComplete:(attackDice,defenseDice)=>{
+        const immediateEffects=attackDice.immediateEffects||{};
         diceDraft.attackDice=attackDice;
         diceDraft.defenseDice=defenseDice;
+        Object.assign(diceDraft,immediateEffects);
         stage[`${attackType}CombatDraft`]={rolling:true,attackType,targetId,targetName,weaponIndex,profile,
-          attackDice:attackDice.map(die=>({...die})),saveDice:defenseDice.map(die=>({...die}))};
+          attackDice:attackDice.map(die=>({...die})),saveDice:defenseDice.map(die=>({...die})),...immediateEffects};
         state.combatState={side:'player',stage:{...stage}};
         save();
         void previewPendingPlayerAttack(stage,attackType,onResolved,onCancel,diceDraft,{targetId,weaponIndex,targetSide}).catch(error=>{rollStarted=false;console.error('[Combat] Combat-triggered dice request failed. No combat result was committed.',error);});
@@ -6386,13 +6391,13 @@ function showPlayerActivation(){
     const profile=locked?.profile||playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex});
     const targetName=targetSide==='player'?playerName(n.id):npoName(n);
     const before=targetSide==='player'?playerCurrentWounds(n.id):projectedNpoWounds(n.id,stage);
-    const resolution=resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,profile);
-    const devastatingDamage=devastatingDamageForAttack(diceDraft.attackDice,profile);
+    const resolution=diceDraft.devastatingIncapacitated?{normal:0,critical:0,damage:0}:resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,profile);
+    const devastatingDamage=Number(diceDraft.devastatingDamage??devastatingDamageForAttack(diceDraft.attackDice,profile));
     const result={
       ...recordedCombat({attackerName:playerName(stage.playerOperativeId),defenderName:targetName,attackType,attackerSide:'player',defenderSide:targetSide,profile:{...profile,rules:weapon.rules||[]},before,
         normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical,damage:resolution.damage+devastatingDamage}),
       targetId:n.id,targetName,side:targetSide,weaponName:weapon.name,weaponIndex,
-      severeApplied:diceDraft.attackDice.some(die=>die.severeConverted),devastatingDamage,devastatingApplied:true
+      severeApplied:diceDraft.attackDice.some(die=>die.severeConverted),devastatingDamage,devastatingApplied:true,devastatingIncapacitated:Boolean(diceDraft.devastatingIncapacitated)
     };
     result.rolledAttackDice=diceDraft.attackDice.map(die=>({...die}));
     result.rolledDefenseDice=diceDraft.defenseDice.map(die=>({...die}));
@@ -7898,16 +7903,16 @@ function showPlayerActivation(){
         });
       }
     };
-    const finishAutomaticCombat=async(profile,rolledAttackDice,rolledDefenseDice)=>{
-      const resolution=resolveRetainedCombat(rolledAttackDice,rolledDefenseDice,profile);
-      const devastatingDamage=devastatingDamageForAttack(rolledAttackDice,profile);
+    const finishAutomaticCombat=async(profile,rolledAttackDice,rolledDefenseDice,immediateEffects={})=>{
+      const resolution=immediateEffects.devastatingIncapacitated?{normal:0,critical:0,damage:0}:resolveRetainedCombat(rolledAttackDice,rolledDefenseDice,profile);
+      const devastatingDamage=Number(immediateEffects.devastatingDamage??devastatingDamageForAttack(rolledAttackDice,profile));
       const combat={
         ...recordedCombat({attackerName:npoName(n),defenderName:targetName,attackType,attackerSide:'npo',defenderSide:targetSide,profile,before:target.wounds||10,
           normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical,damage:resolution.damage+devastatingDamage}),
         attackDice:rolledAttackDice,saveDice:rolledDefenseDice,
         retainedSaves:retainedDiceTotals(rolledDefenseDice).normal+retainedDiceTotals(rolledDefenseDice).critical,
         recordedOutcome:false,targetId:target.id,targetName:targetName,
-        severeApplied:rolledAttackDice.some(die=>die.severeConverted),devastatingDamage,devastatingApplied:true
+        severeApplied:rolledAttackDice.some(die=>die.severeConverted),devastatingDamage,devastatingApplied:true,devastatingIncapacitated:Boolean(immediateEffects.devastatingIncapacitated)
       };
       combat.eventMessages=[];
       let resolvedCombat;
@@ -7973,7 +7978,7 @@ function showPlayerActivation(){
       completeButton.textContent='Rolling…';
       const restoredAttackDice=restoredRoll?.attackDice||null;
       const restoredDefenseDice=restoredRoll?.saveDice||null;
-      combatTimer=runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,attackerSide:'npo',attackType,
+      combatTimer=runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,defenderWounds:target.wounds,attackerSide:'npo',attackType,
         attackerLabel:npoName(n),defenderLabel:targetName,requestKeyBase:`combat:attack:${state.turningPoint}:${state.activationNumber}:${attackType}:npo:${n.id}:${target.id}:${profile.weaponId}:${profile.profileId}`,
         rolledAttackDice:restoredAttackDice,rolledDefenseDice:restoredDefenseDice,
         onAttackComplete:completedAttackDice=>{
@@ -7985,13 +7990,14 @@ function showPlayerActivation(){
           save();
         },
         onComplete:(completedAttackDice,completedDefenseDice)=>{
+        const immediateEffects=completedAttackDice.immediateEffects||{};
         state.lastActivation={...state.lastActivation,dice:attackDice.map(d=>({...d})),targetConfirmed:true,combatDraft:{
           rolling:true,attackType,targetId:target.id,targetName:targetName,profile,attackDice:completedAttackDice,saveDice:completedDefenseDice,
-          severeApplied:completedAttackDice.some(die=>die.severeConverted)
+          severeApplied:completedAttackDice.some(die=>die.severeConverted),...immediateEffects
         }};
         save();
         combatTimer=null;
-        void finishAutomaticCombat(profile,completedAttackDice,completedDefenseDice);
+        void finishAutomaticCombat(profile,completedAttackDice,completedDefenseDice,immediateEffects);
       },onError:()=>{rollStarted=false;}});
     };
     $('#npoCombatProfile')?.addEventListener('change',event=>{

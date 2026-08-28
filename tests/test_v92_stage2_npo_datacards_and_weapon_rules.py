@@ -172,6 +172,19 @@ def test_rending_devastating_and_saturate_are_shared_and_ordered():
     assert "Confirm tabletop target legality" not in shared_roll
 
 
+def test_lethal_devastating_stops_before_defense_and_normal_resolution():
+    shared = section("function runAutomaticCombatRolls", "function retainedDiceTotals")
+    assert "devastatingDamage>=Number(defenderWounds)" in shared
+    assert "const defenseDice=devastatingIncapacitated?[]:" in shared
+    assert "{devastatingDamage,devastatingIncapacitated}" in shared
+    player = section("async function previewPendingPlayerAttack", "function npoBehavior")
+    assert "diceDraft.devastatingIncapacitated?{normal:0,critical:0,damage:0}" in player
+    assert "devastatingIncapacitated:Boolean(diceDraft.devastatingIncapacitated)" in player
+    npo = section("function showNpoAttackWizard", "function spinnerField")
+    assert "immediateEffects.devastatingIncapacitated?{normal:0,critical:0,damage:0}" in npo
+    assert "finishAutomaticCombat(profile,completedAttackDice,completedDefenseDice,immediateEffects)" in npo
+
+
 def test_existing_lethal_piercing_range_and_torrent_paths_are_reused():
     canonical = section("function canonicalAttackProfile", "function normalizeNpo")
     assert "/Lethal\\s*(\\d)\\+/i" in canonical
