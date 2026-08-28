@@ -13,23 +13,26 @@ WORKER = (ROOT / "service-worker.js").read_text()
 
 
 class RestlessTombMissionBriefingTests(unittest.TestCase):
-    def test_accessible_option_appears_once_in_shared_mission_briefing(self):
-        briefing = APP.split("return `<h3>Mission Briefing</h3>", 1)[1].split("function bindSetup", 1)[0]
-        self.assertEqual(briefing.count('id="restlessTombEnabled"'), 1)
-        self.assertIn('<label class="check-row restless-tomb-option">', briefing)
-        self.assertIn('<input id="restlessTombEnabled" type="checkbox"', briefing)
-        self.assertIn('<strong>Restless Tomb</strong>', briefing)
-        self.assertIn('Beginning with Turning Point 2', briefing)
-        self.assertIn('Turning Point 1 is unaffected', briefing)
-        self.assertIn('standard event rules may require additional events', briefing)
-        self.assertIn('optional house rule increases activity and difficulty', briefing)
-        self.assertNotIn('disabled', briefing)
+    def test_accessible_option_appears_once_before_deploy(self):
+        options = APP.split("if(stepId==='options')", 1)[1].split("if(stepId==='deploy')", 1)[0]
+        self.assertEqual(options.count('id="restlessTombEnabled"'), 1)
+        self.assertIn('<label class="check-row restless-tomb-option">', options)
+        self.assertIn('<input id="restlessTombEnabled" type="checkbox"', options)
+        self.assertIn('aria-label="Enable Restless Tomb house rule"', options)
+        self.assertIn('<strong>Restless Tomb</strong>', options)
+        self.assertIn('Beginning with Turning Point 2', options)
+        self.assertIn('Turning Point 1 is unaffected', options)
+        self.assertIn('standard event rules may require additional events', options)
+        self.assertIn('optional house rule increases activity and difficulty', options)
+        briefing = APP.split("return `<h3>Mission Briefing</h3>", 1)[1].split("function advanceSetupStep", 1)[0]
+        self.assertNotIn('id="restlessTombEnabled"', briefing)
+        self.assertIn('<strong>Restless Tomb:</strong>', briefing)
 
     def test_option_defaults_off_updates_immediately_and_survives_setup_navigation(self):
         self.assertIn('setupChecks:{}, restlessTombEnabled:false', APP)
         self.assertIn("merged.restlessTombEnabled=raw.restlessTombEnabled===true", APP)
         self.assertIn("$('#restlessTombEnabled')?.addEventListener('change',e=>{state.restlessTombEnabled=e.target.checked;save();render();});", APP)
-        mission_change = re.search(r"\$\$\('\.mission-choice'\).*?;\}\);", APP).group(0)
+        mission_change = APP.split("$$('.mission-choice').forEach", 1)[1].split("$('#setupHome')", 1)[0]
         self.assertNotIn('restlessTombEnabled', mission_change)
         self.assertNotIn('restlessTombEnabled', APP.split('async function loadObjectiveMission', 1)[1].split('let playerManifest', 1)[0])
 

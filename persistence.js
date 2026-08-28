@@ -23,6 +23,8 @@
   const integer = (value,fallback=0) => Number.isFinite(Number(value))?Math.max(0,Math.round(Number(value))):fallback;
   const records = value => Array.isArray(value)?value.filter(isRecord):[];
   const strings = value => Array.isArray(value)?[...new Set(value.filter(item=>typeof item==='string'&&item))]:[];
+  const TOMB_WORLD_VARIANT_IDS = new Set(['standard','flayer-curse','destroyer-cult','crownworld']);
+  const normalizeTombWorldVariant = value => TOMB_WORLD_VARIANT_IDS.has(value)?value:'standard';
   const normalizedName = value => String(value||'').trim().replace(/\s+/g,' ').toLocaleLowerCase('en');
 
   function currentSaveVersion(){return SAVE_VERSION;}
@@ -194,17 +196,19 @@
   function resetActiveBattle(save){
     const completedJournal=save.completed||save.gameEnd?records(save.journal):[];
     const gameMode=save.gameMode==='pvp'?'pvp':'solo';
-    return {...save,gameMode,screen:'setup',tab:'play',setupStep:0,setupChecks:{},backgroundSelection:null,restlessTombEnabled:false,deadlyEncountersEnabled:false,deadlyEncountersState:null,roster:[],playerRosterInitializedForTeamId:'',turningPoint:0,threat:0,tracker:0,phase:'setup',initiative:'player',nextSide:'player',playerDeployed:false,playerActivatedIds:[],playerCasualtyIds:[],playerWounds:{},playerOperativeStates:{},playerReady:0,activeNpoId:null,lastActivation:null,npoAttackTargetId:null,npoAttackSummary:null,combatState:null,pendingDice:null,journal:completedJournal,activationHistory:[],activationNumber:0,totalActivationsThisTP:0,playerActivated:0,npoActivated:0,reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0},strategyStage:null,strategyData:null,strategyPipeline:null,missionState:null,missionRuntime:null,missionActionContext:null,missionReadyContext:{turningPoint:null,sarcophagusControllers:0},npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[]},startingNpoGeneration:null,eventState:{},gameEnd:null,completed:false};
+    return {...save,gameMode,screen:'setup',tab:'play',setupStep:0,setupChecks:{},backgroundSelection:null,restlessTombEnabled:false,deadlyEncountersEnabled:false,deadlyEncountersState:null,tombWorldVariant:'standard',roster:[],playerRosterInitializedForTeamId:'',turningPoint:0,threat:0,tracker:0,phase:'setup',initiative:'player',nextSide:'player',playerDeployed:false,playerActivatedIds:[],playerCasualtyIds:[],playerWounds:{},playerOperativeStates:{},playerReady:0,activeNpoId:null,lastActivation:null,npoAttackTargetId:null,npoAttackSummary:null,combatState:null,pendingDice:null,journal:completedJournal,activationHistory:[],activationNumber:0,totalActivationsThisTP:0,playerActivated:0,npoActivated:0,reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0},strategyStage:null,strategyData:null,strategyPipeline:null,missionState:null,missionRuntime:null,missionActionContext:null,missionReadyContext:{turningPoint:null,sarcophagusControllers:0},npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[]},startingNpoGeneration:null,eventState:{},gameEnd:null,completed:false};
   }
 
   function normalizeSave(save){
     save=stripObsoleteMatrixState(save);
     const normalized={...save};
+    const predatesOptionalRulesStep=save.tombWorldVariant===undefined;
     normalized.gameMode=save.gameMode===null?null:(save.gameMode==='pvp'?'pvp':'solo');
     normalized.pendingDice=normalizePendingDice(save.pendingDice,normalized.gameMode);
     normalized.restlessTombEnabled=save.restlessTombEnabled===true;
     normalized.deadlyEncountersEnabled=save.deadlyEncountersEnabled===true;
     normalized.deadlyEncountersState=isRecord(save.deadlyEncountersState)?clone(save.deadlyEncountersState):null;
+    normalized.tombWorldVariant=normalizeTombWorldVariant(save.tombWorldVariant);
     normalized.roster=records(save.roster);normalized.playerRoster=strings(save.playerRoster);
     const importedPlayerStates=isRecord(save.playerOperativeStates)?save.playerOperativeStates:{};
     normalized.playerOperativeStates=Object.fromEntries(normalized.playerRoster.map(id=>{const value=isRecord(importedPlayerStates[id])?importedPlayerStates[id]:{};return [id,{...value,inPlay:value.inPlay!==false,...(typeof value.offBoardReason==='string'&&value.offBoardReason?{offBoardReason:value.offBoardReason}:{})}];}));
@@ -212,6 +216,7 @@
     normalized.playerActivatedIds=strings(save.playerActivatedIds).filter(id=>normalized.playerRoster.includes(id));normalized.playerCasualtyIds=strings(save.playerCasualtyIds).filter(id=>normalized.playerRoster.includes(id));
     normalized.playerWounds=isRecord(save.playerWounds)?{...save.playerWounds}:{};normalized.setupChecks=isRecord(save.setupChecks)?{...save.setupChecks}:{};normalized.missionState=isRecord(save.missionState)?{...save.missionState}:{};normalized.missionRuntime=isRecord(save.missionRuntime)?{...save.missionRuntime}:null;normalized.strategyData=isRecord(save.strategyData)?{...save.strategyData}:null;normalized.eventState=isRecord(save.eventState)?{...save.eventState}:{};normalized.reinforcementState=isRecord(save.reinforcementState)?{...save.reinforcementState}:{};
     ['setupStep','playerCount','playerReady','turningPoint','threat','tracker','activationNumber','totalActivationsThisTP','playerActivated','npoActivated','tpStartThreat','tpStartGrade','tpStartDestroyedNpos','tpStartPlayerCasualties'].forEach(field=>{normalized[field]=integer(save[field]);});
+    if(predatesOptionalRulesStep&&normalized.screen==='setup'&&isRecord(save.startingNpoGeneration))normalized.setupStep++;
     const rosterIds=new Set(normalized.roster.map(item=>item.id).filter(id=>typeof id==='string'&&id));normalized.newIds=strings(save.newIds).filter(id=>rosterIds.has(id));normalized.reinforcementState.operativeIds=strings(normalized.reinforcementState.operativeIds).filter(id=>rosterIds.has(id));normalized.reinforcementState.blockedOperativeIds=strings(normalized.reinforcementState.blockedOperativeIds).filter(id=>rosterIds.has(id)&&!normalized.reinforcementState.operativeIds.includes(id));
     return normalized;
   }

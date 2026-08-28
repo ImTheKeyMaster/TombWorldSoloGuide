@@ -906,10 +906,35 @@ document.addEventListener('touchend',function(e){
     return normalized;
   }
 
+  const inertVariantHooks=Object.freeze({
+    startingRosterGeneration:value=>value,
+    reinforcementGeneration:value=>value,
+    eventGeneratedNpoReplacement:value=>value,
+    eventDeckAdditions:()=>[],
+    missionRequestedNpoReplacement:value=>value
+  });
+  const TOMB_WORLD_VARIANTS=Object.freeze({
+    standard:Object.freeze({id:'standard',name:'Standard',available:true,hooks:inertVariantHooks}),
+    'flayer-curse':Object.freeze({id:'flayer-curse',name:'Flayer Curse Infected Tomb',available:false,hooks:inertVariantHooks}),
+    'destroyer-cult':Object.freeze({id:'destroyer-cult',name:'Destroyer Cult Tomb',available:false,hooks:inertVariantHooks}),
+    crownworld:Object.freeze({id:'crownworld',name:'Crownworld of the Dynasty Tomb',available:false,hooks:inertVariantHooks})
+  });
+  function currentTombWorldVariant(){return TOMB_WORLD_VARIANTS[state?.tombWorldVariant]||TOMB_WORLD_VARIANTS.standard;}
+  function isFlayerCurseTomb(){return currentTombWorldVariant().id==='flayer-curse';}
+  function isDestroyerCultTomb(){return currentTombWorldVariant().id==='destroyer-cult';}
+  function isCrownworldTomb(){return currentTombWorldVariant().id==='crownworld';}
+  function tombWorldVariantHook(name,value){
+    const hook=currentTombWorldVariant().hooks[name];
+    return typeof hook==='function'?hook(value):value;
+  }
+  function tombWorldEventDeckAdditions(){return tombWorldVariantHook('eventDeckAdditions',undefined);}
+  function replaceEventGeneratedNpo(request){return tombWorldVariantHook('eventGeneratedNpoReplacement',request);}
+  function replaceMissionRequestedNpo(request){return tombWorldVariantHook('missionRequestedNpoReplacement',request);}
+
   const initialState = () => ({
     version:APP_VERSION, saveVersion:currentSaveVersion(), gameMode:null, screen:'home', tab:'play', setupStep:0, missionId:null,
     backgroundSelection:null,
-    setupChecks:{}, restlessTombEnabled:false, deadlyEncountersEnabled:false, deadlyEncountersState:DeadlyEncounters.emptyState(), roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerDisplayNumbers:{}, playerRosterInitializedForTeamId:'', playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
+    setupChecks:{}, restlessTombEnabled:false, deadlyEncountersEnabled:false, deadlyEncountersState:DeadlyEncounters.emptyState(), tombWorldVariant:'standard', roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerDisplayNumbers:{}, playerRosterInitializedForTeamId:'', playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
     threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
     strategyStage:null, strategyData:null, strategyPipeline:null, missionReadyContext:{turningPoint:null,sarcophagusControllers:0}, activationNumber:0,totalActivationsThisTP:0, playerActivated:0, npoActivated:0,
@@ -1069,6 +1094,7 @@ document.addEventListener('touchend',function(e){
     merged.restlessTombEnabled=raw.restlessTombEnabled===true;
     merged.deadlyEncountersEnabled=raw.deadlyEncountersEnabled===true;
     merged.deadlyEncountersState=DeadlyEncounters.normalizeState(raw.deadlyEncountersState);
+    merged.tombWorldVariant=TOMB_WORLD_VARIANTS[raw.tombWorldVariant]?raw.tombWorldVariant:'standard';
     merged.roster=Array.isArray(raw.roster)?raw.roster.map(normalizeNpo).filter(Boolean):[];
     const usedDisplayNumbers={};
     merged.roster.forEach(npo=>{
@@ -2359,7 +2385,7 @@ document.addEventListener('touchend',function(e){
     const previousRoster=state.roster;
     state.roster=[];
     for(let i=0;i<count;i++){
-      const result=availableGenerationResult();
+      const result=tombWorldVariantHook('startingRosterGeneration',availableGenerationResult());
       if(!result){
         console.warn(`[NPO inventory] ${m.name} requested ${count} models, but only ${state.roster.length} legal generated models were available.`);
         state.roster=previousRoster;showToast('A complete legal NPO roster could not be generated.');return null;
@@ -2417,6 +2443,8 @@ document.addEventListener('touchend',function(e){
         window.scrollTo({top:0,left:0,behavior:'auto'});
         document.documentElement.scrollTop=0;
         document.body.scrollTop=0;
+        const setupHeading=document.querySelector('.wizard-shell .progress-head h2');
+        if(setupHeading){setupHeading.tabIndex=-1;setupHeading.focus({preventScroll:true});}
       });
     }
   }
@@ -2590,13 +2618,14 @@ document.addEventListener('touchend',function(e){
     killzone:{title:'Build the Killzone',subtitle:'Follow the board checklist before deploying models.'},
     team:{title:'Choose Player Kill Team',subtitle:'Select the player-controlled Kill Team for this battle.'},
     playerRoster:{title:'Build Player Roster',subtitle:'Choose the operatives you will use in this battle.'},
+    options:{title:'Optional Rules & Expansions',subtitle:'Configure optional game content before the Necron roster is generated.'},
     deploy:{title:'Deploy Kill Teams',subtitle:'Place both forces on the battlefield and confirm deployment.'},
     ready:{title:'Ready to Begin',subtitle:'Review the mission, then begin Turning Point 1.'}
   };
   function activeSetupSteps(){
     const steps=['mission','killzone'];
     if(hasMultiplePlayerTeams())steps.push('team');
-    steps.push('playerRoster','deploy','ready');
+    steps.push('playerRoster','options','deploy','ready');
     return steps;
   }
   function currentSetupStepId(){
@@ -2660,6 +2689,20 @@ document.addEventListener('touchend',function(e){
   }
   function clearMissionSetupChecks(stage){
     missionSetupChecks(stage).forEach(check=>{state.setupChecks[check.id]=false;});
+  }
+  function invalidateStartingNpoSetup(){
+    state.roster=[];
+    state.startingNpoGeneration=null;
+    delete state.setupChecks['starting-npos'];
+  }
+  function setTombWorldVariant(variantId){
+    if(state.screen!=='setup'||!TOMB_WORLD_VARIANTS[variantId]||variantId===state.tombWorldVariant)return false;
+    state.tombWorldVariant=variantId;
+    invalidateStartingNpoSetup();
+    state.eventState.available=[...eventDeck,...tombWorldEventDeckAdditions()].map(card=>card.instanceId);
+    state.eventState.used=[];
+    state.eventState.active=[];
+    return true;
   }
   function satisfyEmptyStartingNpoDeployment(){
     const generation=state.startingNpoGeneration;
@@ -2751,6 +2794,11 @@ document.addEventListener('touchend',function(e){
       const requirementItems=requirements.map(requirement=>`<li>${escapeHtml(requirement)}</li>`).join('');
       return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><p class="muted">Build a legal kill team using its current official rules. Cooperative team splitting is not currently supported.</p><div class="setup-bulk-row"><button class="btn secondary" id="randomPlayerTeam">Random Team</button></div><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${inlineOperativeList(selectedDefs.map(o=>escapeHtml(playerName(o.id))))}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
     }
+    if(stepId==='options'){
+      const deadlyOption=isPvpMode()?'<p class="muted deadly-encounters-option"><strong>Deadly Encounters: Tomb Worlds</strong> is available in Solo battles only.</p>'
+        : `<label class="check-row deadly-encounters-option"><input id="deadlyEncountersEnabled" type="checkbox" aria-label="Enable Deadly Encounters: Tomb Worlds official expansion" ${state.deadlyEncountersEnabled?'checked':''}><span><strong>Deadly Encounters: Tomb Worlds</strong><span class="rule-classification official">Official Expansion - White Dwarf 521</span><small>Official expansion. Reveal persistent Room and Objective Features using the official D33 tables when Player operatives explore the tomb. PvE Player actions reveal features; NPOs never reveal them, but revealed features can affect NPOs. This independent expansion increases battlefield complexity and danger.</small></span></label>`;
+      return `<h3>Choose optional game content</h3><p>These choices are saved with the battle. The starting Necron roster is generated after this step.</p><div class="checklist optional-rules"><label class="check-row restless-tomb-option"><input id="restlessTombEnabled" type="checkbox" aria-label="Enable Restless Tomb house rule" ${state.restlessTombEnabled?'checked':''}><span><strong>Restless Tomb</strong><span class="rule-classification">House Rule</span><small>House rule. Beginning with Turning Point 2, resolve at least one Tomb World event during each Strategy Phase, regardless of Threat Grade. Turning Point 1 is unaffected, and standard event rules may require additional events at higher Threat. This optional house rule increases activity and difficulty.</small></span></label>${deadlyOption}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext">Continue</button></div>`;
+    }
     if(stepId==='deploy'){
       const generation=state.startingNpoGeneration;
       const hasStartingNpos=generation.deployedNpoIds.length>0;
@@ -2777,8 +2825,8 @@ document.addEventListener('touchend',function(e){
     }
     const m=mission();
     const rules=(m.rules||[]).map(rule=>`<div class="mission-rule"><strong>${escapeHtml(presentSideTerminology(rule.name||'Special Rule'))}</strong>${rule.timing?`<small>${escapeHtml(presentSideTerminology(rule.timing))}</small>`:''}<p>${escapeHtml(presentSideTerminology(rule.summary||''))}</p></div>`).join('');
-    const deadlyOption=isPvpMode()?'<p class="muted deadly-encounters-option"><strong>Deadly Encounters: Tomb Worlds</strong> is available in Solo battles only.</p>':`<label class="check-row deadly-encounters-option"><input id="deadlyEncountersEnabled" type="checkbox" ${state.deadlyEncountersEnabled?'checked':''}><span><strong>Deadly Encounters: Tomb Worlds</strong><span class="rule-classification official">Official Expansion - White Dwarf 521</span><small>Reveal persistent Room and Objective Features using the official D33 tables when Player operatives explore the tomb. PvE Player actions reveal features; NPOs never reveal them, but revealed features can affect NPOs. This independent expansion increases battlefield complexity and danger.</small></span></label>`;
-    return `<h3>Mission Briefing</h3><div class="mission-briefing"><div class="mission-briefing-section mission-heading"><span>Mission</span><strong>${escapeHtml(m.number)} · ${escapeHtml(m.name)}</strong></div><div class="mission-briefing-section"><h4>Objective</h4><p>${escapeHtml(presentSideTerminology(m.objective))}</p></div><div class="mission-briefing-section"><h4>Special Rules</h4>${rules||`<p>${escapeHtml(presentSideTerminology(missionSpecial()))}</p>`}</div><div class="mission-briefing-section optional-rules"><h4>Optional Rules</h4><label class="check-row restless-tomb-option"><input id="restlessTombEnabled" type="checkbox" ${state.restlessTombEnabled?'checked':''}><span><strong>Restless Tomb</strong><span class="rule-classification">House Rule</span><small>Beginning with Turning Point 2, resolve at least one Tomb World event during each Strategy Phase, regardless of Threat Grade. Turning Point 1 is unaffected, and standard event rules may require additional events at higher Threat. This optional house rule increases activity and difficulty.</small></span></label>${deadlyOption}</div></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
+    const deadlySummary=isPvpMode()?'Disabled (Solo battles only)':state.deadlyEncountersEnabled?'Enabled':'Disabled';
+    return `<h3>Mission Briefing</h3><div class="mission-briefing"><div class="mission-briefing-section mission-heading"><span>Mission</span><strong>${escapeHtml(m.number)} · ${escapeHtml(m.name)}</strong></div><div class="mission-briefing-section"><h4>Objective</h4><p>${escapeHtml(presentSideTerminology(m.objective))}</p></div><div class="mission-briefing-section"><h4>Special Rules</h4>${rules||`<p>${escapeHtml(presentSideTerminology(missionSpecial()))}</p>`}</div><div class="mission-briefing-section optional-rules-summary"><h4>Optional Rules &amp; Expansions</h4><p><strong>Restless Tomb:</strong> ${state.restlessTombEnabled?'Enabled':'Disabled'} (House Rule)</p><p><strong>Deadly Encounters:</strong> ${deadlySummary} (Official Expansion)</p><p><strong>Tomb World Variant:</strong> ${escapeHtml(currentTombWorldVariant().name)}</p><small>Go Back to Optional Rules &amp; Expansions to change these settings before beginning the battle.</small></div></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
   }
 
   function advanceSetupStep(stepId){
@@ -4042,7 +4090,7 @@ document.addEventListener('touchend',function(e){
       blocked=requested-actual;
       state.reinforcementState.blockedByCapacity=blocked;
       for(let i=0;i<actual;i++){
-        const rr=randomReinforcement();
+        const rr=tombWorldVariantHook('reinforcementGeneration',randomReinforcement());
         if(!rr){blocked++;state.reinforcementState.blockedByInventory++;continue;}
         const type=rr.type;
         let n=reserveNpos().find(candidate=>candidate.type===type&&!state.reinforcementState.operativeIds.includes(candidate.id)&&!state.reinforcementState.blockedOperativeIds.includes(candidate.id));

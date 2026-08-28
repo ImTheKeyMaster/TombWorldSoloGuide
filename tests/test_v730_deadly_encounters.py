@@ -114,7 +114,7 @@ class DeadlyEncounterDiscovery(unittest.TestCase):
 
 class DeadlyEncounterBriefingAndPersistence(unittest.TestCase):
     def test_optional_rules_and_classifications(self):
-        self.assertIn('<h4>Optional Rules</h4>',APP);self.assertIn('House Rule',APP);self.assertIn('Official Expansion - White Dwarf 521',APP)
+        self.assertIn("options:{title:'Optional Rules & Expansions'",APP);self.assertIn('House Rule',APP);self.assertIn('Official Expansion - White Dwarf 521',APP)
         self.assertNotIn('Optional House Rule',APP)
 
     def test_both_options_default_off_and_are_independent(self):
