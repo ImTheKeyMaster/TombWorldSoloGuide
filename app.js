@@ -6876,6 +6876,12 @@ function showPlayerActivation(){
       if(focus==='support')return {question:distance?`Can this NPO Reposition up to ${distance} to use a support action or help the mission?`:'Can this NPO Reposition to use a support action or help the mission?',help:'Select Yes if moving would help it use a higher-priority action or improve its mission position.'};
       return {question:distance?`Can this NPO Reposition up to ${distance} to help complete or defend the mission?`:'Can this NPO Reposition to help complete or defend the mission?',help:'Select Yes only if it can reach a clearly better mission position.'};
     }
+    if(activation?.movementIntent?.movementActionCommitted&&activation.movementIntent.actionId==='dash')return {...activation.movementIntent,question:'Can this NPO use Dash to complete its Reposition movement intent?',help:npoMovementInstruction(n,action)};
+    if(remainingAp===1&&npoBehavior(n)?.orderRule){
+      if(focus==='warden')return {id:'dash-toward-royal-warden',purpose:'toward-royal-warden',question:STAGE3_RULE_TEXT.lychguardMovement,help:'Move toward the dynasty leader, using cover when possible. If none is in the killzone, move toward the closest Player operative.'};
+      if(focus==='fight')return {id:'dash-toward-enemy',purpose:'enable-fight',question:'Can a 3-inch Dash move this NPO closer to its target?',help:'Select Yes if the Dash moves it closer to the nearest Player operative, using cover when possible.'};
+      if(focus==='shoot')return {id:'dash-shooting-position',purpose:'general-position',question:'Can a 3-inch Dash improve this NPO’s shooting or mission position?',help:'Move toward a valid unobscured Shoot target if possible; otherwise improve its mission position.'};
+    }
     if(remainingAp===1)return {id:'dash-final-position',purpose:'final-position',followUpActionId:null,guaranteesFollowUp:false,endsActivation:true,question:'Can this NPO use its last AP to Dash to a better position?',help:'Select Yes if the Dash improves cover, mission position, or its setup for the next Turning Point. The activation will end after the Dash.'};
     if(focus==='shoot'&&shootCanFollow&&!declined.has('dash-enable-shoot'))return {id:'dash-enable-shoot',purpose:'enable-shoot',followUpActionId:'shoot',guaranteesFollowUp:true,question:'Can a 3-inch Dash move this NPO to a position where it can Shoot?',help:'Select Yes only if it can finish the Dash with a Player operative it can Shoot.'};
     if(focus==='shoot')return {id:'dash-general-position',purpose:'general-position',followUpActionId:null,guaranteesFollowUp:false,question:'Can a 3-inch Dash improve this NPO’s position?',help:'Select Yes if it improves cover, moves it toward the mission, or sets up a better position for a later activation.'};
@@ -7635,9 +7641,12 @@ function showPlayerActivation(){
     activation.declinedActionIds=[];
     activation.declinedMovementIntentIds=[];
     activation.questionHistory=[];
+    const continuedMovementIntent=changesPosition&&actionId==='reposition'&&activation.remainingAp>0&&npoBehavior(n)?.orderRule&&!activation.pendingFollowUpAction&&activation.movementIntent
+      ? {...activation.movementIntent,id:`dash-complete-${activation.movementIntent.id}`,actionId:'dash',completesMovementIntentId:activation.movementIntent.id,movementActionCommitted:true}
+      : null;
     if(changesPosition)activation.currentContext={inEnemyControlRange:null,hasValidShootTarget:null,hasValidFightTarget:null};
     if(changesPosition&&activation.pendingFollowUpAction?.movementActionId===actionId)activation.pendingFollowUpAction={...activation.pendingFollowUpAction,movementCommitted:true,decisionPass:activation.decisionPass};
-    else if(changesPosition)activation.movementIntent=null;
+    else if(changesPosition)activation.movementIntent=continuedMovementIntent;
     state.npoAttackTargetId=null;state.npoAttackSummary=null;
     const journalAction=['reposition','dash'].includes(actionId)?npoMovementInstruction(n,actionName):actionName;
     log(`${npoName(n)} completed ${journalAction}. ${activation.remainingAp} AP remaining.`);

@@ -213,6 +213,27 @@ def test_lychguard_warden_movement_intent_persists_in_shared_activation():
     assert "movementIntent?.purpose==='toward-royal-warden'" in body('chooseNpoDecision')
 
 
+def test_stage3_reposition_intent_can_continue_into_dash_and_reload():
+    commit = body('commitNpoAction')
+    inquiry = body('npoMovementInquiry')
+    assert "actionId==='reposition'" in commit
+    assert 'npoBehavior(n)?.orderRule' in commit
+    assert 'completesMovementIntentId:activation.movementIntent.id' in commit
+    assert 'movementActionCommitted:true' in commit
+    assert "activation.movementIntent.actionId==='dash'" in inquiry
+    assert 'complete its Reposition movement intent' in inquiry
+
+
+def test_stage3_last_ap_dash_keeps_printed_movement_focus():
+    inquiry = body('npoMovementInquiry')
+    focused = inquiry.index("if(remainingAp===1&&npoBehavior(n)?.orderRule)")
+    generic = inquiry.index("if(remainingAp===1)return {id:'dash-final-position'")
+    assert focused < generic
+    assert "id:'dash-toward-enemy'" in inquiry
+    assert "id:'dash-shooting-position'" in inquiry
+    assert "id:'dash-toward-royal-warden'" in inquiry
+
+
 def test_stage3_secondary_damage_uses_shared_casualty_bookkeeping():
     damage = body('commitStage3PlayerDamage')
     assert 'playerCasualtyIds.push(operativeId)' in damage
