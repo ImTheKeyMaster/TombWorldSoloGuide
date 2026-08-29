@@ -212,3 +212,38 @@ if(!fightDicePoolsComplete({{attacker:{{attackDiceComplete:true}},defender:{{att
 if(fightDicePoolsComplete(null))process.exit(3);
 """
     subprocess.run(['node','-e',script],cwd=ROOT,check=True)
+
+
+def test_completed_fight_requires_owner_and_blocks_reentrant_commit():
+    render=body('render')
+    assert '!fightCompletionInProgress' in render
+    assert 'if(restoreFightContinuation())renderFightResolution()' in render
+    finish=body('finishFight')
+    assert 'if(fightCompletionInProgress)return' in finish
+    assert 'activeFightContinuation||restoreFightContinuation()' in finish
+    assert 'if(!continuation)return' in finish
+    assert 'finally{fightCompletionInProgress=false;}' in finish
+
+
+def test_finish_fight_reentrancy_guard_runtime():
+    import subprocess
+    finish=body('finishFight')
+    script=f"""
+let fightCompletionInProgress=false;
+let activeFightContinuation=null;
+let state={{fightState:null}};
+let saves=0,commits=0;
+const save=()=>{{saves++;}};
+const closeModal=()=>{{}};
+const restoreFightContinuation=()=>null;
+{finish}
+const fight={{id:'fight-1',attacker:{{label:'A',profile:{{name:'Blade'}}}},defender:{{id:'d',label:'D',side:'npo',initialWounds:8,wounds:4}},history:[],resultCommitted:false}};
+activeFightContinuation=()=>{{commits++;finishFight(fight);}};
+finishFight(fight);
+if(commits!==1||state.fightState!==null||fightCompletionInProgress||saves!==2)process.exit(1);
+const orphan={{...fight,id:'orphan',resultCommitted:false,result:null}};
+state.fightState=orphan;
+finishFight(orphan);
+if(state.fightState!==orphan||!orphan.resultCommitted)process.exit(2);
+"""
+    subprocess.run(['node','-e',script],cwd=ROOT,check=True)

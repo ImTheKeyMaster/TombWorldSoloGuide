@@ -2499,9 +2499,8 @@ document.addEventListener('touchend',function(e){
     if(state.hotResolution&&!state.hotResolution.acknowledged&&!modal.open){
       showHotResult(state.hotResolution,()=>resumePersistedHotContinuation(state.hotResolution));
     }
-    if(state.fightState&&fightDicePoolsComplete(state.fightState)&&!modal.open){
-      restoreFightContinuation();
-      renderFightResolution();
+    if(state.fightState&&fightDicePoolsComplete(state.fightState)&&!fightCompletionInProgress&&!modal.open){
+      if(restoreFightContinuation())renderFightResolution();
     }
 
     if(movedToNewStep){
@@ -6122,6 +6121,7 @@ function showPlayerActivation(){
 
   let activeFightContinuation=null;
   let fightResumePending=false;
+  let fightCompletionInProgress=false;
   function fightDicePoolsComplete(fight){return Boolean(fight?.attacker?.attackDiceComplete&&fight?.defender?.attackDiceComplete);}
   function restoreFightContinuation(){
     if(activeFightContinuation)return activeFightContinuation;
@@ -6215,10 +6215,15 @@ function showPlayerActivation(){
     return `<section class="fight-pool ${fight.turn===role?'active':''}"><small>${escapeHtml(participant.label)} · ${escapeHtml(participant.profile.name)}</small><strong>${participant.wounds}/${participant.maxWounds} wounds</strong><div><span>Critical: ${critical}</span><span>Normal: ${normal}</span></div></section>`;
   }
   function finishFight(fight){
+    if(fightCompletionInProgress)return;
     const result=fight.result||{transactionId:fight.id,attackType:'melee',attackerName:fight.attacker.label,defenderName:fight.defender.label,targetId:fight.defender.id,targetName:fight.defender.label,side:fight.defender.side,weaponName:fight.attacker.profile.name,profile:fight.attacker.profile,before:fight.defender.initialWounds,after:fight.defender.wounds,damage:Math.max(0,fight.defender.initialWounds-fight.defender.wounds),committed:true,fightHistory:fight.history.map(item=>({...item})),fightTransactionId:fight.id};
     if(!fight.resultCommitted){fight.result=result;fight.resultCommitted=true;save();}
-    closeModal();const continuation=activeFightContinuation;activeFightContinuation=null;
-    if(continuation){continuation(result);state.fightState=null;save();}else render();
+    const continuation=activeFightContinuation||restoreFightContinuation();
+    if(!continuation)return;
+    fightCompletionInProgress=true;
+    closeModal();activeFightContinuation=null;
+    try{continuation(result);state.fightState=null;save();}
+    finally{fightCompletionInProgress=false;}
   }
   function renderFightResolution(){
     const fight=state.fightState;if(!fight)return;if(fight.completed){finishFight(fight);return;}
