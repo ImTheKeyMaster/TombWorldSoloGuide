@@ -101,3 +101,14 @@ def test_rewards_manual_dice_has_a_dedicated_reload_resume_path():
     assert "sourceTransactionId:identity" in APP
     assert "!state.eventState.rewardsTriggers.includes(transaction.id)" in APP
     assert "delete transaction.requesting" in APP
+
+
+def test_variant_event_instance_is_restored_when_loading_an_existing_deck():
+    assert "variantDeck.forEach(card=>{if(!available.includes(card.instanceId)&&!used.includes(card.instanceId))available.push(card.instanceId);})" in APP
+
+
+def test_rewards_uses_authoritative_stage_three_and_fight_sources():
+    assert "sourceNpo:hexmark" in APP
+    assert "transactionId:`multi-threat-eliminator:${transactionId}`" in APP
+    assert "transactionId:`whirling:${fight.id}:${historyEntry.index}:${targetId}`" in APP
+    assert "transactionId:`fight:${fight.id}:${historyEntry.index}`" in APP

@@ -1374,6 +1374,7 @@ document.addEventListener('touchend',function(e){
     const validInstances=new Set(variantDeck.map(card=>card.instanceId));
     const available=Array.isArray(importedEvents.available)?normalizeIdList(importedEvents.available,validInstances):variantDeck.map(card=>card.instanceId);
     const used=normalizeIdList(importedEvents.used,validInstances).filter(id=>!available.includes(id));
+    variantDeck.forEach(card=>{if(!available.includes(card.instanceId)&&!used.includes(card.instanceId))available.push(card.instanceId);});
     const normalizedActive=Array.isArray(importedEvents.active)?importedEvents.active.map(event=>{
       if(!isRecord(event))return null;
       const deckRecord=variantDeck.find(card=>card.instanceId===event.instanceId);
@@ -5218,18 +5219,20 @@ function showPlayerActivation(){
     const base=`multi-threat-eliminator:${transactionId}`;
     if(!reaction.attackDice){reaction.attackDice=await requestAttackDiceForProfile(profile,{rollerLabel:npoName(hexmark),requestKeyBase:base,attackerSide:'npo'});save();}
     if(!reaction.defenseDice){reaction.defenseDice=await requestDefenseDice(effectiveDefenseDiceCount(profile,reaction.attackDice,3),playerDefinition(stage.playerOperativeId)?.save||3,{rollerLabel:playerName(stage.playerOperativeId),requestKeyBase:base});save();acknowledgeDiceRequest(`${base}:defense`);}
-    if(!reaction.damageCommitted){const result=resolveRetainedCombat(reaction.attackDice,reaction.defenseDice,profile),damage=result.damage+devastatingDamageForAttack(reaction.attackDice,profile);commitStage3PlayerDamage(stage.playerOperativeId,damage);reaction.damageCommitted=true;}
+    if(!reaction.damageCommitted){const result=resolveRetainedCombat(reaction.attackDice,reaction.defenseDice,profile),damage=result.damage+devastatingDamageForAttack(reaction.attackDice,profile);commitStage3PlayerDamage(stage.playerOperativeId,damage,{sourceNpo:hexmark,transactionId:`multi-threat-eliminator:${transactionId}`});reaction.damageCommitted=true;}
     reaction.status='complete';pending.multiThreatResolved=true;save();if(!applyPendingPlayerDamage(stage))finishPlayerAttackResolution(stage);
   }
   function askYesNoRuleQuestion(title,question){return new Promise(resolve=>{showModal(title,`<p>${escapeHtml(question)}</p><div class="wizard-actions"><button class="btn ghost" id="ruleAnswerNo">No</button><button class="btn primary" id="ruleAnswerYes">Yes</button></div>`);$('#ruleAnswerNo').onclick=()=>{closeModal();resolve(false);};$('#ruleAnswerYes').onclick=()=>{closeModal();resolve(true);};});}
   function askPerformOrSkip(title,message){return new Promise(resolve=>{showModal(title,`<p>${escapeHtml(message)}</p><div class="wizard-actions"><button class="btn ghost" id="skipRuleAction">Skip</button><button class="btn primary" id="performRuleAction">Perform Free Shoot</button></div>`);$('#skipRuleAction').onclick=()=>{closeModal();resolve('skip');};$('#performRuleAction').onclick=()=>{closeModal();resolve('perform');};});}
-  function commitStage3PlayerDamage(operativeId,damage){
+  function commitStage3PlayerDamage(operativeId,damage,{sourceNpo=null,transactionId=''}={}){
     if(!inPlayLivingPlayerOperativeIds().includes(operativeId))return false;
-    state.playerWounds[operativeId]=Math.max(0,playerCurrentWounds(operativeId)-Math.max(0,Number(damage)||0));
+    const before=playerCurrentWounds(operativeId);
+    state.playerWounds[operativeId]=Math.max(0,before-Math.max(0,Number(damage)||0));
     if(state.playerWounds[operativeId]<=0){
       if(!state.playerCasualtyIds.includes(operativeId))state.playerCasualtyIds.push(operativeId);
       if(!state.playerActivatedIds.includes(operativeId))state.playerActivatedIds.push(operativeId);
     }
+    if(before>0&&state.playerWounds[operativeId]<=0&&sourceNpo)void resolveRewardsOfAnnihilation(sourceNpo,{id:operativeId,maxWounds:playerDefinition(operativeId)?.wounds},{transactionId});
     state.playerReady=playerOperativesRemaining();return true;
   }
 
@@ -6433,7 +6436,11 @@ function showPlayerActivation(){
       if(occurrence.damageByTarget[targetId]!==undefined)continue;
       const requestKey=diceRequestKey('whirling-onslaught',fight.id,historyEntry.index,targetId);
       const [damage]=await requestDiceResults({count:1,sides:3,title:'WHIRLING ONSLAUGHT',instruction:'Roll D3 damage for this nearby operative.',rollerLabel:playerName(targetId),requestKey,resumeKind:'fight',resumeData:{fightId:fight.id}});
-      occurrence.damageByTarget[targetId]=damage;commitStage3PlayerDamage(targetId,damage);save();
+      const sourceNpo=state.roster.find(item=>item.id===fight[historyEntry.role].id);
+      const before=playerCurrentWounds(targetId);
+      occurrence.damageByTarget[targetId]=damage;commitStage3PlayerDamage(targetId,damage);
+      if(before>0&&playerCurrentWounds(targetId)<=0&&sourceNpo)void resolveRewardsOfAnnihilation(sourceNpo,{id:targetId,maxWounds:playerDefinition(targetId)?.wounds},{transactionId:`whirling:${fight.id}:${historyEntry.index}:${targetId}`});
+      save();
     }
     occurrence.status='complete';fight.pendingStage3=false;save();renderFightResolution();
   }
@@ -6464,6 +6471,10 @@ function showPlayerActivation(){
     const shock=success.kind==='critical'?resolveFightShock(fight,role):null;
     const historyEntry={index:fight.resolutionIndex++,type:'strike',role,successId,successKind:success.kind,damage,before,after,targetSide:target.side,targetId:target.id,...(shock?{shockDiscardedSuccessId:shock.id}:{})};fight.history.push(historyEntry);
     if(after<=0){fight.completed=true;fight.incapacitatedRole=otherFightRole(role);}else advanceFightTurn(fight);save();
+    if(before>0&&after<=0&&actor.side==='npo'&&target.side==='player'){
+      const sourceNpo=state.roster.find(item=>item.id===actor.id);
+      if(sourceNpo)void resolveRewardsOfAnnihilation(sourceNpo,{id:target.id,maxWounds:target.maxWounds},{transactionId:`fight:${fight.id}:${historyEntry.index}`});
+    }
     if(typeof qualifyingWhirlingStrike==='function'&&qualifyingWhirlingStrike(fight,role,success))void resolveWhirlingOnslaught(fight,historyEntry);
     if(typeof qualifyingHorrifyingFlaying==='function'&&qualifyingHorrifyingFlaying(fight,role,after)&&target.side==='player')void resolveHorrifyingFlaying(fight,historyEntry);
     return true;
