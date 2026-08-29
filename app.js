@@ -863,6 +863,7 @@ document.addEventListener('touchend',function(e){
     {min:12,max:12,type:'Canoptek Tomb Crawler',weaponIds:['transdimensional-isolator']}
   ];
   const MAX_PHYSICAL_NPOS = Object.values(npoDefinitions).reduce((total,definition)=>total+definition.physicalQuantity,0);
+  // const tombsBeyondCountingNpoDefinitions remains the separate expansion catalog above.
   const TOMB_CRAWLER_TYPE = 'Canoptek Tomb Crawler';
   const ISOLATOR_LOADOUT = 'transdimensional-isolator';
 
@@ -894,7 +895,13 @@ document.addEventListener('touchend',function(e){
     {instanceId:'chittering-drone-1',definitionId:'chittering-drone'},
     {instanceId:'awakened-warrior-1',definitionId:'awakened-warrior'},
     {instanceId:'awakened-warrior-2',definitionId:'awakened-warrior'}
+    /* ];
+
+  const missionStateFactories */
   ];
+
+  function eventDefinition(definitionId){return eventDefinitions[definitionId]||null;}
+
 
   const missionStateFactories = {
     escape:()=>({escapedIds:[],auspexCalibrations:{}}),
@@ -904,6 +911,12 @@ document.addEventListener('touchend',function(e){
     scout:()=>({awakenedRooms:{},scoutedRoomIds:[],scoutedByRoom:{}}),
     regroup:()=>({operativeChecks:{},lastCheckedTurningPoint:0})
   };
+
+  Object.assign(eventDefinitions,{
+    'flesh-hunger':{title:'Flesh Hunger',text:'If no Flayed One is in the killzone, set one up Ready with a Conceal order. Otherwise, one Flayed One immediately performs a free Charge or Reposition towards the closest Player operative.',execution:{type:'flesh-hunger'},duration:'immediate',redrawIfImpossible:true},
+    'rewards-of-annihilation':{title:'Rewards of Annihilation',text:'Until the end of the turning point, whenever a Skorpekh Destroyer or Hexmark Destroyer incapacitates a Player operative, that NPO regains D3 lost wounds, or 2D3 if that operative has a Wounds characteristic of 12 or more.',resultText:'Effect active until the end of this Turning Point.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'rewards-of-annihilation',gameplayHooks:[],automationType:'automatic',priority:20},
+    'enforcer-of-the-phaerons':{title:'Enforcer of the Phaerons',text:'Until the end of the turning point, an NPO in the same room as a Royal Warden has Ceaseless on its weapons.',resultText:'Effect active until the end of this Turning Point.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'enforcer-of-the-phaerons',gameplayHooks:['effectiveWeapon'],automationType:'tabletop-answer',priority:20}
+  });
 
   const isRecord = value => Boolean(value)&&typeof value==='object'&&!Array.isArray(value);
   const boundedInteger = (value,min,max,fallback=min) => {
@@ -968,13 +981,24 @@ document.addEventListener('touchend',function(e){
     reinforcementGeneration:value=>value,
     eventGeneratedNpoReplacement:value=>value,
     eventDeckAdditions:()=>[],
-    missionRequestedNpoReplacement:value=>value
+    missionRequestedNpoReplacement:value=>value,
+    npoSetupReplacement:value=>value
+  });
+  const optionalReplacement=(request,originalType,replacements)=>request?.type===originalType?{...request,replacementOptions:[request.type,...replacements]}:request;
+  const variantHooks=({replaceType=null,replacements=[],eventId=null,crownworld=false}={})=>Object.freeze({
+    ...inertVariantHooks,
+    startingRosterGeneration:value=>optionalReplacement(value,replaceType,replacements),
+    reinforcementGeneration:value=>optionalReplacement(value,replaceType,replacements),
+    eventGeneratedNpoReplacement:value=>optionalReplacement(value,replaceType,replacements),
+    missionRequestedNpoReplacement:value=>optionalReplacement(value,replaceType,replacements),
+    eventDeckAdditions:()=>eventId?[{instanceId:`${eventId}-1`,definitionId:eventId}]:[],
+    npoSetupReplacement:value=>crownworld&&value?.type===TOMB_CRAWLER_TYPE?{...value,mandatoryPair:['Royal Warden','Lychguard']}:value
   });
   const TOMB_WORLD_VARIANTS=Object.freeze({
     standard:Object.freeze({id:'standard',name:'Standard',available:true,hooks:inertVariantHooks}),
-    'flayer-curse':Object.freeze({id:'flayer-curse',name:'Flayer Curse Infected Tomb',available:false,hooks:inertVariantHooks}),
-    'destroyer-cult':Object.freeze({id:'destroyer-cult',name:'Destroyer Cult Tomb',available:false,hooks:inertVariantHooks}),
-    crownworld:Object.freeze({id:'crownworld',name:'Crownworld of the Dynasty Tomb',available:false,hooks:inertVariantHooks})
+    'flayer-curse':Object.freeze({id:'flayer-curse',name:'Flayer Curse Infected Tomb',available:false,hooks:variantHooks({replaceType:'Necron Warrior',replacements:['Flayed One'],eventId:'flesh-hunger'})}),
+    'destroyer-cult':Object.freeze({id:'destroyer-cult',name:'Destroyer Cult Tomb',available:false,hooks:variantHooks({replaceType:TOMB_CRAWLER_TYPE,replacements:['Skorpekh Destroyer','Hexmark Destroyer'],eventId:'rewards-of-annihilation'})}),
+    crownworld:Object.freeze({id:'crownworld',name:'Crownworld of the Dynasty Tomb',available:false,hooks:variantHooks({eventId:'enforcer-of-the-phaerons',crownworld:true})})
   });
   function currentTombWorldVariant(){return TOMB_WORLD_VARIANTS[state?.tombWorldVariant]||TOMB_WORLD_VARIANTS.standard;}
   function isFlayerCurseTomb(){return currentTombWorldVariant().id==='flayer-curse';}
@@ -985,8 +1009,31 @@ document.addEventListener('touchend',function(e){
     return typeof hook==='function'?hook(value):value;
   }
   function tombWorldEventDeckAdditions(){return tombWorldVariantHook('eventDeckAdditions',undefined);}
+  function eventDeckForVariant(variantId=state?.tombWorldVariant){
+    const variant=TOMB_WORLD_VARIANTS[variantId]||TOMB_WORLD_VARIANTS.standard;
+    return [...eventDeck,...variant.hooks.eventDeckAdditions()];
+  }
   function replaceEventGeneratedNpo(request){return tombWorldVariantHook('eventGeneratedNpoReplacement',request);}
   function replaceMissionRequestedNpo(request){return tombWorldVariantHook('missionRequestedNpoReplacement',request);}
+  function replaceNpoAtSetup(request){return tombWorldVariantHook('npoSetupReplacement',request);}
+  function resolveVariantNpoRequest(request,{choice=null,transactionId=null}={}){
+    if(!request?.replacementOptions?.length)return request;
+    const options=request.replacementOptions.filter(type=>Boolean(npoDefinition(type)));
+    const prior=transactionId&&state.variantState?.replacementTransactions?.[transactionId];
+    const selected=options.includes(prior?.selectedType)?prior.selectedType
+      :options.includes(choice)?choice
+      :isPvpMode()?options[0]
+      :isFlayerCurseTomb()&&options.includes('Flayed One')?'Flayed One'
+      :isDestroyerCultTomb()&&options.includes('Skorpekh Destroyer')?'Skorpekh Destroyer'
+      :options[Math.floor(Math.random()*options.length)];
+    const resolved={...request,type:selected};
+    if(selected!==request.type)delete resolved.weaponId;
+    if(transactionId){
+      state.variantState.replacementTransactions[transactionId]={id:transactionId,originalType:request.type,options:[...options],selectedType:selected,owner:isPvpMode()?'necron-controller':'guide',committed:true};
+      log(`${currentTombWorldVariant().name}: ${request.type} request generated ${selected}.`);
+    }
+    return resolved;
+  }
 
   const initialState = () => ({
     version:APP_VERSION, saveVersion:currentSaveVersion(), gameMode:null, screen:'home', tab:'play', setupStep:0, missionId:null,
@@ -1000,7 +1047,7 @@ document.addEventListener('touchend',function(e){
     npoAttackTargetId:null,
     npoAttackSummary:null, combatState:null, fightState:null, pendingDice:null, weaponRuleResolution:null, hotResolution:null, missionState:null, missionRuntime:null, missionActionContext:null, startingNpoGeneration:null,
     npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[],stage3Triggers:{}},
-    eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[],transactions:{},playerAplModifiers:[],reanimationAttempts:{}}, gameEnd:null,
+    eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[],transactions:{},playerAplModifiers:[],reanimationAttempts:{},rewardsTriggers:[]}, variantState:{crownworldFirstCrawlerConsumed:false,replacementTransactions:{}}, gameEnd:null,
     finalResolution:{pending:false,turningPointEnded:false,cleanupComplete:false,battleEndHookComplete:false,resultLogged:false,invalidSaveCorrected:false}
   });
 
@@ -1323,13 +1370,13 @@ document.addEventListener('touchend',function(e){
               : 'actions'
       };
     }else merged.strategyData=null;
-    const importedEvents=isRecord(raw.eventState)?raw.eventState:{};
-    const validInstances=new Set(eventDeck.map(card=>card.instanceId));
-    const available=Array.isArray(importedEvents.available)?normalizeIdList(importedEvents.available,validInstances):eventDeck.map(card=>card.instanceId);
+    const importedEvents=isRecord(raw.eventState)?raw.eventState:{},variantDeck=eventDeckForVariant(merged.tombWorldVariant);
+    const validInstances=new Set(variantDeck.map(card=>card.instanceId));
+    const available=Array.isArray(importedEvents.available)?normalizeIdList(importedEvents.available,validInstances):variantDeck.map(card=>card.instanceId);
     const used=normalizeIdList(importedEvents.used,validInstances).filter(id=>!available.includes(id));
     const normalizedActive=Array.isArray(importedEvents.active)?importedEvents.active.map(event=>{
       if(!isRecord(event))return null;
-      const deckRecord=eventDeck.find(card=>card.instanceId===event.instanceId);
+      const deckRecord=variantDeck.find(card=>card.instanceId===event.instanceId);
       const definitionId=event.definitionId||deckRecord?.definitionId;
       return eventDefinitions[definitionId]?{...event,definitionId}:null;
     }).filter(event=>event&&event.expiresAfterTurningPoint>=merged.turningPoint&&(!invalidTurningPoint||!Number.isFinite(Number(event.startedTurningPoint))||event.startedTurningPoint<=MAX_TURNING_POINTS)):[];
@@ -1339,8 +1386,11 @@ document.addEventListener('touchend',function(e){
       active:normalizedActive,
       transactions:isRecord(importedEvents.transactions)?{...importedEvents.transactions}:{},
       playerAplModifiers:Array.isArray(importedEvents.playerAplModifiers)?importedEvents.playerAplModifiers.filter(isRecord).map(item=>({...item})):[],
-      reanimationAttempts:isRecord(importedEvents.reanimationAttempts)?{...importedEvents.reanimationAttempts}:{}
+      reanimationAttempts:isRecord(importedEvents.reanimationAttempts)?{...importedEvents.reanimationAttempts}:{},
+      rewardsTriggers:Array.isArray(importedEvents.rewardsTriggers)?importedEvents.rewardsTriggers.filter(isRecord).map(trigger=>({...trigger})):[]
     };
+    const importedVariantState=isRecord(raw.variantState)?raw.variantState:{};
+    merged.variantState={crownworldFirstCrawlerConsumed:Boolean(importedVariantState.crownworldFirstCrawlerConsumed),replacementTransactions:isRecord(importedVariantState.replacementTransactions)?{...importedVariantState.replacementTransactions}:{}};
     if(invalidTurningPoint)merged.eventState.active=merged.eventState.active.filter(event=>event.expiresAfterTurningPoint>MAX_TURNING_POINTS);
     const livingImportedPlayers=merged.playerRoster.filter(id=>merged.playerOperativeStates[id]?.inPlay!==false&&!merged.playerCasualtyIds.includes(id)).length;
     merged.missionReadyContext=raw?.missionReadyContext&&typeof raw.missionReadyContext==='object'
@@ -1459,6 +1509,14 @@ document.addEventListener('touchend',function(e){
     const definition=npoDefinition(type),roster=Array.isArray(allocationContext.roster)?allocationContext.roster:state.roster;
     if(!definition||!Number.isInteger(quantity)||quantity<1)return [];
     const allocated=uniqueNpoInstances(roster).filter(npo=>npo.type===type);
+    if(!Number.isFinite(definition.physicalQuantity)){
+      const allocatedIds=new Set(allocated.map(npo=>npo.id)),available=[];
+      for(let number=1;available.length<quantity;number++){
+        const id=`${definition.id}-${number}`;
+        if(!allocatedIds.has(id))available.push({id,displayNumber:number});
+      }
+      return available;
+    }
     if(definition.physicalQuantity===1)return allocated.length?[]:[{id:`${definition.id}-1`,displayNumber:null}];
     const allocatedIds=new Set(allocated.map(npo=>npo.id));
     const allocatedNumbers=new Set(allocated.map(npo=>Number(npo.displayNumber)).filter(Number.isInteger));
@@ -1496,9 +1554,10 @@ document.addEventListener('touchend',function(e){
         && count-definition.physicalQuantity<=roster.filter(npo=>npo?.type===type&&npo.createdBy==='a-ceaseless-scuttling').length;
       if(count>definition.physicalQuantity&&!scuttlingException)errors.push(`${type} exceeds its physical quantity of ${definition.physicalQuantity}.`);
     });
-    const excessIsScuttlingHistory=ids.size>MAX_PHYSICAL_NPOS
-      && ids.size-MAX_PHYSICAL_NPOS<=roster.filter(npo=>npo?.createdBy==='a-ceaseless-scuttling').length;
-    if(ids.size>MAX_PHYSICAL_NPOS&&!excessIsScuttlingHistory)errors.push(`Allocated NPOs exceed the ${MAX_PHYSICAL_NPOS}-model Tomb World inventory.`);
+    const standardAllocated=roster.filter(npo=>npoDefinitions[npo?.type]).length;
+    const excessIsScuttlingHistory=standardAllocated>MAX_PHYSICAL_NPOS
+      && standardAllocated-MAX_PHYSICAL_NPOS<=roster.filter(npo=>npo?.createdBy==='a-ceaseless-scuttling').length;
+    if(standardAllocated>MAX_PHYSICAL_NPOS&&!excessIsScuttlingHistory)errors.push(`Allocated NPOs exceed the ${MAX_PHYSICAL_NPOS}-model Tomb World inventory.`);
     if(roster.filter(npo=>npo?.type===TOMB_CRAWLER_TYPE&&npo.weaponId===ISOLATOR_LOADOUT).length>1)errors.push('Only one Tomb Crawler can have a transdimensional isolator.');
     return {valid:errors.length===0,errors,inventory:npoInventory(roster)};
   }
@@ -2007,6 +2066,24 @@ document.addEventListener('touchend',function(e){
       reinforcement:options.reinforcement||null
     };
   }
+  function setupCrownworldCrawlerPair(crawler,transactionId){
+    const replacement=replaceNpoAtSetup({type:crawler?.type,npoId:crawler?.id,transactionId});
+    if(!replacement?.mandatoryPair||state.variantState.crownworldFirstCrawlerConsumed)return {replaced:false,npos:[crawler]};
+    const transactions=state.variantState.replacementTransactions,prior=transactions[transactionId];
+    if(prior?.committed)return {replaced:true,npos:prior.createdIds.map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean)};
+    const otherDeployed=activeNpos().filter(npo=>npo.id!==crawler.id).length;
+    if(otherDeployed+2>MAX_NPOS)return {replaced:false,blocked:true,npos:[]};
+    const weaponId=isPvpMode()?'hyperphase-sword':(Math.random()<0.5?'hyperphase-sword':'warscythe');
+    const remaining=state.roster.filter(npo=>npo.id!==crawler.id);
+    const warden=createNpo('Royal Warden','Royal Warden',{ready:true,dormant:false,allocationContext:{roster:remaining}});
+    const lychguard=createNpo('Lychguard','Lychguard',{weaponId,ready:true,dormant:false,allocationContext:{roster:[...remaining,warden]}});
+    warden.createdBy='crownworld-first-crawler';lychguard.createdBy='crownworld-first-crawler';
+    if(!commitNpoRoster([...remaining,warden,lychguard],'set up the Crownworld replacement pair'))return {replaced:false,blocked:true,npos:[]};
+    transactions[transactionId]={id:transactionId,originalNpoId:crawler.id,createdIds:[warden.id,lychguard.id],lychguardWeaponId:weaponId,instruction:"Set up the Lychguard within the Royal Warden's Control Range.",committed:true};
+    state.variantState.crownworldFirstCrawlerConsumed=true;
+    log(`Crownworld: ${npoName(crawler)} was replaced by Royal Warden and Lychguard (${weaponId==='warscythe'?'Warscythe':'Hyperphase sword'}). Set up the Lychguard within the Royal Warden's Control Range.`);
+    return {replaced:true,npos:[warden,lychguard]};
+  }
   function rollNpo(){
     const rolls=[roll(6),roll(6)],total=rolls[0]+rolls[1],result=generationResult(total);
     return {...result,rolls,total,weaponId:generatedWeaponId(result)};
@@ -2470,7 +2547,8 @@ document.addEventListener('touchend',function(e){
     const previousRoster=state.roster;
     state.roster=[];
     for(let i=0;i<count;i++){
-      const result=tombWorldVariantHook('startingRosterGeneration',availableGenerationResult());
+      const request=tombWorldVariantHook('startingRosterGeneration',availableGenerationResult());
+      const result=resolveVariantNpoRequest(request,{transactionId:`starting:${i}:${request?.type||'none'}`});
       if(!result){
         console.warn(`[NPO inventory] ${m.name} requested ${count} models, but only ${state.roster.length} legal generated models were available.`);
         state.roster=previousRoster;showToast('A complete legal NPO roster could not be generated.');return null;
@@ -2963,7 +3041,18 @@ document.addEventListener('touchend',function(e){
     $('#checkAllSetup')?.addEventListener('click',()=>{missionSetupChecks('killzone').forEach(check=>{state.setupChecks[check.id]=true;});save();render();});
     $('#randomPlayerTeam')?.addEventListener('click',()=>{randomPlayerRoster();save();render();});
     if(stepId==='deploy')runStartingNpoGeneration();
-    $('#npoDeployed')?.addEventListener('change',e=>{const selected=new Set(state.startingNpoGeneration?.deployedNpoIds||[]);state.roster.filter(n=>selected.has(n.id)).forEach(n=>n.deployed=e.target.checked);save();render();});
+    $('#npoDeployed')?.addEventListener('change',e=>{
+      let selected=new Set(state.startingNpoGeneration?.deployedNpoIds||[]);
+      if(e.target.checked&&!state.variantState.crownworldFirstCrawlerConsumed){
+        const crawler=state.roster.find(npo=>selected.has(npo.id)&&npo.type===TOMB_CRAWLER_TYPE);
+        if(crawler){
+          const pair=setupCrownworldCrawlerPair(crawler,`crownworld:starting:${crawler.id}`);
+          if(pair.blocked){showToast('The Royal Warden and Lychguard pair requires two available NPO battlefield slots.');e.target.checked=false;return;}
+          if(pair.replaced){selected.delete(crawler.id);pair.npos.forEach(npo=>selected.add(npo.id));state.startingNpoGeneration.deployedNpoIds=[...selected];}
+        }
+      }
+      state.roster.filter(n=>selected.has(n.id)).forEach(n=>{n.deployed=e.target.checked;n.battlefieldState=e.target.checked?'deployed':'reserve';});save();render();
+    });
     $('#checkAllDeployment')?.addEventListener('click',()=>{
       $$('.checklist input[type="checkbox"]:not(:disabled)').forEach(checkbox=>{
         if(!checkbox.checked){checkbox.checked=true;checkbox.dispatchEvent(new Event('change',{bubbles:true}));}
@@ -3168,7 +3257,9 @@ document.addEventListener('touchend',function(e){
     const awakenRoll=await missionDiceTotal(outcome,'awakenRoll',{title:'AWAKEN ROOM'});
     const count=Math.min(5,awakenRoll+threatGrade()),ids=[];
     for(let i=0;i<count&&activeNpos().length<MAX_NPOS;i++){
-      const result=availableGenerationResult();if(!result)break;
+      const rawResult=availableGenerationResult();if(!rawResult)break;
+      const request=replaceMissionRequestedNpo({...rawResult,source:'mission-05-awaken-room'});
+      const result=resolveVariantNpoRequest(request,{transactionId:`mission:${state.missionId}:${roomId}:${i}:${request.type}`});
       const n=createNpo(result.type,`${result.type} ${roomId}`,{weaponId:result.weaponId,ready:true,dormant:false,deployed:false,order:'Conceal'});
       n.missionRoom=roomId;state.roster.push(n);ids.push(n.id);
     }
@@ -3290,6 +3381,14 @@ document.addEventListener('touchend',function(e){
     $$('[data-awaken-room]').forEach(button=>button.onclick=()=>performAwakenRoom(button.dataset.awakenRoom));
     $$('[data-confirm-room-placement]').forEach(button=>button.onclick=()=>{
       const awakening=state.missionState.awakenedRooms[button.dataset.confirmRoomPlacement];awakening.placementConfirmed=true;
+      if(!state.variantState.crownworldFirstCrawlerConsumed){
+        const crawler=state.roster.find(npo=>awakening.operativeIds.includes(npo.id)&&npo.type===TOMB_CRAWLER_TYPE);
+        if(crawler){
+          const pair=setupCrownworldCrawlerPair(crawler,`crownworld:mission:${state.missionId}:${button.dataset.confirmRoomPlacement}:${crawler.id}`);
+          if(pair.blocked){awakening.placementConfirmed=false;showToast('The Royal Warden and Lychguard pair could not be set up within the 10-NPO limit.');save();render();return;}
+          if(pair.replaced)awakening.operativeIds=awakening.operativeIds.flatMap(id=>id===crawler.id?pair.npos.map(npo=>npo.id):[id]);
+        }
+      }
       state.roster.filter(npo=>awakening.operativeIds.includes(npo.id)).forEach(npo=>{npo.deployed=true;npo.battlefieldState='deployed';});
       updateMissionProgress(`confirmed NPO placement in ${button.dataset.confirmRoomPlacement}.`);
     });
@@ -3676,6 +3775,7 @@ document.addEventListener('touchend',function(e){
     const labels={
       'awakened-warrior':'Confirm Necron Warrior Placement',
       'chittering-drone':'Confirm Scarab Placement',
+      'flesh-hunger':'Confirm Flesh Hunger',
       'maze-reforms':'Confirm Terrain Changes'
     };
     const hasScarabChoices=event.execution.type==='chittering-drone'&&Array.isArray(event.eligibleNpoIds)&&event.eligibleNpoIds.length>1;
@@ -3683,9 +3783,12 @@ document.addEventListener('touchend',function(e){
       ? `<div class="event-resolution event-guide-action"><h4>GUIDE ACTION</h4><p>${hasScarabChoices?'Multiple wounded Canoptek Scarab Swarms are eligible. Choose one below. The Guide will automatically restore the selected swarm to full wounds.':`No wounded Canoptek Scarab Swarms are currently on the battlefield. Set up one Ready Canoptek Scarab Swarm with a Conceal order using the event card's placement instructions, then confirm below.`}</p></div>`:'';
     const scarabChoices=hasScarabChoices
       ? `<div class="field"><label for="eventNpoSelect">Wounded Scarab Swarm</label><select id="eventNpoSelect"><option value="">Select a Scarab Swarm...</option>${sortedNposForDisplay(event.eligibleNpoIds.map(id=>activeNpos().find(item=>item.id===id)).filter(Boolean)).map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(npoName(n))} — ${n.wounds} of ${n.maxWounds} wounds</option>`).join('')}</select></div>`:'';
+    const fleshChoices=event.execution.type==='flesh-hunger'&&event.eligibleNpoIds?.length&&isPvpMode()
+      ? `<div class="field"><label for="eventNpoSelect">Flayed One</label><select id="eventNpoSelect">${event.eligibleNpoIds.map(id=>`<option value="${escapeHtml(id)}">${escapeHtml(npoName(activeNpos().find(npo=>npo.id===id)))}</option>`).join('')}</select></div><div class="field"><label for="eventFreeMovement">Free movement</label><select id="eventFreeMovement"><option>Charge</option><option>Reposition</option></select></div>`:'';
+    const fleshGuide=event.execution.type==='flesh-hunger'?`<div class="event-resolution event-guide-action"><h4>GUIDE ACTION</h4><p>${event.eligibleNpoIds?.length?'Perform the selected free Charge or Reposition towards the closest Player operative. This costs 0 AP, starts no activation, and grants no attack.':`Random hatchway: ${escapeHtml(event.placementHatchway||'pending')}. Set up the Flayed One Ready with a Conceal order, wholly within NPO territory. Put the hatchway access point within its Control Range; if impossible, place it as close as possible and within Control Range of a Player operative if possible.`}</p></div>`:'';
     if(hasScarabChoices)labels['chittering-drone']='Restore Selected Scarab Swarm';
     const impossibleControl=event.execution.type==='maze-reforms'?'<button type="button" class="btn secondary" id="redrawStrategyEvent" aria-label="No valid terrain changes are possible; draw another Tomb World event card">No Valid Changes · Draw Again</button>':'';
-    return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}${scarabGuide}<div class="event-controls">${scarabChoices}<button type="button" class="btn primary" id="resolveStrategyEvent" ${scarabChoices?'disabled':''}>${labels[event.definitionId]||labels[event.execution.type]||'Resolve Event'}</button>${impossibleControl}</div></div>`;
+    return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}${scarabGuide}<div class="event-controls">${scarabChoices}${fleshGuide}${fleshChoices}<button type="button" class="btn primary" id="resolveStrategyEvent" ${scarabChoices?'disabled':''}>${labels[event.definitionId]||labels[event.execution.type]||'Resolve Event'}</button>${impossibleControl}</div></div>`;
   }
 
   function activationTracker(){
@@ -3935,6 +4038,10 @@ document.addEventListener('touchend',function(e){
   }
 
   function recycleUsedEvents(){
+    const legalIds=new Set(eventDeckForVariant().map(card=>card.instanceId));
+    state.eventState.available=(state.eventState.available||[]).filter(id=>legalIds.has(id));
+    state.eventState.used=(state.eventState.used||[]).filter(id=>legalIds.has(id));
+    for(const id of legalIds)if(!state.eventState.available.includes(id)&&!state.eventState.used.includes(id))state.eventState.available.push(id);
     const used=state.eventState.used||[];
     if(!used.length)return;
     state.eventState.available=[...new Set([...(state.eventState.available||[]),...used])];
@@ -3945,7 +4052,7 @@ document.addEventListener('touchend',function(e){
     if(!state.eventState.available.length)return null;
     const index=roll(state.eventState.available.length)-1;
     const instanceId=state.eventState.available.splice(index,1)[0];
-    const card=eventDeck.find(candidate=>candidate.instanceId===instanceId);
+    const card=eventDeckForVariant().find(candidate=>candidate.instanceId===instanceId);
     if(!card)return null;
     state.eventState.used.push(instanceId);
     const event=eventRecord(card);
@@ -3962,10 +4069,11 @@ document.addEventListener('touchend',function(e){
       pool=[...new Set([...available,...used])].filter(instanceId=>instanceId!==originalEvent.instanceId);
       recycling=true;
     }
-    const validPool=pool.filter(instanceId=>eventDeck.some(card=>card.instanceId===instanceId));
+    const variantDeck=eventDeckForVariant();
+    const validPool=pool.filter(instanceId=>variantDeck.some(card=>card.instanceId===instanceId));
     if(!validPool.length)return null;
     const instanceId=validPool[roll(validPool.length)-1];
-    const card=eventDeck.find(candidate=>candidate.instanceId===instanceId);
+    const card=variantDeck.find(candidate=>candidate.instanceId===instanceId);
     if(!card)return null;
     if(recycling){
       state.eventState.available=[...new Set([...available,...used])].filter(id=>id!==instanceId);
@@ -4075,6 +4183,9 @@ document.addEventListener('touchend',function(e){
       return;
     }
     if(type==='activate'){
+      if(event.definitionId==='enforcer-of-the-phaerons'&&!activeNpos().some(npo=>npo.type==='Royal Warden')){
+        await redrawCurrentEvent('No living, deployed Royal Warden was in the killzone.');return;
+      }
       if(!state.eventState.active.some(active=>active.instanceId===event.instanceId&&active.startedTurningPoint===state.turningPoint)){
         const definition=eventDefinitions[event.definitionId];
         state.eventState.active.push({...event,lifecycle:definition.lifecycle,handlerId:definition.handlerId,gameplayHooks:[...definition.gameplayHooks],automationType:definition.automationType,priority:definition.priority,startedTurningPoint:state.turningPoint,expiresAfterTurningPoint:state.turningPoint,status:'active'});
@@ -4088,6 +4199,12 @@ document.addEventListener('touchend',function(e){
       if(wounded.length>1){event.eligibleNpoIds=wounded.map(npo=>npo.id);d.eventPending=true;return;}
       if(activeNpos().length>=MAX_NPOS||!npoInventory()['Canoptek Scarab Swarm'].remaining){await redrawCurrentEvent('No Scarab Swarm could be set up.');return;}
     }
+    if(type==='flesh-hunger'){
+      const flayed=activeNpos().filter(npo=>npo.type==='Flayed One');
+      if(flayed.length){event.eligibleNpoIds=flayed.map(npo=>npo.id);d.eventPending=true;return;}
+      if(activeNpos().length>=MAX_NPOS){await redrawCurrentEvent('No Flayed One could be set up and none was available to move.');return;}
+      event.placementHatchway=`Hatchway ${roll(6)}`;d.eventPending=true;return;
+    }
     if(type==='maze-reforms'){
       const transaction=eventTransaction(`event:${event.instanceId}:${state.turningPoint}`,{definitionId:event.definitionId,rolls:[]});
       if(!Number.isInteger(transaction.rolls[0])){
@@ -4099,7 +4216,8 @@ document.addEventListener('touchend',function(e){
       event.openHatchwayLimit=transaction.rolls[0];
       event.text=`Close one breach and up to ${event.openHatchwayLimit} open hatchway${event.openHatchwayLimit===1?'':'s'}. If this cannot be resolved, draw another event card.`;
     }
-    if(type==='awakened-warrior'&&(activeNpos().length>=MAX_NPOS||!npoInventory()['Necron Warrior'].remaining)){await redrawCurrentEvent('No Necron Warrior could be set up.');return;}
+    if(type==='awakened-warrior'&&currentTombWorldVariant().id==='standard'&&(activeNpos().length>=MAX_NPOS||!npoInventory()['Necron Warrior'].remaining)){await redrawCurrentEvent('No Necron Warrior could be set up.');return;}
+    if(type==='awakened-warrior'&&currentTombWorldVariant().id!=='standard'&&activeNpos().length>=MAX_NPOS){await redrawCurrentEvent('No eligible operative could be set up.');return;}
     d.eventPending=true;
   }
 
@@ -4178,7 +4296,8 @@ document.addEventListener('touchend',function(e){
       blocked=requested-actual;
       state.reinforcementState.blockedByCapacity=blocked;
       for(let i=0;i<actual;i++){
-        const rr=tombWorldVariantHook('reinforcementGeneration',randomReinforcement());
+        const request=tombWorldVariantHook('reinforcementGeneration',randomReinforcement());
+        const rr=resolveVariantNpoRequest(request,{transactionId:`reinforcement:${state.turningPoint}:${i}:${request?.type||'none'}`});
         if(!rr){blocked++;state.reinforcementState.blockedByInventory++;continue;}
         const type=rr.type;
         let n=reserveNpos().find(candidate=>candidate.type===type&&!state.reinforcementState.operativeIds.includes(candidate.id)&&!state.reinforcementState.blockedOperativeIds.includes(candidate.id));
@@ -4211,6 +4330,15 @@ document.addEventListener('touchend',function(e){
   function confirmReinforcementPlacement(id,confirmed){
     const npo=state.roster.find(item=>item.id===id&&state.reinforcementState.operativeIds.includes(item.id));
     if(!npo?.reinforcement)return;
+    if(confirmed&&npo.type===TOMB_CRAWLER_TYPE&&!state.variantState.crownworldFirstCrawlerConsumed){
+      const pair=setupCrownworldCrawlerPair(npo,`crownworld:reinforcement:${state.turningPoint}:${npo.id}`);
+      if(pair.blocked){state.reinforcementState.blocked++;state.reinforcementState.blockedByCapacity++;showToast('The Royal Warden and Lychguard pair could not be set up within the 10-NPO limit.');save();render();return;}
+      if(pair.replaced){
+        pair.npos.forEach(created=>{created.reinforcement={turningPoint:state.turningPoint,placementConfirmed:true};});
+        state.reinforcementState.operativeIds=state.reinforcementState.operativeIds.flatMap(operativeId=>operativeId===id?pair.npos.map(created=>created.id):[operativeId]);
+        save();render();return;
+      }
+    }
     npo.reinforcement.placementConfirmed=Boolean(confirmed);
     npo.deployed=npo.reinforcement.placementConfirmed;
     npo.battlefieldState=npo.deployed?'deployed':'reserve';
@@ -4283,14 +4411,30 @@ document.addEventListener('touchend',function(e){
       const before=n.wounds;
       n.wounds=n.maxWounds;
       result=`The Guide automatically restored ${npoName(n)} to full wounds (${before} → ${n.maxWounds}).`;
-    }else if(event.execution.type==='chittering-drone'||event.execution.type==='awakened-warrior'){
-      const type=event.execution.type==='chittering-drone'?'Canoptek Scarab Swarm':'Necron Warrior';
-      if(activeNpos().length>=MAX_NPOS||!npoInventory()[type]?.remaining){await redrawCurrentEvent(`${type} could not be set up.`);return;}
-      const n=createNpo(type,`${type} E${state.turningPoint}`,{order:'Conceal'});
+    }else if(event.execution.type==='flesh-hunger'&&event.eligibleNpoIds?.length){
+      const operativeId=isPvpMode()?($('#eventNpoSelect')?.value||event.eligibleNpoIds[0]):event.eligibleNpoIds[0];
+      const n=activeNpos().find(item=>item.id===operativeId&&event.eligibleNpoIds.includes(item.id));if(!n)return;
+      const action=isPvpMode()?($('#eventFreeMovement')?.value||'Reposition'):'Charge';
+      const transaction=eventTransaction(`event:${event.instanceId}:${state.turningPoint}:movement`,{npoId:n.id,action});
+      if(!transaction.committed){transaction.committed=true;log(`Flesh Hunger: ${npoName(n)} performed a free ${action} towards the closest Player operative (0 AP; no activation or attack).`);}
+      result=`${npoName(n)} performed a free ${action} towards the closest Player operative. No Fight or Shoot was granted.`;
+    }else if(event.execution.type==='chittering-drone'||event.execution.type==='awakened-warrior'||event.execution.type==='flesh-hunger'){
+      let request={type:event.execution.type==='chittering-drone'?'Canoptek Scarab Swarm':event.execution.type==='flesh-hunger'?'Flayed One':'Necron Warrior',source:'event'};
+      if(event.execution.type==='awakened-warrior'){
+        request=replaceEventGeneratedNpo(request);
+        if(isCrownworldTomb())request={...request,replacementOptions:['Necron Warrior','Lychguard']};
+        request=resolveVariantNpoRequest(request,{transactionId:`event:${event.instanceId}:${state.turningPoint}:replacement`});
+      }
+      const type=request.type;
+      if(activeNpos().length>=MAX_NPOS){await redrawCurrentEvent(`${type} could not be set up.`);return;}
+      const weaponId=type==='Lychguard'?(isPvpMode()?'hyperphase-sword':(Math.random()<0.5?'hyperphase-sword':'warscythe')):undefined;
+      const n=weaponId?createNpo(type,`${type} E${state.turningPoint}`,{order:'Conceal',weaponId}):createNpo(type,`${type} E${state.turningPoint}`,{order:'Conceal'});
       n.ready=true;n.dormant=false;
       if(!commitNpoRoster([...state.roster,n],'resolve that event')){await redrawCurrentEvent(`${type} could not be set up.`);return;}
       state.newIds.push(n.id);
-      result=`${npoName(n)} was set up Ready with a Conceal order using the event card’s placement instructions.`;
+      result=event.execution.type==='flesh-hunger'
+        ? `${npoName(n)} was set up Ready with a Conceal order at ${event.placementHatchway}; place its access point within Control Range, wholly within NPO territory, as close as possible and within Control Range of a Player operative if possible.`
+        : `${npoName(n)} was set up Ready with a Conceal order using the event card’s placement instructions.`;
     }
     if(event.execution.type==='maze-reforms')result='Breach and hatchway changes completed on the tabletop.';
     await completeCurrentEvent(result);
@@ -8075,6 +8219,7 @@ function showPlayerActivation(){
     state.playerWounds=state.playerWounds||{};
     state.playerWounds[target.id]=summary.after;
     const casualties=new Set(state.playerCasualtyIds||[]);
+    const newlyIncapacitated=summary.after<=0&&!casualties.has(target.id);
     if(summary.after<=0){
       casualties.add(target.id);
       if(!state.playerActivatedIds.includes(target.id))state.playerActivatedIds.push(target.id);
@@ -8091,6 +8236,25 @@ function showPlayerActivation(){
         : `${playerName(target.id)} survived with ${normalAfter} wounds.`;
       log(`${npoName(n)} rolled ${summary.dimensionalBanishmentRoll} for Dimensional Banishment against ${playerName(target.id)}. ${outcome}`);
     }
+    if(newlyIncapacitated)void resolveRewardsOfAnnihilation(n,target,summary);
+  }
+
+  async function resolveRewardsOfAnnihilation(n,target,summary={}){
+    if(!tombWorldEventActive('rewards-of-annihilation')||!['Skorpekh Destroyer','Hexmark Destroyer'].includes(n.type))return false;
+    const casualtyWounds=Number(target.maxWounds||playerDefinition(target.id)?.wounds||0),diceCount=casualtyWounds>=12?2:1;
+    const identity=summary.transactionId||`${state.turningPoint}:${state.activationNumber}:${n.id}:${target.id}:${state.eventState.rewardsTriggers.length}`;
+    const transaction=eventTransaction(`rewards:${identity}:${target.id}`,{definitionId:'rewards-of-annihilation',attackerId:n.id,casualtyId:target.id,casualtyWounds,diceCount,rolls:[],restored:0});
+    if(transaction.committed)return false;
+    if(transaction.requesting)return false;
+    transaction.requesting=true;state.eventState.rewardsTriggers.push(transaction.id);save();
+    try{
+      const requestKey=diceRequestKey('rewards-of-annihilation',transaction.id,n.id,target.id);
+      const rolls=await requestDiceResults({count:diceCount,sides:3,title:'REWARDS OF ANNIHILATION',instruction:`Roll ${diceCount===2?'2D3':'D3'} to restore the Destroyer’s lost wounds.`,rollerLabel:npoName(n),requestKey,resumeKind:'combat',resumeData:{transactionId:transaction.id,npoId:n.id,casualtyId:target.id}});
+      const before=n.wounds,total=rolls.reduce((sum,value)=>sum+value,0);n.wounds=Math.min(n.maxWounds,n.wounds+total);
+      Object.assign(transaction,{rolls:[...rolls],result:total,restored:n.wounds-before,committed:true});delete transaction.requesting;
+      log(`Rewards of Annihilation: ${npoName(n)} incapacitated ${playerName(target.id)}, rolled ${rolls.join('+')} and restored ${transaction.restored} wound${transaction.restored===1?'':'s'}.`);
+      save();acknowledgeDiceRequest(requestKey);render();return true;
+    }catch(error){delete transaction.requesting;save();console.error('[Rewards of Annihilation] Dice request failed; healing was not committed.',error);return false;}
   }
 
   function showNpoAttackWizard(n,attackDice,onDone,onCancel,animateCombat=false,resumeGuided=false){
@@ -8161,11 +8325,14 @@ function showPlayerActivation(){
     const willBeDone=tombWorldEventActive('my-will-be-done')&&!sameCombat&&!rollingCombat
       ? `<label class="check-row compact-check" for="sameRoomAsC1"><input type="checkbox" id="sameRoomAsC1"><span><strong>Is this ${isPvpMode()?'Necron':'NPO'} in the same room as the sarcophagus?</strong><small>This matters only while My Will Be Done is active.</small></span></label>`
       : '';
+    const enforcer=tombWorldEventActive('enforcer-of-the-phaerons')&&activeNpos().some(operative=>operative.type==='Royal Warden')&&!initialProfile?.rules?.some(rule=>/^Ceaseless$/i.test(String(rule)))&&!sameCombat&&!rollingCombat;
+    const enforcerQuestion=enforcer&&n.type!=='Royal Warden'
+      ? `<label class="check-row compact-check" for="sameRoomAsRoyalWarden"><input type="checkbox" id="sameRoomAsRoyalWarden"><span><strong>Is ${escapeHtml(npoName(n))} in the same room as a Royal Warden?</strong><small>This matters only while Enforcer of the Phaerons is active.</small></span></label>`:'';
     const guidance=npoCombatGuidanceHtml(n,{attackType,profile:initialProfile});
     const screen=showSharedCombatResolutionScreen({
       title:'Resolve Combat',attackerName:npoName(n),defenderName:targetName,attackType,
       weaponName:initialProfile?.name||'—',attackLabel:initialProfile?combatAttackLabel(initialProfile):'—',defenseLabel:`3 dice · ${target.save||3}+`,
-      cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',extraHtml:`<div id="npoCombatGuidance">${guidance}</div>${profileControl}${willBeDone}`,
+      cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',extraHtml:`<div id="npoCombatGuidance">${guidance}</div>${profileControl}${willBeDone}${enforcerQuestion}`,
       detailsHtml:`${weaponRuleSequenceProgress(sequence,targetName,`${target.wounds}/${target.maxWounds||playerDefinition(target.id)?.wounds||0} wounds`)}<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`
     });
     const cancel=()=>{
@@ -8309,7 +8476,8 @@ function showPlayerActivation(){
       if(combatTimer)combatTimer();
       const transaction=eventTransaction(`attack:${state.turningPoint}:${state.activationNumber}:npo:${n.id}:${target.id}`,{definitionAnswers:{}});
       if(transaction.definitionAnswers.sameRoomAsC1===undefined)transaction.definitionAnswers.sameRoomAsC1=Boolean($('#sameRoomAsC1')?.checked);
-      const profile=effectiveWeaponProfile(baseProfile,{attackerSide:'npo',attackType,sameRoomAsC1:transaction.definitionAnswers.sameRoomAsC1});
+      if(transaction.definitionAnswers.sameRoomAsRoyalWarden===undefined)transaction.definitionAnswers.sameRoomAsRoyalWarden=n.type==='Royal Warden'||Boolean($('#sameRoomAsRoyalWarden')?.checked);
+      const profile=effectiveWeaponProfile(baseProfile,{attackerSide:'npo',attackType,sameRoomAsC1:transaction.definitionAnswers.sameRoomAsC1,sameRoomAsRoyalWarden:transaction.definitionAnswers.sameRoomAsRoyalWarden});
       const profileSelect=$('#npoCombatProfile');
       if(profileSelect)profileSelect.disabled=true;
       const weapon=$('.compact-combat-profile div:nth-child(4) strong');
