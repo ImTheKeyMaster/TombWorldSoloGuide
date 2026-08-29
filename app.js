@@ -903,7 +903,6 @@ document.addEventListener('touchend',function(e){
     {instanceId:'awakened-warrior-2',definitionId:'awakened-warrior'}
   ];
 
-  function eventDefinition(definitionId){return eventDefinitions[definitionId]||null;}
   const missionStateFactories = {
     escape:()=>({escapedIds:[],auspexCalibrations:{}}),
     sabotage:()=>({completedFeatureIds:[],featureOpenDetails:{},featureTransactions:{}}),
@@ -912,6 +911,7 @@ document.addEventListener('touchend',function(e){
     scout:()=>({awakenedRooms:{},scoutedRoomIds:[],scoutedByRoom:{}}),
     regroup:()=>({operativeChecks:{},lastCheckedTurningPoint:0})
   };
+  function eventDefinition(definitionId){return eventDefinitions[definitionId]||null;}
 
   const isRecord = value => Boolean(value)&&typeof value==='object'&&!Array.isArray(value);
   const boundedInteger = (value,min,max,fallback=min) => {
@@ -1064,6 +1064,7 @@ document.addEventListener('touchend',function(e){
   let threatAdjustOpen = false;
   let expandedRosterCategories = null;
   const eventRedrawsInProgress = new Set();
+  let rewardsQueueInProgress=false;
   function autoSelectRequiredPlayerOperatives(){
     if(!playerTeamData||state.playerRosterInitializedForTeamId===playerTeamData.teamId)return;
     state.playerRosterInitializedForTeamId=playerTeamData.teamId;
@@ -1816,7 +1817,7 @@ document.addEventListener('touchend',function(e){
       const transaction=state.eventState.transactions?.[data.transactionId],npo=state.roster.find(item=>item.id===data.npoId);
       if(!transaction||!npo||transaction.committed){acknowledgeCurrentDiceRequest();return false;}
       delete transaction.requesting;
-      await resolveRewardsOfAnnihilation(n,{id:data.casualtyId,maxWounds:transaction.casualtyWounds},{transactionId:transaction.sourceTransactionId});
+      await processRewardsOfAnnihilationQueue();
       return true;
     }
     if(pending.resumeKind==='combat'){
@@ -8272,22 +8273,34 @@ function showPlayerActivation(){
     if(newlyIncapacitated)void resolveRewardsOfAnnihilation(n,target,summary);
   }
 
-  async function resolveRewardsOfAnnihilation(n,target,summary={}){
+  function resolveRewardsOfAnnihilation(n,target,summary={}){
     if(!tombWorldEventActive('rewards-of-annihilation')||!['Skorpekh Destroyer','Hexmark Destroyer'].includes(n.type))return false;
     const casualtyWounds=Number(target.maxWounds||playerDefinition(target.id)?.wounds||0),diceCount=casualtyWounds>=12?2:1;
     const identity=summary.transactionId||`${state.turningPoint}:${state.activationNumber}:${n.id}:${target.id}:${state.eventState.rewardsTriggers.length}`;
     const transaction=eventTransaction(`rewards:${identity}:${target.id}`,{definitionId:'rewards-of-annihilation',sourceTransactionId:identity,attackerId:n.id,casualtyId:target.id,casualtyWounds,diceCount,rolls:[],restored:0});
     if(transaction.committed)return false;
-    if(transaction.requesting)return false;
-    transaction.requesting=true;if(!state.eventState.rewardsTriggers.includes(transaction.id))state.eventState.rewardsTriggers.push(transaction.id);save();
+    if(!state.eventState.rewardsTriggers.includes(transaction.id))state.eventState.rewardsTriggers.push(transaction.id);
+    save();void processRewardsOfAnnihilationQueue();return true;
+  }
+  async function processRewardsOfAnnihilationQueue(){
+    if(rewardsQueueInProgress)return false;
+    rewardsQueueInProgress=true;
     try{
-      const requestKey=diceRequestKey('rewards-of-annihilation',transaction.id,n.id,target.id);
-      const rolls=await requestDiceResults({count:diceCount,sides:3,title:'REWARDS OF ANNIHILATION',instruction:`Roll ${diceCount===2?'2D3':'D3'} to restore the Destroyer’s lost wounds.`,rollerLabel:npoName(n),requestKey,resumeKind:'rewards',resumeData:{transactionId:transaction.id,npoId:n.id,casualtyId:target.id}});
-      const before=n.wounds,total=rolls.reduce((sum,value)=>sum+value,0);n.wounds=Math.min(n.maxWounds,n.wounds+total);
-      Object.assign(transaction,{rolls:[...rolls],result:total,restored:n.wounds-before,committed:true});delete transaction.requesting;
-      log(`Rewards of Annihilation: ${npoName(n)} incapacitated ${playerName(target.id)}, rolled ${rolls.join('+')} and restored ${transaction.restored} wound${transaction.restored===1?'':'s'}.`);
-      save();acknowledgeDiceRequest(requestKey);render();return true;
-    }catch(error){delete transaction.requesting;save();console.error('[Rewards of Annihilation] Dice request failed; healing was not committed.',error);return false;}
+      for(const transactionId of state.eventState.rewardsTriggers){
+        const transaction=state.eventState.transactions?.[transactionId];
+        if(!transaction||transaction.committed)continue;
+        const n=state.roster.find(item=>item.id===transaction.attackerId&&item.wounds>0);if(!n)continue;
+        transaction.requesting=true;save();
+        const requestKey=diceRequestKey('rewards-of-annihilation',transaction.id,n.id,transaction.casualtyId);
+        const rolls=await requestDiceResults({count:transaction.diceCount,sides:3,title:'REWARDS OF ANNIHILATION',instruction:`Roll ${transaction.diceCount===2?'2D3':'D3'} to restore the Destroyer’s lost wounds.`,rollerLabel:npoName(n),requestKey,resumeKind:'rewards',resumeData:{transactionId:transaction.id,npoId:n.id,casualtyId:transaction.casualtyId}});
+        const before=n.wounds,total=rolls.reduce((sum,value)=>sum+value,0);n.wounds=Math.min(n.maxWounds,n.wounds+total);
+        Object.assign(transaction,{rolls:[...rolls],result:total,restored:n.wounds-before,committed:true});delete transaction.requesting;
+        log(`Rewards of Annihilation: ${npoName(n)} incapacitated ${playerName(transaction.casualtyId)}, rolled ${rolls.join('+')} and restored ${transaction.restored} wound${transaction.restored===1?'':'s'}.`);
+        save();acknowledgeDiceRequest(requestKey);
+      }
+      render();return true;
+    }catch(error){console.error('[Rewards of Annihilation] Dice request failed; healing was not committed.',error);return false;}
+    finally{rewardsQueueInProgress=false;}
   }
 
   function showNpoAttackWizard(n,attackDice,onDone,onCancel,animateCombat=false,resumeGuided=false){

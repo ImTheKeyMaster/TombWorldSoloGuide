@@ -52,7 +52,7 @@ def test_rewards_is_attributed_durable_and_uses_central_dice_provider():
     assert "resolveRewardsOfAnnihilation(n,target,summary)" in APP
     assert "['Skorpekh Destroyer','Hexmark Destroyer'].includes(n.type)" in APP
     assert "casualtyWounds>=12?2:1" in APP
-    assert "requestDiceResults({count:diceCount,sides:3" in APP
+    assert "requestDiceResults({count:transaction.diceCount,sides:3" in APP
     assert "Math.min(n.maxWounds,n.wounds+total)" in APP
     assert "if(transaction.committed)return false" in APP
     assert "casualtyId:target.id" in APP and "restored:n.wounds-before" in APP
@@ -120,3 +120,12 @@ def test_enforcer_applies_to_shared_npo_fight_profiles():
     assert "npo.type==='Royal Warden'||await askYesNoRuleQuestion" in APP
     melee = APP[APP.index("if(attackType==='melee'){"):APP.index("const initialProfile", APP.index("if(attackType==='melee'){"))]
     assert "await effectiveEnforcerNpoWeaponProfile(n,baseAttackerProfile,'melee')" in melee
+
+
+def test_rewards_casualties_are_queued_and_resolved_sequentially():
+    assert "let rewardsQueueInProgress=false" in APP
+    queue = APP[APP.index("async function processRewardsOfAnnihilationQueue"):APP.index("function showNpoAttackWizard")]
+    assert "for(const transactionId of state.eventState.rewardsTriggers)" in queue
+    assert "if(!transaction||transaction.committed)continue" in queue
+    assert "const rolls=await requestDiceResults" in queue
+    assert queue.index("const rolls=await requestDiceResults") < queue.index("Object.assign(transaction")
