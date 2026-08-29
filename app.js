@@ -1489,7 +1489,8 @@ document.addEventListener('touchend',function(e){
     }
     if(Array.isArray(raw.roster)){
       const validation=validateNpoRoster(merged.roster);
-      if(!validation.valid)throw new Error(`Saved NPO roster is invalid: ${validation.errors.join(' ')}`);
+      const variantValidation=validateNpoRoster(merged.roster,merged.tombWorldVariant);
+      if(!validation.valid||!variantValidation.valid)throw new Error(`Saved NPO roster is invalid: ${[...validation.errors,...variantValidation.errors].join(' ')}`);
     }
     return merged;
   }
@@ -1527,7 +1528,7 @@ document.addEventListener('touchend',function(e){
     }
     return available.slice(0,quantity);
   }
-  function validateNpoRoster(roster=state.roster){
+  function validateNpoRoster(roster=state.roster,variantId=null){
     const errors=[], ids=new Set(), displayNumbers={},counts=Object.fromEntries(Object.keys(npoDefinitions).map(type=>[type,0]));
     if(!Array.isArray(roster))return {valid:false,errors:['NPO roster must be an array.']};
     roster.forEach((npo,index)=>{
@@ -1537,6 +1538,9 @@ document.addEventListener('touchend',function(e){
       else ids.add(npo.id);
       const definition=npoDefinition(npo.type);
       if(!definition){errors.push(`Unsupported NPO type: ${npo.type||'missing'}.`);return;}
+      if(variantId!==null&&tombsBeyondCountingNpoDefinitions[npo.type]&&!variantAllowsExpansionNpo(npo.type,variantId)){
+        errors.push(`${npo.type} is not legal for the ${(TOMB_WORLD_VARIANTS[variantId]||TOMB_WORLD_VARIANTS.standard).name} variant.`);return;
+      }
       counts[npo.type]++;
       if(!npo.name)errors.push(`NPO ${npo.id||index+1} is missing a name.`);
       if(definition.physicalQuantity>1){
@@ -1561,8 +1565,14 @@ document.addEventListener('touchend',function(e){
     if(roster.filter(npo=>npo?.type===TOMB_CRAWLER_TYPE&&npo.weaponId===ISOLATOR_LOADOUT).length>1)errors.push('Only one Tomb Crawler can have a transdimensional isolator.');
     return {valid:errors.length===0,errors,inventory:npoInventory(roster)};
   }
+  function variantAllowsExpansionNpo(type,variantId=state?.tombWorldVariant){
+    if(variantId==='flayer-curse')return type==='Flayed One';
+    if(variantId==='destroyer-cult')return ['Skorpekh Destroyer','Hexmark Destroyer'].includes(type);
+    if(variantId==='crownworld')return ['Royal Warden','Lychguard'].includes(type);
+    return false;
+  }
   function commitNpoRoster(candidate,action='update the NPO roster'){
-    const validation=validateNpoRoster(candidate);
+    const validation=validateNpoRoster(candidate,state.tombWorldVariant);
     if(validation.valid){state.roster=candidate;return true;}
     console.warn(`[NPO inventory] Could not ${action}.`,validation.errors);
     showToast(validation.errors[0]);
@@ -1779,6 +1789,7 @@ document.addEventListener('touchend',function(e){
     if(data.eventInstanceId&&!state.strategyData?.events?.some(event=>event.instanceId===data.eventInstanceId&&event.status!=='resolved'))return false;
     if(pending.resumeKind==='strategy'&&state.phase!=='strategy')return false;
     if(pending.resumeKind==='combat'&&!state.combatState&&!state.lastActivation?.combatDraft&&!state.hotResolution&&!state.fightState)return false;
+    if(pending.resumeKind==='rewards'&&!state.eventState.transactions?.[data.transactionId])return false;
     if(pending.resumeKind==='hot'&&(state.hotResolution?.id!==data.hotResolutionId||state.hotResolution.acknowledged))return false;
     if(pending.resumeKind==='player-activation'){
       const operativeId=state.combatState?.stage?.playerOperativeId;
@@ -1805,6 +1816,13 @@ document.addEventListener('touchend',function(e){
     const data=pending.resumeData||{};
     if(pending.resumeKind==='strategy'){await finishTurningPointStart();return true;}
     if(pending.resumeKind==='event'){await beginCurrentEvent();return true;}
+    if(pending.resumeKind==='rewards'){
+      const transaction=state.eventState.transactions?.[data.transactionId],npo=state.roster.find(item=>item.id===data.npoId);
+      if(!transaction||!npo||transaction.committed){acknowledgeCurrentDiceRequest();return false;}
+      delete transaction.requesting;
+      await resolveRewardsOfAnnihilation(n,{id:data.casualtyId,maxWounds:transaction.casualtyWounds},{transactionId:transaction.sourceTransactionId});
+      return true;
+    }
     if(pending.resumeKind==='combat'){
       if(state.fightState){await resumePersistedFight();return true;}
       if(state.combatState?.side==='player'){resolvePendingPlayerAttacks({...state.combatState.stage});return true;}
@@ -2555,7 +2573,7 @@ document.addEventListener('touchend',function(e){
       }
       state.roster.push(createNpo(result.type,`${result.type} ${i+1}`,{weaponId:result.weaponId,ready:false,deployed:false}));
     }
-    const validation=validateNpoRoster(state.roster);
+    const validation=validateNpoRoster(state.roster,state.tombWorldVariant);
     if(!validation.valid){state.roster=previousRoster;console.warn('[NPO inventory] Generated roster was rejected.',validation.errors);showToast('A legal NPO roster could not be generated.');return null;}
     selectStartingNpos(generation);
     state.newIds=[]; log(`${m.name}: selected ${generation.deploymentCount} of ${state.roster.length} starting NPOs (${formula}).`); return {count:state.roster.length,formula};
@@ -4336,6 +4354,8 @@ document.addEventListener('touchend',function(e){
       if(pair.replaced){
         pair.npos.forEach(created=>{created.reinforcement={turningPoint:state.turningPoint,placementConfirmed:true};});
         state.reinforcementState.operativeIds=state.reinforcementState.operativeIds.flatMap(operativeId=>operativeId===id?pair.npos.map(created=>created.id):[operativeId]);
+        const complete=state.reinforcementState.operativeIds.every(operativeId=>state.roster.find(item=>item.id===operativeId)?.reinforcement?.placementConfirmed);
+        state.reinforcementState.status=complete?'complete':'placement';
         save();render();return;
       }
     }
@@ -8243,13 +8263,13 @@ function showPlayerActivation(){
     if(!tombWorldEventActive('rewards-of-annihilation')||!['Skorpekh Destroyer','Hexmark Destroyer'].includes(n.type))return false;
     const casualtyWounds=Number(target.maxWounds||playerDefinition(target.id)?.wounds||0),diceCount=casualtyWounds>=12?2:1;
     const identity=summary.transactionId||`${state.turningPoint}:${state.activationNumber}:${n.id}:${target.id}:${state.eventState.rewardsTriggers.length}`;
-    const transaction=eventTransaction(`rewards:${identity}:${target.id}`,{definitionId:'rewards-of-annihilation',attackerId:n.id,casualtyId:target.id,casualtyWounds,diceCount,rolls:[],restored:0});
+    const transaction=eventTransaction(`rewards:${identity}:${target.id}`,{definitionId:'rewards-of-annihilation',sourceTransactionId:identity,attackerId:n.id,casualtyId:target.id,casualtyWounds,diceCount,rolls:[],restored:0});
     if(transaction.committed)return false;
     if(transaction.requesting)return false;
-    transaction.requesting=true;state.eventState.rewardsTriggers.push(transaction.id);save();
+    transaction.requesting=true;if(!state.eventState.rewardsTriggers.includes(transaction.id))state.eventState.rewardsTriggers.push(transaction.id);save();
     try{
       const requestKey=diceRequestKey('rewards-of-annihilation',transaction.id,n.id,target.id);
-      const rolls=await requestDiceResults({count:diceCount,sides:3,title:'REWARDS OF ANNIHILATION',instruction:`Roll ${diceCount===2?'2D3':'D3'} to restore the Destroyer’s lost wounds.`,rollerLabel:npoName(n),requestKey,resumeKind:'combat',resumeData:{transactionId:transaction.id,npoId:n.id,casualtyId:target.id}});
+      const rolls=await requestDiceResults({count:diceCount,sides:3,title:'REWARDS OF ANNIHILATION',instruction:`Roll ${diceCount===2?'2D3':'D3'} to restore the Destroyer’s lost wounds.`,rollerLabel:npoName(n),requestKey,resumeKind:'rewards',resumeData:{transactionId:transaction.id,npoId:n.id,casualtyId:target.id}});
       const before=n.wounds,total=rolls.reduce((sum,value)=>sum+value,0);n.wounds=Math.min(n.maxWounds,n.wounds+total);
       Object.assign(transaction,{rolls:[...rolls],result:total,restored:n.wounds-before,committed:true});delete transaction.requesting;
       log(`Rewards of Annihilation: ${npoName(n)} incapacitated ${playerName(target.id)}, rolled ${rolls.join('+')} and restored ${transaction.restored} wound${transaction.restored===1?'':'s'}.`);

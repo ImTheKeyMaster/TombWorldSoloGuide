@@ -78,3 +78,26 @@ def test_persistence_is_optional_without_schema_or_product_version_bump():
     assert f"v={CURRENT_APP_VERSION}" in INDEX
     assert "9.2.0" not in APP and "9.2.0" not in INDEX and "9.2.0" not in SW
     assert "Do you own this miniature?" not in APP
+
+
+def test_expansion_roster_types_are_legal_only_for_their_variant():
+    assert "variantAllowsExpansionNpo(npo.type,variantId)" in APP
+    assert "variantId==='flayer-curse'" in APP and "type==='Flayed One'" in APP
+    assert "variantId==='destroyer-cult'" in APP
+    assert "variantId==='crownworld'" in APP
+    assert "return false;" in APP[APP.index("function variantAllowsExpansionNpo"):APP.index("function commitNpoRoster")]
+
+
+def test_crownworld_reinforcement_pair_updates_placement_completion():
+    reinforcement = APP[APP.index("function confirmReinforcementPlacement"):APP.index("async function rollInitiative")]
+    assert "pair.npos.forEach" in reinforcement
+    assert "reinforcementState.operativeIds.every" in reinforcement
+    assert "reinforcementState.status=complete?'complete':'placement'" in reinforcement
+
+
+def test_rewards_manual_dice_has_a_dedicated_reload_resume_path():
+    assert "pending.resumeKind==='rewards'" in APP
+    assert "resumeKind:'rewards'" in APP
+    assert "sourceTransactionId:identity" in APP
+    assert "!state.eventState.rewardsTriggers.includes(transaction.id)" in APP
+    assert "delete transaction.requesting" in APP
