@@ -6905,6 +6905,7 @@ function showPlayerActivation(){
   function npoActionCost(n,actionId){
     const profileAction=(npoDefinition(n?.type)?.actions||[]).find(action=>action.id===actionId);
     if(profileAction&&Number.isFinite(Number(profileAction.ap)))return Math.max(0,Number(profileAction.ap));
+    if(actionId==='operate-hatch'&&npoBehavior(n)?.orderRule&&npoBehavior(n)?.operatesHatches)return 1;
     return Object.prototype.hasOwnProperty.call(NPO_CORE_ACTION_COSTS,actionId)?NPO_CORE_ACTION_COSTS[actionId]:null;
   }
   function npoActionChangesContext(actionId){
@@ -6924,6 +6925,7 @@ function showPlayerActivation(){
       'Reposition','Dash','Charge','Fall Back',
       ...(definition.rangedWeapons||[]).length?['Shoot']:[],
       ...(definition.meleeWeapons||[]).length?['Fight']:[],
+      ...(definition.behavior?.orderRule&&definition.behavior?.operatesHatches?['Operate Hatch']:[]),
       ...(definition.actions||[]).map(action=>action.name)
     ];
   }
@@ -7997,7 +7999,7 @@ function showPlayerActivation(){
           <div><small>Unsaved critical hits</small><strong>${attackSummary.critRemaining}</strong></div>
         </div>
       </section><div class="summary-box"><strong>Actions:</strong> ${attackSummary.attackType==='shoot'?'Shooting':'Melee'} attack resolved.${eliminationAction}</div>`:''}
-      ${!attackRequired?`<div class="wizard-actions"><button class="btn primary" id="completeNpo">Confirm ${escapeHtml(decision.action)} Complete</button></div>`:''}
+      ${!attackRequired?`<div class="wizard-actions">${isPvpMode()&&npoActionId(decision.action)==='operate-hatch'?'<button class="btn ghost" id="cancelNpoUtilityAction">Back</button>':''}<button class="btn primary" id="completeNpo">Confirm ${escapeHtml(decision.action)} Complete</button></div>`:''}
       ${attackRequired&&!targetConfirmed?renderNpoGuideFooter():''}
     </div>`;
     if(!modal.open)modal.showModal();
@@ -8020,6 +8022,7 @@ function showPlayerActivation(){
       if(!confirmed&&confirmTargetButton.isConnected)confirmTargetButton.disabled=false;
     };
     updateNpoTargetConfirmationAvailability();
+    $('#cancelNpoUtilityAction')?.addEventListener('click',()=>backFromNpoAttackSelection(n));
 
     $('#completeNpo')?.addEventListener('click',()=>{
       const pending=state.lastActivation?.pendingAction;

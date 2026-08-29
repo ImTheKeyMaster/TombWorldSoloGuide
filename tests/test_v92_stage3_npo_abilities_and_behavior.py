@@ -267,6 +267,18 @@ def test_all_five_use_shared_human_activation_and_hatches():
     picker = body('renderHumanNpoActionPicker')
     assert 'supportedHumanNpoActions' in picker and 'renderHumanActivationShell' in picker
     assert 'onEnd:()=>confirmEndHumanNpoActivation' in picker
+    catalog = body('supportedHumanNpoActions')
+    assert "definition.behavior?.orderRule&&definition.behavior?.operatesHatches?['Operate Hatch']:[]" in catalog
+    assert "actionId==='operate-hatch'&&npoBehavior(n)?.orderRule&&npoBehavior(n)?.operatesHatches" in body('npoActionCost')
+    result = APP.split('function renderNpoDecisionResult',1)[1].split('async function completeNpoActivation',1)[0]
+    assert 'cancelNpoUtilityAction' in result
+    assert 'backFromNpoAttackSelection(n)' in result
+
+
+def test_operate_hatch_is_hidden_from_standard_human_npo_catalog_metadata_gate():
+    catalog = body('supportedHumanNpoActions')
+    assert 'definition.behavior?.orderRule' in catalog
+    assert "definition.behavior?.operatesHatches?['Operate Hatch']" in catalog
 
 
 def test_stage3_persistence_dice_and_versions_remain_compatible():
