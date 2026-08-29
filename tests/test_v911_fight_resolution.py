@@ -188,3 +188,27 @@ const brutal={{...base,completed:false,turn:'attacker',history:[],successes:{{at
 if(commitFightBlock(brutal,'attacker','x',['y']))process.exit(6);
 """
     subprocess.run(['node','-e',script],cwd=ROOT,check=True)
+
+
+def test_incomplete_fight_dice_wait_for_dice_provider_recovery():
+    render=body('render')
+    assert 'fightDicePoolsComplete(state.fightState)' in render
+    assert 'renderFightResolution()' in render
+    pending=body('pendingDiceContextIsCurrent')
+    assert '!state.fightState' in pending
+    resume=body('resumePendingDiceWorkflow')
+    assert 'if(state.fightState){await resumePersistedFight();return true;}' in resume
+    checkpoint=body('resumeCheckpointedGameplayContext')
+    assert 'if(state.fightState){await resumePersistedFight();return true;}' in checkpoint
+
+
+def test_fight_dice_completion_gate_runtime():
+    import subprocess
+    gate=body('fightDicePoolsComplete')
+    script=f"""
+{gate}
+if(fightDicePoolsComplete({{attacker:{{attackDiceComplete:true}},defender:{{attackDiceComplete:false}}}}))process.exit(1);
+if(!fightDicePoolsComplete({{attacker:{{attackDiceComplete:true}},defender:{{attackDiceComplete:true}}}}))process.exit(2);
+if(fightDicePoolsComplete(null))process.exit(3);
+"""
+    subprocess.run(['node','-e',script],cwd=ROOT,check=True)

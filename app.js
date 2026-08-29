@@ -1710,7 +1710,7 @@ document.addEventListener('touchend',function(e){
     }
     if(data.eventInstanceId&&!state.strategyData?.events?.some(event=>event.instanceId===data.eventInstanceId&&event.status!=='resolved'))return false;
     if(pending.resumeKind==='strategy'&&state.phase!=='strategy')return false;
-    if(pending.resumeKind==='combat'&&!state.combatState&&!state.lastActivation?.combatDraft&&!state.hotResolution)return false;
+    if(pending.resumeKind==='combat'&&!state.combatState&&!state.lastActivation?.combatDraft&&!state.hotResolution&&!state.fightState)return false;
     if(pending.resumeKind==='hot'&&(state.hotResolution?.id!==data.hotResolutionId||state.hotResolution.acknowledged))return false;
     if(pending.resumeKind==='player-activation'){
       const operativeId=state.combatState?.stage?.playerOperativeId;
@@ -1738,6 +1738,7 @@ document.addEventListener('touchend',function(e){
     if(pending.resumeKind==='strategy'){await finishTurningPointStart();return true;}
     if(pending.resumeKind==='event'){await beginCurrentEvent();return true;}
     if(pending.resumeKind==='combat'){
+      if(state.fightState){await resumePersistedFight();return true;}
       if(state.combatState?.side==='player'){resolvePendingPlayerAttacks({...state.combatState.stage});return true;}
       if(state.lastActivation?.npoId){continueHumanNecronActivation();return true;}
       render();return true;
@@ -1788,6 +1789,7 @@ document.addEventListener('touchend',function(e){
     $('#confirmSpecialAction')?.click();return true;
   }
   async function resumeCheckpointedGameplayContext(){
+    if(state.fightState){await resumePersistedFight();return true;}
     if(await resumeMissionActionContext())return true;
     if(state.lastActivation?.side==='player'&&state.lastActivation.committed&&state.lastActivation.completionHookPending){await completeHumanPlayerActivation();return true;}
     if(state.lastActivation?.npoId&&state.lastActivation.committed&&state.lastActivation.completionHookPending){await completeNpoActivation();return true;}
@@ -2497,15 +2499,8 @@ document.addEventListener('touchend',function(e){
     if(state.hotResolution&&!state.hotResolution.acknowledged&&!modal.open){
       showHotResult(state.hotResolution,()=>resumePersistedHotContinuation(state.hotResolution));
     }
-    if(state.fightState&&!modal.open){
-      if(!activeFightContinuation){
-        const playerStage=state.combatState?.side==='player'?state.combatState.stage:null;
-        if(playerStage)activeFightContinuation=result=>continuePlayerMultiTargetAttack(playerStage,'melee',result);
-        else if(state.lastActivation?.pendingAction?.id==='fight')activeFightContinuation=result=>{
-          const pending=state.lastActivation?.pendingAction;
-          if(pending)commitNpoAction({actionId:pending.id,actionName:pending.name,apCost:pending.apCost,result:`${result.targetName} ${result.damage} damage`,attackSummary:result,attackSummaries:[result],transitionMode:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});
-        };
-      }
+    if(state.fightState&&fightDicePoolsComplete(state.fightState)&&!modal.open){
+      restoreFightContinuation();
       renderFightResolution();
     }
 
@@ -6126,6 +6121,30 @@ function showPlayerActivation(){
   }
 
   let activeFightContinuation=null;
+  let fightResumePending=false;
+  function fightDicePoolsComplete(fight){return Boolean(fight?.attacker?.attackDiceComplete&&fight?.defender?.attackDiceComplete);}
+  function restoreFightContinuation(){
+    if(activeFightContinuation)return activeFightContinuation;
+    const playerStage=state.combatState?.side==='player'?state.combatState.stage:null;
+    if(playerStage)activeFightContinuation=result=>continuePlayerMultiTargetAttack(playerStage,'melee',result);
+    else if(state.lastActivation?.pendingAction?.id==='fight')activeFightContinuation=result=>{
+      const pending=state.lastActivation?.pendingAction;
+      if(pending)commitNpoAction({actionId:pending.id,actionName:pending.name,apCost:pending.apCost,result:`${result.targetName} ${result.damage} damage`,attackSummary:result,attackSummaries:[result],transitionMode:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});
+    };
+    return activeFightContinuation;
+  }
+  async function resumePersistedFight(){
+    const fight=state.fightState;
+    if(!fight||fightResumePending)return false;
+    const continuation=restoreFightContinuation();
+    if(!continuation)return false;
+    fightResumePending=true;
+    try{
+      if(fightDicePoolsComplete(fight))renderFightResolution();
+      else await startSharedFight({id:fight.id,attacker:fight.attacker,defender:fight.defender,onComplete:continuation});
+      return true;
+    }finally{fightResumePending=false;}
+  }
   function normalizeFightState(fight){
     if(!isRecord(fight)||fight.version!==1||typeof fight.id!=='string'||!fight.id)return null;
     const participants={};
