@@ -719,13 +719,13 @@ document.addEventListener('touchend',function(e){
       id:'flayed-one',name:'Flayed One',type:'Flayed One',faction:'Necron',move:5,apl:2,save:4,wounds:9,baseSize:32,
       keywords:['Necron','Flayed One'],compatibilityBehavior:null,compatibilityAttack:{dice:4,hit:3,normal:4,crit:5},defaultWeaponId:'flayer-claws',loadoutOptions:null,
       rangedWeapons:[],meleeWeapons:[{id:'flayer-claws',name:'Flayer claws',type:'melee',attacks:4,hit:3,damage:{normal:4,critical:5},rules:['Ceaseless','Rending'],ruleIds:['ceaseless','rending']}],
-      actions:[],passiveRules:[],abilities:[{id:'horrifying-flaying',name:'Horrifying Flaying',deferred:true}],strategicRules:[],behavior:null
+      actions:[],passiveRules:[],abilities:[{id:'horrifying-flaying',name:'Horrifying Flaying',deferred:true}],strategicRules:[],behavior:{summary:'Move toward the enemy to Fight, seeking cover.',actions:['Fight','Charge','Reposition','Dash'],focus:'fight',operatesHatches:true,orderRule:'engage-if-fight-or-charge'}
     },
     'Skorpekh Destroyer': {
       id:'skorpekh-destroyer',name:'Skorpekh Destroyer',type:'Skorpekh Destroyer',faction:'Necron',move:6,apl:2,save:3,wounds:18,baseSize:50,
       keywords:['Necron','Destroyer Cult','Skorpekh Destroyer'],compatibilityBehavior:null,compatibilityAttack:{dice:4,hit:3,normal:4,crit:6},defaultWeaponId:'skorpekh-hyperphase-weapons',loadoutOptions:null,
       rangedWeapons:[],meleeWeapons:[{id:'skorpekh-hyperphase-weapons',name:'Skorpekh hyperphase weapons',type:'melee',attacks:4,hit:3,damage:{normal:4,critical:6},rules:['Balanced','Lethal 5+','Whirling Onslaught*'],ruleIds:['balanced','lethal'],lethal:5,deferredRules:['Whirling Onslaught']}],
-      actions:[],passiveRules:[{id:'hulking',name:'Hulking',deferred:true}],abilities:[{id:'hulking',name:'Hulking',deferred:true}],strategicRules:[],behavior:null
+      actions:[],passiveRules:[{id:'hulking',name:'Hulking',deferred:true}],abilities:[{id:'hulking',name:'Hulking',deferred:true}],strategicRules:[],behavior:{summary:'Move toward the enemy to Fight, seeking cover.',actions:['Fight','Charge','Reposition','Dash'],focus:'fight',operatesHatches:true,orderRule:'engage-if-fight-or-charge'}
     },
     'Hexmark Destroyer': {
       id:'hexmark-destroyer',name:'Hexmark Destroyer',type:'Hexmark Destroyer',faction:'Necron',move:6,apl:2,save:3,wounds:15,baseSize:50,
@@ -735,14 +735,14 @@ document.addEventListener('touchend',function(e){
         {id:'sweeping',name:'Sweeping',attacks:4,hit:3,damage:{normal:3,critical:2},rules:['Range 9"','Devastating 2','Piercing 1','Saturate','Torrent 2"'],ruleIds:['range','devastating','piercing','saturate','torrent'],range:9,devastating:2,piercing:1,torrent:2,manualResolution:'Also attack each other target within 2 inches of the primary target. Resolve each attack separately. Do not attack the primary target twice.'}
       ]}],
       meleeWeapons:[{id:'enmitic-disintegrator-pistols-point-blank',name:'Enmitic disintegrator pistols (point-blank)',type:'melee',attacks:5,hit:3,damage:{normal:3,critical:4},rules:[],ruleIds:[]}],
-      actions:[],passiveRules:[],abilities:[{id:'multi-threat-eliminator',name:'Multi-Threat Eliminator',deferred:true}],strategicRules:[],behavior:null
+      actions:[],passiveRules:[],abilities:[{id:'multi-threat-eliminator',name:'Multi-Threat Eliminator',deferred:true}],strategicRules:[],behavior:{summary:'Seek an unobscured shot, otherwise improve the mission position.',actions:['Fall Back','Shoot','Reposition','Dash','Fight'],focus:'shoot',operatesHatches:true,orderRule:'engage-if-shoot-or-fight'}
     },
     'Royal Warden': {
       id:'royal-warden',name:'Royal Warden',type:'Royal Warden',faction:'Necron',move:5,apl:3,save:3,wounds:14,baseSize:32,
       keywords:['Necron','Royal Warden'],compatibilityBehavior:null,compatibilityAttack:{dice:4,hit:3,normal:4,crit:6},defaultWeaponId:'relic-gauss-blaster',loadoutOptions:null,
       rangedWeapons:[{id:'relic-gauss-blaster',name:'Relic gauss blaster',type:'ranged',attacks:4,hit:3,damage:{normal:4,critical:6},rules:['Lethal 5+','Piercing 1'],ruleIds:['lethal','piercing'],lethal:5,piercing:1}],
       meleeWeapons:[{id:'bayonet',name:'Bayonet',type:'melee',attacks:4,hit:3,damage:{normal:3,critical:4},rules:[],ruleIds:[]}],
-      actions:[],passiveRules:[],abilities:[{id:'engrammatic-logic',name:'Engrammatic Logic',deferred:true}],strategicRules:[],behavior:null
+      actions:[],passiveRules:[],abilities:[{id:'engrammatic-logic',name:'Engrammatic Logic',deferred:true}],strategicRules:[],behavior:{summary:'Seek an unobscured shot, otherwise improve the mission position.',actions:['Fall Back','Shoot','Reposition','Dash','Fight'],focus:'shoot',operatesHatches:true,orderRule:'engage-if-shoot-or-fight'}
     },
     'Lychguard': {
       id:'lychguard',name:'Lychguard',type:'Lychguard',faction:'Necron',move:5,apl:2,save:3,wounds:13,baseSize:32,exclusiveMeleeLoadout:true,
@@ -751,8 +751,16 @@ document.addEventListener('touchend',function(e){
         {id:'hyperphase-sword',name:'Hyperphase sword',type:'melee',attacks:4,hit:3,damage:{normal:4,critical:6},rules:['Lethal 5+','Shield*'],ruleIds:['lethal'],lethal:5,deferredRules:['Shield']},
         {id:'warscythe',name:'Warscythe',type:'melee',attacks:4,hit:3,damage:{normal:5,critical:7},rules:['Lethal 5+'],ruleIds:['lethal'],lethal:5}
       ],
-      actions:[],passiveRules:[],abilities:[{id:'guardian-protocol',name:'Guardian Protocol',deferred:true}],strategicRules:[],behavior:null
+      actions:[],passiveRules:[],abilities:[{id:'guardian-protocol',name:'Guardian Protocol',deferred:true}],strategicRules:[],behavior:{summary:'Stay near the Royal Warden unless an enemy can be fought or charged.',actions:['Fight','Charge','Reposition','Dash'],focus:'warden',operatesHatches:true,orderRule:'engage-if-fight-charge-or-warden'}
     }
+  });
+  const STAGE3_RULE_TEXT=Object.freeze({
+    multiThreatRange:'Is the attacking operative within 8 inches of the Hexmark Destroyer?',
+    engrammatic:'Engrammatic Logic: if this NPO is within 6 inches of the Royal Warden, it can ignore stat changes caused by being Injured.',
+    horrifyingCandidates:'Which other living Player operatives are visible to and within 3 inches of either the Flayed One or the incapacitated operative?',
+    guardianRange:'Is this Royal Warden within Control Range of an Engaged Lychguard?',
+    guardianPrevented:'Guardian Protocol prevents this Royal Warden from being selected.',
+    lychguardMovement:'Can the Lychguard end this movement within Control Range of the Royal Warden?'
   });
 
   // Official NPO datacards, Tomb World Mission Pack pp. 6-7. Combat consumers use
@@ -991,7 +999,7 @@ document.addEventListener('touchend',function(e){
     gradeMilestone:null, gradeMilestoneSequence:0, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0,
     npoAttackTargetId:null,
     npoAttackSummary:null, combatState:null, fightState:null, pendingDice:null, weaponRuleResolution:null, hotResolution:null, missionState:null, missionRuntime:null, missionActionContext:null, startingNpoGeneration:null,
-    npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[]},
+    npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[],stage3Triggers:{}},
     eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[],transactions:{},playerAplModifiers:[],reanimationAttempts:{}}, gameEnd:null,
     finalResolution:{pending:false,turningPointEnded:false,cleanupComplete:false,battleEndHookComplete:false,resultLogged:false,invalidSaveCorrected:false}
   });
@@ -1254,7 +1262,8 @@ document.addEventListener('touchend',function(e){
       pendingMovementEffects:Array.isArray(importedRuleState.pendingMovementEffects)?importedRuleState.pendingMovementEffects.filter(isRecord).map(effect=>({...effect})):[],
       oncePerTurningPoint:isRecord(importedRuleState.oncePerTurningPoint)?{...importedRuleState.oncePerTurningPoint}:{},
       reanimatedTargetIds:normalizeIdList(importedRuleState.reanimatedTargetIds),
-      incapacitationTriggers:normalizeIdList(importedRuleState.incapacitationTriggers)
+      incapacitationTriggers:normalizeIdList(importedRuleState.incapacitationTriggers),
+      stage3Triggers:isRecord(importedRuleState.stage3Triggers)?Object.fromEntries(Object.entries(importedRuleState.stage3Triggers).filter(([,trigger])=>isRecord(trigger)).map(([id,trigger])=>[id,{...trigger}])):{}
     };
     merged.fightState=isRecord(raw?.fightState)&&raw.fightState.version===1
       ? normalizeFightState(raw.fightState)
@@ -1894,6 +1903,20 @@ document.addEventListener('touchend',function(e){
       if(item.targetId!==operativeId||item.expires!=='end-of-target-next-activation')return true;
       if(item.deferCurrentActivation){item.deferCurrentActivation=false;return true;}
       return false;
+    });
+  }
+  function choosePriorityPlayerTarget(candidateIds){
+    return [...candidateIds].sort((a,b)=>playerCurrentWounds(a)-playerCurrentWounds(b)
+      ||Number(state.playerActivatedIds.includes(a))-Number(state.playerActivatedIds.includes(b))
+      ||String(a).localeCompare(String(b)))[0]||null;
+  }
+  function chooseTabletopOperatives(title,question,candidateIds,{humanChoosesAll=false,allowNone=true}={}){
+    return new Promise(resolve=>{
+      const candidates=candidateIds.filter(id=>inPlayLivingPlayerOperativeIds().includes(id));
+      showModal(title,`<p id="stage3TabletopQuestion">${escapeHtml(question)}</p><div class="checklist" aria-describedby="stage3TabletopQuestion">${candidates.map(id=>`<label class="check-row"><input type="${humanChoosesAll?'checkbox':'radio'}" name="stage3Target" value="${escapeHtml(id)}"><span>${escapeHtml(playerTargetLabel(id))}</span></label>`).join('')||'<p class="muted">No other living Player operatives are available.</p>'}</div><div class="wizard-actions">${allowNone?'<button class="btn ghost" id="stage3NoEligible">No eligible operative</button>':''}<button class="btn primary" id="stage3ConfirmTargets">Continue</button></div>`);
+      const finish=ids=>{closeModal();resolve(ids);};
+      $('#stage3NoEligible')?.addEventListener('click',()=>finish([]));
+      $('#stage3ConfirmTargets').onclick=()=>finish($$('[name="stage3Target"]:checked',modal).map(input=>input.value));
     });
   }
   function applyMolecularBreach(sourceId,targetId){
@@ -4989,6 +5012,9 @@ function showPlayerActivation(){
         showAggressiveDefenseResolution(stage,pending,n,incapacitationId);
         return true;
       }
+      if(pending.attackType==='shoot'&&npoDefinition(n.type)?.id==='hexmark-destroyer'&&!pending.multiThreatResolved){
+        void resolveMultiThreatEliminator(stage,pending,n);return true;
+      }
       n.wounds=Math.max(0,pending.after);
       if(protectedForAction)n.wounds=Math.max(1,n.wounds);
       pending.committed=true;
@@ -5006,6 +5032,41 @@ function showPlayerActivation(){
       if(checkGameEnd()&&!stage.sequential)return true;
     }
     return false;
+  }
+
+  function finalDiscardedFailedAttackDice(attackDice=[]){return attackDice.filter(die=>!die.retained&&die.kind==='miss').length;}
+  function focusedHexmarkReactionProfile(hexmark,failedDice){
+    const focused=npoAttackProfiles(hexmark,'shoot').map(canonicalAttackProfile).find(profile=>profile.profileId==='focused');
+    return focused?{...focused,dice:Math.min(finalDiscardedFailedAttackDice(failedDice)+1,4)}:null;
+  }
+  async function resolveMultiThreatEliminator(stage,pending,hexmark){
+    const transactionId=pending.transactionId||`${playerActionTransactionIdentity(stage,'shoot').activationId}:shoot:${hexmark.id}`;
+    const reaction=stage3Trigger(`multi-threat-eliminator:${transactionId}`,{shootTransactionId:transactionId,withinEight:null,offered:false,decision:null,attackCount:null,profile:null,orderBefore:null,orderChanged:false,attackDice:null,defenseDice:null,damageCommitted:false});
+    if(reaction.status==='complete'){pending.multiThreatResolved=true;if(!applyPendingPlayerDamage(stage))finishPlayerAttackResolution(stage);return;}
+    if(reaction.withinEight===null){reaction.withinEight=await askYesNoRuleQuestion('Multi-Threat Eliminator',STAGE3_RULE_TEXT.multiThreatRange);save();}
+    if(!reaction.withinEight){reaction.status='complete';pending.multiThreatResolved=true;save();if(!applyPendingPlayerDamage(stage))finishPlayerAttackResolution(stage);return;}
+    if(!reaction.offered){reaction.offered=true;save();}
+    if(reaction.decision===null){reaction.decision=isPvpMode()?await askPerformOrSkip('Multi-Threat Eliminator','The Hexmark can perform a free Shoot against the attacking operative.'):'perform';save();}
+    if(reaction.decision==='skip'){reaction.status='complete';pending.multiThreatResolved=true;save();if(!applyPendingPlayerDamage(stage))finishPlayerAttackResolution(stage);return;}
+    const profile=reaction.profile?{...reaction.profile}:focusedHexmarkReactionProfile(hexmark,pending.attackDice||[]);if(!profile)return;
+    if(!reaction.profile){reaction.attackCount=profile.dice;reaction.profile={...profile};reaction.orderBefore=hexmark.order;reaction.orderChanged=true;hexmark.order='Engage';save();}
+    else if(reaction.orderChanged&&hexmark.order!=='Engage'){hexmark.order='Engage';save();}
+    const base=`multi-threat-eliminator:${transactionId}`;
+    if(!reaction.attackDice){reaction.attackDice=await requestAttackDiceForProfile(profile,{rollerLabel:npoName(hexmark),requestKeyBase:base,attackerSide:'npo'});save();}
+    if(!reaction.defenseDice){reaction.defenseDice=await requestDefenseDice(effectiveDefenseDiceCount(profile,reaction.attackDice,3),playerDefinition(stage.playerOperativeId)?.save||3,{rollerLabel:playerName(stage.playerOperativeId),requestKeyBase:base});save();acknowledgeDiceRequest(`${base}:defense`);}
+    if(!reaction.damageCommitted){const result=resolveRetainedCombat(reaction.attackDice,reaction.defenseDice,profile),damage=result.damage+devastatingDamageForAttack(reaction.attackDice,profile);commitStage3PlayerDamage(stage.playerOperativeId,damage);reaction.damageCommitted=true;}
+    reaction.status='complete';pending.multiThreatResolved=true;save();if(!applyPendingPlayerDamage(stage))finishPlayerAttackResolution(stage);
+  }
+  function askYesNoRuleQuestion(title,question){return new Promise(resolve=>{showModal(title,`<p>${escapeHtml(question)}</p><div class="wizard-actions"><button class="btn ghost" id="ruleAnswerNo">No</button><button class="btn primary" id="ruleAnswerYes">Yes</button></div>`);$('#ruleAnswerNo').onclick=()=>{closeModal();resolve(false);};$('#ruleAnswerYes').onclick=()=>{closeModal();resolve(true);};});}
+  function askPerformOrSkip(title,message){return new Promise(resolve=>{showModal(title,`<p>${escapeHtml(message)}</p><div class="wizard-actions"><button class="btn ghost" id="skipRuleAction">Skip</button><button class="btn primary" id="performRuleAction">Perform Free Shoot</button></div>`);$('#skipRuleAction').onclick=()=>{closeModal();resolve('skip');};$('#performRuleAction').onclick=()=>{closeModal();resolve('perform');};});}
+  function commitStage3PlayerDamage(operativeId,damage){
+    if(!inPlayLivingPlayerOperativeIds().includes(operativeId))return false;
+    state.playerWounds[operativeId]=Math.max(0,playerCurrentWounds(operativeId)-Math.max(0,Number(damage)||0));
+    if(state.playerWounds[operativeId]<=0){
+      if(!state.playerCasualtyIds.includes(operativeId))state.playerCasualtyIds.push(operativeId);
+      if(!state.playerActivatedIds.includes(operativeId))state.playerActivatedIds.push(operativeId);
+    }
+    state.playerReady=playerOperativesRemaining();return true;
   }
 
   async function showAggressiveDefenseResolution(stage,pending,target,incapacitationId){
@@ -5373,7 +5434,8 @@ function showPlayerActivation(){
       : rawGuidance&&typeof rawGuidance==='object'
         ? {...(inferWeaponGuidanceContext(definition,rawGuidance.text)||{}),...rawGuidance}
         : null;
-    const items=[guidance,weaponSentinel&&{text:`${weaponSentinel.name}: ${weaponSentinel.text}`,attackType:'shoot'}]
+    const injuredReminder=npo&&npo.wounds<npo.maxWounds&&activeNpos().some(item=>npoDefinition(item.type)?.id==='royal-warden')?{text:STAGE3_RULE_TEXT.engrammatic,attackType}:null;
+    const items=[guidance,weaponSentinel&&{text:`${weaponSentinel.name}: ${weaponSentinel.text}`,attackType:'shoot'},injuredReminder]
       .filter(item=>item?.text&&item.attackType===attackType&&(!profile||!item.weaponId||item.weaponId===profile.weaponId));
     return items.length?`<div class="summary-box"><strong>Weapon guidance</strong><ul>${items.map(item=>`<li>${escapeHtml(item.text)}</li>`).join('')}</ul></div>`:'';
   }
@@ -6140,7 +6202,8 @@ function showPlayerActivation(){
     if(!continuation)return false;
     fightResumePending=true;
     try{
-      if(fightDicePoolsComplete(fight))renderFightResolution();
+      if(fight.pendingStage3){void resumeStage3FightTrigger(fight);}
+      else if(fightDicePoolsComplete(fight))renderFightResolution();
       else await startSharedFight({id:fight.id,attacker:fight.attacker,defender:fight.defender,onComplete:continuation});
       return true;
     }finally{fightResumePending=false;}
@@ -6185,14 +6248,61 @@ function showPlayerActivation(){
     const npo=state.roster.find(item=>item.id===participant.id);if(!npo)return;
     npo.wounds=Math.max(0,wounds);if(npo.wounds<=0){npo.ready=false;npo.deployed=false;npo.battlefieldState='out-of-action';}
   }
+  function stage3Trigger(id,defaults={}){
+    state.npoRuleState.stage3Triggers=state.npoRuleState.stage3Triggers||{};
+    return state.npoRuleState.stage3Triggers[id]||(state.npoRuleState.stage3Triggers[id]={id,status:'pending',...defaults});
+  }
+  function fightParticipantDefinitionId(participant){return npoDefinition(state.roster.find(item=>item.id===participant?.id)?.type)?.id||null;}
+  function shieldBlockCapacity(participant){return fightParticipantDefinitionId(participant)==='lychguard'&&participant.profile?.weaponId==='hyperphase-sword'?2:1;}
+  function qualifyingWhirlingStrike(fight,role,success){return success?.kind==='critical'&&fightParticipantDefinitionId(fight?.[role])==='skorpekh-destroyer'&&fight[role].profile?.weaponId==='skorpekh-hyperphase-weapons';}
+  function qualifyingHorrifyingFlaying(fight,role,after){return after<=0&&fightParticipantDefinitionId(fight?.[role])==='flayed-one';}
+  async function resolveWhirlingOnslaught(fight,historyEntry){
+    fight.pendingStage3=true;save();
+    const occurrence=stage3Trigger(`whirling:${fight.id}:${historyEntry.index}`,{fightId:fight.id,historyIndex:historyEntry.index,candidateIds:null,damageByTarget:{}});
+    if(occurrence.status==='complete'){fight.pendingStage3=false;save();renderFightResolution();return;}
+    const primaryId=fight[otherFightRole(historyEntry.role)].id;
+    const eligible=inPlayLivingPlayerOperativeIds().filter(id=>id!==primaryId);
+    if(!Array.isArray(occurrence.candidateIds)){
+      occurrence.candidateIds=await chooseTabletopOperatives('Whirling Onslaught','Which other Player operatives are within this Skorpekh’s Control Range?',eligible,{humanChoosesAll:true});save();
+    }
+    for(const targetId of occurrence.candidateIds.filter(id=>inPlayLivingPlayerOperativeIds().includes(id))){
+      if(occurrence.damageByTarget[targetId]!==undefined)continue;
+      const requestKey=diceRequestKey('whirling-onslaught',fight.id,historyEntry.index,targetId);
+      const [damage]=await requestDiceResults({count:1,sides:3,title:'WHIRLING ONSLAUGHT',instruction:'Roll D3 damage for this nearby operative.',rollerLabel:playerName(targetId),requestKey,resumeKind:'fight',resumeData:{fightId:fight.id}});
+      occurrence.damageByTarget[targetId]=damage;commitStage3PlayerDamage(targetId,damage);save();
+    }
+    occurrence.status='complete';fight.pendingStage3=false;save();renderFightResolution();
+  }
+  async function resolveHorrifyingFlaying(fight,historyEntry){
+    fight.pendingStage3=true;save();
+    const occurrence=stage3Trigger(`horrifying-flaying:${fight.id}:${historyEntry.index}`,{fightId:fight.id,historyIndex:historyEntry.index,candidateIds:null,targetId:null,roll:null,applied:false});
+    if(occurrence.status==='complete'){fight.pendingStage3=false;save();renderFightResolution();return;}
+    const incapacitatedId=historyEntry.targetId,eligible=inPlayLivingPlayerOperativeIds().filter(id=>id!==incapacitatedId);
+    if(!Array.isArray(occurrence.candidateIds)){occurrence.candidateIds=await chooseTabletopOperatives('Horrifying Flaying',STAGE3_RULE_TEXT.horrifyingCandidates,eligible,{humanChoosesAll:!isPvpMode(),allowNone:true});save();}
+    if(!occurrence.candidateIds.length){occurrence.status='complete';fight.pendingStage3=false;save();renderFightResolution();return;}
+    if(!occurrence.targetId){occurrence.targetId=isPvpMode()?occurrence.candidateIds[0]:choosePriorityPlayerTarget(occurrence.candidateIds);save();}
+    if(occurrence.roll===null){const [roll]=await requestDiceResults({count:1,sides:6,title:'HORRIFYING FLAYING',instruction:'Roll D6. On 3+, the selected operative suffers -1 APL.',rollerLabel:playerName(occurrence.targetId),requestKey:diceRequestKey('horrifying-flaying',fight.id,historyEntry.index),resumeKind:'fight',resumeData:{fightId:fight.id}});occurrence.roll=roll;}
+    if(occurrence.roll>=3&&!occurrence.applied)occurrence.applied=applyTemporaryAplModifier({sourceId:`${fight.id}:${historyEntry.index}`,targetId:occurrence.targetId,ruleId:'horrifying-flaying',amount:-1});
+    occurrence.status='complete';fight.pendingStage3=false;save();renderFightResolution();
+  }
+  async function resumeStage3FightTrigger(fight){
+    const trigger=Object.values(state.npoRuleState.stage3Triggers||{}).find(item=>item.fightId===fight.id&&item.status!=='complete');
+    const historyEntry=fight.history.find(item=>item.index===trigger?.historyIndex);
+    if(!trigger||!historyEntry){fight.pendingStage3=false;save();renderFightResolution();return;}
+    if(trigger.id.startsWith('whirling:'))await resolveWhirlingOnslaught(fight,historyEntry);
+    else if(trigger.id.startsWith('horrifying-flaying:'))await resolveHorrifyingFlaying(fight,historyEntry);
+  }
   function commitFightStrike(fight,role,successId){
     if(!fight||fight.completed||fight.turn!==role)return false;
     const success=unresolvedFightSuccesses(fight,role).find(item=>item.id===successId);if(!success)return false;
     const actor=fight[role],target=fight[otherFightRole(role)],damage=success.kind==='critical'?actor.profile.crit:actor.profile.normal;
     success.status='struck';const before=target.wounds,after=Math.max(0,before-damage);target.wounds=after;setFightOperativeWounds(target,after);
     const shock=success.kind==='critical'?resolveFightShock(fight,role):null;
-    fight.history.push({index:fight.resolutionIndex++,type:'strike',role,successId,successKind:success.kind,damage,before,after,targetSide:target.side,targetId:target.id,...(shock?{shockDiscardedSuccessId:shock.id}:{})});
-    if(after<=0){fight.completed=true;fight.incapacitatedRole=otherFightRole(role);}else advanceFightTurn(fight);save();return true;
+    const historyEntry={index:fight.resolutionIndex++,type:'strike',role,successId,successKind:success.kind,damage,before,after,targetSide:target.side,targetId:target.id,...(shock?{shockDiscardedSuccessId:shock.id}:{})};fight.history.push(historyEntry);
+    if(after<=0){fight.completed=true;fight.incapacitatedRole=otherFightRole(role);}else advanceFightTurn(fight);save();
+    if(typeof qualifyingWhirlingStrike==='function'&&qualifyingWhirlingStrike(fight,role,success))void resolveWhirlingOnslaught(fight,historyEntry);
+    if(typeof qualifyingHorrifyingFlaying==='function'&&qualifyingHorrifyingFlaying(fight,role,after)&&target.side==='player')void resolveHorrifyingFlaying(fight,historyEntry);
+    return true;
   }
   function commitFightBlock(fight,role,blockerId,targetSuccessIds){
     if(!fight||fight.completed||fight.turn!==role)return false;
@@ -6204,15 +6314,28 @@ function showPlayerActivation(){
     advanceFightTurn(fight);save();return true;
   }
   function soloNpoFightDecision(fight,role){
-    const actor=fight[role],opponent=fight[otherFightRole(role)],own=unresolvedFightSuccesses(fight,role),enemy=unresolvedFightSuccesses(fight,otherFightRole(role));
+    const actor=fight[role],opponent=fight[otherFightRole(role)],own=unresolvedFightSuccesses(fight,role),enemy=unresolvedFightSuccesses(fight,otherFightRole(role)),capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
     const kill=[...own].sort((a,b)=>(a.kind==='critical')-(b.kind==='critical')).find(item=>(item.kind==='critical'?actor.profile.crit:actor.profile.normal)>=opponent.wounds);if(kill)return {type:'strike',successId:kill.id};
+    if(capacity>1&&enemy.reduce((total,item)=>total+(item.kind==='critical'?opponent.profile.crit:opponent.profile.normal),0)>=actor.wounds){
+      const shieldPlans=own.map(blocker=>({blocker,targets:fightBlockTargets(fight,role,blocker).sort((a,b)=>(b.kind==='critical'?opponent.profile.crit:opponent.profile.normal)-(a.kind==='critical'?opponent.profile.crit:opponent.profile.normal)).slice(0,capacity)}))
+        .filter(plan=>plan.targets.length)
+        .sort((a,b)=>b.targets.reduce((total,item)=>total+(item.kind==='critical'?opponent.profile.crit:opponent.profile.normal),0)-a.targets.reduce((total,item)=>total+(item.kind==='critical'?opponent.profile.crit:opponent.profile.normal),0));
+      if(shieldPlans.length)return {type:'block',successId:shieldPlans[0].blocker.id,targetSuccessIds:shieldPlans[0].targets.map(item=>item.id)};
+    }
     const lethal=enemy.find(item=>(item.kind==='critical'?opponent.profile.crit:opponent.profile.normal)>=actor.wounds);
-    if(lethal){const blocker=own.find(item=>fightBlockTargets(fight,role,item).some(target=>target.id===lethal.id));if(blocker)return {type:'block',successId:blocker.id,targetSuccessIds:[lethal.id]};}
+    if(lethal){const blocker=own.find(item=>fightBlockTargets(fight,role,item).some(target=>target.id===lethal.id));if(blocker){const legal=fightBlockTargets(fight,role,blocker).sort((a,b)=>(b.kind==='critical')-(a.kind==='critical'));return {type:'block',successId:blocker.id,targetSuccessIds:legal.slice(0,capacity).map(item=>item.id)};}}
     const normal=own.find(item=>item.kind==='normal');return {type:'strike',successId:(normal||own[0]).id};
   }
   function fightPoolHtml(fight,role){
     const participant=fight[role],pool=unresolvedFightSuccesses(fight,role),normal=pool.filter(item=>item.kind==='normal').length,critical=pool.length-normal;
     return `<section class="fight-pool ${fight.turn===role?'active':''}"><small>${escapeHtml(participant.label)} · ${escapeHtml(participant.profile.name)}</small><strong>${participant.wounds}/${participant.maxWounds} wounds</strong><div><span>Critical: ${critical}</span><span>Normal: ${normal}</span></div></section>`;
+  }
+  function showFightBlockSelection(fight,role,blockerId,initialTargetId){
+    const blocker=unresolvedFightSuccesses(fight,role).find(item=>item.id===blockerId),legal=fightBlockTargets(fight,role,blocker),capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
+    showModal('Shield Block',`<p><strong>Shield:</strong> this Block can block up to two unresolved successes.</p><div class="checklist">${legal.map(target=>`<label class="check-row"><input type="checkbox" name="shieldBlockTarget" value="${escapeHtml(target.id)}" ${target.id===initialTargetId?'checked':''}><span>${titleCaseRuleId(target.kind)} success</span></label>`).join('')}</div><div class="wizard-actions"><button class="btn primary" id="commitShieldBlock">Block Selected Successes</button></div>`);
+    const inputs=$$('[name="shieldBlockTarget"]',modal),button=$('#commitShieldBlock');
+    inputs.forEach(input=>input.onchange=()=>{const selected=inputs.filter(item=>item.checked);if(selected.length>capacity)input.checked=false;button.disabled=!inputs.some(item=>item.checked);});
+    button.onclick=()=>{const selected=inputs.filter(input=>input.checked).map(input=>input.value);if(commitFightBlock(fight,role,blockerId,selected))renderFightResolution();};
   }
   function finishFight(fight){
     if(fightCompletionInProgress)return;
@@ -6226,7 +6349,7 @@ function showPlayerActivation(){
     finally{fightCompletionInProgress=false;}
   }
   function renderFightResolution(){
-    const fight=state.fightState;if(!fight)return;if(fight.completed){finishFight(fight);return;}
+    const fight=state.fightState;if(!fight||fight.pendingStage3)return;if(fight.completed){finishFight(fight);return;}
     if(!unresolvedFightSuccesses(fight,fight.turn).length){
       const other=otherFightRole(fight.turn);
       if(unresolvedFightSuccesses(fight,other).length)fight.turn=other;else fight.completed=true;
@@ -6236,10 +6359,11 @@ function showPlayerActivation(){
     if(!human){const choice=soloNpoFightDecision(fight,role);if(choice.type==='block')commitFightBlock(fight,role,choice.successId,choice.targetSuccessIds);else commitFightStrike(fight,role,choice.successId);renderFightResolution();return;}
     const own=unresolvedFightSuccesses(fight,role);
     const strikes=own.map(success=>`<button class="btn primary" data-fight-strike="${escapeHtml(success.id)}" aria-label="Strike with ${success.kind} success, ${success.kind==='critical'?participant.profile.crit:participant.profile.normal} damage">Strike with ${titleCaseRuleId(success.kind)} · ${success.kind==='critical'?participant.profile.crit:participant.profile.normal} damage</button>`).join('');
+    const capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
     const blocks=own.flatMap(blocker=>fightBlockTargets(fight,role,blocker).map(target=>`<button class="btn secondary" data-fight-blocker="${escapeHtml(blocker.id)}" data-fight-block-target="${escapeHtml(target.id)}" aria-label="Block opponent ${target.kind} success with ${blocker.kind} success">Block ${titleCaseRuleId(target.kind)} with ${titleCaseRuleId(blocker.kind)}</button>`)).join('');
-    showModal('Resolve Fight',`<div class="fight-sequence"><p><strong>${escapeHtml(fight.attacker.label)}</strong> is fighting <strong>${escapeHtml(fight.defender.label)}</strong>.</p><div class="fight-pools">${fightPoolHtml(fight,'attacker')}${fightPoolHtml(fight,'defender')}</div><h3>${participant.side==='player'?'YOUR TURN':`${escapeHtml(participant.label)}’S TURN`}</h3><div class="fight-actions">${strikes}${blocks}</div><p class="muted">Choose one legal Strike or Block. Damage and Blocks commit immediately.</p></div>`);
+    showModal('Resolve Fight',`<div class="fight-sequence"><p><strong>${escapeHtml(fight.attacker.label)}</strong> is fighting <strong>${escapeHtml(fight.defender.label)}</strong>.</p><div class="fight-pools">${fightPoolHtml(fight,'attacker')}${fightPoolHtml(fight,'defender')}</div><h3>${participant.side==='player'?'YOUR TURN':`${escapeHtml(participant.label)}’S TURN`}</h3>${capacity>1?'<p><strong>Shield:</strong> this Block can block up to two unresolved successes.</p>':''}<div class="fight-actions">${strikes}${blocks}</div><p class="muted">Choose one legal Strike or Block. Damage and Blocks commit immediately.</p></div>`);
     $$('[data-fight-strike]',modal).forEach(button=>button.onclick=()=>{commitFightStrike(fight,role,button.dataset.fightStrike);renderFightResolution();});
-    $$('[data-fight-blocker]',modal).forEach(button=>button.onclick=()=>{commitFightBlock(fight,role,button.dataset.fightBlocker,[button.dataset.fightBlockTarget]);renderFightResolution();});
+    $$('[data-fight-blocker]',modal).forEach(button=>button.onclick=()=>{if(capacity>1)showFightBlockSelection(fight,role,button.dataset.fightBlocker,button.dataset.fightBlockTarget);else{commitFightBlock(fight,role,button.dataset.fightBlocker,[button.dataset.fightBlockTarget]);renderFightResolution();}});
   }
   async function rollFightParticipant(fight,role){
     const participant=fight[role];if(participant.attackDiceComplete)return;
@@ -6254,7 +6378,7 @@ function showPlayerActivation(){
   }
   async function startSharedFight({id,attacker,defender,onComplete}){
     activeFightContinuation=onComplete;let fight=state.fightState?.id===id?state.fightState:null;
-    if(!fight){fight={version:1,id,attacker:{...attacker},defender:{...defender},successes:{attacker:[],defender:[]},turn:'attacker',resolutionIndex:0,history:[],ruleTriggers:{},blockCapacity:{attacker:1,defender:1},completed:false,resultCommitted:false};state.fightState=fight;save();}
+    if(!fight){fight={version:1,id,attacker:{...attacker},defender:{...defender},successes:{attacker:[],defender:[]},turn:'attacker',resolutionIndex:0,history:[],ruleTriggers:{},blockCapacity:{attacker:shieldBlockCapacity(attacker),defender:shieldBlockCapacity(defender)},completed:false,resultCommitted:false};state.fightState=fight;save();}
     for(const role of ['attacker','defender']){
       const participant=fight[role],current=participant.side==='player'?playerCurrentWounds(participant.id):state.roster.find(item=>item.id===participant.id)?.wounds;
       if(Number.isFinite(current)&&fight.history.length===0)participant.wounds=current;
@@ -6407,6 +6531,7 @@ function showPlayerActivation(){
         ? `<strong>Weapon:</strong> ${escapeHtml(weapon.name)} · ${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}`
         : '<strong>Weapon:</strong> —';
       $('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target);
+      if(npoDefinition(target?.type)?.id==='skorpekh-destroyer'&&target.order==='Conceal')$('#aggressiveDefenseFields').insertAdjacentHTML('beforeend','<p class="muted"><strong>Hulking:</strong> while Concealed, this Skorpekh cannot use Light terrain to prevent it from being selected as a target.</p>');
       const weaponIndex=weapon?weapons.indexOf(weapon):-1;
       $('#weaponRules').innerHTML=weaponRulesHtml(weapon?playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex}):null);
       $('#openCombatResolution').disabled=!target||!weapon;
@@ -6427,6 +6552,15 @@ function showPlayerActivation(){
         });
       };
       const back=()=>showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel);
+      const guardianProtocolCheck=async()=>{
+        if(attackType!=='shoot'||npoDefinition(target.type)?.id!=='royal-warden'||!activeNpos().some(item=>npoDefinition(item.type)?.id==='lychguard'&&item.order==='Engage'))return false;
+        const identity=playerActionTransactionIdentity(stage,attackType),decision=stage3Trigger(`guardian-protocol:${identity.activationId}:${identity.actionId}:${target.id}`,{activationId:identity.activationId,actionId:identity.actionId,targetId:target.id,withinControlRange:null});
+        if(decision.withinControlRange===null){decision.withinControlRange=await askYesNoRuleQuestion('Guardian Protocol',STAGE3_RULE_TEXT.guardianRange);decision.status='complete';save();}
+        const protectedTarget=decision.withinControlRange;
+        if(!protectedTarget)return false;
+        showModal('Guardian Protocol',`<p>${STAGE3_RULE_TEXT.guardianPrevented}</p><div class="wizard-actions"><button class="btn primary" id="returnToShootTarget">Select Another Target</button></div>`);
+        $('#returnToShootTarget').onclick=back;return true;
+      };
       const ruleId=weaponHasRule(profile,'blast')?'blast':weaponHasRule(profile,'torrent')?'torrent':null;
       const actionIdentity=playerActionTransactionIdentity(stage,attackType);
       const resolutionKey=`player:${actionIdentity.activationId}:${actionIdentity.actionId}:${stage.playerOperativeId}:${target.id}:${profile.weaponId}`;
@@ -6436,12 +6570,12 @@ function showPlayerActivation(){
         const npoTargets=activeNpos().map(npo=>({id:npo.id,targetSide:'npo',label:npoName(npo),wounds:npo.wounds,inPlay:npo.battlefieldState==='deployed'}));
         showSecondaryTargetCheck({ruleId,distance:weaponRuleValue(profile,ruleId),attackerSide:'player',attackerId:stage.playerOperativeId,activationId:actionIdentity.activationId,actionId:actionIdentity.actionId,primaryTargetId:target.id,targets:ruleId==='blast'?[...playerTargets,...npoTargets]:npoTargets,weaponId:profile.weaponId,weaponName:profile.weaponName,profileKey:profile.profileId,profileName:profile.profileName,weaponRules:profile.rules,onContinue:proceed,onBack:back});return;
       };
-      if(weaponHasRule(profile,'seek-light')&&target.order==='Conceal'){showSeekLightCheck({target,resolutionKey,onContinue:selectSecondaryTargets,onBack:back});return;}
-      selectSecondaryTargets();
+      void guardianProtocolCheck().then(blocked=>{if(blocked)return;if(weaponHasRule(profile,'seek-light')&&target.order==='Conceal'){showSeekLightCheck({target,resolutionKey,onContinue:selectSecondaryTargets,onBack:back});return;}selectSecondaryTargets();});
     };
     renderChoices();
     const singleProfile=weapons.length===1?playerWeaponProfile(weapons[0],{operativeId:stage.playerOperativeId,attackType,weaponIndex:0}):null;
-    const requiresTabletopCheck=singleProfile&&['seek-light','blast','torrent'].some(ruleId=>weaponHasRule(singleProfile,ruleId));
+    const requiresStage3TargetCheck=attackType==='shoot'&&(npoDefinition(singleTarget?.type)?.id==='royal-warden'&&activeNpos().some(item=>npoDefinition(item.type)?.id==='lychguard'&&item.order==='Engage')||npoDefinition(singleTarget?.type)?.id==='skorpekh-destroyer'&&singleTarget.order==='Conceal');
+    const requiresTabletopCheck=requiresStage3TargetCheck||singleProfile&&['seek-light','blast','torrent'].some(ruleId=>weaponHasRule(singleProfile,ruleId));
     if(!isPvpMode()&&singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte Warrior'&&!darkDistance&&!requiresTabletopCheck)showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
   }
 
@@ -6703,6 +6837,9 @@ function showPlayerActivation(){
   };
   function npoMovementFocus(n,action){
     const id=npoDefinition(n.type)?.id;
+    const behavior=npoBehavior(n);
+    if(behavior?.focus==='warden')return activeNpos().some(item=>npoDefinition(item.type)?.id==='royal-warden')?'warden':'fight';
+    if(behavior?.focus)return behavior.focus;
     if(['geomancer','canoptek-macrocyte-accelerator','canoptek-macrocyte-reanimator'].includes(id))return 'support';
     if(String(action).includes('closest player operative'))return 'fight';
     if(String(action).includes('valid unobscured target'))return 'shoot';
@@ -6735,14 +6872,22 @@ function showPlayerActivation(){
       if(focus==='shoot')return {id:'reposition-general-position',purpose:'general-position',followUpActionId:null,guaranteesFollowUp:false,question:distance?`Can this NPO Reposition up to ${distance} to improve its position for the next activation or the mission?`:'Can this NPO Reposition to improve its position for the next activation or the mission?',help:'Select Yes if it can move closer to a future shooting position, gain useful cover, or help complete or defend the mission.'};
       if(focus==='fight'&&fightCanFollow)return {id:'reposition-enable-fight',purpose:'enable-fight',followUpActionId:'fight',guaranteesFollowUp:false,question:distance?`Can this NPO Reposition up to ${distance} closer to its target?`:'Can this NPO Reposition closer to its target?',help:'Select Yes if it can move closer to the nearest Player operative, using cover when possible.'};
       if(focus==='fight')return {question:distance?`Can this NPO Reposition up to ${distance} closer to its target?`:'Can this NPO Reposition closer to its target?',help:'Select Yes if it can move closer to the nearest Player operative, using cover when possible.'};
+      if(focus==='warden')return {id:'reposition-toward-royal-warden',purpose:'toward-royal-warden',question:STAGE3_RULE_TEXT.lychguardMovement,help:'Move toward the dynasty leader, using cover when possible. If none is in the killzone, move toward the closest Player operative.'};
       if(focus==='support')return {question:distance?`Can this NPO Reposition up to ${distance} to use a support action or help the mission?`:'Can this NPO Reposition to use a support action or help the mission?',help:'Select Yes if moving would help it use a higher-priority action or improve its mission position.'};
       return {question:distance?`Can this NPO Reposition up to ${distance} to help complete or defend the mission?`:'Can this NPO Reposition to help complete or defend the mission?',help:'Select Yes only if it can reach a clearly better mission position.'};
+    }
+    if(activation?.movementIntent?.movementActionCommitted&&activation.movementIntent.actionId==='dash')return {...activation.movementIntent,question:'Can this NPO use Dash to complete its Reposition movement intent?',help:npoMovementInstruction(n,action)};
+    if(remainingAp===1&&npoBehavior(n)?.orderRule){
+      if(focus==='warden')return {id:'dash-toward-royal-warden',purpose:'toward-royal-warden',question:STAGE3_RULE_TEXT.lychguardMovement,help:'Move toward the dynasty leader, using cover when possible. If none is in the killzone, move toward the closest Player operative.'};
+      if(focus==='fight')return {id:'dash-toward-enemy',purpose:'enable-fight',question:'Can a 3-inch Dash move this NPO closer to its target?',help:'Select Yes if the Dash moves it closer to the nearest Player operative, using cover when possible.'};
+      if(focus==='shoot')return {id:'dash-shooting-position',purpose:'general-position',question:'Can a 3-inch Dash improve this NPO’s shooting or mission position?',help:'Move toward a valid unobscured Shoot target if possible; otherwise improve its mission position.'};
     }
     if(remainingAp===1)return {id:'dash-final-position',purpose:'final-position',followUpActionId:null,guaranteesFollowUp:false,endsActivation:true,question:'Can this NPO use its last AP to Dash to a better position?',help:'Select Yes if the Dash improves cover, mission position, or its setup for the next Turning Point. The activation will end after the Dash.'};
     if(focus==='shoot'&&shootCanFollow&&!declined.has('dash-enable-shoot'))return {id:'dash-enable-shoot',purpose:'enable-shoot',followUpActionId:'shoot',guaranteesFollowUp:true,question:'Can a 3-inch Dash move this NPO to a position where it can Shoot?',help:'Select Yes only if it can finish the Dash with a Player operative it can Shoot.'};
     if(focus==='shoot')return {id:'dash-general-position',purpose:'general-position',followUpActionId:null,guaranteesFollowUp:false,question:'Can a 3-inch Dash improve this NPO’s position?',help:'Select Yes if it improves cover, moves it toward the mission, or sets up a better position for a later activation.'};
     if(focus==='fight'&&fightCanFollow)return {id:'dash-enable-fight',purpose:'enable-fight',followUpActionId:'fight',guaranteesFollowUp:false,question:'Can a 3-inch Dash move this NPO closer to its target?',help:'Select Yes if the Dash moves it closer to the nearest Player operative, using cover when possible.'};
     if(focus==='fight')return {question:'Can a 3-inch Dash move this NPO closer to its target?',help:'Select Yes if the Dash moves it closer to the nearest Player operative, using cover when possible.'};
+    if(focus==='warden')return {id:'dash-toward-royal-warden',purpose:'toward-royal-warden',question:STAGE3_RULE_TEXT.lychguardMovement,help:'Move toward the dynasty leader, using cover when possible. If none is in the killzone, move toward the closest Player operative.'};
     if(focus==='support')return {question:'Can a 3-inch Dash help this NPO use a support action?',help:'Select Yes if the Dash helps it reach an ally, enemy, or mission position needed for a higher-priority action.'};
     return {question:'Can a 3-inch Dash put this NPO in a better position?',help:'Select Yes if the Dash moves it toward a clear shot or a better mission position.'};
   }
@@ -6751,6 +6896,7 @@ function showPlayerActivation(){
     const distance=name==='Dash'?'3 inches':formatMovementDistance(npoRepositionDistance(n)),focus=npoMovementFocus(n,action);
     if(name==='Reposition'&&state.lastActivation?.movementIntent?.purpose==='enable-shoot')return distance?`Move this NPO up to ${distance} and finish where it can Shoot.`:'Move this NPO and finish where it can Shoot.';
     if(name==='Reposition'&&state.lastActivation?.movementIntent?.purpose==='general-position')return distance?`Move this NPO up to ${distance} to improve its cover, mission position, or setup for a later activation.`:'Move this NPO to improve its cover, mission position, or setup for a later activation.';
+    if(focus==='warden')return distance?`${name==='Dash'?'Dash':'Move'} this bodyguard up to ${distance} toward the dynasty leader, using cover when possible. If none is present, move toward the closest Player operative.`:'Move this bodyguard toward the dynasty leader, or the closest Player operative if none is present.';
     if(focus==='fight')return distance?`${name==='Dash'?'Dash':'Move'} this NPO up to ${distance} toward the selected Player operative, using cover when possible.`:`Move this NPO toward the selected Player operative, using cover when possible.`;
     if(focus==='shoot')return name==='Dash'?`Dash this NPO up to 3 inches toward a clear shot or a better mission position.`:distance?`Move this NPO up to ${distance} to get a clear shot. If that is not possible, move it to help the mission.`:'Move this NPO to get a clear shot. If that is not possible, move it to help the mission.';
     if(focus==='support')return distance?`${name==='Dash'?'Dash':'Move'} this NPO up to ${distance} toward an ally, enemy, or mission position needed for its next support action.`:`Move this NPO toward an ally, enemy, or mission position needed for its next support action.`;
@@ -6759,6 +6905,7 @@ function showPlayerActivation(){
   function npoActionCost(n,actionId){
     const profileAction=(npoDefinition(n?.type)?.actions||[]).find(action=>action.id===actionId);
     if(profileAction&&Number.isFinite(Number(profileAction.ap)))return Math.max(0,Number(profileAction.ap));
+    if(actionId==='operate-hatch'&&npoBehavior(n)?.orderRule&&npoBehavior(n)?.operatesHatches)return 1;
     return Object.prototype.hasOwnProperty.call(NPO_CORE_ACTION_COSTS,actionId)?NPO_CORE_ACTION_COSTS[actionId]:null;
   }
   function npoActionChangesContext(actionId){
@@ -6778,6 +6925,7 @@ function showPlayerActivation(){
       'Reposition','Dash','Charge','Fall Back',
       ...(definition.rangedWeapons||[]).length?['Shoot']:[],
       ...(definition.meleeWeapons||[]).length?['Fight']:[],
+      ...(definition.behavior?.orderRule&&definition.behavior?.operatesHatches?['Operate Hatch']:[]),
       ...(definition.actions||[]).map(action=>action.name)
     ];
   }
@@ -6826,6 +6974,11 @@ function showPlayerActivation(){
   function rankLegalNpoActions(n,legalActions,context={}){
     const definition=npoDefinition(n.type);
     const priorities={
+      'flayed-one':['Fight','Charge','Reposition','Dash'],
+      'skorpekh-destroyer':['Fight','Charge','Reposition','Dash'],
+      'hexmark-destroyer':['Fall Back','Shoot','Reposition','Dash','Fight'],
+      'royal-warden':['Fall Back','Shoot','Reposition','Dash','Fight'],
+      'lychguard':['Fight','Charge','Reposition','Dash'],
       'geomancer':['Canoptek Control','Molecular Breach','Geomantic Disturbance','Shoot','Fight','Reposition','Dash'],
       'canoptek-tomb-crawler':context.inEnemyControlRange?['Fight','Shoot','Charge','Reposition','Dash']:['Shoot','Charge','Fight','Reposition','Dash'],
       'canoptek-macrocyte-warrior':context.inEnemyControlRange?['Fight','Shoot','Charge','Reposition','Dash']:['Shoot','Charge','Fight','Reposition','Dash'],
@@ -7238,6 +7391,7 @@ function showPlayerActivation(){
     });
     const modifiers=(state.npoRuleState.aplModifiers||[]).filter(item=>item.targetId===n.id).map(item=>`${item.amount>0?'+':''}${item.amount} AP (${titleCaseRuleId(item.ruleId)})`);
     if((state.npoRuleState.pendingMovementEffects||[]).some(item=>item.targetId===n.id&&item.ruleId==='molecular-breach'))modifiers.push('Next movement uses Molecular Breach');
+    if(n.wounds<n.maxWounds&&activeNpos().some(item=>npoDefinition(item.type)?.id==='royal-warden'))modifiers.push(STAGE3_RULE_TEXT.engrammatic);
     renderHumanActivationShell({title:'NECRON ACTIVATION',name:npoName(n),wounds:n.wounds,maxWounds:n.maxWounds,
       baseApl:definition.apl,effectiveAp:activation.effectiveApl,remainingAp:activation.remainingAp,startingAp:activation.startingAp,
       order:n.order,loadout:definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name||npoWeapon(definition,n.weaponId)?.name||'',effects:modifiers,
@@ -7271,7 +7425,8 @@ function showPlayerActivation(){
     const definition=npoDefinition(n.type),modifiers=(state.npoRuleState.aplModifiers||[]).filter(item=>item.targetId===n.id);
     const pendingBreach=(state.npoRuleState.pendingMovementEffects||[]).some(item=>item.targetId===n.id&&item.ruleId==='molecular-breach');
     const loadout=definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name||npoWeapon(definition,n.weaponId)?.name,effective=effectiveApl(n.id,definition.apl);
-    return `<h2 id="activeNpoQuestionHeading">${escapeHtml(opponentSingularLabel())} Activation: ${escapeHtml(npoName(n))}</h2><div class="activation-profile-strip" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>APL ${definition.apl}${effective===definition.apl?'':` (${effective} AP this activation)`}</span><span>AP remaining: ${state.lastActivation.remainingAp}/${state.lastActivation.startingAp}</span><span>Order: ${escapeHtml(n.order)}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Next movement uses Molecular Breach</span>':''}</div>${renderNpoActionProgress()}`;
+    const engrammatic=n.wounds<n.maxWounds&&activeNpos().some(item=>npoDefinition(item.type)?.id==='royal-warden')?`<p class="muted">${escapeHtml(STAGE3_RULE_TEXT.engrammatic)}</p>`:'';
+    return `<h2 id="activeNpoQuestionHeading">${escapeHtml(opponentSingularLabel())} Activation: ${escapeHtml(npoName(n))}</h2>${engrammatic}<div class="activation-profile-strip" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>APL ${definition.apl}${effective===definition.apl?'':` (${effective} AP this activation)`}</span><span>AP remaining: ${state.lastActivation.remainingAp}/${state.lastActivation.startingAp}</span><span>Order: ${escapeHtml(n.order)}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Next movement uses Molecular Breach</span>':''}</div>${renderNpoActionProgress()}`;
   }
 
   function renderNpoGuideFooter({backDisabled=false}={}){
@@ -7362,7 +7517,12 @@ function showPlayerActivation(){
     const priorityReason=action==='Fall Back'?' This NPO is in a Player operative’s control range, so Fall Back is its first available action.':skippedFallBack?' Fall Back was not available, so use the next action in its priority list.':' This is the first action in its priority list that works now.';
     const movementInstruction=['reposition','dash'].includes(npoActionId(action))?npoMovementInstruction(n,action):null;
     const reason=c.action?`${movementInstruction||inquiry?.selectedInstruction||`Use ${action}.`}${priorityReason}`:'No useful actions remain.';
-    return {action,target,stance:'Engage',threat:attack?1:0,reason,path:[action]};
+    const rule=npoBehavior(n)?.orderRule;
+    const stance=rule==='engage-if-fight-or-charge'?(['Fight','Charge'].includes(action.split(' ')[0])?'Engage':'Conceal')
+      :rule==='engage-if-shoot-or-fight'?(['Shoot','Fight'].includes(action.split(' ')[0])?'Engage':'Conceal')
+      :rule==='engage-if-fight-charge-or-warden'?(['Fight','Charge'].includes(action.split(' ')[0])||state.lastActivation?.movementIntent?.purpose==='toward-royal-warden'&&activeNpos().some(item=>npoDefinition(item.type)?.id==='royal-warden'&&item.order==='Engage')?'Engage':'Conceal'):'Engage';
+    if(rule)n.order=stance;
+    return {action,target,stance,threat:attack?1:0,reason,path:[action]};
   }
 
   function continueNpoActivation(){
@@ -7483,9 +7643,12 @@ function showPlayerActivation(){
     activation.declinedActionIds=[];
     activation.declinedMovementIntentIds=[];
     activation.questionHistory=[];
+    const continuedMovementIntent=changesPosition&&actionId==='reposition'&&activation.remainingAp>0&&npoBehavior(n)?.orderRule&&!activation.pendingFollowUpAction&&activation.movementIntent
+      ? {...activation.movementIntent,id:`dash-complete-${activation.movementIntent.id}`,actionId:'dash',completesMovementIntentId:activation.movementIntent.id,movementActionCommitted:true}
+      : null;
     if(changesPosition)activation.currentContext={inEnemyControlRange:null,hasValidShootTarget:null,hasValidFightTarget:null};
     if(changesPosition&&activation.pendingFollowUpAction?.movementActionId===actionId)activation.pendingFollowUpAction={...activation.pendingFollowUpAction,movementCommitted:true,decisionPass:activation.decisionPass};
-    else if(changesPosition)activation.movementIntent=null;
+    else if(changesPosition)activation.movementIntent=continuedMovementIntent;
     state.npoAttackTargetId=null;state.npoAttackSummary=null;
     const journalAction=['reposition','dash'].includes(actionId)?npoMovementInstruction(n,actionName):actionName;
     log(`${npoName(n)} completed ${journalAction}. ${activation.remainingAp} AP remaining.`);
@@ -7836,7 +7999,7 @@ function showPlayerActivation(){
           <div><small>Unsaved critical hits</small><strong>${attackSummary.critRemaining}</strong></div>
         </div>
       </section><div class="summary-box"><strong>Actions:</strong> ${attackSummary.attackType==='shoot'?'Shooting':'Melee'} attack resolved.${eliminationAction}</div>`:''}
-      ${!attackRequired?`<div class="wizard-actions"><button class="btn primary" id="completeNpo">Confirm ${escapeHtml(decision.action)} Complete</button></div>`:''}
+      ${!attackRequired?`<div class="wizard-actions">${isPvpMode()&&npoActionId(decision.action)==='operate-hatch'?'<button class="btn ghost" id="cancelNpoUtilityAction">Back</button>':''}<button class="btn primary" id="completeNpo">Confirm ${escapeHtml(decision.action)} Complete</button></div>`:''}
       ${attackRequired&&!targetConfirmed?renderNpoGuideFooter():''}
     </div>`;
     if(!modal.open)modal.showModal();
@@ -7859,6 +8022,7 @@ function showPlayerActivation(){
       if(!confirmed&&confirmTargetButton.isConnected)confirmTargetButton.disabled=false;
     };
     updateNpoTargetConfirmationAvailability();
+    $('#cancelNpoUtilityAction')?.addEventListener('click',()=>backFromNpoAttackSelection(n));
 
     $('#completeNpo')?.addEventListener('click',()=>{
       const pending=state.lastActivation?.pendingAction;
