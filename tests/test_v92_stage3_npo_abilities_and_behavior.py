@@ -1,4 +1,5 @@
 import re
+import subprocess
 from pathlib import Path
 from versioning import CURRENT_APP_VERSION
 
@@ -86,11 +87,27 @@ def test_multi_threat_profile_attack_cap_target_and_free_cost_semantics():
     profile = body('focusedHexmarkReactionProfile')
     reaction = body('resolveMultiThreatEliminator')
     assert "profile.profileId==='focused'" in profile
-    assert 'Math.min(finalDiscardedFailedAttackDice(failedDice)+1,4)' in profile
+    assert 'dice:Math.min(finalDiscardedFailedAttackDice(failedDice)+1,4)' in profile
+    assert 'attacks:Math.min' not in profile
+    assert 'reaction.attackCount=profile.dice' in reaction
     assert 'stage.playerOperativeId' in reaction
     assert "hexmark.order='Engage'" in reaction
     assert 'commitNpoAction' not in reaction
     assert 'remainingAp' not in reaction
+
+
+def test_multi_threat_attack_count_examples_execute_against_canonical_dice_field():
+    script = f"""
+const npoAttackProfiles=()=>[{{profileId:'focused',dice:5,name:'Focused'}}];
+const canonicalAttackProfile=profile=>({{...profile}});
+{body('finalDiscardedFailedAttackDice')}
+{body('focusedHexmarkReactionProfile')}
+const pools=[0,1,3,5].map(count=>Array.from({{length:count}},()=>({{retained:false,kind:'miss'}})));
+const expected=[1,2,4,4];
+if(pools.some((pool,index)=>focusedHexmarkReactionProfile({{}},pool).dice!==expected[index]))process.exit(1);
+if(pools.some(pool=>'attacks' in focusedHexmarkReactionProfile({{}},pool)))process.exit(2);
+"""
+    subprocess.run(['node','-e',script],cwd=ROOT,check=True)
 
 
 def test_multi_threat_pvp_offer_pre_removal_and_reload_state():

@@ -5037,7 +5037,7 @@ function showPlayerActivation(){
   function finalDiscardedFailedAttackDice(attackDice=[]){return attackDice.filter(die=>!die.retained&&die.kind==='miss').length;}
   function focusedHexmarkReactionProfile(hexmark,failedDice){
     const focused=npoAttackProfiles(hexmark,'shoot').map(canonicalAttackProfile).find(profile=>profile.profileId==='focused');
-    return focused?{...focused,attacks:Math.min(finalDiscardedFailedAttackDice(failedDice)+1,4)}:null;
+    return focused?{...focused,dice:Math.min(finalDiscardedFailedAttackDice(failedDice)+1,4)}:null;
   }
   async function resolveMultiThreatEliminator(stage,pending,hexmark){
     const transactionId=pending.transactionId||`${playerActionTransactionIdentity(stage,'shoot').activationId}:shoot:${hexmark.id}`;
@@ -5049,7 +5049,7 @@ function showPlayerActivation(){
     if(reaction.decision===null){reaction.decision=isPvpMode()?await askPerformOrSkip('Multi-Threat Eliminator','The Hexmark can perform a free Shoot against the attacking operative.'):'perform';save();}
     if(reaction.decision==='skip'){reaction.status='complete';pending.multiThreatResolved=true;save();if(!applyPendingPlayerDamage(stage))finishPlayerAttackResolution(stage);return;}
     const profile=reaction.profile?{...reaction.profile}:focusedHexmarkReactionProfile(hexmark,pending.attackDice||[]);if(!profile)return;
-    if(!reaction.profile){reaction.attackCount=profile.attacks;reaction.profile={...profile};reaction.orderBefore=hexmark.order;reaction.orderChanged=true;hexmark.order='Engage';save();}
+    if(!reaction.profile){reaction.attackCount=profile.dice;reaction.profile={...profile};reaction.orderBefore=hexmark.order;reaction.orderChanged=true;hexmark.order='Engage';save();}
     else if(reaction.orderChanged&&hexmark.order!=='Engage'){hexmark.order='Engage';save();}
     const base=`multi-threat-eliminator:${transactionId}`;
     if(!reaction.attackDice){reaction.attackDice=await requestAttackDiceForProfile(profile,{rollerLabel:npoName(hexmark),requestKeyBase:base,attackerSide:'npo'});save();}
