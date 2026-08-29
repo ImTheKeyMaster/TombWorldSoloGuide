@@ -49,7 +49,7 @@ def test_whirling_triggers_only_from_committed_critical_strike_and_is_idempotent
 
 def test_whirling_secondary_casualties_do_not_end_primary_fight():
     splash = body('resolveWhirlingOnslaught')
-    assert 'playerCasualtyIds.push(targetId)' in splash
+    assert 'commitStage3PlayerDamage(targetId,damage)' in splash
     assert 'fight.completed=true' not in splash
 
 
@@ -59,6 +59,7 @@ def test_hulking_is_target_selection_reminder_only():
     assert 'target.order' in wizard
     assert 'effectiveDefenseDiceCount' not in wizard
     assert 'Confirm tabletop target legality' not in APP
+    assert 'requiresStage3TargetCheck' in wizard
 
 
 def test_multi_threat_trigger_and_final_failed_dice_count():
@@ -85,11 +86,22 @@ def test_multi_threat_profile_attack_cap_target_and_free_cost_semantics():
 def test_multi_threat_pvp_offer_pre_removal_and_reload_state():
     damage = body('applyPendingPlayerDamage')
     reaction = body('resolveMultiThreatEliminator')
-    assert damage.index('resolveMultiThreatEliminator') < damage.index('n.wounds=Math.max')
+    assert damage.index('resolveMultiThreatEliminator') < damage.index("n.battlefieldState='out-of-action'")
     assert 'askPerformOrSkip' in reaction and "decision==='skip'" in reaction
     for field in ('withinEight','offered','decision','attackCount','profile','attackDice','defenseDice','damageCommitted'):
         assert field in reaction
     assert "status==='complete'" in reaction and 'pending.multiThreatResolved=true' in reaction
+
+
+def test_multi_threat_resolves_after_attack_consequences_but_defers_removal():
+    damage = body('applyPendingPlayerDamage')
+    hook = damage.index("npoDefinition(n.type)?.id==='hexmark-destroyer'")
+    aggressive = damage.index('showAggressiveDefenseResolution')
+    removal = damage.index("n.battlefieldState='out-of-action'")
+    assert aggressive < hook < removal
+    pre_reaction = damage[aggressive:hook]
+    assert 'resolveNpoIncapacitation' not in pre_reaction
+    assert "n.wounds=Math.max(0,pending.after)" not in pre_reaction
 
 
 def test_engrammatic_logic_is_contextual_reminder_not_injury_engine():
@@ -99,6 +111,8 @@ def test_engrammatic_logic_is_contextual_reminder_not_injury_engine():
     assert "id==='royal-warden'" in guidance
     assert 'ignore stat changes caused by being Injured' in APP
     assert 'effectiveInjured' not in APP
+    assert 'STAGE3_RULE_TEXT.engrammatic' in body('renderNpoActivationHeader')
+    assert 'STAGE3_RULE_TEXT.engrammatic' in body('renderHumanNpoActionPicker')
 
 
 def test_shield_uses_shared_block_capacity_and_records_two_ids():
@@ -128,6 +142,9 @@ def test_guardian_protocol_is_specific_player_shoot_gate():
     assert "item.order==='Engage'" in wizard
     assert 'STAGE3_RULE_TEXT.guardianRange' in wizard
     assert 'STAGE3_RULE_TEXT.guardianPrevented' in wizard
+    assert 'guardian-protocol:${identity.activationId}:${identity.actionId}:${target.id}' in wizard
+    assert 'withinControlRange:null' in wizard
+    assert 'requiresStage3TargetCheck' in wizard
     assert wizard.index('guardianProtocolCheck') < wizard.index('selectSecondaryTargets();})')
 
 
@@ -157,6 +174,15 @@ def test_lychguard_warden_movement_intent_persists_in_shared_activation():
     assert 'STAGE3_RULE_TEXT.lychguardMovement' in inquiry
     assert "focus==='warden'" in instruction and 'closest Player operative' in instruction
     assert 'state.lastActivation.movementIntent={...q.movementIntent' in prompt
+    assert "id:'dash-toward-royal-warden'" in inquiry
+    assert "movementIntent?.purpose==='toward-royal-warden'" in body('chooseNpoDecision')
+
+
+def test_stage3_secondary_damage_uses_shared_casualty_bookkeeping():
+    damage = body('commitStage3PlayerDamage')
+    assert 'playerCasualtyIds.push(operativeId)' in damage
+    assert 'playerActivatedIds.push(operativeId)' in damage
+    assert 'state.playerReady=playerOperativesRemaining()' in damage
 
 
 def test_all_five_use_shared_human_activation_and_hatches():
