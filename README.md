@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v9.1.0
+# Tomb World Battle Guide v9.1.1
+
+## v9.1.1
+
+**Version 9.1.1 - Correct Kill Team Fight and Retaliation Resolution**
+
+- Replaced Fight's former attack-versus-save calculation with one shared, persisted alternating Strike/Block sequence for Player and NPO Fight actions.
+- Both combatants now roll their selected melee weapon's attack dice; normal and critical Strikes commit damage immediately, while legal Blocks consume both the blocking success and selected opposing success.
+- Added deterministic Solo NPO Fight decisions, human Player and PvP Necron decisions, Brutal Block restrictions, and Strike-timed Shock resolution.
+- Preserved Stun and pre-sequence melee rerolls through the central Dice Provider. Incomplete legacy aggregate Fight drafts are reset to the current action picker on load; the rest of the saved battle is preserved and the save schema remains version 3.
+- Corrected the canonical Canoptek Tomb Crawler claws profile to include Brutal.
+- Shoot resolution, hidden Tombs Beyond Counting definitions and variants, event composition, and setup behavior are unchanged.
 
 ## v9.1.0
 

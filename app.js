@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.1.0';
+  const APP_VERSION = '9.1.1';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -787,7 +787,7 @@ document.addEventListener('touchend',function(e){
         ]},
         {id:'transdimensional-isolator',name:'Transdimensional isolator',type:'ranged',attacks:5,hit:4,damage:{normal:5,critical:6},rules:['Dimensional Banishment'],ruleIds:['dimensional-banishment'],postAttackEffect:{id:'dimensional-banishment',trigger:{damageInflictedOrCriticalRetained:true,targetMustSurvive:true},roll:'2D6',comparison:'greater-than-post-damage-wounds',incapacitationPrecedence:true}}
       ],
-      meleeWeapons:[{id:'claws',name:'Claws',type:'melee',attacks:4,hit:4,damage:{normal:4,critical:4},rules:[],ruleIds:[]}],actions:[],
+      meleeWeapons:[{id:'claws',name:'Claws',type:'melee',attacks:4,hit:4,damage:{normal:4,critical:4},rules:['Brutal'],ruleIds:['brutal']}],actions:[],
       passiveRules:[
         {id:'weapon-sentinel',name:'Weapon Sentinel',targetValidity:{concealCannotUseLightTerrain:true,removeCoverSave:false},description:'With a Conceal order, this operative cannot use Light terrain to prevent selection as a valid target. It still retains any cover save.'},
         {id:'steadfast',name:'Steadfast',markerControlApl:3,overridesAplChangesForControl:true,description:'For marker-control determination only, this operative may be treated as having APL 3.'}
@@ -990,7 +990,7 @@ document.addEventListener('touchend',function(e){
     activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], playerWounds:{}, playerOperativeStates:{}, reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0,blockedByCapacity:0,blockedByInventory:0},
     gradeMilestone:null, gradeMilestoneSequence:0, tpStartThreat:0, tpStartGrade:0, tpStartDestroyedNpos:0, tpStartPlayerCasualties:0,
     npoAttackTargetId:null,
-    npoAttackSummary:null, combatState:null, pendingDice:null, weaponRuleResolution:null, hotResolution:null, missionState:null, missionRuntime:null, missionActionContext:null, startingNpoGeneration:null,
+    npoAttackSummary:null, combatState:null, fightState:null, pendingDice:null, weaponRuleResolution:null, hotResolution:null, missionState:null, missionRuntime:null, missionActionContext:null, startingNpoGeneration:null,
     npoRuleState:{aplModifiers:[],pendingMovementEffects:[],oncePerTurningPoint:{},reanimatedTargetIds:[],incapacitationTriggers:[]},
     eventState:{available:eventDeck.map(card=>card.instanceId),used:[],active:[],transactions:{},playerAplModifiers:[],reanimationAttempts:{}}, gameEnd:null,
     finalResolution:{pending:false,turningPointEnded:false,cleanupComplete:false,battleEndHookComplete:false,resultLogged:false,invalidSaveCorrected:false}
@@ -1256,6 +1256,14 @@ document.addEventListener('touchend',function(e){
       reanimatedTargetIds:normalizeIdList(importedRuleState.reanimatedTargetIds),
       incapacitationTriggers:normalizeIdList(importedRuleState.incapacitationTriggers)
     };
+    merged.fightState=isRecord(raw?.fightState)&&raw.fightState.version===1
+      ? normalizeFightState(raw.fightState)
+      : null;
+    // Aggregate pre-v9.1.1 melee drafts cannot be converted into alternating
+    // Strike/Block state. Reset only that unfinished action; preserve the battle.
+    if(!merged.fightState&&merged.combatState?.side==='player'&&isRecord(merged.combatState.stage?.meleeCombatDraft)){
+      merged.combatState={...merged.combatState,stage:{...merged.combatState.stage,meleeCombatDraft:null,pendingMelee:null,pendingMeleeResults:[]}};
+    }
     merged.startingNpoGeneration=isRecord(raw?.startingNpoGeneration)
       ? {...raw.startingNpoGeneration,dice:Array.isArray(raw.startingNpoGeneration.dice)?raw.startingNpoGeneration.dice.map(value=>boundedInteger(value,1,3,1)):[]}
       : null;
@@ -2485,6 +2493,17 @@ document.addEventListener('touchend',function(e){
 
     if(state.hotResolution&&!state.hotResolution.acknowledged&&!modal.open){
       showHotResult(state.hotResolution,()=>resumePersistedHotContinuation(state.hotResolution));
+    }
+    if(state.fightState&&!modal.open){
+      if(!activeFightContinuation){
+        const playerStage=state.combatState?.side==='player'?state.combatState.stage:null;
+        if(playerStage)activeFightContinuation=result=>continuePlayerMultiTargetAttack(playerStage,'melee',result);
+        else if(state.lastActivation?.pendingAction?.id==='fight')activeFightContinuation=result=>{
+          const pending=state.lastActivation?.pendingAction;
+          if(pending)commitNpoAction({actionId:pending.id,actionName:pending.name,apCost:pending.apCost,result:`${result.targetName} ${result.damage} damage`,attackSummary:result,attackSummaries:[result],transitionMode:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});
+        };
+      }
+      renderFightResolution();
     }
 
     if(movedToNewStep){
@@ -6103,6 +6122,116 @@ function showPlayerActivation(){
     };
   }
 
+  let activeFightContinuation=null;
+  function normalizeFightState(fight){
+    if(!isRecord(fight)||fight.version!==1)return null;
+    return {...fight,turn:['attacker','defender'].includes(fight.turn)?fight.turn:'attacker',resolutionIndex:Math.max(0,Number(fight.resolutionIndex||0)),successes:Object.fromEntries(['attacker','defender'].map(role=>[role,Array.isArray(fight.successes?.[role])?fight.successes[role].filter(isRecord).map(item=>({...item})):[]])),history:Array.isArray(fight.history)?fight.history.filter(isRecord).map(item=>({...item})):[],ruleTriggers:isRecord(fight.ruleTriggers)?{...fight.ruleTriggers}:{},completed:Boolean(fight.completed)};
+  }
+  function otherFightRole(role){return role==='attacker'?'defender':'attacker';}
+  function unresolvedFightSuccesses(fight,role){return (fight?.successes?.[role]||[]).filter(success=>success.status==='unresolved');}
+  function fightSuccessesFromDice(id,role,dice=[]){return dice.map((die,index)=>({id:`${id}:${role}:${index}:${die.kind}`,dieIndex:index,kind:die.kind==='crit'?'critical':'normal',status:die.retained?'unresolved':'discarded',value:die.value}));}
+  function fightBlockTargets(fight,role,blocker){
+    const opponent=fight[otherFightRole(role)];
+    if(weaponHasRule(opponent.profile,'brutal')&&blocker.kind!=='critical')return [];
+    return unresolvedFightSuccesses(fight,otherFightRole(role)).filter(target=>blocker.kind==='critical'||target.kind==='normal');
+  }
+  function canFightBlock(fight,role,blocker){return fightBlockTargets(fight,role,blocker).length>0;}
+  function advanceFightTurn(fight){
+    const other=otherFightRole(fight.turn);
+    if(unresolvedFightSuccesses(fight,other).length)fight.turn=other;
+    else if(!unresolvedFightSuccesses(fight,fight.turn).length)fight.completed=true;
+  }
+  function resolveFightShock(fight,role){
+    const key=`shock:${role}`;
+    if(!weaponHasRule(fight[role].profile,'shock')||fight.ruleTriggers[key])return null;
+    const pool=unresolvedFightSuccesses(fight,otherFightRole(role));
+    const discarded=pool.find(item=>item.kind==='normal')||pool.find(item=>item.kind==='critical')||null;
+    fight.ruleTriggers[key]=true;if(discarded)discarded.status='discarded-by-shock';return discarded;
+  }
+  function setFightOperativeWounds(participant,wounds){
+    if(participant.side==='player'){
+      state.playerWounds[participant.id]=Math.max(0,wounds);
+      if(wounds<=0&&!state.playerCasualtyIds.includes(participant.id))state.playerCasualtyIds.push(participant.id);
+      state.playerReady=playerOperativesRemaining();return;
+    }
+    const npo=state.roster.find(item=>item.id===participant.id);if(!npo)return;
+    npo.wounds=Math.max(0,wounds);if(npo.wounds<=0){npo.ready=false;npo.deployed=false;npo.battlefieldState='out-of-action';}
+  }
+  function commitFightStrike(fight,role,successId){
+    if(!fight||fight.completed||fight.turn!==role)return false;
+    const success=unresolvedFightSuccesses(fight,role).find(item=>item.id===successId);if(!success)return false;
+    const actor=fight[role],target=fight[otherFightRole(role)],damage=success.kind==='critical'?actor.profile.crit:actor.profile.normal;
+    success.status='struck';const before=target.wounds,after=Math.max(0,before-damage);target.wounds=after;setFightOperativeWounds(target,after);
+    const shock=success.kind==='critical'?resolveFightShock(fight,role):null;
+    fight.history.push({index:fight.resolutionIndex++,type:'strike',role,successId,successKind:success.kind,damage,before,after,targetSide:target.side,targetId:target.id,...(shock?{shockDiscardedSuccessId:shock.id}:{})});
+    if(after<=0){fight.completed=true;fight.incapacitatedRole=otherFightRole(role);}else advanceFightTurn(fight);save();return true;
+  }
+  function commitFightBlock(fight,role,blockerId,targetSuccessIds){
+    if(!fight||fight.completed||fight.turn!==role)return false;
+    const blocker=unresolvedFightSuccesses(fight,role).find(item=>item.id===blockerId),requested=[...new Set(Array.isArray(targetSuccessIds)?targetSuccessIds:[targetSuccessIds])];
+    const legal=fightBlockTargets(fight,role,blocker||{}),targets=requested.map(id=>legal.find(item=>item.id===id)).filter(Boolean),capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
+    if(!blocker||!targets.length||targets.length>capacity||targets.length!==requested.length)return false;
+    blocker.status='blocked';targets.forEach(target=>{target.status='blocked';});
+    fight.history.push({index:fight.resolutionIndex++,type:'block',role,successId:blocker.id,successKind:blocker.kind,blockedSuccessIds:targets.map(item=>item.id),blockedKinds:targets.map(item=>item.kind)});
+    advanceFightTurn(fight);save();return true;
+  }
+  function soloNpoFightDecision(fight,role){
+    const actor=fight[role],opponent=fight[otherFightRole(role)],own=unresolvedFightSuccesses(fight,role),enemy=unresolvedFightSuccesses(fight,otherFightRole(role));
+    const kill=[...own].sort((a,b)=>(a.kind==='critical')-(b.kind==='critical')).find(item=>(item.kind==='critical'?actor.profile.crit:actor.profile.normal)>=opponent.wounds);if(kill)return {type:'strike',successId:kill.id};
+    const lethal=enemy.find(item=>(item.kind==='critical'?opponent.profile.crit:opponent.profile.normal)>=actor.wounds);
+    if(lethal){const blocker=own.find(item=>fightBlockTargets(fight,role,item).some(target=>target.id===lethal.id));if(blocker)return {type:'block',successId:blocker.id,targetSuccessIds:[lethal.id]};}
+    const normal=own.find(item=>item.kind==='normal');return {type:'strike',successId:(normal||own[0]).id};
+  }
+  function fightPoolHtml(fight,role){
+    const participant=fight[role],pool=unresolvedFightSuccesses(fight,role),normal=pool.filter(item=>item.kind==='normal').length,critical=pool.length-normal;
+    return `<section class="fight-pool ${fight.turn===role?'active':''}"><small>${escapeHtml(participant.label)} · ${escapeHtml(participant.profile.name)}</small><strong>${participant.wounds}/${participant.maxWounds} wounds</strong><div><span>Critical: ${critical}</span><span>Normal: ${normal}</span></div></section>`;
+  }
+  function finishFight(fight){
+    const result=fight.result||{transactionId:fight.id,attackType:'melee',attackerName:fight.attacker.label,defenderName:fight.defender.label,targetId:fight.defender.id,targetName:fight.defender.label,side:fight.defender.side,weaponName:fight.attacker.profile.name,profile:fight.attacker.profile,before:fight.defender.initialWounds,after:fight.defender.wounds,damage:Math.max(0,fight.defender.initialWounds-fight.defender.wounds),committed:true,fightHistory:fight.history.map(item=>({...item})),fightTransactionId:fight.id};
+    if(!fight.resultCommitted){fight.result=result;fight.resultCommitted=true;save();}
+    closeModal();const continuation=activeFightContinuation;activeFightContinuation=null;
+    if(continuation){continuation(result);state.fightState=null;save();}else render();
+  }
+  function renderFightResolution(){
+    const fight=state.fightState;if(!fight)return;if(fight.completed){finishFight(fight);return;}
+    if(!unresolvedFightSuccesses(fight,fight.turn).length){
+      const other=otherFightRole(fight.turn);
+      if(unresolvedFightSuccesses(fight,other).length)fight.turn=other;else fight.completed=true;
+      save();renderFightResolution();return;
+    }
+    const role=fight.turn,participant=fight[role],human=participant.side==='player'||isPvpMode();
+    if(!human){const choice=soloNpoFightDecision(fight,role);if(choice.type==='block')commitFightBlock(fight,role,choice.successId,choice.targetSuccessIds);else commitFightStrike(fight,role,choice.successId);renderFightResolution();return;}
+    const own=unresolvedFightSuccesses(fight,role);
+    const strikes=own.map(success=>`<button class="btn primary" data-fight-strike="${escapeHtml(success.id)}" aria-label="Strike with ${success.kind} success, ${success.kind==='critical'?participant.profile.crit:participant.profile.normal} damage">Strike with ${titleCaseRuleId(success.kind)} · ${success.kind==='critical'?participant.profile.crit:participant.profile.normal} damage</button>`).join('');
+    const blocks=own.flatMap(blocker=>fightBlockTargets(fight,role,blocker).map(target=>`<button class="btn secondary" data-fight-blocker="${escapeHtml(blocker.id)}" data-fight-block-target="${escapeHtml(target.id)}" aria-label="Block opponent ${target.kind} success with ${blocker.kind} success">Block ${titleCaseRuleId(target.kind)} with ${titleCaseRuleId(blocker.kind)}</button>`)).join('');
+    showModal('Resolve Fight',`<div class="fight-sequence"><p><strong>${escapeHtml(fight.attacker.label)}</strong> is fighting <strong>${escapeHtml(fight.defender.label)}</strong>.</p><div class="fight-pools">${fightPoolHtml(fight,'attacker')}${fightPoolHtml(fight,'defender')}</div><h3>${participant.side==='player'?'YOUR TURN':`${escapeHtml(participant.label)}’S TURN`}</h3><div class="fight-actions">${strikes}${blocks}</div><p class="muted">Choose one legal Strike or Block. Damage and Blocks commit immediately.</p></div>`);
+    $$('[data-fight-strike]',modal).forEach(button=>button.onclick=()=>{commitFightStrike(fight,role,button.dataset.fightStrike);renderFightResolution();});
+    $$('[data-fight-blocker]',modal).forEach(button=>button.onclick=()=>{commitFightBlock(fight,role,button.dataset.fightBlocker,[button.dataset.fightBlockTarget]);renderFightResolution();});
+  }
+  async function rollFightParticipant(fight,role){
+    const participant=fight[role];if(participant.attackDice?.length)return;
+    participant.attackDice=await requestAttackDiceForProfile(participant.profile,{rollerLabel:participant.label,requestKeyBase:`fight:${fight.id}:${role}`,attackerSide:participant.side,container:modalBody,onInitialRoll:dice=>{participant.attackDice=dice.map(item=>({...item}));save();}});
+    participant.attackDice=participant.attackDice.map(item=>({...item}));fight.successes[role]=fightSuccessesFromDice(fight.id,role,participant.attackDice);
+    const target=fight[otherFightRole(role)];const stun=applyStunForAttack({profile:participant.profile,attackDice:participant.attackDice,sourceAttackId:`${fight.id}:${role}`,targetId:target.id,targetName:target.label,targetSide:target.side});if(stun.message)fight.messages=[...(fight.messages||[]),stun.message];save();
+  }
+  async function startSharedFight({id,attacker,defender,onComplete}){
+    activeFightContinuation=onComplete;let fight=state.fightState?.id===id?state.fightState:null;
+    if(!fight){fight={version:1,id,attacker:{...attacker},defender:{...defender},successes:{attacker:[],defender:[]},turn:'attacker',resolutionIndex:0,history:[],ruleTriggers:{},blockCapacity:{attacker:1,defender:1},completed:false,resultCommitted:false};state.fightState=fight;save();}
+    try{await rollFightParticipant(fight,'attacker');await rollFightParticipant(fight,'defender');acknowledgeCurrentDiceRequest();renderFightResolution();}catch(error){console.error('[Fight] Dice request failed. The Fight remains resumable.',error);}
+  }
+
+  function fightParticipantState({side,id,label,profile,wounds,maxWounds}){
+    return {side,id,label,profile:{...profile},initialWounds:Number(wounds),wounds:Number(wounds),maxWounds:Number(maxWounds)};
+  }
+  function choosePlayerRetaliationWeapon(operativeId,onSelected,onCancel){
+    const weapons=playerAttackWeapons(operativeId,'melee');
+    if(!weapons.length){showToast(`${playerName(operativeId)} has no melee weapon available to retaliate.`);onCancel();return;}
+    if(weapons.length===1){onSelected(playerWeaponProfile(weapons[0],{operativeId,attackType:'melee',weaponIndex:0}));return;}
+    showModal('Select Retaliation Weapon',`<p>${escapeHtml(playerName(operativeId))} must select a melee weapon for this Fight.</p><div class="field"><label for="retaliationWeapon">Melee weapon</label><select id="retaliationWeapon"><option value="">Select a weapon…</option>${weapons.map((weapon,index)=>`<option value="${index}">${escapeHtml(weapon.name)}</option>`).join('')}</select></div><div class="wizard-actions"><button class="btn ghost" id="cancelRetaliationWeapon">Back</button><button class="btn primary" id="confirmRetaliationWeapon" disabled>Roll Fight Dice</button></div>`);
+    const select=$('#retaliationWeapon'),confirm=$('#confirmRetaliationWeapon');select.onchange=()=>{confirm.disabled=select.value==='';};
+    $('#cancelRetaliationWeapon').onclick=onCancel;confirm.onclick=()=>{const index=Number(select.value);onSelected(playerWeaponProfile(weapons[index],{operativeId,attackType:'melee',weaponIndex:index}));};
+  }
+
   function aggressiveDefenseFields(npo){
     return npo?.type==='Canoptek Macrocyte Warrior'
       ? '<label class="check-row compact-check"><input type="checkbox" id="attackerWithinTwo"><span><strong>Attacker is within 2&quot; of this Macrocyte</strong><small>Required only if this attack incapacitates the Macrocyte.</small></span></label>'
@@ -6313,6 +6442,16 @@ function showPlayerActivation(){
     const attackLabel=attackType==='shoot'?'Shooting':'Melee';
     const profile=locked?.profile||playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex});
     const targetName=targetSide==='player'?playerName(targetId):npoName(target);
+    if(attackType==='melee'){
+      const retaliationProfile=canonicalAttackProfile(npoAttackProfiles(target,'melee')[0]);
+      if(!retaliationProfile?.dice){showToast(`${targetName} has no melee weapon available to retaliate.`);showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel);return;}
+      const actionIdentity=playerActionTransactionIdentity(stage,attackType);
+      const transactionId=`fight:${actionIdentity.activationId}:${actionIdentity.actionId}:player:${stage.playerOperativeId}:npo:${target.id}:${profile.weaponId}:${retaliationProfile.weaponId}`;
+      const attacker=fightParticipantState({side:'player',id:stage.playerOperativeId,label:playerName(stage.playerOperativeId),profile,wounds:playerCurrentWounds(stage.playerOperativeId),maxWounds:playerDefinition(stage.playerOperativeId)?.wounds});
+      const defender=fightParticipantState({side:'npo',id:target.id,label:targetName,profile:retaliationProfile,wounds:target.wounds,maxWounds:target.maxWounds});
+      void startSharedFight({id:transactionId,attacker,defender,onComplete:onResolved});
+      return;
+    }
     const attackerWithinTwo=Boolean($('#attackerWithinTwo')?.checked)||Boolean(result?.attackerWithinTwo);
     const screen=showSharedCombatResolutionScreen({
       title:`Resolve ${attackLabel} Attack`,attackerName:playerName(stage.playerOperativeId),defenderName:targetName,
@@ -7794,6 +7933,17 @@ function showPlayerActivation(){
       $('#cancelNpoAttack').onclick=()=>{if(onCancel)onCancel();};
       return;
     }
+    if(attackType==='melee'){
+      const attackerProfile=canonicalAttackProfile(availableProfiles[0]);
+      const begin=defenderProfile=>{
+        const transactionId=`fight:${state.lastActivation?.activationId||missionActivationId('npo',n.id)}:${state.lastActivation?.pendingAction?.decisionPass||1}:npo:${n.id}:player:${target.id}:${attackerProfile.weaponId}:${defenderProfile.weaponId}`;
+        const attacker=fightParticipantState({side:'npo',id:n.id,label:npoName(n),profile:attackerProfile,wounds:n.wounds,maxWounds:n.maxWounds});
+        const defender=fightParticipantState({side:'player',id:target.id,label:targetName,profile:defenderProfile,wounds:playerCurrentWounds(target.id),maxWounds:target.maxWounds||playerDefinition(target.id)?.wounds});
+        void startSharedFight({id:transactionId,attacker,defender,onComplete:summary=>onDone?.(summary,[summary])});
+      };
+      choosePlayerRetaliationWeapon(target.id,begin,()=>onCancel?.());
+      return;
+    }
     const initialProfile=savedCombat?saved.profile:locked?.profile||(availableProfiles.length===1?canonicalAttackProfile(availableProfiles[0]):null);
     let selectedProfileIndex=initialProfile?availableProfiles.findIndex(profile=>{
       const candidate=canonicalAttackProfile(profile);
@@ -7828,10 +7978,6 @@ function showPlayerActivation(){
     const commitCombat=(combat)=>{
       const pending=state.lastActivation?.pendingAction;
       if(resolutionCommitted||!pending||!canCommitNpoAction(pending.id,pending.apCost))return;
-      if(attackType==='melee'&&weaponHasRule(combat.profile,'shock')&&!combat.shockResolved){
-        showGuidedShockStep(combat,updated=>{state.lastActivation={...state.lastActivation,combatDraft:updated};save();showNpoAttackWizard(n,attackDice,onDone,onCancel,false);},()=>showNpoAttackWizard(n,attackDice,onDone,onCancel,false));
-        return;
-      }
       resolutionCommitted=true;
       const complete=$('#completeNpoCombat');
       complete.disabled=true;

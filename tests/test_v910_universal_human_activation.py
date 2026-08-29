@@ -348,5 +348,5 @@ def test_release_version_cache_and_save_schema():
     assert "tomb-world-battle-guide-${APP_VERSION}" not in SW
     assert "const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`" in SW
     assert f"V{CURRENT_APP_VERSION}" in INDEX and f"?v={CURRENT_APP_VERSION}" in INDEX
-    assert f"Version {CURRENT_APP_VERSION} - Universal Human Activations" in README
+    assert "Version 9.1.0 - Universal Human Activations" in README
     assert "const SAVE_VERSION = 3" in PERSISTENCE
