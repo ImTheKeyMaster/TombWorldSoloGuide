@@ -25,6 +25,9 @@ def test_horrifying_flaying_uses_fight_occurrence_dice_provider_and_temporary_ap
     assert 'requestDiceResults' in ability and 'sides:6' in ability
     assert 'occurrence.roll>=3' in ability and 'applyTemporaryAplModifier' in ability
     assert "ruleId:'horrifying-flaying'" in ability and "status==='complete'" in ability
+    candidate_checkpoint=ability.index('candidateIds=await chooseTabletopOperatives')
+    assert 'save();' in ability[candidate_checkpoint:ability.index('requestDiceResults')]
+    assert "if(!occurrence.targetId)" in ability
 
 
 def test_horrifying_flaying_apl_expires_after_next_activation():
@@ -68,7 +71,8 @@ def test_multi_threat_trigger_and_final_failed_dice_count():
     reaction = body('resolveMultiThreatEliminator')
     assert "pending.attackType==='shoot'" in damage and "hexmark-destroyer" in damage
     assert "!die.retained&&die.kind==='miss'" in count
-    assert 'pending.attackDice||[]' in reaction and 'finalDiscardedFailedAttackDice' in reaction
+    assert 'pending.attackDice||[]' in reaction and 'focusedHexmarkReactionProfile' in reaction
+    assert 'finalDiscardedFailedAttackDice' in body('focusedHexmarkReactionProfile')
     assert 'STAGE3_RULE_TEXT.multiThreatRange' in reaction
 
 
@@ -88,9 +92,26 @@ def test_multi_threat_pvp_offer_pre_removal_and_reload_state():
     reaction = body('resolveMultiThreatEliminator')
     assert damage.index('resolveMultiThreatEliminator') < damage.index("n.battlefieldState='out-of-action'")
     assert 'askPerformOrSkip' in reaction and "decision==='skip'" in reaction
-    for field in ('withinEight','offered','decision','attackCount','profile','attackDice','defenseDice','damageCommitted'):
+    for field in ('withinEight','offered','decision','attackCount','profile','orderBefore','orderChanged','attackDice','defenseDice','damageCommitted'):
         assert field in reaction
     assert "status==='complete'" in reaction and 'pending.multiThreatResolved=true' in reaction
+    assert "reaction.withinEight=await askYesNoRuleQuestion" in reaction
+    assert "reaction.decision=isPvpMode()?await askPerformOrSkip" in reaction
+    assert "reaction.profile?{...reaction.profile}" in reaction
+    assert "acknowledgeDiceRequest(`${base}:defense`)" in reaction
+
+
+def test_multi_threat_checkpoints_every_manual_pause_boundary():
+    reaction = body('resolveMultiThreatEliminator')
+    range_answer = reaction.index('reaction.withinEight=await askYesNoRuleQuestion')
+    offer = reaction.index('reaction.offered=true')
+    decision = reaction.index('reaction.decision=isPvpMode()?await askPerformOrSkip')
+    snapshot = reaction.index('reaction.profile={...profile}')
+    attack = reaction.index('reaction.attackDice=await requestAttackDiceForProfile')
+    defense = reaction.index('reaction.defenseDice=await requestDefenseDice')
+    for checkpoint, following in ((range_answer, offer), (offer, decision), (decision, snapshot), (snapshot, attack), (attack, defense)):
+        assert 'save();' in reaction[checkpoint:following]
+    assert 'save();acknowledgeDiceRequest(`${base}:defense`)' in reaction[defense:]
 
 
 def test_multi_threat_resolves_after_attack_consequences_but_defers_removal():

@@ -5041,18 +5041,19 @@ function showPlayerActivation(){
   }
   async function resolveMultiThreatEliminator(stage,pending,hexmark){
     const transactionId=pending.transactionId||`${playerActionTransactionIdentity(stage,'shoot').activationId}:shoot:${hexmark.id}`;
-    const reaction=stage3Trigger(`multi-threat-eliminator:${transactionId}`,{shootTransactionId:transactionId,withinEight:null,offered:false,decision:null,attackCount:null,profile:null,attackDice:null,defenseDice:null,damageCommitted:false});
+    const reaction=stage3Trigger(`multi-threat-eliminator:${transactionId}`,{shootTransactionId:transactionId,withinEight:null,offered:false,decision:null,attackCount:null,profile:null,orderBefore:null,orderChanged:false,attackDice:null,defenseDice:null,damageCommitted:false});
     if(reaction.status==='complete'){pending.multiThreatResolved=true;if(!applyPendingPlayerDamage(stage))finishPlayerAttackResolution(stage);return;}
-    if(reaction.withinEight===null)reaction.withinEight=await askYesNoRuleQuestion('Multi-Threat Eliminator',STAGE3_RULE_TEXT.multiThreatRange);
+    if(reaction.withinEight===null){reaction.withinEight=await askYesNoRuleQuestion('Multi-Threat Eliminator',STAGE3_RULE_TEXT.multiThreatRange);save();}
     if(!reaction.withinEight){reaction.status='complete';pending.multiThreatResolved=true;save();if(!applyPendingPlayerDamage(stage))finishPlayerAttackResolution(stage);return;}
-    reaction.offered=true;
-    if(reaction.decision===null)reaction.decision=isPvpMode()?await askPerformOrSkip('Multi-Threat Eliminator','The Hexmark can perform a free Shoot against the attacking operative.'):'perform';
+    if(!reaction.offered){reaction.offered=true;save();}
+    if(reaction.decision===null){reaction.decision=isPvpMode()?await askPerformOrSkip('Multi-Threat Eliminator','The Hexmark can perform a free Shoot against the attacking operative.'):'perform';save();}
     if(reaction.decision==='skip'){reaction.status='complete';pending.multiThreatResolved=true;save();if(!applyPendingPlayerDamage(stage))finishPlayerAttackResolution(stage);return;}
-    const failures=finalDiscardedFailedAttackDice(pending.attackDice||[]),profile=focusedHexmarkReactionProfile(hexmark,pending.attackDice||[]);if(!profile)return;
-    reaction.attackCount=profile.attacks;reaction.profile={...profile};hexmark.order='Engage';
+    const profile=reaction.profile?{...reaction.profile}:focusedHexmarkReactionProfile(hexmark,pending.attackDice||[]);if(!profile)return;
+    if(!reaction.profile){reaction.attackCount=profile.attacks;reaction.profile={...profile};reaction.orderBefore=hexmark.order;reaction.orderChanged=true;hexmark.order='Engage';save();}
+    else if(reaction.orderChanged&&hexmark.order!=='Engage'){hexmark.order='Engage';save();}
     const base=`multi-threat-eliminator:${transactionId}`;
-    reaction.attackDice=reaction.attackDice||await requestAttackDiceForProfile(profile,{rollerLabel:npoName(hexmark),requestKeyBase:base,attackerSide:'npo'});
-    reaction.defenseDice=reaction.defenseDice||await requestDefenseDice(effectiveDefenseDiceCount(profile,reaction.attackDice,3),playerDefinition(stage.playerOperativeId)?.save||3,{rollerLabel:playerName(stage.playerOperativeId),requestKeyBase:base});
+    if(!reaction.attackDice){reaction.attackDice=await requestAttackDiceForProfile(profile,{rollerLabel:npoName(hexmark),requestKeyBase:base,attackerSide:'npo'});save();}
+    if(!reaction.defenseDice){reaction.defenseDice=await requestDefenseDice(effectiveDefenseDiceCount(profile,reaction.attackDice,3),playerDefinition(stage.playerOperativeId)?.save||3,{rollerLabel:playerName(stage.playerOperativeId),requestKeyBase:base});save();acknowledgeDiceRequest(`${base}:defense`);}
     if(!reaction.damageCommitted){const result=resolveRetainedCombat(reaction.attackDice,reaction.defenseDice,profile),damage=result.damage+devastatingDamageForAttack(reaction.attackDice,profile);commitStage3PlayerDamage(stage.playerOperativeId,damage);reaction.damageCommitted=true;}
     reaction.status='complete';pending.multiThreatResolved=true;save();if(!applyPendingPlayerDamage(stage))finishPlayerAttackResolution(stage);
   }
@@ -6277,9 +6278,9 @@ function showPlayerActivation(){
     const occurrence=stage3Trigger(`horrifying-flaying:${fight.id}:${historyEntry.index}`,{fightId:fight.id,historyIndex:historyEntry.index,candidateIds:null,targetId:null,roll:null,applied:false});
     if(occurrence.status==='complete'){fight.pendingStage3=false;save();renderFightResolution();return;}
     const incapacitatedId=historyEntry.targetId,eligible=inPlayLivingPlayerOperativeIds().filter(id=>id!==incapacitatedId);
-    if(!Array.isArray(occurrence.candidateIds))occurrence.candidateIds=await chooseTabletopOperatives('Horrifying Flaying',STAGE3_RULE_TEXT.horrifyingCandidates,eligible,{humanChoosesAll:!isPvpMode(),allowNone:true});
+    if(!Array.isArray(occurrence.candidateIds)){occurrence.candidateIds=await chooseTabletopOperatives('Horrifying Flaying',STAGE3_RULE_TEXT.horrifyingCandidates,eligible,{humanChoosesAll:!isPvpMode(),allowNone:true});save();}
     if(!occurrence.candidateIds.length){occurrence.status='complete';fight.pendingStage3=false;save();renderFightResolution();return;}
-    occurrence.targetId=isPvpMode()?occurrence.candidateIds[0]:choosePriorityPlayerTarget(occurrence.candidateIds);
+    if(!occurrence.targetId){occurrence.targetId=isPvpMode()?occurrence.candidateIds[0]:choosePriorityPlayerTarget(occurrence.candidateIds);save();}
     if(occurrence.roll===null){const [roll]=await requestDiceResults({count:1,sides:6,title:'HORRIFYING FLAYING',instruction:'Roll D6. On 3+, the selected operative suffers -1 APL.',rollerLabel:playerName(occurrence.targetId),requestKey:diceRequestKey('horrifying-flaying',fight.id,historyEntry.index),resumeKind:'fight',resumeData:{fightId:fight.id}});occurrence.roll=roll;}
     if(occurrence.roll>=3&&!occurrence.applied)occurrence.applied=applyTemporaryAplModifier({sourceId:`${fight.id}:${historyEntry.index}`,targetId:occurrence.targetId,ruleId:'horrifying-flaying',amount:-1});
     occurrence.status='complete';fight.pendingStage3=false;save();renderFightResolution();
