@@ -754,6 +754,11 @@ document.addEventListener('touchend',function(e){
       actions:[],passiveRules:[],abilities:[{id:'guardian-protocol',name:'Guardian Protocol',deferred:true}],strategicRules:[],behavior:{summary:'Stay near the Royal Warden unless an enemy can be fought or charged.',actions:['Fight','Charge','Reposition','Dash'],focus:'warden',operatesHatches:true,orderRule:'engage-if-fight-charge-or-warden'}
     }
   });
+  const tombsBeyondCountingEventDefinitions=Object.freeze({
+    'flesh-hunger':{title:'Flesh Hunger',text:'If no Flayed One is in the killzone, set one up Ready with a Conceal order. Otherwise, one Flayed One immediately performs a free Charge or Reposition towards the closest Player operative.',execution:{type:'flesh-hunger'},duration:'immediate',redrawIfImpossible:true},
+    'rewards-of-annihilation':{title:'Rewards of Annihilation',text:'Until the end of the turning point, whenever a Skorpekh Destroyer or Hexmark Destroyer incapacitates a Player operative, that NPO regains D3 lost wounds, or 2D3 if that operative has a Wounds characteristic of 12 or more.',resultText:'Effect active until the end of this Turning Point.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'rewards-of-annihilation',gameplayHooks:[],automationType:'automatic',priority:20},
+    'enforcer-of-the-phaerons':{title:'Enforcer of the Phaerons',text:'Until the end of the turning point, an NPO in the same room as a Royal Warden has Ceaseless on its weapons.',resultText:'Effect active until the end of this Turning Point.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'enforcer-of-the-phaerons',gameplayHooks:['effectiveWeapon'],automationType:'tabletop-answer',priority:20}
+  });
   const STAGE3_RULE_TEXT=Object.freeze({
     multiThreatRange:'Is the attacking operative within 8 inches of the Hexmark Destroyer?',
     engrammatic:'Engrammatic Logic: if this NPO is within 6 inches of the Royal Warden, it can ignore stat changes caused by being Injured.',
@@ -862,8 +867,8 @@ document.addEventListener('touchend',function(e){
     {min:11,max:11,type:'Canoptek Tomb Crawler',weaponIds:['twin-gauss-reapers']},
     {min:12,max:12,type:'Canoptek Tomb Crawler',weaponIds:['transdimensional-isolator']}
   ];
+  const tombsBeyondCountingNpoDefinitionsForValidation=tombsBeyondCountingNpoDefinitions;
   const MAX_PHYSICAL_NPOS = Object.values(npoDefinitions).reduce((total,definition)=>total+definition.physicalQuantity,0);
-  // const tombsBeyondCountingNpoDefinitions remains the separate expansion catalog above.
   const TOMB_CRAWLER_TYPE = 'Canoptek Tomb Crawler';
   const ISOLATOR_LOADOUT = 'transdimensional-isolator';
 
@@ -880,7 +885,8 @@ document.addEventListener('touchend',function(e){
     'maze-reforms':{title:'The Maze Reforms',text:'Close one breach and up to D3 open hatchways. If this cannot be resolved, draw another event card.',execution:{type:'maze-reforms'},duration:'immediate',redrawIfImpossible:true},
     'stirrings-of-horror':{title:'Stirrings of Horror',text:'Increase the Threat level by 1. If the Threat level is already 15, draw another event card instead.',execution:{type:'stirrings'},duration:'immediate',redrawIfImpossible:true},
     'chittering-drone':{title:'A Chittering Drone',text:'If a Canoptek Scarab Swarm has lost any wounds, it regains all lost wounds. Otherwise, set up one Ready Canoptek Scarab Swarm with a Conceal order using the placement instructions on the event card. If neither effect is possible, draw another event card.',execution:{type:'chittering-drone'},duration:'immediate',redrawIfImpossible:true},
-    'awakened-warrior':{title:'Awakened Warrior',text:'Set up one Ready Necron Warrior with a Conceal order using the placement instructions on the event card. If no eligible Necron Warrior can be placed, draw another event card.',execution:{type:'awakened-warrior'},duration:'immediate',redrawIfImpossible:true}
+    'awakened-warrior':{title:'Awakened Warrior',text:'Set up one Ready Necron Warrior with a Conceal order using the placement instructions on the event card. If no eligible Necron Warrior can be placed, draw another event card.',execution:{type:'awakened-warrior'},duration:'immediate',redrawIfImpossible:true},
+    ...tombsBeyondCountingEventDefinitions
   };
   const eventDeck = [
     {instanceId:'subjugation-glyphs-1',definitionId:'subjugation-glyphs'},
@@ -895,14 +901,9 @@ document.addEventListener('touchend',function(e){
     {instanceId:'chittering-drone-1',definitionId:'chittering-drone'},
     {instanceId:'awakened-warrior-1',definitionId:'awakened-warrior'},
     {instanceId:'awakened-warrior-2',definitionId:'awakened-warrior'}
-    /* ];
-
-  const missionStateFactories */
   ];
 
   function eventDefinition(definitionId){return eventDefinitions[definitionId]||null;}
-
-
   const missionStateFactories = {
     escape:()=>({escapedIds:[],auspexCalibrations:{}}),
     sabotage:()=>({completedFeatureIds:[],featureOpenDetails:{},featureTransactions:{}}),
@@ -911,12 +912,6 @@ document.addEventListener('touchend',function(e){
     scout:()=>({awakenedRooms:{},scoutedRoomIds:[],scoutedByRoom:{}}),
     regroup:()=>({operativeChecks:{},lastCheckedTurningPoint:0})
   };
-
-  Object.assign(eventDefinitions,{
-    'flesh-hunger':{title:'Flesh Hunger',text:'If no Flayed One is in the killzone, set one up Ready with a Conceal order. Otherwise, one Flayed One immediately performs a free Charge or Reposition towards the closest Player operative.',execution:{type:'flesh-hunger'},duration:'immediate',redrawIfImpossible:true},
-    'rewards-of-annihilation':{title:'Rewards of Annihilation',text:'Until the end of the turning point, whenever a Skorpekh Destroyer or Hexmark Destroyer incapacitates a Player operative, that NPO regains D3 lost wounds, or 2D3 if that operative has a Wounds characteristic of 12 or more.',resultText:'Effect active until the end of this Turning Point.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'rewards-of-annihilation',gameplayHooks:[],automationType:'automatic',priority:20},
-    'enforcer-of-the-phaerons':{title:'Enforcer of the Phaerons',text:'Until the end of the turning point, an NPO in the same room as a Royal Warden has Ceaseless on its weapons.',resultText:'Effect active until the end of this Turning Point.',execution:{type:'activate'},lifecycle:'persistent',duration:'turning-point',handlerId:'enforcer-of-the-phaerons',gameplayHooks:['effectiveWeapon'],automationType:'tabletop-answer',priority:20}
-  });
 
   const isRecord = value => Boolean(value)&&typeof value==='object'&&!Array.isArray(value);
   const boundedInteger = (value,min,max,fallback=min) => {
@@ -1539,7 +1534,7 @@ document.addEventListener('touchend',function(e){
       else ids.add(npo.id);
       const definition=npoDefinition(npo.type);
       if(!definition){errors.push(`Unsupported NPO type: ${npo.type||'missing'}.`);return;}
-      if(variantId!==null&&tombsBeyondCountingNpoDefinitions[npo.type]&&!variantAllowsExpansionNpo(npo.type,variantId)){
+      if(variantId!==null&&tombsBeyondCountingNpoDefinitionsForValidation[npo.type]&&!variantAllowsExpansionNpo(npo.type,variantId)){
         errors.push(`${npo.type} is not legal for the ${(TOMB_WORLD_VARIANTS[variantId]||TOMB_WORLD_VARIANTS.standard).name} variant.`);return;
       }
       counts[npo.type]++;
@@ -1957,6 +1952,13 @@ document.addEventListener('touchend',function(e){
     return state.playerRoster?.includes(operativeId)?effectivePlayerApl(operativeId,baseApl):effectiveNpoApl(operativeId,baseApl);
   }
   function effectiveWeaponProfile(profile,context={}){return EventEffects.effectiveWeaponProfile(state,profile,{turningPoint:state.turningPoint,...context});}
+  async function effectiveEnforcerNpoWeaponProfile(npo,profile,attackType){
+    if(!tombWorldEventActive('enforcer-of-the-phaerons')||weaponHasRule(profile,'ceaseless')||!activeNpos().some(item=>item.type==='Royal Warden'))return effectiveWeaponProfile(profile,{attackerSide:'npo',attackType,sameRoomAsRoyalWarden:false});
+    const sameRoom=npo.type==='Royal Warden'||await askYesNoRuleQuestion('Enforcer of the Phaerons',`Is ${npoName(npo)} in the same room as a Royal Warden?`);
+    const transaction=eventTransaction(`enforcer-room:${state.turningPoint}:${state.activationNumber}:${npo.id}:${attackType}`,{definitionAnswers:{}});
+    transaction.definitionAnswers.sameRoomAsRoyalWarden=sameRoom;save();
+    return effectiveWeaponProfile(profile,{attackerSide:'npo',attackType,sameRoomAsRoyalWarden:sameRoom});
+  }
   function effectiveAttackRerolls(context={}){return EventEffects.effectiveAttackRerolls(state,{turningPoint:state.turningPoint,...context});}
   function applyActiveTombWorldEventHooks(hookName,context={}){return EventEffects.applyActiveTombWorldEventHooks(state,hookName,{turningPoint:state.turningPoint,...context});}
   function resolveNpoIncapacitation(context={}){return EventEffects.resolveNpoIncapacitation(state,{turningPoint:state.turningPoint,...context});}
@@ -8335,8 +8337,9 @@ function showPlayerActivation(){
       return;
     }
     if(attackType==='melee'){
-      const attackerProfile=canonicalAttackProfile(availableProfiles[0]);
-      const begin=defenderProfile=>{
+      const baseAttackerProfile=canonicalAttackProfile(availableProfiles[0]);
+      const begin=async defenderProfile=>{
+        const attackerProfile=await effectiveEnforcerNpoWeaponProfile(n,baseAttackerProfile,'melee');
         const transactionId=`fight:${state.lastActivation?.activationId||missionActivationId('npo',n.id)}:${state.lastActivation?.pendingAction?.decisionPass||1}:npo:${n.id}:player:${target.id}:${attackerProfile.weaponId}:${defenderProfile.weaponId}`;
         const attacker=fightParticipantState({side:'npo',id:n.id,label:npoName(n),profile:attackerProfile,wounds:n.wounds,maxWounds:n.maxWounds});
         const defender=fightParticipantState({side:'player',id:target.id,label:targetName,profile:defenderProfile,wounds:playerCurrentWounds(target.id),maxWounds:target.maxWounds||playerDefinition(target.id)?.wounds});

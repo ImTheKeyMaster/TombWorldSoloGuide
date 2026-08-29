@@ -112,3 +112,11 @@ def test_rewards_uses_authoritative_stage_three_and_fight_sources():
     assert "transactionId:`multi-threat-eliminator:${transactionId}`" in APP
     assert "transactionId:`whirling:${fight.id}:${historyEntry.index}:${targetId}`" in APP
     assert "transactionId:`fight:${fight.id}:${historyEntry.index}`" in APP
+
+
+def test_enforcer_applies_to_shared_npo_fight_profiles():
+    assert "function effectiveEnforcerNpoWeaponProfile" in APP
+    assert "weaponHasRule(profile,'ceaseless')" in APP
+    assert "npo.type==='Royal Warden'||await askYesNoRuleQuestion" in APP
+    melee = APP[APP.index("if(attackType==='melee'){"):APP.index("const initialProfile", APP.index("if(attackType==='melee'){"))]
+    assert "await effectiveEnforcerNpoWeaponProfile(n,baseAttackerProfile,'melee')" in melee
