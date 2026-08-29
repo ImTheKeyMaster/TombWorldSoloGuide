@@ -1264,6 +1264,9 @@ document.addEventListener('touchend',function(e){
     if(!merged.fightState&&merged.combatState?.side==='player'&&isRecord(merged.combatState.stage?.meleeCombatDraft)){
       merged.combatState={...merged.combatState,stage:{...merged.combatState.stage,meleeCombatDraft:null,pendingMelee:null,pendingMeleeResults:[]}};
     }
+    if(!merged.fightState&&merged.lastActivation?.pendingAction?.id==='fight'&&isRecord(merged.lastActivation.combatDraft)){
+      merged.lastActivation={...merged.lastActivation,combatDraft:null,targetConfirmed:false,attackResolved:false};
+    }
     merged.startingNpoGeneration=isRecord(raw?.startingNpoGeneration)
       ? {...raw.startingNpoGeneration,dice:Array.isArray(raw.startingNpoGeneration.dice)?raw.startingNpoGeneration.dice.map(value=>boundedInteger(value,1,3,1)):[]}
       : null;
@@ -6124,8 +6127,14 @@ function showPlayerActivation(){
 
   let activeFightContinuation=null;
   function normalizeFightState(fight){
-    if(!isRecord(fight)||fight.version!==1)return null;
-    return {...fight,turn:['attacker','defender'].includes(fight.turn)?fight.turn:'attacker',resolutionIndex:Math.max(0,Number(fight.resolutionIndex||0)),successes:Object.fromEntries(['attacker','defender'].map(role=>[role,Array.isArray(fight.successes?.[role])?fight.successes[role].filter(isRecord).map(item=>({...item})):[]])),history:Array.isArray(fight.history)?fight.history.filter(isRecord).map(item=>({...item})):[],ruleTriggers:isRecord(fight.ruleTriggers)?{...fight.ruleTriggers}:{},completed:Boolean(fight.completed)};
+    if(!isRecord(fight)||fight.version!==1||typeof fight.id!=='string'||!fight.id)return null;
+    const participants={};
+    for(const role of ['attacker','defender']){
+      const participant=fight[role];
+      if(!isRecord(participant)||!['player','npo'].includes(participant.side)||typeof participant.id!=='string'||!participant.id||!isRecord(participant.profile))return null;
+      participants[role]={...participant,attackDice:Array.isArray(participant.attackDice)?participant.attackDice.filter(isRecord).map(item=>({...item})):[],attackDiceComplete:Boolean(participant.attackDiceComplete)};
+    }
+    return {...fight,...participants,turn:['attacker','defender'].includes(fight.turn)?fight.turn:'attacker',resolutionIndex:Math.max(0,Number(fight.resolutionIndex||0)),successes:Object.fromEntries(['attacker','defender'].map(role=>[role,Array.isArray(fight.successes?.[role])?fight.successes[role].filter(isRecord).map(item=>({...item})):[]])),history:Array.isArray(fight.history)?fight.history.filter(isRecord).map(item=>({...item})):[],ruleTriggers:isRecord(fight.ruleTriggers)?{...fight.ruleTriggers}:{},completed:Boolean(fight.completed)};
   }
   function otherFightRole(role){return role==='attacker'?'defender':'attacker';}
   function unresolvedFightSuccesses(fight,role){return (fight?.successes?.[role]||[]).filter(success=>success.status==='unresolved');}
@@ -6209,14 +6218,23 @@ function showPlayerActivation(){
     $$('[data-fight-blocker]',modal).forEach(button=>button.onclick=()=>{commitFightBlock(fight,role,button.dataset.fightBlocker,[button.dataset.fightBlockTarget]);renderFightResolution();});
   }
   async function rollFightParticipant(fight,role){
-    const participant=fight[role];if(participant.attackDice?.length)return;
-    participant.attackDice=await requestAttackDiceForProfile(participant.profile,{rollerLabel:participant.label,requestKeyBase:`fight:${fight.id}:${role}`,attackerSide:participant.side,container:modalBody,onInitialRoll:dice=>{participant.attackDice=dice.map(item=>({...item}));save();}});
-    participant.attackDice=participant.attackDice.map(item=>({...item}));fight.successes[role]=fightSuccessesFromDice(fight.id,role,participant.attackDice);
+    const participant=fight[role];if(participant.attackDiceComplete)return;
+    if(participant.attackDice?.length){
+      const rerolled=weaponRuleRerollsComplete(participant.attackDice,participant.profile)
+        ? participant.attackDice
+        : await applyWeaponRuleRerolls(participant.attackDice,participant.profile,{attackerSide:participant.side,container:modalBody,rollerLabel:participant.label,requestKeyBase:`fight:${fight.id}:${role}`,onCheckpoint:dice=>{participant.attackDice=dice.map(item=>({...item}));save();}});
+      participant.attackDice=applyAttackSuccessConversions(rerolled,participant.profile);
+    }else participant.attackDice=await requestAttackDiceForProfile(participant.profile,{rollerLabel:participant.label,requestKeyBase:`fight:${fight.id}:${role}`,attackerSide:participant.side,container:modalBody,onInitialRoll:dice=>{participant.attackDice=dice.map(item=>({...item}));participant.attackDiceComplete=false;save();}});
+    participant.attackDice=participant.attackDice.map(item=>({...item}));participant.attackDiceComplete=true;fight.successes[role]=fightSuccessesFromDice(fight.id,role,participant.attackDice);
     const target=fight[otherFightRole(role)];const stun=applyStunForAttack({profile:participant.profile,attackDice:participant.attackDice,sourceAttackId:`${fight.id}:${role}`,targetId:target.id,targetName:target.label,targetSide:target.side});if(stun.message)fight.messages=[...(fight.messages||[]),stun.message];save();
   }
   async function startSharedFight({id,attacker,defender,onComplete}){
     activeFightContinuation=onComplete;let fight=state.fightState?.id===id?state.fightState:null;
     if(!fight){fight={version:1,id,attacker:{...attacker},defender:{...defender},successes:{attacker:[],defender:[]},turn:'attacker',resolutionIndex:0,history:[],ruleTriggers:{},blockCapacity:{attacker:1,defender:1},completed:false,resultCommitted:false};state.fightState=fight;save();}
+    for(const role of ['attacker','defender']){
+      const participant=fight[role],current=participant.side==='player'?playerCurrentWounds(participant.id):state.roster.find(item=>item.id===participant.id)?.wounds;
+      if(Number.isFinite(current)&&fight.history.length===0)participant.wounds=current;
+    }
     try{await rollFightParticipant(fight,'attacker');await rollFightParticipant(fight,'defender');acknowledgeCurrentDiceRequest();renderFightResolution();}catch(error){console.error('[Fight] Dice request failed. The Fight remains resumable.',error);}
   }
 

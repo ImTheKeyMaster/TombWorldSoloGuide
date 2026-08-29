@@ -141,3 +141,50 @@ def test_hidden_expansion_and_stage3_scope_are_preserved():
     assert "name:'Shield',deferred:true" not in APP  # Shield remains datacard-only metadata
     assert "deferredRules:['Shield']" in APP
     assert 'Whirling Onslaught*' in APP and "name:'Horrifying Flaying',deferred:true" in APP
+
+
+def test_partial_attack_pool_is_not_treated_as_final_after_reload():
+    roll=body('rollFightParticipant')
+    assert 'participant.attackDiceComplete' in roll
+    assert 'weaponRuleRerollsComplete(participant.attackDice,participant.profile)' in roll
+    assert 'applyWeaponRuleRerolls(participant.attackDice,participant.profile' in roll
+    assert 'participant.attackDiceComplete=true' in roll
+
+
+def test_restored_fight_validation_and_wounds_are_authoritative():
+    normalize=body('normalizeFightState')
+    assert "typeof fight.id!=='string'" in normalize
+    assert "!['player','npo'].includes(participant.side)" in normalize
+    assert 'isRecord(participant.profile)' in normalize
+    start=body('startSharedFight')
+    assert 'playerCurrentWounds(participant.id)' in start
+    assert "state.roster.find(item=>item.id===participant.id)?.wounds" in start
+
+
+def test_legacy_npo_melee_draft_is_reset_without_losing_activation():
+    assert "merged.lastActivation?.pendingAction?.id==='fight'" in APP
+    assert 'combatDraft:null,targetConfirmed:false,attackResolved:false' in APP
+
+
+def test_shared_commit_api_runtime_semantics():
+    import subprocess
+    sources='\n'.join(body(name) for name in (
+        'otherFightRole','unresolvedFightSuccesses','fightBlockTargets','advanceFightTurn',
+        'resolveFightShock','setFightOperativeWounds','commitFightStrike','commitFightBlock'
+    ))
+    script=f"""
+const state={{playerWounds:{{p:9}},playerCasualtyIds:[],playerReady:1,playerRoster:['p'],playerActivatedIds:[],roster:[{{id:'n',wounds:10,ready:true,deployed:true,battlefieldState:'deployed'}}]}};
+const playerOperativesRemaining=()=>1;
+const save=()=>{{}};
+const weaponHasRule=(profile,id)=>(profile.ruleIds||[]).includes(id);
+{sources}
+const base={{successes:{{attacker:[{{id:'a-c',kind:'critical',status:'unresolved'}},{{id:'a-n',kind:'normal',status:'unresolved'}}],defender:[{{id:'d-c',kind:'critical',status:'unresolved'}},{{id:'d-n',kind:'normal',status:'unresolved'}}]}},attacker:{{side:'player',id:'p',wounds:9,profile:{{normal:3,crit:5,ruleIds:['shock']}}}},defender:{{side:'npo',id:'n',wounds:10,profile:{{normal:4,crit:6,ruleIds:[]}}}},turn:'attacker',resolutionIndex:0,history:[],ruleTriggers:{{}},blockCapacity:{{attacker:1,defender:1}},completed:false}};
+if(!commitFightStrike(base,'attacker','a-c'))process.exit(1);
+if(base.defender.wounds!==5||base.successes.attacker[0].status!=='struck'||base.successes.defender[1].status!=='discarded-by-shock'||base.turn!=='defender')process.exit(2);
+if(commitFightBlock(base,'defender','d-n',['a-c']))process.exit(3);
+if(!commitFightBlock(base,'defender','d-c',['a-n']))process.exit(4);
+if(base.successes.defender[0].status!=='blocked'||base.successes.attacker[1].status!=='blocked'||!base.completed)process.exit(5);
+const brutal={{...base,completed:false,turn:'attacker',history:[],successes:{{attacker:[{{id:'x',kind:'normal',status:'unresolved'}}],defender:[{{id:'y',kind:'normal',status:'unresolved'}}]}},attacker:{{...base.attacker,profile:{{normal:3,crit:5,ruleIds:[]}}}},defender:{{...base.defender,profile:{{normal:4,crit:6,ruleIds:['brutal']}}}}}};
+if(commitFightBlock(brutal,'attacker','x',['y']))process.exit(6);
+"""
+    subprocess.run(['node','-e',script],cwd=ROOT,check=True)

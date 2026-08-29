@@ -14,7 +14,7 @@ WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 
 class DiceWebAudioReleaseTests(unittest.TestCase):
     def test_release_asset_offline_and_save_version(self):
-        self.assertGreaterEqual(tuple(map(int, CURRENT_APP_VERSION.split("."))), (8, 6, 103))
+        self.assertEqual((8, 6, 103), tuple(map(int, CURRENT_APP_VERSION.split("."))))
         asset = ROOT / "Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3"
         self.assertEqual(
             "30b23dd163cfdbeaa4cbc436e5ce436e576c88fd41ed980ed8514dabcb953e40",
