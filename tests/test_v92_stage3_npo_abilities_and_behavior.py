@@ -38,6 +38,12 @@ def test_horrifying_flaying_apl_expires_after_next_activation():
     assert 'item.targetId!==operativeId' in expire
 
 
+def test_solo_horrifying_target_priority_prefers_ready_after_lowest_wounds():
+    priority = body('choosePriorityPlayerTarget')
+    assert 'playerCurrentWounds(a)-playerCurrentWounds(b)' in priority
+    assert 'Number(state.playerActivatedIds.includes(a))-Number(state.playerActivatedIds.includes(b))' in priority
+
+
 def test_whirling_triggers_only_from_committed_critical_strike_and_is_idempotent():
     qualify = body('qualifyingWhirlingStrike')
     strike = body('commitFightStrike')
@@ -154,6 +160,14 @@ def test_shield_human_ui_and_solo_ai_share_fight_engine():
     assert 'showFightBlockSelection' in render and 'commitFightBlock' in render
     assert 'capacity' in ai and 'legal.slice(0,capacity)' in ai
     assert APP.count('function commitFightBlock') == 1
+
+
+def test_shield_solo_ai_values_two_success_combined_damage():
+    ai = body('soloNpoFightDecision')
+    assert 'capacity>1' in ai
+    assert 'enemy.reduce' in ai
+    assert 'shieldPlans' in ai
+    assert '.slice(0,capacity)' in ai
 
 
 def test_guardian_protocol_is_specific_player_shoot_gate():

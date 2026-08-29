@@ -1907,7 +1907,7 @@ document.addEventListener('touchend',function(e){
   }
   function choosePriorityPlayerTarget(candidateIds){
     return [...candidateIds].sort((a,b)=>playerCurrentWounds(a)-playerCurrentWounds(b)
-      ||Number(!state.playerActivatedIds.includes(a))-Number(!state.playerActivatedIds.includes(b))
+      ||Number(state.playerActivatedIds.includes(a))-Number(state.playerActivatedIds.includes(b))
       ||String(a).localeCompare(String(b)))[0]||null;
   }
   function chooseTabletopOperatives(title,question,candidateIds,{humanChoosesAll=false,allowNone=true}={}){
@@ -6316,6 +6316,12 @@ function showPlayerActivation(){
   function soloNpoFightDecision(fight,role){
     const actor=fight[role],opponent=fight[otherFightRole(role)],own=unresolvedFightSuccesses(fight,role),enemy=unresolvedFightSuccesses(fight,otherFightRole(role)),capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
     const kill=[...own].sort((a,b)=>(a.kind==='critical')-(b.kind==='critical')).find(item=>(item.kind==='critical'?actor.profile.crit:actor.profile.normal)>=opponent.wounds);if(kill)return {type:'strike',successId:kill.id};
+    if(capacity>1&&enemy.reduce((total,item)=>total+(item.kind==='critical'?opponent.profile.crit:opponent.profile.normal),0)>=actor.wounds){
+      const shieldPlans=own.map(blocker=>({blocker,targets:fightBlockTargets(fight,role,blocker).sort((a,b)=>(b.kind==='critical'?opponent.profile.crit:opponent.profile.normal)-(a.kind==='critical'?opponent.profile.crit:opponent.profile.normal)).slice(0,capacity)}))
+        .filter(plan=>plan.targets.length)
+        .sort((a,b)=>b.targets.reduce((total,item)=>total+(item.kind==='critical'?opponent.profile.crit:opponent.profile.normal),0)-a.targets.reduce((total,item)=>total+(item.kind==='critical'?opponent.profile.crit:opponent.profile.normal),0));
+      if(shieldPlans.length)return {type:'block',successId:shieldPlans[0].blocker.id,targetSuccessIds:shieldPlans[0].targets.map(item=>item.id)};
+    }
     const lethal=enemy.find(item=>(item.kind==='critical'?opponent.profile.crit:opponent.profile.normal)>=actor.wounds);
     if(lethal){const blocker=own.find(item=>fightBlockTargets(fight,role,item).some(target=>target.id===lethal.id));if(blocker){const legal=fightBlockTargets(fight,role,blocker).sort((a,b)=>(b.kind==='critical')-(a.kind==='critical'));return {type:'block',successId:blocker.id,targetSuccessIds:legal.slice(0,capacity).map(item=>item.id)};}}
     const normal=own.find(item=>item.kind==='normal');return {type:'strike',successId:(normal||own[0]).id};
