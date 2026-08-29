@@ -1446,6 +1446,16 @@ button.tracker-operative:hover{
   .human-npo-action{min-height:56px}
   .human-npo-action .human-action-status{max-width:48%}
 }
+
+.fight-sequence{display:grid;gap:14px}
+.fight-pools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.fight-pool{display:grid;gap:7px;padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.18)}
+.fight-pool.active{border-color:var(--accent);box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 45%,transparent)}
+.fight-pool small,.fight-pool strong{overflow-wrap:anywhere}
+.fight-pool div{display:grid;gap:4px}
+.fight-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.fight-actions .btn{min-height:48px;white-space:normal}
+@media (max-width:374px){.fight-pools,.fight-actions{grid-template-columns:1fr}}
 @media(max-width:340px){
   .human-npo-action{align-items:flex-start;flex-direction:column}
   .human-npo-action .human-action-status{max-width:100%;text-align:left}
