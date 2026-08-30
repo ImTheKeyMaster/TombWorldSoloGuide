@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.8
+# Tomb World Battle Guide v9.2.9
+
+## v9.2.9
+
+**Version 9.2.9**
+
+- Simplified the Human Activation header by removing the redundant standalone APL pill.
+- Removed the Order pill from the Human Activation header.
+- Preserved AP remaining, wounds, loadout, effects, and all underlying APL/Order rules.
 
 ## v9.2.8
 

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.8';
+  const APP_VERSION = '9.2.9';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -4634,7 +4634,7 @@ document.addEventListener('touchend',function(e){
       }).join('')}</div></section>`;
     }).filter(Boolean).join('');
     const history=completedActions.length?`<section class="summary-box human-completed-actions"><strong>Completed Actions</strong><ul>${completedActions.map(action=>`<li>✓ ${escapeHtml(action.summary||action.name)}</li>`).join('')}</ul></section>`:'';
-    showModal(title,`<div class="human-activation-shell"><h2>${escapeHtml(name)}</h2><div class="activation-profile-strip" role="status" aria-label="Activation profile"><span>Wounds: ${wounds}/${maxWounds}</span><span>APL ${baseApl}${effectiveAp===baseApl?'':` · Effective AP ${effectiveAp}`}</span><span><strong>${remainingAp} / ${startingAp} AP remaining</strong></span><span>Order: ${escapeHtml(order||'—')}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${effects.map(effect=>`<span>${escapeHtml(effect)}</span>`).join('')}</div>${history}<div class="activation-groups">${groups}</div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="endHumanActivation">End Activation</button></div></div>`,undefined,'human-activation');
+    showModal(title,`<div class="human-activation-shell"><h2>${escapeHtml(name)}</h2><div class="activation-profile-strip" role="status" aria-label="Activation profile"><span>Wounds: ${wounds}/${maxWounds}</span><span><strong>${remainingAp} / ${startingAp} AP remaining</strong></span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${effects.map(effect=>`<span>${escapeHtml(effect)}</span>`).join('')}</div>${history}<div class="activation-groups">${groups}</div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="endHumanActivation">End Activation</button></div></div>`,undefined,'human-activation');
     $$('[data-human-action]',modalBody).forEach(button=>button.onclick=()=>onAction(button.dataset.humanAction));
     $('#endHumanActivation').onclick=onEnd;
   }
