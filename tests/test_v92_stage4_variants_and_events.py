@@ -1,4 +1,5 @@
 from pathlib import Path
+import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = (ROOT / "app.js").read_text()
@@ -129,3 +130,24 @@ def test_rewards_casualties_are_queued_and_resolved_sequentially():
     assert "if(!transaction||transaction.committed)continue" in queue
     assert "const rolls=await requestDiceResults" in queue
     assert queue.index("const rolls=await requestDiceResults") < queue.index("Object.assign(transaction")
+
+
+def test_expansion_roster_validation_does_not_enter_standard_physical_counts():
+    validate = APP[APP.index("function validateNpoRoster"):APP.index("function variantAllowsExpansionNpo")]
+    allows = APP[APP.index("function variantAllowsExpansionNpo"):APP.index("function commitNpoRoster")]
+    script = f"""
+const state={{roster:[],tombWorldVariant:'crownworld'}};
+const npoDefinitions={{}};
+const tombsBeyondCountingNpoDefinitionsForValidation={{Lychguard:{{}}}};
+const TOMB_WORLD_VARIANTS={{standard:{{name:'Standard'}},crownworld:{{name:'Crownworld'}}}};
+const TOMB_CRAWLER_TYPE='Canoptek Tomb Crawler',ISOLATOR_LOADOUT='isolator',MAX_PHYSICAL_NPOS=20;
+const isRecord=value=>value&&typeof value==='object'&&!Array.isArray(value);
+const npoDefinition=type=>type==='Lychguard'?{{name:'Lychguard',loadoutOptions:[{{id:'warscythe'}}]}}:null;
+const npoInventory=()=>({{}});
+{allows}
+{validate}
+const roster=[{{id:'lychguard-1',type:'Lychguard',name:'Lychguard',weaponId:'warscythe',wounds:13}}];
+if(!validateNpoRoster(roster,'crownworld').valid)process.exit(1);
+if(validateNpoRoster(roster,'standard').valid)process.exit(2);
+"""
+    subprocess.run(["node", "-e", script], check=True, cwd=ROOT)

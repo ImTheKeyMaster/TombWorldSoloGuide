@@ -1538,7 +1538,7 @@ document.addEventListener('touchend',function(e){
       if(variantId!==null&&tombsBeyondCountingNpoDefinitionsForValidation[npo.type]&&!variantAllowsExpansionNpo(npo.type,variantId)){
         errors.push(`${npo.type} is not legal for the ${(TOMB_WORLD_VARIANTS[variantId]||TOMB_WORLD_VARIANTS.standard).name} variant.`);return;
       }
-      counts[npo.type]++;
+      if(npoDefinitions[npo.type])counts[npo.type]++;
       if(!npo.name)errors.push(`NPO ${npo.id||index+1} is missing a name.`);
       if(definition.physicalQuantity>1){
         const used=displayNumbers[npo.type]||(displayNumbers[npo.type]=new Set());
