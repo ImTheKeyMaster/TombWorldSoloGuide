@@ -107,9 +107,14 @@ def test_solo_and_pvp_replacement_ownership_and_human_activation_are_preserved()
     assert "owner:isPvpMode()?'necron-controller':'guide'" in resolver
     assert "pvpDecisionPending" in resolver
     assert "commitPvpNpoReplacement" in APP
-    assert "supportedHumanNpoActions" in APP
-    assert "if(isPvpMode())" in APP
-    assert "no human NPO action picker" not in APP
+    dispatcher = section("function continueNpoActivation()", "function continueHumanNecronActivation()")
+    assert "if(isPvpMode())" in dispatcher
+    assert "continueHumanNecronActivation()" in dispatcher
+    assert "continueSoloNpoActivation()" in dispatcher
+    human_activation = section("function continueHumanNecronActivation()", "function continueSoloNpoActivation()")
+    assert "renderHumanNpoActionPicker(n)" in human_activation
+    solo_activation = section("function continueSoloNpoActivation()", "function normalizeUnknownAttackMovement")
+    assert "renderHumanNpoActionPicker" not in solo_activation
 
 
 def test_cross_variant_rules_persistence_and_fight_contracts_remain_integrated():
