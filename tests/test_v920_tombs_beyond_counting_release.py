@@ -48,6 +48,16 @@ def test_accessible_single_choice_variant_selector_is_released_and_defaults_stan
     assert ".variant-card:focus-within" in STYLES
 
 
+def test_variant_selector_preserves_setup_focus_and_rapid_tap_behavior():
+    render = section("function render()", "function guideInstructionsHtml")
+    assert "if(movedToNewStep)" in render
+    assert "setupHeading.focus({preventScroll:true})" in render
+    touch_handler = section("document.addEventListener('touchend'", "const MAX_NPOS")
+    assert "button, input, select, textarea, a, label" in touch_handler
+    assert '[role="radio"]' in touch_handler
+    assert "if(now-lastTouchEnd<=300)e.preventDefault()" in touch_handler
+
+
 def test_setup_copy_has_no_inventory_questions_and_preserves_independent_options():
     options = section("if(stepId==='options')", "if(stepId==='deploy')")
     assert "Official Expansion - White Dwarf 517" in options
