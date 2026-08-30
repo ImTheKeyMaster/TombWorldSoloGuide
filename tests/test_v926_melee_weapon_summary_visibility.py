@@ -26,20 +26,19 @@ WIZARD = attack_wizard_source()
 def test_melee_weapon_dropdown_and_reserved_hidden_summary_are_rendered():
     assert '<label>Weapon</label><select id="playerWeaponSelect">' in WIZARD
     assert '<option value="">Select a weapon...</option>' in WIZARD
-    assert "attackType==='melee'?' melee-weapon-summary melee-weapon-summary-pending':''" in WIZARD
+    assert "attackType==='melee'?' melee-weapon-summary melee-weapon-details melee-weapon-summary-pending':''" in WIZARD
     assert "attackType==='melee'?' aria-hidden=\"true\"':''" in WIZARD
-    assert "weapons.map(weapon=>`<span class=\"melee-weapon-summary-sizer\" aria-hidden=\"true\">" in WIZARD
+    assert "weapons.map(weapon=>`<div class=\"melee-weapon-summary-sizer\" aria-hidden=\"true\">" in WIZARD
     assert ".melee-weapon-summary{display:grid}" in CSS
-    assert ".melee-weapon-summary>span{grid-area:1/1}" in CSS
+    assert ".melee-weapon-summary>div{grid-area:1/1}" in CSS
     assert ".melee-weapon-summary-sizer,.melee-weapon-summary-pending{visibility:hidden}" in CSS
     assert ".melee-weapon-summary-pending{display:none}" not in CSS
 
 
-def test_weapon_selection_reveals_existing_name_and_stats_summary():
+def test_weapon_selection_reveals_stats_summary():
     assert "weaponSummary.classList.toggle('melee-weapon-summary-pending',!weapon)" in WIZARD
     assert "weaponSummary.setAttribute('aria-hidden',String(!weapon))" in WIZARD
-    assert "$('#playerWeaponSummaryContent').innerHTML=weapon" in WIZARD
-    assert "escapeHtml(weapon.name)" in WIZARD
+    assert "$('#playerWeaponSummaryContent').innerHTML=attackType==='melee'" in WIZARD
     assert "${weapon.attacks} dice" in WIZARD
     assert "${weapon.hit}+" in WIZARD
     assert "escapeHtml(weapon.damage)" in WIZARD
@@ -60,7 +59,7 @@ def test_shoot_summary_behavior_is_not_hidden():
         r'<div class="summary-box\$\{attackType.*?id="playerWeaponSummary".*?</div>',
         WIZARD,
     ).group(0)
-    assert summary_markup.count("attackType==='melee'") == 2
+    assert summary_markup.count("attackType==='melee'") == 3
     assert "attackType==='shoot'" not in summary_markup
     assert "if(attackType==='melee'){" in WIZARD
 

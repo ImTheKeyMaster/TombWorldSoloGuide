@@ -77,7 +77,9 @@ class WeaponRuleSummaryTests(unittest.TestCase):
         self.assertEqual(self.result["defenseTwo"], 1)
 
     def test_12_to_16_shared_renderer_covers_all_combat_paths_and_restore(self):
-        self.assertIn("weaponRulesHtml(weapon?playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex}):null)", APP)
+        self.assertIn("const profile=weapon?playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex}):null", APP)
+        self.assertIn("weaponRulesHtml(profile,{semanticHeading:true})", APP)
+        self.assertIn("if(weaponRules)weaponRules.innerHTML=weaponRulesHtml(profile)", APP)
         self.assertGreaterEqual(APP.count("weaponRulesHtml(profile)"), 2)
         self.assertIn("weaponRulesHtml(initialProfile)", APP)
         self.assertIn("weaponRuleSequenceProgress(sequence", APP)

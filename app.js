@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.7';
+  const APP_VERSION = '9.2.8';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5596,9 +5596,10 @@ function showPlayerActivation(){
       targetIncapacitated&&attackerWithinTwo
   };
 
-  function weaponRulesHtml(profile){
+  function weaponRulesHtml(profile,{semanticHeading=false}={}){
     const summaries=weaponRuleSummaries(profile).map(summary=>`<li>${escapeHtml(summary.label)}</li>`).join('');
-    return summaries?`<section class="weapon-rules"><strong>Weapon rules</strong><ul>${summaries}</ul></section>`:'';
+    const heading=semanticHeading?'<h3>Weapon Rules</h3>':'<strong>Weapon rules</strong>';
+    return summaries?`<section class="weapon-rules">${heading}<ul>${summaries}</ul></section>`:'';
   }
 
   function normalizedGuidanceMatchText(value){
@@ -6821,7 +6822,7 @@ function showPlayerActivation(){
       ? `<div class="field"><label>Weapon</label><div class="readonly-select">${escapeHtml(weapons[0].name)}</div><input type="hidden" id="playerWeaponSelect" value="0"></div>`
       : `<div class="field"><label>Weapon</label><select id="playerWeaponSelect"><option value="">Select a weapon...</option>${weapons.map((weapon,index)=>`<option value="${index}">${escapeHtml(weapon.name)}</option>`).join('')}</select></div>`;
     const meleeWeaponSummarySizers=attackType==='melee'
-      ? weapons.map(weapon=>`<span class="melee-weapon-summary-sizer" aria-hidden="true"><strong>Weapon:</strong> ${escapeHtml(weapon.name)} · ${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}</span>`).join('')
+      ? weapons.map(weapon=>`<div class="melee-weapon-summary-sizer" aria-hidden="true">${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}</div>`).join('')
       : '';
     const priorShoot=pendingAttackResults(stage,'shoot').find(item=>Number(item.after)<=0);
     const priorElimination=attackType==='melee'&&priorShoot
@@ -6837,9 +6838,9 @@ function showPlayerActivation(){
       ${targetControl}
       ${weaponControl}
       ${darkDistance}
-      <div class="summary-box${attackType==='melee'?' melee-weapon-summary melee-weapon-summary-pending':''}" id="playerWeaponSummary"${attackType==='melee'?' aria-hidden="true"':''}><span id="playerWeaponSummaryContent"><strong>Weapon:</strong> —</span>${meleeWeaponSummarySizers}</div>
+      <div class="summary-box${attackType==='melee'?' melee-weapon-summary melee-weapon-details melee-weapon-summary-pending':''}" id="playerWeaponSummary"${attackType==='melee'?' aria-hidden="true"':''}><div id="playerWeaponSummaryContent">${attackType==='melee'?'':'<strong>Weapon:</strong> —'}</div>${meleeWeaponSummarySizers}</div>
       <div id="aggressiveDefenseFields"></div>
-      <div id="weaponRules"></div>
+      ${attackType==='shoot'?'<div id="weaponRules"></div>':''}
       <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button><button class="btn primary" id="openCombatResolution">Continue</button></div>`);
 
     const targetSelect=$('#combatTarget');
@@ -6848,17 +6849,19 @@ function showPlayerActivation(){
       const target=activeNpos().find(n=>n.id===targetSelect.value);
       const weapon=weaponSelect.value===''?null:weapons[Number(weaponSelect.value)];
       const weaponSummary=$('#playerWeaponSummary');
-      $('#playerWeaponSummaryContent').innerHTML=weapon
-        ? `<strong>Weapon:</strong> ${escapeHtml(weapon.name)} · ${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}`
-        : '<strong>Weapon:</strong> —';
+      const weaponIndex=weapon?weapons.indexOf(weapon):-1;
+      const profile=weapon?playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex}):null;
+      $('#playerWeaponSummaryContent').innerHTML=attackType==='melee'
+        ? (weapon?`${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}${weaponRulesHtml(profile,{semanticHeading:true})}`:'')
+        : (weapon?`<strong>Weapon:</strong> ${escapeHtml(weapon.name)} · ${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}`:'<strong>Weapon:</strong> —');
       if(attackType==='melee'){
         weaponSummary.classList.toggle('melee-weapon-summary-pending',!weapon);
         weaponSummary.setAttribute('aria-hidden',String(!weapon));
       }
       $('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target);
       if(npoDefinition(target?.type)?.id==='skorpekh-destroyer'&&target.order==='Conceal')$('#aggressiveDefenseFields').insertAdjacentHTML('beforeend','<p class="muted"><strong>Hulking:</strong> while Concealed, this Skorpekh cannot use Light terrain to prevent it from being selected as a target.</p>');
-      const weaponIndex=weapon?weapons.indexOf(weapon):-1;
-      $('#weaponRules').innerHTML=weaponRulesHtml(weapon?playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex}):null);
+      const weaponRules=$('#weaponRules');
+      if(weaponRules)weaponRules.innerHTML=weaponRulesHtml(profile);
       $('#openCombatResolution').disabled=!target||!weapon;
     };
     targetSelect.addEventListener('change',renderChoices);
