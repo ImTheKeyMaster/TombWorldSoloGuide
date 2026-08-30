@@ -59,10 +59,13 @@ def test_player_combat_actions_commit_sequentially_and_keep_transaction_state():
     assert "weaponRuleResolution" in APP and "pendingDice" in APP
 
 
-def test_shoot_fight_mutual_exclusion_has_visible_reasons():
+def test_shoot_and_fight_are_distinct_once_per_activation_actions():
     legality = source("playerHumanActionState", "renderHumanActivationShell")
-    assert "Unavailable after Fight" in legality
-    assert "Unavailable after Shoot" in legality
+    assert "completed.has(action.id)" in legality
+    assert "action.id==='shoot'&&completed.has('melee')" not in legality
+    assert "action.id==='melee'&&completed.has('shoot')" not in legality
+    assert "Unavailable after Fight" not in legality
+    assert "reason:'Unavailable after Shoot'" not in legality
 
 
 def test_cancel_only_discards_current_uncommitted_action():

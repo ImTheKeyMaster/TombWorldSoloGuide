@@ -139,7 +139,9 @@ class V840NpoActivationPlainLanguageTests(unittest.TestCase):
         self.assertIn("'canoptek-tomb-crawler':context.inEnemyControlRange?['Fight','Shoot','Charge','Reposition','Dash']:['Shoot','Charge','Fight','Reposition','Dash']", APP)
         legality = section('function legalNpoActions', 'function rankLegalNpoActions')
         self.assertIn("if(['shoot','fight','charge'].includes(id)&&!inPlayLivingPlayerOperativeIds().length)return false", legality)
-        self.assertIn("if((id==='shoot'&&completed.has('fight'))||(id==='fight'&&completed.has('shoot')))return false", legality)
+        self.assertNotIn("id==='shoot'&&completed.has('fight')", legality)
+        self.assertNotIn("id==='fight'&&completed.has('shoot')", legality)
+        self.assertIn("cost>remainingAp||completed.has(id)", legality)
 
 
 if __name__ == '__main__':

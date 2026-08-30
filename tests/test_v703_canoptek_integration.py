@@ -13,7 +13,10 @@ class CanoptekIntegrationTests(unittest.TestCase):
         body = APP.split("function recommendedNpoActions", 1)[1].split("\n  }", 1)[0]
         self.assertIn("rankLegalNpoActions(n,legalNpoActions(n,context),context)", body)
         self.assertIn("cost>remainingAp", APP)
-        self.assertIn("completed.has('fight')", APP)
+        legality = APP.split("function filterLegalNpoActions", 1)[1].split("function rankLegalNpoActions", 1)[0]
+        self.assertIn("completed.has(id)", legality)
+        self.assertNotIn("completed.has('fight')", legality)
+        self.assertNotIn("completed.has('shoot')", legality)
 
     def test_all_circle_roles_have_priorities_and_support_actions(self):
         for profile_id in (

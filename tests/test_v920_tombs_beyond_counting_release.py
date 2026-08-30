@@ -19,7 +19,7 @@ def section(start, end):
 
 
 def test_release_identity_cache_assets_and_save_compatibility():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 0)
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 1)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert "const CACHE_PREFIX = 'tomb-world-battle-guide-';" in WORKER
@@ -28,7 +28,7 @@ def test_release_identity_cache_assets_and_save_compatibility():
     assert "const SAVE_VERSION = 3;" in PERSISTENCE
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
     assert README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}")
-    assert f"Version {CURRENT_APP_VERSION} - Tombs Beyond Counting" in README
+    assert "Version 9.2.0 - Tombs Beyond Counting" in README
     for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "audio-capabilities.js", "narration.js", "ambient.js", "dice-sfx.js", "app.js"):
         assert f"{asset}?v={CURRENT_APP_VERSION}" in INDEX
 

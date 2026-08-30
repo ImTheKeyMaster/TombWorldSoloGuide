@@ -88,9 +88,10 @@ class V800NpoMultiActionActivationTests(unittest.TestCase):
     def test_16_attack_then_nonconflicting_action(self):
         model = ActivationModel(2); self.assertTrue(model.commit('shoot')); self.assertTrue(model.commit('dash'))
 
-    def test_17_shoot_fight_incompatibility(self):
-        self.assertIn("id==='shoot'&&completed.has('fight')", APP)
-        self.assertIn("id==='fight'&&completed.has('shoot')", APP)
+    def test_17_shoot_and_fight_are_not_mutually_exclusive(self):
+        self.assertNotIn("id==='shoot'&&completed.has('fight')", APP)
+        self.assertNotIn("id==='fight'&&completed.has('shoot')", APP)
+        self.assertIn("cost>remainingAp||completed.has(id)", APP)
 
     def test_18_movement_yes_is_affirmative(self):
         self.assertIn('to get a clear shot. If that is not possible, move it to help the mission.', APP)
