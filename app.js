@@ -6852,7 +6852,7 @@ function showPlayerActivation(){
       const weaponIndex=weapon?weapons.indexOf(weapon):-1;
       const profile=weapon?playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex}):null;
       $('#playerWeaponSummaryContent').innerHTML=attackType==='melee'
-        ? (weapon?`${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}${weaponRulesHtml(profile,{semanticHeading:true})}`:'')
+        ? (weapon?`<div class="weapon-profile-stats">${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}</div>${weaponRulesHtml(profile,{semanticHeading:true})}`:'')
         : (weapon?`<strong>Weapon:</strong> ${escapeHtml(weapon.name)} · ${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}`:'<strong>Weapon:</strong> —');
       if(attackType==='melee'){
         weaponSummary.classList.toggle('melee-weapon-summary-pending',!weapon);

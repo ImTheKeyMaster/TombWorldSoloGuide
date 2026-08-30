@@ -30,7 +30,7 @@ def test_melee_weapon_dropdown_and_reserved_hidden_summary_are_rendered():
     assert "attackType==='melee'?' aria-hidden=\"true\"':''" in WIZARD
     assert "weapons.map(weapon=>`<div class=\"melee-weapon-summary-sizer\" aria-hidden=\"true\">" in WIZARD
     assert ".melee-weapon-summary{display:grid}" in CSS
-    assert ".melee-weapon-summary>div{grid-area:1/1}" in CSS
+    assert ".melee-weapon-summary>#playerWeaponSummaryContent,.melee-weapon-summary>.melee-weapon-summary-sizer{grid-area:1/1}" in CSS
     assert ".melee-weapon-summary-sizer,.melee-weapon-summary-pending{visibility:hidden}" in CSS
     assert ".melee-weapon-summary-pending{display:none}" not in CSS
 
@@ -39,6 +39,7 @@ def test_weapon_selection_reveals_stats_summary():
     assert "weaponSummary.classList.toggle('melee-weapon-summary-pending',!weapon)" in WIZARD
     assert "weaponSummary.setAttribute('aria-hidden',String(!weapon))" in WIZARD
     assert "$('#playerWeaponSummaryContent').innerHTML=attackType==='melee'" in WIZARD
+    assert '<div class="weapon-profile-stats">' in WIZARD
     assert "${weapon.attacks} dice" in WIZARD
     assert "${weapon.hit}+" in WIZARD
     assert "escapeHtml(weapon.damage)" in WIZARD

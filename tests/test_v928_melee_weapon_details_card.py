@@ -27,11 +27,12 @@ def test_melee_dropdown_remains_the_only_selected_weapon_name_display():
     melee_render = WIZARD[WIZARD.index("$('#playerWeaponSummaryContent').innerHTML"):]
     melee_branch = melee_render.split(": (weapon?", 1)[0]
     assert "escapeHtml(weapon.name)" not in melee_branch
-    assert "${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}" in melee_branch
+    assert '<div class="weapon-profile-stats">${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}</div>' in melee_branch
 
 
 def test_stats_and_rules_share_one_melee_details_card():
     assert "melee-weapon-details melee-weapon-summary-pending" in WIZARD
+    assert '<div class="weapon-profile-stats">' in WIZARD
     assert "weaponRulesHtml(profile,{semanticHeading:true})" in WIZARD
     assert "semanticHeading?'<h3>Weapon Rules</h3>'" in APP
     assert "${attackType==='shoot'?'<div id=\"weaponRules\"></div>':''}" in WIZARD
