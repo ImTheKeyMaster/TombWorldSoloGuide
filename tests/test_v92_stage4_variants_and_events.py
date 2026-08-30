@@ -1,5 +1,6 @@
 from pathlib import Path
 import subprocess
+from versioning import CURRENT_APP_VERSION
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = (ROOT / "app.js").read_text()
@@ -8,14 +9,14 @@ INDEX = (ROOT / "index.html").read_text()
 SW = (ROOT / "service-worker.js").read_text()
 
 
-def test_variant_registry_remains_hidden_and_adds_one_card_each():
-    assert "'flayer-curse':Object.freeze" in APP and "available:false" in APP
+def test_variant_registry_is_released_and_adds_one_card_each():
+    assert "'flayer-curse':Object.freeze" in APP and APP.count("available:true") >= 4
     assert "eventId:'flesh-hunger'" in APP
     assert "eventId:'rewards-of-annihilation'" in APP
     assert "eventId:'enforcer-of-the-phaerons'" in APP
     assert "eventDeckAdditions:()=>eventId?[{instanceId:`${eventId}-1`" in APP
-    options = APP[APP.index("if(stepId==='options')"):APP.index("if(stepId==='deploy')")]
-    assert "flayer-curse" not in options and "destroyer-cult" not in options and "crownworld" not in options
+    options = APP.split("if(stepId==='options')",1)[1].split("if(stepId==='deploy')",1)[0]
+    assert 'name="tombWorldVariant"' in options and "variant.available" in options
 
 
 def test_optional_replacements_use_hooks_and_preserve_original_options():
@@ -70,14 +71,13 @@ def test_enforcer_redraw_overlay_and_specific_room_question():
     assert "Confirm tabletop target legality." not in APP
 
 
-def test_persistence_is_optional_without_schema_or_product_version_bump():
+def test_persistence_is_optional_with_release_version_and_same_schema():
     assert "variantState:{crownworldFirstCrawlerConsumed:false" in APP
     assert "rewardsTriggers:Array.isArray" in APP
     assert "const SAVE_VERSION = 3" in (ROOT / "persistence.js").read_text()
-    from versioning import CURRENT_APP_VERSION
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}'" in APP
     assert f"v={CURRENT_APP_VERSION}" in INDEX
-    assert "9.2.0" not in APP and "9.2.0" not in INDEX and "9.2.0" not in SW
+    assert all(CURRENT_APP_VERSION in surface for surface in (APP, INDEX, SW))
     assert "Do you own this miniature?" not in APP
 
 

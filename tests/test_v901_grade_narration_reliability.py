@@ -63,7 +63,7 @@ vm.createContext(c);vm.runInContext(fs.readFileSync('narration.js','utf8'),c);co
         self.run_node(script)
 
     def test_recovery_hook_and_release_surfaces_are_focused(self):
-        self.assertEqual((9, 1, 1), tuple(map(int, CURRENT_APP_VERSION.split("."))))
+        self.assertEqual((9, 2, 0), tuple(map(int, CURRENT_APP_VERSION.split("."))))
         coordinator = APP[APP.index("async function applySelectedAudioFromGesture"):APP.index("function handleNarrationUsable")]
         usable = APP[APP.index("function handleNarrationUsable"):APP.index("function syncNarrationControls")]
         self.assertIn("void narrateVisibleGradeMilestone()", coordinator)

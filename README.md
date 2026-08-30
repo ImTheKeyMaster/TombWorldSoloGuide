@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v9.1.1
+# Tomb World Battle Guide v9.2.0
+
+## v9.2.0
+
+**Version 9.2.0 - Tombs Beyond Counting**
+
+- Adds optional Tombs Beyond Counting support from White Dwarf 517, selected before NPO deployment as one of three Tomb World variants: Flayer Curse Infected Tomb, Destroyer Cult Tomb, or Crownworld of the Dynasty Tomb.
+- Adds five Necron NPO datacards with Solo behavior and PvP human-control support, including rules-driven Flayed One, Destroyer, Royal Warden, and Lychguard replacements.
+- Adds Flesh Hunger, Rewards of Annihilation, and Enforcer of the Phaerons to their corresponding variant event decks, together with shared weapon rules and bespoke NPO abilities.
+- Retains the corrected v9.1.1 alternating Strike/Block Fight engine, Standard Tomb World behavior, existing-save compatibility, and save schema version 3.
 
 ## v9.1.1
 

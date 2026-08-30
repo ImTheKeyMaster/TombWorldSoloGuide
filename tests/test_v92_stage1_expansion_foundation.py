@@ -34,17 +34,15 @@ def test_optional_controls_are_editable_only_on_options_step():
     assert "<strong>Tomb World Variant:</strong>" in briefing
 
 
-def test_variant_registry_is_complete_but_unfinished_choices_are_hidden():
+def test_variant_registry_is_complete_and_released():
     registry = source("const TOMB_WORLD_VARIANTS", "const initialState")
-    assert "standard:Object.freeze({id:'standard',name:'Standard',available:true" in registry
+    assert "standard:Object.freeze({id:'standard',name:'Standard Tomb World',available:true" in registry
     for variant in ("flayer-curse", "destroyer-cult", "crownworld"):
         assert f"id:'{variant}'" in registry
-    assert registry.count("available:false") == 3
+    assert registry.count("available:true") == 4
     options = source("if(stepId==='options')", "if(stepId==='deploy')")
-    assert "tombWorldVariant" not in options
-    assert "Flayer Curse" not in options
-    assert "Destroyer Cult" not in options
-    assert "Crownworld" not in options
+    assert 'name="tombWorldVariant"' in options
+    assert "Object.values(TOMB_WORLD_VARIANTS).filter" in options
 
 
 def test_variant_helpers_and_all_stage_one_hooks_are_centralized_and_inert():
@@ -114,7 +112,7 @@ def test_stage_one_adds_no_new_playable_npos_or_events_and_keeps_version():
         "Rewards of Annihilation",
         "Enforcer of the Phaerons",
     )
-    event_deck = source("const eventDeck = [", "];\n\n  function eventDefinition")
+    event_deck = source("const eventDeck = [", "const missionStateFactories")
     assert all(name not in event_deck for name in forbidden)
     generation_table = source("const npoGenerationTable", "const eventDeck")
     for name in ("Flayed One", "Skorpekh Destroyer", "Hexmark Destroyer", "Royal Warden", "Lychguard"):

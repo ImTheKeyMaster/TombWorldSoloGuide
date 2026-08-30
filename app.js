@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.1.1';
+  const APP_VERSION = '9.2.0';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -711,9 +711,8 @@ document.addEventListener('touchend',function(e){
   let missions=[];
   let maps={};
 
-  // Stage 2 expansion datacards are deliberately separate from the Standard physical
-  // inventory. Variants remain unavailable, so these definitions are data/combat-ready
-  // without entering generation, roster validation, or the Add NPO interface.
+  // Expansion datacards remain separate from the Standard physical inventory. Variant
+  // hooks introduce them through rules-driven generation, not the manual Add NPO tool.
   const tombsBeyondCountingNpoDefinitions = Object.freeze({
     'Flayed One': {
       id:'flayed-one',name:'Flayed One',type:'Flayed One',faction:'Necron',move:5,apl:2,save:4,wounds:9,baseSize:32,
@@ -990,10 +989,10 @@ document.addEventListener('touchend',function(e){
     npoSetupReplacement:value=>crownworld&&value?.type===TOMB_CRAWLER_TYPE?{...value,mandatoryPair:['Royal Warden','Lychguard']}:value
   });
   const TOMB_WORLD_VARIANTS=Object.freeze({
-    standard:Object.freeze({id:'standard',name:'Standard',available:true,hooks:inertVariantHooks}),
-    'flayer-curse':Object.freeze({id:'flayer-curse',name:'Flayer Curse Infected Tomb',available:false,hooks:variantHooks({replaceType:'Necron Warrior',replacements:['Flayed One'],eventId:'flesh-hunger'})}),
-    'destroyer-cult':Object.freeze({id:'destroyer-cult',name:'Destroyer Cult Tomb',available:false,hooks:variantHooks({replaceType:TOMB_CRAWLER_TYPE,replacements:['Skorpekh Destroyer','Hexmark Destroyer'],eventId:'rewards-of-annihilation'})}),
-    crownworld:Object.freeze({id:'crownworld',name:'Crownworld of the Dynasty Tomb',available:false,hooks:variantHooks({eventId:'enforcer-of-the-phaerons',crownworld:true})})
+    standard:Object.freeze({id:'standard',name:'Standard Tomb World',available:true,summary:'Use the normal Tomb World NPO generation table and event deck.',briefing:'Standard Tomb World',hooks:inertVariantHooks}),
+    'flayer-curse':Object.freeze({id:'flayer-curse',name:'Flayer Curse Infected Tomb',available:true,summary:'Flayed Ones may replace Necron Warriors. Adds the Flesh Hunger event.',briefing:'Flayed One replacements + Flesh Hunger',hooks:variantHooks({replaceType:'Necron Warrior',replacements:['Flayed One'],eventId:'flesh-hunger'})}),
+    'destroyer-cult':Object.freeze({id:'destroyer-cult',name:'Destroyer Cult Tomb',available:true,summary:'Skorpekh and Hexmark Destroyers may replace Tomb Crawlers. Adds Rewards of Annihilation.',briefing:'Destroyer replacements + Rewards of Annihilation',hooks:variantHooks({replaceType:TOMB_CRAWLER_TYPE,replacements:['Skorpekh Destroyer','Hexmark Destroyer'],eventId:'rewards-of-annihilation'})}),
+    crownworld:Object.freeze({id:'crownworld',name:'Crownworld of the Dynasty Tomb',available:true,summary:'The first Tomb Crawler setup becomes a Royal Warden and Lychguard. Awakened Warrior may instead create a Lychguard. Adds Enforcer of the Phaerons.',briefing:'Royal Warden/Lychguard replacements + Enforcer of the Phaerons',hooks:variantHooks({eventId:'enforcer-of-the-phaerons',crownworld:true})})
   });
   function currentTombWorldVariant(){return TOMB_WORLD_VARIANTS[state?.tombWorldVariant]||TOMB_WORLD_VARIANTS.standard;}
   function isFlayerCurseTomb(){return currentTombWorldVariant().id==='flayer-curse';}
@@ -2904,12 +2903,15 @@ document.addEventListener('touchend',function(e){
     delete state.setupChecks['starting-npos'];
   }
   function setTombWorldVariant(variantId){
-    if(state.screen!=='setup'||!TOMB_WORLD_VARIANTS[variantId]||variantId===state.tombWorldVariant)return false;
+    if(state.screen!=='setup'||!TOMB_WORLD_VARIANTS[variantId]?.available||variantId===state.tombWorldVariant)return false;
     state.tombWorldVariant=variantId;
     invalidateStartingNpoSetup();
+    state.variantState={crownworldFirstCrawlerConsumed:false,replacementTransactions:{}};
     state.eventState.available=[...eventDeck,...tombWorldEventDeckAdditions()].map(card=>card.instanceId);
     state.eventState.used=[];
     state.eventState.active=[];
+    state.eventState.transactions={};
+    state.eventState.rewardsTriggers=[];
     return true;
   }
   function satisfyEmptyStartingNpoDeployment(){
@@ -3003,9 +3005,10 @@ document.addEventListener('touchend',function(e){
       return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><p class="muted">Build a legal kill team using its current official rules. Cooperative team splitting is not currently supported.</p><div class="setup-bulk-row"><button class="btn secondary" id="randomPlayerTeam">Random Team</button></div><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${inlineOperativeList(selectedDefs.map(o=>escapeHtml(playerName(o.id))))}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
     }
     if(stepId==='options'){
+      const variantOptions=Object.values(TOMB_WORLD_VARIANTS).filter(variant=>variant.available).map(variant=>`<label class="variant-card"><input type="radio" name="tombWorldVariant" value="${escapeHtml(variant.id)}" aria-describedby="variant-${escapeHtml(variant.id)}-description" ${state.tombWorldVariant===variant.id?'checked':''}><span><strong>${escapeHtml(variant.name)}</strong>${variant.id==='standard'?'':`<span class="rule-classification official">Official Expansion - White Dwarf 517</span>`}<small id="variant-${escapeHtml(variant.id)}-description">${escapeHtml(variant.summary)}</small></span></label>`).join('');
       const deadlyOption=isPvpMode()?'<p class="muted deadly-encounters-option"><strong>Deadly Encounters: Tomb Worlds</strong> is available in Solo battles only.</p>'
         : `<label class="check-row deadly-encounters-option"><input id="deadlyEncountersEnabled" type="checkbox" aria-label="Enable Deadly Encounters: Tomb Worlds official expansion" ${state.deadlyEncountersEnabled?'checked':''}><span><strong>Deadly Encounters: Tomb Worlds</strong><span class="rule-classification official">Official Expansion - White Dwarf 521</span><small>Official expansion. Reveal persistent Room and Objective Features using the official D33 tables when Player operatives explore the tomb. PvE Player actions reveal features; NPOs never reveal them, but revealed features can affect NPOs. This independent expansion increases battlefield complexity and danger.</small></span></label>`;
-      return `<h3>Choose optional game content</h3><p>These choices are saved with the battle. The starting Necron roster is generated after this step.</p><div class="checklist optional-rules"><label class="check-row restless-tomb-option"><input id="restlessTombEnabled" type="checkbox" aria-label="Enable Restless Tomb house rule" ${state.restlessTombEnabled?'checked':''}><span><strong>Restless Tomb</strong><span class="rule-classification">House Rule</span><small>House rule. Beginning with Turning Point 2, resolve at least one Tomb World event during each Strategy Phase, regardless of Threat Grade. Turning Point 1 is unaffected, and standard event rules may require additional events at higher Threat. This optional house rule increases activity and difficulty.</small></span></label>${deadlyOption}</div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext">Continue</button></div>`;
+      return `<h3>Choose optional game content</h3><p>These choices are saved with the battle. The starting Necron roster is generated after this step.</p><fieldset class="variant-selector"><legend>Tomb World Variant</legend><p class="section-note">Choose one variant for this battle. Tombs Beyond Counting is an official expansion from White Dwarf 517.</p><div class="variant-card-grid">${variantOptions}</div></fieldset><section class="other-optional-rules" aria-labelledby="other-optional-rules-heading"><h4 id="other-optional-rules-heading">Other Optional Rules</h4><div class="checklist optional-rules"><label class="check-row restless-tomb-option"><input id="restlessTombEnabled" type="checkbox" aria-label="Enable Restless Tomb house rule" ${state.restlessTombEnabled?'checked':''}><span><strong>Restless Tomb</strong><span class="rule-classification">House Rule</span><small>Beginning with Turning Point 2, resolve at least one Tomb World event during each Strategy Phase, regardless of Threat Grade. Turning Point 1 is unaffected, and standard event rules may require additional events at higher Threat. This optional house rule increases activity and difficulty.</small></span></label>${deadlyOption}</div></section><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext">Continue</button></div>`;
     }
     if(stepId==='deploy'){
       const generation=state.startingNpoGeneration;
@@ -3034,7 +3037,9 @@ document.addEventListener('touchend',function(e){
     const m=mission();
     const rules=(m.rules||[]).map(rule=>`<div class="mission-rule"><strong>${escapeHtml(presentSideTerminology(rule.name||'Special Rule'))}</strong>${rule.timing?`<small>${escapeHtml(presentSideTerminology(rule.timing))}</small>`:''}<p>${escapeHtml(presentSideTerminology(rule.summary||''))}</p></div>`).join('');
     const deadlySummary=isPvpMode()?'Disabled (Solo battles only)':state.deadlyEncountersEnabled?'Enabled':'Disabled';
-    return `<h3>Mission Briefing</h3><div class="mission-briefing"><div class="mission-briefing-section mission-heading"><span>Mission</span><strong>${escapeHtml(m.number)} · ${escapeHtml(m.name)}</strong></div><div class="mission-briefing-section"><h4>Objective</h4><p>${escapeHtml(presentSideTerminology(m.objective))}</p></div><div class="mission-briefing-section"><h4>Special Rules</h4>${rules||`<p>${escapeHtml(presentSideTerminology(missionSpecial()))}</p>`}</div><div class="mission-briefing-section optional-rules-summary"><h4>Optional Rules &amp; Expansions</h4><p><strong>Restless Tomb:</strong> ${state.restlessTombEnabled?'Enabled':'Disabled'} (House Rule)</p><p><strong>Deadly Encounters:</strong> ${deadlySummary} (Official Expansion)</p><p><strong>Tomb World Variant:</strong> ${escapeHtml(currentTombWorldVariant().name)}</p><small>Go Back to Optional Rules &amp; Expansions to change these settings before beginning the battle.</small></div></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
+    const selectedVariant=currentTombWorldVariant();
+    const variantSource=selectedVariant.id==='standard'?'':`<small>Tombs Beyond Counting - Official Expansion, White Dwarf 517</small>`;
+    return `<h3>Mission Briefing</h3><div class="mission-briefing"><div class="mission-briefing-section mission-heading"><span>Mission</span><strong>${escapeHtml(m.number)} · ${escapeHtml(m.name)}</strong></div><div class="mission-briefing-section"><h4>Objective</h4><p>${escapeHtml(presentSideTerminology(m.objective))}</p></div><div class="mission-briefing-section"><h4>Special Rules</h4>${rules||`<p>${escapeHtml(presentSideTerminology(missionSpecial()))}</p>`}</div><div class="mission-briefing-section optional-rules-summary"><h4>Optional Rules &amp; Expansions</h4><p><strong>Tomb World Variant:</strong> ${escapeHtml(selectedVariant.name)}<br>${variantSource}<br><span class="muted">${escapeHtml(selectedVariant.briefing)}</span></p><p><strong>Restless Tomb:</strong> ${state.restlessTombEnabled?'On':'Off'} (House Rule)</p><p><strong>Deadly Encounters:</strong> ${deadlySummary} (Official Expansion - White Dwarf 521)</p><small>Go Back to Optional Rules &amp; Expansions to change these settings before beginning the battle.</small></div></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
   }
 
   function advanceSetupStep(stepId){
@@ -3127,6 +3132,7 @@ document.addEventListener('touchend',function(e){
     $('#playerDeployed')?.addEventListener('change',e=>{state.playerDeployed=e.target.checked;save();render();});
     $('#restlessTombEnabled')?.addEventListener('change',e=>{state.restlessTombEnabled=e.target.checked;save();render();});
     $('#deadlyEncountersEnabled')?.addEventListener('change',e=>{if(isPvpMode())return;state.deadlyEncountersEnabled=e.target.checked;save();render();});
+    $$('input[name="tombWorldVariant"]').forEach(input=>input.addEventListener('change',e=>{if(e.target.checked&&setTombWorldVariant(e.target.value)){save();render();}}));
     $('#beginGame')?.addEventListener('click',async()=>{
       state.screen='game';state.tab='play';state.turningPoint=0;state.phase='between';state.nextSide='player';state.playerCount=(state.playerRoster||[]).length;state.playerReady=state.playerCount;
       if(!backgroundManifest.length)await loadBackgroundManifest();
@@ -8713,6 +8719,7 @@ function showPlayerActivation(){
   function operativeCard(n,controls){return npoRosterCard(n,controls);}
   function renderJournal(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">JOURNAL</p><h2>Battle Record</h2><p>Automatic game-state and Threat history.</p></div><button class="btn ghost" id="clearJournal">Clear</button></div><section class="card"><ol class="activity-log">${state.journal.length?state.journal.map(j=>`<li><time>${new Date(j.time).toLocaleString()}</time>${escapeHtml(presentSideTerminology(j.text))}</li>`).join(''):'<li>No events recorded.</li>'}</ol></section>`;$('#clearJournal').onclick=()=>{state.journal=[];save();render();};}
   function renderHelp(){app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">FIELD HELP</p><h2>Instructions & quick reference</h2><p>${isPvpMode()?'Review player responsibilities and common gameplay terms.':`Review the ${escapeHtml(opponentSingularLabel())} decision process and common gameplay terms.`} This reference does not change the current game.</p></div></div>${guideInstructionsHtml(false)}<section class="card help-list">
+    <details><summary>Tombs Beyond Counting</summary><p>The Guide supports the official White Dwarf 517 expansion through three mutually exclusive Tomb World variants: Flayer Curse Infected Tomb, Destroyer Cult Tomb, and Crownworld of the Dynasty Tomb. A selected variant can substitute additional Necron NPOs, add its corresponding Tomb World event, and apply variant-specific rules. Select the variant before NPO deployment. The manual Add NPO tool remains limited to the Standard inventory; expansion operatives enter play only through their rules-driven replacement flows. Consult the official publication for authoritative wording.</p></details>
     <details><summary>Deadly Encounters: Tomb Worlds</summary><p>${isPvpMode()?'This Guide supports Deadly Encounters only in Solo battles, so it is unavailable and its effects do not apply in PvP.':'This is the official optional expansion from White Dwarf 521, February 2026. The Guide implements only its PvE solo method. Player operatives reveal persistent features; NPOs never reveal them, although revealed features can affect NPOs. Rooms and eligible markers use separate D33 tables, and every feature rule is unique across the battle. Deadly Encounters is independent from Restless Tomb. Consult the official publication for authoritative wording.'}</p></details>
     <details><summary>What does ${escapeHtml(playerSideLabel())} mean?</summary><p>${isPvpMode()?'The operatives from the selected player-controlled Kill Team.':'Your solo player-controlled Kill Team operatives.'}</p></details>
     <details><summary>What is a ${escapeHtml(opponentSingularLabel())}?</summary><p>${isPvpMode()?'A Necron operative controlled by the second player. The Guide validates choices and tracks the battle, but does not choose its actions or targets.':'A non-player operative controlled by the Guide’s decision tree.'}</p></details>
