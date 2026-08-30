@@ -101,8 +101,9 @@ def test_solo_npo_is_deterministic_and_prefers_kill_then_lethal_block():
 def test_human_controls_are_legal_accessible_and_mobile_first():
     render=body('renderFightResolution')
     assert 'aria-label="Strike with ${success.kind} success' in render
-    assert 'aria-label="Block opponent ${target.kind} success' in render
-    assert 'fightBlockTargets(fight,role,blocker)' in render
+    assert 'aria-label="Block enemy ${target.kind} success using' in render
+    assert 'semanticFightActions(fight,role)' in render
+    assert 'fightBlockTargets(fight,role,success)' in body('semanticFightActions')
     assert '.fight-actions' in CSS and 'min-height:48px' in CSS
     assert '@media (max-width:374px)' in CSS
 

@@ -50,10 +50,10 @@ def test_committed_final_dice_use_shared_visual_renderer_and_accessible_classes(
     assert "severeAppliedHtml(dice)" in participant
 
 
-def test_roll_summary_names_critical_normal_and_failure_results():
+def test_roll_summary_names_retained_critical_and_normal_results():
     summary = body("fightRollSummary")
-    assert "Critical" in summary and "Normal" in summary and "Failure" in summary
-    assert "No Successes" in summary
+    assert "Critical" in summary and "Normal" in summary
+    assert "Failure" not in summary and "No retained successes" in summary
 
 
 def test_solo_animation_reuses_timing_and_sfx_while_pvp_stays_settled():
@@ -88,10 +88,10 @@ def test_resolution_is_explicit_not_color_only_and_shows_unresolved_pool():
 
 def test_actions_name_type_success_consequence_and_keep_accessible_labels():
     render = body("renderFightResolution")
-    assert ">STRIKE<" in render and "Success · ${success.kind==='critical'?participant.profile.crit:participant.profile.normal} Damage" in render
-    assert ">BLOCK<" in render and "Block ${titleCaseRuleId(target.kind)}" in render
-    assert "aria-label=\"Strike with ${success.kind} success for" in render
-    assert "aria-label=\"Block opponent ${target.kind} success with" in render
+    assert 'id="fightStrikeHeading">STRIKE' in render and "Deal ${damage} damage" in render
+    assert "fightBlockHeading" in render and "Block 1 enemy ${titleCaseRuleId(target.kind)}" in render
+    assert "aria-label=\"Strike with ${success.kind} success, deal" in render
+    assert "aria-label=\"Block enemy ${target.kind} success using" in render
     assert "showFightBlockSelection" in render
 
 
@@ -100,7 +100,8 @@ def test_live_wounds_and_last_resolution_derive_from_authoritative_history():
     last = body("fightLastResolutionHtml")
     strike = body("commitFightStrike")
     assert "participant.wounds}/${participant.maxWounds} wounds" in pool
-    assert "fight.history.at(-1)" in last and "Last Resolution:" in last
+    assert "fight.history.at(-1)" in last and "LAST EXCHANGE" in last
+    assert "soloExchange?[previous,latest]:[latest]" in last
     assert "setFightOperativeWounds(target,after)" in strike
     assert "fight.history.push(historyEntry)" in strike
 
@@ -118,7 +119,8 @@ def test_only_equivalent_no_block_strikes_auto_resolve_through_commit_api():
 def test_real_choices_solo_ai_and_all_block_rules_remain_authoritative():
     render = body("renderFightResolution")
     block_targets = body("fightBlockTargets")
-    assert "fightBlockTargets(fight,role,blocker)" in render
+    assert "semanticFightActions(fight,role)" in render
+    assert "fightBlockTargets(fight,role,success)" in body("semanticFightActions")
     assert "soloNpoFightDecision" in render
     assert "weaponHasRule(opponent.profile,'brutal')" in block_targets
     assert "blocker.kind==='critical'||target.kind==='normal'" in block_targets
@@ -159,7 +161,7 @@ def test_mobile_layout_wraps_at_all_requested_widths_without_fixed_overflow():
 
 
 def test_v922_release_surfaces_cache_and_save_contract():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 2)
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 2)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX

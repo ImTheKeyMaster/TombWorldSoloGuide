@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.2';
+  const APP_VERSION = '9.2.3';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -6549,7 +6549,8 @@ function showPlayerActivation(){
   }
   function fightPoolHtml(fight,role){
     const participant=fight[role],pool=unresolvedFightSuccesses(fight,role),normal=pool.filter(item=>item.kind==='normal').length,critical=pool.length-normal;
-    return `<section class="fight-pool ${fight.turn===role?'active':''}">${fight.turn===role?'<span class="fight-active-label">ACTING NOW</span>':''}<small>${escapeHtml(participant.label)} · ${escapeHtml(participant.profile.name)}</small><strong>${participant.wounds}/${participant.maxWounds} wounds</strong><div class="fight-unresolved"><small>UNRESOLVED SUCCESSES</small><span>★ Critical × ${critical}</span><span>● Normal × ${normal}</span></div></section>`;
+    const active=fight.turn===role;
+    return `<section class="fight-pool ${active?'active':''}" aria-label="${active?'Acting now: ':''}${escapeHtml(participant.label)}">${active?'<span class="fight-active-label">ACTING NOW</span>':''}<small>${escapeHtml(participant.label)} · ${escapeHtml(participant.profile.name)}</small><strong>${participant.wounds}/${participant.maxWounds} wounds</strong><div class="fight-unresolved"><small>UNRESOLVED SUCCESSES</small><span>★ Critical × ${critical}</span><span>● Normal × ${normal}</span></div></section>`;
   }
   function fightDiePresentation(die,index){
     const result=die.retained?(die.kind==='crit'?'critical success':'normal success'):'failure';
@@ -6558,9 +6559,8 @@ function showPlayerActivation(){
   function fightRollSummary(dice=[]){
     const critical=dice.filter(die=>die.retained&&die.kind==='crit').length;
     const normal=dice.filter(die=>die.retained&&die.kind==='hit').length;
-    const failures=dice.length-critical-normal;
-    if(!critical&&!normal)return '<strong>No Successes</strong>';
-    return `<strong>${critical?`${critical} Critical ${critical===1?'Success':'Successes'}`:''}${critical&&normal?'<br>':''}${normal?`${normal} Normal ${normal===1?'Success':'Successes'}`:''}</strong>${failures?`<span>${failures} ${failures===1?'Failure':'Failures'}</span>`:''}`;
+    if(!critical&&!normal)return '<strong>No retained successes</strong>';
+    return `<strong>${critical?`${critical} Critical ${critical===1?'Success':'Successes'}`:''}${critical&&normal?'<br>':''}${normal?`${normal} Normal ${normal===1?'Success':'Successes'}`:''}</strong>`;
   }
   function fightRollParticipantHtml(fight,role,animate){
     const participant=fight[role],profile=participant.profile,dice=participant.attackDice.map(fightDiePresentation);
@@ -6572,13 +6572,20 @@ function showPlayerActivation(){
     continueButton.onclick=renderFightResolution;
     if(animate)settleAnimatedDice(['attacker','defender'].map(role=>({row:$(`[data-fight-roll-dice="${role}"]`,modal),dice:fight[role].attackDice.map(fightDiePresentation)})),()=>{if(continueButton.isConnected)continueButton.disabled=false;});
   }
-  function fightLastResolutionHtml(fight){
-    const entry=fight.history.at(-1);if(!entry)return '';
+  function fightResolutionRecordHtml(fight,entry){
     const actor=fight[entry.role],target=fight[otherFightRole(entry.role)];
-    const text=entry.type==='strike'
-      ? `${actor.label} struck ${target.label} with a ${entry.successKind} success for ${entry.damage} damage.`
-      : `${actor.label} blocked ${target.label}’s ${entry.blockedKinds.map(titleCaseRuleId).join(' and ')} ${entry.blockedKinds.length===1?'success':'successes'}.`;
-    return `<p class="fight-last-resolution" role="status"><strong>Last Resolution:</strong> ${escapeHtml(text)}</p>`;
+    const actorName=actor.side==='player'?'YOU':actor.label;
+    const action=entry.type==='strike'?'STRUCK':'BLOCKED';
+    const detail=entry.type==='strike'
+      ? `<span>${titleCaseRuleId(entry.successKind)} Success · ${entry.damage} damage</span><span>${escapeHtml(target.label)}: ${entry.before} → ${entry.after} wounds</span>`
+      : `<span>Used ${titleCaseRuleId(entry.successKind)} Success to block ${entry.blockedKinds.length>1?'enemy ':`1 ${escapeHtml(target.label)} `}${entry.blockedKinds.map(titleCaseRuleId).join(' and ')} ${entry.blockedKinds.length===1?'Success':'Successes'}.</span>`;
+    return `<div class="fight-resolution-record"><strong>${escapeHtml(actorName)} ${action}</strong>${detail}</div>`;
+  }
+  function fightLastResolutionHtml(fight){
+    const latest=fight.history.at(-1);if(!latest)return '';
+    const previous=fight.history.at(-2),soloExchange=!isPvpMode()&&fight[latest.role]?.side==='npo'&&previous&&fight[previous.role]?.side==='player';
+    const entries=soloExchange?[previous,latest]:[latest];
+    return `<section class="fight-last-resolution" role="status" aria-label="Last exchange"><small>LAST EXCHANGE</small>${entries.map(entry=>fightResolutionRecordHtml(fight,entry)).join('')}</section>`;
   }
   function equivalentRemainingFightStrikes(fight,role){
     const own=unresolvedFightSuccesses(fight,role),enemy=unresolvedFightSuccesses(fight,otherFightRole(role));
@@ -6590,6 +6597,18 @@ function showPlayerActivation(){
     const inputs=$$('[name="shieldBlockTarget"]',modal),button=$('#commitShieldBlock');
     inputs.forEach(input=>input.onchange=()=>{const selected=inputs.filter(item=>item.checked);if(selected.length>capacity)input.checked=false;button.disabled=!inputs.some(item=>item.checked);});
     button.onclick=()=>{const selected=inputs.filter(input=>input.checked).map(input=>input.value);if(commitFightBlock(fight,role,blockerId,selected))renderFightResolution();};
+  }
+  function semanticFightActions(fight,role){
+    const participant=fight[role],own=unresolvedFightSuccesses(fight,role),capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1)),strikes=[],blocks=[],strikeKeys=new Set(),blockKeys=new Set();
+    own.forEach(success=>{
+      const damage=success.kind==='critical'?participant.profile.crit:participant.profile.normal,key=`${success.kind}:${damage}`;
+      if(!strikeKeys.has(key)){strikeKeys.add(key);strikes.push({success,damage});}
+      fightBlockTargets(fight,role,success).forEach(target=>{
+        const blockKey=capacity>1?`${success.kind}:shield`:`${success.kind}:${target.kind}`;
+        if(!blockKeys.has(blockKey)){blockKeys.add(blockKey);blocks.push({blocker:success,target});}
+      });
+    });
+    return {strikes,blocks};
   }
   function finishFight(fight){
     if(fightCompletionInProgress)return;
@@ -6613,11 +6632,13 @@ function showPlayerActivation(){
     const automaticStrikes=equivalentRemainingFightStrikes(fight,role);
     if(human&&automaticStrikes){commitFightStrike(fight,role,automaticStrikes[0].id);renderFightResolution();return;}
     if(!human){const choice=soloNpoFightDecision(fight,role);if(choice.type==='block')commitFightBlock(fight,role,choice.successId,choice.targetSuccessIds);else commitFightStrike(fight,role,choice.successId);renderFightResolution();return;}
-    const own=unresolvedFightSuccesses(fight,role);
-    const strikes=own.map(success=>`<button class="btn primary fight-action" data-fight-strike="${escapeHtml(success.id)}" aria-label="Strike with ${success.kind} success for ${success.kind==='critical'?participant.profile.crit:participant.profile.normal} damage"><strong>STRIKE</strong><span>${titleCaseRuleId(success.kind)} Success · ${success.kind==='critical'?participant.profile.crit:participant.profile.normal} Damage</span></button>`).join('');
+    const actions=semanticFightActions(fight,role);
+    const strikes=actions.strikes.map(({success,damage})=>`<button class="btn secondary fight-action" data-fight-strike="${escapeHtml(success.id)}" aria-label="Strike with ${success.kind} success, deal ${damage} damage"><strong>${titleCaseRuleId(success.kind)} Success</strong><span>Deal ${damage} damage</span></button>`).join('');
     const capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
-    const blocks=own.flatMap(blocker=>fightBlockTargets(fight,role,blocker).map(target=>`<button class="btn secondary fight-action" data-fight-blocker="${escapeHtml(blocker.id)}" data-fight-block-target="${escapeHtml(target.id)}" aria-label="Block opponent ${target.kind} success with ${blocker.kind} success"><strong>BLOCK</strong><span>Use ${titleCaseRuleId(blocker.kind)} · Block ${titleCaseRuleId(target.kind)}</span></button>`)).join('');
-    showModal('Fight Resolution',`<div class="fight-sequence"><p>Starting with the attacker, alternate resolving one success as a Strike or Block.</p><div class="fight-pools">${fightPoolHtml(fight,'attacker')}${fightPoolHtml(fight,'defender')}</div>${fightLastResolutionHtml(fight)}<h3 class="fight-turn-heading">${participant.side==='player'?'YOUR TURN':`${escapeHtml(participant.label)}’S TURN`}</h3>${capacity>1?'<p><strong>Shield:</strong> this Block can block up to two unresolved successes.</p>':''}<div class="fight-actions">${strikes}${blocks}</div><p class="muted">Choose one success to resolve. Damage and Blocks commit immediately.</p></div>`);
+    const blocks=actions.blocks.map(({blocker,target})=>`<button class="btn secondary fight-action" data-fight-blocker="${escapeHtml(blocker.id)}" data-fight-block-target="${escapeHtml(target.id)}" aria-label="Block enemy ${target.kind} success using ${blocker.kind} success"><strong>${titleCaseRuleId(blocker.kind)} Success</strong><span>${capacity>1?'Block up to 2 legal enemy successes':`Block 1 enemy ${titleCaseRuleId(target.kind)}`}</span></button>`).join('');
+    const intro=isPvpMode()?'Starting with the attacker, players alternate resolving one success as a Strike or Block.':'You and the NPO alternate resolving one success. You choose for your operative. The Guide automatically resolves the NPO’s response.';
+    const turnOwner=participant.side==='player'?'YOUR TURN':`NECRON PLAYER’S TURN`;
+    showModal('Fight Resolution',`<div class="fight-sequence"><p>${intro}</p><div class="fight-pools">${fightPoolHtml(fight,'attacker')}${fightPoolHtml(fight,'defender')}</div>${fightLastResolutionHtml(fight)}<section class="fight-turn" aria-label="Acting now: ${escapeHtml(participant.label)}"><h3 class="fight-turn-heading">${turnOwner} · ${escapeHtml(participant.label)}</h3><p>Choose how ${escapeHtml(participant.label)} uses one of its unresolved successes.</p>${capacity>1?'<p><strong>Shield:</strong> this Block can block up to two unresolved successes.</p>':''}<section class="fight-action-group" aria-labelledby="fightStrikeHeading"><h4 id="fightStrikeHeading">STRIKE</h4><div class="fight-actions">${strikes}</div></section>${blocks?`<section class="fight-action-group" aria-labelledby="fightBlockHeading"><h4 id="fightBlockHeading">${capacity>1?'BLOCK · SHIELD':'BLOCK'}</h4><div class="fight-actions">${blocks}</div></section>`:''}</section><p class="muted">Choose one success to resolve. Damage and Blocks commit immediately.</p></div>`);
     $$('[data-fight-strike]',modal).forEach(button=>button.onclick=()=>{commitFightStrike(fight,role,button.dataset.fightStrike);renderFightResolution();});
     $$('[data-fight-blocker]',modal).forEach(button=>button.onclick=()=>{if(capacity>1)showFightBlockSelection(fight,role,button.dataset.fightBlocker,button.dataset.fightBlockTarget);else{commitFightBlock(fight,role,button.dataset.fightBlocker,[button.dataset.fightBlockTarget]);renderFightResolution();}});
   }
