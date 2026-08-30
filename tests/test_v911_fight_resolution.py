@@ -222,30 +222,28 @@ def test_completed_fight_requires_owner_and_blocks_reentrant_commit():
     assert 'renderFightResolution()' in render and 'renderFightRoll(state.fightState,{animate:false})' in render
     finish=body('finishFight')
     assert 'if(fightCompletionInProgress)return' in finish
-    assert 'activeFightContinuation||restoreFightContinuation()' in finish
-    assert 'if(!continuation)return' in finish
-    assert 'finally{fightCompletionInProgress=false;}' in finish
+    assert 'renderFightResult(fight)' in finish
+    acknowledge=body('acknowledgeFightResult')
+    assert 'activeFightContinuation||restoreFightContinuation()' in acknowledge
+    assert 'if(!continuation)return' in acknowledge
+    assert 'finally{fightCompletionInProgress=false;}' in acknowledge
 
 
-def test_finish_fight_reentrancy_guard_runtime():
+def test_fight_result_acknowledgement_reentrancy_guard_runtime():
     import subprocess
-    finish=body('finishFight')
+    acknowledge=body('acknowledgeFightResult')
     script=f"""
 let fightCompletionInProgress=false;
 let activeFightContinuation=null;
 let state={{fightState:null}};
 let saves=0,commits=0;
 const save=()=>{{saves++;}};
-const closeModal=()=>{{}};
 const restoreFightContinuation=()=>null;
-{finish}
-const fight={{id:'fight-1',attacker:{{label:'A',profile:{{name:'Blade'}}}},defender:{{id:'d',label:'D',side:'npo',initialWounds:8,wounds:4}},history:[],resultCommitted:false}};
-activeFightContinuation=()=>{{commits++;finishFight(fight);}};
-finishFight(fight);
-if(commits!==1||state.fightState!==null||fightCompletionInProgress||saves!==2)process.exit(1);
-const orphan={{...fight,id:'orphan',resultCommitted:false,result:null}};
-state.fightState=orphan;
-finishFight(orphan);
-if(state.fightState!==orphan||!orphan.resultCommitted)process.exit(2);
+{acknowledge}
+const fight={{result:{{damage:4}},resultAcknowledged:false}};
+state.fightState=fight;
+activeFightContinuation=()=>{{commits++;acknowledgeFightResult(fight);}};
+acknowledgeFightResult(fight);
+if(commits!==1||state.fightState!==null||fightCompletionInProgress||saves!==3||!fight.resultAcknowledged)process.exit(1);
 """
     subprocess.run(['node','-e',script],cwd=ROOT,check=True)

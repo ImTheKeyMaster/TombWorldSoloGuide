@@ -99,7 +99,7 @@ def test_pvp_and_engine_persistence_contracts_remain_unchanged():
 
 
 def test_v923_release_surfaces_and_notes_are_consistent():
-    expected = ".".join(map(str, (9, 2, 3)))
+    expected = CURRENT_APP_VERSION
     assert CURRENT_APP_VERSION == expected
     assert f"const APP_VERSION = '{expected}';" in WORKER
     assert "tomb-world-battle-guide-" in WORKER
@@ -110,4 +110,5 @@ def test_v923_release_surfaces_and_notes_are_consistent():
         "dice-sfx.js", "app.js",
     ))
     assert README.startswith(f"# Tomb World Battle Guide v{expected}\n\n## v{expected}")
+    assert "## v9.2.3" in README
     assert "Removed duplicate equivalent Fight choices." in README
