@@ -26,15 +26,19 @@ WIZARD = attack_wizard_source()
 def test_melee_weapon_dropdown_and_reserved_hidden_summary_are_rendered():
     assert '<label>Weapon</label><select id="playerWeaponSelect">' in WIZARD
     assert '<option value="">Select a weapon...</option>' in WIZARD
-    assert "attackType==='melee'?' melee-weapon-summary-pending':''" in WIZARD
+    assert "attackType==='melee'?' melee-weapon-summary melee-weapon-summary-pending':''" in WIZARD
     assert "attackType==='melee'?' aria-hidden=\"true\"':''" in WIZARD
-    assert ".melee-weapon-summary-pending{visibility:hidden}" in CSS
-    assert "display:none" not in CSS[CSS.index(".melee-weapon-summary-pending"):]
+    assert "weapons.map(weapon=>`<span class=\"melee-weapon-summary-sizer\" aria-hidden=\"true\">" in WIZARD
+    assert ".melee-weapon-summary{display:grid}" in CSS
+    assert ".melee-weapon-summary>span{grid-area:1/1}" in CSS
+    assert ".melee-weapon-summary-sizer,.melee-weapon-summary-pending{visibility:hidden}" in CSS
+    assert ".melee-weapon-summary-pending{display:none}" not in CSS
 
 
 def test_weapon_selection_reveals_existing_name_and_stats_summary():
     assert "weaponSummary.classList.toggle('melee-weapon-summary-pending',!weapon)" in WIZARD
     assert "weaponSummary.setAttribute('aria-hidden',String(!weapon))" in WIZARD
+    assert "$('#playerWeaponSummaryContent').innerHTML=weapon" in WIZARD
     assert "escapeHtml(weapon.name)" in WIZARD
     assert "${weapon.attacks} dice" in WIZARD
     assert "${weapon.hit}+" in WIZARD

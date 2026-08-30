@@ -1516,4 +1516,6 @@ button.tracker-operative:hover{
   .combat-summary-grid,.combat-summary-grid.has-attack-profile{grid-template-columns:1fr}
 }
 
-.melee-weapon-summary-pending{visibility:hidden}
+.melee-weapon-summary{display:grid}
+.melee-weapon-summary>span{grid-area:1/1}
+.melee-weapon-summary-sizer,.melee-weapon-summary-pending{visibility:hidden}
