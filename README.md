@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v9.2.1
+# Tomb World Battle Guide v9.2.2
+
+## v9.2.2
+
+**Version 9.2.2**
+
+- Restored visible Fight dice results so melee resolution is easier to follow.
+- Fight now clearly separates dice rolling from Strike/Block resolution.
+- Improved active-turn and unresolved-success presentation.
+- Trivial no-choice remaining Strikes can resolve automatically while preserving all Strike-triggered rules.
+- Fight rules remain unchanged.
 
 ## v9.2.1
 

@@ -1451,10 +1451,16 @@ button.tracker-operative:hover{
 .fight-pools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .fight-pool{display:grid;gap:7px;padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.18)}
 .fight-pool.active{border-color:var(--accent);box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 45%,transparent)}
+.fight-active-label{width:max-content;max-width:100%;padding:3px 7px;border-radius:999px;background:var(--green);color:#062012;font-size:.65rem;font-weight:950;letter-spacing:.08em}
 .fight-pool small,.fight-pool strong{overflow-wrap:anywhere}
 .fight-pool div{display:grid;gap:4px}
+.fight-unresolved{padding-top:5px;border-top:1px solid var(--line)}
+.fight-unresolved small,.fight-roll-result small{color:var(--muted);font-size:.65rem;font-weight:850;letter-spacing:.08em}
+.fight-roll{display:grid;gap:10px}.fight-roll>p{margin-top:0}.fight-roll-pool{min-width:0;margin-bottom:0}.fight-roll-pool>strong{display:block;margin-top:4px;overflow-wrap:anywhere}.fight-roll-pool .dice-row{margin:9px 0}.fight-roll-result{display:grid;gap:3px}.fight-roll-result strong{color:var(--green)}.fight-roll-result span{color:var(--muted);font-size:.82rem}
+.fight-turn-heading{margin:0}.fight-last-resolution{margin:0;padding:9px 11px;border-left:3px solid var(--green);background:rgba(41,127,78,.12);overflow-wrap:anywhere}
 .fight-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .fight-actions .btn{min-height:48px;white-space:normal}
+.fight-action{display:grid;gap:2px;text-align:left}.fight-action strong{font-size:.8rem;letter-spacing:.08em}.fight-action span{font-size:.78rem}
 @media (max-width:374px){.fight-pools,.fight-actions{grid-template-columns:1fr}}
 @media(max-width:340px){
   .human-npo-action{align-items:flex-start;flex-direction:column}
