@@ -1515,3 +1515,7 @@ button.tracker-operative:hover{
 @media(max-width:360px){
   .combat-summary-grid,.combat-summary-grid.has-attack-profile{grid-template-columns:1fr}
 }
+
+.melee-weapon-summary{display:grid}
+.melee-weapon-summary>span{grid-area:1/1}
+.melee-weapon-summary-sizer,.melee-weapon-summary-pending{visibility:hidden}

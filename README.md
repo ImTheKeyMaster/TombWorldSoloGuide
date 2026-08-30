@@ -1,4 +1,11 @@
-# Tomb World Battle Guide v9.2.5
+# Tomb World Battle Guide v9.2.6
+
+## v9.2.6
+
+**Version 9.2.6**
+
+- Hid the empty melee weapon summary card until a weapon is selected.
+- Preserved the dialog layout so selecting a weapon does not resize or shift the Resolve Melee Attack screen.
 
 ## v9.2.5
 
