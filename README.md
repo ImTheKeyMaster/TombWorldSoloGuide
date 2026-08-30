@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v9.2.3
+# Tomb World Battle Guide v9.2.4
+
+## v9.2.4
+
+**Version 9.2.4**
+
+- Added a final Fight Result screen showing damage dealt and suffered by both participants.
+- Fight outcomes are now shown before returning to the activation picker or ending an activation.
+- Completed Actions now reports both damage dealt and Fight retaliation damage.
+- Improved clarity when one participant runs out of unresolved successes and the opponent resolves the remainder.
 
 ## v9.2.3
 
