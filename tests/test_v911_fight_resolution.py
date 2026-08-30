@@ -130,14 +130,14 @@ def test_pending_dice_and_fight_identity_are_durable():
 
 
 def test_legacy_in_progress_melee_reset_is_narrow():
-    assert 'Aggregate pre-v' + CURRENT_APP_VERSION + ' melee drafts cannot be converted' in APP
+    assert 'Aggregate pre-v9.1.1 melee drafts cannot be converted' in APP
     assert 'meleeCombatDraft:null,pendingMelee:null,pendingMeleeResults:[]' in APP
     assert 'localStorage.clear' not in APP
 
 
-def test_hidden_expansion_and_stage3_scope_are_preserved():
+def test_released_expansion_and_stage3_scope_are_preserved():
     for variant in ('flayer-curse','destroyer-cult','crownworld'):
-        assert re.search(rf"{re.escape(variant)}[^\n]+available:false",APP)
+        assert re.search(rf"{re.escape(variant)}[^\n]+available:true",APP)
     assert "name:'Shield',deferred:true" not in APP  # Shield remains datacard-only metadata
     assert "deferredRules:['Shield']" in APP
     assert 'Whirling Onslaught*' in APP and "name:'Horrifying Flaying',deferred:true" in APP

@@ -1463,6 +1463,19 @@ button.tracker-operative:hover{
 
 .optional-rules{display:grid;gap:12px}
 .optional-rules h4{margin-bottom:0}
+.variant-selector{min-width:0;margin:22px 0;padding:0;border:0}
+.variant-selector legend,.other-optional-rules h4{font-size:1rem;font-weight:850}
+.section-note{margin:6px 0 14px;color:var(--muted);line-height:1.45}
+.variant-card-grid{display:grid;gap:10px}
+.variant-card{display:flex;align-items:flex-start;gap:12px;min-width:0;padding:14px;border:1px solid var(--line);border-radius:14px;background:#091912;cursor:pointer}
+.variant-card:has(input:checked){border-color:var(--green);background:#102a1d;box-shadow:0 0 0 2px rgba(118,245,168,.12)}
+.variant-card:focus-within{outline:2px solid var(--green);outline-offset:2px}
+.variant-card input{width:22px;height:22px;flex:0 0 auto;margin:0;accent-color:var(--green)}
+.variant-card>span{min-width:0}
+.variant-card strong,.variant-card small{display:block;overflow-wrap:anywhere}
+.variant-card small{margin-top:4px;color:var(--muted);line-height:1.4}
+.other-optional-rules{margin-top:24px}
+.other-optional-rules h4{margin:0}
 .rule-classification{display:block;width:max-content;max-width:100%;margin:4px 0 6px;padding:2px 7px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:.7rem;font-weight:800;line-height:1.35;overflow-wrap:anywhere}
 .rule-classification.official{border-color:var(--green2);color:var(--green)}
 .deadly-section{min-width:0;margin:14px 0;padding-top:10px;border-top:1px solid var(--line)}

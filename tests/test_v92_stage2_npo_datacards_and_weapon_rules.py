@@ -94,13 +94,13 @@ def test_expansion_catalog_is_hidden_from_standard_inventory_generation_and_add_
     assert "Object.keys(npoDefinitions).map" in section("function npoInventory", "function lowestAvailableNpoInstances")
 
 
-def test_variants_events_versions_and_save_schema_remain_unchanged():
+def test_variants_events_versions_and_save_schema_remain_compatible():
     variants = section("const TOMB_WORLD_VARIANTS", "const initialState")
-    assert variants.count("available:false") == 3
+    assert variants.count("available:true") == 4
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
     assert "const SAVE_VERSION = 3;" in (ROOT / "persistence.js").read_text(encoding="utf-8")
-    event_deck = section("const eventDeck = [", "];\n\n  function eventDefinition")
+    event_deck = section("const eventDeck = [", "const missionStateFactories")
     assert all(name not in event_deck for name in ("Flesh Hunger", "Rewards of Annihilation", "Enforcer of the Phaerons"))
 
 

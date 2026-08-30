@@ -291,9 +291,9 @@ def test_stage3_persistence_dice_and_versions_remain_compatible():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
 
 
-def test_variants_hidden_and_event_deck_unchanged():
+def test_variants_released_and_standard_event_deck_unchanged():
     variants = APP.split('const TOMB_WORLD_VARIANTS',1)[1].split('const initialState',1)[0]
-    assert variants.count('available:false') == 3
-    event_deck = APP.split('const eventDeck = [',1)[1].split('];\n\n  function eventDefinition',1)[0]
+    assert variants.count('available:true') == 4
+    event_deck = APP.split('const eventDeck = [',1)[1].split('const missionStateFactories',1)[0]
     for event in ('Flesh Hunger','Rewards of Annihilation','Enforcer of the Phaerons'):
         assert event not in event_deck
