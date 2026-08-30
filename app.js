@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.4';
+  const APP_VERSION = '9.2.5';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -6620,31 +6620,22 @@ function showPlayerActivation(){
     const lines=[];
     if(!attackerRetained)lines.push(`${fight.attacker.label} retained no successes.`);
     if(!defenderRetained)lines.push(`${fight.defender.label} retained no successes.`);
-    const strikes=fight.history.filter(entry=>entry.type==='strike'),blocks=fight.history.filter(entry=>entry.type==='block');
-    if(!attackerRetained&&defenderRetained){lines.push(`${fight.defender.label} resolved all ${defenderRetained} of its successes and dealt ${result.defenderDamageDealt} damage.`);return lines;}
-    if(attackerRetained&&!defenderRetained){lines.push(`${fight.attacker.label} resolved its ${attackerRetained} remaining ${attackerRetained===1?'success':'successes'} for ${result.attackerDamageDealt} damage.`);return lines;}
-    if(blocks.length){
-      const first=blocks[0],blocked=(first.blockedKinds||[]).map(titleCaseRuleId).join(' and ');
-      lines.push(`${fight[first.role].label} blocked ${first.blockedKinds?.length===1?'one':first.blockedKinds?.length} ${fight[otherFightRole(first.role)].label} ${blocked} ${first.blockedKinds?.length===1?'Success':'Successes'}.`);
-    }
-    if(strikes.length){
-      const first=strikes[0],roleDamage=first.role==='attacker'?result.attackerDamageDealt:result.defenderDamageDealt;
-      lines.push(`${fight[first.role].label} struck${first.index===0?' first':''} with a ${titleCaseRuleId(first.successKind)} Success for ${Math.max(0,first.before-first.after)} damage.`);
-      const remaining=fight.history.filter(entry=>entry.type==='strike'&&entry.resolvingRemaining),remainingRole=remaining[0]?.role;
-      if(remaining.length&&remainingRole&&remainingRole!==first.role){
-        const damage=remaining.reduce((total,entry)=>total+Math.max(0,entry.before-entry.after),0);
-        lines.push(`With no ${fight[first.role].label} successes remaining, ${fight[remainingRole].label} resolved its remaining successes for ${damage} damage.`);
-      }else if(strikes.length>1&&roleDamage!==result.attackerDamageDealt+result.defenderDamageDealt){
-        const last=strikes.at(-1);lines.push(`${fight[last.role].label} then struck for ${Math.max(0,last.before-last.after)} damage.`);
-      }
-    }
-    if(!strikes.length)lines.push('No damage was dealt.');
-    return lines.slice(0,3);
+    ['attacker','defender'].forEach(role=>{
+      const blockedKinds=fight.history.filter(entry=>entry.type==='block'&&entry.role===role).flatMap(entry=>entry.blockedKinds||[]);
+      if(!blockedKinds.length)return;
+      const kinds=[...new Set(blockedKinds)],count=blockedKinds.length,target=fight[otherFightRole(role)].label;
+      const detail=kinds.length===1?`${titleCaseRuleId(kinds[0])} ${count===1?'Success':'Successes'}`:`${count===1?'success':'successes'}`;
+      lines.push(`${fight[role].label} blocked ${count} ${target} ${detail}.`);
+    });
+    if(result.attackerDamageDealt>0)lines.push(`${fight.attacker.label} dealt ${result.attackerDamageDealt} total Strike damage.`);
+    if(result.defenderDamageDealt>0)lines.push(`${fight.defender.label} dealt ${result.defenderDamageDealt} total Strike damage.`);
+    if(result.attackerDamageDealt<=0&&result.defenderDamageDealt<=0)lines.push('No damage was dealt.');
+    return lines;
   }
   function buildFightResult(fight){
     const attackerDamageDealt=fightRoleDamage(fight,'attacker'),defenderDamageDealt=fightRoleDamage(fight,'defender');
     const participant=role=>({id:fight[role].id,name:fight[role].label,side:fight[role].side,before:fight[role].initialWounds,after:fight[role].wounds,incapacitated:fight[role].wounds<=0,damageDealt:role==='attacker'?attackerDamageDealt:defenderDamageDealt});
-    const result={resultVersion:1,transactionId:fight.id,attackType:'melee',attackerName:fight.attacker.label,defenderName:fight.defender.label,targetId:fight.defender.id,targetName:fight.defender.label,side:fight.defender.side,weaponName:fight.attacker.profile.name,profile:fight.attacker.profile,before:fight.defender.initialWounds,after:fight.defender.wounds,damage:attackerDamageDealt,damageDealt:attackerDamageDealt,damageSuffered:defenderDamageDealt,attackerDamageDealt,defenderDamageDealt,attackerBefore:fight.attacker.initialWounds,attackerAfter:fight.attacker.wounds,defenderBefore:fight.defender.initialWounds,defenderAfter:fight.defender.wounds,attackerIncapacitated:fight.attacker.wounds<=0,defenderIncapacitated:fight.defender.wounds<=0,participants:{attacker:participant('attacker'),defender:participant('defender')},committed:true,fightHistory:fight.history.map(item=>({...item})),fightTransactionId:fight.id};
+    const result={resultVersion:2,transactionId:fight.id,attackType:'melee',attackerName:fight.attacker.label,defenderName:fight.defender.label,targetId:fight.defender.id,targetName:fight.defender.label,side:fight.defender.side,weaponName:fight.attacker.profile.name,profile:fight.attacker.profile,before:fight.defender.initialWounds,after:fight.defender.wounds,damage:attackerDamageDealt,damageDealt:attackerDamageDealt,damageSuffered:defenderDamageDealt,attackerDamageDealt,defenderDamageDealt,attackerBefore:fight.attacker.initialWounds,attackerAfter:fight.attacker.wounds,defenderBefore:fight.defender.initialWounds,defenderAfter:fight.defender.wounds,attackerIncapacitated:fight.attacker.wounds<=0,defenderIncapacitated:fight.defender.wounds<=0,participants:{attacker:participant('attacker'),defender:participant('defender')},committed:true,fightHistory:fight.history.map(item=>({...item})),fightTransactionId:fight.id};
     result.explanation=fightResultExplanation(fight,result);return result;
   }
   function fightResultParticipantHtml(participant,role){
@@ -6660,12 +6651,12 @@ function showPlayerActivation(){
   }
   function renderFightResult(fight){
     const result=fight.result;
-    showModal('Fight Result',`<div class="fight-result" role="status" aria-label="Fight finished"><p class="fight-finished">FIGHT FINISHED</p><div class="fight-result-participants">${fightResultParticipantHtml(result.participants.attacker,'attacker')}${fightResultParticipantHtml(result.participants.defender,'defender')}</div><div class="fight-result-explanation">${result.explanation.map(line=>`<p>${escapeHtml(line)}</p>`).join('')}</div><div class="wizard-actions"><button class="btn primary" id="continueFightResult" data-dialog-focus>Continue</button></div></div>`,undefined,'fight-result');
+    showModal('Fight Result',`<div class="fight-result" role="status" aria-label="Fight finished"><p class="fight-finished">FIGHT FINISHED</p><div class="fight-result-participants">${fightResultParticipantHtml(result.participants.attacker,'attacker')}${fightResultParticipantHtml(result.participants.defender,'defender')}</div><div class="fight-result-explanation"><h3>SUMMARY</h3>${result.explanation.map(line=>`<p>${escapeHtml(line)}</p>`).join('')}</div><div class="wizard-actions"><button class="btn primary" id="continueFightResult" data-dialog-focus>Continue</button></div></div>`,undefined,'fight-result');
     $('#continueFightResult').onclick=()=>{const button=$('#continueFightResult');button.disabled=true;acknowledgeFightResult(fight);};
   }
   function finishFight(fight){
     if(fightCompletionInProgress)return;
-    const completeResult=fight.result?.resultVersion===1&&fight.result?.participants?.attacker&&fight.result?.participants?.defender&&Array.isArray(fight.result?.explanation);
+    const completeResult=fight.result?.resultVersion===2&&fight.result?.participants?.attacker&&fight.result?.participants?.defender&&Array.isArray(fight.result?.explanation);
     if(!fight.resultCommitted||!completeResult){fight.result=buildFightResult(fight);fight.resultCommitted=true;fight.resultAcknowledged=false;if(!fight.resultLogged){log(`${fight.attacker.label} fought ${fight.defender.label}: dealt ${fight.result.attackerDamageDealt} damage, suffered ${fight.result.defenderDamageDealt}.`);fight.resultLogged=true;}save();}
     if(fight.resultAcknowledged){acknowledgeFightResult(fight);return;}
     renderFightResult(fight);

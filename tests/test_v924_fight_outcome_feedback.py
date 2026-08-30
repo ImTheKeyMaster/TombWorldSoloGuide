@@ -85,22 +85,17 @@ def test_result_screen_summarizes_both_participants_and_continue():
 
 def test_no_success_and_remaining_success_explanations_are_supported():
     explanation = body("fightResultExplanation")
-    strike = body("commitFightStrike")
     assert "Neither operative retained a success." in explanation
     assert "No damage was dealt." in explanation
     assert "retained no successes." in explanation
-    assert "successes remaining" in explanation
-    assert "resolved its remaining successes" in explanation
     assert "fight.history.filter" in explanation
-    assert "resolvingRemaining=!unresolvedFightSuccesses" in strike
-    assert "resolvingRemaining:true" in strike
-    assert "entry.resolvingRemaining" in explanation
+    assert "total Strike damage." in explanation
 
 
 def test_legacy_checkpoint_is_upgraded_without_duplicate_battle_record():
     finish = body("finishFight")
     result = body("buildFightResult")
-    assert "resultVersion:1" in result
+    assert "resultVersion:2" in result
     assert "completeResult" in finish
     assert "!fight.resultCommitted||!completeResult" in finish
     assert "!fight.resultLogged" in finish
@@ -133,7 +128,7 @@ def test_solo_pvp_and_engine_decisions_remain_in_existing_resolution_path():
 
 
 def test_mobile_accessibility_and_release_surfaces():
-    expected = ".".join(map(str, (9, 2, 4)))
+    expected = ".".join(map(str, (9, 2, 5)))
     assert CURRENT_APP_VERSION == expected
     assert ".fight-result-participants" in CSS
     assert "@media (max-width:374px){.fight-result-participants{grid-template-columns:1fr}" in CSS
