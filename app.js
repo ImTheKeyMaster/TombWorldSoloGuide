@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.5';
+  const APP_VERSION = '9.2.6';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -6835,7 +6835,7 @@ function showPlayerActivation(){
       ${targetControl}
       ${weaponControl}
       ${darkDistance}
-      <div class="summary-box" id="playerWeaponSummary"><strong>Weapon:</strong> —</div>
+      <div class="summary-box${attackType==='melee'?' melee-weapon-summary-pending':''}" id="playerWeaponSummary"${attackType==='melee'?' aria-hidden="true"':''}><strong>Weapon:</strong> —</div>
       <div id="aggressiveDefenseFields"></div>
       <div id="weaponRules"></div>
       <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button><button class="btn primary" id="openCombatResolution">Continue</button></div>`);
@@ -6845,9 +6845,14 @@ function showPlayerActivation(){
     const renderChoices=()=>{
       const target=activeNpos().find(n=>n.id===targetSelect.value);
       const weapon=weaponSelect.value===''?null:weapons[Number(weaponSelect.value)];
-      $('#playerWeaponSummary').innerHTML=weapon
+      const weaponSummary=$('#playerWeaponSummary');
+      weaponSummary.innerHTML=weapon
         ? `<strong>Weapon:</strong> ${escapeHtml(weapon.name)} · ${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}`
         : '<strong>Weapon:</strong> —';
+      if(attackType==='melee'){
+        weaponSummary.classList.toggle('melee-weapon-summary-pending',!weapon);
+        weaponSummary.setAttribute('aria-hidden',String(!weapon));
+      }
       $('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target);
       if(npoDefinition(target?.type)?.id==='skorpekh-destroyer'&&target.order==='Conceal')$('#aggressiveDefenseFields').insertAdjacentHTML('beforeend','<p class="muted"><strong>Hulking:</strong> while Concealed, this Skorpekh cannot use Light terrain to prevent it from being selected as a target.</p>');
       const weaponIndex=weapon?weapons.indexOf(weapon):-1;

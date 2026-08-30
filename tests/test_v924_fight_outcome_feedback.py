@@ -128,7 +128,7 @@ def test_solo_pvp_and_engine_decisions_remain_in_existing_resolution_path():
 
 
 def test_mobile_accessibility_and_release_surfaces():
-    expected = ".".join(map(str, (9, 2, 5)))
+    expected = ".".join(map(str, (9, 2, 6)))
     assert CURRENT_APP_VERSION == expected
     assert ".fight-result-participants" in CSS
     assert "@media (max-width:374px){.fight-result-participants{grid-template-columns:1fr}" in CSS
