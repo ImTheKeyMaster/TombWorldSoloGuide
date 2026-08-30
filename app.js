@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.11';
+  const APP_VERSION = '9.2.12';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -6817,7 +6817,7 @@ function showPlayerActivation(){
     const targetControl=singleTarget
       ? `<div class="field"><label>Target ${targetSideLabel}</label><div class="readonly-select">${escapeHtml(npoName(singleTarget))} · Wounds ${projectedNpoWounds(singleTarget.id,stage)}/${singleTarget.maxWounds} · Save ${singleTarget.save}+</div><input type="hidden" id="combatTarget" value="${singleTarget.id}"></div>`
       : `<div class="field"><label for="combatTarget">Target ${targetSideLabel}</label><select id="combatTarget"><option value="">Select a target ${targetSideLabel}...</option>${targets.map(n=>`<option value="${n.id}"${n.id===preferredTargetId?' selected':''}>${escapeHtml(npoName(n))} · Wounds ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} · Save ${n.save}+</option>`).join('')}</select></div>`;
-    const weaponFieldClass=`field${attackType==='melee'?' melee-weapon-field':''}`;
+    const weaponFieldClass='field weapon-field';
     const weaponControl=weapons.length===1
       ? `<div class="${weaponFieldClass}"><label>Weapon</label><div class="readonly-select">${escapeHtml(weapons[0].name)}</div><input type="hidden" id="playerWeaponSelect" value="0"></div>`
       : `<div class="${weaponFieldClass}"><label>Weapon</label><select id="playerWeaponSelect"><option value="">Select a weapon...</option>${weapons.map((weapon,index)=>`<option value="${index}">${escapeHtml(weapon.name)}</option>`).join('')}</select></div>`;
@@ -6838,9 +6838,8 @@ function showPlayerActivation(){
       ${targetControl}
       ${weaponControl}
       ${darkDistance}
-      <div class="summary-box${attackType==='melee'?' melee-weapon-summary melee-weapon-details melee-weapon-summary-pending':''}" id="playerWeaponSummary"${attackType==='melee'?' aria-hidden="true"':''}><div id="playerWeaponSummaryContent">${attackType==='melee'?'':'<strong>Weapon:</strong> —'}</div>${meleeWeaponSummarySizers}</div>
+      <div class="summary-box weapon-details${attackType==='melee'?' melee-weapon-summary melee-weapon-summary-pending':''}" id="playerWeaponSummary" aria-hidden="true"${attackType==='shoot'?' hidden':''}><div id="playerWeaponSummaryContent"></div>${meleeWeaponSummarySizers}</div>
       <div id="aggressiveDefenseFields"></div>
-      ${attackType==='shoot'?'<div id="weaponRules"></div>':''}
       <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button><button class="btn primary" id="openCombatResolution">Continue</button></div>`);
 
     const targetSelect=$('#combatTarget');
@@ -6851,17 +6850,15 @@ function showPlayerActivation(){
       const weaponSummary=$('#playerWeaponSummary');
       const weaponIndex=weapon?weapons.indexOf(weapon):-1;
       const profile=weapon?playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex}):null;
-      $('#playerWeaponSummaryContent').innerHTML=attackType==='melee'
-        ? (weapon?`<div class="weapon-profile-stats">${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}</div>${weaponRulesHtml(profile,{semanticHeading:true})}`:'')
-        : (weapon?`<strong>Weapon:</strong> ${escapeHtml(weapon.name)} · ${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}`:'<strong>Weapon:</strong> —');
+      $('#playerWeaponSummaryContent').innerHTML=weapon
+        ? `<div class="weapon-profile-stats">${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}</div>${weaponRulesHtml(profile,{semanticHeading:true})}`
+        : '';
       if(attackType==='melee'){
         weaponSummary.classList.toggle('melee-weapon-summary-pending',!weapon);
-        weaponSummary.setAttribute('aria-hidden',String(!weapon));
-      }
+      }else weaponSummary.hidden=!weapon;
+      weaponSummary.setAttribute('aria-hidden',String(!weapon));
       $('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target);
       if(npoDefinition(target?.type)?.id==='skorpekh-destroyer'&&target.order==='Conceal')$('#aggressiveDefenseFields').insertAdjacentHTML('beforeend','<p class="muted"><strong>Hulking:</strong> while Concealed, this Skorpekh cannot use Light terrain to prevent it from being selected as a target.</p>');
-      const weaponRules=$('#weaponRules');
-      if(weaponRules)weaponRules.innerHTML=weaponRulesHtml(profile);
       $('#openCombatResolution').disabled=!target||!weapon;
     };
     targetSelect.addEventListener('change',renderChoices);

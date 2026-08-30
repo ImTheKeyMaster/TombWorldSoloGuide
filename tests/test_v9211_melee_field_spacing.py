@@ -29,10 +29,10 @@ def test_target_and_weapon_selects_remain_in_order():
     assert WIZARD.index(target) < WIZARD.index(weapon)
 
 
-def test_only_melee_weapon_field_receives_six_pixel_top_spacing():
-    assert "const weaponFieldClass=`field${attackType==='melee'?' melee-weapon-field':''}`;" in WIZARD
+def test_shoot_and_melee_weapon_fields_receive_six_pixel_top_spacing():
+    assert "const weaponFieldClass='field weapon-field';" in WIZARD
     assert '<div class="${weaponFieldClass}"><label>Weapon</label>' in WIZARD
-    assert ".melee-weapon-field{margin-top:6px}" in CSS
+    assert ".weapon-field{margin-top:6px}" in CSS
     assert ".field{margin" not in CSS
 
 
@@ -54,7 +54,7 @@ def test_select_dimensions_and_padding_are_unchanged():
 
 
 def test_v928_details_and_continue_validation_remain_intact():
-    assert "melee-weapon-details melee-weapon-summary-pending" in WIZARD
+    assert "weapon-details${attackType==='melee'?' melee-weapon-summary melee-weapon-summary-pending':''}" in WIZARD
     assert "weaponRulesHtml(profile,{semanticHeading:true})" in WIZARD
     assert "weaponSummary.setAttribute('aria-hidden',String(!weapon))" in WIZARD
     assert "$('#openCombatResolution').disabled=!target||!weapon;" in WIZARD
