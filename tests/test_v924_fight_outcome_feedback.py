@@ -85,12 +85,26 @@ def test_result_screen_summarizes_both_participants_and_continue():
 
 def test_no_success_and_remaining_success_explanations_are_supported():
     explanation = body("fightResultExplanation")
+    strike = body("commitFightStrike")
     assert "Neither operative retained a success." in explanation
     assert "No damage was dealt." in explanation
     assert "retained no successes." in explanation
     assert "successes remaining" in explanation
     assert "resolved its remaining successes" in explanation
     assert "fight.history.filter" in explanation
+    assert "resolvingRemaining=!unresolvedFightSuccesses" in strike
+    assert "resolvingRemaining:true" in strike
+    assert "entry.resolvingRemaining" in explanation
+
+
+def test_legacy_checkpoint_is_upgraded_without_duplicate_battle_record():
+    finish = body("finishFight")
+    result = body("buildFightResult")
+    assert "resultVersion:1" in result
+    assert "completeResult" in finish
+    assert "!fight.resultCommitted||!completeResult" in finish
+    assert "!fight.resultLogged" in finish
+    assert "fight.resultLogged=true" in finish
 
 
 def test_completed_action_keeps_fight_specific_outcome_fields():
