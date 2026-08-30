@@ -151,3 +151,11 @@ if(!validateNpoRoster(roster,'crownworld').valid)process.exit(1);
 if(validateNpoRoster(roster,'standard').valid)process.exit(2);
 """
     subprocess.run(["node", "-e", script], check=True, cwd=ROOT)
+
+
+def test_pvp_awakened_warrior_uses_human_replacement_and_loadout_controls():
+    assert 'id="eventReplacementChoice"' in APP
+    assert 'id="eventLychguardLoadout"' in APP
+    assert "choice:$('#eventReplacementChoice')?.value||null" in APP
+    assert "$('#eventLychguardLoadout')?.value||'hyperphase-sword'" in APP
+    assert "toggleAttribute('hidden',e.target.value!=='Lychguard')" in APP

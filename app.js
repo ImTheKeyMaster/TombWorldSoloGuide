@@ -3808,9 +3808,14 @@ document.addEventListener('touchend',function(e){
     const fleshChoices=event.execution.type==='flesh-hunger'&&event.eligibleNpoIds?.length&&isPvpMode()
       ? `<div class="field"><label for="eventNpoSelect">Flayed One</label><select id="eventNpoSelect">${event.eligibleNpoIds.map(id=>`<option value="${escapeHtml(id)}">${escapeHtml(npoName(activeNpos().find(npo=>npo.id===id)))}</option>`).join('')}</select></div><div class="field"><label for="eventFreeMovement">Free movement</label><select id="eventFreeMovement"><option>Charge</option><option>Reposition</option></select></div>`:'';
     const fleshGuide=event.execution.type==='flesh-hunger'?`<div class="event-resolution event-guide-action"><h4>GUIDE ACTION</h4><p>${event.eligibleNpoIds?.length?'Perform the selected free Charge or Reposition towards the closest Player operative. This costs 0 AP, starts no activation, and grants no attack.':`Random hatchway: ${escapeHtml(event.placementHatchway||'pending')}. Set up the Flayed One Ready with a Conceal order, wholly within NPO territory. Put the hatchway access point within its Control Range; if impossible, place it as close as possible and within Control Range of a Player operative if possible.`}</p></div>`:'';
+    const awakenedOptions=event.execution.type==='awakened-warrior'&&isPvpMode()
+      ? replaceEventGeneratedNpo({type:'Necron Warrior',source:'event'}).replacementOptions|| (isCrownworldTomb()?['Necron Warrior','Lychguard']:[])
+      : [];
+    const awakenedChoices=awakenedOptions.length
+      ? `<div class="field"><label for="eventReplacementChoice">Choose NPO</label><select id="eventReplacementChoice">${awakenedOptions.map(type=>`<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('')}</select></div>${isCrownworldTomb()?'<div class="field" id="eventLychguardLoadoutField" hidden><label for="eventLychguardLoadout">Lychguard weapon</label><select id="eventLychguardLoadout"><option value="hyperphase-sword">Hyperphase sword</option><option value="warscythe">Warscythe</option></select></div>':''}`:'';
     if(hasScarabChoices)labels['chittering-drone']='Restore Selected Scarab Swarm';
     const impossibleControl=event.execution.type==='maze-reforms'?'<button type="button" class="btn secondary" id="redrawStrategyEvent" aria-label="No valid terrain changes are possible; draw another Tomb World event card">No Valid Changes · Draw Again</button>':'';
-    return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}${scarabGuide}<div class="event-controls">${scarabChoices}${fleshGuide}${fleshChoices}<button type="button" class="btn primary" id="resolveStrategyEvent" ${scarabChoices?'disabled':''}>${labels[event.definitionId]||labels[event.execution.type]||'Resolve Event'}</button>${impossibleControl}</div></div>`;
+    return `<div class="summary-box strategy-event tomb-world-event-card">${eventDetails}${scarabGuide}<div class="event-controls">${scarabChoices}${fleshGuide}${fleshChoices}${awakenedChoices}<button type="button" class="btn primary" id="resolveStrategyEvent" ${scarabChoices?'disabled':''}>${labels[event.definitionId]||labels[event.execution.type]||'Resolve Event'}</button>${impossibleControl}</div></div>`;
   }
 
   function activationTracker(){
@@ -3886,6 +3891,7 @@ document.addEventListener('touchend',function(e){
     $('#startTp')?.addEventListener('click',startTurningPoint);
     $$('[data-reinforcement-placement]').forEach(input=>input.addEventListener('change',()=>confirmReinforcementPlacement(input.dataset.reinforcementPlacement,input.checked)));
     $('#eventNpoSelect')?.addEventListener('change',e=>{$('#resolveStrategyEvent').disabled=!e.target.value;});
+    $('#eventReplacementChoice')?.addEventListener('change',e=>{$('#eventLychguardLoadoutField')?.toggleAttribute('hidden',e.target.value!=='Lychguard');});
     $('#resolveStrategyEvent')?.addEventListener('click',event=>{
       const button=event.currentTarget;
       if(button.disabled)return;
@@ -4447,11 +4453,11 @@ document.addEventListener('touchend',function(e){
       if(event.execution.type==='awakened-warrior'){
         request=replaceEventGeneratedNpo(request);
         if(isCrownworldTomb())request={...request,replacementOptions:['Necron Warrior','Lychguard']};
-        request=resolveVariantNpoRequest(request,{transactionId:`event:${event.instanceId}:${state.turningPoint}:replacement`});
+        request=resolveVariantNpoRequest(request,{choice:$('#eventReplacementChoice')?.value||null,transactionId:`event:${event.instanceId}:${state.turningPoint}:replacement`});
       }
       const type=request.type;
       if(activeNpos().length>=MAX_NPOS){await redrawCurrentEvent(`${type} could not be set up.`);return;}
-      const weaponId=type==='Lychguard'?(isPvpMode()?'hyperphase-sword':(Math.random()<0.5?'hyperphase-sword':'warscythe')):undefined;
+      const weaponId=type==='Lychguard'?(isPvpMode()?($('#eventLychguardLoadout')?.value||'hyperphase-sword'):(Math.random()<0.5?'hyperphase-sword':'warscythe')):undefined;
       const n=weaponId?createNpo(type,`${type} E${state.turningPoint}`,{order:'Conceal',weaponId}):createNpo(type,`${type} E${state.turningPoint}`,{order:'Conceal'});
       n.ready=true;n.dormant=false;
       if(!commitNpoRoster([...state.roster,n],'resolve that event')){await redrawCurrentEvent(`${type} could not be set up.`);return;}
