@@ -1506,6 +1506,7 @@ button.tracker-operative:hover{
 }
 
 .melee-weapon-summary{display:grid}
+.melee-weapon-field{margin-top:6px}
 .melee-weapon-summary>#playerWeaponSummaryContent,.melee-weapon-summary>.melee-weapon-summary-sizer{grid-area:1/1}
 .melee-weapon-summary-sizer,.melee-weapon-summary-pending{visibility:hidden}
 .melee-weapon-details .weapon-rules{margin:14px 0 0;padding:14px 0 0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent}
