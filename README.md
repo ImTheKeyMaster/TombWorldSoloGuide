@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v9.2.7
+# Tomb World Battle Guide v9.2.8
+
+## v9.2.8
+
+**Version 9.2.8**
+
+- Combined melee weapon statistics and Weapon Rules into one details card.
+- Removed the redundant weapon-name repetition beneath the weapon selector.
+- Weapons without special rules now show only their profile statistics.
+- Preserved the hidden empty-state behavior introduced in v9.2.6.
 
 ## v9.2.7
 

@@ -1517,5 +1517,7 @@ button.tracker-operative:hover{
 }
 
 .melee-weapon-summary{display:grid}
-.melee-weapon-summary>span{grid-area:1/1}
+.melee-weapon-summary>#playerWeaponSummaryContent,.melee-weapon-summary>.melee-weapon-summary-sizer{grid-area:1/1}
 .melee-weapon-summary-sizer,.melee-weapon-summary-pending{visibility:hidden}
+.melee-weapon-details .weapon-rules{margin:14px 0 0;padding:14px 0 0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent}
+.melee-weapon-details .weapon-rules h3{margin:0;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;color:var(--green)}
