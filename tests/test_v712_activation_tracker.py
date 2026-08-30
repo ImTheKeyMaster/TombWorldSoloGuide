@@ -119,7 +119,7 @@ console.log(JSON.stringify({{rows:trackerNpos().map(npo=>({{id:npo.id,...npoTrac
         self.assertIn(".tracker-operative.eliminated{", CSS)
         tracker = self.source("function activationTracker()", "function showPlayerOperativeStatus")
         self.assertIn("<strong>${trackerStatus.status}</strong>", tracker)
-        self.assertIn("tracker-elimination-icon", tracker)
+        self.assertNotIn("tracker-elimination-icon", tracker)
 
     def test_player_tracker_and_activation_count_are_unchanged(self):
         tracker = self.source("function activationTracker()", "function showPlayerOperativeStatus")

@@ -52,12 +52,11 @@ class UiUxPhase1Tests(unittest.TestCase):
     def test_activation_tracker_reuses_eliminated_state_for_players_and_npos(self):
         styles = (ROOT / "styles.css").read_text()
         tracker = self.source("function activationTracker()", "function showPlayerOperativeStatus")
-        self.assertEqual(tracker.count('class="tracker-elimination-icon"'), 2)
+        self.assertNotIn('tracker-elimination-icon', tracker)
         self.assertIn("border:2px solid var(--danger)", styles)
         self.assertIn("color:var(--danger)", styles)
         self.assertIn("container-type:inline-size", styles)
         self.assertNotIn(".tracker-operative.spent,\n.tracker-operative.eliminated", styles)
-        self.assertIn(".tracker-elimination-icon{display:none}", styles)
         self.assertIn("data-player-operative=", tracker)
 
     def test_application_ui_uses_solo_terminology(self):

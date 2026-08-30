@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.9
+# Tomb World Battle Guide v9.2.10
+
+## v9.2.10
+
+**Version 9.2.10**
+
+- Standardized defeated-operative UI terminology to “Eliminated.”
+- Fight Result and dashboard views no longer use mixed “Incapacitated” / “Eliminated” wording.
+- Removed the skull icon from defeated operative cards to improve readability and save space.
 
 ## v9.2.9
 

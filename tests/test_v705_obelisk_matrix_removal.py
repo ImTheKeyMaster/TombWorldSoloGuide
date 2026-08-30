@@ -119,7 +119,7 @@ class ObeliskMatrixRemovalTests(unittest.TestCase):
         self.assertIn("numeric:true,sensitivity:'base'", APP)
         self.assertNotIn("npoPortrait", APP)
         self.assertTrue(any((ROOT / "Assets/Images/Death Korps").glob("*.jpg")))
-        self.assertIn("eliminated-necron-skull.png", (ROOT / "styles.css").read_text())
+        self.assertNotIn("eliminated-necron-skull.png", (ROOT / "styles.css").read_text())
         for operative in ("Necron Warrior", "Canoptek Scarab Swarm"):
             self.assertIn(operative, self.profiles)
 
