@@ -7240,6 +7240,8 @@ function showPlayerActivation(){
   }
   function conciseNpoActionName(action){
     if(NPO_CORE_ACTION_COSTS[action.id]===undefined)return action.name;
+    const fight=action.id==='fight'?action.attackSummary||action.attackSummaries?.at(-1):null;
+    if(fight)return `Fight · ${fight.targetName} · Dealt ${Number(fight.damageDealt??fight.damage??0)} · Suffered ${Number(fight.damageSuffered??0)}`;
     return action.id==='fall-back'?'Fall Back':action.id[0].toUpperCase()+action.id.slice(1);
   }
   function legalNpoActions(n,context={}){

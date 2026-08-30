@@ -109,12 +109,18 @@ def test_legacy_checkpoint_is_upgraded_without_duplicate_battle_record():
 
 def test_completed_action_keeps_fight_specific_outcome_fields():
     commit = body("commitHumanPlayerAction")
+    npo_summary = body("conciseNpoActionName")
     assert "Dealt ${Number(primary.damageDealt" in commit
     assert "Suffered ${Number(primary.damageSuffered" in commit
     for field in ("damageDealt", "damageSuffered", "attackerBefore", "attackerAfter",
                   "defenderBefore", "defenderAfter", "attackerIncapacitated",
                   "defenderIncapacitated", "fightTransactionId"):
         assert field in commit
+    assert "action.id==='fight'" in npo_summary
+    assert "fight.targetName" in npo_summary
+    assert "fight.damageDealt" in npo_summary
+    assert "fight.damageSuffered" in npo_summary
+    assert "Dealt" in npo_summary and "Suffered" in npo_summary
 
 
 def test_solo_pvp_and_engine_decisions_remain_in_existing_resolution_path():
