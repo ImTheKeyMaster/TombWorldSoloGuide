@@ -37,11 +37,10 @@ class RefinedOperativeStatusPanelTests(unittest.TestCase):
         self.assertIn('.operative-status-row.eliminated', shared)
         self.assertIn('border:2px solid var(--danger)', shared)
         row = APP[APP.index('function operativeStatusRow'):APP.index('function renderOperativeStatusPanel')]
-        self.assertIn('operative-status-elimination-icon ${side}', row)
-        self.assertIn('aria-hidden="true"', row)
+        self.assertNotIn('operative-status-elimination-icon', row)
         self.assertIn("status==='ELIMINATED'", row)
         self.assertIn('eliminated', row)
-        self.assertIn('eliminated-necron-skull.png', CSS)
+        self.assertNotIn('eliminated-necron-skull.png', CSS)
 
     def test_eliminated_precedes_active_and_living_active_is_emphasized(self):
         row = APP[APP.index('function operativeStatusRow'):APP.index('function renderOperativeStatusPanel')]

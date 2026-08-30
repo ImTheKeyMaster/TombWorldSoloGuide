@@ -78,7 +78,8 @@ def test_result_screen_summarizes_both_participants_and_continue():
     assert "participants.attacker" in render and "participants.defender" in render
     assert "Damage Dealt" in card and "Wounds" in card
     assert "participant.before" in card and "participant.after" in card
-    assert "INCAPACITATED" in card
+    assert "ELIMINATED" in card
+    assert "INCAPACITATED" not in card
     assert 'id="continueFightResult"' in render and "data-dialog-focus" in render
     assert "acknowledgeFightResult(fight)" in render
 

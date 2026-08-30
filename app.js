@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.9';
+  const APP_VERSION = '9.2.10';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2184,8 +2184,7 @@ document.addEventListener('touchend',function(e){
     const eliminated=status==='ELIMINATED';
     const active=!eliminated&&status==='ACTIVE';
     const wounded=!eliminated&&current>0&&current<maximum;
-    const eliminationIcon=eliminated?`<span class="operative-status-elimination-icon ${side}" aria-hidden="true">${side==='player'?'☠':''}</span>`:'';
-    return `<div class="operative-status-row${eliminated?' eliminated':''}${active?' active':''}${wounded?' wounded':''}">${eliminationIcon}<strong>${escapeHtml(name)}</strong>${statusWoundsHtml(current,maximum)}<span class="operative-status-type">${escapeHtml(type)}</span><span class="operative-status-value">${status}</span></div>`;
+    return `<div class="operative-status-row${eliminated?' eliminated':''}${active?' active':''}${wounded?' wounded':''}"><strong>${escapeHtml(name)}</strong>${statusWoundsHtml(current,maximum)}<span class="operative-status-type">${escapeHtml(type)}</span><span class="operative-status-value">${status}</span></div>`;
   }
   function renderOperativeStatusPanel(activePlayerId=null){
     const eligible=state.screen==='game'&&operativeStatusMedia.matches;
@@ -3223,7 +3222,7 @@ document.addEventListener('touchend',function(e){
   const missionProgressRenderers = {
     escape:(engine,progress,{readOnly=false}={})=>{
       const escaped=new Set(progress.escapedIds);
-      const rows=(state.playerRoster||[]).map(id=>{const incapacitated=state.playerCasualtyIds.includes(id), operativeState=playerOperativeState(id), escapedHere=escaped.has(id)&&operativeState.offBoardReason==='escaped', unavailable=operativeState.inPlay===false&&!escapedHere;return `<div class="mission-objective-row"><span><strong>${escapeHtml(playerName(id))}</strong><small>${escapedHere?'Escaped · Off Board':unavailable?`Off Board${operativeState.offBoardReason?` · ${escapeHtml(operativeState.offBoardReason)}`:''}`:incapacitated?'Incapacitated':'Still in the killzone'}</small></span>${readOnly||incapacitated||unavailable?'':`<button class="btn compact ${escapedHere?'secondary':'ghost'}" data-mission-escaped="${escapeHtml(id)}">${escapedHere?'Undo Escape':'Confirm Escape'}</button>`}</div>`;}).join('');
+      const rows=(state.playerRoster||[]).map(id=>{const incapacitated=state.playerCasualtyIds.includes(id), operativeState=playerOperativeState(id), escapedHere=escaped.has(id)&&operativeState.offBoardReason==='escaped', unavailable=operativeState.inPlay===false&&!escapedHere;return `<div class="mission-objective-row"><span><strong>${escapeHtml(playerName(id))}</strong><small>${escapedHere?'Escaped · Off Board':unavailable?`Off Board${operativeState.offBoardReason?` · ${escapeHtml(operativeState.offBoardReason)}`:''}`:incapacitated?'Eliminated':'Still in the killzone'}</small></span>${readOnly||incapacitated||unavailable?'':`<button class="btn compact ${escapedHere?'secondary':'ghost'}" data-mission-escaped="${escapeHtml(id)}">${escapedHere?'Undo Escape':'Confirm Escape'}</button>`}</div>`;}).join('');
       const migrationWarning=progress.legacyEscapedCount&&!escaped.size?`<div class="summary-box"><strong>Legacy escape progress needs confirmation.</strong><br>This save recorded ${progress.legacyEscapedCount} escaped operative${progress.legacyEscapedCount===1?'':'s'} without names. No identity was guessed; confirm a named operative to replace the aggregate progress safely.</div>`:'';
       return `${migrationWarning}<p>${escaped.size} of ${state.playerRoster.length} operatives escaped. Resolve the mission only after every operative has left the killzone.</p><div class="mission-objective-list">${rows}</div>`;
     },
@@ -3857,12 +3856,12 @@ document.addEventListener('touchend',function(e){
       const status=operativeState.inPlay===false?(operativeState.offBoardReason==='escaped'?'ESCAPED':'OFF BOARD'):casualty?'ELIMINATED':activated?'ACTIVATED':'READY';
       const cls=operativeState.inPlay===false?'activated':casualty?'eliminated':activated?'activated':'ready';
       return `<button type="button" class="tracker-operative player ${cls}" data-player-operative="${operativeId}" title="Select ${escapeHtml(playerName(operativeId))} to mark it eliminated or restore it">
-        <span>${escapeHtml(playerName(operativeId))}</span><span class="tracker-operative-status">${casualty?'<span class="tracker-elimination-icon" aria-hidden="true">☠</span>':''}<strong>${status}</strong></span>
+        <span>${escapeHtml(playerName(operativeId))}</span><span class="tracker-operative-status"><strong>${status}</strong></span>
       </button>`;
     }).join('');
     const npoRows=sortedNposForDisplay(trackerNpos()).map(n=>{
       const trackerStatus=npoTrackerStatus(n);
-      return `<div class="tracker-operative npo ${trackerStatus.className}"><span>${escapeHtml(npoName(n))}</span><span class="tracker-operative-status">${trackerStatus.status==='ELIMINATED'?'<span class="tracker-elimination-icon" aria-hidden="true">☠</span>':''}<strong>${trackerStatus.status}</strong></span></div>`;
+      return `<div class="tracker-operative npo ${trackerStatus.className}"><span>${escapeHtml(npoName(n))}</span><span class="tracker-operative-status"><strong>${trackerStatus.status}</strong></span></div>`;
     }).join('');
     return `<section class="card activation-tracker"><details class="activation-details">
       <summary><div><p class="eyebrow">ACTIVATION TRACKER</p><h3>${state.activationNumber} activations completed</h3></div></summary>
@@ -6640,7 +6639,7 @@ function showPlayerActivation(){
     result.explanation=fightResultExplanation(fight,result);return result;
   }
   function fightResultParticipantHtml(participant,role){
-    return `<section class="fight-result-card" aria-label="${escapeHtml(participant.name)}, ${role} participant"><h3>${escapeHtml(participant.name)}</h3><dl><div><dt>Damage Dealt</dt><dd>${participant.damageDealt}</dd></div><div><dt>Wounds</dt><dd>${participant.before} <span aria-hidden="true">→</span><span class="sr-only">to</span> ${participant.after}</dd></div></dl>${participant.incapacitated?'<strong class="fight-incapacitated">INCAPACITATED</strong>':''}</section>`;
+    return `<section class="fight-result-card" aria-label="${escapeHtml(participant.name)}, ${role} participant"><h3>${escapeHtml(participant.name)}</h3><dl><div><dt>Damage Dealt</dt><dd>${participant.damageDealt}</dd></div><div><dt>Wounds</dt><dd>${participant.before} <span aria-hidden="true">→</span><span class="sr-only">to</span> ${participant.after}</dd></div></dl>${participant.incapacitated?'<strong class="fight-eliminated">ELIMINATED</strong>':''}</section>`;
   }
   function acknowledgeFightResult(fight){
     fight.resultAcknowledged=true;save();

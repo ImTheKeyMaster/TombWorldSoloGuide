@@ -128,7 +128,6 @@ assert.ok(imported.state.roster.every(npo=>!('portrait' in npo)&&!('matrixActive
         ))
         self.assertNotRegex(production, r"Assets/Images/Canoptek Circle|npoPortrait")
         self.assertNotRegex(json.dumps(self.definitions), r"(?i)obelisk|matrix")
-        self.assertIn("eliminated-necron-skull.png", CSS)
         self.assertTrue((ROOT / "Assets/Images/eliminated-necron-skull.png").is_file())
         for asset in re.findall(r"'\./([^']+)'", WORKER):
             self.assertTrue((ROOT / asset).exists(), asset)

@@ -31,7 +31,7 @@ class NpoRosterReadOnlyActivationTests(unittest.TestCase):
         card = self.function_source("function npoRosterCard", "function operativeCard")
 
         self.assertIn("npoRosterCard(n,n.battlefieldState==='deployed'||n.wounds<=0)", roster)
-        self.assertIn('data-delete="${n.id}" ${state.turningPoint>0?\'disabled\':\'\'}>Remove NPO</button>', card)
+        self.assertIn('data-delete="${n.id}" ${state.turningPoint>0?\'disabled\':\'\'}>Remove ${escapeHtml(opponentSingularLabel())}</button>', card)
         self.assertNotIn(">Delete</button>", card)
 
         wound_controls, removal_control = card.split('</div>`:\'\'}', 1)
@@ -48,25 +48,14 @@ class NpoRosterReadOnlyActivationTests(unittest.TestCase):
             self.styles,
         )
 
-    def test_eliminated_cards_share_prominent_overlay_styling(self):
-        self.assertIn('.operative-card.dead:after{content:"☠"', self.styles)
+    def test_eliminated_cards_keep_status_styling_without_skull_overlays(self):
         self.assertIn(
             ".operative-card.dead,.npo-roster-card.dead{opacity:.5}",
             self.styles,
         )
-        self.assertIn(
-            ".operative-card.dead:after,.npo-roster-card.dead:after{--elimination-overlay-size:6rem;position:absolute;z-index:2",
-            self.styles,
-        )
-        self.assertIn(
-            'font-size:var(--elimination-overlay-size);opacity:1;pointer-events:none',
-            self.styles,
-        )
-        self.assertIn(
-            '.npo-roster-card.dead:after{content:"";background:url("Assets/Images/eliminated-necron-skull.png") center/auto var(--elimination-overlay-size) no-repeat;filter:brightness(1.4) contrast(1.2) drop-shadow(0 0 2px rgba(255,255,255,.55))}',
-            self.styles,
-        )
-        self.assertIn(".npo-roster-card>*{position:relative;z-index:1}", self.styles)
+        self.assertNotIn('.operative-card.dead:after', self.styles)
+        self.assertNotIn('.npo-roster-card.dead:after', self.styles)
+        self.assertNotIn('eliminated-necron-skull.png', self.styles)
 
     def test_eliminated_roster_cards_reuse_activation_tracker_border(self):
         self.assertIn(
