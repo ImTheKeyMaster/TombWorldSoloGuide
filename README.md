@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v9.2.0
+# Tomb World Battle Guide v9.2.1
+
+## v9.2.1
+
+**Version 9.2.1**
+
+- Corrected an action-legality bug that incorrectly made Fight unavailable after Shoot and Shoot unavailable after Fight.
+- Human-controlled operatives can now perform both actions in the same activation when they have sufficient AP and the player determines the tabletop actions are legal.
+- Shoot → Charge → Fight is supported for eligible operatives.
+- Normal once-per-activation and movement-action restrictions remain unchanged.
 
 ## v9.2.0
 

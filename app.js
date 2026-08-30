@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.0';
+  const APP_VERSION = '9.2.1';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -4604,8 +4604,6 @@ document.addEventListener('touchend',function(e){
     const discountedBreachCompleted=(activation?.resolvedActions||[]).some(record=>record.id==='breachSarcophagus'&&record.apCost===1);
     if(completed.has(action.id))return {status:'Used',disabled:true,reason:'Used'};
     if(action.cost>remaining)return {status:'Insufficient AP',disabled:true,reason:`Needs ${action.cost} AP`};
-    if(action.id==='shoot'&&completed.has('melee'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Fight'};
-    if(action.id==='melee'&&completed.has('shoot'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Shoot'};
     if(action.id==='charge'&&['move','dash','fallBack'].some(id=>completed.has(id)))return {status:'Unavailable',disabled:true,reason:'Unavailable after movement'};
     if(['move','dash','fallBack'].includes(action.id)&&completed.has('charge'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Charge'};
     if(action.id==='fallBack'&&completed.has('move'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Reposition'};
@@ -7081,8 +7079,8 @@ function showPlayerActivation(){
   function npoMovementInquiry(n,action,id){
     const activation=state.lastActivation,focus=npoMovementFocus(n,action),remainingAp=Number(activation?.remainingAp||0);
     const declined=new Set(activation?.declinedMovementIntentIds||[]);
-    const shootCanFollow=remainingAp>=2&&!(activation?.completedActionIds||[]).includes('shoot')&&!(activation?.completedActionIds||[]).includes('fight');
-    const fightCanFollow=remainingAp>=2&&!(activation?.completedActionIds||[]).includes('fight')&&!(activation?.completedActionIds||[]).includes('shoot');
+    const shootCanFollow=remainingAp>=2&&!(activation?.completedActionIds||[]).includes('shoot');
+    const fightCanFollow=remainingAp>=2&&!(activation?.completedActionIds||[]).includes('fight');
     if(id==='reposition'){
       const distance=formatMovementDistance(npoRepositionDistance(n));
       if(focus==='shoot'&&shootCanFollow&&!declined.has('reposition-enable-shoot'))return {id:'reposition-enable-shoot',purpose:'enable-shoot',followUpActionId:'shoot',guaranteesFollowUp:true,question:distance?`Can this NPO Reposition up to ${distance} and finish where it can Shoot?`:'Can this NPO Reposition to a position where it can Shoot?',help:'Select Yes only if it can finish the Reposition with a Player operative it can Shoot.'};
@@ -7177,7 +7175,6 @@ function showPlayerActivation(){
       if(['shoot','fight','charge'].includes(id)&&!inPlayLivingPlayerOperativeIds().length)return false;
       if(id==='shoot'&&!(definition.rangedWeapons||[]).length)return false;
       if(id==='fight'&&!(definition.meleeWeapons||[]).length)return false;
-      if((id==='shoot'&&completed.has('fight'))||(id==='fight'&&completed.has('shoot')))return false;
       if(id==='charge'&&['reposition','dash','fall-back'].some(done=>completed.has(done)))return false;
       if(['reposition','dash','fall-back'].includes(id)&&completed.has('charge'))return false;
       if(id==='fall-back'&&['reposition','charge'].some(done=>completed.has(done)))return false;
@@ -7601,9 +7598,7 @@ function showPlayerActivation(){
     const completed=new Set(activation.completedActionIds||[]),definition=npoDefinition(n.type);
     const catalog=supportedHumanNpoActions(n).map(name=>{
       const id=npoActionId(name),cost=npoActionCost(n,id),available=legal.has(id),used=completed.has(id);
-      let reason=used?'Used':available?'Available':cost>activation.remainingAp?`Needs ${cost} AP`:'Unavailable';
-      if(id==='fight'&&completed.has('shoot'))reason='Unavailable after Shoot';
-      if(id==='shoot'&&completed.has('fight'))reason='Unavailable after Fight';
+      const reason=used?'Used':available?'Available':cost>activation.remainingAp?`Needs ${cost} AP`:'Unavailable';
       return {name,id,cost,group:['reposition','dash','charge','fall-back'].includes(id)?'movement':['shoot','fight'].includes(id)?'combat':'special',state:{status:used?'Used':available?'Available':cost>activation.remainingAp?'Insufficient AP':'Unavailable',disabled:!available,reason}};
     });
     const modifiers=(state.npoRuleState.aplModifiers||[]).filter(item=>item.targetId===n.id).map(item=>`${item.amount>0?'+':''}${item.amount} AP (${titleCaseRuleId(item.ruleId)})`);
@@ -7696,7 +7691,7 @@ function showPlayerActivation(){
         if(q.movementIntent){
           state.lastActivation.movementIntent={...q.movementIntent,actionId:q.actionId,decisionPass:state.lastActivation.decisionPass};
           state.lastActivation.pendingFollowUpAction=q.movementIntent.guaranteesFollowUp?{activationId:state.lastActivation.activationId,movementActionId:q.actionId,actionId:q.movementIntent.followUpActionId,decisionPass:state.lastActivation.decisionPass,movementCommitted:false}:null;
-        }else if(q.actionId==='charge'&&state.lastActivation.remainingAp>=2&&!(state.lastActivation.completedActionIds||[]).includes('fight')&&!(state.lastActivation.completedActionIds||[]).includes('shoot')){
+        }else if(q.actionId==='charge'&&state.lastActivation.remainingAp>=2&&!(state.lastActivation.completedActionIds||[]).includes('fight')){
           state.lastActivation.movementIntent={id:'charge-enable-fight',actionId:'charge',purpose:'enable-fight',followUpActionId:'fight',guaranteesFollowUp:true,decisionPass:state.lastActivation.decisionPass};
           state.lastActivation.pendingFollowUpAction={activationId:state.lastActivation.activationId,movementActionId:'charge',actionId:'fight',decisionPass:state.lastActivation.decisionPass,movementCommitted:false};
         }

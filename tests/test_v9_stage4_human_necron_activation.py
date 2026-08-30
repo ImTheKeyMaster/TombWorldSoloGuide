@@ -133,11 +133,11 @@ class Stage4HumanNecronActivationTests(unittest.TestCase):
         self.assertIn("button.disabled=false", failure)
         self.assertIn("if(isPvpMode())", failure)
 
-    def test_shared_legality_keeps_ap_repeat_combat_and_movement_rules(self):
+    def test_shared_legality_keeps_ap_repeat_and_movement_rules_without_combat_conflict(self):
         rules = self.section("function filterLegalNpoActions", "function rankLegalNpoActions")
         self.assertIn("cost>remainingAp||completed.has(id)", rules)
-        self.assertIn("id==='shoot'&&completed.has('fight')", rules)
-        self.assertIn("id==='fight'&&completed.has('shoot')", rules)
+        self.assertNotIn("id==='shoot'&&completed.has('fight')", rules)
+        self.assertNotIn("id==='fight'&&completed.has('shoot')", rules)
         self.assertIn("id==='charge'&&['reposition','dash','fall-back']", rules)
         self.assertIn("id==='fall-back'", rules)
         self.assertIn("oncePerTurningPoint", rules)
