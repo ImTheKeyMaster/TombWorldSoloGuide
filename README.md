@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v9.2.2
+# Tomb World Battle Guide v9.2.3
+
+## v9.2.3
+
+**Version 9.2.3**
+
+- Simplified Fight Roll results by removing redundant Failure counts.
+- Clarified that all Strike/Block choices belong to the ACTING NOW operative.
+- Strike and Block choices now use equal visual emphasis.
+- Removed duplicate equivalent Fight choices.
+- Solo Fight now clearly reports the NPO's automatic response before returning control to the Player.
 
 ## v9.2.2
 
