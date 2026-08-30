@@ -51,7 +51,9 @@ def test_actions_are_neutral_grouped_owned_and_accessible():
     assert "aria-label=\"Acting now:" in render
     assert "Strike with ${success.kind} success, deal" in render
     assert "Block enemy ${target.kind} success using" in render
-    assert ".fight-pool.active" in CSS and "ACTING NOW" in body("fightPoolHtml")
+    pool = body("fightPoolHtml")
+    assert ".fight-pool.active" in CSS and "ACTING NOW" in pool
+    assert "aria-label=\"${active?'Acting now: ':''}${escapeHtml(participant.label)}\"" in pool
     assert "@media (max-width:430px){.fight-actions{grid-template-columns:1fr}" in CSS
 
 
@@ -62,6 +64,7 @@ def test_equivalent_choices_collapse_to_first_stable_pool_records():
     assert "strikes.push({success,damage})" in actions
     assert "blocks.push({blocker:success,target})" in actions
     assert "fightBlockTargets(fight,role,success)" in actions
+    assert "capacity>1?`${success.kind}:shield`:`${success.kind}:${target.kind}`" in actions
     assert "Math.random" not in actions
     assert "fightSuccessesFromDice" in APP and "dieIndex:index" in body("fightSuccessesFromDice")
     render = body("renderFightResolution")
@@ -75,7 +78,10 @@ def test_recent_exchange_uses_committed_history_and_solo_copy_is_explicit():
     render = body("renderFightResolution")
     assert "entry.damage" in record and "entry.before" in record and "entry.after" in record
     assert "entry.blockedKinds" in record and "BLOCKED" in record and "STRUCK" in record
-    assert "fight.history.slice(-2)" in recent and "LAST EXCHANGE" in recent
+    assert "!isPvpMode()" in recent
+    assert "fight[latest.role]?.side==='npo'" in recent
+    assert "fight[previous.role]?.side==='player'" in recent
+    assert "soloExchange?[previous,latest]:[latest]" in recent and "LAST EXCHANGE" in recent
     assert "Guide automatically resolves the NPO’s response" in render
     assert "soloNpoFightDecision" in render
     assert "Continue" not in recent

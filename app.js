@@ -6549,7 +6549,8 @@ function showPlayerActivation(){
   }
   function fightPoolHtml(fight,role){
     const participant=fight[role],pool=unresolvedFightSuccesses(fight,role),normal=pool.filter(item=>item.kind==='normal').length,critical=pool.length-normal;
-    return `<section class="fight-pool ${fight.turn===role?'active':''}">${fight.turn===role?'<span class="fight-active-label">ACTING NOW</span>':''}<small>${escapeHtml(participant.label)} · ${escapeHtml(participant.profile.name)}</small><strong>${participant.wounds}/${participant.maxWounds} wounds</strong><div class="fight-unresolved"><small>UNRESOLVED SUCCESSES</small><span>★ Critical × ${critical}</span><span>● Normal × ${normal}</span></div></section>`;
+    const active=fight.turn===role;
+    return `<section class="fight-pool ${active?'active':''}" aria-label="${active?'Acting now: ':''}${escapeHtml(participant.label)}">${active?'<span class="fight-active-label">ACTING NOW</span>':''}<small>${escapeHtml(participant.label)} · ${escapeHtml(participant.profile.name)}</small><strong>${participant.wounds}/${participant.maxWounds} wounds</strong><div class="fight-unresolved"><small>UNRESOLVED SUCCESSES</small><span>★ Critical × ${critical}</span><span>● Normal × ${normal}</span></div></section>`;
   }
   function fightDiePresentation(die,index){
     const result=die.retained?(die.kind==='crit'?'critical success':'normal success'):'failure';
@@ -6582,7 +6583,8 @@ function showPlayerActivation(){
   }
   function fightLastResolutionHtml(fight){
     const latest=fight.history.at(-1);if(!latest)return '';
-    const entries=latest.role&&fight[latest.role]?.side==='npo'&&fight.history.length>1?fight.history.slice(-2):[latest];
+    const previous=fight.history.at(-2),soloExchange=!isPvpMode()&&fight[latest.role]?.side==='npo'&&previous&&fight[previous.role]?.side==='player';
+    const entries=soloExchange?[previous,latest]:[latest];
     return `<section class="fight-last-resolution" role="status" aria-label="Last exchange"><small>LAST EXCHANGE</small>${entries.map(entry=>fightResolutionRecordHtml(fight,entry)).join('')}</section>`;
   }
   function equivalentRemainingFightStrikes(fight,role){
@@ -6597,12 +6599,12 @@ function showPlayerActivation(){
     button.onclick=()=>{const selected=inputs.filter(input=>input.checked).map(input=>input.value);if(commitFightBlock(fight,role,blockerId,selected))renderFightResolution();};
   }
   function semanticFightActions(fight,role){
-    const participant=fight[role],own=unresolvedFightSuccesses(fight,role),strikes=[],blocks=[],strikeKeys=new Set(),blockKeys=new Set();
+    const participant=fight[role],own=unresolvedFightSuccesses(fight,role),capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1)),strikes=[],blocks=[],strikeKeys=new Set(),blockKeys=new Set();
     own.forEach(success=>{
       const damage=success.kind==='critical'?participant.profile.crit:participant.profile.normal,key=`${success.kind}:${damage}`;
       if(!strikeKeys.has(key)){strikeKeys.add(key);strikes.push({success,damage});}
       fightBlockTargets(fight,role,success).forEach(target=>{
-        const blockKey=`${success.kind}:${target.kind}`;
+        const blockKey=capacity>1?`${success.kind}:shield`:`${success.kind}:${target.kind}`;
         if(!blockKeys.has(blockKey)){blockKeys.add(blockKey);blocks.push({blocker:success,target});}
       });
     });

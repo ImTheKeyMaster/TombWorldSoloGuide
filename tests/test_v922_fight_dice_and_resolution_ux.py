@@ -101,6 +101,7 @@ def test_live_wounds_and_last_resolution_derive_from_authoritative_history():
     strike = body("commitFightStrike")
     assert "participant.wounds}/${participant.maxWounds} wounds" in pool
     assert "fight.history.at(-1)" in last and "LAST EXCHANGE" in last
+    assert "soloExchange?[previous,latest]:[latest]" in last
     assert "setFightOperativeWounds(target,after)" in strike
     assert "fight.history.push(historyEntry)" in strike
 
