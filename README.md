@@ -1,4 +1,11 @@
-# Tomb World Battle Guide v9.2.10
+# Tomb World Battle Guide v9.2.11
+
+## v9.2.11
+
+**Version 9.2.11**
+
+- Added a small amount of spacing above the melee Weapon field so it no longer crowds the Target NPO dropdown focus outline.
+- Preserved native browser dropdown behavior and accessibility.
 
 ## v9.2.10
 
