@@ -1015,17 +1015,18 @@ document.addEventListener('touchend',function(e){
     if(!request?.replacementOptions?.length)return request;
     const options=request.replacementOptions.filter(type=>Boolean(npoDefinition(type)));
     const prior=transactionId&&state.variantState?.replacementTransactions?.[transactionId];
+    const pvpDecisionPending=isPvpMode()&&!options.includes(choice)&&!prior?.committed;
     const selected=options.includes(prior?.selectedType)?prior.selectedType
       :options.includes(choice)?choice
       :isPvpMode()?options[0]
       :isFlayerCurseTomb()&&options.includes('Flayed One')?'Flayed One'
       :isDestroyerCultTomb()&&options.includes('Skorpekh Destroyer')?'Skorpekh Destroyer'
       :options[Math.floor(Math.random()*options.length)];
-    const resolved={...request,type:selected};
+    const resolved={...request,type:selected,...(pvpDecisionPending?{replacementOptions:[...options],replacementTransactionId:transactionId}:{})};
     if(selected!==request.type)delete resolved.weaponId;
     if(transactionId){
-      state.variantState.replacementTransactions[transactionId]={id:transactionId,originalType:request.type,options:[...options],selectedType:selected,owner:isPvpMode()?'necron-controller':'guide',committed:true};
-      log(`${currentTombWorldVariant().name}: ${request.type} request generated ${selected}.`);
+      state.variantState.replacementTransactions[transactionId]={id:transactionId,originalType:request.type,originalWeaponId:request.weaponId,options:[...options],selectedType:selected,owner:isPvpMode()?'necron-controller':'guide',committed:!pvpDecisionPending};
+      if(!pvpDecisionPending)log(`${currentTombWorldVariant().name}: ${request.type} request generated ${selected}.`);
     }
     return resolved;
   }
@@ -2085,8 +2086,27 @@ document.addEventListener('touchend',function(e){
       behavior:definition.compatibilityBehavior,attack:canonicalAttackProfile(npoAttackProfiles({type,weaponId},'shoot')[0]||npoAttackProfiles({type,weaponId},'melee')[0]),weaponId,order:'Conceal',
       ready:options.ready??(battlefieldState==='deployed'&&!dormant),dormant,
       battlefieldState,deployed:battlefieldState==='deployed',
-      reinforcement:options.reinforcement||null
+      reinforcement:options.reinforcement||null,
+      replacementOptions:Array.isArray(options.replacementOptions)?[...options.replacementOptions]:null,
+      replacementTransactionId:options.replacementTransactionId||null
     };
+  }
+  function commitPvpNpoReplacement(npo,selectedType){
+    const options=npo?.replacementOptions||[],transaction=state.variantState.replacementTransactions[npo?.replacementTransactionId];
+    if(!isPvpMode()||!transaction||transaction.committed||!options.includes(selectedType))return npo;
+    if(selectedType===npo.type){transaction.selectedType=selectedType;transaction.committed=true;delete npo.replacementOptions;delete npo.replacementTransactionId;log(`${currentTombWorldVariant().name}: the Necron controller retained ${npoName(npo)}.`);return npo;}
+    const remaining=state.roster.filter(item=>item.id!==npo.id),replacement=createNpo(selectedType,`${selectedType} ${npo.displayNumber||''}`.trim(),{
+      deployed:false,ready:npo.ready,dormant:false,reinforcement:npo.reinforcement,allocationContext:{roster:remaining}
+    });
+    replacement.order=npo.order;replacement.missionRoom=npo.missionRoom;
+    if(!commitNpoRoster([...remaining,replacement],'apply the Necron controller replacement'))return null;
+    const replaceId=list=>(list||[]).map(id=>id===npo.id?replacement.id:id);
+    state.reinforcementState.operativeIds=replaceId(state.reinforcementState.operativeIds);
+    if(state.startingNpoGeneration){state.startingNpoGeneration.deployedNpoIds=replaceId(state.startingNpoGeneration.deployedNpoIds);state.startingNpoGeneration.reserveNpoIds=replaceId(state.startingNpoGeneration.reserveNpoIds);}
+    Object.values(state.missionState?.awakenedRooms||{}).forEach(awakening=>{awakening.operativeIds=replaceId(awakening.operativeIds);});
+    transaction.selectedType=selectedType;transaction.committed=true;transaction.createdNpoId=replacement.id;
+    log(`${currentTombWorldVariant().name}: the Necron controller replaced ${npo.type} with ${selectedType}.`);
+    return replacement;
   }
   function setupCrownworldCrawlerPair(crawler,transactionId){
     const replacement=replaceNpoAtSetup({type:crawler?.type,npoId:crawler?.id,transactionId});
@@ -2575,7 +2595,7 @@ document.addEventListener('touchend',function(e){
         console.warn(`[NPO inventory] ${m.name} requested ${count} models, but only ${state.roster.length} legal generated models were available.`);
         state.roster=previousRoster;showToast('A complete legal NPO roster could not be generated.');return null;
       }
-      state.roster.push(createNpo(result.type,`${result.type} ${i+1}`,{weaponId:result.weaponId,ready:false,deployed:false}));
+      state.roster.push(createNpo(result.type,`${result.type} ${i+1}`,{weaponId:result.weaponId,ready:false,deployed:false,replacementOptions:result.replacementOptions,replacementTransactionId:result.replacementTransactionId}));
     }
     const validation=validateNpoRoster(state.roster,state.tombWorldVariant);
     if(!validation.valid){state.roster=previousRoster;console.warn('[NPO inventory] Generated roster was rejected.',validation.errors);showToast('A legal NPO roster could not be generated.');return null;}
@@ -3282,7 +3302,7 @@ document.addEventListener('touchend',function(e){
       const rawResult=availableGenerationResult();if(!rawResult)break;
       const request=replaceMissionRequestedNpo({...rawResult,source:'mission-05-awaken-room'});
       const result=resolveVariantNpoRequest(request,{transactionId:`mission:${state.missionId}:${roomId}:${i}:${request.type}`});
-      const n=createNpo(result.type,`${result.type} ${roomId}`,{weaponId:result.weaponId,ready:true,dormant:false,deployed:false,order:'Conceal'});
+      const n=createNpo(result.type,`${result.type} ${roomId}`,{weaponId:result.weaponId,ready:true,dormant:false,deployed:false,order:'Conceal',replacementOptions:result.replacementOptions,replacementTransactionId:result.replacementTransactionId});
       n.missionRoom=roomId;state.roster.push(n);ids.push(n.id);
     }
     state.missionState.awakenedRooms[roomId]={count:ids.length,operativeIds:ids,placementConfirmed:false};
@@ -3651,7 +3671,7 @@ document.addEventListener('touchend',function(e){
     const reinforcementCard=deployingNpos.length||blockedCount
       ? `<section class="card reinforcement-card" aria-live="polite"><p class="eyebrow">REINFORCEMENTS</p>${deployedSection}${pendingSection}${blockedCount?`<div class="reinforcement-blocked" role="status"><h3>${deployingNpos.length?`${blockedCount} additional reinforcement${blockedCount===1?'':'s'} could not be deployed`:'No reinforcements could be deployed'}</h3><p>${blockedReason}</p></div>`:''}</section>`
       : '<div class="summary-box strategy-empty-message">No reinforcements were generated this Turning Point.</div>';
-    const placements=deployingNpos.map(npo=>`<label class="check-row"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong><small>Randomly determine an open hatchway, set up this operative with a Conceal order following the Tomb World reinforcement placement restrictions, then confirm.</small></span></label>`).join('');
+    const placements=deployingNpos.map(npo=>`<label class="check-row"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong>${npo.replacementOptions?.length?`<span class="field"><span>Choose NPO</span><select aria-label="Choose replacement for ${escapeHtml(npoName(npo))}" data-reinforcement-replacement="${escapeHtml(npo.id)}">${npo.replacementOptions.map(type=>`<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('')}</select></span>`:''}<small>Randomly determine an open hatchway, set up this operative with a Conceal order following the Tomb World reinforcement placement restrictions, then confirm.</small></span></label>`).join('');
     const showStatTooltips=!window.matchMedia('(max-width:600px)').matches;
     const tooltipAttrs=text=>showStatTooltips?` tabindex="0" data-tooltip="${text}"`:'';
     const infoDot=showStatTooltips?'<span class="info-dot">i</span>':'';
@@ -4332,8 +4352,9 @@ document.addEventListener('touchend',function(e){
         if(n){
           n.reinforcement={turningPoint:state.turningPoint,placementConfirmed:false};
           n.battlefieldState='reserve';n.deployed=false;n.dormant=false;n.ready=false;
+          n.replacementOptions=rr.replacementOptions||null;n.replacementTransactionId=rr.replacementTransactionId||null;
         }else{
-          n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId,deployed:false,reinforcement:{turningPoint:state.turningPoint,placementConfirmed:false}});
+          n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId,deployed:false,reinforcement:{turningPoint:state.turningPoint,placementConfirmed:false},replacementOptions:rr.replacementOptions,replacementTransactionId:rr.replacementTransactionId});
           if(!commitNpoRoster([...state.roster,n],'add a reinforcement')){blocked++;state.reinforcementState.blockedByInventory++;continue;}
           state.newIds.push(n.id);
         }
@@ -4356,8 +4377,14 @@ document.addEventListener('touchend',function(e){
   }
 
   function confirmReinforcementPlacement(id,confirmed){
-    const npo=state.roster.find(item=>item.id===id&&state.reinforcementState.operativeIds.includes(item.id));
+    let npo=state.roster.find(item=>item.id===id&&state.reinforcementState.operativeIds.includes(item.id));
     if(!npo?.reinforcement)return;
+    if(confirmed&&npo.replacementOptions?.length){
+      const selected=$$('[data-reinforcement-replacement]').find(select=>select.dataset.reinforcementReplacement===npo.id)?.value;
+      npo=commitPvpNpoReplacement(npo,selected);
+      if(!npo){showToast('That replacement could not be added.');save();render();return;}
+      id=npo.id;
+    }
     if(confirmed&&npo.type===TOMB_CRAWLER_TYPE&&!state.variantState.crownworldFirstCrawlerConsumed){
       const pair=setupCrownworldCrawlerPair(npo,`crownworld:reinforcement:${state.turningPoint}:${npo.id}`);
       if(pair.blocked){state.reinforcementState.blocked++;state.reinforcementState.blockedByCapacity++;showToast('The Royal Warden and Lychguard pair could not be set up within the 10-NPO limit.');save();render();return;}

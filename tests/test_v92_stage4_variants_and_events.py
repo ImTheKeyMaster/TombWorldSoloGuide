@@ -159,3 +159,15 @@ def test_pvp_awakened_warrior_uses_human_replacement_and_loadout_controls():
     assert "choice:$('#eventReplacementChoice')?.value||null" in APP
     assert "$('#eventLychguardLoadout')?.value||'hyperphase-sword'" in APP
     assert "toggleAttribute('hidden',e.target.value!=='Lychguard')" in APP
+
+
+def test_pvp_reinforcement_replacement_remains_pending_until_human_confirmation():
+    assert "const pvpDecisionPending=isPvpMode()" in APP
+    assert "committed:!pvpDecisionPending" in APP
+    assert "replacementOptions:Array.isArray(options.replacementOptions)" in APP
+    assert "data-reinforcement-replacement" in APP
+    reinforcement = APP[APP.index("function confirmReinforcementPlacement"):APP.index("async function rollInitiative")]
+    assert "commitPvpNpoReplacement(npo,selected)" in reinforcement
+    replacement = APP[APP.index("function commitPvpNpoReplacement"):APP.index("function rollNpo")]
+    assert "commitNpoRoster([...remaining,replacement]" in replacement
+    assert "transaction.committed=true" in replacement
