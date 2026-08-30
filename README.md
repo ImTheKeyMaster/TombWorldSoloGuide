@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v9.2.11
+# Tomb World Battle Guide v9.2.12
+
+## v9.2.12
+
+**Version 9.2.12**
+
+- Standardized Shooting weapon details with the Melee attack screen.
+- Removed the redundant repeated weapon name beneath the Shooting weapon selector.
+- Combined ranged weapon statistics and Weapon Rules into one details card.
+- Weapons without special rules now show only their profile statistics.
 
 ## v9.2.11
 

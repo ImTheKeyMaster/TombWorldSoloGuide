@@ -31,13 +31,13 @@ def test_melee_dropdown_remains_the_only_selected_weapon_name_display():
 
 
 def test_stats_and_rules_share_one_melee_details_card():
-    assert "melee-weapon-details melee-weapon-summary-pending" in WIZARD
+    assert "weapon-details${attackType==='melee'?' melee-weapon-summary melee-weapon-summary-pending':''}" in WIZARD
     assert '<div class="weapon-profile-stats">' in WIZARD
     assert "weaponRulesHtml(profile,{semanticHeading:true})" in WIZARD
     assert "semanticHeading?'<h3>Weapon Rules</h3>'" in APP
-    assert "${attackType==='shoot'?'<div id=\"weaponRules\"></div>':''}" in WIZARD
-    assert ".melee-weapon-details .weapon-rules" in CSS
-    nested_style = CSS[CSS.index(".melee-weapon-details .weapon-rules{"):].split("}", 1)[0]
+    assert 'id="weaponRules"' not in WIZARD
+    assert ".weapon-details .weapon-rules" in CSS
+    nested_style = CSS[CSS.index(".weapon-details .weapon-rules{"):].split("}", 1)[0]
     assert "border:0" in nested_style
     assert "border-top:1px solid var(--line)" in nested_style
     assert "background:transparent" in nested_style
@@ -61,10 +61,10 @@ def test_rule_summaries_and_support_statuses_are_unchanged():
 
 def test_preselection_card_stays_hidden_visually_and_accessibly_with_reserved_space():
     assert "melee-weapon-summary-pending':''" in WIZARD
-    assert "attackType==='melee'?' aria-hidden=\"true\"':''" in WIZARD
+    assert 'id="playerWeaponSummary" aria-hidden="true"' in WIZARD
     assert "weaponSummary.classList.toggle('melee-weapon-summary-pending',!weapon)" in WIZARD
     assert "weaponSummary.setAttribute('aria-hidden',String(!weapon))" in WIZARD
-    assert "${attackType==='melee'?'':'<strong>Weapon:</strong> —'}" in WIZARD
+    assert '<strong>Weapon:</strong> —' not in WIZARD
     assert ".melee-weapon-summary-sizer,.melee-weapon-summary-pending{visibility:hidden}" in CSS
     assert ".melee-weapon-summary-pending{display:none}" not in CSS
 
@@ -73,9 +73,7 @@ def test_validation_macrocyte_and_shoot_paths_are_preserved():
     assert "$('#openCombatResolution').disabled=!target||!weapon;" in WIZARD
     assert "$('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target);" in WIZARD
     assert '<strong>Attacker is within 2&quot; of this Macrocyte</strong>' in APP
-    shoot_branch = WIZARD[WIZARD.index(": (weapon?`<strong>Weapon:</strong>"):]
-    assert "escapeHtml(weapon.name)" in shoot_branch
-    assert "if(weaponRules)weaponRules.innerHTML=weaponRulesHtml(profile);" in WIZARD
+    assert "runAutomaticCombatRolls" not in WIZARD
 
 
 def test_v928_release_and_save_schema_surfaces():

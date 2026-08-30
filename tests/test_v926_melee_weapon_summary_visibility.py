@@ -1,4 +1,3 @@
-import re
 from pathlib import Path
 
 from versioning import CURRENT_APP_VERSION
@@ -26,8 +25,8 @@ WIZARD = attack_wizard_source()
 def test_melee_weapon_dropdown_and_reserved_hidden_summary_are_rendered():
     assert '<label>Weapon</label><select id="playerWeaponSelect">' in WIZARD
     assert '<option value="">Select a weapon...</option>' in WIZARD
-    assert "attackType==='melee'?' melee-weapon-summary melee-weapon-details melee-weapon-summary-pending':''" in WIZARD
-    assert "attackType==='melee'?' aria-hidden=\"true\"':''" in WIZARD
+    assert "attackType==='melee'?' melee-weapon-summary melee-weapon-summary-pending':''" in WIZARD
+    assert 'id="playerWeaponSummary" aria-hidden="true"' in WIZARD
     assert "weapons.map(weapon=>`<div class=\"melee-weapon-summary-sizer\" aria-hidden=\"true\">" in WIZARD
     assert ".melee-weapon-summary{display:grid}" in CSS
     assert ".melee-weapon-summary>#playerWeaponSummaryContent,.melee-weapon-summary>.melee-weapon-summary-sizer{grid-area:1/1}" in CSS
@@ -38,7 +37,7 @@ def test_melee_weapon_dropdown_and_reserved_hidden_summary_are_rendered():
 def test_weapon_selection_reveals_stats_summary():
     assert "weaponSummary.classList.toggle('melee-weapon-summary-pending',!weapon)" in WIZARD
     assert "weaponSummary.setAttribute('aria-hidden',String(!weapon))" in WIZARD
-    assert "$('#playerWeaponSummaryContent').innerHTML=attackType==='melee'" in WIZARD
+    assert "$('#playerWeaponSummaryContent').innerHTML=weapon" in WIZARD
     assert '<div class="weapon-profile-stats">' in WIZARD
     assert "${weapon.attacks} dice" in WIZARD
     assert "${weapon.hit}+" in WIZARD
@@ -55,14 +54,12 @@ def test_macrocyte_question_is_unchanged():
     assert "$('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target);" in WIZARD
 
 
-def test_shoot_summary_behavior_is_not_hidden():
-    summary_markup = re.search(
-        r'<div class="summary-box\$\{attackType.*?id="playerWeaponSummary".*?</div>',
-        WIZARD,
-    ).group(0)
-    assert summary_markup.count("attackType==='melee'") == 3
-    assert "attackType==='shoot'" not in summary_markup
+def test_shoot_summary_is_hidden_only_until_a_weapon_is_selected():
+    summary_markup = WIZARD[WIZARD.index('<div class="summary-box weapon-details'):WIZARD.index('<div id="aggressiveDefenseFields">')]
+    assert summary_markup.count("attackType==='melee'") == 1
+    assert "attackType==='shoot'?' hidden':''" in summary_markup
     assert "if(attackType==='melee'){" in WIZARD
+    assert "else weaponSummary.hidden=!weapon;" in WIZARD
 
 
 def test_release_version_surfaces_and_save_schema():
