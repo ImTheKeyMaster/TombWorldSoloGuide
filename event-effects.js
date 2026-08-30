@@ -21,6 +21,15 @@
         return {...context,profile,messages:[...(context.messages||[]),'My Will Be Done: This NPO has Accurate 1.']};
       }
     },
+    'enforcer-of-the-phaerons':{
+      effectiveWeapon(context){
+        if(context.attackerSide!=='npo'||context.sameRoomAsRoyalWarden!==true)return context;
+        const profile={...context.profile,rules:[...(context.profile?.rules||[])]};
+        if(!profile.rules.some(rule=>/^Ceaseless$/i.test(String(rule))))profile.rules.push('Ceaseless');
+        profile.ceaseless=true;
+        return {...context,profile,messages:[...(context.messages||[]),'Enforcer of the Phaerons: This NPO has Ceaseless.']};
+      }
+    },
     'countertemporal-shifting':{
       damagePackets(context){
         if(context.attackerSide!=='player'||context.defenderSide!=='npo'||!['shoot','melee'].includes(context.attackType))return context;
