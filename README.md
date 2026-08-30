@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v9.2.4
+# Tomb World Battle Guide v9.2.5
+
+## v9.2.5
+
+**Version 9.2.5**
+
+- Fixed Fight Result summaries that could omit committed Strike damage.
+- Fight summaries now reconcile with the authoritative Damage Dealt totals for both participants.
+- Block information remains visible without implying that Blocks deal damage.
+- Replaced incomplete first/last Strike narration with concise aggregate Fight damage summaries.
 
 ## v9.2.4
 
