@@ -19,7 +19,7 @@ def section(start, end):
 
 
 def test_release_identity_cache_assets_and_save_compatibility():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 1)
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 0)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert "const CACHE_PREFIX = 'tomb-world-battle-guide-';" in WORKER

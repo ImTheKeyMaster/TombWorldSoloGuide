@@ -217,7 +217,8 @@ if(fightDicePoolsComplete(null))process.exit(3);
 def test_completed_fight_requires_owner_and_blocks_reentrant_commit():
     render=body('render')
     assert '!fightCompletionInProgress' in render
-    assert 'if(restoreFightContinuation())renderFightResolution()' in render
+    assert 'if(restoreFightContinuation())' in render
+    assert 'renderFightResolution()' in render and 'renderFightRoll(state.fightState,{animate:false})' in render
     finish=body('finishFight')
     assert 'if(fightCompletionInProgress)return' in finish
     assert 'activeFightContinuation||restoreFightContinuation()' in finish

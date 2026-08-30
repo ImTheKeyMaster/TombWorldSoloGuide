@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.1';
+  const APP_VERSION = '9.2.2';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2642,7 +2642,10 @@ document.addEventListener('touchend',function(e){
       showHotResult(state.hotResolution,()=>resumePersistedHotContinuation(state.hotResolution));
     }
     if(state.fightState&&fightDicePoolsComplete(state.fightState)&&!fightCompletionInProgress&&!modal.open){
-      if(restoreFightContinuation())renderFightResolution();
+      if(restoreFightContinuation()){
+        if(state.fightState.history.length)renderFightResolution();
+        else renderFightRoll(state.fightState,{animate:false});
+      }
     }
 
     if(movedToNewStep){
@@ -6410,7 +6413,10 @@ function showPlayerActivation(){
     fightResumePending=true;
     try{
       if(fight.pendingStage3){void resumeStage3FightTrigger(fight);}
-      else if(fightDicePoolsComplete(fight))renderFightResolution();
+      else if(fightDicePoolsComplete(fight)){
+        if(fight.history.length)renderFightResolution();
+        else renderFightRoll(fight,{animate:false});
+      }
       else await startSharedFight({id:fight.id,attacker:fight.attacker,defender:fight.defender,onComplete:continuation});
       return true;
     }finally{fightResumePending=false;}
@@ -6543,7 +6549,40 @@ function showPlayerActivation(){
   }
   function fightPoolHtml(fight,role){
     const participant=fight[role],pool=unresolvedFightSuccesses(fight,role),normal=pool.filter(item=>item.kind==='normal').length,critical=pool.length-normal;
-    return `<section class="fight-pool ${fight.turn===role?'active':''}"><small>${escapeHtml(participant.label)} · ${escapeHtml(participant.profile.name)}</small><strong>${participant.wounds}/${participant.maxWounds} wounds</strong><div><span>Critical: ${critical}</span><span>Normal: ${normal}</span></div></section>`;
+    return `<section class="fight-pool ${fight.turn===role?'active':''}">${fight.turn===role?'<span class="fight-active-label">ACTING NOW</span>':''}<small>${escapeHtml(participant.label)} · ${escapeHtml(participant.profile.name)}</small><strong>${participant.wounds}/${participant.maxWounds} wounds</strong><div class="fight-unresolved"><small>UNRESOLVED SUCCESSES</small><span>★ Critical × ${critical}</span><span>● Normal × ${normal}</span></div></section>`;
+  }
+  function fightDiePresentation(die,index){
+    const result=die.retained?(die.kind==='crit'?'critical success':'normal success'):'failure';
+    return {...die,ariaLabel:`Die ${index+1}: ${die.value}, ${result}${die.rerolledBy?`, rerolled by ${die.rerolledBy}`:''}`};
+  }
+  function fightRollSummary(dice=[]){
+    const critical=dice.filter(die=>die.retained&&die.kind==='crit').length;
+    const normal=dice.filter(die=>die.retained&&die.kind==='hit').length;
+    const failures=dice.length-critical-normal;
+    if(!critical&&!normal)return '<strong>No Successes</strong>';
+    return `<strong>${critical?`${critical} Critical ${critical===1?'Success':'Successes'}`:''}${critical&&normal?'<br>':''}${normal?`${normal} Normal ${normal===1?'Success':'Successes'}`:''}</strong>${failures?`<span>${failures} ${failures===1?'Failure':'Failures'}</span>`:''}`;
+  }
+  function fightRollParticipantHtml(fight,role,animate){
+    const participant=fight[role],profile=participant.profile,dice=participant.attackDice.map(fightDiePresentation);
+    return `<section class="combat-stage fight-roll-pool" aria-label="${escapeHtml(participant.label)} Fight roll"><small>${escapeHtml(participant.label)}</small><strong>${escapeHtml(profile.name)} · ${profile.dice} dice · ${profile.hit}+ · ${profile.normal}/${profile.crit}</strong><div class="dice-row ${animate?'animated-roll':'settled'}" data-fight-roll-dice="${role}">${dice.map(die=>animate?rollingDieHtml():dieHtml(die)).join('')}</div>${attackRuleAppliedHtml(dice)}${severeAppliedHtml(dice)}<div class="fight-roll-result"><small>RESULT</small>${fightRollSummary(dice)}</div></section>`;
+  }
+  function renderFightRoll(fight,{animate=false}={}){
+    showModal('Fight Roll',`<div class="fight-roll"><p>The Fight dice are rolled. Review each participant’s retained results before resolving successes.</p>${fightRollParticipantHtml(fight,'attacker',animate)}${fightRollParticipantHtml(fight,'defender',animate)}<div class="wizard-actions"><button class="btn primary" id="continueFightResolution" ${animate?'disabled':''}>Resolve Strike or Block</button></div></div>`);
+    const continueButton=$('#continueFightResolution');
+    continueButton.onclick=renderFightResolution;
+    if(animate)settleAnimatedDice(['attacker','defender'].map(role=>({row:$(`[data-fight-roll-dice="${role}"]`,modal),dice:fight[role].attackDice.map(fightDiePresentation)})),()=>{if(continueButton.isConnected)continueButton.disabled=false;});
+  }
+  function fightLastResolutionHtml(fight){
+    const entry=fight.history.at(-1);if(!entry)return '';
+    const actor=fight[entry.role],target=fight[otherFightRole(entry.role)];
+    const text=entry.type==='strike'
+      ? `${actor.label} struck ${target.label} with a ${entry.successKind} success for ${entry.damage} damage.`
+      : `${actor.label} blocked ${target.label}’s ${entry.blockedKinds.map(titleCaseRuleId).join(' and ')} ${entry.blockedKinds.length===1?'success':'successes'}.`;
+    return `<p class="fight-last-resolution" role="status"><strong>Last Resolution:</strong> ${escapeHtml(text)}</p>`;
+  }
+  function equivalentRemainingFightStrikes(fight,role){
+    const own=unresolvedFightSuccesses(fight,role),enemy=unresolvedFightSuccesses(fight,otherFightRole(role));
+    return own.length&&!enemy.length&&new Set(own.map(success=>success.kind)).size===1?own:null;
   }
   function showFightBlockSelection(fight,role,blockerId,initialTargetId){
     const blocker=unresolvedFightSuccesses(fight,role).find(item=>item.id===blockerId),legal=fightBlockTargets(fight,role,blocker),capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
@@ -6571,12 +6610,14 @@ function showPlayerActivation(){
       save();renderFightResolution();return;
     }
     const role=fight.turn,participant=fight[role],human=participant.side==='player'||isPvpMode();
+    const automaticStrikes=equivalentRemainingFightStrikes(fight,role);
+    if(human&&automaticStrikes){commitFightStrike(fight,role,automaticStrikes[0].id);renderFightResolution();return;}
     if(!human){const choice=soloNpoFightDecision(fight,role);if(choice.type==='block')commitFightBlock(fight,role,choice.successId,choice.targetSuccessIds);else commitFightStrike(fight,role,choice.successId);renderFightResolution();return;}
     const own=unresolvedFightSuccesses(fight,role);
-    const strikes=own.map(success=>`<button class="btn primary" data-fight-strike="${escapeHtml(success.id)}" aria-label="Strike with ${success.kind} success, ${success.kind==='critical'?participant.profile.crit:participant.profile.normal} damage">Strike with ${titleCaseRuleId(success.kind)} · ${success.kind==='critical'?participant.profile.crit:participant.profile.normal} damage</button>`).join('');
+    const strikes=own.map(success=>`<button class="btn primary fight-action" data-fight-strike="${escapeHtml(success.id)}" aria-label="Strike with ${success.kind} success for ${success.kind==='critical'?participant.profile.crit:participant.profile.normal} damage"><strong>STRIKE</strong><span>${titleCaseRuleId(success.kind)} Success · ${success.kind==='critical'?participant.profile.crit:participant.profile.normal} Damage</span></button>`).join('');
     const capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
-    const blocks=own.flatMap(blocker=>fightBlockTargets(fight,role,blocker).map(target=>`<button class="btn secondary" data-fight-blocker="${escapeHtml(blocker.id)}" data-fight-block-target="${escapeHtml(target.id)}" aria-label="Block opponent ${target.kind} success with ${blocker.kind} success">Block ${titleCaseRuleId(target.kind)} with ${titleCaseRuleId(blocker.kind)}</button>`)).join('');
-    showModal('Resolve Fight',`<div class="fight-sequence"><p><strong>${escapeHtml(fight.attacker.label)}</strong> is fighting <strong>${escapeHtml(fight.defender.label)}</strong>.</p><div class="fight-pools">${fightPoolHtml(fight,'attacker')}${fightPoolHtml(fight,'defender')}</div><h3>${participant.side==='player'?'YOUR TURN':`${escapeHtml(participant.label)}’S TURN`}</h3>${capacity>1?'<p><strong>Shield:</strong> this Block can block up to two unresolved successes.</p>':''}<div class="fight-actions">${strikes}${blocks}</div><p class="muted">Choose one legal Strike or Block. Damage and Blocks commit immediately.</p></div>`);
+    const blocks=own.flatMap(blocker=>fightBlockTargets(fight,role,blocker).map(target=>`<button class="btn secondary fight-action" data-fight-blocker="${escapeHtml(blocker.id)}" data-fight-block-target="${escapeHtml(target.id)}" aria-label="Block opponent ${target.kind} success with ${blocker.kind} success"><strong>BLOCK</strong><span>Use ${titleCaseRuleId(blocker.kind)} · Block ${titleCaseRuleId(target.kind)}</span></button>`)).join('');
+    showModal('Fight Resolution',`<div class="fight-sequence"><p>Starting with the attacker, alternate resolving one success as a Strike or Block.</p><div class="fight-pools">${fightPoolHtml(fight,'attacker')}${fightPoolHtml(fight,'defender')}</div>${fightLastResolutionHtml(fight)}<h3 class="fight-turn-heading">${participant.side==='player'?'YOUR TURN':`${escapeHtml(participant.label)}’S TURN`}</h3>${capacity>1?'<p><strong>Shield:</strong> this Block can block up to two unresolved successes.</p>':''}<div class="fight-actions">${strikes}${blocks}</div><p class="muted">Choose one success to resolve. Damage and Blocks commit immediately.</p></div>`);
     $$('[data-fight-strike]',modal).forEach(button=>button.onclick=()=>{commitFightStrike(fight,role,button.dataset.fightStrike);renderFightResolution();});
     $$('[data-fight-blocker]',modal).forEach(button=>button.onclick=()=>{if(capacity>1)showFightBlockSelection(fight,role,button.dataset.fightBlocker,button.dataset.fightBlockTarget);else{commitFightBlock(fight,role,button.dataset.fightBlocker,[button.dataset.fightBlockTarget]);renderFightResolution();}});
   }
@@ -6598,7 +6639,8 @@ function showPlayerActivation(){
       const participant=fight[role],current=participant.side==='player'?playerCurrentWounds(participant.id):state.roster.find(item=>item.id===participant.id)?.wounds;
       if(Number.isFinite(current)&&fight.history.length===0)participant.wounds=current;
     }
-    try{await rollFightParticipant(fight,'attacker');await rollFightParticipant(fight,'defender');acknowledgeCurrentDiceRequest();renderFightResolution();}catch(error){console.error('[Fight] Dice request failed. The Fight remains resumable.',error);}
+    const restored=fightDicePoolsComplete(fight);
+    try{await rollFightParticipant(fight,'attacker');await rollFightParticipant(fight,'defender');acknowledgeCurrentDiceRequest();renderFightRoll(fight,{animate:!isPvpMode()&&!restored});}catch(error){console.error('[Fight] Dice request failed. The Fight remains resumable.',error);}
   }
 
   function fightParticipantState({side,id,label,profile,wounds,maxWounds}){

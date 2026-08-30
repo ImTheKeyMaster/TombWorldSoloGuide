@@ -175,8 +175,8 @@ def test_reload_recalculates_legality_without_new_geometry_persistence():
     assert "fightTargetAvailable" not in APP
 
 
-def test_release_surfaces_and_persistence_versions_are_v921_compatible():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 1)
+def test_release_surfaces_and_persistence_versions_remain_v921_compatible():
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 1)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     for asset in (
