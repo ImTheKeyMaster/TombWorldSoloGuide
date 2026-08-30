@@ -46,7 +46,7 @@ def test_actions_are_neutral_grouped_owned_and_accessible():
     assert render.count('btn secondary fight-action') == 2
     assert 'id="fightStrikeHeading">STRIKE' in render
     assert "fightBlockHeading" in render
-    assert "YOUR TURN" in render and "NECRON PLAYER’S TURN" in render
+    assert "${escapeHtml(participant.label)}'s Turn" in render
     assert "uses one of its unresolved successes" in render
     assert "aria-label=\"Acting now:" in render
     assert "Strike with ${success.kind} success, deal" in render

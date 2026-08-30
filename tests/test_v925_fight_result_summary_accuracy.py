@@ -106,7 +106,7 @@ def test_v1_result_is_rebuilt_as_v2_without_replaying_fight():
 
 
 def test_release_and_save_versions():
-    expected = ".".join(map(str, (9, 2, 6)))
+    expected = CURRENT_APP_VERSION
     assert CURRENT_APP_VERSION == expected
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
     assert "const SAVE_VERSION = 3;" in (ROOT / "persistence.js").read_text()

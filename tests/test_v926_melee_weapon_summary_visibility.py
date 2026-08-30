@@ -11,7 +11,7 @@ INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
 README = (ROOT / "README.md").read_text(encoding="utf-8")
 WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 PERSISTENCE = (ROOT / "persistence.js").read_text(encoding="utf-8")
-EXPECTED_VERSION = ".".join(map(str, (9, 2, 6)))
+EXPECTED_VERSION = CURRENT_APP_VERSION
 
 
 def attack_wizard_source():

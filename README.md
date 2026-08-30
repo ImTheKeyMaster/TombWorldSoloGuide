@@ -1,4 +1,11 @@
-# Tomb World Battle Guide v9.2.6
+# Tomb World Battle Guide v9.2.7
+
+## v9.2.7
+
+**Version 9.2.7**
+
+- Fight Resolution now identifies the acting operative with “[Operative Name]’s Turn” instead of generic player-facing wording.
+- Improved clarity in shared-device PvP play without changing Fight rules or turn ownership.
 
 ## v9.2.6
 
