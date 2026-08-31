@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.17
+# Tomb World Battle Guide v9.2.18
+
+## v9.2.18
+
+**Version 9.2.18**
+
+- Removed the redundant Mission Details item from the Game Menu.
+- Mission & Map remains the full mission reference screen.
+- Mission Details remains available as a quick status popup by tapping the Mission HUD during Guided Play.
 
 ## v9.2.17
 

@@ -21,9 +21,10 @@ class MissionUiTests(unittest.TestCase):
         self.assertIn("$('#missionHud')?.addEventListener('click',showMissionDetails)", self.app)
         self.assertIn("repeat(6,minmax(0,1fr))", self.styles)
 
-    def test_hud_and_game_menu_share_one_details_dialog(self):
+    def test_hud_keeps_the_compact_details_dialog_outside_the_game_menu(self):
         self.assertEqual(len(re.findall(r"function showMissionDetails\(", self.app)), 1)
-        self.assertIn("$('#menuMissionDetails').onclick=showMissionDetails", self.app)
+        self.assertNotIn("menuMissionDetails", self.app)
+        self.assertIn('data-game-view="mission">Mission & Map</button>', self.app)
         self.assertIn("objectiveEngine.getMissionDetailsModel()", self.app)
         self.assertIn("No mission activity yet.", self.app)
         self.assertIn("historyDisplayCount", self.app)
