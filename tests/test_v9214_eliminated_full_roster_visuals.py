@@ -96,8 +96,8 @@ def test_compact_status_tracker_and_fight_surfaces_have_no_skulls():
     assert '<strong class="fight-eliminated">ELIMINATED</strong>' in fight
 
 
-def test_release_surfaces_are_v9214_and_save_format_is_unchanged():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 14)
+def test_release_surfaces_are_v9214_or_later_and_save_format_is_unchanged():
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 14)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert "const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;" in WORKER

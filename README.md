@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.14
+# Tomb World Battle Guide v9.2.15
+
+## v9.2.15
+
+**Version 9.2.15**
+
+- Moved full-roster eliminated skull decorations to the top visual layer so they are no longer hidden behind stat boxes.
+- Enlarged the Necron eliminated skull to match the Player skull-and-crossbones visual size.
+- Preserved upper-card placement, compact-view exclusions, and eliminated-card interactions.
 
 ## v9.2.14
 
