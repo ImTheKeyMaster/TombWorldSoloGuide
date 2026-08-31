@@ -29,9 +29,10 @@ class V840NpoActivationPlainLanguageTests(unittest.TestCase):
     def test_profile_and_progress_plain_language(self):
         prompt = section('function renderNpoActivationHeader', 'function renderNpoGuideFooter')
         self.assertIn('Wounds: ${n.wounds}/${n.maxWounds}', prompt)
-        self.assertIn("effective===definition.apl?'':` (${effective} AP this activation)`", prompt)
+        self.assertNotIn('<span>APL ', prompt)
         self.assertNotIn(' · effective ', prompt)
-        self.assertIn('Order: ${escapeHtml(n.order)}', prompt)
+        self.assertNotIn('<span>Order:', prompt)
+        self.assertIn('AP remaining: ${state.lastActivation.remainingAp}/${state.lastActivation.startingAp}', prompt)
         self.assertIn("AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})", prompt)
         self.assertIn('Next movement uses Molecular Breach', prompt)
         progress = section('function renderNpoActionProgress', 'function titleCaseRuleId')
