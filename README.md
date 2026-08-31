@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.23
+# Tomb World Battle Guide v9.2.24
+
+## v9.2.24
+
+**Version 9.2.24**
+
+- Deadly Encounters now appears in the Game Menu only when the optional expansion is enabled for the current Solo battle.
+- Disabled Solo battles and PvP battles no longer show an unnecessary Deadly Encounters menu item.
+- Deadly Encounters setup, mission summaries, Help documentation, and enabled-battle functionality remain unchanged.
 
 ## v9.2.23
 

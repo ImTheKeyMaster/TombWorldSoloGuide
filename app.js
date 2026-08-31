@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.23';
+  const APP_VERSION = '9.2.24';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -9149,7 +9149,7 @@ function showPlayerActivation(){
     showModal('Game Menu',`<p>Open a reference screen without changing the guided play sequence, or begin a completely new game.</p>
       <div class="game-menu-grid">
         <button class="btn primary" data-game-view="play">Return to Guided Play</button>
-        ${inGame?`${!isPvpMode()?'<button class="btn secondary" id="menuDeadlyEncounters">Deadly Encounters</button>':''}
+        ${inGame?`${deadlyEncountersActive()?'<button class="btn secondary" id="menuDeadlyEncounters">Deadly Encounters</button>':''}
         <button class="btn secondary" data-game-view="mission">Mission & Map</button>
         <button class="btn secondary" data-game-view="roster">${escapeHtml(opponentSingularLabel())} Roster</button>
         <button class="btn secondary" data-game-view="player-roster">${escapeHtml(playerSideLabel())} Roster</button>
@@ -9193,7 +9193,7 @@ function showPlayerActivation(){
       closeModal();
       render();
     });
-    if(inGame&&!isPvpMode())$('#menuDeadlyEncounters').onclick=showDeadlyEncountersPanel;
+    if(inGame&&deadlyEncountersActive())$('#menuDeadlyEncounters').onclick=showDeadlyEncountersPanel;
     if(canOpenHelp())$('#menuHelp').onclick=openHelpFromGameMenu;
     $('#narrationToggle').onclick=()=>{
       TombWorldNarration.setPreferenceEnabled(!TombWorldNarration.isPreferenceEnabled());
