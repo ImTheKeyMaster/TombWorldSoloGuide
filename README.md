@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.22
+# Tomb World Battle Guide v9.2.23
+
+## v9.2.23
+
+**Version 9.2.23**
+
+- Torrent secondary targets are no longer automatically preselected; players now explicitly select the operatives that are valid on the tabletop.
+- Returning to an in-progress Torrent resolution restores previously selected secondary targets.
+- Breach and Operate Hatch Threat Check dice animation and Dice Roll sound now play only in Solo; PvP immediately displays the manually entered physical die result.
 
 ## v9.2.22
 

@@ -67,7 +67,7 @@ class V8610DirectTargetToCombatTests(unittest.TestCase):
     def test_10_multi_target_weapon_guidance_is_preserved(self):
         self.assertIn("weaponHasRule(baseProfile,'blast')?'blast'", APP)
         self.assertIn("weaponHasRule(baseProfile,'torrent')?'torrent'", APP)
-        self.assertIn("ruleId==='torrent'&&attackerSide==='npo'", APP)
+        self.assertIn("input.checked=sameStep?(saved.secondaryTargetIds||[]).includes(input.value):false", APP)
 
     def test_11_back_returns_to_unconfirmed_target_selection(self):
         self.assertIn("renderNpoDecisionResult(n,decision,resolvedDice,answers,false,false,true,false)", self.entry)

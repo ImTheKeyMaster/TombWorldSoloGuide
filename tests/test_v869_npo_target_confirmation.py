@@ -59,7 +59,7 @@ class V869NpoTargetConfirmationTests(unittest.TestCase):
     def test_27_fight_after_charge_preserved(self): self.assertIn("id:'charge-enable-fight'", APP)
     def test_28_blast_primary_preserved(self): self.assertIn("weaponHasRule(baseProfile,'blast')?'blast'", APP)
     def test_29_torrent_primary_preserved(self): self.assertIn("weaponHasRule(baseProfile,'torrent')?'torrent'", APP)
-    def test_30_sweeping_primary_preserved(self): self.assertIn("ruleId==='torrent'&&attackerSide==='npo'", APP)
+    def test_30_sweeping_primary_preserved(self): self.assertIn("input.checked=sameStep?(saved.secondaryTargetIds||[]).includes(input.value):false", APP)
     def test_31_secondary_sequences_preserved(self): self.assertIn("advanceMultiTargetAttackSequence(queue,target.id,summary)", APP)
     def test_32_console_reference_error_fixed(self): self.assertIn("targetSide==='npo'?npoName(target):playerName(target.id)", APP)
     def test_33_save_version_unchanged(self): self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)

@@ -77,7 +77,7 @@ def test_presentation_marker_is_saved_before_play_and_reload_is_settled():
                       "acknowledged": False, "presentationSeen": False}
     render = source("function renderThreatCheckResult", "function confirmEndHumanPlayerActivation")
     assert render.index("result.presentationSeen=true") < render.index("save();") < render.index("TombWorldDiceSfx.play()")
-    assert "const animate=!result.presentationSeen&&!reducedMotion" in render
+    assert "const animate=!isPvpMode()&&!result.presentationSeen&&!reducedMotion" in render
     assert "matchMedia('(prefers-reduced-motion: reduce)').matches" in render
     assert "result.acknowledged=true" in render
     assert "save();commitHumanPlayerAction(stage)" in render
@@ -95,7 +95,7 @@ def test_threat_rules_cap_and_scout_exception_remain_unchanged():
 
 
 def test_release_surfaces_and_save_schema():
-    expected = ".".join(map(str, (9, 2, 22)))
+    expected = ".".join(map(str, (9, 2, 23)))
     assert CURRENT_APP_VERSION == expected
     assert f"const APP_VERSION = '{expected}';" in WORKER
     assert "const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;" in WORKER
