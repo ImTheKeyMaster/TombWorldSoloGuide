@@ -29,9 +29,9 @@ def test_game_menu_removes_only_the_redundant_mission_details_entry():
     assert 'data-game-view="play">Return to Guided Play</button>' in GAME_MENU
 
 
-def test_game_menu_preserves_solo_only_deadly_encounters_behavior():
-    assert "${!isPvpMode()?'<button class=\"btn secondary\" id=\"menuDeadlyEncounters\">Deadly Encounters</button>':''}" in GAME_MENU
-    assert "if(inGame&&!isPvpMode())$('#menuDeadlyEncounters').onclick=showDeadlyEncountersPanel;" in GAME_MENU
+def test_game_menu_preserves_active_solo_only_deadly_encounters_behavior():
+    assert "${deadlyEncountersActive()?'<button class=\"btn secondary\" id=\"menuDeadlyEncounters\">Deadly Encounters</button>':''}" in GAME_MENU
+    assert "if(inGame&&deadlyEncountersActive())$('#menuDeadlyEncounters').onclick=showDeadlyEncountersPanel;" in GAME_MENU
 
 
 def test_compact_mission_details_modal_and_status_content_remain_available():
