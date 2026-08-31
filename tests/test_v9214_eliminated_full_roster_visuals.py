@@ -64,13 +64,14 @@ def test_npo_roster_actions_and_elimination_logic_are_unchanged():
 
 def test_player_overlay_is_upper_scoped_generic_and_decorative():
     player = source("function renderPlayerRoster", "function npoProfileWeaponHtml")
-    overlay = css_rule(".roster-grid>.roster-operative-card.dead::after")
-    assert 'class="roster-grid"' in player
+    overlay = css_rule(".player-full-roster-grid>.roster-operative-card.dead::after")
+    assert 'class="roster-grid player-full-roster-grid"' in player
     assert "operative-card roster-operative-card ${eliminated?'dead':''}" in player
     assert 'content:"☠"' in overlay
     assert "eliminated-necron-skull.png" not in overlay
     assert "top:3.5rem" in overlay and "left:50%" in overlay
     assert "pointer-events:none" in overlay
+    assert ".roster-grid>.roster-operative-card.dead::after" not in CSS
     assert ".roster-operative-card:not(.dead)::after" not in CSS
     assert "eliminated?'ELIMINATED':" in player
 

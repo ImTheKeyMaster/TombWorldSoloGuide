@@ -1204,8 +1204,8 @@ button.tracker-operative:hover{
 .operative-status-badge.activated,.operative-status-badge.dormant,.operative-status-badge.reserve,.operative-status-badge.off-board,.operative-status-badge.escaped{background:rgba(140,155,146,.16);color:var(--muted)}
 .operative-status-badge.eliminated{background:rgba(190,40,40,.22);color:var(--danger,#ff7b7b)}
 .roster-operative-card{display:flex;flex-direction:column}
-.roster-grid>.roster-operative-card>*{position:relative;z-index:1}
-.roster-grid>.roster-operative-card.dead::after{content:"☠";position:absolute;z-index:0;top:3.5rem;left:50%;width:5.5rem;height:5.5rem;transform:translateX(-50%);display:grid;place-items:center;color:rgba(255,255,255,.16);font-size:5.5rem;line-height:1;pointer-events:none}
+.player-full-roster-grid>.roster-operative-card>*{position:relative;z-index:1}
+.player-full-roster-grid>.roster-operative-card.dead::after{content:"☠";position:absolute;z-index:0;top:3.5rem;left:50%;width:5.5rem;height:5.5rem;transform:translateX(-50%);display:grid;place-items:center;color:rgba(255,255,255,.16);font-size:5.5rem;line-height:1;pointer-events:none}
 .roster-operative-card .operative-stat-line{margin-top:13px}
 .player-roster-weapons{margin-top:13px!important;line-height:1.4}
 .player-roster-weapons,.operative-guidance p{overflow-wrap:anywhere}
