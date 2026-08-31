@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.18';
+  const APP_VERSION = '9.2.19';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2538,6 +2538,12 @@ document.addEventListener('touchend',function(e){
     }
   }
   function escapeHtml(s){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+  function rosterRequirementHtml(requirement){
+    const text=String(requirement);
+    const colonIndex=text.indexOf(':');
+    if(colonIndex<0)return escapeHtml(text);
+    return `<strong>${escapeHtml(text.slice(0,colonIndex+1))}</strong><span>${escapeHtml(text.slice(colonIndex+1))}</span>`;
+  }
   function inlineOperativeList(names){return names.filter(Boolean).join(' · ');}
 
   function startingNpoRoll(){
@@ -3003,7 +3009,7 @@ document.addEventListener('touchend',function(e){
       const validation=playerRosterValidation([...selected]);
       if((playerTeamData?.rosterCategories||[]).some(category=>category.id!=='leader'&&(category.requiredCount||category.maxCount)))requirements.splice(0,requirements.length,...validation.requirements);
       const valid=validation.valid&&requiredLeaderSelected&&(!hasGravis||(gravisCount>=1&&gravisCount<=maxGravis));
-      const requirementItems=requirements.map(requirement=>`<li>${escapeHtml(requirement)}</li>`).join('');
+      const requirementItems=requirements.map(requirement=>`<li>${rosterRequirementHtml(requirement)}</li>`).join('');
       return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><p class="muted">Build a legal kill team using its current official rules. Cooperative team splitting is not currently supported.</p><div class="setup-bulk-row"><button class="btn secondary" id="randomPlayerTeam">Random Team</button></div><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${inlineOperativeList(selectedDefs.map(o=>escapeHtml(playerName(o.id))))}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
     }
     if(stepId==='options'){

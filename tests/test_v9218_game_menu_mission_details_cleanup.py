@@ -63,7 +63,7 @@ def test_mission_and_map_reference_content_is_preserved():
 
 
 def test_release_surfaces_and_save_schema_are_consistent():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 18)
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 18)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX

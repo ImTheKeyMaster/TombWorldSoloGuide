@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.18
+# Tomb World Battle Guide v9.2.19
+
+## v9.2.19
+
+**Version 9.2.19**
+
+- Improved Roster Requirements readability by bolding only each requirement label while displaying its current count/status at normal weight.
+- Removed the redundant “Give every starting NPO a Conceal order” deployment checkbox.
+- Starting NPOs still begin with Conceal orders automatically, and all other deployment requirements remain unchanged.
 
 ## v9.2.18
 
