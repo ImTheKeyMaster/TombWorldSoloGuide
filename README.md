@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.20
+# Tomb World Battle Guide v9.2.21
+
+## v9.2.21
+
+**Version 9.2.21**
+
+- Added clear Threat Check result feedback after human Breach and Operate Hatch rolls.
+- Result screens now show the committed roll, Threat contribution, and Threat before/after before returning to the activation.
+- Threat Check results are reload-safe and cannot reapply Threat after refresh.
 
 ## v9.2.20
 

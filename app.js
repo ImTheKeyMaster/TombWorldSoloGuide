@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.20';
+  const APP_VERSION = '9.2.21';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -4723,6 +4723,37 @@ document.addEventListener('touchend',function(e){
     return true;
   }
 
+  function buildThreatCheckResult(type,roll,threatBefore,threatAfter){
+    const breach=type==='breach';
+    return {
+      version:1,type,roll,threatBefore,threatAfter,
+      baseThreat:breach?1:0,rollThreat:roll>=4?1:0,acknowledged:false
+    };
+  }
+
+  function renderThreatCheckResult(stage){
+    const result=stage.threatCheckResult;
+    if(!result||result.acknowledged)return false;
+    const breach=result.type==='breach';
+    const title=breach?'Breach · Threat Check Result':'Operate Hatch · Threat Check Result';
+    const outcome=breach
+      ?result.rollThreat?'+1 ADDITIONAL THREAT':'NO ADDITIONAL THREAT'
+      :result.rollThreat?'+1 THREAT':'NO THREAT INCREASE';
+    const change=result.threatBefore===result.threatAfter
+      ?`Threat remains ${result.threatAfter}`
+      :`Threat: ${result.threatBefore} <span aria-hidden="true">→</span><span class="sr-only"> to </span> ${result.threatAfter}`;
+    const maximum=result.threatAfter===15&&result.threatBefore===result.threatAfter&&(result.baseThreat+result.rollThreat)>0
+      ?'<p class="threat-check-maximum">Threat is already at maximum.</p>':'';
+    showModal(title,`<section class="threat-check-result" role="status" aria-label="Threat Check result"><div class="threat-check-roll"><small>ROLL</small><div class="dice-row compact">${dieHtml({value:result.roll,ariaLabel:`Committed roll: ${result.roll}`})}</div></div><strong class="threat-check-outcome">${outcome}</strong><dl class="threat-check-breakdown">${breach?`<div><dt>Opening the Breach</dt><dd>+${result.baseThreat}</dd></div>`:''}<div><dt>Threat Check</dt><dd>+${result.rollThreat}</dd></div></dl><p class="threat-check-change">${change}</p>${maximum}<div class="wizard-actions"><button class="btn primary" id="continueThreatCheckResult" data-dialog-focus>Continue</button></div></section>`,undefined,'threat-check-result');
+    $('#continueThreatCheckResult').onclick=()=>{
+      const button=$('#continueThreatCheckResult');button.disabled=true;
+      result.acknowledged=true;
+      state.combatState={side:'player',stage:{...stage}};
+      save();commitHumanPlayerAction(stage);
+    };
+    return true;
+  }
+
   function confirmEndHumanPlayerActivation(){
     const activation=activePlayerActivation();if(!activation)return;
     const message=(activation.resolvedActions||[]).length
@@ -5378,6 +5409,10 @@ function showPlayerActivation(){
         return;
       }
     }
+    if(stage.sequential&&stage.threatCheckResult&&!stage.threatCheckResult.acknowledged){
+      renderThreatCheckResult(stage);
+      return true;
+    }
     const requiredThreatChecks=[
       ...(stage.hatch&&state.missionId!=='scout-sub-crypt'?[{id:'operateHatch',title:'OPERATE HATCH - THREAT CHECK',instruction:'Roll 1D6. On 4+, Threat increases by 1.'}]:[]),
       ...(stage.breach?[{id:'breach',title:'BREACH - THREAT CHECK',instruction:'Roll 1D6. On 4+, Threat increases by an additional 1.'}]:[])
@@ -5454,8 +5489,6 @@ function showPlayerActivation(){
       stage.missionFeatureRecord=pending.at(-1)?{featureId:pending.at(-1).feature.id,featureType:pending.at(-1).featureType,openedBy:pending.at(-1).action,transactionId:pending.at(-1).transactionId}:null;
       state.combatState={side:'player',stage:{...stage}};
     }
-    state.combatState=null;
-    state.missionActionContext=null;
     let inc=0;
     if(stage.shoot)inc++;
     if(stage.melee)inc++;
@@ -5471,18 +5504,30 @@ function showPlayerActivation(){
     }
     const threatCommitKey=stage.sequential?`threat:${stage.humanActionId}:${activePlayerActivation()?.pendingAction?.actionSequence||0}`:'batch-threat';
     const threatAlreadyCommitted=stage.sequential&&(activePlayerActivation()?.committedEffectKeys||[]).includes(threatCommitKey);
-    if(inc&&!threatAlreadyCommitted){
-      setThreat(inc,stage.sequential?`${stage.humanActionName} action`:'Player activation');
+    const threatBefore=state.threat;
+    if(!threatAlreadyCommitted){
+      if(inc)setThreat(inc,stage.sequential?`${stage.humanActionName} action`:'Player activation');
       if(stage.sequential){
         const activation=activePlayerActivation();
         activation.committedEffectKeys=[...(activation.committedEffectKeys||[]),threatCommitKey];
-        save();
       }
     }
     if(stage.sequential){
+      if((stage.hatch&&state.missionId!=='scout-sub-crypt')||stage.breach){
+        const type=stage.breach?'breach':'operateHatch';
+        const roll=stage.threatRolls[type];
+        if(!stage.threatCheckResult){
+          stage.threatCheckResult=buildThreatCheckResult(type,roll,threatBefore,state.threat);
+        }
+        state.combatState={side:'player',stage:{...stage}};
+        save();
+        if(!stage.threatCheckResult.acknowledged){renderThreatCheckResult(stage);return true;}
+      }
       commitHumanPlayerAction(stage);
       return true;
     }
+    state.combatState=null;
+    state.missionActionContext=null;
     if(!state.playerActivatedIds.includes(operativeId))state.playerActivatedIds.push(operativeId);
     state.playerReady=playerOperativesRemaining();
     state.playerActivated=state.playerActivatedIds.length;

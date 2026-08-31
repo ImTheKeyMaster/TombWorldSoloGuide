@@ -86,7 +86,7 @@ def test_interactive_optional_rules_setup_and_state_handlers_remain_present():
 
 
 def test_v9220_version_and_persistence_surfaces_are_consistent():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 20)
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 20)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert "const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
