@@ -56,7 +56,8 @@ def test_defeated_cards_render_no_skull_icon_or_icon_gap():
     assert "☠" not in card_sources
     assert "tracker-elimination-icon" not in card_sources
     assert "operative-status-elimination-icon" not in card_sources
-    assert "eliminated-necron-skull.png" not in CSS
+    assert ".npo-roster-grid>.npo-roster-card.dead::after" in CSS
+    assert ".operative-card.dead:after" not in CSS
     assert ".operative-status-row.eliminated{padding-left" not in CSS
 
 
@@ -79,7 +80,7 @@ def test_non_defeated_statuses_are_unchanged():
 
 
 def test_release_version_and_persistence_surfaces():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 10)
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 10)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert "const CACHE_PREFIX = 'tomb-world-battle-guide-';" in WORKER

@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.12
+# Tomb World Battle Guide v9.2.13
+
+## v9.2.13
+
+**Version 9.2.13**
+
+- Restored the Necron skull overlay for eliminated operatives on the full NPO Roster page.
+- Compact dashboard and tracker views remain text-only to preserve space.
+- ELIMINATED remains the standardized visible defeated-operative status.
 
 ## v9.2.12
 
