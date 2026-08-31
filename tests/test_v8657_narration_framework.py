@@ -69,7 +69,7 @@ class NarrationManifestTests(unittest.TestCase):
         entries = manifest['entries']
         self.assertEqual(len(entries), len(set(entries)))
         self.assertEqual(sum(key.startswith('mission.') for key in entries), 6)
-        self.assertEqual(sum(key.startswith('event.') for key in entries), 11)
+        self.assertEqual(sum(key.startswith('event.') for key in entries), 14)
         self.assertEqual(sum(key.startswith('outcome.') for key in entries), 12)
         records = {}
         for path in (ROOT / 'Narration/scripts').glob('*.json'):
