@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.19
+# Tomb World Battle Guide v9.2.20
+
+## v9.2.20
+
+**Version 9.2.20**
+
+- Standardized Optional Rules & Expansions on the Mission Briefing with the same card presentation used for Special Rules.
+- Removed the duplicate Standard Tomb World text in the briefing.
+- Tomb World Variant, Restless Tomb, and Deadly Encounters now have clearer individual read-only summaries.
 
 ## v9.2.19
 

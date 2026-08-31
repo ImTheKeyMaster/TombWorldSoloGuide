@@ -166,7 +166,7 @@ def test_stale_setup_check_cleanup_remains_generic_and_save_schema_is_stable():
 
 
 def test_v9219_release_surfaces_and_cache_are_consistent():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 19)
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 19)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
