@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.21';
+  const APP_VERSION = '9.2.22';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -4727,13 +4727,20 @@ document.addEventListener('touchend',function(e){
     const breach=type==='breach';
     return {
       version:1,type,roll,threatBefore,threatAfter,
-      baseThreat:breach?1:0,rollThreat:roll>=4?1:0,acknowledged:false
+      baseThreat:breach?1:0,rollThreat:roll>=4?1:0,acknowledged:false,presentationSeen:false
     };
   }
 
   function renderThreatCheckResult(stage){
     const result=stage.threatCheckResult;
     if(!result||result.acknowledged)return false;
+    const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const animate=!result.presentationSeen&&!reducedMotion;
+    if(!result.presentationSeen){
+      result.presentationSeen=true;
+      state.combatState={side:'player',stage:{...stage}};
+      save();
+    }
     const breach=result.type==='breach';
     const title=breach?'Breach · Threat Check Result':'Operate Hatch · Threat Check Result';
     const outcome=breach
@@ -4744,8 +4751,22 @@ document.addEventListener('touchend',function(e){
       :`Threat: ${result.threatBefore} <span aria-hidden="true">→</span><span class="sr-only"> to </span> ${result.threatAfter}`;
     const maximum=result.threatAfter===15&&result.threatBefore===result.threatAfter&&(result.baseThreat+result.rollThreat)>0
       ?'<p class="threat-check-maximum">Threat is already at maximum.</p>':'';
-    showModal(title,`<section class="threat-check-result" role="status" aria-label="Threat Check result"><div class="threat-check-roll"><small>ROLL</small><div class="dice-row compact">${dieHtml({value:result.roll,ariaLabel:`Committed roll: ${result.roll}`})}</div></div><strong class="threat-check-outcome">${outcome}</strong><dl class="threat-check-breakdown">${breach?`<div><dt>Opening the Breach</dt><dd>+${result.baseThreat}</dd></div>`:''}<div><dt>Threat Check</dt><dd>+${result.rollThreat}</dd></div></dl><p class="threat-check-change">${change}</p>${maximum}<div class="wizard-actions"><button class="btn primary" id="continueThreatCheckResult" data-dialog-focus>Continue</button></div></section>`,undefined,'threat-check-result');
-    $('#continueThreatCheckResult').onclick=()=>{
+    const details=`<strong class="threat-check-outcome">${outcome}</strong><dl class="threat-check-breakdown">${breach?`<div><dt>Opening the Breach</dt><dd>+${result.baseThreat}</dd></div>`:''}<div><dt>Threat Check</dt><dd>+${result.rollThreat}</dd></div></dl><p class="threat-check-change">${change}</p>${maximum}`;
+    showModal(title,`<section class="threat-check-result" role="status" aria-label="Threat Check result"><div class="threat-check-roll"><small>ROLL</small><div class="dice-row compact ${animate?'animated-roll':'settled'}" id="threatCheckResultDie">${animate?rollingDieHtml():dieHtml({value:result.roll,ariaLabel:`Committed roll: ${result.roll}`})}</div></div><div id="threatCheckResultDetails" ${animate?'hidden':''}>${details}</div><div class="wizard-actions"><button class="btn primary" id="continueThreatCheckResult" data-dialog-focus ${animate?'disabled':''}>Continue</button></div></section>`,undefined,'threat-check-result');
+    const button=$('#continueThreatCheckResult');
+    if(animate){
+      void TombWorldDiceSfx.play();
+      setTimeout(()=>{
+        if(!button?.isConnected)return;
+        const die=$('#threatCheckResultDie');
+        die.innerHTML=dieHtml({value:result.roll,ariaLabel:`Committed roll: ${result.roll}`});
+        die.classList.replace('animated-roll','settled');
+        $('#threatCheckResultDetails').hidden=false;
+        button.disabled=false;
+        button.focus({preventScroll:true});
+      },DICE_ROLL_ANIMATION_MS);
+    }
+    button.onclick=()=>{
       const button=$('#continueThreatCheckResult');button.disabled=true;
       result.acknowledged=true;
       state.combatState={side:'player',stage:{...stage}};
@@ -7409,330 +7430,13 @@ function showPlayerActivation(){
     return {key:movementInquiry?.id||`${id}-${applicability?'applicability':'feasibility'}`,action,actionId:id,type:applicability?'applicability':'feasibility',title,help:help||'Check the action’s target, distance, and placement. Select Yes only if the action can be completed now.',movementIntent:movementInquiry||null,concernsControlRange:Boolean(inquiry?.concernsControlRange)};
   }
 
-  const npoMovementIcons = Object.freeze({
-    reposition:'movement',dash:'movement',repositionToShoot:'moveToShoot',dashToShoot:'moveToShoot'
-  });
-  const npoQuestionIcons = {
-    Fight:'radar',Charge:'charge-movement',Shoot:'crosshair','Fall Back':'charge',Reposition:npoMovementIcons.reposition,Dash:npoMovementIcons.dash
-  };
-
-  function npoIcon(type){
-    if(type==='command')return npoIcon('radar');
-    if(type==='moveToShoot')return `<svg class="npo-question-icon npo-question-icon--movement is-move-to-shoot" viewBox="0 0 42 32" fill="none" aria-hidden="true" focusable="false"><g fill="currentColor" stroke="currentColor"><circle cx="3" cy="16" r="3" stroke="none"/><path d="M6 16h20" fill="none" stroke-width="2"/><path d="m8 12.5 5 3.5-5 3.5Z" stroke="none"/><path d="m13.5 12.5 5 3.5-5 3.5Z" stroke="none"/><path d="m19 12.5 5 3.5-5 3.5Z" stroke="none"/><circle cx="35" cy="16" r="4" fill="none" stroke-width="2"/><circle cx="35" cy="16" r="1.25" stroke="none"/><path d="M35 6v6M35 20v6M25 16h6M39 16h2" fill="none" stroke-width="2"/></g></svg>`;
-    const paths={
-      crosshair:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>',
-      objective:'<path d="M6 21V4m0 1h11l-2 4 2 4H6"/><circle cx="6" cy="21" r="2"/>',
-      wounded:'<path d="M12 21s-7-4.4-7-10a4 4 0 017-2.7A4 4 0 0119 11c0 5.6-7 10-7 10z"/><path d="M9 12h2l1-3 2 6 1-3h2"/>',
-      shield:'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6l7-3z"/><path d="M8 12h8"/>',
-      group:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-4 2-6 6-6s6 2 6 6m0-5c3 0 5 2 5 5"/>'
-    };
-    if(type==='movement'||type==='charge-movement')return `<svg
-  class="npo-question-icon ${type==='movement'?'npo-question-icon--movement':'npo-question-icon--charge'} is-movement"
-  viewBox="0 0 32 32"
-  width="32"
-  height="32"
-  fill="currentColor"
-  stroke="currentColor"
-  xmlns="http://www.w3.org/2000/svg"
-  aria-hidden="true"
-  focusable="false"
->
-  <circle cx="4" cy="16" r="3" stroke="none" />
-  <line x1="7" y1="16" x2="25" y2="16" fill="none" stroke-width="2" />
-  <path d="M9 12.5L14 16L9 19.5Z" stroke="none" />
-  <path d="M14 12.5L19 16L14 19.5Z" stroke="none" />
-  <path d="M19 12.5L24 16L19 19.5Z" stroke="none" />
-  <circle cx="28" cy="16" r="3" fill="none" stroke-width="2" />
-</svg>`;
-    if(type==='charge')return `<svg
-  class="npo-question-icon npo-question-icon--charge"
-  viewBox="0 0 32 32"
-  width="32"
-  height="32"
-  fill="none"
-  xmlns="http://www.w3.org/2000/svg"
-  aria-hidden="true"
-  focusable="false"
->
-  <!-- Charging operative -->
-  <circle
-    cx="6.5"
-    cy="16"
-    r="4.25"
-    stroke="currentColor"
-    stroke-width="2"
-  />
-  <!-- Charging operative center -->
-  <circle
-    cx="6.5"
-    cy="16"
-    r="1.25"
-    fill="currentColor"
-  />
-  <!-- Target operative -->
-  <circle
-    cx="25.5"
-    cy="16"
-    r="4.25"
-    stroke="currentColor"
-    stroke-width="2"
-  />
-  <!-- Target operative center -->
-  <circle
-    cx="25.5"
-    cy="16"
-    r="1.25"
-    fill="currentColor"
-  />
-  <!-- Charge path:
-       Starts at the right edge of the first circle.
-       Ends at the left edge of the second circle. -->
-  <path
-    d="M10.75 16H19.25"
-    stroke="currentColor"
-    stroke-width="2.5"
-    stroke-linecap="round"
-  />
-  <!-- Arrowhead:
-       Tip touches the target circle at x=21.25.
-       The arrowhead does not overlap the target circle. -->
-  <path
-    d="M17.25 12.5L21.25 16L17.25 19.5"
-    stroke="currentColor"
-    stroke-width="2.5"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-  <!-- Small speed lines behind the charging operative -->
-  <path
-    d="M1.5 12.5H3"
-    stroke="currentColor"
-    stroke-width="1.5"
-    stroke-linecap="round"
-    opacity="0.7"
-  />
-  <path
-    d="M0.75 16H2.25"
-    stroke="currentColor"
-    stroke-width="1.5"
-    stroke-linecap="round"
-    opacity="0.9"
-  />
-  <path
-    d="M1.5 19.5H3"
-    stroke="currentColor"
-    stroke-width="1.5"
-    stroke-linecap="round"
-    opacity="0.7"
-  />
-</svg>`;
-    if(type==='radar')return `<svg
-  class="npo-question-icon npo-question-icon--radar"
-  viewBox="0 0 32 32"
-  width="32"
-  height="32"
-  fill="none"
-  xmlns="http://www.w3.org/2000/svg"
-  aria-hidden="true"
-  focusable="false"
->
-  <!-- Outer radar housing -->
-  <circle
-    cx="16"
-    cy="16"
-    r="13"
-    stroke="currentColor"
-    stroke-width="2"
-  />
-  <!-- Radar range rings -->
-  <circle
-    cx="16"
-    cy="16"
-    r="8.75"
-    stroke="currentColor"
-    stroke-width="1.25"
-    opacity="0.48"
-  />
-  <circle
-    cx="16"
-    cy="16"
-    r="4.5"
-    stroke="currentColor"
-    stroke-width="1.25"
-    opacity="0.38"
-  />
-  <!-- Partial scanning arcs -->
-  <path
-    d="M5.9 13.2A10.5 10.5 0 0 1 11.2 6.9"
-    stroke="currentColor"
-    stroke-width="1.35"
-    stroke-linecap="round"
-    opacity="0.85"
-  />
-  <path
-    d="M8.1 19.9A8.6 8.6 0 0 0 13 24"
-    stroke="currentColor"
-    stroke-width="1.2"
-    stroke-linecap="round"
-    opacity="0.55"
-  />
-  <!-- Radar sweep beam -->
-  <path
-    d="M16 16L20.8 3.95A13 13 0 0 1 27.4 8.95L16 16Z"
-    fill="currentColor"
-    opacity="0.92"
-  />
-  <!-- Sweep leading edge -->
-  <path
-    d="M16 16L24.1 5.85"
-    stroke="currentColor"
-    stroke-width="1.8"
-    stroke-linecap="round"
-  />
-  <!-- Center pivot -->
-  <circle
-    cx="16"
-    cy="16"
-    r="1.65"
-    fill="var(--radar-center-fill, currentColor)"
-    stroke="currentColor"
-    stroke-width="1.35"
-  />
-  <!-- Radar contacts -->
-  <circle
-    cx="9.3"
-    cy="8.7"
-    r="1.45"
-    fill="currentColor"
-  />
-  <circle
-    cx="14"
-    cy="6.6"
-    r="1.55"
-    fill="currentColor"
-  />
-  <circle
-    cx="23.3"
-    cy="14"
-    r="1.45"
-    fill="currentColor"
-  />
-  <circle
-    cx="21.3"
-    cy="21.6"
-    r="1.45"
-    fill="currentColor"
-  />
-  <circle
-    cx="10.2"
-    cy="21"
-    r="1.35"
-    fill="currentColor"
-  />
-</svg>`;
-    if(type==='hatch')return `<svg
-  class="npo-question-icon npo-question-icon--hatch"
-  viewBox="0 0 32 32"
-  width="32"
-  height="32"
-  fill="none"
-  xmlns="http://www.w3.org/2000/svg"
-  aria-hidden="true"
-  focusable="false"
->
-  <!-- Outer hatch frame -->
-  <rect
-    x="5"
-    y="3.5"
-    width="22"
-    height="25"
-    rx="3"
-    stroke="currentColor"
-    stroke-width="2"
-  />
-  <!-- Inner hatch door -->
-  <rect
-    x="8.5"
-    y="7"
-    width="15"
-    height="18"
-    rx="1.5"
-    stroke="currentColor"
-    stroke-width="2"
-  />
-  <!-- Reinforced upper and lower door panels -->
-  <path
-    d="M9 11H23"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-  />
-  <path
-    d="M9 21H23"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-  />
-  <!-- Central split between hatch doors -->
-  <path
-    d="M16 7.5V24.5"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-  />
-  <!-- Hatch locking wheel -->
-  <circle
-    cx="16"
-    cy="16"
-    r="3.25"
-    fill="var(--icon-surface, currentColor)"
-    stroke="currentColor"
-    stroke-width="2"
-  />
-  <!-- Locking wheel spokes -->
-  <path
-    d="M16 12.75V19.25"
-    stroke="var(--icon-detail, currentColor)"
-    stroke-width="1.5"
-    stroke-linecap="round"
-  />
-  <path
-    d="M12.75 16H19.25"
-    stroke="var(--icon-detail, currentColor)"
-    stroke-width="1.5"
-    stroke-linecap="round"
-  />
-  <!-- Floor threshold -->
-  <path
-    d="M3.5 28.5H28.5"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-  />
-</svg>`;
-    if(!paths[type])return npoIcon('radar');
-    return `<svg class="npo-question-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${paths[type]}</svg>`;
-  }
-
-  function iconForNpoQuestion(question){
-    const actionId=npoActionId(question?.action||'');
-    const enablesShoot=question?.movementIntent?.purpose==='enable-shoot'||question?.movementIntentId?.endsWith('-enable-shoot');
-    if(enablesShoot&&['reposition','dash'].includes(actionId))return npoMovementIcons[`${actionId}ToShoot`];
-    if(question.concernsControlRange)return 'radar';
-    return npoQuestionIcons[question.action.split(' ')[0]];
-  }
-
-  function iconForNpoDecision(attackRequired,targetConfirmed){
-    return attackRequired&&!targetConfirmed?'crosshair':'command';
-  }
-
   function renderCompletedNpoQuestions(history){
-    return history.map(item=>`<div class="npo-question-complete npo-question-history">${npoIcon(iconForNpoQuestion(item))}<span>${escapeHtml(item.question||item.action)}</span><strong>${item.type==='selected'?'Selected':item.answer?'Yes':'No'}</strong></div>`).join('');
+    return history.map(item=>`<div class="npo-question-complete npo-question-history"><span>${escapeHtml(item.question||item.action)}</span><strong>${item.type==='selected'?'Selected':item.answer?'Yes':'No'}</strong></div>`).join('');
   }
 
   function renderActiveNpoQuestion(q){
     return `<section class="npo-question-active npo-question-card--active npo-active-question" aria-live="polite" aria-atomic="true" aria-labelledby="activeNpoQuestion" aria-describedby="activeNpoQuestionHelp">
-      ${npoIcon(iconForNpoQuestion(q))}<h3 id="activeNpoQuestion">${escapeHtml(q.title)}</h3><p id="activeNpoQuestionHelp">${escapeHtml(q.help)}</p>
+      <h3 id="activeNpoQuestion">${escapeHtml(q.title)}</h3><p id="activeNpoQuestionHelp">${escapeHtml(q.help)}</p>
       <div class="ai-choice-grid"><button class="ai-choice no" data-answer="no"><strong>No</strong></button><button class="ai-choice yes" data-answer="yes"><strong>Yes</strong></button></div>
     </section>`;
   }
@@ -8238,8 +7942,7 @@ function showPlayerActivation(){
 
   function renderNpoMovementConfirmation(n,pendingAction,decision){
     const displayAction=conciseNpoActionName(pendingAction),headingId='activeNpoMovementHeading',instructionId='activeNpoMovementInstruction';
-    const icon=iconForNpoQuestion({action:displayAction,movementIntent:state.lastActivation?.movementIntent});
-    modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}<div class="ai-wizard"><div class="npo-question-flow"><section class="npo-question-active npo-question-card--active npo-movement-confirmation" aria-labelledby="${headingId}" aria-describedby="${instructionId}">${npoIcon(icon)}<h3 id="${headingId}">${escapeHtml(displayAction)}</h3><p id="${instructionId}">${escapeHtml(decision.reason)}</p><p class="npo-movement-cost">Costs ${pendingAction.apCost} AP (${state.lastActivation.remainingAp} AP to ${state.lastActivation.remainingAp-pendingAction.apCost} AP)</p><div class="ai-choice-grid"><button class="ai-choice yes npo-movement-confirm" id="confirmNpoMovement"><strong>Confirm ${escapeHtml(displayAction)} Complete</strong></button></div></section></div>${renderNpoGuideFooter()}</div></div>`;
+    modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}<div class="ai-wizard"><div class="npo-question-flow"><section class="npo-question-active npo-question-card--active npo-movement-confirmation" aria-labelledby="${headingId}" aria-describedby="${instructionId}"><h3 id="${headingId}">${escapeHtml(displayAction)}</h3><p id="${instructionId}">${escapeHtml(decision.reason)}</p><p class="npo-movement-cost">Costs ${pendingAction.apCost} AP (${state.lastActivation.remainingAp} AP to ${state.lastActivation.remainingAp-pendingAction.apCost} AP)</p><div class="ai-choice-grid"><button class="ai-choice yes npo-movement-confirm" id="confirmNpoMovement"><strong>Confirm ${escapeHtml(displayAction)} Complete</strong></button></div></section></div>${renderNpoGuideFooter()}</div></div>`;
     if(!modal.open)modal.showModal();
     modal.setAttribute('aria-labelledby','activeNpoQuestionHeading');
     modal.setAttribute('tabindex','-1');
@@ -8363,7 +8066,7 @@ function showPlayerActivation(){
     modalBody.innerHTML=`<div class="modal-inner ai-result">
       <div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div>
       ${attackRequired&&questionHistory.length?`<div class="npo-question-flow">${renderCompletedNpoQuestions(questionHistory.filter(item=>item.type!=='selected'))}</div>`:''}
-      <div class="npo-result-card">${npoIcon(iconForNpoDecision(attackRequired,targetConfirmed))}<div><small>${isPvpMode()?'SELECTED ACTION':'NEXT ACTION'}</small><strong>${escapeHtml(decision.action)}</strong><p>${escapeHtml(decision.reason)}</p><div class="npo-target-priority">${isPvpMode()?'':`<small>TARGET PRIORITY</small>`}${targetPriority}${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Select Target</label>${targetField}</div>`:''}</div></div></div>
+      <div class="npo-result-card"><div><small>${isPvpMode()?'SELECTED ACTION':'NEXT ACTION'}</small><strong>${escapeHtml(decision.action)}</strong><p>${escapeHtml(decision.reason)}</p><div class="npo-target-priority">${isPvpMode()?'':`<small>TARGET PRIORITY</small>`}${targetPriority}${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Select Target</label>${targetField}</div>`:''}</div></div></div>
       ${attackRequired&&!targetConfirmed&&(isPvpMode()||eligibleTargetIds.length>1)?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
       ${attackRequired&&!targetConfirmed&&!isPvpMode()&&eligibleTargetIds.length===1?`<button class="btn secondary big-action" id="resolveNpoTarget">Resolve Combat</button>`:''}
       ${attackSummary?`${renderEliminationSummary(attackSummary)}<section class="card npo-attack-summary">

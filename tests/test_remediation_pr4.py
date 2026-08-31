@@ -38,12 +38,12 @@ class RemediationPr4Tests(unittest.TestCase):
         self.assertNotIn('clustered', source)
 
     def test_active_question_icon_uses_the_printed_action(self):
-        question = self.function_source('npoActionQuestion', 'npoIcon')
+        question = self.function_source('npoActionQuestion', 'renderCompletedNpoQuestions')
         self.assertIn('action,actionId:id', question)
         self.assertIn('title,help:', question)
         renderer = self.function_source('renderActiveNpoQuestion', 'runNpoPrompt')
-        self.assertIn("npoIcon(iconForNpoQuestion(q))", renderer)
-        self.assertNotIn('npoQuestionIcons[q.key]', renderer)
+        self.assertNotIn('npoIcon', renderer)
+        self.assertNotIn('<svg', renderer)
 
     def test_activation_threat_principle_is_printed_in_order(self):
         source = self.function_source('showNpoSelection', 'remainingPlayerOperatives')

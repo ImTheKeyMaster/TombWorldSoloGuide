@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.21
+# Tomb World Battle Guide v9.2.22
+
+## v9.2.22
+
+**Version 9.2.22**
+
+- Simplified Necron activation screens by removing the decorative action/question icons and reclaiming the space for gameplay information.
+- Added dice animation and Dice Roll sound feedback when Breach and Operate Hatch Threat Check results are revealed.
+- Threat Check animation uses the already committed roll and preserves v9.2.21 reload-safe result behavior.
 
 ## v9.2.21
 

@@ -100,7 +100,7 @@ def test_grade_journal_and_fight_result_paths_are_untouched():
 def test_mobile_styles_and_version_surfaces():
     assert ".threat-check-result" in STYLES
     assert ".threat-check-result .wizard-actions .btn{width:100%}" in STYLES
-    expected_version = ".".join(map(str, (9, 2, 20 + 1)))
+    expected_version = ".".join(map(str, (9, 2, 22)))
     assert CURRENT_APP_VERSION == expected_version
     assert f"const APP_VERSION = '{expected_version}';" in WORKER
     assert "const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;" in WORKER

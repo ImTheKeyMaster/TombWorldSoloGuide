@@ -45,7 +45,7 @@ class V831FallBackQuestionGuidanceTests(unittest.TestCase):
         self.assertRegex(warrior, r'move:5,apl:2')
 
     def test_question_stage_selects_separate_helper_text(self):
-        question = section('function npoActionQuestion', 'const npoQuestionIcons')
+        question = section('function npoActionQuestion', 'function renderCompletedNpoQuestions')
         self.assertIn("applicability?inquiry?.applicabilityHelp:", question)
         self.assertIn("inquiry?.feasibilityHelp??inquiry?.help", question)
 

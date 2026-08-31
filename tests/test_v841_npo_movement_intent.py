@@ -53,7 +53,7 @@ class V841NpoMovementIntentTests(unittest.TestCase):
         prompt = section('function runNpoPrompt', 'function chooseNpoDecision')
         self.assertIn("q.actionId==='charge'&&state.lastActivation.remainingAp>=2", prompt)
         self.assertIn("id:'charge-enable-fight'", prompt)
-        question = section('function npoActionQuestion', 'const npoQuestionIcons')
+        question = section('function npoActionQuestion', 'function renderCompletedNpoQuestions')
         self.assertIn("id==='charge'&&activation.remainingAp===1", question)
         self.assertIn('it will not Fight afterward', question)
 
