@@ -77,11 +77,12 @@ class Stage5FullPvpCombatTests(unittest.TestCase):
         self.assertNotIn("npoTabletopTargetConfirmed", wizard)
         self.assertIn("screen.continueButton.disabled=false", profile_change)
 
-    def test_ai_guidance_and_torrent_auto_selection_are_solo_only(self):
+    def test_ai_guidance_is_solo_only_and_torrent_defaults_are_unchecked(self):
         guidance = self.section("function npoCombatGuidanceHtml", "function recordedCombat")
         secondary = self.section("function showSecondaryTargetCheck", "function weaponRuleSequenceProgress")
         self.assertIn("if(isPvpMode())return ''", guidance)
-        self.assertIn("!isPvpMode()&&ruleId==='torrent'&&attackerSide==='npo'", secondary)
+        self.assertIn("input.checked=sameStep?(saved.secondaryTargetIds||[]).includes(input.value):false", secondary)
+        self.assertNotIn("automaticallySelected", secondary)
 
     def test_shared_rules_and_transaction_guards_remain_in_use(self):
         resolver = self.section("function resolveRetainedCombat", "function aggressiveDefenseFields")

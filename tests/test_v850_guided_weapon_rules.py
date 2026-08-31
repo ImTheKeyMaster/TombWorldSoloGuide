@@ -23,7 +23,7 @@ class GuidedWeaponRuleTests(unittest.TestCase):
     def test_14_to_16_blast(self):
         self.assertIn('including friendly operatives',APP); self.assertIn("ruleId==='blast'?[...playerTargets,...npoTargets]",APP); self.assertIn("secondaryTargetIds:orderedTargetIds.slice(1)",APP)
     def test_17_to_21_torrent_and_secondary_attacks(self):
-        self.assertIn("ruleId==='torrent'&&attackerSide==='npo'",APP); self.assertIn('completedTargetIds',APP); self.assertIn('currentSequenceIndex',APP); self.assertIn('totalSequences',APP)
+        self.assertIn("input.checked=sameStep?(saved.secondaryTargetIds||[]).includes(input.value):false",APP); self.assertIn('completedTargetIds',APP); self.assertIn('currentSequenceIndex',APP); self.assertIn('totalSequences',APP)
     def test_22_to_24_shock(self):
         self.assertIn('function resolveShockCriticalStrike',APP); self.assertLess(APP.index("die.retained&&die.kind==='hit'",APP.index('function resolveShockCriticalStrike')),APP.index("die.retained&&die.kind==='crit'",APP.index('function resolveShockCriticalStrike'))); self.assertNotIn('Shock applied: the defender rolls',APP)
     def test_25_to_28_persistence_and_idempotence(self):
