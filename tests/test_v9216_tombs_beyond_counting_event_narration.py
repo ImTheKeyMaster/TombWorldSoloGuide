@@ -1,3 +1,4 @@
+import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -13,6 +14,11 @@ EXPANSION_EVENTS = {
     "flesh-hunger": "flayer-curse",
     "rewards-of-annihilation": "destroyer-cult",
     "enforcer-of-the-phaerons": "crownworld",
+}
+EXPANSION_AUDIO = {
+    "flesh-hunger": (345696, 21577, "15c0154438931de42d5b4dbf48828132d0168e221112ffe99039cfe3c3f85d4b"),
+    "rewards-of-annihilation": (349457, 21812, "14b536f59c010d71e3affb35b27f652c0bba814f1db6fc6030a643cea056cc2e"),
+    "enforcer-of-the-phaerons": (321872, 20088, "a03981aeed019413b90807997d522ac0e2ddcdfaa764cfb5eaeed4b027e322c4"),
 }
 
 
@@ -33,41 +39,37 @@ def app_section(start, end):
     return APP[start_at:APP.index(end, start_at)]
 
 
-def test_scripts_use_exact_event_ids_and_approved_preproduction_state():
+def test_all_event_scripts_are_generated_with_complete_production_metadata():
     scripts = event_scripts()
+    assert len(scripts) == 14
+    assert all(item["status"] == "generated" for item in scripts.values())
     for definition_id in EXPANSION_EVENTS:
         item = scripts[f"event.{definition_id}"]
         assert item["category"] == "event"
-        assert item["status"] == "approved"
         assert item["outputFile"] == f"events/{definition_id}.mp3"
-        assert item["scriptHash"]
-        assert item["settingsHash"] is None
-        assert item["generationHash"] is None
-        assert item["audioHash"] is None
+        assert all(item[field] for field in ("scriptHash", "settingsHash", "generationHash", "audioHash"))
 
 
-def test_unavailable_audio_is_not_fabricated_or_advertised():
+def test_all_event_audio_is_available_and_release_audio_metadata_matches_files():
     entries = manifest_entries()
+    event_entries = {key: item for key, item in entries.items() if key.startswith("event.")}
+    assert len(event_entries) == 14
+    assert all(item["available"] is True for item in event_entries.values())
     for definition_id in EXPANSION_EVENTS:
         item = entries[f"event.{definition_id}"]
+        expected_size, expected_duration, expected_hash = EXPANSION_AUDIO[definition_id]
+        audio = ROOT / "Assets/Audio/Narration" / item["file"]
         assert item["category"] == "event"
         assert item["eventDefinitionId"] == definition_id
         assert item["file"] == f"events/{definition_id}.mp3"
-        assert item["available"] is False
-        assert item["durationMs"] is None
-        assert not (ROOT / "Assets/Audio/Narration" / item["file"]).exists()
+        assert item["durationMs"] == expected_duration
+        assert item["audioHash"] == expected_hash
+        assert audio.stat().st_size == expected_size
+        assert hashlib.sha256(audio.read_bytes()).hexdigest() == expected_hash
 
 
-def test_existing_event_audio_and_narration_categories_remain_available():
+def test_other_narration_categories_remain_available():
     entries = manifest_entries()
-    existing = {
-        key: item
-        for key, item in entries.items()
-        if key.startswith("event.") and key.removeprefix("event.") not in EXPANSION_EVENTS
-    }
-    assert len(existing) == 11
-    assert all(item["available"] is True for item in existing.values())
-    assert all((ROOT / "Assets/Audio/Narration" / item["file"]).stat().st_size > 0 for item in existing.values())
     for prefix in ("mission.", "grade.", "outcome.", "deadly."):
         assert any(key.startswith(prefix) and item["available"] for key, item in entries.items())
 
@@ -129,8 +131,8 @@ def test_redraw_timing_master_settings_and_manifest_driven_offline_cache_are_pre
     assert "await precacheNarration(cache);" in WORKER
 
 
-def test_release_version_and_save_schema_remain_at_production_baseline_until_audio_exists():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) < (9, 2, 16)
+def test_release_version_and_save_schema_are_finalized():
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 16)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert "const SAVE_VERSION = 3;" in (ROOT / "persistence.js").read_text(encoding="utf-8")

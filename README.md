@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.15
+# Tomb World Battle Guide v9.2.16
+
+## v9.2.16
+
+**Version 9.2.16**
+
+- Added narration audio for Flesh Hunger, Rewards of Annihilation, and Enforcer of the Phaerons.
+- Completed narration availability for all 14 Tomb World events, including offline caching through the narration manifest.
+- Corrected an encoding error in the Reanimation Protocols narration script without changing its generated audio metadata.
 
 ## v9.2.15
 

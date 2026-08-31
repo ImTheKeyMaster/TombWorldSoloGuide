@@ -95,7 +95,7 @@ class ProducerStaticTests(unittest.TestCase):
         events = {script_id: item for script_id, item in scripts.items() if script_id.startswith("event.")}
         self.assertEqual(14, len(events))
         generated_events = {script_id for script_id, item in events.items() if item["status"] == "generated"}
-        self.assertEqual(11, len(generated_events))
+        self.assertEqual(14, len(generated_events))
         self.assertTrue(all(entries[script_id]["available"] is True for script_id in generated_events))
 
     def test_producer_selection_is_approval_driven_not_pilot_id_driven(self):
@@ -107,14 +107,7 @@ class ProducerStaticTests(unittest.TestCase):
 
         approved = [item["id"] for item in records() if item["status"] == "approved"]
         deadly = [item["id"] for item in records() if item["category"] == "deadly-encounter"]
-        self.assertEqual(
-            [
-                "event.flesh-hunger",
-                "event.rewards-of-annihilation",
-                "event.enforcer-of-the-phaerons",
-            ],
-            approved,
-        )
+        self.assertEqual([], approved)
         self.assertEqual(16, len(deadly))
         self.assertTrue(all(item["status"] == "generated" for item in records() if item["category"] == "deadly-encounter"))
 
