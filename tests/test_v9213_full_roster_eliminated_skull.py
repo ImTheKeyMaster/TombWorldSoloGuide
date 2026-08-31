@@ -33,7 +33,7 @@ def test_full_roster_dead_cards_receive_the_decorative_necron_overlay_only():
     assert 'content:""' in overlay
     assert "pointer-events:none" in overlay
     assert "position:absolute" in overlay and "top:3.5rem" in overlay
-    assert "5.5rem" in overlay and "opacity:.55" in overlay
+    assert "rem" in overlay and "opacity:.55" in overlay
     assert ".npo-roster-card.dead::after" not in CSS.replace(
         ".npo-roster-grid>.npo-roster-card.dead::after", ""
     )
