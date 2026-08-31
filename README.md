@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v9.2.13
+# Tomb World Battle Guide v9.2.14
+
+## v9.2.14
+
+**Version 9.2.14**
+
+- Repositioned eliminated NPO skull artwork so it no longer overlaps Gameplay profile.
+- Muted Gameplay profile styling on eliminated NPO roster cards while keeping the profile accessible.
+- Restored a skull-and-crossbones overlay for eliminated Player operatives on the full Player Roster page.
+- Compact tracker and dashboard views remain skull-free.
 
 ## v9.2.13
 
