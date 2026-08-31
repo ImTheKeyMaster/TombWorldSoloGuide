@@ -143,6 +143,45 @@
       "audioHash": "eb33075a6bd8e6ea97ee95e586caa69d2fd93a22ffb56622461238af5fada25f",
       "voiceId": "keNGlRe631vnQRvGXasN",
       "modelId": "eleven_multilingual_v2"
+    },
+    {
+      "id": "event.flesh-hunger",
+      "category": "event",
+      "status": "generated",
+      "script": "The walls answer with the sound of tearing metal.\n\nSomething moves beyond the hatchways, fast and hungry. Hooked claws scrape across living metal as a twisted figure emerges from the darkness, drawn toward the warmth of living prey.\n\nThe curse has found your trail.\n\nThe Flayed Ones are coming.",
+      "scriptHash": "af62e840dd5239189971f8f8e0788613f44ae383789ebde05321036dfed82947",
+      "outputFile": "events/flesh-hunger.mp3",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "553792969e39be030a770174d9f11627861a55b04388b2dfa8925c441fb32a3b",
+      "audioHash": "15c0154438931de42d5b4dbf48828132d0168e221112ffe99039cfe3c3f85d4b",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
+    },
+    {
+      "id": "event.rewards-of-annihilation",
+      "category": "event",
+      "status": "generated",
+      "script": "The Destroyers react to the kill.\n\nEnergy surges through damaged frames as ancient systems feed upon the moment of annihilation. Fractured armor draws together. Failing mechanisms flare back to life.\n\nEvery death strengthens their purpose.\n\nThe more they destroy, the harder they become to stop.",
+      "scriptHash": "a37b66e9c18ff11fe53e863f2cd33f929e8a89d73329dbfdf0019aed5aac4dcf",
+      "outputFile": "events/rewards-of-annihilation.mp3",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "977b7d363074137bc044ad838ab05c6ad52f8178b577fd98888d61986250cfb5",
+      "audioHash": "14b536f59c010d71e3affb35b27f652c0bba814f1db6fc6030a643cea056cc2e",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
+    },
+    {
+      "id": "event.enforcer-of-the-phaerons",
+      "category": "event",
+      "status": "generated",
+      "script": "A command pulse cuts through the chamber.\n\nThe Royal Warden raises its weapon, and the surrounding legions answer at once. Targeting matrices align. Fire patterns tighten. Ancient warriors move with cold, synchronized purpose.\n\nThe phaerons' will echoes through the crypt.\n\nTheir servants will not relent.",
+      "scriptHash": "a45b15e7798c01b95d1dce590b1e2b90fe8e053f011081d50bb1323aa1e567ba",
+      "outputFile": "events/enforcer-of-the-phaerons.mp3",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "9bb73fdc63f3534abc1e7519dcfd451284b25967914c322a0441d878d08afd6f",
+      "audioHash": "a03981aeed019413b90807997d522ac0e2ddcdfaa764cfb5eaeed4b027e322c4",
+      "voiceId": "keNGlRe631vnQRvGXasN",
+      "modelId": "eleven_multilingual_v2"
     }
   ]
 }

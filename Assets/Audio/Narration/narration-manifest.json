@@ -540,6 +540,39 @@
       "generationHash": "0a9e255c2e15b4057c047d141648eb52feebee2442f6ee4bdc52e50c7355acc5",
       "audioHash": "647afaec31cac61032bb5331f2466e9554c38545ffe4642c37100ea05823b19d",
       "durationMs": 19043
+    },
+    "event.flesh-hunger": {
+      "category": "event",
+      "eventDefinitionId": "flesh-hunger",
+      "file": "events/flesh-hunger.mp3",
+      "available": true,
+      "scriptHash": "af62e840dd5239189971f8f8e0788613f44ae383789ebde05321036dfed82947",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "553792969e39be030a770174d9f11627861a55b04388b2dfa8925c441fb32a3b",
+      "audioHash": "15c0154438931de42d5b4dbf48828132d0168e221112ffe99039cfe3c3f85d4b",
+      "durationMs": 21577
+    },
+    "event.rewards-of-annihilation": {
+      "category": "event",
+      "eventDefinitionId": "rewards-of-annihilation",
+      "file": "events/rewards-of-annihilation.mp3",
+      "available": true,
+      "scriptHash": "a37b66e9c18ff11fe53e863f2cd33f929e8a89d73329dbfdf0019aed5aac4dcf",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "977b7d363074137bc044ad838ab05c6ad52f8178b577fd98888d61986250cfb5",
+      "audioHash": "14b536f59c010d71e3affb35b27f652c0bba814f1db6fc6030a643cea056cc2e",
+      "durationMs": 21812
+    },
+    "event.enforcer-of-the-phaerons": {
+      "category": "event",
+      "eventDefinitionId": "enforcer-of-the-phaerons",
+      "file": "events/enforcer-of-the-phaerons.mp3",
+      "available": true,
+      "scriptHash": "a45b15e7798c01b95d1dce590b1e2b90fe8e053f011081d50bb1323aa1e567ba",
+      "settingsHash": "196a72c39105991a6ac156aa94c746726cbc583947f7e491ba50da98b3a1117f",
+      "generationHash": "9bb73fdc63f3534abc1e7519dcfd451284b25967914c322a0441d878d08afd6f",
+      "audioHash": "a03981aeed019413b90807997d522ac0e2ddcdfaa764cfb5eaeed4b027e322c4",
+      "durationMs": 20088
     }
   }
 }
