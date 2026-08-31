@@ -130,11 +130,6 @@
       "stage": "deploy"
     },
     {
-      "id": "starting-conceal",
-      "label": "Give every starting NPO a Conceal order.",
-      "stage": "deploy"
-    },
-    {
       "id": "player-setup",
       "label": "Set up every Player operative wholly within the Player drop zone; none can be set up elsewhere before the battle.",
       "stage": "deploy"

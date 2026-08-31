@@ -126,11 +126,6 @@
       "stage": "deploy"
     },
     {
-      "id": "starting-conceal",
-      "label": "Give every starting NPO a Conceal order.",
-      "stage": "deploy"
-    },
-    {
       "id": "initial-resources",
       "label": "Start with 2CP total and select up to four equipment options, recording and managing both for tabletop play; the Guide does not track or validate their effects.",
       "stage": "deploy"
