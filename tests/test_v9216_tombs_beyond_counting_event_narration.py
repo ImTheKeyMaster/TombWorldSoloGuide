@@ -132,7 +132,7 @@ def test_redraw_timing_master_settings_and_manifest_driven_offline_cache_are_pre
 
 
 def test_release_version_and_save_schema_are_finalized():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 16)
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 16)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert "const SAVE_VERSION = 3;" in (ROOT / "persistence.js").read_text(encoding="utf-8")

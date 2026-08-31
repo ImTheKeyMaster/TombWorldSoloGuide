@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.16
+# Tomb World Battle Guide v9.2.17
+
+## v9.2.17
+
+**Version 9.2.17**
+
+- Simplified Solo NPO Activation headers by removing the redundant standalone APL pill.
+- Removed the Order pill from Solo NPO Activation headers.
+- Preserved Wounds, AP remaining, weapon/loadout, effects, and all underlying Solo AI/APL/Order behavior.
 
 ## v9.2.16
 
