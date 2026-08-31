@@ -1,5 +1,6 @@
 import json
 import re
+import subprocess
 from pathlib import Path
 
 from versioning import CURRENT_APP_VERSION
@@ -20,6 +21,25 @@ def source_between(start, end):
     return APP.split(start, 1)[1].split(end, 1)[0]
 
 
+def render_requirements(*requirements):
+    escape_html = re.search(r"  function escapeHtml\(s\)\{.*\}", APP).group(0)
+    formatter = "function rosterRequirementHtml" + source_between(
+        "function rosterRequirementHtml", "function inlineOperativeList"
+    )
+    script = f"""
+{escape_html}
+{formatter}
+console.log(JSON.stringify({json.dumps(requirements)}.map(rosterRequirementHtml)));
+"""
+    result = subprocess.run(
+        ["node", "-e", script],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return json.loads(result.stdout)
+
+
 def test_shared_roster_requirements_use_safe_semantic_label_value_markup():
     helper = source_between("function rosterRequirementHtml(requirement)", "function inlineOperativeList")
     roster = source_between("if(stepId==='playerRoster')", "if(stepId==='options')")
@@ -33,6 +53,20 @@ def test_shared_roster_requirements_use_safe_semantic_label_value_markup():
     assert "if(colonIndex<0)return escapeHtml(text)" in helper
     assert "requirements.map(requirement=>`<li>${rosterRequirementHtml(requirement)}</li>`)" in roster
     assert "requirements.map(requirement=>`<li>${escapeHtml(requirement)}</li>`)" not in roster
+
+
+def test_roster_requirement_formatter_behavior():
+    assert render_requirements(
+        "Leader: 1 of 1 required",
+        "Rule: value: detail",
+        "Unsafe <label>: 1 & ready",
+        "No colon <unsafe>",
+    ) == [
+        "<strong>Leader:</strong><span> 1 of 1 required</span>",
+        "<strong>Rule:</strong><span> value: detail</span>",
+        "<strong>Unsafe &lt;label&gt;:</strong><span> 1 &amp; ready</span>",
+        "No colon &lt;unsafe&gt;",
+    ]
 
 
 def test_all_requirement_labels_and_values_are_still_generated_unchanged():
@@ -105,7 +139,7 @@ def test_remaining_deployment_checks_still_gate_completion_and_check_all():
         deploy_ids = {check["id"] for check in mission["setupChecks"] if check["stage"] == "deploy"}
         assert "starting-npos" in deploy_ids
         assert "initial-resources" in deploy_ids
-    regroup = MISSIONS[-1]
+    regroup = next(mission for mission in MISSIONS if mission["id"] == "regroup")
     assert "player-setup" in {check["id"] for check in regroup["setupChecks"]}
 
 
