@@ -84,6 +84,7 @@ def test_release_surfaces_and_persistence_are_v9213_compatible():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert "tomb-world-battle-guide-';" in WORKER
+    assert "'./Assets/Images/eliminated-necron-skull.png'" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     for asset in ("styles.css", "mission-engine.js", "persistence.js", "deadly-encounters.js", "event-effects.js", "audio-capabilities.js", "narration.js", "ambient.js", "dice-sfx.js", "app.js"):
         assert f"{asset}?v={CURRENT_APP_VERSION}" in INDEX
