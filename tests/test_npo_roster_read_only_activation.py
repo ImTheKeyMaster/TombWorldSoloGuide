@@ -48,14 +48,15 @@ class NpoRosterReadOnlyActivationTests(unittest.TestCase):
             self.styles,
         )
 
-    def test_eliminated_cards_keep_status_styling_without_skull_overlays(self):
+    def test_eliminated_cards_keep_status_styling_with_full_roster_only_skull_overlay(self):
         self.assertIn(
             ".operative-card.dead,.npo-roster-card.dead{opacity:.5}",
             self.styles,
         )
         self.assertNotIn('.operative-card.dead:after', self.styles)
         self.assertNotIn('.npo-roster-card.dead:after', self.styles)
-        self.assertNotIn('eliminated-necron-skull.png', self.styles)
+        self.assertIn('.npo-roster-grid>.npo-roster-card.dead::after', self.styles)
+        self.assertIn('eliminated-necron-skull.png', self.styles)
 
     def test_eliminated_roster_cards_reuse_activation_tracker_border(self):
         self.assertIn(

@@ -56,7 +56,8 @@ class NpoPortraitRemovalTests(unittest.TestCase):
         self.assertIn('Assets/Maps/mission-${missionNumber}.png', APP)
         self.assertIn("function npoIcon", APP)
         self.assertTrue((ROOT / "Assets/Images/eliminated-necron-skull.png").is_file())
-        self.assertNotIn('Assets/Images/eliminated-necron-skull.png', CSS)
+        self.assertIn('.npo-roster-grid>.npo-roster-card.dead::after', CSS)
+        self.assertIn('Assets/Images/eliminated-necron-skull.png', CSS)
         self.assertIn(".npo-roster-card.dead{", CSS)
         self.assertIn("border:2px solid var(--danger)", CSS)
 

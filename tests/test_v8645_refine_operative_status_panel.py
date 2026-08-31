@@ -40,7 +40,8 @@ class RefinedOperativeStatusPanelTests(unittest.TestCase):
         self.assertNotIn('operative-status-elimination-icon', row)
         self.assertIn("status==='ELIMINATED'", row)
         self.assertIn('eliminated', row)
-        self.assertNotIn('eliminated-necron-skull.png', CSS)
+        self.assertIn('.npo-roster-grid>.npo-roster-card.dead::after', CSS)
+        self.assertNotIn('eliminated-necron-skull.png', row)
 
     def test_eliminated_precedes_active_and_living_active_is_emphasized(self):
         row = APP[APP.index('function operativeStatusRow'):APP.index('function renderOperativeStatusPanel')]

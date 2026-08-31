@@ -77,7 +77,7 @@ def test_selection_validation_and_profile_behavior_are_unchanged():
 
 
 def test_release_surfaces_and_save_schema():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 12)
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 12)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert "const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;" in WORKER

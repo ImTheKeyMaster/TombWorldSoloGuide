@@ -1192,6 +1192,7 @@ button.tracker-operative:hover{
 /* v2.4.0 roster consistency and contextual help */
 .npo-roster-card{position:relative;display:flex;flex-direction:column;overflow:hidden;cursor:default}
 .npo-roster-card>*{position:relative;z-index:1}
+.npo-roster-grid>.npo-roster-card.dead::after{content:"";position:absolute;z-index:0;inset:0;background:url("Assets/Images/eliminated-necron-skull.png") center/auto 6rem no-repeat;filter:brightness(1.15) contrast(1.1);opacity:.55;pointer-events:none}
 .npo-roster-card:not(.dead):hover{border-color:var(--line)}
 .operative-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;min-width:0}
 .operative-identity{min-width:0;overflow-wrap:anywhere}
