@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.19';
+  const APP_VERSION = '9.2.20';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3044,10 +3044,11 @@ document.addEventListener('touchend',function(e){
     }
     const m=mission();
     const rules=(m.rules||[]).map(rule=>`<div class="mission-rule"><strong>${escapeHtml(presentSideTerminology(rule.name||'Special Rule'))}</strong>${rule.timing?`<small>${escapeHtml(presentSideTerminology(rule.timing))}</small>`:''}<p>${escapeHtml(presentSideTerminology(rule.summary||''))}</p></div>`).join('');
-    const deadlySummary=isPvpMode()?'Disabled (Solo battles only)':state.deadlyEncountersEnabled?'Enabled':'Disabled';
+    const deadlySummary=isPvpMode()?'Disabled<br><span class="muted">Solo battles only</span>':state.deadlyEncountersEnabled?'Enabled':'Disabled';
     const selectedVariant=currentTombWorldVariant();
-    const variantSource=selectedVariant.id==='standard'?'':`<br><small>Tombs Beyond Counting - Official Expansion, White Dwarf 517</small>`;
-    return `<h3>Mission Briefing</h3><div class="mission-briefing"><div class="mission-briefing-section mission-heading"><span>Mission</span><strong>${escapeHtml(m.number)} · ${escapeHtml(m.name)}</strong></div><div class="mission-briefing-section"><h4>Objective</h4><p>${escapeHtml(presentSideTerminology(m.objective))}</p></div><div class="mission-briefing-section"><h4>Special Rules</h4>${rules||`<p>${escapeHtml(presentSideTerminology(missionSpecial()))}</p>`}</div><div class="mission-briefing-section optional-rules-summary"><h4>Optional Rules &amp; Expansions</h4><p><strong>Tomb World Variant:</strong> ${escapeHtml(selectedVariant.name)}${variantSource}<br><span class="muted">${escapeHtml(selectedVariant.briefing)}</span></p><p><strong>Restless Tomb:</strong> ${state.restlessTombEnabled?'On':'Off'} (House Rule)</p><p><strong>Deadly Encounters:</strong> ${deadlySummary} (Official Expansion - White Dwarf 521)</p><small>Go Back to Optional Rules &amp; Expansions to change these settings before beginning the battle.</small></div></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
+    const variantBriefing=selectedVariant.briefing===selectedVariant.name?'':`<p>${escapeHtml(selectedVariant.briefing)}</p>`;
+    const variantSource=selectedVariant.id==='standard'?'<small>Tomb World Variant</small>':'<small>Tomb World Variant<br>Tombs Beyond Counting · Official Expansion<br>White Dwarf 517</small>';
+    return `<h3>Mission Briefing</h3><div class="mission-briefing"><div class="mission-briefing-section mission-heading"><span>Mission</span><strong>${escapeHtml(m.number)} · ${escapeHtml(m.name)}</strong></div><div class="mission-briefing-section"><h4>Objective</h4><p>${escapeHtml(presentSideTerminology(m.objective))}</p></div><div class="mission-briefing-section"><h4>Special Rules</h4>${rules||`<p>${escapeHtml(presentSideTerminology(missionSpecial()))}</p>`}</div><div class="mission-briefing-section optional-rules-summary"><h4>Optional Rules &amp; Expansions</h4><section class="mission-rule" aria-labelledby="briefing-variant-title"><strong id="briefing-variant-title">${escapeHtml(selectedVariant.name)}</strong>${variantSource}${variantBriefing}</section><section class="mission-rule" aria-labelledby="briefing-restless-tomb-title"><strong id="briefing-restless-tomb-title">Restless Tomb</strong><small>House Rule</small><p>${state.restlessTombEnabled?'On':'Off'}</p></section><section class="mission-rule" aria-labelledby="briefing-deadly-encounters-title"><strong id="briefing-deadly-encounters-title">Deadly Encounters</strong><small>Official Expansion<br>White Dwarf 521</small><p>${deadlySummary}</p></section><small class="optional-rules-instruction">Go Back to Optional Rules &amp; Expansions to change these settings before beginning the battle.</small></div></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="beginGame">Begin Turning Point 1</button></div>`;
   }
 
   function advanceSetupStep(stepId){

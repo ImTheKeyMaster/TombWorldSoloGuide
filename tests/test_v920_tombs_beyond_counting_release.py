@@ -84,11 +84,11 @@ def test_variant_change_uses_authoritative_invalidation_and_rebuilds_deck():
 
 def test_briefing_is_read_only_and_summarizes_variant_and_optional_rules():
     briefing = section("const selectedVariant=currentTombWorldVariant()", "function advanceSetupStep")
-    assert "Tombs Beyond Counting - Official Expansion, White Dwarf 517" in briefing
+    assert "Tombs Beyond Counting · Official Expansion<br>White Dwarf 517" in briefing
     assert "selectedVariant.briefing" in briefing
-    assert "${escapeHtml(selectedVariant.name)}${variantSource}<br>" in briefing
+    assert "${escapeHtml(selectedVariant.name)}</strong>${variantSource}${variantBriefing}" in briefing
     assert "${escapeHtml(selectedVariant.name)}<br>${variantSource}<br>" not in briefing
-    assert "Restless Tomb:" in briefing and "Deadly Encounters:" in briefing
+    assert ">Restless Tomb</strong>" in briefing and ">Deadly Encounters</strong>" in briefing
     assert 'name="tombWorldVariant"' not in briefing
     assert 'id="restlessTombEnabled"' not in briefing
 

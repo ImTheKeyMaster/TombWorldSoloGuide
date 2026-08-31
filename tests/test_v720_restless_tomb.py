@@ -26,7 +26,7 @@ class RestlessTombMissionBriefingTests(unittest.TestCase):
         self.assertIn('optional house rule increases activity and difficulty', options)
         briefing = APP.split("return `<h3>Mission Briefing</h3>", 1)[1].split("function advanceSetupStep", 1)[0]
         self.assertNotIn('id="restlessTombEnabled"', briefing)
-        self.assertIn('<strong>Restless Tomb:</strong>', briefing)
+        self.assertIn('<strong id="briefing-restless-tomb-title">Restless Tomb</strong>', briefing)
 
     def test_option_defaults_off_updates_immediately_and_survives_setup_navigation(self):
         self.assertIn('setupChecks:{}, restlessTombEnabled:false', APP)

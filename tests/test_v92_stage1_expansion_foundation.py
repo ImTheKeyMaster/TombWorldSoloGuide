@@ -29,9 +29,9 @@ def test_optional_controls_are_editable_only_on_options_step():
     briefing = source("return `<h3>Mission Briefing</h3>", "function advanceSetupStep")
     assert 'id="restlessTombEnabled"' not in briefing
     assert 'id="deadlyEncountersEnabled"' not in briefing
-    assert "<strong>Restless Tomb:</strong>" in briefing
-    assert "<strong>Deadly Encounters:</strong>" in briefing
-    assert "<strong>Tomb World Variant:</strong>" in briefing
+    assert '<strong id="briefing-restless-tomb-title">Restless Tomb</strong>' in briefing
+    assert '<strong id="briefing-deadly-encounters-title">Deadly Encounters</strong>' in briefing
+    assert 'id="briefing-variant-title"' in briefing
 
 
 def test_variant_registry_is_complete_and_released():
