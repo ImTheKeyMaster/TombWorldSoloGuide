@@ -1192,7 +1192,8 @@ button.tracker-operative:hover{
 /* v2.4.0 roster consistency and contextual help */
 .npo-roster-card{position:relative;display:flex;flex-direction:column;overflow:hidden;cursor:default}
 .npo-roster-card>*{position:relative;z-index:1}
-.npo-roster-grid>.npo-roster-card.dead::after{content:"";position:absolute;z-index:0;inset:0;background:url("Assets/Images/eliminated-necron-skull.png") center/auto 6rem no-repeat;filter:brightness(1.15) contrast(1.1);opacity:.55;pointer-events:none}
+.npo-roster-grid>.npo-roster-card.dead::after{content:"";position:absolute;z-index:0;top:3.5rem;left:50%;width:5.5rem;height:5.5rem;transform:translateX(-50%);background:url("Assets/Images/eliminated-necron-skull.png") center/contain no-repeat;filter:brightness(1.15) contrast(1.1);opacity:.55;pointer-events:none}
+.npo-roster-grid>.npo-roster-card.dead .npo-profile-details>summary{color:var(--muted)}
 .npo-roster-card:not(.dead):hover{border-color:var(--line)}
 .operative-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;min-width:0}
 .operative-identity{min-width:0;overflow-wrap:anywhere}
@@ -1203,6 +1204,8 @@ button.tracker-operative:hover{
 .operative-status-badge.activated,.operative-status-badge.dormant,.operative-status-badge.reserve,.operative-status-badge.off-board,.operative-status-badge.escaped{background:rgba(140,155,146,.16);color:var(--muted)}
 .operative-status-badge.eliminated{background:rgba(190,40,40,.22);color:var(--danger,#ff7b7b)}
 .roster-operative-card{display:flex;flex-direction:column}
+.roster-grid>.roster-operative-card>*{position:relative;z-index:1}
+.roster-grid>.roster-operative-card.dead::after{content:"☠";position:absolute;z-index:0;top:3.5rem;left:50%;width:5.5rem;height:5.5rem;transform:translateX(-50%);display:grid;place-items:center;color:rgba(255,255,255,.16);font-size:5.5rem;line-height:1;pointer-events:none}
 .roster-operative-card .operative-stat-line{margin-top:13px}
 .player-roster-weapons{margin-top:13px!important;line-height:1.4}
 .player-roster-weapons,.operative-guidance p{overflow-wrap:anywhere}

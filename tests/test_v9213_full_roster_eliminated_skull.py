@@ -32,8 +32,8 @@ def test_full_roster_dead_cards_receive_the_decorative_necron_overlay_only():
     assert 'url("Assets/Images/eliminated-necron-skull.png")' in overlay
     assert 'content:""' in overlay
     assert "pointer-events:none" in overlay
-    assert "position:absolute" in overlay and "inset:0" in overlay
-    assert "6rem" in overlay and "opacity:.55" in overlay
+    assert "position:absolute" in overlay and "top:3.5rem" in overlay
+    assert "5.5rem" in overlay and "opacity:.55" in overlay
     assert ".npo-roster-card.dead::after" not in CSS.replace(
         ".npo-roster-grid>.npo-roster-card.dead::after", ""
     )
@@ -67,20 +67,19 @@ def test_compact_dashboard_remains_text_only_without_icon_space():
     assert ".operative-status-row.eliminated{padding-left" not in CSS
 
 
-def test_tracker_fight_result_and_player_cards_remain_skull_free():
+def test_tracker_and_fight_result_remain_skull_free():
     tracker = source("function activationTracker", "function showPlayerOperativeStatus")
     fight = source("function fightResultParticipantHtml", "function acknowledgeFightResult")
-    player = source("function renderPlayerRoster", "function npoProfileWeaponHtml")
     assert "<strong>${trackerStatus.status}</strong>" in tracker
     assert "tracker-elimination-icon" not in tracker
     assert '<strong class="fight-eliminated">ELIMINATED</strong>' in fight
     assert "eliminated-necron-skull.png" not in fight
-    assert "☠" not in tracker + fight + player + CSS
+    assert "☠" not in tracker + fight
     assert ".operative-card.dead:after" not in CSS
 
 
 def test_release_surfaces_and_persistence_are_v9213_compatible():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 13)
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 13)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert "tomb-world-battle-guide-';" in WORKER
