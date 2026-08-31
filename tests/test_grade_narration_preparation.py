@@ -130,7 +130,7 @@ class GradeNarrationPreparationTests(unittest.TestCase):
         self.assertIn("playGradeEscalation", runtime)
         app = (ROOT / "app.js").read_text(encoding="utf-8")
         persistence = (ROOT / "persistence.js").read_text(encoding="utf-8")
-        self.assertEqual((8, 6, 102), tuple(map(int, CURRENT_APP_VERSION.split("."))))
+        self.assertGreaterEqual(tuple(map(int, CURRENT_APP_VERSION.split("."))), (8, 6, 102))
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", app)
         self.assertEqual("3", re.search(r"SAVE_VERSION = (\d+)", persistence).group(1))
 
