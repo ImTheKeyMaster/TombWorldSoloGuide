@@ -73,7 +73,7 @@ class V800NpoMultiActionActivationTests(unittest.TestCase):
         model = ActivationModel(2); model.decline('shoot'); model.commit('reposition'); self.assertNotIn('shoot', model.declined)
 
     def test_12_decline_not_reasked_in_same_pass(self):
-        source = self.source('npoActionQuestion', 'npoIcon')
+        source = self.source('npoActionQuestion', 'renderCompletedNpoQuestions')
         self.assertIn('declinedActionIds', source)
 
     def test_13_reposition_then_shoot(self):

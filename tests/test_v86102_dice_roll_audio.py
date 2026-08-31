@@ -88,7 +88,7 @@ class DiceRollAudioReleaseTests(unittest.TestCase):
             self.assertIn("DICE_ROLL_ANIMATION_MS", body, function_name)
         automatic = APP[APP.index("function runAutomaticCombatRolls") : APP.index("function retainedDiceTotals")]
         self.assertEqual(2, automatic.count("TombWorldDiceSfx.play()") + automatic.count("settleCombatDice("))
-        self.assertEqual(5, APP.count("void TombWorldDiceSfx.play()"))
+        self.assertEqual(6, APP.count("void TombWorldDiceSfx.play()"))
         self.assertNotIn("await TombWorldDiceSfx.play()", APP)
 
     def test_attack_and_defense_start_audio_synchronously_with_each_animation(self):

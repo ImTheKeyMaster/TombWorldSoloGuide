@@ -54,7 +54,7 @@ class NpoPortraitRemovalTests(unittest.TestCase):
         player_portraits = list((ROOT / "Assets/Images/Death Korps").glob("*.jpg"))
         self.assertTrue(player_portraits)
         self.assertIn('Assets/Maps/mission-${missionNumber}.png', APP)
-        self.assertIn("function npoIcon", APP)
+        self.assertNotIn("function npoIcon", APP)
         self.assertTrue((ROOT / "Assets/Images/eliminated-necron-skull.png").is_file())
         self.assertIn('.npo-roster-grid>.npo-roster-card.dead::after', CSS)
         self.assertIn('Assets/Images/eliminated-necron-skull.png', CSS)

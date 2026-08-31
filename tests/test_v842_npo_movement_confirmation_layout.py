@@ -29,14 +29,12 @@ class V842NpoMovementConfirmationLayoutTests(unittest.TestCase):
         self.assertIn('${renderNpoActivationHeader(n)}', prompt)
         self.assertIn('${renderNpoActivationHeader(n)}', confirmation)
 
-    def test_all_movement_actions_use_the_question_icon_source(self):
-        icons = section('const npoQuestionIcons', 'function npoIcon')
-        for action in ('Reposition', 'Dash', 'Charge', 'Fall Back'):
-            self.assertIn(action, icons)
+    def test_movement_confirmation_uses_text_without_decorative_icon(self):
         confirmation = section('function renderNpoMovementConfirmation', 'function resolveNpoAction')
-        self.assertIn('iconForNpoQuestion({action:displayAction,movementIntent:state.lastActivation?.movementIntent})', confirmation)
-        self.assertIn('npoIcon(icon)', confirmation)
-        self.assertNotIn("npoIcon('command')", confirmation)
+        self.assertIn('${escapeHtml(displayAction)}</h3>', confirmation)
+        self.assertIn('${escapeHtml(decision.reason)}</p>', confirmation)
+        self.assertNotIn('npoIcon', confirmation)
+        self.assertNotIn('<svg', confirmation)
 
     def test_confirmation_is_an_accessible_active_question_card(self):
         confirmation = section('function renderNpoMovementConfirmation', 'function resolveNpoAction')

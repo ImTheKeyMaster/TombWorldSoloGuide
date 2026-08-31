@@ -25,7 +25,7 @@ class V868AttackBeforeMovementTests(unittest.TestCase):
         self.assertTrue(README.startswith(f'# Tomb World Battle Guide v{CURRENT_APP_VERSION}'))
 
     def test_02_shoot_check_precedes_reposition_intent(self):
-        question = section('function npoActionQuestion', 'const npoQuestionIcons')
+        question = section('function npoActionQuestion', 'function renderCompletedNpoQuestions')
         self.assertIn('const availability=attackAvailabilityForMovementIntent(activation,movementInquiry)', question)
         self.assertIn('if(availability===null||availability===true)', question)
 
@@ -64,7 +64,7 @@ class V868AttackBeforeMovementTests(unittest.TestCase):
 
     def test_12_shoot_no_is_not_reasked(self):
         self.assertIn('if(availability===null||availability===true)', APP)
-        self.assertNotIn('if(!availability)', section('function npoActionQuestion', 'const npoQuestionIcons'))
+        self.assertNotIn('if(!availability)', section('function npoActionQuestion', 'function renderCompletedNpoQuestions'))
 
     def test_13_fight_check_precedes_charge(self):
         self.assertIn("const chargeIntent=id==='charge'&&fightAction", APP)
@@ -184,7 +184,7 @@ process.stdout.write(JSON.stringify(values.map(value=>attackAvailabilityForMovem
         self.assertEqual(json.loads(result.stdout), [None, False, True])
 
     def test_40_illegal_follow_up_is_not_treated_as_attack_enabling_movement(self):
-        question = section('function npoActionQuestion', 'const npoQuestionIcons')
+        question = section('function npoActionQuestion', 'function renderCompletedNpoQuestions')
         self.assertIn("if(movementInquiry?.followUpActionId&&!intendedAttack)", question)
         self.assertIn("purpose:'general-position',followUpActionId:null,guaranteesFollowUp:false", question)
 

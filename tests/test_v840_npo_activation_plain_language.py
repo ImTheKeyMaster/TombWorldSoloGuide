@@ -87,7 +87,7 @@ class V840NpoActivationPlainLanguageTests(unittest.TestCase):
             self.assertIn(wording, movement)
 
     def test_fallback_next_action_and_end_wording(self):
-        question = section('function npoActionQuestion', 'const npoQuestionIcons')
+        question = section('function npoActionQuestion', 'function renderCompletedNpoQuestions')
         self.assertIn('Can this NPO use ${action} now?', question)
         self.assertIn('Check the action’s target, distance, and placement.', question)
         result = section('function renderNpoDecisionResult', 'async function completeNpoActivation')
