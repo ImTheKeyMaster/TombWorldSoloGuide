@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.25';
+  const APP_VERSION = '9.2.26';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2582,11 +2582,13 @@ document.addEventListener('touchend',function(e){
     }
   }
   function escapeHtml(s){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
-  function rosterRequirementHtml(requirement){
-    const text=String(requirement);
-    const colonIndex=text.indexOf(':');
-    if(colonIndex<0)return escapeHtml(text);
-    return `<strong>${escapeHtml(text.slice(0,colonIndex+1))}</strong><span>${escapeHtml(text.slice(colonIndex+1))}</span>`;
+  function rosterCategoryRequirementText(category,accessible=false){
+    const parts=[];
+    const required=Number(category.requiredCount||0);
+    const maximum=Number(category.maxCount??Infinity);
+    if(required)parts.push(`${accessible?'required':'Req'} ${required}`);
+    if(Number.isFinite(maximum))parts.push(`${accessible?'maximum':'Max'} ${maximum}`);
+    return parts;
   }
   function inlineOperativeList(names){return names.filter(Boolean).join(' · ');}
 
@@ -2995,10 +2997,8 @@ document.addEventListener('touchend',function(e){
       const selectedDefs=selectedPlayerOperatives();
       const gravisCount=selectedDefs.filter(o=>o.gravis).length;
       const gunnerCount=selectedDefs.filter(o=>o.role==='Gunner').length;
-      const trooperCount=selectedDefs.filter(o=>o.role==='Trooper').length;
       const maxGunners=Number(playerTeamData?.selectionRules?.maxGunners??Infinity);
       const maxGravis=Number(playerTeamData?.selectionRules?.maxGravis||1);
-      const mandatoryTroopers=Number(playerTeamData?.selectionRules?.mandatoryTroopers||0);
       const requiredLeaderId=playerTeamData?.selectionRules?.leader?.operativeId||'';
       const leaderSelected=!requiredLeaderId||selected.has(requiredLeaderId);
       const requiredLeaderCategory=(playerTeamData?.rosterCategories||[]).find(category=>category.id==='leader'&&Number(category.requiredCount||0)>0);
@@ -3018,7 +3018,7 @@ document.addEventListener('touchend',function(e){
         let category=categories.find(entry=>entry.id===categoryId);
         if(!category){
           const metadata=categoryMetadata.get(categoryId)||{};
-          category={id:categoryId,label:metadata.label||categoryId,order:Number(metadata.order??categories.length),operatives:[]};
+          category={...metadata,id:categoryId,label:metadata.label||categoryId,order:Number(metadata.order??categories.length),operatives:[]};
           categories.push(category);
         }
         category.operatives.push(operative);
@@ -3040,21 +3040,17 @@ document.addEventListener('touchend',function(e){
           const selectionGroupBlocked=!chosen&&o.selectionGroup&&Number.isFinite(selectionGroupMaximum)&&selectedDefs.filter(candidate=>candidate.selectionGroup===o.selectionGroup).length>=selectionGroupMaximum;
           return `<button type="button" class="player-roster-card ${chosen?'selected':''}" data-select-player="${o.id}" ${rosterBlocked||gravisBlocked||gunnerBlocked||categoryBlocked||selectionGroupBlocked?'disabled':''}><div class="player-roster-card-head"><div><strong>${escapeHtml(chosen?playerName(o.id):o.name)}</strong><small>${escapeHtml(o.role)}${o.gravis?' · GRAVIS':''}</small></div><span>${chosen?'✓':'+'}</span></div><div class="operative-stat-line"><span><small>APL</small><b>${o.apl}</b></span><span><small>MOVE</small><b>${o.move}"</b></span><span><small>SAVE</small><b>${o.save}+</b></span><span><small>WOUNDS</small><b>${o.wounds}</b></span></div></button>`;
         }).join('');
-        return `<section class="roster-category"><button type="button" class="roster-category-heading" data-roster-category-toggle="${escapeHtml(category.id)}" aria-expanded="${expanded}" aria-controls="${panelId}"><span class="roster-category-title"><span class="roster-category-indicator" aria-hidden="true">›</span>${escapeHtml(category.label)}</span><span>${categorySelected} selected</span></button><div class="player-roster-grid roster-category-content" id="${panelId}" ${expanded?'':'hidden'}>${cards}</div></section>`;
+        const constraints=rosterCategoryRequirementText(category);
+        const accessibleConstraints=rosterCategoryRequirementText(category,true);
+        const categoryStatus=`${categorySelected} selected${constraints.length?` · ${constraints.join(' · ')}`:''}`;
+        const accessibleStatus=`${categorySelected} selected${accessibleConstraints.length?`, ${accessibleConstraints.join(', ')}`:''}`;
+        return `<section class="roster-category"><button type="button" class="roster-category-heading" data-roster-category-toggle="${escapeHtml(category.id)}" aria-expanded="${expanded}" aria-controls="${panelId}" aria-label="${escapeHtml(`${category.label}, ${accessibleStatus}`)}"><span class="roster-category-title"><span class="roster-category-indicator" aria-hidden="true">›</span>${escapeHtml(category.label)}</span><span class="roster-category-status" aria-hidden="true">${escapeHtml(categoryStatus)}</span></button><div class="player-roster-grid roster-category-content" id="${panelId}" ${expanded?'':'hidden'}>${cards}</div></section>`;
       }).join('');
       const selectionPrompt=minRoster===maxRoster?`Select exactly ${maxRoster} operatives.`:`Select between ${minRoster} and ${maxRoster} operatives.`;
-      const selectionCount=minRoster===maxRoster?`Total Operatives: ${selected.size} of ${maxRoster}`:`Total Operatives: ${selected.size} of ${maxRoster} (minimum ${minRoster})`;
-      const requirements=[];
-      if(hasGravis)requirements.push(`Required Gravis: ${gravisCount} of 1`);
-      if(Number.isFinite(maxGunners))requirements.push(`Maximum Gunners: ${gunnerCount} of ${maxGunners}`);
-      if(requiredLeaderId||requiredLeaderCategory)requirements.push(`Required Leader: ${selectedLeaderCount} of ${requiredLeaderCount}`);
-      if(mandatoryTroopers)requirements.push(`Required Troopers: ${trooperCount} of ${mandatoryTroopers}`);
-      requirements.push(selectionCount);
       const validation=playerRosterValidation([...selected]);
-      if((playerTeamData?.rosterCategories||[]).some(category=>category.id!=='leader'&&(category.requiredCount||category.maxCount)))requirements.splice(0,requirements.length,...validation.requirements);
       const valid=validation.valid&&requiredLeaderSelected&&(!hasGravis||(gravisCount>=1&&gravisCount<=maxGravis));
-      const requirementItems=requirements.map(requirement=>`<li>${rosterRequirementHtml(requirement)}</li>`).join('');
-      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><p class="muted">Build a legal kill team using its current official rules. Cooperative team splitting is not currently supported.</p><div class="setup-bulk-row"><button class="btn secondary" id="randomPlayerTeam">Random Team</button></div><section class="player-roster-summary" aria-labelledby="roster-requirements-heading"><h4 id="roster-requirements-heading">Roster Requirements</h4><ul>${requirementItems}</ul></section><div class="roster-categories">${sections}</div>${selectedDefs.length?`<div class="summary-box"><strong>Selected roster</strong><br>${inlineOperativeList(selectedDefs.map(o=>escapeHtml(playerName(o.id))))}</div>`:''}<div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
+      const rosterCount=minRoster===maxRoster?`${selected.size} of ${maxRoster} operatives`:`${selected.size} of ${maxRoster} operatives (minimum ${minRoster})`;
+      return `<h3>Choose your ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||'Kill Team')} roster</h3><p>${selectionPrompt}</p><p class="muted">Build a legal kill team using its current official rules. Cooperative team splitting is not currently supported.</p><div class="setup-bulk-row"><button class="btn secondary" id="randomPlayerTeam">Random Team</button></div><div class="roster-categories">${sections}</div><section class="summary-box selected-roster-summary" aria-label="Selected roster"><div class="selected-roster-heading"><strong>Selected roster</strong><span class="selected-roster-readiness">${valid?'✓ Ready':'Incomplete'}</span></div><p><strong>Roster Status:</strong> ${rosterCount}</p><div>${selectedDefs.length?inlineOperativeList(selectedDefs.map(o=>escapeHtml(playerName(o.id)))):'No operatives selected.'}</div></section><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${valid?'':'disabled'}>Roster Ready</button></div>`;
     }
     if(stepId==='options'){
       const variantOptions=Object.values(TOMB_WORLD_VARIANTS).filter(variant=>variant.available).map(variant=>`<label class="variant-card"><input type="radio" name="tombWorldVariant" value="${escapeHtml(variant.id)}" aria-describedby="variant-${escapeHtml(variant.id)}-description" ${state.tombWorldVariant===variant.id?'checked':''}><span><strong>${escapeHtml(variant.name)}</strong>${variant.id==='standard'?'':`<span class="rule-classification official">Official Expansion - White Dwarf 517</span>`}<small id="variant-${escapeHtml(variant.id)}-description">${escapeHtml(variant.summary)}</small></span></label>`).join('');
