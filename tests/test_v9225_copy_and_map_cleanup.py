@@ -83,7 +83,6 @@ def test_all_shared_map_surfaces_still_render_the_same_map():
 def test_map_keeps_its_responsive_mobile_image_contract_without_caption_space():
     assert ".official-map-image{\n  display:block;\n  width:100%;\n  height:auto;" in STYLES
     assert ".official-map-card{margin-inline:-2px;border-radius:13px}" in STYLES
-    assert all(width > 0 for width in (320, 375, 390, 430))
     assert "figcaption" not in MAP_RENDERER
 
 
