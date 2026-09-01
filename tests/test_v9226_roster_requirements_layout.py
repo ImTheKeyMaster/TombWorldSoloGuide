@@ -1,5 +1,6 @@
 import json
 import re
+import subprocess
 from pathlib import Path
 
 from versioning import CURRENT_APP_VERSION
@@ -51,6 +52,36 @@ def test_category_constraint_formatter_supports_all_metadata_combinations():
     assert "constraints.join(' · ')" in ROSTER
 
 
+def test_category_constraint_formatter_runtime_output():
+    helper = "function rosterCategoryRequirementText(category,accessible=false)" + source_between(
+        "function rosterCategoryRequirementText(category,accessible=false)",
+        "function inlineOperativeList",
+    )
+    script = f"""
+{helper}
+const categories = [
+  {{requiredCount: 1, maxCount: 1}},
+  {{maxCount: 9}},
+  {{requiredCount: 2}},
+  {{}}
+];
+console.log(JSON.stringify({{
+  visible: categories.map(category => rosterCategoryRequirementText(category)),
+  accessible: categories.map(category => rosterCategoryRequirementText(category, true))
+}}));
+"""
+    result = subprocess.run(
+        ["node", "-e", script],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert json.loads(result.stdout) == {
+        "visible": [["Req 1", "Max 1"], ["Max 9"], ["Req 2"], []],
+        "accessible": [["required 1", "maximum 1"], ["maximum 9"], ["required 2"], []],
+    }
+
+
 def test_spectre_category_metadata_produces_requested_statuses():
     team = json.loads((ROOT / "Player_Operatives" / "SpectreSquad.json").read_text())
     counts = {"leader": 1, "support": 1, "specialists": 4, "troopers": 5}
@@ -85,7 +116,7 @@ def test_selected_roster_combines_existing_readiness_count_and_names():
     assert "selected-roster-summary" in ROSTER
     assert "Selected roster" in ROSTER
     assert "Roster Status:" in ROSTER
-    assert "${valid?'ready':''}" in ROSTER
+    assert "${valid?' ready':''}" in ROSTER
     assert "${valid?'✓ Ready':'Incomplete'}" in ROSTER
     assert "inlineOperativeList(selectedDefs.map(o=>escapeHtml(playerName(o.id))))" in ROSTER
     assert "const valid=validation.valid&&requiredLeaderSelected" in ROSTER
