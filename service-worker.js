@@ -29,10 +29,19 @@ const canCache = response => response && response.ok && response.type === 'basic
 const isTombWorldCache = name => name.startsWith(CACHE_PREFIX) || LEGACY_CACHE_PREFIXES.some(prefix => name.startsWith(prefix));
 const installPercent = (completed, total) => Math.min(100, Math.max(0, Math.round((completed / total) * 100)));
 let offlinePreparationPromise=null;
+const offlinePreparationClients=new Set();
 
-function reportOfflineInstall(client, type, completed, total) {
+function postOfflineMessage(client,message) {
+  try {
+    client?.postMessage(message);
+  } catch(error) {
+    console.warn('Offline preparation status could not be reported to a client.',error);
+  }
+}
+
+function reportOfflineInstall(type, completed, total) {
   const percent=type==='OFFLINE_INSTALL_COMPLETE'?100:installPercent(completed,total);
-  client?.postMessage({type,completed,total,percent});
+  offlinePreparationClients.forEach(client=>postOfflineMessage(client,{type,completed,total,percent}));
 }
 
 function narrationFiles(manifest) {
@@ -98,7 +107,7 @@ async function precacheAmbient(cache,file,onProgress,strict=false) {
   }
 }
 
-async function prepareOfflinePackage(client,{reportProgress=true}={}) {
+async function prepareOfflinePackage({reportProgress=true}={}) {
   const cache=await caches.open(CACHE_NAME);
   let narrationManifest,ambientConfig,backgroundManifest;
   try {
@@ -115,10 +124,10 @@ async function prepareOfflinePackage(client,{reportProgress=true}={}) {
   if(!ambient)throw new Error('Ambient configuration does not identify a supported offline audio file.');
   const assets=[NARRATION_MANIFEST,AMBIENT_CONFIG,BACKGROUND_MANIFEST,...narration,ambient,...backgrounds];
   let completed=3;
-  if(reportProgress)reportOfflineInstall(client,'OFFLINE_INSTALL_START',completed,assets.length);
+  if(reportProgress)reportOfflineInstall('OFFLINE_INSTALL_START',completed,assets.length);
   const progress=()=>{
     completed+=1;
-    if(reportProgress)reportOfflineInstall(client,'OFFLINE_INSTALL_PROGRESS',completed,assets.length);
+    if(reportProgress)reportOfflineInstall('OFFLINE_INSTALL_PROGRESS',completed,assets.length);
   };
   try {
     await precacheNarration(cache,narration,progress,true);
@@ -132,36 +141,40 @@ async function prepareOfflinePackage(client,{reportProgress=true}={}) {
     throw error;
   }
   await cache.put(OFFLINE_PACKAGE_MARKER,new Response(APP_VERSION,{headers:{'Content-Type':'text/plain'}}));
-  if(reportProgress)reportOfflineInstall(client,'OFFLINE_INSTALL_COMPLETE',assets.length,assets.length);
+  if(reportProgress)reportOfflineInstall('OFFLINE_INSTALL_COMPLETE',assets.length,assets.length);
 }
 
 async function ensureOfflinePackage(client) {
   const cache=await caches.open(CACHE_NAME);
   const marker=await cache.match(OFFLINE_PACKAGE_MARKER);
   if(marker){
-    client?.postMessage({type:'OFFLINE_PACKAGE_READY'});
+    postOfflineMessage(client,{type:'OFFLINE_PACKAGE_READY'});
     const markerVersion=await marker.text();
     if(markerVersion===APP_VERSION)return;
     try {
-      await prepareOfflinePackage(client,{reportProgress:false});
+      await prepareOfflinePackage({reportProgress:false});
     } catch(error) {
       console.warn('Updated offline media will be checked again on the next standalone launch.',error);
     }
     return;
   }
-  await prepareOfflinePackage(client);
+  await prepareOfflinePackage();
 }
 
 async function copyExtendedAssetsFromOldCaches(names) {
   const destination=await caches.open(CACHE_NAME);
   for(const name of names.filter(name=>isTombWorldCache(name)&&name!==CACHE_NAME)){
-    const source=await caches.open(name);
-    for(const request of await source.keys()){
-      const pathname=new URL(request.url).pathname;
-      const isExtended=pathname.includes('/Assets/Audio/Narration/')||pathname.includes('/Assets/Images/Backgrounds/')||pathname.endsWith('/__offline-package-complete__');
-      if(!isExtended||await destination.match(request))continue;
-      const response=await source.match(request);
-      if(response)await destination.put(request,response);
+    try {
+      const source=await caches.open(name);
+      for(const request of await source.keys()){
+        const pathname=new URL(request.url).pathname;
+        const isExtended=pathname.includes('/Assets/Audio/Narration/')||pathname.includes('/Assets/Images/Backgrounds/')||pathname.endsWith('/__offline-package-complete__');
+        if(!isExtended||await destination.match(request))continue;
+        const response=await source.match(request);
+        if(response)await destination.put(request,response);
+      }
+    } catch(error) {
+      console.warn(`Offline media could not be reused from cache "${name}".`,error);
     }
   }
 }
@@ -185,10 +198,14 @@ self.addEventListener('message',event=>{
     return;
   }
   if(event.data?.type!=='ENSURE_OFFLINE_PACKAGE')return;
+  if(event.source)offlinePreparationClients.add(event.source);
   if(!offlinePreparationPromise){
     offlinePreparationPromise=ensureOfflinePackage(event.source)
-      .catch(error=>event.source?.postMessage({type:'OFFLINE_INSTALL_ERROR',message:'Offline setup could not be completed. It will be retried next time.'}))
-      .finally(()=>{offlinePreparationPromise=null;});
+      .catch(error=>offlinePreparationClients.forEach(client=>postOfflineMessage(client,{type:'OFFLINE_INSTALL_ERROR',message:'Offline setup could not be completed. It will be retried next time.'})))
+      .finally(()=>{
+        offlinePreparationPromise=null;
+        offlinePreparationClients.clear();
+      });
   }
   event.waitUntil?.(offlinePreparationPromise);
 });

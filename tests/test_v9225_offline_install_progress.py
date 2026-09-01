@@ -66,12 +66,21 @@ def test_marker_retry_update_reuse_and_cleanup_contracts_are_present():
     assert preparation.index("for(const asset of backgrounds)") < preparation.index("cache.put(OFFLINE_PACKAGE_MARKER")
     assert "if(await cache.match(path))return;" in WORKER
     assert "if(markerVersion===APP_VERSION)return;" in WORKER
-    assert "prepareOfflinePackage(client,{reportProgress:false})" in WORKER
+    assert "prepareOfflinePackage({reportProgress:false})" in WORKER
     assert "copyExtendedAssetsFromOldCaches(names)" in WORKER
     assert "await copyExtendedAssetsFromOldCaches(names);" in WORKER
     assert ".map(name=>caches.delete(name))" in WORKER
     assert "OFFLINE_INSTALL_ERROR" in WORKER
     assert "It will be retried next time." in APP
+    assert "Offline media could not be reused from cache" in WORKER
+
+
+def test_status_delivery_is_failure_isolated_and_shared_with_concurrent_clients():
+    assert "const offlinePreparationClients=new Set();" in WORKER
+    assert "if(event.source)offlinePreparationClients.add(event.source);" in WORKER
+    assert "offlinePreparationClients.forEach(client=>postOfflineMessage" in WORKER
+    assert "Offline preparation status could not be reported to a client." in WORKER
+    assert "offlinePreparationClients.clear();" in WORKER
 
 
 def test_progress_payload_ui_and_completion_are_accessible_and_bounded():
