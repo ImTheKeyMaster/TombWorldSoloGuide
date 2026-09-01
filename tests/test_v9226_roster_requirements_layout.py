@@ -29,6 +29,8 @@ def test_requirements_panel_is_removed_and_headers_are_metadata_driven():
     assert "player-roster-summary" not in ROSTER
     assert "categorySelected" in ROSTER
     assert "rosterCategoryRequirementText(category)" in ROSTER
+    assert "requiredCount:metadata.requiredCount" in ROSTER
+    assert "maxCount:metadata.maxCount" in ROSTER
     for label in ("Veteran Sergeant", "Vox-Relay Beacon", "Specialists", "Troopers"):
         assert f"'{label}'" not in ROSTER
         assert f'"{label}"' not in ROSTER
@@ -83,6 +85,7 @@ def test_selected_roster_combines_existing_readiness_count_and_names():
     assert "selected-roster-summary" in ROSTER
     assert "Selected roster" in ROSTER
     assert "Roster Status:" in ROSTER
+    assert "${valid?'ready':''}" in ROSTER
     assert "${valid?'✓ Ready':'Incomplete'}" in ROSTER
     assert "inlineOperativeList(selectedDefs.map(o=>escapeHtml(playerName(o.id))))" in ROSTER
     assert "const valid=validation.valid&&requiredLeaderSelected" in ROSTER

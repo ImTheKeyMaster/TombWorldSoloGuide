@@ -6,7 +6,6 @@ from versioning import CURRENT_APP_VERSION
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = (ROOT / "app.js").read_text(encoding="utf-8")
-CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
 INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
 README = (ROOT / "README.md").read_text(encoding="utf-8")
 WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")

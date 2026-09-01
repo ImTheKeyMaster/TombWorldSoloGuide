@@ -1269,7 +1269,8 @@ button.tracker-operative:hover{
 @media(max-width:600px){.roster-category-heading{padding:13px}.roster-category-content{grid-template-columns:minmax(0,1fr);padding:10px}}
 .selected-roster-summary{overflow-wrap:anywhere}
 .selected-roster-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;margin-bottom:8px}
-.selected-roster-readiness{color:var(--green);font-weight:850}
+.selected-roster-readiness{color:var(--muted);font-weight:850}
+.selected-roster-readiness.ready{color:var(--green)}
 .selected-roster-summary p{margin:0 0 8px;color:var(--muted)}
 
 .update-notice{
