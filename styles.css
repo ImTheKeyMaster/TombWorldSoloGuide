@@ -148,20 +148,10 @@ html.desktop-game-background #gameBackground{opacity:1}
   height:auto;
   background:#e9e8e5;
 }
-.official-map-card figcaption{
-  margin:0;
-  padding:10px 14px 12px;
-  color:var(--muted);
-  font-size:.72rem;
-  line-height:1.4;
-  border-top:1px solid rgba(118,245,168,.12);
-}
-.official-map-card code{color:#c7f7d8;font-size:.7rem}
 @media(max-width:600px){
   .official-map-card{margin-inline:-2px;border-radius:13px}
   .official-map-heading{align-items:flex-start;flex-direction:column;gap:6px;padding:12px}
   .official-map-heading small{max-width:none;text-align:left}
-  .official-map-card figcaption{padding:9px 11px 11px}
 }
 
 

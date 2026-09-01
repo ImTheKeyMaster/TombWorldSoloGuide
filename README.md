@@ -1,4 +1,11 @@
-# Tomb World Battle Guide v9.2.24
+# Tomb World Battle Guide v9.2.25
+
+## v9.2.25
+
+**Version 9.2.25**
+
+- Clarified the message shown when an older incompatible battle cannot be resumed while preserving compatible setup choices.
+- Removed the internal mission-pack PDF file-path caption from official mission map displays.
 
 ## v9.2.24
 
