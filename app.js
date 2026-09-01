@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.24';
+  const APP_VERSION = '9.2.25';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8602,7 +8602,6 @@ function showPlayerActivation(){
         <small>Extracted from the included Games Workshop mission-pack PDF</small>
       </div>
       <img class="official-map-image" src="${imagePath}" alt="Official board layout for ${escapeHtml(currentMission.name)}" loading="eager">
-      <figcaption>Only the map for this mission is shown. The complete official PDF is stored locally in <code>Assets/Tomb-World-Mission-Pack.pdf</code>.</figcaption>
     </figure>`;
   }
 
@@ -9323,7 +9322,7 @@ function showPlayerActivation(){
     showModal('Current battle cannot be resumed',`<p>The current battle uses retired or invalid NPO data and cannot be resumed safely.</p>${causes.length?`<p><strong>Cause:</strong> ${causes.map(escapeHtml).join('; ')}</p>`:''}<p>The battle will return to setup and a new legal NPO roster must be generated. The selected mission, player team and roster choices, completed battle history, settings, and preferences will be preserved where possible.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmLegacyReset">Return to Setup</button></div>`);
     $('#confirmLegacyReset').onclick=async()=>{
       const reset=resetActiveBattle(migration.state);closeModal();
-      if(await commitImported(reset,{...migration.report,requiresRegeneration:true}))showToast(source==='import'?'Save imported and returned to setup.':'Legacy battle returned to setup.');
+      if(await commitImported(reset,{...migration.report,requiresRegeneration:true}))showToast(source==='import'?'Imported battle could not be resumed. Your setup choices were preserved.':'Previous battle could not be resumed. Your setup choices were preserved.');
     };
   }
   importInput.addEventListener('change',async()=>{
