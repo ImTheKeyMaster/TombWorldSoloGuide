@@ -80,6 +80,8 @@ def test_status_delivery_is_failure_isolated_and_shared_with_concurrent_clients(
     assert "if(event.source)offlinePreparationClients.add(event.source);" in WORKER
     assert "offlinePreparationClients.forEach(client=>postOfflineMessage" in WORKER
     assert "Offline preparation status could not be reported to a client." in WORKER
+    assert "if(offlinePreparationStatus)postOfflineMessage(event.source,offlinePreparationStatus);" in WORKER
+    assert "offlinePreparationStatus={type,completed,total,percent};" in WORKER
     assert "offlinePreparationClients.clear();" in WORKER
 
 

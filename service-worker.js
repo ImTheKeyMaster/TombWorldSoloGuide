@@ -30,6 +30,7 @@ const isTombWorldCache = name => name.startsWith(CACHE_PREFIX) || LEGACY_CACHE_P
 const installPercent = (completed, total) => Math.min(100, Math.max(0, Math.round((completed / total) * 100)));
 let offlinePreparationPromise=null;
 const offlinePreparationClients=new Set();
+let offlinePreparationStatus=null;
 
 function postOfflineMessage(client,message) {
   try {
@@ -41,7 +42,8 @@ function postOfflineMessage(client,message) {
 
 function reportOfflineInstall(type, completed, total) {
   const percent=type==='OFFLINE_INSTALL_COMPLETE'?100:installPercent(completed,total);
-  offlinePreparationClients.forEach(client=>postOfflineMessage(client,{type,completed,total,percent}));
+  offlinePreparationStatus={type,completed,total,percent};
+  offlinePreparationClients.forEach(client=>postOfflineMessage(client,offlinePreparationStatus));
 }
 
 function narrationFiles(manifest) {
@@ -144,11 +146,12 @@ async function prepareOfflinePackage({reportProgress=true}={}) {
   if(reportProgress)reportOfflineInstall('OFFLINE_INSTALL_COMPLETE',assets.length,assets.length);
 }
 
-async function ensureOfflinePackage(client) {
+async function ensureOfflinePackage() {
   const cache=await caches.open(CACHE_NAME);
   const marker=await cache.match(OFFLINE_PACKAGE_MARKER);
   if(marker){
-    postOfflineMessage(client,{type:'OFFLINE_PACKAGE_READY'});
+    offlinePreparationStatus={type:'OFFLINE_PACKAGE_READY'};
+    offlinePreparationClients.forEach(client=>postOfflineMessage(client,offlinePreparationStatus));
     const markerVersion=await marker.text();
     if(markerVersion===APP_VERSION)return;
     try {
@@ -199,14 +202,19 @@ self.addEventListener('message',event=>{
   }
   if(event.data?.type!=='ENSURE_OFFLINE_PACKAGE')return;
   if(event.source)offlinePreparationClients.add(event.source);
-  if(!offlinePreparationPromise){
-    offlinePreparationPromise=ensureOfflinePackage(event.source)
-      .catch(error=>offlinePreparationClients.forEach(client=>postOfflineMessage(client,{type:'OFFLINE_INSTALL_ERROR',message:'Offline setup could not be completed. It will be retried next time.'})))
-      .finally(()=>{
-        offlinePreparationPromise=null;
-        offlinePreparationClients.clear();
-      });
+  if(offlinePreparationPromise){
+    if(offlinePreparationStatus)postOfflineMessage(event.source,offlinePreparationStatus);
+    event.waitUntil?.(offlinePreparationPromise);
+    return;
   }
+  offlinePreparationStatus=null;
+  offlinePreparationPromise=ensureOfflinePackage()
+    .catch(error=>offlinePreparationClients.forEach(client=>postOfflineMessage(client,{type:'OFFLINE_INSTALL_ERROR',message:'Offline setup could not be completed. It will be retried next time.'})))
+    .finally(()=>{
+      offlinePreparationPromise=null;
+      offlinePreparationStatus=null;
+      offlinePreparationClients.clear();
+    });
   event.waitUntil?.(offlinePreparationPromise);
 });
 
