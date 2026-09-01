@@ -66,7 +66,7 @@ const s={Audio,URL,location:{href:'https://example.test/'},document,performance:
     def test_offline_cache_and_narration_isolation(self):
         worker = (ROOT / "service-worker.js").read_text(encoding="utf-8")
         self.assertIn("`./Assets/Audio/Narration/${file}`", worker)
-        self.assertIn("await precacheAmbient(cache)", worker)
+        self.assertIn("await precacheAmbient(cache,ambient", worker)
         self.assertNotIn("TombWorldAmbient", (ROOT / "narration.js").read_text(encoding="utf-8"))
         self.assertNotIn("playMissionIntro", AMBIENT)
 

@@ -97,7 +97,7 @@ def test_v9225_version_cache_and_save_compatibility_surfaces():
     assert f"tomb-world-battle-guide-{CURRENT_APP_VERSION}" == (
         "tomb-world-battle-guide-" + ".".join(map(str, (9, 2, 25)))
     )
-    assert "./Assets/Tomb-World-Mission-Pack.pdf" in WORKER
+    assert "./Assets/Tomb-World-Mission-Pack.pdf" not in WORKER
     assert README.startswith(
         f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}"
     )

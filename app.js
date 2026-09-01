@@ -331,10 +331,51 @@ document.addEventListener('touchend',function(e){
   if(desktopBackgroundMedia.addEventListener)desktopBackgroundMedia.addEventListener('change',updateGameBackground);
   else desktopBackgroundMedia.addListener?.(updateGameBackground);
 
+  function isStandalonePwa(){
+    return window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+  }
+
   function registerServiceWorker(){
     if(!('serviceWorker' in navigator))return;
+    const standalonePwa=isStandalonePwa();
     let waitingWorker=null;
     let updateRequested=false;
+    let offlineInstallPercent=0;
+    let offlineInstallDismissTimer=null;
+    const offlineInstallStatus=$('#offlineInstallStatus');
+    const offlineInstallMessage=$('#offlineInstallMessage');
+    const offlineInstallPercentText=$('#offlineInstallPercent');
+    const offlineInstallProgress=$('#offlineInstallProgress');
+    const offlineInstallProgressBar=$('span',offlineInstallProgress);
+    const updateOfflineInstallStatus=data=>{
+      if(!data||!Number.isFinite(data.completed)||!Number.isFinite(data.total)||data.total<=0)return;
+      const calculated=Math.round((data.completed/data.total)*100);
+      const percent=Math.max(offlineInstallPercent,Math.min(100,Math.max(0,Number.isFinite(data.percent)?data.percent:calculated)));
+      offlineInstallPercent=percent;
+      clearTimeout(offlineInstallDismissTimer);
+      offlineInstallStatus.hidden=false;
+      offlineInstallProgress.hidden=false;
+      offlineInstallStatus.classList.toggle('complete',data.type==='OFFLINE_INSTALL_COMPLETE');
+      offlineInstallMessage.textContent=data.type==='OFFLINE_INSTALL_COMPLETE'?'Ready for offline play':'Preparing for offline play…';
+      offlineInstallPercentText.textContent=`${percent}%`;
+      offlineInstallProgress.setAttribute('aria-valuenow',String(percent));
+      offlineInstallProgressBar.style.width=`${percent}%`;
+      if(data.type==='OFFLINE_INSTALL_COMPLETE')offlineInstallDismissTimer=setTimeout(()=>{offlineInstallStatus.hidden=true;},1800);
+    };
+    navigator.serviceWorker.addEventListener('message',event=>{
+      if(!standalonePwa)return;
+      if(['OFFLINE_INSTALL_START','OFFLINE_INSTALL_PROGRESS','OFFLINE_INSTALL_COMPLETE'].includes(event.data?.type))updateOfflineInstallStatus(event.data);
+      if(event.data?.type==='OFFLINE_PACKAGE_READY')offlineInstallStatus.hidden=true;
+      if(event.data?.type==='OFFLINE_INSTALL_ERROR'){
+        clearTimeout(offlineInstallDismissTimer);
+        offlineInstallStatus.classList.remove('complete');
+        offlineInstallStatus.hidden=false;
+        offlineInstallMessage.textContent=event.data.message||'Offline setup could not be completed. It will be retried next time.';
+        offlineInstallPercentText.textContent='';
+        offlineInstallProgress.hidden=true;
+        offlineInstallDismissTimer=setTimeout(()=>{offlineInstallStatus.hidden=true;},4000);
+      }
+    });
     const showUpdate=worker=>{
       waitingWorker=worker;
       if(navigator.onLine)updateNotice.hidden=false;
@@ -354,6 +395,9 @@ document.addEventListener('touchend',function(e){
     window.addEventListener('load',()=>{
       navigator.serviceWorker.register('./service-worker.js',{scope:'./'})
         .then(registration=>{
+          if(standalonePwa)navigator.serviceWorker.ready.then(readyRegistration=>{
+            readyRegistration.active?.postMessage({type:'ENSURE_OFFLINE_PACKAGE'});
+          });
           if(registration.waiting)showUpdate(registration.waiting);
           registration.addEventListener('updatefound',()=>{
             const installingWorker=registration.installing;
