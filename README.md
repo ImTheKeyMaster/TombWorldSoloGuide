@@ -6,6 +6,8 @@
 
 - Clarified the message shown when an older incompatible battle cannot be resumed while preserving compatible setup choices.
 - Removed the internal mission-pack PDF file-path caption from official mission map displays.
+- Reduced fresh PWA installation downloads by leaving the full mission-pack PDF out of the automatic offline cache while retaining all six mission maps.
+- Added accessible, non-blocking progress feedback when an installed standalone PWA first prepares narration, ambient audio, and backgrounds for complete offline use; ordinary browser visits retain lightweight core caching only.
 
 ## v9.2.24
 

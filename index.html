@@ -58,6 +58,15 @@
     </div>
   </dialog>
   <div id="toast" class="toast" hidden></div>
+  <div id="offlineInstallStatus" class="offline-install-status" role="status" aria-live="polite" aria-atomic="true" hidden>
+    <div class="offline-install-copy">
+      <span id="offlineInstallMessage">Preparing for offline play…</span>
+      <strong id="offlineInstallPercent">0%</strong>
+    </div>
+    <div id="offlineInstallProgress" class="offline-install-progress" role="progressbar" aria-label="Offline preparation progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <span></span>
+    </div>
+  </div>
   <div id="updateNotice" class="update-notice" role="status" hidden>
     <span>A new version is available.</span>
     <button class="btn primary" id="updateAppBtn" type="button">Update App</button>
