@@ -1,6 +1,4 @@
 import json
-import re
-import subprocess
 from pathlib import Path
 
 from versioning import CURRENT_APP_VERSION
@@ -8,7 +6,6 @@ from versioning import CURRENT_APP_VERSION
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = (ROOT / "app.js").read_text(encoding="utf-8")
-CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
 INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
 README = (ROOT / "README.md").read_text(encoding="utf-8")
 WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
@@ -21,81 +18,19 @@ def source_between(start, end):
     return APP.split(start, 1)[1].split(end, 1)[0]
 
 
-def render_requirements(*requirements):
-    escape_html = re.search(r"  function escapeHtml\(s\)\{.*\}", APP).group(0)
-    formatter = "function rosterRequirementHtml" + source_between(
-        "function rosterRequirementHtml", "function inlineOperativeList"
-    )
-    script = f"""
-{escape_html}
-{formatter}
-console.log(JSON.stringify({json.dumps(requirements)}.map(rosterRequirementHtml)));
-"""
-    result = subprocess.run(
-        ["node", "-e", script],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    return json.loads(result.stdout)
-
-
-def test_shared_roster_requirements_use_safe_semantic_label_value_markup():
-    helper = source_between("function rosterRequirementHtml(requirement)", "function inlineOperativeList")
+def test_roster_requirement_panel_was_replaced_by_safe_category_status_markup():
     roster = source_between("if(stepId==='playerRoster')", "if(stepId==='options')")
-    assert "Roster Requirements" in roster
-    assert "text.indexOf(':')" in helper
-    assert "text.slice(0,colonIndex+1)" in helper
-    assert "text.slice(colonIndex+1)" in helper
-    assert helper.count("escapeHtml(") == 3
-    assert "<strong>${escapeHtml(text.slice(0,colonIndex+1))}</strong>" in helper
-    assert "<span>${escapeHtml(text.slice(colonIndex+1))}</span>" in helper
-    assert "if(colonIndex<0)return escapeHtml(text)" in helper
-    assert "requirements.map(requirement=>`<li>${rosterRequirementHtml(requirement)}</li>`)" in roster
-    assert "requirements.map(requirement=>`<li>${escapeHtml(requirement)}</li>`)" not in roster
-
-
-def test_roster_requirement_formatter_behavior():
-    assert render_requirements(
-        "Leader: 1 of 1 required",
-        "Rule: value: detail",
-        "Unsafe <label>: 1 & ready",
-        "No colon <unsafe>",
-    ) == [
-        "<strong>Leader:</strong><span> 1 of 1 required</span>",
-        "<strong>Rule:</strong><span> value: detail</span>",
-        "<strong>Unsafe &lt;label&gt;:</strong><span> 1 &amp; ready</span>",
-        "No colon &lt;unsafe&gt;",
-    ]
-
-
-def test_all_requirement_labels_and_values_are_still_generated_unchanged():
-    roster = source_between("if(stepId==='playerRoster')", "if(stepId==='options')")
-    for unchanged_source in (
-        "Required Gravis: ${gravisCount} of 1",
-        "Maximum Gunners: ${gunnerCount} of ${maxGunners}",
-        "Required Leader: ${selectedLeaderCount} of ${requiredLeaderCount}",
-        "Required Troopers: ${trooperCount} of ${mandatoryTroopers}",
-        "Total Operatives: ${selected.size} of ${maxRoster}",
-    ):
-        assert unchanged_source in roster
-    # Category-driven teams supply labels such as Leader and Troopers through
-    # the same validation output and the same generic formatter.
-    assert "validation.requirements" in roster
-    assert "requirements.splice(0,requirements.length,...validation.requirements)" in roster
-
-
-def test_only_roster_requirement_labels_are_heavy():
-    assert ".player-roster-summary li{color:var(--muted);font-weight:400}" in CSS
-    assert ".player-roster-summary li strong{font-weight:800}" in CSS
-    assert not re.search(r"\.player-roster-summary li\{[^}]*font-weight:800", CSS)
+    assert "Roster Requirements" not in roster
+    assert "roster-category-status" in roster
+    assert "escapeHtml(categoryStatus)" in roster
+    assert "escapeHtml(`${category.label}, ${accessibleStatus}`)" in roster
 
 
 def test_every_supported_team_uses_the_shared_roster_renderer():
     manifest = json.loads((ROOT / "Player_Operatives" / "manifest.json").read_text(encoding="utf-8"))
     assert len(manifest["teams"]) >= 6
-    assert APP.count("function rosterRequirementHtml(") == 1
-    assert APP.count("rosterRequirementHtml(requirement)") == 2
+    assert APP.count("function rosterCategoryRequirementText(") == 1
+    assert APP.count("rosterCategoryRequirementText(category") == 3
     for team in manifest["teams"]:
         team_path = ROOT / "Player_Operatives" / team["file"]
         assert team_path.is_file(), team_path

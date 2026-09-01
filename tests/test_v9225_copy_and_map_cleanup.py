@@ -87,16 +87,13 @@ def test_map_keeps_its_responsive_mobile_image_contract_without_caption_space():
 
 
 def test_v9225_version_cache_and_save_compatibility_surfaces():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 25)
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 25)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 10
     assert "const CACHE_PREFIX = 'tomb-world-battle-guide-';" in WORKER
     assert "const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;" in WORKER
-    assert f"tomb-world-battle-guide-{CURRENT_APP_VERSION}" == (
-        "tomb-world-battle-guide-" + ".".join(map(str, (9, 2, 25)))
-    )
     assert "./Assets/Tomb-World-Mission-Pack.pdf" not in WORKER
     assert README.startswith(
         f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}"

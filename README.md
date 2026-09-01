@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.25
+# Tomb World Battle Guide v9.2.26
+
+## v9.2.26
+
+**Version 9.2.26**
+
+- Moved roster required/maximum counts into the expandable roster category headers.
+- Combined roster status with the Selected roster summary.
+- Removed the redundant Roster Requirements panel and visible Loadout choices status row.
 
 ## v9.2.25
 
