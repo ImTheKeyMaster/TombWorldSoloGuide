@@ -1,0 +1,57 @@
+name: Feature request
+description: Suggest an improvement to the tabletop play aid
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: Feature suggestions are welcome. Implementation and the direction of the official version remain at the project owner's discretion.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity
+      description: What tabletop need, difficulty, or opportunity would this address?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Proposed idea
+      description: Describe the change you would like to see.
+    validations:
+      required: true
+  - type: textarea
+    id: tabletop-benefit
+    attributes:
+      label: Tabletop benefit
+      description: How would this improve play at the table?
+    validations:
+      required: true
+  - type: dropdown
+    id: game-mode
+    attributes:
+      label: Game mode
+      options:
+        - Solo
+        - PvP
+        - Both
+        - Not applicable
+    validations:
+      required: true
+  - type: dropdown
+    id: change-type
+    attributes:
+      label: Type of change
+      options:
+        - Rules automation
+        - Presentation only
+        - Both rules and presentation
+        - Unsure
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add examples, mockups, or other helpful context if available.

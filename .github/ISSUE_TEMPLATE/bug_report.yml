@@ -1,0 +1,91 @@
+name: Bug report
+description: Report a problem, rules discrepancy, or compatibility issue
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve Tomb World Battle Guide. Please share the details that apply to the problem.
+  - type: textarea
+    id: description
+    attributes:
+      label: Short description
+      description: What went wrong?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: List the steps that reliably show the problem.
+      placeholder: |
+        1. Start...
+        2. Select...
+        3. Observe...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead?
+    validations:
+      required: true
+  - type: dropdown
+    id: game-mode
+    attributes:
+      label: Game mode
+      options:
+        - Solo
+        - PvP
+        - Both
+        - Not applicable
+  - type: input
+    id: mission
+    attributes:
+      label: Mission
+      placeholder: Mission name, if relevant
+  - type: input
+    id: kill-team
+    attributes:
+      label: Kill Team
+      placeholder: Kill Team name, if relevant
+  - type: input
+    id: tomb-world-variant
+    attributes:
+      label: Tomb World variant
+      placeholder: Standard, Flayer Curse, Destroyer Cult, Crownworld, or not applicable
+  - type: input
+    id: optional-rules
+    attributes:
+      label: Optional rules
+      description: Include Restless Tomb, Deadly Encounters, or other enabled optional rules when relevant.
+  - type: input
+    id: turning-point
+    attributes:
+      label: Turning Point or setup step
+      placeholder: Turning Point number or setup stage, if relevant
+  - type: input
+    id: device-browser
+    attributes:
+      label: Device and browser
+      placeholder: For example, iPhone 15 / Safari
+  - type: input
+    id: app-version
+    attributes:
+      label: App version
+      description: The version shown in the Guide, if available.
+      placeholder: For example, 9.2.33
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or additional context
+      description: Add screenshots or other useful details here. Do not include private information.
