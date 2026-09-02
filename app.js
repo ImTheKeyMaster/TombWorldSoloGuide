@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.31';
+  const APP_VERSION = '9.2.32';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3844,6 +3844,9 @@ document.addEventListener('touchend',function(e){
     if(event.type!=='tomb-world-event')return `<div class="summary-box"><strong>${escapeHtml(title)}</strong><br>${escapeHtml(description)}</div>`;
     const isRelocation=event.definitionId==='transdimensional-relocation';
     if(isRelocation&&event.status==='drawn')prepareTransdimensionalRelocation(event);
+    const displayDescription=isRelocation&&event.status==='drawn'&&event.resolution?.playerOperativeIds?.length===2
+      ? `Two ${selectedPlayerTeamName('Player')} operatives were randomly selected to swap positions.`
+      : description;
     const eventHeader=`<div class="tomb-world-event-header"><span class="tomb-world-event-icon" aria-hidden="true"><svg
   class="tomb-world-event-anomaly-icon"
   viewBox="0 0 32 32"
@@ -3942,7 +3945,7 @@ document.addEventListener('touchend',function(e){
     const activeLabel=activeEffect?.expiresAfterTurningPoint!==undefined?'Resolved and active until the end of the Turning Point':'Resolved and active';
     const statusLabel=statusLabels[event.status]||escapeHtml(event.status).toUpperCase();
     const resolvedHeadingId=isRelocation&&event.status==='resolved'?' id="resolved-transdimensional-relocation-heading"':'';
-    const eventDetails=`${eventHeader}<div class="tomb-world-event-heading"><h3 class="tomb-world-event-title"${resolvedHeadingId}>${escapeHtml(presentSideTerminology(title))}</h3><span class="strategy-event-status" data-event-status="${escapeHtml(event.status)}"${activeEffect?` data-event-active="true" aria-label="${activeLabel}"`:''}>${statusLabel}</span></div><div class="tomb-world-event-effect"><div class="tomb-world-event-effect-label">Effect</div><p class="tomb-world-event-description">${escapeHtml(presentSideTerminology(description))}</p></div>`;
+    const eventDetails=`${eventHeader}<div class="tomb-world-event-heading"><h3 class="tomb-world-event-title"${resolvedHeadingId}>${escapeHtml(presentSideTerminology(title))}</h3><span class="strategy-event-status" data-event-status="${escapeHtml(event.status)}"${activeEffect?` data-event-active="true" aria-label="${activeLabel}"`:''}>${statusLabel}</span></div><div class="tomb-world-event-effect"><div class="tomb-world-event-effect-label">Effect</div><p class="tomb-world-event-description">${escapeHtml(presentSideTerminology(displayDescription))}</p></div>`;
     if(event.status!=='drawn'){
       const cardStatusClass=event.status==='redrawn'?' tomb-world-event-card--redrawn':'';
       return `<div class="summary-box strategy-event tomb-world-event-card${cardStatusClass}" aria-live="polite">${eventDetails}<div class="event-resolution">${escapeHtml(presentSideTerminology(event.result||'Complete'))}</div></div>`;

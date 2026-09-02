@@ -209,7 +209,7 @@ def test_resolution_is_once_per_turning_point_and_restores_or_creates_once():
 
 
 def test_release_and_save_compatibility_surfaces():
-    expected_release = ".".join(("9", "2", "31"))
+    expected_release = ".".join(("9", "2", "32"))
     assert CURRENT_APP_VERSION == expected_release
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
@@ -220,4 +220,4 @@ def test_release_and_save_compatibility_surfaces():
     assert "const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;" in WORKER
     assert "const SAVE_VERSION = 3;" in PERSISTENCE
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
-    assert not re.search(r"9\.2\.30", "\n".join((APP, INDEX, WORKER)))
+    assert not re.search(r"9\.2\.31", "\n".join((APP, INDEX, WORKER)))
