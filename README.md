@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.30
+# Tomb World Battle Guide v9.2.31
+
+## v9.2.31
+
+**Version 9.2.31**
+
+- Restricted A Ceaseless Scuttling to battles that actually have access to the Macrocyte Warrior rule.
+- In Solo, the Guide now decides to use the gambit when eligible and asks the Player only to resolve the physical setup.
+- Preserved the optional tactical decision for the Necron player in PvP.
 
 ## v9.2.30
 
