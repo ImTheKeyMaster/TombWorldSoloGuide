@@ -98,7 +98,8 @@ class Stage8DeadlyEncountersTests(unittest.TestCase):
 
     def test_pvp_setup_cannot_enable_deadly_encounters(self):
         self.assertIn("const deadlyOption=isPvpMode()?", APP)
-        self.assertIn("is available in Solo battles only", APP)
+        self.assertIn("Deadly Encounters: Tomb Worlds (Solo battles only)", APP)
+        self.assertNotIn('id="deadlyEncountersEnabled"', APP.split("const deadlyOption=isPvpMode()?", 1)[1].split(": `<label", 1)[0])
         self.assertIn("if(isPvpMode())return;state.deadlyEncountersEnabled=e.target.checked", APP)
 
     def test_restless_tomb_remains_available_in_both_modes(self):

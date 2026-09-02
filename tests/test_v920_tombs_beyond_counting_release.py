@@ -64,7 +64,7 @@ def test_setup_copy_has_no_inventory_questions_and_preserves_independent_options
     assert "Other Optional Rules" in options
     assert "Restless Tomb" in options
     assert "Deadly Encounters: Tomb Worlds" in options
-    assert "available in Solo battles only" in options
+    assert "Deadly Encounters: Tomb Worlds (Solo battles only)" in options
     forbidden = ("which models", "models you own", "how many flayed", "own a hexmark", "own a royal warden")
     assert not any(text in APP.lower() for text in forbidden)
 

@@ -75,8 +75,8 @@ class RemediationPr1Tests(unittest.TestCase):
         self.assertRegex(self.app, r"const allChecked=checks\.length>0&&checks\.every\(check=>state\.setupChecks\[check\.id\]\)")
 
     def test_roster_scope_and_turning_point_one_baseline(self):
-        self.assertIn("Build a legal kill team using its current official rules", self.app)
-        self.assertIn("Cooperative team splitting is not currently supported", self.app)
+        self.assertNotIn("Build a legal kill team using its current official rules", self.app)
+        self.assertNotIn("Cooperative team splitting is not currently supported", self.app)
         self.assertIn("state.turningPoint=0", self.app)
         self.assertIn("state.turningPoint++;", self.app)
         self.assertIn("if(state.turningPoint===1||state.threat===0)", self.app)
