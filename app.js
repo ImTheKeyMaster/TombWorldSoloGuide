@@ -4113,8 +4113,14 @@ document.addEventListener('touchend',function(e){
     const loadoutHtml=isPvpMode()
       ? `<div class="field"><label for="scuttlingLoadout">Loadout</label><select id="scuttlingLoadout">${definition.loadoutOptions.map(option=>`<option value="${escapeHtml(option.id)}">${escapeHtml(option.name)}</option>`).join('')}</select></div>`
       : `<div class="summary-box"><strong>New Canoptek Macrocyte Warrior</strong><br>${escapeHtml(definition.loadoutOptions.find(option=>option.id===soloWeaponId).name)}</div>`;
-    showModal('A Ceaseless Scuttling',`<p>${isPvpMode()?'Select a supported loadout for the new operative instance, then ':''}Confirm a valid setup wholly within the NPO drop zone.</p>${loadoutHtml}<label class="check-row"><input id="scuttlingPlacement" type="checkbox"><span>Valid NPO drop-zone setup location confirmed</span></label><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmScuttling" disabled>Confirm Setup</button></div>`);
+    const noLegalSetupAction=isPvpMode()?'':'<button class="btn secondary big-action" id="scuttlingNoLegalSetup">No Legal Setup Location</button>';
+    showModal('A Ceaseless Scuttling',`<p>${isPvpMode()?'Select a supported loadout for the new operative instance, then ':''}Confirm a valid setup wholly within the NPO drop zone.</p>${loadoutHtml}<label class="check-row"><input id="scuttlingPlacement" type="checkbox"><span>Valid NPO drop-zone setup location confirmed</span></label>${noLegalSetupAction}<div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmScuttling" disabled>Confirm Setup</button></div>`);
     $('#scuttlingPlacement').onchange=()=>{$('#confirmScuttling').disabled=!$('#scuttlingPlacement').checked;};
+    $('#scuttlingNoLegalSetup')?.addEventListener('click',()=>{
+      state.strategyData.ceaselessScuttlingTurningPoint=state.turningPoint;
+      log('A Ceaseless Scuttling could not set up a Macrocyte Warrior because no legal NPO drop-zone location was available.');
+      save();closeModal();render();
+    });
     $('#confirmScuttling').onclick=()=>{
       const warrior=createCeaselessScuttlingWarrior(isPvpMode()?$('#scuttlingLoadout').value:soloWeaponId);
       if(!warrior)return;

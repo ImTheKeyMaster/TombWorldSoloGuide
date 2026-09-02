@@ -178,6 +178,19 @@ def test_solo_uses_generation_policy_and_only_requests_physical_input():
     assert "createCeaselessScuttlingWarrior(isPvpMode()?$('#scuttlingLoadout').value:soloWeaponId)" in modal
 
 
+def test_solo_can_report_that_no_legal_setup_location_exists():
+    modal = function_source("showCeaselessScuttling")
+
+    assert "isPvpMode()?'':'<button" in modal
+    assert "No Legal Setup Location" in modal
+    assert "$('#scuttlingNoLegalSetup')?.addEventListener" in modal
+    assert "state.strategyData.ceaselessScuttlingTurningPoint=state.turningPoint" in modal
+    assert "no legal NPO drop-zone location was available" in modal
+    no_setup_handler = modal.split("$('#scuttlingNoLegalSetup')", 1)[1].split("});", 1)[0]
+    assert "createCeaselessScuttlingWarrior" not in no_setup_handler
+    assert "save();closeModal();render();" in no_setup_handler
+
+
 def test_resolution_is_once_per_turning_point_and_restores_or_creates_once():
     create_scuttling = function_source("createCeaselessScuttlingWarrior")
     modal = function_source("showCeaselessScuttling")
