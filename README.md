@@ -6,6 +6,20 @@
 
 - Kept Transdimensional Relocation's team-aware random-selection summary visible after the event is resolved.
 
+## Project Status and Contributions
+
+Tomb World Battle Guide is a personal, independently maintained project.
+
+Suggestions, bug reports, and gameplay feedback are welcome through GitHub Issues. External code contributions and pull requests are not generally accepted. Development decisions and all changes incorporated into the official version are made by the project owner.
+
+The repository is public for transparency, hosting, and community visibility. Public availability of the source does not make the project community-maintained.
+
+## Source and License
+
+The source code for Tomb World Battle Guide is publicly viewable on GitHub. No open-source license is currently granted for the project's original code.
+
+Games Workshop, Warhammer, Kill Team, and related names, rules, imagery, and other intellectual property remain the property of their respective rights holders. This unofficial fan-made play aid is not affiliated with or endorsed by Games Workshop.
+
 ## v9.2.32
 
 **Version 9.2.32**
@@ -2107,7 +2121,7 @@ The service-worker cache prefix is `tomb-world-battle-guide-`. During activation
 
 ## Important
 
-This is an unofficial play aid. Use the official Kill Team and Tomb World publications for authoritative rules, mission wording, terrain placement, and datacards.
+Use the official Kill Team and Tomb World publications for authoritative rules, mission wording, terrain placement, and datacards.
 
 
 ## v1.1.6
