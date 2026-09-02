@@ -48,16 +48,40 @@ def test_solo_deadly_encounters_checkbox_and_state_contract_remain():
     assert "function deadlyEncountersActive(){return !isPvpMode()&&state.deadlyEncountersEnabled===true;}" in APP
 
 
-def test_pvp_deadly_encounters_is_muted_noninteractive_information():
-    expected = '<div class="check-row deadly-encounters-option pvp-unavailable-option"><span><strong>Deadly Encounters: Tomb Worlds (Solo battles only)</strong></span></div>'
-    assert expected in SETUP
+def test_pvp_optional_content_omits_deadly_encounters_entirely():
+    assert "const deadlyOption=isPvpMode()?''" in SETUP
     assert "Deadly Encounters: Tomb Worlds is available in Solo battles only." not in SETUP
     pvp_markup = SETUP[SETUP.index("const deadlyOption=isPvpMode()?") : SETUP.index(": `<label class=\"check-row deadly-encounters-option\"")]
     assert "<input" not in pvp_markup
     assert "<label" not in pvp_markup
     assert "tabindex" not in pvp_markup
-    assert ".pvp-unavailable-option{color:var(--muted)}" in STYLES
+    assert "pvp-unavailable-option" not in STYLES
     assert ".section-note" not in STYLES
+
+
+def test_pvp_mission_briefing_help_and_game_menu_omit_deadly_encounters():
+    assert "const deadlyBriefing=isPvpMode()?'':`<section" in SETUP
+    assert "</section>${deadlyBriefing}<small class=\"optional-rules-instruction\">" in SETUP
+    assert "${isPvpMode()?'':'<details><summary>Deadly Encounters: Tomb Worlds</summary>" in APP
+    assert "if(isPvpMode())return;\n    const de=state.deadlyEncountersState" in APP
+    assert "${deadlyEncountersActive()?'<button class=\"btn secondary\" id=\"menuDeadlyEncounters\">Deadly Encounters</button>':''}" in APP
+
+
+def test_pvp_stale_enabled_state_remains_inactive_without_state_rewrite():
+    assert "function deadlyEncountersActive(){return !isPvpMode()&&state.deadlyEncountersEnabled===true;}" in APP
+    assert "function deadlyEncountersStatusLabel(){return deadlyEncountersActive()?'On':'Off';}" in APP
+    assert "merged.deadlyEncountersEnabled=raw.deadlyEncountersEnabled===true;" in APP
+    assert "state.deadlyEncountersEnabled=false" not in SETUP
+
+
+def test_shared_optional_rules_remain_available_in_both_modes():
+    assert 'id="restlessTombEnabled" type="checkbox"' in SETUP
+    assert 'name="tombWorldVariant"' in SETUP
+    assert "isPvpMode()?'':`<label class=\"check-row restless-tomb-option" not in SETUP
+
+
+def test_release_note_describes_complete_pvp_removal():
+    assert "Removed Solo-only Deadly Encounters references from PvP screens." in README
 
 
 def test_release_version_cache_and_save_compatibility():

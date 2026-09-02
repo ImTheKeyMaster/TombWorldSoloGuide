@@ -6,7 +6,7 @@
 
 - Reduced unnecessary instructional text in roster and optional-content setup.
 - Simplified the Games Workshop mission-map source label.
-- Improved the PvP presentation of the Solo-only Deadly Encounters option.
+- Removed Solo-only Deadly Encounters references from PvP screens.
 
 ## v9.2.27
 
