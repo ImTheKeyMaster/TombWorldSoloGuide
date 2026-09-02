@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.26';
+  const APP_VERSION = '9.2.27';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2634,6 +2634,41 @@ document.addEventListener('touchend',function(e){
     return true;
   }
 
+  function startingNpoDeploymentComplete(generation=state.startingNpoGeneration){
+    const deployedIds=generation?.deployedNpoIds||[],deployedIdSet=new Set(deployedIds);
+    const reserveIdSet=new Set(generation?.reserveNpoIds||[]);
+    return deployedIds.length>0&&deployedIdSet.size===deployedIds.length
+      &&deployedIds.every(id=>!reserveIdSet.has(id)&&state.roster.some(npo=>npo.id===id&&npo.deployed&&npo.battlefieldState==='deployed'));
+  }
+
+  function setStartingNposDeployed(deployed){
+    const generation=state.startingNpoGeneration;
+    if(!generation)return false;
+    const selected=new Set(generation.deployedNpoIds||[]);
+    if(deployed&&!state.variantState.crownworldFirstCrawlerConsumed){
+      const crawler=state.roster.find(npo=>selected.has(npo.id)&&npo.type===TOMB_CRAWLER_TYPE);
+      if(crawler){
+        const pair=setupCrownworldCrawlerPair(crawler,`crownworld:starting:${crawler.id}`);
+        if(pair.blocked){
+          state.setupChecks['starting-npos']=false;
+          showToast('The Royal Warden and Lychguard pair requires two available NPO battlefield slots.');
+          return false;
+        }
+        if(pair.replaced){
+          selected.delete(crawler.id);
+          pair.npos.forEach(npo=>selected.add(npo.id));
+          generation.deployedNpoIds=[...selected];
+        }
+      }
+    }
+    state.roster.filter(npo=>selected.has(npo.id)).forEach(npo=>{
+      npo.deployed=deployed;
+      npo.battlefieldState=deployed?'deployed':'reserve';
+    });
+    state.setupChecks['starting-npos']=Boolean(deployed);
+    return true;
+  }
+
   function generateRoster(generation){
     const m=mission(),count=MAX_NPOS,formula=generation.calculation;
     const previousRoster=state.roster;
@@ -3075,13 +3110,12 @@ document.addEventListener('touchend',function(e){
       const placementChecks=missionSetupChecks('deploy');
       const deploymentCheck=placementChecks.find(check=>check.id==='starting-npos');
       const otherPlacementChecks=placementChecks.filter(check=>check.id!=='starting-npos');
-      const deploymentInstruction=`Deploy the ${generation.deploymentCount} selected starting ${opponentPluralLabel()}.`;
+      const deploymentInstruction=`Deploy the ${generation.deployedNpoIds.length} selected starting ${opponentPluralLabel()}.`;
       const deployedNpoRoster=inlineOperativeList(sortedNposForDisplay(generation.deployedNpoIds.map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean)).map(npo=>escapeHtml(npoName(npo))));
       const playerRoster=inlineOperativeList((state.playerRoster||[]).map(id=>escapeHtml(playerName(id))));
       const playerRosterHtml=playerRoster?`<span class="deployment-roster">${playerRoster}</span>`:'';
       const deploymentDetails=presentSideTerminology(mission().startingNpos?.deployment||'Use the mission deployment rules.');
-      const selectionComplete=generation.deployedNpoIds.length===generation.deploymentCount&&generation.deployedNpoIds.length+generation.reserveNpoIds.length===generation.availableNpos;
-      const allNposPlaced=selectionComplete&&generation.deployedNpoIds.every(id=>state.roster.find(npo=>npo.id===id)?.deployed);
+      const allNposPlaced=startingNpoDeploymentComplete(generation);
       const deploymentRow=hasStartingNpos&&deploymentCheck?`<label class="check-row deployment-check"><input id="npoDeployed" type="checkbox" data-check="${escapeHtml(deploymentCheck.id)}" ${state.setupChecks[deploymentCheck.id]&&allNposPlaced?'checked':''}><span><strong>${deploymentInstruction}</strong><span class="deployment-roster">${deployedNpoRoster}</span><small>${escapeHtml(deploymentDetails)}</small></span></label>`:'';
       const requiredPlacementChecks=hasStartingNpos?placementChecks:otherPlacementChecks;
       const allPlacementChecked=requiredPlacementChecks.every(check=>state.setupChecks[check.id]);
@@ -3140,26 +3174,19 @@ document.addEventListener('touchend',function(e){
     $('#setupBack')?.addEventListener('click',()=>{if(stepId==='killzone'){clearPendingBoardSetupMissionIntro();TombWorldNarration.stop();}state.setupStep=Math.max(0,state.setupStep-1);save();render();});
     $('#setupNext')?.addEventListener('click',()=>advanceSetupStep(stepId));
     $$('[data-player-team]').forEach(button=>button.onclick=()=>selectPlayerTeam(button.dataset.playerTeam));
-    $$('[data-check]').forEach(c=>c.onchange=()=>{state.setupChecks[c.dataset.check]=c.checked;save();render();});
+    $$('[data-check]').filter(c=>c.id!=='npoDeployed').forEach(c=>c.onchange=()=>{state.setupChecks[c.dataset.check]=c.checked;save();render();});
     $('#checkAllSetup')?.addEventListener('click',()=>{missionSetupChecks('killzone').forEach(check=>{state.setupChecks[check.id]=true;});save();render();});
     $('#randomPlayerTeam')?.addEventListener('click',()=>{randomPlayerRoster();save();render();});
     if(stepId==='deploy')runStartingNpoGeneration();
     $('#npoDeployed')?.addEventListener('change',e=>{
-      let selected=new Set(state.startingNpoGeneration?.deployedNpoIds||[]);
-      if(e.target.checked&&!state.variantState.crownworldFirstCrawlerConsumed){
-        const crawler=state.roster.find(npo=>selected.has(npo.id)&&npo.type===TOMB_CRAWLER_TYPE);
-        if(crawler){
-          const pair=setupCrownworldCrawlerPair(crawler,`crownworld:starting:${crawler.id}`);
-          if(pair.blocked){showToast('The Royal Warden and Lychguard pair requires two available NPO battlefield slots.');e.target.checked=false;return;}
-          if(pair.replaced){selected.delete(crawler.id);pair.npos.forEach(npo=>selected.add(npo.id));state.startingNpoGeneration.deployedNpoIds=[...selected];}
-        }
-      }
-      state.roster.filter(n=>selected.has(n.id)).forEach(n=>{n.deployed=e.target.checked;n.battlefieldState=e.target.checked?'deployed':'reserve';});save();render();
+      setStartingNposDeployed(e.target.checked);
+      save();render();
     });
     $('#checkAllDeployment')?.addEventListener('click',()=>{
-      $$('.checklist input[type="checkbox"]:not(:disabled)').forEach(checkbox=>{
-        if(!checkbox.checked){checkbox.checked=true;checkbox.dispatchEvent(new Event('change',{bubbles:true}));}
-      });
+      missionSetupChecks('deploy').filter(check=>check.id!=='starting-npos').forEach(check=>{state.setupChecks[check.id]=true;});
+      setStartingNposDeployed(true);
+      if(playerRosterValidation().valid)state.playerDeployed=true;
+      save();render();
     });
     $$('[data-roster-category-toggle]').forEach(button=>button.addEventListener('click',()=>{
       const expanded=button.getAttribute('aria-expanded')==='true';
