@@ -27,8 +27,10 @@ class StrategyPhaseStepTests(unittest.TestCase):
     def test_02_actions_has_requested_checklist(self):
         body = function_body('strategyActionsStepHtml')
         for wording in ('Generate Command Points as required.', 'Play any Strategic Ploys.',
-                        'Resolve abilities and mission rules.', 'Review optional Strategic Gambits.'):
+                        'Resolve abilities and mission rules.', 'Review optional Strategic Gambits.',
+                        'Resolve applicable Strategic Gambits.'):
             self.assertIn(wording, body)
+        self.assertIn("isPvpMode()?'Review optional Strategic Gambits.':'Resolve applicable Strategic Gambits.'", body)
 
     def test_03_actions_excludes_events_and_reinforcements(self):
         body = function_body('strategyActionsStepHtml')

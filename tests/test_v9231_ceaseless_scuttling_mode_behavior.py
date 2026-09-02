@@ -54,6 +54,7 @@ def test_solo_only_shows_and_gates_an_eligible_pending_resolution():
     assert "${isPvpMode()?'Use':'Resolve'} A Ceaseless Scuttling" in actions
     assert "disabled:actionsBlocked" in actions
     assert "Resolve A Ceaseless Scuttling before continuing." in actions
+    assert "isPvpMode()?'Review optional Strategic Gambits.':'Resolve applicable Strategic Gambits.'" in actions
     assert "Decline" not in actions
     assert "Skip" not in actions
 
