@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.30';
+  const APP_VERSION = '9.2.31';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2080,10 +2080,32 @@ document.addEventListener('touchend',function(e){
     return Math.max(0,Math.round((durability+Number(definition.apl||0)+peakDamage/4)*10)/10);
   }
   function activeNpoThreat(){return activeNpos().reduce((total,npo)=>total+npoThreatRating(npo),0);}
-  function ceaselessScuttlingEligible(turningPoint=state.turningPoint,roster=state.roster){
+  function ceaselessScuttlingAvailable(roster=state.roster){
+    return roster.some(npo=>npo.type==='Canoptek Macrocyte Warrior');
+  }
+  function ceaselessScuttlingEligible(turningPoint=state.turningPoint,roster=state.roster,strategyData=state.strategyData){
     const living=roster.filter(npo=>npo.type==='Canoptek Macrocyte Warrior'&&npo.wounds>0).length;
     const deployed=roster.filter(npo=>npo.battlefieldState==='deployed'&&npo.wounds>0).length;
-    return turningPoint>1&&living<3&&deployed<MAX_NPOS;
+    return ceaselessScuttlingAvailable(roster)&&turningPoint>1&&living<3&&deployed<MAX_NPOS
+      &&strategyData?.ceaselessScuttlingTurningPoint!==turningPoint;
+  }
+  function ceaselessScuttlingUnavailableReason(turningPoint=state.turningPoint,roster=state.roster,strategyData=state.strategyData){
+    if(strategyData?.ceaselessScuttlingTurningPoint===turningPoint)return 'Unavailable: A Ceaseless Scuttling was already resolved this Turning Point.';
+    const living=roster.filter(npo=>npo.type==='Canoptek Macrocyte Warrior'&&npo.wounds>0).length;
+    if(living>=3)return `Unavailable: ${living} of 3 Macrocyte Warriors remain.`;
+    const deployed=roster.filter(npo=>npo.battlefieldState==='deployed'&&npo.wounds>0).length;
+    if(deployed>=MAX_NPOS)return `Unavailable: the battlefield already has the maximum ${MAX_NPOS} NPOs.`;
+    return '';
+  }
+  function ceaselessScuttlingSoloWeaponId(){
+    const definition=npoDefinition('Canoptek Macrocyte Warrior');
+    const saved=state.strategyData?.ceaselessScuttlingWeaponId;
+    if(definition.loadoutOptions.some(option=>option.id===saved))return saved;
+    const generatedResult=npoGenerationTable.find(result=>result.type===definition.type);
+    const weaponId=generatedWeaponId(generatedResult);
+    state.strategyData.ceaselessScuttlingWeaponId=weaponId;
+    save();
+    return weaponId;
   }
   function createCeaselessScuttlingWarrior(weaponId){
     if(!ceaselessScuttlingEligible())return null;
@@ -2097,6 +2119,7 @@ document.addEventListener('touchend',function(e){
     warrior.createdBy='a-ceaseless-scuttling';
     warrior.order='Conceal';
     if(!returned)state.roster.push(warrior);
+    state.strategyData.ceaselessScuttlingTurningPoint=state.turningPoint;
     log(`A Ceaseless Scuttling created ${npoName(warrior)} (${definition.loadoutOptions.find(option=>option.id===weaponId).name}) ready with a Conceal order in the NPO drop zone.`);
     return warrior;
   }
@@ -3701,7 +3724,9 @@ document.addEventListener('touchend',function(e){
     return Object.values(state.eventState.transactions||{}).some(transaction=>transaction?.type==='event-redraw'&&transaction.turningPoint===state.turningPoint&&!transaction.committed);
   }
 
-  function canLeaveStrategyActions(){return !missionStrategyPending();}
+  function soloCeaselessScuttlingPending(){return !isPvpMode()&&ceaselessScuttlingEligible();}
+
+  function canLeaveStrategyActions(){return !missionStrategyPending()&&!soloCeaselessScuttlingPending();}
 
   function canLeaveStrategyEvents(){
     const d=state.strategyData||{};
@@ -3748,11 +3773,16 @@ document.addEventListener('touchend',function(e){
 
   function strategyActionsStepHtml(d){
     const missionPending=missionStrategyPending();
+    const scuttlingPending=soloCeaselessScuttlingPending();
     const completeFromActions=strategyHasNoDownstreamWork();
-    const scuttlingEligible=ceaselessScuttlingEligible()&&d.ceaselessScuttlingTurningPoint!==state.turningPoint;
-    const scuttlingCard=state.turningPoint>1?`<section class="card reinforcement-card"><p class="eyebrow">STRATEGIC GAMBIT</p><h3>A Ceaseless Scuttling</h3><p>${scuttlingEligible?'Fewer than three Macrocyte Warriors remain. You may reuse an incapacitated miniature to set up a new operative instance.':'Unavailable: three Warriors remain, or this gambit was already resolved this turning point.'}</p><button class="btn secondary" id="ceaselessScuttling" ${scuttlingEligible?'':'disabled'}>Use A Ceaseless Scuttling</button></section>`:'';
+    const scuttlingAvailable=ceaselessScuttlingAvailable();
+    const scuttlingEligible=ceaselessScuttlingEligible();
+    const scuttlingCard=state.turningPoint>1&&scuttlingAvailable&&(isPvpMode()||scuttlingEligible)
+      ? `<section class="card reinforcement-card"><p class="eyebrow">STRATEGIC GAMBIT</p><h3>A Ceaseless Scuttling</h3><p>${scuttlingEligible?(isPvpMode()?'Fewer than three Macrocyte Warriors remain. You may reuse an incapacitated miniature to set up a new operative instance.':'Fewer than three Macrocyte Warriors remain. The tomb sets up another Macrocyte Warrior ready with a Conceal order wholly within the NPO drop zone.'):escapeHtml(ceaselessScuttlingUnavailableReason())}</p><button class="btn secondary" id="ceaselessScuttling" ${scuttlingEligible?'':'disabled'}>${isPvpMode()?'Use':'Resolve'} A Ceaseless Scuttling</button></section>`:'';
     const actionsHtml=`${missionStrategyPromptHtml()}${factionGuidanceHtml('gambits')}${scuttlingCard}`;
-    return `${completeFromActions?'':strategyProgressHtml('actions')}<h2 id="strategy-step-heading">Resolve Strategy Phase Actions</h2><div class="strategy-phase-guide"><h3>Strategy Phase Checklist</h3><ol><li>Generate Command Points as required.</li><li>Play any Strategic Ploys.</li><li>Resolve abilities and mission rules.</li><li>Review optional Strategic Gambits.</li></ol></div>${actionsHtml||'<p class="strategy-empty-message">No additional guided Strategy Phase actions are required.</p>'}${strategyNavigationHtml({continueId:completeFromActions?'completeStrategyFromActions':'continueStrategyEvents',continueLabel:completeFromActions?'Strategy Phase Complete':'Continue to Tomb World Events',disabled:missionPending,disabledReason:missionPending?'Resolve the mandatory mission Strategy Phase rule before continuing.':''})}`;
+    const actionsBlocked=missionPending||scuttlingPending;
+    const blockedReason=missionPending?'Resolve the mandatory mission Strategy Phase rule before continuing.':scuttlingPending?'Resolve A Ceaseless Scuttling before continuing.':'';
+    return `${completeFromActions?'':strategyProgressHtml('actions')}<h2 id="strategy-step-heading">Resolve Strategy Phase Actions</h2><div class="strategy-phase-guide"><h3>Strategy Phase Checklist</h3><ol><li>Generate Command Points as required.</li><li>Play any Strategic Ploys.</li><li>Resolve abilities and mission rules.</li><li>Review optional Strategic Gambits.</li></ol></div>${actionsHtml||'<p class="strategy-empty-message">No additional guided Strategy Phase actions are required.</p>'}${strategyNavigationHtml({continueId:completeFromActions?'completeStrategyFromActions':'continueStrategyEvents',continueLabel:completeFromActions?'Strategy Phase Complete':'Continue to Tomb World Events',disabled:actionsBlocked,disabledReason:blockedReason})}`;
   }
 
   function strategyEventsStepHtml(d){
@@ -4077,12 +4107,16 @@ document.addEventListener('touchend',function(e){
 
   function showCeaselessScuttling(){
     if(!ceaselessScuttlingEligible())return;
-    showModal('A Ceaseless Scuttling',`<p>Select a supported loadout for the new operative instance, then confirm a valid setup wholly within the NPO drop zone.</p><div class="field"><label for="scuttlingLoadout">Loadout</label><select id="scuttlingLoadout"><option value="gauss-scalpel">Gauss scalpel and claws &amp; tail</option><option value="tesla-caster">Tesla caster and claws &amp; tail</option></select></div><label class="check-row"><input id="scuttlingPlacement" type="checkbox"><span>Valid NPO drop-zone setup location confirmed</span></label><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmScuttling" disabled>Create New Warrior</button></div>`);
+    const definition=npoDefinition('Canoptek Macrocyte Warrior');
+    const soloWeaponId=isPvpMode()?null:ceaselessScuttlingSoloWeaponId();
+    const loadoutHtml=isPvpMode()
+      ? `<div class="field"><label for="scuttlingLoadout">Loadout</label><select id="scuttlingLoadout">${definition.loadoutOptions.map(option=>`<option value="${escapeHtml(option.id)}">${escapeHtml(option.name)}</option>`).join('')}</select></div>`
+      : `<div class="summary-box"><strong>New Canoptek Macrocyte Warrior</strong><br>${escapeHtml(definition.loadoutOptions.find(option=>option.id===soloWeaponId).name)}</div>`;
+    showModal('A Ceaseless Scuttling',`<p>${isPvpMode()?'Select a supported loadout for the new operative instance, then ':''}Confirm a valid setup wholly within the NPO drop zone.</p>${loadoutHtml}<label class="check-row"><input id="scuttlingPlacement" type="checkbox"><span>Valid NPO drop-zone setup location confirmed</span></label><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn primary" id="confirmScuttling" disabled>Confirm Setup</button></div>`);
     $('#scuttlingPlacement').onchange=()=>{$('#confirmScuttling').disabled=!$('#scuttlingPlacement').checked;};
     $('#confirmScuttling').onclick=()=>{
-      const warrior=createCeaselessScuttlingWarrior($('#scuttlingLoadout').value);
+      const warrior=createCeaselessScuttlingWarrior(isPvpMode()?$('#scuttlingLoadout').value:soloWeaponId);
       if(!warrior)return;
-      state.strategyData.ceaselessScuttlingTurningPoint=state.turningPoint;
       state.activationHistory.unshift({side:'npo',label:npoName(warrior),action:'A Ceaseless Scuttling',loadout:warrior.weaponId,turningPoint:state.turningPoint,instanceId:warrior.id});
       save();closeModal();render();
     };

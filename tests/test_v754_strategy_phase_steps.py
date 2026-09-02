@@ -36,12 +36,14 @@ class StrategyPhaseStepTests(unittest.TestCase):
         self.assertNotIn('data-reinforcement-placement', body)
 
     def test_04_mandatory_mission_blocks_actions(self):
-        self.assertIn('return !missionStrategyPending()', function_body('canLeaveStrategyActions'))
+        self.assertIn('!missionStrategyPending()', function_body('canLeaveStrategyActions'))
 
-    def test_05_optional_gambits_do_not_block_actions(self):
+    def test_05_solo_mandatory_gambit_blocks_actions_but_pvp_choice_does_not(self):
         body = function_body('canLeaveStrategyActions')
-        self.assertNotIn('ceaseless', body.lower())
-        self.assertNotIn('gambit', body.lower())
+        self.assertIn('!soloCeaselessScuttlingPending()', body)
+        pending = function_body('soloCeaselessScuttlingPending')
+        self.assertIn('!isPvpMode()', pending)
+        self.assertIn('ceaselessScuttlingEligible()', pending)
 
     def test_06_continue_moves_to_events(self):
         self.assertIn("showStrategyViewStep('events','actions')", function_body('bindPlay'))
