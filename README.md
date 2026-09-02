@@ -1,4 +1,10 @@
-# Tomb World Battle Guide v9.2.31
+# Tomb World Battle Guide v9.2.32
+
+## v9.2.32
+
+**Version 9.2.32**
+
+- Clarified Transdimensional Relocation so the event identifies that the Guide already randomly selected two operatives, using the active Kill Team name.
 
 ## v9.2.31
 
