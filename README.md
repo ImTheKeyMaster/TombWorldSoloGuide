@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.27
+# Tomb World Battle Guide v9.2.28
+
+## v9.2.28
+
+**Version 9.2.28**
+
+- Reduced unnecessary instructional text in roster and optional-content setup.
+- Simplified the Games Workshop mission-map source label.
+- Improved the PvP presentation of the Solo-only Deadly Encounters option.
 
 ## v9.2.27
 

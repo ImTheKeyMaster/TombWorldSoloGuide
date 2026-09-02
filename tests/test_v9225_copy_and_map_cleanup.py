@@ -62,7 +62,7 @@ def test_shared_official_map_renderer_removes_only_the_file_path_caption():
     assert '<figure class="official-map-card">' in MAP_RENDERER
     assert "OFFICIAL MISSION MAP" in MAP_RENDERER
     assert "${escapeHtml(currentMission.number)} · ${escapeHtml(currentMission.name)}" in MAP_RENDERER
-    assert "Extracted from the included Games Workshop mission-pack PDF" in MAP_RENDERER
+    assert "Extracted from the Games Workshop mission-pack PDF" in MAP_RENDERER
     assert '<img class="official-map-image"' in MAP_RENDERER
     assert 'alt="Official board layout for ${escapeHtml(currentMission.name)}"' in MAP_RENDERER
     assert ".official-map-card figcaption" not in STYLES
