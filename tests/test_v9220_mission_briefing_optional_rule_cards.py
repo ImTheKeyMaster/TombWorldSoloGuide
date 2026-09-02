@@ -18,18 +18,19 @@ def ready_briefing_source():
     return APP[start:end]
 
 
-def test_optional_settings_use_three_shared_mission_rule_cards():
+def test_optional_settings_use_shared_mission_rule_cards():
     briefing = ready_briefing_source()
     optional = briefing[briefing.index("optional-rules-summary") :]
 
     assert "Optional Rules &amp; Expansions" in optional
-    assert optional.count('<section class="mission-rule"') == 3
+    assert optional.count('<section class="mission-rule"') == 2
+    assert "const deadlyBriefing=isPvpMode()?'':`<section" in briefing
     assert 'id="briefing-variant-title"' in optional
     assert '>Restless Tomb</strong>' in optional
-    assert '>Deadly Encounters</strong>' in optional
+    assert '>Deadly Encounters</strong>' in briefing
     assert '<p><strong>Tomb World Variant:</strong>' not in optional
     assert '<p><strong>Restless Tomb:</strong>' not in optional
-    assert '<p><strong>Deadly Encounters:</strong>' not in optional
+    assert '<p><strong>Deadly Encounters:</strong>' not in briefing
     assert ".mission-rule{padding:13px 14px;border:1px solid var(--line);border-radius:12px" in CSS
 
 
@@ -50,8 +51,8 @@ def test_optional_card_statuses_derive_from_existing_authoritative_state():
     assert "${state.restlessTombEnabled?'On':'Off'}" in briefing
     assert ">House Rule</small>" in briefing
     assert "state.deadlyEncountersEnabled?'Enabled':'Disabled'" in briefing
-    assert "isPvpMode()?'Disabled<br>" in briefing
-    assert "Solo battles only" in briefing
+    assert "const deadlyBriefing=isPvpMode()?'':" in briefing
+    assert "Solo battles only" not in briefing
     assert "Official Expansion<br>White Dwarf 521" in briefing
 
 
@@ -59,7 +60,7 @@ def test_instruction_remains_after_all_three_cards():
     briefing = ready_briefing_source()
     instruction = "Go Back to Optional Rules &amp; Expansions to change these settings before beginning the battle."
 
-    assert briefing.index(instruction) > briefing.index('id="briefing-deadly-encounters-title"')
+    assert "${deadlyBriefing}<small class=\"optional-rules-instruction\">" in briefing
     assert 'class="optional-rules-instruction"' in briefing
     assert ".optional-rules-instruction{display:block;margin-top:12px;color:var(--muted)" in CSS
 

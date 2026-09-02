@@ -1443,7 +1443,6 @@ button.tracker-operative:hover{
 }
 
 .optional-rules{display:grid;gap:12px}
-.pvp-unavailable-option{color:var(--muted)}
 .optional-rules h4{margin-bottom:0}
 .variant-selector{min-width:0;margin:22px 0;padding:0;border:0}
 .variant-selector legend,.other-optional-rules h4{font-size:1rem;font-weight:850}
