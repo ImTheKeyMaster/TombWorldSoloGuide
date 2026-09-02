@@ -56,7 +56,8 @@ def test_pvp_deadly_encounters_is_muted_noninteractive_information():
     assert "<input" not in pvp_markup
     assert "<label" not in pvp_markup
     assert "tabindex" not in pvp_markup
-    assert ".pvp-unavailable-option{color:var(--muted);opacity:.6}" in STYLES
+    assert ".pvp-unavailable-option{color:var(--muted)}" in STYLES
+    assert ".section-note" not in STYLES
 
 
 def test_release_version_cache_and_save_compatibility():
