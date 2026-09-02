@@ -1,4 +1,10 @@
-# Tomb World Battle Guide v9.2.32
+# Tomb World Battle Guide v9.2.33
+
+## v9.2.33
+
+**Version 9.2.33**
+
+- Kept Transdimensional Relocation's team-aware random-selection summary visible after the event is resolved.
 
 ## v9.2.32
 
