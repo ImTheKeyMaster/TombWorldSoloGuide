@@ -1,4 +1,10 @@
-# Tomb World Battle Guide v9.2.28
+# Tomb World Battle Guide v9.2.29
+
+## v9.2.29
+
+**Version 9.2.29**
+
+- Fixed Deploy Kill Teams so battles with no starting NPOs can complete deployment normally.
 
 ## v9.2.28
 

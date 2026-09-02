@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.28';
+  const APP_VERSION = '9.2.29';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3123,12 +3123,13 @@ document.addEventListener('touchend',function(e){
       const playerRosterHtml=playerRoster?`<span class="deployment-roster">${playerRoster}</span>`:'';
       const deploymentDetails=presentSideTerminology(mission().startingNpos?.deployment||'Use the mission deployment rules.');
       const allNposPlaced=startingNpoDeploymentComplete(generation);
+      const npoDeploymentSatisfied=!hasStartingNpos||allNposPlaced;
       const deploymentRow=hasStartingNpos&&deploymentCheck?`<label class="check-row deployment-check"><input id="npoDeployed" type="checkbox" data-check="${escapeHtml(deploymentCheck.id)}" ${state.setupChecks[deploymentCheck.id]&&allNposPlaced?'checked':''}><span><strong>${deploymentInstruction}</strong><span class="deployment-roster">${deployedNpoRoster}</span><small>${escapeHtml(deploymentDetails)}</small></span></label>`:'';
       const requiredPlacementChecks=hasStartingNpos?placementChecks:otherPlacementChecks;
       const allPlacementChecked=requiredPlacementChecks.every(check=>state.setupChecks[check.id]);
       const {minRoster,maxRoster}=playerRosterLimits();
       const playerValid=playerRosterValidation().valid;
-      return `<h3>Deploy Kill Teams</h3><p>Place the generated ${escapeHtml(opponentSingularLabel())} roster and selected ${escapeHtml(playerSideLabel())} roster, then confirm every mission deployment requirement.</p>${missionRoll}${factionGuidanceHtml()}${hasStartingNpos?`<div class="setup-bulk-row"><button class="btn secondary" id="checkAllDeployment" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'disabled':''}>Check All</button></div>`:''}<div class="checklist deployment-checklist">${deploymentRow}${setupChecklistHtml(otherPlacementChecks)}<label class="check-row deployment-check"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${playerValid?'':'disabled'}><span><strong>Deploy ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||(isPvpMode()?'Kill Team':'Player'))} Kill Team</strong>${playerRosterHtml}<small>All selected ${escapeHtml(playerSideLabel())} operatives are on the battlefield.</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked?'':'disabled'}>Deployment Complete</button></div>`;
+      return `<h3>Deploy Kill Teams</h3><p>Place the generated ${escapeHtml(opponentSingularLabel())} roster and selected ${escapeHtml(playerSideLabel())} roster, then confirm every mission deployment requirement.</p>${missionRoll}${factionGuidanceHtml()}${hasStartingNpos?`<div class="setup-bulk-row"><button class="btn secondary" id="checkAllDeployment" ${playerValid&&state.playerDeployed&&npoDeploymentSatisfied&&allPlacementChecked?'disabled':''}>Check All</button></div>`:''}<div class="checklist deployment-checklist">${deploymentRow}${setupChecklistHtml(otherPlacementChecks)}<label class="check-row deployment-check"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${playerValid?'':'disabled'}><span><strong>Deploy ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||(isPvpMode()?'Kill Team':'Player'))} Kill Team</strong>${playerRosterHtml}<small>All selected ${escapeHtml(playerSideLabel())} operatives are on the battlefield.</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${playerValid&&state.playerDeployed&&npoDeploymentSatisfied&&allPlacementChecked?'':'disabled'}>Deployment Complete</button></div>`;
     }
     const m=mission();
     const rules=(m.rules||[]).map(rule=>`<div class="mission-rule"><strong>${escapeHtml(presentSideTerminology(rule.name||'Special Rule'))}</strong>${rule.timing?`<small>${escapeHtml(presentSideTerminology(rule.timing))}</small>`:''}<p>${escapeHtml(presentSideTerminology(rule.summary||''))}</p></div>`).join('');
