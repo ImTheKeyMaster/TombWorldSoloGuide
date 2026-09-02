@@ -1,4 +1,6 @@
+import json
 import re
+import subprocess
 from pathlib import Path
 
 from versioning import CURRENT_APP_VERSION
@@ -18,6 +20,29 @@ def function_source(name):
     return APP[start : next_function if next_function >= 0 else len(APP)]
 
 
+def ceaseless_result(roster, turning_point=2, resolved_turning_point=None):
+    strategy_data = {}
+    if resolved_turning_point is not None:
+        strategy_data["ceaselessScuttlingTurningPoint"] = resolved_turning_point
+    script = "\n".join(
+        (
+            "const MAX_NPOS=10;",
+            f"const state={{turningPoint:{turning_point},roster:{json.dumps(roster)},strategyData:{json.dumps(strategy_data)}}};",
+            function_source("ceaselessScuttlingAvailable").strip(),
+            function_source("ceaselessScuttlingEligible").strip(),
+            function_source("ceaselessScuttlingUnavailableReason").strip(),
+            "console.log(JSON.stringify({available:ceaselessScuttlingAvailable(),eligible:ceaselessScuttlingEligible(),reason:ceaselessScuttlingUnavailableReason()}));",
+        )
+    )
+    completed = subprocess.run(
+        ["node", "-e", script],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return json.loads(completed.stdout)
+
+
 def test_rule_availability_is_distinct_and_follows_the_complete_battle_roster():
     available = function_source("ceaselessScuttlingAvailable")
     eligible = function_source("ceaselessScuttlingEligible")
@@ -29,6 +54,73 @@ def test_rule_availability_is_distinct_and_follows_the_complete_battle_roster():
     assert "living<3" in eligible
     assert "deployed<MAX_NPOS" in eligible
     assert "ceaselessScuttlingTurningPoint!==turningPoint" in eligible
+
+
+def test_rule_availability_runtime_covers_every_roster_lifecycle_state():
+    assert ceaseless_result([]) == {"available": False, "eligible": False, "reason": ""}
+
+    for battlefield_state, wounds in (
+        ("deployed", 7),
+        ("reserve", 7),
+        ("out-of-action", 0),
+    ):
+        result = ceaseless_result(
+            [
+                {
+                    "type": "Canoptek Macrocyte Warrior",
+                    "battlefieldState": battlefield_state,
+                    "wounds": wounds,
+                }
+            ]
+        )
+        assert result["available"] is True
+        assert result["eligible"] is True
+
+
+def test_rule_eligibility_runtime_reports_exact_temporary_blockers():
+    three_warriors = [
+        {
+            "type": "Canoptek Macrocyte Warrior",
+            "battlefieldState": "deployed",
+            "wounds": 7,
+        }
+        for _ in range(3)
+    ]
+    assert ceaseless_result(three_warriors) == {
+        "available": True,
+        "eligible": False,
+        "reason": "Unavailable: 3 of 3 Macrocyte Warriors remain.",
+    }
+
+    full_battlefield = [
+        {
+            "type": "Canoptek Macrocyte Warrior" if index == 0 else "Necron Warrior",
+            "battlefieldState": "deployed",
+            "wounds": 7,
+        }
+        for index in range(10)
+    ]
+    assert ceaseless_result(full_battlefield) == {
+        "available": True,
+        "eligible": False,
+        "reason": "Unavailable: the battlefield already has the maximum 10 NPOs.",
+    }
+
+    resolved = ceaseless_result(
+        [
+            {
+                "type": "Canoptek Macrocyte Warrior",
+                "battlefieldState": "out-of-action",
+                "wounds": 0,
+            }
+        ],
+        resolved_turning_point=2,
+    )
+    assert resolved == {
+        "available": True,
+        "eligible": False,
+        "reason": "Unavailable: A Ceaseless Scuttling was already resolved this Turning Point.",
+    }
 
 
 def test_roster_model_preserves_deployed_reserve_and_out_of_action_instances():
