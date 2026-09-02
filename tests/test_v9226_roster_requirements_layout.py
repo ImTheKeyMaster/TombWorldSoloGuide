@@ -148,9 +148,8 @@ def test_accordion_and_selection_enforcement_paths_remain():
     assert "autoSelectRequiredPlayerOperatives()" in APP
 
 
-def test_save_and_release_surfaces_are_v9226():
-    expected = ".".join(map(str, (9, 2, 26)))
-    assert CURRENT_APP_VERSION == expected
+def test_save_and_release_surfaces_are_current():
+    expected = CURRENT_APP_VERSION
     assert f"const APP_VERSION = '{expected}';" in APP
     assert f"const APP_VERSION = '{expected}';" in WORKER
     assert f'<div class="version">V{expected}</div>' in INDEX

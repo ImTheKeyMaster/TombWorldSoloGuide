@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.26
+# Tomb World Battle Guide v9.2.27
+
+## v9.2.27
+
+**Version 9.2.27**
+
+- Fixed starting NPO deployment confirmation so it remains checked after legal roster transformations such as Crownworld Tomb Crawler replacement.
+- Corrected the starting NPO deployment count to reflect the actual physical models being deployed.
+- Fixed Check All to use the same authoritative deployment state.
 
 ## v9.2.26
 

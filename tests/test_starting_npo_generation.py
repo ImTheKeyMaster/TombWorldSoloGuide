@@ -53,7 +53,7 @@ class StartingNpoGenerationTests(unittest.TestCase):
         self.assertIn("count=MAX_NPOS", roster)
         self.assertIn("selectStartingNpos(generation)", roster)
         presentation = self.deployment_source()
-        self.assertIn("Deploy the ${generation.deploymentCount} selected starting NPOs.", presentation)
+        self.assertIn("Deploy the ${generation.deployedNpoIds.length} selected starting ${opponentPluralLabel()}.", presentation)
         self.assertNotIn("available NPOs", presentation)
         self.assertIn("${generation.missionRoll} Starting NPOs", presentation)
         self.assertIn('class="deployment-roster"', presentation)

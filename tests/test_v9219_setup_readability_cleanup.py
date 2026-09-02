@@ -69,7 +69,8 @@ def test_remaining_deployment_checks_still_gate_completion_and_check_all():
     assert "playerValid&&state.playerDeployed&&allNposPlaced&&allPlacementChecked" in deploy
     assert "state.setupChecks[deploymentCheck.id]&&allNposPlaced" in deploy
     assert "checkAllDeployment" in bindings
-    assert "checkbox.dispatchEvent(new Event('change',{bubbles:true}))" in bindings
+    assert "setStartingNposDeployed(true)" in bindings
+    assert "dispatchEvent(new Event('change'" not in bindings
     for mission in MISSIONS:
         deploy_ids = {check["id"] for check in mission["setupChecks"] if check["stage"] == "deploy"}
         assert "starting-npos" in deploy_ids

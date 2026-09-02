@@ -43,10 +43,13 @@ class UiUxPhase1Tests(unittest.TestCase):
             troopers = [operative for operative in data["operatives"] if operative.get("role") == "Trooper"]
             self.assertGreaterEqual(len(troopers), rules.get("mandatoryTroopers", 0))
 
-    def test_check_all_invokes_existing_checkbox_handlers(self):
+    def test_check_all_updates_authoritative_deployment_state_once(self):
         handler = self.source("$('#checkAllDeployment')", "$$('[data-roster-category-toggle]')")
-        self.assertIn("input[type=\"checkbox\"]:not(:disabled)", handler)
-        self.assertIn("dispatchEvent(new Event('change'", handler)
+        self.assertIn("missionSetupChecks('deploy')", handler)
+        self.assertIn("setStartingNposDeployed(true)", handler)
+        self.assertIn("if(playerRosterValidation().valid)state.playerDeployed=true", handler)
+        self.assertEqual(handler.count("save();render()"), 1)
+        self.assertNotIn("dispatchEvent", handler)
         self.assertIn("id=\"checkAllDeployment\"", self.app)
 
     def test_activation_tracker_reuses_eliminated_state_for_players_and_npos(self):
