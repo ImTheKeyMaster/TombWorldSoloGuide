@@ -1,4 +1,11 @@
-# Tomb World Battle Guide v9.2.29
+# Tomb World Battle Guide v9.2.30
+
+## v9.2.30
+
+**Version 9.2.30**
+
+- Condensed Scout Squad Forward Scouting guidance into one expandable faction-rule card.
+- Nested all Forward Scouting options beneath their parent rule while preserving their full tabletop guidance.
 
 ## v9.2.29
 
