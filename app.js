@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.32';
+  const APP_VERSION = '9.2.33';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -490,6 +490,7 @@ document.addEventListener('touchend',function(e){
   }
   function isPvpMode(){return state.gameMode==='pvp';}
   function selectedPlayerTeamName(fallback='Kill Team'){return playerTeamData?.teamName||playerTeamEntry()?.name||fallback;}
+  function transdimensionalRelocationSelectionSummary(){return `Two ${selectedPlayerTeamName('Player')} operatives were randomly selected to swap positions.`;}
   function playerSideLabel(){return isPvpMode()?selectedPlayerTeamName():'Player';}
   function opponentSingularLabel(){return isPvpMode()?'Necron':'NPO';}
   function opponentPluralLabel(){return isPvpMode()?'Necrons':'NPOs';}
@@ -3844,8 +3845,8 @@ document.addEventListener('touchend',function(e){
     if(event.type!=='tomb-world-event')return `<div class="summary-box"><strong>${escapeHtml(title)}</strong><br>${escapeHtml(description)}</div>`;
     const isRelocation=event.definitionId==='transdimensional-relocation';
     if(isRelocation&&event.status==='drawn')prepareTransdimensionalRelocation(event);
-    const displayDescription=isRelocation&&event.status==='drawn'&&event.resolution?.playerOperativeIds?.length===2
-      ? `Two ${selectedPlayerTeamName('Player')} operatives were randomly selected to swap positions.`
+    const displayDescription=isRelocation&&['drawn','resolved'].includes(event.status)&&event.resolution?.playerOperativeIds?.length===2
+      ? transdimensionalRelocationSelectionSummary()
       : description;
     const eventHeader=`<div class="tomb-world-event-header"><span class="tomb-world-event-icon" aria-hidden="true"><svg
   class="tomb-world-event-anomaly-icon"

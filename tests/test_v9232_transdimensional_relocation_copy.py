@@ -47,7 +47,8 @@ class TransdimensionalRelocationCopyTests(unittest.TestCase):
         helper = source("function selectedPlayerTeamName", "function playerSideLabel")
         renderer = source("function strategyEventHtml", "function activationTracker")
         self.assertIn("playerTeamData?.teamName||playerTeamEntry()?.name||fallback", helper)
-        self.assertIn("`Two ${selectedPlayerTeamName('Player')} operatives were randomly selected to swap positions.`", renderer)
+        self.assertIn("`Two ${selectedPlayerTeamName('Player')} operatives were randomly selected to swap positions.`", helper)
+        self.assertIn("transdimensionalRelocationSelectionSummary()", renderer)
         self.assertIn("presentSideTerminology(displayDescription)", renderer)
         for team_name in ("Scout Squad", "Deathwatch", "Spectre Squad", "Kasrkin", "Tempestus Aquilons"):
             self.assertIn(team_name, {team["name"] for team in MANIFEST["teams"]})
@@ -59,6 +60,14 @@ class TransdimensionalRelocationCopyTests(unittest.TestCase):
         self.assertIn("Randomly select two Player operatives and swap their positions.", definitions)
         self.assertNotIn("Randomly select two Player operatives and swap their positions.", renderer)
         self.assertIn("displayDescription", renderer)
+
+    def test_pending_and_resolved_cards_share_completed_selection_summary(self):
+        helper = source("function transdimensionalRelocationSelectionSummary", "function playerSideLabel")
+        renderer = source("function strategyEventHtml", "function activationTracker")
+        self.assertIn("selectedPlayerTeamName('Player')", helper)
+        self.assertIn("['drawn','resolved'].includes(event.status)", renderer)
+        self.assertEqual(renderer.count("transdimensionalRelocationSelectionSummary()"), 1)
+        self.assertIn("event.result||'Complete'", renderer)
 
     def test_operatives_and_physical_instructions_remain_visible(self):
         renderer = source("function strategyEventHtml", "function activationTracker")
@@ -91,7 +100,7 @@ class TransdimensionalRelocationCopyTests(unittest.TestCase):
         helper = source("function selectedPlayerTeamName", "function playerSideLabel")
         renderer = source("function strategyEventHtml", "function activationTracker")
         self.assertIn("fallback='Kill Team'", helper)
-        self.assertIn("selectedPlayerTeamName('Player')", renderer)
+        self.assertIn("selectedPlayerTeamName('Player')", helper)
 
     def test_solo_and_pvp_do_not_change_relocation_targeting(self):
         relocation = source(
