@@ -27,8 +27,10 @@ def test_completion_uses_current_physical_starting_selection():
     )
     assert "deployedIds=generation?.deployedNpoIds||[]" in completion
     assert "deployedIdSet.size===deployedIds.length" in completion
+    assert "reserveIdSet.size===reserveIds.length" in completion
     assert "!reserveIdSet.has(id)" in completion
     assert "npo.id===id&&npo.deployed&&npo.battlefieldState==='deployed'" in completion
+    assert "npo.id===id&&!npo.deployed&&npo.battlefieldState==='reserve'" in completion
     assert "deploymentCount" not in completion
     assert "availableNpos" not in completion
 
@@ -51,6 +53,11 @@ assert.equal(startingNpoDeploymentComplete(),true);
 state.roster.find(npo=>npo.id==='warden').deployed=false;
 assert.equal(startingNpoDeploymentComplete(),false);
 state.roster.find(npo=>npo.id==='warden').deployed=true;
+state.roster.find(npo=>npo.id==='reserve-1').deployed=true;
+state.roster.find(npo=>npo.id==='reserve-1').battlefieldState='deployed';
+assert.equal(startingNpoDeploymentComplete(),false);
+state.roster.find(npo=>npo.id==='reserve-1').deployed=false;
+state.roster.find(npo=>npo.id==='reserve-1').battlefieldState='reserve';
 state.startingNpoGeneration.reserveNpoIds.push('warden');
 assert.equal(startingNpoDeploymentComplete(),false);
 for(const variant of ['standard','flayer-curse','destroyer-cult']){{
@@ -74,6 +81,8 @@ def test_shared_helper_marks_current_models_and_setup_confirmation():
     assert "const selected=new Set(generation.deployedNpoIds||[])" in helper
     assert "npo.deployed=deployed" in helper
     assert "npo.battlefieldState=deployed?'deployed':'reserve'" in helper
+    assert "npo.deployed=false" in helper
+    assert "npo.battlefieldState='reserve'" in helper
     assert "state.setupChecks['starting-npos']=Boolean(deployed)" in helper
     assert "save()" not in helper
     assert "render()" not in helper
@@ -114,6 +123,8 @@ assert.equal(setStartingNposDeployed(true),true);
 assert.deepEqual(new Set(state.startingNpoGeneration.deployedNpoIds),new Set(['warden','lychguard']));
 assert.equal(replacementCalls,1);
 assert.equal(state.setupChecks['starting-npos'],true);
+assert.equal(reserve.deployed,false);
+assert.equal(reserve.battlefieldState,'reserve');
 setStartingNposDeployed(false);
 assert.equal(state.setupChecks['starting-npos'],false);
 assert(state.roster.filter(npo=>['warden','lychguard'].includes(npo.id)).every(npo=>!npo.deployed&&npo.battlefieldState==='reserve'));

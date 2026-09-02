@@ -2636,9 +2636,11 @@ document.addEventListener('touchend',function(e){
 
   function startingNpoDeploymentComplete(generation=state.startingNpoGeneration){
     const deployedIds=generation?.deployedNpoIds||[],deployedIdSet=new Set(deployedIds);
-    const reserveIdSet=new Set(generation?.reserveNpoIds||[]);
+    const reserveIds=generation?.reserveNpoIds||[],reserveIdSet=new Set(reserveIds);
     return deployedIds.length>0&&deployedIdSet.size===deployedIds.length
-      &&deployedIds.every(id=>!reserveIdSet.has(id)&&state.roster.some(npo=>npo.id===id&&npo.deployed&&npo.battlefieldState==='deployed'));
+      &&reserveIdSet.size===reserveIds.length
+      &&deployedIds.every(id=>!reserveIdSet.has(id)&&state.roster.some(npo=>npo.id===id&&npo.deployed&&npo.battlefieldState==='deployed'))
+      &&reserveIds.every(id=>state.roster.some(npo=>npo.id===id&&!npo.deployed&&npo.battlefieldState==='reserve'));
   }
 
   function setStartingNposDeployed(deployed){
@@ -2664,6 +2666,11 @@ document.addEventListener('touchend',function(e){
     state.roster.filter(npo=>selected.has(npo.id)).forEach(npo=>{
       npo.deployed=deployed;
       npo.battlefieldState=deployed?'deployed':'reserve';
+    });
+    const reserves=new Set(generation.reserveNpoIds||[]);
+    state.roster.filter(npo=>reserves.has(npo.id)).forEach(npo=>{
+      npo.deployed=false;
+      npo.battlefieldState='reserve';
     });
     state.setupChecks['starting-npos']=Boolean(deployed);
     return true;
