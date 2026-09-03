@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.33
+# Tomb World Battle Guide v9.2.34
+
+## v9.2.34
+
+**Version 9.2.34**
+
+- Added custom redrawn mission maps and versioned their URLs for reliable cache busting in browsers and installed PWAs.
+- Updated mission map labeling to identify each image as a Battle Guide schematic.
+- No gameplay or save-schema changes.
 
 ## v9.2.33
 

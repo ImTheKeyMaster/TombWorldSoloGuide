@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '9.2.33';
+const APP_VERSION = '9.2.34';
 const CACHE_PREFIX = 'tomb-world-battle-guide-';
 const LEGACY_CACHE_PREFIXES = ['tomb-world-solo-guide-'];
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
@@ -14,8 +14,8 @@ const PRECACHE_ASSETS = [
   './manifest.webmanifest', './Assets/icon.svg', './Assets/icon-180.png', './Assets/icon-192.png', './Assets/icon-512.png', './Assets/icon-1024.png', './Assets/Icons/move-to-shoot.svg', './Assets/Images/eliminated-necron-skull.png',
   './Assets/Images/defeat.png', './Assets/Images/victory.png',
   './Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3',
-  './Assets/Maps/mission-01.png', './Assets/Maps/mission-02.png', './Assets/Maps/mission-03.png',
-  './Assets/Maps/mission-04.png', './Assets/Maps/mission-05.png', './Assets/Maps/mission-06.png',
+  `./Assets/Maps/mission-01.png?v=${APP_VERSION}`, `./Assets/Maps/mission-02.png?v=${APP_VERSION}`, `./Assets/Maps/mission-03.png?v=${APP_VERSION}`,
+  `./Assets/Maps/mission-04.png?v=${APP_VERSION}`, `./Assets/Maps/mission-05.png?v=${APP_VERSION}`, `./Assets/Maps/mission-06.png?v=${APP_VERSION}`,
   './Missions/manifest.json',
   './Missions/mission.schema.json', './Missions/definition-01-shifting-labyrinth.json', './Missions/definition-02-demolition-protocol.json', './Missions/definition-03-recover-transponder.json', './Missions/definition-04-destroy-sarcophagus.json', './Missions/definition-05-scout-sub-crypt.json',
   './Missions/01-shifting-labyrinth.json', './Missions/02-demolition-protocol.json',
