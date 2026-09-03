@@ -22,12 +22,16 @@ def test_roster_copy_is_removed_without_changing_roster_controls():
     assert 'id="setupNext" ${valid?\'\':\'disabled\'}>Roster Ready' in SETUP
 
 
-def test_shared_official_map_copy_and_image_contract():
-    assert "Extracted from the Games Workshop mission-pack PDF" in MAP
+def test_shared_map_copy_and_image_contract():
+    assert "Extracted from the Games Workshop mission-pack PDF" not in MAP
     assert "Extracted from the included Games Workshop mission-pack PDF" not in APP
-    assert "OFFICIAL MISSION MAP" in MAP
+    assert ">MISSION MAP</span>" in MAP
+    assert "Battle Guide schematic" in MAP
     assert '<img class="official-map-image"' in MAP
-    assert 'alt="Official board layout for ${escapeHtml(currentMission.name)}"' in MAP
+    assert 'alt="Battle Guide board layout for ${escapeHtml(currentMission.name)}"' in MAP
+    assert "const imagePath=`Assets/Maps/mission-${missionNumber}.png?v=${APP_VERSION}`;" in MAP
+    for mission_number in range(1, 7):
+        assert f"`./Assets/Maps/mission-{mission_number:02}.png?v=${{APP_VERSION}}`" in WORKER
     assert APP.count("boardSvg(m.id)") == 2
 
 

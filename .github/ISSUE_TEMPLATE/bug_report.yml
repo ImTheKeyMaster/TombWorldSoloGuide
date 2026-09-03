@@ -83,7 +83,7 @@ body:
     attributes:
       label: App version
       description: The version shown in the Guide, if available.
-      placeholder: For example, 9.2.33
+      placeholder: For example, 9.2.34
   - type: textarea
     id: screenshots
     attributes:

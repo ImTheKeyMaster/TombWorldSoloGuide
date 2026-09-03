@@ -54,17 +54,17 @@ assert.equal(reset.turningPoint,0);
     subprocess.run(["node", "-e", script], cwd=ROOT, check=True)
 
 
-def test_shared_official_map_renderer_removes_only_the_file_path_caption():
+def test_shared_map_renderer_uses_battle_guide_labeling():
     assert "<figcaption" not in MAP_RENDERER
     assert "Only the map for this mission is shown." not in APP
     assert "The complete official PDF is stored locally in" not in APP
     assert "Assets/Tomb-World-Mission-Pack.pdf" not in APP
     assert '<figure class="official-map-card">' in MAP_RENDERER
-    assert "OFFICIAL MISSION MAP" in MAP_RENDERER
+    assert ">MISSION MAP</span>" in MAP_RENDERER
     assert "${escapeHtml(currentMission.number)} · ${escapeHtml(currentMission.name)}" in MAP_RENDERER
-    assert "Extracted from the Games Workshop mission-pack PDF" in MAP_RENDERER
+    assert "Battle Guide schematic" in MAP_RENDERER
     assert '<img class="official-map-image"' in MAP_RENDERER
-    assert 'alt="Official board layout for ${escapeHtml(currentMission.name)}"' in MAP_RENDERER
+    assert 'alt="Battle Guide board layout for ${escapeHtml(currentMission.name)}"' in MAP_RENDERER
     assert ".official-map-card figcaption" not in STYLES
     assert ".official-map-card code" not in STYLES
 

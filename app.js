@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.33';
+  const APP_VERSION = '9.2.34';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8734,13 +8734,13 @@ function showPlayerActivation(){
   function boardSvg(id){
     const currentMission=mission();
     const missionNumber=String(currentMission.number).padStart(2,'0');
-    const imagePath=`Assets/Maps/mission-${missionNumber}.png`;
+    const imagePath=`Assets/Maps/mission-${missionNumber}.png?v=${APP_VERSION}`;
     return `<figure class="official-map-card">
       <div class="official-map-heading">
-        <div><span>OFFICIAL MISSION MAP</span><strong>${escapeHtml(currentMission.number)} · ${escapeHtml(currentMission.name)}</strong></div>
-        <small>Extracted from the Games Workshop mission-pack PDF</small>
+        <div><span>MISSION MAP</span><strong>${escapeHtml(currentMission.number)} · ${escapeHtml(currentMission.name)}</strong></div>
+        <small>Battle Guide schematic</small>
       </div>
-      <img class="official-map-image" src="${imagePath}" alt="Official board layout for ${escapeHtml(currentMission.name)}" loading="eager">
+      <img class="official-map-image" src="${imagePath}" alt="Battle Guide board layout for ${escapeHtml(currentMission.name)}" loading="eager">
     </figure>`;
   }
 
