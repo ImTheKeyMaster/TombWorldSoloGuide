@@ -1,4 +1,10 @@
-# Tomb World Battle Guide v9.2.35
+# Tomb World Battle Guide v9.2.36
+
+## v9.2.36
+
+**Version 9.2.36**
+
+- Streamlines Recover Transponder's final-marker pickup: the sole unresolved marker is discovered by the normal 1AP Pick Up Marker action without redundant marker selection or a D3 roll.
 
 ## v9.2.35
 
