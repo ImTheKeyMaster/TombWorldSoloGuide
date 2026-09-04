@@ -1,12 +1,12 @@
-# Tomb World Battle Guide v9.2.34
+# Tomb World Battle Guide v9.2.35
 
-## v9.2.34
+## v9.2.35
 
-**Version 9.2.34**
+**Version 9.2.35**
 
-- Added custom redrawn mission maps and versioned their URLs for reliable cache busting in browsers and installed PWAs.
-- Updated mission map labeling to identify each image as a Battle Guide schematic.
-- No gameplay or save-schema changes.
+- Added the complete Recover Transponder search, carrier, drop, bookkeeping, extraction, and outcome flow.
+- Integrated Locate Item with player activations, AP accounting, central dice persistence, mission history, and save migration.
+- Preserved the existing save schema and storage key while migrating older Mission 03 progress in place.
 
 ## v9.2.33
 

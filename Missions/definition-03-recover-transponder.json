@@ -4,8 +4,17 @@
   "id": "03",
   "slug": "recover-transponder",
   "name": "Recover Transponder",
-  "briefing": "Search the three objective markers for the transponder, then escape over the Player killzone edge while carrying it.",
-  "objectiveSummary": "Find the transponder and have its carrier escape over the Player killzone edge.",
+  "briefing": "Search the three objective markers for the transponder, then escape through Player A's killzone edge while carrying it.",
+  "objectiveSummary": "Find the transponder and escape through Player A's killzone edge.",
+  "runtime": {
+    "markers": [
+      { "id": "site-1", "label": "Objective Marker 1", "initialState": "available" },
+      { "id": "site-2", "label": "Objective Marker 2", "initialState": "available" },
+      { "id": "site-3", "label": "Objective Marker 3", "initialState": "available" }
+    ],
+    "initial": { "transponderFound": false, "carrierOperativeId": null, "transponderStatus": "unknown", "searchSitesResolved": 0, "missionCompleted": false, "extractionConfirmed": false }
+  },
+  "stages": { "search": "LOCATE TRANSPONDER", "extraction": "EXTRACT TRANSPONDER" },
   "objectives": [
     {
       "id": "transponderRecovered",
@@ -22,8 +31,11 @@
   "actions": [
     {
       "id": "searchTransponder",
-      "label": "Locate Item",
+      "label": "Pick Up Marker",
       "description": "Roll D3 after an operative picks up an unresolved objective marker.",
+      "apCost": 1,
+      "diceExpression": "1D3",
+      "comparison": "roll > otherRemainingMarkerCount",
       "availability": {
         "all": [
           { "path": "mission.objectives.transponderRecovered.completed", "operator": "==", "value": false }
@@ -56,14 +68,20 @@
   },
   "hud": {
     "label": "MISSION",
-    "inProgress": { "format": "0 / 1" },
+    "search": { "format": "SEARCH {resolved}/3" },
+    "extraction": { "format": "TRANSPONDER FOUND" },
     "complete": { "format": "✓ COMPLETE" }
   },
   "dialogs": {
+    "selectMarker": { "title": "LOCATE ITEM", "message": "Which objective marker is this operative searching?" },
+    "notFound": { "title": "ITEM NOT FOUND", "message": "Objective Marker {marker} was a false signal." },
+    "found": { "title": "TRANSPONDER FOUND", "message": "Objective Marker {marker} contains the transponder." },
+    "confirmEscape": { "title": "CONFIRM ESCAPE", "message": "Has {operative} crossed Player A's killzone edge while carrying the transponder?" },
     "objectiveComplete": {
       "title": "TRANSPONDER RECOVERED",
-      "message": "The carrier escaped over the Player killzone edge with the transponder."
+      "message": "The carrier escaped through Player A's killzone edge with the transponder."
     }
   },
-  "presentation": { "historyDisplayCount": 5, "showHud": true }
+  "presentation": { "historyDisplayCount": 8, "showHud": true },
+  "narration": { "introduction": "mission-03-introduction", "victory": "mission-03-victory", "defeat": "mission-03-defeat" }
 }

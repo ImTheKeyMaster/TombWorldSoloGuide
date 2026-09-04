@@ -43,6 +43,51 @@ const definition=JSON.parse(fs.readFileSync('Missions/definition-03-recover-tran
 })().catch(error=>{console.error(error);process.exit(1)});
 """)
 
+    def test_locate_item_comparison_for_every_remaining_marker_case(self):
+        self.run_node(r"""
+const assert=require('assert').strict;require('./mission-engine.js');
+const resolve=globalThis.TombWorldMissionEngine.resolveRemainingEntityRoll;
+assert.deepEqual([1,2,3].map(roll=>resolve(roll,3).found),[false,false,true]);
+assert.deepEqual([1,2,3].map(roll=>resolve(roll,2).found),[false,true,true]);
+assert.deepEqual([1,2,3].map(roll=>resolve(roll,1).found),[true,true,true]);
+assert.equal(resolve(2,3).otherRemainingMarkerCount,2);
+assert.equal(resolve(2,2).otherRemainingMarkerCount,1);
+assert.equal(resolve(1,1).otherRemainingMarkerCount,0);
+""")
+
+    def test_complete_activation_dice_carrier_persistence_and_outcome_contracts(self):
+        app=(ROOT/'app.js').read_text()
+        definition=json.loads((ROOT/'Missions/definition-03-recover-transponder.json').read_text())
+        runtime=definition['runtime']['initial']
+        self.assertEqual([marker['initialState'] for marker in definition['runtime']['markers']],['available']*3)
+        self.assertFalse(runtime['transponderFound'])
+        self.assertIsNone(runtime['carrierOperativeId'])
+        self.assertEqual(runtime['transponderStatus'],'unknown')
+        self.assertEqual(runtime['searchSitesResolved'],0)
+        self.assertEqual(definition['actions'][0]['diceExpression'],'1D3')
+        self.assertEqual(definition['actions'][0]['comparison'],'roll > otherRemainingMarkerCount')
+        for contract in (
+            "name:'Pick Up Marker'", "cost:Number(objectiveDefinition", "performLocateItem(button.dataset.locateSite",
+            "commitHumanPlayerAction(stage,{deferContinuation:true})", "resumeKind:'mission'", "transactionId",
+            "transponderStatus='onBattlefield'", "showUpdateTransponderCarrier", "confirmTransponderEscape",
+            "completeMission('victory')", "handleTransponderCarrierIncapacitation", "livingPlayerOperativeCount()===0"
+        ):
+            self.assertIn(contract,app)
+        self.assertNotIn("Math.random()",app[app.index('async function performLocateItem'):app.index('async function performAwakenRoom')])
+        self.assertIn("progress.transponderFound=true",app)
+        self.assertIn("progress.searchSitesResolved=missionEngine().sites.length",app)
+        self.assertIn("if(found){",app)
+        self.assertNotIn("completeMission",app[app.index('if(found){',app.index('async function performLocateItem')):app.index('}else progress.searchSitesResolved',app.index('async function performLocateItem'))])
+
+    def test_migration_and_idempotency_fields_are_durable(self):
+        app=(ROOT/'app.js').read_text()
+        normalizer=app[app.index("}else if(engine.type==='transponder'){"):app.index("}else if(engine.type==='destruction'){")]
+        for field in ('transponderFound','transponderMarkerId','carrierId','transponderStatus','searchSitesResolved','extractionConfirmed','completed','outcome','transactions','lastRoll'):
+            self.assertIn(f'normalized.{field}',normalizer)
+        self.assertIn("{found:'transponder',empty:'cleared'}",normalizer)
+        self.assertIn("progress.transactions?.[transactionId]",app)
+        self.assertIn("if(progress.transactions?.[transactionId]||state.gameEnd)return",app)
+
     def test_registry_ui_persistence_offline_and_reference_regressions(self):
         manifest=json.loads((ROOT/'Missions/manifest.json').read_text())
         self.assertIn({'id':'03','file':'definition-03-recover-transponder.json'},manifest['definitions'])

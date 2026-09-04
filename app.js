@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.34';
+  const APP_VERSION = '9.2.35';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -962,7 +962,7 @@ document.addEventListener('touchend',function(e){
   const missionStateFactories = {
     escape:()=>({escapedIds:[],auspexCalibrations:{}}),
     sabotage:()=>({completedFeatureIds:[],featureOpenDetails:{},featureTransactions:{}}),
-    transponder:()=>({sites:{},carrierId:null,escaped:false,lastRoll:null}),
+    transponder:()=>({sites:{},transponderFound:false,transponderMarkerId:null,carrierId:null,transponderStatus:'unknown',searchSitesResolved:0,escaped:false,extractionConfirmed:false,completed:false,outcome:null,lastRoll:null,transactions:{}}),
     destruction:()=>({destruction:0}),
     scout:()=>({awakenedRooms:{},scoutedRoomIds:[],scoutedByRoom:{}}),
     regroup:()=>({operativeChecks:{},lastCheckedTurningPoint:0})
@@ -1007,9 +1007,18 @@ document.addEventListener('touchend',function(e){
         : {};
       normalized.featureTransactions=isRecord(raw.featureTransactions)?{...raw.featureTransactions}:{};
     }else if(engine.type==='transponder'){
-      normalized.sites=isRecord(raw.sites)?Object.fromEntries(Object.entries(raw.sites).filter(([,value])=>['found','empty'].includes(value))):{};
+      normalized.sites=isRecord(raw.sites)?Object.fromEntries(Object.entries(raw.sites).filter(([id,value])=>engine.sites.some(site=>site.id===id)&&['found','empty','available','cleared','transponder','removed'].includes(value)).map(([id,value])=>[id,{found:'transponder',empty:'cleared'}[value]||value])):{};
+      const foundEntry=Object.entries(normalized.sites).find(([,value])=>value==='transponder');
+      normalized.transponderFound=Boolean(raw.transponderFound||foundEntry);
+      normalized.transponderMarkerId=normalized.transponderFound&&(typeof raw.transponderMarkerId==='string'?engine.sites.some(site=>site.id===raw.transponderMarkerId)&&raw.transponderMarkerId:foundEntry?.[0])||null;
       normalized.carrierId=typeof raw.carrierId==='string'&&raw.carrierId?raw.carrierId:null;
       normalized.escaped=Boolean(raw.escaped);
+      normalized.extractionConfirmed=Boolean(raw.extractionConfirmed||normalized.escaped);
+      normalized.transponderStatus=normalized.extractionConfirmed?'escaped':normalized.transponderFound?(normalized.carrierId?'carried':'onBattlefield'):'unknown';
+      normalized.searchSitesResolved=normalized.transponderFound?engine.sites.length:engine.sites.filter(site=>['cleared','removed'].includes(normalized.sites[site.id])).length;
+      normalized.completed=Boolean(raw.completed||normalized.extractionConfirmed);
+      normalized.outcome=['victory','defeat'].includes(raw.outcome)?raw.outcome:normalized.extractionConfirmed?'victory':null;
+      normalized.transactions=isRecord(raw.transactions)?{...raw.transactions}:{};
       normalized.lastRoll=isRecord(raw.lastRoll)?{...raw.lastRoll}:null;
     }else if(engine.type==='destruction'){
       normalized.destruction=Math.max(0,Number.isFinite(Number(raw.destruction))?Number(raw.destruction):Number(legacyTracker)||0);
@@ -2458,7 +2467,9 @@ document.addEventListener('touchend',function(e){
   }
 
   function checkGameEnd(timing='immediate'){
+    handleTransponderCarrierIncapacitation();
     const outcome=missionOutcome(timing);
+    if(outcome&&missionEngine()?.type==='transponder'&&state.missionState){state.missionState.completed=true;state.missionState.outcome=outcome;}
     return outcome?completeMission(outcome):false;
   }
 
@@ -3331,11 +3342,12 @@ document.addEventListener('touchend',function(e){
     const visible=model?.visible!==false;
     if(!visible)return '';
     const label=model?.label||'MISSION';
-    const value=model?(model.completed?'COMPLETE':`${model.value} / ${model.target}`):'DETAILS';
+    const transponder=missionEngine()?.type==='transponder'?state.missionState:null;
+    const value=transponder?(transponder.transponderFound?'TRANSPONDER FOUND':`SEARCH ${transponder.searchSitesResolved||0}/3`):model?(model.completed?'COMPLETE':`${model.value} / ${model.target}`):'DETAILS';
     const completeMark=model?.completed?'<span class="mission-complete-mark" aria-hidden="true">✓ </span>':'';
-    const status=model?`${model.value} of ${model.target}${model.completed?', objective complete':''}`:'details';
+    const status=transponder?transponder.transponderFound?`transponder found, ${transponder.carrierId?`carried by ${playerName(transponder.carrierId)}`:'on battlefield with no carrier'}`:`${transponder.searchSitesResolved||0} of 3 search sites resolved`:model?`${model.value} of ${model.target}${model.completed?', objective complete':''}`:'details';
     const name=model?.name||mission()?.name||'selected mission';
-    return `<button class="hud-cell mission-hud" id="missionHud" type="button" aria-label="Mission details, ${escapeHtml(name)}, ${escapeHtml(status)}"><small>${escapeHtml(label)}</small><strong>${completeMark}${escapeHtml(value)}</strong></button>`;
+    return `<button class="hud-cell mission-hud" id="missionHud" type="button" aria-label="Mission Details, ${escapeHtml(name)}, ${escapeHtml(status)}"><small>${escapeHtml(label)}</small><strong>${completeMark}${escapeHtml(value)}</strong></button>`;
   }
 
   function hud(){return `<div class="hud"><div><small>Turning<span class="portrait-break"><br></span> Point</small><strong>${state.turningPoint||'Setup'}</strong></div><button class="hud-cell hud-threat" id="threatHudToggle" type="button" aria-expanded="${threatAdjustOpen}" aria-controls="threatAdjuster"><small>Threat<span class="portrait-break"><br></span> Level</small><strong>${state.threat}</strong></button><div><small>Grade<span class="portrait-break"><br></span> Level</small><strong>${threatGrade()}</strong></div><div><small>${escapeHtml(playerSideLabel())}<span class="portrait-break"><br></span> Ready</small><strong>${state.playerReady}</strong></div><div><small>${escapeHtml(opponentSingularLabel())}<span class="portrait-break"><br></span> Ready</small><strong>${readyNpos().length}</strong></div>${missionHudHtml()}</div><div class="threat-strip ${threatAdjustOpen?'':'hidden'}" id="threatAdjuster"><div><strong>THREAT LEVEL: ${threatLabel()}</strong><small>${threatGrade()===3?'Maximum Grade':`Next Grade at Threat Level ${nextGradeThreat()}`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
@@ -3366,12 +3378,11 @@ document.addEventListener('touchend',function(e){
       return `<p>${model?.value??completed.size} of ${model?.target??engine.required} required features have been permanently opened by Breach.</p><div class="mission-objective-grid">${engine.features.map(feature=>readOnly?`<div class="mission-objective-check">${featureCard(feature)}</div>`:`<label class="mission-objective-check"><input type="checkbox" data-mission-feature="${feature.id}" ${completed.has(feature.id)?'checked':''} ${missionOperationResolving?'disabled':''}>${featureCard(feature)}</label>`).join('')}</div>`;
     },
     transponder:(engine,progress,{readOnly=false}={})=>{
-      const transponderFound=Object.values(progress.sites).includes('found');
-      const sites=engine.sites.map(site=>{const result=progress.sites[site.id];return `<div class="mission-objective-row"><span><strong>${escapeHtml(site.label)}</strong><small>${result==='found'?'Transponder found':result==='empty'?'Removed — no transponder':'Unresolved'}</small></span>${readOnly||result||transponderFound?'' : `<button class="btn secondary compact" data-search-site="${site.id}">Pick Up & Resolve</button>`}</div>`;}).join('');
-      const carrier=progress.carrierId?playerName(progress.carrierId):'None';
-      const assignment=readOnly?'':transponderFound?`<div class="field"><label for="transponderCarrier">Current carrier</label><select id="transponderCarrier"><option value="">Marker is not being carried…</option>${livingPlayerOptions(progress.carrierId)}</select></div>`:`<div class="field"><label for="transponderOperative">Operative resolving the marker</label><select id="transponderOperative"><option value="">Select operative…</option>${livingPlayerOptions()}</select></div>`;
-      const escapeControl=readOnly?'':`<button class="btn primary" id="transponderEscape" ${progress.carrierId&&isPlayerOperativeInPlay(progress.carrierId)&&!state.playerCasualtyIds.includes(progress.carrierId)&&!progress.escaped?'':'disabled'}>Confirm Carrier Escaped</button>`;
-      return `<p>Pick up an unresolved marker, then roll D3. The transponder is found only if the result is higher than the number of other unresolved markers.</p>${progress.lastRoll?`<div class="summary-box"><strong>Last search:</strong> rolled ${progress.lastRoll.roll}; ${escapeHtml(progress.lastRoll.result)}.</div>`:''}${assignment}<div class="mission-objective-list">${sites}</div><div class="summary-box"><strong>Carrier:</strong> ${escapeHtml(carrier)}${readOnly&&progress.escaped?' · Escaped':''}</div>${escapeControl}`;
+      const sites=engine.sites.map(site=>{const result=progress.sites[site.id]||'available';const status={available:'Available',cleared:'Cleared',transponder:'Transponder',removed:'Removed / resolved'}[result]||'Available';return `<div class="mission-objective-row"><span><strong>${escapeHtml(site.label)}</strong><small>${status}</small></span></div>`;}).join('');
+      if(!progress.transponderFound)return `<p><strong>Status: SEARCHING</strong></p><p>Find the transponder and escape through Player A's killzone edge.</p><div class="mission-objective-list">${sites}</div><div class="summary-box"><strong>Search Sites Resolved: ${progress.searchSitesResolved||0} / 3</strong></div>`;
+      const carrier=progress.carrierId?playerName(progress.carrierId):'On battlefield / no carrier';
+      const controls=readOnly?'':`<div class="wizard-actions"><button class="btn secondary" id="updateTransponderCarrier">Update Carrier</button><button class="btn primary" id="transponderEscape" ${progress.carrierId&&isPlayerOperativeInPlay(progress.carrierId)&&!state.playerCasualtyIds.includes(progress.carrierId)&&!progress.escaped?'':'disabled'}>Confirm Escape</button></div>`;
+      return `<p><strong>Status: EXTRACTION</strong></p><p>Escape through Player A's killzone edge while carrying the transponder.</p><div class="mission-objective-list">${sites}</div><div class="summary-box"><strong>Transponder:</strong> Found<br><strong>Location:</strong> ${escapeHtml(engine.sites.find(site=>site.id===progress.transponderMarkerId)?.label||'Objective marker')}<br><strong>Carrier:</strong> ${escapeHtml(carrier)}${progress.escaped?' · Escaped':''}</div>${controls}`;
     },
     destruction:(engine,progress,{readOnly=false}={})=>{
       if(!objectiveEngine)return '<p class="muted">Mission automation is unavailable.</p>';
@@ -3405,21 +3416,78 @@ document.addEventListener('touchend',function(e){
     save();render();
   }
 
-  async function performLocateItem(siteId,carrierId){
-    if(!siteId||!carrierId)return;
-    if(state.missionState?.sites?.[siteId]){state.missionActionContext=null;acknowledgeCurrentDiceRequest();return;}
-    state.missionActionContext={missionId:state.missionId,actionId:'searchTransponder',siteId,operativeId:carrierId};save();
-    const progress=state.missionState;
-    const otherRemaining=missionEngine().sites.filter(site=>site.id!==siteId&&!progress.sites[site.id]).length;
-    const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('searchTransponder',{...missionLifecycleContext(),operativeId:carrierId,siteId})):null;
+  async function performLocateItem(siteId,carrierId,stage=state.combatState?.stage){
+    if(!siteId||!carrierId||!stage)return;
+    const progress=state.missionState,existing=progress?.sites?.[siteId];
+    if(existing&&existing!=='available'){state.missionActionContext=null;acknowledgeCurrentDiceRequest();return;}
+    const transactionId=`${activePlayerActivation()?.activationId}:${activePlayerActivation()?.pendingAction?.actionSequence}:${siteId}`;
+    if(progress.transactions?.[transactionId])return;
+    state.missionActionContext={missionId:state.missionId,actionId:'searchTransponder',siteId,operativeId:carrierId,activationId:activePlayerActivation()?.activationId,transactionId};save();
+    const available=missionEngine().sites.filter(site=>!progress.sites[site.id]||progress.sites[site.id]==='available');
+    const searchRule=TombWorldMissionEngine.resolveRemainingEntityRoll;
+    const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('searchTransponder',{...missionLifecycleContext(),activationId:activePlayerActivation()?.activationId,operativeId:carrierId,siteId})):null;
     if(objectiveEngine&&!outcome)return;
-    const result=await missionDiceTotal(outcome,'searchRoll',{title:'LOCATE ITEM'}),found=result>otherRemaining;
-    progress.sites[siteId]=found?'found':'empty';
-    if(found)progress.carrierId=carrierId;
-    progress.lastRoll={siteId,roll:result,result:found?'transponder found':'marker removed'};
-    state.missionActionContext=null;
-    save();acknowledgeCurrentDiceRequest();
-    updateMissionProgress(`searched ${siteId}, rolled ${result}, and ${found?'found the transponder':'removed the marker'}.`);
+    const result=await missionDiceTotal(outcome,'searchRoll',{title:'LOCATE ITEM'}),found=searchRule(result,available.length).found;
+    if(progress.transactions?.[transactionId])return;
+    progress.transactions={...(progress.transactions||{}),[transactionId]:{siteId,roll:result,committed:true}};
+    progress.sites[siteId]=found?'transponder':'cleared';
+    progress.lastRoll={siteId,roll:result,result:found?'transponder found':'false signal'};
+    if(found){
+      progress.transponderFound=true;progress.transponderMarkerId=siteId;progress.carrierId=carrierId;progress.transponderStatus='carried';progress.searchSitesResolved=missionEngine().sites.length;
+      missionEngine().sites.forEach(site=>{if(site.id!==siteId&&(!progress.sites[site.id]||progress.sites[site.id]==='available'))progress.sites[site.id]='removed';});
+    }else progress.searchSitesResolved=missionEngine().sites.filter(site=>progress.sites[site.id]==='cleared').length;
+    const marker=missionEngine().sites.find(site=>site.id===siteId),history=objectiveEngine?.getMissionRuntime().history||[],entry=history.at(-1);
+    const summary=found?`${playerName(carrierId)} found the transponder at ${marker.label}.`:`${playerName(carrierId)} searched ${marker.label}: false signal.`;
+    if(entry){entry.type='transponder-search';entry.summary=summary;entry.title=summary;entry.transactionId=transactionId;}
+    commitHumanPlayerAction(stage,{deferContinuation:true});
+    state.missionActionContext=null;save();acknowledgeCurrentDiceRequest();
+    const removed=found?missionEngine().sites.filter(site=>site.id!==siteId&&progress.sites[site.id]==='removed').map(site=>site.label.replace(/Objective Marker /i,'')).join(' and '):'';
+    const body=found?`<p><strong>${escapeHtml(marker.label)} contains the transponder.</strong></p><p>${escapeHtml(playerName(carrierId))} is carrying the transponder.</p>${removed?`<p>Remove Objective Markers ${escapeHtml(removed)} from the killzone.</p>`:''}`:`<p><strong>${escapeHtml(marker.label)} was a false signal.</strong></p><p>Remove ${escapeHtml(marker.label)} from the killzone.</p>`;
+    showModal(found?'TRANSPONDER FOUND':'ITEM NOT FOUND',`${body}<div class="summary-box"><strong>D3: ${result}</strong></div><div class="wizard-actions"><button class="btn primary" id="continueLocateItem" data-dialog-focus>Continue</button></div>`);
+    $('#continueLocateItem').onclick=()=>continueAfterCommittedHumanAction();
+  }
+
+  function showUpdateTransponderCarrier(){
+    const progress=state.missionState;
+    if(missionEngine()?.type!=='transponder'||!progress?.transponderFound)return;
+    showModal('UPDATE CARRIER',`<p>Synchronize the app after legally resolving the marker on the tabletop.</p><div class="field"><label for="updatedTransponderCarrier">Current transponder carrier</label><select id="updatedTransponderCarrier" data-dialog-focus><option value="">On battlefield / no carrier</option>${livingPlayerOptions(progress.carrierId)}</select></div><div class="wizard-actions"><button class="btn ghost" id="cancelCarrierUpdate">Back</button><button class="btn primary" id="commitCarrierUpdate">Update Carrier</button></div>`);
+    $('#cancelCarrierUpdate').onclick=showMissionDetails;
+    $('#commitCarrierUpdate').onclick=()=>{
+      const next=$('#updatedTransponderCarrier').value||null;
+      if(next&&(state.playerCasualtyIds.includes(next)||!isPlayerOperativeInPlay(next)))return;
+      if(next===progress.carrierId){showMissionDetails();return;}
+      progress.carrierId=next;progress.transponderStatus=next?'carried':'onBattlefield';
+      const summary=next?`Transponder carrier changed to ${playerName(next)}.`:'Transponder placed on battlefield with no carrier.';
+      objectiveEngine?.recordMissionHistory({type:'transponder-carrier',title:summary,summary,operativeId:null,turningPoint:state.turningPoint},missionLifecycleContext());
+      log(`${mission().name}: ${summary}`);save();showMissionDetails();
+    };
+  }
+
+  function confirmTransponderEscape(){
+    const progress=state.missionState,carrierId=progress?.carrierId;
+    if(!carrierId||progress.escaped||state.playerCasualtyIds.includes(carrierId)||!isPlayerOperativeInPlay(carrierId))return;
+    showMissionConfirmation({title:'CONFIRM ESCAPE',description:`Has ${playerName(carrierId)} crossed Player A's killzone edge while carrying the transponder?`,cancelLabel:'Back',confirmLabel:'Confirm Escape'},async()=>{
+      const transactionId=`transponder-escape:${carrierId}`;
+      if(progress.transactions?.[transactionId]||state.gameEnd)return;
+      const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('recordTransponderEscape',{...missionLifecycleContext(),activationId:transactionId,operativeId:carrierId})):null;
+      if(objectiveEngine&&!outcome)return;
+      progress.transactions={...(progress.transactions||{}),[transactionId]:{committed:true}};
+      progress.escaped=true;progress.extractionConfirmed=true;progress.transponderStatus='escaped';progress.completed=true;progress.outcome='victory';
+      const summary=`${playerName(carrierId)} escaped with the transponder.`;
+      const entry=objectiveEngine?.getMissionRuntime().history?.at(-1);if(entry){entry.type='transponder-escape';entry.title=summary;entry.summary=summary;}
+      save();completeMission('victory');
+    });
+  }
+
+  function handleTransponderCarrierIncapacitation(){
+    const progress=state.missionState,carrierId=progress?.carrierId;
+    if(missionEngine()?.type!=='transponder'||!progress?.transponderFound||!carrierId||!state.playerCasualtyIds.includes(carrierId)||progress.escaped)return false;
+    progress.carrierId=null;progress.transponderStatus='onBattlefield';
+    const summary=`Transponder dropped when ${playerName(carrierId)} was incapacitated.`;
+    objectiveEngine?.recordMissionHistory({id:`transponder-drop:${carrierId}:${state.turningPoint}:${state.activationNumber}`,type:'transponder-drop',title:summary,summary,turningPoint:state.turningPoint},missionLifecycleContext());
+    log(`${mission().name}: ${summary}`);save();
+    if(livingPlayerOperativeCount()>0)showToast(`TRANSPONDER DROPPED — ${playerName(carrierId)} was incapacitated. Update the marker on the tabletop.`);
+    return true;
   }
 
   async function performAwakenRoom(roomId){
@@ -3539,19 +3607,8 @@ document.addEventListener('touchend',function(e){
       }
       updateMissionProgress(`corrected ${feature.label}.`);
     });
-    $$('[data-search-site]').forEach(button=>button.onclick=async()=>{
-      const carrier=$('#transponderOperative')?.value;
-      if(!carrier){showToast('Select the operative picking up this marker.');return;}
-      await performLocateItem(button.dataset.searchSite,carrier);
-    });
-    $('#transponderCarrier')?.addEventListener('change',event=>{state.missionState.carrierId=event.target.value||null;save();render();});
-    $('#transponderEscape')?.addEventListener('click',async()=>{
-      const carrierId=state.missionState.carrierId;
-      const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('recordTransponderEscape',{...missionLifecycleContext(),operativeId:carrierId})):null;
-      if(objectiveEngine&&!outcome)return;
-      state.missionState.escaped=true;
-      updateMissionProgress(`${playerName(carrierId)} escaped carrying the transponder.`);
-    });
+    $('#updateTransponderCarrier')?.addEventListener('click',showUpdateTransponderCarrier);
+    $('#transponderEscape')?.addEventListener('click',confirmTransponderEscape);
     $('#resolveMissionAction')?.addEventListener('click',confirmMissionAction);
     $$('[data-awaken-room]').forEach(button=>button.onclick=()=>performAwakenRoom(button.dataset.awakenRoom));
     $$('[data-confirm-room-placement]').forEach(button=>button.onclick=()=>{
@@ -4740,7 +4797,11 @@ document.addEventListener('touchend',function(e){
       {id:'hatch',name:'Operate Hatch',group:'mission',cost:1},
       {id:'breach',name:'Breach',group:'mission',cost:1}
     ];
-    if(state.missionId!=='destroy-sarcophagus')actions.push({id:'objective',name:'Mission Action',group:'mission',cost:1});
+    if(!['destroy-sarcophagus','recover-transponder'].includes(state.missionId))actions.push({id:'objective',name:'Mission Action',group:'mission',cost:1});
+    const transponder=state.missionState;
+    if(missionEngine()?.type==='transponder'&&!transponder?.transponderFound&&missionEngine().sites.some(site=>!transponder?.sites?.[site.id]||transponder.sites[site.id]==='available')){
+      actions.push({id:'pickUpMarker',name:'Pick Up Marker',group:'mission',cost:Number(objectiveDefinition?.actions?.find(item=>item.id==='searchTransponder')?.apCost)||1});
+    }
     if(canOfferBreachSarcophagus({missionBreachCommitted:(activation.completedActionIds||[]).includes('breachSarcophagus')},operativeId)){
       actions.push({id:'breachSarcophagus',name:'Breach Sarcophagus',group:'mission',cost:breachSarcophagusApCost(operativeId)});
     }
@@ -4835,13 +4896,20 @@ document.addEventListener('touchend',function(e){
     if(action.id==='hatch'&&state.missionId==='demolition-protocol'){showActivationFeatureTargetSelection(stage,'operate-hatch');return;}
     if(action.id==='breach'&&state.missionId==='demolition-protocol'){showActivationFeatureTargetSelection(stage,'breach');return;}
     if(action.id==='breachSarcophagus'){beginBreachSarcophagus(stage);return;}
+    if(action.id==='pickUpMarker'){
+      const choices=missionEngine().sites.filter(site=>!state.missionState.sites[site.id]||state.missionState.sites[site.id]==='available').map(site=>`<button type="button" class="btn secondary big-action" data-locate-site="${escapeHtml(site.id)}">${escapeHtml(site.label.toUpperCase())}</button>`).join('');
+      showModal('LOCATE ITEM',`<p>Which objective marker is this operative searching?</p><div class="human-npo-action-list">${choices}</div><div class="wizard-actions"><button class="btn ghost" id="cancelLocateItem">Back</button></div>`);
+      $('#cancelLocateItem').onclick=cancelCurrentHumanPlayerAction;
+      $$('[data-locate-site]',modalBody).forEach(button=>button.onclick=()=>{button.disabled=true;void performLocateItem(button.dataset.locateSite,activation.operativeId,stage);});
+      return;
+    }
     const descriptions={move:'Confirm that Reposition has been completed on the tabletop.',dash:'Confirm that Dash has been completed on the tabletop.',charge:'Confirm that Charge has been completed on the tabletop.',fallBack:'Confirm that Fall Back has been completed on the tabletop.',damage:'Confirm that the damaging action and its effects are complete.',hatch:'Confirm that Operate Hatch is complete.',breach:'Confirm that Breach is complete.',objective:'Confirm that the mission action resolved successfully.'};
     showModal(action.name,`<p>${escapeHtml(descriptions[action.id]||`Confirm ${action.name} is complete.`)}</p><div class="wizard-actions"><button class="btn ghost" id="cancelHumanPlayerAction">Cancel</button><button class="btn primary" id="commitHumanPlayerAction">${['move','dash','charge','fallBack'].includes(action.id)?'Movement Complete':'Action Complete'}</button></div>`);
     $('#cancelHumanPlayerAction').onclick=cancelCurrentHumanPlayerAction;
     $('#commitHumanPlayerAction').onclick=()=>completePlayerActivation(stage);
   }
 
-  function commitHumanPlayerAction(stage){
+  function commitHumanPlayerAction(stage,{deferContinuation=false}={}){
     const activation=activePlayerActivation(),pending=activation?.pendingAction;
     if(!activation||!pending||pending.activationId!==activation.activationId||pending.actionId!==stage.humanActionId)return false;
     if((activation.completedActionIds||[]).includes(pending.actionId))return false;
@@ -4857,6 +4925,13 @@ document.addEventListener('touchend',function(e){
     activation.pendingAction=null;state.combatState=null;state.missionActionContext=null;
     log(`${playerName(activation.operativeId)} completed ${summary}. ${activation.remainingAp} AP remaining.`);
     save();acknowledgeCurrentDiceRequest();
+    if(deferContinuation)return true;
+    return continueAfterCommittedHumanAction();
+  }
+
+  function continueAfterCommittedHumanAction(){
+    const activation=activePlayerActivation();
+    if(!activation)return false;
     if(playerCurrentWounds(activation.operativeId)<=0||activation.remainingAp<=0){void completeHumanPlayerActivation();return true;}
     renderHumanPlayerActionPicker();
     return true;
@@ -8953,7 +9028,7 @@ function showPlayerActivation(){
 
   function missionHistoryText(entry){
     const change=entry.changes?.[0];
-    if(entry.type==='mission-feature-opened'||entry.type==='mission-feature-corrected')return entry.summary||entry.title;
+    if(['mission-feature-opened','mission-feature-corrected','transponder-search','transponder-carrier','transponder-drop','transponder-escape'].includes(entry.type))return entry.summary||entry.title;
     if(entry.operativeId)return `${entry.title||'Mission activity'}: ${playerName(entry.operativeId)}`;
     if(!change)return entry.summary||entry.title||'Mission activity recorded.';
     const delta=change.after-change.before;
@@ -8976,6 +9051,10 @@ function showPlayerActivation(){
     const model=objectiveEngine.getMissionDetailsModel();
     const objective=model.objectives[0];
     const history=model.history.slice(0,objectiveDefinition.presentation.historyDisplayCount||5);
+    if(missionEngine()?.type==='transponder'){
+      const activity=history.length?`<ul class="mission-history">${history.map(entry=>`<li><span>${escapeHtml(missionHistoryText(entry))}</span>${entry.turningPoint?`<small>Turning Point ${entry.turningPoint}</small>`:''}</li>`).join('')}</ul>`:'<p class="muted mission-history-empty">No mission activity yet.</p>';
+      return `<div class="mission-details"><h3>RECOVER TRANSPONDER</h3>${missionProgressRenderers.transponder(missionEngine(),state.missionState||freshMissionState())}<section><h4>Recent Activity</h4>${activity}</section></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
+    }
     if(!objective)return `<div class="mission-details"><h3>${escapeHtml(model.name)}</h3><section><h4>Battle settings</h4><p>Restless Tomb: ${state.restlessTombEnabled?'On':'Off'} (House Rule)</p>${isPvpMode()?'':`<p>Deadly Encounters: ${deadlyEncountersStatusLabel()} (Official Expansion - White Dwarf 521)</p>`}</section><section><h4>Objective</h4><p>${escapeHtml(presentSideTerminology(model.objectiveSummary))}</p></section><section><h4>Recent Activity</h4>${history.length?`<ul class="mission-history">${history.map(entry=>`<li><span>${escapeHtml(presentSideTerminology(missionHistoryText(entry)))}</span></li>`).join('')}</ul>`:'<p class="muted mission-history-empty">No mission activity yet.</p>'}</section></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
     const completedDuring=objective.completedTurningPoint?`<section><h4>Completed during</h4><p>Turning Point ${objective.completedTurningPoint}</p></section>`:'';
     const activity=history.length?`<ul class="mission-history">${history.map(entry=>`<li><span>${escapeHtml(presentSideTerminology(missionHistoryText(entry)))}</span>${entry.turningPoint?`<small>Turning Point ${entry.turningPoint}</small>`:''}</li>`).join('')}</ul>`:'<p class="muted mission-history-empty">No mission activity yet.</p>';
@@ -8988,6 +9067,7 @@ function showPlayerActivation(){
     try{completed=Boolean(objectiveEngine?.getMissionHudModel().completed);content=missionDetailsContent();}
     catch(error){console.warn('[MissionEngine] Mission details unavailable.',error);content=missionDetailsContentFallback();}
     showModal(completed?'MISSION STATUS':'MISSION DETAILS',content);
+    bindMissionProgressControls();
   }
 
   function showMissionResult(title,outcome){

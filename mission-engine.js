@@ -217,6 +217,13 @@
     switch(expression.operation){case 'add':return values.reduce((sum,value)=>sum+value,0);case 'subtract':return values.slice(1).reduce((result,value)=>result-value,values[0]);case 'multiply':return values.reduce((result,value)=>result*value,1);case 'divide':if(values.length!==2||values[1]===0)throw new MissionEngineError('INVALID_EXPRESSION_VALUE','Mission division requires two operands and a non-zero divisor.');return values[0]/values[1];case 'ceil':if(values.length!==1)throw new MissionEngineError('INVALID_EXPRESSION_VALUE','Mission ceiling requires one operand.');return Math.ceil(values[0]);case 'min':return Math.min(...values);case 'max':return Math.max(...values);default:return 0;}
   }
 
+  function resolveRemainingEntityRoll(roll,remainingEntityCount){
+    if(!Number.isInteger(roll)||roll<1)throw new MissionEngineError('INVALID_DICE_RESULT','The entity search roll must be a positive integer.');
+    if(!Number.isInteger(remainingEntityCount)||remainingEntityCount<1)throw new MissionEngineError('INVALID_ENTITY_COUNT','At least one remaining entity is required.');
+    const otherRemainingMarkerCount=remainingEntityCount-1;
+    return {roll,remainingEntityCount,otherRemainingMarkerCount,found:roll>otherRemainingMarkerCount};
+  }
+
   function createMissionEngine(services={}){
     if(!isRecord(services))throw new MissionEngineError('INVALID_SERVICES','Mission Engine services must be an object.');
     let definition=null,runtime=null;
@@ -331,5 +338,5 @@
     return {initializeMissionRuntime,restoreMissionRuntime,refreshMissionContext,getMissionRuntime:()=>runtime,getMissionDefinition:()=>definition,getObjectiveValue,setObjectiveValue,adjustObjectiveValue,evaluateMissionConditions,executeMissionAction,executeMissionHook,evaluateObjectiveCompletion,recordMissionHistory,getMissionHudModel,getMissionDetailsModel};
   }
 
-  global.TombWorldMissionEngine={MissionEngineError,validateMissionDefinition,createMissionRegistry,loadMissionDefinition,evaluateCondition,evaluateExpression,createMissionEngine,constants:{DEFINITION_SCHEMA_VERSION,RUNTIME_SCHEMA_VERSION,HISTORY_LIMIT}};
+  global.TombWorldMissionEngine={MissionEngineError,validateMissionDefinition,createMissionRegistry,loadMissionDefinition,evaluateCondition,evaluateExpression,resolveRemainingEntityRoll,createMissionEngine,constants:{DEFINITION_SCHEMA_VERSION,RUNTIME_SCHEMA_VERSION,HISTORY_LIMIT}};
 })(typeof window!=='undefined'?window:globalThis);
