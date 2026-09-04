@@ -18,14 +18,18 @@ class DarkMapLoadingTests(unittest.TestCase):
 
     def test_critical_css_makes_first_paint_shell_dark(self):
         critical = INDEX.split("<style>", 1)[1].split("</style>", 1)[0]
-        self.assertIn("html,body,#gameWorkspace,#app", critical)
+        self.assertIn("html,body{", critical)
+        self.assertIn("#app:empty{", critical)
         self.assertIn("background:#06100c", critical)
         self.assertIn("min-height:100%", critical)
+        self.assertIn("min-height:100vh", critical)
         self.assertIn("color-scheme:dark", critical)
         self.assertLess(INDEX.index("<style>"), INDEX.index('rel="stylesheet"'))
 
     def test_loaded_css_keeps_root_and_route_layers_dark(self):
-        self.assertIn("html,body,.game-workspace,.app-shell{background-color:var(--bg)}", STYLES)
+        self.assertIn("html{background-color:var(--bg)}", STYLES)
+        self.assertNotIn("html,body,.game-workspace,.app-shell{background-color:var(--bg)}", STYLES)
+        self.assertIn(".app-shell{position:relative;max-width:1000px;margin:0 auto", STYLES)
         self.assertIn("--bg:#06100c", STYLES)
         self.assertIn("min-height:100vh", STYLES)
 
