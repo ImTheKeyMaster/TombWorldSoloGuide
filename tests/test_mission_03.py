@@ -69,12 +69,13 @@ assert.equal(resolve(1,1).otherRemainingMarkerCount,0);
         self.assertIn("const outcome=automatic?null:objectiveEngine?",locate)
         self.assertIn("const result=automatic?null:await missionDiceTotal",locate)
         self.assertIn("const found=automatic||TombWorldMissionEngine.resolveRemainingEntityRoll",locate)
-        self.assertIn("if(!commitHumanPlayerAction(stage,{deferContinuation:true}))return",locate)
+        self.assertIn("if(!commitHumanPlayerAction(stage,{deferContinuation:true,deferPersistence:true}))return",locate)
         self.assertIn("...(result===null?{}:{roll:result})",locate)
         self.assertIn("progress.lastRoll={siteId,...(result===null?{}:{roll:result})",locate)
         self.assertIn("else if(automatic)objectiveEngine?.recordMissionHistory",locate)
         self.assertIn("const diceResult=result===null?'':",locate)
         self.assertNotIn("pendingDice=",locate)
+        self.assertLess(locate.index("deferPersistence:true"),locate.index("state.missionActionContext=null;save();acknowledgeCurrentDiceRequest()"))
 
         self.assertIn("if(available.length===1){void performLocateItem(available[0].id,activation.operativeId,stage);return;}",selection)
         self.assertLess(selection.index("if(available.length===1)"),selection.index("showModal('LOCATE ITEM'"))
@@ -111,7 +112,7 @@ assert.equal(resolve(1,1).otherRemainingMarkerCount,0);
         self.assertEqual(definition['actions'][1]['operations'][0],{'type':'setOperativeInPlay','side':'player','operativeIdFrom':'operativeId','inPlay':False,'reason':'escaped'})
         for contract in (
             "name:'Pick Up Marker'", "cost:Number(objectiveDefinition", "performLocateItem(button.dataset.locateSite",
-            "commitHumanPlayerAction(stage,{deferContinuation:true})", "resumeKind:'mission'", "transactionId",
+            "commitHumanPlayerAction(stage,{deferContinuation:true,deferPersistence:true})", "resumeKind:'mission'", "transactionId",
             "transponderStatus='onBattlefield'", "showUpdateTransponderCarrier", "confirmTransponderEscape",
             "completeMission('victory')", "handleTransponderCarrierIncapacitation", "livingPlayerOperativeCount()===0"
         ):

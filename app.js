@@ -3434,7 +3434,7 @@ document.addEventListener('touchend',function(e){
     const result=automatic?null:await missionDiceTotal(outcome,'searchRoll',{title:'LOCATE ITEM'});
     const found=automatic||TombWorldMissionEngine.resolveRemainingEntityRoll(result,available.length).found;
     if(progress.transactions?.[transactionId])return;
-    if(!commitHumanPlayerAction(stage,{deferContinuation:true}))return;
+    if(!commitHumanPlayerAction(stage,{deferContinuation:true,deferPersistence:true}))return;
     progress.transactions={...(progress.transactions||{}),[transactionId]:{siteId,...(result===null?{}:{roll:result}),committed:true}};
     progress.sites[siteId]=found?'transponder':'cleared';
     progress.lastRoll={siteId,...(result===null?{}:{roll:result}),result:found?'transponder found':'false signal'};
@@ -4922,7 +4922,7 @@ document.addEventListener('touchend',function(e){
     $('#commitHumanPlayerAction').onclick=()=>completePlayerActivation(stage);
   }
 
-  function commitHumanPlayerAction(stage,{deferContinuation=false}={}){
+  function commitHumanPlayerAction(stage,{deferContinuation=false,deferPersistence=false}={}){
     const activation=activePlayerActivation(),pending=activation?.pendingAction;
     if(!activation||!pending||pending.activationId!==activation.activationId||pending.actionId!==stage.humanActionId)return false;
     if((activation.completedActionIds||[]).includes(pending.actionId))return false;
@@ -4937,7 +4937,7 @@ document.addEventListener('touchend',function(e){
     activation.resolvedActions=[...(activation.resolvedActions||[]),{sequence:pending.actionSequence,id:pending.actionId,name:stage.humanActionName,summary,apCost:pending.cost,apBefore:before,apRemaining:activation.remainingAp,attackSummaries:attacks.map(item=>item.attackType==='melee'?{targetId:item.targetId,targetName:item.targetName,before:item.before,after:item.after,damage:item.damage,attackType:item.attackType,damageDealt:item.attackerDamageDealt,damageSuffered:item.defenderDamageDealt,attackerBefore:item.attackerBefore,attackerAfter:item.attackerAfter,defenderBefore:item.defenderBefore,defenderAfter:item.defenderAfter,attackerIncapacitated:item.attackerIncapacitated,defenderIncapacitated:item.defenderIncapacitated,fightTransactionId:item.fightTransactionId}:{targetId:item.targetId,targetName:item.targetName,before:item.before,after:item.after,damage:item.damage,attackType:item.attackType})}];
     activation.pendingAction=null;state.combatState=null;state.missionActionContext=null;
     log(`${playerName(activation.operativeId)} completed ${summary}. ${activation.remainingAp} AP remaining.`);
-    save();acknowledgeCurrentDiceRequest();
+    if(!deferPersistence){save();acknowledgeCurrentDiceRequest();}
     if(deferContinuation)return true;
     return continueAfterCommittedHumanAction();
   }
