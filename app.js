@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.38';
+  const APP_VERSION = '9.2.39';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2525,6 +2525,17 @@ document.addEventListener('touchend',function(e){
     const activated=new Set(state.playerActivatedIds||[]);
     return inPlayPlayerOperativeIds().filter(id=>!casualties.has(id)&&!activated.has(id)).length;
   }
+  function canSkipRemainingActivations(){
+    if(state.phase!=='firefight'||state.completed||state.gameEnd)return false;
+    if(playerOperativesRemaining()<=0&&readyNpos().length<=0)return false;
+    if(!objectiveEngine?.getMissionHudModel().completed)return false;
+    const activation=state.lastActivation;
+    if(activation&&!activation.committed&&!activation.completed)return false;
+    return !state.pendingDice&&!state.combatState&&!state.fightState&&!state.missionActionContext&&!state.weaponRuleResolution&&!state.hotResolution;
+  }
+  function skipRemainingActivationsControl(){
+    return canSkipRemainingActivations()?'<button type="button" class="btn secondary skip-remaining-activations" id="skipRemainingActivations">Skip Remaining Activations</button>':'';
+  }
   function destroyedNpoCount(){ return state.roster.filter(n=>n.wounds<=0).length; }
   function eligibleNpoAttackTargets(){
     return inPlayLivingPlayerOperativeIds();
@@ -3709,8 +3720,8 @@ document.addEventListener('touchend',function(e){
     }
     setNextActivation(state.nextSide || state.initiative || 'player');
     if(state.phase==='end'){save();return nextStepCard();}
-    if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>${escapeHtml(playerSideLabel())} Activation</h2><p>Activate one ${escapeHtml(playerSideLabel())} operative on the tabletop. After it completes, the Guide will alternate to a ${escapeHtml(opponentSingularLabel())} if one is ready.</p><button class="btn primary big-action" id="playerActivation">Activate an Operative</button></section>`;
-    if(state.nextSide==='npo' && readyNpos().length>0)return `<section class="next-card npo-activation-card"><span class="phase">${escapeHtml(opponentSingularLabel().toUpperCase())} ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">${escapeHtml(opponentSingularLabel())} Activation</h2><p class="npo-activation-meta">${isPvpMode()?`Choose a Ready ${escapeHtml(opponentSingularLabel())} to activate.`:`Identify the next ready ${escapeHtml(opponentSingularLabel())} using the Threat Principle.`}</p><button class="btn primary big-action" id="npoActivation">Activate ${escapeHtml(opponentSingularLabel())}</button></section>`;
+    if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>${escapeHtml(playerSideLabel())} Activation</h2><p>Activate one ${escapeHtml(playerSideLabel())} operative on the tabletop. After it completes, the Guide will alternate to a ${escapeHtml(opponentSingularLabel())} if one is ready.</p><button class="btn primary big-action" id="playerActivation">Activate an Operative</button>${skipRemainingActivationsControl()}</section>`;
+    if(state.nextSide==='npo' && readyNpos().length>0)return `<section class="next-card npo-activation-card"><span class="phase">${escapeHtml(opponentSingularLabel().toUpperCase())} ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">${escapeHtml(opponentSingularLabel())} Activation</h2><p class="npo-activation-meta">${isPvpMode()?`Choose a Ready ${escapeHtml(opponentSingularLabel())} to activate.`:`Identify the next ready ${escapeHtml(opponentSingularLabel())} using the Threat Principle.`}</p><button class="btn primary big-action" id="npoActivation">Activate ${escapeHtml(opponentSingularLabel())}</button>${skipRemainingActivationsControl()}</section>`;
     setNextActivation(state.nextSide==='player'?'npo':'player');
     save();
     return nextStepCard();
@@ -4145,6 +4156,7 @@ document.addEventListener('touchend',function(e){
     $('#retryStrategyDice')?.addEventListener('click',finishTurningPointStart);
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
     $('#npoActivation')?.addEventListener('click',showNpoSelection);
+    $('#skipRemainingActivations')?.addEventListener('click',confirmSkipRemainingActivations);
     $('#missionHud')?.addEventListener('click',showMissionDetails);
     bindMissionProgressControls();
     $('#resolveAuspexCalibration')?.addEventListener('click',performAuspexCalibration);
@@ -4162,6 +4174,35 @@ document.addEventListener('touchend',function(e){
     $('#threatHudToggle')?.addEventListener('click',()=>{threatAdjustOpen=!threatAdjustOpen;render();});
     $('#threatUp')?.addEventListener('click',()=>{setThreat(1,'Manual adjustment');save();render();});
     $('#threatDown')?.addEventListener('click',()=>{setThreat(-1,'Manual adjustment');save();render();});
+  }
+
+  let skipRemainingActivationsPending=false;
+  function confirmSkipRemainingActivations(){
+    if(!canSkipRemainingActivations()||skipRemainingActivationsPending)return;
+    showModal('SKIP REMAINING ACTIVATIONS?',`<p>All unactivated operatives and NPOs will be treated as finished for this Turning Point. You will continue to the end-of-turn steps.</p><div class="wizard-actions"><button type="button" class="btn ghost" data-close data-dialog-focus>BACK</button><button type="button" class="btn secondary" id="confirmSkipRemainingActivations">SKIP ACTIVATIONS</button></div>`);
+    $('#confirmSkipRemainingActivations').onclick=skipRemainingActivations;
+  }
+
+  function skipRemainingActivations(){
+    if(skipRemainingActivationsPending||!canSkipRemainingActivations())return false;
+    skipRemainingActivationsPending=true;
+    const unresolvedPlayerIds=inPlayPlayerOperativeIds().filter(id=>!(state.playerCasualtyIds||[]).includes(id)&&!(state.playerActivatedIds||[]).includes(id));
+    const unresolvedNpos=readyNpos();
+    state.playerActivatedIds=[...new Set([...(state.playerActivatedIds||[]),...unresolvedPlayerIds])];
+    unresolvedNpos.forEach(npo=>{npo.ready=false;});
+    state.playerReady=0;
+    state.playerActivated=state.playerActivatedIds.length;
+    state.npoActivated+=unresolvedNpos.length;
+    state.activationNumber+=unresolvedPlayerIds.length+unresolvedNpos.length;
+    state.activeNpoId=null;
+    state.nextSide=null;
+    state.phase='end';
+    log('Remaining activations skipped.');
+    save();
+    closeModal();
+    render();
+    skipRemainingActivationsPending=false;
+    return true;
   }
 
   function showCeaselessScuttling(){

@@ -1,4 +1,11 @@
-# Tomb World Battle Guide v9.2.38
+# Tomb World Battle Guide v9.2.39
+
+## v9.2.39
+
+**Version 9.2.39**
+
+- Added an objective-completion shortcut that resolves all remaining Player and NPO activation trackers after one confirmation.
+- Continues directly to Score and clean up without simulating actions, running NPO AI, or completing end-of-turn procedures.
 
 ## v9.2.38
 

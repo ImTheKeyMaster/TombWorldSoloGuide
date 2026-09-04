@@ -15,9 +15,9 @@ def source(start, end):
     return APP[APP.index(start):APP.index(end, APP.index(start))]
 
 
-def test_release_surfaces_are_v9237_without_save_key_change():
+def test_release_surfaces_preserve_v9237_behavior_without_save_key_change():
     expected = CURRENT_APP_VERSION
-    assert tuple(map(int, expected.split("."))) == (9, 2, 37)
+    assert tuple(map(int, expected.split("."))) >= (9, 2, 37)
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
     assert f"const APP_VERSION = '{expected}';" in WORKER
     assert f'<div class="version">V{expected}</div>' in INDEX
