@@ -1,4 +1,11 @@
-# Tomb World Battle Guide v9.2.37
+# Tomb World Battle Guide v9.2.38
+
+## v9.2.38
+
+**Version 9.2.38**
+
+- Prevented the browser default white first paint with a critical Tomb World shell background.
+- Kept the map card and image loading surface dark while mission map assets load, decode, or fail.
 
 ## v9.2.37
 

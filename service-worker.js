@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '9.2.37';
+const APP_VERSION = '9.2.38';
 const CACHE_PREFIX = 'tomb-world-battle-guide-';
 const LEGACY_CACHE_PREFIXES = ['tomb-world-solo-guide-'];
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
