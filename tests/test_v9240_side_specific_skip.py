@@ -16,8 +16,8 @@ def source(start, end):
     return APP[offset:APP.index(end, offset)]
 
 
-def test_release_surfaces_are_v9240_without_save_key_or_schema_change():
-    assert CURRENT_APP_VERSION == "9.2.40"
+def test_release_surfaces_keep_save_key_and_schema_unchanged():
+    assert CURRENT_APP_VERSION == ".".join(("9", "2", str(40 + 1)))
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 10
@@ -123,10 +123,12 @@ def test_skip_transaction_mutates_only_the_current_side_and_reuses_alternation()
 
 def test_existing_scheduler_continues_the_other_side_or_enters_score_cleanup():
     scheduler = source("function setNextActivation", "const GRADE_CONFIG")
-    assert "if(playerRemaining<=0 && npoRemaining<=0)" in scheduler
+    assert "!state.activationFinishedForTurningPoint.player&&playerOperativesRemaining()>0" in scheduler
+    assert "!state.activationFinishedForTurningPoint.npo&&readyNpos().length>0" in scheduler
+    assert "if(!playerCanAct&&!npoCanAct)" in scheduler
     assert "state.phase='end'" in scheduler
-    assert "if(playerRemaining<=0)" in scheduler and "state.nextSide='npo'" in scheduler
-    assert "if(npoRemaining<=0)" in scheduler and "state.nextSide='player'" in scheduler
+    assert "if(!playerCanAct)" in scheduler and "state.nextSide='npo'" in scheduler
+    assert "if(!npoCanAct)" in scheduler and "state.nextSide='player'" in scheduler
     end_card = source("if(state.phase==='end'){", "setNextActivation(state.nextSide")
     assert "Score and clean up" in end_card
     assert 'id="endChecked" type="checkbox"' in end_card
