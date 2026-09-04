@@ -76,8 +76,8 @@ class CollapsibleActiveEventsTests(unittest.TestCase):
 
     def test_11_player_and_npo_activation_cards_follow_the_component(self):
         next_step = function_source("nextStepCard", "missionStrategyPending")
-        self.assertIn('<h2>Player Activation</h2>', next_step)
-        self.assertIn('<h2 class="npo-activation-title">NPO Activation</h2>', next_step)
+        self.assertIn('<h2>${escapeHtml(teamName)} Activation</h2>', next_step)
+        self.assertIn('<h2 class="npo-activation-title">Necron Activation</h2>', next_step)
         self.assertLess(self.render_play.index("activeEventEffectsHtml()"), self.render_play.index("nextStepCard()"))
 
     def test_12_strategy_phase_keeps_its_resolution_cards(self):

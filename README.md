@@ -4,8 +4,8 @@
 
 **Version 9.2.40**
 
-- Makes Skip Remaining Activations available whenever eligible activations remain on a stable Activation Phase screen, independent of mission progress.
-- Keeps the existing confirmation, single skip transaction, and direct transition to Score and clean up from both Player and NPO activation screens.
+- Makes Skip Remaining side-specific, leaving the opposing side's eligible activations unchanged and continuing that side without empty alternations.
+- Uses contextual kill-team and Necron activation labels, with per-side first-activation visibility in PvP and immediate Necron skipping in Solo.
 
 ## v9.2.39
 

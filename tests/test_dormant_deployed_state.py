@@ -24,7 +24,8 @@ class DormantDeployedStateTests(unittest.TestCase):
     def test_all_deployed_dormant_npos_have_no_activation_button(self):
         activation = self.source("function nextStepCard()", "function missionStrategyPending")
         self.assertIn("readyNpos().length>0", activation)
-        self.assertEqual(activation.count("Activate NPO"), 1)
+        self.assertEqual(activation.count('id="npoActivation"'), 1)
+        self.assertIn("Activate ${activationModelLabel('npo')}", activation)
 
     def test_awakened_battlefield_uses_normal_activation_without_banner(self):
         activation = self.source("function nextStepCard()", "function missionStrategyPending")
