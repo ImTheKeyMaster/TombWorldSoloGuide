@@ -491,13 +491,12 @@ document.addEventListener('touchend',function(e){
   function isPvpMode(){return state.gameMode==='pvp';}
   function selectedPlayerTeamName(fallback='Kill Team'){return playerTeamData?.teamName||playerTeamEntry()?.name||fallback;}
   function transdimensionalRelocationSelectionSummary(){return `Two ${selectedPlayerTeamName('Player')} operatives were randomly selected to swap positions.`;}
-  function playerSideLabel(){return isPvpMode()?selectedPlayerTeamName():'Player';}
-  function opponentSingularLabel(){return isPvpMode()?'Necron':'NPO';}
-  function opponentPluralLabel(){return isPvpMode()?'Necrons':'NPOs';}
+  function playerSideLabel(){return selectedPlayerTeamName();}
+  function opponentSingularLabel(){return 'Necron';}
+  function opponentPluralLabel(){return 'Necrons';}
   function deadlyEncountersActive(){return !isPvpMode()&&state.deadlyEncountersEnabled===true;}
   function deadlyEncountersStatusLabel(){return deadlyEncountersActive()?'On':'Off';}
   function presentSideTerminology(text){
-    if(!isPvpMode())return text;
     return String(text)
       .replace(/NPOs\b/g,()=>opponentPluralLabel())
       .replace(/NPO\b/g,()=>opponentSingularLabel())
@@ -2525,15 +2524,32 @@ document.addEventListener('touchend',function(e){
     const activated=new Set(state.playerActivatedIds||[]);
     return inPlayPlayerOperativeIds().filter(id=>!casualties.has(id)&&!activated.has(id)).length;
   }
+  function activationSideName(side){
+    return side==='npo'?'Necron':selectedPlayerTeamName();
+  }
+  function activationModelLabel(side,{plural=false}={}){
+    if(side==='npo')return plural?(isPvpMode()?'Necron Operatives':'Necrons'):`a Necron${isPvpMode()?' Operative':''}`;
+    const teamName=activationSideName(side);
+    if(plural)return `${teamName} Operatives`;
+    return `${/^[aeiou]/i.test(teamName)?'an':'a'} ${teamName} Operative`;
+  }
   function canSkipRemainingActivations(){
     if(state.phase!=='firefight'||state.completed||state.gameEnd)return false;
-    if(playerOperativesRemaining()<=0&&readyNpos().length<=0)return false;
+    const side=state.nextSide;
+    if(side!=='player'&&side!=='npo')return false;
+    if(side==='player'&&playerOperativesRemaining()<=0)return false;
+    if(side==='npo'&&readyNpos().length<=0)return false;
     const activation=state.lastActivation;
     if(activation&&!activation.committed&&!activation.completed)return false;
-    return !state.pendingDice&&!state.combatState&&!state.fightState&&!state.missionActionContext&&!state.weaponRuleResolution&&!state.hotResolution;
+    const safe=!state.pendingDice&&!state.combatState&&!state.fightState&&!state.missionActionContext&&!state.weaponRuleResolution&&!state.hotResolution;
+    if(!safe)return false;
+    if(!isPvpMode()&&side==='npo')return true;
+    return side==='player'?state.playerActivated>0:state.npoActivated>0;
   }
   function skipRemainingActivationsControl(){
-    return canSkipRemainingActivations()?'<button type="button" class="btn secondary skip-remaining-activations" id="skipRemainingActivations">Skip Remaining Activations</button>':'';
+    if(!canSkipRemainingActivations())return '';
+    const models=activationModelLabel(state.nextSide,{plural:true});
+    return `<button type="button" class="btn secondary skip-remaining-activations" id="skipRemainingActivations">Skip Remaining ${escapeHtml(models)}</button>`;
   }
   function destroyedNpoCount(){ return state.roster.filter(n=>n.wounds<=0).length; }
   function eligibleNpoAttackTargets(){
@@ -3719,8 +3735,15 @@ document.addEventListener('touchend',function(e){
     }
     setNextActivation(state.nextSide || state.initiative || 'player');
     if(state.phase==='end'){save();return nextStepCard();}
-    if(state.nextSide==='player' && playerOperativesRemaining()>0) return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>${escapeHtml(playerSideLabel())} Activation</h2><p>Activate one ${escapeHtml(playerSideLabel())} operative on the tabletop. After it completes, the Guide will alternate to a ${escapeHtml(opponentSingularLabel())} if one is ready.</p><button class="btn primary big-action" id="playerActivation">Activate an Operative</button>${skipRemainingActivationsControl()}</section>`;
-    if(state.nextSide==='npo' && readyNpos().length>0)return `<section class="next-card npo-activation-card"><span class="phase">${escapeHtml(opponentSingularLabel().toUpperCase())} ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">${escapeHtml(opponentSingularLabel())} Activation</h2><p class="npo-activation-meta">${isPvpMode()?`Choose a Ready ${escapeHtml(opponentSingularLabel())} to activate.`:`Identify the next ready ${escapeHtml(opponentSingularLabel())} using the Threat Principle.`}</p><button class="btn primary big-action" id="npoActivation">Activate ${escapeHtml(opponentSingularLabel())}</button>${skipRemainingActivationsControl()}</section>`;
+    if(state.nextSide==='player' && playerOperativesRemaining()>0){
+      const teamName=activationSideName('player');
+      const action=state.playerActivated>0?`Activate Next ${teamName} Operative`:`Activate ${activationModelLabel('player')}`;
+      return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>${escapeHtml(teamName)} Activation</h2><p>Activate one ${escapeHtml(teamName)} operative on the tabletop. After it completes, the Guide will alternate to a Necron if one is ready.</p><button class="btn primary big-action" id="playerActivation">${escapeHtml(action)}</button>${skipRemainingActivationsControl()}</section>`;
+    }
+    if(state.nextSide==='npo' && readyNpos().length>0){
+      const action=state.npoActivated>0?'Activate Next Necron':`Activate ${activationModelLabel('npo')}`;
+      return `<section class="next-card npo-activation-card"><span class="phase">NECRON ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">Necron Activation</h2><p class="npo-activation-meta">${isPvpMode()?'Choose a Ready Necron to activate.':'Identify the next ready Necron using the Threat Principle.'}</p><button class="btn primary big-action" id="npoActivation">${escapeHtml(action)}</button>${skipRemainingActivationsControl()}</section>`;
+    }
     setNextActivation(state.nextSide==='player'?'npo':'player');
     save();
     return nextStepCard();
@@ -4178,25 +4201,29 @@ document.addEventListener('touchend',function(e){
   let skipRemainingActivationsPending=false;
   function confirmSkipRemainingActivations(){
     if(!canSkipRemainingActivations()||skipRemainingActivationsPending)return;
-    showModal('SKIP REMAINING ACTIVATIONS?',`<p>All unactivated operatives and NPOs will be treated as finished for this Turning Point. You will continue to the end-of-turn steps.</p><div class="wizard-actions"><button type="button" class="btn ghost" data-close data-dialog-focus>BACK</button><button type="button" class="btn secondary" id="confirmSkipRemainingActivations">SKIP ACTIVATIONS</button></div>`);
+    const side=state.nextSide;
+    const sideName=activationSideName(side),otherName=activationSideName(side==='player'?'npo':'player');
+    const models=activationModelLabel(side,{plural:true});
+    const otherModels=side==='player'?'Necrons':`${otherName} operatives`;
+    const readiness=side==='player'?'ready':'eligible';
+    showModal(`SKIP REMAINING ${models.toUpperCase()}?`,`<p>All remaining ${readiness} ${escapeHtml(models)} will be treated as finished for this Turning Point. ${escapeHtml(otherModels)} may continue to activate.</p><div class="wizard-actions"><button type="button" class="btn ghost" data-close data-dialog-focus>BACK</button><button type="button" class="btn secondary" id="confirmSkipRemainingActivations">SKIP ${escapeHtml(sideName.toUpperCase())}</button></div>`);
     $('#confirmSkipRemainingActivations').onclick=skipRemainingActivations;
   }
 
   function skipRemainingActivations(){
     if(skipRemainingActivationsPending||!canSkipRemainingActivations())return false;
     skipRemainingActivationsPending=true;
-    const unresolvedPlayerIds=inPlayPlayerOperativeIds().filter(id=>!(state.playerCasualtyIds||[]).includes(id)&&!(state.playerActivatedIds||[]).includes(id));
-    const unresolvedNpos=readyNpos();
-    state.playerActivatedIds=[...new Set([...(state.playerActivatedIds||[]),...unresolvedPlayerIds])];
-    unresolvedNpos.forEach(npo=>{npo.ready=false;});
-    state.playerReady=0;
-    state.playerActivated=state.playerActivatedIds.length;
-    state.npoActivated+=unresolvedNpos.length;
-    state.activationNumber+=unresolvedPlayerIds.length+unresolvedNpos.length;
-    state.activeNpoId=null;
-    state.nextSide=null;
-    state.phase='end';
-    log('Remaining activations skipped.');
+    const side=state.nextSide;
+    if(side==='player'){
+      const unresolvedPlayerIds=remainingPlayerOperatives();
+      state.playerActivatedIds=[...new Set([...(state.playerActivatedIds||[]),...unresolvedPlayerIds])];
+      state.playerReady=0;
+    }else{
+      readyNpos().forEach(npo=>{npo.ready=false;});
+      state.activeNpoId=null;
+    }
+    advanceAfterActivation(side);
+    log(`Remaining ${activationModelLabel(side,{plural:true})} skipped.`);
     save();
     closeModal();
     render();
@@ -6527,7 +6554,7 @@ function showPlayerActivation(){
   }
 
   function showMultiTargetProfileRecovery(attackerSide,onReturn){
-    const attackerLabel=attackerSide==='npo'?(isPvpMode()?'Necron':'NPO'):playerSideLabel();
+    const attackerLabel=attackerSide==='npo'?opponentSingularLabel():playerSideLabel();
     showModal('Attack profile unavailable',`<div class="modal-inner"><div class="summary-box"><strong>Attack profile unavailable</strong><p>The weapon selected for this multi-target attack could not be restored. Completed target results were preserved.</p></div><div class="wizard-actions"><button class="btn primary" id="returnFromMissingProfile">Return to ${escapeHtml(attackerLabel)} Activation</button></div></div>`);
     $('#returnFromMissingProfile').onclick=onReturn;
   }
@@ -8032,7 +8059,7 @@ function showPlayerActivation(){
       'cranial-overload':['Choose a visible Player operative within 3 inches. It gets 1 fewer AP in its next activation, to a minimum of 1 (-1 APL).','Cannot be used while the Accelerator is in enemy control range.'],
       'nanoscarab-beam':['Choose a visible wounded Canoptek Circle NPO within 6 inches. Roll 3D3 and restore that many wounds, up to its maximum.','It cannot target an incapacitated NPO or one saved by Reanimate this turning point.']
     };
-    return (paragraphs[action.id]||[action.description]).map(text=>`<p>${escapeHtml(isPvpMode()?text.replaceAll('Player operative',`${playerSideLabel()} operative`).replaceAll('NPO','Necron'):text)}</p>`).join('');
+    return (paragraphs[action.id]||[action.description]).map(text=>`<p>${escapeHtml(presentSideTerminology(text))}</p>`).join('');
   }
   function resolveNpoSpecialAction(n,decision,answers,questionHistory){
     const action=npoSpecialAction(n,decision.action);
@@ -8041,7 +8068,7 @@ function showPlayerActivation(){
     const friendlyOptions=friendlies.map(target=>`<option value="${escapeHtml(target.id)}">${escapeHtml(npoName(target))}</option>`).join('');
     const enemyOptions=(action.target?.side==='enemy'?eligibleNpoSpecialActionTargets(n,action):[]).map(target=>`<option value="${escapeHtml(target.id)}">${escapeHtml(playerTargetLabel(target.id))}</option>`).join('');
     const targetOptions=action.target?.side==='enemy'?enemyOptions:friendlyOptions;
-    const targetLabel=action.target?.side==='enemy'?(isPvpMode()?`${playerSideLabel()} operative`:'Player operative'):(isPvpMode()?`Friendly ${opponentSingularLabel()}`:'Friendly NPO');
+    const targetLabel=action.target?.side==='enemy'?`${playerSideLabel()} operative`:`Friendly ${opponentSingularLabel()}`;
     if(action.id==='geomantic-disturbance'){
       const affected=[...sortedNposForDisplay(activeNpos()),...inPlayLivingPlayerOperativeIds().map(id=>({id:`player:${id}`,label:playerTargetLabel(id),ariaLabel:playerTargetAriaLabel(id)}))];
       showModal(action.name,`<p>Choose a visible terrain point within 8 inches, then select every operative within 2 inches of it.</p><div class="checklist">${affected.map(target=>`<label class="check-row"><input type="checkbox" data-disturbance-target="${escapeHtml(target.id)}"${target.ariaLabel?` aria-label="${escapeHtml(target.ariaLabel)}"`:''}><span>${escapeHtml(target.label||npoName(target))}</span></label>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="cancelSpecialAction">Cancel</button><button class="btn primary" id="confirmSpecialAction">Roll Damage</button></div>`);

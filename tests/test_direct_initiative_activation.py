@@ -42,8 +42,8 @@ class DirectInitiativeActivationTests(unittest.TestCase):
         self.assertNotIn("initiativeStatusHtml", card)
         self.assertNotIn("has initiative", card)
         self.assertNotIn("have initiative", card)
-        self.assertIn("<h2>Player Activation</h2>", card)
-        self.assertIn(">NPO Activation</h2>", card)
+        self.assertIn("<h2>${escapeHtml(teamName)} Activation</h2>", card)
+        self.assertIn(">Necron Activation</h2>", card)
         self.assertIn("activationProgressLabel()", card)
 
     def test_legacy_confirmation_save_restores_directly(self):

@@ -96,9 +96,9 @@ class RemediationPr3Tests(unittest.TestCase):
         self.assertNotIn("initiativeStatusHtml()", npo_activation)
         self.assertNotIn("has initiative", next_step)
         self.assertNotIn("have initiative", next_step)
-        self.assertIn("Identify the next ready NPO using the Threat Principle.", npo_activation)
+        self.assertIn("Identify the next ready Necron using the Threat Principle.", npo_activation)
         self.assertNotIn("Apply the Threat Principle to select the next ready NPO.", npo_activation)
-        self.assertIn('id="npoActivation">Activate NPO</button>', npo_activation)
+        self.assertIn('id="npoActivation">${escapeHtml(action)}', npo_activation)
 
     def test_legacy_null_rolls_migrate_as_automatic_initiative(self):
         normalize = self.function_source("normalizeState", "npoDefinition")
