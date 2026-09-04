@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.40';
+  const APP_VERSION = '9.2.41';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -1100,7 +1100,7 @@ document.addEventListener('touchend',function(e){
     version:APP_VERSION, saveVersion:currentSaveVersion(), gameMode:null, screen:'home', tab:'play', setupStep:0, missionId:null,
     backgroundSelection:null,
     setupChecks:{}, restlessTombEnabled:false, deadlyEncountersEnabled:false, deadlyEncountersState:DeadlyEncounters.emptyState(), tombWorldVariant:'standard', roster:[], playerTeamId:'', playerTeamFile:'', playerRoster:[], playerDisplayNumbers:{}, playerRosterInitializedForTeamId:'', playerCount:0, playerReady:0, playerDeployed:false, turningPoint:0,
-    threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0,
+    threat:0, initiative:'player', phase:'setup', nextSide:'player', tracker:0, activationFinishedForTurningPoint:{player:false,npo:false},
     activeNpoId:null, journal:[], lastActivation:null, newIds:[], completed:false,
     strategyStage:null, strategyData:null, strategyPipeline:null, missionReadyContext:{turningPoint:null,sarcophagusControllers:0}, activationNumber:0,totalActivationsThisTP:0, playerActivated:0, npoActivated:0,
     activationHistory:[], playerActivatedIds:[], playerCasualtyIds:[], playerWounds:{}, playerOperativeStates:{}, reinforcementState:{turningPoint:0,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0,blockedByCapacity:0,blockedByInventory:0},
@@ -1242,6 +1242,10 @@ document.addEventListener('touchend',function(e){
     }
     const base=initialState(), merged={...base,...raw};
     merged.gameMode=raw.gameMode===null?null:(raw.gameMode==='pvp'?'pvp':'solo');
+    merged.activationFinishedForTurningPoint={
+      player:raw.activationFinishedForTurningPoint?.player===true,
+      npo:raw.activationFinishedForTurningPoint?.npo===true
+    };
     merged.gradeMilestoneSequence=Math.max(0,Math.trunc(Number(raw.gradeMilestoneSequence)||0));
     if(isRecord(raw.gradeMilestone)){
       const tracked=typeof raw.gradeMilestone.instanceId==='string'&&typeof raw.gradeMilestone.narrationSeen==='boolean';
@@ -2562,24 +2566,25 @@ document.addEventListener('touchend',function(e){
   }
 
   function setNextActivation(preferredSide){
-    const playerRemaining=playerOperativesRemaining();
-    const npoRemaining=readyNpos().length;
+    const playerCanAct=!state.activationFinishedForTurningPoint.player&&playerOperativesRemaining()>0;
+    const npoCanAct=!state.activationFinishedForTurningPoint.npo&&readyNpos().length>0;
 
-    if(playerRemaining<=0 && npoRemaining<=0){
+    if(!playerCanAct&&!npoCanAct){
       state.nextSide=null;
       state.phase='end';
       return null;
     }
-    if(playerRemaining<=0){
+    if(!playerCanAct){
       state.nextSide='npo';
       return 'npo';
     }
-    if(npoRemaining<=0){
+    if(!npoCanAct){
       state.nextSide='player';
       return 'player';
     }
 
     state.nextSide=preferredSide==='npo'?'npo':'player';
+    console.assert(!state.activationFinishedForTurningPoint[state.nextSide],'Activation scheduler selected a finished side.');
     return state.nextSide;
   }
 
@@ -4222,6 +4227,7 @@ document.addEventListener('touchend',function(e){
       readyNpos().forEach(npo=>{npo.ready=false;});
       state.activeNpoId=null;
     }
+    state.activationFinishedForTurningPoint[side]=true;
     advanceAfterActivation(side);
     log(`Remaining ${activationModelLabel(side,{plural:true})} skipped.`);
     save();
@@ -4270,6 +4276,7 @@ document.addEventListener('touchend',function(e){
     state.tpStartPlayerCasualties=(state.playerCasualtyIds||[]).length;
     state.gradeMilestone=null;
     state.playerReady=Math.max(0,state.playerCount-(state.playerCasualtyIds||[]).length);
+    state.activationFinishedForTurningPoint={player:false,npo:false};
     state.playerActivated=0;state.npoActivated=0;state.activationNumber=0;state.activationHistory=[];state.playerActivatedIds=[];
     state.strategyData={grade:threatGrade(),reinforcements:[],actualReinforcements:0,blocked:0,event:null,playerRoll:null,npoRoll:null,suggestedInitiative:'player',missionReadyHooks:[],viewStep:'actions'};
     state.strategyPipeline={current:'ready',completed:[]};

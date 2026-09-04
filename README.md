@@ -1,4 +1,11 @@
-# Tomb World Battle Guide v9.2.40
+# Tomb World Battle Guide v9.2.41
+
+## v9.2.41
+
+**Version 9.2.41**
+
+- Keeps a side that chooses Skip Remaining unavailable for the rest of the current Turning Point, including across saves and reloads.
+- Schedules consecutive activations for the only eligible side, then clears both finished-side flags during the next Turning Point Ready/reset flow.
 
 ## v9.2.40
 
