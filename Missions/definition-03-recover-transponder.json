@@ -49,12 +49,14 @@
     {
       "id": "recordTransponderEscape",
       "label": "Recover Transponder",
+      "oncePer": "game",
       "availability": {
         "all": [
           { "path": "mission.objectives.transponderRecovered.completed", "operator": "==", "value": false }
         ]
       },
       "operations": [
+        { "type": "setOperativeInPlay", "side": "player", "operativeIdFrom": "operativeId", "inPlay": false, "reason": "escaped" },
         { "type": "setCounter", "objectiveId": "transponderRecovered", "value": 1 }
       ]
     }

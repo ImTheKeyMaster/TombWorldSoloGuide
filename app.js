@@ -1469,6 +1469,9 @@ document.addEventListener('touchend',function(e){
     for(const id of merged.missionState?.escapedIds||[]){
       if(merged.playerRoster.includes(id))merged.playerOperativeStates[id]={inPlay:false,offBoardReason:'escaped'};
     }
+    if(missionEngine(savedMission)?.type==='transponder'&&merged.missionState?.escaped&&merged.playerRoster.includes(merged.missionState.carrierId)){
+      merged.playerOperativeStates[merged.missionState.carrierId]={inPlay:false,offBoardReason:'escaped'};
+    }
     const legacyEscapeCount=Number(raw?.missionRuntime?.missionId)==1&&!merged.missionState?.escapedIds?.length
       ? boundedInteger(raw?.missionRuntime?.objectives?.escapedOperatives?.value,0,merged.playerRoster.length)
       : 0;
