@@ -491,13 +491,12 @@ document.addEventListener('touchend',function(e){
   function isPvpMode(){return state.gameMode==='pvp';}
   function selectedPlayerTeamName(fallback='Kill Team'){return playerTeamData?.teamName||playerTeamEntry()?.name||fallback;}
   function transdimensionalRelocationSelectionSummary(){return `Two ${selectedPlayerTeamName('Player')} operatives were randomly selected to swap positions.`;}
-  function playerSideLabel(){return isPvpMode()?selectedPlayerTeamName():'Player';}
-  function opponentSingularLabel(){return isPvpMode()?'Necron':'NPO';}
-  function opponentPluralLabel(){return isPvpMode()?'Necrons':'NPOs';}
+  function playerSideLabel(){return selectedPlayerTeamName();}
+  function opponentSingularLabel(){return 'Necron';}
+  function opponentPluralLabel(){return 'Necrons';}
   function deadlyEncountersActive(){return !isPvpMode()&&state.deadlyEncountersEnabled===true;}
   function deadlyEncountersStatusLabel(){return deadlyEncountersActive()?'On':'Off';}
   function presentSideTerminology(text){
-    if(!isPvpMode())return text;
     return String(text)
       .replace(/NPOs\b/g,()=>opponentPluralLabel())
       .replace(/NPO\b/g,()=>opponentSingularLabel())
@@ -6555,7 +6554,7 @@ function showPlayerActivation(){
   }
 
   function showMultiTargetProfileRecovery(attackerSide,onReturn){
-    const attackerLabel=attackerSide==='npo'?(isPvpMode()?'Necron':'NPO'):playerSideLabel();
+    const attackerLabel=attackerSide==='npo'?opponentSingularLabel():playerSideLabel();
     showModal('Attack profile unavailable',`<div class="modal-inner"><div class="summary-box"><strong>Attack profile unavailable</strong><p>The weapon selected for this multi-target attack could not be restored. Completed target results were preserved.</p></div><div class="wizard-actions"><button class="btn primary" id="returnFromMissingProfile">Return to ${escapeHtml(attackerLabel)} Activation</button></div></div>`);
     $('#returnFromMissingProfile').onclick=onReturn;
   }
@@ -8060,7 +8059,7 @@ function showPlayerActivation(){
       'cranial-overload':['Choose a visible Player operative within 3 inches. It gets 1 fewer AP in its next activation, to a minimum of 1 (-1 APL).','Cannot be used while the Accelerator is in enemy control range.'],
       'nanoscarab-beam':['Choose a visible wounded Canoptek Circle NPO within 6 inches. Roll 3D3 and restore that many wounds, up to its maximum.','It cannot target an incapacitated NPO or one saved by Reanimate this turning point.']
     };
-    return (paragraphs[action.id]||[action.description]).map(text=>`<p>${escapeHtml(isPvpMode()?text.replaceAll('Player operative',`${playerSideLabel()} operative`).replaceAll('NPO','Necron'):text)}</p>`).join('');
+    return (paragraphs[action.id]||[action.description]).map(text=>`<p>${escapeHtml(presentSideTerminology(text))}</p>`).join('');
   }
   function resolveNpoSpecialAction(n,decision,answers,questionHistory){
     const action=npoSpecialAction(n,decision.action);
@@ -8069,7 +8068,7 @@ function showPlayerActivation(){
     const friendlyOptions=friendlies.map(target=>`<option value="${escapeHtml(target.id)}">${escapeHtml(npoName(target))}</option>`).join('');
     const enemyOptions=(action.target?.side==='enemy'?eligibleNpoSpecialActionTargets(n,action):[]).map(target=>`<option value="${escapeHtml(target.id)}">${escapeHtml(playerTargetLabel(target.id))}</option>`).join('');
     const targetOptions=action.target?.side==='enemy'?enemyOptions:friendlyOptions;
-    const targetLabel=action.target?.side==='enemy'?(isPvpMode()?`${playerSideLabel()} operative`:'Player operative'):(isPvpMode()?`Friendly ${opponentSingularLabel()}`:'Friendly NPO');
+    const targetLabel=action.target?.side==='enemy'?`${playerSideLabel()} operative`:`Friendly ${opponentSingularLabel()}`;
     if(action.id==='geomantic-disturbance'){
       const affected=[...sortedNposForDisplay(activeNpos()),...inPlayLivingPlayerOperativeIds().map(id=>({id:`player:${id}`,label:playerTargetLabel(id),ariaLabel:playerTargetAriaLabel(id)}))];
       showModal(action.name,`<p>Choose a visible terrain point within 8 inches, then select every operative within 2 inches of it.</p><div class="checklist">${affected.map(target=>`<label class="check-row"><input type="checkbox" data-disturbance-target="${escapeHtml(target.id)}"${target.ariaLabel?` aria-label="${escapeHtml(target.ariaLabel)}"`:''}><span>${escapeHtml(target.label||npoName(target))}</span></label>`).join('')}</div><div class="wizard-actions"><button class="btn ghost" id="cancelSpecialAction">Cancel</button><button class="btn primary" id="confirmSpecialAction">Roll Damage</button></div>`);

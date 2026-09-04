@@ -68,6 +68,28 @@ def test_model_labels_cover_solo_necrons_pvp_operatives_and_articles():
     assert "${teamName} Operatives" in labels
 
 
+def test_shared_gameplay_terminology_is_contextual_in_solo_and_pvp():
+    terminology = source("function playerSideLabel", "function deadlyEncountersActive")
+    assert "return selectedPlayerTeamName()" in terminology
+    assert "return 'Necron'" in terminology
+    assert "return 'Necrons'" in terminology
+    presenter = source("function presentSideTerminology", "function canBuildPlayerRoster")
+    assert "if(!isPvpMode())return text" not in presenter
+    assert ".replace(/NPOs\\b/g,()=>opponentPluralLabel())" in presenter
+    assert ".replace(/Player\\b/g,()=>playerSideLabel())" in presenter
+
+
+def test_downstream_activation_guidance_uses_shared_contextual_terminology():
+    selection = source("function showNpoSelection", "function remainingPlayerOperatives")
+    assert "opponentSingularLabel()" in selection
+    assert "playerSideLabel()" in selection
+    header = source("function renderNpoActivationHeader", "function renderNpoGuideFooter")
+    assert "opponentSingularLabel()" in header
+    instructions = source("function npoSpecialActionDescription", "function resolveNpoSpecialAction")
+    assert "presentSideTerminology(text)" in instructions
+    assert "isPvpMode()?text.replaceAll" not in instructions
+
+
 def test_confirmation_is_contextual_and_back_only_closes_the_dialog():
     confirmation = source("function confirmSkipRemainingActivations", "function skipRemainingActivations")
     assert "activationSideName(side)" in confirmation

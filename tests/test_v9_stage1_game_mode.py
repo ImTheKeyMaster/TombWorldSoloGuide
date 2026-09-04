@@ -20,8 +20,8 @@ class Stage1GameModeTests(unittest.TestCase):
     def test_presentation_api_drives_primary_surfaces(self):
         for helper in ("isPvpMode", "selectedPlayerTeamName", "playerSideLabel", "opponentSingularLabel", "opponentPluralLabel"):
             self.assertIn(f"function {helper}", APP)
-        self.assertIn("${escapeHtml(playerSideLabel())} Activation", APP)
-        self.assertIn("${escapeHtml(opponentSingularLabel())} Activation", APP)
+        self.assertIn("<h2>${escapeHtml(teamName)} Activation</h2>", APP)
+        self.assertIn("${escapeHtml(opponentSingularLabel())} Activation:", APP)
         self.assertIn("${escapeHtml(playerSideLabel())}<span", APP)
         self.assertIn("${escapeHtml(opponentSingularLabel())}<span", APP)
         self.assertIn("${escapeHtml(opponentSingularLabel())} Roster", APP)
