@@ -1,4 +1,11 @@
-# Tomb World Battle Guide v9.2.39
+# Tomb World Battle Guide v9.2.40
+
+## v9.2.40
+
+**Version 9.2.40**
+
+- Makes Skip Remaining Activations available whenever eligible activations remain on a stable Activation Phase screen, independent of mission progress.
+- Keeps the existing confirmation, single skip transaction, and direct transition to Score and clean up from both Player and NPO activation screens.
 
 ## v9.2.39
 
