@@ -60,6 +60,41 @@ assert.equal(resolve(2,2).otherRemainingMarkerCount,1);
 assert.equal(resolve(1,1).otherRemainingMarkerCount,0);
 """)
 
+    def test_final_marker_bypasses_selection_and_dice_but_uses_action_transaction(self):
+        app=(ROOT/'app.js').read_text()
+        locate=app[app.index('async function performLocateItem'):app.index('function showUpdateTransponderCarrier')]
+        selection=app[app.index("if(action.id==='pickUpMarker')"):app.index("const descriptions=",app.index("if(action.id==='pickUpMarker')"))]
+
+        self.assertIn("const automatic=available.length===1",locate)
+        self.assertIn("const outcome=automatic?null:objectiveEngine?",locate)
+        self.assertIn("const result=automatic?null:await missionDiceTotal",locate)
+        self.assertIn("const found=automatic||TombWorldMissionEngine.resolveRemainingEntityRoll",locate)
+        self.assertIn("if(!commitHumanPlayerAction(stage,{deferContinuation:true}))return",locate)
+        self.assertIn("...(result===null?{}:{roll:result})",locate)
+        self.assertIn("progress.lastRoll={siteId,...(result===null?{}:{roll:result})",locate)
+        self.assertIn("else if(automatic)objectiveEngine?.recordMissionHistory",locate)
+        self.assertIn("const diceResult=result===null?'':",locate)
+        self.assertNotIn("pendingDice=",locate)
+
+        self.assertIn("if(available.length===1){void performLocateItem(available[0].id,activation.operativeId,stage);return;}",selection)
+        self.assertLess(selection.index("if(available.length===1)"),selection.index("showModal('LOCATE ITEM'"))
+        self.assertIn("if(!available.length)",selection)
+        self.assertIn("cancelCurrentHumanPlayerAction()",selection)
+        self.assertIn("Saved mission state was preserved",selection)
+
+    def test_searching_state_is_not_promoted_when_only_one_marker_remains(self):
+        app=(ROOT/'app.js').read_text()
+        normalizer=app[app.index("}else if(engine.type==='transponder'){"):app.index("}else if(engine.type==='destruction'){")]
+        locate=app[app.index('async function performLocateItem'):app.index('function showUpdateTransponderCarrier')]
+        hud=app[app.index('function missionHudHtml'):app.index('const missionProgressRenderers')]
+
+        self.assertIn("normalized.transponderFound=Boolean(raw.transponderFound||foundEntry||raw.escaped)",normalizer)
+        self.assertIn("normalized.searchSitesResolved=normalized.transponderFound?engine.sites.length",normalizer)
+        self.assertIn("}else progress.searchSitesResolved=missionEngine().sites.filter",locate)
+        self.assertIn("transponder.transponderFound?'TRANSPONDER FOUND':`SEARCH",hud)
+        self.assertNotIn("available.length===1",normalizer)
+        self.assertNotIn("available.length===1",hud)
+
     def test_complete_activation_dice_carrier_persistence_and_outcome_contracts(self):
         app=(ROOT/'app.js').read_text()
         definition=json.loads((ROOT/'Missions/definition-03-recover-transponder.json').read_text())

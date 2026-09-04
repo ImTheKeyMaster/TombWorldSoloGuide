@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.35';
+  const APP_VERSION = '9.2.36';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3428,26 +3428,29 @@ document.addEventListener('touchend',function(e){
     if(progress.transactions?.[transactionId])return;
     state.missionActionContext={missionId:state.missionId,actionId:'searchTransponder',siteId,operativeId:carrierId,activationId:activePlayerActivation()?.activationId,transactionId};save();
     const available=missionEngine().sites.filter(site=>!progress.sites[site.id]||progress.sites[site.id]==='available');
-    const searchRule=TombWorldMissionEngine.resolveRemainingEntityRoll;
-    const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('searchTransponder',{...missionLifecycleContext(),activationId:activePlayerActivation()?.activationId,operativeId:carrierId,siteId})):null;
-    if(objectiveEngine&&!outcome)return;
-    const result=await missionDiceTotal(outcome,'searchRoll',{title:'LOCATE ITEM'}),found=searchRule(result,available.length).found;
+    const automatic=available.length===1;
+    const outcome=automatic?null:objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('searchTransponder',{...missionLifecycleContext(),activationId:activePlayerActivation()?.activationId,operativeId:carrierId,siteId})):null;
+    if(!automatic&&objectiveEngine&&!outcome)return;
+    const result=automatic?null:await missionDiceTotal(outcome,'searchRoll',{title:'LOCATE ITEM'});
+    const found=automatic||TombWorldMissionEngine.resolveRemainingEntityRoll(result,available.length).found;
     if(progress.transactions?.[transactionId])return;
-    progress.transactions={...(progress.transactions||{}),[transactionId]:{siteId,roll:result,committed:true}};
+    if(!commitHumanPlayerAction(stage,{deferContinuation:true}))return;
+    progress.transactions={...(progress.transactions||{}),[transactionId]:{siteId,...(result===null?{}:{roll:result}),committed:true}};
     progress.sites[siteId]=found?'transponder':'cleared';
-    progress.lastRoll={siteId,roll:result,result:found?'transponder found':'false signal'};
+    progress.lastRoll={siteId,...(result===null?{}:{roll:result}),result:found?'transponder found':'false signal'};
     if(found){
       progress.transponderFound=true;progress.transponderMarkerId=siteId;progress.carrierId=carrierId;progress.transponderStatus='carried';progress.searchSitesResolved=missionEngine().sites.length;
       missionEngine().sites.forEach(site=>{if(site.id!==siteId&&(!progress.sites[site.id]||progress.sites[site.id]==='available'))progress.sites[site.id]='removed';});
     }else progress.searchSitesResolved=missionEngine().sites.filter(site=>progress.sites[site.id]==='cleared').length;
     const marker=missionEngine().sites.find(site=>site.id===siteId),history=objectiveEngine?.getMissionRuntime().history||[],entry=history.at(-1);
     const summary=found?`${playerName(carrierId)} found the transponder at ${marker.label}.`:`${playerName(carrierId)} searched ${marker.label}: false signal.`;
-    if(entry){entry.type='transponder-search';entry.summary=summary;entry.title=summary;entry.transactionId=transactionId;}
-    commitHumanPlayerAction(stage,{deferContinuation:true});
+    if(entry&&!automatic){entry.type='transponder-search';entry.summary=summary;entry.title=summary;entry.transactionId=transactionId;}
+    else if(automatic)objectiveEngine?.recordMissionHistory({id:transactionId,type:'transponder-search',title:summary,summary,operativeId:carrierId,turningPoint:state.turningPoint,transactionId},missionLifecycleContext());
     state.missionActionContext=null;save();acknowledgeCurrentDiceRequest();
     const removed=found?missionEngine().sites.filter(site=>site.id!==siteId&&progress.sites[site.id]==='removed').map(site=>site.label.replace(/Objective Marker /i,'')).join(' and '):'';
     const body=found?`<p><strong>${escapeHtml(marker.label)} contains the transponder.</strong></p><p>${escapeHtml(playerName(carrierId))} is carrying the transponder.</p>${removed?`<p>Remove Objective Markers ${escapeHtml(removed)} from the killzone.</p>`:''}`:`<p><strong>${escapeHtml(marker.label)} was a false signal.</strong></p><p>Remove ${escapeHtml(marker.label)} from the killzone.</p>`;
-    showModal(found?'TRANSPONDER FOUND':'ITEM NOT FOUND',`${body}<div class="summary-box"><strong>D3: ${result}</strong></div><div class="wizard-actions"><button class="btn primary" id="continueLocateItem" data-dialog-focus>Continue</button></div>`);
+    const diceResult=result===null?'':`<div class="summary-box"><strong>D3: ${result}</strong></div>`;
+    showModal(found?'TRANSPONDER FOUND':'ITEM NOT FOUND',`${body}${diceResult}<div class="wizard-actions"><button class="btn primary" id="continueLocateItem" data-dialog-focus>Continue</button></div>`);
     $('#continueLocateItem').onclick=()=>continueAfterCommittedHumanAction();
   }
 
@@ -4901,7 +4904,13 @@ document.addEventListener('touchend',function(e){
     if(action.id==='breach'&&state.missionId==='demolition-protocol'){showActivationFeatureTargetSelection(stage,'breach');return;}
     if(action.id==='breachSarcophagus'){beginBreachSarcophagus(stage);return;}
     if(action.id==='pickUpMarker'){
-      const choices=missionEngine().sites.filter(site=>!state.missionState.sites[site.id]||state.missionState.sites[site.id]==='available').map(site=>`<button type="button" class="btn secondary big-action" data-locate-site="${escapeHtml(site.id)}">${escapeHtml(site.label.toUpperCase())}</button>`).join('');
+      const available=missionEngine().sites.filter(site=>!state.missionState.sites[site.id]||state.missionState.sites[site.id]==='available');
+      if(!available.length){
+        console.error('[Recover Transponder] Pick Up Marker cannot resolve because no unresolved markers remain. Saved mission state was preserved.');
+        cancelCurrentHumanPlayerAction();showToast('Pick Up Marker could not be completed. Mission progress was preserved.');return;
+      }
+      if(available.length===1){void performLocateItem(available[0].id,activation.operativeId,stage);return;}
+      const choices=available.map(site=>`<button type="button" class="btn secondary big-action" data-locate-site="${escapeHtml(site.id)}">${escapeHtml(site.label.toUpperCase())}</button>`).join('');
       showModal('LOCATE ITEM',`<p>Which objective marker is this operative searching?</p><div class="human-npo-action-list">${choices}</div><div class="wizard-actions"><button class="btn ghost" id="cancelLocateItem">Back</button></div>`);
       $('#cancelLocateItem').onclick=cancelCurrentHumanPlayerAction;
       $$('[data-locate-site]',modalBody).forEach(button=>button.onclick=()=>{button.disabled=true;void performLocateItem(button.dataset.locateSite,activation.operativeId,stage);});
