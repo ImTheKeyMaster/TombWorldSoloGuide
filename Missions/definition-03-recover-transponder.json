@@ -36,6 +36,7 @@
       "apCost": 1,
       "diceExpression": "1D3",
       "comparison": "roll > otherRemainingMarkerCount",
+      "oncePer": "activation",
       "availability": {
         "all": [
           { "path": "mission.objectives.transponderRecovered.completed", "operator": "==", "value": false }

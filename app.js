@@ -1009,7 +1009,7 @@ document.addEventListener('touchend',function(e){
     }else if(engine.type==='transponder'){
       normalized.sites=isRecord(raw.sites)?Object.fromEntries(Object.entries(raw.sites).filter(([id,value])=>engine.sites.some(site=>site.id===id)&&['found','empty','available','cleared','transponder','removed'].includes(value)).map(([id,value])=>[id,{found:'transponder',empty:'cleared'}[value]||value])):{};
       const foundEntry=Object.entries(normalized.sites).find(([,value])=>value==='transponder');
-      normalized.transponderFound=Boolean(raw.transponderFound||foundEntry);
+      normalized.transponderFound=Boolean(raw.transponderFound||foundEntry||raw.escaped);
       normalized.transponderMarkerId=normalized.transponderFound&&(typeof raw.transponderMarkerId==='string'?engine.sites.some(site=>site.id===raw.transponderMarkerId)&&raw.transponderMarkerId:foundEntry?.[0])||null;
       normalized.carrierId=typeof raw.carrierId==='string'&&raw.carrierId?raw.carrierId:null;
       normalized.escaped=Boolean(raw.escaped);
@@ -1020,6 +1020,7 @@ document.addEventListener('touchend',function(e){
       normalized.outcome=['victory','defeat'].includes(raw.outcome)?raw.outcome:normalized.extractionConfirmed?'victory':null;
       normalized.transactions=isRecord(raw.transactions)?{...raw.transactions}:{};
       normalized.lastRoll=isRecord(raw.lastRoll)?{...raw.lastRoll}:null;
+      if(normalized.transponderMarkerId)engine.sites.forEach(site=>{if(site.id!==normalized.transponderMarkerId&&!normalized.sites[site.id])normalized.sites[site.id]='removed';});
     }else if(engine.type==='destruction'){
       normalized.destruction=Math.max(0,Number.isFinite(Number(raw.destruction))?Number(raw.destruction):Number(legacyTracker)||0);
     }else if(engine.type==='scout'){

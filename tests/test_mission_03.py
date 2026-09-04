@@ -26,9 +26,10 @@ const definition=JSON.parse(fs.readFileSync('Missions/definition-03-recover-tran
   for(const hook of ['onMissionInitialized','onStrategyPhaseReadyStep','onPlayerActivationStarted','onPlayerActivationCompleted','onNpoActivationStarted','onNpoActivationCompleted','onTurningPointEnded','onBattleEnded']){
     assert.deepEqual(await engine.executeMissionHook(hook,{turningPoint:1,activationId:'one'}),[]);
   }
-  const first=await engine.executeMissionAction('searchTransponder',{turningPoint:1,phase:'firefight',operativeId:'alpha'});
+  const first=await engine.executeMissionAction('searchTransponder',{turningPoint:1,phase:'firefight',activationId:'activation-one',operativeId:'alpha'});
   assert.equal(first.results.searchRoll.total,1);assert.equal(engine.getObjectiveValue('transponderRecovered'),0);
-  const second=await engine.executeMissionAction('searchTransponder',{turningPoint:2,phase:'firefight',operativeId:'alpha'});
+  assert.equal((await engine.executeMissionAction('searchTransponder',{turningPoint:1,phase:'firefight',activationId:'activation-one',operativeId:'alpha'})).status,'already-executed');
+  const second=await engine.executeMissionAction('searchTransponder',{turningPoint:2,phase:'firefight',activationId:'activation-two',operativeId:'alpha'});
   assert.equal(second.results.searchRoll.total,3);assert.equal(engine.getMissionDetailsModel().history.length,2);
   const completion=await engine.executeMissionAction('recordTransponderEscape',{turningPoint:2,phase:'firefight',operativeId:'alpha'});
   assert.deepEqual(completion.changes[0],{objectiveId:'transponderRecovered',before:0,after:1});
@@ -66,6 +67,7 @@ assert.equal(resolve(1,1).otherRemainingMarkerCount,0);
         self.assertEqual(runtime['searchSitesResolved'],0)
         self.assertEqual(definition['actions'][0]['diceExpression'],'1D3')
         self.assertEqual(definition['actions'][0]['comparison'],'roll > otherRemainingMarkerCount')
+        self.assertEqual(definition['actions'][0]['oncePer'],'activation')
         for contract in (
             "name:'Pick Up Marker'", "cost:Number(objectiveDefinition", "performLocateItem(button.dataset.locateSite",
             "commitHumanPlayerAction(stage,{deferContinuation:true})", "resumeKind:'mission'", "transactionId",
@@ -85,6 +87,7 @@ assert.equal(resolve(1,1).otherRemainingMarkerCount,0);
         for field in ('transponderFound','transponderMarkerId','carrierId','transponderStatus','searchSitesResolved','extractionConfirmed','completed','outcome','transactions','lastRoll'):
             self.assertIn(f'normalized.{field}',normalizer)
         self.assertIn("{found:'transponder',empty:'cleared'}",normalizer)
+        self.assertIn("normalized.sites[site.id]='removed'",normalizer)
         self.assertIn("progress.transactions?.[transactionId]",app)
         self.assertIn("if(progress.transactions?.[transactionId]||state.gameEnd)return",app)
 
