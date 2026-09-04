@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.36';
+  const APP_VERSION = '9.2.37';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2433,6 +2433,12 @@ document.addEventListener('touchend',function(e){
 
   let battleEndHookPending=false;
 
+  function resetOutcomeScroll(){
+    const scrollContainer=document.scrollingElement||document.documentElement;
+    scrollContainer.scrollTop=0;
+    scrollContainer.scrollLeft=0;
+  }
+
   async function finalizeMissionCompletion(outcome,previousPhase){
     if(battleEndHookPending)return;
     battleEndHookPending=true;
@@ -3317,7 +3323,7 @@ document.addEventListener('touchend',function(e){
       app.innerHTML=`<section class="hero-card mission-outcome"><p class="eyebrow">${atLimit?'BATTLE COMPLETE':'MISSION COMPLETE'}</p><img class="game-end-image" src="Assets/Images/${resultClass}.png" alt="">${atLimit?`<h2>Battle Complete</h2><p role="status">Turning Point ${MAX_TURNING_POINTS} has ended.</p><h3 class="battle-result battle-result--${resultClass}">MISSION ${resultLabel.toUpperCase()}</h3>`:`<h2 class="battle-result battle-result--${resultClass}">${resultLabel}</h2>`}<p>${escapeHtml(victory?missionEngine()?.success:missionEngine()?.failure)}</p>${missionProgressHtml(true)}<div class="button-row"><button class="btn secondary" id="reviewCompletedMission">Review Mission</button><button class="btn primary" id="gameEndNewGame">Start New Game</button></div></section>`;
       $('#reviewCompletedMission').onclick=()=>showModal(`${mission().number} · ${mission().name}`,`<p><strong>Objective:</strong> ${escapeHtml(mission().objective)}</p><p><strong>Outcome:</strong> ${escapeHtml(victory?missionEngine()?.success:missionEngine()?.failure)}</p><div class="wizard-actions"><button class="btn primary" data-close>Done</button></div>`);
       $('#gameEndNewGame').onclick=confirmNewGame;
-      requestAnimationFrame(()=>$('#reviewCompletedMission')?.focus());
+      requestAnimationFrame(()=>{resetOutcomeScroll();$('#reviewCompletedMission')?.focus({preventScroll:true});});
       return;
     }
     if(state.finalResolution?.pending&&state.turningPoint>=MAX_TURNING_POINTS){
@@ -3385,7 +3391,7 @@ document.addEventListener('touchend',function(e){
       const sites=engine.sites.map(site=>{const result=progress.sites[site.id]||'available';const status={available:'Available',cleared:'Cleared',transponder:'Transponder',removed:'Removed / resolved'}[result]||'Available';return `<div class="mission-objective-row"><span><strong>${escapeHtml(site.label)}</strong><small>${status}</small></span></div>`;}).join('');
       if(!progress.transponderFound)return `<p><strong>Status: SEARCHING</strong></p><p>Find the transponder and escape through Player A's killzone edge.</p><div class="mission-objective-list">${sites}</div><div class="summary-box"><strong>Search Sites Resolved: ${progress.searchSitesResolved||0} / 3</strong></div>`;
       const carrier=progress.carrierId?playerName(progress.carrierId):'On battlefield / no carrier';
-      const controls=readOnly?'':`<div class="wizard-actions"><button class="btn secondary" id="updateTransponderCarrier">Update Carrier</button><button class="btn primary" id="transponderEscape" ${progress.carrierId&&isPlayerOperativeInPlay(progress.carrierId)&&!state.playerCasualtyIds.includes(progress.carrierId)&&!progress.escaped?'':'disabled'}>Confirm Escape</button></div>`;
+      const controls=readOnly?'':`<div class="wizard-actions"><button class="btn primary" id="transponderEscape" ${progress.carrierId&&isPlayerOperativeInPlay(progress.carrierId)&&!state.playerCasualtyIds.includes(progress.carrierId)&&!progress.escaped?'':'disabled'}>Confirm Escape</button></div>`;
       return `<p><strong>Status: EXTRACTION</strong></p><p>Escape through Player A's killzone edge while carrying the transponder.</p><div class="mission-objective-list">${sites}</div><div class="summary-box"><strong>Transponder:</strong> Found<br><strong>Location:</strong> ${escapeHtml(engine.sites.find(site=>site.id===progress.transponderMarkerId)?.label||'Objective marker')}<br><strong>Carrier:</strong> ${escapeHtml(carrier)}${progress.escaped?' · Escaped':''}</div>${controls}`;
     },
     destruction:(engine,progress,{readOnly=false}={})=>{
@@ -3454,36 +3460,21 @@ document.addEventListener('touchend',function(e){
     $('#continueLocateItem').onclick=()=>continueAfterCommittedHumanAction();
   }
 
-  function showUpdateTransponderCarrier(){
-    const progress=state.missionState;
-    if(missionEngine()?.type!=='transponder'||!progress?.transponderFound)return;
-    showModal('UPDATE CARRIER',`<p>Synchronize the app after legally resolving the marker on the tabletop.</p><div class="field"><label for="updatedTransponderCarrier">Current transponder carrier</label><select id="updatedTransponderCarrier" data-dialog-focus><option value="">On battlefield / no carrier</option>${livingPlayerOptions(progress.carrierId)}</select></div><div class="wizard-actions"><button class="btn ghost" id="cancelCarrierUpdate">Back</button><button class="btn primary" id="commitCarrierUpdate">Update Carrier</button></div>`);
-    $('#cancelCarrierUpdate').onclick=showMissionDetails;
-    $('#commitCarrierUpdate').onclick=()=>{
-      const next=$('#updatedTransponderCarrier').value||null;
-      if(next&&(state.playerCasualtyIds.includes(next)||!isPlayerOperativeInPlay(next)))return;
-      if(next===progress.carrierId){showMissionDetails();return;}
-      progress.carrierId=next;progress.transponderStatus=next?'carried':'onBattlefield';
-      const summary=next?`Transponder carrier changed to ${playerName(next)}.`:'Transponder placed on battlefield with no carrier.';
-      objectiveEngine?.recordMissionHistory({type:'transponder-carrier',title:summary,summary,operativeId:null,turningPoint:state.turningPoint},missionLifecycleContext());
-      log(`${mission().name}: ${summary}`);save();showMissionDetails();
-    };
-  }
-
-  function confirmTransponderEscape(){
+  let transponderEscapePending=false;
+  async function confirmTransponderEscape(){
     const progress=state.missionState,carrierId=progress?.carrierId;
-    if(!carrierId||progress.escaped||state.playerCasualtyIds.includes(carrierId)||!isPlayerOperativeInPlay(carrierId))return;
-    showMissionConfirmation({title:'CONFIRM ESCAPE',description:`Has ${playerName(carrierId)} crossed Player A's killzone edge while carrying the transponder?`,cancelLabel:'Back',confirmLabel:'Confirm Escape'},async()=>{
-      const transactionId=`transponder-escape:${carrierId}`;
-      if(progress.transactions?.[transactionId]||state.gameEnd)return;
-      const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('recordTransponderEscape',{...missionLifecycleContext(),activationId:transactionId,operativeId:carrierId})):null;
-      if(objectiveEngine&&!outcome)return;
-      progress.transactions={...(progress.transactions||{}),[transactionId]:{committed:true}};
-      progress.escaped=true;progress.extractionConfirmed=true;progress.transponderStatus='escaped';progress.completed=true;progress.outcome='victory';
-      const summary=`${playerName(carrierId)} escaped with the transponder.`;
-      const entry=objectiveEngine?.getMissionRuntime().history?.at(-1);if(entry){entry.type='transponder-escape';entry.title=summary;entry.summary=summary;}
-      save();completeMission('victory');
-    });
+    if(transponderEscapePending||missionEngine()?.type!=='transponder'||!progress?.transponderFound||!carrierId||progress.escaped||progress.completed||state.gameEnd||state.playerCasualtyIds.includes(carrierId)||!isPlayerOperativeInPlay(carrierId))return;
+    const transactionId=`transponder-escape:${carrierId}`;
+    if(progress.transactions?.[transactionId])return;
+    transponderEscapePending=true;
+    const button=$('#transponderEscape');if(button)button.disabled=true;
+    const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction('recordTransponderEscape',{...missionLifecycleContext(),activationId:transactionId,operativeId:carrierId})):null;
+    if(objectiveEngine&&!outcome){transponderEscapePending=false;if(button?.isConnected)button.disabled=false;return;}
+    progress.transactions={...(progress.transactions||{}),[transactionId]:{committed:true}};
+    progress.escaped=true;progress.extractionConfirmed=true;progress.transponderStatus='escaped';progress.completed=true;progress.outcome='victory';
+    const summary=`${playerName(carrierId)} escaped with the transponder.`;
+    const entry=objectiveEngine?.getMissionRuntime().history?.at(-1);if(entry){entry.type='transponder-escape';entry.title=summary;entry.summary=summary;}
+    save();completeMission('victory');transponderEscapePending=false;
   }
 
   function handleTransponderCarrierIncapacitation(){
@@ -3614,7 +3605,6 @@ document.addEventListener('touchend',function(e){
       }
       updateMissionProgress(`corrected ${feature.label}.`);
     });
-    $('#updateTransponderCarrier')?.addEventListener('click',showUpdateTransponderCarrier);
     $('#transponderEscape')?.addEventListener('click',confirmTransponderEscape);
     $('#resolveMissionAction')?.addEventListener('click',confirmMissionAction);
     $$('[data-awaken-room]').forEach(button=>button.onclick=()=>performAwakenRoom(button.dataset.awakenRoom));

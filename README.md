@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.36
+# Tomb World Battle Guide v9.2.37
+
+## v9.2.37
+
+**Version 9.2.37**
+
+- Removes Recover Transponder's manual carrier update and redundant escape-confirmation flows while preserving automatic carrier tracking.
+- Makes the Mission Details Confirm Escape button directly and idempotently resolve extraction victory.
+- Resets every Victory and Defeat outcome screen to the top of the document's scrolling element after rendering.
 
 ## v9.2.36
 

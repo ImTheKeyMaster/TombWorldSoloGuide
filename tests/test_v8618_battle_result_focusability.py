@@ -73,7 +73,7 @@ class BattleResultFocusabilityTests(unittest.TestCase):
     def test_09_result_never_receives_programmatic_focus(self):
         self.assertNotRegex(self.render, r"battle-result[^\n]*\.focus\(")
         self.assertNotIn("$('#battle-complete-heading')?.focus()", self.render)
-        self.assertIn("$('#reviewCompletedMission')?.focus()", self.render)
+        self.assertIn("$('#reviewCompletedMission')?.focus({preventScroll:true})", self.render)
         self.assertIn("$('#recordFinalDefeat')?.focus()", self.render)
 
     def test_10_result_has_no_click_handler(self):
