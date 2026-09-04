@@ -62,7 +62,7 @@ assert.equal(resolve(1,1).otherRemainingMarkerCount,0);
 
     def test_final_marker_bypasses_selection_and_dice_but_uses_action_transaction(self):
         app=(ROOT/'app.js').read_text()
-        locate=app[app.index('async function performLocateItem'):app.index('function showUpdateTransponderCarrier')]
+        locate=app[app.index('async function performLocateItem'):app.index('let transponderEscapePending')]
         selection=app[app.index("if(action.id==='pickUpMarker')"):app.index("const descriptions=",app.index("if(action.id==='pickUpMarker')"))]
 
         self.assertIn("const automatic=available.length===1",locate)
@@ -86,7 +86,7 @@ assert.equal(resolve(1,1).otherRemainingMarkerCount,0);
     def test_searching_state_is_not_promoted_when_only_one_marker_remains(self):
         app=(ROOT/'app.js').read_text()
         normalizer=app[app.index("}else if(engine.type==='transponder'){"):app.index("}else if(engine.type==='destruction'){")]
-        locate=app[app.index('async function performLocateItem'):app.index('function showUpdateTransponderCarrier')]
+        locate=app[app.index('async function performLocateItem'):app.index('let transponderEscapePending')]
         hud=app[app.index('function missionHudHtml'):app.index('const missionProgressRenderers')]
 
         self.assertIn("normalized.transponderFound=Boolean(raw.transponderFound||foundEntry||raw.escaped)",normalizer)
@@ -113,7 +113,7 @@ assert.equal(resolve(1,1).otherRemainingMarkerCount,0);
         for contract in (
             "name:'Pick Up Marker'", "cost:Number(objectiveDefinition", "performLocateItem(button.dataset.locateSite",
             "commitHumanPlayerAction(stage,{deferContinuation:true,deferPersistence:true})", "resumeKind:'mission'", "transactionId",
-            "transponderStatus='onBattlefield'", "showUpdateTransponderCarrier", "confirmTransponderEscape",
+            "transponderStatus='onBattlefield'", "confirmTransponderEscape",
             "completeMission('victory')", "handleTransponderCarrierIncapacitation", "livingPlayerOperativeCount()===0"
         ):
             self.assertIn(contract,app)
@@ -122,6 +122,25 @@ assert.equal(resolve(1,1).otherRemainingMarkerCount,0);
         self.assertIn("progress.searchSitesResolved=missionEngine().sites.length",app)
         self.assertIn("if(found){",app)
         self.assertNotIn("completeMission",app[app.index('if(found){',app.index('async function performLocateItem')):app.index('}else progress.searchSitesResolved',app.index('async function performLocateItem'))])
+
+    def test_extraction_has_one_direct_idempotent_control_and_no_carrier_editor(self):
+        app=(ROOT/'app.js').read_text()
+        renderer=app[app.index('transponder:(engine,progress,{readOnly=false}={})=>'):app.index('destruction:(engine,progress',app.index('transponder:(engine,progress,{readOnly=false}={})=>'))]
+        escape=app[app.index('let transponderEscapePending'):app.index('function handleTransponderCarrierIncapacitation')]
+
+        self.assertIn('id="transponderEscape"',renderer)
+        self.assertIn('Carrier:</strong>',renderer)
+        self.assertNotIn('Update Carrier',renderer)
+        self.assertNotIn('updateTransponderCarrier',app)
+        self.assertNotIn('updatedTransponderCarrier',app)
+        self.assertNotIn("showMissionConfirmation",escape)
+        self.assertIn("missionEngine()?.type!=='transponder'",escape)
+        self.assertIn('!progress?.transponderFound',escape)
+        self.assertIn('transponderEscapePending',escape)
+        self.assertIn('button.disabled=true',escape)
+        self.assertIn("executeMissionAction('recordTransponderEscape'",escape)
+        self.assertIn("progress.escaped=true;progress.extractionConfirmed=true;progress.transponderStatus='escaped';progress.completed=true;progress.outcome='victory'",escape)
+        self.assertIn("save();completeMission('victory')",escape)
 
     def test_migration_and_idempotency_fields_are_durable(self):
         app=(ROOT/'app.js').read_text()
@@ -132,7 +151,8 @@ assert.equal(resolve(1,1).otherRemainingMarkerCount,0);
         self.assertIn("normalized.sites[site.id]='removed'",normalizer)
         self.assertIn("missionEngine(savedMission)?.type==='transponder'",app)
         self.assertIn("progress.transactions?.[transactionId]",app)
-        self.assertIn("if(progress.transactions?.[transactionId]||state.gameEnd)return",app)
+        self.assertIn("if(progress.transactions?.[transactionId])return",app)
+        self.assertIn("||state.gameEnd||",app)
 
     def test_registry_ui_persistence_offline_and_reference_regressions(self):
         manifest=json.loads((ROOT/'Missions/manifest.json').read_text())

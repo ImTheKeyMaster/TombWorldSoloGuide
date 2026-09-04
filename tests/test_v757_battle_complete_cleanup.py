@@ -33,7 +33,7 @@ class BattleCompleteCleanupTests(unittest.TestCase):
         render = function_body("renderGame")
         self.assertIn('class="battle-result battle-result--${resultClass}"', render)
         self.assertNotIn('id="battle-complete-heading" tabindex="-1"', render)
-        self.assertIn("requestAnimationFrame(()=>$('#reviewCompletedMission')?.focus())", render)
+        self.assertIn("requestAnimationFrame(()=>{resetOutcomeScroll();$('#reviewCompletedMission')?.focus({preventScroll:true});})", render)
 
     def test_02_real_controls_retain_scoped_visible_focus(self):
         self.assertIn(".btn:focus-visible", STYLES)
@@ -48,7 +48,7 @@ class BattleCompleteCleanupTests(unittest.TestCase):
 
     def test_04_completed_escape_keeps_names_statuses_and_count(self):
         body = renderer("escape", "sabotage")
-        for text in ("playerName(id)", "operatives escaped", "Incapacitated", "Still in the killzone", "Escaped · Off Board"):
+        for text in ("playerName(id)", "operatives escaped", "Eliminated", "Still in the killzone", "Escaped · Off Board"):
             self.assertIn(text, body)
         self.assertIn("readOnly||incapacitated||unavailable?'':", body)
 
@@ -73,8 +73,8 @@ class BattleCompleteCleanupTests(unittest.TestCase):
         scout = renderer("scout", "regroup")
         regroup = renderer("regroup")
         self.assertIn("readOnly?`<div", sabotage)
-        self.assertIn("const assignment=readOnly?'':", transponder)
-        self.assertIn("const escapeControl=readOnly?'':", transponder)
+        self.assertIn("const controls=readOnly?'':", transponder)
+        self.assertNotIn("Update Carrier", transponder)
         self.assertIn("readOnly?finalState:", destruction)
         self.assertNotIn('id="resolveMissionAction"', destruction)
         self.assertIn("const actions=readOnly?'':", scout)
@@ -83,7 +83,7 @@ class BattleCompleteCleanupTests(unittest.TestCase):
     def test_08_other_active_renderers_retain_controls(self):
         all_renderers = APP[APP.index("const missionProgressRenderers"):APP.index("function missionProgressHtml")]
         for control in (
-            'data-mission-feature', 'data-search-site', 'id="transponderCarrier"',
+            'data-mission-feature', 'id="transponderEscape"',
 'data-awaken-room', 'data-scout-room',
             'data-regroup-check',
         ):

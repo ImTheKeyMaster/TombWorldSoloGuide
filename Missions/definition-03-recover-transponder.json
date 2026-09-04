@@ -79,7 +79,6 @@
     "selectMarker": { "title": "LOCATE ITEM", "message": "Which objective marker is this operative searching?" },
     "notFound": { "title": "ITEM NOT FOUND", "message": "Objective Marker {marker} was a false signal." },
     "found": { "title": "TRANSPONDER FOUND", "message": "Objective Marker {marker} contains the transponder." },
-    "confirmEscape": { "title": "CONFIRM ESCAPE", "message": "Has {operative} crossed Player A's killzone edge while carrying the transponder?" },
     "objectiveComplete": {
       "title": "TRANSPONDER RECOVERED",
       "message": "The carrier escaped through Player A's killzone edge with the transponder."
