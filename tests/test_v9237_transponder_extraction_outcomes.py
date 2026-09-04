@@ -52,9 +52,10 @@ def test_all_outcomes_reset_document_scroll_after_render_before_focus():
     reset = source("function resetOutcomeScroll", "async function finalizeMissionCompletion")
     outcome = source("if(state.gameEnd){", "if(state.finalResolution?.pending")
 
-    assert "window.scrollTo({top:0,left:0,behavior:'auto'})" in reset
-    assert "document.documentElement.scrollTop=0" in reset
-    assert "document.body.scrollTop=0" in reset
+    assert "const scrollContainer=document.scrollingElement||document.documentElement" in reset
+    assert "scrollContainer.scrollTop=0" in reset
+    assert "scrollContainer.scrollLeft=0" in reset
+    assert "window.scrollTo" not in reset
     assert "requestAnimationFrame(()=>{resetOutcomeScroll();" in outcome
     assert "focus({preventScroll:true})" in outcome
     assert "state.gameEnd==='victory'" in outcome

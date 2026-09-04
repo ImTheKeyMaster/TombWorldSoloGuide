@@ -2434,9 +2434,9 @@ document.addEventListener('touchend',function(e){
   let battleEndHookPending=false;
 
   function resetOutcomeScroll(){
-    window.scrollTo({top:0,left:0,behavior:'auto'});
-    document.documentElement.scrollTop=0;
-    document.body.scrollTop=0;
+    const scrollContainer=document.scrollingElement||document.documentElement;
+    scrollContainer.scrollTop=0;
+    scrollContainer.scrollLeft=0;
   }
 
   async function finalizeMissionCompletion(outcome,previousPhase){
