@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.39';
+  const APP_VERSION = '9.2.40';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2528,7 +2528,6 @@ document.addEventListener('touchend',function(e){
   function canSkipRemainingActivations(){
     if(state.phase!=='firefight'||state.completed||state.gameEnd)return false;
     if(playerOperativesRemaining()<=0&&readyNpos().length<=0)return false;
-    if(!objectiveEngine?.getMissionHudModel().completed)return false;
     const activation=state.lastActivation;
     if(activation&&!activation.committed&&!activation.completed)return false;
     return !state.pendingDice&&!state.combatState&&!state.fightState&&!state.missionActionContext&&!state.weaponRuleResolution&&!state.hotResolution;

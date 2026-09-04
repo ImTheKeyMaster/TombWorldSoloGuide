@@ -1,4 +1,6 @@
 from pathlib import Path
+import json
+import subprocess
 
 from versioning import CURRENT_APP_VERSION
 
@@ -15,8 +17,8 @@ def source(start, end):
     return APP[APP.index(start):APP.index(end, APP.index(start))]
 
 
-def test_release_surfaces_are_v9239_without_save_key_or_schema_change():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 39)
+def test_release_surfaces_are_v9240_without_save_key_or_schema_change():
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 40)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 10
@@ -25,17 +27,72 @@ def test_release_surfaces_are_v9239_without_save_key_or_schema_change():
     assert "const SAVE_VERSION = 3;" in (ROOT / "persistence.js").read_text(encoding="utf-8")
 
 
-def test_visibility_uses_generic_objective_and_unresolved_activation_state():
+def test_visibility_uses_generic_phase_and_unresolved_activation_state():
     visibility = source("function canSkipRemainingActivations", "function skipRemainingActivationsControl")
     assert "state.phase!=='firefight'" in visibility
     assert "state.completed||state.gameEnd" in visibility
     assert "playerOperativesRemaining()<=0&&readyNpos().length<=0" in visibility
-    assert "objectiveEngine?.getMissionHudModel().completed" in visibility
+    assert "objectiveEngine" not in visibility
+    assert "getMissionHudModel" not in visibility
     assert "activation&&!activation.committed&&!activation.completed" in visibility
     for pending in ("state.pendingDice", "state.combatState", "state.fightState", "state.missionActionContext", "state.weaponRuleResolution", "state.hotResolution"):
         assert pending in visibility
     assert APP.count("Skip Remaining Activations</button>") == 1
     assert ".skip-remaining-activations{width:100%;margin-top:10px}" in STYLES
+
+
+def test_player_and_npo_main_cards_place_shared_skip_control_after_primary_action():
+    cards = source("function nextStepCard(){", "function missionStrategyPending")
+    player_primary = '<button class="btn primary big-action" id="playerActivation">Activate an Operative</button>'
+    npo_primary = '<button class="btn primary big-action" id="npoActivation">'
+    assert player_primary + "${skipRemainingActivationsControl()}" in cards
+    assert npo_primary in cards
+    assert cards.count("${skipRemainingActivationsControl()}") == 2
+    assert cards.index(player_primary) < cards.index("${skipRemainingActivationsControl()}")
+
+
+def test_visibility_is_independent_of_zero_partial_or_complete_mission_progress():
+    visibility = source("function canSkipRemainingActivations", "function skipRemainingActivationsControl")
+    for mission_progress in ("0 / 7", "3 / 7", "7 / 7"):
+        assert mission_progress not in visibility
+    assert "playerOperativesRemaining()<=0&&readyNpos().length<=0" in visibility
+    assert "state.phase!=='firefight'||state.completed||state.gameEnd" in visibility
+
+
+def test_visibility_covers_player_only_npo_only_and_no_remaining_activations():
+    visibility = source("function canSkipRemainingActivations", "function skipRemainingActivationsControl")
+    assert "playerOperativesRemaining()<=0&&readyNpos().length<=0" in visibility
+    assert "playerOperativesRemaining()<=0||readyNpos().length<=0" not in visibility
+
+
+def test_visibility_runtime_matrix_covers_phase_outcome_eligibility_and_safety():
+    visibility = source("function canSkipRemainingActivations", "function skipRemainingActivationsControl")
+    scenarios = [
+        ({"phase": "firefight", "players": 2, "npos": 0}, True),
+        ({"phase": "firefight", "players": 0, "npos": 2}, True),
+        ({"phase": "firefight", "players": 0, "npos": 0}, False),
+        ({"phase": "strategy", "players": 2, "npos": 2}, False),
+        ({"phase": "end", "players": 2, "npos": 2}, False),
+        ({"phase": "firefight", "players": 2, "npos": 2, "completed": True}, False),
+        ({"phase": "firefight", "players": 2, "npos": 2, "gameEnd": "victory"}, False),
+        ({"phase": "firefight", "players": 2, "npos": 2, "gameEnd": "defeat"}, False),
+        ({"phase": "firefight", "players": 2, "npos": 2, "pendingDice": True}, False),
+        ({"phase": "firefight", "players": 2, "npos": 2, "combatState": True}, False),
+        ({"phase": "firefight", "players": 2, "npos": 2, "lastActivation": {"committed": False, "completed": False}}, False),
+    ]
+    script = f"""
+const scenarios = {json.dumps(scenarios)};
+for (const [input, expected] of scenarios) {{
+  const state = {{completed:false, gameEnd:null, lastActivation:null, pendingDice:null,
+    combatState:null, fightState:null, missionActionContext:null,
+    weaponRuleResolution:null, hotResolution:null, ...input}};
+  const playerOperativesRemaining = () => input.players;
+  const readyNpos = () => Array(input.npos).fill({{ready:true}});
+  {visibility}
+  if (canSkipRemainingActivations() !== expected) process.exit(1);
+}}
+"""
+    subprocess.run(["node", "-e", script], cwd=ROOT, check=True)
 
 
 def test_confirmation_has_exact_copy_one_step_and_back_is_non_mutating():
