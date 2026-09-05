@@ -94,6 +94,8 @@ def test_scout_commit_is_one_ap_idempotent_and_keeps_activation_continuity():
     scout = section("async function performScoutRoom", "async function performLocateItem")
     action = section("function commitHumanPlayerAction", "function pendingAttackResults")
     assert "eligibleScoutRooms().find(item=>item.id===roomId)" in scout
+    assert "!canPerformScoutRoom(activation,operativeId,stage)" in scout
+    assert "cancelCurrentHumanPlayerAction()" not in scout
     assert scout.index("eligibleScoutRooms().find") < scout.index("executeMissionAction")
     assert "commitHumanPlayerAction(stage,{deferContinuation:true,deferPersistence:true})" in scout
     assert "const ids=new Set(state.missionState.scoutedRoomIds||[]);ids.add(roomId)" in scout
@@ -101,6 +103,16 @@ def test_scout_commit_is_one_ap_idempotent_and_keeps_activation_continuity():
     assert "continueAfterCommittedHumanAction()" in scout
     assert "activation.remainingAp=before-pending.cost" in action
     assert "completedActionIds=[...(activation.completedActionIds||[]),pending.actionId]" in action
+
+
+def test_scout_preflight_rejects_stale_or_duplicate_callbacks_before_mutation():
+    preflight = section("function canPerformScoutRoom", "async function performScoutRoom")
+    scout = section("async function performScoutRoom", "async function performLocateItem")
+    assert "pending?.activationId===activation.activationId" in preflight
+    assert "pending.actionId==='scoutRoom'" in preflight
+    assert "completedActionIds||[]).includes('scoutRoom')" in preflight
+    assert "pending.cost<=activation.remainingAp" in preflight
+    assert scout.index("!canPerformScoutRoom(activation,operativeId,stage)") < scout.index("executeMissionAction")
 
 
 def test_mission_details_report_known_room_state():

@@ -3469,11 +3469,16 @@ document.addEventListener('touchend',function(e){
 
   function eligibleScoutRooms(){return scoutRoomState().rooms;}
 
+  function canPerformScoutRoom(activation,operativeId,stage){
+    const pending=activation?.pendingAction;
+    return activation?.operativeId===operativeId&&stage?.humanActionId==='scoutRoom'&&pending?.activationId===activation.activationId&&pending.actionId==='scoutRoom'&&!(activation.completedActionIds||[]).includes('scoutRoom')&&pending.cost<=activation.remainingAp;
+  }
+
   async function performScoutRoom(roomId,operativeId,stage){
-    const room=eligibleScoutRooms().find(item=>item.id===roomId);
-    if(!room||!activePlayerActivation()||stage?.humanActionId!=='scoutRoom'){cancelCurrentHumanPlayerAction();return;}
+    const activation=activePlayerActivation(),room=eligibleScoutRooms().find(item=>item.id===roomId);
+    if(!room||!canPerformScoutRoom(activation,operativeId,stage))return;
     const actionId=missionEngine().actions?.recordScout;
-    const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction(actionId,{...missionLifecycleContext({activationId:activePlayerActivation().activationId,operativeId}),roomId})):null;
+    const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction(actionId,{...missionLifecycleContext({activationId:activation.activationId,operativeId}),roomId})):null;
     if(objectiveEngine&&!outcome)return;
     if(!commitHumanPlayerAction(stage,{deferContinuation:true,deferPersistence:true}))return;
     const ids=new Set(state.missionState.scoutedRoomIds||[]);ids.add(roomId);state.missionState.scoutedRoomIds=[...ids];
