@@ -79,7 +79,8 @@ class RemediationPr1Tests(unittest.TestCase):
         self.assertNotIn("Cooperative team splitting is not currently supported", self.app)
         self.assertIn("state.turningPoint=0", self.app)
         self.assertIn("state.turningPoint++;", self.app)
-        self.assertIn("if(state.turningPoint===1||state.threat===0)", self.app)
+        self.assertIn("if(state.turningPoint===1)", self.app)
+        self.assertIn("const side=missionFirstInitiative()", self.app)
         self.assertTrue(all(m["firstTurningPointInitiative"] == "player" for m in self.missions.values()))
         self.assertIn("const STORAGE_KEY = 'tombWorldBattleGuide.v1';", self.app)
 

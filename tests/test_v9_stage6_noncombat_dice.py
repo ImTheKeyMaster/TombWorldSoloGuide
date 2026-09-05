@@ -11,12 +11,14 @@ class Stage6NoncombatDiceTests(unittest.TestCase):
     def section(self, start, end):
         return APP.split(start, 1)[1].split(end, 1)[0]
 
-    def test_initiative_is_sequential_provider_dice_with_automatic_exceptions(self):
+    def test_initiative_is_sequential_provider_dice_with_mission_tp1_exception(self):
         flow = self.section("async function rollInitiative", "function beginFirefight")
-        self.assertIn("state.turningPoint===1||state.threat===0", flow)
+        self.assertIn("state.turningPoint===1", flow)
+        self.assertNotIn("state.threat===0", flow)
         self.assertEqual(flow.count("await requestDiceResults"), 2)
         self.assertLess(flow.index("rollerLabel:playerLabel"), flow.index("rollerLabel:'Necrons'"))
         self.assertIn("suggestedInitiative=n>p?'npo':'player'", flow)
+        self.assertIn("if(p!==n)break", flow)
         self.assertNotIn("roll()", flow)
 
     def test_strategy_pipeline_awaits_initiative_and_event_dice(self):

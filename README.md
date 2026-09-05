@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.47
+# Tomb World Battle Guide v9.2.48
+
+## v9.2.48
+
+**Version 9.2.48**
+
+- Use each mission's validated Turning Point 1 initiative side without requesting dice, while retaining the Player fallback for older mission definitions.
+- Roll one Player D6 and one Necron/NPO D6 through the shared Dice Provider on every later Turning Point, including at Threat 0.
+- Reroll tied initiative rounds with resumable per-side dice checkpoints, then preserve the resolved side through the first activation and Battle Record.
 
 ## v9.2.47
 

@@ -14,7 +14,7 @@ def section(start, end):
 
 
 def test_release_and_initial_scout_state_are_current():
-    assert CURRENT_APP_VERSION == ".".join(("9", "2", str(40 + 7)))
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 47)
     assert '"formula": "0"' in MISSION
     factory = section("const missionStateFactories", "function eventDefinition")
     assert "awakenedRooms:{}" in factory
