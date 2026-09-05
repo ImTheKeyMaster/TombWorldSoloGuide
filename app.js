@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.41';
+  const APP_VERSION = '9.2.42';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -4866,7 +4866,7 @@ document.addEventListener('touchend',function(e){
       {id:'melee',name:'Fight',group:'combat',cost:1},
       {id:'damage',name:'Other Damage',group:'special',cost:1},
       {id:'hatch',name:'Operate Hatch',group:'mission',cost:1},
-      {id:'breach',name:'Breach',group:'mission',cost:1}
+      {id:'breach',name:'Breach',group:'mission',cost:breachApCost(operative)}
     ];
     if(!['destroy-sarcophagus','recover-transponder'].includes(state.missionId))actions.push({id:'objective',name:'Mission Action',group:'mission',cost:1});
     const transponder=state.missionState;
@@ -5113,7 +5113,7 @@ document.addEventListener('touchend',function(e){
     melee:1,
     damage:1,
     hatch:1,
-    breach:1,
+    breach:2,
     objective:1
   };
 
@@ -5122,14 +5122,27 @@ document.addEventListener('touchend',function(e){
       + (stage.missionBreachCommitted?Math.max(1,Number(stage.missionBreachCost)||2):0);
   }
 
+  function structuredTextValues(value){
+    if(typeof value==='string')return [value];
+    if(Array.isArray(value))return value.flatMap(structuredTextValues);
+    if(value&&typeof value==='object')return Object.values(value).flatMap(structuredTextValues);
+    return [];
+  }
+
   function qualifyingBreachDiscount(operative){
     if(!operative)return false;
-    const operativeRules=[...(operative.abilities||[]),...(operative.rules||[])].map(String);
-    if(operativeRules.some(rule=>/breach/i.test(rule)&&/(?:1\s*AP|reduce|costs?\s*1)/i.test(rule)))return true;
-    return (operative.weapons||[]).some(weapon=>{
-      const rules=(weapon.rules||[]).map(String);
-      return rules.some(rule=>/^Piercing(?:\s|$)/i.test(rule))&&!rules.some(rule=>/^(?:Blast|Torrent)(?:\s|$)/i.test(rule));
+    const {weapons=[], ...datacard}=operative;
+    const datacardText=structuredTextValues(datacard).join(' ');
+    if(/\bbreach marker\b|\bgrenadier\b|\bmine\b/i.test(datacardText))return true;
+    return weapons.some(weapon=>{
+      const rules=structuredTextValues(weapon.rules);
+      return rules.some(rule=>/^Piercing(?: Crits)? 2(?:\s|$)/i.test(rule.trim()))
+        &&!rules.some(rule=>/^(?:Blast|Torrent)(?:\s|$)/i.test(rule.trim()));
     });
+  }
+
+  function breachApCost(operative){
+    return qualifyingBreachDiscount(operative)?1:2;
   }
 
   function breachSarcophagusApCost(operativeId){
