@@ -20,14 +20,14 @@ def evaluate_breach_cost(operative):
     return int(subprocess.run(["node", "-e", script], check=True, capture_output=True, text=True).stdout)
 
 
-def test_release_is_v9242_without_changing_save_key():
-    assert CURRENT_APP_VERSION == ".".join(("9", "2", str(40 + 2)))
+def test_release_keeps_v9242_breach_rules_without_changing_save_key():
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 42)
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
 
 
 def test_breach_catalog_uses_selected_operative_cost_and_existing_action():
     catalog = source("function playerHumanActionCatalog", "function playerHumanActionState")
-    assert "{id:'breach',name:'Breach',group:'mission',cost:breachApCost(operative)}" in catalog
+    assert "{id:'breach',name:breachLabel,group:'mission',cost:breachApCost(operative)}" in catalog
     assert catalog.count("id:'breach'") == 1
     assert "{id:'breach',name:'Breach',group:'mission',cost:1}" not in catalog
 

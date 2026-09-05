@@ -21,7 +21,8 @@ class DestroySarcophagusV860Tests(unittest.TestCase):
         self.assertEqual(DEFINITION["dialogs"]["objectiveComplete"]["message"], "The sarcophagus has been destroyed. The Player team is victorious.")
 
     def test_activation_only_guided_presentation(self):
-        self.assertIn("name:'Breach Sarcophagus',group:'mission',cost:breachSarcophagusApCost(operativeId)", APP)
+        self.assertIn("const breachLabel=missionAction?.existingAction==='breach'?missionAction.displayLabel:'Breach'", APP)
+        self.assertIn("{id:'breach',name:breachLabel,group:'mission',cost:breachApCost(operative)}", APP)
         self.assertIn("Is this operative within the sarcophagus’s control range?", APP)
         self.assertIn("Is this operative outside the control range of every NPO?", APP)
         self.assertIn("Not enough AP to Breach the sarcophagus.", APP)
@@ -40,7 +41,7 @@ class DestroySarcophagusV860Tests(unittest.TestCase):
             "button.disabled=true",
             "context.newTotal!=null",
             "stage.missionBreachCommitted",
-            "Math.max(1,qualifyingBreachDiscount",
+            "return breachApCost(playerDefinition(operativeId))",
             "!rules.some(rule=>/^(?:Blast|Torrent)",
         ):
             self.assertIn(text, APP)

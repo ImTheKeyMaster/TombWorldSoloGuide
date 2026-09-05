@@ -111,7 +111,7 @@ assert.equal(resolve(1,1).otherRemainingMarkerCount,0);
         self.assertEqual(definition['actions'][1]['oncePer'],'game')
         self.assertEqual(definition['actions'][1]['operations'][0],{'type':'setOperativeInPlay','side':'player','operativeIdFrom':'operativeId','inPlay':False,'reason':'escaped'})
         for contract in (
-            "name:'Pick Up Marker'", "cost:Number(objectiveDefinition", "performLocateItem(button.dataset.locateSite",
+            "missionAction?.id==='pickUpMarker'", "name:missionAction.displayLabel", "performLocateItem(button.dataset.locateSite",
             "commitHumanPlayerAction(stage,{deferContinuation:true,deferPersistence:true})", "resumeKind:'mission'", "transactionId",
             "transponderStatus='onBattlefield'", "confirmTransponderEscape",
             "completeMission('victory')", "handleTransponderCarrierIncapacitation", "livingPlayerOperativeCount()===0"

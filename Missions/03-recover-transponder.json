@@ -5,6 +5,13 @@
   "brief": "Search several locations for a hidden device and carry it back to safety.",
   "objective": "Locate the true transponder and escape over Player's killzone edge while carrying it.",
   "firstTurningPointInitiative": "player",
+  "actionGuide": {
+    "missionAction": {
+      "id": "pickUpMarker",
+      "displayLabel": "Pick Up Marker",
+      "apCost": 1
+    }
+  },
   "startingNpos": {
     "formula": "2D3+3",
     "deployment": "Wholly within NPO territory, spread evenly across rooms containing objective markers, with intervening terrain in control range when viewed from Player's drop zone.",

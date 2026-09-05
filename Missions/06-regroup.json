@@ -5,6 +5,9 @@
   "brief": "Navigate unstable phasing routes and reunite the scattered Player team.",
   "objective": "End a Turning Point with all surviving player operatives regrouped in NPO's drop zone.",
   "firstTurningPointInitiative": "player",
+  "actionGuide": {
+    "missionAction": null
+  },
   "startingNpos": {
     "formula": "2D3+3",
     "deployment": "Wholly within NPO territory, spread evenly with intervening terrain in control range when viewed from Player's drop zone.",

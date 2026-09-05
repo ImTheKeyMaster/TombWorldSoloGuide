@@ -5,6 +5,13 @@
   "brief": "Explore sealed rooms and clear the guardians that awaken inside.",
   "objective": "Scout three eligible rooms.",
   "firstTurningPointInitiative": "player",
+  "actionGuide": {
+    "missionAction": {
+      "id": "scoutRoom",
+      "displayLabel": "Scout Room",
+      "apCost": 1
+    }
+  },
   "startingNpos": {
     "formula": "0",
     "deployment": "No NPOs are set up before the battle.",

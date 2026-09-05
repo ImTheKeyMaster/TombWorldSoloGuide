@@ -5,6 +5,12 @@
   "brief": "Overload a damaged stasis crypt while tomb systems attempt to repair it.",
   "objective": "Accumulate 20 Destruction points on the sarcophagus.",
   "firstTurningPointInitiative": "player",
+  "actionGuide": {
+    "missionAction": {
+      "existingAction": "breach",
+      "displayLabel": "Breach Sarcophagus"
+    }
+  },
   "startingNpos": {
     "formula": "D3+6",
     "deployment": "Wholly within NPO territory. Put half, rounding down, in the sarcophagus room and spread the remainder across the other rooms.",

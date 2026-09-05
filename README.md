@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.42
+# Tomb World Battle Guide v9.2.43
+
+## v9.2.43
+
+**Version 9.2.43**
+
+- Replaced the generic Mission Action in the operative guide with mission-specific action metadata.
+- Preserved Pick Up Marker for Recover Transponder, renamed the existing Breach action for Destroy Sarcophagus, and added Scout Room for Scout Sub-Crypt.
+- Preserved the v9.2.42 dynamic Breach AP calculation and save-data compatibility.
 
 ## v9.2.42
 
