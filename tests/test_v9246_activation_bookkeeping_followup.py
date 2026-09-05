@@ -12,7 +12,7 @@ def section(start, end):
 
 
 def test_strict_damage_validation_and_single_commit_guard():
-    damage = section("function showApplyOtherDamage", "function showPendingHumanPlayerActionCompletion")
+    damage = section("function showApplyOtherDamage", "function renderHumanPlayerActionPicker")
     assert "input.valueAsNumber" in damage
     assert "!Number.isInteger(amount)||amount<1||amount>wounds" in damage
     assert "Enter a whole number from 1 to ${wounds}." in damage
@@ -20,10 +20,11 @@ def test_strict_damage_validation_and_single_commit_guard():
     assert "Math.min" not in damage
     assert "if(button.disabled)return" in damage
     assert "button.disabled=true" in damage
+    assert "pendingStage&&!canCommitHumanPlayerAction(pendingStage)" in damage
 
 
 def test_nonlethal_bookkeeping_preserves_the_authoritative_activation():
-    damage = section("function showApplyOtherDamage", "function showPendingHumanPlayerActionCompletion")
+    damage = section("function showApplyOtherDamage", "function renderHumanPlayerActionPicker")
     adjustment = section("function adjustPlayerWounds", "function adjustWounds")
     assert "if(remaining>0){save();onNonlethal();return;}" in damage
     assert "activationBookkeeping&&activePlayerActivation()?.operativeId===id" in adjustment
@@ -34,7 +35,7 @@ def test_nonlethal_bookkeeping_preserves_the_authoritative_activation():
 
 
 def test_lethal_bookkeeping_uses_canonical_completion_once_and_clears_pending_state():
-    damage = section("function showApplyOtherDamage", "function showPendingHumanPlayerActionCompletion")
+    damage = section("function showApplyOtherDamage", "function renderHumanPlayerActionPicker")
     completion = section("async function completeHumanPlayerActivation", "const PLAYER_ACTION_COSTS")
     assert "if(pendingStage)commitHumanPlayerAction(pendingStage,{deferContinuation:true})" in damage
     assert damage.count("completeHumanPlayerActivation()") == 1
@@ -44,12 +45,26 @@ def test_lethal_bookkeeping_uses_canonical_completion_once_and_clears_pending_st
 
 
 def test_pending_final_ap_action_offers_optional_bookkeeping_without_committing_it():
-    result = section("function showPendingHumanPlayerActionCompletion", "function renderHumanPlayerActionPicker")
+    result = section("function showPendingHumanPlayerActionCompletion", "function commitHumanPlayerAction")
     assert 'id="pendingActionOtherDamage"' in result
     assert result.index("Apply Other Damage") < result.index("id=\"commitHumanPlayerAction\"")
     assert "pendingStage:stage" in result
     assert "onNonlethal:()=>showPendingHumanPlayerActionCompletion(stage,action,descriptions,completionLabel)" in result
     assert result.count("completePlayerActivation(stage)") == 1
+
+
+def test_pending_action_is_validated_before_bookkeeping_damage_is_applied():
+    damage = section("function showApplyOtherDamage", "function showPendingHumanPlayerActionCompletion")
+    validator = section("function canCommitHumanPlayerAction", "function showApplyOtherDamage")
+    commit = section("function commitHumanPlayerAction", "function continueAfterCommittedHumanAction")
+    assert damage.index("canCommitHumanPlayerAction(pendingStage)") < damage.index("adjustPlayerWounds(")
+    assert "pending.activationId===activation.activationId" in validator
+    assert "pending.actionId===stage?.humanActionId" in validator
+    assert "!(activation.completedActionIds||[]).includes(pending.actionId)" in validator
+    assert "pending.cost<=activation.remainingAp" in validator
+    assert "pending.activationId!==activation.activationId" in commit
+    assert "(activation.completedActionIds||[]).includes(pending.actionId)" in commit
+    assert "pending.cost>before" in commit
 
 
 def test_legacy_damage_action_state_is_inert_but_save_key_is_compatible():

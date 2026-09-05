@@ -4943,6 +4943,13 @@ document.addEventListener('touchend',function(e){
     $('#endHumanActivation').onclick=onEnd;
   }
 
+  function canCommitHumanPlayerAction(stage){
+    const activation=activePlayerActivation(),pending=activation?.pendingAction;
+    return Boolean(activation&&pending&&pending.activationId===activation.activationId
+      &&pending.actionId===stage?.humanActionId&&!(activation.completedActionIds||[]).includes(pending.actionId)
+      &&Number.isFinite(pending.cost)&&pending.cost>=0&&pending.cost<=activation.remainingAp);
+  }
+
   function showApplyOtherDamage({onCancel=renderHumanPlayerActionPicker,onNonlethal=renderHumanPlayerActionPicker,pendingStage=null}={}){
     const activation=activePlayerActivation();
     if(!activation)return;
@@ -4955,6 +4962,10 @@ document.addEventListener('touchend',function(e){
         $('#otherDamageValidation').textContent=`Enter a whole number from 1 to ${wounds}.`;
         input.focus();return;
       }
+      if(pendingStage&&!canCommitHumanPlayerAction(pendingStage)){
+        $('#otherDamageValidation').textContent='This action can no longer be completed. Return to the activation guide.';
+        return;
+      }
       if(button.disabled)return;
       button.disabled=true;
       const remaining=adjustPlayerWounds(activation.operativeId,-amount,{activationBookkeeping:true});
@@ -4963,13 +4974,6 @@ document.addEventListener('touchend',function(e){
       if(pendingStage)commitHumanPlayerAction(pendingStage,{deferContinuation:true});
       void completeHumanPlayerActivation();
     };
-  }
-
-  function showPendingHumanPlayerActionCompletion(stage,action,descriptions={},completionLabel='Action Complete'){
-    showModal(action.name,`<p>${escapeHtml(descriptions[action.id]||`Confirm ${action.name} is complete.`)}</p><div class="wizard-actions"><button class="btn ghost" id="cancelHumanPlayerAction">Cancel</button><button class="btn secondary" id="pendingActionOtherDamage">Apply Other Damage</button><button class="btn primary" id="commitHumanPlayerAction">${completionLabel}</button></div>`);
-    $('#cancelHumanPlayerAction').onclick=cancelCurrentHumanPlayerAction;
-    $('#pendingActionOtherDamage').onclick=()=>showApplyOtherDamage({onCancel:()=>showPendingHumanPlayerActionCompletion(stage,action,descriptions,completionLabel),onNonlethal:()=>showPendingHumanPlayerActionCompletion(stage,action,descriptions,completionLabel),pendingStage:stage});
-    $('#commitHumanPlayerAction').onclick=()=>completePlayerActivation(stage);
   }
 
   function renderHumanPlayerActionPicker(){
@@ -5054,12 +5058,19 @@ document.addEventListener('touchend',function(e){
     showPendingHumanPlayerActionCompletion(stage,action,descriptions,completionLabel);
   }
 
+  function showPendingHumanPlayerActionCompletion(stage,action,descriptions={},completionLabel='Action Complete'){
+    showModal(action.name,`<p>${escapeHtml(descriptions[action.id]||`Confirm ${action.name} is complete.`)}</p><div class="wizard-actions"><button class="btn ghost" id="cancelHumanPlayerAction">Cancel</button><button class="btn secondary" id="pendingActionOtherDamage">Apply Other Damage</button><button class="btn primary" id="commitHumanPlayerAction">${completionLabel}</button></div>`);
+    $('#cancelHumanPlayerAction').onclick=cancelCurrentHumanPlayerAction;
+    $('#pendingActionOtherDamage').onclick=()=>showApplyOtherDamage({onCancel:()=>showPendingHumanPlayerActionCompletion(stage,action,descriptions,completionLabel),onNonlethal:()=>showPendingHumanPlayerActionCompletion(stage,action,descriptions,completionLabel),pendingStage:stage});
+    $('#commitHumanPlayerAction').onclick=()=>completePlayerActivation(stage);
+  }
+
   function commitHumanPlayerAction(stage,{deferContinuation=false,deferPersistence=false}={}){
     const activation=activePlayerActivation(),pending=activation?.pendingAction;
     if(!activation||!pending||pending.activationId!==activation.activationId||pending.actionId!==stage.humanActionId)return false;
     if((activation.completedActionIds||[]).includes(pending.actionId))return false;
     const before=activation.remainingAp;
-    if(pending.cost>before)return false;
+    if(!Number.isFinite(pending.cost)||pending.cost<0||pending.cost>before)return false;
     const attacks=[...pendingAttackResults(stage,'shoot'),...pendingAttackResults(stage,'melee')];
     const primary=attacks[0];
     const summary=primary?primary.attackType==='melee'?`${stage.humanActionName} · ${primary.targetName} · Dealt ${Number(primary.damageDealt??primary.damage??0)} · Suffered ${Number(primary.damageSuffered??0)}`:`${stage.humanActionName} · ${primary.targetName} · ${attacks.reduce((sum,item)=>sum+Number(item.damage||0),0)} damage`:stage.humanActionName;

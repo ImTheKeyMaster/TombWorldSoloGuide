@@ -37,7 +37,7 @@ def test_only_nonempty_groups_render_and_footer_follows_groups_without_placehold
 
 def test_damage_bookkeeping_is_outside_action_list_and_has_no_ap_or_history_transaction():
     shell = section("function renderHumanActivationShell", "function showApplyOtherDamage")
-    damage = section("function showApplyOtherDamage", "function showPendingHumanPlayerActionCompletion")
+    damage = section("function showApplyOtherDamage", "function renderHumanPlayerActionPicker")
     assert 'class="activation-bookkeeping"' in shell
     assert 'id="applyOtherDamage"' in shell
     assert 'data-human-action' not in shell.split('id="applyOtherDamage"', 1)[1].split("</button>", 1)[0]
