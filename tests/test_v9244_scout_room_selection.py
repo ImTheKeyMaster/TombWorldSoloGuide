@@ -33,7 +33,7 @@ def test_scout_status_uses_authoritative_global_blockers_and_ap_priority():
     assert "No eligible room" not in state
 
 
-def test_scout_room_state_reacts_to_threat_scouting_and_known_npos():
+def test_scout_room_state_reacts_to_threat_awakened_rooms_and_scouting():
     helpers = "function scoutRoomState" + section("function scoutRoomState", "async function performScoutRoom")
     script = f"""
 const assert=require('assert').strict;
@@ -49,11 +49,11 @@ assert.equal(scoutRoomState().reason,'Threat Level must be above 0');
 assert.deepEqual(eligibleScoutRooms(),[]);
 state.threat=1;
 assert.equal(scoutRoomState().reason,'Available');
-assert.deepEqual(eligibleScoutRooms().map(room=>room.id),['room-2']);
+assert.deepEqual(eligibleScoutRooms().map(room=>room.id),['room-1','room-2']);
 npos[1]={{id:'npo-2',deployed:true,wounds:5}};
-assert.equal(scoutRoomState().reason,'Clear a room first');
+assert.equal(scoutRoomState().reason,'Available');
 npos[0].wounds=0;
-assert.deepEqual(eligibleScoutRooms().map(room=>room.id),['room-1']);
+assert.deepEqual(eligibleScoutRooms().map(room=>room.id),['room-1','room-2']);
 state.missionState.scoutedRoomIds=['room-1','room-2','room-3'];
 assert.equal(scoutRoomState().reason,'All rooms scouted');
 """
@@ -61,10 +61,11 @@ assert.equal(scoutRoomState().reason,'All rooms scouted');
     assert result.returncode == 0, result.stderr or result.stdout
 
 
-def test_scout_eligibility_uses_tracked_room_npos_not_operative_location():
+def test_scout_eligibility_defers_room_clearance_to_the_tabletop_confirmation():
     eligibility = section("function scoutRoomState", "async function performScoutRoom")
     assert "progress.awakenedRooms?.[room.id]" in eligibility
-    assert "awakening.operativeIds.some(id=>activeIds.has(id))" in eligibility
+    assert "activeNpos" not in eligibility
+    assert "operativeIds.some" not in eligibility
     assert "placementConfirmed" in eligibility
     assert "currentOperative.roomId" not in eligibility
     assert "activation.operativeId" not in eligibility
@@ -136,6 +137,6 @@ assert.equal(canPerformScoutRoom({{...valid,completedActionIds:['scoutRoom']}},'
 
 def test_mission_details_report_known_room_state():
     details = section("scout:(engine,progress,{readOnly", "regroup:(engine,progress,{readOnly")
-    assert "NPOs remain" in details
-    assert "Unscouted · Clear" in details
+    assert "Awakened · Unscouted" in details
+    assert "when the room is clear on the tabletop" in details
     assert "Scouted" in details

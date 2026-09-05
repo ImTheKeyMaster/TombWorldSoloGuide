@@ -47,7 +47,7 @@ def test_open_and_entry_use_one_immediate_awakening_transaction():
 def test_spawn_formula_uses_committed_d3_current_grade_and_both_caps():
     awakening = section("async function performAwakenRoom", "async function performAuspexCalibration")
     assert "await missionDiceTotal(outcome,'awakenRoll'" in awakening
-    assert "const grade=threatGrade(),requestedCount=Math.min(5,awakenRoll+threatGrade())" in awakening
+    assert "uncappedCount=awakenRoll+threatGrade(),requestedCount=Math.min(5,uncappedCount)" in awakening
     assert "activeNpos().length<MAX_NPOS" in awakening
     assert "availableGenerationResult()" in awakening
     assert "resolveVariantNpoRequest" in awakening
@@ -70,8 +70,8 @@ def test_cleanup_is_display_only_and_scout_room_remains_the_only_scout_commit():
     display = section("scout:(engine,progress,{readOnly", "regroup:(engine,progress,{readOnly")
     scout = section("async function performScoutRoom", "async function performLocateItem")
     assert "Unopened" in display
-    assert "Awakened · ${roomCondition}" in display
-    assert "Unscouted · NPOs remain" in display
+    assert "Awakened · Unscouted" in display
+    assert "when the room is clear on the tabletop" in display
     assert "data-awaken-room" not in display
     assert "First Open / Entry" not in display
     assert "scoutedRoomIds" in scout
@@ -84,3 +84,15 @@ def test_awakening_battle_record_is_explicit_and_idempotent():
     assert "Scout Sub-Crypt awakening roll: D3" in awakening
     assert "is Awakened and remains Unscouted" in awakening
     assert "blocked by the NPO cap or available model inventory" in awakening
+
+
+def test_selected_room_transaction_resumes_before_selection_and_does_not_infer_clearance():
+    normalization = section("function normalizeMissionState", "const inertVariantHooks")
+    resume = section("async function resumeCheckpointedGameplayContext", "async function missionDiceTotal")
+    awakening = section("async function performAwakenRoom", "async function performAuspexCalibration")
+    eligibility = section("function scoutRoomState", "function eligibleScoutRooms")
+    assert "['select','resolving'].includes(raw.pendingAwakening.phase)" in normalization
+    assert resume.index("resumeMissionActionContext()") < resume.index("pendingAwakening?.phase==='select'")
+    assert "phase:'resolving',roomId" in awakening
+    assert "activeNpos" not in eligibility
+    assert "operativeIds.some" not in eligibility

@@ -1029,8 +1029,8 @@ document.addEventListener('touchend',function(e){
         ? normalizeIdList(raw.scoutedRoomIds,roomIds)
         : engine.rooms.slice(0,boundedInteger(legacyTracker,0,engine.rooms.length)).map(room=>room.id);
       normalized.scoutedByRoom=isRecord(raw.scoutedByRoom)?Object.fromEntries(Object.entries(raw.scoutedByRoom).filter(([roomId,operativeId])=>allowedRooms.has(roomId)&&rosterIds.has(operativeId))):{};
-      normalized.pendingAwakening=isRecord(raw.pendingAwakening)&&['select'].includes(raw.pendingAwakening.phase)
-        ? {...raw.pendingAwakening,phase:'select',source:['operate-hatch','breach','first-entry'].includes(raw.pendingAwakening.source)?raw.pendingAwakening.source:'first-entry'}
+      normalized.pendingAwakening=isRecord(raw.pendingAwakening)&&['select','resolving'].includes(raw.pendingAwakening.phase)
+        ? {...raw.pendingAwakening,phase:raw.pendingAwakening.phase==='resolving'&&allowedRooms.has(raw.pendingAwakening.roomId)?'resolving':'select',roomId:allowedRooms.has(raw.pendingAwakening.roomId)?raw.pendingAwakening.roomId:null,source:['operate-hatch','breach','first-entry'].includes(raw.pendingAwakening.source)?raw.pendingAwakening.source:'first-entry'}
         : null;
     }else if(engine.type==='regroup'){
       normalized.operativeChecks=isRecord(raw.operativeChecks)?{...raw.operativeChecks}:{};
@@ -1949,8 +1949,8 @@ document.addEventListener('touchend',function(e){
   }
   async function resumeCheckpointedGameplayContext(){
     if(state.fightState){await resumePersistedFight();return true;}
-    if(state.missionState?.pendingAwakening?.phase==='select'){showAwakenedRoomSelector();return true;}
     if(await resumeMissionActionContext())return true;
+    if(state.missionState?.pendingAwakening?.phase==='select'){showAwakenedRoomSelector();return true;}
     if(state.lastActivation?.side==='player'&&state.lastActivation.committed&&state.lastActivation.completionHookPending){await completeHumanPlayerActivation();return true;}
     if(state.lastActivation?.npoId&&state.lastActivation.committed&&state.lastActivation.completionHookPending){await completeNpoActivation();return true;}
     if(isPvpMode()&&Boolean(state.lastActivation?.pendingAction?.diceResults||state.lastActivation?.pendingAction?.resolvedResult))return resumeNpoSpecialActionContext();
@@ -3435,8 +3435,7 @@ document.addEventListener('touchend',function(e){
     },
     scout:(engine,progress,{readOnly=false}={})=>{
       const scouted=new Set(progress.scoutedRoomIds);
-      const activeIds=new Set(activeNpos().map(npo=>npo.id));
-      const rooms=engine.rooms.map(room=>{const awakening=progress.awakenedRooms[room.id],scout=progress.scoutedByRoom?.[room.id],nposRemain=awakening?.operativeIds.some(id=>activeIds.has(id)),roomCondition=nposRemain?'Unscouted · NPOs remain':'Unscouted · Clear';const actions=readOnly?'':`<div class="mission-objective-actions">${awakening?.placementConfirmed&&!nposRemain&&!scouted.has(room.id)?'<small>Ready for the Scout Room action</small>':''}${scouted.has(room.id)?`<button class="btn ghost compact" data-correct-scout-room="${room.id}">Correct</button>`:''}</div>`;const generated=awakening?` · ${awakening.count} NPO${awakening.count===1?'':'s'} generated`:'';const status=scouted.has(room.id)?`Scouted${scout?` by ${escapeHtml(playerName(scout))}`:''}`:awakening?`Awakened · ${roomCondition}${generated}`:'Unopened';return `<div class="mission-objective-row"><span><strong>${escapeHtml(room.label)}</strong><small>${status}</small></span>${actions}</div>`;}).join('');
+      const rooms=engine.rooms.map(room=>{const awakening=progress.awakenedRooms[room.id],scout=progress.scoutedByRoom?.[room.id];const actions=readOnly?'':`<div class="mission-objective-actions">${awakening&&!scouted.has(room.id)?'<small>Use Scout Room when the room is clear on the tabletop</small>':''}${scouted.has(room.id)?`<button class="btn ghost compact" data-correct-scout-room="${room.id}">Correct</button>`:''}</div>`;const generated=awakening?` · ${awakening.count} NPO${awakening.count===1?'':'s'} generated`:'';const status=scouted.has(room.id)?`Scouted${scout?` by ${escapeHtml(playerName(scout))}`:''}`:awakening?`Awakened · Unscouted${generated}`:'Unopened';return `<div class="mission-objective-row"><span><strong>${escapeHtml(room.label)}</strong><small>${status}</small></span>${actions}</div>`;}).join('');
       return `<p>${objectiveEngine?.getMissionHudModel().value??scouted.size} of ${objectiveEngine?.getMissionHudModel().target??engine.required} rooms scouted. Use the operative action guide to Scout Room.</p><div class="mission-objective-list">${rooms}</div>`;
     },
     regroup:(engine,progress,{readOnly=false}={})=>{
@@ -3463,11 +3462,7 @@ document.addEventListener('touchend',function(e){
     if(missionEngine()?.type!=='scout')return {rooms:[],remaining:[],reason:'Clear a room first'};
     const progress=state.missionState||{},scouted=new Set(progress.scoutedRoomIds||[]);
     const remaining=missionEngine().rooms.filter(room=>!scouted.has(room.id));
-    const activeIds=new Set(activeNpos().map(npo=>npo.id));
-    const rooms=remaining.filter(room=>{
-      const awakening=progress.awakenedRooms?.[room.id];
-      return awakening?.placementConfirmed&&!awakening.operativeIds.some(id=>activeIds.has(id));
-    });
+    const rooms=remaining.filter(room=>progress.awakenedRooms?.[room.id]?.placementConfirmed);
     const reason=state.threat===0?'Threat Level must be above 0':!remaining.length?'All rooms scouted':!rooms.length?'Clear a room first':'Available';
     return {rooms:state.threat===0?[]:rooms,remaining,reason};
   }
@@ -3591,13 +3586,14 @@ document.addEventListener('touchend',function(e){
     if(!roomId)return;
     if(state.missionState?.awakenedRooms?.[roomId]){state.missionActionContext=null;acknowledgeCurrentDiceRequest();return;}
     const pending=state.missionState?.pendingAwakening;
-    if(!pending||!unawakenedScoutRooms().some(room=>room.id===roomId))return;
+    if(!pending||!unawakenedScoutRooms().some(room=>room.id===roomId)||pending.phase==='resolving'&&pending.roomId!==roomId)return;
     const actionId=missionEngine().actions?.awakenRoom;
+    state.missionState.pendingAwakening={...pending,phase:'resolving',roomId};
     state.missionActionContext={missionId:state.missionId,actionId,roomId,source:pending.source};save();
     const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction(actionId,{...missionLifecycleContext(),roomId})):null;
     if(objectiveEngine&&!outcome)return;
     const awakenRoll=await missionDiceTotal(outcome,'awakenRoll',{title:'AWAKEN ROOM'});
-    const grade=threatGrade(),requestedCount=Math.min(5,awakenRoll+threatGrade()),ids=[];
+    const grade=threatGrade(),uncappedCount=awakenRoll+threatGrade(),requestedCount=Math.min(5,uncappedCount),ids=[];
     const room=missionEngine().rooms.find(item=>item.id===roomId),source=pending.source;
     for(let i=0;i<requestedCount&&activeNpos().length<MAX_NPOS;i++){
       const rawResult=availableGenerationResult();if(!rawResult)break;
@@ -3607,13 +3603,13 @@ document.addEventListener('touchend',function(e){
       const n=createNpo(result.type,`${result.type} ${roomId}`,{weaponId:result.weaponId,deployed:true,ready:state.threat>0,dormant:state.threat===0,order:'Conceal',replacementOptions:result.replacementOptions,replacementTransactionId:result.replacementTransactionId});
       n.sourceRoomId=roomId;n.missionRoom=roomId;state.roster.push(n);ids.push(n.id);
     }
-    state.missionState.awakenedRooms[roomId]={roomId,awakened:true,scouted:false,awakeningTurningPoint:state.turningPoint,awakeningSource:source,awakeningRoll:awakenRoll,threatGrade:grade,requestedCount,count:ids.length,generatedNpoIds:ids,operativeIds:ids,placementConfirmed:true};
+    state.missionState.awakenedRooms[roomId]={roomId,awakened:true,scouted:false,awakeningTurningPoint:state.turningPoint,awakeningSource:source,awakeningRoll:awakenRoll,threatGrade:grade,uncappedCount,requestedCount,count:ids.length,generatedNpoIds:ids,operativeIds:ids,placementConfirmed:true};
     state.missionState.pendingAwakening=null;
     if(ids.some(id=>state.roster.find(npo=>npo.id===id)?.ready))state.activationFinishedForTurningPoint.npo=false;
     state.missionActionContext=null;
-    const sourceVerb=source==='first-entry'?'entered':source==='breach'?'opened by Breach':'opened by Operate Hatch';
-    log(`${playerName(pending.operativeId)||'A player operative'} ${sourceVerb} ${room.label} for the first time.`);
-    log(`Scout Sub-Crypt awakening roll: D3 ${awakenRoll} + Grade ${grade} = ${requestedCount} NPOs.`);
+    const sourceText=source==='first-entry'?'by entering it':source==='breach'?'with Breach':'with Operate Hatch';
+    log(`${playerName(pending.operativeId)||'A player operative'} opened ${room.label} for the first time ${sourceText}.`);
+    log(`Scout Sub-Crypt awakening roll: D3 ${awakenRoll} + Grade ${grade} = ${uncappedCount}${uncappedCount>5?', capped at 5':''} NPOs.`);
     log(`${ids.length} NPO${ids.length===1?' was':'s were'} generated for ${room.label}.${ids.length<requestedCount?` ${requestedCount-ids.length} blocked by the NPO cap or available model inventory.`:state.threat===0?' Threat is 0, so they are Dormant.':' They are Ready immediately.'}`);
     log(`${room.label} is Awakened and remains Unscouted.`);
     save();acknowledgeCurrentDiceRequest();renderHumanPlayerActionPicker();
