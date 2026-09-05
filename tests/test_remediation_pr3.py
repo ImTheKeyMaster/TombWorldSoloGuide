@@ -70,10 +70,10 @@ class RemediationPr3Tests(unittest.TestCase):
         self.assertIn("npo.dormant=true;npo.ready=false", transition)
         self.assertIn("filter(n => n.ready&&!n.dormant)", self.app)
 
-    def test_initiative_automatic_cases_precede_event(self):
+    def test_mission_initiative_and_later_rolls_precede_event(self):
         initiative = self.function_source("rollInitiative", "beginFirefight")
-        self.assertIn("state.turningPoint===1||state.threat===0", initiative)
-        self.assertIn("suggestedInitiative='player'", initiative)
+        self.assertIn("state.turningPoint===1", initiative)
+        self.assertIn("missionFirstInitiative()", initiative)
         self.assertIn("initiativeMode='automatic'", initiative)
         self.assertIn("initiativeMode='rolled'", initiative)
         pipeline = self.function_source("startTurningPoint", "completeStrategyStage")
@@ -103,7 +103,7 @@ class RemediationPr3Tests(unittest.TestCase):
     def test_legacy_null_rolls_migrate_as_automatic_initiative(self):
         normalize = self.function_source("normalizeState", "npoDefinition")
         self.assertIn("hasRolledInitiative?'rolled':'automatic'", normalize)
-        self.assertIn("Threat was 0 when initiative was determined", normalize)
+        self.assertIn("Legacy automatic initiative", normalize)
 
     def test_import_normalizes_threat_and_new_state(self):
         normalize = self.function_source("normalizeState", "npoDefinition")

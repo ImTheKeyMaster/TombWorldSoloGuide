@@ -13,10 +13,10 @@ class DirectInitiativeActivationTests(unittest.TestCase):
     def function_source(self, name, next_name):
         return self.app.split(f"function {name}(", 1)[1].split(f"function {next_name}(", 1)[0]
 
-    def test_turning_point_one_keeps_automatic_player_initiative_and_dormancy(self):
+    def test_turning_point_one_uses_mission_initiative_and_dormancy_is_independent(self):
         initiative = self.function_source("rollInitiative", "beginFirefight")
-        self.assertIn("state.turningPoint===1||state.threat===0", initiative)
-        self.assertIn("suggestedInitiative='player'", initiative)
+        self.assertIn("state.turningPoint===1", initiative)
+        self.assertIn("missionFirstInitiative()", initiative)
         ready = self.function_source("processReadyStep", "applyMissionReadyHooks")
         self.assertIn("npo.dormant=dormant", ready)
         self.assertIn("npo.ready=!dormant", ready)

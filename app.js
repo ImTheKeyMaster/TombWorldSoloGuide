@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.47';
+  const APP_VERSION = '9.2.48';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -1420,16 +1420,20 @@ document.addEventListener('touchend',function(e){
       const legacyTitle=Array.isArray(legacyEvent)?legacyEvent[0]:legacyEvent?.title;
       const legacyDefinitionId=Object.keys(eventDefinitions).find(id=>eventDefinitions[id].title===legacyTitle);
       const event=legacyDefinitionId?eventRecord({instanceId:`legacy-${legacyDefinitionId}`,definitionId:legacyDefinitionId}):legacyEvent;
-      const hasRolledInitiative=Number.isFinite(raw.strategyData.playerRoll)&&Number.isFinite(raw.strategyData.npoRoll);
+      const hasRolledInitiative=Number.isInteger(raw.strategyData.playerRoll)&&Number.isInteger(raw.strategyData.npoRoll);
+      const initiativeRolls=Array.isArray(raw.strategyData.initiativeRolls)
+        ? raw.strategyData.initiativeRolls.filter(round=>isRecord(round)&&Number.isInteger(round.playerRoll)&&round.playerRoll>=1&&round.playerRoll<=6&&Number.isInteger(round.npoRoll)&&round.npoRoll>=1&&round.npoRoll<=6).map(round=>({playerRoll:round.playerRoll,npoRoll:round.npoRoll}))
+        : [];
       merged.strategyData={
         ...raw.strategyData,
         event,
+        initiativeRolls,
         events:Array.isArray(raw.strategyData.events)?raw.strategyData.events:(event?[{...event,status:raw.strategyData.eventPending?'drawn':'resolved'}]:[]),
         eventIndex:Number.isInteger(raw.strategyData.eventIndex)?raw.strategyData.eventIndex:0,
         initiativeMode:['rolled','automatic','pending'].includes(raw.strategyData.initiativeMode)
           ? raw.strategyData.initiativeMode
           : hasRolledInitiative?'rolled':'automatic',
-        initiativeReason:raw.strategyData.initiativeReason||(raw?.turningPoint===1?'Turning Point 1':'Threat was 0 when initiative was determined'),
+        initiativeReason:raw.strategyData.initiativeReason||(raw?.turningPoint===1?'Turning Point 1':'Legacy automatic initiative'),
         viewStep:['actions','events','review'].includes(raw.strategyData.viewStep)
           ? raw.strategyData.viewStep
           : raw.strategyData.eventPending
@@ -1546,12 +1550,14 @@ document.addEventListener('touchend',function(e){
         committed:Boolean(merged.lastActivation.committed),completed:Boolean(merged.lastActivation.completed||merged.lastActivation.committed)
       };
     }
-    if(merged.phase==='strategy'&&merged.strategyStage==='initiative'&&merged.strategyData?.initiativeMode!=='pending'){
+    if(merged.strategyData?.initiativeMode!=='pending'&&['player','npo'].includes(merged.strategyData?.suggestedInitiative)){
       const resolvedSide=merged.strategyData?.suggestedInitiative==='npo'?'npo':'player';
       merged.initiative=resolvedSide;
-      merged.phase='firefight';
-      merged.strategyStage=null;
-      merged.nextSide=resolvedSide;
+      if(merged.phase==='strategy'&&merged.strategyStage==='initiative'&&raw.version!==APP_VERSION){
+        merged.phase='firefight';
+        merged.strategyStage=null;
+        merged.nextSide=resolvedSide;
+      }
     }
     if(invalidTurningPoint){
       merged.phase='battle-resolution';
@@ -1718,7 +1724,12 @@ document.addEventListener('touchend',function(e){
   function missionTracker(m=mission()){return m?.tracker?.label||'Mission progress';}
   function missionTrackerMax(m=mission()){return Number(m?.tracker?.max||0);}
   function missionSpecial(m=mission()){return (m?.rules||[]).map(rule=>`${rule.name}: ${rule.summary}`).join(' ');}
-  function missionFirstInitiative(m=mission()){return m?.firstTurningPointInitiative||'player';}
+  function missionFirstInitiative(m=mission()){
+    const side=m?.firstTurningPointInitiative;
+    if(side==null)return 'player';
+    if(!['player','npo'].includes(side))throw new Error(`Invalid firstTurningPointInitiative: ${side}`);
+    return side;
+  }
 
   function roll(sides=6){ return Math.floor(Math.random()*sides)+1; }
   function rollD3(){ return roll(3); }
@@ -4367,7 +4378,7 @@ document.addEventListener('touchend',function(e){
     state.playerReady=Math.max(0,state.playerCount-(state.playerCasualtyIds||[]).length);
     state.activationFinishedForTurningPoint={player:false,npo:false};
     state.playerActivated=0;state.npoActivated=0;state.activationNumber=0;state.activationHistory=[];state.playerActivatedIds=[];
-    state.strategyData={grade:threatGrade(),reinforcements:[],actualReinforcements:0,blocked:0,event:null,playerRoll:null,npoRoll:null,suggestedInitiative:'player',missionReadyHooks:[],viewStep:'actions'};
+    state.strategyData={grade:threatGrade(),reinforcements:[],actualReinforcements:0,blocked:0,event:null,playerRoll:null,npoRoll:null,initiativeRolls:[],suggestedInitiative:'player',missionReadyHooks:[],viewStep:'actions'};
     state.strategyPipeline={current:'ready',completed:[]};
     processReadyStep();
     const missionReadyCompleted=await applyMissionReadyHooks();
@@ -4779,36 +4790,51 @@ document.addEventListener('touchend',function(e){
 
   async function rollInitiative(){
     if(!state.strategyData)state.strategyData={};
-    if(state.turningPoint===1||state.threat===0){
+    if(state.turningPoint===1){
+      const side=missionFirstInitiative();
       state.strategyData.playerRoll=null;
       state.strategyData.npoRoll=null;
-      state.strategyData.suggestedInitiative='player';
+      state.strategyData.initiativeRolls=[];
+      state.strategyData.suggestedInitiative=side;
+      state.initiative=side;
       state.strategyData.initiativeMode='automatic';
-      state.strategyData.initiativeReason=state.turningPoint===1?'Turning Point 1':'Threat was 0 when initiative was determined';
+      state.strategyData.initiativeReason='Mission-defined Turning Point 1 initiative';
       return;
     }
     const playerLabel=selectedPlayerTeamName();
+    const rounds=Array.isArray(state.strategyData.initiativeRolls)?state.strategyData.initiativeRolls:[];
+    state.strategyData.initiativeRolls=rounds;
     let p=state.strategyData.playerRoll,n=state.strategyData.npoRoll;
-    if(!Number.isInteger(p)){
-      const requestKey=`initiative:tp${state.turningPoint}:player`;
-      [p]=await requestDiceResults({count:1,sides:6,title:'INITIATIVE',instruction:'Roll 1D6 and enter the result.',rollerLabel:playerLabel,requestKey,resumeKind:'strategy',resumeData:{turningPoint:state.turningPoint,side:'player'}});
-      state.strategyData.playerRoll=p;save();
-      acknowledgeDiceRequest(requestKey);
+    while(true){
+      const round=rounds.length+1;
+      if(!Number.isInteger(p)){
+        const requestKey=`initiative:tp${state.turningPoint}:round${round}:player`;
+        [p]=await requestDiceResults({count:1,sides:6,title:'INITIATIVE',instruction:'Roll 1D6 and enter the result.',rollerLabel:playerLabel,requestKey,resumeKind:'strategy',resumeData:{turningPoint:state.turningPoint,side:'player',round}});
+        state.strategyData.playerRoll=p;save();
+        acknowledgeDiceRequest(requestKey);
+      }
+      if(!Number.isInteger(n)){
+        const requestKey=`initiative:tp${state.turningPoint}:round${round}:necrons`;
+        [n]=await requestDiceResults({count:1,sides:6,title:'INITIATIVE',instruction:'Roll 1D6 and enter the result.',rollerLabel:'Necrons',requestKey,resumeKind:'strategy',resumeData:{turningPoint:state.turningPoint,side:'necrons',round}});
+        state.strategyData.npoRoll=n;save();
+        acknowledgeDiceRequest(requestKey);
+      }
+      if(p!==n)break;
+      rounds.push({playerRoll:p,npoRoll:n});
+      state.strategyData.playerRoll=null;
+      state.strategyData.npoRoll=null;
+      p=null;n=null;save();
     }
-    if(!Number.isInteger(n)){
-      const requestKey=`initiative:tp${state.turningPoint}:necrons`;
-      [n]=await requestDiceResults({count:1,sides:6,title:'INITIATIVE',instruction:'Roll 1D6 and enter the result.',rollerLabel:'Necrons',requestKey,resumeKind:'strategy',resumeData:{turningPoint:state.turningPoint,side:'necrons'}});
-      state.strategyData.npoRoll=n;save();
-      acknowledgeDiceRequest(requestKey);
-    }
-    state.strategyData.playerRoll=p;
-    state.strategyData.npoRoll=n;
     state.strategyData.suggestedInitiative=n>p?'npo':'player';
+    state.initiative=state.strategyData.suggestedInitiative;
     state.strategyData.initiativeMode='rolled';
     state.strategyData.initiativeReason=null;
+    save();
   }
 
   function beginFirefight(side){
+    if(state.phase==='firefight')return state.nextSide;
+    if(!['player','npo'].includes(side))throw new Error(`Invalid initiative side: ${side}`);
     state.initiative=side;
     state.phase='firefight';
     state.strategyStage=null;
@@ -4816,6 +4842,7 @@ document.addEventListener('touchend',function(e){
     log(`${side==='npo'?'NPOs':'Player'} begin the Firefight Phase with initiative.`);
     save();
     render();
+    return state.nextSide;
   }
 
   async function resolveStrategyEvent(button=null){
