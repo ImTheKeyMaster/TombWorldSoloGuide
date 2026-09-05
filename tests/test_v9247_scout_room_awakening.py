@@ -166,4 +166,14 @@ def test_variant_generation_and_cleanup_pending_guard_are_preserved():
     assert "sourceRoomId:roomId" in awakening
     assert "awakeningPending=Boolean(state.missionState?.pendingAwakening)" in cleanup
     assert "Room awakening incomplete." in cleanup
+    assert 'id="resolvePendingAwakening"' in cleanup
+    assert "showAwakenedRoomSelector" in bindings
     assert "if(state.missionState?.pendingAwakening)return" in bindings
+
+
+def test_legacy_placement_recovery_applies_current_readiness_and_provenance():
+    bindings = section("function bindMissionProgressControls", "async function narrateVisibleGradeMilestone")
+    assert "npo.ready=state.threat>0" in bindings
+    assert "npo.dormant=state.threat===0" in bindings
+    assert "npo.sourceRoomId=npo.sourceRoomId||button.dataset.confirmRoomPlacement" in bindings
+    assert "state.activationFinishedForTurningPoint.npo=false" in bindings

@@ -3732,10 +3732,15 @@ document.addEventListener('touchend',function(e){
         if(crawler){
           const pair=setupCrownworldCrawlerPair(crawler,`crownworld:mission:${state.missionId}:${button.dataset.confirmRoomPlacement}:${crawler.id}`);
           if(pair.blocked){awakening.placementConfirmed=false;showToast('The Royal Warden and Lychguard pair could not be set up within the 10-NPO limit.');save();render();return;}
-          if(pair.replaced)awakening.operativeIds=awakening.operativeIds.flatMap(id=>id===crawler.id?pair.npos.map(npo=>npo.id):[id]);
+          if(pair.replaced){
+            pair.npos.forEach(npo=>Object.assign(npo,{ready:state.threat>0,dormant:state.threat===0,sourceRoomId:button.dataset.confirmRoomPlacement,missionRoom:button.dataset.confirmRoomPlacement}));
+            awakening.operativeIds=awakening.operativeIds.flatMap(id=>id===crawler.id?pair.npos.map(npo=>npo.id):[id]);
+            awakening.generatedNpoIds=[...awakening.operativeIds];awakening.count=awakening.operativeIds.length;
+          }
         }
       }
-      state.roster.filter(npo=>awakening.operativeIds.includes(npo.id)).forEach(npo=>{npo.deployed=true;npo.battlefieldState='deployed';});
+      state.roster.filter(npo=>awakening.operativeIds.includes(npo.id)).forEach(npo=>{npo.deployed=true;npo.battlefieldState='deployed';npo.ready=state.threat>0;npo.dormant=state.threat===0;npo.sourceRoomId=npo.sourceRoomId||button.dataset.confirmRoomPlacement;});
+      if(state.threat>0&&awakening.operativeIds.length)state.activationFinishedForTurningPoint.npo=false;
       updateMissionProgress(`confirmed NPO placement in ${button.dataset.confirmRoomPlacement}.`);
     });
     $$('[data-correct-scout-room]').forEach(button=>button.onclick=async()=>{
@@ -3812,7 +3817,7 @@ document.addEventListener('touchend',function(e){
       const threatChanged=state.threat!==(state.tpStartThreat??state.threat);
       const gradeChanged=threatGrade()!==(state.tpStartGrade??threatGrade());
       const awakeningPending=Boolean(state.missionState?.pendingAwakening);
-      const pendingWarning=awakeningPending?'<div class="summary-box" role="alert"><strong>Room awakening incomplete.</strong><br>Select the awakened room before finishing this Turning Point.</div>':'';
+      const pendingWarning=awakeningPending?`<div class="summary-box" role="alert"><strong>Room awakening incomplete.</strong><br>Select the awakened room before finishing this Turning Point.${state.missionState.pendingAwakening.phase==='select'?'<div class="event-controls"><button class="btn secondary" id="resolvePendingAwakening">Select Awakened Room</button></div>':''}</div>`:'';
       return `<section class="next-card"><span class="phase">TURNING POINT ${state.turningPoint} COMPLETE</span><h2>Battle summary</h2><div class="turn-summary-grid"><div><small>Threat</small><strong>${state.tpStartThreat??state.threat} → ${state.threat}</strong><span>${threatChanged?'Changed this Turning Point':'No change'}</span></div><div><small>Grade</small><strong>${state.tpStartGrade??threatGrade()} → ${threatGrade()}</strong><span>${gradeChanged?'Grade increased':'Grade unchanged'}</span></div><div><small>${escapeHtml(opponentPluralLabel())} destroyed</small><strong>${npoLosses}</strong><span>This Turning Point</span></div><div><small>${escapeHtml(playerSideLabel())} casualties</small><strong>${playerLosses}</strong><span>This Turning Point</span></div></div><h3>Score and clean up</h3><p>Score mission objectives, resolve end-of-turn effects, and confirm all temporary markers have been cleared.</p>${missionProgressHtml()}${pendingWarning}<div class="checklist"><label class="check-row required-confirmation-row"><input id="endChecked" type="checkbox" ${awakeningPending?'disabled':''}><span><strong>End-of-turn steps complete</strong><small>Objectives scored, temporary effects resolved, and physical tokens cleaned up.</small></span></label></div><button class="btn primary big-action" id="finishTp" disabled>Finish Turning Point</button></section>`;
     }
     setNextActivation(state.nextSide || state.initiative || 'player');
@@ -4264,6 +4269,7 @@ document.addEventListener('touchend',function(e){
     $('#missionHud')?.addEventListener('click',showMissionDetails);
     bindMissionProgressControls();
     $('#resolveAuspexCalibration')?.addEventListener('click',performAuspexCalibration);
+    $('#resolvePendingAwakening')?.addEventListener('click',showAwakenedRoomSelector);
     $('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked||Boolean(state.missionState?.pendingAwakening);});
     $('#finishTp')?.addEventListener('click',async()=>{
       if(state.missionState?.pendingAwakening)return;
