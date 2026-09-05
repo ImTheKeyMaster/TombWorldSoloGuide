@@ -72,9 +72,9 @@ assert.equal(engine.getMissionRuntime().history.length,0);assert.equal(engine.ge
         app=(ROOT/'app.js').read_text();worker=(ROOT/'service-worker.js').read_text();index=(ROOT/'index.html').read_text()
         for action in ('awakenRoom','recordScout','correctScout'):
             self.assertIn(f"missionEngine().actions?.{action}",app)
-        self.assertIn('data-scout-operative',app)
-        self.assertIn("inPlayLivingPlayerOperativeIds().includes(operativeId)",app)
-        self.assertIn('state.missionState.scoutedByRoom[button.dataset.scoutRoom]=operativeId',app)
+        self.assertIn('data-activation-scout-room',app)
+        self.assertIn("commitHumanPlayerAction(stage,{deferContinuation:true,deferPersistence:true})",app)
+        self.assertIn("state.missionState.scoutedByRoom={...(state.missionState.scoutedByRoom||{}),[roomId]:operativeId}",app)
         self.assertIn('delete state.missionState.scoutedByRoom[button.dataset.correctScoutRoom]',app)
         self.assertIn('normalized.scoutedByRoom=',app)
         self.assertLess(app.index('state.missionState=normalizeMissionState(state.missionState,selectedMission,state.tracker)'),app.index('const definition=await TombWorldMissionEngine.loadMissionDefinition'))

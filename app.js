@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.42';
+  const APP_VERSION = '9.2.43';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3393,10 +3393,6 @@ document.addEventListener('touchend',function(e){
 
   function hud(){return `<div class="hud"><div><small>Turning<span class="portrait-break"><br></span> Point</small><strong>${state.turningPoint||'Setup'}</strong></div><button class="hud-cell hud-threat" id="threatHudToggle" type="button" aria-expanded="${threatAdjustOpen}" aria-controls="threatAdjuster"><small>Threat<span class="portrait-break"><br></span> Level</small><strong>${state.threat}</strong></button><div><small>Grade<span class="portrait-break"><br></span> Level</small><strong>${threatGrade()}</strong></div><div><small>${escapeHtml(playerSideLabel())}<span class="portrait-break"><br></span> Ready</small><strong>${state.playerReady}</strong></div><div><small>${escapeHtml(opponentSingularLabel())}<span class="portrait-break"><br></span> Ready</small><strong>${readyNpos().length}</strong></div>${missionHudHtml()}</div><div class="threat-strip ${threatAdjustOpen?'':'hidden'}" id="threatAdjuster"><div><strong>THREAT LEVEL: ${threatLabel()}</strong><small>${threatGrade()===3?'Maximum Grade':`Next Grade at Threat Level ${nextGradeThreat()}`}</small></div><div class="threat-meter"><span style="width:${(state.threat/15)*100}%"></span></div><button class="mini-btn" id="threatDown" aria-label="Decrease Threat">−</button><button class="mini-btn" id="threatUp" aria-label="Increase Threat">+</button></div>`;}
 
-  function livingPlayerOptions(selected=''){
-    return inPlayPlayerOperativeIds().filter(id=>!state.playerCasualtyIds.includes(id)).map(id=>`<option value="${escapeHtml(id)}" ${id===selected?'selected':''}>${escapeHtml(playerName(id))}</option>`).join('');
-  }
-
   const missionProgressRenderers = {
     escape:(engine,progress,{readOnly=false}={})=>{
       const escaped=new Set(progress.escapedIds);
@@ -3434,7 +3430,7 @@ document.addEventListener('touchend',function(e){
     },
     scout:(engine,progress,{readOnly=false}={})=>{
       const scouted=new Set(progress.scoutedRoomIds);
-      const rooms=engine.rooms.map(room=>{const awakening=progress.awakenedRooms[room.id],scout=progress.scoutedByRoom?.[room.id];const actions=readOnly?'':`<div class="mission-objective-actions">${awakening?'':`<button class="btn secondary compact" data-awaken-room="${room.id}">First Open / Entry</button>`}${awakening&&!awakening.placementConfirmed?`<button class="btn secondary compact" data-confirm-room-placement="${room.id}">Confirm Placement</button>`:''}${awakening?.placementConfirmed&&!scouted.has(room.id)?`<select aria-label="Operative scouting ${escapeHtml(room.label)}" data-scout-operative="${room.id}"><option value="">Select operative…</option>${livingPlayerOptions()}</select><button class="btn primary compact" data-scout-room="${room.id}">Confirm Cleared & Scout (1AP)</button>`:''}${scouted.has(room.id)?`<button class="btn ghost compact" data-correct-scout-room="${room.id}">Correct</button>`:''}</div>`;return `<div class="mission-objective-row"><span><strong>${escapeHtml(room.label)}</strong><small>${scouted.has(room.id)?`Scouted${scout?` by ${escapeHtml(playerName(scout))}`:''}`:awakening?`${awakening.count} NPOs generated${awakening.placementConfirmed?' and placed':' — placement required'}`:'Unopened / unentered'}</small></span>${actions}</div>`;}).join('');
+      const rooms=engine.rooms.map(room=>{const awakening=progress.awakenedRooms[room.id],scout=progress.scoutedByRoom?.[room.id];const actions=readOnly?'':`<div class="mission-objective-actions">${awakening?'':`<button class="btn secondary compact" data-awaken-room="${room.id}">First Open / Entry</button>`}${awakening&&!awakening.placementConfirmed?`<button class="btn secondary compact" data-confirm-room-placement="${room.id}">Confirm Placement</button>`:''}${awakening?.placementConfirmed&&!scouted.has(room.id)?'<small>Ready for the Scout Room action</small>':''}${scouted.has(room.id)?`<button class="btn ghost compact" data-correct-scout-room="${room.id}">Correct</button>`:''}</div>`;return `<div class="mission-objective-row"><span><strong>${escapeHtml(room.label)}</strong><small>${scouted.has(room.id)?`Scouted${scout?` by ${escapeHtml(playerName(scout))}`:''}`:awakening?`${awakening.count} NPOs generated${awakening.placementConfirmed?' and placed':' — placement required'}`:'Unopened / unentered'}</small></span>${actions}</div>`;}).join('');
       return `<p>${objectiveEngine?.getMissionHudModel().value??scouted.size} of ${objectiveEngine?.getMissionHudModel().target??engine.required} rooms scouted. Confirm that an eligible room is cleared on the tabletop before resolving the 1AP Scout Room action.</p><div class="mission-objective-list">${rooms}</div>`;
     },
     regroup:(engine,progress,{readOnly=false}={})=>{
@@ -3455,6 +3451,29 @@ document.addEventListener('touchend',function(e){
     if(message)log(`${mission().name}: ${message}`);
     if(checkGameEnd())return;
     save();render();
+  }
+
+  function eligibleScoutRooms(){
+    if(missionEngine()?.type!=='scout')return [];
+    const progress=state.missionState||{};
+    const scouted=new Set(progress.scoutedRoomIds||[]);
+    return missionEngine().rooms.filter(room=>progress.awakenedRooms?.[room.id]?.placementConfirmed&&!scouted.has(room.id));
+  }
+
+  async function performScoutRoom(roomId,operativeId,stage){
+    const room=eligibleScoutRooms().find(item=>item.id===roomId);
+    if(!room||!activePlayerActivation()||stage?.humanActionId!=='scoutRoom'){cancelCurrentHumanPlayerAction();return;}
+    const actionId=missionEngine().actions?.recordScout;
+    const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction(actionId,{...missionLifecycleContext({activationId:activePlayerActivation().activationId,operativeId}),roomId})):null;
+    if(objectiveEngine&&!outcome)return;
+    if(!commitHumanPlayerAction(stage,{deferContinuation:true,deferPersistence:true}))return;
+    const ids=new Set(state.missionState.scoutedRoomIds||[]);ids.add(roomId);state.missionState.scoutedRoomIds=[...ids];
+    state.missionState.scoutedByRoom={...(state.missionState.scoutedByRoom||{}),[roomId]:operativeId};
+    const gradeFloor=[0,0,5,10][threatGrade()];
+    if(state.threat>gradeFloor)setThreat(gradeFloor-state.threat,'Scout Room');
+    log(`${playerName(operativeId)} performed Scout Room in ${room.label}.`);
+    save();
+    if(!checkGameEnd())continueAfterCommittedHumanAction();
   }
 
   async function performLocateItem(siteId,carrierId,stage=state.combatState?.stage){
@@ -3651,18 +3670,6 @@ document.addEventListener('touchend',function(e){
       }
       state.roster.filter(npo=>awakening.operativeIds.includes(npo.id)).forEach(npo=>{npo.deployed=true;npo.battlefieldState='deployed';});
       updateMissionProgress(`confirmed NPO placement in ${button.dataset.confirmRoomPlacement}.`);
-    });
-    $$('[data-scout-room]').forEach(button=>button.onclick=async()=>{
-      const operativeId=$(`[data-scout-operative="${button.dataset.scoutRoom}"]`)?.value;
-      if(!operativeId||!inPlayLivingPlayerOperativeIds().includes(operativeId)){showToast('Select an in-play Player operative to perform Scout Room.');return;}
-      const actionId=missionEngine().actions?.recordScout;
-      const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction(actionId,{...missionLifecycleContext(),operativeId})):null;
-      if(objectiveEngine&&!outcome)return;
-      const ids=new Set(state.missionState.scoutedRoomIds);ids.add(button.dataset.scoutRoom);state.missionState.scoutedRoomIds=[...ids];
-      state.missionState.scoutedByRoom[button.dataset.scoutRoom]=operativeId;
-      const grade=threatGrade(), gradeFloor=[0,0,5,10][grade];
-      if(state.threat>gradeFloor)setThreat(gradeFloor-state.threat,'Scout Room');
-      updateMissionProgress(`scouted ${button.dataset.scoutRoom}.`);
     });
     $$('[data-correct-scout-room]').forEach(button=>button.onclick=async()=>{
       const actionId=missionEngine().actions?.correctScout;
@@ -4857,6 +4864,8 @@ document.addEventListener('touchend',function(e){
   function playerHumanActionCatalog(activation=activePlayerActivation()){
     const operativeId=activation?.operativeId,operative=playerDefinition(operativeId);
     if(!operative)return [];
+    const missionAction=mission()?.actionGuide?.missionAction;
+    const breachLabel=missionAction?.existingAction==='breach'?missionAction.displayLabel:'Breach';
     const actions=[
       {id:'move',name:'Reposition',group:'movement',cost:1},
       {id:'dash',name:'Dash',group:'movement',cost:1},
@@ -4866,35 +4875,35 @@ document.addEventListener('touchend',function(e){
       {id:'melee',name:'Fight',group:'combat',cost:1},
       {id:'damage',name:'Other Damage',group:'special',cost:1},
       {id:'hatch',name:'Operate Hatch',group:'mission',cost:1},
-      {id:'breach',name:'Breach',group:'mission',cost:breachApCost(operative)}
+      {id:'breach',name:breachLabel,group:'mission',cost:breachApCost(operative)}
     ];
-    if(!['destroy-sarcophagus','recover-transponder'].includes(state.missionId))actions.push({id:'objective',name:'Mission Action',group:'mission',cost:1});
     const transponder=state.missionState;
-    if(missionEngine()?.type==='transponder'&&!transponder?.transponderFound&&missionEngine().sites.some(site=>!transponder?.sites?.[site.id]||transponder.sites[site.id]==='available')){
-      actions.push({id:'pickUpMarker',name:'Pick Up Marker',group:'mission',cost:Number(objectiveDefinition?.actions?.find(item=>item.id==='searchTransponder')?.apCost)||1});
+    if(missionAction?.id==='pickUpMarker'&&missionEngine()?.type==='transponder'&&!transponder?.transponderFound&&missionEngine().sites.some(site=>!transponder?.sites?.[site.id]||transponder.sites[site.id]==='available')){
+      actions.push({id:missionAction.id,name:missionAction.displayLabel,group:'mission',cost:missionAction.apCost});
     }
-    if(canOfferBreachSarcophagus({missionBreachCommitted:(activation.completedActionIds||[]).includes('breachSarcophagus')},operativeId)){
-      actions.push({id:'breachSarcophagus',name:'Breach Sarcophagus',group:'mission',cost:breachSarcophagusApCost(operativeId)});
+    if(missionAction?.id==='scoutRoom'&&!objectiveEngine?.getMissionHudModel().completed){
+      actions.push({id:missionAction.id,name:missionAction.displayLabel,group:'mission',cost:missionAction.apCost});
     }
     return actions;
   }
 
   function playerHumanActionState(action,activation=activePlayerActivation()){
     const completed=new Set(activation?.completedActionIds||[]),remaining=Number(activation?.remainingAp||0);
-    const discountedBreachCompleted=(activation?.resolvedActions||[]).some(record=>record.id==='breachSarcophagus'&&record.apCost===1);
+    const discountedBreachCompleted=(activation?.resolvedActions||[]).some(record=>record.id==='breach'&&record.apCost===1);
     if(completed.has(action.id))return {status:'Used',disabled:true,reason:'Used'};
     if(action.cost>remaining)return {status:'Insufficient AP',disabled:true,reason:`Needs ${action.cost} AP`};
     if(action.id==='charge'&&['move','dash','fallBack'].some(id=>completed.has(id)))return {status:'Unavailable',disabled:true,reason:'Unavailable after movement'};
     if(['move','dash','fallBack'].includes(action.id)&&completed.has('charge'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Charge'};
     if(action.id==='fallBack'&&completed.has('move'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Reposition'};
     if(action.id==='move'&&completed.has('fallBack'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Fall Back'};
-    if(discountedBreachCompleted&&['shoot','charge'].includes(action.id))return {status:'Unavailable',disabled:true,reason:'Unavailable after Breach Sarcophagus'};
+    if(discountedBreachCompleted&&['shoot','charge'].includes(action.id))return {status:'Unavailable',disabled:true,reason:'Unavailable after Breach'};
     if(action.id==='shoot'&&!playerAttackWeapons(activation.operativeId,'shoot').length)return {status:'Unavailable',disabled:true,reason:'No ranged weapon'};
     if(action.id==='melee'&&!playerAttackWeapons(activation.operativeId,'melee').length)return {status:'Unavailable',disabled:true,reason:'No melee weapon'};
     if(['shoot','melee'].includes(action.id)&&!hasValidPlayerCombatTargets({}))return {status:'Unavailable',disabled:true,reason:'No valid target'};
     if(action.id==='hatch'&&state.missionId==='demolition-protocol'&&!closedMissionFeatures('hatchway').length)return {status:'Unavailable',disabled:true,reason:'No closed hatchway'};
     if(action.id==='breach'&&state.missionId==='demolition-protocol'&&!closedMissionFeatures('breach-point').length)return {status:'Unavailable',disabled:true,reason:'No breach point'};
-    if(action.id==='breachSarcophagus'&&action.cost===1&&(completed.has('shoot')||completed.has('charge')))return {status:'Unavailable',disabled:true,reason:'Unavailable after Shoot or Charge'};
+    if(action.id==='breach'&&action.cost===1&&(completed.has('shoot')||completed.has('charge')))return {status:'Unavailable',disabled:true,reason:'Unavailable after Shoot or Charge'};
+    if(action.id==='scoutRoom'&&!eligibleScoutRooms().length)return {status:'Unavailable',disabled:true,reason:'No eligible room'};
     return {status:'Available',disabled:false,reason:'Available'};
   }
 
@@ -4966,7 +4975,11 @@ document.addEventListener('touchend',function(e){
     }
     if(action.id==='hatch'&&state.missionId==='demolition-protocol'){showActivationFeatureTargetSelection(stage,'operate-hatch');return;}
     if(action.id==='breach'&&state.missionId==='demolition-protocol'){showActivationFeatureTargetSelection(stage,'breach');return;}
-    if(action.id==='breachSarcophagus'){beginBreachSarcophagus(stage);return;}
+    if(action.id==='breach'&&mission()?.actionGuide?.missionAction?.existingAction==='breach'){
+      delete stage.breach;
+      stage.breachSarcophagus=true;
+      beginBreachSarcophagus(stage);return;
+    }
     if(action.id==='pickUpMarker'){
       const available=missionEngine().sites.filter(site=>!state.missionState.sites[site.id]||state.missionState.sites[site.id]==='available');
       if(!available.length){
@@ -4978,6 +4991,15 @@ document.addEventListener('touchend',function(e){
       showModal('LOCATE ITEM',`<p>Which objective marker is this operative searching?</p><div class="human-npo-action-list">${choices}</div><div class="wizard-actions"><button class="btn ghost" id="cancelLocateItem">Back</button></div>`);
       $('#cancelLocateItem').onclick=cancelCurrentHumanPlayerAction;
       $$('[data-locate-site]',modalBody).forEach(button=>button.onclick=()=>{button.disabled=true;void performLocateItem(button.dataset.locateSite,activation.operativeId,stage);});
+      return;
+    }
+    if(action.id==='scoutRoom'){
+      const rooms=eligibleScoutRooms();
+      if(!rooms.length){cancelCurrentHumanPlayerAction();return;}
+      const choices=rooms.map(room=>`<button type="button" class="btn secondary big-action" data-activation-scout-room="${escapeHtml(room.id)}">${escapeHtml(room.label.toUpperCase())}</button>`).join('');
+      showModal('SCOUT ROOM',`<p>Choose a cleared eligible room for this operative to scout.</p><div class="human-npo-action-list">${choices}</div><div class="wizard-actions"><button class="btn ghost" id="cancelScoutRoom">Back</button></div>`);
+      $('#cancelScoutRoom').onclick=cancelCurrentHumanPlayerAction;
+      $$('[data-activation-scout-room]',modalBody).forEach(button=>button.onclick=()=>{button.disabled=true;void performScoutRoom(button.dataset.activationScoutRoom,activation.operativeId,stage);});
       return;
     }
     const descriptions={move:'Confirm that Reposition has been completed on the tabletop.',dash:'Confirm that Dash has been completed on the tabletop.',charge:'Confirm that Charge has been completed on the tabletop.',fallBack:'Confirm that Fall Back has been completed on the tabletop.',damage:'Confirm that the damaging action and its effects are complete.',hatch:'Confirm that Operate Hatch is complete.',breach:'Confirm that Breach is complete.',objective:'Confirm that the mission action resolved successfully.'};
@@ -5146,13 +5168,13 @@ document.addEventListener('touchend',function(e){
   }
 
   function breachSarcophagusApCost(operativeId){
-    return Math.max(1,qualifyingBreachDiscount(playerDefinition(operativeId))?1:2);
+    return breachApCost(playerDefinition(operativeId));
   }
 
   function canOfferBreachSarcophagus(stage,operativeId){
     if(state.missionId!=='destroy-sarcophagus'||state.gameEnd||state.nextSide!=='player'||state.phase!=='firefight')return false;
     if(!operativeId||!isPlayerOperativeInPlay(operativeId)||state.playerCasualtyIds.includes(operativeId))return false;
-    if(stage.missionBreachCommitted)return false;
+    if(stage.missionBreachCommitted||(activePlayerActivation()?.completedActionIds||[]).includes('breach'))return false;
     return Number(objectiveEngine?.getMissionHudModel().value||state.missionState?.destruction||0)<20;
   }
 
@@ -9178,7 +9200,7 @@ function showPlayerActivation(){
 
   function showMissionConfirmation(options,onConfirm){
     options=options&&typeof options==='object'?options:{};
-    showModal(options.title||'Confirm Mission Action',`<p>${escapeHtml(options.description||'')}</p><p>${escapeHtml(options.message||'')}</p><div class="wizard-actions"><button class="btn ghost" data-close>${escapeHtml(options.cancelLabel||'Cancel')}</button><button class="btn primary" id="confirmMissionDialog">${escapeHtml(options.confirmLabel||'Confirm')}</button></div>`);
+    showModal(options.title||'Confirm Mission Activity',`<p>${escapeHtml(options.description||'')}</p><p>${escapeHtml(options.message||'')}</p><div class="wizard-actions"><button class="btn ghost" data-close>${escapeHtml(options.cancelLabel||'Cancel')}</button><button class="btn primary" id="confirmMissionDialog">${escapeHtml(options.confirmLabel||'Confirm')}</button></div>`);
     $('#confirmMissionDialog').onclick=typeof onConfirm==='function'?onConfirm:closeModal;
   }
 

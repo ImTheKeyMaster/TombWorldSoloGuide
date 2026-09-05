@@ -5,6 +5,9 @@
   "brief": "Escape a tomb complex while its route shifts around the kill team.",
   "objective": "Get at least half of the player operatives to escape.",
   "firstTurningPointInitiative": "player",
+  "actionGuide": {
+    "missionAction": null
+  },
   "startingNpos": {
     "formula": "2D3+3",
     "deployment": "Wholly within NPO territory, spread evenly with intervening terrain in control range when viewed from Player's drop zone.",
