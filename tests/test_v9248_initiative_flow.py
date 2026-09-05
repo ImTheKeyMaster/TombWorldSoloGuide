@@ -51,6 +51,7 @@ def run_node(body):
 
 
 MISSION_HELPER = function_source("missionFirstInitiative")
+IS_D6_RESULT = function_source("isD6Result")
 ROLL_INITIATIVE = function_source("rollInitiative")
 SET_NEXT = function_source("setNextActivation")
 ADVANCE = function_source("advanceAfterActivation")
@@ -70,6 +71,7 @@ const selectedPlayerTeamName=()=> 'Test Team';
 const save=()=>{{saves.push(JSON.parse(JSON.stringify(state)));return true;}};
 const acknowledgeDiceRequest=key=>{{acknowledgements.push(key);return true;}};
 const requestDiceResults=async request=>{{requests.push({{...request,mode:{json.dumps(mode)}}});return [supplied.shift()];}};
+{IS_D6_RESULT}
 {MISSION_HELPER}
 {ROLL_INITIATIVE}
 (async()=>{{await rollInitiative();process.stdout.write(JSON.stringify({{state,requests,saves,acknowledgements,remaining:supplied}}));}})().catch(error=>{{console.error(error);process.exit(1);}});
@@ -93,6 +95,7 @@ def test_tp1_missing_metadata_falls_back_and_invalid_metadata_is_rejected():
     failed = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
     assert failed.returncode != 0
     assert "Invalid firstTurningPointInitiative" in failed.stderr
+    assert "loaded.forEach(loadedMission=>missionFirstInitiative(loadedMission))" in APP
 
 
 def test_tp2_threat_zero_and_nonzero_request_both_d6_and_resolve_each_winner():
@@ -126,9 +129,23 @@ def test_partial_pvp_result_resumes_without_duplicating_player_die():
     assert result["state"]["strategyData"]["suggestedInitiative"] == "player"
 
 
+def test_invalid_restored_dice_are_requested_again():
+    existing = {"turningPoint": 2, "threat": 4, "strategyData": {"playerRoll": 7, "npoRoll": 0, "initiativeRolls": []}}
+    result = initiative_run(turning_point=2, threat=4, dice=[5, 2], existing=existing, mode="pvp")
+    assert [request["resumeData"]["side"] for request in result["requests"]] == ["player", "necrons"]
+    assert result["state"]["strategyData"]["playerRoll"] == 5
+    assert result["state"]["strategyData"]["npoRoll"] == 2
+
+
 def test_resolved_state_survives_serialization_and_does_not_reroll():
     resolved = initiative_run(turning_point=2, threat=6, dice=[2, 5], mode="solo")["state"]
-    loaded = json.loads(json.dumps(resolved))
+    script = f"""
+const persistence=require('./persistence.js');
+const saved=persistence.createPersistedSave({json.dumps(resolved)});
+const loaded=persistence.migrateSave(saved);
+process.stdout.write(JSON.stringify(loaded));
+"""
+    loaded = run_node(script)
     rerendered = initiative_run(turning_point=2, threat=6, dice=[], existing=loaded, mode="pvp")
     assert rerendered["requests"] == []
     assert rerendered["state"]["strategyData"]["suggestedInitiative"] == "npo"

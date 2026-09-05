@@ -433,6 +433,7 @@ document.addEventListener('touchend',function(e){
       if(!response.ok)throw new Error(`Unable to load ${entry.file} (${response.status})`);
       return response.json();
     }));
+    loaded.forEach(loadedMission=>missionFirstInitiative(loadedMission));
     missions=loaded.sort((a,b)=>String(a.number).localeCompare(String(b.number)));
     maps=Object.fromEntries(missions.map(m=>[m.id,m.map||{walls:[],hatches:[],markers:[]}]));
   }
@@ -1420,13 +1421,17 @@ document.addEventListener('touchend',function(e){
       const legacyTitle=Array.isArray(legacyEvent)?legacyEvent[0]:legacyEvent?.title;
       const legacyDefinitionId=Object.keys(eventDefinitions).find(id=>eventDefinitions[id].title===legacyTitle);
       const event=legacyDefinitionId?eventRecord({instanceId:`legacy-${legacyDefinitionId}`,definitionId:legacyDefinitionId}):legacyEvent;
-      const hasRolledInitiative=Number.isInteger(raw.strategyData.playerRoll)&&Number.isInteger(raw.strategyData.npoRoll);
+      const playerRoll=isD6Result(raw.strategyData.playerRoll)?raw.strategyData.playerRoll:null;
+      const npoRoll=isD6Result(raw.strategyData.npoRoll)?raw.strategyData.npoRoll:null;
+      const hasRolledInitiative=playerRoll!==null&&npoRoll!==null;
       const initiativeRolls=Array.isArray(raw.strategyData.initiativeRolls)
-        ? raw.strategyData.initiativeRolls.filter(round=>isRecord(round)&&Number.isInteger(round.playerRoll)&&round.playerRoll>=1&&round.playerRoll<=6&&Number.isInteger(round.npoRoll)&&round.npoRoll>=1&&round.npoRoll<=6).map(round=>({playerRoll:round.playerRoll,npoRoll:round.npoRoll}))
+        ? raw.strategyData.initiativeRolls.filter(round=>isRecord(round)&&isD6Result(round.playerRoll)&&isD6Result(round.npoRoll)).map(round=>({playerRoll:round.playerRoll,npoRoll:round.npoRoll}))
         : [];
       merged.strategyData={
         ...raw.strategyData,
         event,
+        playerRoll,
+        npoRoll,
         initiativeRolls,
         events:Array.isArray(raw.strategyData.events)?raw.strategyData.events:(event?[{...event,status:raw.strategyData.eventPending?'drawn':'resolved'}]:[]),
         eventIndex:Number.isInteger(raw.strategyData.eventIndex)?raw.strategyData.eventIndex:0,
@@ -1724,6 +1729,7 @@ document.addEventListener('touchend',function(e){
   function missionTracker(m=mission()){return m?.tracker?.label||'Mission progress';}
   function missionTrackerMax(m=mission()){return Number(m?.tracker?.max||0);}
   function missionSpecial(m=mission()){return (m?.rules||[]).map(rule=>`${rule.name}: ${rule.summary}`).join(' ');}
+  function isD6Result(value){return Number.isInteger(value)&&value>=1&&value<=6;}
   function missionFirstInitiative(m=mission()){
     const side=m?.firstTurningPointInitiative;
     if(side==null)return 'player';
@@ -4807,13 +4813,13 @@ document.addEventListener('touchend',function(e){
     let p=state.strategyData.playerRoll,n=state.strategyData.npoRoll;
     while(true){
       const round=rounds.length+1;
-      if(!Number.isInteger(p)){
+      if(!isD6Result(p)){
         const requestKey=`initiative:tp${state.turningPoint}:round${round}:player`;
         [p]=await requestDiceResults({count:1,sides:6,title:'INITIATIVE',instruction:'Roll 1D6 and enter the result.',rollerLabel:playerLabel,requestKey,resumeKind:'strategy',resumeData:{turningPoint:state.turningPoint,side:'player',round}});
         state.strategyData.playerRoll=p;save();
         acknowledgeDiceRequest(requestKey);
       }
-      if(!Number.isInteger(n)){
+      if(!isD6Result(n)){
         const requestKey=`initiative:tp${state.turningPoint}:round${round}:necrons`;
         [n]=await requestDiceResults({count:1,sides:6,title:'INITIATIVE',instruction:'Roll 1D6 and enter the result.',rollerLabel:'Necrons',requestKey,resumeKind:'strategy',resumeData:{turningPoint:state.turningPoint,side:'necrons',round}});
         state.strategyData.npoRoll=n;save();
