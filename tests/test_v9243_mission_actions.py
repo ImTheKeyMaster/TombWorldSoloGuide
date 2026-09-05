@@ -53,6 +53,16 @@ def test_destroy_sarcophagus_keeps_breach_identity_cost_and_restrictions():
     assert "return breachApCost(playerDefinition(operativeId))" in APP
 
 
+def test_destroy_sarcophagus_uses_the_active_transaction_ap_values():
+    begin = APP.split("function beginBreachSarcophagus", 1)[1].split("function renderBreachSarcophagusStep", 1)[0]
+    perform = APP.split("async function performBreachSarcophagus", 1)[1].split("function confirmMissionAction", 1)[0]
+    assert "activation?.pendingAction?.cost" in begin
+    assert "activation?.remainingAp" in begin
+    assert "activePlayerActivation()?.remainingAp" in perform
+    assert "playerActionCost(stage)" not in begin
+    assert "playerActionCost(stage)" not in perform
+
+
 def test_scout_room_uses_normal_one_ap_transaction_and_existing_engine_action():
     scout = APP.split("async function performScoutRoom", 1)[1].split("async function performLocateItem", 1)[0]
     assert "missionEngine().actions?.recordScout" in scout

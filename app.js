@@ -9215,8 +9215,9 @@ function showPlayerActivation(){
   function beginBreachSarcophagus(stage){
     const operativeId=stage.playerOperativeId;
     const activationId=missionActivationId('player',operativeId);
-    const apCost=breachSarcophagusApCost(operativeId);
-    const remainingAp=Number(stage.apl||3)-playerActionCost(stage);
+    const activation=activePlayerActivation();
+    const apCost=Number(activation?.pendingAction?.cost??breachSarcophagusApCost(operativeId));
+    const remainingAp=Number(activation?.remainingAp??stage.apl??3);
     if(!canOfferBreachSarcophagus(stage,operativeId)){if(stage.sequential)cancelCurrentHumanPlayerAction();return;}
     if(remainingAp<apCost){showToast('Not enough AP to Breach the sarcophagus.');if(stage.sequential)cancelCurrentHumanPlayerAction();return;}
     if(apCost===1&&(stage.shoot||stage.charge)){showToast('The Breach reduction cannot be combined with Shoot or Charge in this activation.');if(stage.sequential)cancelCurrentHumanPlayerAction();return;}
@@ -9258,7 +9259,7 @@ function showPlayerActivation(){
     if(!context||context.newTotal!=null||context.operativeId!==stage.playerOperativeId||context.activationId!==missionActivationId('player',stage.playerOperativeId))return;
     if(!context.controlRangeConfirmed||!context.enemyControlRangeConfirmed)return clearPendingBreach(stage);
     if(!context.committed){
-      if(Number(stage.apl||3)-playerActionCost(stage)<context.apCost){showToast('Not enough AP to Breach the sarcophagus.');return clearPendingBreach(stage);}
+      if(Number(activePlayerActivation()?.remainingAp??stage.apl??3)<context.apCost){showToast('Not enough AP to Breach the sarcophagus.');return clearPendingBreach(stage);}
       try{
         const requestKey=diceRequestKey('mission','04',context.activationId,'breach-sarcophagus',context.operativeId);
         context.dice=await requestDiceResults({count:2,sides:6,title:'BREACH SARCOPHAGUS',instruction:'Roll 2D6 on the tabletop and enter each result.',rollerLabel:playerName(context.operativeId),requestKey,resumeKind:'breach-sarcophagus',resumeData:{missionId:'04',activationId:context.activationId,operativeId:context.operativeId}});
