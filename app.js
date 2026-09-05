@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.43';
+  const APP_VERSION = '9.2.44';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3430,8 +3430,9 @@ document.addEventListener('touchend',function(e){
     },
     scout:(engine,progress,{readOnly=false}={})=>{
       const scouted=new Set(progress.scoutedRoomIds);
-      const rooms=engine.rooms.map(room=>{const awakening=progress.awakenedRooms[room.id],scout=progress.scoutedByRoom?.[room.id];const actions=readOnly?'':`<div class="mission-objective-actions">${awakening?'':`<button class="btn secondary compact" data-awaken-room="${room.id}">First Open / Entry</button>`}${awakening&&!awakening.placementConfirmed?`<button class="btn secondary compact" data-confirm-room-placement="${room.id}">Confirm Placement</button>`:''}${awakening?.placementConfirmed&&!scouted.has(room.id)?'<small>Ready for the Scout Room action</small>':''}${scouted.has(room.id)?`<button class="btn ghost compact" data-correct-scout-room="${room.id}">Correct</button>`:''}</div>`;return `<div class="mission-objective-row"><span><strong>${escapeHtml(room.label)}</strong><small>${scouted.has(room.id)?`Scouted${scout?` by ${escapeHtml(playerName(scout))}`:''}`:awakening?`${awakening.count} NPOs generated${awakening.placementConfirmed?' and placed':' — placement required'}`:'Unopened / unentered'}</small></span>${actions}</div>`;}).join('');
-      return `<p>${objectiveEngine?.getMissionHudModel().value??scouted.size} of ${objectiveEngine?.getMissionHudModel().target??engine.required} rooms scouted. Confirm that an eligible room is cleared on the tabletop before resolving the 1AP Scout Room action.</p><div class="mission-objective-list">${rooms}</div>`;
+      const activeIds=new Set(activeNpos().map(npo=>npo.id));
+      const rooms=engine.rooms.map(room=>{const awakening=progress.awakenedRooms[room.id],scout=progress.scoutedByRoom?.[room.id],nposRemain=awakening?.operativeIds.some(id=>activeIds.has(id));const actions=readOnly?'':`<div class="mission-objective-actions">${awakening?'':`<button class="btn secondary compact" data-awaken-room="${room.id}">First Open / Entry</button>`}${awakening&&!awakening.placementConfirmed?`<button class="btn secondary compact" data-confirm-room-placement="${room.id}">Confirm Placement</button>`:''}${awakening?.placementConfirmed&&!nposRemain&&!scouted.has(room.id)?'<small>Ready for the Scout Room action</small>':''}${scouted.has(room.id)?`<button class="btn ghost compact" data-correct-scout-room="${room.id}">Correct</button>`:''}</div>`;const status=scouted.has(room.id)?`Scouted${scout?` by ${escapeHtml(playerName(scout))}`:''}`:nposRemain?'NPOs remain':awakening?.placementConfirmed?'Unscouted · Clear':'Unscouted';return `<div class="mission-objective-row"><span><strong>${escapeHtml(room.label)}</strong><small>${status}</small></span>${actions}</div>`;}).join('');
+      return `<p>${objectiveEngine?.getMissionHudModel().value??scouted.size} of ${objectiveEngine?.getMissionHudModel().target??engine.required} rooms scouted. Use the operative action guide to Scout Room.</p><div class="mission-objective-list">${rooms}</div>`;
     },
     regroup:(engine,progress,{readOnly=false}={})=>{
       const survivors=inPlayLivingPlayerOperativeIds();
@@ -3453,18 +3454,31 @@ document.addEventListener('touchend',function(e){
     save();render();
   }
 
-  function eligibleScoutRooms(){
-    if(missionEngine()?.type!=='scout')return [];
-    const progress=state.missionState||{};
-    const scouted=new Set(progress.scoutedRoomIds||[]);
-    return missionEngine().rooms.filter(room=>progress.awakenedRooms?.[room.id]?.placementConfirmed&&!scouted.has(room.id));
+  function scoutRoomState(){
+    if(missionEngine()?.type!=='scout')return {rooms:[],remaining:[],reason:'Clear a room first'};
+    const progress=state.missionState||{},scouted=new Set(progress.scoutedRoomIds||[]);
+    const remaining=missionEngine().rooms.filter(room=>!scouted.has(room.id));
+    const activeIds=new Set(activeNpos().map(npo=>npo.id));
+    const rooms=remaining.filter(room=>{
+      const awakening=progress.awakenedRooms?.[room.id];
+      return awakening?.placementConfirmed&&!awakening.operativeIds.some(id=>activeIds.has(id));
+    });
+    const reason=state.threat===0?'Threat Level must be above 0':!remaining.length?'All rooms scouted':!rooms.length?'Clear a room first':'Available';
+    return {rooms:state.threat===0?[]:rooms,remaining,reason};
+  }
+
+  function eligibleScoutRooms(){return scoutRoomState().rooms;}
+
+  function canPerformScoutRoom(activation,operativeId,stage){
+    const pending=activation?.pendingAction;
+    return activation?.operativeId===operativeId&&stage?.humanActionId==='scoutRoom'&&pending?.activationId===activation.activationId&&pending?.actionId==='scoutRoom'&&!(activation.completedActionIds||[]).includes('scoutRoom')&&pending.cost<=activation.remainingAp;
   }
 
   async function performScoutRoom(roomId,operativeId,stage){
-    const room=eligibleScoutRooms().find(item=>item.id===roomId);
-    if(!room||!activePlayerActivation()||stage?.humanActionId!=='scoutRoom'){cancelCurrentHumanPlayerAction();return;}
+    const activation=activePlayerActivation(),room=eligibleScoutRooms().find(item=>item.id===roomId);
+    if(!room||!canPerformScoutRoom(activation,operativeId,stage))return;
     const actionId=missionEngine().actions?.recordScout;
-    const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction(actionId,{...missionLifecycleContext({activationId:activePlayerActivation().activationId,operativeId}),roomId})):null;
+    const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction(actionId,{...missionLifecycleContext({activationId:activation.activationId,operativeId}),roomId})):null;
     if(objectiveEngine&&!outcome)return;
     if(!commitHumanPlayerAction(stage,{deferContinuation:true,deferPersistence:true}))return;
     const ids=new Set(state.missionState.scoutedRoomIds||[]);ids.add(roomId);state.missionState.scoutedRoomIds=[...ids];
@@ -4903,7 +4917,10 @@ document.addEventListener('touchend',function(e){
     if(action.id==='hatch'&&state.missionId==='demolition-protocol'&&!closedMissionFeatures('hatchway').length)return {status:'Unavailable',disabled:true,reason:'No closed hatchway'};
     if(action.id==='breach'&&state.missionId==='demolition-protocol'&&!closedMissionFeatures('breach-point').length)return {status:'Unavailable',disabled:true,reason:'No breach point'};
     if(action.id==='breach'&&action.cost===1&&(completed.has('shoot')||completed.has('charge')))return {status:'Unavailable',disabled:true,reason:'Unavailable after Shoot or Charge'};
-    if(action.id==='scoutRoom'&&!eligibleScoutRooms().length)return {status:'Unavailable',disabled:true,reason:'No eligible room'};
+    if(action.id==='scoutRoom'){
+      const scout=scoutRoomState();
+      if(scout.reason!=='Available')return {status:'Unavailable',disabled:true,reason:scout.reason};
+    }
     return {status:'Available',disabled:false,reason:'Available'};
   }
 
@@ -4996,8 +5013,8 @@ document.addEventListener('touchend',function(e){
     if(action.id==='scoutRoom'){
       const rooms=eligibleScoutRooms();
       if(!rooms.length){cancelCurrentHumanPlayerAction();return;}
-      const choices=rooms.map(room=>`<button type="button" class="btn secondary big-action" data-activation-scout-room="${escapeHtml(room.id)}">${escapeHtml(room.label.toUpperCase())}</button>`).join('');
-      showModal('SCOUT ROOM',`<p>Choose a cleared eligible room for this operative to scout.</p><div class="human-npo-action-list">${choices}</div><div class="wizard-actions"><button class="btn ghost" id="cancelScoutRoom">Back</button></div>`);
+      const choices=rooms.map(room=>`<button type="button" class="btn secondary human-npo-action scout-room-choice" data-activation-scout-room="${escapeHtml(room.id)}"><span><strong>${escapeHtml(room.label.toUpperCase())}</strong><small>Ready to scout</small></span></button>`).join('');
+      showModal('SCOUT ROOM',`<p><strong>Which room is this operative scouting?</strong></p><p>Select the room this operative currently occupies. Only select it if the operative can legally perform Scout Room on the tabletop.</p><div class="human-npo-action-list">${choices}</div><div class="wizard-actions"><button class="btn ghost" id="cancelScoutRoom">Back</button></div>`);
       $('#cancelScoutRoom').onclick=cancelCurrentHumanPlayerAction;
       $$('[data-activation-scout-room]',modalBody).forEach(button=>button.onclick=()=>{button.disabled=true;void performScoutRoom(button.dataset.activationScoutRoom,activation.operativeId,stage);});
       return;

@@ -1416,6 +1416,7 @@ button.tracker-operative:hover{
 .human-npo-action strong{min-width:0;overflow-wrap:anywhere}
 .human-npo-action span{flex:0 0 auto;color:var(--muted);font-size:.72rem;font-weight:800}
 .human-npo-action:disabled span{color:inherit}
+.scout-room-choice{min-height:64px}
 .human-npo-completed{margin:.5rem 0 0;padding-left:1.2rem}
 @media(max-width:520px){.human-npo-action-list{grid-template-columns:1fr}.human-npo-action{width:100%}}
 

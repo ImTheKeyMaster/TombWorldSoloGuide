@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.43
+# Tomb World Battle Guide v9.2.44
+
+## v9.2.44
+
+**Version 9.2.44**
+
+- Replaced Scout Room's generic eligibility failure with specific Threat, room-clearance, completion, AP, and used-action statuses.
+- Added a one-tap room-selection dialog that uses tracked Mission 05 room-to-NPO state while leaving physical operative placement and control-range legality to the player.
+- Preserved the 1AP action transaction, scouting progress, mission completion, activation continuity, and save compatibility.
 
 ## v9.2.43
 
