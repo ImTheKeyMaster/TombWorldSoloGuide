@@ -1447,6 +1447,9 @@ document.addEventListener('touchend',function(e){
               ? 'review'
               : 'actions'
       };
+      if(merged.strategyData.initiativeMode==='rolled'&&hasRolledInitiative&&playerRoll!==npoRoll){
+        merged.strategyData.suggestedInitiative=npoRoll>playerRoll?'npo':'player';
+      }
     }else merged.strategyData=null;
     const importedEvents=isRecord(raw.eventState)?raw.eventState:{},variantDeck=eventDeckForVariant(merged.tombWorldVariant);
     const validInstances=new Set(variantDeck.map(card=>card.instanceId));

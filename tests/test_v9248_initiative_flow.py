@@ -137,6 +137,12 @@ def test_invalid_restored_dice_are_requested_again():
     assert result["state"]["strategyData"]["npoRoll"] == 2
 
 
+def test_normalization_derives_rolled_initiative_from_persisted_dice():
+    normalization = APP[APP.index("function normalizeState"):APP.index("function npoDefinition")]
+    assert "initiativeMode==='rolled'&&hasRolledInitiative&&playerRoll!==npoRoll" in normalization
+    assert "suggestedInitiative=npoRoll>playerRoll?'npo':'player'" in normalization
+
+
 def test_resolved_state_survives_serialization_and_does_not_reroll():
     resolved = initiative_run(turning_point=2, threat=6, dice=[2, 5], mode="solo")["state"]
     script = f"""
