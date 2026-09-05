@@ -4890,10 +4890,6 @@ document.addEventListener('touchend',function(e){
       {id:'hatch',name:'Operate Hatch',group:'mission',cost:1},
       {id:'breach',name:breachLabel,group:'mission',cost:breachApCost(operative)}
     ];
-    (operative.actions||[]).forEach(action=>{
-      const cost=Number(action.ap??action.cost);
-      if(action.id&&action.name&&Number.isFinite(cost)&&cost>=0)actions.push({id:action.id,name:action.name,group:'operative',cost});
-    });
     const transponder=state.missionState;
     if(missionAction?.id==='pickUpMarker'&&missionEngine()?.type==='transponder'&&!transponder?.transponderFound&&missionEngine().sites.some(site=>!transponder?.sites?.[site.id]||transponder.sites[site.id]==='available')){
       actions.push({id:missionAction.id,name:missionAction.displayLabel,group:'mission',cost:missionAction.apCost});

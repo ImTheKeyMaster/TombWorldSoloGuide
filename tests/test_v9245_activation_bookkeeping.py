@@ -56,13 +56,12 @@ def test_bookkeeping_uses_existing_wound_and_incapacitation_state():
     assert "save();render();" in adjustment
 
 
-def test_genuine_datacard_actions_use_named_conditional_operative_group_and_real_cost():
+def test_operative_group_is_available_but_no_placeholder_action_is_invented():
     groups = section("const HUMAN_ACTION_GROUPS", "function activePlayerActivation")
     catalog = section("function playerHumanActionCatalog", "function playerHumanActionState")
     assert "label:'Operative Actions'" in groups
-    assert "(operative.actions||[]).forEach" in catalog
-    assert "id:action.id,name:action.name,group:'operative',cost" in catalog
-    assert "if(action.id&&action.name&&Number.isFinite(cost)&&cost>=0)" in catalog
+    assert "group:'operative'" not in catalog
+    assert "operative.actions" not in catalog
 
 
 def test_other_damage_does_not_change_action_legality_or_ap_behaviorally():
