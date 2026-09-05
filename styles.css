@@ -1425,6 +1425,7 @@ button.tracker-operative:hover{
 .human-activation-shell h2{margin:0;overflow-wrap:anywhere}
 .human-activation-shell .activation-profile-strip{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
 .human-activation-shell .activation-profile-strip span{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.activation-bookkeeping{display:flex;margin-top:-4px}.activation-bookkeeping .btn{padding:10px 14px}
 .human-completed-actions ul{margin:.5rem 0 0;padding-left:1.25rem}
 .human-completed-actions li{overflow-wrap:anywhere}
 .human-npo-action>span{min-width:0;flex:1 1 auto;display:grid;gap:2px}
