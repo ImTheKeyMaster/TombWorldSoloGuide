@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.41
+# Tomb World Battle Guide v9.2.42
+
+## v9.2.42
+
+**Version 9.2.42**
+
+- Corrected Breach to cost 2 AP for normal operatives and 1 AP for operatives whose datacards or eligible weapon profiles provide the reduction.
+- Excluded Blast and Torrent weapon profiles from granting the Piercing-based Breach reduction.
+- Preserved all existing Breach resolution effects, activation flows, and save data.
 
 ## v9.2.41
 
