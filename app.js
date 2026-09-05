@@ -3586,14 +3586,14 @@ document.addEventListener('touchend',function(e){
     if(!roomId)return;
     if(state.missionState?.awakenedRooms?.[roomId]){state.missionActionContext=null;acknowledgeCurrentDiceRequest();return;}
     const pending=state.missionState?.pendingAwakening;
-    if(!pending||!unawakenedScoutRooms().some(room=>room.id===roomId)||pending.phase==='resolving'&&pending.roomId!==roomId)return;
+    if(!pending||!unawakenedScoutRooms().some(room=>room.id===roomId)||(pending.phase==='resolving'&&pending.roomId!==roomId))return;
     const actionId=missionEngine().actions?.awakenRoom;
     state.missionState.pendingAwakening={...pending,phase:'resolving',roomId};
     state.missionActionContext={missionId:state.missionId,actionId,roomId,source:pending.source};save();
     const outcome=objectiveEngine?await runMissionEvent(()=>objectiveEngine.executeMissionAction(actionId,{...missionLifecycleContext(),roomId})):null;
     if(objectiveEngine&&!outcome)return;
     const awakenRoll=await missionDiceTotal(outcome,'awakenRoll',{title:'AWAKEN ROOM'});
-    const grade=threatGrade(),uncappedCount=awakenRoll+threatGrade(),requestedCount=Math.min(5,uncappedCount),ids=[];
+    const grade=threatGrade(),uncappedCount=awakenRoll+grade,requestedCount=Math.min(5,uncappedCount),ids=[];
     const room=missionEngine().rooms.find(item=>item.id===roomId),source=pending.source;
     for(let i=0;i<requestedCount&&activeNpos().length<MAX_NPOS;i++){
       const rawResult=availableGenerationResult();if(!rawResult)break;

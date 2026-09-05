@@ -79,7 +79,7 @@ assert.equal(engine.getMissionRuntime().history.length,0);assert.equal(engine.ge
         self.assertIn('normalized.scoutedByRoom=',app)
         self.assertLess(app.index('state.missionState=normalizeMissionState(state.missionState,selectedMission,state.tracker)'),app.index('const definition=await TombWorldMissionEngine.loadMissionDefinition'))
         self.assertIn("missionDiceTotal(outcome,'awakenRoll'",app)
-        self.assertIn("uncappedCount=awakenRoll+threatGrade(),requestedCount=Math.min(5,uncappedCount)",app)
+        self.assertIn("grade=threatGrade(),uncappedCount=awakenRoll+grade,requestedCount=Math.min(5,uncappedCount)",app)
         self.assertIn("setThreat(gradeFloor-state.threat,'Scout Room')",app)
         self.assertIn("stage.hatch&&state.missionId!=='scout-sub-crypt'",app)
         self.assertIn("'./Missions/definition-05-scout-sub-crypt.json'",worker)

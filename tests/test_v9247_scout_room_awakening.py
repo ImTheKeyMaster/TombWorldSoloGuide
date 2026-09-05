@@ -48,7 +48,8 @@ def test_open_and_entry_use_one_immediate_awakening_transaction():
 def test_spawn_formula_uses_committed_d3_current_grade_and_both_caps():
     awakening = section("async function performAwakenRoom", "async function performAuspexCalibration")
     assert "await missionDiceTotal(outcome,'awakenRoll'" in awakening
-    assert "uncappedCount=awakenRoll+threatGrade(),requestedCount=Math.min(5,uncappedCount)" in awakening
+    assert "grade=threatGrade(),uncappedCount=awakenRoll+grade,requestedCount=Math.min(5,uncappedCount)" in awakening
+    assert awakening.count("threatGrade()") == 1
     assert "activeNpos().length<MAX_NPOS" in awakening
     assert "availableGenerationResult()" in awakening
     assert "resolveVariantNpoRequest" in awakening
