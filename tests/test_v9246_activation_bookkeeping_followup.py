@@ -86,9 +86,8 @@ def test_pvp_named_actions_are_grouped_as_operative_and_hatches_as_mission():
     assert "Special Actions" not in groups
 
 
-def test_release_surfaces_are_v9246():
-    expected = ".".join(("9", "2", str(40 + 6)))
-    assert CURRENT_APP_VERSION == expected
+def test_release_surfaces_remain_current_after_v9246():
+    expected = CURRENT_APP_VERSION
     assert f"const APP_VERSION = '{expected}';" in (ROOT / "service-worker.js").read_text()
     index = (ROOT / "index.html").read_text()
     assert f'<div class="version">V{expected}</div>' in index

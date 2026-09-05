@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.46
+# Tomb World Battle Guide v9.2.47
+
+## v9.2.47
+
+**Version 9.2.47**
+
+- Awaken Scout Sub-Crypt rooms immediately after a first Operate Hatch, Breach, or manually reported First Room Entry during an operative's activation.
+- Generate D3 plus the current Threat Grade NPOs (maximum 5) through the existing dice and roster systems, with immediate Ready or Dormant state based on Threat.
+- Persist separate Awakened and Scouted room state, awakening provenance, pending room selection, and generated NPO IDs while making cleanup primarily display room status.
 
 ## v9.2.46
 
