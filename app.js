@@ -4952,7 +4952,7 @@ document.addEventListener('touchend',function(e){
     $('#confirmOtherDamage').onclick=()=>{
       const amount=$('#otherDamageAmount').valueAsNumber;
       if(!Number.isInteger(amount)||amount<1||amount>wounds){showToast(`Enter a whole number from 1 to ${wounds}.`);return;}
-      adjustPlayerWounds(activation.operativeId,-amount);
+      adjustPlayerWounds(activation.operativeId,-amount,{preserveActivation:true});
       if(activePlayerActivation()&&playerCurrentWounds(activation.operativeId)>0)renderHumanPlayerActionPicker();
       else closeModal();
     };
@@ -5166,7 +5166,6 @@ document.addEventListener('touchend',function(e){
     fallBack:2,
     shoot:1,
     melee:1,
-    damage:1,
     hatch:1,
     breach:2,
     objective:1
@@ -5230,7 +5229,6 @@ function showPlayerActivation(){
     if(stage.fallBack)actions.push('Fall Back');
     if(stage.shoot)actions.push('Shooting attack resolved');
     if(stage.melee)actions.push('Melee attack resolved');
-    if(stage.damage)actions.push('Damaging action');
     if(stage.hatch)actions.push('Operate Hatch');
     if(stage.breach)actions.push('Breach');
     if(stage.objective)actions.push('Mission action');
@@ -5872,7 +5870,6 @@ function showPlayerActivation(){
     let inc=0;
     if(stage.shoot)inc++;
     if(stage.melee)inc++;
-    if(stage.damage)inc++;
     if(stage.hatch&&state.missionId!=='scout-sub-crypt'){
       const r=stage.threatRolls.operateHatch;
       if(r>=4)inc++;
@@ -8987,7 +8984,7 @@ function showPlayerActivation(){
     if(!commitNpoRoster(candidate,'change that loadout')){render();return;}
     save();render();
   }
-  function adjustPlayerWounds(id,d){
+  function adjustPlayerWounds(id,d,{preserveActivation=false}={}){
     const definition=playerDefinition(id);
     if(!definition||!isPlayerOperativeInPlay(id))return;
     const maxWounds=Number(definition.wounds||0), before=playerCurrentWounds(id);
@@ -9003,7 +9000,7 @@ function showPlayerActivation(){
     state.playerCasualtyIds=[...casualties];
     state.playerReady=playerOperativesRemaining();
     if(checkGameEnd())return;
-    setNextActivation(state.nextSide||'npo');
+    if(!preserveActivation||wounds===0)setNextActivation(state.nextSide||'npo');
     save();render();
   }
   function adjustWounds(id,d){

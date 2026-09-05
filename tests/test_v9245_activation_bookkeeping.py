@@ -27,6 +27,15 @@ def test_generic_special_actions_and_other_damage_are_absent_from_action_catalog
     assert "id:'damage'" not in catalog
 
 
+def test_legacy_damage_stage_is_tolerated_without_action_cost_history_or_threat():
+    costs = section("const PLAYER_ACTION_COSTS", "function playerActionCost")
+    summary = section("function playerActivationSummary", "function newlyEliminated")
+    threat = section("let inc=0;", "const threatCommitKey")
+    assert "damage:1" not in costs
+    assert "stage.damage" not in summary
+    assert "stage.damage" not in threat
+
+
 def test_only_nonempty_groups_render_and_footer_follows_groups_without_placeholder():
     shell = section("function renderHumanActivationShell", "function showApplyOtherDamage")
     assert "if(!items.length)return ''" in shell
@@ -43,7 +52,7 @@ def test_damage_bookkeeping_is_outside_action_list_and_has_no_ap_or_history_tran
     bookkeeping_button = shell.split('id="applyOtherDamage"', 1)[1].split("</button>", 1)[0]
     assert "data-human-action" not in bookkeeping_button
     assert "AP" not in bookkeeping_button
-    assert "adjustPlayerWounds(activation.operativeId,-amount)" in damage
+    assert "adjustPlayerWounds(activation.operativeId,-amount,{preserveActivation:true})" in damage
     for mutation in ("remainingAp", "completedActionIds", "resolvedActions", "pendingAction", "actionSequence"):
         assert mutation not in damage
     assert "valueAsNumber" in damage
@@ -57,6 +66,7 @@ def test_bookkeeping_uses_existing_wound_and_incapacitation_state():
     assert "if(wounds===0)" in adjustment
     assert "casualties.add(id)" in adjustment
     assert "state.playerActivatedIds.push(id)" in adjustment
+    assert "if(!preserveActivation||wounds===0)setNextActivation" in adjustment
     assert "save();render();" in adjustment
 
 
