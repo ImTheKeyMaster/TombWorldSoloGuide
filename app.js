@@ -9222,13 +9222,13 @@ function showPlayerActivation(){
     if(remainingAp<apCost){showToast('Not enough AP to Breach the sarcophagus.');if(stage.sequential)cancelCurrentHumanPlayerAction();return;}
     if(apCost===1&&(stage.shoot||stage.charge)){showToast('The Breach reduction cannot be combined with Shoot or Charge in this activation.');if(stage.sequential)cancelCurrentHumanPlayerAction();return;}
     state.combatState={side:'player',stage:{...stage}};
-    state.missionActionContext={missionId:'04',actionId:'breachSarcophagus',side:'player',operativeId,activationId,apCost,remainingAp,step:'control-range',controlRangeConfirmed:null,enemyControlRangeConfirmed:null,committed:false,diceRolled:false,dice:[],previousTotal:null,newTotal:null,victoryCommitted:false};
+    state.missionActionContext={missionId:state.missionId,actionId:'breachSarcophagus',side:'player',operativeId,activationId,apCost,remainingAp,step:'control-range',controlRangeConfirmed:null,enemyControlRangeConfirmed:null,committed:false,diceRolled:false,dice:[],previousTotal:null,newTotal:null,victoryCommitted:false};
     save();renderBreachSarcophagusStep(stage);
   }
 
   function renderBreachSarcophagusStep(stage){
     const context=state.missionActionContext;
-    if(!context||context.missionId!=='04'||context.actionId!=='breachSarcophagus')return stage.sequential?cancelCurrentHumanPlayerAction():showPlayerActivation(stage);
+    if(!context||context.missionId!==state.missionId||context.actionId!=='breachSarcophagus')return stage.sequential?cancelCurrentHumanPlayerAction():showPlayerActivation(stage);
     if(context.operativeId!==stage.playerOperativeId||context.activationId!==missionActivationId('player',stage.playerOperativeId)){
       state.missionActionContext=null;save();showToast('The active operative changed. Breach was not performed.');if(stage.sequential)cancelCurrentHumanPlayerAction();else showPlayerActivation(stage);return;
     }
@@ -9262,7 +9262,7 @@ function showPlayerActivation(){
       if(Number(activePlayerActivation()?.remainingAp??stage.apl??3)<context.apCost){showToast('Not enough AP to Breach the sarcophagus.');return clearPendingBreach(stage);}
       try{
         const requestKey=diceRequestKey('mission','04',context.activationId,'breach-sarcophagus',context.operativeId);
-        context.dice=await requestDiceResults({count:2,sides:6,title:'BREACH SARCOPHAGUS',instruction:'Roll 2D6 on the tabletop and enter each result.',rollerLabel:playerName(context.operativeId),requestKey,resumeKind:'breach-sarcophagus',resumeData:{missionId:'04',activationId:context.activationId,operativeId:context.operativeId}});
+        context.dice=await requestDiceResults({count:2,sides:6,title:'BREACH SARCOPHAGUS',instruction:'Roll 2D6 on the tabletop and enter each result.',rollerLabel:playerName(context.operativeId),requestKey,resumeKind:'breach-sarcophagus',resumeData:{missionId:state.missionId,activationId:context.activationId,operativeId:context.operativeId}});
         context.committed=true;context.diceRolled=true;context.step='result';
         stage.missionBreachCommitted=true;stage.missionBreachCost=context.apCost;
         state.combatState={side:'player',stage:{...stage}};save();acknowledgeDiceRequest(requestKey);

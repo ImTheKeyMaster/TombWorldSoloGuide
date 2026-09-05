@@ -63,6 +63,16 @@ def test_destroy_sarcophagus_uses_the_active_transaction_ap_values():
     assert "playerActionCost(stage)" not in perform
 
 
+def test_destroy_sarcophagus_resume_state_uses_the_active_mission_slug():
+    begin = APP.split("function beginBreachSarcophagus", 1)[1].split("async function performBreachSarcophagus", 1)[0]
+    perform = APP.split("async function performBreachSarcophagus", 1)[1].split("function confirmMissionAction", 1)[0]
+    assert "missionId:state.missionId" in begin
+    assert "context.missionId!==state.missionId" in begin
+    assert "resumeData:{missionId:state.missionId" in perform
+    assert "missionId:'04'" not in begin
+    assert "resumeData:{missionId:'04'" not in perform
+
+
 def test_scout_room_uses_normal_one_ap_transaction_and_existing_engine_action():
     scout = APP.split("async function performScoutRoom", 1)[1].split("async function performLocateItem", 1)[0]
     assert "missionEngine().actions?.recordScout" in scout
