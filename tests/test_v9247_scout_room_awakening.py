@@ -1,4 +1,5 @@
 from pathlib import Path
+import subprocess
 
 from versioning import CURRENT_APP_VERSION
 
@@ -96,3 +97,59 @@ def test_selected_room_transaction_resumes_before_selection_and_does_not_infer_c
     assert "phase:'resolving',roomId" in awakening
     assert "activeNpos" not in eligibility
     assert "operativeIds.some" not in eligibility
+
+
+def test_exact_breach_awakening_regression_executes_current_scheduler_state():
+    awakening_helpers = "function unawakenedScoutRooms" + section(
+        "function unawakenedScoutRooms", "async function performAuspexCalibration"
+    )
+    scheduler = "function setNextActivation" + section(
+        "function setNextActivation", "function advanceAfterActivation"
+    )
+    script = f"""
+const assert=require('assert').strict;
+const MAX_NPOS=10;
+const rooms=[1,2,3].map(number=>({{id:`room-${{number}}`,label:`Eligible Room ${{number}}`}}));
+let state={{
+  missionId:'scout-sub-crypt',turningPoint:1,threat:1,roster:[],journal:[],
+  missionState:{{awakenedRooms:{{}},scoutedRoomIds:[],pendingAwakening:{{phase:'select',source:'breach',operativeId:'aegis'}}}},
+  missionActionContext:null,activationFinishedForTurningPoint:{{player:false,npo:false}},nextSide:'player'
+}};
+let generated=0;
+const missionEngine=()=>({{type:'scout',rooms,actions:{{awakenRoom:'awakenRoom'}}}});
+const missionLifecycleContext=()=>({{}});
+const objectiveEngine={{executeMissionAction:async()=>({{results:{{awakenRoll:{{dice:[2]}}}}}})}};
+const runMissionEvent=callback=>callback();
+const missionDiceTotal=async()=>2;
+const threatGrade=()=>state.threat===0?0:1;
+const activeNpos=()=>state.roster.filter(npo=>npo.deployed&&npo.wounds>0);
+const readyNpos=()=>activeNpos().filter(npo=>npo.ready&&!npo.dormant);
+const availableGenerationResult=()=>({{type:'Necron Warrior',weaponId:'gauss-flayer'}});
+const replaceMissionRequestedNpo=value=>value;
+const resolveVariantNpoRequest=value=>value;
+const createNpo=(type,name,options)=>({{id:`npo-${{++generated}}`,type,name,wounds:10,battlefieldState:'deployed',...options}});
+const save=()=>true;
+const acknowledgeCurrentDiceRequest=()=>{{}};
+const renderHumanPlayerActionPicker=()=>{{}};
+const playerName=()=> 'Aegis';
+const log=text=>state.journal.unshift({{text}});
+const playerOperativesRemaining=()=>0;
+{awakening_helpers}
+{scheduler}
+(async()=>{{
+  await performAwakenRoom('room-1');
+  assert.equal(state.roster.length,3);
+  assert.equal(readyNpos().length,3);
+  assert.equal(state.missionState.awakenedRooms['room-1'].awakeningRoll,2);
+  assert.equal(state.missionState.awakenedRooms['room-1'].threatGrade,1);
+  assert.equal(state.missionState.awakenedRooms['room-1'].count,3);
+  assert.equal(state.missionState.awakenedRooms['room-1'].scouted,false);
+  assert.deepEqual(state.missionState.scoutedRoomIds,[]);
+  state.activationFinishedForTurningPoint.player=true;
+  assert.equal(setNextActivation('npo'),'npo');
+  assert.equal(state.phase,undefined);
+  assert.equal(state.nextSide,'npo');
+}})().catch(error=>{{console.error(error);process.exitCode=1;}});
+"""
+    result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
+    assert result.returncode == 0, result.stderr or result.stdout
