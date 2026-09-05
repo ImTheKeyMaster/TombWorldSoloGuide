@@ -3435,7 +3435,7 @@ document.addEventListener('touchend',function(e){
     },
     scout:(engine,progress,{readOnly=false}={})=>{
       const scouted=new Set(progress.scoutedRoomIds);
-      const rooms=engine.rooms.map(room=>{const awakening=progress.awakenedRooms[room.id],scout=progress.scoutedByRoom?.[room.id];const actions=readOnly?'':`<div class="mission-objective-actions">${awakening&&!scouted.has(room.id)?'<small>Use Scout Room when the room is clear on the tabletop</small>':''}${scouted.has(room.id)?`<button class="btn ghost compact" data-correct-scout-room="${room.id}">Correct</button>`:''}</div>`;const generated=awakening?` · ${awakening.count} NPO${awakening.count===1?'':'s'} generated`:'';const status=scouted.has(room.id)?`Scouted${scout?` by ${escapeHtml(playerName(scout))}`:''}`:awakening?`Awakened · Unscouted${generated}`:'Unopened';return `<div class="mission-objective-row"><span><strong>${escapeHtml(room.label)}</strong><small>${status}</small></span>${actions}</div>`;}).join('');
+      const rooms=engine.rooms.map(room=>{const awakening=progress.awakenedRooms[room.id],scout=progress.scoutedByRoom?.[room.id];const actions=readOnly?'':`<div class="mission-objective-actions">${awakening&&!awakening.placementConfirmed?`<button class="btn secondary compact" data-confirm-room-placement="${room.id}">Correct Legacy Placement</button>`:awakening&&!scouted.has(room.id)?'<small>Use Scout Room when the room is clear on the tabletop</small>':''}${scouted.has(room.id)?`<button class="btn ghost compact" data-correct-scout-room="${room.id}">Correct</button>`:''}</div>`;const generated=awakening?` · ${awakening.count} NPO${awakening.count===1?'':'s'} generated`:'';const status=scouted.has(room.id)?`Scouted${scout?` by ${escapeHtml(playerName(scout))}`:''}`:awakening?`Awakened · Unscouted${generated}`:'Unopened';return `<div class="mission-objective-row"><span><strong>${escapeHtml(room.label)}</strong><small>${status}</small></span>${actions}</div>`;}).join('');
       return `<p>${objectiveEngine?.getMissionHudModel().value??scouted.size} of ${objectiveEngine?.getMissionHudModel().target??engine.required} rooms scouted. Use the operative action guide to Scout Room.</p><div class="mission-objective-list">${rooms}</div>`;
     },
     regroup:(engine,progress,{readOnly=false}={})=>{
@@ -3602,6 +3602,18 @@ document.addEventListener('touchend',function(e){
       if(!result)break;
       const n=createNpo(result.type,`${result.type} ${roomId}`,{weaponId:result.weaponId,deployed:true,ready:state.threat>0,dormant:state.threat===0,order:'Conceal',replacementOptions:result.replacementOptions,replacementTransactionId:result.replacementTransactionId});
       n.sourceRoomId=roomId;n.missionRoom=roomId;state.roster.push(n);ids.push(n.id);
+    }
+    if(state.variantState&&!state.variantState.crownworldFirstCrawlerConsumed){
+      const crawler=state.roster.find(npo=>ids.includes(npo.id)&&npo.type===TOMB_CRAWLER_TYPE);
+      if(crawler){
+        const crawlerIndex=ids.indexOf(crawler.id);
+        const pair=ids.length>=5?{blocked:true}:setupCrownworldCrawlerPair(crawler,`crownworld:mission:${state.missionId}:${roomId}:${crawler.id}`);
+        if(pair.blocked){state.roster=state.roster.filter(npo=>npo.id!==crawler.id);ids.splice(crawlerIndex,1);}
+        else if(pair.replaced){
+          pair.npos.forEach(npo=>Object.assign(npo,{ready:state.threat>0,dormant:state.threat===0,sourceRoomId:roomId,missionRoom:roomId}));
+          ids.splice(crawlerIndex,1,...pair.npos.map(npo=>npo.id));
+        }
+      }
     }
     state.missionState.awakenedRooms[roomId]={roomId,awakened:true,scouted:false,awakeningTurningPoint:state.turningPoint,awakeningSource:source,awakeningRoll:awakenRoll,threatGrade:grade,uncappedCount,requestedCount,count:ids.length,generatedNpoIds:ids,operativeIds:ids,placementConfirmed:true};
     state.missionState.pendingAwakening=null;
@@ -3799,7 +3811,9 @@ document.addEventListener('touchend',function(e){
       const playerLosses=Math.max(0,(state.playerCasualtyIds||[]).length-(state.tpStartPlayerCasualties||0));
       const threatChanged=state.threat!==(state.tpStartThreat??state.threat);
       const gradeChanged=threatGrade()!==(state.tpStartGrade??threatGrade());
-      return `<section class="next-card"><span class="phase">TURNING POINT ${state.turningPoint} COMPLETE</span><h2>Battle summary</h2><div class="turn-summary-grid"><div><small>Threat</small><strong>${state.tpStartThreat??state.threat} → ${state.threat}</strong><span>${threatChanged?'Changed this Turning Point':'No change'}</span></div><div><small>Grade</small><strong>${state.tpStartGrade??threatGrade()} → ${threatGrade()}</strong><span>${gradeChanged?'Grade increased':'Grade unchanged'}</span></div><div><small>${escapeHtml(opponentPluralLabel())} destroyed</small><strong>${npoLosses}</strong><span>This Turning Point</span></div><div><small>${escapeHtml(playerSideLabel())} casualties</small><strong>${playerLosses}</strong><span>This Turning Point</span></div></div><h3>Score and clean up</h3><p>Score mission objectives, resolve end-of-turn effects, and confirm all temporary markers have been cleared.</p>${missionProgressHtml()}<div class="checklist"><label class="check-row required-confirmation-row"><input id="endChecked" type="checkbox"><span><strong>End-of-turn steps complete</strong><small>Objectives scored, temporary effects resolved, and physical tokens cleaned up.</small></span></label></div><button class="btn primary big-action" id="finishTp" disabled>Finish Turning Point</button></section>`;
+      const awakeningPending=Boolean(state.missionState?.pendingAwakening);
+      const pendingWarning=awakeningPending?'<div class="summary-box" role="alert"><strong>Room awakening incomplete.</strong><br>Select the awakened room before finishing this Turning Point.</div>':'';
+      return `<section class="next-card"><span class="phase">TURNING POINT ${state.turningPoint} COMPLETE</span><h2>Battle summary</h2><div class="turn-summary-grid"><div><small>Threat</small><strong>${state.tpStartThreat??state.threat} → ${state.threat}</strong><span>${threatChanged?'Changed this Turning Point':'No change'}</span></div><div><small>Grade</small><strong>${state.tpStartGrade??threatGrade()} → ${threatGrade()}</strong><span>${gradeChanged?'Grade increased':'Grade unchanged'}</span></div><div><small>${escapeHtml(opponentPluralLabel())} destroyed</small><strong>${npoLosses}</strong><span>This Turning Point</span></div><div><small>${escapeHtml(playerSideLabel())} casualties</small><strong>${playerLosses}</strong><span>This Turning Point</span></div></div><h3>Score and clean up</h3><p>Score mission objectives, resolve end-of-turn effects, and confirm all temporary markers have been cleared.</p>${missionProgressHtml()}${pendingWarning}<div class="checklist"><label class="check-row required-confirmation-row"><input id="endChecked" type="checkbox" ${awakeningPending?'disabled':''}><span><strong>End-of-turn steps complete</strong><small>Objectives scored, temporary effects resolved, and physical tokens cleaned up.</small></span></label></div><button class="btn primary big-action" id="finishTp" disabled>Finish Turning Point</button></section>`;
     }
     setNextActivation(state.nextSide || state.initiative || 'player');
     if(state.phase==='end'){save();return nextStepCard();}
@@ -4250,8 +4264,9 @@ document.addEventListener('touchend',function(e){
     $('#missionHud')?.addEventListener('click',showMissionDetails);
     bindMissionProgressControls();
     $('#resolveAuspexCalibration')?.addEventListener('click',performAuspexCalibration);
-    $('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked;});
+    $('#endChecked')?.addEventListener('change',e=>{$('#finishTp').disabled=!e.target.checked||Boolean(state.missionState?.pendingAwakening);});
     $('#finishTp')?.addEventListener('click',async()=>{
+      if(state.missionState?.pendingAwakening)return;
       if(state.turningPoint>=MAX_TURNING_POINTS){await resolveTurningPointLimit();return;}
       if(await executeMissionLifecycleHook('onTurningPointEnded')===null)return;
       log(`Turning Point ${state.turningPoint} completed.`);

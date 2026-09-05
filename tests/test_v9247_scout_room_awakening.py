@@ -75,6 +75,7 @@ def test_cleanup_is_display_only_and_scout_room_remains_the_only_scout_commit():
     assert "when the room is clear on the tabletop" in display
     assert "data-awaken-room" not in display
     assert "First Open / Entry" not in display
+    assert "Correct Legacy Placement" in display
     assert "scoutedRoomIds" in scout
     assert "commitHumanPlayerAction" in scout
 
@@ -153,3 +154,16 @@ const playerOperativesRemaining=()=>0;
 """
     result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
     assert result.returncode == 0, result.stderr or result.stdout
+
+
+def test_variant_generation_and_cleanup_pending_guard_are_preserved():
+    awakening = section("async function performAwakenRoom", "async function performAuspexCalibration")
+    cleanup = section("function nextStepCard", "function missionStrategyPending")
+    bindings = section("function bindPlay", "let skipRemainingActivationsPending")
+    assert "setupCrownworldCrawlerPair" in awakening
+    assert "pair.npos.forEach" in awakening
+    assert "ready:state.threat>0,dormant:state.threat===0" in awakening
+    assert "sourceRoomId:roomId" in awakening
+    assert "awakeningPending=Boolean(state.missionState?.pendingAwakening)" in cleanup
+    assert "Room awakening incomplete." in cleanup
+    assert "if(state.missionState?.pendingAwakening)return" in bindings
