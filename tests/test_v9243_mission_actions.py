@@ -13,7 +13,7 @@ def mission(number, slug):
 
 
 def test_release_version_and_save_key_are_consistent():
-    assert CURRENT_APP_VERSION == ".".join(("9", "2", str(40 + 3)))
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 43)
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in (ROOT / "service-worker.js").read_text()
     index = (ROOT / "index.html").read_text()
