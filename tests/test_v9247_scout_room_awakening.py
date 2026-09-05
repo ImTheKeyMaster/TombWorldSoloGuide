@@ -132,7 +132,10 @@ const resolveVariantNpoRequest=value=>value;
 const createNpo=(type,name,options)=>({{id:`npo-${{++generated}}`,type,name,wounds:10,battlefieldState:'deployed',...options}});
 const save=()=>true;
 const acknowledgeCurrentDiceRequest=()=>{{}};
+const activePlayerActivation=()=>({{activationId:'activation-1'}});
 const renderHumanPlayerActionPicker=()=>{{}};
+const closeModal=()=>{{}};
+const render=()=>{{}};
 const playerName=()=> 'Aegis';
 const log=text=>state.journal.unshift({{text}});
 const playerOperativesRemaining=()=>0;
@@ -178,3 +181,11 @@ def test_legacy_placement_recovery_applies_current_readiness_and_provenance():
     assert "npo.dormant=state.threat===0" in bindings
     assert "npo.sourceRoomId=npo.sourceRoomId||button.dataset.confirmRoomPlacement" in bindings
     assert "state.activationFinishedForTurningPoint.npo=false" in bindings
+
+
+def test_room_awakening_continuation_does_not_enter_activation_from_cleanup():
+    flow = section("function continueAfterRoomAwakeningBookkeeping", "function beginRoomAwakeningSelection")
+    assert "if(activePlayerActivation())return renderHumanPlayerActionPicker()" in flow
+    assert "closeModal();render();return true" in flow
+    assert "cancelPendingAwakening" in flow
+    assert "state.missionState.pendingAwakening=null;save();continueAfterRoomAwakeningBookkeeping()" in flow

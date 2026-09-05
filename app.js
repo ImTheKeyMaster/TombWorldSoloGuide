@@ -3558,14 +3558,19 @@ document.addEventListener('touchend',function(e){
     return missionEngine().rooms.filter(room=>!state.missionState?.awakenedRooms?.[room.id]);
   }
 
+  function continueAfterRoomAwakeningBookkeeping(){
+    if(activePlayerActivation())return renderHumanPlayerActionPicker();
+    closeModal();render();return true;
+  }
+
   function showAwakenedRoomSelector(){
     const pending=state.missionState?.pendingAwakening,rooms=unawakenedScoutRooms();
-    if(!pending)return renderHumanPlayerActionPicker();
-    if(!rooms.length){state.missionState.pendingAwakening=null;save();return renderHumanPlayerActionPicker();}
+    if(!pending)return continueAfterRoomAwakeningBookkeeping();
+    if(!rooms.length){state.missionState.pendingAwakening=null;save();return continueAfterRoomAwakeningBookkeeping();}
     const question=pending.source==='first-entry'?'WHICH ROOM WAS ENTERED FOR THE FIRST TIME?':'SELECT AWAKENED ROOM';
     const choices=rooms.map(room=>`<button type="button" class="btn secondary big-action" data-select-awakened-room="${escapeHtml(room.id)}">${escapeHtml(room.label.toUpperCase())}<small>Unopened</small></button>`).join('');
     showModal(question,`<p>Select the eligible room that was first ${pending.source==='first-entry'?'entered':'opened'}.</p><div class="human-npo-action-list">${choices}</div><div class="wizard-actions"><button class="btn ghost" id="cancelPendingAwakening">Back</button></div>`);
-    $('#cancelPendingAwakening').onclick=()=>{state.missionState.pendingAwakening=null;save();renderHumanPlayerActionPicker();};
+    $('#cancelPendingAwakening').onclick=()=>{state.missionState.pendingAwakening=null;save();continueAfterRoomAwakeningBookkeeping();};
     $$('[data-select-awakened-room]',modalBody).forEach(button=>button.onclick=()=>{button.disabled=true;void performAwakenRoom(button.dataset.selectAwakenedRoom);});
   }
 
@@ -3624,7 +3629,7 @@ document.addEventListener('touchend',function(e){
     log(`Scout Sub-Crypt awakening roll: D3 ${awakenRoll} + Grade ${grade} = ${uncappedCount}${uncappedCount>5?', capped at 5':''} NPOs.`);
     log(`${ids.length} NPO${ids.length===1?' was':'s were'} generated for ${room.label}.${ids.length<requestedCount?` ${requestedCount-ids.length} blocked by the NPO cap or available model inventory.`:state.threat===0?' Threat is 0, so they are Dormant.':' They are Ready immediately.'}`);
     log(`${room.label} is Awakened and remains Unscouted.`);
-    save();acknowledgeCurrentDiceRequest();renderHumanPlayerActionPicker();
+    save();acknowledgeCurrentDiceRequest();continueAfterRoomAwakeningBookkeeping();
   }
 
   async function performAuspexCalibration(){
