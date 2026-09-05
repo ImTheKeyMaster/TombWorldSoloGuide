@@ -13,7 +13,7 @@ def section(start, end):
 
 
 def test_release_version_and_persistent_save_key_are_consistent():
-    assert CURRENT_APP_VERSION == ".".join(("9", "2", str(40 + 5)))
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 45)
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in (ROOT / "service-worker.js").read_text()
 
@@ -37,11 +37,11 @@ def test_only_nonempty_groups_render_and_footer_follows_groups_without_placehold
 
 def test_damage_bookkeeping_is_outside_action_list_and_has_no_ap_or_history_transaction():
     shell = section("function renderHumanActivationShell", "function showApplyOtherDamage")
-    damage = section("function showApplyOtherDamage", "function renderHumanPlayerActionPicker")
+    damage = section("function showApplyOtherDamage", "function showPendingHumanPlayerActionCompletion")
     assert 'class="activation-bookkeeping"' in shell
     assert 'id="applyOtherDamage"' in shell
     assert 'data-human-action' not in shell.split('id="applyOtherDamage"', 1)[1].split("</button>", 1)[0]
-    assert "adjustPlayerWounds(activation.operativeId,-amount)" in damage
+    assert "adjustPlayerWounds(activation.operativeId,-amount,{activationBookkeeping:true})" in damage
     for mutation in ("remainingAp", "completedActionIds", "resolvedActions", "pendingAction", "actionSequence"):
         assert mutation not in damage
     assert "AP" not in damage.split('aria-label="Damage to apply', 1)[1]

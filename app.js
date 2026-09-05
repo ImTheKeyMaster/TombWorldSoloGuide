@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.45';
+  const APP_VERSION = '9.2.46';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -4943,18 +4943,33 @@ document.addEventListener('touchend',function(e){
     $('#endHumanActivation').onclick=onEnd;
   }
 
-  function showApplyOtherDamage(){
+  function showApplyOtherDamage({onCancel=renderHumanPlayerActionPicker,onNonlethal=renderHumanPlayerActionPicker,pendingStage=null}={}){
     const activation=activePlayerActivation();
     if(!activation)return;
     const name=playerName(activation.operativeId),wounds=playerCurrentWounds(activation.operativeId);
-    showModal('APPLY OTHER DAMAGE',`<p>Apply external damage to <strong>${escapeHtml(name)}</strong>. This is wound bookkeeping and does not cost AP or count as an action.</p><div class="field"><label for="otherDamageAmount">Damage</label><input id="otherDamageAmount" type="number" min="1" max="${wounds}" value="1" inputmode="numeric" aria-label="Damage to apply to ${escapeHtml(name)}"></div><div class="wizard-actions"><button class="btn ghost" id="cancelOtherDamage">Cancel</button><button class="btn primary" id="confirmOtherDamage">Apply Damage</button></div>`);
-    $('#cancelOtherDamage').onclick=renderHumanPlayerActionPicker;
+    showModal('APPLY OTHER DAMAGE',`<p>Apply external damage to <strong>${escapeHtml(name)}</strong>. This does not cost AP or count as an action.</p><div class="field"><label for="otherDamageAmount">Damage</label><input id="otherDamageAmount" type="number" min="1" max="${wounds}" value="1" inputmode="numeric" aria-label="Damage to apply to ${escapeHtml(name)}"><p class="muted" id="otherDamageValidation" role="alert" aria-live="polite"></p></div><div class="wizard-actions"><button class="btn ghost" id="cancelOtherDamage">Cancel</button><button class="btn primary" id="confirmOtherDamage">Apply Damage</button></div>`);
+    $('#cancelOtherDamage').onclick=onCancel;
     $('#confirmOtherDamage').onclick=()=>{
-      const amount=Math.max(1,Math.min(wounds,Math.floor(num('otherDamageAmount'))));
-      adjustPlayerWounds(activation.operativeId,-amount);
-      if(activePlayerActivation()&&playerCurrentWounds(activation.operativeId)>0)renderHumanPlayerActionPicker();
-      else closeModal();
+      const button=$('#confirmOtherDamage'),input=$('#otherDamageAmount'),amount=input.valueAsNumber;
+      if(!Number.isInteger(amount)||amount<1||amount>wounds){
+        $('#otherDamageValidation').textContent=`Enter a whole number from 1 to ${wounds}.`;
+        input.focus();return;
+      }
+      if(button.disabled)return;
+      button.disabled=true;
+      const remaining=adjustPlayerWounds(activation.operativeId,-amount,{activationBookkeeping:true});
+      log(remaining===0?`${name} suffered ${amount} other damage and was incapacitated.`:`${name} suffered ${amount} other damage. ${remaining} wounds remaining.`);
+      if(remaining>0){save();onNonlethal();return;}
+      if(pendingStage)commitHumanPlayerAction(pendingStage,{deferContinuation:true});
+      void completeHumanPlayerActivation();
     };
+  }
+
+  function showPendingHumanPlayerActionCompletion(stage,action,descriptions={},completionLabel='Action Complete'){
+    showModal(action.name,`<p>${escapeHtml(descriptions[action.id]||`Confirm ${action.name} is complete.`)}</p><div class="wizard-actions"><button class="btn ghost" id="cancelHumanPlayerAction">Cancel</button><button class="btn secondary" id="pendingActionOtherDamage">Apply Other Damage</button><button class="btn primary" id="commitHumanPlayerAction">${completionLabel}</button></div>`);
+    $('#cancelHumanPlayerAction').onclick=cancelCurrentHumanPlayerAction;
+    $('#pendingActionOtherDamage').onclick=()=>showApplyOtherDamage({onCancel:()=>showPendingHumanPlayerActionCompletion(stage,action,descriptions,completionLabel),onNonlethal:()=>showPendingHumanPlayerActionCompletion(stage,action,descriptions,completionLabel),pendingStage:stage});
+    $('#commitHumanPlayerAction').onclick=()=>completePlayerActivation(stage);
   }
 
   function renderHumanPlayerActionPicker(){
@@ -5035,9 +5050,8 @@ document.addEventListener('touchend',function(e){
       return;
     }
     const descriptions={move:'Confirm that Reposition has been completed on the tabletop.',dash:'Confirm that Dash has been completed on the tabletop.',charge:'Confirm that Charge has been completed on the tabletop.',fallBack:'Confirm that Fall Back has been completed on the tabletop.',hatch:'Confirm that Operate Hatch is complete.',breach:'Confirm that Breach is complete.',objective:'Confirm that the mission action resolved successfully.'};
-    showModal(action.name,`<p>${escapeHtml(descriptions[action.id]||`Confirm ${action.name} is complete.`)}</p><div class="wizard-actions"><button class="btn ghost" id="cancelHumanPlayerAction">Cancel</button><button class="btn primary" id="commitHumanPlayerAction">${['move','dash','charge','fallBack'].includes(action.id)?'Movement Complete':'Action Complete'}</button></div>`);
-    $('#cancelHumanPlayerAction').onclick=cancelCurrentHumanPlayerAction;
-    $('#commitHumanPlayerAction').onclick=()=>completePlayerActivation(stage);
+    const completionLabel=['move','dash','charge','fallBack'].includes(action.id)?'Movement Complete':'Action Complete';
+    showPendingHumanPlayerActionCompletion(stage,action,descriptions,completionLabel);
   }
 
   function commitHumanPlayerAction(stage,{deferContinuation=false,deferPersistence=false}={}){
@@ -5138,6 +5152,7 @@ document.addEventListener('touchend',function(e){
       closeModal();
       await executeMissionLifecycleHook('onPlayerActivationCompleted',{activationId:activation.activationId,operativeId:activation.operativeId});
       activation.completionHookPending=false;save();
+      if(state.lastActivation===activation){state.lastActivation=null;save();}
       if(!checkGameEnd())render();
       return;
     }
@@ -5154,6 +5169,7 @@ document.addEventListener('touchend',function(e){
     state.combatState=null;state.missionActionContext=null;save();closeModal();
     await executeMissionLifecycleHook('onPlayerActivationCompleted',{activationId,operativeId});
     activation.completionHookPending=false;save();
+    if(state.lastActivation===activation){state.lastActivation=null;save();}
     if(!checkGameEnd())render();
   }
 
@@ -5165,7 +5181,6 @@ document.addEventListener('touchend',function(e){
     fallBack:2,
     shoot:1,
     melee:1,
-    damage:1,
     hatch:1,
     breach:2,
     objective:1
@@ -5229,7 +5244,6 @@ function showPlayerActivation(){
     if(stage.fallBack)actions.push('Fall Back');
     if(stage.shoot)actions.push('Shooting attack resolved');
     if(stage.melee)actions.push('Melee attack resolved');
-    if(stage.damage)actions.push('Damaging action');
     if(stage.hatch)actions.push('Operate Hatch');
     if(stage.breach)actions.push('Breach');
     if(stage.objective)actions.push('Mission action');
@@ -5871,7 +5885,6 @@ function showPlayerActivation(){
     let inc=0;
     if(stage.shoot)inc++;
     if(stage.melee)inc++;
-    if(stage.damage)inc++;
     if(stage.hatch&&state.missionId!=='scout-sub-crypt'){
       const r=stage.threatRolls.operateHatch;
       if(r>=4)inc++;
@@ -7824,7 +7837,7 @@ function showPlayerActivation(){
     const catalog=supportedHumanNpoActions(n).map(name=>{
       const id=npoActionId(name),cost=npoActionCost(n,id),available=legal.has(id),used=completed.has(id);
       const reason=used?'Used':available?'Available':cost>activation.remainingAp?`Needs ${cost} AP`:'Unavailable';
-      return {name,id,cost,group:['reposition','dash','charge','fall-back'].includes(id)?'movement':['shoot','fight'].includes(id)?'combat':'special',state:{status:used?'Used':available?'Available':cost>activation.remainingAp?'Insufficient AP':'Unavailable',disabled:!available,reason}};
+      return {name,id,cost,group:['reposition','dash','charge','fall-back'].includes(id)?'movement':['shoot','fight'].includes(id)?'combat':id==='operate-hatch'?'mission':'operative',state:{status:used?'Used':available?'Available':cost>activation.remainingAp?'Insufficient AP':'Unavailable',disabled:!available,reason}};
     });
     const modifiers=(state.npoRuleState.aplModifiers||[]).filter(item=>item.targetId===n.id).map(item=>`${item.amount>0?'+':''}${item.amount} AP (${titleCaseRuleId(item.ruleId)})`);
     if((state.npoRuleState.pendingMovementEffects||[]).some(item=>item.targetId===n.id&&item.ruleId==='molecular-breach'))modifiers.push('Next movement uses Molecular Breach');
@@ -8986,12 +8999,12 @@ function showPlayerActivation(){
     if(!commitNpoRoster(candidate,'change that loadout')){render();return;}
     save();render();
   }
-  function adjustPlayerWounds(id,d){
+  function adjustPlayerWounds(id,d,{activationBookkeeping=false}={}){
     const definition=playerDefinition(id);
     if(!definition||!isPlayerOperativeInPlay(id))return;
     const maxWounds=Number(definition.wounds||0), before=playerCurrentWounds(id);
     const wounds=Math.max(0,Math.min(maxWounds,before+d));
-    if(wounds===before)return;
+    if(wounds===before)return before;
     state.playerWounds=state.playerWounds||{};
     state.playerWounds[id]=wounds;
     const casualties=new Set(state.playerCasualtyIds||[]);
@@ -9001,9 +9014,12 @@ function showPlayerActivation(){
     }else if(before===0)casualties.delete(id);
     state.playerCasualtyIds=[...casualties];
     state.playerReady=playerOperativesRemaining();
-    if(checkGameEnd())return;
+    const preservingCurrentActivation=activationBookkeeping&&activePlayerActivation()?.operativeId===id;
+    if(preservingCurrentActivation){save();render();return wounds;}
+    if(checkGameEnd())return wounds;
     setNextActivation(state.nextSide||'npo');
     save();render();
+    return wounds;
   }
   function adjustWounds(id,d){
     const n=state.roster.find(x=>x.id===id);
