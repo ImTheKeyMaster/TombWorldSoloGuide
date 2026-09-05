@@ -109,10 +109,29 @@ def test_scout_preflight_rejects_stale_or_duplicate_callbacks_before_mutation():
     preflight = section("function canPerformScoutRoom", "async function performScoutRoom")
     scout = section("async function performScoutRoom", "async function performLocateItem")
     assert "pending?.activationId===activation.activationId" in preflight
-    assert "pending.actionId==='scoutRoom'" in preflight
+    assert "pending?.actionId==='scoutRoom'" in preflight
     assert "completedActionIds||[]).includes('scoutRoom')" in preflight
     assert "pending.cost<=activation.remainingAp" in preflight
     assert scout.index("!canPerformScoutRoom(activation,operativeId,stage)") < scout.index("executeMissionAction")
+
+
+def test_scout_preflight_handles_missing_and_stale_pending_state_behaviorally():
+    helper = "function canPerformScoutRoom" + section("function canPerformScoutRoom", "async function performScoutRoom")
+    script = f"""
+const assert=require('assert').strict;
+{helper}
+const stage={{humanActionId:'scoutRoom'}};
+const valid={{operativeId:'p1',activationId:'a1',remainingAp:2,completedActionIds:[],pendingAction:{{activationId:'a1',actionId:'scoutRoom',cost:1}}}};
+assert.equal(canPerformScoutRoom(valid,'p1',stage),true);
+assert.equal(canPerformScoutRoom(null,'p1',stage),false);
+assert.equal(canPerformScoutRoom({{...valid,pendingAction:null}},'p1',stage),false);
+assert.equal(canPerformScoutRoom({{...valid,activationId:'a2'}},'p1',stage),false);
+assert.equal(canPerformScoutRoom({{...valid,operativeId:'p2'}},'p1',stage),false);
+assert.equal(canPerformScoutRoom({{...valid,remainingAp:0}},'p1',stage),false);
+assert.equal(canPerformScoutRoom({{...valid,completedActionIds:['scoutRoom']}},'p1',stage),false);
+"""
+    result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
+    assert result.returncode == 0, result.stderr or result.stdout
 
 
 def test_mission_details_report_known_room_state():

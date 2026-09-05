@@ -3471,7 +3471,7 @@ document.addEventListener('touchend',function(e){
 
   function canPerformScoutRoom(activation,operativeId,stage){
     const pending=activation?.pendingAction;
-    return activation?.operativeId===operativeId&&stage?.humanActionId==='scoutRoom'&&pending?.activationId===activation.activationId&&pending.actionId==='scoutRoom'&&!(activation.completedActionIds||[]).includes('scoutRoom')&&pending.cost<=activation.remainingAp;
+    return activation?.operativeId===operativeId&&stage?.humanActionId==='scoutRoom'&&pending?.activationId===activation.activationId&&pending?.actionId==='scoutRoom'&&!(activation.completedActionIds||[]).includes('scoutRoom')&&pending.cost<=activation.remainingAp;
   }
 
   async function performScoutRoom(roomId,operativeId,stage){
