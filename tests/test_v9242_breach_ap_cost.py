@@ -33,21 +33,21 @@ def test_breach_catalog_uses_selected_operative_cost_and_existing_action():
 
 
 def test_breach_reduction_uses_structured_datacard_and_weapon_data():
-    qualification = source("function operativeQualifiesForBreachReduction", "function breachApCost")
+    qualification = source("function qualifyingBreachDiscount", "function breachApCost")
     assert "const {weapons=[], ...datacard}=operative" in qualification
     assert "structuredTextValues(datacard)" in qualification
     assert r"\bbreach marker\b|\bgrenadier\b|\bmine\b" in qualification
     assert "structuredTextValues(weapon.rules)" in qualification
     assert r"^Piercing(?: Crits)? 2(?:\s|$)" in qualification
     assert r"^(?:Blast|Torrent)(?:\s|$)" in qualification
-    assert "hasQualifyingRule&&!hasExcludedRule" in qualification
+    assert "&&!rules.some" in qualification
     assert "textContent" not in qualification
     assert "querySelector" not in qualification
 
 
 def test_reduction_is_binary_and_cost_never_drops_below_one():
     cost = source("function breachApCost", "function breachSarcophagusApCost")
-    assert "return operativeQualifiesForBreachReduction(operative)?1:2" in cost
+    assert "return qualifyingBreachDiscount(operative)?1:2" in cost
     assert "--" not in cost
     assert "reduce(" not in cost
 
@@ -79,3 +79,9 @@ def test_existing_breach_resolution_effects_are_unchanged():
     assert "if(stage.breach){\n      inc++;" in completion
     assert "commitHumanPlayerAction(stage)" in completion
     assert "stage.missionFeatureCommitted=true" in completion
+
+
+def test_canonical_base_cost_is_two_ap():
+    costs = source("const PLAYER_ACTION_COSTS", "function playerActionCost")
+    assert "breach:2" in costs
+    assert "breach:1" not in costs

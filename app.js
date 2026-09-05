@@ -5113,23 +5113,13 @@ document.addEventListener('touchend',function(e){
     melee:1,
     damage:1,
     hatch:1,
-    breach:1,
+    breach:2,
     objective:1
   };
 
   function playerActionCost(stage){
     return Object.entries(PLAYER_ACTION_COSTS).reduce((total,[key,cost])=>total+(stage[key]?cost:0),0)
       + (stage.missionBreachCommitted?Math.max(1,Number(stage.missionBreachCost)||2):0);
-  }
-
-  function qualifyingBreachDiscount(operative){
-    if(!operative)return false;
-    const operativeRules=[...(operative.abilities||[]),...(operative.rules||[])].map(String);
-    if(operativeRules.some(rule=>/breach/i.test(rule)&&/(?:1\s*AP|reduce|costs?\s*1)/i.test(rule)))return true;
-    return (operative.weapons||[]).some(weapon=>{
-      const rules=(weapon.rules||[]).map(String);
-      return rules.some(rule=>/^Piercing(?:\s|$)/i.test(rule))&&!rules.some(rule=>/^(?:Blast|Torrent)(?:\s|$)/i.test(rule));
-    });
   }
 
   function structuredTextValues(value){
@@ -5139,21 +5129,20 @@ document.addEventListener('touchend',function(e){
     return [];
   }
 
-  function operativeQualifiesForBreachReduction(operative){
+  function qualifyingBreachDiscount(operative){
     if(!operative)return false;
     const {weapons=[], ...datacard}=operative;
     const datacardText=structuredTextValues(datacard).join(' ');
     if(/\bbreach marker\b|\bgrenadier\b|\bmine\b/i.test(datacardText))return true;
     return weapons.some(weapon=>{
       const rules=structuredTextValues(weapon.rules);
-      const hasExcludedRule=rules.some(rule=>/^(?:Blast|Torrent)(?:\s|$)/i.test(rule.trim()));
-      const hasQualifyingRule=rules.some(rule=>/^Piercing(?: Crits)? 2(?:\s|$)/i.test(rule.trim()));
-      return hasQualifyingRule&&!hasExcludedRule;
+      return rules.some(rule=>/^Piercing(?: Crits)? 2(?:\s|$)/i.test(rule.trim()))
+        &&!rules.some(rule=>/^(?:Blast|Torrent)(?:\s|$)/i.test(rule.trim()));
     });
   }
 
   function breachApCost(operative){
-    return operativeQualifiesForBreachReduction(operative)?1:2;
+    return qualifyingBreachDiscount(operative)?1:2;
   }
 
   function breachSarcophagusApCost(operativeId){
