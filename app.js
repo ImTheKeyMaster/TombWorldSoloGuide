@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.44';
+  const APP_VERSION = '9.2.45';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -4854,7 +4854,7 @@ document.addEventListener('touchend',function(e){
     {id:'movement',label:'Movement'},
     {id:'combat',label:'Combat'},
     {id:'mission',label:'Mission / Battlefield'},
-    {id:'special',label:'Special Actions'}
+    {id:'operative',label:'Operative Actions'}
   ];
 
   function activePlayerActivation(){
@@ -4887,7 +4887,6 @@ document.addEventListener('touchend',function(e){
       {id:'fallBack',name:'Fall Back',group:'movement',cost:2},
       {id:'shoot',name:'Shoot',group:'combat',cost:1},
       {id:'melee',name:'Fight',group:'combat',cost:1},
-      {id:'damage',name:'Other Damage',group:'special',cost:1},
       {id:'hatch',name:'Operate Hatch',group:'mission',cost:1},
       {id:'breach',name:breachLabel,group:'mission',cost:breachApCost(operative)}
     ];
@@ -4924,7 +4923,7 @@ document.addEventListener('touchend',function(e){
     return {status:'Available',disabled:false,reason:'Available'};
   }
 
-  function renderHumanActivationShell({title,name,wounds,maxWounds,baseApl,effectiveAp,remainingAp,startingAp,order,loadout,effects=[],completedActions=[],actions,onAction,onEnd}){
+  function renderHumanActivationShell({title,name,wounds,maxWounds,baseApl,effectiveAp,remainingAp,startingAp,order,loadout,effects=[],completedActions=[],actions,onAction,onEnd,onApplyOtherDamage}){
     const groups=HUMAN_ACTION_GROUPS.map(group=>{
       const items=actions.filter(action=>action.group===group.id);
       if(!items.length)return '';
@@ -4937,9 +4936,25 @@ document.addEventListener('touchend',function(e){
       }).join('')}</div></section>`;
     }).filter(Boolean).join('');
     const history=completedActions.length?`<section class="summary-box human-completed-actions"><strong>Completed Actions</strong><ul>${completedActions.map(action=>`<li>✓ ${escapeHtml(action.summary||action.name)}</li>`).join('')}</ul></section>`:'';
-    showModal(title,`<div class="human-activation-shell"><h2>${escapeHtml(name)}</h2><div class="activation-profile-strip" role="status" aria-label="Activation profile"><span>Wounds: ${wounds}/${maxWounds}</span><span><strong>${remainingAp} / ${startingAp} AP remaining</strong></span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${effects.map(effect=>`<span>${escapeHtml(effect)}</span>`).join('')}</div>${history}<div class="activation-groups">${groups}</div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="endHumanActivation">End Activation</button></div></div>`,undefined,'human-activation');
+    const bookkeeping=onApplyOtherDamage?`<div class="activation-bookkeeping" aria-label="Wound bookkeeping"><button type="button" class="btn ghost" id="applyOtherDamage" aria-label="Apply other damage to ${escapeHtml(name)}">Apply Other Damage</button></div>`:'';
+    showModal(title,`<div class="human-activation-shell"><h2>${escapeHtml(name)}</h2><div class="activation-profile-strip" role="status" aria-label="Activation profile"><span>Wounds: ${wounds}/${maxWounds}</span><span><strong>${remainingAp} / ${startingAp} AP remaining</strong></span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${effects.map(effect=>`<span>${escapeHtml(effect)}</span>`).join('')}</div>${bookkeeping}${history}<div class="activation-groups">${groups}</div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="endHumanActivation">End Activation</button></div></div>`,undefined,'human-activation');
     $$('[data-human-action]',modalBody).forEach(button=>button.onclick=()=>onAction(button.dataset.humanAction));
+    if(onApplyOtherDamage)$('#applyOtherDamage').onclick=onApplyOtherDamage;
     $('#endHumanActivation').onclick=onEnd;
+  }
+
+  function showApplyOtherDamage(){
+    const activation=activePlayerActivation();
+    if(!activation)return;
+    const name=playerName(activation.operativeId),wounds=playerCurrentWounds(activation.operativeId);
+    showModal('APPLY OTHER DAMAGE',`<p>Apply external damage to <strong>${escapeHtml(name)}</strong>. This is wound bookkeeping and does not cost AP or count as an action.</p><div class="field"><label for="otherDamageAmount">Damage</label><input id="otherDamageAmount" type="number" min="1" max="${wounds}" value="1" inputmode="numeric" aria-label="Damage to apply to ${escapeHtml(name)}"></div><div class="wizard-actions"><button class="btn ghost" id="cancelOtherDamage">Cancel</button><button class="btn primary" id="confirmOtherDamage">Apply Damage</button></div>`);
+    $('#cancelOtherDamage').onclick=renderHumanPlayerActionPicker;
+    $('#confirmOtherDamage').onclick=()=>{
+      const amount=Math.max(1,Math.min(wounds,Math.floor(num('otherDamageAmount'))));
+      adjustPlayerWounds(activation.operativeId,-amount);
+      if(activePlayerActivation()&&playerCurrentWounds(activation.operativeId)>0)renderHumanPlayerActionPicker();
+      else closeModal();
+    };
   }
 
   function renderHumanPlayerActionPicker(){
@@ -4958,7 +4973,7 @@ document.addEventListener('touchend',function(e){
       effectiveAp:activation.effectiveApl,remainingAp:activation.remainingAp,startingAp:activation.startingAp,
       order:state.playerOperativeStates?.[activation.operativeId]?.order||'Tabletop',loadout,effects,
       completedActions:activation.resolvedActions||[],actions,onAction:selectHumanPlayerAction,
-      onEnd:confirmEndHumanPlayerActivation
+      onEnd:confirmEndHumanPlayerActivation,onApplyOtherDamage:showApplyOtherDamage
     });
     renderOperativeStatusPanel(activation.operativeId);
   }
@@ -5019,7 +5034,7 @@ document.addEventListener('touchend',function(e){
       $$('[data-activation-scout-room]',modalBody).forEach(button=>button.onclick=()=>{button.disabled=true;void performScoutRoom(button.dataset.activationScoutRoom,activation.operativeId,stage);});
       return;
     }
-    const descriptions={move:'Confirm that Reposition has been completed on the tabletop.',dash:'Confirm that Dash has been completed on the tabletop.',charge:'Confirm that Charge has been completed on the tabletop.',fallBack:'Confirm that Fall Back has been completed on the tabletop.',damage:'Confirm that the damaging action and its effects are complete.',hatch:'Confirm that Operate Hatch is complete.',breach:'Confirm that Breach is complete.',objective:'Confirm that the mission action resolved successfully.'};
+    const descriptions={move:'Confirm that Reposition has been completed on the tabletop.',dash:'Confirm that Dash has been completed on the tabletop.',charge:'Confirm that Charge has been completed on the tabletop.',fallBack:'Confirm that Fall Back has been completed on the tabletop.',hatch:'Confirm that Operate Hatch is complete.',breach:'Confirm that Breach is complete.',objective:'Confirm that the mission action resolved successfully.'};
     showModal(action.name,`<p>${escapeHtml(descriptions[action.id]||`Confirm ${action.name} is complete.`)}</p><div class="wizard-actions"><button class="btn ghost" id="cancelHumanPlayerAction">Cancel</button><button class="btn primary" id="commitHumanPlayerAction">${['move','dash','charge','fallBack'].includes(action.id)?'Movement Complete':'Action Complete'}</button></div>`);
     $('#cancelHumanPlayerAction').onclick=cancelCurrentHumanPlayerAction;
     $('#commitHumanPlayerAction').onclick=()=>completePlayerActivation(stage);

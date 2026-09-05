@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.44
+# Tomb World Battle Guide v9.2.45
+
+## v9.2.45
+
+**Version 9.2.45**
+
+- Removed the generic Special Actions section and its misleading 1AP Other Damage action from the operative activation guide.
+- Kept external damage available as wound bookkeeping without spending AP or changing action history, and retained conditional support for genuine named operative actions.
+- Preserved standard and mission actions, incapacitation handling, the save schema, and the existing storage key.
 
 ## v9.2.44
 
