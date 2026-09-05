@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.45
+# Tomb World Battle Guide v9.2.46
+
+## v9.2.46
+
+**Version 9.2.46**
+
+- Added strict validation and idempotent confirmation for external-damage bookkeeping, preserving active AP and action state after nonlethal damage.
+- Completed lethal bookkeeping damage through the canonical player activation lifecycle and made bookkeeping optionally available before a pending action is committed.
+- Removed inert legacy damage-action AP, summary, and Threat semantics while keeping older saves loadable, and restored PvP Necron named actions under Operative Actions.
 
 ## v9.2.45
 
