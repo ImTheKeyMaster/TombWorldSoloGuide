@@ -1558,7 +1558,7 @@ document.addEventListener('touchend',function(e){
     if(merged.strategyData?.initiativeMode!=='pending'&&['player','npo'].includes(merged.strategyData?.suggestedInitiative)){
       const resolvedSide=merged.strategyData?.suggestedInitiative==='npo'?'npo':'player';
       merged.initiative=resolvedSide;
-      if(merged.phase==='strategy'&&merged.strategyStage==='initiative'&&raw.version!==APP_VERSION){
+      if(merged.phase==='strategy'&&merged.strategyStage==='initiative'&&merged.strategyPipeline?.current!=='initiative'){
         merged.phase='firefight';
         merged.strategyStage=null;
         merged.nextSide=resolvedSide;

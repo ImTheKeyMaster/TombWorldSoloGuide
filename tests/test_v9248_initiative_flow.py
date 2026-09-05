@@ -149,6 +149,9 @@ process.stdout.write(JSON.stringify(loaded));
     rerendered = initiative_run(turning_point=2, threat=6, dice=[], existing=loaded, mode="pvp")
     assert rerendered["requests"] == []
     assert rerendered["state"]["strategyData"]["suggestedInitiative"] == "npo"
+    normalization = APP[APP.index("function normalizeState"):APP.index("function npoDefinition")]
+    assert "merged.strategyPipeline?.current!=='initiative'" in normalization
+    assert "raw.version!==APP_VERSION" not in normalization
 
 
 def test_solo_and_pvp_use_the_same_initiative_requests():
