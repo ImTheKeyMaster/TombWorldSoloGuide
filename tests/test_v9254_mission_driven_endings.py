@@ -137,3 +137,53 @@ def test_version_surfaces_and_release_notes():
     assert f"V{CURRENT_APP_VERSION}" in index and index.count(f"?v={CURRENT_APP_VERSION}") == 10
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in worker
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
+
+
+def test_tp5_and_tp6_execute_the_production_start_and_strategy_pipeline():
+    start = "async function startTurningPoint" + source(
+        "async function startTurningPoint", "async function continueTurningPointStart"
+    )
+    finish = "async function finishTurningPointStart" + source(
+        "async function finishTurningPointStart", "function completeStrategyStage"
+    )
+    script = f"""
+const calls=[];
+let state={{
+  turningPoint:4,finalResolution:{{}},npoRuleState:{{reanimatedTargetIds:['old'],incapacitationTriggers:['old']}},
+  missionState:{{}},threat:6,playerCount:2,playerCasualtyIds:[],playerActivatedIds:['old'],
+  activationFinishedForTurningPoint:{{player:true,npo:true}},activationHistory:['old'],
+  eventState:{{}},roster:[]
+}};
+function missionEngine(){{return {{type:'sabotage'}};}}
+function threatGrade(){{return 2;}}
+function destroyedNpoCount(){{return 1;}}
+function processReadyStep(){{calls.push(`ready:${{state.turningPoint}}`);state.strategyPipeline.current='initiative';}}
+async function applyMissionReadyHooks(){{calls.push(`mission-ready:${{state.turningPoint}}`);return true;}}
+async function determineInitiative(){{calls.push(`initiative:${{state.turningPoint}}`);state.strategyData.playerRoll=6;state.strategyData.npoRoll=1;state.strategyPipeline.current='event';}}
+async function processEventStage(){{calls.push(`event:${{state.turningPoint}}`);state.strategyPipeline.current='reinforcement';}}
+async function beginCurrentEvent(){{throw new Error('unexpected restored event');}}
+function processReinforcementStage(){{calls.push(`reinforcement:${{state.turningPoint}}`);state.strategyData.reinforcements=['one'];}}
+function log(message){{calls.push(message);}}
+function save(){{calls.push(`save:${{state.turningPoint}}`);}}
+function render(){{calls.push(`render:${{state.turningPoint}}`);}}
+{finish}
+{start}
+(async()=>{{
+  await startTurningPoint();
+  const tp5={{turningPoint:state.turningPoint,phase:state.phase,activationNumber:state.activationNumber,history:state.activationHistory.length,activated:state.playerActivatedIds.length}};
+  state.phase='between';
+  await startTurningPoint();
+  const tp6={{turningPoint:state.turningPoint,phase:state.phase,activationNumber:state.activationNumber,history:state.activationHistory.length,activated:state.playerActivatedIds.length}};
+  process.stdout.write(JSON.stringify({{calls,tp5,tp6}}));
+}})().catch(error=>{{console.error(error);process.exit(1);}});
+"""
+    completed = subprocess.run(
+        ["node", "-e", script], cwd=ROOT, check=True, capture_output=True, text=True
+    )
+    result = json.loads(completed.stdout)
+    assert result["tp5"] == {"turningPoint": 5, "phase": "strategy", "activationNumber": 0, "history": 0, "activated": 0}
+    assert result["tp6"] == {"turningPoint": 6, "phase": "strategy", "activationNumber": 0, "history": 0, "activated": 0}
+    for turning_point in (5, 6):
+        for stage in ("ready", "mission-ready", "initiative", "event", "reinforcement"):
+            assert f"{stage}:{turning_point}" in result["calls"]
+        assert any(entry.startswith(f"Turning Point {turning_point} started.") for entry in result["calls"])
