@@ -87,6 +87,8 @@ def test_starting_npo_copy_names_the_guide_and_formulas_are_unchanged():
         assert data["startingNpos"]["formula"] == formula
         assert f"Guide automatically generates the {formula} starting NPO roster" in setup(data)
     assert "The Guide automatically generated the starting ${escapeHtml(opponentSingularLabel())} roster" in APP
+    assert "<small>GUIDE-AUTOMATED MISSION ROLL</small>" in APP
+    assert "<small>MISSION ROLL</small>" not in APP
 
 
 def test_mission_dice_operations_and_comparisons_are_unchanged():
