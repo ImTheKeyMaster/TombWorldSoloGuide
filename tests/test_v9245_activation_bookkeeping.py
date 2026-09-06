@@ -28,23 +28,19 @@ def test_generic_special_actions_and_other_damage_are_absent_from_action_catalog
 
 
 def test_only_nonempty_groups_render_and_footer_follows_groups_without_placeholder():
-    shell = section("function renderHumanActivationShell", "function showApplyOtherDamage")
+    shell = section("function renderHumanActivationShell", "function renderHumanPlayerActionPicker")
     assert "if(!items.length)return ''" in shell
     assert ".filter(Boolean).join('')" in shell
     assert "No special actions" not in shell
     assert shell.index('<div class="activation-groups">${groups}</div>') < shell.index("End Activation")
 
 
-def test_damage_bookkeeping_is_outside_action_list_and_has_no_ap_or_history_transaction():
-    shell = section("function renderHumanActivationShell", "function showApplyOtherDamage")
-    damage = section("function showApplyOtherDamage", "function renderHumanPlayerActionPicker")
-    assert 'class="activation-bookkeeping"' in shell
-    assert 'id="applyOtherDamage"' in shell
-    assert 'data-human-action' not in shell.split('id="applyOtherDamage"', 1)[1].split("</button>", 1)[0]
-    assert "adjustPlayerWounds(activation.operativeId,-amount,{activationBookkeeping:true})" in damage
-    for mutation in ("remainingAp", "completedActionIds", "resolvedActions", "pendingAction", "actionSequence"):
-        assert mutation not in damage
-    assert "AP" not in damage.split('aria-label="Damage to apply', 1)[1]
+def test_generic_damage_bookkeeping_is_absent_from_activation_ui():
+    shell = section("function renderHumanActivationShell", "function renderHumanPlayerActionPicker")
+    completion = section("function showPendingHumanPlayerActionCompletion", "function commitHumanPlayerAction")
+    assert "Apply Other Damage" not in shell + completion
+    assert "applyOtherDamage" not in shell + completion
+    assert "pendingActionOtherDamage" not in completion
 
 
 def test_bookkeeping_uses_existing_wound_and_incapacitation_state():
@@ -54,6 +50,14 @@ def test_bookkeeping_uses_existing_wound_and_incapacitation_state():
     assert "casualties.add(id)" in adjustment
     assert "state.playerActivatedIds.push(id)" in adjustment
     assert "save();render();" in adjustment
+
+
+def test_player_roster_remains_the_canonical_manual_wound_ui():
+    roster = section("function renderPlayerRoster", "function npoProfileWeaponHtml")
+    assert 'data-player-wound="${id}"' in roster
+    assert 'data-player-heal="${id}"' in roster
+    assert "adjustPlayerWounds(button.dataset.playerWound,-1)" in roster
+    assert "adjustPlayerWounds(button.dataset.playerHeal,1)" in roster
 
 
 def test_operative_group_is_available_but_no_placeholder_action_is_invented():
