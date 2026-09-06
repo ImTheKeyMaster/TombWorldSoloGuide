@@ -3585,7 +3585,7 @@ document.addEventListener('touchend',function(e){
     if(!pending)return continueAfterRoomAwakeningBookkeeping();
     if(!rooms.length){state.missionState.pendingAwakening=null;save();return continueAfterRoomAwakeningBookkeeping();}
     const question=pending.source==='first-entry'?'WHICH ROOM WAS ENTERED FOR THE FIRST TIME?':'SELECT AWAKENED ROOM';
-    const choices=rooms.map(room=>`<button type="button" class="btn secondary big-action" data-select-awakened-room="${escapeHtml(room.id)}">${escapeHtml(room.label.toUpperCase())}</button>`).join('');
+    const choices=rooms.map(room=>`<button type="button" class="btn secondary big-action" data-select-awakened-room="${escapeHtml(room.id)}">${escapeHtml(room.label)}</button>`).join('');
     showModal(question,`<p>Select the eligible room that was first ${pending.source==='first-entry'?'entered':'opened'}.</p><div class="human-npo-action-list">${choices}</div><div class="wizard-actions"><button class="btn ghost" id="cancelPendingAwakening">Back</button></div>`);
     $('#cancelPendingAwakening').onclick=()=>{state.missionState.pendingAwakening=null;save();continueAfterRoomAwakeningBookkeeping();};
     $$('[data-select-awakened-room]',modalBody).forEach(button=>button.onclick=()=>{button.disabled=true;void performAwakenRoom(button.dataset.selectAwakenedRoom);});

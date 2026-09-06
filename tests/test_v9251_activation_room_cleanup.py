@@ -27,7 +27,8 @@ def test_release_surfaces_and_cache_busting_are_v9251():
 def test_awakened_room_selector_uses_only_canonical_room_labels():
     selector = section("function unawakenedScoutRooms", "async function performAwakenRoom")
     assert "SELECT AWAKENED ROOM" in selector
-    assert "room.label.toUpperCase()" in selector
+    assert "${escapeHtml(room.label)}</button>" in selector
+    assert "room.label.toUpperCase()" not in selector
     button = selector.split('data-select-awakened-room=', 1)[1].split("</button>", 1)[0]
     assert "<small>" not in button
     assert "Unopened" not in button
