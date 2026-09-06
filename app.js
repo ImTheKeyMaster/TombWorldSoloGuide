@@ -2487,7 +2487,7 @@ document.addEventListener('touchend',function(e){
       if(hookResult===null){
         battleEndHookPending=false;
         state.gameEnd=null;state.completed=false;
-        state.phase=state.finalResolution.pending?'battle-resolution':previousPhase;
+        state.phase=previousPhase;
         save();render();
         showToast('The battle result could not be recorded. Please try again.');
         return;
@@ -2495,7 +2495,6 @@ document.addEventListener('touchend',function(e){
       state.finalResolution.battleEndHookComplete=true;
     }
     void TombWorldNarration.playOutcome(state.missionId,outcome);
-    const engine=missionEngine();
     if(!state.finalResolution.resultLogged){
       log(`${mission().name}: ${outcome}. ${missionOutcomeExplanation(outcome)}`);
       state.finalResolution.resultLogged=true;

@@ -56,13 +56,53 @@ def test_escape_result_copy_comes_from_the_same_threshold_calculation():
 
 
 def test_all_six_evaluators_are_mission_driven():
-    evaluators = source("const missionOutcomeEvaluators", "function missionOutcome")
-    assert "turning-point-limit" not in evaluators
-    assert "completedFeatureIds.length>=engine.required?'victory':null" in evaluators
-    assert "progress.escaped?'victory':null" in evaluators
-    assert "progress.destruction>=engine.required?'victory':null" in evaluators
-    assert "progress.scoutedRoomIds.length>=engine.required?'victory':null" in evaluators
-    assert "timing!=='end-turning-point'" in evaluators
+    helper = "function shiftingLabyrinthResult" + source(
+        "function shiftingLabyrinthResult", "function missionOutcomeExplanation"
+    )
+    evaluators = "const missionOutcomeEvaluators" + source(
+        "const missionOutcomeEvaluators", "function missionOutcome"
+    )
+    script = f"""
+let state={{playerRoster:['one'],playerCasualtyIds:[],missionState:{{escapedIds:[]}}}};
+function freshMissionState(){{return state.missionState;}}
+function inPlayLivingPlayerOperativeIds(){{return state.survivors||[];}}
+{helper}
+{evaluators}
+const outcomes={{
+  escapeIncomplete:missionOutcomeEvaluators.escape({{}},{{escapedIds:[]}},'end-turning-point'),
+  sabotageIncomplete:missionOutcomeEvaluators.sabotage({{required:7}},{{completedFeatureIds:Array(6)}},'end-turning-point'),
+  sabotageVictory:missionOutcomeEvaluators.sabotage({{required:7}},{{completedFeatureIds:Array(7)}},'immediate'),
+  transponderIncomplete:missionOutcomeEvaluators.transponder({{}},{{escaped:false}},'end-turning-point'),
+  transponderVictory:missionOutcomeEvaluators.transponder({{}},{{escaped:true}},'immediate'),
+  destructionIncomplete:missionOutcomeEvaluators.destruction({{required:20}},{{destruction:19}},'end-turning-point'),
+  destructionVictory:missionOutcomeEvaluators.destruction({{required:20}},{{destruction:20}},'immediate'),
+  scoutIncomplete:missionOutcomeEvaluators.scout({{required:3}},{{scoutedRoomIds:Array(2)}},'end-turning-point'),
+  scoutVictory:missionOutcomeEvaluators.scout({{required:3}},{{scoutedRoomIds:Array(3)}},'immediate')
+}};
+state.survivors=['one'];
+outcomes.regroupIncomplete=missionOutcomeEvaluators.regroup({{}},{{operativeChecks:{{one:{{inDropZone:false,outsideNpoControl:true,nearPlayer:true}}}}}},'end-turning-point');
+outcomes.regroupVictory=missionOutcomeEvaluators.regroup({{}},{{operativeChecks:{{one:{{inDropZone:true,outsideNpoControl:true,nearPlayer:true}}}}}},'end-turning-point');
+state.survivors=[];
+outcomes.regroupEmpty=missionOutcomeEvaluators.regroup({{}},{{operativeChecks:{{}}}},'end-turning-point');
+process.stdout.write(JSON.stringify(outcomes));
+"""
+    completed = subprocess.run(
+        ["node", "-e", script], cwd=ROOT, check=True, capture_output=True, text=True
+    )
+    assert json.loads(completed.stdout) == {
+        "escapeIncomplete": None,
+        "sabotageIncomplete": None,
+        "sabotageVictory": "victory",
+        "transponderIncomplete": None,
+        "transponderVictory": "victory",
+        "destructionIncomplete": None,
+        "destructionVictory": "victory",
+        "scoutIncomplete": None,
+        "scoutVictory": "victory",
+        "regroupIncomplete": None,
+        "regroupVictory": "victory",
+        "regroupEmpty": None,
+    }
 
 
 def test_elimination_defeat_precedes_regroup_and_other_objectives():
