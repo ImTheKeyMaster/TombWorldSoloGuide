@@ -1300,7 +1300,8 @@ document.addEventListener('touchend',function(e){
     merged.journal=Array.isArray(raw.journal)?raw.journal.filter(isRecord):[];
     const importedFinalResolution=isRecord(raw.finalResolution)?raw.finalResolution:{};
     merged.finalResolution={
-      pending:Boolean(importedFinalResolution.pending),
+      // Pending resolution represented the retired four-Turning-Point fallback.
+      pending:false,
       turningPointEnded:Boolean(importedFinalResolution.turningPointEnded),
       cleanupComplete:Boolean(importedFinalResolution.cleanupComplete),
       battleEndHookComplete:Boolean(importedFinalResolution.battleEndHookComplete),
@@ -3375,7 +3376,6 @@ document.addEventListener('touchend',function(e){
       requestAnimationFrame(()=>{resetOutcomeScroll();$('#reviewCompletedMission')?.focus({preventScroll:true});});
       return;
     }
-    if(state.finalResolution?.pending)state.finalResolution.pending=false;
     if(state.tab==='play') renderPlay();
     else if(state.tab==='mission'){renderMission();bindMissionProgressControls();}
     else if(state.tab==='roster') renderRoster();
@@ -9586,7 +9586,7 @@ function showPlayerActivation(){
   }
   function showCorrectDeadlyRecord(){showModal('Correct Location or Encounter',`<p>Location corrections can be recorded directly. To correct a committed encounter, record a note; damage, movement, dice, and model placement are not silently reversed.</p><div class="field"><label for="deadlyCorrection">Correction note</label><textarea id="deadlyCorrection" rows="4" maxlength="300"></textarea></div><label class="check-row"><input id="confirmPhysicalCorrection" type="checkbox"><span>I understand physical tabletop effects may require manual reversal.</span></label><div class="wizard-actions"><button class="btn ghost" id="backDeadlyPanel">Cancel</button><button class="btn danger" id="confirmDeadlyCorrection">Record Correction</button></div>`);$('#backDeadlyPanel').onclick=showDeadlyEncountersPanel;$('#confirmDeadlyCorrection').onclick=()=>{const note=$('#deadlyCorrection').value.trim();if(!note||!$('#confirmPhysicalCorrection').checked){showToast('Enter a note and confirm the tabletop warning.');return;}state.deadlyEncountersState.resolutionHistory.push({type:'correction',note,time:new Date().toISOString()});log(`Deadly Encounters correction: ${note}`);save();showDeadlyEncountersPanel();};}
   function isNewGameSetupActive(){return state.screen==='setup';}
-  function isBattleComplete(){return state.screen==='game'&&Boolean(state.gameEnd||state.finalResolution?.pending);}
+  function isBattleComplete(){return state.screen==='game'&&Boolean(state.gameEnd);}
   function isGuidedPlayActive(){return state.screen==='game'&&!isBattleComplete();}
   function canOpenHelp(){return isNewGameSetupActive()||isGuidedPlayActive()||isBattleComplete();}
   function openHelpFromGameMenu(){

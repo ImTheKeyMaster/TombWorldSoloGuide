@@ -101,7 +101,7 @@ class BattleCompleteCleanupTests(unittest.TestCase):
         self.assertIn('BATTLE COMPLETE', completed)
         self.assertIn('MISSION ${resultLabel.toUpperCase()}', completed)
         self.assertNotIn("MAX_TURNING_POINTS", render)
-        self.assertNotIn("BATTLE COMPLETE", completed.split("if(state.finalResolution?.pending)", 1)[-1])
+        self.assertNotIn("finalResolution?.pending", render)
 
     def test_11_application_displays_version_757(self):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
