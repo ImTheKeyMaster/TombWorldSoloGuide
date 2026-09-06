@@ -12,6 +12,9 @@ class PersistentNpoReadinessV9250Tests(unittest.TestCase):
         return APP.split(start, 1)[1].split(end, 1)[0]
 
     def test_scout_room_threat_drop_preserves_mixed_persistent_states(self):
+        create_npo = "function createNpo(type,name=`${type} ${state.roster.length+1}`,options={}){" + self.source(
+            "function createNpo(type,name=`${type} ${state.roster.length+1}`,options={}){", "function commitPvpNpoReplacement"
+        )
         set_threat = "function setThreat(amount,reason){" + self.source(
             "function setThreat(amount,reason){", "function escapeHtml"
         )
@@ -24,11 +27,15 @@ const state={{
   threat:3,npoActivated:1,activeNpoId:null,lastActivation:null,
   activationFinishedForTurningPoint:{{player:false,npo:false}},
   gradeMilestoneSequence:0,gradeMilestone:null,journal:[],
-  roster:Array.from({{length:4}},(_,index)=>({{
-    id:`room-1-${{index+1}}`,wounds:7,battlefieldState:'deployed',deployed:true,
-    ready:true,dormant:false
-  }}))
+  roster:[]
 }};
+const TOMB_CRAWLER_TYPE='Tomb Crawler',ISOLATOR_LOADOUT='isolator';
+let nextNpoId=1;
+function npoDefinition(type){{return {{name:type,move:5,apl:2,save:3,wounds:7,baseSize:32,compatibilityBehavior:'test',compatibilityAttack:{{}},defaultWeaponId:'weapon'}};}}
+function lowestAvailableNpoInstances(){{return [{{id:`npo-${{nextNpoId++}}`,displayNumber:nextNpoId-1}}];}}
+function npoWeapon(definition,weaponId){{return {{id:weaponId||definition.defaultWeaponId}};}}
+function npoAttackProfiles(){{return [];}}
+function canonicalAttackProfile(profile){{return profile||{{}};}}
 const GRADE_CONFIG=[
   {{grade:0,name:'Dormant',minThreat:0,maxThreat:0}},
   {{grade:1,name:'Stirring',minThreat:1,maxThreat:5}},
@@ -41,9 +48,11 @@ function gradeConfig(grade){{return GRADE_CONFIG.find(config=>config.grade===Num
 function threatLabel(){{return gradeConfig(threatGrade()).name;}}
 function log(text){{state.journal.unshift({{time:'test',text}});state.journal=state.journal.slice(0,150);}}
 {tracker_helpers}
+{create_npo}
 {set_threat}
 
-log('4 Necrons were generated for Eligible room 1. They are Ready immediately.');
+for(let index=0;index<4;index++)state.roster.push(createNpo('Necron Warrior',`Room 1 ${{index+1}}`));
+assert(state.roster.every(npo=>npo.ready&&!npo.dormant));
 state.roster[0].ready=false;
 state.roster[0].wounds=0;
 state.roster[0].deployed=false;
@@ -54,20 +63,14 @@ assert.deepEqual(state.roster.slice(1,4).map(npo=>[npo.ready,npo.dormant]),[
   [true,false],[true,false],[true,false]
 ]);
 
-for(let index=0;index<2;index++)state.roster.push({{
-  id:`room-4-${{index+1}}`,wounds:7,battlefieldState:'deployed',deployed:true,
-  ready:false,dormant:true
-}});
-log('2 Necrons were generated for Eligible room 4. Threat is 0, so they are Dormant.');
+for(let index=0;index<2;index++)state.roster.push(createNpo('Necron Warrior',`Room 4 ${{index+1}}`));
 
 const statuses=trackerNpos().map(npo=>npoTrackerStatus(npo).status);
 assert.equal(statuses.filter(status=>status==='READY').length,3);
 assert.equal(statuses.filter(status=>status==='DORMANT').length,2);
 assert.equal(statuses.filter(status=>status==='ELIMINATED').length,1);
-assert.deepEqual(readyNpos().map(npo=>npo.id),['room-1-2','room-1-3','room-1-4']);
-assert(state.journal.some(entry=>entry.text.includes('4 Necrons were generated')&&entry.text.includes('Ready immediately')));
+assert.deepEqual(readyNpos().map(npo=>npo.id),['npo-2','npo-3','npo-4']);
 assert(state.journal.some(entry=>entry.text==='Threat 3 → 0: Scout Room'));
-assert(state.journal.some(entry=>entry.text.includes('2 Necrons were generated')&&entry.text.includes('Dormant')));
 assert(!state.journal.some(entry=>entry.text.includes('Dormant NPOs became Ready')));
 """
         result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
@@ -96,7 +99,7 @@ assert(!state.journal.some(entry=>entry.text.includes('Dormant NPOs became Ready
         self.assertIn("filter(npo=>!npo.dormant)", ready_step)
         self.assertNotIn("npo.dormant=", ready_step)
 
-        awakening = self.source("async function performAwakenRoom(roomId)", "function continueAfterAwakenRoom")
+        awakening = self.source("async function performAwakenRoom(roomId)", "async function performAuspexCalibration()")
         self.assertIn("ready:state.threat>0,dormant:state.threat===0", awakening)
         self.assertIn("They are Ready immediately", awakening)
         self.assertIn("they are Dormant", awakening)
