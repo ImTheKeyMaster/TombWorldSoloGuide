@@ -84,7 +84,7 @@ class BattleCompleteCleanupTests(unittest.TestCase):
         all_renderers = APP[APP.index("const missionProgressRenderers"):APP.index("function missionProgressHtml")]
         for control in (
             'data-mission-feature', 'id="transponderEscape"',
-'data-awaken-room', 'data-scout-room',
+'data-confirm-room-placement', 'data-correct-scout-room',
             'data-regroup-check',
         ):
             self.assertIn(control, all_renderers)
@@ -95,12 +95,13 @@ class BattleCompleteCleanupTests(unittest.TestCase):
         self.assertNotIn("save()", body)
         self.assertNotIn("updateMissionProgress", body)
 
-    def test_10_victory_defeat_and_turning_point_limit_are_unchanged(self):
+    def test_10_battle_complete_requires_a_committed_mission_result(self):
         render = function_body("renderGame")
-        self.assertIn("victory?'victory':'defeat'", render)
-        self.assertIn("MISSION ${resultLabel.toUpperCase()}", render)
-        self.assertIn("Turning Point ${MAX_TURNING_POINTS} has ended.", render)
-        self.assertIn("const MAX_TURNING_POINTS = 4;", APP)
+        completed = render[render.index("if(state.gameEnd){"):render.index("if(state.tab==='play')")]
+        self.assertIn('BATTLE COMPLETE', completed)
+        self.assertIn('MISSION ${resultLabel.toUpperCase()}', completed)
+        self.assertNotIn("MAX_TURNING_POINTS", render)
+        self.assertNotIn("finalResolution?.pending", render)
 
     def test_11_application_displays_version_757(self):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
