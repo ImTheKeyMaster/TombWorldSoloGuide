@@ -26,8 +26,8 @@ class RemediationPr8MissionTests(unittest.TestCase):
         self.assertEqual(self.by_type["scout"]["missionEngine"]["required"], 3)
 
     def test_mission_one_waits_for_every_operative_and_requires_half_to_escape(self):
-        evaluator = self.source("escape:(engine,progress,timing)=>{", "sabotage:(engine,progress,timing)")
-        self.assertIn("departed.size<total", evaluator)
+        evaluator = self.source("function shiftingLabyrinthResult", "function missionOutcomeExplanation")
+        self.assertIn("removed.size<total", evaluator)
         self.assertIn("Math.ceil(total/2)", evaluator)
         self.assertNotIn("activeNpos", evaluator)
         self.assertNotIn("failedExitIds", self.app)
@@ -72,7 +72,7 @@ class RemediationPr8MissionTests(unittest.TestCase):
 
     def test_mission_six_victory_is_only_evaluated_at_end_of_turning_point(self):
         evaluator = self.source("regroup:(engine,progress,timing)=>{", "  };\n\n  function missionOutcome")
-        self.assertIn("['end-turning-point','turning-point-limit'].includes(timing)", evaluator)
+        self.assertIn("timing!=='end-turning-point'", evaluator)
         for predicate in ("inDropZone", "outsideNpoControl", "nearPlayer"):
             self.assertIn(predicate, evaluator)
         self.assertIn("checkGameEnd('end-turning-point')", self.app)

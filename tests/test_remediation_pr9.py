@@ -19,7 +19,7 @@ class RemediationPr9StabilizationTests(unittest.TestCase):
         for helper in ("isRecord", "boundedInteger", "normalizeIdList"):
             self.assertIn(f"const {helper}", self.app)
         normalize = self.source("function normalizeState(raw)", "function npoDefinition")
-        self.assertIn("merged.turningPoint=Math.min(boundedInteger(raw.turningPoint,0,999),MAX_TURNING_POINTS)", normalize)
+        self.assertIn("merged.turningPoint=boundedInteger(raw.turningPoint,0,999)", normalize)
         self.assertIn("merged.threat=boundedInteger(raw.threat,0,15)", normalize)
 
     def test_corrupted_top_level_and_npo_data_recover_safely(self):

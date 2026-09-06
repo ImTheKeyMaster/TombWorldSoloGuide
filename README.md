@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v9.2.53
+# Tomb World Battle Guide v9.2.54
+
+## v9.2.54
+
+**Version 9.2.54**
+
+### Mission-Driven Tomb World Battle Endings
+
+- Remove the obsolete automatic four-Turning-Point battle limit: incomplete Tomb World Joint Ops missions now continue through Turning Point 5 and later until their mission-specific victory or defeat condition is met.
+- Correct Shifting Labyrinth so it resolves only after every starting player operative has been removed from the killzone and uses `Math.ceil(starting operatives / 2)` for its half-or-more escape threshold.
+- Preserve normal Ready, mission Ready-hook, initiative, Tomb World Event, reinforcement, and Firefight processing beyond Turning Point 4, and preserve Turning Point values above 4 when saving and loading.
+- Replace the invalid v7.5.6 limit expectations with regression coverage for mission-driven outcomes and late Turning Points.
 
 ## v9.2.53
 
