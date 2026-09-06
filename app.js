@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.51';
+  const APP_VERSION = '9.2.52';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5391,7 +5391,7 @@ function showPlayerActivation(){
     return `${profile.dice} dice · ${profile.hit}+`;
   }
 
-  function showSharedCombatResolutionScreen({title,attackerName,defenderName,attackType,weaponName,attackLabel='',defenseLabel,cancelId,continueId,extraHtml='',detailsHtml=''}){
+  function showSharedCombatResolutionScreen({title,attackerName,defenderName,attackType,weaponName,attackLabel='',defenseLabel,cancelId,continueId,guidanceHtml='',rulesHtml='',extraHtml='',detailsHtml=''}){
     showModal(title,`
       <section class="dedicated-combat-screen" aria-label="Combat resolution screen">
         <div class="damage-summary combat-participants compact-combat-profile combat-summary-grid${attackLabel?' has-attack-profile':''}">
@@ -5402,6 +5402,8 @@ function showPlayerActivation(){
           ${attackLabel?`<div><small>Attack</small><strong class="combat-summary-value">${escapeHtml(attackLabel)}</strong></div>`:''}
           <div><small>Defense</small><strong class="combat-summary-value">${escapeHtml(defenseLabel)}</strong></div>
         </div>
+        ${guidanceHtml}
+        ${rulesHtml}
         ${extraHtml}
         <div id="automaticCombat" class="combat-results combat-dice-area" aria-live="polite"></div>
         <div id="combatResults" class="combat-results" aria-live="polite"></div>
@@ -7089,8 +7091,15 @@ function showPlayerActivation(){
     const participant=fight[role],profile=participant.profile,dice=participant.attackDice.map(fightDiePresentation);
     return `<section class="combat-stage fight-roll-pool" aria-label="${escapeHtml(participant.label)} Fight roll"><small>${escapeHtml(participant.label)}</small><strong>${escapeHtml(profile.name)} · ${profile.dice} dice · ${profile.hit}+ · ${profile.normal}/${profile.crit}</strong><div class="dice-row ${animate?'animated-roll':'settled'}" data-fight-roll-dice="${role}">${dice.map(die=>animate?rollingDieHtml():dieHtml(die)).join('')}</div>${attackRuleAppliedHtml(dice)}${severeAppliedHtml(dice)}<div class="fight-roll-result"><small>RESULT</small>${fightRollSummary(dice)}</div></section>`;
   }
+  function fightWeaponRulesHtml(fight){
+    return ['attacker','defender'].map(role=>{
+      const participant=fight[role];
+      const summaries=weaponRuleSummaries(participant.profile).map(summary=>`<li>${escapeHtml(summary.label)}</li>`).join('');
+      return summaries?`<section class="weapon-rules"><h3>Weapon Rules · ${escapeHtml(participant.label)}</h3><ul>${summaries}</ul></section>`:'';
+    }).join('');
+  }
   function renderFightRoll(fight,{animate=false}={}){
-    showModal('Fight Roll',`<div class="fight-roll"><p>The Fight dice are rolled. Review each participant’s retained results before resolving successes.</p>${fightRollParticipantHtml(fight,'attacker',animate)}${fightRollParticipantHtml(fight,'defender',animate)}<div class="wizard-actions"><button class="btn primary" id="continueFightResolution" ${animate?'disabled':''}>Resolve Strike or Block</button></div></div>`);
+    showModal('Fight Roll',`<div class="fight-roll"><p>The Fight dice are rolled. Review each participant’s retained results before resolving successes.</p>${fightWeaponRulesHtml(fight)}${fightRollParticipantHtml(fight,'attacker',animate)}${fightRollParticipantHtml(fight,'defender',animate)}<div class="wizard-actions"><button class="btn primary" id="continueFightResolution" ${animate?'disabled':''}>Resolve Strike or Block</button></div></div>`);
     const continueButton=$('#continueFightResolution');
     continueButton.onclick=renderFightResolution;
     if(animate)settleAnimatedDice(['attacker','defender'].map(role=>({row:$(`[data-fight-roll-dice="${role}"]`,modal),dice:fight[role].attackDice.map(fightDiePresentation)})),()=>{if(continueButton.isConnected)continueButton.disabled=false;});
@@ -7482,6 +7491,7 @@ function showPlayerActivation(){
       attackType,weaponName:weapon.name,attackLabel:attackType==='shoot'?combatAttackLabel(profile):'',
       defenseLabel:`${Math.max(0,3-profile.ap)} dice · ${target.save}+`,
       cancelId:'cancelPendingAttack',continueId:'continuePendingAttack',
+      rulesHtml:weaponRulesHtml(profile),
       detailsHtml:weaponRuleSequenceProgress(sequence,targetName,`${targetSide==='player'?playerCurrentWounds(targetId):projectedNpoWounds(targetId,stage)}/${target.maxWounds||playerDefinition(targetId)?.wounds||0} wounds`)
     });
 
@@ -8730,8 +8740,11 @@ function showPlayerActivation(){
     const screen=showSharedCombatResolutionScreen({
       title:'Resolve Combat',attackerName:npoName(n),defenderName:targetName,attackType,
       weaponName:initialProfile?.name||'—',attackLabel:initialProfile?combatAttackLabel(initialProfile):'—',defenseLabel:`3 dice · ${target.save||3}+`,
-      cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',extraHtml:`<div id="npoCombatGuidance">${guidance}</div>${profileControl}${willBeDone}${enforcerQuestion}`,
-      detailsHtml:`${weaponRuleSequenceProgress(sequence,targetName,`${target.wounds}/${target.maxWounds||playerDefinition(target.id)?.wounds||0} wounds`)}<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`
+      cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',
+      guidanceHtml:`<div id="npoCombatGuidance">${guidance}</div>`,
+      rulesHtml:`<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`,
+      extraHtml:`${profileControl}${willBeDone}${enforcerQuestion}`,
+      detailsHtml:weaponRuleSequenceProgress(sequence,targetName,`${target.wounds}/${target.maxWounds||playerDefinition(target.id)?.wounds||0} wounds`)
     });
     const cancel=()=>{
       if(combatTimer)combatTimer();

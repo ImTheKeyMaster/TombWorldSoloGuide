@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v9.2.51
+# Tomb World Battle Guide v9.2.52
+
+## v9.2.52
+
+**Version 9.2.52**
+
+### Weapon Rules Before Combat Resolution
+
+- Resolve Combat now presents contextual Weapon Guidance first, followed by all applicable Weapon Rules, before showing attack and defense dice.
+- Automatic rule result cards, including Dimensional Banishment, remain after the combat dice at their existing resolution point.
+- The shared presentation applies consistently to Player and NPO shooting, while Fight rolls now show both combatants’ applicable weapon rules before their dice, without changing dice, damage, trigger timing, persistence, or weapon-rule execution.
 
 ## v9.2.51
 
