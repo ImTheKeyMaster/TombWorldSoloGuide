@@ -18,8 +18,9 @@ class DirectInitiativeActivationTests(unittest.TestCase):
         self.assertIn("state.turningPoint===1", initiative)
         self.assertIn("missionFirstInitiative()", initiative)
         ready = self.function_source("processReadyStep", "applyMissionReadyHooks")
-        self.assertIn("npo.dormant=dormant", ready)
-        self.assertIn("npo.ready=!dormant", ready)
+        self.assertIn("filter(npo=>!npo.dormant)", ready)
+        self.assertIn("npo.ready=true", ready)
+        self.assertNotIn("npo.dormant=", ready)
 
     def test_strategy_completion_uses_resolved_side_without_reroll(self):
         binding = self.function_source("bindPlay", "startTurningPoint")

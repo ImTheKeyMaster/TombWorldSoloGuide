@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.49';
+  const APP_VERSION = '9.2.50';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2683,8 +2683,6 @@ document.addEventListener('touchend',function(e){
     if(before===0&&state.threat>0){
       activeNpos().filter(npo=>npo.dormant).forEach(npo=>{npo.dormant=false;npo.ready=true;});
       if(readyNpos().length){state.activationFinishedForTurningPoint.npo=false;log('Threat is no longer 0. Dormant NPOs became Ready.');}
-    }else if(state.threat===0){
-      activeNpos().forEach(npo=>{npo.dormant=true;npo.ready=false;});
     }
     const afterGrade=threatGrade();
     if(state.threat!==before) log(`Threat ${before} → ${state.threat}: ${reason}`);
@@ -4435,8 +4433,7 @@ document.addEventListener('touchend',function(e){
 
   function processReadyStep(){
     recycleUsedEvents();
-    const dormant=state.threat===0;
-    activeNpos().forEach(npo=>{npo.dormant=dormant;npo.ready=!dormant;});
+    activeNpos().filter(npo=>!npo.dormant).forEach(npo=>{npo.ready=true;});
     completeStrategyStage('ready','mission-ready-hooks');
   }
 

@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.49
+# Tomb World Battle Guide v9.2.50
+
+## v9.2.50
+
+**Version 9.2.50**
+
+- Preserve each deployed NPO's Ready or Dormant state when Threat decreases, including after Scout Room reduces Threat to 0.
+- Continue to awaken Dormant NPOs when Threat rises from 0 and to create newly generated NPOs as Dormant while Threat is 0.
+- Keep the Activation Tracker, status-bar Ready count, activation selector, and Battle Journal aligned with persistent per-NPO readiness.
 
 ## v9.2.49
 
