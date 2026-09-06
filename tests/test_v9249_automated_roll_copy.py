@@ -86,6 +86,7 @@ def test_starting_npo_copy_names_the_guide_and_formulas_are_unchanged():
         data = mission(number, slug)
         assert data["startingNpos"]["formula"] == formula
         assert f"Guide automatically generates the {formula} starting NPO roster" in setup(data)
+    assert "The Guide automatically generated the starting ${escapeHtml(opponentSingularLabel())} roster" in APP
 
 
 def test_mission_dice_operations_and_comparisons_are_unchanged():
@@ -154,3 +155,7 @@ def test_other_automated_reference_rules_name_the_guide():
     for expected_copy in automated_rules:
         assert expected_copy in APP
     assert "Close one breach and up to that many open hatchways" in APP
+    action_copy = APP[APP.index("function npoSpecialActionDescription") : APP.index("function resolveNpoSpecialAction")]
+    assert "The Guide automatically rolls 2D6 separately for each and resolves the damage" in action_copy
+    assert "The Guide automatically rolls 3D3 and restores that many wounds" in action_copy
+    assert "<li>Roll 2D6 separately for each." not in action_copy
