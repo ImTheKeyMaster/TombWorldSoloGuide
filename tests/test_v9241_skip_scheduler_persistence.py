@@ -26,7 +26,7 @@ def resolve_next(*, player_finished, npo_finished, player_remaining, npo_remaini
 
 
 def test_release_is_v9241_and_finished_state_is_backward_compatible():
-    assert CURRENT_APP_VERSION == ".".join(("9", "2", str(40 + 1)))
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 41)
     initial = source("const initialState", "const loadedSave")
     normalizer = source("function normalizeState", "function npoDefinition")
     assert "activationFinishedForTurningPoint:{player:false,npo:false}" in initial

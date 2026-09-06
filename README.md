@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v9.2.52
+# Tomb World Battle Guide v9.2.53
+
+## v9.2.53
+
+**Version 9.2.53**
+
+### Activation Flow Regression Fixes
+
+- Restore Skip Remaining Activations on clean activation cards by clearing completed combat, dice, mission-action, weapon-rule, Fight, and Hot transaction state when an activation finishes.
+- Automatically begin the activation when exactly one player operative remains Ready, while retaining the existing picker when multiple operatives are available.
+- Preserve the existing activation scheduler, side-specific Skip behavior, transaction-safety guards, save key, and Scout Sub-Crypt activation behavior.
 
 ## v9.2.52
 
