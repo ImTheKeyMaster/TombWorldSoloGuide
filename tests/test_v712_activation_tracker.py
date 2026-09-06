@@ -72,12 +72,12 @@ console.log(JSON.stringify({{rows:trackerNpos().map(npo=>({{id:npo.id,...npoTrac
         roster[0]["ready"] = False
         self.assertEqual([r["status"] for r in self.run_tracker_helpers(roster, npo_activated=1)], ["ACTIVATED", "READY"])
 
-    def test_player_activation_does_not_classify_an_npo_as_activated(self):
+    def test_tracker_uses_individual_ready_state_not_global_activation_count(self):
         roster = self.roster(1)
         roster[0]["ready"] = False
-        self.assertEqual([r["status"] for r in self.run_tracker_helpers(roster)], ["READY", "READY"])
+        self.assertEqual([r["status"] for r in self.run_tracker_helpers(roster)], ["ACTIVATED", "READY"])
         resolver = self.source("function npoTrackerStatus(npo)", "function livingPlayerOperativeCount")
-        self.assertIn("state.npoActivated>0", resolver)
+        self.assertNotIn("state.npoActivated", resolver)
         self.assertNotIn("state.activationNumber>0", resolver)
 
     def test_tracker_uses_filtered_sorted_copy_and_leaves_gameplay_selection_order(self):

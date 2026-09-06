@@ -60,14 +60,14 @@ class RemediationPr3Tests(unittest.TestCase):
         self.assertIn("livingImportedPlayers", normalize)
         self.assertIn("normalizeSarcophagusControllers(raw.missionReadyContext.sarcophagusControllers,livingImportedPlayers)", normalize)
 
-    def test_dormant_npos_cannot_ready_at_threat_zero(self):
+    def test_dormant_npos_only_ready_after_explicit_threat_increase(self):
         ready = self.function_source("processReadyStep", "applyMissionReadyHooks")
-        self.assertIn("npo.dormant=dormant", ready)
-        self.assertIn("npo.ready=!dormant", ready)
+        self.assertIn("filter(npo=>!npo.dormant)", ready)
+        self.assertNotIn("npo.dormant=", ready)
         transition = self.function_source("setThreat", "escapeHtml")
         self.assertIn("before===0&&state.threat>0", transition)
         self.assertIn("npo.dormant=false;npo.ready=true", transition)
-        self.assertIn("npo.dormant=true;npo.ready=false", transition)
+        self.assertNotIn("npo.dormant=true", transition)
         self.assertIn("filter(n => n.ready&&!n.dormant)", self.app)
 
     def test_mission_initiative_and_later_rolls_precede_event(self):
