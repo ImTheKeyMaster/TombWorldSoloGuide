@@ -7094,8 +7094,8 @@ function showPlayerActivation(){
   function fightWeaponRulesHtml(fight){
     return ['attacker','defender'].map(role=>{
       const participant=fight[role];
-      const summaries=weaponRuleSummaries(participant.profile).map(summary=>`<li>${escapeHtml(summary.label)}</li>`).join('');
-      return summaries?`<section class="weapon-rules"><h3>Weapon Rules · ${escapeHtml(participant.label)}</h3><ul>${summaries}</ul></section>`:'';
+      const rules=weaponRulesHtml(participant.profile,{semanticHeading:true});
+      return rules?`<div class="fight-weapon-rules"><strong>${escapeHtml(participant.label)}</strong>${rules}</div>`:'';
     }).join('');
   }
   function renderFightRoll(fight,{animate=false}={}){

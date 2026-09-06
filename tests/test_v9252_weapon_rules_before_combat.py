@@ -41,15 +41,35 @@ process.stdout.write(markup);
     return subprocess.check_output(["node", "-e", script], cwd=ROOT, text=True)
 
 
+def dimensional_banishment_rules_html():
+    handlers = APP[APP.index("const WEAPON_RULE_HANDLERS"):APP.index("const NPO_ACTION_TRANSITIONS")]
+    renderer = "function weaponRulesHtml" + function_source(
+        "function weaponRulesHtml", "function normalizedGuidanceMatchText"
+    )
+    summaries = APP[APP.index("  function normalizedWeaponRuleId"):APP.index("  function createWeaponRuleResolution")]
+    script = f"""
+const console={{warn:()=>{{}}}};
+const escapeHtml=value=>String(value);
+{handlers}
+{renderer}
+{summaries}
+const profile={{rules:['Dimensional Banishment','Dimensional Banishment'],ruleIds:['dimensional-banishment']}};
+process.stdout.write(weaponRulesHtml(profile));
+"""
+    return subprocess.check_output(["node", "-e", script], cwd=ROOT, text=True)
+
+
 def test_shared_shooting_dom_order_places_guidance_and_rules_before_dice_and_results():
+    rules_html = dimensional_banishment_rules_html()
     markup = render_shared_screen(
         '<section data-guidance>Weapon Guidance: Weapon Sentinel</section>',
-        '<section data-rules>Weapon Rules: Dimensional Banishment</section>',
+        f'<div data-rules>{rules_html}</div>',
     )
     assert markup.index("data-guidance") < markup.index("data-rules")
     assert markup.index("data-rules") < markup.index('id="automaticCombat"')
     assert markup.index('id="automaticCombat"') < markup.index('id="combatResults"')
-    assert markup.count("Weapon Rules: Dimensional Banishment") == 1
+    assert markup.count("Dimensional Banishment") == 1
+    assert "Handled automatically." in markup
 
 
 def test_optional_guidance_and_rules_sections_do_not_create_placeholders():
