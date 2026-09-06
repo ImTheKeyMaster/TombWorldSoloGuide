@@ -89,6 +89,8 @@ assert(!state.journal.some(entry=>entry.text.includes('Dormant NPOs became Ready
 
         tracker = self.source("function activationTracker()", "function showPlayerOperativeStatus")
         self.assertIn("npoTrackerStatus(n)", tracker)
+        tracker_status = self.source("function npoTrackerStatus(npo)", "function npoStatus(npo)")
+        self.assertNotIn("state.npoActivated", tracker_status)
 
     def test_threat_and_ready_step_never_demote_a_ready_npo(self):
         threat = self.source("function setThreat(amount,reason)", "function escapeHtml")
