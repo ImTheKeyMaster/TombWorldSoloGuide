@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.52';
+  const APP_VERSION = '9.2.53';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2612,6 +2612,12 @@ document.addEventListener('touchend',function(e){
   }
 
   function advanceAfterActivation(completedSide){
+    state.pendingDice=null;
+    state.combatState=null;
+    state.fightState=null;
+    state.missionActionContext=null;
+    state.weaponRuleResolution=null;
+    state.hotResolution=null;
     return setNextActivation(completedSide==='player'?'npo':'player');
   }
 
@@ -5310,6 +5316,7 @@ function showPlayerActivation(){
     if(active){void resumeCheckpointedGameplayContext();return;}
     const candidates=remainingPlayerOperatives();
     if(!candidates.length){state.playerReady=0;setNextActivation('npo');save();render();return;}
+    if(candidates.length===1){beginPlayerActivation(candidates[0]);return;}
     const options=candidates.map(id=>`<option value="${escapeHtml(id)}">${escapeHtml(playerName(id))}</option>`).join('');
     showModal(`${selectedPlayerTeamName().toUpperCase()} ACTIVATION`,`<p>Choose a Ready operative.</p><div class="field"><label for="humanPlayerSelection">Ready operative</label><select id="humanPlayerSelection" data-dialog-focus><option value="">Select a Ready operative</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmHumanPlayerSelection" disabled>Continue</button></div>`);
     $('#humanPlayerSelection').onchange=()=>{$('#confirmHumanPlayerSelection').disabled=!$('#humanPlayerSelection').value;};

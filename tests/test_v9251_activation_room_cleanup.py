@@ -13,7 +13,7 @@ def section(start, end):
 
 def test_release_surfaces_and_cache_busting_are_v9251():
     expected = CURRENT_APP_VERSION
-    assert tuple(map(int, expected.split("."))) == (9, 2, 50 + 1)
+    assert tuple(map(int, expected.split("."))) >= (9, 2, 51)
     assert f"const APP_VERSION = '{expected}';" in (ROOT / "service-worker.js").read_text()
     index = (ROOT / "index.html").read_text()
     assert f'<div class="version">V{expected}</div>' in index

@@ -17,7 +17,7 @@ def source(start, end):
 
 
 def test_release_surfaces_keep_save_key_and_schema_unchanged():
-    assert CURRENT_APP_VERSION == ".".join(("9", "2", str(40 + 1)))
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 41)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 10
