@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.50
+# Tomb World Battle Guide v9.2.51
+
+## v9.2.51
+
+**Version 9.2.51**
+
+- Show only each canonical room name on the filtered Scout Sub-Crypt awakened-room selection buttons, without the redundant Unopened status.
+- Remove generic Other Damage bookkeeping from the operative activation guide and pending action-completion dialogs.
+- Keep roster wound controls, action transactions, Scout Sub-Crypt awakening, NPO generation, and persistent readiness behavior unchanged.
 
 ## v9.2.50
 

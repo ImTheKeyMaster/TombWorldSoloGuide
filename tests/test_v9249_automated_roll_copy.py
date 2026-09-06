@@ -31,8 +31,8 @@ def action(data, action_id):
 
 
 def test_release_version_surfaces_are_9249():
-    expected = ".".join(map(str, (9, 2, 49)))
-    assert CURRENT_APP_VERSION == expected
+    expected = CURRENT_APP_VERSION
+    assert tuple(map(int, expected.split("."))) >= (9, 2, 49)
     assert f"const APP_VERSION = '{expected}';" in (ROOT / "service-worker.js").read_text()
     assert f'<div class="version">V{expected}</div>' in (ROOT / "index.html").read_text()
     assert (ROOT / "README.md").read_text().startswith(

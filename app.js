@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.50';
+  const APP_VERSION = '9.2.51';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3585,7 +3585,7 @@ document.addEventListener('touchend',function(e){
     if(!pending)return continueAfterRoomAwakeningBookkeeping();
     if(!rooms.length){state.missionState.pendingAwakening=null;save();return continueAfterRoomAwakeningBookkeeping();}
     const question=pending.source==='first-entry'?'WHICH ROOM WAS ENTERED FOR THE FIRST TIME?':'SELECT AWAKENED ROOM';
-    const choices=rooms.map(room=>`<button type="button" class="btn secondary big-action" data-select-awakened-room="${escapeHtml(room.id)}">${escapeHtml(room.label.toUpperCase())}<small>Unopened</small></button>`).join('');
+    const choices=rooms.map(room=>`<button type="button" class="btn secondary big-action" data-select-awakened-room="${escapeHtml(room.id)}">${escapeHtml(room.label.toUpperCase())}</button>`).join('');
     showModal(question,`<p>Select the eligible room that was first ${pending.source==='first-entry'?'entered':'opened'}.</p><div class="human-npo-action-list">${choices}</div><div class="wizard-actions"><button class="btn ghost" id="cancelPendingAwakening">Back</button></div>`);
     $('#cancelPendingAwakening').onclick=()=>{state.missionState.pendingAwakening=null;save();continueAfterRoomAwakeningBookkeeping();};
     $$('[data-select-awakened-room]',modalBody).forEach(button=>button.onclick=()=>{button.disabled=true;void performAwakenRoom(button.dataset.selectAwakenedRoom);});
@@ -5023,7 +5023,7 @@ document.addEventListener('touchend',function(e){
     return {status:'Available',disabled:false,reason:'Available'};
   }
 
-  function renderHumanActivationShell({title,name,wounds,maxWounds,baseApl,effectiveAp,remainingAp,startingAp,order,loadout,effects=[],completedActions=[],actions,onAction,onEnd,onApplyOtherDamage,onFirstRoomEntry}){
+  function renderHumanActivationShell({title,name,wounds,maxWounds,baseApl,effectiveAp,remainingAp,startingAp,order,loadout,effects=[],completedActions=[],actions,onAction,onEnd,onFirstRoomEntry}){
     const groups=HUMAN_ACTION_GROUPS.map(group=>{
       const items=actions.filter(action=>action.group===group.id);
       if(!items.length)return '';
@@ -5036,45 +5036,11 @@ document.addEventListener('touchend',function(e){
       }).join('')}</div></section>`;
     }).filter(Boolean).join('');
     const history=completedActions.length?`<section class="summary-box human-completed-actions"><strong>Completed Actions</strong><ul>${completedActions.map(action=>`<li>✓ ${escapeHtml(action.summary||action.name)}</li>`).join('')}</ul></section>`:'';
-    const bookkeeping=onApplyOtherDamage||onFirstRoomEntry?`<div class="activation-bookkeeping" aria-label="Activation bookkeeping">${onApplyOtherDamage?`<button type="button" class="btn ghost" id="applyOtherDamage" aria-label="Apply other damage to ${escapeHtml(name)}">Apply Other Damage</button>`:''}${onFirstRoomEntry?'<button type="button" class="btn ghost" id="firstRoomEntry">FIRST ROOM ENTRY</button>':''}</div>`:'';
+    const bookkeeping=onFirstRoomEntry?'<div class="activation-bookkeeping" aria-label="Activation bookkeeping"><button type="button" class="btn ghost" id="firstRoomEntry">FIRST ROOM ENTRY</button></div>':'';
     showModal(title,`<div class="human-activation-shell"><h2>${escapeHtml(name)}</h2><div class="activation-profile-strip" role="status" aria-label="Activation profile"><span>Wounds: ${wounds}/${maxWounds}</span><span><strong>${remainingAp} / ${startingAp} AP remaining</strong></span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${effects.map(effect=>`<span>${escapeHtml(effect)}</span>`).join('')}</div>${bookkeeping}${history}<div class="activation-groups">${groups}</div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="endHumanActivation">End Activation</button></div></div>`,undefined,'human-activation');
     $$('[data-human-action]',modalBody).forEach(button=>button.onclick=()=>onAction(button.dataset.humanAction));
-    if(onApplyOtherDamage)$('#applyOtherDamage').onclick=onApplyOtherDamage;
     if(onFirstRoomEntry)$('#firstRoomEntry').onclick=onFirstRoomEntry;
     $('#endHumanActivation').onclick=onEnd;
-  }
-
-  function canCommitHumanPlayerAction(stage){
-    const activation=activePlayerActivation(),pending=activation?.pendingAction;
-    return Boolean(activation&&pending&&pending.activationId===activation.activationId
-      &&pending.actionId===stage?.humanActionId&&!(activation.completedActionIds||[]).includes(pending.actionId)
-      &&Number.isFinite(pending.cost)&&pending.cost>=0&&pending.cost<=activation.remainingAp);
-  }
-
-  function showApplyOtherDamage({onCancel=renderHumanPlayerActionPicker,onNonlethal=renderHumanPlayerActionPicker,pendingStage=null}={}){
-    const activation=activePlayerActivation();
-    if(!activation)return;
-    const name=playerName(activation.operativeId),wounds=playerCurrentWounds(activation.operativeId);
-    showModal('APPLY OTHER DAMAGE',`<p>Apply external damage to <strong>${escapeHtml(name)}</strong>. This does not cost AP or count as an action.</p><div class="field"><label for="otherDamageAmount">Damage</label><input id="otherDamageAmount" type="number" min="1" max="${wounds}" value="1" inputmode="numeric" aria-label="Damage to apply to ${escapeHtml(name)}"><p class="muted" id="otherDamageValidation" role="alert" aria-live="polite"></p></div><div class="wizard-actions"><button class="btn ghost" id="cancelOtherDamage">Cancel</button><button class="btn primary" id="confirmOtherDamage">Apply Damage</button></div>`);
-    $('#cancelOtherDamage').onclick=onCancel;
-    $('#confirmOtherDamage').onclick=()=>{
-      const button=$('#confirmOtherDamage'),input=$('#otherDamageAmount'),amount=input.valueAsNumber;
-      if(!Number.isInteger(amount)||amount<1||amount>wounds){
-        $('#otherDamageValidation').textContent=`Enter a whole number from 1 to ${wounds}.`;
-        input.focus();return;
-      }
-      if(pendingStage&&!canCommitHumanPlayerAction(pendingStage)){
-        $('#otherDamageValidation').textContent='This action can no longer be completed. Return to the activation guide.';
-        return;
-      }
-      if(button.disabled)return;
-      button.disabled=true;
-      const remaining=adjustPlayerWounds(activation.operativeId,-amount,{activationBookkeeping:true});
-      log(remaining===0?`${name} suffered ${amount} other damage and was incapacitated.`:`${name} suffered ${amount} other damage. ${remaining} wounds remaining.`);
-      if(remaining>0){save();onNonlethal();return;}
-      if(pendingStage)commitHumanPlayerAction(pendingStage,{deferContinuation:true});
-      void completeHumanPlayerActivation();
-    };
   }
 
   function renderHumanPlayerActionPicker(){
@@ -5093,7 +5059,7 @@ document.addEventListener('touchend',function(e){
       effectiveAp:activation.effectiveApl,remainingAp:activation.remainingAp,startingAp:activation.startingAp,
       order:state.playerOperativeStates?.[activation.operativeId]?.order||'Tabletop',loadout,effects,
       completedActions:activation.resolvedActions||[],actions,onAction:selectHumanPlayerAction,
-      onEnd:confirmEndHumanPlayerActivation,onApplyOtherDamage:showApplyOtherDamage,
+      onEnd:confirmEndHumanPlayerActivation,
       onFirstRoomEntry:unawakenedScoutRooms().length?()=>beginRoomAwakeningSelection('first-entry'):null
     });
     renderOperativeStatusPanel(activation.operativeId);
@@ -5161,9 +5127,8 @@ document.addEventListener('touchend',function(e){
   }
 
   function showPendingHumanPlayerActionCompletion(stage,action,descriptions={},completionLabel='Action Complete'){
-    showModal(action.name,`<p>${escapeHtml(descriptions[action.id]||`Confirm ${action.name} is complete.`)}</p><div class="wizard-actions"><button class="btn ghost" id="cancelHumanPlayerAction">Cancel</button><button class="btn secondary" id="pendingActionOtherDamage">Apply Other Damage</button><button class="btn primary" id="commitHumanPlayerAction">${completionLabel}</button></div>`);
+    showModal(action.name,`<p>${escapeHtml(descriptions[action.id]||`Confirm ${action.name} is complete.`)}</p><div class="wizard-actions"><button class="btn ghost" id="cancelHumanPlayerAction">Cancel</button><button class="btn primary" id="commitHumanPlayerAction">${completionLabel}</button></div>`);
     $('#cancelHumanPlayerAction').onclick=cancelCurrentHumanPlayerAction;
-    $('#pendingActionOtherDamage').onclick=()=>showApplyOtherDamage({onCancel:()=>showPendingHumanPlayerActionCompletion(stage,action,descriptions,completionLabel),onNonlethal:()=>showPendingHumanPlayerActionCompletion(stage,action,descriptions,completionLabel),pendingStage:stage});
     $('#commitHumanPlayerAction').onclick=()=>completePlayerActivation(stage);
   }
 
