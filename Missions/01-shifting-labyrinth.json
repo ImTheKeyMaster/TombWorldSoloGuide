@@ -26,7 +26,7 @@
     {
       "name": "Auspex Calibration",
       "timing": "Strategic Gambit in each Turning Point after the first, if no operatives have escaped",
-      "summary": "From Turning Point 2 onward, if no operatives have escaped, the Guide automatically rolls the direction result and, when movement is required, the D3+3 distance. On 1 move the Escape marker left, on 2 leave it in place, and on 3 move it right."
+      "summary": "From Turning Point 2 onward, if no operatives have escaped, the Guide automatically rolls the direction result and the D3+3 distance, then tells you whether and how far to move the Escape marker. On 1 move it left, on 2 leave it in place, and on 3 move it right."
     }
   ],
   "victory": {

@@ -54,7 +54,7 @@ class EventPlacementWordingTests(unittest.TestCase):
     def test_transdimensional_relocation_uses_corrected_random_swap_effect(self):
         definitions = source("const eventDefinitions = {", "const eventDeck = [")
         relocation = next(line for line in definitions.splitlines() if "'transdimensional-relocation':" in line)
-        self.assertIn("Randomly select two Player operatives and swap their positions.", relocation)
+        self.assertIn("The Guide automatically selects two random Player operatives. Swap their positions.", relocation)
         self.assertNotIn("closest to an NPO", relocation)
         self.assertNotIn("placement restrictions", relocation)
 

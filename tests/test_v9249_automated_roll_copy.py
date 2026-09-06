@@ -58,6 +58,7 @@ def test_known_automated_mission_rules_name_the_guide_and_preserve_dice_notation
         assert "Guide automatically" in text
         assert notation in text
     assert "Roll D3:" not in expected["auspex"][0]
+    assert "rolls the direction result and the D3+3 distance" in expected["auspex"][0]
     assert "only one unresolved marker remains" in expected["locate"][0]
     assert "without a roll" in expected["locate"][0]
 
@@ -138,18 +139,18 @@ def test_focused_copy_audit_rejects_old_bare_imperatives():
 
 
 def test_other_automated_reference_rules_name_the_guide():
-    for rule_name in (
-        "Rewards of Annihilation",
-        "Geomantic Disturbance",
-        "Aggressive Defence",
-        "Nanoscarab Beam",
-        "Subjugation Glyphs",
-        "Transdimensional Relocation",
-        "Reanimation Protocols",
-        "Countertemporal Shifting",
-        "Living Metal Flux",
-        "The Maze Reforms",
-    ):
-        marker = f"{rule_name}'" if rule_name == "The Maze Reforms" else rule_name
-        start = APP.index(marker)
-        assert "Guide automatically" in APP[start : start + 900]
+    automated_rules = (
+        "the Guide automatically rolls D3 and restores that many lost wounds",
+        "The Guide automatically rolls 2D6 separately for each selected operative",
+        "the Guide automatically rolls D3 before removal",
+        "The Guide automatically rolls 3D3 and restores that many wounds",
+        "The Guide automatically selects and tests eligible Player operatives",
+        "The Guide automatically selects two random Player operatives",
+        "the Guide automatically rolls one D6. On 4+",
+        "the Guide automatically rolls one D6. On 5+",
+        "the Guide automatically rolls D3 and restores that result plus 2 wounds",
+        "The Guide automatically rolls D3 to determine the maximum number of open hatchways",
+    )
+    for expected_copy in automated_rules:
+        assert expected_copy in APP
+    assert "Close one breach and up to that many open hatchways" in APP
