@@ -129,7 +129,7 @@
     },
     {
       "id": "starting-npos",
-      "label": "Generate 2D3+3 starting NPOs and set each up wholly within NPO territory, spread evenly, with intervening terrain within its control range when viewed from Player’s drop zone.",
+      "label": "The Guide automatically generates the 2D3+3 starting NPO roster. Set those NPOs up wholly within NPO territory, spread evenly, with intervening terrain within their control range when viewed from Player’s drop zone.",
       "stage": "deploy"
     },
     {

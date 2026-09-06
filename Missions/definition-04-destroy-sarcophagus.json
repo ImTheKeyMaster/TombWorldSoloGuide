@@ -23,7 +23,7 @@
     {
       "id": "breachSarcophagus",
       "label": "Breach Sarcophagus",
-      "description": "During a Player operative's activation, it can perform this action while within the sarcophagus's control range. Spend the required AP, roll 2D6, and add the total to Destruction Points.",
+      "description": "During a Player operative's activation, it can perform this action while within the sarcophagus's control range. Spend the required AP; the Guide automatically rolls 2D6 and adds the total to Destruction Points.",
       "oncePer": "activation",
       "availability": {
         "all": [

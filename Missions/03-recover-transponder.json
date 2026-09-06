@@ -29,7 +29,7 @@
     },
     {
       "name": "Locate Item",
-      "summary": "When picking up an unresolved marker, roll D3. The item is found if the result is higher than the number of other markers remaining; otherwise remove that marker."
+      "summary": "When more than one unresolved marker remains, the Guide automatically rolls D3 when Pick Up Marker is performed and resolves whether the transponder is found. It is found if the result is higher than the number of other unresolved markers remaining; otherwise remove that marker. If only one unresolved marker remains, the Guide resolves it automatically without a roll when Pick Up Marker is performed."
     },
     {
       "name": "Escape",
@@ -136,7 +136,7 @@
     },
     {
       "id": "starting-npos",
-      "label": "Generate 2D3+3 starting NPOs and set each up wholly within NPO territory, spread evenly across the rooms containing objective markers, with intervening terrain within its control range when viewed from Player’s drop zone.",
+      "label": "The Guide automatically generates the 2D3+3 starting NPO roster. Set those NPOs up wholly within NPO territory, spread evenly across the rooms containing objective markers, with intervening terrain within their control range when viewed from Player’s drop zone.",
       "stage": "deploy"
     },
     {

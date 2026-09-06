@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v9.2.48
+# Tomb World Battle Guide v9.2.49
+
+## v9.2.49
+
+**Version 9.2.49**
+
+- Clarify that the Guide automatically resolves mission dice for Auspex Calibration, Locate Item, Breach Sarcophagus, Nanoscarab Repair, and Awaken Rooms while the player performs the remaining tabletop movement and placement.
+- Identify the Guide as the generator of starting NPO rosters and Strategy Phase reinforcements, preserving the displayed formulas and tabletop setup responsibilities.
+- Clarify automated Turning Point 2+ initiative ownership while preserving all existing dice, mission, Scout Sub-Crypt, and save behavior.
 
 ## v9.2.48
 

@@ -26,7 +26,7 @@
     {
       "name": "Auspex Calibration",
       "timing": "Strategic Gambit in each Turning Point after the first, if no operatives have escaped",
-      "summary": "Roll D3: move the Escape marker D3+3 inches left on 1, do not move it on 2, or D3+3 inches right on 3."
+      "summary": "From Turning Point 2 onward, if no operatives have escaped, the Guide automatically rolls the direction result and the D3+3 distance, then tells you whether and how far to move the Escape marker. On 1 move it left, on 2 leave it in place, and on 3 move it right."
     }
   ],
   "victory": {
@@ -137,7 +137,7 @@
     },
     {
       "id": "starting-npos",
-      "label": "Generate 2D3+3 starting NPOs and set each up wholly within NPO territory, spread evenly, with intervening terrain within its control range when viewed from Player’s drop zone.",
+      "label": "The Guide automatically generates the 2D3+3 starting NPO roster. Set those NPOs up wholly within NPO territory, spread evenly, with intervening terrain within their control range when viewed from Player’s drop zone.",
       "stage": "deploy"
     },
     {

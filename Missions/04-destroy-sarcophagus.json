@@ -24,12 +24,12 @@
   "rules": [
     {
       "name": "Sarcophagus",
-      "summary": "Treat C1 as an objective marker. Breach performed within its control range adds 2D6 Destruction points instead of normal Breach effects."
+      "summary": "Treat C1 as an objective marker. When Breach Sarcophagus is performed within its control range, the Guide automatically rolls 2D6 and adds the total as Destruction points instead of applying normal Breach effects."
     },
     {
       "name": "Nanoscarab Repair",
       "timing": "Ready step of each Strategy phase",
-      "summary": "Roll D6, subtracting 1 for each player operative controlling the sarcophagus, and remove that many Destruction points, to a minimum of 0."
+      "summary": "During the Ready step, tell the Guide how many player operatives control the sarcophagus. The Guide automatically rolls D6, subtracts 1 for each of those operatives, and removes that many Destruction points, to a minimum of 0."
     }
   ],
   "victory": {
@@ -128,7 +128,7 @@
     },
     {
       "id": "starting-npos",
-      "label": "Generate D3+6 starting NPOs and set each up wholly within NPO territory: place half, rounding down, in the sarcophagus room and spread the remainder across the other rooms.",
+      "label": "The Guide automatically generates the D3+6 starting NPO roster. Set those NPOs up wholly within NPO territory: place half, rounding down, in the sarcophagus room and spread the remainder across the other rooms.",
       "stage": "deploy"
     },
     {

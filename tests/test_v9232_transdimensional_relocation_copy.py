@@ -57,7 +57,7 @@ class TransdimensionalRelocationCopyTests(unittest.TestCase):
     def test_old_rule_copy_is_not_used_for_completed_selection_presentation(self):
         definitions = source("const eventDefinitions = {", "const eventDeck = [")
         renderer = source("function strategyEventHtml", "function activationTracker")
-        self.assertIn("Randomly select two Player operatives and swap their positions.", definitions)
+        self.assertIn("The Guide automatically selects two random Player operatives. Swap their positions.", definitions)
         self.assertNotIn("Randomly select two Player operatives and swap their positions.", renderer)
         self.assertIn("displayDescription", renderer)
 
