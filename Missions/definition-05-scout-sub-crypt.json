@@ -23,7 +23,7 @@
     {
       "id": "awakenRoom",
       "label": "Awaken Room",
-      "description": "Roll D3. Add the current Threat Grade and set up that many NPOs, to a maximum of 5.",
+      "description": "The Guide automatically rolls D3 and generates that result plus the current Threat Grade NPOs, to a maximum of 5. Set the generated NPOs up in the awakened room.",
       "operations": [
         { "type": "requestDiceRoll", "id": "awakenRoll", "dice": { "count": 1, "sides": 3 }, "label": "Awaken Room" }
       ]

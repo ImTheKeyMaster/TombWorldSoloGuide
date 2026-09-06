@@ -32,7 +32,7 @@
     {
       "id": "searchTransponder",
       "label": "Pick Up Marker",
-      "description": "Roll D3 after an operative picks up an unresolved objective marker.",
+      "description": "When more than one unresolved marker remains, the Guide automatically rolls D3 and resolves the search after an operative picks up a marker. The Guide resolves the final unresolved marker automatically without a roll.",
       "apCost": 1,
       "diceExpression": "1D3",
       "comparison": "roll > otherRemainingMarkerCount",

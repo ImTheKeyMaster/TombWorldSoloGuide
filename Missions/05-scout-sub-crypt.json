@@ -25,7 +25,7 @@
   "rules": [
     {
       "name": "Awaken Rooms",
-      "summary": "Excluding Player's drop-zone rooms, the first time each room is opened or entered, set up D3 plus current Threat Grade NPOs, maximum 5, ready with Conceal orders."
+      "summary": "Excluding Player's drop-zone rooms, the first time each room is opened or entered, the Guide automatically rolls D3 and generates that result plus the current Threat Grade NPOs, to a maximum of 5. Set them up ready with Conceal orders."
     },
     {
       "name": "Dormant",
