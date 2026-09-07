@@ -44,6 +44,6 @@
   "hooks": {},
   "completion": { "objectiveId": "escapedOperatives", "operator": ">=", "value": 1, "endsBattle": false, "dialogId": "objectiveComplete" },
   "hud": { "label": "MISSION", "inProgress": { "format": "{value} / {target}" }, "complete": { "format": "✓ TARGET MET" } },
-  "dialogs": { "objectiveComplete": { "title": "ESCAPE TARGET MET", "message": "Continue until every operative has left the killzone." } },
+  "dialogs": { "objectiveComplete": { "title": "ESCAPE TARGET MET", "message": "The mission objective is secured. Continue the battle to extract remaining operatives." } },
   "presentation": { "historyDisplayCount": 5, "showHud": true }
 }
