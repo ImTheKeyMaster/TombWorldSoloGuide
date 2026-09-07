@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v9.2.54
+# Tomb World Battle Guide v9.2.55
+
+## v9.2.55
+
+**Version 9.2.55**
+
+### Dynamically Aligned HUD Labels and Values
+
+- Place all six battle HUD labels in one shared, content-sized Grid row and all six values in one shared value row, so values remain aligned when labels wrap to different line counts.
+- Use CSS subgrid to preserve each label/value pair and the existing Threat and Mission button boxes while allowing the tallest current label to size the row automatically.
+- Remove the portrait label minimum height so the HUD expands for a three-line team name and shrinks again when wider viewports reduce wrapping, without JavaScript measurement or fixed three-line spacing.
 
 ## v9.2.54
 
