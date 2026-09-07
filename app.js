@@ -997,7 +997,7 @@ document.addEventListener('touchend',function(e){
       normalized.escapedIds=normalizeIdList(raw.escapedIds);
       normalized.auspexCalibrations=isRecord(raw.auspexCalibrations)?{...raw.auspexCalibrations}:{};
       normalized.objectiveAchieved=Boolean(raw.objectiveAchieved);
-      normalized.objectiveAcknowledged=Boolean(raw.objectiveAcknowledged||raw.objectiveAchieved);
+      normalized.objectiveAcknowledged=Boolean(raw.objectiveAcknowledged);
     }else if(engine.type==='sabotage'){
       normalized.completedFeatureIds=Array.isArray(raw.completedFeatureIds)
         ? normalizeIdList(raw.completedFeatureIds,engine.features.map(feature=>feature.id))

@@ -38,7 +38,8 @@ def test_escape_target_is_announced_and_logged_once():
 
 def test_escape_target_is_suppressed_only_after_continue_extraction():
     assert "objectiveAcknowledged:false" in APP
-    assert "raw.objectiveAcknowledged||raw.objectiveAchieved" in APP
+    assert "normalized.objectiveAcknowledged=Boolean(raw.objectiveAcknowledged)" in APP
+    assert "raw.objectiveAcknowledged||raw.objectiveAchieved" not in APP
     assert "model?.completed&&!state.missionState.objectiveAcknowledged" in APP
     assert 'id="continueExtraction"' in APP
     assert "state.missionState.objectiveAcknowledged=true" in APP
