@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v9.2.56
+# Tomb World Battle Guide v9.2.57
+
+## v9.2.57
+
+**Version 9.2.57**
+
+### Responsive Mission HUD Values
+
+- Allow textual Mission HUD values such as `OBJECTIVE MET` to wrap naturally at word boundaries when the Mission column is narrow.
+- Keep the shared value row content-sized so all six HUD cells expand together for wrapped values and contract again when the value fits on one line.
+- Preserve compact numeric values, the dynamic label row, and the existing Mission and Threat HUD interactions without JavaScript measurement or fixed two-line spacing.
 
 ## v9.2.56
 

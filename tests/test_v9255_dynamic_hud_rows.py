@@ -2,9 +2,14 @@ import json
 import re
 from pathlib import Path
 
+from versioning import CURRENT_APP_VERSION
+
 ROOT = Path(__file__).resolve().parents[1]
 APP = (ROOT / "app.js").read_text(encoding="utf-8")
 STYLES = (ROOT / "styles.css").read_text(encoding="utf-8")
+INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
+README = (ROOT / "README.md").read_text(encoding="utf-8")
+WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 
 
 def section(source, start, end):
@@ -20,6 +25,8 @@ PORTRAIT_HUD = section(
 )
 HUD_GRID = re.search(r"\.hud\{grid-template-rows:([^}]*)\}", STYLES).group(1)
 HUD_CELL_GRID = re.search(r"\.hud>\.hud-cell\{([^}]*)\}", STYLES).group(1)
+MISSION_CELL = "".join(re.findall(r"\.hud \.mission-hud\{([^}]*)\}", STYLES))
+MISSION_VALUE = re.search(r"\.hud \.mission-hud strong\{([^}]*)\}", STYLES).group(1)
 
 
 def test_two_line_maximum_uses_content_sized_shared_rows():
@@ -41,6 +48,23 @@ def test_three_line_maximum_keeps_all_six_label_value_pairs_in_shared_rows():
 def test_dynamic_shrink_has_no_fixed_label_or_value_track_height():
     assert HUD_GRID.split(";", 1)[0] == "auto auto"
     assert not re.search(r"(?:min-)?height", HUD_GRID + HUD_CELL_GRID)
+
+
+def test_mission_value_wraps_naturally_inside_its_grid_column():
+    assert "min-width:0" in MISSION_CELL
+    assert "min-width:0" in MISSION_VALUE
+    assert "white-space:normal" in MISSION_VALUE
+    assert "overflow-wrap:normal" in MISSION_VALUE
+    assert "word-break:normal" in MISSION_VALUE
+    assert "nowrap" not in MISSION_VALUE
+    assert not re.search(r"(?:overflow:hidden|(?:min-)?height)", MISSION_VALUE)
+
+
+def test_mission_status_stays_unbroken_in_markup_and_numeric_values_are_unchanged():
+    assert "escapeObjectiveMet?'OBJECTIVE MET':objectiveValue" in HUD
+    assert "OBJECTIVE<br" not in HUD
+    assert "OBJECTIVE\\nMET" not in HUD
+    assert "`${model.value} / ${model.target}`" in HUD
 
 
 def test_threat_and_mission_buttons_keep_accessibility_and_interactions():
@@ -68,3 +92,13 @@ def test_deathwatch_and_death_korps_keep_contextual_names_without_team_css():
     assert team_names == {"Deathwatch", "Death Korps"}
     assert "playerSideLabel()" in HUD
     assert all(name.lower() not in STYLES.lower() for name in team_names)
+
+
+def test_v9257_release_surfaces_and_storage_compatibility():
+    assert CURRENT_APP_VERSION == "9.2.57"
+    assert "const APP_VERSION = '9.2.57';" in APP
+    assert "const APP_VERSION = '9.2.57';" in WORKER
+    assert '<div class="version">V9.2.57</div>' in INDEX
+    assert INDEX.count("?v=9.2.57") == 10
+    assert README.startswith("# Tomb World Battle Guide v9.2.57\n\n## v9.2.57")
+    assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
