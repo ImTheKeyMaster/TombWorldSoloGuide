@@ -969,9 +969,14 @@ button.tracker-operative:hover{
 .portrait-break{display:none}
 @media (max-width:600px) and (orientation:portrait){
   .portrait-break{display:inline}
-  .hud small{min-height:2.2em;line-height:1.1}
+  .hud small{line-height:1.1}
   .hud .hud-cell{padding:8px 3px}
 }
+
+/* v9.2.55: dynamically shared HUD label and value rows */
+.hud{grid-template-rows:auto auto;column-gap:1px;row-gap:0}
+.hud>.hud-cell{display:grid;grid-row:span 2;grid-template-rows:subgrid;align-items:start;cursor:default}
+.hud>button.hud-cell{cursor:pointer}
 
 
 /* v2.2.8: read-only Player defense profile */
