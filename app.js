@@ -3405,7 +3405,8 @@ document.addEventListener('touchend',function(e){
     const label=model?.label||'MISSION';
     const transponder=missionEngine()?.type==='transponder'?state.missionState:null;
     const escapeObjectiveMet=missionEngine()?.type==='escape'&&model?.completed&&!state.completed;
-    const value=transponder?(transponder.transponderFound?'TRANSPONDER FOUND':`SEARCH ${transponder.searchSitesResolved||0}/3`):model?(escapeObjectiveMet?'OBJECTIVE MET':model.completed?'COMPLETE':`${model.value} / ${model.target}`):'DETAILS';
+    const objectiveValue=model?(model.completed?'COMPLETE':`${model.value} / ${model.target}`):'DETAILS';
+    const value=transponder?(transponder.transponderFound?'TRANSPONDER FOUND':`SEARCH ${transponder.searchSitesResolved||0}/3`):escapeObjectiveMet?'OBJECTIVE MET':objectiveValue;
     const completeMark=model?.completed?'<span class="mission-complete-mark" aria-hidden="true">✓ </span>':'';
     const status=transponder?transponder.transponderFound?`transponder found, ${transponder.carrierId?`carried by ${playerName(transponder.carrierId)}`:'on battlefield with no carrier'}`:`${transponder.searchSitesResolved||0} of 3 search sites resolved`:model?`${model.value} of ${model.target}${model.completed?', objective complete':''}`:'details';
     const name=model?.name||mission()?.name||'selected mission';
