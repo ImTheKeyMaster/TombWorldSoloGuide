@@ -1380,7 +1380,7 @@ button.tracker-operative:hover{
 .reinforcement-card{margin:18px 0;padding:17px;box-shadow:none}.reinforcement-card h3{margin:6px 0 8px}.reinforcement-card>p{margin:8px 0 0}.reinforcement-pending p{margin:8px 0 0}.reinforcement-deployed+.reinforcement-pending{margin-top:18px}.reinforcement-list{margin:0;padding-left:1.25rem;line-height:1.6}.reinforcement-blocked{margin-top:18px;padding:14px;border-top:1px solid var(--line);border-radius:10px;background:rgba(242,191,114,.06)}.reinforcement-blocked h3{margin-top:0;color:#f2bf72;font-size:.92rem}.reinforcement-blocked p{margin:6px 0 0;color:#f2bf72}
 
 /* Mission objective HUD and reusable dialogs */
-.hud .mission-hud{min-height:44px}.hud .mission-hud strong{white-space:nowrap;text-align:center;font-size:clamp(.68rem,2.2vw,.9rem)}
+.hud .mission-hud{min-height:44px}.hud .mission-hud{min-width:0}.hud .mission-hud strong{min-width:0;white-space:normal;overflow-wrap:normal;word-break:normal;text-align:center;font-size:clamp(.68rem,2.2vw,.9rem)}
 .mission-details{display:grid;gap:16px;min-width:0}
 .mission-details h3,.mission-details h4,.mission-details p{margin:0}
 .mission-details section{display:grid;gap:5px}
