@@ -15,6 +15,7 @@ def test_escape_objective_and_battle_completion_are_separate():
     assert "escaped.size>=requiredEscapes" in result_body
     assert "OBJECTIVE MET" in APP
     assert "escapeObjectiveMet" in APP
+    assert "objective met, battle continues" in APP
 
 
 def test_escape_target_dialog_shows_distinct_counts_and_extraction_copy():

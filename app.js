@@ -3406,9 +3406,9 @@ document.addEventListener('touchend',function(e){
     const transponder=missionEngine()?.type==='transponder'?state.missionState:null;
     const escapeObjectiveMet=missionEngine()?.type==='escape'&&model?.completed&&!state.completed;
     const objectiveValue=model?(model.completed?'COMPLETE':`${model.value} / ${model.target}`):'DETAILS';
-    const value=transponder?(transponder.transponderFound?'TRANSPONDER FOUND':`SEARCH ${transponder.searchSitesResolved||0}/3`):escapeObjectiveMet?'OBJECTIVE MET':objectiveValue;
+    const value=transponder?(transponder.transponderFound?'TRANSPONDER FOUND':`SEARCH ${transponder.searchSitesResolved||0}/3`):(escapeObjectiveMet?'OBJECTIVE MET':objectiveValue);
     const completeMark=model?.completed?'<span class="mission-complete-mark" aria-hidden="true">✓ </span>':'';
-    const status=transponder?transponder.transponderFound?`transponder found, ${transponder.carrierId?`carried by ${playerName(transponder.carrierId)}`:'on battlefield with no carrier'}`:`${transponder.searchSitesResolved||0} of 3 search sites resolved`:model?`${model.value} of ${model.target}${model.completed?', objective complete':''}`:'details';
+    const status=transponder?transponder.transponderFound?`transponder found, ${transponder.carrierId?`carried by ${playerName(transponder.carrierId)}`:'on battlefield with no carrier'}`:`${transponder.searchSitesResolved||0} of 3 search sites resolved`:escapeObjectiveMet?`${model.value} of ${model.target}, objective met, battle continues`:model?`${model.value} of ${model.target}${model.completed?', objective complete':''}`:'details';
     const name=model?.name||mission()?.name||'selected mission';
     return `<button class="hud-cell mission-hud" id="missionHud" type="button" aria-label="Mission Details, ${escapeHtml(name)}, ${escapeHtml(status)}"><small>${escapeHtml(label)}</small><strong>${completeMark}${escapeHtml(value)}</strong></button>`;
   }
