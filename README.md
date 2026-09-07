@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v9.2.55
+# Tomb World Battle Guide v9.2.56
+
+## v9.2.56
+
+**Version 9.2.56**
+
+### Escape Objective and Battle Completion UX
+
+- Distinguish Shifting Labyrinth's minimum escape requirement from the total starting operatives and the operatives still eligible to extract.
+- Show `OBJECTIVE MET` while extraction play continues, reserving `MISSION COMPLETE` for the mission's existing terminal state.
+- Present the escape-target milestone once, log objective achievement once, and continue tracking subsequent escapes without interrupting normal Turning Point progression.
 
 ## v9.2.55
 

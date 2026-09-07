@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.55';
+  const APP_VERSION = '9.2.56';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -959,7 +959,7 @@ document.addEventListener('touchend',function(e){
   ];
 
   const missionStateFactories = {
-    escape:()=>({escapedIds:[],auspexCalibrations:{}}),
+    escape:()=>({escapedIds:[],auspexCalibrations:{},objectiveAchieved:false,objectiveAcknowledged:false}),
     sabotage:()=>({completedFeatureIds:[],featureOpenDetails:{},featureTransactions:{}}),
     transponder:()=>({sites:{},transponderFound:false,transponderMarkerId:null,carrierId:null,transponderStatus:'unknown',searchSitesResolved:0,escaped:false,extractionConfirmed:false,completed:false,outcome:null,lastRoll:null,transactions:{}}),
     destruction:()=>({destruction:0}),
@@ -996,6 +996,8 @@ document.addEventListener('touchend',function(e){
     if(engine.type==='escape'){
       normalized.escapedIds=normalizeIdList(raw.escapedIds);
       normalized.auspexCalibrations=isRecord(raw.auspexCalibrations)?{...raw.auspexCalibrations}:{};
+      normalized.objectiveAchieved=Boolean(raw.objectiveAchieved);
+      normalized.objectiveAcknowledged=Boolean(raw.objectiveAcknowledged);
     }else if(engine.type==='sabotage'){
       normalized.completedFeatureIds=Array.isArray(raw.completedFeatureIds)
         ? normalizeIdList(raw.completedFeatureIds,engine.features.map(feature=>feature.id))
@@ -2439,6 +2441,14 @@ document.addEventListener('touchend',function(e){
     return {outcome:escaped.size>=requiredEscapes?'victory':'defeat',total,escaped:escaped.size,requiredEscapes};
   }
 
+  function escapeMissionProgress(progress=state.missionState||freshMissionState()){
+    const total=state.playerRoster.length;
+    const escaped=new Set((progress.escapedIds||[]).filter(id=>state.playerRoster.includes(id)));
+    const escapeRequirement=objectiveEngine?.getMissionHudModel().target??Math.ceil(total/2);
+    const remaining=state.playerRoster.filter(id=>!escaped.has(id)&&!state.playerCasualtyIds.includes(id)&&playerOperativeState(id).inPlay!==false).length;
+    return {escapeRequirement,escapedCount:escaped.size,total,remaining};
+  }
+
   function missionOutcomeExplanation(outcome){
     if(missionEngine()?.type!=='escape')return outcome==='victory'?missionEngine()?.success:missionEngine()?.failure;
     const result=shiftingLabyrinthResult();
@@ -3394,9 +3404,11 @@ document.addEventListener('touchend',function(e){
     if(!visible)return '';
     const label=model?.label||'MISSION';
     const transponder=missionEngine()?.type==='transponder'?state.missionState:null;
-    const value=transponder?(transponder.transponderFound?'TRANSPONDER FOUND':`SEARCH ${transponder.searchSitesResolved||0}/3`):model?(model.completed?'COMPLETE':`${model.value} / ${model.target}`):'DETAILS';
+    const escapeObjectiveMet=missionEngine()?.type==='escape'&&model?.completed&&!state.completed;
+    const objectiveValue=model?(model.completed?'COMPLETE':`${model.value} / ${model.target}`):'DETAILS';
+    const value=transponder?(transponder.transponderFound?'TRANSPONDER FOUND':`SEARCH ${transponder.searchSitesResolved||0}/3`):(escapeObjectiveMet?'OBJECTIVE MET':objectiveValue);
     const completeMark=model?.completed?'<span class="mission-complete-mark" aria-hidden="true">✓ </span>':'';
-    const status=transponder?transponder.transponderFound?`transponder found, ${transponder.carrierId?`carried by ${playerName(transponder.carrierId)}`:'on battlefield with no carrier'}`:`${transponder.searchSitesResolved||0} of 3 search sites resolved`:model?`${model.value} of ${model.target}${model.completed?', objective complete':''}`:'details';
+    const status=transponder?transponder.transponderFound?`transponder found, ${transponder.carrierId?`carried by ${playerName(transponder.carrierId)}`:'on battlefield with no carrier'}`:`${transponder.searchSitesResolved||0} of 3 search sites resolved`:escapeObjectiveMet?`${model.value} of ${model.target}, objective met, battle continues`:model?`${model.value} of ${model.target}${model.completed?', objective complete':''}`:'details';
     const name=model?.name||mission()?.name||'selected mission';
     return `<button class="hud-cell mission-hud" id="missionHud" type="button" aria-label="Mission Details, ${escapeHtml(name)}, ${escapeHtml(status)}"><small>${escapeHtml(label)}</small><strong>${completeMark}${escapeHtml(value)}</strong></button>`;
   }
@@ -3406,9 +3418,10 @@ document.addEventListener('touchend',function(e){
   const missionProgressRenderers = {
     escape:(engine,progress,{readOnly=false}={})=>{
       const escaped=new Set(progress.escapedIds);
+      const missionProgress=escapeMissionProgress(progress);
       const rows=(state.playerRoster||[]).map(id=>{const incapacitated=state.playerCasualtyIds.includes(id), operativeState=playerOperativeState(id), escapedHere=escaped.has(id)&&operativeState.offBoardReason==='escaped', unavailable=operativeState.inPlay===false&&!escapedHere;return `<div class="mission-objective-row"><span><strong>${escapeHtml(playerName(id))}</strong><small>${escapedHere?'Escaped · Off Board':unavailable?`Off Board${operativeState.offBoardReason?` · ${escapeHtml(operativeState.offBoardReason)}`:''}`:incapacitated?'Eliminated':'Still in the killzone'}</small></span>${readOnly||incapacitated||unavailable?'':`<button class="btn compact ${escapedHere?'secondary':'ghost'}" data-mission-escaped="${escapeHtml(id)}">${escapedHere?'Undo Escape':'Confirm Escape'}</button>`}</div>`;}).join('');
       const migrationWarning=progress.legacyEscapedCount&&!escaped.size?`<div class="summary-box"><strong>Legacy escape progress needs confirmation.</strong><br>This save recorded ${progress.legacyEscapedCount} escaped operative${progress.legacyEscapedCount===1?'':'s'} without names. No identity was guessed; confirm a named operative to replace the aggregate progress safely.</div>`:'';
-      return `${migrationWarning}<p>${escaped.size} of ${state.playerRoster.length} operatives escaped. Resolve the mission only after every operative has left the killzone.</p><div class="mission-objective-list">${rows}</div>`;
+      return `${migrationWarning}<p><strong>Escape Requirement: ${Math.min(missionProgress.escapedCount,missionProgress.escapeRequirement)} / ${missionProgress.escapeRequirement}</strong><br>Total Escaped: ${missionProgress.escapedCount} / ${missionProgress.total}<br>Operatives Remaining: ${missionProgress.remaining}</p><div class="mission-objective-list">${rows}</div>`;
     },
     sabotage:(engine,progress,{readOnly=false}={})=>{
       const completed=new Set(progress.completedFeatureIds);
@@ -3709,7 +3722,13 @@ document.addEventListener('touchend',function(e){
       delete state.missionState.legacyEscapedCount;
       if(objectiveEngine)objectiveEngine.setObjectiveValue('escapedOperatives',state.missionState.escapedIds.length,missionLifecycleContext());
       const model=objectiveEngine?.getMissionHudModel();
-      if(outcome&&model?.completed&&outcome.changes?.[0]?.before<model.target)showMissionResult('ESCAPE RECORDED',outcome);
+      const objectiveChange=outcome?.changes?.find(change=>change.objectiveId===model?.objectiveId);
+      const targetFirstReached=model?.completed&&objectiveChange?.before<model.target&&!state.missionState.objectiveAchieved;
+      if(targetFirstReached){
+        state.missionState.objectiveAchieved=true;
+        log(`Mission objective achieved: ${model.target} operatives escaped. Extraction may continue.`);
+      }
+      if(model?.completed&&!state.missionState.objectiveAcknowledged)showEscapeTargetMet();
       updateMissionProgress(`${playerName(id)} ${ids.has(id)?'escaped via the Escape marker':'escape status was corrected'}.`);
     });
     $$('[data-mission-feature]').forEach(input=>input.onchange=async()=>{
@@ -9288,6 +9307,10 @@ function showPlayerActivation(){
       const activity=history.length?`<ul class="mission-history">${history.map(entry=>`<li><span>${escapeHtml(missionHistoryText(entry))}</span>${entry.turningPoint?`<small>Turning Point ${entry.turningPoint}</small>`:''}</li>`).join('')}</ul>`:'<p class="muted mission-history-empty">No mission activity yet.</p>';
       return `<div class="mission-details"><h3>RECOVER TRANSPONDER</h3>${missionProgressRenderers.transponder(missionEngine(),state.missionState||freshMissionState())}<section><h4>Recent Activity</h4>${activity}</section></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
     }
+    if(missionEngine()?.type==='escape'){
+      const activity=history.length?`<ul class="mission-history">${history.map(entry=>`<li><span>${escapeHtml(missionHistoryText(entry))}</span>${entry.turningPoint?`<small>Turning Point ${entry.turningPoint}</small>`:''}</li>`).join('')}</ul>`:'<p class="muted mission-history-empty">No mission activity yet.</p>';
+      return `<div class="mission-details"><h3>${escapeHtml(model.name)}</h3>${objective.completed?'<p class="mission-complete-status">✓ Mission Objective Achieved</p>':`<section><h4>Objective</h4><p>${escapeHtml(presentSideTerminology(model.objectiveSummary))}</p></section>`}${missionProgressRenderers.escape(missionEngine(),state.missionState||freshMissionState())}<section><h4>Recent Activity</h4>${activity}</section></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
+    }
     if(!objective)return `<div class="mission-details"><h3>${escapeHtml(model.name)}</h3><section><h4>Battle settings</h4><p>Restless Tomb: ${state.restlessTombEnabled?'On':'Off'} (House Rule)</p>${isPvpMode()?'':`<p>Deadly Encounters: ${deadlyEncountersStatusLabel()} (Official Expansion - White Dwarf 521)</p>`}</section><section><h4>Objective</h4><p>${escapeHtml(presentSideTerminology(model.objectiveSummary))}</p></section><section><h4>Recent Activity</h4>${history.length?`<ul class="mission-history">${history.map(entry=>`<li><span>${escapeHtml(presentSideTerminology(missionHistoryText(entry)))}</span></li>`).join('')}</ul>`:'<p class="muted mission-history-empty">No mission activity yet.</p>'}</section></div><div class="wizard-actions"><button class="btn primary" data-close>Close</button></div>`;
     const completedDuring=objective.completedTurningPoint?`<section><h4>Completed during</h4><p>Turning Point ${objective.completedTurningPoint}</p></section>`:'';
     const activity=history.length?`<ul class="mission-history">${history.map(entry=>`<li><span>${escapeHtml(presentSideTerminology(missionHistoryText(entry)))}</span>${entry.turningPoint?`<small>Turning Point ${entry.turningPoint}</small>`:''}</li>`).join('')}</ul>`:'<p class="muted mission-history-empty">No mission activity yet.</p>';
@@ -9317,6 +9340,16 @@ function showPlayerActivation(){
     const diceResult=dice.length?`<div class="dice-row settled">${dice.map(value=>dieHtml({value})).join('')}</div><p>Dice: ${dice.join(' + ')}${dice.length>1?` · Total: ${total}`:''}</p>`:'';
     const progress=objective?`<div class="summary-box"><strong>Progress: ${model.value} / ${model.target} ${escapeHtml(objective.label)}</strong></div>`:'';
     showModal(completed?(completionDialog.title||'MISSION OBJECTIVE COMPLETE'):title,`<div class="mission-roll-result">${completed?`<h3>${escapeHtml(objectiveDefinition.name)}</h3><p class="mission-complete-status">✓ ${escapeHtml(objective.label)}</p>`:''}${diceResult}${inputs}<p>${detail}</p>${progress}${completed?`<p>${escapeHtml(completionDialog.message||'Continue the battle.')}</p>`:''}</div><div class="wizard-actions"><button class="btn primary" data-close>${completed?'Continue the battle':'Continue'}</button></div>`);
+  }
+
+  function showEscapeTargetMet(){
+    const progress=escapeMissionProgress();
+    const completionDialog=objectiveDefinition?.dialogs?.[objectiveDefinition.completion?.dialogId]||{};
+    showModal(completionDialog.title||'ESCAPE TARGET MET',`<div class="mission-roll-result"><h3>${escapeHtml(objectiveDefinition?.name||mission()?.name)}</h3><p class="mission-complete-status">✓ Mission Objective Achieved</p><div class="summary-box"><strong>Escape Requirement: ${Math.min(progress.escapedCount,progress.escapeRequirement)} / ${progress.escapeRequirement}</strong><br>Total Escaped: ${progress.escapedCount} / ${progress.total}<br>Operatives Remaining: ${progress.remaining}</div><p><strong>You have achieved the mission objective. Continue the battle to extract your remaining operatives.</strong></p></div><div class="wizard-actions"><button class="btn primary" id="continueExtraction">Continue Extraction</button></div>`);
+    $('#continueExtraction').onclick=()=>{
+      state.missionState.objectiveAcknowledged=true;
+      save();closeModal();render();
+    };
   }
 
   function showMissionConfirmation(options,onConfirm){
