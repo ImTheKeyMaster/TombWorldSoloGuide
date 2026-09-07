@@ -959,7 +959,7 @@ document.addEventListener('touchend',function(e){
   ];
 
   const missionStateFactories = {
-    escape:()=>({escapedIds:[],auspexCalibrations:{},objectiveAchieved:false}),
+    escape:()=>({escapedIds:[],auspexCalibrations:{},objectiveAchieved:false,objectiveAcknowledged:false}),
     sabotage:()=>({completedFeatureIds:[],featureOpenDetails:{},featureTransactions:{}}),
     transponder:()=>({sites:{},transponderFound:false,transponderMarkerId:null,carrierId:null,transponderStatus:'unknown',searchSitesResolved:0,escaped:false,extractionConfirmed:false,completed:false,outcome:null,lastRoll:null,transactions:{}}),
     destruction:()=>({destruction:0}),
@@ -997,6 +997,7 @@ document.addEventListener('touchend',function(e){
       normalized.escapedIds=normalizeIdList(raw.escapedIds);
       normalized.auspexCalibrations=isRecord(raw.auspexCalibrations)?{...raw.auspexCalibrations}:{};
       normalized.objectiveAchieved=Boolean(raw.objectiveAchieved);
+      normalized.objectiveAcknowledged=Boolean(raw.objectiveAcknowledged||raw.objectiveAchieved);
     }else if(engine.type==='sabotage'){
       normalized.completedFeatureIds=Array.isArray(raw.completedFeatureIds)
         ? normalizeIdList(raw.completedFeatureIds,engine.features.map(feature=>feature.id))
@@ -2443,9 +2444,9 @@ document.addEventListener('touchend',function(e){
   function escapeMissionProgress(progress=state.missionState||freshMissionState()){
     const total=state.playerRoster.length;
     const escaped=new Set((progress.escapedIds||[]).filter(id=>state.playerRoster.includes(id)));
-    const requirement=objectiveEngine?.getMissionHudModel().target??Math.ceil(total/2);
+    const escapeRequirement=objectiveEngine?.getMissionHudModel().target??Math.ceil(total/2);
     const remaining=state.playerRoster.filter(id=>!escaped.has(id)&&!state.playerCasualtyIds.includes(id)&&playerOperativeState(id).inPlay!==false).length;
-    return {escapeRequirement:requirement,escapedCount:escaped.size,total,remaining};
+    return {escapeRequirement,escapedCount:escaped.size,total,remaining};
   }
 
   function missionOutcomeExplanation(outcome){
@@ -3724,8 +3725,8 @@ document.addEventListener('touchend',function(e){
       if(targetFirstReached){
         state.missionState.objectiveAchieved=true;
         log(`Mission objective achieved: ${model.target} operatives escaped. Extraction may continue.`);
-        showMissionResult('ESCAPE RECORDED',outcome);
       }
+      if(model?.completed&&!state.missionState.objectiveAcknowledged)showEscapeTargetMet();
       updateMissionProgress(`${playerName(id)} ${ids.has(id)?'escaped via the Escape marker':'escape status was corrected'}.`);
     });
     $$('[data-mission-feature]').forEach(input=>input.onchange=async()=>{
@@ -9332,16 +9333,21 @@ function showPlayerActivation(){
     const detail=objective?(decreased?(delta?`${objective.label} repaired: ${delta}`:`No ${objective.label} repaired.`):`${objective.label} added: ${delta}`):'Mission result recorded.';
     const completed=Boolean(model.completed&&change&&change.before<model.target);
     const completionDialog=objectiveDefinition.dialogs?.[objectiveDefinition.completion?.dialogId]||{};
-    if(completed&&missionEngine()?.type==='escape'){
-      const progress=escapeMissionProgress();
-      showModal(completionDialog.title||'ESCAPE TARGET MET',`<div class="mission-roll-result"><h3>${escapeHtml(objectiveDefinition.name)}</h3><p class="mission-complete-status">✓ Mission Objective Achieved</p><div class="summary-box"><strong>Escape Requirement: ${Math.min(progress.escapedCount,progress.escapeRequirement)} / ${progress.escapeRequirement}</strong><br>Total Escaped: ${progress.escapedCount} / ${progress.total}<br>Operatives Remaining: ${progress.remaining}</div><p><strong>You have achieved the mission objective. Continue the battle to extract your remaining operatives.</strong></p></div><div class="wizard-actions"><button class="btn primary" data-close>Continue Extraction</button></div>`);
-      return;
-    }
     const total=dice.reduce((sum,value)=>sum+value,0);
     const inputs=Object.entries(outcome.inputs||{}).map(([id,value])=>`<p>${escapeHtml(missionOperation(id)?.label||id)}: <strong>${value}</strong></p>`).join('');
     const diceResult=dice.length?`<div class="dice-row settled">${dice.map(value=>dieHtml({value})).join('')}</div><p>Dice: ${dice.join(' + ')}${dice.length>1?` · Total: ${total}`:''}</p>`:'';
     const progress=objective?`<div class="summary-box"><strong>Progress: ${model.value} / ${model.target} ${escapeHtml(objective.label)}</strong></div>`:'';
     showModal(completed?(completionDialog.title||'MISSION OBJECTIVE COMPLETE'):title,`<div class="mission-roll-result">${completed?`<h3>${escapeHtml(objectiveDefinition.name)}</h3><p class="mission-complete-status">✓ ${escapeHtml(objective.label)}</p>`:''}${diceResult}${inputs}<p>${detail}</p>${progress}${completed?`<p>${escapeHtml(completionDialog.message||'Continue the battle.')}</p>`:''}</div><div class="wizard-actions"><button class="btn primary" data-close>${completed?'Continue the battle':'Continue'}</button></div>`);
+  }
+
+  function showEscapeTargetMet(){
+    const progress=escapeMissionProgress();
+    const completionDialog=objectiveDefinition?.dialogs?.[objectiveDefinition.completion?.dialogId]||{};
+    showModal(completionDialog.title||'ESCAPE TARGET MET',`<div class="mission-roll-result"><h3>${escapeHtml(objectiveDefinition?.name||mission()?.name)}</h3><p class="mission-complete-status">✓ Mission Objective Achieved</p><div class="summary-box"><strong>Escape Requirement: ${Math.min(progress.escapedCount,progress.escapeRequirement)} / ${progress.escapeRequirement}</strong><br>Total Escaped: ${progress.escapedCount} / ${progress.total}<br>Operatives Remaining: ${progress.remaining}</div><p><strong>You have achieved the mission objective. Continue the battle to extract your remaining operatives.</strong></p></div><div class="wizard-actions"><button class="btn primary" id="continueExtraction">Continue Extraction</button></div>`);
+    $('#continueExtraction').onclick=()=>{
+      state.missionState.objectiveAcknowledged=true;
+      save();closeModal();render();
+    };
   }
 
   function showMissionConfirmation(options,onConfirm){
