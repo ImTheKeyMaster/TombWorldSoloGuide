@@ -29,6 +29,7 @@ def test_escape_target_dialog_shows_distinct_counts_and_extraction_copy():
 
 def test_escape_target_is_announced_and_logged_once():
     assert "objectiveAchieved:false" in APP
+    assert "outcome?.changes?.find(change=>change.objectiveId===model?.objectiveId)" in APP
     assert "!state.missionState.objectiveAchieved" in APP
     assert "state.missionState.objectiveAchieved=true" in APP
     assert (

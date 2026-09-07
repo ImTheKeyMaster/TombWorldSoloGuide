@@ -3722,7 +3722,8 @@ document.addEventListener('touchend',function(e){
       delete state.missionState.legacyEscapedCount;
       if(objectiveEngine)objectiveEngine.setObjectiveValue('escapedOperatives',state.missionState.escapedIds.length,missionLifecycleContext());
       const model=objectiveEngine?.getMissionHudModel();
-      const targetFirstReached=outcome&&model?.completed&&outcome.changes?.[0]?.before<model.target&&!state.missionState.objectiveAchieved;
+      const objectiveChange=outcome?.changes?.find(change=>change.objectiveId===model?.objectiveId);
+      const targetFirstReached=model?.completed&&objectiveChange?.before<model.target&&!state.missionState.objectiveAchieved;
       if(targetFirstReached){
         state.missionState.objectiveAchieved=true;
         log(`Mission objective achieved: ${model.target} operatives escaped. Extraction may continue.`);
