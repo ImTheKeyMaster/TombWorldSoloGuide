@@ -153,7 +153,7 @@ def test_save_and_release_surfaces_are_current():
     assert f"const APP_VERSION = '{expected}';" in APP
     assert f"const APP_VERSION = '{expected}';" in WORKER
     assert f'<div class="version">V{expected}</div>' in INDEX
-    assert INDEX.count(f"?v={expected}") == 10
+    assert INDEX.count(f"?v={expected}") == 11
     assert "const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;" in WORKER
     assert README.startswith(f"# Tomb World Battle Guide v{expected}\n\n## v{expected}")
     assert "const SAVE_VERSION = 3;" in PERSISTENCE

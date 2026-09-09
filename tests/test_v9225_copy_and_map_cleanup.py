@@ -91,7 +91,7 @@ def test_v9225_version_cache_and_save_compatibility_surfaces():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
-    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 10
+    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 11
     assert "const CACHE_PREFIX = 'tomb-world-battle-guide-';" in WORKER
     assert "const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;" in WORKER
     assert "./Assets/Tomb-World-Mission-Pack.pdf" not in WORKER

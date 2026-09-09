@@ -81,7 +81,7 @@ def test_release_surfaces_and_save_contract_are_current():
     assert f"const APP_VERSION = '{version}';" in APP
     assert f"const APP_VERSION = '{version}';" in WORKER
     assert f'<div class="version">V{version}</div>' in INDEX
-    assert INDEX.count(f"?v={version}") == 10
+    assert INDEX.count(f"?v={version}") == 11
     assert "const CACHE_PREFIX = 'tomb-world-battle-guide-';" in WORKER
     assert "const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;" in WORKER
     assert README.startswith(f"# Tomb World Battle Guide v{version}")

@@ -21,7 +21,7 @@ def test_release_surfaces_preserve_v9237_behavior_without_save_key_change():
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
     assert f"const APP_VERSION = '{expected}';" in WORKER
     assert f'<div class="version">V{expected}</div>' in INDEX
-    assert INDEX.count(f"?v={expected}") == 10
+    assert INDEX.count(f"?v={expected}") == 11
     assert README.startswith(f"# Tomb World Battle Guide v{expected}\n\n## v{expected}")
 
 

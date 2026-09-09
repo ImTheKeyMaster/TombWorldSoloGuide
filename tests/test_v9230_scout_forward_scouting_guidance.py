@@ -93,7 +93,7 @@ def test_v9230_version_and_save_surfaces():
     assert f"const APP_VERSION = '{EXPECTED_VERSION}';" in WORKER
     assert "const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;" in WORKER
     assert f'<div class="version">V{EXPECTED_VERSION}</div>' in INDEX
-    assert INDEX.count(f"?v={EXPECTED_VERSION}") == 10
+    assert INDEX.count(f"?v={EXPECTED_VERSION}") == 11
     assert README.startswith(f"# Tomb World Battle Guide v{EXPECTED_VERSION}\n\n## v{EXPECTED_VERSION}")
     assert "const SAVE_VERSION = 3;" in PERSISTENCE
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP

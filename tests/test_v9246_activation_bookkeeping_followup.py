@@ -60,5 +60,5 @@ def test_release_surfaces_remain_current_after_v9246():
     assert f"const APP_VERSION = '{expected}';" in (ROOT / "service-worker.js").read_text()
     index = (ROOT / "index.html").read_text()
     assert f'<div class="version">V{expected}</div>' in index
-    assert index.count(f"?v={expected}") == 10
+    assert index.count(f"?v={expected}") == 11
     assert (ROOT / "README.md").read_text().startswith(f"# Tomb World Battle Guide v{expected}\n\n## v{expected}")

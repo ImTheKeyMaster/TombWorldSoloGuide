@@ -1,4 +1,16 @@
-# Tomb World Battle Guide v9.2.57
+# Tomb World Battle Guide v9.2.58
+
+## v9.2.58
+
+**Version 9.2.58**
+
+### Basic Production Visitor Analytics
+
+- Add an isolated Google Analytics 4 module for aggregate production-site traffic such as visits, device type, and referral source.
+- Restrict Analytics to the official `imthekeymaster.github.io/TombWorldSoloGuide/` path, without gameplay events or gameplay-state transmission.
+- Keep offline play independent of Analytics; offline events are not queued, and Google-hosted Analytics resources are not cached by the service worker.
+
+**Usage Analytics:** This Guide uses Google Analytics to understand aggregate site traffic such as visits, device type, and referral source. Gameplay state, rosters, dice results, combat results, and saved battles are not intentionally sent to Analytics. Offline use is not reported.
 
 ## v9.2.57
 

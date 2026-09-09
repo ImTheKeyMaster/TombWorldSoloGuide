@@ -29,7 +29,7 @@ def test_release_surfaces_are_v9253_without_save_key_change():
     assert f"const APP_VERSION = '{EXPECTED_VERSION}';" in (ROOT / "service-worker.js").read_text()
     index = (ROOT / "index.html").read_text()
     assert f'<div class="version">V{EXPECTED_VERSION}</div>' in index
-    assert index.count(f"?v={EXPECTED_VERSION}") == 10
+    assert index.count(f"?v={EXPECTED_VERSION}") == 11
 
 
 def test_completed_activation_clears_transaction_state_before_scheduling():
