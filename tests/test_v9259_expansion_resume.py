@@ -1,4 +1,3 @@
-import json
 import subprocess
 from pathlib import Path
 
@@ -27,7 +26,8 @@ def test_production_catalog_boundary_and_release_contracts():
         "Royal Warden",
         "Lychguard",
     )
-    assert "const persistenceNpoDefinitions=Object.freeze({...npoDefinitions,...tombsBeyondCountingNpoDefinitions});" in APP
+    assert "const persistenceNpoDefinitions=Object.freeze({" in APP
+    assert "physicalQuantity:definition.physicalQuantity??Infinity" in APP
     assert "migrateSaveDetailed(input,persistenceNpoDefinitions)" in APP
     assert "migrateSupportedSave(parsed)" in APP
     assert "migrateSupportedSave(data)" in APP
@@ -57,9 +57,29 @@ function objectLiteral(marker){
   }
   throw new Error(`Unclosed catalog ${marker}`);
 }
+function functionSource(name){
+  const start=app.indexOf(`function ${name}`);
+  const brace=app.indexOf('{',start);
+  let depth=0,quote=null,escaped=false;
+  for(let i=brace;i<app.length;i++){
+    const c=app[i];
+    if(quote){if(escaped)escaped=false;else if(c==='\\')escaped=true;else if(c===quote)quote=null;continue;}
+    if(c==="'"||c==='"'||c==='`'){quote=c;continue;}
+    if(c==='{')depth++;
+    if(c==='}'&&--depth===0)return app.slice(start,i+1);
+  }
+  throw new Error(`Unclosed function ${name}`);
+}
 const expansion=Function(`return (${objectLiteral('const tombsBeyondCountingNpoDefinitions = Object.freeze({')})`)();
 const standard=Function(`return (${objectLiteral('const npoDefinitions = {')})`)();
-const catalog={...standard,...expansion};
+const catalog={...standard,...Object.fromEntries(Object.entries(expansion).map(([type,definition])=>[
+  type,{...definition,physicalQuantity:definition.physicalQuantity??Infinity}
+]))};
+const variantAllowsExpansionNpo=Function(`${functionSource('variantAllowsExpansionNpo')};return variantAllowsExpansionNpo;`)();
+const migrateSupportedSave=Function(
+  'migrateSaveDetailed','persistenceNpoDefinitions','tombsBeyondCountingNpoDefinitionsForValidation','variantAllowsExpansionNpo',
+  `${functionSource('migrateSupportedSave')};return migrateSupportedSave;`
+)(p.migrateSaveDetailed,catalog,expansion,variantAllowsExpansionNpo);
 const legalVariants={
   'Flayed One':'flayer-curse','Skorpekh Destroyer':'destroyer-cult',
   'Hexmark Destroyer':'destroyer-cult','Royal Warden':'crownworld','Lychguard':'crownworld'
@@ -72,14 +92,14 @@ for(const [type,variant] of Object.entries(legalVariants)){
     wounds:definition.wounds-1,maxWounds:definition.wounds,battlefieldState:'deployed',deployed:true,dormant:false
   }],playerRoster:[]};
   const exported=JSON.parse(JSON.stringify(p.createPersistedSave(state)));
-  const first=p.migrateSaveDetailed(exported,catalog);
+  const first=migrateSupportedSave(exported);
   assert.equal(first.report.requiresRegeneration,false,type);
   assert.deepEqual(first.report.unsupportedRetiredTypes,[],type);
   assert.equal(first.state.tombWorldVariant,variant,type);
   assert.equal(first.state.roster[0].type,type);
   assert.equal(first.state.roster[0].wounds,definition.wounds-1);
   assert.equal(first.state.roster[0].weaponId,state.roster[0].weaponId);
-  const second=p.migrateSaveDetailed(p.createPersistedSave(first.state),catalog);
+  const second=migrateSupportedSave(p.createPersistedSave(first.state));
   assert.equal(second.report.outcome,'current',type);
   assert.deepStrictEqual(second.state,first.state,type);
 }
@@ -91,7 +111,7 @@ const production={saveVersion:3,version:'9.2.58',gameMode:'solo',screen:'game',p
   activationFinishedForTurningPoint:{player:false,npo:false},lastActivation:{side:'player',operativeId:'watch-sergeant',completed:true,committed:true},
   playerOperativeStates:{'watch-sergeant':{inPlay:true,ready:false},'deathwatch-warrior':{inPlay:true,ready:true}},
   roster:[{id:'flayed-one-production',displayNumber:1,type:'Flayed One',name:'Flayed One',weaponId:'flayer-claws',wounds:7,maxWounds:9,battlefieldState:'deployed',deployed:true,dormant:false}]};
-const resumed=p.migrateSaveDetailed(JSON.parse(JSON.stringify(p.createPersistedSave(production))),catalog);
+const resumed=migrateSupportedSave(JSON.parse(JSON.stringify(p.createPersistedSave(production))));
 assert.equal(resumed.report.requiresRegeneration,false);
 assert.equal(resumed.report.outcome,'current');
 assert.ok(!resumed.report.unsupportedRetiredTypes.includes('Flayed One'));
@@ -106,6 +126,15 @@ assert.equal(resumed.state.roster[0].weaponId,'flayer-claws');
 const retired=p.migrateSaveDetailed({saveVersion:3,roster:[{id:'old',type:'Crypt Sentinel'}],playerRoster:[]},catalog);
 assert.equal(retired.report.requiresRegeneration,true);
 assert.deepEqual(retired.report.unsupportedRetiredTypes,['Crypt Sentinel']);
+for(const [type,variant] of [['Flayed One','standard'],['Royal Warden','flayer-curse'],['Lychguard','destroyer-cult'],['Flayed One','crownworld']]){
+  const definition=catalog[type];
+  const wrong=migrateSupportedSave({saveVersion:3,tombWorldVariant:variant,playerRoster:[],roster:[{
+    id:`wrong-${definition.id}`,displayNumber:1,type,name:type,weaponId:definition.defaultWeaponId,wounds:definition.wounds
+  }]});
+  assert.equal(wrong.report.requiresRegeneration,true,type);
+  assert.deepEqual(wrong.report.invalidVariantNpos,[type],type);
+  assert.deepEqual(wrong.report.unsupportedRetiredTypes,[],type);
+}
 """
     run_node(script)
 
