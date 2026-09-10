@@ -19,9 +19,9 @@ def function_source(name):
     return APP[start : next_function if next_function >= 0 else len(APP)]
 
 
-def test_release_surfaces_move_from_confirmed_baseline_to_v9261():
-    assert "## v9.2.60\n\n**Version 9.2.60**" in README
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 61)
+def test_release_surfaces_move_from_confirmed_baseline_to_v9262():
+    assert "## v9.2.61\n\n**Version 9.2.61**" in README
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 62)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 10
@@ -36,12 +36,16 @@ def test_solo_card_is_an_accessible_tabletop_confirmation_not_an_action_modal():
     binding = function_source("bindPlay")
     modal = function_source("showCeaselessScuttling")
 
-    assert 'for="scuttlingPlacement"' in actions
-    assert 'id="scuttlingPlacement" type="checkbox"' in actions
-    assert "Macrocyte Warrior set up" in actions
+    assert 'scuttlingPlacement' not in actions
+    assert 'type="checkbox"' not in actions
+    assert 'id="scuttlingSetup"' in actions
+    assert '>Set Up Macrocyte Warrior</button>' in actions
+    assert '>No Legal Setup Location</button>' in actions
     assert "Set up another Macrocyte Warrior ready with a Conceal order" in actions
     assert "Resolve A Ceaseless Scuttling" not in actions
-    assert "confirmSoloCeaselessScuttlingSetup()" in binding
+    assert "addEventListener('click',confirmSoloCeaselessScuttlingSetup)" in binding
+    assert "scuttlingPlacement" not in binding
+    assert "showCeaselessScuttling" not in binding[binding.index("#scuttlingSetup"):binding.index("#scuttlingNoLegalSetup")]
     assert "if(!isPvpMode()||!ceaselessScuttlingEligible())return" in modal
     assert "scuttlingLoadout" in modal
     assert "Confirm Setup" in modal
@@ -116,7 +120,7 @@ def test_gating_completion_exception_pvp_and_save_contract_are_preserved():
 
     assert "!isPvpMode()&&ceaselessScuttlingEligible()" in pending
     assert "disabled:actionsBlocked" in actions
-    assert "No legal setup location" in actions
+    assert "No Legal Setup Location" in actions
     assert "createCeaselessScuttlingWarrior" not in no_setup
     assert "ceaselessScuttlingTurningPoint=state.turningPoint" in no_setup
     assert ">Use A Ceaseless Scuttling</button>" in actions
@@ -125,3 +129,45 @@ def test_gating_completion_exception_pvp_and_save_contract_are_preserved():
     assert "ceaselessScuttlingAvailable(roster)" in function_source("ceaselessScuttlingEligible")
     assert "const SAVE_VERSION = 3;" in PERSISTENCE
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
+
+
+def test_no_location_outcome_is_mutually_exclusive_and_creates_nothing():
+    available = function_source("ceaselessScuttlingAvailable")
+    eligible = function_source("ceaselessScuttlingEligible")
+    create = function_source("createCeaselessScuttlingWarrior")
+    confirm = function_source("confirmSoloCeaselessScuttlingSetup")
+    no_setup = function_source("resolveCeaselessScuttlingWithoutSetup")
+    script = "\n".join(
+        (
+            "const MAX_NPOS=10;",
+            "const state={turningPoint:2,strategyData:{},activationHistory:[],roster:[{id:'original',type:'Canoptek Macrocyte Warrior',wounds:7,battlefieldState:'deployed'}]};",
+            "let creations=0,saves=0,renders=0,logs=0;",
+            "const isPvpMode=()=>false; const ceaselessScuttlingSoloWeaponId=()=>\"synaptic-discharger\";",
+            "const npoDefinition=()=>({type:'Canoptek Macrocyte Warrior',name:'Macrocyte Warrior',wounds:7});",
+            "const createNpo=()=>{creations++;return {};}; const npoName=()=>'';",
+            "const log=()=>logs++; const save=()=>saves++; const render=()=>renders++;",
+            "const requestAnimationFrame=callback=>callback(); const $=()=>null;",
+            available.strip(),
+            eligible.strip(),
+            create.strip(),
+            confirm.strip(),
+            no_setup.strip(),
+            "const alternate=resolveCeaselessScuttlingWithoutSetup();",
+            "const successAfterAlternate=confirmSoloCeaselessScuttlingSetup();",
+            "const alternateAgain=resolveCeaselessScuttlingWithoutSetup();",
+            "console.log(JSON.stringify({alternate,successAfterAlternate,alternateAgain,creations,saves,renders,logs,marker:state.strategyData.ceaselessScuttlingTurningPoint,history:state.activationHistory.length}));",
+        )
+    )
+    result = subprocess.run(["node", "-e", script], check=True, capture_output=True, text=True)
+
+    assert json.loads(result.stdout) == {
+        "alternate": True,
+        "successAfterAlternate": False,
+        "alternateAgain": False,
+        "creations": 0,
+        "saves": 1,
+        "renders": 1,
+        "logs": 1,
+        "marker": 2,
+        "history": 0,
+    }

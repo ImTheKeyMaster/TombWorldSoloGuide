@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v9.2.61
+# Tomb World Battle Guide v9.2.62
+
+## v9.2.62
+
+**Version 9.2.62**
+
+### A Ceaseless Scuttling Solo Actions
+
+- Replaced the Solo setup checkbox with two explicit outcomes: "Set Up Macrocyte Warrior" and "No Legal Setup Location."
+- The affirmative setup button now directly confirms the physical tabletop placement without an additional modal.
+- Preserved Guide-owned Solo resolution, PvP choices, eligibility rules, exactly-once creation, and save/resume behavior.
 
 ## v9.2.61
 
