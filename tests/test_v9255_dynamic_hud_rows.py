@@ -95,10 +95,9 @@ def test_deathwatch_and_death_korps_keep_contextual_names_without_team_css():
 
 
 def test_v9257_release_surfaces_and_storage_compatibility():
-    assert CURRENT_APP_VERSION == "9.2.57"
-    assert "const APP_VERSION = '9.2.57';" in APP
-    assert "const APP_VERSION = '9.2.57';" in WORKER
-    assert '<div class="version">V9.2.57</div>' in INDEX
-    assert INDEX.count("?v=9.2.57") == 10
-    assert README.startswith("# Tomb World Battle Guide v9.2.57\n\n## v9.2.57")
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
+    assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
+    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 10
+    assert README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}")
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP

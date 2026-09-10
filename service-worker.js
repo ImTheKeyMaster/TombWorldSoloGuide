@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '9.2.57';
+const APP_VERSION = '9.2.58';
 const CACHE_PREFIX = 'tomb-world-battle-guide-';
 const LEGACY_CACHE_PREFIXES = ['tomb-world-solo-guide-'];
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
@@ -10,7 +10,7 @@ const AMBIENT_CONFIG = './Assets/Audio/Narration/ambient-config.json';
 const BACKGROUND_MANIFEST = './Assets/Images/Backgrounds/manifest.json';
 const OFFLINE_PACKAGE_MARKER = './__offline-package-complete__';
 const PRECACHE_ASSETS = [
-  './', APP_SHELL, `./event-effects.js?v=${APP_VERSION}`, `./audio-capabilities.js?v=${APP_VERSION}`, `./narration.js?v=${APP_VERSION}`, `./ambient.js?v=${APP_VERSION}`, `./dice-sfx.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`,
+  './', APP_SHELL, `./analytics.js?release=${APP_VERSION}`, `./event-effects.js?v=${APP_VERSION}`, `./audio-capabilities.js?v=${APP_VERSION}`, `./narration.js?v=${APP_VERSION}`, `./ambient.js?v=${APP_VERSION}`, `./dice-sfx.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`,
   './manifest.webmanifest', './Assets/icon.svg', './Assets/icon-180.png', './Assets/icon-192.png', './Assets/icon-512.png', './Assets/icon-1024.png', './Assets/Icons/move-to-shoot.svg', './Assets/Images/eliminated-necron-skull.png',
   './Assets/Images/defeat.png', './Assets/Images/victory.png',
   './Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3',
