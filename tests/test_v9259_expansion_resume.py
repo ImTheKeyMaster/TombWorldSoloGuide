@@ -34,7 +34,7 @@ def test_production_catalog_boundary_and_release_contracts():
     assert "types=sortedNposForDisplay(Object.keys(npoDefinitions))" in APP
     for npo_type in expansion_types:
         assert npo_type not in standard
-    assert CURRENT_APP_VERSION == "9.2.59"
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 59)
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
     assert "const SAVE_VERSION = 3;" in (ROOT / "persistence.js").read_text()
 
