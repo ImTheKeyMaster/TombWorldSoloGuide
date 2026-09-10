@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v9.2.59
+# Tomb World Battle Guide v9.2.60
+
+## v9.2.60
+
+**Version 9.2.60**
+
+### Solo Reinforcement Replacement UX
+
+- Removed the contradictory NPO replacement selector after the Guide has already resolved a Tombs Beyond Counting reinforcement replacement in Solo play.
+- Reinforcement placement now consistently displays the final generated operative, such as a Flayed One replacing a Necron Warrior, while preserving human replacement choices in PvP.
+- Preserved existing replacement rules, placement behavior, save/resume state, and all optional Tomb World content.
 
 ## v9.2.59
 

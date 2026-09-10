@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.59';
+  const APP_VERSION = '9.2.60';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -1098,7 +1098,9 @@ document.addEventListener('touchend',function(e){
       :isFlayerCurseTomb()&&options.includes('Flayed One')?'Flayed One'
       :isDestroyerCultTomb()&&options.includes('Skorpekh Destroyer')?'Skorpekh Destroyer'
       :options[Math.floor(Math.random()*options.length)];
-    const resolved={...request,type:selected,...(pvpDecisionPending?{replacementOptions:[...options],replacementTransactionId:transactionId}:{})};
+    const resolved={...request,type:selected};
+    if(pvpDecisionPending){resolved.replacementOptions=[...options];resolved.replacementTransactionId=transactionId;}
+    else{delete resolved.replacementOptions;delete resolved.replacementTransactionId;}
     if(selected!==request.type)delete resolved.weaponId;
     if(transactionId){
       state.variantState.replacementTransactions[transactionId]={id:transactionId,originalType:request.type,originalWeaponId:request.weaponId,options:[...options],selectedType:selected,owner:isPvpMode()?'necron-controller':'guide',committed:!pvpDecisionPending};
@@ -2246,6 +2248,10 @@ document.addEventListener('touchend',function(e){
     transaction.selectedType=selectedType;transaction.committed=true;transaction.createdNpoId=replacement.id;
     log(`${currentTombWorldVariant().name}: the Necron controller replaced ${npo.type} with ${selectedType}.`);
     return replacement;
+  }
+  function isHumanNpoReplacementPending(npo){
+    const transaction=state.variantState?.replacementTransactions?.[npo?.replacementTransactionId];
+    return isPvpMode()&&npo?.replacementOptions?.length&&transaction?.owner==='necron-controller'&&!transaction.committed;
   }
   function setupCrownworldCrawlerPair(crawler,transactionId){
     const replacement=replaceNpoAtSetup({type:crawler?.type,npoId:crawler?.id,transactionId});
@@ -4027,7 +4033,7 @@ document.addEventListener('touchend',function(e){
     const reinforcementCard=deployingNpos.length||blockedCount
       ? `<section class="card reinforcement-card" aria-live="polite"><p class="eyebrow">REINFORCEMENTS</p><p>The Guide automatically determined and generated this Turning Point’s reinforcements. Place the generated models using the instructions below.</p>${deployedSection}${pendingSection}${blockedCount?`<div class="reinforcement-blocked" role="status"><h3>${deployingNpos.length?`${blockedCount} additional reinforcement${blockedCount===1?'':'s'} could not be deployed`:'No reinforcements could be deployed'}</h3><p>${blockedReason}</p></div>`:''}</section>`
       : '<div class="summary-box strategy-empty-message">The Guide automatically determined that no reinforcements were generated this Turning Point.</div>';
-    const placements=deployingNpos.map(npo=>`<label class="check-row"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong>${npo.replacementOptions?.length?`<span class="field"><span>Choose NPO</span><select aria-label="Choose replacement for ${escapeHtml(npoName(npo))}" data-reinforcement-replacement="${escapeHtml(npo.id)}">${npo.replacementOptions.map(type=>`<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('')}</select></span>`:''}<small>Randomly determine an open hatchway, set up this operative with a Conceal order following the Tomb World reinforcement placement restrictions, then confirm.</small></span></label>`).join('');
+    const placements=deployingNpos.map(npo=>`<label class="check-row"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong>${isHumanNpoReplacementPending(npo)?`<span class="field"><span>Choose NPO</span><select aria-label="Choose replacement for ${escapeHtml(npoName(npo))}" data-reinforcement-replacement="${escapeHtml(npo.id)}">${npo.replacementOptions.map(type=>`<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('')}</select></span>`:''}<small>Randomly determine an open hatchway, set up this operative with a Conceal order following the Tomb World reinforcement placement restrictions, then confirm.</small></span></label>`).join('');
     const showStatTooltips=!window.matchMedia('(max-width:600px)').matches;
     const tooltipAttrs=text=>showStatTooltips?` tabindex="0" data-tooltip="${text}"`:'';
     const infoDot=showStatTooltips?'<span class="info-dot">i</span>':'';
@@ -4779,7 +4785,7 @@ document.addEventListener('touchend',function(e){
   function confirmReinforcementPlacement(id,confirmed){
     let npo=state.roster.find(item=>item.id===id&&state.reinforcementState.operativeIds.includes(item.id));
     if(!npo?.reinforcement)return;
-    if(confirmed&&npo.replacementOptions?.length){
+    if(confirmed&&isHumanNpoReplacementPending(npo)){
       const selected=$$('[data-reinforcement-replacement]').find(select=>select.dataset.reinforcementReplacement===npo.id)?.value;
       npo=commitPvpNpoReplacement(npo,selected);
       if(!npo){showToast('That replacement could not be added.');save();render();return;}
