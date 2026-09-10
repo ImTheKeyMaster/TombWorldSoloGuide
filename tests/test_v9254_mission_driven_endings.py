@@ -134,7 +134,7 @@ def test_version_surfaces_and_release_notes():
     assert README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}")
     index = (ROOT / "index.html").read_text()
     worker = (ROOT / "service-worker.js").read_text()
-    assert f"V{CURRENT_APP_VERSION}" in index and index.count(f"?v={CURRENT_APP_VERSION}") == 11
+    assert f"V{CURRENT_APP_VERSION}" in index and index.count(f"?v={CURRENT_APP_VERSION}") == 10
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in worker
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
 

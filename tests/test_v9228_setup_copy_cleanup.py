@@ -93,7 +93,7 @@ def test_release_version_cache_and_save_compatibility():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
-    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 11
+    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 10
     assert "const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;" in WORKER
     assert README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}")
     assert "const SAVE_VERSION = 3;" in PERSISTENCE

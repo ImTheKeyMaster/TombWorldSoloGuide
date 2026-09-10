@@ -98,6 +98,6 @@ def test_v9257_release_surfaces_and_storage_compatibility():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
-    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 11
+    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 10
     assert README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}")
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP

@@ -19,7 +19,7 @@ def test_release_version_and_save_key_are_consistent():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in (ROOT / "service-worker.js").read_text()
     index = (ROOT / "index.html").read_text()
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in index
-    assert index.count(f"?v={CURRENT_APP_VERSION}") == 11
+    assert index.count(f"?v={CURRENT_APP_VERSION}") == 10
 
 
 def test_scout_status_uses_authoritative_global_blockers_and_ap_priority():

@@ -17,7 +17,7 @@ def test_release_surfaces_and_cache_busting_are_v9251():
     assert f"const APP_VERSION = '{expected}';" in (ROOT / "service-worker.js").read_text()
     index = (ROOT / "index.html").read_text()
     assert f'<div class="version">V{expected}</div>' in index
-    assert index.count(f"?v={expected}") == 11
+    assert index.count(f"?v={expected}") == 10
     assert (ROOT / "README.md").read_text().startswith(
         f"# Tomb World Battle Guide v{expected}\n\n## v{expected}"
     )

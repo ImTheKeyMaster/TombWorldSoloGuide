@@ -213,7 +213,7 @@ def test_release_and_save_compatibility_surfaces():
     assert CURRENT_APP_VERSION == expected_release
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
-    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 11
+    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 10
     assert README.startswith(
         f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}"
     )

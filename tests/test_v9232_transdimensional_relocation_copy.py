@@ -123,7 +123,7 @@ class TransdimensionalRelocationCopyTests(unittest.TestCase):
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", WORKER)
         self.assertIn("const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;", WORKER)
         self.assertIn(f'<div class="version">V{CURRENT_APP_VERSION}</div>', INDEX)
-        self.assertEqual(INDEX.count(f"?v={CURRENT_APP_VERSION}"), 11)
+        self.assertEqual(INDEX.count(f"?v={CURRENT_APP_VERSION}"), 10)
         self.assertTrue(README.startswith(
             f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}"
         ))

@@ -82,7 +82,7 @@ def test_nonproduction_and_offline_locations_do_not_initialize_ga4():
 
 
 def test_analytics_module_is_isolated_nonblocking_and_contains_no_gameplay_data():
-    assert f'<script async src="analytics.js?v={CURRENT_APP_VERSION}"></script>' in INDEX
+    assert '<script async src="analytics.js"></script>' in INDEX
     assert "gtag" not in APP.lower()
     assert APP.count("Usage Analytics:") == 1
     for forbidden in (
@@ -102,7 +102,7 @@ def test_analytics_module_is_isolated_nonblocking_and_contains_no_gameplay_data(
 
 
 def test_analytics_assets_and_requests_preserve_offline_cache_boundaries():
-    assert f"`./analytics.js?v=${{APP_VERSION}}`" in WORKER
+    assert "'./analytics.js'" in WORKER
     for google_host in (
         "googletagmanager.com",
         "google-analytics.com",
@@ -124,7 +124,7 @@ def test_disclosures_persistence_and_release_versions_are_consistent():
     assert "const SAVE_VERSION = 3;" in PERSISTENCE
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
-    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 11
+    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 10
     assert README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}")
     assert "G-XXXXXXXXXX" not in "\n".join(
         path.read_text(encoding="utf-8")
