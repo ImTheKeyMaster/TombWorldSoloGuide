@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.58';
+  const APP_VERSION = '9.2.59';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -923,6 +923,12 @@ document.addEventListener('touchend',function(e){
     {min:12,max:12,type:'Canoptek Tomb Crawler',weaponIds:['transdimensional-isolator']}
   ];
   const tombsBeyondCountingNpoDefinitionsForValidation=tombsBeyondCountingNpoDefinitions;
+  const persistenceNpoDefinitions=Object.freeze({
+    ...npoDefinitions,
+    ...Object.fromEntries(Object.entries(tombsBeyondCountingNpoDefinitions).map(([type,definition])=>[
+      type,Object.freeze({...definition,physicalQuantity:definition.physicalQuantity??Infinity})
+    ]))
+  });
   const MAX_PHYSICAL_NPOS = Object.values(npoDefinitions).reduce((total,definition)=>total+definition.physicalQuantity,0);
   const TOMB_CRAWLER_TYPE = 'Canoptek Tomb Crawler';
   const ISOLATOR_LOADOUT = 'transdimensional-isolator';
@@ -1225,11 +1231,20 @@ document.addEventListener('touchend',function(e){
       const saved=localStorage.getItem(STORAGE_KEY);
       if(!saved)return null;
       const parsed=JSON.parse(saved);
-      return migrateSaveDetailed(parsed,npoDefinitions);
+      return migrateSupportedSave(parsed);
     }catch(error){
       console.warn('[Persistence] Saved game could not be loaded; the original save was left unchanged.',error);
       return null;
     }
+  }
+  function migrateSupportedSave(input){
+    const migration=migrateSaveDetailed(input,persistenceNpoDefinitions);
+    const invalidVariantNpos=[...new Set((Array.isArray(migration.state.roster)?migration.state.roster:[])
+      .filter(npo=>tombsBeyondCountingNpoDefinitionsForValidation[npo.type]&&!variantAllowsExpansionNpo(npo.type,migration.state.tombWorldVariant))
+      .map(npo=>npo.type))];
+    migration.report.invalidVariantNpos=invalidVariantNpos;
+    if(invalidVariantNpos.length){migration.report.requiresRegeneration=true;migration.report.outcome='regeneration-required';}
+    return migration;
   }
   function recoverInvalidMission(){
     if(!state.missionId||missionDefinition(state.missionId))return false;
@@ -9805,7 +9820,7 @@ function showPlayerActivation(){
     }
   }
   function showRegenerationNotice(migration,source){
-    const causes=[...migration.report.unsupportedRetiredTypes,...migration.report.invalidPhysicalLimits,...migration.report.errors];
+    const causes=[...migration.report.unsupportedRetiredTypes,...(migration.report.invalidVariantNpos||[]),...migration.report.invalidPhysicalLimits,...migration.report.errors];
     showModal('Current battle cannot be resumed',`<p>The current battle uses retired or invalid NPO data and cannot be resumed safely.</p>${causes.length?`<p><strong>Cause:</strong> ${causes.map(escapeHtml).join('; ')}</p>`:''}<p>The battle will return to setup and a new legal NPO roster must be generated. The selected mission, player team and roster choices, completed battle history, settings, and preferences will be preserved where possible.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmLegacyReset">Return to Setup</button></div>`);
     $('#confirmLegacyReset').onclick=async()=>{
       const reset=resetActiveBattle(migration.state);closeModal();
@@ -9815,7 +9830,7 @@ function showPlayerActivation(){
   importInput.addEventListener('change',async()=>{
     const f=importInput.files?.[0];if(!f)return;
     try{
-      const data=JSON.parse(await f.text()),migration=migrateSaveDetailed(data,npoDefinitions);
+      const data=JSON.parse(await f.text()),migration=migrateSupportedSave(data);
       if(migration.report.requiresRegeneration){showRegenerationNotice(migration,'import');return;}
       if(await commitImported(migration.state,migration.report)){
         if(hasMeaningfulMigrationChanges(migration.report))showMigrationNotice(migration.report);else showToast('Save imported.');

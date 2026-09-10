@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v9.2.58
+# Tomb World Battle Guide v9.2.59
+
+## v9.2.59
+
+**Version 9.2.59**
+
+### Tombs Beyond Counting Resume Validation
+
+- Recognize all five current Tombs Beyond Counting NPO datacards when normalizing local and imported saves, without adding them to Standard Tomb World generation.
+- Keep variant legality separate from catalog recognition so legal expansion battles resume while wrong-variant rosters still use the safe recovery flow.
+- Preserve the save schema and storage key so affected v9.2.58 battles become resumable without conversion or regeneration.
 
 ## v9.2.58
 

@@ -64,7 +64,7 @@ assert.equal(p.migrateSaveDetailed(exported,catalog).report.outcome,'current');
         self.assertIn("confirmLegacyReset", app)
         self.assertIn("const previous=state", app)
         self.assertIn("state=previous", app)
-        self.assertIn("migrateSaveDetailed(data,npoDefinitions)", app)
+        self.assertIn("migrateSupportedSave(data)", app)
         self.assertNotIn("TODO(v7 legacy-save migration)", app)
         self.assertIn("const RETIRED_NPO_TYPES = Object.freeze([])", persistence)
         self.assertEqual(persistence.count("'canoptek macrocyte':"), 1)
