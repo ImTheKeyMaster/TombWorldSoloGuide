@@ -6,13 +6,14 @@
   const BEACON_ELEMENT_ID = 'tomb-world-cloudflare-analytics';
   const PRODUCTION_HOSTNAME = 'imthekeymaster.github.io';
   const PRODUCTION_PATH_PREFIX = '/TombWorldSoloGuide/';
-  const location = window.location;
-  const isProductionAnalyticsSite = location.protocol === 'https:'
-    && location.hostname === PRODUCTION_HOSTNAME
-    && location.pathname.startsWith(PRODUCTION_PATH_PREFIX);
 
-  if (!isProductionAnalyticsSite || navigator.onLine === false || document.getElementById(BEACON_ELEMENT_ID)) return;
   try {
+    const location = window.location;
+    const isProductionAnalyticsSite = location.protocol === 'https:'
+      && location.hostname === PRODUCTION_HOSTNAME
+      && location.pathname.startsWith(PRODUCTION_PATH_PREFIX);
+    if (!isProductionAnalyticsSite || navigator.onLine === false || document.getElementById(BEACON_ELEMENT_ID)) return;
+
     const beacon = document.createElement('script');
     beacon.id = BEACON_ELEMENT_ID;
     beacon.type = 'module';

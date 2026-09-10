@@ -16,14 +16,23 @@ PRODUCTION_SOURCE = "\n".join((ANALYTICS, APP, INDEX, WORKER, README))
 
 
 def run_analytics(
-    hostname, pathname, protocol="https:", online=True, runs=1, fail_append=False
+    hostname,
+    pathname,
+    protocol="https:",
+    online=True,
+    runs=1,
+    fail_lookup=False,
+    fail_append=False,
 ):
     harness = f"""
 const vm = require('node:vm');
 const source = {json.dumps(ANALYTICS)};
 const appended = [];
 const document = {{
-  getElementById: id => appended.find(element => element.id === id) || null,
+  getElementById: id => {{
+    if ({json.dumps(fail_lookup)}) throw new Error('document unavailable');
+    return appended.find(element => element.id === id) || null;
+  }},
   createElement: () => ({{
     attributes: {{}},
     setAttribute(name, value) {{ this.attributes[name] = value; }}
@@ -86,12 +95,13 @@ def test_nonproduction_and_offline_locations_do_not_inject_beacon():
 
 
 def test_analytics_failure_is_nonfatal_and_application_does_not_wait_for_it():
-    result = run_analytics(
-        "imthekeymaster.github.io",
-        "/TombWorldSoloGuide/",
-        fail_append=True,
-    )
-    assert result["appended"] == 0
+    for failure in ({"fail_lookup": True}, {"fail_append": True}):
+        result = run_analytics(
+            "imthekeymaster.github.io",
+            "/TombWorldSoloGuide/",
+            **failure,
+        )
+        assert result["appended"] == 0
     assert (
         f'<script async src="analytics.js?release={CURRENT_APP_VERSION}"></script>'
         in INDEX
