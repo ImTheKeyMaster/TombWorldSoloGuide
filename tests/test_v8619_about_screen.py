@@ -79,11 +79,17 @@ class AboutScreenV8619Tests(unittest.TestCase):
     def test_20_nonwaivable_liability_preserved(self):
         self.assertIn("where doing so would be prohibited by applicable law", ABOUT)
 
-    def test_21_privacy_matches_local_only_implementation(self):
-        self.assertIn("does not intentionally collect or transmit personal information", ABOUT)
+    def test_21_privacy_matches_cloudflare_analytics_implementation(self):
+        analytics = (ROOT / "analytics.js").read_text()
         self.assertIn("stored locally in the user’s browser", ABOUT)
+        self.assertIn("Cloudflare Web Analytics", ABOUT)
+        self.assertIn("Gameplay state, rosters, dice results, combat results", ABOUT)
+        self.assertIn("Offline use is not reported", ABOUT)
         self.assertIn("localStorage.setItem", APP)
-        self.assertNotRegex(INDEX + APP, r"sendBeacon|document\.cookie|google-analytics|googletagmanager")
+        self.assertNotRegex(
+            INDEX + APP + analytics,
+            r"sendBeacon|document\.cookie|google-analytics|googletagmanager",
+        )
 
     def test_22_repository_link_is_safe_and_external(self):
         self.assertIn('href="https://github.com/ImTheKeyMaster/TombWorldSoloGuide"', ABOUT)

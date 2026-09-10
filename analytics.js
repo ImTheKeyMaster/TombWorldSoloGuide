@@ -1,7 +1,9 @@
 (() => {
   'use strict';
 
-  const MEASUREMENT_ID = 'G-JWESVY3VFE';
+  const CLOUDFLARE_TOKEN = 'a5fcae7597364071bb35e87f0789706b';
+  const BEACON_URL = 'https://static.cloudflareinsights.com/beacon.min.js';
+  const BEACON_ELEMENT_ID = 'tomb-world-cloudflare-analytics';
   const PRODUCTION_HOSTNAME = 'imthekeymaster.github.io';
   const PRODUCTION_PATH_PREFIX = '/TombWorldSoloGuide/';
   const location = window.location;
@@ -9,26 +11,15 @@
     && location.hostname === PRODUCTION_HOSTNAME
     && location.pathname.startsWith(PRODUCTION_PATH_PREFIX);
 
-  if (!isProductionAnalyticsSite || navigator.onLine === false || window.__tombWorldGa4Initialized) return;
+  if (!isProductionAnalyticsSite || navigator.onLine === false || document.getElementById(BEACON_ELEMENT_ID)) return;
   try {
-    window.__tombWorldGa4Initialized = true;
-
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = window.gtag || function gtag() {
-      window.dataLayer.push(arguments);
-    };
-
-    const googleTag = document.createElement('script');
-    googleTag.async = true;
-    googleTag.src = `https://www.googletagmanager.com/gtag/js?id=${MEASUREMENT_ID}`;
-    googleTag.onerror = () => {};
-    document.head.appendChild(googleTag);
-
-    window.gtag('js', new Date());
-    window.gtag('config', MEASUREMENT_ID, {
-      allow_google_signals: false,
-      allow_ad_personalization_signals: false
-    });
+    const beacon = document.createElement('script');
+    beacon.id = BEACON_ELEMENT_ID;
+    beacon.type = 'module';
+    beacon.src = BEACON_URL;
+    beacon.setAttribute('data-cf-beacon', JSON.stringify({token:CLOUDFLARE_TOKEN}));
+    beacon.onerror = () => {};
+    document.head.appendChild(beacon);
   } catch {
     // Analytics is optional and must never affect Guide startup.
   }
