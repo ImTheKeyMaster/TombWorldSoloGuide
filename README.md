@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v9.2.62
+# Tomb World Battle Guide v9.2.63
+
+## v9.2.63
+
+**Version 9.2.63**
+
+### Dark of the Tomb Reroll Enforcement
+
+- Dark of the Tomb now fully suppresses Player Shoot attack-dice rerolls when the target is confirmed more than 8 inches away.
+- Balanced, Ceaseless, and other Guide-managed attack rerolls now obey the event's shared reroll permission without changing their normal behavior at shorter range, in melee, or for NPO attacks.
+- Preserved combat save/resume behavior and the existing tabletop distance confirmation.
 
 ## v9.2.62
 

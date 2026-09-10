@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.62';
+  const APP_VERSION = '9.2.63';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -6285,7 +6285,7 @@ function showPlayerActivation(){
     return applyRendingToAttackDice(severe.dice,profile).dice;
   }
 
-  async function requestAttackDiceForProfile(profile,{rollerLabel='',requestKeyBase='',attackerSide='npo',container,onInitialRoll}={}){
+  async function requestAttackDiceForProfile(profile,{rollerLabel='',requestKeyBase='',attackerSide='npo',container,onInitialRoll,rerollPolicy}={}){
     const total=Math.max(0,Number(profile?.dice||0));
     const accurate=Math.min(Number(profile?.accurate||0),total);
     const rolledCount=total-accurate;
@@ -6300,7 +6300,7 @@ function showPlayerActivation(){
     ]);
     if(onInitialRoll)onInitialRoll(dice);
     if(isPvpMode())acknowledgeDiceRequest(requestKey);
-    const rerolled=await applyWeaponRuleRerolls(dice,profile,{attackerSide,container,rollerLabel,requestKeyBase,onCheckpoint:onInitialRoll});
+    const rerolled=await applyWeaponRuleRerolls(dice,profile,{attackerSide,container,rollerLabel,requestKeyBase,onCheckpoint:onInitialRoll,rerollPolicy});
     const severe=applySevereToAttackDice(retainSuccessfulDice(rerolled),profile);
     return applyRendingToAttackDice(severe.dice,profile).dice;
   }
@@ -6359,13 +6359,15 @@ function showPlayerActivation(){
     return (dice||[]).map(die=>({...die,rerollRulesResolved:[...new Set([...(die.rerollRulesResolved||[]),ruleId])]}));
   }
 
-  function weaponRuleRerollsComplete(dice,profile){
+  function weaponRuleRerollsComplete(dice,profile,rerollPolicy){
+    if(rerollPolicy?.attackDice===false)return true;
     const rules=['balanced','ceaseless'].filter(ruleId=>weaponHasRule(profile,ruleId));
     return rules.every(ruleId=>(dice||[]).every(die=>(die.rerollRulesResolved||[]).includes(ruleId)));
   }
 
-  async function applyWeaponRuleRerolls(dice,profile,{attackerSide='npo',container,rollerLabel='',requestKeyBase='',onCheckpoint}={}){
+  async function applyWeaponRuleRerolls(dice,profile,{attackerSide='npo',container,rollerLabel='',requestKeyBase='',onCheckpoint,rerollPolicy}={}){
     let updated=(dice||[]).map(die=>({...die}));
+    if(rerollPolicy?.attackDice===false)return updated;
     const humanControlled=attackerSide==='player'||isPvpMode();
     for(const ruleId of ['balanced','ceaseless']){
       if(!weaponHasRule(profile,ruleId))continue;
@@ -6867,7 +6869,7 @@ function showPlayerActivation(){
     return messages.map(message=>`<p class="severe-applied" role="status">${escapeHtml(message)}</p>`).join('');
   }
 
-  function runAutomaticCombatRolls({container,profile,defenseSave,defenderWounds=0,attackerSide='npo',attackType='shoot',attackerLabel='',defenderLabel='',requestKeyBase='',rolledAttackDice=null,rolledDefenseDice=null,onAttackComplete,onComplete,onError}){
+  function runAutomaticCombatRolls({container,profile,defenseSave,defenderWounds=0,attackerSide='npo',attackType='shoot',attackerLabel='',defenderLabel='',requestKeyBase='',rolledAttackDice=null,rolledDefenseDice=null,rerollPolicy,onAttackComplete,onComplete,onError}){
     // Restored pools still receive the same conversion represented previously by
     // applySevereToAttackDice(retainSuccessfulDice(rolledAttackDice),profile).dice;
     // Fresh pools remain: rolledAttackDice ? restored : await requestAttackDiceForProfile(profile, ...).
@@ -6880,12 +6882,12 @@ function showPlayerActivation(){
         let attackDice;
         if(rolledAttackDice){
           if(isPvpMode()&&state.pendingDice?.requestKey===`${requestKeyBase}:attack`)acknowledgeDiceRequest(state.pendingDice.requestKey);
-          const needsRerollResume=!weaponRuleRerollsComplete(rolledAttackDice,profile);
+          const needsRerollResume=!weaponRuleRerollsComplete(rolledAttackDice,profile,rerollPolicy);
           const resumedDice=needsRerollResume
-            ? await applyWeaponRuleRerolls(rolledAttackDice,profile,{attackerSide,container,rollerLabel:attackerLabel,requestKeyBase,onCheckpoint:onAttackComplete})
+            ? await applyWeaponRuleRerolls(rolledAttackDice,profile,{attackerSide,container,rollerLabel:attackerLabel,requestKeyBase,onCheckpoint:onAttackComplete,rerollPolicy})
             : rolledAttackDice;
           attackDice=applyAttackSuccessConversions(resumedDice,profile);
-        }else attackDice=await requestAttackDiceForProfile(profile,{rollerLabel:attackerLabel,requestKeyBase,attackerSide,container,onInitialRoll:onAttackComplete});
+        }else attackDice=await requestAttackDiceForProfile(profile,{rollerLabel:attackerLabel,requestKeyBase,attackerSide,container,onInitialRoll:onAttackComplete,rerollPolicy});
         if(cancelled||!container.isConnected)return;
         if(isPvpMode()&&!rolledAttackDice&&onAttackComplete){onAttackComplete(attackDice);acknowledgeDiceRequest(`${requestKeyBase}:attack`);}
         else if(onAttackComplete)onAttackComplete(attackDice);
@@ -7569,7 +7571,7 @@ function showPlayerActivation(){
       if(rollStarted)return;
       rollStarted=true;
       runAutomaticCombatRolls({container:screen.dice,profile,defenseSave:target.save,defenderWounds:targetSide==='player'?playerCurrentWounds(target.id):projectedNpoWounds(target.id,stage),attackerSide:'player',attackType,attackerLabel:playerName(stage.playerOperativeId),defenderLabel:targetName,requestKeyBase:`combat:${transactionId}`,
-        rolledAttackDice:committedAttackDice,rolledDefenseDice:committedDefenseDice,
+        rolledAttackDice:committedAttackDice,rolledDefenseDice:committedDefenseDice,rerollPolicy:rerolls,
         onAttackComplete:attackDice=>{
           diceDraft.attackDice=attackDice.map(die=>({...die}));
           stage[`${attackType}CombatDraft`]={rolling:true,attackType,targetId,targetName,weaponIndex,profile,attackDice:diceDraft.attackDice};

@@ -153,7 +153,7 @@ def test_skipped_and_restored_rerolls_are_checkpointed_once():
     shared = section("function runAutomaticCombatRolls", "function retainedDiceTotals")
     acknowledge = "state.pendingDice?.requestKey===`${requestKeyBase}:attack`"
     assert acknowledge in shared
-    assert "const needsRerollResume=!weaponRuleRerollsComplete(rolledAttackDice,profile)" in shared
+    assert "const needsRerollResume=!weaponRuleRerollsComplete(rolledAttackDice,profile,rerollPolicy)" in shared
 
 
 def test_each_rule_is_checkpointed_before_the_next_rule_can_open():
