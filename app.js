@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.61';
+  const APP_VERSION = '9.2.62';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -4002,10 +4002,10 @@ document.addEventListener('touchend',function(e){
     const scuttlingResolved=state.strategyData?.ceaselessScuttlingTurningPoint===state.turningPoint;
     const scuttlingSetUp=scuttlingResolved&&(state.activationHistory||[]).some(entry=>entry.action==='A Ceaseless Scuttling'&&entry.turningPoint===state.turningPoint);
     const soloScuttlingControl=scuttlingSetUp
-      ? '<label class="check-row required-confirmation-row"><input type="checkbox" checked disabled><span>Macrocyte Warrior set up</span></label>'
+      ? '<p class="strategy-exception-complete">Macrocyte Warrior set up.</p>'
       : scuttlingResolved
-        ? '<p class="strategy-exception-complete">No legal setup location reported.</p>'
-        : '<label class="check-row required-confirmation-row" for="scuttlingPlacement"><input id="scuttlingPlacement" type="checkbox"><span>Macrocyte Warrior set up</span></label><button type="button" class="btn ghost strategy-exception-action" id="scuttlingNoLegalSetup">No legal setup location</button>';
+        ? '<p class="strategy-exception-complete">No legal setup location was available.</p>'
+        : '<button type="button" class="btn primary big-action" id="scuttlingSetup">Set Up Macrocyte Warrior</button><button type="button" class="btn ghost strategy-exception-action" id="scuttlingNoLegalSetup">No Legal Setup Location</button>';
     const scuttlingCard=state.turningPoint>1&&scuttlingAvailable&&(isPvpMode()||scuttlingEligible||scuttlingResolved)
       ? `<section class="card reinforcement-card"><p class="eyebrow">STRATEGIC GAMBIT</p><h3>A Ceaseless Scuttling</h3><p>${scuttlingEligible?(isPvpMode()?'Fewer than three Macrocyte Warriors remain. You may reuse an incapacitated miniature to set up a new operative instance.':'Fewer than three Macrocyte Warriors remain. Set up another Macrocyte Warrior ready with a Conceal order wholly within the NPO drop zone.'):scuttlingResolved&&!isPvpMode()?'A Ceaseless Scuttling is complete for this Turning Point.':escapeHtml(ceaselessScuttlingUnavailableReason())}</p>${isPvpMode()?`<button class="btn secondary" id="ceaselessScuttling" ${scuttlingEligible?'':'disabled'}>Use A Ceaseless Scuttling</button>`:soloScuttlingControl}</section>`:'';
     const actionsHtml=`${missionStrategyPromptHtml()}${factionGuidanceHtml('gambits')}${scuttlingCard}`;
@@ -4314,7 +4314,7 @@ document.addEventListener('touchend',function(e){
     $('#backStrategyEvents')?.addEventListener('click',()=>showStrategyViewStep('events','review'));
     $('#continueStrategy')?.addEventListener('click',()=>{if(!canCompleteStrategyPhase())return;beginFirefight(state.strategyData?.suggestedInitiative==='npo'?'npo':'player');});
     $('#ceaselessScuttling')?.addEventListener('click',showCeaselessScuttling);
-    $('#scuttlingPlacement')?.addEventListener('change',event=>{if(event.currentTarget.checked)confirmSoloCeaselessScuttlingSetup();});
+    $('#scuttlingSetup')?.addEventListener('click',confirmSoloCeaselessScuttlingSetup);
     $('#scuttlingNoLegalSetup')?.addEventListener('click',resolveCeaselessScuttlingWithoutSetup);
     $('#retryMissionReady')?.addEventListener('click',continueTurningPointStart);
     $('#retryStrategyDice')?.addEventListener('click',finishTurningPointStart);
