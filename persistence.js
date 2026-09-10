@@ -83,7 +83,7 @@
   const migrations = {0:migrate0to1,1:migrate1to2,2:migrate2to3};
 
   function migrationReport(sourceVersion){
-    return {sourceVersion,targetVersion:SAVE_VERSION,outcome:'current',aliasesApplied:[],instanceNamesRepaired:[],instanceIdsCreated:[],instanceIdsRepaired:[],loadoutsNormalized:[],woundsClamped:[],portraitFieldsRemoved:0,matrixFieldsRemoved:0,unsupportedRetiredTypes:[],invalidPhysicalLimits:[],temporaryEffectsRemoved:0,pendingStateCleared:[],requiresRegeneration:false,completedHistoryPreserved:true,warnings:[],errors:[]};
+    return {sourceVersion,targetVersion:SAVE_VERSION,outcome:'current',aliasesApplied:[],instanceNamesRepaired:[],instanceIdsCreated:[],instanceIdsRepaired:[],loadoutsNormalized:[],woundsClamped:[],portraitFieldsRemoved:0,matrixFieldsRemoved:0,unsupportedRetiredTypes:[],invalidVariantNpos:[],invalidPhysicalLimits:[],temporaryEffectsRemoved:0,pendingStateCleared:[],requiresRegeneration:false,completedHistoryPreserved:true,warnings:[],errors:[]};
   }
   function canonicalCatalog(catalog){
     if(!isRecord(catalog)||!Object.keys(catalog).length)throw new TypeError('The authoritative NPO catalog is required.');

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '9.2.58';
+  const APP_VERSION = '9.2.59';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -771,19 +771,19 @@ document.addEventListener('touchend',function(e){
   // hooks introduce them through rules-driven generation, not the manual Add NPO tool.
   const tombsBeyondCountingNpoDefinitions = Object.freeze({
     'Flayed One': {
-      id:'flayed-one',name:'Flayed One',type:'Flayed One',faction:'Necron',move:5,apl:2,save:4,wounds:9,baseSize:32,
+      id:'flayed-one',name:'Flayed One',type:'Flayed One',faction:'Necron',physicalQuantity:Infinity,move:5,apl:2,save:4,wounds:9,baseSize:32,
       keywords:['Necron','Flayed One'],compatibilityBehavior:null,compatibilityAttack:{dice:4,hit:3,normal:4,crit:5},defaultWeaponId:'flayer-claws',loadoutOptions:null,
       rangedWeapons:[],meleeWeapons:[{id:'flayer-claws',name:'Flayer claws',type:'melee',attacks:4,hit:3,damage:{normal:4,critical:5},rules:['Ceaseless','Rending'],ruleIds:['ceaseless','rending']}],
       actions:[],passiveRules:[],abilities:[{id:'horrifying-flaying',name:'Horrifying Flaying',deferred:true}],strategicRules:[],behavior:{summary:'Move toward the enemy to Fight, seeking cover.',actions:['Fight','Charge','Reposition','Dash'],focus:'fight',operatesHatches:true,orderRule:'engage-if-fight-or-charge'}
     },
     'Skorpekh Destroyer': {
-      id:'skorpekh-destroyer',name:'Skorpekh Destroyer',type:'Skorpekh Destroyer',faction:'Necron',move:6,apl:2,save:3,wounds:18,baseSize:50,
+      id:'skorpekh-destroyer',name:'Skorpekh Destroyer',type:'Skorpekh Destroyer',faction:'Necron',physicalQuantity:Infinity,move:6,apl:2,save:3,wounds:18,baseSize:50,
       keywords:['Necron','Destroyer Cult','Skorpekh Destroyer'],compatibilityBehavior:null,compatibilityAttack:{dice:4,hit:3,normal:4,crit:6},defaultWeaponId:'skorpekh-hyperphase-weapons',loadoutOptions:null,
       rangedWeapons:[],meleeWeapons:[{id:'skorpekh-hyperphase-weapons',name:'Skorpekh hyperphase weapons',type:'melee',attacks:4,hit:3,damage:{normal:4,critical:6},rules:['Balanced','Lethal 5+','Whirling Onslaught*'],ruleIds:['balanced','lethal'],lethal:5,deferredRules:['Whirling Onslaught']}],
       actions:[],passiveRules:[{id:'hulking',name:'Hulking',deferred:true}],abilities:[{id:'hulking',name:'Hulking',deferred:true}],strategicRules:[],behavior:{summary:'Move toward the enemy to Fight, seeking cover.',actions:['Fight','Charge','Reposition','Dash'],focus:'fight',operatesHatches:true,orderRule:'engage-if-fight-or-charge'}
     },
     'Hexmark Destroyer': {
-      id:'hexmark-destroyer',name:'Hexmark Destroyer',type:'Hexmark Destroyer',faction:'Necron',move:6,apl:2,save:3,wounds:15,baseSize:50,
+      id:'hexmark-destroyer',name:'Hexmark Destroyer',type:'Hexmark Destroyer',faction:'Necron',physicalQuantity:Infinity,move:6,apl:2,save:3,wounds:15,baseSize:50,
       keywords:['Necron','Destroyer Cult','Hexmark Destroyer'],compatibilityBehavior:null,compatibilityAttack:{dice:5,hit:3,normal:3,crit:2},defaultWeaponId:'enmitic-disintegrator-pistols',loadoutOptions:null,
       rangedWeapons:[{id:'enmitic-disintegrator-pistols',name:'Enmitic disintegrator pistols',type:'ranged',profiles:[
         {id:'focused',name:'Focused',attacks:5,hit:3,damage:{normal:3,critical:2},rules:['Range 9"','Ceaseless','Devastating 2','Piercing 1','Saturate'],ruleIds:['range','ceaseless','devastating','piercing','saturate'],range:9,devastating:2,piercing:1},
@@ -793,14 +793,14 @@ document.addEventListener('touchend',function(e){
       actions:[],passiveRules:[],abilities:[{id:'multi-threat-eliminator',name:'Multi-Threat Eliminator',deferred:true}],strategicRules:[],behavior:{summary:'Seek an unobscured shot, otherwise improve the mission position.',actions:['Fall Back','Shoot','Reposition','Dash','Fight'],focus:'shoot',operatesHatches:true,orderRule:'engage-if-shoot-or-fight'}
     },
     'Royal Warden': {
-      id:'royal-warden',name:'Royal Warden',type:'Royal Warden',faction:'Necron',move:5,apl:3,save:3,wounds:14,baseSize:32,
+      id:'royal-warden',name:'Royal Warden',type:'Royal Warden',faction:'Necron',physicalQuantity:Infinity,move:5,apl:3,save:3,wounds:14,baseSize:32,
       keywords:['Necron','Royal Warden'],compatibilityBehavior:null,compatibilityAttack:{dice:4,hit:3,normal:4,crit:6},defaultWeaponId:'relic-gauss-blaster',loadoutOptions:null,
       rangedWeapons:[{id:'relic-gauss-blaster',name:'Relic gauss blaster',type:'ranged',attacks:4,hit:3,damage:{normal:4,critical:6},rules:['Lethal 5+','Piercing 1'],ruleIds:['lethal','piercing'],lethal:5,piercing:1}],
       meleeWeapons:[{id:'bayonet',name:'Bayonet',type:'melee',attacks:4,hit:3,damage:{normal:3,critical:4},rules:[],ruleIds:[]}],
       actions:[],passiveRules:[],abilities:[{id:'engrammatic-logic',name:'Engrammatic Logic',deferred:true}],strategicRules:[],behavior:{summary:'Seek an unobscured shot, otherwise improve the mission position.',actions:['Fall Back','Shoot','Reposition','Dash','Fight'],focus:'shoot',operatesHatches:true,orderRule:'engage-if-shoot-or-fight'}
     },
     'Lychguard': {
-      id:'lychguard',name:'Lychguard',type:'Lychguard',faction:'Necron',move:5,apl:2,save:3,wounds:13,baseSize:32,exclusiveMeleeLoadout:true,
+      id:'lychguard',name:'Lychguard',type:'Lychguard',faction:'Necron',physicalQuantity:Infinity,move:5,apl:2,save:3,wounds:13,baseSize:32,exclusiveMeleeLoadout:true,
       keywords:['Necron','Lychguard'],compatibilityBehavior:null,compatibilityAttack:{dice:4,hit:3,normal:4,crit:6},defaultWeaponId:'hyperphase-sword',loadoutOptions:[{id:'hyperphase-sword',name:'Hyperphase sword'},{id:'warscythe',name:'Warscythe'}],
       rangedWeapons:[],meleeWeapons:[
         {id:'hyperphase-sword',name:'Hyperphase sword',type:'melee',attacks:4,hit:3,damage:{normal:4,critical:6},rules:['Lethal 5+','Shield*'],ruleIds:['lethal'],lethal:5,deferredRules:['Shield']},
@@ -923,6 +923,7 @@ document.addEventListener('touchend',function(e){
     {min:12,max:12,type:'Canoptek Tomb Crawler',weaponIds:['transdimensional-isolator']}
   ];
   const tombsBeyondCountingNpoDefinitionsForValidation=tombsBeyondCountingNpoDefinitions;
+  const persistenceNpoDefinitions=Object.freeze({...npoDefinitions,...tombsBeyondCountingNpoDefinitions});
   const MAX_PHYSICAL_NPOS = Object.values(npoDefinitions).reduce((total,definition)=>total+definition.physicalQuantity,0);
   const TOMB_CRAWLER_TYPE = 'Canoptek Tomb Crawler';
   const ISOLATOR_LOADOUT = 'transdimensional-isolator';
@@ -1225,11 +1226,20 @@ document.addEventListener('touchend',function(e){
       const saved=localStorage.getItem(STORAGE_KEY);
       if(!saved)return null;
       const parsed=JSON.parse(saved);
-      return migrateSaveDetailed(parsed,npoDefinitions);
+      return migrateSupportedSave(parsed);
     }catch(error){
       console.warn('[Persistence] Saved game could not be loaded; the original save was left unchanged.',error);
       return null;
     }
+  }
+  function migrateSupportedSave(input){
+    const migration=migrateSaveDetailed(input,persistenceNpoDefinitions);
+    const invalidVariantNpos=[...new Set((Array.isArray(migration.state.roster)?migration.state.roster:[])
+      .filter(npo=>tombsBeyondCountingNpoDefinitionsForValidation[npo.type]&&!variantAllowsExpansionNpo(npo.type,migration.state.tombWorldVariant))
+      .map(npo=>npo.type))];
+    migration.report.invalidVariantNpos=invalidVariantNpos;
+    if(invalidVariantNpos.length){migration.report.requiresRegeneration=true;migration.report.outcome='regeneration-required';}
+    return migration;
   }
   function recoverInvalidMission(){
     if(!state.missionId||missionDefinition(state.missionId))return false;
@@ -9805,7 +9815,7 @@ function showPlayerActivation(){
     }
   }
   function showRegenerationNotice(migration,source){
-    const causes=[...migration.report.unsupportedRetiredTypes,...migration.report.invalidPhysicalLimits,...migration.report.errors];
+    const causes=[...migration.report.unsupportedRetiredTypes,...(migration.report.invalidVariantNpos||[]),...migration.report.invalidPhysicalLimits,...migration.report.errors];
     showModal('Current battle cannot be resumed',`<p>The current battle uses retired or invalid NPO data and cannot be resumed safely.</p>${causes.length?`<p><strong>Cause:</strong> ${causes.map(escapeHtml).join('; ')}</p>`:''}<p>The battle will return to setup and a new legal NPO roster must be generated. The selected mission, player team and roster choices, completed battle history, settings, and preferences will be preserved where possible.</p><div class="wizard-actions"><button class="btn ghost" data-close>Cancel</button><button class="btn danger" id="confirmLegacyReset">Return to Setup</button></div>`);
     $('#confirmLegacyReset').onclick=async()=>{
       const reset=resetActiveBattle(migration.state);closeModal();
@@ -9815,7 +9825,7 @@ function showPlayerActivation(){
   importInput.addEventListener('change',async()=>{
     const f=importInput.files?.[0];if(!f)return;
     try{
-      const data=JSON.parse(await f.text()),migration=migrateSaveDetailed(data,npoDefinitions);
+      const data=JSON.parse(await f.text()),migration=migrateSupportedSave(data);
       if(migration.report.requiresRegeneration){showRegenerationNotice(migration,'import');return;}
       if(await commitImported(migration.state,migration.report)){
         if(hasMeaningfulMigrationChanges(migration.report))showMigrationNotice(migration.report);else showToast('Save imported.');
