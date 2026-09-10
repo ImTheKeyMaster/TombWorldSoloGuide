@@ -14,7 +14,9 @@ WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 PERSISTENCE = (ROOT / "persistence.js").read_text(encoding="utf-8")
 
 
-def run_analytics(hostname, pathname, protocol="https:", online=True, runs=1):
+def run_analytics(
+    hostname, pathname, protocol="https:", online=True, runs=1, fail_append=False
+):
     harness = f"""
 const vm = require('node:vm');
 const source = {json.dumps(ANALYTICS)};
@@ -24,7 +26,10 @@ const context = {{
   navigator: {{onLine: {json.dumps(online)}}},
   document: {{
     createElement: () => ({{}}),
-    head: {{appendChild: element => appended.push(element)}}
+    head: {{appendChild: element => {{
+      if ({json.dumps(fail_append)}) throw new Error('head unavailable');
+      appended.push(element);
+    }}}}
   }},
   Date
 }};
@@ -82,7 +87,10 @@ def test_nonproduction_and_offline_locations_do_not_initialize_ga4():
 
 
 def test_analytics_module_is_isolated_nonblocking_and_contains_no_gameplay_data():
-    assert '<script async src="analytics.js"></script>' in INDEX
+    assert (
+        f'<script async src="analytics.js?release={CURRENT_APP_VERSION}"></script>'
+        in INDEX
+    )
     assert "gtag" not in APP.lower()
     assert APP.count("Usage Analytics:") == 1
     for forbidden in (
@@ -101,8 +109,17 @@ def test_analytics_module_is_isolated_nonblocking_and_contains_no_gameplay_data(
     assert "googleTag.onerror = () => {};" in ANALYTICS
 
 
+def test_analytics_initialization_failure_is_nonfatal():
+    result = run_analytics(
+        "imthekeymaster.github.io",
+        "/TombWorldSoloGuide/",
+        fail_append=True,
+    )
+    assert result["appended"] == 0
+
+
 def test_analytics_assets_and_requests_preserve_offline_cache_boundaries():
-    assert "'./analytics.js'" in WORKER
+    assert "`./analytics.js?release=${APP_VERSION}`" in WORKER
     for google_host in (
         "googletagmanager.com",
         "google-analytics.com",
