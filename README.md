@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v9.2.60
+# Tomb World Battle Guide v9.2.61
+
+## v9.2.61
+
+**Version 9.2.61**
+
+### A Ceaseless Scuttling Solo Setup Confirmation
+
+- Replaced the redundant Solo "Resolve A Ceaseless Scuttling" action button with a direct "Macrocyte Warrior set up" tabletop confirmation checkbox.
+- The Guide still determines when the Gambit applies, while the Player confirms only the physical placement of the new Macrocyte Warrior.
+- Preserved the no-legal-setup-location path, PvP choices, existing Scuttling rules, and save/resume behavior.
 
 ## v9.2.60
 

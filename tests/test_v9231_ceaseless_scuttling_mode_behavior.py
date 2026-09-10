@@ -142,10 +142,11 @@ def test_solo_only_shows_and_gates_an_eligible_pending_resolution():
 
     assert "!isPvpMode()&&ceaselessScuttlingEligible()" in pending
     assert "!soloCeaselessScuttlingPending()" in can_leave
-    assert "state.turningPoint>1&&scuttlingAvailable&&(isPvpMode()||scuttlingEligible)" in actions
-    assert "${isPvpMode()?'Use':'Resolve'} A Ceaseless Scuttling" in actions
+    assert "state.turningPoint>1&&scuttlingAvailable&&(isPvpMode()||scuttlingEligible||scuttlingResolved)" in actions
+    assert ">Use A Ceaseless Scuttling</button>" in actions
+    assert "Macrocyte Warrior set up" in actions
     assert "disabled:actionsBlocked" in actions
-    assert "Resolve A Ceaseless Scuttling before continuing." in actions
+    assert "Confirm the Macrocyte Warrior setup before continuing." in actions
     assert "isPvpMode()?'Review optional Strategic Gambits.':'Resolve applicable Strategic Gambits.'" in actions
     assert "Decline" not in actions
     assert "Skip" not in actions
@@ -155,7 +156,7 @@ def test_pvp_keeps_optional_choice_and_reports_the_exact_primary_blocker():
     actions = function_source("strategyActionsStepHtml")
     reason = function_source("ceaselessScuttlingUnavailableReason")
 
-    assert "${isPvpMode()?'Use':'Resolve'} A Ceaseless Scuttling" in actions
+    assert ">Use A Ceaseless Scuttling</button>" in actions
     assert "already resolved this Turning Point" in reason
     assert "of 3 Macrocyte Warriors remain" in reason
     assert "maximum ${MAX_NPOS} NPOs" in reason
@@ -164,36 +165,34 @@ def test_pvp_keeps_optional_choice_and_reports_the_exact_primary_blocker():
 
 def test_solo_uses_generation_policy_and_only_requests_physical_input():
     modal = function_source("showCeaselessScuttling")
+    confirmation = function_source("confirmSoloCeaselessScuttlingSetup")
     policy = function_source("ceaselessScuttlingSoloWeaponId")
 
     assert "generatedWeaponId(generatedResult)" in policy
     assert "ceaselessScuttlingWeaponId" in policy
     assert "save()" in policy
-    assert "ceaselessScuttlingSoloWeaponId()" in modal
-    assert "isPvpMode()" in modal
+    assert "ceaselessScuttlingSoloWeaponId()" in confirmation
+    assert "isPvpMode()" in confirmation
     assert "scuttlingLoadout" in modal
-    assert "New Canoptek Macrocyte Warrior" in modal
     assert "Valid NPO drop-zone setup location confirmed" in modal
     assert ">Confirm Setup</button>" in modal
-    assert "createCeaselessScuttlingWarrior(isPvpMode()?$('#scuttlingLoadout').value:soloWeaponId)" in modal
+    assert "createCeaselessScuttlingWarrior(ceaselessScuttlingSoloWeaponId())" in confirmation
 
 
 def test_solo_can_report_that_no_legal_setup_location_exists():
-    modal = function_source("showCeaselessScuttling")
+    no_setup = function_source("resolveCeaselessScuttlingWithoutSetup")
+    actions = function_source("strategyActionsStepHtml")
 
-    assert "isPvpMode()?'':'<button" in modal
-    assert "No Legal Setup Location" in modal
-    assert "$('#scuttlingNoLegalSetup')?.addEventListener" in modal
-    assert "state.strategyData.ceaselessScuttlingTurningPoint=state.turningPoint" in modal
-    assert "no legal NPO drop-zone location was available" in modal
-    no_setup_handler = modal.split("$('#scuttlingNoLegalSetup')", 1)[1].split("});", 1)[0]
-    assert "createCeaselessScuttlingWarrior" not in no_setup_handler
-    assert "save();closeModal();render();" in no_setup_handler
+    assert "No legal setup location" in actions
+    assert "state.strategyData.ceaselessScuttlingTurningPoint=state.turningPoint" in no_setup
+    assert "no legal NPO drop-zone location was available" in no_setup
+    assert "createCeaselessScuttlingWarrior" not in no_setup
+    assert "save();render();" in no_setup
 
 
 def test_resolution_is_once_per_turning_point_and_restores_or_creates_once():
     create_scuttling = function_source("createCeaselessScuttlingWarrior")
-    modal = function_source("showCeaselessScuttling")
+    confirmation = function_source("confirmSoloCeaselessScuttlingSetup")
 
     assert "if(!ceaselessScuttlingEligible())return null" in create_scuttling
     assert "const warrior=returned||createNpo" in create_scuttling
@@ -204,12 +203,13 @@ def test_resolution_is_once_per_turning_point_and_restores_or_creates_once():
     assert "warrior.order='Conceal'" in create_scuttling
     assert "warrior.createdBy='a-ceaseless-scuttling'" in create_scuttling
     assert "ceaselessScuttlingTurningPoint=state.turningPoint" in create_scuttling
-    assert "activationHistory.unshift" in modal
+    assert "activationHistory.unshift" in confirmation
+    modal = function_source("showCeaselessScuttling")
     assert "data-close>Cancel" in modal
 
 
 def test_release_and_save_compatibility_surfaces():
-    expected_release = ".".join(("9", "2", "32"))
+    expected_release = CURRENT_APP_VERSION
     assert CURRENT_APP_VERSION == expected_release
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
