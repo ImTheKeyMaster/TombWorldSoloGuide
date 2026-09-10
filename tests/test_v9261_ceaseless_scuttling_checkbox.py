@@ -20,9 +20,7 @@ def function_source(name):
 
 
 def test_release_surfaces_move_from_confirmed_baseline_to_v9261():
-    assert "d2292eb v9.2.60" in subprocess.run(
-        ["git", "log", "-10", "--oneline"], cwd=ROOT, check=True, capture_output=True, text=True
-    ).stdout
+    assert "## v9.2.60\n\n**Version 9.2.60**" in README
     assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (9, 2, 61)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
@@ -50,23 +48,31 @@ def test_solo_card_is_an_accessible_tabletop_confirmation_not_an_action_modal():
 
 
 def test_solo_confirmation_commits_once_and_keeps_existing_creation_rules():
+    available = function_source("ceaselessScuttlingAvailable")
+    eligible = function_source("ceaselessScuttlingEligible")
     create = function_source("createCeaselessScuttlingWarrior")
     confirm = function_source("confirmSoloCeaselessScuttlingSetup")
     script = "\n".join(
         (
-            "const state={turningPoint:2,strategyData:{},activationHistory:[]};",
-            "let creations=0,saves=0,renders=0;",
+            "const MAX_NPOS=10;",
+            "const state={turningPoint:2,strategyData:{},activationHistory:[],roster:[{id:'original',type:'Canoptek Macrocyte Warrior',wounds:7,battlefieldState:'deployed'}]};",
+            "let creations=0,saves=0,renders=0,logs=0;",
             "const isPvpMode=()=>false;",
-            "const ceaselessScuttlingEligible=()=>state.strategyData.ceaselessScuttlingTurningPoint!==state.turningPoint;",
             "const ceaselessScuttlingSoloWeaponId=()=>\"synaptic-discharger\";",
-            "const createCeaselessScuttlingWarrior=weaponId=>{if(!ceaselessScuttlingEligible())return null;creations++;state.strategyData.ceaselessScuttlingTurningPoint=state.turningPoint;return {id:\"npo-1\",name:\"Macrocyte\",weaponId};};",
-            "const npoName=warrior=>warrior.name;",
+            "const definition={type:'Canoptek Macrocyte Warrior',name:'Macrocyte Warrior',wounds:7,loadoutOptions:[{id:'synaptic-discharger',name:'Synaptic discharger'}]};",
+            "const npoDefinition=()=>definition;",
+            "const createNpo=(type,name,options)=>{creations++;return {id:'npo-1',type,name,weaponId:options.weaponId,wounds:7,ready:options.ready,dormant:options.dormant,deployed:true,battlefieldState:'deployed'};};",
+            "const npoName=warrior=>warrior.name; const log=()=>logs++;",
             "const save=()=>saves++; const render=()=>renders++;",
             "const requestAnimationFrame=callback=>callback(); const $=()=>null;",
+            available.strip(),
+            eligible.strip(),
+            create.strip(),
             confirm.strip(),
             "const first=confirmSoloCeaselessScuttlingSetup();",
             "const second=confirmSoloCeaselessScuttlingSetup();",
-            "console.log(JSON.stringify({first,second,creations,saves,renders,history:state.activationHistory.length,marker:state.strategyData.ceaselessScuttlingTurningPoint}));",
+            "const warrior=state.roster.find(item=>item.createdBy==='a-ceaseless-scuttling');",
+            "console.log(JSON.stringify({first,second,creations,saves,renders,logs,history:state.activationHistory.length,marker:state.strategyData.ceaselessScuttlingTurningPoint,generated:state.roster.filter(item=>item.createdBy==='a-ceaseless-scuttling').length,warrior}));",
         )
     )
     result = subprocess.run(["node", "-e", script], check=True, capture_output=True, text=True)
@@ -77,8 +83,23 @@ def test_solo_confirmation_commits_once_and_keeps_existing_creation_rules():
         "creations": 1,
         "saves": 1,
         "renders": 1,
+        "logs": 1,
         "history": 1,
         "marker": 2,
+        "generated": 1,
+        "warrior": {
+            "id": "npo-1",
+            "type": "Canoptek Macrocyte Warrior",
+            "name": "Macrocyte Warrior",
+            "weaponId": "synaptic-discharger",
+            "wounds": 7,
+            "ready": True,
+            "dormant": False,
+            "deployed": True,
+            "battlefieldState": "deployed",
+            "createdBy": "a-ceaseless-scuttling",
+            "order": "Conceal",
+        },
     }
     assert "if(!ceaselessScuttlingEligible())return null" in create
     assert "ready:true" in create
