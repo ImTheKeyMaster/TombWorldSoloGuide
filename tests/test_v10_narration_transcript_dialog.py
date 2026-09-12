@@ -10,6 +10,7 @@ INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
 NARRATION = (ROOT / "narration.js").read_text(encoding="utf-8")
 TRANSCRIPT = (ROOT / "narration-transcript.js").read_text(encoding="utf-8")
 STYLES = (ROOT / "styles.css").read_text(encoding="utf-8")
+WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 
 
 class NarrationTranscriptDialogTests(unittest.TestCase):
@@ -87,6 +88,9 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
         self.assertIn("overflow:auto", STYLES)
         self.assertIn("@media(max-width:480px)", STYLES)
         self.assertIn("env(safe-area-inset-bottom)", STYLES)
+        transcript_body_rule = STYLES.split(".narration-transcript-body{", 1)[1].split("}", 1)[0]
+        self.assertIn("min-height:0", transcript_body_rule)
+        self.assertNotIn("narration-transcript.js", WORKER)
         self.assertIn(f">V{CURRENT_APP_VERSION}<", INDEX)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
         self.assertIn("const STORAGE_KEY = 'tombWorldBattleGuide.v1';", (ROOT / "app.js").read_text())

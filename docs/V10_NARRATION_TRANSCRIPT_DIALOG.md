@@ -60,4 +60,4 @@ At phone widths, including approximately 390px, the dialog retains edge and safe
 9. Simulate a missing alignment response. Confirm “Transcript unavailable.” while all media controls remain usable.
 10. Repeat at a 390px viewport and phone landscape. Confirm there is no horizontal overflow or clipped control and only the transcript body scrolls.
 
-Stage 3 does not add the alignment JSON files to the app shell. Because the new local UI module is added to the existing shell list without a release version bump, local PWA testing may require clearing site data as described above.
+Stage 3 does not change the versioned service-worker app shell or add alignment JSON files to it. Offline packaging and cache-version integration remain deferred to the dedicated offline stage. Until that release updates the cache version, local PWA testing may require clearing site data as described above.

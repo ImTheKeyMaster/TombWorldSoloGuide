@@ -64,7 +64,8 @@
       const masterDisabled = narration.isMasterEnabled?.() === false || state.pausedByMaster;
       pause.textContent = masterDisabled ? 'Paused' : (state.pausedByUser ? 'Resume' : 'Pause');
       pause.disabled = masterDisabled;
-      pause.setAttribute('aria-describedby', masterDisabled ? 'narrationTranscriptPauseHelp' : '');
+      if (masterDisabled) pause.setAttribute('aria-describedby', 'narrationTranscriptPauseHelp');
+      else pause.removeAttribute('aria-describedby');
       pauseHelp.hidden = !masterDisabled;
     }
 
