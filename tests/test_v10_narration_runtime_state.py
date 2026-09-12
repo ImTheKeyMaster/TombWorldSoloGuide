@@ -99,6 +99,25 @@ const state=n.getPlaybackState();
 if(state.active||state.lastEndReason!=='stop')throw Error('audio error was labeled as natural completion');
 """)
 
+    def test_stale_queue_callback_cannot_finish_a_new_entry(self):
+        self.run_node(r"""
+const first=n.playEvent('first','stale-1');await flush();const staleEnded=Audio.instance.onended;
+n.stop();await first;
+const second=n.playEvent('second','stale-2');await flush();
+staleEnded();
+if(n.getPlaybackState().id!=='event.second'||!n.getPlaybackState().active)throw Error('stale callback finished the new entry');
+Audio.instance.end();if(!await second)throw Error('new queued entry failed');
+""")
+
+    def test_repeated_master_mute_preserves_master_pause_resume(self):
+        self.run_node(r"""
+await n.playMissionIntro('shifting-labyrinth');const player=Audio.instance;player.currentTime=3.5;
+n.setMasterEnabled(false);n.setMasterEnabled(false);
+let state=n.getPlaybackState();if(!state.pausedByMaster||!state.paused||!player.paused)throw Error('repeated mute lost master pause');
+n.setMasterEnabled(true);if(!await n.activateFromGesture())throw Error('master resume failed');
+state=n.getPlaybackState();if(state.pausedByMaster||state.paused||!state.playing||player.currentTime!==3.5)throw Error('master resume state incorrect');
+""")
+
     def test_late_alignment_cannot_replace_new_active_entry_and_queue_continues(self):
         fetch_body = """
 if(url.includes('narration-manifest'))return {ok:true,json:async()=>({entries})};

@@ -285,6 +285,10 @@
       notifyPlaybackActivity(false);
       return false;
     }
+    if (pausedByMaster) {
+      notifyPlaybackActivity(false);
+      return true;
+    }
     if (userPaused || player.paused) {
       pausedByMaster = false;
       notifyPlaybackActivity(false);
@@ -458,8 +462,9 @@
           notifyPlaybackActivity(false);
           resolve();
         };
-        audio.onended = () => finishActiveEvent?.('natural');
-        audio.onerror = () => finishActiveEvent?.('stop');
+        const finish = finishActiveEvent;
+        audio.onended = () => finish('natural');
+        audio.onerror = () => finish('stop');
       });
 
       if (playbackRequest !== requestBeforePlayback + 1) break;
@@ -544,8 +549,9 @@
               notifyPlaybackActivity(false);
               resolve();
             };
-            audio.onended = () => finishActiveEvent?.('natural');
-            audio.onerror = () => finishActiveEvent?.('stop');
+            const finish = finishActiveEvent;
+            audio.onended = () => finish('natural');
+            audio.onerror = () => finish('stop');
           });
           if (generation !== deadlyEncounterGeneration || playbackRequest !== requestBeforePlayback + 1) break;
         }
