@@ -84,9 +84,12 @@ const context={document,TombWorldNarration:narration,requestAnimationFrame:()=>1
 vm.createContext(context);vm.runInContext(fs.readFileSync('narration-transcript.js','utf8'),context);
 context.TombWorldNarrationTranscript.init();
 if(listenerCounts.tombworldnarrationstatechange!==1)throw Error('init attached duplicate state listeners');
-state={active:true,id:'mission.01.intro',category:'mission-intro',currentTimeMs:0,durationMs:1000,transcriptAvailable:true,transcript:'First paragraph.\n\nSecond paragraph.'};listeners.tombworldnarrationstatechange({detail:state});
+state={active:true,id:'mission.01.intro',category:'mission-intro',currentTimeMs:250,durationMs:1000,transcriptAvailable:true,transcript:'First paragraph.\n\nSecond paragraph.'};listeners.tombworldnarrationstatechange({detail:state});
 if(elements.narrationTranscriptCategory.textContent!=='MISSION BRIEFING')throw Error('category eyebrow was not updated');
 if(elements.narrationTranscriptBody.children.length!==2||elements.narrationTranscriptBody.children[1].textContent!=='Second paragraph.')throw Error('paragraph structure was not preserved');
+if(fill.style.width!=='25%'||elements.narrationTranscriptProgress.attributes['aria-valuenow']!=='25')throw Error('progress did not reflect playback position');
+state={...state,currentTimeMs:750};listeners.tombworldnarrationstatechange({detail:state});
+if(fill.style.width!=='75%'||elements.narrationTranscriptProgress.attributes['aria-valuenow']!=='75')throw Error('progress did not update independently of its visual ticks');
 elements.narrationTranscriptSkip.listeners.click();elements.narrationTranscriptStop.listeners.click();
 if(skipCalls!==1||stopCalls!==1)throw Error('transcript controls changed narration actions');
 elements.narrationTranscriptHide.listeners.click();
@@ -141,15 +144,20 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
         dialog_rule = STYLES.split(".narration-transcript-dialog{", 1)[1].split("}", 1)[0]
         body_rule = STYLES.split(".narration-transcript-body{", 1)[1].split("}", 1)[0]
         progress_rule = STYLES.split(".narration-transcript-progress{", 1)[1].split("}", 1)[0]
+        progress_ticks_rule = STYLES.split(".narration-transcript-progress::after{", 1)[1].split("}", 1)[0]
+        progress_fill_rule = STYLES.split(".narration-transcript-progress span{", 1)[1].split("}", 1)[0]
         reopen_rule = STYLES.split(".narration-transcript-reopen{", 1)[1].split("}", 1)[0]
 
         self.assertIn("linear-gradient", dialog_rule)
-        self.assertIn("border-radius:17px", dialog_rule)
+        self.assertIn("clip-path:polygon", dialog_rule)
+        self.assertIn("filter:drop-shadow", dialog_rule)
         self.assertIn("background-size:100% 4px", body_rule)
-        self.assertIn("repeating-linear-gradient", progress_rule)
+        self.assertNotIn("repeating-linear-gradient", progress_fill_rule)
+        self.assertIn("repeating-linear-gradient", progress_ticks_rule)
+        self.assertIn("position:absolute", progress_ticks_rule)
         self.assertIn("max-width:calc(100% - 20px)", STYLES)
         self.assertIn("border-left:3px solid var(--green)", reopen_rule)
-        self.assertNotIn("animation:", "\n".join((dialog_rule, body_rule, progress_rule, reopen_rule)))
+        self.assertNotIn("animation:", "\n".join((dialog_rule, body_rule, progress_rule, progress_ticks_rule, progress_fill_rule, reopen_rule)))
 
 
 if __name__ == "__main__":
