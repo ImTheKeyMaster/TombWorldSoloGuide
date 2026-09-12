@@ -101,6 +101,8 @@ elements.narrationTranscriptHide.listeners.click();
 if(rootClasses.has('narration-transcript-open')||document.body.style.position!=='relative'||document.body.style.top!=='1px'||document.body.style.width!=='95%'||restoredScrollY!==120)throw Error('page scroll lock was not restored');
 if(document.activeElement!==elements.narrationTranscriptReopen)throw Error('hide did not focus reopen');
 elements.narrationTranscriptReopen.listeners.click();
+elements.narrationTranscriptDialog.listeners.close();
+if(!rootClasses.has('narration-transcript-open'))throw Error('stale close event unlocked a reopened dialog');
 elements.narrationTranscriptDialog.close();elements.narrationTranscriptDialog.listeners.close();
 if(rootClasses.has('narration-transcript-open')||restoredScrollY!==120)throw Error('native close did not release page scroll lock');
 state={active:false,id:null,currentTimeMs:0,durationMs:0,lastEndReason:'natural'};listeners.tombworldnarrationstatechange({detail:state});

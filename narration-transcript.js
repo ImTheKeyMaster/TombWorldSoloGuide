@@ -120,7 +120,7 @@
       const page = global.document.documentElement;
       const pageBody = global.document.body;
       if (!page || !pageBody || page.classList.contains('narration-transcript-open')) return;
-      lockedScrollY = global.scrollY || page.scrollTop || 0;
+      lockedScrollY = global.scrollY ?? page.scrollTop ?? 0;
       previousBodyStyles = {
         position: pageBody.style.position,
         top: pageBody.style.top,
@@ -325,7 +325,9 @@
     }
 
     hide.addEventListener('click', hideTranscript);
-    dialog.addEventListener('close', unlockPageScroll);
+    dialog.addEventListener('close', () => {
+      if (!dialogOpen()) unlockPageScroll();
+    });
     dialog.addEventListener('cancel', event => {
       event.preventDefault();
       hideTranscript();
