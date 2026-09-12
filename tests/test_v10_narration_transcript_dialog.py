@@ -66,14 +66,17 @@ for(const [value,want] of [[0,'0:00'],[2486,'0:02'],[23236,'0:23'],[61000,'1:01'
         self.run_node(r"""
 const fs=require('fs'),vm=require('vm');
 const listeners={};let state={active:false,id:null,currentTimeMs:0,durationMs:0};
+const listenerCounts={};
 const document={readyState:'complete',activeElement:null,getElementById:id=>elements[id]};
 function element(id){return elements[id]={id,hidden:false,open:false,isConnected:true,style:{},attributes:{},listeners:{},addEventListener(type,fn){this.listeners[type]=fn},setAttribute(name,value){this.attributes[name]=value},removeAttribute(name){delete this.attributes[name]},focus(){document.activeElement=this},close(){this.open=false},showModal(){this.open=true},querySelector(){return fill}}}
 const elements={},fill={style:{}};
 for(const id of ['narrationTranscriptDialog','narrationTranscriptReopen','narrationTranscriptCategory','narrationTranscriptBody','narrationTranscriptProgress','narrationTranscriptTime','narrationTranscriptHide','narrationTranscriptPause','narrationTranscriptSkip','narrationTranscriptStop','narrationTranscriptPauseHelp'])element(id);
 const origin=element('origin');document.activeElement=origin;
 const narration={getPlaybackState:()=>state,isMasterEnabled:()=>true,pauseNarration(){},resumeNarration(){},skipCurrent(){},stop(){}};
-const context={document,TombWorldNarration:narration,requestAnimationFrame:()=>1,cancelAnimationFrame(){},addEventListener:(type,fn)=>listeners[type]=fn,CustomEvent:function(){}};context.window=context;
+const context={document,TombWorldNarration:narration,requestAnimationFrame:()=>1,cancelAnimationFrame(){},addEventListener:(type,fn)=>{listeners[type]=fn;listenerCounts[type]=(listenerCounts[type]||0)+1},CustomEvent:function(){}};context.window=context;
 vm.createContext(context);vm.runInContext(fs.readFileSync('narration-transcript.js','utf8'),context);
+context.TombWorldNarrationTranscript.init();
+if(listenerCounts.tombworldnarrationstatechange!==1)throw Error('init attached duplicate state listeners');
 state={active:true,id:'mission.01.intro',category:'mission-intro',currentTimeMs:0,durationMs:1000,transcriptLoading:true};listeners.tombworldnarrationstatechange({detail:state});
 elements.narrationTranscriptHide.listeners.click();
 if(document.activeElement!==elements.narrationTranscriptReopen)throw Error('hide did not focus reopen');

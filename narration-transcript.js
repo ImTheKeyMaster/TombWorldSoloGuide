@@ -8,6 +8,7 @@
     outcome: 'MISSION OUTCOME',
     'deadly-encounter': 'DEADLY ENCOUNTER'
   });
+  let initialized = false;
 
   function formatTime(milliseconds) {
     const safeMilliseconds = Number.isFinite(Number(milliseconds)) && Number(milliseconds) > 0
@@ -18,6 +19,7 @@
   }
 
   function init() {
+    if (initialized) return;
     const narration = global.TombWorldNarration;
     const dialog = global.document?.getElementById('narrationTranscriptDialog');
     const reopen = global.document?.getElementById('narrationTranscriptReopen');
@@ -164,6 +166,7 @@
     stop.addEventListener('click', () => narration.stop());
     global.addEventListener('tombworldnarrationstatechange', event => handleState(event.detail));
     global.addEventListener('pagehide', cancelProgressLoop, { once: true });
+    initialized = true;
     handleState();
   }
 
