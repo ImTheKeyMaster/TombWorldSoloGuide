@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import Mock
+import requests
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -42,7 +43,7 @@ class NarrationAlignmentTests(unittest.TestCase):
         self.audio_hash = hashlib.sha256(self.audio_file.read_bytes()).hexdigest()
         (self.scripts / "events.json").write_text(json.dumps({"scripts": [{
             "id": "event.sample", "category": "event", "script": "Exact text.",
-            "scriptHash": self.script_hash,
+            "scriptHash": self.script_hash, "outputFile": "sample.mp3",
         }]}), encoding="utf8")
         self.manifest = self.audio / "narration-manifest.json"
         self.write_manifest()
@@ -51,7 +52,7 @@ class NarrationAlignmentTests(unittest.TestCase):
         self.temp.cleanup()
 
     def write_manifest(self, **changes):
-        entry = {"file": "sample.mp3", "available": True, "scriptHash": self.script_hash,
+        entry = {"category": "event", "file": "sample.mp3", "available": True, "scriptHash": self.script_hash,
                  "audioHash": self.audio_hash, "durationMs": 1001}
         entry.update(changes)
         self.manifest.write_text(json.dumps({"entries": {"event.sample": entry}}), encoding="utf8")
@@ -69,6 +70,8 @@ class NarrationAlignmentTests(unittest.TestCase):
             record, status = resolver.resolve(entry_id)
             self.assertEqual("OK", status, entry_id)
             self.assertEqual(entry["scriptHash"], record["computedScriptHash"], entry_id)
+            self.assertEqual(entry["category"], record["category"], entry_id)
+            self.assertEqual(entry["file"], record["outputFile"], entry_id)
 
     def test_safe_deterministic_path_and_millisecond_rounding(self):
         self.assertEqual(self.output / "mission.03.intro.json",
@@ -149,18 +152,26 @@ class NarrationAlignmentTests(unittest.TestCase):
         self.assertEqual("test-only-key", post.call_args.kwargs["headers"]["xi-api-key"])
 
     def test_manifest_cannot_read_audio_outside_the_library(self):
+        source = json.loads((self.scripts / "events.json").read_text())
+        source["scripts"][0]["outputFile"] = "../outside.mp3"
+        (self.scripts / "events.json").write_text(json.dumps(source), encoding="utf8")
         self.write_manifest(file="../outside.mp3")
         with self.assertRaisesRegex(ValueError, "outside the audio library"):
             self.generate()
 
     def test_connection_and_non_json_failures_do_not_write_output(self):
         with self.assertRaisesRegex(ValueError, "could not be reached"):
-            self.generate(Mock(side_effect=RuntimeError("secret transport detail")))
+            self.generate(Mock(side_effect=requests.ConnectionError("secret transport detail")))
         response = Response()
         response.json = Mock(side_effect=ValueError("not JSON"))
         with self.assertRaisesRegex(ValueError, "invalid forced-alignment response"):
             self.generate(Mock(return_value=response))
         self.assertFalse(alignment.alignment_path(self.output, "event.sample").exists())
+
+    def test_source_category_and_output_file_must_match_manifest(self):
+        self.write_manifest(category="outcome")
+        with self.assertRaisesRegex(ValueError, "metadata does not match"):
+            self.generate()
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ import os
 import re
 import tempfile
 from pathlib import Path
+import requests
 
 ALIGNMENT_SCHEMA_VERSION = 1
 ALIGNMENT_API_URL = "https://api.elevenlabs.io/v1/forced-alignment"
@@ -76,7 +77,7 @@ def validate_alignment(path, entry, transcript=None):
                             and isinstance(word.get("startMs"), int)
                             and isinstance(word.get("endMs"), int)
                             and (word.get("loss") is None or _number_or_none(word.get("loss")) is not None)
-                            and word["startMs"] <= word["endMs"]
+                            and 0 <= word["startMs"] <= word["endMs"]
                             for word in data["words"]))
         if not required:
             return "INVALID", None
@@ -108,6 +109,9 @@ def inventory(manifest_path, scripts_dir, audio_dir, alignment_dir):
                                and hashlib.sha256(audio_path.read_bytes()).hexdigest() != entry.get("audioHash"))
         if script and script.get("computedScriptHash") != entry.get("scriptHash"):
             mapping = "SCRIPT HASH MISMATCH"
+        elif script and (script.get("category") != entry.get("category")
+                         or script.get("outputFile") != entry.get("file")):
+            mapping = "METADATA MISMATCH"
         status, alignment = validate_alignment(
             alignment_path(alignment_dir, entry_id), entry, script["script"] if script else None)
         items.append({
@@ -132,6 +136,7 @@ def inventory(manifest_path, scripts_dir, audio_dir, alignment_dir):
         "scriptMissing": sum(item["mappingStatus"] == "SCRIPT MISSING" for item in items),
         "ambiguous": sum(item["mappingStatus"] == "AMBIGUOUS" for item in items),
         "scriptHashMismatch": sum(item["mappingStatus"] == "SCRIPT HASH MISMATCH" for item in items),
+        "metadataMismatch": sum(item["mappingStatus"] == "METADATA MISMATCH" for item in items),
     }}
 
 
@@ -148,7 +153,7 @@ def convert_response(entry, transcript, response):
         if not isinstance(word, dict) or not isinstance(word.get("text"), str):
             raise ValueError("ElevenLabs returned an invalid aligned word.")
         start, end = seconds_to_ms(word.get("start")), seconds_to_ms(word.get("end"))
-        if start > end:
+        if start < 0 or start > end:
             raise ValueError("ElevenLabs returned an invalid word timing range.")
         loss = _number_or_none(word.get("loss"))
         if loss is not None:
@@ -204,6 +209,9 @@ def generate_alignment(entry_id, manifest_path, scripts_dir, audio_dir, alignmen
         raise ValueError(f"Authoritative script mapping is {mapping.lower()}.")
     if transcript.get("computedScriptHash") != entry.get("scriptHash"):
         raise ValueError("The authoritative script hash does not match the narration manifest.")
+    if (transcript.get("category") != entry.get("category")
+            or transcript.get("outputFile") != entry.get("file")):
+        raise ValueError("The authoritative script metadata does not match the narration manifest.")
     audio_path = existing_audio_path(audio_dir, entry.get("file", ""))
     if not audio_path.is_file():
         raise ValueError("The existing narration audio file is missing.")
@@ -216,7 +224,7 @@ def generate_alignment(entry_id, manifest_path, scripts_dir, audio_dir, alignmen
             response = post(ALIGNMENT_API_URL, headers={"xi-api-key": api_key},
                             files={"file": (audio_path.name, audio, "audio/mpeg")},
                             data={"text": transcript["script"]}, timeout=180)
-    except Exception as error:
+    except requests.RequestException as error:
         raise ValueError("ElevenLabs forced alignment could not be reached.") from error
     if not response.ok:
         error = ValueError("ElevenLabs could not complete forced alignment.")
