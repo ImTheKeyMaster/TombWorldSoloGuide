@@ -105,6 +105,7 @@
     let autoFollowSuspendedUntil = 0;
     let programmaticScrollUntil = 0;
     let lockedScrollY = 0;
+    let previousBodyStyles = null;
 
     function dialogOpen() {
       return dialog.open === true;
@@ -120,6 +121,11 @@
       const pageBody = global.document.body;
       if (!page || !pageBody || page.classList.contains('narration-transcript-open')) return;
       lockedScrollY = global.scrollY || page.scrollTop || 0;
+      previousBodyStyles = {
+        position: pageBody.style.position,
+        top: pageBody.style.top,
+        width: pageBody.style.width
+      };
       page.classList.add('narration-transcript-open');
       pageBody.style.position = 'fixed';
       pageBody.style.top = `-${lockedScrollY}px`;
@@ -131,9 +137,10 @@
       const pageBody = global.document.body;
       if (!page || !pageBody || !page.classList.contains('narration-transcript-open')) return;
       page.classList.remove('narration-transcript-open');
-      pageBody.style.position = '';
-      pageBody.style.top = '';
-      pageBody.style.width = '';
+      pageBody.style.position = previousBodyStyles?.position || '';
+      pageBody.style.top = previousBodyStyles?.top || '';
+      pageBody.style.width = previousBodyStyles?.width || '';
+      previousBodyStyles = null;
       global.scrollTo?.(0, lockedScrollY);
     }
 
@@ -318,6 +325,7 @@
     }
 
     hide.addEventListener('click', hideTranscript);
+    dialog.addEventListener('close', unlockPageScroll);
     dialog.addEventListener('cancel', event => {
       event.preventDefault();
       hideTranscript();

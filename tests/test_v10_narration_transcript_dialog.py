@@ -53,6 +53,8 @@ class NarrationTranscriptDialogTests(unittest.TestCase):
         self.assertIn("narration.stop()", TRANSCRIPT)
         self.assertIn("lockPageScroll()", TRANSCRIPT)
         self.assertIn("unlockPageScroll()", TRANSCRIPT)
+        self.assertIn("dialog.addEventListener('close', unlockPageScroll)", TRANSCRIPT)
+        self.assertIn("position: pageBody.style.position", TRANSCRIPT)
         hide_handler = TRANSCRIPT.split("function hideTranscript()", 1)[1].split("hide.addEventListener", 1)[0]
         self.assertNotIn(".stop(", hide_handler)
         self.assertIn("event.preventDefault()", TRANSCRIPT)
