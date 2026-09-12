@@ -39,12 +39,12 @@ class NarrationTranscriptDialogTests(unittest.TestCase):
         self.assertIn("currentTimeMs / durationMs", TRANSCRIPT)
         self.assertIn("requestAnimationFrame(progressLoop)", TRANSCRIPT)
         self.assertNotIn("setInterval", TRANSCRIPT)
-        self.assertNotIn("alignment.words", TRANSCRIPT)
+        self.assertIn("state.alignment?.words", TRANSCRIPT)
         self.assertNotIn("elevenlabs", TRANSCRIPT.lower())
         for label in ("MISSION BRIEFING", "TOMB WORLD EVENT", "THREAT ESCALATION",
                       "MISSION OUTCOME", "DEADLY ENCOUNTER"):
             self.assertIn(label, TRANSCRIPT)
-        self.assertNotIn("state.id", TRANSCRIPT.split("function renderTranscript", 1)[1].split("function handleState", 1)[0])
+        self.assertNotIn("category.textContent = state.id", TRANSCRIPT)
 
     def test_controls_use_only_public_narration_actions(self):
         self.assertIn("narration.pauseNarration()", TRANSCRIPT)
@@ -126,7 +126,7 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
         transcript_body_rule = STYLES.split(".narration-transcript-body{", 1)[1].split("}", 1)[0]
         self.assertIn("min-height:0", transcript_body_rule)
         self.assertIn("line-height:1.5", transcript_body_rule)
-        self.assertIn("white-space:pre-line", transcript_body_rule)
+        self.assertIn("white-space:pre-wrap", transcript_body_rule)
         self.assertIn(".narration-transcript-body p{margin:0 0 .75em}", STYLES)
         self.assertIn(".narration-transcript-body p:last-child{margin-bottom:0}", STYLES)
         mobile_rule = STYLES.split("@media(max-width:480px)", 1)[1].split("@media", 1)[0]
