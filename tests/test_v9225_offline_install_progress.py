@@ -68,8 +68,7 @@ def test_marker_retry_update_reuse_and_cleanup_contracts_are_present():
     preparation = source_between(WORKER, "async function prepareOfflinePackage", "async function ensureOfflinePackage")
     assert preparation.index("for(const asset of backgrounds)") < preparation.index("cache.put(OFFLINE_PACKAGE_MARKER")
     assert "if(await cache.match(path))return;" in WORKER
-    assert "if(markerVersion===APP_VERSION)return;" in WORKER
-    assert "prepareOfflinePackage({reportProgress:false})" in WORKER
+    assert "if(markerVersion===APP_VERSION)" in WORKER
     assert "copyExtendedAssetsFromOldCaches(names)" in WORKER
     assert "await copyExtendedAssetsFromOldCaches(names);" in WORKER
     assert ".map(name=>caches.delete(name))" in WORKER
@@ -160,6 +159,54 @@ async function dispatch(type,data,client){let promise;listeners[type]({data,sour
   }
   const before=fetches.length;messages.length=0;await dispatch('message',{type:'ENSURE_OFFLINE_PACKAGE'},client);
   if(messages[0]?.type!=='OFFLINE_PACKAGE_READY'||fetches.length!==before)throw Error('completed package repeated preparation');
+})().catch(error=>{console.error(error);process.exit(1)});
+"""
+    result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)
+    assert result.returncode == 0, result.stderr
+
+
+def test_stale_migrated_marker_does_not_claim_ready_when_alignment_update_fails():
+    script = r"""
+const fs=require('fs'),vm=require('vm');
+const listeners={},messages=[],entries=new Map([
+  ['./__offline-package-complete__',new Response('9.2.63')]
+]);
+const key=value=>typeof value==='string'?value:value.url;
+const cache={
+  async addAll(){},
+  async add(path){
+    const response=await context.fetch(path);
+    if(!response.ok)throw Error('failed '+path);
+    entries.set(key(path),response.clone());
+  },
+  async match(path){return entries.get(key(path))?.clone();},
+  async put(path,response){entries.set(key(path),response.clone());},
+  async keys(){return [];}
+};
+const manifests={
+  'narration-manifest':{entries:{one:{available:true,file:'events/one.mp3'}}},
+  'ambient-config':{schemaVersion:1,file:'Ambient/caverns_25.ogg'},
+  'Backgrounds/manifest':{landscape:[]}
+};
+const context={URL,Request,Response,console,caches:{open:async()=>cache,keys:async()=>[],delete:async()=>true},
+  fetch:async path=>{
+    path=String(path);
+    const manifest=Object.entries(manifests).find(([part])=>path.includes(part));
+    if(manifest)return new Response(JSON.stringify(manifest[1]),{status:200});
+    if(path.includes('alignment/one.json'))return new Response('',{status:404});
+    return new Response('media',{status:200});
+  },
+  self:{location:{origin:'https://example.test'},clients:{claim:async()=>{}},skipWaiting:()=>{},addEventListener:(type,fn)=>listeners[type]=fn}
+};
+vm.createContext(context);vm.runInContext(fs.readFileSync('service-worker.js','utf8'),context);
+(async()=>{
+  let promise;
+  const client={postMessage:message=>messages.push(message)};
+  listeners.message({data:{type:'ENSURE_OFFLINE_PACKAGE'},source:client,waitUntil:value=>promise=value});
+  await promise;
+  if(messages.some(message=>message.type==='OFFLINE_PACKAGE_READY'||message.type==='OFFLINE_INSTALL_COMPLETE'))throw Error('stale package claimed ready');
+  if(messages.at(-1)?.type!=='OFFLINE_INSTALL_ERROR')throw Error('alignment update failure was not reported');
+  if(await (await cache.match('./__offline-package-complete__')).text()!=='9.2.63')throw Error('stale marker was incorrectly promoted');
 })().catch(error=>{console.error(error);process.exit(1)});
 """
     result = subprocess.run(["node", "-e", script], cwd=ROOT, text=True, capture_output=True)

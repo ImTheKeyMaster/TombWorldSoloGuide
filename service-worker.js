@@ -159,16 +159,12 @@ async function ensureOfflinePackage() {
   const cache=await caches.open(CACHE_NAME);
   const marker=await cache.match(OFFLINE_PACKAGE_MARKER);
   if(marker){
-    offlinePreparationStatus={type:'OFFLINE_PACKAGE_READY'};
-    offlinePreparationClients.forEach(client=>postOfflineMessage(client,offlinePreparationStatus));
     const markerVersion=await marker.text();
-    if(markerVersion===APP_VERSION)return;
-    try {
-      await prepareOfflinePackage({reportProgress:false});
-    } catch(error) {
-      console.warn('Updated offline media will be checked again on the next standalone launch.',error);
+    if(markerVersion===APP_VERSION){
+      offlinePreparationStatus={type:'OFFLINE_PACKAGE_READY'};
+      offlinePreparationClients.forEach(client=>postOfflineMessage(client,offlinePreparationStatus));
+      return;
     }
-    return;
   }
   await prepareOfflinePackage();
 }
