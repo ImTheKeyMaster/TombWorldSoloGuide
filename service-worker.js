@@ -25,7 +25,7 @@ const PRECACHE_ASSETS = [
   './Player_Operatives/DeathWatch.json', './Player_Operatives/Kasrkin.json', './Player_Operatives/TempestusAquilons.json', './Player_Operatives/SpectreSquad.json', './Player_Operatives/ScoutSquad.json'
 ];
 
-const canCache = response => response && response.ok && response.type === 'basic';
+const canCache = response => response && response.status === 200 && response.type === 'basic';
 const isTombWorldCache = name => name.startsWith(CACHE_PREFIX) || LEGACY_CACHE_PREFIXES.some(prefix => name.startsWith(prefix));
 const installPercent = (completed, total) => Math.min(100, Math.max(0, Math.round((completed / total) * 100)));
 let offlinePreparationPromise=null;
@@ -223,10 +223,19 @@ async function networkFirst(request) {
   try {
     const response = await fetch(request);
     if (!response.ok) return cachedFallback(cache, request, response);
-    if (canCache(response)) await cache.put(request, response.clone());
+    await cacheResponse(cache, request, response);
     return response;
   } catch {
     return cachedFallback(cache, request);
+  }
+}
+
+async function cacheResponse(cache, request, response) {
+  if (request.headers.has('range') || !canCache(response)) return;
+  try {
+    await cache.put(request, response.clone());
+  } catch(error) {
+    console.warn('Network response could not be cached.',error);
   }
 }
 
@@ -240,11 +249,12 @@ async function cachedFallback(cache, request, failedResponse) {
 }
 
 async function cacheFirst(request) {
+  if (request.headers.has('range')) return fetch(request);
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
   if (cached) return cached;
   const response = await fetch(request);
-  if (canCache(response)) await cache.put(request, response.clone());
+  await cacheResponse(cache, request, response);
   return response;
 }
 
