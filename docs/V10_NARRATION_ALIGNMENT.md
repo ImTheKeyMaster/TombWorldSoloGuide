@@ -23,7 +23,7 @@ Each JSON document has schema version 1 and contains:
 * ElevenLabs `alignmentLoss` and a local `qualityStatus`;
 * `words`, each with `text`, integer `startMs`, integer `endMs`, and API `loss` when supplied.
 
-An alignment is `VALID` only when it is structurally usable and both hashes equal the current manifest. A mismatch is reported as `STALE SCRIPT` or `STALE AUDIO`; malformed metadata is `INVALID`. Stale data is never silently accepted.
+An alignment is `VALID` only when it is structurally usable and both hashes equal the current manifest. Hash comparisons occur first so a mismatch is reliably reported as `STALE SCRIPT` or `STALE AUDIO`, even when the associated transcript or duration has also changed; malformed current metadata is `INVALID`. Stale data is never silently accepted.
 
 `qualityStatus` is `GOOD` for a structurally complete response by default. `REVIEW` is a deliberately conservative local heuristic, not an ElevenLabs guarantee: overall loss must exceed `0.5` and be more than three times the median returned per-word loss. All loss values remain available for human review, and elevated loss alone does not discard otherwise complete timing data.
 

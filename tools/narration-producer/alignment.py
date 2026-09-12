@@ -59,21 +59,25 @@ def validate_alignment(path, entry, transcript=None):
         return "MISSING", None
     try:
         data = json.loads(path.read_text(encoding="utf8"))
+        if not isinstance(data, dict) or data.get("id") != entry["id"]:
+            return "INVALID", None
+        if data.get("scriptHash") != entry.get("scriptHash"):
+            return "STALE SCRIPT", data
+        if data.get("audioHash") != entry.get("audioHash"):
+            return "STALE AUDIO", data
         required = (data.get("schemaVersion") == ALIGNMENT_SCHEMA_VERSION
-                    and data.get("id") == entry["id"]
                     and isinstance(data.get("text"), str)
                     and (transcript is None or data.get("text") == transcript)
-                    and isinstance(data.get("durationMs"), int)
+                    and isinstance(data.get("durationMs"), int) and data["durationMs"] >= 0
                     and data.get("durationMs") == entry.get("durationMs")
-                    and isinstance(data.get("scriptHash"), str)
-                    and isinstance(data.get("audioHash"), str)
+                    and isinstance(data.get("scriptHash"), str) and bool(data["scriptHash"])
+                    and isinstance(data.get("audioHash"), str) and bool(data["audioHash"])
                     and data.get("qualityStatus") in ("GOOD", "REVIEW")
-                    and (data.get("alignmentLoss") is None
-                         or _number_or_none(data.get("alignmentLoss")) is not None)
+                    and _number_or_none(data.get("alignmentLoss")) is not None
                     and isinstance(data.get("words"), list)
                     and bool(data["words"])
                     and all(isinstance(word, dict)
-                            and isinstance(word.get("text"), str)
+                            and isinstance(word.get("text"), str) and bool(word["text"])
                             and isinstance(word.get("startMs"), int)
                             and isinstance(word.get("endMs"), int)
                             and (word.get("loss") is None or _number_or_none(word.get("loss")) is not None)
@@ -81,10 +85,6 @@ def validate_alignment(path, entry, transcript=None):
                             for word in data["words"]))
         if not required:
             return "INVALID", None
-        if data.get("scriptHash") != entry.get("scriptHash"):
-            return "STALE SCRIPT", data
-        if data.get("audioHash") != entry.get("audioHash"):
-            return "STALE AUDIO", data
         return "VALID", data
     except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError):
         return "INVALID", None
@@ -160,6 +160,8 @@ def convert_response(entry, transcript, response):
             losses.append(loss)
         words.append({"text": word["text"], "startMs": start, "endMs": end, "loss": loss})
     overall = _number_or_none(response.get("loss"))
+    if overall is None:
+        raise ValueError("ElevenLabs returned forced alignment without a valid overall loss.")
     # This is a review heuristic, not an ElevenLabs quality guarantee: only flag an
     # overall loss that is both conspicuously absolute and 3x the median word loss.
     median = sorted(losses)[len(losses) // 2] if losses else None
@@ -227,7 +229,15 @@ def generate_alignment(entry_id, manifest_path, scripts_dir, audio_dir, alignmen
     except requests.RequestException as error:
         raise ValueError("ElevenLabs forced alignment could not be reached.") from error
     if not response.ok:
-        error = ValueError("ElevenLabs could not complete forced alignment.")
+        if response.status_code in (401, 403):
+            message = "ElevenLabs rejected the API key. Verify the local key and try again."
+        elif response.status_code == 402:
+            message = "ElevenLabs reported insufficient quota or a payment requirement."
+        elif response.status_code == 429:
+            message = "ElevenLabs rate-limited forced alignment. Wait before resuming the batch."
+        else:
+            message = "ElevenLabs could not complete forced alignment."
+        error = ValueError(message)
         error.stop_batch = response.status_code in (401, 402, 403, 429)
         raise error
     try:

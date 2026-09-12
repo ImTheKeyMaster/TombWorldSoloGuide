@@ -57,7 +57,8 @@ class NarrationAlignmentTests(unittest.TestCase):
         entry.update(changes)
         self.manifest.write_text(json.dumps({"entries": {"event.sample": entry}}), encoding="utf8")
 
-    def generate(self, post=Mock(return_value=Response())):
+    def generate(self, post=None):
+        post = post or Mock(return_value=Response())
         return alignment.generate_alignment("event.sample", self.manifest, self.scripts,
                                             self.audio, self.output, "test-only-key", post)
 
@@ -114,6 +115,13 @@ class NarrationAlignmentTests(unittest.TestCase):
         self.assertEqual("INVALID", alignment.validate_alignment(path, entry, "Different text.")[0])
         self.assertEqual("INVALID", alignment.validate_alignment(path, dict(entry, durationMs=999), "Exact text.")[0])
 
+    def test_stale_hash_status_precedes_transcript_schema_differences(self):
+        self.generate()
+        path = alignment.alignment_path(self.output, "event.sample")
+        entry = dict(json.loads(self.manifest.read_text())["entries"]["event.sample"],
+                     id="event.sample", scriptHash="replacement")
+        self.assertEqual("STALE SCRIPT", alignment.validate_alignment(path, entry, "Replacement text.")[0])
+
     def test_inventory_supports_skip_and_resume(self):
         first = alignment.inventory(self.manifest, self.scripts, self.audio, self.output)
         self.assertEqual(1, first["totals"]["missing"])
@@ -167,6 +175,25 @@ class NarrationAlignmentTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "invalid forced-alignment response"):
             self.generate(Mock(return_value=response))
         self.assertFalse(alignment.alignment_path(self.output, "event.sample").exists())
+
+    def test_authentication_quota_and_rate_limit_errors_stop_batch_clearly(self):
+        expected = {401: "rejected the API key", 402: "quota or a payment", 429: "rate-limited"}
+        for status_code, message in expected.items():
+            response = Response()
+            response.ok = False
+            response.status_code = status_code
+            with self.assertRaisesRegex(ValueError, message) as raised:
+                self.generate(Mock(return_value=response))
+            self.assertTrue(raised.exception.stop_batch)
+
+    def test_missing_or_non_finite_overall_loss_is_invalid(self):
+        for loss in (None, float("inf")):
+            response = Response()
+            response.json = Mock(return_value={"loss": loss, "words": [
+                {"text": "Exact", "start": 0, "end": 1, "loss": 0.1}
+            ]})
+            with self.assertRaisesRegex(ValueError, "valid overall loss"):
+                self.generate(Mock(return_value=response))
 
     def test_source_category_and_output_file_must_match_manifest(self):
         self.write_manifest(category="outcome")
