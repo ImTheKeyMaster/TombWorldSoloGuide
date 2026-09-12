@@ -25,7 +25,7 @@ const PRECACHE_ASSETS = [
   './Player_Operatives/DeathWatch.json', './Player_Operatives/Kasrkin.json', './Player_Operatives/TempestusAquilons.json', './Player_Operatives/SpectreSquad.json', './Player_Operatives/ScoutSquad.json'
 ];
 
-const canCache = response => response && response.ok && response.status !== 206 && response.type === 'basic';
+const canCache = response => response && response.status === 200 && response.type === 'basic';
 const isTombWorldCache = name => name.startsWith(CACHE_PREFIX) || LEGACY_CACHE_PREFIXES.some(prefix => name.startsWith(prefix));
 const installPercent = (completed, total) => Math.min(100, Math.max(0, Math.round((completed / total) * 100)));
 let offlinePreparationPromise=null;

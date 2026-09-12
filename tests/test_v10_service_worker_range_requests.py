@@ -7,7 +7,7 @@ WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 
 
 def test_range_and_partial_response_guards_are_present():
-    assert "response.status !== 206" in WORKER
+    assert "response.status === 200" in WORKER
     assert "request.headers.has('range')" in WORKER
     assert "if (request.headers.has('range')) return fetch(request);" in WORKER
     assert "await cacheResponse(cache, request, response);" in WORKER
@@ -17,6 +17,7 @@ def test_audio_range_runtime_and_normal_asset_caching():
     script = r"""
 const fs=require('fs'),vm=require('vm');
 const listeners={},cached=new Map(),putRequests=[],fetchRequests=[];
+let cacheOpenCount=0;
 const cache={
   async addAll(){},
   async match(request){return cached.get(request.url)?.clone();},
@@ -31,7 +32,7 @@ const response=(body,status)=>{
   Object.defineProperty(value,'type',{value:'basic'});
   return value;
 };
-const context={URL,Request,Response,console,caches:{open:async()=>cache},
+const context={URL,Request,Response,console,caches:{open:async()=>{cacheOpenCount+=1;return cache;}},
   fetch:async request=>{
     fetchRequests.push(request);
     if(request.url.endsWith('partial.mp3'))return response('part',206);
@@ -55,8 +56,11 @@ async function dispatch(path,headers){
   response=await dispatch('partial.mp3');
   if(response.status!==206||putRequests.some(request=>request.url.endsWith('partial.mp3')))throw Error('partial response was cached');
 
+  const cacheOpensBeforeRange=cacheOpenCount;
+  const fetchesBeforeRange=fetchRequests.length;
   response=await dispatch('range.ogg',{'Range':'bytes=0-99'});
   if(response.status!==206||putRequests.some(request=>request.url.endsWith('range.ogg')))throw Error('range request was cached');
+  if(cacheOpenCount!==cacheOpensBeforeRange||fetchRequests.length!==fetchesBeforeRange+1)throw Error('range request did not bypass the cache');
 
   response=await dispatch('uncacheable.mp3');
   if(response.status!==200)throw Error('cache write failure rejected a valid response');
