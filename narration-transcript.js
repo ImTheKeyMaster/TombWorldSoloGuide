@@ -104,6 +104,8 @@
     let previousCurrentTimeMs = null;
     let autoFollowSuspendedUntil = 0;
     let programmaticScrollUntil = 0;
+    let lockedScrollY = 0;
+    let previousBodyStyles = null;
 
     function dialogOpen() {
       return dialog.open === true;
@@ -112,6 +114,34 @@
     function cancelProgressLoop() {
       if (animationFrame !== null) global.cancelAnimationFrame(animationFrame);
       animationFrame = null;
+    }
+
+    function lockPageScroll() {
+      const page = global.document.documentElement;
+      const pageBody = global.document.body;
+      if (!page || !pageBody || page.classList.contains('narration-transcript-open')) return;
+      lockedScrollY = global.scrollY ?? page.scrollTop ?? 0;
+      previousBodyStyles = {
+        position: pageBody.style.position,
+        top: pageBody.style.top,
+        width: pageBody.style.width
+      };
+      page.classList.add('narration-transcript-open');
+      pageBody.style.position = 'fixed';
+      pageBody.style.top = `-${lockedScrollY}px`;
+      pageBody.style.width = '100%';
+    }
+
+    function unlockPageScroll() {
+      const page = global.document.documentElement;
+      const pageBody = global.document.body;
+      if (!page || !pageBody || !page.classList.contains('narration-transcript-open')) return;
+      page.classList.remove('narration-transcript-open');
+      pageBody.style.position = previousBodyStyles?.position || '';
+      pageBody.style.top = previousBodyStyles?.top || '';
+      pageBody.style.width = previousBodyStyles?.width || '';
+      previousBodyStyles = null;
+      global.scrollTo?.(0, lockedScrollY);
     }
 
     function updateProgress(state) {
@@ -206,6 +236,7 @@
     function closeDialog(restoreToReopen) {
       cancelProgressLoop();
       if (dialogOpen()) dialog.close();
+      unlockPageScroll();
       if (restoreToReopen) {
         reopen.hidden = false;
         reopen.focus();
@@ -219,6 +250,7 @@
       if (!dialogOpen()) {
         if (global.document.activeElement !== reopen) previousFocus = global.document.activeElement;
         dialog.showModal();
+        lockPageScroll();
       }
       if (resetScroll) body.scrollTop = 0;
       updateProgress(state);
@@ -293,6 +325,9 @@
     }
 
     hide.addEventListener('click', hideTranscript);
+    dialog.addEventListener('close', () => {
+      if (!dialogOpen()) unlockPageScroll();
+    });
     dialog.addEventListener('cancel', event => {
       event.preventDefault();
       hideTranscript();
