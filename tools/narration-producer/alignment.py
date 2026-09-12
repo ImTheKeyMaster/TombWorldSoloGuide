@@ -61,15 +61,9 @@ def validate_alignment(path, entry, transcript=None):
         data = json.loads(path.read_text(encoding="utf8"))
         if not isinstance(data, dict) or data.get("id") != entry["id"]:
             return "INVALID", None
-        if data.get("scriptHash") != entry.get("scriptHash"):
-            return "STALE SCRIPT", data
-        if data.get("audioHash") != entry.get("audioHash"):
-            return "STALE AUDIO", data
         required = (data.get("schemaVersion") == ALIGNMENT_SCHEMA_VERSION
                     and isinstance(data.get("text"), str)
-                    and (transcript is None or data.get("text") == transcript)
                     and isinstance(data.get("durationMs"), int) and data["durationMs"] >= 0
-                    and data.get("durationMs") == entry.get("durationMs")
                     and isinstance(data.get("scriptHash"), str) and bool(data["scriptHash"])
                     and isinstance(data.get("audioHash"), str) and bool(data["audioHash"])
                     and data.get("qualityStatus") in ("GOOD", "REVIEW")
@@ -85,6 +79,13 @@ def validate_alignment(path, entry, transcript=None):
                             for word in data["words"]))
         if not required:
             return "INVALID", None
+        if data.get("scriptHash") != entry.get("scriptHash"):
+            return "STALE SCRIPT", data
+        if data.get("audioHash") != entry.get("audioHash"):
+            return "STALE AUDIO", data
+        if ((transcript is not None and data.get("text") != transcript)
+                or data.get("durationMs") != entry.get("durationMs")):
+            return "INVALID", None
         return "VALID", data
     except (OSError, ValueError, TypeError, KeyError, json.JSONDecodeError):
         return "INVALID", None
@@ -97,12 +98,13 @@ def inventory(manifest_path, scripts_dir, audio_dir, alignment_dir):
     for entry_id, raw_entry in manifest.get("entries", {}).items():
         entry = dict(raw_entry, id=entry_id)
         script, mapping = resolver.resolve(entry_id)
-        try:
-            audio_path = existing_audio_path(audio_dir, entry.get("file", ""))
-            audio_path_invalid = False
-        except (TypeError, ValueError):
-            audio_path = None
-            audio_path_invalid = True
+        audio_path = None
+        audio_path_invalid = False
+        if entry.get("available"):
+            try:
+                audio_path = existing_audio_path(audio_dir, entry.get("file", ""))
+            except (TypeError, ValueError):
+                audio_path_invalid = True
         audio_missing = bool(entry.get("available")) and (
             audio_path_invalid or not entry.get("file") or not audio_path.is_file())
         audio_hash_mismatch = (bool(entry.get("available")) and not audio_missing

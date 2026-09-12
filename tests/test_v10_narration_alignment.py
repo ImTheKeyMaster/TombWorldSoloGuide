@@ -123,6 +123,13 @@ class NarrationAlignmentTests(unittest.TestCase):
                      id="event.sample", scriptHash="replacement")
         self.assertEqual("STALE SCRIPT", alignment.validate_alignment(path, entry, "Replacement text.")[0])
 
+    def test_malformed_file_is_invalid_even_when_its_hash_is_stale(self):
+        path = alignment.alignment_path(self.output, "event.sample")
+        path.parent.mkdir()
+        path.write_text(json.dumps({"id": "event.sample", "scriptHash": "old"}))
+        entry = dict(json.loads(self.manifest.read_text())["entries"]["event.sample"], id="event.sample")
+        self.assertEqual("INVALID", alignment.validate_alignment(path, entry)[0])
+
     def test_inventory_supports_skip_and_resume(self):
         first = alignment.inventory(self.manifest, self.scripts, self.audio, self.output)
         self.assertEqual(1, first["totals"]["missing"])
@@ -218,6 +225,13 @@ class NarrationAlignmentTests(unittest.TestCase):
         browser = (PRODUCER / "static/producer.js").read_text(encoding="utf8")
         self.assertIn("'STALE AUDIO','INVALID'", browser)
         self.assertEqual(2, browser.count("body:JSON.stringify({confirmation:true})"))
+
+    def test_unavailable_entry_does_not_report_audio_path_errors(self):
+        self.write_manifest(file=None, available=False)
+        report = alignment.inventory(self.manifest, self.scripts, self.audio, self.output)
+        self.assertEqual(1, report["totals"]["unavailable"])
+        self.assertEqual(0, report["totals"]["audioMissing"])
+        self.assertEqual(0, report["totals"]["audioPathInvalid"])
 
 
 if __name__ == "__main__":
