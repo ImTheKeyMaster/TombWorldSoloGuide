@@ -171,7 +171,8 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
         self.assertIn("repeating-linear-gradient", progress_ticks_rule)
         self.assertIn("position:absolute", progress_ticks_rule)
         self.assertIn("max-width:calc(100% - 20px)", STYLES)
-        self.assertIn("border-left:3px solid var(--green)", reopen_rule)
+        self.assertIn("border-left:3px solid #67c3ff", reopen_rule)
+        self.assertIn("rgba(32,112,166,.38)", body_rule)
         self.assertNotIn("animation:", "\n".join((dialog_rule, body_rule, progress_rule, progress_ticks_rule, progress_fill_rule, reopen_rule)))
 
 
