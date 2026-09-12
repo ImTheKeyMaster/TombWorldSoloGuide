@@ -35,6 +35,7 @@ def test_core_precache_excludes_pdf_and_large_optional_media_but_keeps_gameplay(
         "./Player_Operatives/manifest.json",
     ):
         assert asset in precache
+    assert f"./narration-transcript.js?v=${{APP_VERSION}}" in precache
 
 
 def test_standalone_detection_and_request_are_page_owned_and_ios_compatible():
@@ -53,9 +54,11 @@ def test_standalone_detection_and_request_are_page_owned_and_ios_compatible():
 def test_extended_package_contains_narration_ambient_and_backgrounds_not_pdf():
     preparation = source_between(WORKER, "async function prepareOfflinePackage", "async function ensureOfflinePackage")
     assert "narrationFiles(narrationManifest)" in preparation
+    assert "narrationAlignmentFiles(narrationManifest)" in preparation
     assert "ambientFile(ambientConfig)" in preparation
     assert "backgroundManifest.landscape||[]" in preparation
     assert "precacheNarration(cache,narration" in preparation
+    assert "precacheNarration(cache,alignments" in preparation
     assert "precacheAmbient(cache,ambient" in preparation
     assert "Tomb-World-Mission-Pack.pdf" not in preparation
 
@@ -131,7 +134,7 @@ const context={URL,Request,Response,console,caches:{open:async()=>cache,keys:asy
     path=String(path);fetches.push(path);
     const manifest=Object.entries(manifests).find(([part])=>path.includes(part));
     if(manifest)return new Response(JSON.stringify(manifest[1]),{status:200});
-    if(failMedia&&path.includes('events/one.mp3'))return new Response('',{status:503});
+    if(failMedia&&path.includes('alignment/one.json'))return new Response('',{status:503});
     return new Response('media',{status:200});
   },
   self:{location:{origin:'https://example.test'},clients:{claim:async()=>{}},skipWaiting:()=>{},addEventListener:(type,fn)=>listeners[type]=fn}
@@ -149,6 +152,8 @@ async function dispatch(type,data,client){let promise;listeners[type]({data,sour
   const complete=messages.at(-1);
   if(complete?.type!=='OFFLINE_INSTALL_COMPLETE'||complete.percent!==100||complete.completed!==complete.total)throw Error('completion invalid');
   if(!await cache.match('./__offline-package-complete__'))throw Error('successful package was not marked complete');
+  if(!fetches.includes('./Assets/Audio/Narration/events/one.mp3'))throw Error('available narration audio was omitted');
+  if(!fetches.includes('./Assets/Audio/Narration/alignment/one.json'))throw Error('available narration alignment was omitted');
   let previous=-1;
   for(const message of messages.filter(item=>Number.isFinite(item.percent))){
     if(message.percent<previous||message.percent>100)throw Error('progress invalid');previous=message.percent;

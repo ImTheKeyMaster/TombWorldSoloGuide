@@ -2,6 +2,8 @@ import subprocess
 import unittest
 from pathlib import Path
 
+from versioning import CURRENT_APP_VERSION
+
 
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
@@ -17,8 +19,8 @@ class NarrationWordHighlightingTests(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stderr)
 
     def test_release_and_stage_3_contracts_are_unchanged(self):
-        self.assertIn(">V9.2.63<", INDEX)
-        self.assertIn("const APP_VERSION = '9.2.63';", APP)
+        self.assertIn(f">V{CURRENT_APP_VERSION}<", INDEX)
+        self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", APP)
         self.assertIn("Skip This Narration", INDEX)
         self.assertIn("Stop All Narration", INDEX)
         self.assertIn("const SAVE_VERSION = 3;", PERSISTENCE)

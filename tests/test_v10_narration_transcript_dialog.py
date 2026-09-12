@@ -135,7 +135,7 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
         mobile_rule = STYLES.split("@media(max-width:480px)", 1)[1].split("@media", 1)[0]
         self.assertIn("grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)", mobile_rule)
         self.assertIn(".narration-transcript-controls .danger{grid-column:1/-1}", mobile_rule)
-        self.assertNotIn("narration-transcript.js", WORKER)
+        self.assertIn(f"`./narration-transcript.js?v=${{APP_VERSION}}`", WORKER)
         self.assertIn(f">V{CURRENT_APP_VERSION}<", INDEX)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
         self.assertIn("const STORAGE_KEY = 'tombWorldBattleGuide.v1';", (ROOT / "app.js").read_text())
