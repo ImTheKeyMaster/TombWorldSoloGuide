@@ -51,10 +51,6 @@ class NarrationTranscriptDialogTests(unittest.TestCase):
         self.assertIn("await narration.resumeNarration()", TRANSCRIPT)
         self.assertIn("narration.skipCurrent()", TRANSCRIPT)
         self.assertIn("narration.stop()", TRANSCRIPT)
-        self.assertIn("lockPageScroll()", TRANSCRIPT)
-        self.assertIn("unlockPageScroll()", TRANSCRIPT)
-        self.assertIn("dialog.addEventListener('close', unlockPageScroll)", TRANSCRIPT)
-        self.assertIn("position: pageBody.style.position", TRANSCRIPT)
         hide_handler = TRANSCRIPT.split("function hideTranscript()", 1)[1].split("hide.addEventListener", 1)[0]
         self.assertNotIn(".stop(", hide_handler)
         self.assertIn("event.preventDefault()", TRANSCRIPT)
@@ -77,18 +73,23 @@ for(const [value,want] of [[0,'0:00'],[2486,'0:02'],[23236,'0:23'],[61000,'1:01'
 const fs=require('fs'),vm=require('vm');
 const listeners={};let state={active:false,id:null,currentTimeMs:0,durationMs:0};
 const listenerCounts={};
-const document={readyState:'complete',activeElement:null,getElementById:id=>elements[id],createElement:tag=>({tag,textContent:''})};
+const rootClasses=new Set();let restoredScrollY=null;
+const document={readyState:'complete',activeElement:null,
+ documentElement:{scrollTop:0,classList:{contains:value=>rootClasses.has(value),add:value=>rootClasses.add(value),remove:value=>rootClasses.delete(value)}},
+ body:{style:{position:'relative',top:'1px',width:'95%'}},
+ getElementById:id=>elements[id],createElement:tag=>({tag,textContent:''})};
 function element(id){return elements[id]={id,hidden:false,open:false,isConnected:true,style:{},attributes:{},children:[],listeners:{},addEventListener(type,fn){this.listeners[type]=fn},setAttribute(name,value){this.attributes[name]=value},removeAttribute(name){delete this.attributes[name]},replaceChildren(...children){this.children=children},focus(){document.activeElement=this},close(){this.open=false},showModal(){this.open=true},querySelector(){return fill}}}
 const elements={},fill={style:{}};
 for(const id of ['narrationTranscriptDialog','narrationTranscriptReopen','narrationTranscriptCategory','narrationTranscriptBody','narrationTranscriptProgress','narrationTranscriptTime','narrationTranscriptHide','narrationTranscriptPause','narrationTranscriptSkip','narrationTranscriptStop','narrationTranscriptPauseHelp'])element(id);
 const origin=element('origin');document.activeElement=origin;
 let skipCalls=0,stopCalls=0;
 const narration={getPlaybackState:()=>state,isMasterEnabled:()=>true,pauseNarration(){},resumeNarration(){},skipCurrent(){skipCalls++},stop(){stopCalls++}};
-const context={document,TombWorldNarration:narration,requestAnimationFrame:()=>1,cancelAnimationFrame(){},addEventListener:(type,fn)=>{listeners[type]=fn;listenerCounts[type]=(listenerCounts[type]||0)+1},CustomEvent:function(){}};context.window=context;
+const context={document,scrollY:120,scrollTo:(x,y)=>{restoredScrollY=y},TombWorldNarration:narration,requestAnimationFrame:()=>1,cancelAnimationFrame(){},addEventListener:(type,fn)=>{listeners[type]=fn;listenerCounts[type]=(listenerCounts[type]||0)+1},CustomEvent:function(){}};context.window=context;
 vm.createContext(context);vm.runInContext(fs.readFileSync('narration-transcript.js','utf8'),context);
 context.TombWorldNarrationTranscript.init();
 if(listenerCounts.tombworldnarrationstatechange!==1)throw Error('init attached duplicate state listeners');
 state={active:true,id:'mission.01.intro',category:'mission-intro',currentTimeMs:250,durationMs:1000,transcriptAvailable:true,transcript:'First paragraph.\n\nSecond paragraph.'};listeners.tombworldnarrationstatechange({detail:state});
+if(!rootClasses.has('narration-transcript-open')||document.body.style.position!=='fixed'||document.body.style.top!=='-120px'||document.body.style.width!=='100%')throw Error('page scroll was not locked');
 if(elements.narrationTranscriptCategory.textContent!=='MISSION BRIEFING')throw Error('category eyebrow was not updated');
 if(elements.narrationTranscriptBody.children.length!==2||elements.narrationTranscriptBody.children[1].textContent!=='Second paragraph.')throw Error('paragraph structure was not preserved');
 if(fill.style.width!=='25%'||elements.narrationTranscriptProgress.attributes['aria-valuenow']!=='25')throw Error('progress did not reflect playback position');
@@ -97,8 +98,11 @@ if(fill.style.width!=='75%'||elements.narrationTranscriptProgress.attributes['ar
 elements.narrationTranscriptSkip.listeners.click();elements.narrationTranscriptStop.listeners.click();
 if(skipCalls!==1||stopCalls!==1)throw Error('transcript controls changed narration actions');
 elements.narrationTranscriptHide.listeners.click();
+if(rootClasses.has('narration-transcript-open')||document.body.style.position!=='relative'||document.body.style.top!=='1px'||document.body.style.width!=='95%'||restoredScrollY!==120)throw Error('page scroll lock was not restored');
 if(document.activeElement!==elements.narrationTranscriptReopen)throw Error('hide did not focus reopen');
 elements.narrationTranscriptReopen.listeners.click();
+elements.narrationTranscriptDialog.close();elements.narrationTranscriptDialog.listeners.close();
+if(rootClasses.has('narration-transcript-open')||restoredScrollY!==120)throw Error('native close did not release page scroll lock');
 state={active:false,id:null,currentTimeMs:0,durationMs:0,lastEndReason:'natural'};listeners.tombworldnarrationstatechange({detail:state});
 if(document.activeElement!==origin)throw Error('playback end did not restore original app focus');
 """)

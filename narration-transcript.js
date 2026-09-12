@@ -249,8 +249,8 @@
       reopen.hidden = true;
       if (!dialogOpen()) {
         if (global.document.activeElement !== reopen) previousFocus = global.document.activeElement;
-        lockPageScroll();
         dialog.showModal();
+        lockPageScroll();
       }
       if (resetScroll) body.scrollTop = 0;
       updateProgress(state);
