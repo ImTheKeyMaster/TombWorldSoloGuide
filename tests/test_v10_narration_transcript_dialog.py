@@ -49,6 +49,7 @@ class NarrationTranscriptDialogTests(unittest.TestCase):
         self.assertNotIn(".stop(", hide_handler)
         self.assertIn("event.preventDefault()", TRANSCRIPT)
         self.assertIn("narration.isMasterEnabled?.() === false", TRANSCRIPT)
+        self.assertIn("if (global.document.activeElement !== reopen) previousFocus = global.document.activeElement;", TRANSCRIPT)
 
     def test_time_formatter_handles_boundaries(self):
         self.run_node(r"""
@@ -59,6 +60,26 @@ const f=context.TombWorldNarrationTranscript.formatTime;
 for(const [value,want] of [[0,'0:00'],[2486,'0:02'],[23236,'0:23'],[61000,'1:01'],[-1,'0:00'],[NaN,'0:00'],[Infinity,'0:00']]){
  if(f(value)!==want)throw Error(`${value}: ${f(value)} != ${want}`);
 }
+""")
+
+    def test_reopen_preserves_original_focus_for_playback_end(self):
+        self.run_node(r"""
+const fs=require('fs'),vm=require('vm');
+const listeners={};let state={active:false,id:null,currentTimeMs:0,durationMs:0};
+const document={readyState:'complete',activeElement:null,getElementById:id=>elements[id]};
+function element(id){return elements[id]={id,hidden:false,open:false,isConnected:true,style:{},attributes:{},listeners:{},addEventListener(type,fn){this.listeners[type]=fn},setAttribute(name,value){this.attributes[name]=value},removeAttribute(name){delete this.attributes[name]},focus(){document.activeElement=this},close(){this.open=false},showModal(){this.open=true},querySelector(){return fill}}}
+const elements={},fill={style:{}};
+for(const id of ['narrationTranscriptDialog','narrationTranscriptReopen','narrationTranscriptCategory','narrationTranscriptBody','narrationTranscriptProgress','narrationTranscriptTime','narrationTranscriptHide','narrationTranscriptPause','narrationTranscriptSkip','narrationTranscriptStop','narrationTranscriptPauseHelp'])element(id);
+const origin=element('origin');document.activeElement=origin;
+const narration={getPlaybackState:()=>state,isMasterEnabled:()=>true,pauseNarration(){},resumeNarration(){},skipCurrent(){},stop(){}};
+const context={document,TombWorldNarration:narration,requestAnimationFrame:()=>1,cancelAnimationFrame(){},addEventListener:(type,fn)=>listeners[type]=fn,CustomEvent:function(){}};context.window=context;
+vm.createContext(context);vm.runInContext(fs.readFileSync('narration-transcript.js','utf8'),context);
+state={active:true,id:'mission.01.intro',category:'mission-intro',currentTimeMs:0,durationMs:1000,transcriptLoading:true};listeners.tombworldnarrationstatechange({detail:state});
+elements.narrationTranscriptHide.listeners.click();
+if(document.activeElement!==elements.narrationTranscriptReopen)throw Error('hide did not focus reopen');
+elements.narrationTranscriptReopen.listeners.click();
+state={active:false,id:null,currentTimeMs:0,durationMs:0,lastEndReason:'natural'};listeners.tombworldnarrationstatechange({detail:state});
+if(document.activeElement!==origin)throw Error('playback end did not restore original app focus');
 """)
 
     def test_skip_advances_event_and_deadly_queues_while_paused(self):

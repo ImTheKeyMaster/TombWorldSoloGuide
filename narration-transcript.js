@@ -97,7 +97,7 @@
     function openDialog(state, resetScroll) {
       reopen.hidden = true;
       if (!dialogOpen()) {
-        previousFocus = global.document.activeElement;
+        if (global.document.activeElement !== reopen) previousFocus = global.document.activeElement;
         dialog.showModal();
       }
       if (resetScroll) body.scrollTop = 0;
