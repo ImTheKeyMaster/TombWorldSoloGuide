@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.0
+# Tomb World Battle Guide v10.0.1
+
+## v10.0.1 - Narration Cogitator Polish
+
+**Version 10.0.1**
+
+- Refined the Narration Cogitator's CRT-blue presentation and transcript readability.
+- Corrected narration transcript dialog positioning across mobile and desktop layouts.
+- Preserved gameplay behavior, save schema version 3, and the existing storage key.
 
 ## v10.0.0 - Narration Cogitator
 

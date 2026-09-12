@@ -132,13 +132,13 @@ context.resolveFirst();await flush();if(n.getPlaybackState().transcriptAvailable
 Audio.instance.end();if(!await queued)throw Error('alignment failure stalled queue');
 """, fetch_body)
 
-    def test_runtime_boundaries_and_production_version_are_unchanged(self):
+    def test_runtime_boundaries_and_v1001_production_version(self):
         self.assertIn(".replace(/[^A-Za-z0-9._-]/g, '_')", NARRATION)
         self.assertNotIn("elevenlabs", NARRATION.lower())
         self.assertNotRegex(NARRATION, r"(?i)api[_-]?key")
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text(encoding="utf-8"))
         self.assertIn("const STORAGE_KEY = 'tombWorldBattleGuide.v1';", (ROOT / "app.js").read_text(encoding="utf-8"))
-        self.assertEqual((10, 0, 0), tuple(map(int, CURRENT_APP_VERSION.split("."))))
+        self.assertEqual((10, 0, 1), tuple(map(int, CURRENT_APP_VERSION.split("."))))
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", (ROOT / "app.js").read_text(encoding="utf-8"))
         self.assertIn("narrationAlignmentFiles(narrationManifest)",
                       (ROOT / "service-worker.js").read_text(encoding="utf-8"))
