@@ -8,7 +8,7 @@ The producer sends each existing MP3 and its exact authoritative text to `POST h
 
 ## Source mapping and validation
 
-`tools/narration-producer/alignment.py` contains the single ID-to-transcript resolver. It indexes the `scripts` arrays in `Narration/scripts/*.json`, covering mission introductions, events (including Tombs Beyond Counting sources), grades, outcomes, and deadly encounters. An entry is not submitted if its ID is missing or duplicated, its audio is unavailable or missing, or its source script hash does not exactly match the manifest.
+`tools/narration-producer/alignment.py` contains the single ID-to-transcript resolver. It indexes the `scripts` arrays in `Narration/scripts/*.json`, covering mission introductions, events (including Tombs Beyond Counting sources), grades, outcomes, and deadly encounters. An entry is not submitted if its ID is missing or duplicated, its audio is unavailable or missing, its audio path escapes the narration library, or its source-script/audio hash does not exactly match the manifest.
 
 The inventory reports available and unavailable entries; valid, missing, stale, and invalid alignments; missing audio; missing or ambiguous scripts; and script-hash mismatches.
 

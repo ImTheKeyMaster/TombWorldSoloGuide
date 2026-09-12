@@ -103,6 +103,14 @@ class NarrationAlignmentTests(unittest.TestCase):
         path.write_text("not JSON")
         self.assertEqual("INVALID", alignment.validate_alignment(path, entry)[0])
 
+    def test_validation_requires_the_exact_transcript_and_manifest_duration(self):
+        self.generate()
+        path = alignment.alignment_path(self.output, "event.sample")
+        entry = dict(json.loads(self.manifest.read_text())["entries"]["event.sample"], id="event.sample")
+        self.assertEqual("VALID", alignment.validate_alignment(path, entry, "Exact text.")[0])
+        self.assertEqual("INVALID", alignment.validate_alignment(path, entry, "Different text.")[0])
+        self.assertEqual("INVALID", alignment.validate_alignment(path, dict(entry, durationMs=999), "Exact text.")[0])
+
     def test_inventory_supports_skip_and_resume(self):
         first = alignment.inventory(self.manifest, self.scripts, self.audio, self.output)
         self.assertEqual(1, first["totals"]["missing"])
@@ -139,6 +147,20 @@ class NarrationAlignmentTests(unittest.TestCase):
         self.assertEqual(alignment.ALIGNMENT_API_URL, post.call_args.args[0])
         self.assertEqual("Exact text.", post.call_args.kwargs["data"]["text"])
         self.assertEqual("test-only-key", post.call_args.kwargs["headers"]["xi-api-key"])
+
+    def test_manifest_cannot_read_audio_outside_the_library(self):
+        self.write_manifest(file="../outside.mp3")
+        with self.assertRaisesRegex(ValueError, "outside the audio library"):
+            self.generate()
+
+    def test_connection_and_non_json_failures_do_not_write_output(self):
+        with self.assertRaisesRegex(ValueError, "could not be reached"):
+            self.generate(Mock(side_effect=RuntimeError("secret transport detail")))
+        response = Response()
+        response.json = Mock(side_effect=ValueError("not JSON"))
+        with self.assertRaisesRegex(ValueError, "invalid forced-alignment response"):
+            self.generate(Mock(return_value=response))
+        self.assertFalse(alignment.alignment_path(self.output, "event.sample").exists())
 
 
 if __name__ == "__main__":

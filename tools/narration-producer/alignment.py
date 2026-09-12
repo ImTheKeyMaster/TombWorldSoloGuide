@@ -52,7 +52,7 @@ class TranscriptResolver:
         return dict(matches[0], script=text, computedScriptHash=hashlib.sha256(text.encode("utf8")).hexdigest()), "OK"
 
 
-def validate_alignment(path, entry):
+def validate_alignment(path, entry, transcript=None):
     path = Path(path)
     if not path.exists():
         return "MISSING", None
@@ -61,12 +61,21 @@ def validate_alignment(path, entry):
         required = (data.get("schemaVersion") == ALIGNMENT_SCHEMA_VERSION
                     and data.get("id") == entry["id"]
                     and isinstance(data.get("text"), str)
+                    and (transcript is None or data.get("text") == transcript)
                     and isinstance(data.get("durationMs"), int)
+                    and data.get("durationMs") == entry.get("durationMs")
+                    and isinstance(data.get("scriptHash"), str)
+                    and isinstance(data.get("audioHash"), str)
+                    and data.get("qualityStatus") in ("GOOD", "REVIEW")
+                    and (data.get("alignmentLoss") is None
+                         or _number_or_none(data.get("alignmentLoss")) is not None)
                     and isinstance(data.get("words"), list)
+                    and bool(data["words"])
                     and all(isinstance(word, dict)
                             and isinstance(word.get("text"), str)
                             and isinstance(word.get("startMs"), int)
                             and isinstance(word.get("endMs"), int)
+                            and (word.get("loss") is None or _number_or_none(word.get("loss")) is not None)
                             and word["startMs"] <= word["endMs"]
                             for word in data["words"]))
         if not required:
@@ -87,19 +96,27 @@ def inventory(manifest_path, scripts_dir, audio_dir, alignment_dir):
     for entry_id, raw_entry in manifest.get("entries", {}).items():
         entry = dict(raw_entry, id=entry_id)
         script, mapping = resolver.resolve(entry_id)
-        audio_path = Path(audio_dir) / entry.get("file", "")
-        audio_missing = bool(entry.get("available")) and (not entry.get("file") or not audio_path.is_file())
+        try:
+            audio_path = existing_audio_path(audio_dir, entry.get("file", ""))
+            audio_path_invalid = False
+        except (TypeError, ValueError):
+            audio_path = None
+            audio_path_invalid = True
+        audio_missing = bool(entry.get("available")) and (
+            audio_path_invalid or not entry.get("file") or not audio_path.is_file())
         audio_hash_mismatch = (bool(entry.get("available")) and not audio_missing
                                and hashlib.sha256(audio_path.read_bytes()).hexdigest() != entry.get("audioHash"))
         if script and script.get("computedScriptHash") != entry.get("scriptHash"):
             mapping = "SCRIPT HASH MISMATCH"
-        status, alignment = validate_alignment(alignment_path(alignment_dir, entry_id), entry)
+        status, alignment = validate_alignment(
+            alignment_path(alignment_dir, entry_id), entry, script["script"] if script else None)
         items.append({
             "id": entry_id, "available": bool(entry.get("available")), "file": entry.get("file"),
             "alignmentStatus": status, "qualityStatus": alignment.get("qualityStatus") if alignment else None,
             "alignmentLoss": alignment.get("alignmentLoss") if alignment else None,
             "mappingStatus": mapping, "audioMissing": audio_missing,
             "audioHashMismatch": audio_hash_mismatch,
+            "audioPathInvalid": audio_path_invalid,
         })
     available = [item for item in items if item["available"]]
     return {"items": items, "totals": {
@@ -111,6 +128,7 @@ def inventory(manifest_path, scripts_dir, audio_dir, alignment_dir):
         "unavailable": sum(not item["available"] for item in items),
         "audioMissing": sum(item["audioMissing"] for item in items),
         "audioHashMismatch": sum(item["audioHashMismatch"] for item in items),
+        "audioPathInvalid": sum(item["audioPathInvalid"] for item in items),
         "scriptMissing": sum(item["mappingStatus"] == "SCRIPT MISSING" for item in items),
         "ambiguous": sum(item["mappingStatus"] == "AMBIGUOUS" for item in items),
         "scriptHashMismatch": sum(item["mappingStatus"] == "SCRIPT HASH MISMATCH" for item in items),
@@ -163,6 +181,16 @@ def atomic_write(path, data):
             os.unlink(temporary)
 
 
+def existing_audio_path(audio_dir, relative_path):
+    if not isinstance(relative_path, str) or not relative_path:
+        raise ValueError("The narration manifest audio path is missing.")
+    root = Path(audio_dir).resolve()
+    path = (root / relative_path).resolve()
+    if root not in path.parents:
+        raise ValueError("The narration manifest audio path is outside the audio library.")
+    return path
+
+
 def generate_alignment(entry_id, manifest_path, scripts_dir, audio_dir, alignment_dir, api_key, post):
     manifest = json.loads(Path(manifest_path).read_text(encoding="utf8"))
     raw_entry = manifest.get("entries", {}).get(entry_id)
@@ -176,21 +204,28 @@ def generate_alignment(entry_id, manifest_path, scripts_dir, audio_dir, alignmen
         raise ValueError(f"Authoritative script mapping is {mapping.lower()}.")
     if transcript.get("computedScriptHash") != entry.get("scriptHash"):
         raise ValueError("The authoritative script hash does not match the narration manifest.")
-    audio_path = Path(audio_dir) / entry.get("file", "")
+    audio_path = existing_audio_path(audio_dir, entry.get("file", ""))
     if not audio_path.is_file():
         raise ValueError("The existing narration audio file is missing.")
     if hashlib.sha256(audio_path.read_bytes()).hexdigest() != entry.get("audioHash"):
         raise ValueError("The existing narration audio hash does not match the narration manifest.")
     if not api_key:
         raise ValueError("Configure the API key before generating alignment metadata.")
-    with audio_path.open("rb") as audio:
-        response = post(ALIGNMENT_API_URL, headers={"xi-api-key": api_key},
-                        files={"file": (audio_path.name, audio, "audio/mpeg")},
-                        data={"text": transcript["script"]}, timeout=180)
+    try:
+        with audio_path.open("rb") as audio:
+            response = post(ALIGNMENT_API_URL, headers={"xi-api-key": api_key},
+                            files={"file": (audio_path.name, audio, "audio/mpeg")},
+                            data={"text": transcript["script"]}, timeout=180)
+    except Exception as error:
+        raise ValueError("ElevenLabs forced alignment could not be reached.") from error
     if not response.ok:
         error = ValueError("ElevenLabs could not complete forced alignment.")
         error.stop_batch = response.status_code in (401, 402, 403, 429)
         raise error
-    result = convert_response(entry, transcript["script"], response.json())
+    try:
+        response_data = response.json()
+    except (TypeError, ValueError) as error:
+        raise ValueError("ElevenLabs returned an invalid forced-alignment response.") from error
+    result = convert_response(entry, transcript["script"], response_data)
     atomic_write(alignment_path(alignment_dir, entry_id), result)
     return result
