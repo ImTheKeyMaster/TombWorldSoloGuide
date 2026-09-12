@@ -31,7 +31,8 @@ class NarrationTranscriptDialogTests(unittest.TestCase):
         self.assertLess(INDEX.index(f"narration-transcript.js?v={CURRENT_APP_VERSION}"), INDEX.index(f"app.js?v={CURRENT_APP_VERSION}"))
 
     def test_static_safe_transcript_player_contract(self):
-        self.assertIn("body.textContent =", TRANSCRIPT)
+        self.assertIn("paragraph.textContent = text", TRANSCRIPT)
+        self.assertIn("body.replaceChildren(...paragraphs)", TRANSCRIPT)
         self.assertNotIn("innerHTML", TRANSCRIPT)
         self.assertIn("Loading transcript…", TRANSCRIPT)
         self.assertIn("Transcript unavailable.", TRANSCRIPT)
@@ -72,8 +73,8 @@ for(const [value,want] of [[0,'0:00'],[2486,'0:02'],[23236,'0:23'],[61000,'1:01'
 const fs=require('fs'),vm=require('vm');
 const listeners={};let state={active:false,id:null,currentTimeMs:0,durationMs:0};
 const listenerCounts={};
-const document={readyState:'complete',activeElement:null,getElementById:id=>elements[id]};
-function element(id){return elements[id]={id,hidden:false,open:false,isConnected:true,style:{},attributes:{},listeners:{},addEventListener(type,fn){this.listeners[type]=fn},setAttribute(name,value){this.attributes[name]=value},removeAttribute(name){delete this.attributes[name]},focus(){document.activeElement=this},close(){this.open=false},showModal(){this.open=true},querySelector(){return fill}}}
+const document={readyState:'complete',activeElement:null,getElementById:id=>elements[id],createElement:tag=>({tag,textContent:''})};
+function element(id){return elements[id]={id,hidden:false,open:false,isConnected:true,style:{},attributes:{},children:[],listeners:{},addEventListener(type,fn){this.listeners[type]=fn},setAttribute(name,value){this.attributes[name]=value},removeAttribute(name){delete this.attributes[name]},replaceChildren(...children){this.children=children},focus(){document.activeElement=this},close(){this.open=false},showModal(){this.open=true},querySelector(){return fill}}}
 const elements={},fill={style:{}};
 for(const id of ['narrationTranscriptDialog','narrationTranscriptReopen','narrationTranscriptCategory','narrationTranscriptBody','narrationTranscriptProgress','narrationTranscriptTime','narrationTranscriptHide','narrationTranscriptPause','narrationTranscriptSkip','narrationTranscriptStop','narrationTranscriptPauseHelp'])element(id);
 const origin=element('origin');document.activeElement=origin;
@@ -83,8 +84,9 @@ const context={document,TombWorldNarration:narration,requestAnimationFrame:()=>1
 vm.createContext(context);vm.runInContext(fs.readFileSync('narration-transcript.js','utf8'),context);
 context.TombWorldNarrationTranscript.init();
 if(listenerCounts.tombworldnarrationstatechange!==1)throw Error('init attached duplicate state listeners');
-state={active:true,id:'mission.01.intro',category:'mission-intro',currentTimeMs:0,durationMs:1000,transcriptLoading:true};listeners.tombworldnarrationstatechange({detail:state});
+state={active:true,id:'mission.01.intro',category:'mission-intro',currentTimeMs:0,durationMs:1000,transcriptAvailable:true,transcript:'First paragraph.\n\nSecond paragraph.'};listeners.tombworldnarrationstatechange({detail:state});
 if(elements.narrationTranscriptCategory.textContent!=='MISSION BRIEFING')throw Error('category eyebrow was not updated');
+if(elements.narrationTranscriptBody.children.length!==2||elements.narrationTranscriptBody.children[1].textContent!=='Second paragraph.')throw Error('paragraph structure was not preserved');
 elements.narrationTranscriptSkip.listeners.click();elements.narrationTranscriptStop.listeners.click();
 if(skipCalls!==1||stopCalls!==1)throw Error('transcript controls changed narration actions');
 elements.narrationTranscriptHide.listeners.click();
@@ -125,6 +127,8 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
         self.assertIn("min-height:0", transcript_body_rule)
         self.assertIn("line-height:1.5", transcript_body_rule)
         self.assertIn("white-space:pre-line", transcript_body_rule)
+        self.assertIn(".narration-transcript-body p{margin:0 0 .75em}", STYLES)
+        self.assertIn(".narration-transcript-body p:last-child{margin-bottom:0}", STYLES)
         mobile_rule = STYLES.split("@media(max-width:480px)", 1)[1].split("@media", 1)[0]
         self.assertIn("grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)", mobile_rule)
         self.assertIn(".narration-transcript-controls .danger{grid-column:1/-1}", mobile_rule)
