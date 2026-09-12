@@ -110,9 +110,15 @@
 
     function renderTranscript(state) {
       category.textContent = CATEGORY_LABELS[state.category] || 'NARRATION';
-      body.textContent = state.transcriptAvailable
+      const transcript = state.transcriptAvailable
         ? state.transcript
         : (state.transcriptLoading ? 'Loading transcript…' : 'Transcript unavailable.');
+      const paragraphs = String(transcript).split(/\n\s*\n/).map(text => {
+        const paragraph = global.document.createElement('p');
+        paragraph.textContent = text;
+        return paragraph;
+      });
+      body.replaceChildren(...paragraphs);
     }
 
     function handleState(state = narration.getPlaybackState()) {

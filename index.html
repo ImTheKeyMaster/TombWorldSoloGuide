@@ -63,13 +63,10 @@
       </div>
     </div>
   </dialog>
-  <dialog id="narrationTranscriptDialog" class="narration-transcript-dialog" aria-labelledby="narrationTranscriptTitle">
+  <dialog id="narrationTranscriptDialog" class="narration-transcript-dialog" aria-labelledby="narrationTranscriptCategory">
     <div class="narration-transcript-shell">
       <header class="narration-transcript-header">
-        <div>
-          <p id="narrationTranscriptCategory" class="narration-transcript-eyebrow">NARRATION</p>
-          <h2 id="narrationTranscriptTitle">Narration</h2>
-        </div>
+        <p id="narrationTranscriptCategory" class="narration-transcript-eyebrow">NARRATION</p>
         <button id="narrationTranscriptHide" class="narration-transcript-hide" type="button" aria-label="Hide transcript">×</button>
       </header>
       <div id="narrationTranscriptBody" class="narration-transcript-body">Loading transcript…</div>
@@ -78,8 +75,8 @@
         <div id="narrationTranscriptTime" class="narration-transcript-time">0:00 / 0:00</div>
         <div class="narration-transcript-controls">
           <button id="narrationTranscriptPause" class="btn primary" type="button">Pause</button>
-          <button id="narrationTranscriptSkip" class="btn ghost" type="button">Skip</button>
-          <button id="narrationTranscriptStop" class="btn danger" type="button">Stop Narration</button>
+          <button id="narrationTranscriptSkip" class="btn ghost" type="button">Skip This Narration</button>
+          <button id="narrationTranscriptStop" class="btn danger" type="button">Stop All Narration</button>
         </div>
         <p id="narrationTranscriptPauseHelp" class="narration-transcript-help" hidden>Turn master audio on to resume narration.</p>
       </footer>
