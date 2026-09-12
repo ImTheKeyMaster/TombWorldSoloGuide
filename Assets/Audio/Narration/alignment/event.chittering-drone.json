@@ -1,0 +1,414 @@
+{
+  "schemaVersion": 1,
+  "id": "event.chittering-drone",
+  "text": "A mechanical chittering rises from inside the walls.\n\nTiny metallic forms gather in the darkness, converging on damaged machinery or spilling from seams that were empty moments before.\n\nThe scarabs are moving again.",
+  "durationMs": 15229,
+  "scriptHash": "acf391b4475d129353f8967bba924a4a3042dab34c784cfe2a8cdbebb9ffeefc",
+  "audioHash": "7dda83e549ee924d668f543b2edaba14a983e4b29cae0ee5df79adb266bf4c11",
+  "alignmentLoss": 0.1221876815307972,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "A",
+      "startMs": 59,
+      "endMs": 119,
+      "loss": 4.75
+    },
+    {
+      "text": " ",
+      "startMs": 119,
+      "endMs": 140,
+      "loss": 0.00531005859375
+    },
+    {
+      "text": "mechanical",
+      "startMs": 140,
+      "endMs": 659,
+      "loss": 0.0006662368774414063
+    },
+    {
+      "text": " ",
+      "startMs": 659,
+      "endMs": 799,
+      "loss": 0.000823974609375
+    },
+    {
+      "text": "chittering",
+      "startMs": 799,
+      "endMs": 1419,
+      "loss": 0.0112152099609375
+    },
+    {
+      "text": " ",
+      "startMs": 1419,
+      "endMs": 1500,
+      "loss": 0.003326416015625
+    },
+    {
+      "text": "rises",
+      "startMs": 1500,
+      "endMs": 1919,
+      "loss": 0.00085906982421875
+    },
+    {
+      "text": " ",
+      "startMs": 1919,
+      "endMs": 1959,
+      "loss": 0.0005950927734375
+    },
+    {
+      "text": "from",
+      "startMs": 1959,
+      "endMs": 2079,
+      "loss": 0.00017657876014709473
+    },
+    {
+      "text": " ",
+      "startMs": 2079,
+      "endMs": 2139,
+      "loss": 9.393692016601562e-05
+    },
+    {
+      "text": "inside",
+      "startMs": 2139,
+      "endMs": 2500,
+      "loss": 0.0002323786417643229
+    },
+    {
+      "text": " ",
+      "startMs": 2500,
+      "endMs": 2539,
+      "loss": 0.00112152099609375
+    },
+    {
+      "text": "the",
+      "startMs": 2539,
+      "endMs": 2599,
+      "loss": 0.00034236907958984375
+    },
+    {
+      "text": " ",
+      "startMs": 2599,
+      "endMs": 2659,
+      "loss": 0.00010442733764648438
+    },
+    {
+      "text": "walls.",
+      "startMs": 2659,
+      "endMs": 3039,
+      "loss": 0.035021185874938965
+    },
+    {
+      "text": "\n",
+      "startMs": 3039,
+      "endMs": 3040,
+      "loss": 7.0
+    },
+    {
+      "text": "\n",
+      "startMs": 3039,
+      "endMs": 3040,
+      "loss": 2.703125
+    },
+    {
+      "text": "Tiny",
+      "startMs": 4159,
+      "endMs": 4480,
+      "loss": 0.03124701976776123
+    },
+    {
+      "text": " ",
+      "startMs": 4480,
+      "endMs": 4599,
+      "loss": 0.28125
+    },
+    {
+      "text": "metallic",
+      "startMs": 4599,
+      "endMs": 5099,
+      "loss": 0.00031711161136627197
+    },
+    {
+      "text": " ",
+      "startMs": 5099,
+      "endMs": 5159,
+      "loss": 0.0023040771484375
+    },
+    {
+      "text": "forms",
+      "startMs": 5159,
+      "endMs": 5579,
+      "loss": 0.00023298263549804689
+    },
+    {
+      "text": " ",
+      "startMs": 5579,
+      "endMs": 5639,
+      "loss": 0.00070953369140625
+    },
+    {
+      "text": "gather",
+      "startMs": 5639,
+      "endMs": 5859,
+      "loss": 0.00018825133641560873
+    },
+    {
+      "text": " ",
+      "startMs": 5859,
+      "endMs": 5899,
+      "loss": 0.0038604736328125
+    },
+    {
+      "text": "in",
+      "startMs": 5900,
+      "endMs": 5960,
+      "loss": 0.0003867149353027344
+    },
+    {
+      "text": " ",
+      "startMs": 5960,
+      "endMs": 5980,
+      "loss": 0.012451171875
+    },
+    {
+      "text": "the",
+      "startMs": 5980,
+      "endMs": 6059,
+      "loss": 0.0012189547220865886
+    },
+    {
+      "text": " ",
+      "startMs": 6059,
+      "endMs": 6099,
+      "loss": 4.291534423828125e-05
+    },
+    {
+      "text": "darkness,",
+      "startMs": 6099,
+      "endMs": 6599,
+      "loss": 0.09392533037397596
+    },
+    {
+      "text": " ",
+      "startMs": 6599,
+      "endMs": 7059,
+      "loss": 9.489059448242188e-05
+    },
+    {
+      "text": "converging",
+      "startMs": 7059,
+      "endMs": 7579,
+      "loss": 0.00037790536880493163
+    },
+    {
+      "text": " ",
+      "startMs": 7579,
+      "endMs": 7619,
+      "loss": 0.001220703125
+    },
+    {
+      "text": "on",
+      "startMs": 7619,
+      "endMs": 7719,
+      "loss": 0.0013256072998046875
+    },
+    {
+      "text": " ",
+      "startMs": 7719,
+      "endMs": 7839,
+      "loss": 0.000324249267578125
+    },
+    {
+      "text": "damaged",
+      "startMs": 7839,
+      "endMs": 8199,
+      "loss": 0.00044597898210797993
+    },
+    {
+      "text": " ",
+      "startMs": 8199,
+      "endMs": 8279,
+      "loss": 0.0003185272216796875
+    },
+    {
+      "text": "machinery",
+      "startMs": 8279,
+      "endMs": 9219,
+      "loss": 0.00014196501837836372
+    },
+    {
+      "text": " ",
+      "startMs": 9219,
+      "endMs": 9300,
+      "loss": 0.3046875
+    },
+    {
+      "text": "or",
+      "startMs": 9300,
+      "endMs": 9380,
+      "loss": 0.0021429061889648438
+    },
+    {
+      "text": " ",
+      "startMs": 9380,
+      "endMs": 9500,
+      "loss": 0.0003223419189453125
+    },
+    {
+      "text": "spilling",
+      "startMs": 9500,
+      "endMs": 9840,
+      "loss": 0.00023321807384490967
+    },
+    {
+      "text": " ",
+      "startMs": 9840,
+      "endMs": 9899,
+      "loss": 0.0020599365234375
+    },
+    {
+      "text": "from",
+      "startMs": 9899,
+      "endMs": 10039,
+      "loss": 0.00030243396759033203
+    },
+    {
+      "text": " ",
+      "startMs": 10039,
+      "endMs": 10179,
+      "loss": 0.00023746490478515625
+    },
+    {
+      "text": "seams",
+      "startMs": 10179,
+      "endMs": 10659,
+      "loss": 0.0023756027221679688
+    },
+    {
+      "text": " ",
+      "startMs": 10659,
+      "endMs": 10699,
+      "loss": 0.01318359375
+    },
+    {
+      "text": "that",
+      "startMs": 10699,
+      "endMs": 10800,
+      "loss": 0.0006404519081115723
+    },
+    {
+      "text": " ",
+      "startMs": 10800,
+      "endMs": 10840,
+      "loss": 6.151199340820312e-05
+    },
+    {
+      "text": "were",
+      "startMs": 10840,
+      "endMs": 10960,
+      "loss": 0.0004678964614868164
+    },
+    {
+      "text": " ",
+      "startMs": 10960,
+      "endMs": 11019,
+      "loss": 0.000186920166015625
+    },
+    {
+      "text": "empty",
+      "startMs": 11019,
+      "endMs": 11420,
+      "loss": 0.0008063793182373046
+    },
+    {
+      "text": " ",
+      "startMs": 11420,
+      "endMs": 11479,
+      "loss": 0.00701904296875
+    },
+    {
+      "text": "moments",
+      "startMs": 11479,
+      "endMs": 11819,
+      "loss": 0.00040793418884277344
+    },
+    {
+      "text": " ",
+      "startMs": 11819,
+      "endMs": 11899,
+      "loss": 0.0030517578125
+    },
+    {
+      "text": "before.",
+      "startMs": 11899,
+      "endMs": 12359,
+      "loss": 0.011641417230878557
+    },
+    {
+      "text": "\n",
+      "startMs": 12359,
+      "endMs": 12360,
+      "loss": 6.9375
+    },
+    {
+      "text": "\n",
+      "startMs": 12359,
+      "endMs": 12360,
+      "loss": 1.859375
+    },
+    {
+      "text": "The",
+      "startMs": 13439,
+      "endMs": 13500,
+      "loss": 0.016665140787760418
+    },
+    {
+      "text": " ",
+      "startMs": 13500,
+      "endMs": 13559,
+      "loss": 0.00069427490234375
+    },
+    {
+      "text": "scarabs",
+      "startMs": 13559,
+      "endMs": 14039,
+      "loss": 0.023550714765276228
+    },
+    {
+      "text": " ",
+      "startMs": 14039,
+      "endMs": 14099,
+      "loss": 0.002349853515625
+    },
+    {
+      "text": "are",
+      "startMs": 14099,
+      "endMs": 14219,
+      "loss": 0.0003101030985514323
+    },
+    {
+      "text": " ",
+      "startMs": 14219,
+      "endMs": 14279,
+      "loss": 0.00010538101196289062
+    },
+    {
+      "text": "moving",
+      "startMs": 14279,
+      "endMs": 14539,
+      "loss": 4.4624010721842446e-05
+    },
+    {
+      "text": " ",
+      "startMs": 14539,
+      "endMs": 14639,
+      "loss": 0.00035858154296875
+    },
+    {
+      "text": "again.",
+      "startMs": 14639,
+      "endMs": 14939,
+      "loss": 0.11953512827555339
+    }
+  ]
+}

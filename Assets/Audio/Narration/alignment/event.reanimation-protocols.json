@@ -1,0 +1,510 @@
+{
+  "schemaVersion": 1,
+  "id": "event.reanimation-protocols",
+  "text": "The fallen begin to move.\n\nEmerald light returns to darkened eyes. Bodies that should lie silent rise again, driven by ancient systems that refuse to accept their destruction.\n\nFor a time, death may not be enough to stop the tomb’s defenders.",
+  "durationMs": 18390,
+  "scriptHash": "4b1d78ac90110d38893bb20ba528cd168d26db7e96ff69cf50ec95542b882dfe",
+  "audioHash": "eaef1827ca16d225e7ba89edbea46eb4962ca7eb7cb0ee381127d439f98bec36",
+  "alignmentLoss": 0.17447705948648373,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "The",
+      "startMs": 79,
+      "endMs": 159,
+      "loss": 1.168404261271159
+    },
+    {
+      "text": " ",
+      "startMs": 159,
+      "endMs": 280,
+      "loss": 8.344650268554688e-05
+    },
+    {
+      "text": "fallen",
+      "startMs": 280,
+      "endMs": 839,
+      "loss": 0.042534192403157554
+    },
+    {
+      "text": " ",
+      "startMs": 839,
+      "endMs": 879,
+      "loss": 0.00341796875
+    },
+    {
+      "text": "begin",
+      "startMs": 879,
+      "endMs": 1199,
+      "loss": 0.00048046112060546876
+    },
+    {
+      "text": " ",
+      "startMs": 1199,
+      "endMs": 1239,
+      "loss": 0.00469970703125
+    },
+    {
+      "text": "to",
+      "startMs": 1240,
+      "endMs": 1319,
+      "loss": 0.00036853551864624023
+    },
+    {
+      "text": " ",
+      "startMs": 1319,
+      "endMs": 1419,
+      "loss": 1.537799835205078e-05
+    },
+    {
+      "text": "move.",
+      "startMs": 1419,
+      "endMs": 1879,
+      "loss": 0.06651902198791504
+    },
+    {
+      "text": "\n",
+      "startMs": 1879,
+      "endMs": 2659,
+      "loss": 12.4375
+    },
+    {
+      "text": "\n",
+      "startMs": 2659,
+      "endMs": 2740,
+      "loss": 6.78125
+    },
+    {
+      "text": "Emerald",
+      "startMs": 2740,
+      "endMs": 3079,
+      "loss": 0.024428469794137136
+    },
+    {
+      "text": " ",
+      "startMs": 3079,
+      "endMs": 3179,
+      "loss": 0.0069580078125
+    },
+    {
+      "text": "light",
+      "startMs": 3179,
+      "endMs": 3419,
+      "loss": 0.007650518417358398
+    },
+    {
+      "text": " ",
+      "startMs": 3419,
+      "endMs": 3559,
+      "loss": 0.0002574920654296875
+    },
+    {
+      "text": "returns",
+      "startMs": 3559,
+      "endMs": 4119,
+      "loss": 0.0002050229481288365
+    },
+    {
+      "text": " ",
+      "startMs": 4119,
+      "endMs": 4199,
+      "loss": 2.4437904357910156e-05
+    },
+    {
+      "text": "to",
+      "startMs": 4199,
+      "endMs": 4259,
+      "loss": 0.0002548694610595703
+    },
+    {
+      "text": " ",
+      "startMs": 4259,
+      "endMs": 4439,
+      "loss": 1.4543533325195312e-05
+    },
+    {
+      "text": "darkened",
+      "startMs": 4440,
+      "endMs": 4880,
+      "loss": 0.0002777576446533203
+    },
+    {
+      "text": " ",
+      "startMs": 4880,
+      "endMs": 5000,
+      "loss": 0.00016880035400390625
+    },
+    {
+      "text": "eyes.",
+      "startMs": 5000,
+      "endMs": 5480,
+      "loss": 0.09156208038330078
+    },
+    {
+      "text": " ",
+      "startMs": 5480,
+      "endMs": 6259,
+      "loss": 0.003448486328125
+    },
+    {
+      "text": "Bodies",
+      "startMs": 6259,
+      "endMs": 6639,
+      "loss": 0.0006030797958374023
+    },
+    {
+      "text": " ",
+      "startMs": 6639,
+      "endMs": 6719,
+      "loss": 0.00026702880859375
+    },
+    {
+      "text": "that",
+      "startMs": 6719,
+      "endMs": 6839,
+      "loss": 0.00029659271240234375
+    },
+    {
+      "text": " ",
+      "startMs": 6839,
+      "endMs": 6899,
+      "loss": 1.5139579772949219e-05
+    },
+    {
+      "text": "should",
+      "startMs": 6899,
+      "endMs": 7039,
+      "loss": 0.00015926361083984375
+    },
+    {
+      "text": " ",
+      "startMs": 7039,
+      "endMs": 7159,
+      "loss": 2.6941299438476562e-05
+    },
+    {
+      "text": "lie",
+      "startMs": 7159,
+      "endMs": 7319,
+      "loss": 0.0005308787027994791
+    },
+    {
+      "text": " ",
+      "startMs": 7319,
+      "endMs": 7499,
+      "loss": 0.0002956390380859375
+    },
+    {
+      "text": "silent",
+      "startMs": 7500,
+      "endMs": 7919,
+      "loss": 0.00017209847768147787
+    },
+    {
+      "text": " ",
+      "startMs": 7919,
+      "endMs": 8079,
+      "loss": 0.014404296875
+    },
+    {
+      "text": "rise",
+      "startMs": 8079,
+      "endMs": 8319,
+      "loss": 0.00047209858894348145
+    },
+    {
+      "text": " ",
+      "startMs": 8319,
+      "endMs": 8420,
+      "loss": 0.00035858154296875
+    },
+    {
+      "text": "again,",
+      "startMs": 8420,
+      "endMs": 8800,
+      "loss": 0.00543061892191569
+    },
+    {
+      "text": " ",
+      "startMs": 8800,
+      "endMs": 9380,
+      "loss": 5.3882598876953125e-05
+    },
+    {
+      "text": "driven",
+      "startMs": 9380,
+      "endMs": 9639,
+      "loss": 0.00023180246353149414
+    },
+    {
+      "text": " ",
+      "startMs": 9639,
+      "endMs": 9719,
+      "loss": 0.0003147125244140625
+    },
+    {
+      "text": "by",
+      "startMs": 9719,
+      "endMs": 9880,
+      "loss": 0.0006268024444580078
+    },
+    {
+      "text": " ",
+      "startMs": 9880,
+      "endMs": 9960,
+      "loss": 4.506111145019531e-05
+    },
+    {
+      "text": "ancient",
+      "startMs": 9960,
+      "endMs": 10279,
+      "loss": 0.0002831050327845982
+    },
+    {
+      "text": " ",
+      "startMs": 10279,
+      "endMs": 10359,
+      "loss": 0.000156402587890625
+    },
+    {
+      "text": "systems",
+      "startMs": 10359,
+      "endMs": 10819,
+      "loss": 0.0002625669751848493
+    },
+    {
+      "text": " ",
+      "startMs": 10819,
+      "endMs": 10859,
+      "loss": 0.002349853515625
+    },
+    {
+      "text": "that",
+      "startMs": 10859,
+      "endMs": 10960,
+      "loss": 0.00043258070945739746
+    },
+    {
+      "text": " ",
+      "startMs": 10960,
+      "endMs": 11019,
+      "loss": 5.1975250244140625e-05
+    },
+    {
+      "text": "refuse",
+      "startMs": 11019,
+      "endMs": 11479,
+      "loss": 0.00025391578674316406
+    },
+    {
+      "text": " ",
+      "startMs": 11479,
+      "endMs": 11519,
+      "loss": 0.01483154296875
+    },
+    {
+      "text": "to",
+      "startMs": 11519,
+      "endMs": 11579,
+      "loss": 0.0010172724723815918
+    },
+    {
+      "text": " ",
+      "startMs": 11579,
+      "endMs": 11659,
+      "loss": 3.457069396972656e-05
+    },
+    {
+      "text": "accept",
+      "startMs": 11659,
+      "endMs": 12000,
+      "loss": 0.0003076593081156413
+    },
+    {
+      "text": " ",
+      "startMs": 12000,
+      "endMs": 12079,
+      "loss": 0.000415802001953125
+    },
+    {
+      "text": "their",
+      "startMs": 12079,
+      "endMs": 12179,
+      "loss": 0.00041904449462890623
+    },
+    {
+      "text": " ",
+      "startMs": 12179,
+      "endMs": 12239,
+      "loss": 0.00023174285888671875
+    },
+    {
+      "text": "destruction.",
+      "startMs": 12239,
+      "endMs": 12859,
+      "loss": 0.0033410986264546714
+    },
+    {
+      "text": "\n",
+      "startMs": 12859,
+      "endMs": 13679,
+      "loss": 9.625
+    },
+    {
+      "text": "\n",
+      "startMs": 13679,
+      "endMs": 13719,
+      "loss": 5.28125
+    },
+    {
+      "text": "For",
+      "startMs": 13719,
+      "endMs": 13779,
+      "loss": 0.019803603490193684
+    },
+    {
+      "text": " ",
+      "startMs": 13779,
+      "endMs": 13840,
+      "loss": 8.440017700195312e-05
+    },
+    {
+      "text": "a",
+      "startMs": 13840,
+      "endMs": 13899,
+      "loss": 0.00075531005859375
+    },
+    {
+      "text": " ",
+      "startMs": 13899,
+      "endMs": 13979,
+      "loss": 0.0004062652587890625
+    },
+    {
+      "text": "time,",
+      "startMs": 13979,
+      "endMs": 14299,
+      "loss": 0.02044377326965332
+    },
+    {
+      "text": " ",
+      "startMs": 14299,
+      "endMs": 14939,
+      "loss": 2.658367156982422e-05
+    },
+    {
+      "text": "death",
+      "startMs": 14939,
+      "endMs": 15299,
+      "loss": 0.0018802404403686524
+    },
+    {
+      "text": " ",
+      "startMs": 15299,
+      "endMs": 15379,
+      "loss": 0.0008544921875
+    },
+    {
+      "text": "may",
+      "startMs": 15380,
+      "endMs": 15519,
+      "loss": 0.00019888083140055338
+    },
+    {
+      "text": " ",
+      "startMs": 15519,
+      "endMs": 15579,
+      "loss": 3.4332275390625e-05
+    },
+    {
+      "text": "not",
+      "startMs": 15579,
+      "endMs": 15720,
+      "loss": 0.00012520949045817056
+    },
+    {
+      "text": " ",
+      "startMs": 15720,
+      "endMs": 15819,
+      "loss": 2.086162567138672e-05
+    },
+    {
+      "text": "be",
+      "startMs": 15819,
+      "endMs": 15880,
+      "loss": 0.0002944469451904297
+    },
+    {
+      "text": " ",
+      "startMs": 15880,
+      "endMs": 15960,
+      "loss": 4.506111145019531e-05
+    },
+    {
+      "text": "enough",
+      "startMs": 15960,
+      "endMs": 16259,
+      "loss": 0.00019528468449910483
+    },
+    {
+      "text": " ",
+      "startMs": 16259,
+      "endMs": 16299,
+      "loss": 0.000720977783203125
+    },
+    {
+      "text": "to",
+      "startMs": 16299,
+      "endMs": 16379,
+      "loss": 0.00027364492416381836
+    },
+    {
+      "text": " ",
+      "startMs": 16379,
+      "endMs": 16459,
+      "loss": 1.4185905456542969e-05
+    },
+    {
+      "text": "stop",
+      "startMs": 16459,
+      "endMs": 16779,
+      "loss": 0.00025984644889831543
+    },
+    {
+      "text": " ",
+      "startMs": 16779,
+      "endMs": 16899,
+      "loss": 0.00028228759765625
+    },
+    {
+      "text": "the",
+      "startMs": 16899,
+      "endMs": 16960,
+      "loss": 0.0005509058634440104
+    },
+    {
+      "text": " ",
+      "startMs": 16960,
+      "endMs": 17039,
+      "loss": 0.00024127960205078125
+    },
+    {
+      "text": "tomb’s",
+      "startMs": 17039,
+      "endMs": 17399,
+      "loss": 0.4569406509399414
+    },
+    {
+      "text": " ",
+      "startMs": 17399,
+      "endMs": 17459,
+      "loss": 0.000621795654296875
+    },
+    {
+      "text": "defenders.",
+      "startMs": 17459,
+      "endMs": 18119,
+      "loss": 0.02567257881164551
+    }
+  ]
+}

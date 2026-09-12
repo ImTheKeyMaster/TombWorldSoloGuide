@@ -1,0 +1,492 @@
+{
+  "schemaVersion": 1,
+  "id": "event.my-will-be-done",
+  "text": "A pulse rolls outward from the sarcophagus.\n\nNearby constructs turn almost as one, their movements suddenly precise, their weapons tracking with unnatural certainty.\n\nWhatever sleeps within the crypt is not entirely silent.\n\nIts will is reaching beyond the grave.",
+  "durationMs": 19304,
+  "scriptHash": "076b0ffbeb64f818b1ebaa66fc33012c88514a82c897b03ca615b829d410d1eb",
+  "audioHash": "9a72840b755acfce0054415dbdbddbe5f82d1a332d449b1df203c28cdea0ec24",
+  "alignmentLoss": 0.11906785430110453,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "A",
+      "startMs": 59,
+      "endMs": 159,
+      "loss": 4.78125
+    },
+    {
+      "text": " ",
+      "startMs": 159,
+      "endMs": 199,
+      "loss": 0.00555419921875
+    },
+    {
+      "text": "pulse",
+      "startMs": 199,
+      "endMs": 599,
+      "loss": 0.0026111602783203125
+    },
+    {
+      "text": " ",
+      "startMs": 599,
+      "endMs": 740,
+      "loss": 0.002105712890625
+    },
+    {
+      "text": "rolls",
+      "startMs": 740,
+      "endMs": 1199,
+      "loss": 0.00117340087890625
+    },
+    {
+      "text": " ",
+      "startMs": 1199,
+      "endMs": 1339,
+      "loss": 0.000583648681640625
+    },
+    {
+      "text": "outward",
+      "startMs": 1339,
+      "endMs": 1779,
+      "loss": 0.00022462436131068638
+    },
+    {
+      "text": " ",
+      "startMs": 1779,
+      "endMs": 1860,
+      "loss": 0.00555419921875
+    },
+    {
+      "text": "from",
+      "startMs": 1860,
+      "endMs": 1979,
+      "loss": 0.00015059113502502441
+    },
+    {
+      "text": " ",
+      "startMs": 1979,
+      "endMs": 2039,
+      "loss": 3.2901763916015625e-05
+    },
+    {
+      "text": "the",
+      "startMs": 2039,
+      "endMs": 2099,
+      "loss": 0.0002609093983968099
+    },
+    {
+      "text": " ",
+      "startMs": 2099,
+      "endMs": 2139,
+      "loss": 3.361701965332031e-05
+    },
+    {
+      "text": "sarcophagus.",
+      "startMs": 2139,
+      "endMs": 2899,
+      "loss": 0.017229199409484863
+    },
+    {
+      "text": "\n",
+      "startMs": 2899,
+      "endMs": 3679,
+      "loss": 6.5625
+    },
+    {
+      "text": "\n",
+      "startMs": 3679,
+      "endMs": 3719,
+      "loss": 2.125
+    },
+    {
+      "text": "Nearby",
+      "startMs": 3720,
+      "endMs": 4199,
+      "loss": 0.008617977301279703
+    },
+    {
+      "text": " ",
+      "startMs": 4199,
+      "endMs": 4239,
+      "loss": 0.00360107421875
+    },
+    {
+      "text": "constructs",
+      "startMs": 4239,
+      "endMs": 4940,
+      "loss": 0.000506281852722168
+    },
+    {
+      "text": " ",
+      "startMs": 4940,
+      "endMs": 5000,
+      "loss": 0.004058837890625
+    },
+    {
+      "text": "turn",
+      "startMs": 5000,
+      "endMs": 5339,
+      "loss": 0.0002828836441040039
+    },
+    {
+      "text": " ",
+      "startMs": 5339,
+      "endMs": 5419,
+      "loss": 0.00157928466796875
+    },
+    {
+      "text": "almost",
+      "startMs": 5420,
+      "endMs": 5779,
+      "loss": 0.00019971529642740885
+    },
+    {
+      "text": " ",
+      "startMs": 5779,
+      "endMs": 5819,
+      "loss": 9.489059448242188e-05
+    },
+    {
+      "text": "as",
+      "startMs": 5819,
+      "endMs": 5920,
+      "loss": 0.00030684471130371094
+    },
+    {
+      "text": " ",
+      "startMs": 5920,
+      "endMs": 6019,
+      "loss": 0.00018787384033203125
+    },
+    {
+      "text": "one,",
+      "startMs": 6019,
+      "endMs": 6259,
+      "loss": 0.10400888323783875
+    },
+    {
+      "text": " ",
+      "startMs": 6259,
+      "endMs": 6679,
+      "loss": 0.0001277923583984375
+    },
+    {
+      "text": "their",
+      "startMs": 6679,
+      "endMs": 6819,
+      "loss": 0.0004971981048583985
+    },
+    {
+      "text": " ",
+      "startMs": 6819,
+      "endMs": 6879,
+      "loss": 4.5299530029296875e-05
+    },
+    {
+      "text": "movements",
+      "startMs": 6879,
+      "endMs": 7319,
+      "loss": 0.013032462861802842
+    },
+    {
+      "text": " ",
+      "startMs": 7319,
+      "endMs": 7379,
+      "loss": 0.0027008056640625
+    },
+    {
+      "text": "suddenly",
+      "startMs": 7379,
+      "endMs": 7679,
+      "loss": 0.00026081502437591553
+    },
+    {
+      "text": " ",
+      "startMs": 7679,
+      "endMs": 7779,
+      "loss": 0.0009918212890625
+    },
+    {
+      "text": "precise,",
+      "startMs": 7779,
+      "endMs": 8279,
+      "loss": 0.03809201717376709
+    },
+    {
+      "text": " ",
+      "startMs": 8279,
+      "endMs": 8619,
+      "loss": 0.00014781951904296875
+    },
+    {
+      "text": "their",
+      "startMs": 8619,
+      "endMs": 8739,
+      "loss": 0.0002512931823730469
+    },
+    {
+      "text": " ",
+      "startMs": 8739,
+      "endMs": 8800,
+      "loss": 4.6253204345703125e-05
+    },
+    {
+      "text": "weapons",
+      "startMs": 8800,
+      "endMs": 9179,
+      "loss": 0.0003990445818219866
+    },
+    {
+      "text": " ",
+      "startMs": 9179,
+      "endMs": 9319,
+      "loss": 0.00396728515625
+    },
+    {
+      "text": "tracking",
+      "startMs": 9319,
+      "endMs": 9699,
+      "loss": 0.00020754337310791016
+    },
+    {
+      "text": " ",
+      "startMs": 9699,
+      "endMs": 9739,
+      "loss": 0.0057373046875
+    },
+    {
+      "text": "with",
+      "startMs": 9739,
+      "endMs": 9920,
+      "loss": 0.00021189451217651367
+    },
+    {
+      "text": " ",
+      "startMs": 9920,
+      "endMs": 10000,
+      "loss": 8.440017700195312e-05
+    },
+    {
+      "text": "unnatural",
+      "startMs": 10000,
+      "endMs": 10619,
+      "loss": 0.00031128194597032334
+    },
+    {
+      "text": " ",
+      "startMs": 10619,
+      "endMs": 10760,
+      "loss": 0.00063323974609375
+    },
+    {
+      "text": "certainty.",
+      "startMs": 10760,
+      "endMs": 11299,
+      "loss": 0.0355280876159668
+    },
+    {
+      "text": "\n",
+      "startMs": 11299,
+      "endMs": 11300,
+      "loss": 5.375
+    },
+    {
+      "text": "\n",
+      "startMs": 11299,
+      "endMs": 11300,
+      "loss": 1.234375
+    },
+    {
+      "text": "Whatever",
+      "startMs": 12399,
+      "endMs": 12779,
+      "loss": 0.008987635374069214
+    },
+    {
+      "text": " ",
+      "startMs": 12779,
+      "endMs": 12840,
+      "loss": 0.0004863739013671875
+    },
+    {
+      "text": "sleeps",
+      "startMs": 12840,
+      "endMs": 13179,
+      "loss": 0.00030632813771565753
+    },
+    {
+      "text": " ",
+      "startMs": 13179,
+      "endMs": 13239,
+      "loss": 9.34600830078125e-05
+    },
+    {
+      "text": "within",
+      "startMs": 13239,
+      "endMs": 13479,
+      "loss": 0.00017182032267252603
+    },
+    {
+      "text": " ",
+      "startMs": 13479,
+      "endMs": 13539,
+      "loss": 0.0002002716064453125
+    },
+    {
+      "text": "the",
+      "startMs": 13539,
+      "endMs": 13579,
+      "loss": 0.00039656956990559894
+    },
+    {
+      "text": " ",
+      "startMs": 13579,
+      "endMs": 13659,
+      "loss": 7.390975952148438e-05
+    },
+    {
+      "text": "crypt",
+      "startMs": 13659,
+      "endMs": 14119,
+      "loss": 0.009519338607788086
+    },
+    {
+      "text": " ",
+      "startMs": 14119,
+      "endMs": 14219,
+      "loss": 0.0035400390625
+    },
+    {
+      "text": "is",
+      "startMs": 14219,
+      "endMs": 14340,
+      "loss": 0.0009244680404663086
+    },
+    {
+      "text": " ",
+      "startMs": 14340,
+      "endMs": 14399,
+      "loss": 5.459785461425781e-05
+    },
+    {
+      "text": "not",
+      "startMs": 14399,
+      "endMs": 14559,
+      "loss": 0.0004285176595052083
+    },
+    {
+      "text": " ",
+      "startMs": 14559,
+      "endMs": 14619,
+      "loss": 4.2438507080078125e-05
+    },
+    {
+      "text": "entirely",
+      "startMs": 14619,
+      "endMs": 15199,
+      "loss": 0.00017346441745758057
+    },
+    {
+      "text": " ",
+      "startMs": 15199,
+      "endMs": 15279,
+      "loss": 7.295608520507812e-05
+    },
+    {
+      "text": "silent.",
+      "startMs": 15279,
+      "endMs": 15719,
+      "loss": 0.1425828082220895
+    },
+    {
+      "text": "\n",
+      "startMs": 15719,
+      "endMs": 16719,
+      "loss": 5.28125
+    },
+    {
+      "text": "\n",
+      "startMs": 16719,
+      "endMs": 16760,
+      "loss": 2.53125
+    },
+    {
+      "text": "Its",
+      "startMs": 16760,
+      "endMs": 16899,
+      "loss": 0.058369954427083336
+    },
+    {
+      "text": " ",
+      "startMs": 16899,
+      "endMs": 17000,
+      "loss": 6.246566772460938e-05
+    },
+    {
+      "text": "will",
+      "startMs": 17000,
+      "endMs": 17239,
+      "loss": 0.0014097988605499268
+    },
+    {
+      "text": " ",
+      "startMs": 17239,
+      "endMs": 17299,
+      "loss": 0.00018405914306640625
+    },
+    {
+      "text": "is",
+      "startMs": 17299,
+      "endMs": 17440,
+      "loss": 0.00043582916259765625
+    },
+    {
+      "text": " ",
+      "startMs": 17440,
+      "endMs": 17500,
+      "loss": 3.7670135498046875e-05
+    },
+    {
+      "text": "reaching",
+      "startMs": 17500,
+      "endMs": 17839,
+      "loss": 0.0001719146966934204
+    },
+    {
+      "text": " ",
+      "startMs": 17839,
+      "endMs": 17879,
+      "loss": 6.4849853515625e-05
+    },
+    {
+      "text": "beyond",
+      "startMs": 17879,
+      "endMs": 18359,
+      "loss": 0.00016589959462483725
+    },
+    {
+      "text": " ",
+      "startMs": 18359,
+      "endMs": 18459,
+      "loss": 0.0062255859375
+    },
+    {
+      "text": "the",
+      "startMs": 18459,
+      "endMs": 18500,
+      "loss": 0.00048414866129557293
+    },
+    {
+      "text": " ",
+      "startMs": 18500,
+      "endMs": 18579,
+      "loss": 0.00021839141845703125
+    },
+    {
+      "text": "grave.",
+      "startMs": 18579,
+      "endMs": 19039,
+      "loss": 0.09462865193684895
+    }
+  ]
+}

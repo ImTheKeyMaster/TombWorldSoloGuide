@@ -1,0 +1,510 @@
+{
+  "schemaVersion": 1,
+  "id": "deadly.room-corrosive-fluid-leak",
+  "text": "Something is leaking into the chamber.\n\nHissing liquid spills from ruptured conduits and spreads across the floor, eating into anything it touches. Only the shelter of the walls offers any protection from the corrosive spray.\n\nRemaining exposed here will be dangerous.",
+  "durationMs": 18338,
+  "scriptHash": "2da6e6ae256c1111144f0655aa33b0ad5be0cf9b15fdfe921298cd1c46e08061",
+  "audioHash": "9f0b81c28edb5268391fc8f453a9a2a443d8a7ede2409a8dbd15a0a696c36cdb",
+  "alignmentLoss": 0.09337353661878785,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "Something",
+      "startMs": 159,
+      "endMs": 759,
+      "loss": 0.18164347277747261
+    },
+    {
+      "text": " ",
+      "startMs": 759,
+      "endMs": 799,
+      "loss": 0.0010986328125
+    },
+    {
+      "text": "is",
+      "startMs": 799,
+      "endMs": 959,
+      "loss": 0.00222015380859375
+    },
+    {
+      "text": " ",
+      "startMs": 959,
+      "endMs": 1039,
+      "loss": 0.0003108978271484375
+    },
+    {
+      "text": "leaking",
+      "startMs": 1039,
+      "endMs": 1359,
+      "loss": 0.0007461139133998326
+    },
+    {
+      "text": " ",
+      "startMs": 1359,
+      "endMs": 1379,
+      "loss": 0.000255584716796875
+    },
+    {
+      "text": "into",
+      "startMs": 1379,
+      "endMs": 1579,
+      "loss": 0.0004544854164123535
+    },
+    {
+      "text": " ",
+      "startMs": 1579,
+      "endMs": 1619,
+      "loss": 0.0003223419189453125
+    },
+    {
+      "text": "the",
+      "startMs": 1620,
+      "endMs": 1699,
+      "loss": 0.0005653699239095052
+    },
+    {
+      "text": " ",
+      "startMs": 1699,
+      "endMs": 1739,
+      "loss": 4.649162292480469e-05
+    },
+    {
+      "text": "chamber.",
+      "startMs": 1740,
+      "endMs": 2119,
+      "loss": 0.04209011793136597
+    },
+    {
+      "text": "\n",
+      "startMs": 2119,
+      "endMs": 2899,
+      "loss": 7.25
+    },
+    {
+      "text": "\n",
+      "startMs": 2899,
+      "endMs": 2919,
+      "loss": 3.515625
+    },
+    {
+      "text": "Hissing",
+      "startMs": 2919,
+      "endMs": 3299,
+      "loss": 0.027542403766087124
+    },
+    {
+      "text": " ",
+      "startMs": 3299,
+      "endMs": 3379,
+      "loss": 0.0035858154296875
+    },
+    {
+      "text": "liquid",
+      "startMs": 3379,
+      "endMs": 3779,
+      "loss": 0.0005542834599812826
+    },
+    {
+      "text": " ",
+      "startMs": 3779,
+      "endMs": 3899,
+      "loss": 0.01007080078125
+    },
+    {
+      "text": "spills",
+      "startMs": 3899,
+      "endMs": 4259,
+      "loss": 0.0018264055252075195
+    },
+    {
+      "text": " ",
+      "startMs": 4259,
+      "endMs": 4359,
+      "loss": 0.000682830810546875
+    },
+    {
+      "text": "from",
+      "startMs": 4360,
+      "endMs": 4539,
+      "loss": 0.0008845329284667969
+    },
+    {
+      "text": " ",
+      "startMs": 4539,
+      "endMs": 4579,
+      "loss": 2.491474151611328e-05
+    },
+    {
+      "text": "ruptured",
+      "startMs": 4579,
+      "endMs": 5000,
+      "loss": 0.0003810971975326538
+    },
+    {
+      "text": " ",
+      "startMs": 5000,
+      "endMs": 5059,
+      "loss": 0.00054931640625
+    },
+    {
+      "text": "conduits",
+      "startMs": 5059,
+      "endMs": 5779,
+      "loss": 0.0010022670030593872
+    },
+    {
+      "text": " ",
+      "startMs": 5779,
+      "endMs": 5819,
+      "loss": 0.193359375
+    },
+    {
+      "text": "and",
+      "startMs": 5819,
+      "endMs": 5980,
+      "loss": 0.0018397967020670574
+    },
+    {
+      "text": " ",
+      "startMs": 5980,
+      "endMs": 6000,
+      "loss": 0.00051116943359375
+    },
+    {
+      "text": "spreads",
+      "startMs": 6000,
+      "endMs": 6379,
+      "loss": 0.003566469464983259
+    },
+    {
+      "text": " ",
+      "startMs": 6379,
+      "endMs": 6459,
+      "loss": 0.0027313232421875
+    },
+    {
+      "text": "across",
+      "startMs": 6460,
+      "endMs": 6739,
+      "loss": 0.0027138392130533853
+    },
+    {
+      "text": " ",
+      "startMs": 6739,
+      "endMs": 6759,
+      "loss": 0.00130462646484375
+    },
+    {
+      "text": "the",
+      "startMs": 6759,
+      "endMs": 6859,
+      "loss": 0.000438690185546875
+    },
+    {
+      "text": " ",
+      "startMs": 6859,
+      "endMs": 6899,
+      "loss": 2.562999725341797e-05
+    },
+    {
+      "text": "floor,",
+      "startMs": 6899,
+      "endMs": 7179,
+      "loss": 0.04796759287516276
+    },
+    {
+      "text": " ",
+      "startMs": 7179,
+      "endMs": 7619,
+      "loss": 0.00014591217041015625
+    },
+    {
+      "text": "eating",
+      "startMs": 7619,
+      "endMs": 7919,
+      "loss": 0.0009496212005615234
+    },
+    {
+      "text": " ",
+      "startMs": 7919,
+      "endMs": 7939,
+      "loss": 0.000186920166015625
+    },
+    {
+      "text": "into",
+      "startMs": 7940,
+      "endMs": 8180,
+      "loss": 0.0005976259708404541
+    },
+    {
+      "text": " ",
+      "startMs": 8180,
+      "endMs": 8220,
+      "loss": 6.771087646484375e-05
+    },
+    {
+      "text": "anything",
+      "startMs": 8220,
+      "endMs": 8560,
+      "loss": 0.0005046278238296509
+    },
+    {
+      "text": " ",
+      "startMs": 8560,
+      "endMs": 8579,
+      "loss": 0.0005645751953125
+    },
+    {
+      "text": "it",
+      "startMs": 8579,
+      "endMs": 8720,
+      "loss": 0.0007796287536621094
+    },
+    {
+      "text": " ",
+      "startMs": 8720,
+      "endMs": 8739,
+      "loss": 0.00159454345703125
+    },
+    {
+      "text": "touches.",
+      "startMs": 8739,
+      "endMs": 9159,
+      "loss": 0.0645880252122879
+    },
+    {
+      "text": " ",
+      "startMs": 9159,
+      "endMs": 9160,
+      "loss": 0.01043701171875
+    },
+    {
+      "text": "Only",
+      "startMs": 10340,
+      "endMs": 10560,
+      "loss": 0.002127736806869507
+    },
+    {
+      "text": " ",
+      "startMs": 10560,
+      "endMs": 10579,
+      "loss": 0.00167083740234375
+    },
+    {
+      "text": "the",
+      "startMs": 10579,
+      "endMs": 10619,
+      "loss": 0.0006510416666666666
+    },
+    {
+      "text": " ",
+      "startMs": 10619,
+      "endMs": 10719,
+      "loss": 6.532669067382812e-05
+    },
+    {
+      "text": "shelter",
+      "startMs": 10719,
+      "endMs": 11100,
+      "loss": 0.0008997406278337751
+    },
+    {
+      "text": " ",
+      "startMs": 11100,
+      "endMs": 11119,
+      "loss": 0.001190185546875
+    },
+    {
+      "text": "of",
+      "startMs": 11119,
+      "endMs": 11220,
+      "loss": 0.0011081695556640625
+    },
+    {
+      "text": " ",
+      "startMs": 11220,
+      "endMs": 11259,
+      "loss": 0.000659942626953125
+    },
+    {
+      "text": "the",
+      "startMs": 11259,
+      "endMs": 11299,
+      "loss": 0.0007723172505696615
+    },
+    {
+      "text": " ",
+      "startMs": 11299,
+      "endMs": 11399,
+      "loss": 0.00017452239990234375
+    },
+    {
+      "text": "walls",
+      "startMs": 11399,
+      "endMs": 11920,
+      "loss": 0.001107025146484375
+    },
+    {
+      "text": " ",
+      "startMs": 11920,
+      "endMs": 12000,
+      "loss": 0.00592041015625
+    },
+    {
+      "text": "offers",
+      "startMs": 12000,
+      "endMs": 12239,
+      "loss": 0.0018731156984965007
+    },
+    {
+      "text": " ",
+      "startMs": 12239,
+      "endMs": 12279,
+      "loss": 0.000362396240234375
+    },
+    {
+      "text": "any",
+      "startMs": 12279,
+      "endMs": 12460,
+      "loss": 0.0008188883463541666
+    },
+    {
+      "text": " ",
+      "startMs": 12460,
+      "endMs": 12500,
+      "loss": 0.000698089599609375
+    },
+    {
+      "text": "protection",
+      "startMs": 12500,
+      "endMs": 13020,
+      "loss": 0.0010135650634765625
+    },
+    {
+      "text": " ",
+      "startMs": 13020,
+      "endMs": 13099,
+      "loss": 0.001861572265625
+    },
+    {
+      "text": "from",
+      "startMs": 13099,
+      "endMs": 13239,
+      "loss": 0.00032839179039001465
+    },
+    {
+      "text": " ",
+      "startMs": 13239,
+      "endMs": 13240,
+      "loss": 0.00019073486328125
+    },
+    {
+      "text": "the",
+      "startMs": 13240,
+      "endMs": 13299,
+      "loss": 0.001194000244140625
+    },
+    {
+      "text": " ",
+      "startMs": 13299,
+      "endMs": 13380,
+      "loss": 0.00012159347534179688
+    },
+    {
+      "text": "corrosive",
+      "startMs": 13380,
+      "endMs": 13880,
+      "loss": 0.004080030653211806
+    },
+    {
+      "text": " ",
+      "startMs": 13880,
+      "endMs": 13920,
+      "loss": 0.007354736328125
+    },
+    {
+      "text": "spray.",
+      "startMs": 13920,
+      "endMs": 14359,
+      "loss": 0.023696422576904297
+    },
+    {
+      "text": "\n",
+      "startMs": 14359,
+      "endMs": 15299,
+      "loss": 7.4375
+    },
+    {
+      "text": "\n",
+      "startMs": 15299,
+      "endMs": 15359,
+      "loss": 2.75
+    },
+    {
+      "text": "Remaining",
+      "startMs": 15359,
+      "endMs": 15720,
+      "loss": 0.006434837977091472
+    },
+    {
+      "text": " ",
+      "startMs": 15720,
+      "endMs": 15759,
+      "loss": 0.000762939453125
+    },
+    {
+      "text": "exposed",
+      "startMs": 15759,
+      "endMs": 16280,
+      "loss": 0.0005460126059395927
+    },
+    {
+      "text": " ",
+      "startMs": 16280,
+      "endMs": 16299,
+      "loss": 0.00081634521484375
+    },
+    {
+      "text": "here",
+      "startMs": 16299,
+      "endMs": 16520,
+      "loss": 0.005789637565612793
+    },
+    {
+      "text": " ",
+      "startMs": 16520,
+      "endMs": 16579,
+      "loss": 0.000667572021484375
+    },
+    {
+      "text": "will",
+      "startMs": 16579,
+      "endMs": 16719,
+      "loss": 0.0004330575466156006
+    },
+    {
+      "text": " ",
+      "startMs": 16719,
+      "endMs": 16739,
+      "loss": 0.00014495849609375
+    },
+    {
+      "text": "be",
+      "startMs": 16739,
+      "endMs": 16840,
+      "loss": 0.0011768341064453125
+    },
+    {
+      "text": " ",
+      "startMs": 16840,
+      "endMs": 16859,
+      "loss": 0.000804901123046875
+    },
+    {
+      "text": "dangerous.",
+      "startMs": 16859,
+      "endMs": 17319,
+      "loss": 0.04235497713088989
+    }
+  ]
+}

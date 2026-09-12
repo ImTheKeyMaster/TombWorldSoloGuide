@@ -1,0 +1,558 @@
+{
+  "schemaVersion": 1,
+  "id": "deadly.room-darkness",
+  "text": "The light dies as you enter.\n\nBeyond a few meters, the chamber disappears into absolute black. Shapes become shadows, distances become uncertain, and even the metallic walls of the tomb seem to vanish into the void.\n\nWhatever waits beyond the darkness is hidden from sight.",
+  "durationMs": 20741,
+  "scriptHash": "4d9da34b770fc78bbb508a3212b726ce74f1ed3813b8f75d3ec79dd096c9bcbb",
+  "audioHash": "e59bd8650d9dda21e0806b482dc409ea4b49c177d96da8170163f7e926d2107c",
+  "alignmentLoss": 0.08174704544710153,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "The",
+      "startMs": 179,
+      "endMs": 280,
+      "loss": 1.1272125244140625
+    },
+    {
+      "text": " ",
+      "startMs": 280,
+      "endMs": 359,
+      "loss": 0.00089263916015625
+    },
+    {
+      "text": "light",
+      "startMs": 359,
+      "endMs": 599,
+      "loss": 0.0035411357879638673
+    },
+    {
+      "text": " ",
+      "startMs": 599,
+      "endMs": 899,
+      "loss": 0.0010833740234375
+    },
+    {
+      "text": "dies",
+      "startMs": 899,
+      "endMs": 1579,
+      "loss": 0.002513885498046875
+    },
+    {
+      "text": " ",
+      "startMs": 1579,
+      "endMs": 1619,
+      "loss": 0.0133056640625
+    },
+    {
+      "text": "as",
+      "startMs": 1620,
+      "endMs": 1740,
+      "loss": 0.0005745887756347656
+    },
+    {
+      "text": " ",
+      "startMs": 1740,
+      "endMs": 1779,
+      "loss": 0.00038909912109375
+    },
+    {
+      "text": "you",
+      "startMs": 1779,
+      "endMs": 1899,
+      "loss": 0.0010388692220052083
+    },
+    {
+      "text": " ",
+      "startMs": 1899,
+      "endMs": 1979,
+      "loss": 8.630752563476562e-05
+    },
+    {
+      "text": "enter.",
+      "startMs": 1979,
+      "endMs": 2319,
+      "loss": 0.09232417742411296
+    },
+    {
+      "text": "\n",
+      "startMs": 2319,
+      "endMs": 2320,
+      "loss": 2.703125
+    },
+    {
+      "text": "\n",
+      "startMs": 2319,
+      "endMs": 2320,
+      "loss": 1.6015625
+    },
+    {
+      "text": "Beyond",
+      "startMs": 3399,
+      "endMs": 3699,
+      "loss": 0.016112009684244793
+    },
+    {
+      "text": " ",
+      "startMs": 3699,
+      "endMs": 3799,
+      "loss": 0.000553131103515625
+    },
+    {
+      "text": "a",
+      "startMs": 3799,
+      "endMs": 3819,
+      "loss": 0.0022430419921875
+    },
+    {
+      "text": " ",
+      "startMs": 3819,
+      "endMs": 3839,
+      "loss": 0.00151824951171875
+    },
+    {
+      "text": "few",
+      "startMs": 3839,
+      "endMs": 4000,
+      "loss": 0.00028785069783528644
+    },
+    {
+      "text": " ",
+      "startMs": 4000,
+      "endMs": 4099,
+      "loss": 1.823902130126953e-05
+    },
+    {
+      "text": "meters,",
+      "startMs": 4099,
+      "endMs": 4579,
+      "loss": 0.05470548357282366
+    },
+    {
+      "text": " ",
+      "startMs": 4579,
+      "endMs": 4699,
+      "loss": 3.218650817871094e-05
+    },
+    {
+      "text": "the",
+      "startMs": 4699,
+      "endMs": 4799,
+      "loss": 0.0003191630045572917
+    },
+    {
+      "text": " ",
+      "startMs": 4799,
+      "endMs": 4839,
+      "loss": 1.1920928955078125e-05
+    },
+    {
+      "text": "chamber",
+      "startMs": 4839,
+      "endMs": 5219,
+      "loss": 0.002041680472237723
+    },
+    {
+      "text": " ",
+      "startMs": 5219,
+      "endMs": 5259,
+      "loss": 0.000293731689453125
+    },
+    {
+      "text": "disappears",
+      "startMs": 5259,
+      "endMs": 5879,
+      "loss": 0.0007649660110473633
+    },
+    {
+      "text": " ",
+      "startMs": 5879,
+      "endMs": 5919,
+      "loss": 0.006103515625
+    },
+    {
+      "text": "into",
+      "startMs": 5920,
+      "endMs": 6179,
+      "loss": 0.0009427070617675781
+    },
+    {
+      "text": " ",
+      "startMs": 6179,
+      "endMs": 6239,
+      "loss": 0.000148773193359375
+    },
+    {
+      "text": "absolute",
+      "startMs": 6239,
+      "endMs": 6719,
+      "loss": 0.0005250722169876099
+    },
+    {
+      "text": " ",
+      "startMs": 6719,
+      "endMs": 6839,
+      "loss": 0.00029754638671875
+    },
+    {
+      "text": "black.",
+      "startMs": 6839,
+      "endMs": 7219,
+      "loss": 0.27125247319539386
+    },
+    {
+      "text": " ",
+      "startMs": 7219,
+      "endMs": 7220,
+      "loss": 0.02587890625
+    },
+    {
+      "text": "Shapes",
+      "startMs": 8319,
+      "endMs": 8699,
+      "loss": 0.0005311965942382812
+    },
+    {
+      "text": " ",
+      "startMs": 8699,
+      "endMs": 8739,
+      "loss": 0.00012969970703125
+    },
+    {
+      "text": "become",
+      "startMs": 8739,
+      "endMs": 9019,
+      "loss": 0.001477062702178955
+    },
+    {
+      "text": " ",
+      "startMs": 9019,
+      "endMs": 9139,
+      "loss": 0.000675201416015625
+    },
+    {
+      "text": "shadows,",
+      "startMs": 9139,
+      "endMs": 9659,
+      "loss": 0.008933201432228088
+    },
+    {
+      "text": " ",
+      "startMs": 9659,
+      "endMs": 9779,
+      "loss": 3.3855438232421875e-05
+    },
+    {
+      "text": "distances",
+      "startMs": 9779,
+      "endMs": 10300,
+      "loss": 0.0010532935460408528
+    },
+    {
+      "text": " ",
+      "startMs": 10300,
+      "endMs": 10319,
+      "loss": 0.0003299713134765625
+    },
+    {
+      "text": "become",
+      "startMs": 10319,
+      "endMs": 10579,
+      "loss": 0.0003476540247599284
+    },
+    {
+      "text": " ",
+      "startMs": 10579,
+      "endMs": 10619,
+      "loss": 0.00013637542724609375
+    },
+    {
+      "text": "uncertain,",
+      "startMs": 10619,
+      "endMs": 11219,
+      "loss": 0.010445284843444824
+    },
+    {
+      "text": " ",
+      "startMs": 11219,
+      "endMs": 11719,
+      "loss": 0.00013256072998046875
+    },
+    {
+      "text": "and",
+      "startMs": 11719,
+      "endMs": 11820,
+      "loss": 0.0008172988891601562
+    },
+    {
+      "text": " ",
+      "startMs": 11820,
+      "endMs": 11899,
+      "loss": 0.0006561279296875
+    },
+    {
+      "text": "even",
+      "startMs": 11899,
+      "endMs": 12159,
+      "loss": 0.00046885013580322266
+    },
+    {
+      "text": " ",
+      "startMs": 12159,
+      "endMs": 12179,
+      "loss": 0.00421142578125
+    },
+    {
+      "text": "the",
+      "startMs": 12179,
+      "endMs": 12219,
+      "loss": 0.0009926954905192058
+    },
+    {
+      "text": " ",
+      "startMs": 12219,
+      "endMs": 12279,
+      "loss": 0.00010824203491210938
+    },
+    {
+      "text": "metallic",
+      "startMs": 12279,
+      "endMs": 12739,
+      "loss": 0.0007605105638504028
+    },
+    {
+      "text": " ",
+      "startMs": 12739,
+      "endMs": 12840,
+      "loss": 0.000644683837890625
+    },
+    {
+      "text": "walls",
+      "startMs": 12840,
+      "endMs": 13199,
+      "loss": 0.0009843826293945313
+    },
+    {
+      "text": " ",
+      "startMs": 13199,
+      "endMs": 13219,
+      "loss": 0.0009613037109375
+    },
+    {
+      "text": "of",
+      "startMs": 13219,
+      "endMs": 13319,
+      "loss": 0.0011072158813476562
+    },
+    {
+      "text": " ",
+      "startMs": 13319,
+      "endMs": 13339,
+      "loss": 0.000446319580078125
+    },
+    {
+      "text": "the",
+      "startMs": 13340,
+      "endMs": 13460,
+      "loss": 0.0006354649861653646
+    },
+    {
+      "text": " ",
+      "startMs": 13460,
+      "endMs": 13500,
+      "loss": 0.00014972686767578125
+    },
+    {
+      "text": "tomb",
+      "startMs": 13500,
+      "endMs": 13899,
+      "loss": 0.004874467849731445
+    },
+    {
+      "text": " ",
+      "startMs": 13899,
+      "endMs": 14019,
+      "loss": 0.00787353515625
+    },
+    {
+      "text": "seem",
+      "startMs": 14019,
+      "endMs": 14199,
+      "loss": 0.0011687278747558594
+    },
+    {
+      "text": " ",
+      "startMs": 14199,
+      "endMs": 14239,
+      "loss": 0.0089111328125
+    },
+    {
+      "text": "to",
+      "startMs": 14239,
+      "endMs": 14400,
+      "loss": 0.00154876708984375
+    },
+    {
+      "text": " ",
+      "startMs": 14400,
+      "endMs": 14420,
+      "loss": 0.00010633468627929688
+    },
+    {
+      "text": "vanish",
+      "startMs": 14420,
+      "endMs": 14779,
+      "loss": 0.0002590020497639974
+    },
+    {
+      "text": " ",
+      "startMs": 14779,
+      "endMs": 14819,
+      "loss": 0.0115966796875
+    },
+    {
+      "text": "into",
+      "startMs": 14819,
+      "endMs": 15039,
+      "loss": 0.0007494986057281494
+    },
+    {
+      "text": " ",
+      "startMs": 15039,
+      "endMs": 15059,
+      "loss": 0.0004673004150390625
+    },
+    {
+      "text": "the",
+      "startMs": 15059,
+      "endMs": 15099,
+      "loss": 0.0005822181701660156
+    },
+    {
+      "text": " ",
+      "startMs": 15099,
+      "endMs": 15199,
+      "loss": 0.0001354217529296875
+    },
+    {
+      "text": "void.",
+      "startMs": 15199,
+      "endMs": 15559,
+      "loss": 0.010247039794921874
+    },
+    {
+      "text": "\n",
+      "startMs": 15559,
+      "endMs": 15560,
+      "loss": 7.375
+    },
+    {
+      "text": "\n",
+      "startMs": 15559,
+      "endMs": 15560,
+      "loss": 3.53125
+    },
+    {
+      "text": "Whatever",
+      "startMs": 16659,
+      "endMs": 17020,
+      "loss": 0.024789512157440186
+    },
+    {
+      "text": " ",
+      "startMs": 17020,
+      "endMs": 17119,
+      "loss": 0.00054168701171875
+    },
+    {
+      "text": "waits",
+      "startMs": 17119,
+      "endMs": 17459,
+      "loss": 0.01417999267578125
+    },
+    {
+      "text": " ",
+      "startMs": 17459,
+      "endMs": 17500,
+      "loss": 0.000926971435546875
+    },
+    {
+      "text": "beyond",
+      "startMs": 17500,
+      "endMs": 17940,
+      "loss": 0.0013616482416788738
+    },
+    {
+      "text": " ",
+      "startMs": 17940,
+      "endMs": 18000,
+      "loss": 0.0016021728515625
+    },
+    {
+      "text": "the",
+      "startMs": 18000,
+      "endMs": 18079,
+      "loss": 0.001644134521484375
+    },
+    {
+      "text": " ",
+      "startMs": 18079,
+      "endMs": 18119,
+      "loss": 0.00014972686767578125
+    },
+    {
+      "text": "darkness",
+      "startMs": 18119,
+      "endMs": 18719,
+      "loss": 0.00047178566455841064
+    },
+    {
+      "text": " ",
+      "startMs": 18719,
+      "endMs": 18779,
+      "loss": 0.002532958984375
+    },
+    {
+      "text": "is",
+      "startMs": 18779,
+      "endMs": 18940,
+      "loss": 0.0006303787231445312
+    },
+    {
+      "text": " ",
+      "startMs": 18940,
+      "endMs": 18959,
+      "loss": 0.0003795623779296875
+    },
+    {
+      "text": "hidden",
+      "startMs": 18959,
+      "endMs": 19279,
+      "loss": 0.0006702343622843424
+    },
+    {
+      "text": " ",
+      "startMs": 19279,
+      "endMs": 19319,
+      "loss": 0.000194549560546875
+    },
+    {
+      "text": "from",
+      "startMs": 19319,
+      "endMs": 19440,
+      "loss": 0.0006508827209472656
+    },
+    {
+      "text": " ",
+      "startMs": 19440,
+      "endMs": 19559,
+      "loss": 0.00238037109375
+    },
+    {
+      "text": "sight.",
+      "startMs": 19559,
+      "endMs": 19840,
+      "loss": 0.04991976420084635
+    }
+  ]
+}

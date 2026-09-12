@@ -1,0 +1,516 @@
+{
+  "schemaVersion": 1,
+  "id": "grade.3.overrun",
+  "text": "The tomb answers in force.\n\nAncient defenses converge through every passage as the crypt pulses with hostile purpose. What began as an intrusion has become open war.\n\nThe Tomb World is fully awake.\n\nThere will be no silence now. Only war.",
+  "durationMs": 19043,
+  "scriptHash": "b662bdc1a453c77194a3e38b223132a56760dc0d34f007067c07f72ee84494d7",
+  "audioHash": "647afaec31cac61032bb5331f2466e9554c38545ffe4642c37100ea05823b19d",
+  "alignmentLoss": 0.17527910040206268,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "The",
+      "startMs": 79,
+      "endMs": 179,
+      "loss": 0.4048118591308594
+    },
+    {
+      "text": " ",
+      "startMs": 179,
+      "endMs": 219,
+      "loss": 0.0004405975341796875
+    },
+    {
+      "text": "tomb",
+      "startMs": 219,
+      "endMs": 539,
+      "loss": 0.09959006309509277
+    },
+    {
+      "text": " ",
+      "startMs": 539,
+      "endMs": 679,
+      "loss": 0.01080322265625
+    },
+    {
+      "text": "answers",
+      "startMs": 680,
+      "endMs": 1100,
+      "loss": 0.0028898375374930246
+    },
+    {
+      "text": " ",
+      "startMs": 1100,
+      "endMs": 1139,
+      "loss": 0.0023956298828125
+    },
+    {
+      "text": "in",
+      "startMs": 1139,
+      "endMs": 1279,
+      "loss": 0.0028731822967529297
+    },
+    {
+      "text": " ",
+      "startMs": 1279,
+      "endMs": 1319,
+      "loss": 0.002532958984375
+    },
+    {
+      "text": "force.",
+      "startMs": 1319,
+      "endMs": 1740,
+      "loss": 0.05776564280192057
+    },
+    {
+      "text": "\n",
+      "startMs": 1740,
+      "endMs": 1741,
+      "loss": 10.3125
+    },
+    {
+      "text": "\n",
+      "startMs": 1740,
+      "endMs": 1741,
+      "loss": 4.6875
+    },
+    {
+      "text": "Ancient",
+      "startMs": 3019,
+      "endMs": 3379,
+      "loss": 0.08349653652736119
+    },
+    {
+      "text": " ",
+      "startMs": 3379,
+      "endMs": 3439,
+      "loss": 5.435943603515625e-05
+    },
+    {
+      "text": "defenses",
+      "startMs": 3439,
+      "endMs": 3999,
+      "loss": 0.016200095415115356
+    },
+    {
+      "text": " ",
+      "startMs": 3999,
+      "endMs": 4059,
+      "loss": 0.0012664794921875
+    },
+    {
+      "text": "converge",
+      "startMs": 4059,
+      "endMs": 4619,
+      "loss": 0.0002452731132507324
+    },
+    {
+      "text": " ",
+      "startMs": 4619,
+      "endMs": 4699,
+      "loss": 0.014892578125
+    },
+    {
+      "text": "through",
+      "startMs": 4699,
+      "endMs": 4940,
+      "loss": 0.0003592286791120257
+    },
+    {
+      "text": " ",
+      "startMs": 4940,
+      "endMs": 5039,
+      "loss": 5.7697296142578125e-05
+    },
+    {
+      "text": "every",
+      "startMs": 5039,
+      "endMs": 5279,
+      "loss": 0.00021209716796875
+    },
+    {
+      "text": " ",
+      "startMs": 5279,
+      "endMs": 5419,
+      "loss": 0.0004062652587890625
+    },
+    {
+      "text": "passage",
+      "startMs": 5420,
+      "endMs": 5859,
+      "loss": 0.00024114336286272322
+    },
+    {
+      "text": " ",
+      "startMs": 5859,
+      "endMs": 6139,
+      "loss": 0.3125
+    },
+    {
+      "text": "as",
+      "startMs": 6139,
+      "endMs": 6259,
+      "loss": 0.0008544921875
+    },
+    {
+      "text": " ",
+      "startMs": 6259,
+      "endMs": 6299,
+      "loss": 2.7418136596679688e-05
+    },
+    {
+      "text": "the",
+      "startMs": 6299,
+      "endMs": 6359,
+      "loss": 0.0008121331532796224
+    },
+    {
+      "text": " ",
+      "startMs": 6359,
+      "endMs": 6419,
+      "loss": 9.059906005859375e-05
+    },
+    {
+      "text": "crypt",
+      "startMs": 6420,
+      "endMs": 6739,
+      "loss": 0.016086912155151366
+    },
+    {
+      "text": " ",
+      "startMs": 6739,
+      "endMs": 6779,
+      "loss": 0.0010833740234375
+    },
+    {
+      "text": "pulses",
+      "startMs": 6779,
+      "endMs": 7199,
+      "loss": 0.00043964385986328125
+    },
+    {
+      "text": " ",
+      "startMs": 7199,
+      "endMs": 7239,
+      "loss": 0.000957489013671875
+    },
+    {
+      "text": "with",
+      "startMs": 7239,
+      "endMs": 7359,
+      "loss": 0.00022643804550170898
+    },
+    {
+      "text": " ",
+      "startMs": 7359,
+      "endMs": 7459,
+      "loss": 0.0002765655517578125
+    },
+    {
+      "text": "hostile",
+      "startMs": 7460,
+      "endMs": 7899,
+      "loss": 0.0005283185413905553
+    },
+    {
+      "text": " ",
+      "startMs": 7899,
+      "endMs": 8019,
+      "loss": 0.000324249267578125
+    },
+    {
+      "text": "purpose.",
+      "startMs": 8019,
+      "endMs": 8460,
+      "loss": 0.011407047510147095
+    },
+    {
+      "text": " ",
+      "startMs": 8460,
+      "endMs": 9179,
+      "loss": 0.001800537109375
+    },
+    {
+      "text": "What",
+      "startMs": 9179,
+      "endMs": 9319,
+      "loss": 0.000722736120223999
+    },
+    {
+      "text": " ",
+      "startMs": 9319,
+      "endMs": 9380,
+      "loss": 3.8623809814453125e-05
+    },
+    {
+      "text": "began",
+      "startMs": 9380,
+      "endMs": 9760,
+      "loss": 0.00025081634521484375
+    },
+    {
+      "text": " ",
+      "startMs": 9760,
+      "endMs": 9880,
+      "loss": 0.0006866455078125
+    },
+    {
+      "text": "as",
+      "startMs": 9880,
+      "endMs": 9960,
+      "loss": 0.0007181167602539062
+    },
+    {
+      "text": " ",
+      "startMs": 9960,
+      "endMs": 10000,
+      "loss": 1.4543533325195312e-05
+    },
+    {
+      "text": "an",
+      "startMs": 10000,
+      "endMs": 10059,
+      "loss": 0.0010673999786376953
+    },
+    {
+      "text": " ",
+      "startMs": 10059,
+      "endMs": 10099,
+      "loss": 7.534027099609375e-05
+    },
+    {
+      "text": "intrusion",
+      "startMs": 10099,
+      "endMs": 10679,
+      "loss": 0.0003445413377549913
+    },
+    {
+      "text": " ",
+      "startMs": 10679,
+      "endMs": 10899,
+      "loss": 0.01239013671875
+    },
+    {
+      "text": "has",
+      "startMs": 10899,
+      "endMs": 11019,
+      "loss": 0.0005046526590983073
+    },
+    {
+      "text": " ",
+      "startMs": 11019,
+      "endMs": 11059,
+      "loss": 3.0040740966796875e-05
+    },
+    {
+      "text": "become",
+      "startMs": 11059,
+      "endMs": 11460,
+      "loss": 0.00020424524943033853
+    },
+    {
+      "text": " ",
+      "startMs": 11460,
+      "endMs": 11559,
+      "loss": 0.000354766845703125
+    },
+    {
+      "text": "open",
+      "startMs": 11559,
+      "endMs": 11839,
+      "loss": 0.005347251892089844
+    },
+    {
+      "text": " ",
+      "startMs": 11839,
+      "endMs": 11899,
+      "loss": 0.0220947265625
+    },
+    {
+      "text": "war.",
+      "startMs": 11899,
+      "endMs": 12239,
+      "loss": 0.024818062782287598
+    },
+    {
+      "text": "\n",
+      "startMs": 12239,
+      "endMs": 12240,
+      "loss": 7.0625
+    },
+    {
+      "text": "\n",
+      "startMs": 12239,
+      "endMs": 12240,
+      "loss": 2.171875
+    },
+    {
+      "text": "The",
+      "startMs": 13319,
+      "endMs": 13380,
+      "loss": 0.04430325826009115
+    },
+    {
+      "text": " ",
+      "startMs": 13380,
+      "endMs": 13460,
+      "loss": 5.7697296142578125e-05
+    },
+    {
+      "text": "Tomb",
+      "startMs": 13460,
+      "endMs": 13679,
+      "loss": 0.37787914276123047
+    },
+    {
+      "text": " ",
+      "startMs": 13679,
+      "endMs": 13759,
+      "loss": 0.00811767578125
+    },
+    {
+      "text": "World",
+      "startMs": 13759,
+      "endMs": 14000,
+      "loss": 0.09517483711242676
+    },
+    {
+      "text": " ",
+      "startMs": 14000,
+      "endMs": 14059,
+      "loss": 0.000438690185546875
+    },
+    {
+      "text": "is",
+      "startMs": 14059,
+      "endMs": 14139,
+      "loss": 0.0028478503227233887
+    },
+    {
+      "text": " ",
+      "startMs": 14139,
+      "endMs": 14299,
+      "loss": 1.895427703857422e-05
+    },
+    {
+      "text": "fully",
+      "startMs": 14299,
+      "endMs": 14500,
+      "loss": 0.0004031896591186523
+    },
+    {
+      "text": " ",
+      "startMs": 14500,
+      "endMs": 14619,
+      "loss": 0.0009765625
+    },
+    {
+      "text": "awake.",
+      "startMs": 14619,
+      "endMs": 14979,
+      "loss": 0.055906216303507485
+    },
+    {
+      "text": "\n",
+      "startMs": 14979,
+      "endMs": 15880,
+      "loss": 5.90625
+    },
+    {
+      "text": "\n",
+      "startMs": 15880,
+      "endMs": 15899,
+      "loss": 2.984375
+    },
+    {
+      "text": "There",
+      "startMs": 15899,
+      "endMs": 16020,
+      "loss": 0.005752301216125489
+    },
+    {
+      "text": " ",
+      "startMs": 16020,
+      "endMs": 16059,
+      "loss": 0.0029449462890625
+    },
+    {
+      "text": "will",
+      "startMs": 16059,
+      "endMs": 16159,
+      "loss": 0.00018909573554992676
+    },
+    {
+      "text": " ",
+      "startMs": 16159,
+      "endMs": 16199,
+      "loss": 1.6927719116210938e-05
+    },
+    {
+      "text": "be",
+      "startMs": 16199,
+      "endMs": 16319,
+      "loss": 0.00023603439331054688
+    },
+    {
+      "text": " ",
+      "startMs": 16319,
+      "endMs": 16379,
+      "loss": 1.633167266845703e-05
+    },
+    {
+      "text": "no",
+      "startMs": 16379,
+      "endMs": 16539,
+      "loss": 0.0001957416534423828
+    },
+    {
+      "text": " ",
+      "startMs": 16539,
+      "endMs": 16619,
+      "loss": 0.00018978118896484375
+    },
+    {
+      "text": "silence",
+      "startMs": 16619,
+      "endMs": 17020,
+      "loss": 0.00013128348759242466
+    },
+    {
+      "text": " ",
+      "startMs": 17020,
+      "endMs": 17100,
+      "loss": 0.01165771484375
+    },
+    {
+      "text": "now.",
+      "startMs": 17100,
+      "endMs": 17379,
+      "loss": 0.24826300144195557
+    },
+    {
+      "text": " ",
+      "startMs": 17379,
+      "endMs": 18079,
+      "loss": 0.130859375
+    },
+    {
+      "text": "Only",
+      "startMs": 18079,
+      "endMs": 18340,
+      "loss": 0.004494994878768921
+    },
+    {
+      "text": " ",
+      "startMs": 18340,
+      "endMs": 18440,
+      "loss": 0.00067901611328125
+    },
+    {
+      "text": "war.",
+      "startMs": 18440,
+      "endMs": 18760,
+      "loss": 0.38002824783325195
+    }
+  ]
+}

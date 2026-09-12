@@ -1,0 +1,564 @@
+{
+  "schemaVersion": 1,
+  "id": "event.enforcer-of-the-phaerons",
+  "text": "A command pulse cuts through the chamber.\n\nThe Royal Warden raises its weapon, and the surrounding legions answer at once. Targeting matrices align. Fire patterns tighten. Ancient warriors move with cold, synchronized purpose.\n\nThe phaerons' will echoes through the crypt.\n\nTheir servants will not relent.",
+  "durationMs": 20088,
+  "scriptHash": "a45b15e7798c01b95d1dce590b1e2b90fe8e053f011081d50bb1323aa1e567ba",
+  "audioHash": "a03981aeed019413b90807997d522ac0e2ddcdfaa764cfb5eaeed4b027e322c4",
+  "alignmentLoss": 0.19942315367401622,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "A",
+      "startMs": 79,
+      "endMs": 119,
+      "loss": 6.1875
+    },
+    {
+      "text": " ",
+      "startMs": 119,
+      "endMs": 159,
+      "loss": 0.0022125244140625
+    },
+    {
+      "text": "command",
+      "startMs": 159,
+      "endMs": 500,
+      "loss": 0.0014418022973196848
+    },
+    {
+      "text": " ",
+      "startMs": 500,
+      "endMs": 579,
+      "loss": 0.01239013671875
+    },
+    {
+      "text": "pulse",
+      "startMs": 579,
+      "endMs": 859,
+      "loss": 0.0010284900665283204
+    },
+    {
+      "text": " ",
+      "startMs": 859,
+      "endMs": 979,
+      "loss": 0.00125885009765625
+    },
+    {
+      "text": "cuts",
+      "startMs": 979,
+      "endMs": 1199,
+      "loss": 0.0005083680152893066
+    },
+    {
+      "text": " ",
+      "startMs": 1199,
+      "endMs": 1239,
+      "loss": 0.00067138671875
+    },
+    {
+      "text": "through",
+      "startMs": 1240,
+      "endMs": 1399,
+      "loss": 0.00019666126796177456
+    },
+    {
+      "text": " ",
+      "startMs": 1399,
+      "endMs": 1439,
+      "loss": 0.000385284423828125
+    },
+    {
+      "text": "the",
+      "startMs": 1439,
+      "endMs": 1500,
+      "loss": 0.00040519237518310547
+    },
+    {
+      "text": " ",
+      "startMs": 1500,
+      "endMs": 1579,
+      "loss": 5.316734313964844e-05
+    },
+    {
+      "text": "chamber.",
+      "startMs": 1579,
+      "endMs": 1899,
+      "loss": 0.03357003629207611
+    },
+    {
+      "text": "\n",
+      "startMs": 1899,
+      "endMs": 2419,
+      "loss": 9.0625
+    },
+    {
+      "text": "\n",
+      "startMs": 2419,
+      "endMs": 2440,
+      "loss": 3.78125
+    },
+    {
+      "text": "The",
+      "startMs": 2440,
+      "endMs": 2480,
+      "loss": 0.06225903828938802
+    },
+    {
+      "text": " ",
+      "startMs": 2480,
+      "endMs": 2539,
+      "loss": 8.153915405273438e-05
+    },
+    {
+      "text": "Royal",
+      "startMs": 2539,
+      "endMs": 2779,
+      "loss": 0.24547898769378662
+    },
+    {
+      "text": " ",
+      "startMs": 2779,
+      "endMs": 2879,
+      "loss": 0.000438690185546875
+    },
+    {
+      "text": "Warden",
+      "startMs": 2879,
+      "endMs": 3279,
+      "loss": 0.02143271764119466
+    },
+    {
+      "text": " ",
+      "startMs": 3279,
+      "endMs": 3339,
+      "loss": 0.00701904296875
+    },
+    {
+      "text": "raises",
+      "startMs": 3339,
+      "endMs": 3679,
+      "loss": 0.006241798400878906
+    },
+    {
+      "text": " ",
+      "startMs": 3679,
+      "endMs": 3739,
+      "loss": 0.000244140625
+    },
+    {
+      "text": "its",
+      "startMs": 3740,
+      "endMs": 3879,
+      "loss": 0.0008967320124308268
+    },
+    {
+      "text": " ",
+      "startMs": 3879,
+      "endMs": 3939,
+      "loss": 1.6808509826660156e-05
+    },
+    {
+      "text": "weapon,",
+      "startMs": 3939,
+      "endMs": 4179,
+      "loss": 0.19226883138929093
+    },
+    {
+      "text": " ",
+      "startMs": 4179,
+      "endMs": 4460,
+      "loss": 5.078315734863281e-05
+    },
+    {
+      "text": "and",
+      "startMs": 4460,
+      "endMs": 4539,
+      "loss": 0.0008098681767781576
+    },
+    {
+      "text": " ",
+      "startMs": 4539,
+      "endMs": 4579,
+      "loss": 3.600120544433594e-05
+    },
+    {
+      "text": "the",
+      "startMs": 4579,
+      "endMs": 4639,
+      "loss": 0.0005472103754679362
+    },
+    {
+      "text": " ",
+      "startMs": 4639,
+      "endMs": 4699,
+      "loss": 2.956390380859375e-05
+    },
+    {
+      "text": "surrounding",
+      "startMs": 4699,
+      "endMs": 5159,
+      "loss": 0.00016383691267533735
+    },
+    {
+      "text": " ",
+      "startMs": 5159,
+      "endMs": 5239,
+      "loss": 0.00020599365234375
+    },
+    {
+      "text": "legions",
+      "startMs": 5239,
+      "endMs": 5659,
+      "loss": 0.015266690935407366
+    },
+    {
+      "text": " ",
+      "startMs": 5659,
+      "endMs": 5819,
+      "loss": 0.001983642578125
+    },
+    {
+      "text": "answer",
+      "startMs": 5819,
+      "endMs": 6159,
+      "loss": 0.0003693898518880208
+    },
+    {
+      "text": " ",
+      "startMs": 6159,
+      "endMs": 6199,
+      "loss": 0.0016326904296875
+    },
+    {
+      "text": "at",
+      "startMs": 6199,
+      "endMs": 6319,
+      "loss": 0.0013005733489990234
+    },
+    {
+      "text": " ",
+      "startMs": 6319,
+      "endMs": 6359,
+      "loss": 0.00015544891357421875
+    },
+    {
+      "text": "once.",
+      "startMs": 6359,
+      "endMs": 6759,
+      "loss": 0.023786759376525878
+    },
+    {
+      "text": " ",
+      "startMs": 6759,
+      "endMs": 7479,
+      "loss": 0.006195068359375
+    },
+    {
+      "text": "Targeting",
+      "startMs": 7480,
+      "endMs": 7899,
+      "loss": 0.0009043349160088433
+    },
+    {
+      "text": " ",
+      "startMs": 7899,
+      "endMs": 7999,
+      "loss": 0.000499725341796875
+    },
+    {
+      "text": "matrices",
+      "startMs": 8000,
+      "endMs": 8519,
+      "loss": 0.0015138983726501465
+    },
+    {
+      "text": " ",
+      "startMs": 8519,
+      "endMs": 8599,
+      "loss": 0.004058837890625
+    },
+    {
+      "text": "align.",
+      "startMs": 8599,
+      "endMs": 9099,
+      "loss": 0.12348703543345134
+    },
+    {
+      "text": " ",
+      "startMs": 9099,
+      "endMs": 9699,
+      "loss": 0.01031494140625
+    },
+    {
+      "text": "Fire",
+      "startMs": 9699,
+      "endMs": 9920,
+      "loss": 0.0013360381126403809
+    },
+    {
+      "text": " ",
+      "startMs": 9920,
+      "endMs": 10019,
+      "loss": 0.01373291015625
+    },
+    {
+      "text": "patterns",
+      "startMs": 10019,
+      "endMs": 10399,
+      "loss": 0.0009836852550506592
+    },
+    {
+      "text": " ",
+      "startMs": 10399,
+      "endMs": 10519,
+      "loss": 0.00994873046875
+    },
+    {
+      "text": "tighten.",
+      "startMs": 10519,
+      "endMs": 10880,
+      "loss": 0.02326582372188568
+    },
+    {
+      "text": " ",
+      "startMs": 10880,
+      "endMs": 11619,
+      "loss": 0.00323486328125
+    },
+    {
+      "text": "Ancient",
+      "startMs": 11619,
+      "endMs": 11960,
+      "loss": 0.0002196516309465681
+    },
+    {
+      "text": " ",
+      "startMs": 11960,
+      "endMs": 12059,
+      "loss": 0.0003185272216796875
+    },
+    {
+      "text": "warriors",
+      "startMs": 12059,
+      "endMs": 12500,
+      "loss": 0.0023419708013534546
+    },
+    {
+      "text": " ",
+      "startMs": 12500,
+      "endMs": 12639,
+      "loss": 0.0011138916015625
+    },
+    {
+      "text": "move",
+      "startMs": 12639,
+      "endMs": 12899,
+      "loss": 0.00028508901596069336
+    },
+    {
+      "text": " ",
+      "startMs": 12899,
+      "endMs": 12960,
+      "loss": 0.0018310546875
+    },
+    {
+      "text": "with",
+      "startMs": 12960,
+      "endMs": 13119,
+      "loss": 0.00046116113662719727
+    },
+    {
+      "text": " ",
+      "startMs": 13119,
+      "endMs": 13199,
+      "loss": 0.000148773193359375
+    },
+    {
+      "text": "cold,",
+      "startMs": 13199,
+      "endMs": 13500,
+      "loss": 0.20596532821655272
+    },
+    {
+      "text": " ",
+      "startMs": 13500,
+      "endMs": 13639,
+      "loss": 0.0001506805419921875
+    },
+    {
+      "text": "synchronized",
+      "startMs": 13639,
+      "endMs": 14219,
+      "loss": 0.01077596346537272
+    },
+    {
+      "text": " ",
+      "startMs": 14219,
+      "endMs": 14319,
+      "loss": 0.0023345947265625
+    },
+    {
+      "text": "purpose.",
+      "startMs": 14319,
+      "endMs": 14739,
+      "loss": 0.004101425409317017
+    },
+    {
+      "text": "\n",
+      "startMs": 14739,
+      "endMs": 15460,
+      "loss": 9.375
+    },
+    {
+      "text": "\n",
+      "startMs": 15460,
+      "endMs": 15500,
+      "loss": 4.53125
+    },
+    {
+      "text": "The",
+      "startMs": 15500,
+      "endMs": 15559,
+      "loss": 0.013521830240885416
+    },
+    {
+      "text": " ",
+      "startMs": 15559,
+      "endMs": 15599,
+      "loss": 0.0026397705078125
+    },
+    {
+      "text": "phaerons'",
+      "startMs": 15599,
+      "endMs": 16059,
+      "loss": 0.5018024444580078
+    },
+    {
+      "text": " ",
+      "startMs": 16059,
+      "endMs": 16159,
+      "loss": 0.0020751953125
+    },
+    {
+      "text": "will",
+      "startMs": 16159,
+      "endMs": 16479,
+      "loss": 0.0012176036834716797
+    },
+    {
+      "text": " ",
+      "startMs": 16479,
+      "endMs": 16559,
+      "loss": 0.00124359130859375
+    },
+    {
+      "text": "echoes",
+      "startMs": 16559,
+      "endMs": 16920,
+      "loss": 0.002649585405985514
+    },
+    {
+      "text": " ",
+      "startMs": 16920,
+      "endMs": 16979,
+      "loss": 0.000762939453125
+    },
+    {
+      "text": "through",
+      "startMs": 16979,
+      "endMs": 17139,
+      "loss": 0.0003426756177629743
+    },
+    {
+      "text": " ",
+      "startMs": 17139,
+      "endMs": 17199,
+      "loss": 0.00054931640625
+    },
+    {
+      "text": "the",
+      "startMs": 17199,
+      "endMs": 17260,
+      "loss": 0.0011431376139322917
+    },
+    {
+      "text": " ",
+      "startMs": 17260,
+      "endMs": 17319,
+      "loss": 0.00074005126953125
+    },
+    {
+      "text": "crypt.",
+      "startMs": 17319,
+      "endMs": 17619,
+      "loss": 0.33762121200561523
+    },
+    {
+      "text": "\n",
+      "startMs": 17619,
+      "endMs": 17979,
+      "loss": 8.4375
+    },
+    {
+      "text": "\n",
+      "startMs": 17979,
+      "endMs": 18000,
+      "loss": 5.90625
+    },
+    {
+      "text": "Their",
+      "startMs": 18000,
+      "endMs": 18179,
+      "loss": 0.1272989273071289
+    },
+    {
+      "text": " ",
+      "startMs": 18179,
+      "endMs": 18260,
+      "loss": 0.00011444091796875
+    },
+    {
+      "text": "servants",
+      "startMs": 18260,
+      "endMs": 18839,
+      "loss": 0.001027137041091919
+    },
+    {
+      "text": " ",
+      "startMs": 18839,
+      "endMs": 18920,
+      "loss": 0.0030517578125
+    },
+    {
+      "text": "will",
+      "startMs": 18920,
+      "endMs": 19020,
+      "loss": 0.0003986656665802002
+    },
+    {
+      "text": " ",
+      "startMs": 19020,
+      "endMs": 19100,
+      "loss": 0.00010919570922851562
+    },
+    {
+      "text": "not",
+      "startMs": 19100,
+      "endMs": 19299,
+      "loss": 0.0002532005310058594
+    },
+    {
+      "text": " ",
+      "startMs": 19299,
+      "endMs": 19359,
+      "loss": 0.00024318695068359375
+    },
+    {
+      "text": "relent.",
+      "startMs": 19359,
+      "endMs": 19779,
+      "loss": 0.0804189954485212
+    }
+  ]
+}

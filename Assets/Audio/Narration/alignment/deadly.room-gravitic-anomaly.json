@@ -1,0 +1,474 @@
+{
+  "schemaVersion": 1,
+  "id": "deadly.room-gravitic-anomaly",
+  "text": "Gravity twists.\n\nArmor suddenly feels lighter. Bodies move farther with every step, yet weapons strike with strangely diminished force as a distorted field pulls at everything within the chamber.\n\nThe laws of weight and momentum have changed here.",
+  "durationMs": 18808,
+  "scriptHash": "1ec02302b4d8f452777ea748519d70a0bca7c00fe8b37042776de53945083a63",
+  "audioHash": "e865c97f1e7e400a7a89406f98dca039fd9bdcad2f25a927e800ec5a51ce8117",
+  "alignmentLoss": 0.12934221140286217,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "Gravity",
+      "startMs": 99,
+      "endMs": 699,
+      "loss": 0.08071156910487584
+    },
+    {
+      "text": " ",
+      "startMs": 699,
+      "endMs": 919,
+      "loss": 0.00762939453125
+    },
+    {
+      "text": "twists.",
+      "startMs": 919,
+      "endMs": 1439,
+      "loss": 0.0445354836327689
+    },
+    {
+      "text": "\n",
+      "startMs": 1439,
+      "endMs": 2180,
+      "loss": 12.0625
+    },
+    {
+      "text": "\n",
+      "startMs": 2180,
+      "endMs": 2240,
+      "loss": 6.03125
+    },
+    {
+      "text": "Armor",
+      "startMs": 2240,
+      "endMs": 2679,
+      "loss": 0.07612648010253906
+    },
+    {
+      "text": " ",
+      "startMs": 2679,
+      "endMs": 2819,
+      "loss": 0.000614166259765625
+    },
+    {
+      "text": "suddenly",
+      "startMs": 2819,
+      "endMs": 3259,
+      "loss": 9.338557720184326e-05
+    },
+    {
+      "text": " ",
+      "startMs": 3259,
+      "endMs": 3339,
+      "loss": 0.0011138916015625
+    },
+    {
+      "text": "feels",
+      "startMs": 3339,
+      "endMs": 3619,
+      "loss": 0.0007239580154418945
+    },
+    {
+      "text": " ",
+      "startMs": 3619,
+      "endMs": 3699,
+      "loss": 2.7894973754882812e-05
+    },
+    {
+      "text": "lighter.",
+      "startMs": 3699,
+      "endMs": 4099,
+      "loss": 0.032578930258750916
+    },
+    {
+      "text": " ",
+      "startMs": 4099,
+      "endMs": 5039,
+      "loss": 0.005157470703125
+    },
+    {
+      "text": "Bodies",
+      "startMs": 5039,
+      "endMs": 5480,
+      "loss": 0.0004937648773193359
+    },
+    {
+      "text": " ",
+      "startMs": 5480,
+      "endMs": 5539,
+      "loss": 0.00012111663818359375
+    },
+    {
+      "text": "move",
+      "startMs": 5539,
+      "endMs": 5900,
+      "loss": 0.00019174814224243164
+    },
+    {
+      "text": " ",
+      "startMs": 5900,
+      "endMs": 5980,
+      "loss": 0.0013427734375
+    },
+    {
+      "text": "farther",
+      "startMs": 5980,
+      "endMs": 6339,
+      "loss": 0.0016084909439086914
+    },
+    {
+      "text": " ",
+      "startMs": 6339,
+      "endMs": 6399,
+      "loss": 0.00074005126953125
+    },
+    {
+      "text": "with",
+      "startMs": 6399,
+      "endMs": 6500,
+      "loss": 0.00017273426055908203
+    },
+    {
+      "text": " ",
+      "startMs": 6500,
+      "endMs": 6599,
+      "loss": 7.009506225585938e-05
+    },
+    {
+      "text": "every",
+      "startMs": 6599,
+      "endMs": 6759,
+      "loss": 0.00013065338134765625
+    },
+    {
+      "text": " ",
+      "startMs": 6759,
+      "endMs": 6899,
+      "loss": 0.00010919570922851562
+    },
+    {
+      "text": "step,",
+      "startMs": 6899,
+      "endMs": 7199,
+      "loss": 0.05444226264953613
+    },
+    {
+      "text": " ",
+      "startMs": 7199,
+      "endMs": 7839,
+      "loss": 2.6464462280273438e-05
+    },
+    {
+      "text": "yet",
+      "startMs": 7839,
+      "endMs": 8000,
+      "loss": 0.0011190176010131836
+    },
+    {
+      "text": " ",
+      "startMs": 8000,
+      "endMs": 8099,
+      "loss": 0.001678466796875
+    },
+    {
+      "text": "weapons",
+      "startMs": 8099,
+      "endMs": 8479,
+      "loss": 0.00033594880785260884
+    },
+    {
+      "text": " ",
+      "startMs": 8479,
+      "endMs": 8539,
+      "loss": 0.0006866455078125
+    },
+    {
+      "text": "strike",
+      "startMs": 8539,
+      "endMs": 8920,
+      "loss": 0.00028121471405029297
+    },
+    {
+      "text": " ",
+      "startMs": 8920,
+      "endMs": 8979,
+      "loss": 0.00140380859375
+    },
+    {
+      "text": "with",
+      "startMs": 8979,
+      "endMs": 9099,
+      "loss": 0.000482708215713501
+    },
+    {
+      "text": " ",
+      "startMs": 9099,
+      "endMs": 9219,
+      "loss": 0.0001239776611328125
+    },
+    {
+      "text": "strangely",
+      "startMs": 9220,
+      "endMs": 9639,
+      "loss": 0.00020831161075168185
+    },
+    {
+      "text": " ",
+      "startMs": 9639,
+      "endMs": 9739,
+      "loss": 0.0184326171875
+    },
+    {
+      "text": "diminished",
+      "startMs": 9739,
+      "endMs": 10159,
+      "loss": 0.00025159120559692383
+    },
+    {
+      "text": " ",
+      "startMs": 10159,
+      "endMs": 10300,
+      "loss": 0.000537872314453125
+    },
+    {
+      "text": "force",
+      "startMs": 10300,
+      "endMs": 10679,
+      "loss": 0.0002948999404907227
+    },
+    {
+      "text": " ",
+      "startMs": 10679,
+      "endMs": 10879,
+      "loss": 0.0703125
+    },
+    {
+      "text": "as",
+      "startMs": 10880,
+      "endMs": 10960,
+      "loss": 0.0018892288208007812
+    },
+    {
+      "text": " ",
+      "startMs": 10960,
+      "endMs": 11000,
+      "loss": 5.078315734863281e-05
+    },
+    {
+      "text": "a",
+      "startMs": 11000,
+      "endMs": 11039,
+      "loss": 0.002777099609375
+    },
+    {
+      "text": " ",
+      "startMs": 11039,
+      "endMs": 11099,
+      "loss": 0.00011301040649414062
+    },
+    {
+      "text": "distorted",
+      "startMs": 11099,
+      "endMs": 11699,
+      "loss": 0.0002498096889919705
+    },
+    {
+      "text": " ",
+      "startMs": 11699,
+      "endMs": 11800,
+      "loss": 0.000499725341796875
+    },
+    {
+      "text": "field",
+      "startMs": 11800,
+      "endMs": 12199,
+      "loss": 0.00045371055603027344
+    },
+    {
+      "text": " ",
+      "startMs": 12199,
+      "endMs": 12259,
+      "loss": 0.0019989013671875
+    },
+    {
+      "text": "pulls",
+      "startMs": 12259,
+      "endMs": 12599,
+      "loss": 0.0013095855712890625
+    },
+    {
+      "text": " ",
+      "startMs": 12599,
+      "endMs": 12659,
+      "loss": 0.0005950927734375
+    },
+    {
+      "text": "at",
+      "startMs": 12659,
+      "endMs": 12759,
+      "loss": 0.0024580955505371094
+    },
+    {
+      "text": " ",
+      "startMs": 12759,
+      "endMs": 12859,
+      "loss": 0.00017642974853515625
+    },
+    {
+      "text": "everything",
+      "startMs": 12859,
+      "endMs": 13239,
+      "loss": 8.587837219238281e-05
+    },
+    {
+      "text": " ",
+      "startMs": 13239,
+      "endMs": 13299,
+      "loss": 0.00135040283203125
+    },
+    {
+      "text": "within",
+      "startMs": 13299,
+      "endMs": 13579,
+      "loss": 0.0003184676170349121
+    },
+    {
+      "text": " ",
+      "startMs": 13579,
+      "endMs": 13619,
+      "loss": 0.00049591064453125
+    },
+    {
+      "text": "the",
+      "startMs": 13619,
+      "endMs": 13679,
+      "loss": 0.00040860970815022785
+    },
+    {
+      "text": " ",
+      "startMs": 13679,
+      "endMs": 13759,
+      "loss": 0.00010776519775390625
+    },
+    {
+      "text": "chamber.",
+      "startMs": 13759,
+      "endMs": 14139,
+      "loss": 0.005200281739234924
+    },
+    {
+      "text": "\n",
+      "startMs": 14139,
+      "endMs": 14140,
+      "loss": 7.125
+    },
+    {
+      "text": "\n",
+      "startMs": 14139,
+      "endMs": 14140,
+      "loss": 3.796875
+    },
+    {
+      "text": "The",
+      "startMs": 15239,
+      "endMs": 15299,
+      "loss": 0.03084278106689453
+    },
+    {
+      "text": " ",
+      "startMs": 15299,
+      "endMs": 15380,
+      "loss": 0.0001697540283203125
+    },
+    {
+      "text": "laws",
+      "startMs": 15380,
+      "endMs": 15659,
+      "loss": 0.003614187240600586
+    },
+    {
+      "text": " ",
+      "startMs": 15659,
+      "endMs": 15719,
+      "loss": 0.00013446807861328125
+    },
+    {
+      "text": "of",
+      "startMs": 15719,
+      "endMs": 15839,
+      "loss": 0.00017827749252319336
+    },
+    {
+      "text": " ",
+      "startMs": 15839,
+      "endMs": 15899,
+      "loss": 2.3365020751953125e-05
+    },
+    {
+      "text": "weight",
+      "startMs": 15899,
+      "endMs": 16340,
+      "loss": 0.0015415549278259277
+    },
+    {
+      "text": " ",
+      "startMs": 16340,
+      "endMs": 16399,
+      "loss": 0.0054931640625
+    },
+    {
+      "text": "and",
+      "startMs": 16399,
+      "endMs": 16500,
+      "loss": 0.0002491474151611328
+    },
+    {
+      "text": " ",
+      "startMs": 16500,
+      "endMs": 16619,
+      "loss": 4.6253204345703125e-05
+    },
+    {
+      "text": "momentum",
+      "startMs": 16619,
+      "endMs": 17379,
+      "loss": 0.00011816620826721191
+    },
+    {
+      "text": " ",
+      "startMs": 17379,
+      "endMs": 17420,
+      "loss": 0.08935546875
+    },
+    {
+      "text": "have",
+      "startMs": 17420,
+      "endMs": 17540,
+      "loss": 0.0004697442054748535
+    },
+    {
+      "text": " ",
+      "startMs": 17540,
+      "endMs": 17680,
+      "loss": 3.62396240234375e-05
+    },
+    {
+      "text": "changed",
+      "startMs": 17680,
+      "endMs": 18119,
+      "loss": 0.00010500635419573103
+    },
+    {
+      "text": " ",
+      "startMs": 18119,
+      "endMs": 18199,
+      "loss": 0.006500244140625
+    },
+    {
+      "text": "here.",
+      "startMs": 18199,
+      "endMs": 18520,
+      "loss": 0.13989944458007814
+    }
+  ]
+}

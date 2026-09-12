@@ -1,0 +1,462 @@
+{
+  "schemaVersion": 1,
+  "id": "outcome.05.defeat",
+  "text": "The exploration ends here.\n\nBeyond the chambers you reached, sealed rooms continue into the darkness, their contents unknown and their guardians undisturbed.\n\nToo much of the sub-crypt remains hidden.\n\nThe tomb keeps its secrets.\n\nMission failed.",
+  "durationMs": 19644,
+  "scriptHash": "6f86d5744e97679db54ae932adf50b7bea6a98d9b8e97f74ed40bcd5fec5b961",
+  "audioHash": "d223e3c35a21daf1496ac784690fdd6ea5932819ff783f99b1a0fc5770f9d94a",
+  "alignmentLoss": 0.24532343992372838,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "The",
+      "startMs": 99,
+      "endMs": 179,
+      "loss": 2.1062838236490884
+    },
+    {
+      "text": " ",
+      "startMs": 179,
+      "endMs": 280,
+      "loss": 2.3245811462402344e-05
+    },
+    {
+      "text": "exploration",
+      "startMs": 280,
+      "endMs": 1059,
+      "loss": 0.002211895855990323
+    },
+    {
+      "text": " ",
+      "startMs": 1059,
+      "endMs": 1240,
+      "loss": 0.00049591064453125
+    },
+    {
+      "text": "ends",
+      "startMs": 1240,
+      "endMs": 1599,
+      "loss": 0.0003586411476135254
+    },
+    {
+      "text": " ",
+      "startMs": 1599,
+      "endMs": 1679,
+      "loss": 0.0009765625
+    },
+    {
+      "text": "here.",
+      "startMs": 1679,
+      "endMs": 2000,
+      "loss": 0.02639741897583008
+    },
+    {
+      "text": "\n",
+      "startMs": 2000,
+      "endMs": 2139,
+      "loss": 12.0
+    },
+    {
+      "text": "\n",
+      "startMs": 2139,
+      "endMs": 2140,
+      "loss": 4.71875
+    },
+    {
+      "text": "Beyond",
+      "startMs": 3319,
+      "endMs": 3639,
+      "loss": 0.06094789505004883
+    },
+    {
+      "text": " ",
+      "startMs": 3639,
+      "endMs": 3679,
+      "loss": 6.198883056640625e-05
+    },
+    {
+      "text": "the",
+      "startMs": 3679,
+      "endMs": 3779,
+      "loss": 0.00016701221466064453
+    },
+    {
+      "text": " ",
+      "startMs": 3779,
+      "endMs": 3839,
+      "loss": 2.765655517578125e-05
+    },
+    {
+      "text": "chambers",
+      "startMs": 3839,
+      "endMs": 4219,
+      "loss": 0.0003439188003540039
+    },
+    {
+      "text": " ",
+      "startMs": 4219,
+      "endMs": 4259,
+      "loss": 0.001953125
+    },
+    {
+      "text": "you",
+      "startMs": 4259,
+      "endMs": 4339,
+      "loss": 0.0001652240753173828
+    },
+    {
+      "text": " ",
+      "startMs": 4339,
+      "endMs": 4439,
+      "loss": 0.0020599365234375
+    },
+    {
+      "text": "reached,",
+      "startMs": 4440,
+      "endMs": 4759,
+      "loss": 0.006899148225784302
+    },
+    {
+      "text": " ",
+      "startMs": 4759,
+      "endMs": 5319,
+      "loss": 4.3392181396484375e-05
+    },
+    {
+      "text": "sealed",
+      "startMs": 5319,
+      "endMs": 5679,
+      "loss": 0.0006926854451497396
+    },
+    {
+      "text": " ",
+      "startMs": 5679,
+      "endMs": 5759,
+      "loss": 0.00112152099609375
+    },
+    {
+      "text": "rooms",
+      "startMs": 5759,
+      "endMs": 6079,
+      "loss": 0.00021204948425292968
+    },
+    {
+      "text": " ",
+      "startMs": 6079,
+      "endMs": 6139,
+      "loss": 0.00020122528076171875
+    },
+    {
+      "text": "continue",
+      "startMs": 6139,
+      "endMs": 6599,
+      "loss": 0.00016075372695922852
+    },
+    {
+      "text": " ",
+      "startMs": 6599,
+      "endMs": 6659,
+      "loss": 0.00244140625
+    },
+    {
+      "text": "into",
+      "startMs": 6659,
+      "endMs": 6819,
+      "loss": 0.0007807016372680664
+    },
+    {
+      "text": " ",
+      "startMs": 6819,
+      "endMs": 6859,
+      "loss": 3.62396240234375e-05
+    },
+    {
+      "text": "the",
+      "startMs": 6859,
+      "endMs": 6940,
+      "loss": 0.0008591413497924805
+    },
+    {
+      "text": " ",
+      "startMs": 6940,
+      "endMs": 7000,
+      "loss": 0.00022220611572265625
+    },
+    {
+      "text": "darkness,",
+      "startMs": 7000,
+      "endMs": 7500,
+      "loss": 0.01672620243496365
+    },
+    {
+      "text": " ",
+      "startMs": 7500,
+      "endMs": 8019,
+      "loss": 7.104873657226562e-05
+    },
+    {
+      "text": "their",
+      "startMs": 8019,
+      "endMs": 8139,
+      "loss": 0.000931406021118164
+    },
+    {
+      "text": " ",
+      "startMs": 8139,
+      "endMs": 8199,
+      "loss": 3.0279159545898438e-05
+    },
+    {
+      "text": "contents",
+      "startMs": 8199,
+      "endMs": 8639,
+      "loss": 0.0002896636724472046
+    },
+    {
+      "text": " ",
+      "startMs": 8639,
+      "endMs": 8779,
+      "loss": 0.000942230224609375
+    },
+    {
+      "text": "unknown",
+      "startMs": 8779,
+      "endMs": 9300,
+      "loss": 0.0010577780859810965
+    },
+    {
+      "text": " ",
+      "startMs": 9300,
+      "endMs": 9359,
+      "loss": 0.162109375
+    },
+    {
+      "text": "and",
+      "startMs": 9359,
+      "endMs": 9460,
+      "loss": 0.0003840128580729167
+    },
+    {
+      "text": " ",
+      "startMs": 9460,
+      "endMs": 9500,
+      "loss": 6.151199340820312e-05
+    },
+    {
+      "text": "their",
+      "startMs": 9500,
+      "endMs": 9639,
+      "loss": 0.0003106117248535156
+    },
+    {
+      "text": " ",
+      "startMs": 9639,
+      "endMs": 9719,
+      "loss": 6.628036499023438e-05
+    },
+    {
+      "text": "guardians",
+      "startMs": 9719,
+      "endMs": 10279,
+      "loss": 0.005558980835808648
+    },
+    {
+      "text": " ",
+      "startMs": 10279,
+      "endMs": 10340,
+      "loss": 0.0007476806640625
+    },
+    {
+      "text": "undisturbed.",
+      "startMs": 10340,
+      "endMs": 11119,
+      "loss": 0.002100100119908651
+    },
+    {
+      "text": "\n",
+      "startMs": 11119,
+      "endMs": 11120,
+      "loss": 7.1875
+    },
+    {
+      "text": "\n",
+      "startMs": 11119,
+      "endMs": 11120,
+      "loss": 3.515625
+    },
+    {
+      "text": "Too",
+      "startMs": 12319,
+      "endMs": 12460,
+      "loss": 0.03264490763346354
+    },
+    {
+      "text": " ",
+      "startMs": 12460,
+      "endMs": 12500,
+      "loss": 9.250640869140625e-05
+    },
+    {
+      "text": "much",
+      "startMs": 12500,
+      "endMs": 12719,
+      "loss": 6.216764450073242e-05
+    },
+    {
+      "text": " ",
+      "startMs": 12719,
+      "endMs": 12759,
+      "loss": 0.00017547607421875
+    },
+    {
+      "text": "of",
+      "startMs": 12759,
+      "endMs": 12839,
+      "loss": 0.0003268718719482422
+    },
+    {
+      "text": " ",
+      "startMs": 12839,
+      "endMs": 12880,
+      "loss": 3.695487976074219e-05
+    },
+    {
+      "text": "the",
+      "startMs": 12880,
+      "endMs": 13000,
+      "loss": 0.00029718875885009766
+    },
+    {
+      "text": " ",
+      "startMs": 13000,
+      "endMs": 13079,
+      "loss": 8.58306884765625e-05
+    },
+    {
+      "text": "sub-crypt",
+      "startMs": 13079,
+      "endMs": 13699,
+      "loss": 0.08468299441867405
+    },
+    {
+      "text": " ",
+      "startMs": 13699,
+      "endMs": 13939,
+      "loss": 0.028076171875
+    },
+    {
+      "text": "remains",
+      "startMs": 13939,
+      "endMs": 14359,
+      "loss": 0.00033836705344063897
+    },
+    {
+      "text": " ",
+      "startMs": 14359,
+      "endMs": 14399,
+      "loss": 7.152557373046875e-05
+    },
+    {
+      "text": "hidden.",
+      "startMs": 14399,
+      "endMs": 14779,
+      "loss": 0.05816449437822614
+    },
+    {
+      "text": "\n",
+      "startMs": 14779,
+      "endMs": 14800,
+      "loss": 7.21875
+    },
+    {
+      "text": "\n",
+      "startMs": 14800,
+      "endMs": 14801,
+      "loss": 4.21875
+    },
+    {
+      "text": "The",
+      "startMs": 15819,
+      "endMs": 15880,
+      "loss": 0.0054302215576171875
+    },
+    {
+      "text": " ",
+      "startMs": 15880,
+      "endMs": 15960,
+      "loss": 0.0022125244140625
+    },
+    {
+      "text": "tomb",
+      "startMs": 15960,
+      "endMs": 16479,
+      "loss": 0.012583017349243164
+    },
+    {
+      "text": " ",
+      "startMs": 16479,
+      "endMs": 16539,
+      "loss": 0.000385284423828125
+    },
+    {
+      "text": "keeps",
+      "startMs": 16539,
+      "endMs": 16739,
+      "loss": 0.00020220279693603516
+    },
+    {
+      "text": " ",
+      "startMs": 16739,
+      "endMs": 16760,
+      "loss": 6.008148193359375e-05
+    },
+    {
+      "text": "its",
+      "startMs": 16760,
+      "endMs": 16899,
+      "loss": 0.004713217417399089
+    },
+    {
+      "text": " ",
+      "startMs": 16899,
+      "endMs": 16959,
+      "loss": 0.000240325927734375
+    },
+    {
+      "text": "secrets.",
+      "startMs": 16959,
+      "endMs": 17439,
+      "loss": 0.07488518953323364
+    },
+    {
+      "text": "\n",
+      "startMs": 17439,
+      "endMs": 18279,
+      "loss": 5.96875
+    },
+    {
+      "text": "\n",
+      "startMs": 18279,
+      "endMs": 18339,
+      "loss": 3.6875
+    },
+    {
+      "text": "Mission",
+      "startMs": 18340,
+      "endMs": 18699,
+      "loss": 0.011217185429164342
+    },
+    {
+      "text": " ",
+      "startMs": 18699,
+      "endMs": 18939,
+      "loss": 0.004150390625
+    },
+    {
+      "text": "failed.",
+      "startMs": 18939,
+      "endMs": 19359,
+      "loss": 0.34822906766619
+    }
+  ]
+}

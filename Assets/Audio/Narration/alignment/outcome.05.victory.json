@@ -1,0 +1,528 @@
+{
+  "schemaVersion": 1,
+  "id": "outcome.05.victory",
+  "text": "Another chamber falls silent.\n\nEnough of the sub-crypt has now been opened, cleared and mapped to reveal the shape of what lies beneath the Tomb World.\n\nThe darkness still holds many secrets.\n\nBut not these.\n\nThe reconnaissance is complete.\n\nMission accomplished.",
+  "durationMs": 20245,
+  "scriptHash": "e3c61ba9824472b20524d5deee776f4fc1755a6cf5772d14ad986b548f0594c9",
+  "audioHash": "b084115ff562534319a4c9d0d4c97c62d70af676b87efd8bca1061925569a98d",
+  "alignmentLoss": 0.3075786321335419,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "Another",
+      "startMs": 179,
+      "endMs": 599,
+      "loss": 0.14481372492653982
+    },
+    {
+      "text": " ",
+      "startMs": 599,
+      "endMs": 639,
+      "loss": 0.0010833740234375
+    },
+    {
+      "text": "chamber",
+      "startMs": 639,
+      "endMs": 1120,
+      "loss": 0.004507320267813546
+    },
+    {
+      "text": " ",
+      "startMs": 1120,
+      "endMs": 1179,
+      "loss": 0.000629425048828125
+    },
+    {
+      "text": "falls",
+      "startMs": 1179,
+      "endMs": 1639,
+      "loss": 0.0010339021682739258
+    },
+    {
+      "text": " ",
+      "startMs": 1639,
+      "endMs": 1779,
+      "loss": 0.007720947265625
+    },
+    {
+      "text": "silent.",
+      "startMs": 1779,
+      "endMs": 2220,
+      "loss": 0.02932262420654297
+    },
+    {
+      "text": "\n",
+      "startMs": 2220,
+      "endMs": 2939,
+      "loss": 10.125
+    },
+    {
+      "text": "\n",
+      "startMs": 2939,
+      "endMs": 3039,
+      "loss": 5.28125
+    },
+    {
+      "text": "Enough",
+      "startMs": 3039,
+      "endMs": 3339,
+      "loss": 0.3337252338727315
+    },
+    {
+      "text": " ",
+      "startMs": 3339,
+      "endMs": 3379,
+      "loss": 0.00058746337890625
+    },
+    {
+      "text": "of",
+      "startMs": 3379,
+      "endMs": 3480,
+      "loss": 0.0005550384521484375
+    },
+    {
+      "text": " ",
+      "startMs": 3480,
+      "endMs": 3519,
+      "loss": 0.0003910064697265625
+    },
+    {
+      "text": "the",
+      "startMs": 3519,
+      "endMs": 3559,
+      "loss": 0.0005077521006266276
+    },
+    {
+      "text": " ",
+      "startMs": 3559,
+      "endMs": 3659,
+      "loss": 0.0002536773681640625
+    },
+    {
+      "text": "sub-crypt",
+      "startMs": 3659,
+      "endMs": 4179,
+      "loss": 0.10903718736436632
+    },
+    {
+      "text": " ",
+      "startMs": 4179,
+      "endMs": 4239,
+      "loss": 0.000637054443359375
+    },
+    {
+      "text": "has",
+      "startMs": 4239,
+      "endMs": 4359,
+      "loss": 0.00179290771484375
+    },
+    {
+      "text": " ",
+      "startMs": 4359,
+      "endMs": 4399,
+      "loss": 0.0003070831298828125
+    },
+    {
+      "text": "now",
+      "startMs": 4400,
+      "endMs": 4539,
+      "loss": 0.0035948753356933594
+    },
+    {
+      "text": " ",
+      "startMs": 4539,
+      "endMs": 4579,
+      "loss": 0.000812530517578125
+    },
+    {
+      "text": "been",
+      "startMs": 4579,
+      "endMs": 4759,
+      "loss": 0.0004800856113433838
+    },
+    {
+      "text": " ",
+      "startMs": 4759,
+      "endMs": 4839,
+      "loss": 0.00144195556640625
+    },
+    {
+      "text": "opened,",
+      "startMs": 4839,
+      "endMs": 5219,
+      "loss": 0.003292356218610491
+    },
+    {
+      "text": " ",
+      "startMs": 5219,
+      "endMs": 5399,
+      "loss": 8.153915405273438e-05
+    },
+    {
+      "text": "cleared",
+      "startMs": 5400,
+      "endMs": 5779,
+      "loss": 0.013076032911028181
+    },
+    {
+      "text": " ",
+      "startMs": 5779,
+      "endMs": 5819,
+      "loss": 0.828125
+    },
+    {
+      "text": "and",
+      "startMs": 5819,
+      "endMs": 6059,
+      "loss": 0.0008805592854817709
+    },
+    {
+      "text": " ",
+      "startMs": 6059,
+      "endMs": 6060,
+      "loss": 0.0003414154052734375
+    },
+    {
+      "text": "mapped",
+      "startMs": 6060,
+      "endMs": 6500,
+      "loss": 0.002013524373372396
+    },
+    {
+      "text": " ",
+      "startMs": 6500,
+      "endMs": 6539,
+      "loss": 0.0244140625
+    },
+    {
+      "text": "to",
+      "startMs": 6539,
+      "endMs": 6659,
+      "loss": 0.0008459091186523438
+    },
+    {
+      "text": " ",
+      "startMs": 6659,
+      "endMs": 6679,
+      "loss": 0.0009307861328125
+    },
+    {
+      "text": "reveal",
+      "startMs": 6679,
+      "endMs": 7039,
+      "loss": 0.0010788838068644206
+    },
+    {
+      "text": " ",
+      "startMs": 7039,
+      "endMs": 7079,
+      "loss": 0.0003871917724609375
+    },
+    {
+      "text": "the",
+      "startMs": 7079,
+      "endMs": 7119,
+      "loss": 0.0007044474283854166
+    },
+    {
+      "text": " ",
+      "startMs": 7119,
+      "endMs": 7259,
+      "loss": 0.00074005126953125
+    },
+    {
+      "text": "shape",
+      "startMs": 7259,
+      "endMs": 7500,
+      "loss": 0.000727987289428711
+    },
+    {
+      "text": " ",
+      "startMs": 7500,
+      "endMs": 7539,
+      "loss": 0.0030517578125
+    },
+    {
+      "text": "of",
+      "startMs": 7539,
+      "endMs": 7659,
+      "loss": 0.0004878044128417969
+    },
+    {
+      "text": " ",
+      "startMs": 7659,
+      "endMs": 7679,
+      "loss": 0.00011920928955078125
+    },
+    {
+      "text": "what",
+      "startMs": 7679,
+      "endMs": 7859,
+      "loss": 0.00039958953857421875
+    },
+    {
+      "text": " ",
+      "startMs": 7859,
+      "endMs": 7939,
+      "loss": 0.0004024505615234375
+    },
+    {
+      "text": "lies",
+      "startMs": 7940,
+      "endMs": 8300,
+      "loss": 0.0005087852478027344
+    },
+    {
+      "text": " ",
+      "startMs": 8300,
+      "endMs": 8319,
+      "loss": 0.000354766845703125
+    },
+    {
+      "text": "beneath",
+      "startMs": 8319,
+      "endMs": 8720,
+      "loss": 0.0006702968052455357
+    },
+    {
+      "text": " ",
+      "startMs": 8720,
+      "endMs": 8739,
+      "loss": 0.000469207763671875
+    },
+    {
+      "text": "the",
+      "startMs": 8739,
+      "endMs": 8859,
+      "loss": 0.0006777445475260416
+    },
+    {
+      "text": " ",
+      "startMs": 8859,
+      "endMs": 8899,
+      "loss": 0.000560760498046875
+    },
+    {
+      "text": "Tomb",
+      "startMs": 8899,
+      "endMs": 9199,
+      "loss": 0.6768136024475098
+    },
+    {
+      "text": " ",
+      "startMs": 9199,
+      "endMs": 9260,
+      "loss": 0.115234375
+    },
+    {
+      "text": "World.",
+      "startMs": 9260,
+      "endMs": 9579,
+      "loss": 0.038494269053141274
+    },
+    {
+      "text": "\n",
+      "startMs": 9579,
+      "endMs": 9580,
+      "loss": 8.75
+    },
+    {
+      "text": "\n",
+      "startMs": 9579,
+      "endMs": 9580,
+      "loss": 5.90625
+    },
+    {
+      "text": "The",
+      "startMs": 10659,
+      "endMs": 10739,
+      "loss": 0.015097300211588541
+    },
+    {
+      "text": " ",
+      "startMs": 10739,
+      "endMs": 10800,
+      "loss": 0.0115966796875
+    },
+    {
+      "text": "darkness",
+      "startMs": 10800,
+      "endMs": 11300,
+      "loss": 0.00569838285446167
+    },
+    {
+      "text": " ",
+      "startMs": 11300,
+      "endMs": 11380,
+      "loss": 4.673004150390625e-05
+    },
+    {
+      "text": "still",
+      "startMs": 11380,
+      "endMs": 11720,
+      "loss": 0.0001787900924682617
+    },
+    {
+      "text": " ",
+      "startMs": 11720,
+      "endMs": 11739,
+      "loss": 3.7670135498046875e-05
+    },
+    {
+      "text": "holds",
+      "startMs": 11739,
+      "endMs": 12159,
+      "loss": 0.0002178192138671875
+    },
+    {
+      "text": " ",
+      "startMs": 12159,
+      "endMs": 12179,
+      "loss": 0.000202178955078125
+    },
+    {
+      "text": "many",
+      "startMs": 12179,
+      "endMs": 12400,
+      "loss": 0.0004940032958984375
+    },
+    {
+      "text": " ",
+      "startMs": 12400,
+      "endMs": 12519,
+      "loss": 6.151199340820312e-05
+    },
+    {
+      "text": "secrets.",
+      "startMs": 12519,
+      "endMs": 13859,
+      "loss": 0.2959437966346741
+    },
+    {
+      "text": "\n",
+      "startMs": 13859,
+      "endMs": 13880,
+      "loss": 6.25
+    },
+    {
+      "text": "\n",
+      "startMs": 13880,
+      "endMs": 13899,
+      "loss": 4.90625
+    },
+    {
+      "text": "But",
+      "startMs": 13899,
+      "endMs": 14020,
+      "loss": 0.019488016764322918
+    },
+    {
+      "text": " ",
+      "startMs": 14020,
+      "endMs": 14079,
+      "loss": 0.0021820068359375
+    },
+    {
+      "text": "not",
+      "startMs": 14079,
+      "endMs": 14279,
+      "loss": 0.004258632659912109
+    },
+    {
+      "text": " ",
+      "startMs": 14279,
+      "endMs": 14339,
+      "loss": 0.00086212158203125
+    },
+    {
+      "text": "these.",
+      "startMs": 14340,
+      "endMs": 14699,
+      "loss": 0.39138539632161456
+    },
+    {
+      "text": "\n",
+      "startMs": 14699,
+      "endMs": 15400,
+      "loss": 7.125
+    },
+    {
+      "text": "\n",
+      "startMs": 15400,
+      "endMs": 15420,
+      "loss": 6.375
+    },
+    {
+      "text": "The",
+      "startMs": 15420,
+      "endMs": 15479,
+      "loss": 0.02613067626953125
+    },
+    {
+      "text": " ",
+      "startMs": 15479,
+      "endMs": 15519,
+      "loss": 0.2431640625
+    },
+    {
+      "text": "reconnaissance",
+      "startMs": 15519,
+      "endMs": 16159,
+      "loss": 0.012959897518157959
+    },
+    {
+      "text": " ",
+      "startMs": 16159,
+      "endMs": 16199,
+      "loss": 0.000858306884765625
+    },
+    {
+      "text": "is",
+      "startMs": 16199,
+      "endMs": 16319,
+      "loss": 0.0011310577392578125
+    },
+    {
+      "text": " ",
+      "startMs": 16319,
+      "endMs": 16359,
+      "loss": 0.000438690185546875
+    },
+    {
+      "text": "complete.",
+      "startMs": 16359,
+      "endMs": 16819,
+      "loss": 0.3147589365641276
+    },
+    {
+      "text": "\n",
+      "startMs": 16819,
+      "endMs": 17699,
+      "loss": 3.1875
+    },
+    {
+      "text": "\n",
+      "startMs": 17699,
+      "endMs": 17779,
+      "loss": 2.109375
+    },
+    {
+      "text": "Mission",
+      "startMs": 17779,
+      "endMs": 18239,
+      "loss": 0.02099909101213728
+    },
+    {
+      "text": " ",
+      "startMs": 18239,
+      "endMs": 18520,
+      "loss": 0.0213623046875
+    },
+    {
+      "text": "accomplished.",
+      "startMs": 18520,
+      "endMs": 19159,
+      "loss": 0.3177658227773813
+    }
+  ]
+}

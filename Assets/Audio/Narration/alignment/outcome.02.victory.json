@@ -1,0 +1,546 @@
+{
+  "schemaVersion": 1,
+  "id": "outcome.02.victory",
+  "text": "Another sealed access point gives way.\n\nAcross the crypt, forced hatchways and shattered breach points now form a path through defenses never meant to be opened from within.\n\nThe tomb can no longer contain the route.\n\nThe way forward is open.\n\nMission accomplished.",
+  "durationMs": 19304,
+  "scriptHash": "85d83a4418e088f523c96444bcff8c25ce2942aff6b3505370bf2e6a1a54a8a6",
+  "audioHash": "0fa89484b9ebad348e5a767e56167ac467c943c63078d22e6d624ef68b0c9666",
+  "alignmentLoss": 0.19261240464336468,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "Another",
+      "startMs": 79,
+      "endMs": 379,
+      "loss": 0.6746461732046944
+    },
+    {
+      "text": " ",
+      "startMs": 379,
+      "endMs": 539,
+      "loss": 0.000732421875
+    },
+    {
+      "text": "sealed",
+      "startMs": 539,
+      "endMs": 879,
+      "loss": 0.002472539742787679
+    },
+    {
+      "text": " ",
+      "startMs": 879,
+      "endMs": 1019,
+      "loss": 0.00194549560546875
+    },
+    {
+      "text": "access",
+      "startMs": 1019,
+      "endMs": 1339,
+      "loss": 0.0009708205858866373
+    },
+    {
+      "text": " ",
+      "startMs": 1339,
+      "endMs": 1459,
+      "loss": 0.0191650390625
+    },
+    {
+      "text": "point",
+      "startMs": 1459,
+      "endMs": 1659,
+      "loss": 0.00011072158813476562
+    },
+    {
+      "text": " ",
+      "startMs": 1659,
+      "endMs": 1759,
+      "loss": 0.0025482177734375
+    },
+    {
+      "text": "gives",
+      "startMs": 1759,
+      "endMs": 1979,
+      "loss": 0.0007232666015625
+    },
+    {
+      "text": " ",
+      "startMs": 1979,
+      "endMs": 2039,
+      "loss": 0.0033721923828125
+    },
+    {
+      "text": "way.",
+      "startMs": 2039,
+      "endMs": 2339,
+      "loss": 0.034076988697052
+    },
+    {
+      "text": "\n",
+      "startMs": 2339,
+      "endMs": 2340,
+      "loss": 8.625
+    },
+    {
+      "text": "\n",
+      "startMs": 2339,
+      "endMs": 2340,
+      "loss": 4.03125
+    },
+    {
+      "text": "Across",
+      "startMs": 3399,
+      "endMs": 3740,
+      "loss": 0.009264310201009115
+    },
+    {
+      "text": " ",
+      "startMs": 3740,
+      "endMs": 3799,
+      "loss": 0.000438690185546875
+    },
+    {
+      "text": "the",
+      "startMs": 3799,
+      "endMs": 3879,
+      "loss": 0.00033736228942871094
+    },
+    {
+      "text": " ",
+      "startMs": 3879,
+      "endMs": 3919,
+      "loss": 6.4849853515625e-05
+    },
+    {
+      "text": "crypt,",
+      "startMs": 3919,
+      "endMs": 4159,
+      "loss": 0.017259915669759113
+    },
+    {
+      "text": " ",
+      "startMs": 4159,
+      "endMs": 4539,
+      "loss": 3.361701965332031e-05
+    },
+    {
+      "text": "forced",
+      "startMs": 4539,
+      "endMs": 4799,
+      "loss": 0.0007162094116210938
+    },
+    {
+      "text": " ",
+      "startMs": 4799,
+      "endMs": 4839,
+      "loss": 0.004180908203125
+    },
+    {
+      "text": "hatchways",
+      "startMs": 4839,
+      "endMs": 5380,
+      "loss": 0.0011652443144056532
+    },
+    {
+      "text": " ",
+      "startMs": 5380,
+      "endMs": 5420,
+      "loss": 0.0081787109375
+    },
+    {
+      "text": "and",
+      "startMs": 5420,
+      "endMs": 5500,
+      "loss": 0.0005050500233968099
+    },
+    {
+      "text": " ",
+      "startMs": 5500,
+      "endMs": 5579,
+      "loss": 2.6941299438476562e-05
+    },
+    {
+      "text": "shattered",
+      "startMs": 5579,
+      "endMs": 5960,
+      "loss": 0.00022155708736843534
+    },
+    {
+      "text": " ",
+      "startMs": 5960,
+      "endMs": 6019,
+      "loss": 0.00099945068359375
+    },
+    {
+      "text": "breach",
+      "startMs": 6019,
+      "endMs": 6199,
+      "loss": 0.028542637825012207
+    },
+    {
+      "text": " ",
+      "startMs": 6199,
+      "endMs": 6319,
+      "loss": 0.1337890625
+    },
+    {
+      "text": "points",
+      "startMs": 6319,
+      "endMs": 6679,
+      "loss": 0.000268399715423584
+    },
+    {
+      "text": " ",
+      "startMs": 6679,
+      "endMs": 6779,
+      "loss": 0.00933837890625
+    },
+    {
+      "text": "now",
+      "startMs": 6779,
+      "endMs": 7079,
+      "loss": 0.0022176106770833335
+    },
+    {
+      "text": " ",
+      "startMs": 7079,
+      "endMs": 7139,
+      "loss": 0.000652313232421875
+    },
+    {
+      "text": "form",
+      "startMs": 7139,
+      "endMs": 7299,
+      "loss": 0.0004398226737976074
+    },
+    {
+      "text": " ",
+      "startMs": 7299,
+      "endMs": 7339,
+      "loss": 0.0026702880859375
+    },
+    {
+      "text": "a",
+      "startMs": 7339,
+      "endMs": 7419,
+      "loss": 0.00180816650390625
+    },
+    {
+      "text": " ",
+      "startMs": 7419,
+      "endMs": 7499,
+      "loss": 0.000270843505859375
+    },
+    {
+      "text": "path",
+      "startMs": 7500,
+      "endMs": 7819,
+      "loss": 0.0005104243755340576
+    },
+    {
+      "text": " ",
+      "startMs": 7819,
+      "endMs": 7859,
+      "loss": 0.004364013671875
+    },
+    {
+      "text": "through",
+      "startMs": 7859,
+      "endMs": 8039,
+      "loss": 0.0008819273539951869
+    },
+    {
+      "text": " ",
+      "startMs": 8039,
+      "endMs": 8079,
+      "loss": 0.0003223419189453125
+    },
+    {
+      "text": "defenses",
+      "startMs": 8079,
+      "endMs": 8579,
+      "loss": 0.07317483425140381
+    },
+    {
+      "text": " ",
+      "startMs": 8579,
+      "endMs": 8720,
+      "loss": 0.01019287109375
+    },
+    {
+      "text": "never",
+      "startMs": 8720,
+      "endMs": 8939,
+      "loss": 0.000794219970703125
+    },
+    {
+      "text": " ",
+      "startMs": 8939,
+      "endMs": 8979,
+      "loss": 0.00057220458984375
+    },
+    {
+      "text": "meant",
+      "startMs": 8979,
+      "endMs": 9139,
+      "loss": 0.0002293825149536133
+    },
+    {
+      "text": " ",
+      "startMs": 9139,
+      "endMs": 9179,
+      "loss": 0.000560760498046875
+    },
+    {
+      "text": "to",
+      "startMs": 9179,
+      "endMs": 9239,
+      "loss": 0.0002770423889160156
+    },
+    {
+      "text": " ",
+      "startMs": 9239,
+      "endMs": 9279,
+      "loss": 0.0001430511474609375
+    },
+    {
+      "text": "be",
+      "startMs": 9279,
+      "endMs": 9399,
+      "loss": 0.0007395148277282715
+    },
+    {
+      "text": " ",
+      "startMs": 9399,
+      "endMs": 9500,
+      "loss": 0.0001811981201171875
+    },
+    {
+      "text": "opened",
+      "startMs": 9500,
+      "endMs": 9840,
+      "loss": 0.0010361870129903157
+    },
+    {
+      "text": " ",
+      "startMs": 9840,
+      "endMs": 9880,
+      "loss": 0.000911712646484375
+    },
+    {
+      "text": "from",
+      "startMs": 9880,
+      "endMs": 10019,
+      "loss": 0.00032001733779907227
+    },
+    {
+      "text": " ",
+      "startMs": 10019,
+      "endMs": 10079,
+      "loss": 0.0003032684326171875
+    },
+    {
+      "text": "within.",
+      "startMs": 10079,
+      "endMs": 10479,
+      "loss": 0.00709099428994315
+    },
+    {
+      "text": "\n",
+      "startMs": 10479,
+      "endMs": 11479,
+      "loss": 6.0
+    },
+    {
+      "text": "\n",
+      "startMs": 11479,
+      "endMs": 11500,
+      "loss": 2.0625
+    },
+    {
+      "text": "The",
+      "startMs": 11500,
+      "endMs": 11560,
+      "loss": 0.028825124104817707
+    },
+    {
+      "text": " ",
+      "startMs": 11560,
+      "endMs": 11679,
+      "loss": 0.0001068115234375
+    },
+    {
+      "text": "tomb",
+      "startMs": 11679,
+      "endMs": 12019,
+      "loss": 0.009496688842773438
+    },
+    {
+      "text": " ",
+      "startMs": 12019,
+      "endMs": 12119,
+      "loss": 0.005584716796875
+    },
+    {
+      "text": "can",
+      "startMs": 12119,
+      "endMs": 12299,
+      "loss": 0.0002932548522949219
+    },
+    {
+      "text": " ",
+      "startMs": 12299,
+      "endMs": 12359,
+      "loss": 0.000415802001953125
+    },
+    {
+      "text": "no",
+      "startMs": 12359,
+      "endMs": 12559,
+      "loss": 0.00033479928970336914
+    },
+    {
+      "text": " ",
+      "startMs": 12559,
+      "endMs": 12599,
+      "loss": 0.000823974609375
+    },
+    {
+      "text": "longer",
+      "startMs": 12599,
+      "endMs": 12939,
+      "loss": 6.41942024230957e-05
+    },
+    {
+      "text": " ",
+      "startMs": 12939,
+      "endMs": 12979,
+      "loss": 6.866455078125e-05
+    },
+    {
+      "text": "contain",
+      "startMs": 12979,
+      "endMs": 13479,
+      "loss": 7.493155343191964e-05
+    },
+    {
+      "text": " ",
+      "startMs": 13479,
+      "endMs": 13519,
+      "loss": 0.0005950927734375
+    },
+    {
+      "text": "the",
+      "startMs": 13519,
+      "endMs": 13579,
+      "loss": 0.0006362597147623698
+    },
+    {
+      "text": " ",
+      "startMs": 13579,
+      "endMs": 13659,
+      "loss": 0.00015926361083984375
+    },
+    {
+      "text": "route.",
+      "startMs": 13659,
+      "endMs": 13939,
+      "loss": 0.21739991505940756
+    },
+    {
+      "text": "\n",
+      "startMs": 13939,
+      "endMs": 14019,
+      "loss": 5.28125
+    },
+    {
+      "text": "\n",
+      "startMs": 14019,
+      "endMs": 14020,
+      "loss": 2.890625
+    },
+    {
+      "text": "The",
+      "startMs": 15119,
+      "endMs": 15180,
+      "loss": 0.02724456787109375
+    },
+    {
+      "text": " ",
+      "startMs": 15180,
+      "endMs": 15239,
+      "loss": 0.00323486328125
+    },
+    {
+      "text": "way",
+      "startMs": 15239,
+      "endMs": 15439,
+      "loss": 0.005352973937988281
+    },
+    {
+      "text": " ",
+      "startMs": 15439,
+      "endMs": 15500,
+      "loss": 0.000675201416015625
+    },
+    {
+      "text": "forward",
+      "startMs": 15500,
+      "endMs": 16199,
+      "loss": 0.0001012427466256278
+    },
+    {
+      "text": " ",
+      "startMs": 16199,
+      "endMs": 16279,
+      "loss": 0.019287109375
+    },
+    {
+      "text": "is",
+      "startMs": 16279,
+      "endMs": 16379,
+      "loss": 0.0013103485107421875
+    },
+    {
+      "text": " ",
+      "startMs": 16379,
+      "endMs": 16479,
+      "loss": 8.869171142578125e-05
+    },
+    {
+      "text": "open.",
+      "startMs": 16479,
+      "endMs": 16799,
+      "loss": 0.22643556594848632
+    },
+    {
+      "text": "\n",
+      "startMs": 16799,
+      "endMs": 17559,
+      "loss": 6.40625
+    },
+    {
+      "text": "\n",
+      "startMs": 17559,
+      "endMs": 17619,
+      "loss": 3.953125
+    },
+    {
+      "text": "Mission",
+      "startMs": 17619,
+      "endMs": 17979,
+      "loss": 0.03087329864501953
+    },
+    {
+      "text": " ",
+      "startMs": 17979,
+      "endMs": 18399,
+      "loss": 0.07470703125
+    },
+    {
+      "text": "accomplished.",
+      "startMs": 18399,
+      "endMs": 19059,
+      "loss": 0.20729544529548058
+    }
+  ]
+}

@@ -1,0 +1,486 @@
+{
+  "schemaVersion": 1,
+  "id": "deadly.objective-regeneration-sphere",
+  "text": "Emerald light spills outward from the sphere.\n\nDamaged armor begins knitting together. Failing systems stabilize. Wounds that should have been fatal seem to hesitate at the edge of death.\n\nSomething within this field refuses to let the fallen die.",
+  "durationMs": 17502,
+  "scriptHash": "bd48d32da9f3f9dc0712026a95d5cb80cd883ca62232995b02edca04e2aac73a",
+  "audioHash": "bbbf170010f27e2ee1d4dc43ed5c538fbab1dda10e43548a94645b27fe52bbed",
+  "alignmentLoss": 0.15726069738025125,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "Emerald",
+      "startMs": 199,
+      "endMs": 560,
+      "loss": 0.2648282051086426
+    },
+    {
+      "text": " ",
+      "startMs": 560,
+      "endMs": 639,
+      "loss": 0.002105712890625
+    },
+    {
+      "text": "light",
+      "startMs": 639,
+      "endMs": 1039,
+      "loss": 0.010117816925048827
+    },
+    {
+      "text": " ",
+      "startMs": 1039,
+      "endMs": 1079,
+      "loss": 0.00933837890625
+    },
+    {
+      "text": "spills",
+      "startMs": 1079,
+      "endMs": 1519,
+      "loss": 0.002445220947265625
+    },
+    {
+      "text": " ",
+      "startMs": 1519,
+      "endMs": 1599,
+      "loss": 0.0009918212890625
+    },
+    {
+      "text": "outward",
+      "startMs": 1599,
+      "endMs": 1959,
+      "loss": 0.003569534846714565
+    },
+    {
+      "text": " ",
+      "startMs": 1959,
+      "endMs": 1999,
+      "loss": 0.00067901611328125
+    },
+    {
+      "text": "from",
+      "startMs": 2000,
+      "endMs": 2139,
+      "loss": 0.0005362629890441895
+    },
+    {
+      "text": " ",
+      "startMs": 2139,
+      "endMs": 2159,
+      "loss": 5.125999450683594e-05
+    },
+    {
+      "text": "the",
+      "startMs": 2159,
+      "endMs": 2200,
+      "loss": 0.000682671864827474
+    },
+    {
+      "text": " ",
+      "startMs": 2200,
+      "endMs": 2259,
+      "loss": 0.000255584716796875
+    },
+    {
+      "text": "sphere.",
+      "startMs": 2259,
+      "endMs": 2619,
+      "loss": 0.05134187425885882
+    },
+    {
+      "text": "\n",
+      "startMs": 2619,
+      "endMs": 3379,
+      "loss": 9.25
+    },
+    {
+      "text": "\n",
+      "startMs": 3379,
+      "endMs": 3419,
+      "loss": 4.53125
+    },
+    {
+      "text": "Damaged",
+      "startMs": 3419,
+      "endMs": 3839,
+      "loss": 0.07569684301103864
+    },
+    {
+      "text": " ",
+      "startMs": 3839,
+      "endMs": 3939,
+      "loss": 0.000370025634765625
+    },
+    {
+      "text": "armor",
+      "startMs": 3939,
+      "endMs": 4239,
+      "loss": 0.05214204788208008
+    },
+    {
+      "text": " ",
+      "startMs": 4239,
+      "endMs": 4299,
+      "loss": 0.000762939453125
+    },
+    {
+      "text": "begins",
+      "startMs": 4299,
+      "endMs": 4619,
+      "loss": 0.00042267640431722003
+    },
+    {
+      "text": " ",
+      "startMs": 4619,
+      "endMs": 4699,
+      "loss": 0.0004367828369140625
+    },
+    {
+      "text": "knitting",
+      "startMs": 4699,
+      "endMs": 5019,
+      "loss": 0.0009295046329498291
+    },
+    {
+      "text": " ",
+      "startMs": 5019,
+      "endMs": 5039,
+      "loss": 0.00099945068359375
+    },
+    {
+      "text": "together.",
+      "startMs": 5039,
+      "endMs": 5420,
+      "loss": 0.304460777176751
+    },
+    {
+      "text": " ",
+      "startMs": 5420,
+      "endMs": 5939,
+      "loss": 0.166015625
+    },
+    {
+      "text": "Failing",
+      "startMs": 5940,
+      "endMs": 6359,
+      "loss": 0.0048667362758091515
+    },
+    {
+      "text": " ",
+      "startMs": 6359,
+      "endMs": 6399,
+      "loss": 0.0023651123046875
+    },
+    {
+      "text": "systems",
+      "startMs": 6399,
+      "endMs": 7079,
+      "loss": 0.00134519168308803
+    },
+    {
+      "text": " ",
+      "startMs": 7079,
+      "endMs": 7179,
+      "loss": 0.0020294189453125
+    },
+    {
+      "text": "stabilize.",
+      "startMs": 7179,
+      "endMs": 7939,
+      "loss": 0.028759026527404787
+    },
+    {
+      "text": " ",
+      "startMs": 7939,
+      "endMs": 7940,
+      "loss": 0.019287109375
+    },
+    {
+      "text": "Wounds",
+      "startMs": 9139,
+      "endMs": 9539,
+      "loss": 0.002315521240234375
+    },
+    {
+      "text": " ",
+      "startMs": 9539,
+      "endMs": 9559,
+      "loss": 0.000644683837890625
+    },
+    {
+      "text": "that",
+      "startMs": 9559,
+      "endMs": 9699,
+      "loss": 0.0005021095275878906
+    },
+    {
+      "text": " ",
+      "startMs": 9699,
+      "endMs": 9719,
+      "loss": 0.0002841949462890625
+    },
+    {
+      "text": "should",
+      "startMs": 9719,
+      "endMs": 9820,
+      "loss": 0.0005482832590738932
+    },
+    {
+      "text": " ",
+      "startMs": 9820,
+      "endMs": 9840,
+      "loss": 0.0142822265625
+    },
+    {
+      "text": "have",
+      "startMs": 9840,
+      "endMs": 9920,
+      "loss": 0.009675025939941406
+    },
+    {
+      "text": " ",
+      "startMs": 9920,
+      "endMs": 9939,
+      "loss": 6.29425048828125e-05
+    },
+    {
+      "text": "been",
+      "startMs": 9939,
+      "endMs": 10060,
+      "loss": 0.00038874149322509766
+    },
+    {
+      "text": " ",
+      "startMs": 10060,
+      "endMs": 10199,
+      "loss": 4.410743713378906e-05
+    },
+    {
+      "text": "fatal",
+      "startMs": 10199,
+      "endMs": 10599,
+      "loss": 0.0008262395858764648
+    },
+    {
+      "text": " ",
+      "startMs": 10599,
+      "endMs": 10639,
+      "loss": 0.00567626953125
+    },
+    {
+      "text": "seem",
+      "startMs": 10639,
+      "endMs": 10800,
+      "loss": 0.0011458992958068848
+    },
+    {
+      "text": " ",
+      "startMs": 10800,
+      "endMs": 10819,
+      "loss": 0.04638671875
+    },
+    {
+      "text": "to",
+      "startMs": 10819,
+      "endMs": 10940,
+      "loss": 0.001453399658203125
+    },
+    {
+      "text": " ",
+      "startMs": 10940,
+      "endMs": 10941,
+      "loss": 0.0001811981201171875
+    },
+    {
+      "text": "hesitate",
+      "startMs": 10941,
+      "endMs": 11420,
+      "loss": 0.0006503313779830933
+    },
+    {
+      "text": " ",
+      "startMs": 11420,
+      "endMs": 11460,
+      "loss": 0.00160980224609375
+    },
+    {
+      "text": "at",
+      "startMs": 11460,
+      "endMs": 11539,
+      "loss": 0.0007035732269287109
+    },
+    {
+      "text": " ",
+      "startMs": 11539,
+      "endMs": 11559,
+      "loss": 0.00063323974609375
+    },
+    {
+      "text": "the",
+      "startMs": 11559,
+      "endMs": 11680,
+      "loss": 0.00043646494547526043
+    },
+    {
+      "text": " ",
+      "startMs": 11680,
+      "endMs": 11699,
+      "loss": 0.00055694580078125
+    },
+    {
+      "text": "edge",
+      "startMs": 11699,
+      "endMs": 11860,
+      "loss": 0.00568389892578125
+    },
+    {
+      "text": " ",
+      "startMs": 11860,
+      "endMs": 11880,
+      "loss": 0.000484466552734375
+    },
+    {
+      "text": "of",
+      "startMs": 11880,
+      "endMs": 12020,
+      "loss": 0.0004658699035644531
+    },
+    {
+      "text": " ",
+      "startMs": 12020,
+      "endMs": 12039,
+      "loss": 6.103515625e-05
+    },
+    {
+      "text": "death.",
+      "startMs": 12039,
+      "endMs": 13179,
+      "loss": 0.016318400700887043
+    },
+    {
+      "text": "\n",
+      "startMs": 13179,
+      "endMs": 13199,
+      "loss": 10.375
+    },
+    {
+      "text": "\n",
+      "startMs": 13199,
+      "endMs": 13259,
+      "loss": 7.75
+    },
+    {
+      "text": "Something",
+      "startMs": 13259,
+      "endMs": 13659,
+      "loss": 0.007399135165744358
+    },
+    {
+      "text": " ",
+      "startMs": 13659,
+      "endMs": 13699,
+      "loss": 0.00074005126953125
+    },
+    {
+      "text": "within",
+      "startMs": 13699,
+      "endMs": 14000,
+      "loss": 0.003124237060546875
+    },
+    {
+      "text": " ",
+      "startMs": 14000,
+      "endMs": 14019,
+      "loss": 0.0007781982421875
+    },
+    {
+      "text": "this",
+      "startMs": 14019,
+      "endMs": 14199,
+      "loss": 0.002536296844482422
+    },
+    {
+      "text": " ",
+      "startMs": 14199,
+      "endMs": 14279,
+      "loss": 8.058547973632812e-05
+    },
+    {
+      "text": "field",
+      "startMs": 14279,
+      "endMs": 14579,
+      "loss": 0.0008429527282714844
+    },
+    {
+      "text": " ",
+      "startMs": 14579,
+      "endMs": 14639,
+      "loss": 0.000652313232421875
+    },
+    {
+      "text": "refuses",
+      "startMs": 14639,
+      "endMs": 15259,
+      "loss": 0.0006699562072753906
+    },
+    {
+      "text": " ",
+      "startMs": 15259,
+      "endMs": 15279,
+      "loss": 0.00157928466796875
+    },
+    {
+      "text": "to",
+      "startMs": 15279,
+      "endMs": 15400,
+      "loss": 0.0011920928955078125
+    },
+    {
+      "text": " ",
+      "startMs": 15400,
+      "endMs": 15420,
+      "loss": 0.000934600830078125
+    },
+    {
+      "text": "let",
+      "startMs": 15420,
+      "endMs": 15560,
+      "loss": 0.0006650288899739584
+    },
+    {
+      "text": " ",
+      "startMs": 15560,
+      "endMs": 15579,
+      "loss": 0.000598907470703125
+    },
+    {
+      "text": "the",
+      "startMs": 15579,
+      "endMs": 15699,
+      "loss": 0.0010420481363932292
+    },
+    {
+      "text": " ",
+      "startMs": 15699,
+      "endMs": 15739,
+      "loss": 0.0003337860107421875
+    },
+    {
+      "text": "fallen",
+      "startMs": 15739,
+      "endMs": 16100,
+      "loss": 0.012835184733072916
+    },
+    {
+      "text": " ",
+      "startMs": 16100,
+      "endMs": 16180,
+      "loss": 0.00341796875
+    },
+    {
+      "text": "die.",
+      "startMs": 16180,
+      "endMs": 16500,
+      "loss": 0.02063751220703125
+    }
+  ]
+}

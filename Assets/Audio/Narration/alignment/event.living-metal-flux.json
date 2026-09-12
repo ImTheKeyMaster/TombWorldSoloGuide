@@ -1,0 +1,426 @@
+{
+  "schemaVersion": 1,
+  "id": "event.living-metal-flux",
+  "text": "The damaged constructs begin to change.\n\nLiving metal flows across broken armor like liquid mercury, filling fractures and rebuilding what your weapons tore away.\n\nAcross the crypt, the tomb's wounded defenders are repairing themselves.",
+  "durationMs": 14655,
+  "scriptHash": "8d0a11d95ed60566d5ec4af2bef41a75a33f8be24b279032c22541b2fa4b29e2",
+  "audioHash": "abd9d4ef3570ceefdb407f3e048ea313e3be266c55ffae803beb1f4078af8be4",
+  "alignmentLoss": 0.17421208397816804,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "The",
+      "startMs": 79,
+      "endMs": 179,
+      "loss": 2.0320409138997397
+    },
+    {
+      "text": " ",
+      "startMs": 179,
+      "endMs": 199,
+      "loss": 0.0001430511474609375
+    },
+    {
+      "text": "damaged",
+      "startMs": 199,
+      "endMs": 579,
+      "loss": 0.0008661065782819476
+    },
+    {
+      "text": " ",
+      "startMs": 579,
+      "endMs": 659,
+      "loss": 0.000171661376953125
+    },
+    {
+      "text": "constructs",
+      "startMs": 659,
+      "endMs": 1179,
+      "loss": 0.00020656585693359374
+    },
+    {
+      "text": " ",
+      "startMs": 1179,
+      "endMs": 1219,
+      "loss": 0.000576019287109375
+    },
+    {
+      "text": "begin",
+      "startMs": 1220,
+      "endMs": 1399,
+      "loss": 0.0003864288330078125
+    },
+    {
+      "text": " ",
+      "startMs": 1399,
+      "endMs": 1480,
+      "loss": 0.00112152099609375
+    },
+    {
+      "text": "to",
+      "startMs": 1480,
+      "endMs": 1579,
+      "loss": 0.000245511531829834
+    },
+    {
+      "text": " ",
+      "startMs": 1579,
+      "endMs": 1619,
+      "loss": 2.47955322265625e-05
+    },
+    {
+      "text": "change.",
+      "startMs": 1620,
+      "endMs": 2059,
+      "loss": 0.02767700808388846
+    },
+    {
+      "text": "\n",
+      "startMs": 2059,
+      "endMs": 2779,
+      "loss": 13.4375
+    },
+    {
+      "text": "\n",
+      "startMs": 2779,
+      "endMs": 2819,
+      "loss": 6.28125
+    },
+    {
+      "text": "Living",
+      "startMs": 2819,
+      "endMs": 3019,
+      "loss": 0.03424417972564697
+    },
+    {
+      "text": " ",
+      "startMs": 3019,
+      "endMs": 3099,
+      "loss": 0.005401611328125
+    },
+    {
+      "text": "metal",
+      "startMs": 3099,
+      "endMs": 3419,
+      "loss": 0.0012822628021240234
+    },
+    {
+      "text": " ",
+      "startMs": 3419,
+      "endMs": 3479,
+      "loss": 0.00909423828125
+    },
+    {
+      "text": "flows",
+      "startMs": 3480,
+      "endMs": 3740,
+      "loss": 0.00032153129577636717
+    },
+    {
+      "text": " ",
+      "startMs": 3740,
+      "endMs": 3839,
+      "loss": 7.963180541992188e-05
+    },
+    {
+      "text": "across",
+      "startMs": 3839,
+      "endMs": 4159,
+      "loss": 0.00018781423568725586
+    },
+    {
+      "text": " ",
+      "startMs": 4159,
+      "endMs": 4219,
+      "loss": 9.441375732421875e-05
+    },
+    {
+      "text": "broken",
+      "startMs": 4219,
+      "endMs": 4539,
+      "loss": 0.0003579854965209961
+    },
+    {
+      "text": " ",
+      "startMs": 4539,
+      "endMs": 4619,
+      "loss": 0.0003261566162109375
+    },
+    {
+      "text": "armor",
+      "startMs": 4619,
+      "endMs": 4919,
+      "loss": 0.020405340194702148
+    },
+    {
+      "text": " ",
+      "startMs": 4919,
+      "endMs": 4980,
+      "loss": 0.0244140625
+    },
+    {
+      "text": "like",
+      "startMs": 4980,
+      "endMs": 5139,
+      "loss": 0.0005297362804412842
+    },
+    {
+      "text": " ",
+      "startMs": 5139,
+      "endMs": 5239,
+      "loss": 2.872943878173828e-05
+    },
+    {
+      "text": "liquid",
+      "startMs": 5239,
+      "endMs": 5559,
+      "loss": 0.003260751565297445
+    },
+    {
+      "text": " ",
+      "startMs": 5559,
+      "endMs": 5599,
+      "loss": 0.00179290771484375
+    },
+    {
+      "text": "mercury,",
+      "startMs": 5599,
+      "endMs": 6039,
+      "loss": 0.005841478705406189
+    },
+    {
+      "text": " ",
+      "startMs": 6039,
+      "endMs": 6439,
+      "loss": 6.4849853515625e-05
+    },
+    {
+      "text": "filling",
+      "startMs": 6440,
+      "endMs": 6679,
+      "loss": 0.00023765223366873606
+    },
+    {
+      "text": " ",
+      "startMs": 6679,
+      "endMs": 6759,
+      "loss": 0.00020885467529296875
+    },
+    {
+      "text": "fractures",
+      "startMs": 6759,
+      "endMs": 7219,
+      "loss": 0.00028440687391493056
+    },
+    {
+      "text": " ",
+      "startMs": 7219,
+      "endMs": 7259,
+      "loss": 0.00421142578125
+    },
+    {
+      "text": "and",
+      "startMs": 7259,
+      "endMs": 7359,
+      "loss": 0.0005419254302978516
+    },
+    {
+      "text": " ",
+      "startMs": 7359,
+      "endMs": 7419,
+      "loss": 1.2755393981933594e-05
+    },
+    {
+      "text": "rebuilding",
+      "startMs": 7419,
+      "endMs": 7960,
+      "loss": 0.0008318185806274414
+    },
+    {
+      "text": " ",
+      "startMs": 7960,
+      "endMs": 8000,
+      "loss": 0.00064849853515625
+    },
+    {
+      "text": "what",
+      "startMs": 8000,
+      "endMs": 8159,
+      "loss": 0.0006585121154785156
+    },
+    {
+      "text": " ",
+      "startMs": 8159,
+      "endMs": 8220,
+      "loss": 5.626678466796875e-05
+    },
+    {
+      "text": "your",
+      "startMs": 8220,
+      "endMs": 8340,
+      "loss": 0.0004513263702392578
+    },
+    {
+      "text": " ",
+      "startMs": 8340,
+      "endMs": 8439,
+      "loss": 3.170967102050781e-05
+    },
+    {
+      "text": "weapons",
+      "startMs": 8439,
+      "endMs": 8840,
+      "loss": 0.0006337847028459821
+    },
+    {
+      "text": " ",
+      "startMs": 8840,
+      "endMs": 8939,
+      "loss": 0.00102996826171875
+    },
+    {
+      "text": "tore",
+      "startMs": 8939,
+      "endMs": 9159,
+      "loss": 0.0007134675979614258
+    },
+    {
+      "text": " ",
+      "startMs": 9159,
+      "endMs": 9239,
+      "loss": 0.0004749298095703125
+    },
+    {
+      "text": "away.",
+      "startMs": 9239,
+      "endMs": 9599,
+      "loss": 0.006570672988891602
+    },
+    {
+      "text": "\n",
+      "startMs": 9599,
+      "endMs": 10500,
+      "loss": 9.125
+    },
+    {
+      "text": "\n",
+      "startMs": 10500,
+      "endMs": 10519,
+      "loss": 4.1875
+    },
+    {
+      "text": "Across",
+      "startMs": 10519,
+      "endMs": 10859,
+      "loss": 0.01770402987798055
+    },
+    {
+      "text": " ",
+      "startMs": 10859,
+      "endMs": 10899,
+      "loss": 0.00011539459228515625
+    },
+    {
+      "text": "the",
+      "startMs": 10899,
+      "endMs": 11000,
+      "loss": 0.0002853870391845703
+    },
+    {
+      "text": " ",
+      "startMs": 11000,
+      "endMs": 11039,
+      "loss": 0.00021648406982421875
+    },
+    {
+      "text": "crypt,",
+      "startMs": 11039,
+      "endMs": 11320,
+      "loss": 0.014278570810953775
+    },
+    {
+      "text": " ",
+      "startMs": 11320,
+      "endMs": 11759,
+      "loss": 8.7738037109375e-05
+    },
+    {
+      "text": "the",
+      "startMs": 11759,
+      "endMs": 11840,
+      "loss": 0.0010223388671875
+    },
+    {
+      "text": " ",
+      "startMs": 11840,
+      "endMs": 11880,
+      "loss": 0.0002002716064453125
+    },
+    {
+      "text": "tomb's",
+      "startMs": 11880,
+      "endMs": 12279,
+      "loss": 0.02446746826171875
+    },
+    {
+      "text": " ",
+      "startMs": 12279,
+      "endMs": 12340,
+      "loss": 0.000293731689453125
+    },
+    {
+      "text": "wounded",
+      "startMs": 12340,
+      "endMs": 12659,
+      "loss": 0.0002550908497401646
+    },
+    {
+      "text": " ",
+      "startMs": 12659,
+      "endMs": 12699,
+      "loss": 0.0009613037109375
+    },
+    {
+      "text": "defenders",
+      "startMs": 12699,
+      "endMs": 13199,
+      "loss": 0.0017247200012207031
+    },
+    {
+      "text": " ",
+      "startMs": 13199,
+      "endMs": 13259,
+      "loss": 0.00098419189453125
+    },
+    {
+      "text": "are",
+      "startMs": 13259,
+      "endMs": 13340,
+      "loss": 0.0006362199783325195
+    },
+    {
+      "text": " ",
+      "startMs": 13340,
+      "endMs": 13380,
+      "loss": 4.2438507080078125e-05
+    },
+    {
+      "text": "repairing",
+      "startMs": 13380,
+      "endMs": 13840,
+      "loss": 0.00018715858459472656
+    },
+    {
+      "text": " ",
+      "startMs": 13840,
+      "endMs": 13880,
+      "loss": 0.000553131103515625
+    },
+    {
+      "text": "themselves.",
+      "startMs": 13880,
+      "endMs": 14399,
+      "loss": 0.08358634601939809
+    }
+  ]
+}

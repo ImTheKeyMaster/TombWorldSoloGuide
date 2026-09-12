@@ -1,0 +1,486 @@
+{
+  "schemaVersion": 1,
+  "id": "deadly.objective-amplification-matrix",
+  "text": "The matrix erupts with power.\n\nEnergy races outward and gathers around nearby weapons, feeding them far beyond their normal limits. Barrels glow. Blades crackle. Every strike promises devastating force.\n\nBut power drawn from the tomb is never without risk.",
+  "durationMs": 18704,
+  "scriptHash": "5e09bc5a2a292de581ec9f63856b96f179f3500d21820f3eb0246433a4a666fb",
+  "audioHash": "2f693381b56bcf6ce44ecfc0eb579d816a8abda1c0af1bc349cde3a46c88db34",
+  "alignmentLoss": 0.20148561149835587,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "The",
+      "startMs": 79,
+      "endMs": 159,
+      "loss": 0.7954305013020834
+    },
+    {
+      "text": " ",
+      "startMs": 159,
+      "endMs": 219,
+      "loss": 4.363059997558594e-05
+    },
+    {
+      "text": "matrix",
+      "startMs": 219,
+      "endMs": 659,
+      "loss": 0.0793909231821696
+    },
+    {
+      "text": " ",
+      "startMs": 659,
+      "endMs": 739,
+      "loss": 0.000865936279296875
+    },
+    {
+      "text": "erupts",
+      "startMs": 740,
+      "endMs": 1220,
+      "loss": 0.0003782312075297038
+    },
+    {
+      "text": " ",
+      "startMs": 1220,
+      "endMs": 1259,
+      "loss": 0.0003509521484375
+    },
+    {
+      "text": "with",
+      "startMs": 1259,
+      "endMs": 1360,
+      "loss": 0.00020295381546020508
+    },
+    {
+      "text": " ",
+      "startMs": 1360,
+      "endMs": 1500,
+      "loss": 7.152557373046875e-05
+    },
+    {
+      "text": "power.",
+      "startMs": 1500,
+      "endMs": 1860,
+      "loss": 0.16364947954813638
+    },
+    {
+      "text": "\n",
+      "startMs": 1860,
+      "endMs": 2339,
+      "loss": 13.6875
+    },
+    {
+      "text": "\n",
+      "startMs": 2339,
+      "endMs": 2399,
+      "loss": 8.9375
+    },
+    {
+      "text": "Energy",
+      "startMs": 2399,
+      "endMs": 2700,
+      "loss": 0.017650067806243896
+    },
+    {
+      "text": " ",
+      "startMs": 2700,
+      "endMs": 2819,
+      "loss": 0.0003223419189453125
+    },
+    {
+      "text": "races",
+      "startMs": 2819,
+      "endMs": 3159,
+      "loss": 0.0016847610473632812
+    },
+    {
+      "text": " ",
+      "startMs": 3159,
+      "endMs": 3299,
+      "loss": 7.43865966796875e-05
+    },
+    {
+      "text": "outward",
+      "startMs": 3299,
+      "endMs": 3679,
+      "loss": 0.00018211773463657925
+    },
+    {
+      "text": " ",
+      "startMs": 3679,
+      "endMs": 3719,
+      "loss": 0.01544189453125
+    },
+    {
+      "text": "and",
+      "startMs": 3720,
+      "endMs": 3879,
+      "loss": 0.0006162722905476888
+    },
+    {
+      "text": " ",
+      "startMs": 3879,
+      "endMs": 3959,
+      "loss": 6.318092346191406e-06
+    },
+    {
+      "text": "gathers",
+      "startMs": 3959,
+      "endMs": 4239,
+      "loss": 0.00042998790740966797
+    },
+    {
+      "text": " ",
+      "startMs": 4239,
+      "endMs": 4319,
+      "loss": 3.933906555175781e-05
+    },
+    {
+      "text": "around",
+      "startMs": 4319,
+      "endMs": 4639,
+      "loss": 0.00024272998174031576
+    },
+    {
+      "text": " ",
+      "startMs": 4639,
+      "endMs": 4739,
+      "loss": 0.00025177001953125
+    },
+    {
+      "text": "nearby",
+      "startMs": 4739,
+      "endMs": 5159,
+      "loss": 0.00032389163970947266
+    },
+    {
+      "text": " ",
+      "startMs": 5159,
+      "endMs": 5219,
+      "loss": 8.249282836914062e-05
+    },
+    {
+      "text": "weapons,",
+      "startMs": 5219,
+      "endMs": 5579,
+      "loss": 0.009194031357765198
+    },
+    {
+      "text": " ",
+      "startMs": 5579,
+      "endMs": 6000,
+      "loss": 2.7060508728027344e-05
+    },
+    {
+      "text": "feeding",
+      "startMs": 6000,
+      "endMs": 6279,
+      "loss": 0.00013623918805803572
+    },
+    {
+      "text": " ",
+      "startMs": 6279,
+      "endMs": 6319,
+      "loss": 9.72747802734375e-05
+    },
+    {
+      "text": "them",
+      "startMs": 6319,
+      "endMs": 6519,
+      "loss": 0.00038817524909973145
+    },
+    {
+      "text": " ",
+      "startMs": 6519,
+      "endMs": 6599,
+      "loss": 0.000408172607421875
+    },
+    {
+      "text": "far",
+      "startMs": 6599,
+      "endMs": 6759,
+      "loss": 0.00041635831197102863
+    },
+    {
+      "text": " ",
+      "startMs": 6759,
+      "endMs": 6879,
+      "loss": 0.0003261566162109375
+    },
+    {
+      "text": "beyond",
+      "startMs": 6879,
+      "endMs": 7179,
+      "loss": 0.0001371304194132487
+    },
+    {
+      "text": " ",
+      "startMs": 7179,
+      "endMs": 7219,
+      "loss": 0.000171661376953125
+    },
+    {
+      "text": "their",
+      "startMs": 7219,
+      "endMs": 7359,
+      "loss": 0.00034635066986083985
+    },
+    {
+      "text": " ",
+      "startMs": 7359,
+      "endMs": 7439,
+      "loss": 6.4849853515625e-05
+    },
+    {
+      "text": "normal",
+      "startMs": 7440,
+      "endMs": 7679,
+      "loss": 0.00020666917165120444
+    },
+    {
+      "text": " ",
+      "startMs": 7679,
+      "endMs": 7779,
+      "loss": 0.00049591064453125
+    },
+    {
+      "text": "limits.",
+      "startMs": 7779,
+      "endMs": 8159,
+      "loss": 0.014470015253339494
+    },
+    {
+      "text": " ",
+      "startMs": 8159,
+      "endMs": 8579,
+      "loss": 0.0024871826171875
+    },
+    {
+      "text": "Barrels",
+      "startMs": 8579,
+      "endMs": 9019,
+      "loss": 0.001468385968889509
+    },
+    {
+      "text": " ",
+      "startMs": 9019,
+      "endMs": 9139,
+      "loss": 0.000698089599609375
+    },
+    {
+      "text": "glow.",
+      "startMs": 9139,
+      "endMs": 9559,
+      "loss": 0.33340015411376955
+    },
+    {
+      "text": " ",
+      "startMs": 9559,
+      "endMs": 10019,
+      "loss": 0.01507568359375
+    },
+    {
+      "text": "Blades",
+      "startMs": 10019,
+      "endMs": 10500,
+      "loss": 0.021567583084106445
+    },
+    {
+      "text": " ",
+      "startMs": 10500,
+      "endMs": 10559,
+      "loss": 0.0107421875
+    },
+    {
+      "text": "crackle.",
+      "startMs": 10559,
+      "endMs": 10979,
+      "loss": 0.026611626148223877
+    },
+    {
+      "text": " ",
+      "startMs": 10979,
+      "endMs": 11599,
+      "loss": 0.0140380859375
+    },
+    {
+      "text": "Every",
+      "startMs": 11599,
+      "endMs": 11840,
+      "loss": 0.00022730827331542968
+    },
+    {
+      "text": " ",
+      "startMs": 11840,
+      "endMs": 12000,
+      "loss": 0.00011873245239257812
+    },
+    {
+      "text": "strike",
+      "startMs": 12000,
+      "endMs": 12399,
+      "loss": 0.0005976160367329916
+    },
+    {
+      "text": " ",
+      "startMs": 12399,
+      "endMs": 12460,
+      "loss": 0.000946044921875
+    },
+    {
+      "text": "promises",
+      "startMs": 12460,
+      "endMs": 12899,
+      "loss": 0.0002884864807128906
+    },
+    {
+      "text": " ",
+      "startMs": 12899,
+      "endMs": 13079,
+      "loss": 0.0004291534423828125
+    },
+    {
+      "text": "devastating",
+      "startMs": 13079,
+      "endMs": 13699,
+      "loss": 0.00025750290263782847
+    },
+    {
+      "text": " ",
+      "startMs": 13699,
+      "endMs": 13859,
+      "loss": 0.000812530517578125
+    },
+    {
+      "text": "force.",
+      "startMs": 13859,
+      "endMs": 14239,
+      "loss": 0.23594256242116293
+    },
+    {
+      "text": "\n",
+      "startMs": 14239,
+      "endMs": 14819,
+      "loss": 8.6875
+    },
+    {
+      "text": "\n",
+      "startMs": 14819,
+      "endMs": 14839,
+      "loss": 6.75
+    },
+    {
+      "text": "But",
+      "startMs": 14839,
+      "endMs": 14939,
+      "loss": 0.002083937327067057
+    },
+    {
+      "text": " ",
+      "startMs": 14939,
+      "endMs": 15079,
+      "loss": 0.00157928466796875
+    },
+    {
+      "text": "power",
+      "startMs": 15079,
+      "endMs": 15380,
+      "loss": 0.0014990806579589845
+    },
+    {
+      "text": " ",
+      "startMs": 15380,
+      "endMs": 15599,
+      "loss": 0.90234375
+    },
+    {
+      "text": "drawn",
+      "startMs": 15599,
+      "endMs": 15919,
+      "loss": 0.02587413787841797
+    },
+    {
+      "text": " ",
+      "startMs": 15919,
+      "endMs": 15960,
+      "loss": 0.00130462646484375
+    },
+    {
+      "text": "from",
+      "startMs": 15960,
+      "endMs": 16100,
+      "loss": 0.0001570284366607666
+    },
+    {
+      "text": " ",
+      "startMs": 16100,
+      "endMs": 16119,
+      "loss": 4.839897155761719e-05
+    },
+    {
+      "text": "the",
+      "startMs": 16119,
+      "endMs": 16180,
+      "loss": 0.0005559921264648438
+    },
+    {
+      "text": " ",
+      "startMs": 16180,
+      "endMs": 16299,
+      "loss": 3.933906555175781e-05
+    },
+    {
+      "text": "tomb",
+      "startMs": 16299,
+      "endMs": 16639,
+      "loss": 0.007797956466674805
+    },
+    {
+      "text": " ",
+      "startMs": 16639,
+      "endMs": 17179,
+      "loss": 3.71875
+    },
+    {
+      "text": "is",
+      "startMs": 17180,
+      "endMs": 17299,
+      "loss": 0.048058509826660156
+    },
+    {
+      "text": " ",
+      "startMs": 17299,
+      "endMs": 17399,
+      "loss": 3.24249267578125e-05
+    },
+    {
+      "text": "never",
+      "startMs": 17399,
+      "endMs": 17600,
+      "loss": 0.00018341541290283202
+    },
+    {
+      "text": " ",
+      "startMs": 17600,
+      "endMs": 17680,
+      "loss": 0.00022029876708984375
+    },
+    {
+      "text": "without",
+      "startMs": 17680,
+      "endMs": 18020,
+      "loss": 0.0001267875943865095
+    },
+    {
+      "text": " ",
+      "startMs": 18020,
+      "endMs": 18139,
+      "loss": 0.000396728515625
+    },
+    {
+      "text": "risk.",
+      "startMs": 18139,
+      "endMs": 18459,
+      "loss": 0.1910247802734375
+    }
+  ]
+}

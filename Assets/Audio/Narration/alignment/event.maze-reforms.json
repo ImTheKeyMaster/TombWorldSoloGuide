@@ -1,0 +1,516 @@
+{
+  "schemaVersion": 1,
+  "id": "event.maze-reforms",
+  "text": "The chamber shudders.\n\nWalls slide across one another with impossible precision. A route you forced open begins sealing itself while other passages grind apart elsewhere in the crypt.\n\nThe maze has changed again.\n\nAdjust the battlefield to match the new configuration.",
+  "durationMs": 18625,
+  "scriptHash": "6130047b7c4a63d808ed91f70a97552235e06034295f44b6e8e357ab8c8c3bd9",
+  "audioHash": "e332bd0ddd584789a68fecbc21e0d8c7322e20bf8b86dcacd9d99aef8583377d",
+  "alignmentLoss": 0.20620840254114636,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "The",
+      "startMs": 79,
+      "endMs": 140,
+      "loss": 1.1988754272460938
+    },
+    {
+      "text": " ",
+      "startMs": 140,
+      "endMs": 219,
+      "loss": 3.4332275390625e-05
+    },
+    {
+      "text": "chamber",
+      "startMs": 219,
+      "endMs": 639,
+      "loss": 0.0020700182233537945
+    },
+    {
+      "text": " ",
+      "startMs": 639,
+      "endMs": 879,
+      "loss": 0.0019683837890625
+    },
+    {
+      "text": "shudders.",
+      "startMs": 879,
+      "endMs": 1319,
+      "loss": 0.12659651703304714
+    },
+    {
+      "text": "\n",
+      "startMs": 1319,
+      "endMs": 2079,
+      "loss": 12.5
+    },
+    {
+      "text": "\n",
+      "startMs": 2079,
+      "endMs": 2139,
+      "loss": 6.03125
+    },
+    {
+      "text": "Walls",
+      "startMs": 2139,
+      "endMs": 2559,
+      "loss": 0.029848051071166993
+    },
+    {
+      "text": " ",
+      "startMs": 2559,
+      "endMs": 2799,
+      "loss": 0.00038909912109375
+    },
+    {
+      "text": "slide",
+      "startMs": 2799,
+      "endMs": 3119,
+      "loss": 0.0003110408782958984
+    },
+    {
+      "text": " ",
+      "startMs": 3119,
+      "endMs": 3219,
+      "loss": 0.000431060791015625
+    },
+    {
+      "text": "across",
+      "startMs": 3220,
+      "endMs": 3480,
+      "loss": 0.00011283159255981445
+    },
+    {
+      "text": " ",
+      "startMs": 3480,
+      "endMs": 3539,
+      "loss": 0.000766754150390625
+    },
+    {
+      "text": "one",
+      "startMs": 3539,
+      "endMs": 3639,
+      "loss": 0.0006029605865478516
+    },
+    {
+      "text": " ",
+      "startMs": 3639,
+      "endMs": 3659,
+      "loss": 0.00041961669921875
+    },
+    {
+      "text": "another",
+      "startMs": 3659,
+      "endMs": 4059,
+      "loss": 0.000113504273550851
+    },
+    {
+      "text": " ",
+      "startMs": 4059,
+      "endMs": 4099,
+      "loss": 0.00946044921875
+    },
+    {
+      "text": "with",
+      "startMs": 4099,
+      "endMs": 4219,
+      "loss": 9.414553642272949e-05
+    },
+    {
+      "text": " ",
+      "startMs": 4219,
+      "endMs": 4259,
+      "loss": 0.00171661376953125
+    },
+    {
+      "text": "impossible",
+      "startMs": 4259,
+      "endMs": 4819,
+      "loss": 0.0002634882926940918
+    },
+    {
+      "text": " ",
+      "startMs": 4819,
+      "endMs": 4920,
+      "loss": 0.00012159347534179688
+    },
+    {
+      "text": "precision.",
+      "startMs": 4920,
+      "endMs": 5420,
+      "loss": 0.010103344917297363
+    },
+    {
+      "text": " ",
+      "startMs": 5420,
+      "endMs": 6339,
+      "loss": 0.006195068359375
+    },
+    {
+      "text": "A",
+      "startMs": 6339,
+      "endMs": 6399,
+      "loss": 0.005279541015625
+    },
+    {
+      "text": " ",
+      "startMs": 6399,
+      "endMs": 6459,
+      "loss": 0.00043487548828125
+    },
+    {
+      "text": "route",
+      "startMs": 6460,
+      "endMs": 6679,
+      "loss": 0.001122593879699707
+    },
+    {
+      "text": " ",
+      "startMs": 6679,
+      "endMs": 6739,
+      "loss": 0.00124359130859375
+    },
+    {
+      "text": "you",
+      "startMs": 6739,
+      "endMs": 6839,
+      "loss": 0.0015080769856770833
+    },
+    {
+      "text": " ",
+      "startMs": 6839,
+      "endMs": 6959,
+      "loss": 0.01190185546875
+    },
+    {
+      "text": "forced",
+      "startMs": 6960,
+      "endMs": 7239,
+      "loss": 0.003581523895263672
+    },
+    {
+      "text": " ",
+      "startMs": 7239,
+      "endMs": 7319,
+      "loss": 0.0022125244140625
+    },
+    {
+      "text": "open",
+      "startMs": 7319,
+      "endMs": 7599,
+      "loss": 0.0008094906806945801
+    },
+    {
+      "text": " ",
+      "startMs": 7599,
+      "endMs": 7659,
+      "loss": 0.005462646484375
+    },
+    {
+      "text": "begins",
+      "startMs": 7659,
+      "endMs": 8059,
+      "loss": 0.00026661157608032227
+    },
+    {
+      "text": " ",
+      "startMs": 8059,
+      "endMs": 8279,
+      "loss": 0.0009918212890625
+    },
+    {
+      "text": "sealing",
+      "startMs": 8279,
+      "endMs": 8579,
+      "loss": 0.0013535703931535994
+    },
+    {
+      "text": " ",
+      "startMs": 8579,
+      "endMs": 8599,
+      "loss": 0.000667572021484375
+    },
+    {
+      "text": "itself",
+      "startMs": 8599,
+      "endMs": 9039,
+      "loss": 0.00024962425231933594
+    },
+    {
+      "text": " ",
+      "startMs": 9039,
+      "endMs": 9139,
+      "loss": 0.06396484375
+    },
+    {
+      "text": "while",
+      "startMs": 9139,
+      "endMs": 9380,
+      "loss": 0.0004834413528442383
+    },
+    {
+      "text": " ",
+      "startMs": 9380,
+      "endMs": 9460,
+      "loss": 6.67572021484375e-05
+    },
+    {
+      "text": "other",
+      "startMs": 9460,
+      "endMs": 9619,
+      "loss": 0.0005235433578491211
+    },
+    {
+      "text": " ",
+      "startMs": 9619,
+      "endMs": 9739,
+      "loss": 0.000644683837890625
+    },
+    {
+      "text": "passages",
+      "startMs": 9739,
+      "endMs": 10239,
+      "loss": 0.0006392151117324829
+    },
+    {
+      "text": " ",
+      "startMs": 10239,
+      "endMs": 10300,
+      "loss": 0.0003376007080078125
+    },
+    {
+      "text": "grind",
+      "startMs": 10300,
+      "endMs": 10619,
+      "loss": 0.0022718429565429686
+    },
+    {
+      "text": " ",
+      "startMs": 10619,
+      "endMs": 10679,
+      "loss": 0.002166748046875
+    },
+    {
+      "text": "apart",
+      "startMs": 10679,
+      "endMs": 11219,
+      "loss": 0.001958465576171875
+    },
+    {
+      "text": " ",
+      "startMs": 11219,
+      "endMs": 11279,
+      "loss": 0.00927734375
+    },
+    {
+      "text": "elsewhere",
+      "startMs": 11279,
+      "endMs": 11840,
+      "loss": 0.00026732020907931856
+    },
+    {
+      "text": " ",
+      "startMs": 11840,
+      "endMs": 11880,
+      "loss": 0.00787353515625
+    },
+    {
+      "text": "in",
+      "startMs": 11880,
+      "endMs": 11960,
+      "loss": 0.0006391406059265137
+    },
+    {
+      "text": " ",
+      "startMs": 11960,
+      "endMs": 12000,
+      "loss": 7.915496826171875e-05
+    },
+    {
+      "text": "the",
+      "startMs": 12000,
+      "endMs": 12059,
+      "loss": 0.0008797645568847656
+    },
+    {
+      "text": " ",
+      "startMs": 12059,
+      "endMs": 12139,
+      "loss": 6.341934204101562e-05
+    },
+    {
+      "text": "crypt.",
+      "startMs": 12139,
+      "endMs": 12479,
+      "loss": 0.009218374888102213
+    },
+    {
+      "text": "\n",
+      "startMs": 12479,
+      "endMs": 13239,
+      "loss": 9.125
+    },
+    {
+      "text": "\n",
+      "startMs": 13239,
+      "endMs": 13259,
+      "loss": 5.875
+    },
+    {
+      "text": "The",
+      "startMs": 13259,
+      "endMs": 13319,
+      "loss": 0.03044549624125163
+    },
+    {
+      "text": " ",
+      "startMs": 13319,
+      "endMs": 13399,
+      "loss": 2.3603439331054688e-05
+    },
+    {
+      "text": "maze",
+      "startMs": 13399,
+      "endMs": 13719,
+      "loss": 0.005595088005065918
+    },
+    {
+      "text": " ",
+      "startMs": 13719,
+      "endMs": 13779,
+      "loss": 0.00121307373046875
+    },
+    {
+      "text": "has",
+      "startMs": 13779,
+      "endMs": 13920,
+      "loss": 0.0003049770991007487
+    },
+    {
+      "text": " ",
+      "startMs": 13920,
+      "endMs": 13979,
+      "loss": 2.7418136596679688e-06
+    },
+    {
+      "text": "changed",
+      "startMs": 13979,
+      "endMs": 14339,
+      "loss": 4.54017094203404e-05
+    },
+    {
+      "text": " ",
+      "startMs": 14339,
+      "endMs": 14420,
+      "loss": 0.00078582763671875
+    },
+    {
+      "text": "again.",
+      "startMs": 14420,
+      "endMs": 14779,
+      "loss": 0.20581740140914917
+    },
+    {
+      "text": "\n",
+      "startMs": 14779,
+      "endMs": 15319,
+      "loss": 8.6875
+    },
+    {
+      "text": "\n",
+      "startMs": 15319,
+      "endMs": 15380,
+      "loss": 5.5
+    },
+    {
+      "text": "Adjust",
+      "startMs": 15380,
+      "endMs": 15839,
+      "loss": 0.004971742630004883
+    },
+    {
+      "text": " ",
+      "startMs": 15839,
+      "endMs": 15879,
+      "loss": 0.0004673004150390625
+    },
+    {
+      "text": "the",
+      "startMs": 15880,
+      "endMs": 15939,
+      "loss": 0.00027116139729817707
+    },
+    {
+      "text": " ",
+      "startMs": 15939,
+      "endMs": 16000,
+      "loss": 8.20159912109375e-05
+    },
+    {
+      "text": "battlefield",
+      "startMs": 16000,
+      "endMs": 16659,
+      "loss": 0.0003200444308194247
+    },
+    {
+      "text": " ",
+      "startMs": 16659,
+      "endMs": 16719,
+      "loss": 0.00118255615234375
+    },
+    {
+      "text": "to",
+      "startMs": 16719,
+      "endMs": 16819,
+      "loss": 0.0006543993949890137
+    },
+    {
+      "text": " ",
+      "startMs": 16819,
+      "endMs": 16859,
+      "loss": 6.556510925292969e-06
+    },
+    {
+      "text": "match",
+      "startMs": 16859,
+      "endMs": 17100,
+      "loss": 0.00010044574737548828
+    },
+    {
+      "text": " ",
+      "startMs": 17100,
+      "endMs": 17159,
+      "loss": 7.724761962890625e-05
+    },
+    {
+      "text": "the",
+      "startMs": 17159,
+      "endMs": 17219,
+      "loss": 0.00032071272532145184
+    },
+    {
+      "text": " ",
+      "startMs": 17219,
+      "endMs": 17299,
+      "loss": 3.4809112548828125e-05
+    },
+    {
+      "text": "new",
+      "startMs": 17299,
+      "endMs": 17440,
+      "loss": 0.00022721290588378906
+    },
+    {
+      "text": " ",
+      "startMs": 17440,
+      "endMs": 17559,
+      "loss": 0.00022792816162109375
+    },
+    {
+      "text": "configuration.",
+      "startMs": 17559,
+      "endMs": 18340,
+      "loss": 0.062169790267944336
+    }
+  ]
+}

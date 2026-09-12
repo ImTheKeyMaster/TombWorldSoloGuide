@@ -1,0 +1,570 @@
+{
+  "schemaVersion": 1,
+  "id": "deadly.room-collapsed-ceiling",
+  "text": "Stone and metal have collapsed across the chamber.\n\nBroken slabs hang at impossible angles while debris chokes the passages beneath them. Every step must be chosen carefully, and what remains of the ceiling offers uncertain shelter from incoming fire.\n\nMovement through this room will be slower.",
+  "durationMs": 19958,
+  "scriptHash": "d39c6191766986acc9dae88f909942352fe83f79310bc6f01cd522b3a725bc66",
+  "audioHash": "84b64bb60c6c8447e5f2f2ceb4896d0dec51319c5ed7ee2c653e99f9cc084666",
+  "alignmentLoss": 0.13650584301706087,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "Stone",
+      "startMs": 179,
+      "endMs": 539,
+      "loss": 0.2657313823699951
+    },
+    {
+      "text": " ",
+      "startMs": 539,
+      "endMs": 639,
+      "loss": 0.00186920166015625
+    },
+    {
+      "text": "and",
+      "startMs": 639,
+      "endMs": 759,
+      "loss": 0.0005702972412109375
+    },
+    {
+      "text": " ",
+      "startMs": 759,
+      "endMs": 859,
+      "loss": 4.38690185546875e-05
+    },
+    {
+      "text": "metal",
+      "startMs": 859,
+      "endMs": 1179,
+      "loss": 0.0008598089218139649
+    },
+    {
+      "text": " ",
+      "startMs": 1179,
+      "endMs": 1279,
+      "loss": 0.00020503997802734375
+    },
+    {
+      "text": "have",
+      "startMs": 1279,
+      "endMs": 1419,
+      "loss": 0.0004763603210449219
+    },
+    {
+      "text": " ",
+      "startMs": 1419,
+      "endMs": 1459,
+      "loss": 3.981590270996094e-05
+    },
+    {
+      "text": "collapsed",
+      "startMs": 1459,
+      "endMs": 1899,
+      "loss": 0.0005345344543457031
+    },
+    {
+      "text": " ",
+      "startMs": 1899,
+      "endMs": 1919,
+      "loss": 0.001129150390625
+    },
+    {
+      "text": "across",
+      "startMs": 1919,
+      "endMs": 2240,
+      "loss": 0.000305791695912679
+    },
+    {
+      "text": " ",
+      "startMs": 2240,
+      "endMs": 2259,
+      "loss": 0.0010986328125
+    },
+    {
+      "text": "the",
+      "startMs": 2259,
+      "endMs": 2339,
+      "loss": 0.0007252693176269531
+    },
+    {
+      "text": " ",
+      "startMs": 2339,
+      "endMs": 2379,
+      "loss": 7.152557373046875e-05
+    },
+    {
+      "text": "chamber.",
+      "startMs": 2379,
+      "endMs": 2759,
+      "loss": 0.020838797092437744
+    },
+    {
+      "text": "\n",
+      "startMs": 2759,
+      "endMs": 3359,
+      "loss": 12.625
+    },
+    {
+      "text": "\n",
+      "startMs": 3359,
+      "endMs": 3399,
+      "loss": 8.5
+    },
+    {
+      "text": "Broken",
+      "startMs": 3399,
+      "endMs": 3740,
+      "loss": 0.12311408917109172
+    },
+    {
+      "text": " ",
+      "startMs": 3740,
+      "endMs": 3899,
+      "loss": 0.00012493133544921875
+    },
+    {
+      "text": "slabs",
+      "startMs": 3899,
+      "endMs": 4380,
+      "loss": 0.001260662078857422
+    },
+    {
+      "text": " ",
+      "startMs": 4380,
+      "endMs": 4500,
+      "loss": 0.00024318695068359375
+    },
+    {
+      "text": "hang",
+      "startMs": 4500,
+      "endMs": 4679,
+      "loss": 0.0008554458618164062
+    },
+    {
+      "text": " ",
+      "startMs": 4679,
+      "endMs": 4739,
+      "loss": 0.0007171630859375
+    },
+    {
+      "text": "at",
+      "startMs": 4739,
+      "endMs": 4839,
+      "loss": 0.0009145736694335938
+    },
+    {
+      "text": " ",
+      "startMs": 4839,
+      "endMs": 4879,
+      "loss": 0.0002994537353515625
+    },
+    {
+      "text": "impossible",
+      "startMs": 4880,
+      "endMs": 5480,
+      "loss": 0.0005520105361938477
+    },
+    {
+      "text": " ",
+      "startMs": 5480,
+      "endMs": 5559,
+      "loss": 0.0003528594970703125
+    },
+    {
+      "text": "angles",
+      "startMs": 5559,
+      "endMs": 6219,
+      "loss": 0.0012093385060628254
+    },
+    {
+      "text": " ",
+      "startMs": 6219,
+      "endMs": 6279,
+      "loss": 0.130859375
+    },
+    {
+      "text": "while",
+      "startMs": 6279,
+      "endMs": 6379,
+      "loss": 0.0009884357452392579
+    },
+    {
+      "text": " ",
+      "startMs": 6379,
+      "endMs": 6439,
+      "loss": 0.0008087158203125
+    },
+    {
+      "text": "debris",
+      "startMs": 6440,
+      "endMs": 7059,
+      "loss": 0.0004425644874572754
+    },
+    {
+      "text": " ",
+      "startMs": 7059,
+      "endMs": 7119,
+      "loss": 0.0009918212890625
+    },
+    {
+      "text": "chokes",
+      "startMs": 7119,
+      "endMs": 7460,
+      "loss": 0.0014883677164713542
+    },
+    {
+      "text": " ",
+      "startMs": 7460,
+      "endMs": 7519,
+      "loss": 0.006256103515625
+    },
+    {
+      "text": "the",
+      "startMs": 7519,
+      "endMs": 7599,
+      "loss": 0.0014349619547526042
+    },
+    {
+      "text": " ",
+      "startMs": 7599,
+      "endMs": 7619,
+      "loss": 0.0002307891845703125
+    },
+    {
+      "text": "passages",
+      "startMs": 7619,
+      "endMs": 8159,
+      "loss": 0.001980498433113098
+    },
+    {
+      "text": " ",
+      "startMs": 8159,
+      "endMs": 8179,
+      "loss": 0.000701904296875
+    },
+    {
+      "text": "beneath",
+      "startMs": 8179,
+      "endMs": 8479,
+      "loss": 0.0008449554443359375
+    },
+    {
+      "text": " ",
+      "startMs": 8479,
+      "endMs": 8519,
+      "loss": 0.0012054443359375
+    },
+    {
+      "text": "them.",
+      "startMs": 8519,
+      "endMs": 8659,
+      "loss": 0.003496551513671875
+    },
+    {
+      "text": " ",
+      "startMs": 8659,
+      "endMs": 8660,
+      "loss": 0.00090789794921875
+    },
+    {
+      "text": "Every",
+      "startMs": 9739,
+      "endMs": 9920,
+      "loss": 0.0012905120849609375
+    },
+    {
+      "text": " ",
+      "startMs": 9920,
+      "endMs": 10059,
+      "loss": 0.00014781951904296875
+    },
+    {
+      "text": "step",
+      "startMs": 10059,
+      "endMs": 10279,
+      "loss": 0.0020742416381835938
+    },
+    {
+      "text": " ",
+      "startMs": 10279,
+      "endMs": 10340,
+      "loss": 0.000400543212890625
+    },
+    {
+      "text": "must",
+      "startMs": 10340,
+      "endMs": 10520,
+      "loss": 0.0015430450439453125
+    },
+    {
+      "text": " ",
+      "startMs": 10520,
+      "endMs": 10539,
+      "loss": 0.0001239776611328125
+    },
+    {
+      "text": "be",
+      "startMs": 10539,
+      "endMs": 10659,
+      "loss": 0.00063323974609375
+    },
+    {
+      "text": " ",
+      "startMs": 10659,
+      "endMs": 10699,
+      "loss": 0.00010442733764648438
+    },
+    {
+      "text": "chosen",
+      "startMs": 10699,
+      "endMs": 11100,
+      "loss": 0.0014192064603169758
+    },
+    {
+      "text": " ",
+      "startMs": 11100,
+      "endMs": 11139,
+      "loss": 0.0021209716796875
+    },
+    {
+      "text": "carefully,",
+      "startMs": 11139,
+      "endMs": 11600,
+      "loss": 0.02498784065246582
+    },
+    {
+      "text": " ",
+      "startMs": 11600,
+      "endMs": 12059,
+      "loss": 5.316734313964844e-05
+    },
+    {
+      "text": "and",
+      "startMs": 12059,
+      "endMs": 12199,
+      "loss": 0.0006847381591796875
+    },
+    {
+      "text": " ",
+      "startMs": 12199,
+      "endMs": 12239,
+      "loss": 0.000797271728515625
+    },
+    {
+      "text": "what",
+      "startMs": 12239,
+      "endMs": 12340,
+      "loss": 0.0019330978393554688
+    },
+    {
+      "text": " ",
+      "startMs": 12340,
+      "endMs": 12399,
+      "loss": 0.00011205673217773438
+    },
+    {
+      "text": "remains",
+      "startMs": 12399,
+      "endMs": 12840,
+      "loss": 0.00027186529976981025
+    },
+    {
+      "text": " ",
+      "startMs": 12840,
+      "endMs": 12859,
+      "loss": 0.00084686279296875
+    },
+    {
+      "text": "of",
+      "startMs": 12859,
+      "endMs": 12940,
+      "loss": 0.001682281494140625
+    },
+    {
+      "text": " ",
+      "startMs": 12940,
+      "endMs": 12979,
+      "loss": 0.0006561279296875
+    },
+    {
+      "text": "the",
+      "startMs": 12979,
+      "endMs": 13019,
+      "loss": 0.000655968983968099
+    },
+    {
+      "text": " ",
+      "startMs": 13019,
+      "endMs": 13099,
+      "loss": 0.0003795623779296875
+    },
+    {
+      "text": "ceiling",
+      "startMs": 13099,
+      "endMs": 13500,
+      "loss": 0.004305158342633929
+    },
+    {
+      "text": " ",
+      "startMs": 13500,
+      "endMs": 13579,
+      "loss": 0.001922607421875
+    },
+    {
+      "text": "offers",
+      "startMs": 13579,
+      "endMs": 13980,
+      "loss": 0.002162019411722819
+    },
+    {
+      "text": " ",
+      "startMs": 13980,
+      "endMs": 14059,
+      "loss": 0.00067138671875
+    },
+    {
+      "text": "uncertain",
+      "startMs": 14059,
+      "endMs": 14739,
+      "loss": 0.002226750055948893
+    },
+    {
+      "text": " ",
+      "startMs": 14739,
+      "endMs": 14779,
+      "loss": 0.003387451171875
+    },
+    {
+      "text": "shelter",
+      "startMs": 14779,
+      "endMs": 15179,
+      "loss": 0.0004565375191824777
+    },
+    {
+      "text": " ",
+      "startMs": 15179,
+      "endMs": 15219,
+      "loss": 0.00677490234375
+    },
+    {
+      "text": "from",
+      "startMs": 15219,
+      "endMs": 15380,
+      "loss": 0.00032579898834228516
+    },
+    {
+      "text": " ",
+      "startMs": 15380,
+      "endMs": 15420,
+      "loss": 0.000850677490234375
+    },
+    {
+      "text": "incoming",
+      "startMs": 15420,
+      "endMs": 15939,
+      "loss": 0.0034239739179611206
+    },
+    {
+      "text": " ",
+      "startMs": 15939,
+      "endMs": 16000,
+      "loss": 0.00146484375
+    },
+    {
+      "text": "fire.",
+      "startMs": 16000,
+      "endMs": 17019,
+      "loss": 0.06237239837646484
+    },
+    {
+      "text": "\n",
+      "startMs": 17019,
+      "endMs": 17040,
+      "loss": 10.125
+    },
+    {
+      "text": "\n",
+      "startMs": 17040,
+      "endMs": 17079,
+      "loss": 5.375
+    },
+    {
+      "text": "Movement",
+      "startMs": 17079,
+      "endMs": 17479,
+      "loss": 0.0017009973526000977
+    },
+    {
+      "text": " ",
+      "startMs": 17479,
+      "endMs": 17480,
+      "loss": 4.6253204345703125e-05
+    },
+    {
+      "text": "through",
+      "startMs": 17480,
+      "endMs": 17719,
+      "loss": 0.0010968617030552455
+    },
+    {
+      "text": " ",
+      "startMs": 17719,
+      "endMs": 17759,
+      "loss": 0.00154876708984375
+    },
+    {
+      "text": "this",
+      "startMs": 17760,
+      "endMs": 17920,
+      "loss": 0.0022907257080078125
+    },
+    {
+      "text": " ",
+      "startMs": 17920,
+      "endMs": 17959,
+      "loss": 9.012222290039062e-05
+    },
+    {
+      "text": "room",
+      "startMs": 17959,
+      "endMs": 18219,
+      "loss": 0.0008723437786102295
+    },
+    {
+      "text": " ",
+      "startMs": 18219,
+      "endMs": 18259,
+      "loss": 0.0002288818359375
+    },
+    {
+      "text": "will",
+      "startMs": 18260,
+      "endMs": 18440,
+      "loss": 0.00107574462890625
+    },
+    {
+      "text": " ",
+      "startMs": 18440,
+      "endMs": 18459,
+      "loss": 0.00014209747314453125
+    },
+    {
+      "text": "be",
+      "startMs": 18459,
+      "endMs": 18579,
+      "loss": 0.0010833740234375
+    },
+    {
+      "text": " ",
+      "startMs": 18579,
+      "endMs": 18619,
+      "loss": 0.0016326904296875
+    },
+    {
+      "text": "slower.",
+      "startMs": 18619,
+      "endMs": 18959,
+      "loss": 0.05592237200055804
+    }
+  ]
+}

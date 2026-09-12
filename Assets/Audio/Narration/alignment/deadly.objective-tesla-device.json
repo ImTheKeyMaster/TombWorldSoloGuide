@@ -1,0 +1,462 @@
+{
+  "schemaVersion": 1,
+  "id": "deadly.objective-tesla-device",
+  "text": "Electrical charge builds around the ancient device.\n\nArcs of energy crawl across the floor, searching for movement. The moment something crosses its influence, the chamber answers with a violent discharge.\n\nEvery sudden move risks awakening the storm.",
+  "durationMs": 15464,
+  "scriptHash": "b1d299bce550fa75150b0cc1cf06f1c590888730cb404d3b69b0926382ec0410",
+  "audioHash": "f5d919d7e23dd53b956ae997a0ae44e3efb45e3d6f9a5a50e050e29d2821bdf6",
+  "alignmentLoss": 0.13646209714897126,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "Electrical",
+      "startMs": 159,
+      "endMs": 599,
+      "loss": 0.14665307998657226
+    },
+    {
+      "text": " ",
+      "startMs": 599,
+      "endMs": 719,
+      "loss": 0.005767822265625
+    },
+    {
+      "text": "charge",
+      "startMs": 719,
+      "endMs": 1139,
+      "loss": 0.007181485493977864
+    },
+    {
+      "text": " ",
+      "startMs": 1139,
+      "endMs": 1199,
+      "loss": 0.016845703125
+    },
+    {
+      "text": "builds",
+      "startMs": 1199,
+      "endMs": 1480,
+      "loss": 0.0030326644579569497
+    },
+    {
+      "text": " ",
+      "startMs": 1480,
+      "endMs": 1579,
+      "loss": 0.00152587890625
+    },
+    {
+      "text": "around",
+      "startMs": 1579,
+      "endMs": 1839,
+      "loss": 0.0007686217625935873
+    },
+    {
+      "text": " ",
+      "startMs": 1839,
+      "endMs": 1899,
+      "loss": 0.00122833251953125
+    },
+    {
+      "text": "the",
+      "startMs": 1899,
+      "endMs": 1939,
+      "loss": 0.001087506612141927
+    },
+    {
+      "text": " ",
+      "startMs": 1939,
+      "endMs": 2059,
+      "loss": 0.000293731689453125
+    },
+    {
+      "text": "ancient",
+      "startMs": 2059,
+      "endMs": 2359,
+      "loss": 0.008187123707362584
+    },
+    {
+      "text": " ",
+      "startMs": 2359,
+      "endMs": 2399,
+      "loss": 0.000804901123046875
+    },
+    {
+      "text": "device.",
+      "startMs": 2399,
+      "endMs": 2779,
+      "loss": 0.13415908813476562
+    },
+    {
+      "text": "\n",
+      "startMs": 2779,
+      "endMs": 3199,
+      "loss": 8.25
+    },
+    {
+      "text": "\n",
+      "startMs": 3199,
+      "endMs": 3279,
+      "loss": 3.90625
+    },
+    {
+      "text": "Arcs",
+      "startMs": 3279,
+      "endMs": 3519,
+      "loss": 0.0915374755859375
+    },
+    {
+      "text": " ",
+      "startMs": 3519,
+      "endMs": 3559,
+      "loss": 0.00084686279296875
+    },
+    {
+      "text": "of",
+      "startMs": 3559,
+      "endMs": 3679,
+      "loss": 0.0008440017700195312
+    },
+    {
+      "text": " ",
+      "startMs": 3679,
+      "endMs": 3719,
+      "loss": 0.000255584716796875
+    },
+    {
+      "text": "energy",
+      "startMs": 3720,
+      "endMs": 4099,
+      "loss": 0.002703984578450521
+    },
+    {
+      "text": " ",
+      "startMs": 4099,
+      "endMs": 4159,
+      "loss": 0.0034027099609375
+    },
+    {
+      "text": "crawl",
+      "startMs": 4159,
+      "endMs": 4500,
+      "loss": 0.0010095596313476562
+    },
+    {
+      "text": " ",
+      "startMs": 4500,
+      "endMs": 4539,
+      "loss": 0.005096435546875
+    },
+    {
+      "text": "across",
+      "startMs": 4539,
+      "endMs": 4839,
+      "loss": 0.0027389923731486
+    },
+    {
+      "text": " ",
+      "startMs": 4839,
+      "endMs": 4859,
+      "loss": 0.0009765625
+    },
+    {
+      "text": "the",
+      "startMs": 4859,
+      "endMs": 4940,
+      "loss": 0.0002778371175130208
+    },
+    {
+      "text": " ",
+      "startMs": 4940,
+      "endMs": 4980,
+      "loss": 3.647804260253906e-05
+    },
+    {
+      "text": "floor,",
+      "startMs": 4980,
+      "endMs": 5239,
+      "loss": 0.23879639307657877
+    },
+    {
+      "text": " ",
+      "startMs": 5239,
+      "endMs": 5379,
+      "loss": 5.4836273193359375e-05
+    },
+    {
+      "text": "searching",
+      "startMs": 5380,
+      "endMs": 5779,
+      "loss": 0.0005112356609768338
+    },
+    {
+      "text": " ",
+      "startMs": 5779,
+      "endMs": 5799,
+      "loss": 0.00018024444580078125
+    },
+    {
+      "text": "for",
+      "startMs": 5799,
+      "endMs": 5900,
+      "loss": 0.0009314219156901041
+    },
+    {
+      "text": " ",
+      "startMs": 5900,
+      "endMs": 5940,
+      "loss": 0.0002765655517578125
+    },
+    {
+      "text": "movement.",
+      "startMs": 5940,
+      "endMs": 6319,
+      "loss": 0.180432743496365
+    },
+    {
+      "text": " ",
+      "startMs": 6319,
+      "endMs": 7139,
+      "loss": 0.01513671875
+    },
+    {
+      "text": "The",
+      "startMs": 7139,
+      "endMs": 7199,
+      "loss": 0.0014050801595052083
+    },
+    {
+      "text": " ",
+      "startMs": 7199,
+      "endMs": 7239,
+      "loss": 0.00014495849609375
+    },
+    {
+      "text": "moment",
+      "startMs": 7239,
+      "endMs": 7579,
+      "loss": 0.0042413075764973955
+    },
+    {
+      "text": " ",
+      "startMs": 7579,
+      "endMs": 7619,
+      "loss": 0.0024566650390625
+    },
+    {
+      "text": "something",
+      "startMs": 7619,
+      "endMs": 7939,
+      "loss": 0.0009444422192043728
+    },
+    {
+      "text": " ",
+      "startMs": 7939,
+      "endMs": 7979,
+      "loss": 0.0004367828369140625
+    },
+    {
+      "text": "crosses",
+      "startMs": 7980,
+      "endMs": 8260,
+      "loss": 0.001398921012878418
+    },
+    {
+      "text": " ",
+      "startMs": 8260,
+      "endMs": 8300,
+      "loss": 0.001068115234375
+    },
+    {
+      "text": "its",
+      "startMs": 8300,
+      "endMs": 8460,
+      "loss": 0.00140380859375
+    },
+    {
+      "text": " ",
+      "startMs": 8460,
+      "endMs": 8500,
+      "loss": 0.0017242431640625
+    },
+    {
+      "text": "influence,",
+      "startMs": 8500,
+      "endMs": 8940,
+      "loss": 0.006477165222167969
+    },
+    {
+      "text": " ",
+      "startMs": 8940,
+      "endMs": 9220,
+      "loss": 4.8160552978515625e-05
+    },
+    {
+      "text": "the",
+      "startMs": 9220,
+      "endMs": 9319,
+      "loss": 0.0020383199055989585
+    },
+    {
+      "text": " ",
+      "startMs": 9319,
+      "endMs": 9359,
+      "loss": 8.344650268554688e-05
+    },
+    {
+      "text": "chamber",
+      "startMs": 9359,
+      "endMs": 9739,
+      "loss": 0.012973546981811523
+    },
+    {
+      "text": " ",
+      "startMs": 9739,
+      "endMs": 9819,
+      "loss": 0.001556396484375
+    },
+    {
+      "text": "answers",
+      "startMs": 9819,
+      "endMs": 10239,
+      "loss": 0.0011013575962611607
+    },
+    {
+      "text": " ",
+      "startMs": 10239,
+      "endMs": 10259,
+      "loss": 0.004669189453125
+    },
+    {
+      "text": "with",
+      "startMs": 10260,
+      "endMs": 10360,
+      "loss": 0.0032978057861328125
+    },
+    {
+      "text": " ",
+      "startMs": 10360,
+      "endMs": 10479,
+      "loss": 0.001708984375
+    },
+    {
+      "text": "a",
+      "startMs": 10479,
+      "endMs": 10500,
+      "loss": 0.0020599365234375
+    },
+    {
+      "text": " ",
+      "startMs": 10500,
+      "endMs": 10539,
+      "loss": 0.00482177734375
+    },
+    {
+      "text": "violent",
+      "startMs": 10539,
+      "endMs": 10940,
+      "loss": 0.0008539472307477679
+    },
+    {
+      "text": " ",
+      "startMs": 10940,
+      "endMs": 10979,
+      "loss": 0.00020503997802734375
+    },
+    {
+      "text": "discharge.",
+      "startMs": 10979,
+      "endMs": 12059,
+      "loss": 0.014015960693359374
+    },
+    {
+      "text": "\n",
+      "startMs": 12059,
+      "endMs": 12079,
+      "loss": 10.375
+    },
+    {
+      "text": "\n",
+      "startMs": 12079,
+      "endMs": 12159,
+      "loss": 4.75
+    },
+    {
+      "text": "Every",
+      "startMs": 12159,
+      "endMs": 12500,
+      "loss": 0.03053436279296875
+    },
+    {
+      "text": " ",
+      "startMs": 12500,
+      "endMs": 12559,
+      "loss": 0.04052734375
+    },
+    {
+      "text": "sudden",
+      "startMs": 12559,
+      "endMs": 12840,
+      "loss": 0.0032386581103006997
+    },
+    {
+      "text": " ",
+      "startMs": 12840,
+      "endMs": 12899,
+      "loss": 0.001953125
+    },
+    {
+      "text": "move",
+      "startMs": 12899,
+      "endMs": 13299,
+      "loss": 0.0005886554718017578
+    },
+    {
+      "text": " ",
+      "startMs": 13299,
+      "endMs": 13399,
+      "loss": 0.0012054443359375
+    },
+    {
+      "text": "risks",
+      "startMs": 13399,
+      "endMs": 13800,
+      "loss": 0.0005072116851806641
+    },
+    {
+      "text": " ",
+      "startMs": 13800,
+      "endMs": 13920,
+      "loss": 0.00034332275390625
+    },
+    {
+      "text": "awakening",
+      "startMs": 13920,
+      "endMs": 14340,
+      "loss": 0.0009260707431369358
+    },
+    {
+      "text": " ",
+      "startMs": 14340,
+      "endMs": 14399,
+      "loss": 0.0004291534423828125
+    },
+    {
+      "text": "the",
+      "startMs": 14399,
+      "endMs": 14439,
+      "loss": 0.004362742106119792
+    },
+    {
+      "text": " ",
+      "startMs": 14439,
+      "endMs": 14519,
+      "loss": 0.001068115234375
+    },
+    {
+      "text": "storm.",
+      "startMs": 14519,
+      "endMs": 14920,
+      "loss": 0.04493570327758789
+    }
+  ]
+}

@@ -1,0 +1,570 @@
+{
+  "schemaVersion": 1,
+  "id": "deadly.objective-quantum-shield",
+  "text": "An emerald field snaps into existence around the objective.\n\nLight bends across its surface as the air shimmers with contained energy. Shots passing close to the device distort, their trajectories pulled aside by an invisible barrier.\n\nThe tomb is protecting anything that fights beneath its shield.",
+  "durationMs": 18207,
+  "scriptHash": "190cca7363b6744818e1aba4bd66779bb8bbe7ef2b2148d0217ea3c2875435b3",
+  "audioHash": "e798b3028b267b9155ad1f6b0358d918d26b1434ee59c0c48d34be8b4e482165",
+  "alignmentLoss": 0.12586341055739284,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "An",
+      "startMs": 59,
+      "endMs": 159,
+      "loss": 1.787322998046875
+    },
+    {
+      "text": " ",
+      "startMs": 159,
+      "endMs": 199,
+      "loss": 0.0020294189453125
+    },
+    {
+      "text": "emerald",
+      "startMs": 199,
+      "endMs": 539,
+      "loss": 0.0036018405641828266
+    },
+    {
+      "text": " ",
+      "startMs": 539,
+      "endMs": 619,
+      "loss": 0.00182342529296875
+    },
+    {
+      "text": "field",
+      "startMs": 620,
+      "endMs": 1039,
+      "loss": 0.00023047924041748048
+    },
+    {
+      "text": " ",
+      "startMs": 1039,
+      "endMs": 1059,
+      "loss": 0.000904083251953125
+    },
+    {
+      "text": "snaps",
+      "startMs": 1059,
+      "endMs": 1399,
+      "loss": 0.00034842491149902346
+    },
+    {
+      "text": " ",
+      "startMs": 1399,
+      "endMs": 1439,
+      "loss": 0.0003528594970703125
+    },
+    {
+      "text": "into",
+      "startMs": 1439,
+      "endMs": 1599,
+      "loss": 0.0002251267433166504
+    },
+    {
+      "text": " ",
+      "startMs": 1599,
+      "endMs": 1659,
+      "loss": 1.9788742065429688e-05
+    },
+    {
+      "text": "existence",
+      "startMs": 1659,
+      "endMs": 2299,
+      "loss": 0.00010293059878879123
+    },
+    {
+      "text": " ",
+      "startMs": 2299,
+      "endMs": 2339,
+      "loss": 0.0025787353515625
+    },
+    {
+      "text": "around",
+      "startMs": 2339,
+      "endMs": 2579,
+      "loss": 0.0003227988878885905
+    },
+    {
+      "text": " ",
+      "startMs": 2579,
+      "endMs": 2619,
+      "loss": 0.000255584716796875
+    },
+    {
+      "text": "the",
+      "startMs": 2619,
+      "endMs": 2679,
+      "loss": 0.000356594721476237
+    },
+    {
+      "text": " ",
+      "startMs": 2679,
+      "endMs": 2719,
+      "loss": 2.6345252990722656e-05
+    },
+    {
+      "text": "objective.",
+      "startMs": 2720,
+      "endMs": 3299,
+      "loss": 0.012105405330657959
+    },
+    {
+      "text": "\n",
+      "startMs": 3299,
+      "endMs": 4039,
+      "loss": 11.4375
+    },
+    {
+      "text": "\n",
+      "startMs": 4039,
+      "endMs": 4059,
+      "loss": 5.53125
+    },
+    {
+      "text": "Light",
+      "startMs": 4059,
+      "endMs": 4380,
+      "loss": 0.018935585021972658
+    },
+    {
+      "text": " ",
+      "startMs": 4380,
+      "endMs": 4440,
+      "loss": 0.0003643035888671875
+    },
+    {
+      "text": "bends",
+      "startMs": 4440,
+      "endMs": 4759,
+      "loss": 0.00026593208312988283
+    },
+    {
+      "text": " ",
+      "startMs": 4759,
+      "endMs": 4859,
+      "loss": 6.29425048828125e-05
+    },
+    {
+      "text": "across",
+      "startMs": 4859,
+      "endMs": 5079,
+      "loss": 0.00012816985448201498
+    },
+    {
+      "text": " ",
+      "startMs": 5079,
+      "endMs": 5119,
+      "loss": 7.009506225585938e-05
+    },
+    {
+      "text": "its",
+      "startMs": 5119,
+      "endMs": 5279,
+      "loss": 0.0006119410196940104
+    },
+    {
+      "text": " ",
+      "startMs": 5279,
+      "endMs": 5339,
+      "loss": 7.104873657226562e-05
+    },
+    {
+      "text": "surface",
+      "startMs": 5339,
+      "endMs": 5719,
+      "loss": 9.761537824358259e-05
+    },
+    {
+      "text": " ",
+      "startMs": 5719,
+      "endMs": 5779,
+      "loss": 0.005706787109375
+    },
+    {
+      "text": "as",
+      "startMs": 5779,
+      "endMs": 5859,
+      "loss": 0.00025844573974609375
+    },
+    {
+      "text": " ",
+      "startMs": 5859,
+      "endMs": 5919,
+      "loss": 6.198883056640625e-06
+    },
+    {
+      "text": "the",
+      "startMs": 5920,
+      "endMs": 6000,
+      "loss": 0.00036215782165527344
+    },
+    {
+      "text": " ",
+      "startMs": 6000,
+      "endMs": 6039,
+      "loss": 2.7894973754882812e-05
+    },
+    {
+      "text": "air",
+      "startMs": 6039,
+      "endMs": 6259,
+      "loss": 0.00040582815806070965
+    },
+    {
+      "text": " ",
+      "startMs": 6259,
+      "endMs": 6379,
+      "loss": 0.000141143798828125
+    },
+    {
+      "text": "shimmers",
+      "startMs": 6379,
+      "endMs": 6799,
+      "loss": 0.0003225654363632202
+    },
+    {
+      "text": " ",
+      "startMs": 6799,
+      "endMs": 6839,
+      "loss": 0.000843048095703125
+    },
+    {
+      "text": "with",
+      "startMs": 6839,
+      "endMs": 6980,
+      "loss": 0.00020891427993774414
+    },
+    {
+      "text": " ",
+      "startMs": 6980,
+      "endMs": 7019,
+      "loss": 0.00010967254638671875
+    },
+    {
+      "text": "contained",
+      "startMs": 7019,
+      "endMs": 7480,
+      "loss": 0.00014013714260525175
+    },
+    {
+      "text": " ",
+      "startMs": 7480,
+      "endMs": 7559,
+      "loss": 9.441375732421875e-05
+    },
+    {
+      "text": "energy.",
+      "startMs": 7559,
+      "endMs": 7919,
+      "loss": 0.01934828077043806
+    },
+    {
+      "text": " ",
+      "startMs": 7919,
+      "endMs": 8599,
+      "loss": 0.00518798828125
+    },
+    {
+      "text": "Shots",
+      "startMs": 8599,
+      "endMs": 9000,
+      "loss": 0.0005022048950195313
+    },
+    {
+      "text": " ",
+      "startMs": 9000,
+      "endMs": 9059,
+      "loss": 0.00628662109375
+    },
+    {
+      "text": "passing",
+      "startMs": 9059,
+      "endMs": 9420,
+      "loss": 0.0005375998360770089
+    },
+    {
+      "text": " ",
+      "startMs": 9420,
+      "endMs": 9460,
+      "loss": 0.00014781951904296875
+    },
+    {
+      "text": "close",
+      "startMs": 9460,
+      "endMs": 9699,
+      "loss": 0.000252532958984375
+    },
+    {
+      "text": " ",
+      "startMs": 9699,
+      "endMs": 9739,
+      "loss": 0.001434326171875
+    },
+    {
+      "text": "to",
+      "startMs": 9739,
+      "endMs": 9800,
+      "loss": 0.00030231475830078125
+    },
+    {
+      "text": " ",
+      "startMs": 9800,
+      "endMs": 9840,
+      "loss": 9.441375732421875e-05
+    },
+    {
+      "text": "the",
+      "startMs": 9840,
+      "endMs": 9899,
+      "loss": 0.0003345012664794922
+    },
+    {
+      "text": " ",
+      "startMs": 9899,
+      "endMs": 9960,
+      "loss": 0.0004673004150390625
+    },
+    {
+      "text": "device",
+      "startMs": 9960,
+      "endMs": 10319,
+      "loss": 0.00037346283594767254
+    },
+    {
+      "text": " ",
+      "startMs": 10319,
+      "endMs": 10380,
+      "loss": 0.004913330078125
+    },
+    {
+      "text": "distort,",
+      "startMs": 10380,
+      "endMs": 10840,
+      "loss": 0.017098233103752136
+    },
+    {
+      "text": " ",
+      "startMs": 10840,
+      "endMs": 11239,
+      "loss": 5.626678466796875e-05
+    },
+    {
+      "text": "their",
+      "startMs": 11239,
+      "endMs": 11359,
+      "loss": 0.0012347698211669922
+    },
+    {
+      "text": " ",
+      "startMs": 11359,
+      "endMs": 11399,
+      "loss": 7.677078247070312e-05
+    },
+    {
+      "text": "trajectories",
+      "startMs": 11399,
+      "endMs": 11960,
+      "loss": 0.0015962918599446614
+    },
+    {
+      "text": " ",
+      "startMs": 11960,
+      "endMs": 12059,
+      "loss": 0.0020904541015625
+    },
+    {
+      "text": "pulled",
+      "startMs": 12059,
+      "endMs": 12219,
+      "loss": 0.00045661131540934247
+    },
+    {
+      "text": " ",
+      "startMs": 12219,
+      "endMs": 12339,
+      "loss": 0.00030517578125
+    },
+    {
+      "text": "aside",
+      "startMs": 12340,
+      "endMs": 12679,
+      "loss": 0.0004832983016967773
+    },
+    {
+      "text": " ",
+      "startMs": 12679,
+      "endMs": 12759,
+      "loss": 0.00182342529296875
+    },
+    {
+      "text": "by",
+      "startMs": 12759,
+      "endMs": 12859,
+      "loss": 0.0005693435668945312
+    },
+    {
+      "text": " ",
+      "startMs": 12859,
+      "endMs": 12880,
+      "loss": 2.574920654296875e-05
+    },
+    {
+      "text": "an",
+      "startMs": 12880,
+      "endMs": 12960,
+      "loss": 0.0008192062377929688
+    },
+    {
+      "text": " ",
+      "startMs": 12960,
+      "endMs": 13000,
+      "loss": 4.458427429199219e-05
+    },
+    {
+      "text": "invisible",
+      "startMs": 13000,
+      "endMs": 13420,
+      "loss": 0.00029314888848198787
+    },
+    {
+      "text": " ",
+      "startMs": 13420,
+      "endMs": 13539,
+      "loss": 0.00026702880859375
+    },
+    {
+      "text": "barrier.",
+      "startMs": 13539,
+      "endMs": 13899,
+      "loss": 0.007665723562240601
+    },
+    {
+      "text": "\n",
+      "startMs": 13899,
+      "endMs": 14719,
+      "loss": 11.3125
+    },
+    {
+      "text": "\n",
+      "startMs": 14719,
+      "endMs": 14739,
+      "loss": 4.4375
+    },
+    {
+      "text": "The",
+      "startMs": 14739,
+      "endMs": 14799,
+      "loss": 0.024616559346516926
+    },
+    {
+      "text": " ",
+      "startMs": 14799,
+      "endMs": 14880,
+      "loss": 0.0003147125244140625
+    },
+    {
+      "text": "tomb",
+      "startMs": 14880,
+      "endMs": 15179,
+      "loss": 0.010396003723144531
+    },
+    {
+      "text": " ",
+      "startMs": 15179,
+      "endMs": 15219,
+      "loss": 0.00084686279296875
+    },
+    {
+      "text": "is",
+      "startMs": 15219,
+      "endMs": 15339,
+      "loss": 0.000988006591796875
+    },
+    {
+      "text": " ",
+      "startMs": 15339,
+      "endMs": 15399,
+      "loss": 8.225440979003906e-06
+    },
+    {
+      "text": "protecting",
+      "startMs": 15399,
+      "endMs": 15919,
+      "loss": 0.0001569032669067383
+    },
+    {
+      "text": " ",
+      "startMs": 15919,
+      "endMs": 15979,
+      "loss": 3.4809112548828125e-05
+    },
+    {
+      "text": "anything",
+      "startMs": 15979,
+      "endMs": 16420,
+      "loss": 0.0001885741949081421
+    },
+    {
+      "text": " ",
+      "startMs": 16420,
+      "endMs": 16479,
+      "loss": 0.00030517578125
+    },
+    {
+      "text": "that",
+      "startMs": 16479,
+      "endMs": 16579,
+      "loss": 0.0002141892910003662
+    },
+    {
+      "text": " ",
+      "startMs": 16579,
+      "endMs": 16699,
+      "loss": 2.6702880859375e-05
+    },
+    {
+      "text": "fights",
+      "startMs": 16699,
+      "endMs": 16920,
+      "loss": 0.0004655122756958008
+    },
+    {
+      "text": " ",
+      "startMs": 16920,
+      "endMs": 17020,
+      "loss": 0.000102996826171875
+    },
+    {
+      "text": "beneath",
+      "startMs": 17020,
+      "endMs": 17260,
+      "loss": 0.00024005344935825894
+    },
+    {
+      "text": " ",
+      "startMs": 17260,
+      "endMs": 17299,
+      "loss": 0.00022602081298828125
+    },
+    {
+      "text": "its",
+      "startMs": 17299,
+      "endMs": 17479,
+      "loss": 0.000831445058186849
+    },
+    {
+      "text": " ",
+      "startMs": 17479,
+      "endMs": 17539,
+      "loss": 0.0017547607421875
+    },
+    {
+      "text": "shield.",
+      "startMs": 17539,
+      "endMs": 17920,
+      "loss": 0.07535675593784877
+    }
+  ]
+}

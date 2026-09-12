@@ -1,0 +1,474 @@
+{
+  "schemaVersion": 1,
+  "id": "event.subjugation-glyphs",
+  "text": "Symbols ignite across the walls.\n\nTheir shapes seem to shift whenever you look directly at them. A crushing pressure settles over the strike team, slowing thought and movement alike.\n\nThe tomb is imposing its will upon the living.",
+  "durationMs": 15647,
+  "scriptHash": "474e37c49599c8df411454775dda23a8f04a3ea95573fa26211b76adc13aa8f3",
+  "audioHash": "15c17b3481188bc7192d27033ce29fd38e9d423dcaffc4f666c9fa404046f128",
+  "alignmentLoss": 0.14201932316241056,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "Symbols",
+      "startMs": 179,
+      "endMs": 680,
+      "loss": 0.26107610974993023
+    },
+    {
+      "text": " ",
+      "startMs": 680,
+      "endMs": 740,
+      "loss": 0.01068115234375
+    },
+    {
+      "text": "ignite",
+      "startMs": 740,
+      "endMs": 1179,
+      "loss": 0.0017407735188802083
+    },
+    {
+      "text": " ",
+      "startMs": 1179,
+      "endMs": 1399,
+      "loss": 0.025146484375
+    },
+    {
+      "text": "across",
+      "startMs": 1399,
+      "endMs": 1739,
+      "loss": 0.0026792685190836587
+    },
+    {
+      "text": " ",
+      "startMs": 1739,
+      "endMs": 1759,
+      "loss": 0.002227783203125
+    },
+    {
+      "text": "the",
+      "startMs": 1759,
+      "endMs": 1839,
+      "loss": 0.0005372365315755209
+    },
+    {
+      "text": " ",
+      "startMs": 1839,
+      "endMs": 1879,
+      "loss": 0.00054168701171875
+    },
+    {
+      "text": "walls.",
+      "startMs": 1879,
+      "endMs": 2279,
+      "loss": 0.12164727846781413
+    },
+    {
+      "text": "\n",
+      "startMs": 2279,
+      "endMs": 2740,
+      "loss": 7.375
+    },
+    {
+      "text": "\n",
+      "startMs": 2740,
+      "endMs": 2759,
+      "loss": 4.5
+    },
+    {
+      "text": "Their",
+      "startMs": 2759,
+      "endMs": 2960,
+      "loss": 0.046034836769104005
+    },
+    {
+      "text": " ",
+      "startMs": 2960,
+      "endMs": 3000,
+      "loss": 0.0036163330078125
+    },
+    {
+      "text": "shapes",
+      "startMs": 3000,
+      "endMs": 3480,
+      "loss": 0.0013526280721028645
+    },
+    {
+      "text": " ",
+      "startMs": 3480,
+      "endMs": 3559,
+      "loss": 0.000713348388671875
+    },
+    {
+      "text": "seem",
+      "startMs": 3559,
+      "endMs": 3720,
+      "loss": 0.00040966272354125977
+    },
+    {
+      "text": " ",
+      "startMs": 3720,
+      "endMs": 3740,
+      "loss": 0.00341796875
+    },
+    {
+      "text": "to",
+      "startMs": 3740,
+      "endMs": 3859,
+      "loss": 0.0006990432739257812
+    },
+    {
+      "text": " ",
+      "startMs": 3859,
+      "endMs": 3899,
+      "loss": 0.0004425048828125
+    },
+    {
+      "text": "shift",
+      "startMs": 3899,
+      "endMs": 4279,
+      "loss": 0.00099639892578125
+    },
+    {
+      "text": " ",
+      "startMs": 4279,
+      "endMs": 4319,
+      "loss": 0.0201416015625
+    },
+    {
+      "text": "whenever",
+      "startMs": 4319,
+      "endMs": 4599,
+      "loss": 0.0007948130369186401
+    },
+    {
+      "text": " ",
+      "startMs": 4599,
+      "endMs": 4619,
+      "loss": 0.0003376007080078125
+    },
+    {
+      "text": "you",
+      "startMs": 4619,
+      "endMs": 4719,
+      "loss": 0.0008945465087890625
+    },
+    {
+      "text": " ",
+      "startMs": 4719,
+      "endMs": 4739,
+      "loss": 0.00116729736328125
+    },
+    {
+      "text": "look",
+      "startMs": 4739,
+      "endMs": 4900,
+      "loss": 0.000650256872177124
+    },
+    {
+      "text": " ",
+      "startMs": 4900,
+      "endMs": 4940,
+      "loss": 0.0037841796875
+    },
+    {
+      "text": "directly",
+      "startMs": 4940,
+      "endMs": 5359,
+      "loss": 0.001017838716506958
+    },
+    {
+      "text": " ",
+      "startMs": 5359,
+      "endMs": 5399,
+      "loss": 0.00130462646484375
+    },
+    {
+      "text": "at",
+      "startMs": 5400,
+      "endMs": 5559,
+      "loss": 0.00148773193359375
+    },
+    {
+      "text": " ",
+      "startMs": 5559,
+      "endMs": 5579,
+      "loss": 0.00145721435546875
+    },
+    {
+      "text": "them.",
+      "startMs": 5579,
+      "endMs": 5739,
+      "loss": 0.3426116943359375
+    },
+    {
+      "text": " ",
+      "startMs": 5739,
+      "endMs": 6480,
+      "loss": 0.0155029296875
+    },
+    {
+      "text": "A",
+      "startMs": 6480,
+      "endMs": 6559,
+      "loss": 0.0030517578125
+    },
+    {
+      "text": " ",
+      "startMs": 6559,
+      "endMs": 6619,
+      "loss": 0.000736236572265625
+    },
+    {
+      "text": "crushing",
+      "startMs": 6619,
+      "endMs": 7119,
+      "loss": 0.0014126300811767578
+    },
+    {
+      "text": " ",
+      "startMs": 7119,
+      "endMs": 7139,
+      "loss": 0.00147247314453125
+    },
+    {
+      "text": "pressure",
+      "startMs": 7139,
+      "endMs": 7639,
+      "loss": 0.002344071865081787
+    },
+    {
+      "text": " ",
+      "startMs": 7639,
+      "endMs": 7699,
+      "loss": 0.002777099609375
+    },
+    {
+      "text": "settles",
+      "startMs": 7699,
+      "endMs": 8199,
+      "loss": 0.0004897798810686384
+    },
+    {
+      "text": " ",
+      "startMs": 8199,
+      "endMs": 8260,
+      "loss": 0.0022125244140625
+    },
+    {
+      "text": "over",
+      "startMs": 8260,
+      "endMs": 8420,
+      "loss": 0.0008490085601806641
+    },
+    {
+      "text": " ",
+      "startMs": 8420,
+      "endMs": 8439,
+      "loss": 0.00138092041015625
+    },
+    {
+      "text": "the",
+      "startMs": 8439,
+      "endMs": 8479,
+      "loss": 0.000606536865234375
+    },
+    {
+      "text": " ",
+      "startMs": 8479,
+      "endMs": 8559,
+      "loss": 0.00048065185546875
+    },
+    {
+      "text": "strike",
+      "startMs": 8559,
+      "endMs": 8859,
+      "loss": 0.007325013478597005
+    },
+    {
+      "text": " ",
+      "startMs": 8859,
+      "endMs": 8920,
+      "loss": 0.03564453125
+    },
+    {
+      "text": "team,",
+      "startMs": 8920,
+      "endMs": 9199,
+      "loss": 0.036489105224609374
+    },
+    {
+      "text": " ",
+      "startMs": 9199,
+      "endMs": 9819,
+      "loss": 3.1948089599609375e-05
+    },
+    {
+      "text": "slowing",
+      "startMs": 9819,
+      "endMs": 10180,
+      "loss": 0.00037487915584019253
+    },
+    {
+      "text": " ",
+      "startMs": 10180,
+      "endMs": 10279,
+      "loss": 0.0021514892578125
+    },
+    {
+      "text": "thought",
+      "startMs": 10279,
+      "endMs": 10559,
+      "loss": 0.0006212166377476283
+    },
+    {
+      "text": " ",
+      "startMs": 10559,
+      "endMs": 10599,
+      "loss": 0.00164794921875
+    },
+    {
+      "text": "and",
+      "startMs": 10599,
+      "endMs": 10739,
+      "loss": 0.00037658214569091797
+    },
+    {
+      "text": " ",
+      "startMs": 10739,
+      "endMs": 10819,
+      "loss": 9.202957153320312e-05
+    },
+    {
+      "text": "movement",
+      "startMs": 10819,
+      "endMs": 11260,
+      "loss": 0.0010744929313659668
+    },
+    {
+      "text": " ",
+      "startMs": 11260,
+      "endMs": 11279,
+      "loss": 0.00799560546875
+    },
+    {
+      "text": "alike.",
+      "startMs": 11279,
+      "endMs": 12259,
+      "loss": 0.01166534423828125
+    },
+    {
+      "text": "\n",
+      "startMs": 12259,
+      "endMs": 12279,
+      "loss": 9.625
+    },
+    {
+      "text": "\n",
+      "startMs": 12279,
+      "endMs": 12319,
+      "loss": 5.03125
+    },
+    {
+      "text": "The",
+      "startMs": 12319,
+      "endMs": 12440,
+      "loss": 0.07267252604166667
+    },
+    {
+      "text": " ",
+      "startMs": 12440,
+      "endMs": 12460,
+      "loss": 0.10546875
+    },
+    {
+      "text": "tomb",
+      "startMs": 12460,
+      "endMs": 12939,
+      "loss": 0.009586334228515625
+    },
+    {
+      "text": " ",
+      "startMs": 12939,
+      "endMs": 12979,
+      "loss": 0.005279541015625
+    },
+    {
+      "text": "is",
+      "startMs": 12979,
+      "endMs": 13100,
+      "loss": 0.002471923828125
+    },
+    {
+      "text": " ",
+      "startMs": 13100,
+      "endMs": 13119,
+      "loss": 0.000244140625
+    },
+    {
+      "text": "imposing",
+      "startMs": 13119,
+      "endMs": 13680,
+      "loss": 0.0021629929542541504
+    },
+    {
+      "text": " ",
+      "startMs": 13680,
+      "endMs": 13699,
+      "loss": 0.0003376007080078125
+    },
+    {
+      "text": "its",
+      "startMs": 13699,
+      "endMs": 13920,
+      "loss": 0.0035909016927083335
+    },
+    {
+      "text": " ",
+      "startMs": 13920,
+      "endMs": 13939,
+      "loss": 0.00022792816162109375
+    },
+    {
+      "text": "will",
+      "startMs": 13939,
+      "endMs": 14199,
+      "loss": 0.0017232894897460938
+    },
+    {
+      "text": " ",
+      "startMs": 14199,
+      "endMs": 14319,
+      "loss": 0.003082275390625
+    },
+    {
+      "text": "upon",
+      "startMs": 14319,
+      "endMs": 14520,
+      "loss": 0.0029140710830688477
+    },
+    {
+      "text": " ",
+      "startMs": 14520,
+      "endMs": 14539,
+      "loss": 0.0010528564453125
+    },
+    {
+      "text": "the",
+      "startMs": 14539,
+      "endMs": 14599,
+      "loss": 0.0017674763997395833
+    },
+    {
+      "text": " ",
+      "startMs": 14599,
+      "endMs": 14659,
+      "loss": 0.0031585693359375
+    },
+    {
+      "text": "living.",
+      "startMs": 14659,
+      "endMs": 15000,
+      "loss": 0.09021268572126116
+    }
+  ]
+}

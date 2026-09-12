@@ -1,0 +1,564 @@
+{
+  "schemaVersion": 1,
+  "id": "event.rewards-of-annihilation",
+  "text": "The Destroyers react to the kill.\n\nEnergy surges through damaged frames as ancient systems feed upon the moment of annihilation. Fractured armor draws together. Failing mechanisms flare back to life.\n\nEvery death strengthens their purpose.\n\nThe more they destroy, the harder they become to stop.",
+  "durationMs": 21812,
+  "scriptHash": "a37b66e9c18ff11fe53e863f2cd33f929e8a89d73329dbfdf0019aed5aac4dcf",
+  "audioHash": "14b536f59c010d71e3affb35b27f652c0bba814f1db6fc6030a643cea056cc2e",
+  "alignmentLoss": 0.16108561612791933,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "The",
+      "startMs": 219,
+      "endMs": 280,
+      "loss": 1.4604593912760417
+    },
+    {
+      "text": " ",
+      "startMs": 280,
+      "endMs": 319,
+      "loss": 0.001739501953125
+    },
+    {
+      "text": "Destroyers",
+      "startMs": 319,
+      "endMs": 919,
+      "loss": 0.3312427282333374
+    },
+    {
+      "text": " ",
+      "startMs": 919,
+      "endMs": 999,
+      "loss": 0.000797271728515625
+    },
+    {
+      "text": "react",
+      "startMs": 1000,
+      "endMs": 1319,
+      "loss": 0.0010454654693603516
+    },
+    {
+      "text": " ",
+      "startMs": 1319,
+      "endMs": 1359,
+      "loss": 0.0003719329833984375
+    },
+    {
+      "text": "to",
+      "startMs": 1360,
+      "endMs": 1419,
+      "loss": 0.00048542022705078125
+    },
+    {
+      "text": " ",
+      "startMs": 1419,
+      "endMs": 1459,
+      "loss": 0.000396728515625
+    },
+    {
+      "text": "the",
+      "startMs": 1459,
+      "endMs": 1539,
+      "loss": 0.000499884287516276
+    },
+    {
+      "text": " ",
+      "startMs": 1539,
+      "endMs": 1599,
+      "loss": 8.153915405273438e-05
+    },
+    {
+      "text": "kill.",
+      "startMs": 1599,
+      "endMs": 1879,
+      "loss": 0.13711149692535402
+    },
+    {
+      "text": "\n",
+      "startMs": 1879,
+      "endMs": 2659,
+      "loss": 5.125
+    },
+    {
+      "text": "\n",
+      "startMs": 2659,
+      "endMs": 2720,
+      "loss": 3.53125
+    },
+    {
+      "text": "Energy",
+      "startMs": 2720,
+      "endMs": 3099,
+      "loss": 0.0033423900604248047
+    },
+    {
+      "text": " ",
+      "startMs": 3099,
+      "endMs": 3179,
+      "loss": 9.632110595703125e-05
+    },
+    {
+      "text": "surges",
+      "startMs": 3179,
+      "endMs": 3659,
+      "loss": 0.0007297197977701823
+    },
+    {
+      "text": " ",
+      "startMs": 3659,
+      "endMs": 3679,
+      "loss": 0.0027313232421875
+    },
+    {
+      "text": "through",
+      "startMs": 3679,
+      "endMs": 4000,
+      "loss": 0.0003999301365443638
+    },
+    {
+      "text": " ",
+      "startMs": 4000,
+      "endMs": 4059,
+      "loss": 0.001220703125
+    },
+    {
+      "text": "damaged",
+      "startMs": 4059,
+      "endMs": 4480,
+      "loss": 0.001110076904296875
+    },
+    {
+      "text": " ",
+      "startMs": 4480,
+      "endMs": 4539,
+      "loss": 0.000789642333984375
+    },
+    {
+      "text": "frames",
+      "startMs": 4539,
+      "endMs": 4960,
+      "loss": 0.0019147197405497234
+    },
+    {
+      "text": " ",
+      "startMs": 4960,
+      "endMs": 5019,
+      "loss": 0.353515625
+    },
+    {
+      "text": "as",
+      "startMs": 5019,
+      "endMs": 5139,
+      "loss": 0.00152587890625
+    },
+    {
+      "text": " ",
+      "startMs": 5139,
+      "endMs": 5279,
+      "loss": 0.00012683868408203125
+    },
+    {
+      "text": "ancient",
+      "startMs": 5279,
+      "endMs": 5659,
+      "loss": 0.0002591780253819057
+    },
+    {
+      "text": " ",
+      "startMs": 5659,
+      "endMs": 5759,
+      "loss": 0.0005645751953125
+    },
+    {
+      "text": "systems",
+      "startMs": 5759,
+      "endMs": 6259,
+      "loss": 0.0012134143284388951
+    },
+    {
+      "text": " ",
+      "startMs": 6259,
+      "endMs": 6359,
+      "loss": 0.03515625
+    },
+    {
+      "text": "feed",
+      "startMs": 6359,
+      "endMs": 6619,
+      "loss": 0.0012450218200683594
+    },
+    {
+      "text": " ",
+      "startMs": 6619,
+      "endMs": 6699,
+      "loss": 0.0262451171875
+    },
+    {
+      "text": "upon",
+      "startMs": 6699,
+      "endMs": 6859,
+      "loss": 0.004047662019729614
+    },
+    {
+      "text": " ",
+      "startMs": 6859,
+      "endMs": 6879,
+      "loss": 0.0032501220703125
+    },
+    {
+      "text": "the",
+      "startMs": 6879,
+      "endMs": 7000,
+      "loss": 0.0005270640055338541
+    },
+    {
+      "text": " ",
+      "startMs": 7000,
+      "endMs": 7039,
+      "loss": 0.0017242431640625
+    },
+    {
+      "text": "moment",
+      "startMs": 7039,
+      "endMs": 7319,
+      "loss": 0.0003642837206522624
+    },
+    {
+      "text": " ",
+      "startMs": 7319,
+      "endMs": 7359,
+      "loss": 0.001190185546875
+    },
+    {
+      "text": "of",
+      "startMs": 7359,
+      "endMs": 7439,
+      "loss": 0.0002536773681640625
+    },
+    {
+      "text": " ",
+      "startMs": 7439,
+      "endMs": 7519,
+      "loss": 0.00012874603271484375
+    },
+    {
+      "text": "annihilation.",
+      "startMs": 7519,
+      "endMs": 8220,
+      "loss": 0.04663329858046312
+    },
+    {
+      "text": " ",
+      "startMs": 8220,
+      "endMs": 9059,
+      "loss": 0.00482177734375
+    },
+    {
+      "text": "Fractured",
+      "startMs": 9059,
+      "endMs": 9480,
+      "loss": 0.0007537470923529731
+    },
+    {
+      "text": " ",
+      "startMs": 9480,
+      "endMs": 9579,
+      "loss": 0.00096893310546875
+    },
+    {
+      "text": "armor",
+      "startMs": 9579,
+      "endMs": 9899,
+      "loss": 0.020513296127319336
+    },
+    {
+      "text": " ",
+      "startMs": 9899,
+      "endMs": 9939,
+      "loss": 0.00174713134765625
+    },
+    {
+      "text": "draws",
+      "startMs": 9939,
+      "endMs": 10219,
+      "loss": 0.0008801937103271485
+    },
+    {
+      "text": " ",
+      "startMs": 10219,
+      "endMs": 10259,
+      "loss": 0.00054931640625
+    },
+    {
+      "text": "together.",
+      "startMs": 10260,
+      "endMs": 10639,
+      "loss": 0.07718777656555176
+    },
+    {
+      "text": " ",
+      "startMs": 10639,
+      "endMs": 11439,
+      "loss": 0.0025634765625
+    },
+    {
+      "text": "Failing",
+      "startMs": 11439,
+      "endMs": 11800,
+      "loss": 0.005231039864676339
+    },
+    {
+      "text": " ",
+      "startMs": 11800,
+      "endMs": 11819,
+      "loss": 0.0010223388671875
+    },
+    {
+      "text": "mechanisms",
+      "startMs": 11819,
+      "endMs": 12460,
+      "loss": 0.000431060791015625
+    },
+    {
+      "text": " ",
+      "startMs": 12460,
+      "endMs": 12559,
+      "loss": 0.000560760498046875
+    },
+    {
+      "text": "flare",
+      "startMs": 12559,
+      "endMs": 12819,
+      "loss": 0.0032329559326171875
+    },
+    {
+      "text": " ",
+      "startMs": 12819,
+      "endMs": 12959,
+      "loss": 0.0019073486328125
+    },
+    {
+      "text": "back",
+      "startMs": 12960,
+      "endMs": 13079,
+      "loss": 0.0026702880859375
+    },
+    {
+      "text": " ",
+      "startMs": 13079,
+      "endMs": 13139,
+      "loss": 0.00189971923828125
+    },
+    {
+      "text": "to",
+      "startMs": 13139,
+      "endMs": 13220,
+      "loss": 0.0005042552947998047
+    },
+    {
+      "text": " ",
+      "startMs": 13220,
+      "endMs": 13299,
+      "loss": 0.0010986328125
+    },
+    {
+      "text": "life.",
+      "startMs": 13299,
+      "endMs": 13619,
+      "loss": 0.016642236709594728
+    },
+    {
+      "text": "\n",
+      "startMs": 13619,
+      "endMs": 14500,
+      "loss": 9.25
+    },
+    {
+      "text": "\n",
+      "startMs": 14500,
+      "endMs": 14579,
+      "loss": 6.375
+    },
+    {
+      "text": "Every",
+      "startMs": 14579,
+      "endMs": 14979,
+      "loss": 0.11009902954101562
+    },
+    {
+      "text": " ",
+      "startMs": 14979,
+      "endMs": 15039,
+      "loss": 0.007598876953125
+    },
+    {
+      "text": "death",
+      "startMs": 15039,
+      "endMs": 15439,
+      "loss": 0.0024600982666015624
+    },
+    {
+      "text": " ",
+      "startMs": 15439,
+      "endMs": 15539,
+      "loss": 0.0002899169921875
+    },
+    {
+      "text": "strengthens",
+      "startMs": 15539,
+      "endMs": 16120,
+      "loss": 0.0007763992656360973
+    },
+    {
+      "text": " ",
+      "startMs": 16120,
+      "endMs": 16159,
+      "loss": 0.00031280517578125
+    },
+    {
+      "text": "their",
+      "startMs": 16159,
+      "endMs": 16319,
+      "loss": 0.0012960433959960938
+    },
+    {
+      "text": " ",
+      "startMs": 16319,
+      "endMs": 16340,
+      "loss": 0.000453948974609375
+    },
+    {
+      "text": "purpose.",
+      "startMs": 16340,
+      "endMs": 17619,
+      "loss": 0.076698899269104
+    },
+    {
+      "text": "\n",
+      "startMs": 17619,
+      "endMs": 17639,
+      "loss": 7.15625
+    },
+    {
+      "text": "\n",
+      "startMs": 17639,
+      "endMs": 17659,
+      "loss": 3.96875
+    },
+    {
+      "text": "The",
+      "startMs": 17659,
+      "endMs": 17760,
+      "loss": 0.019673983256022137
+    },
+    {
+      "text": " ",
+      "startMs": 17760,
+      "endMs": 17779,
+      "loss": 0.038818359375
+    },
+    {
+      "text": "more",
+      "startMs": 17779,
+      "endMs": 17960,
+      "loss": 0.0004856586456298828
+    },
+    {
+      "text": " ",
+      "startMs": 17960,
+      "endMs": 17979,
+      "loss": 0.00019168853759765625
+    },
+    {
+      "text": "they",
+      "startMs": 17979,
+      "endMs": 18120,
+      "loss": 0.0005155205726623535
+    },
+    {
+      "text": " ",
+      "startMs": 18120,
+      "endMs": 18139,
+      "loss": 4.124641418457031e-05
+    },
+    {
+      "text": "destroy,",
+      "startMs": 18139,
+      "endMs": 18620,
+      "loss": 0.0009715259075164795
+    },
+    {
+      "text": " ",
+      "startMs": 18620,
+      "endMs": 19260,
+      "loss": 0.0057373046875
+    },
+    {
+      "text": "the",
+      "startMs": 19260,
+      "endMs": 19379,
+      "loss": 0.002463658650716146
+    },
+    {
+      "text": " ",
+      "startMs": 19379,
+      "endMs": 19420,
+      "loss": 0.0035400390625
+    },
+    {
+      "text": "harder",
+      "startMs": 19420,
+      "endMs": 19739,
+      "loss": 0.0007350842157999674
+    },
+    {
+      "text": " ",
+      "startMs": 19739,
+      "endMs": 19760,
+      "loss": 0.0002727508544921875
+    },
+    {
+      "text": "they",
+      "startMs": 19760,
+      "endMs": 19879,
+      "loss": 0.0002041459083557129
+    },
+    {
+      "text": " ",
+      "startMs": 19879,
+      "endMs": 19920,
+      "loss": 0.0001087188720703125
+    },
+    {
+      "text": "become",
+      "startMs": 19920,
+      "endMs": 20219,
+      "loss": 0.00017275412877400717
+    },
+    {
+      "text": " ",
+      "startMs": 20219,
+      "endMs": 20299,
+      "loss": 0.0010528564453125
+    },
+    {
+      "text": "to",
+      "startMs": 20299,
+      "endMs": 20379,
+      "loss": 0.0021800994873046875
+    },
+    {
+      "text": " ",
+      "startMs": 20379,
+      "endMs": 20479,
+      "loss": 0.0003032684326171875
+    },
+    {
+      "text": "stop.",
+      "startMs": 20479,
+      "endMs": 20819,
+      "loss": 0.05775470733642578
+    }
+  ]
+}
