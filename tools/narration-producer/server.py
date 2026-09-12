@@ -1,16 +1,20 @@
 """Local-only Tomb World narration production server."""
 from __future__ import annotations
-import hashlib, json, os, subprocess, tempfile, webbrowser
+import hashlib, json, os, subprocess, sys, tempfile, webbrowser
 from pathlib import Path
 from urllib.parse import quote
+HERE=Path(__file__).resolve().parent
+if str(HERE) not in sys.path: sys.path.insert(0,str(HERE))
 import requests
 from dotenv import dotenv_values
 from flask import Flask, jsonify, request, send_from_directory
 from mutagen.mp3 import MP3
+from alignment import generate_alignment, inventory
 
-HERE=Path(__file__).resolve().parent; ROOT=HERE.parents[1]
+ROOT=HERE.parents[1]
 SCRIPTS=ROOT/'Narration'/'scripts'; SETTINGS=ROOT/'Narration'/'producer-settings.json'
 AUDIO=ROOT/'Assets'/'Audio'/'Narration'; MANIFEST=AUDIO/'narration-manifest.json'
+ALIGNMENTS=AUDIO/'alignment'
 API='https://api.elevenlabs.io/v1'; ALLOWED_ROOTS=(SCRIPTS.resolve(),AUDIO.resolve())
 app=Flask(__name__,static_folder='static',static_url_path='')
 
@@ -57,7 +61,20 @@ def get_json(url):
 @app.get('/')
 def index(): return app.send_static_file('index.html')
 @app.get('/api/status')
-def status(): return jsonify(apiKeyConfigured=bool(key()),settings=json.loads(SETTINGS.read_text()),scripts=library())
+def status():
+ alignment_inventory=inventory(MANIFEST,SCRIPTS,AUDIO,ALIGNMENTS)
+ statuses={item['id']:item for item in alignment_inventory['items']}
+ scripts=[dict(script,alignment=statuses.get(script['id'])) for script in library()]
+ return jsonify(apiKeyConfigured=bool(key()),settings=json.loads(SETTINGS.read_text()),scripts=scripts,alignment=alignment_inventory)
+@app.get('/api/alignments')
+def alignment_status(): return jsonify(inventory(MANIFEST,SCRIPTS,AUDIO,ALIGNMENTS))
+@app.post('/api/alignments/<path:entry_id>')
+def align_one(entry_id):
+ try:
+  result=generate_alignment(entry_id,MANIFEST,SCRIPTS,AUDIO,ALIGNMENTS,key(),requests.post)
+  return jsonify(ok=True,id=entry_id,qualityStatus=result['qualityStatus'],alignmentLoss=result['alignmentLoss'])
+ except ValueError as e:
+  return jsonify(error=str(e),stopBatch=bool(getattr(e,'stop_batch',False))),400
 @app.post('/api/recheck')
 def recheck(): return jsonify(apiKeyConfigured=bool(key()))
 @app.post('/api/open-key-file')
