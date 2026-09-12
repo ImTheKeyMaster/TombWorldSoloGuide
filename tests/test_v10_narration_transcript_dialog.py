@@ -137,7 +137,7 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
         self.assertIn("@media(max-width:480px)", STYLES)
         self.assertIn("env(safe-area-inset-bottom)", STYLES)
         transcript_body_rule = STYLES.split(".narration-transcript-body{", 1)[1].split("}", 1)[0]
-        self.assertIn("min-height:0", transcript_body_rule)
+        self.assertIn("min-height:120px", transcript_body_rule)
         self.assertIn("line-height:1.42", transcript_body_rule)
         self.assertIn("white-space:pre-wrap", transcript_body_rule)
         self.assertIn(".narration-transcript-body p{margin:0 0 .55em}", STYLES)
@@ -162,7 +162,27 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
         self.assertIn("linear-gradient", dialog_rule)
         self.assertIn("position:fixed", dialog_rule)
         self.assertIn("inset:0", dialog_rule)
-        self.assertIn("height:min(680px", dialog_rule)
+        shell_rule = STYLES.split(".narration-transcript-shell{", 1)[1].split("}", 1)[0]
+        mobile_rule = STYLES.split("@media(max-width:480px)", 1)[1].split("@media", 1)[0]
+        mobile_dialog_rule = mobile_rule.split(".narration-transcript-dialog{", 1)[1].split("}", 1)[0]
+
+        self.assertIn("height:auto", dialog_rule)
+        self.assertIn("--narration-dialog-max-height:calc(100dvh", dialog_rule)
+        self.assertIn("max-height:var(--narration-dialog-max-height)", dialog_rule)
+        self.assertNotIn("height:min(680px", dialog_rule)
+        self.assertIn("grid-template-rows:auto auto auto", shell_rule)
+        self.assertNotIn("height:100%", shell_rule)
+        self.assertIn("max-height:calc(var(--narration-dialog-max-height) - 10px)", shell_rule)
+        self.assertIn("min-height:120px", body_rule)
+        self.assertIn("max-height:min(450px,50dvh)", body_rule)
+        self.assertIn("overflow:auto", body_rule)
+        self.assertIn("overscroll-behavior:contain", body_rule)
+        self.assertIn("height:auto", mobile_dialog_rule)
+        self.assertIn("--narration-dialog-max-height:calc(100dvh", mobile_dialog_rule)
+        self.assertIn("max-height:var(--narration-dialog-max-height)", mobile_dialog_rule)
+        self.assertIn("max-height:48dvh", mobile_rule)
+        self.assertNotIn("100dvh - 300px", STYLES)
+        self.assertNotRegex(mobile_dialog_rule, r"(?:^|;)height:calc\(100dvh")
         self.assertIn("clip-path:polygon", dialog_rule)
         self.assertIn("filter:drop-shadow", dialog_rule)
         self.assertIn("repeating-linear-gradient", body_rule)
