@@ -156,6 +156,7 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
         progress_rule = STYLES.split(".narration-transcript-progress{", 1)[1].split("}", 1)[0]
         progress_ticks_rule = STYLES.split(".narration-transcript-progress::after{", 1)[1].split("}", 1)[0]
         progress_fill_rule = STYLES.split(".narration-transcript-progress span{", 1)[1].split("}", 1)[0]
+        help_rule = STYLES.split(".narration-transcript-help{", 1)[1].split("}", 1)[0]
         reopen_rule = STYLES.split(".narration-transcript-reopen{", 1)[1].split("}", 1)[0]
 
         self.assertIn("linear-gradient", dialog_rule)
@@ -173,6 +174,7 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
         self.assertIn("max-width:calc(100% - 20px)", STYLES)
         self.assertIn("border-left:3px solid #67c3ff", reopen_rule)
         self.assertIn("rgba(32,112,166,.38)", body_rule)
+        self.assertNotIn("var(--muted)", help_rule)
         self.assertNotIn("animation:", "\n".join((dialog_rule, body_rule, progress_rule, progress_ticks_rule, progress_fill_rule, reopen_rule)))
 
 
