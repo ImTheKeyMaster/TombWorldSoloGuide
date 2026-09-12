@@ -137,6 +137,20 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
         self.assertIn("const STORAGE_KEY = 'tombWorldBattleGuide.v1';", (ROOT / "app.js").read_text())
 
+    def test_cogitator_polish_is_lightweight_and_mobile_safe(self):
+        dialog_rule = STYLES.split(".narration-transcript-dialog{", 1)[1].split("}", 1)[0]
+        body_rule = STYLES.split(".narration-transcript-body{", 1)[1].split("}", 1)[0]
+        progress_rule = STYLES.split(".narration-transcript-progress{", 1)[1].split("}", 1)[0]
+        reopen_rule = STYLES.split(".narration-transcript-reopen{", 1)[1].split("}", 1)[0]
+
+        self.assertIn("linear-gradient", dialog_rule)
+        self.assertIn("border-radius:17px", dialog_rule)
+        self.assertIn("background-size:100% 4px", body_rule)
+        self.assertIn("repeating-linear-gradient", progress_rule)
+        self.assertIn("max-width:calc(100% - 20px)", STYLES)
+        self.assertIn("border-left:3px solid var(--green)", reopen_rule)
+        self.assertNotIn("animation:", "\n".join((dialog_rule, body_rule, progress_rule, reopen_rule)))
+
 
 if __name__ == "__main__":
     unittest.main()
