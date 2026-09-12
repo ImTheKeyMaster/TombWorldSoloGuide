@@ -1,0 +1,528 @@
+{
+  "schemaVersion": 1,
+  "id": "outcome.06.defeat",
+  "text": "The phasing routes never bring the team back together.\n\nWarriors remain separated by chambers, sealed passages and distances that refuse to behave as they should.\n\nThe tomb has divided the survivors and denied them any chance to reform.\n\nThe regroup has failed.",
+  "durationMs": 16980,
+  "scriptHash": "20ff564ccb4a3b75bef6edf2cca3beebdaa48c7eb3e81301f5ea7c15889c5b04",
+  "audioHash": "febe6eada3df80d99cbee572ad3489b950b4644d0bb0a0d319da64797be2ca7e",
+  "alignmentLoss": 0.22131710673657415,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "The",
+      "startMs": 79,
+      "endMs": 179,
+      "loss": 1.0381113688151042
+    },
+    {
+      "text": " ",
+      "startMs": 179,
+      "endMs": 199,
+      "loss": 0.00031280517578125
+    },
+    {
+      "text": "phasing",
+      "startMs": 199,
+      "endMs": 559,
+      "loss": 0.019505841391427175
+    },
+    {
+      "text": " ",
+      "startMs": 559,
+      "endMs": 619,
+      "loss": 0.002105712890625
+    },
+    {
+      "text": "routes",
+      "startMs": 620,
+      "endMs": 899,
+      "loss": 0.04473336537679037
+    },
+    {
+      "text": " ",
+      "startMs": 899,
+      "endMs": 979,
+      "loss": 0.002227783203125
+    },
+    {
+      "text": "never",
+      "startMs": 979,
+      "endMs": 1159,
+      "loss": 0.00023646354675292968
+    },
+    {
+      "text": " ",
+      "startMs": 1159,
+      "endMs": 1199,
+      "loss": 8.7738037109375e-05
+    },
+    {
+      "text": "bring",
+      "startMs": 1199,
+      "endMs": 1339,
+      "loss": 0.00010001659393310547
+    },
+    {
+      "text": " ",
+      "startMs": 1339,
+      "endMs": 1379,
+      "loss": 0.000530242919921875
+    },
+    {
+      "text": "the",
+      "startMs": 1379,
+      "endMs": 1480,
+      "loss": 0.0003509521484375
+    },
+    {
+      "text": " ",
+      "startMs": 1480,
+      "endMs": 1519,
+      "loss": 0.0002460479736328125
+    },
+    {
+      "text": "team",
+      "startMs": 1519,
+      "endMs": 1740,
+      "loss": 0.00043889880180358887
+    },
+    {
+      "text": " ",
+      "startMs": 1740,
+      "endMs": 1779,
+      "loss": 0.00035858154296875
+    },
+    {
+      "text": "back",
+      "startMs": 1779,
+      "endMs": 1959,
+      "loss": 0.00018700957298278809
+    },
+    {
+      "text": " ",
+      "startMs": 1959,
+      "endMs": 1979,
+      "loss": 0.00115966796875
+    },
+    {
+      "text": "together.",
+      "startMs": 1979,
+      "endMs": 2379,
+      "loss": 0.015148215823703341
+    },
+    {
+      "text": "\n",
+      "startMs": 2379,
+      "endMs": 3199,
+      "loss": 13.6875
+    },
+    {
+      "text": "\n",
+      "startMs": 3199,
+      "endMs": 3259,
+      "loss": 7.875
+    },
+    {
+      "text": "Warriors",
+      "startMs": 3259,
+      "endMs": 3679,
+      "loss": 0.004710868000984192
+    },
+    {
+      "text": " ",
+      "startMs": 3679,
+      "endMs": 3759,
+      "loss": 0.006103515625
+    },
+    {
+      "text": "remain",
+      "startMs": 3759,
+      "endMs": 4119,
+      "loss": 0.00019939740498860678
+    },
+    {
+      "text": " ",
+      "startMs": 4119,
+      "endMs": 4159,
+      "loss": 0.00445556640625
+    },
+    {
+      "text": "separated",
+      "startMs": 4159,
+      "endMs": 4659,
+      "loss": 0.00011001692877875434
+    },
+    {
+      "text": " ",
+      "startMs": 4659,
+      "endMs": 4699,
+      "loss": 9.5367431640625e-05
+    },
+    {
+      "text": "by",
+      "startMs": 4699,
+      "endMs": 4859,
+      "loss": 0.00037795305252075195
+    },
+    {
+      "text": " ",
+      "startMs": 4859,
+      "endMs": 4919,
+      "loss": 1.1682510375976562e-05
+    },
+    {
+      "text": "chambers,",
+      "startMs": 4920,
+      "endMs": 5440,
+      "loss": 0.001262174712287055
+    },
+    {
+      "text": " ",
+      "startMs": 5440,
+      "endMs": 5759,
+      "loss": 5.507469177246094e-05
+    },
+    {
+      "text": "sealed",
+      "startMs": 5759,
+      "endMs": 6059,
+      "loss": 0.0003389914830525716
+    },
+    {
+      "text": " ",
+      "startMs": 6059,
+      "endMs": 6159,
+      "loss": 0.000576019287109375
+    },
+    {
+      "text": "passages",
+      "startMs": 6159,
+      "endMs": 6699,
+      "loss": 0.00016848742961883545
+    },
+    {
+      "text": " ",
+      "startMs": 6699,
+      "endMs": 6739,
+      "loss": 0.7578125
+    },
+    {
+      "text": "and",
+      "startMs": 6739,
+      "endMs": 6819,
+      "loss": 0.004706978797912598
+    },
+    {
+      "text": " ",
+      "startMs": 6819,
+      "endMs": 6919,
+      "loss": 1.4185905456542969e-05
+    },
+    {
+      "text": "distances",
+      "startMs": 6920,
+      "endMs": 7480,
+      "loss": 0.00033206409878200956
+    },
+    {
+      "text": " ",
+      "startMs": 7480,
+      "endMs": 7539,
+      "loss": 0.00335693359375
+    },
+    {
+      "text": "that",
+      "startMs": 7539,
+      "endMs": 7639,
+      "loss": 0.0006506443023681641
+    },
+    {
+      "text": " ",
+      "startMs": 7639,
+      "endMs": 7699,
+      "loss": 3.910064697265625e-05
+    },
+    {
+      "text": "refuse",
+      "startMs": 7699,
+      "endMs": 8079,
+      "loss": 0.0003058115641276042
+    },
+    {
+      "text": " ",
+      "startMs": 8079,
+      "endMs": 8119,
+      "loss": 0.1796875
+    },
+    {
+      "text": "to",
+      "startMs": 8119,
+      "endMs": 8179,
+      "loss": 0.0004477500915527344
+    },
+    {
+      "text": " ",
+      "startMs": 8179,
+      "endMs": 8219,
+      "loss": 0.0003108978271484375
+    },
+    {
+      "text": "behave",
+      "startMs": 8220,
+      "endMs": 8659,
+      "loss": 0.00023339192072550455
+    },
+    {
+      "text": " ",
+      "startMs": 8659,
+      "endMs": 8699,
+      "loss": 0.0023956298828125
+    },
+    {
+      "text": "as",
+      "startMs": 8699,
+      "endMs": 8800,
+      "loss": 0.0003361701965332031
+    },
+    {
+      "text": " ",
+      "startMs": 8800,
+      "endMs": 8840,
+      "loss": 6.198883056640625e-05
+    },
+    {
+      "text": "they",
+      "startMs": 8840,
+      "endMs": 9019,
+      "loss": 0.0002830624580383301
+    },
+    {
+      "text": " ",
+      "startMs": 9019,
+      "endMs": 9079,
+      "loss": 8.678436279296875e-05
+    },
+    {
+      "text": "should.",
+      "startMs": 9079,
+      "endMs": 9359,
+      "loss": 0.0021726914814540316
+    },
+    {
+      "text": "\n",
+      "startMs": 9359,
+      "endMs": 10340,
+      "loss": 10.25
+    },
+    {
+      "text": "\n",
+      "startMs": 10340,
+      "endMs": 10399,
+      "loss": 6.34375
+    },
+    {
+      "text": "The",
+      "startMs": 10399,
+      "endMs": 10440,
+      "loss": 0.01367950439453125
+    },
+    {
+      "text": " ",
+      "startMs": 10440,
+      "endMs": 10559,
+      "loss": 0.0255126953125
+    },
+    {
+      "text": "tomb",
+      "startMs": 10559,
+      "endMs": 10840,
+      "loss": 0.008396148681640625
+    },
+    {
+      "text": " ",
+      "startMs": 10840,
+      "endMs": 10920,
+      "loss": 0.0001354217529296875
+    },
+    {
+      "text": "has",
+      "startMs": 10920,
+      "endMs": 11059,
+      "loss": 0.0018723805745442708
+    },
+    {
+      "text": " ",
+      "startMs": 11059,
+      "endMs": 11119,
+      "loss": 1.8835067749023438e-05
+    },
+    {
+      "text": "divided",
+      "startMs": 11119,
+      "endMs": 11600,
+      "loss": 0.00013150487627301897
+    },
+    {
+      "text": " ",
+      "startMs": 11600,
+      "endMs": 11639,
+      "loss": 0.00010919570922851562
+    },
+    {
+      "text": "the",
+      "startMs": 11639,
+      "endMs": 11679,
+      "loss": 0.0007945696512858073
+    },
+    {
+      "text": " ",
+      "startMs": 11679,
+      "endMs": 11759,
+      "loss": 0.0002536773681640625
+    },
+    {
+      "text": "survivors",
+      "startMs": 11759,
+      "endMs": 12300,
+      "loss": 0.00038743019104003906
+    },
+    {
+      "text": " ",
+      "startMs": 12300,
+      "endMs": 12779,
+      "loss": 0.08837890625
+    },
+    {
+      "text": "and",
+      "startMs": 12779,
+      "endMs": 12900,
+      "loss": 0.0014278888702392578
+    },
+    {
+      "text": " ",
+      "startMs": 12900,
+      "endMs": 12920,
+      "loss": 0.000152587890625
+    },
+    {
+      "text": "denied",
+      "startMs": 12920,
+      "endMs": 13279,
+      "loss": 0.0014928579330444336
+    },
+    {
+      "text": " ",
+      "startMs": 13279,
+      "endMs": 13319,
+      "loss": 0.00016021728515625
+    },
+    {
+      "text": "them",
+      "startMs": 13319,
+      "endMs": 13460,
+      "loss": 0.0007524490356445312
+    },
+    {
+      "text": " ",
+      "startMs": 13460,
+      "endMs": 13539,
+      "loss": 0.000171661376953125
+    },
+    {
+      "text": "any",
+      "startMs": 13539,
+      "endMs": 13739,
+      "loss": 0.00035973389943440753
+    },
+    {
+      "text": " ",
+      "startMs": 13739,
+      "endMs": 13799,
+      "loss": 0.000102996826171875
+    },
+    {
+      "text": "chance",
+      "startMs": 13799,
+      "endMs": 14099,
+      "loss": 0.00031626224517822266
+    },
+    {
+      "text": " ",
+      "startMs": 14099,
+      "endMs": 14139,
+      "loss": 0.000682830810546875
+    },
+    {
+      "text": "to",
+      "startMs": 14139,
+      "endMs": 14199,
+      "loss": 0.0006492733955383301
+    },
+    {
+      "text": " ",
+      "startMs": 14199,
+      "endMs": 14239,
+      "loss": 0.00121307373046875
+    },
+    {
+      "text": "reform.",
+      "startMs": 14239,
+      "endMs": 14719,
+      "loss": 0.0241678101675851
+    },
+    {
+      "text": "\n",
+      "startMs": 14719,
+      "endMs": 15560,
+      "loss": 6.65625
+    },
+    {
+      "text": "\n",
+      "startMs": 15560,
+      "endMs": 15579,
+      "loss": 5.40625
+    },
+    {
+      "text": "The",
+      "startMs": 15579,
+      "endMs": 15640,
+      "loss": 0.010537465413411459
+    },
+    {
+      "text": " ",
+      "startMs": 15640,
+      "endMs": 15719,
+      "loss": 0.0634765625
+    },
+    {
+      "text": "regroup",
+      "startMs": 15719,
+      "endMs": 16139,
+      "loss": 0.00968921184539795
+    },
+    {
+      "text": " ",
+      "startMs": 16139,
+      "endMs": 16199,
+      "loss": 0.0001964569091796875
+    },
+    {
+      "text": "has",
+      "startMs": 16199,
+      "endMs": 16319,
+      "loss": 0.0029424031575520835
+    },
+    {
+      "text": " ",
+      "startMs": 16319,
+      "endMs": 16399,
+      "loss": 0.00012493133544921875
+    },
+    {
+      "text": "failed.",
+      "startMs": 16399,
+      "endMs": 16699,
+      "loss": 0.32288033621651785
+    }
+  ]
+}

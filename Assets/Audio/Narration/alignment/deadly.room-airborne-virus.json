@@ -1,0 +1,522 @@
+{
+  "schemaVersion": 1,
+  "id": "deadly.room-airborne-virus",
+  "text": "Warning indicators flare.\n\nAn invisible contaminant hangs in the air, released from systems sealed for untold millennia. Breathing becomes difficult. Muscles hesitate. Even simple actions demand an effort they did not moments before.\n\nSomething in this room is fighting you from within.",
+  "durationMs": 20846,
+  "scriptHash": "e29abc20a0480b9a25fb73d1eac3ceb74679af003d80fb4f9000605cb81c9648",
+  "audioHash": "757bcba7ea6da18ef652d5504f956bb1445bf56f565d52dea9d3a89010a4b701",
+  "alignmentLoss": 0.12899678612088825,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "Warning",
+      "startMs": 219,
+      "endMs": 560,
+      "loss": 0.30633182185036795
+    },
+    {
+      "text": " ",
+      "startMs": 560,
+      "endMs": 659,
+      "loss": 0.00634765625
+    },
+    {
+      "text": "indicators",
+      "startMs": 659,
+      "endMs": 1199,
+      "loss": 0.009435367584228516
+    },
+    {
+      "text": " ",
+      "startMs": 1199,
+      "endMs": 1299,
+      "loss": 0.005950927734375
+    },
+    {
+      "text": "flare.",
+      "startMs": 1299,
+      "endMs": 1659,
+      "loss": 0.5196717580159506
+    },
+    {
+      "text": "\n",
+      "startMs": 1659,
+      "endMs": 1999,
+      "loss": 7.625
+    },
+    {
+      "text": "\n",
+      "startMs": 1999,
+      "endMs": 2039,
+      "loss": 4.65625
+    },
+    {
+      "text": "An",
+      "startMs": 2039,
+      "endMs": 2099,
+      "loss": 0.7134552001953125
+    },
+    {
+      "text": " ",
+      "startMs": 2099,
+      "endMs": 2159,
+      "loss": 0.06591796875
+    },
+    {
+      "text": "invisible",
+      "startMs": 2159,
+      "endMs": 2619,
+      "loss": 0.0005116462707519531
+    },
+    {
+      "text": " ",
+      "startMs": 2619,
+      "endMs": 2739,
+      "loss": 0.000804901123046875
+    },
+    {
+      "text": "contaminant",
+      "startMs": 2740,
+      "endMs": 3379,
+      "loss": 0.0022951472889293323
+    },
+    {
+      "text": " ",
+      "startMs": 3379,
+      "endMs": 3499,
+      "loss": 0.01202392578125
+    },
+    {
+      "text": "hangs",
+      "startMs": 3500,
+      "endMs": 3740,
+      "loss": 0.002039337158203125
+    },
+    {
+      "text": " ",
+      "startMs": 3740,
+      "endMs": 3779,
+      "loss": 0.000720977783203125
+    },
+    {
+      "text": "in",
+      "startMs": 3779,
+      "endMs": 3859,
+      "loss": 0.000766754150390625
+    },
+    {
+      "text": " ",
+      "startMs": 3859,
+      "endMs": 3879,
+      "loss": 0.004669189453125
+    },
+    {
+      "text": "the",
+      "startMs": 3879,
+      "endMs": 3959,
+      "loss": 0.0004781087239583333
+    },
+    {
+      "text": " ",
+      "startMs": 3959,
+      "endMs": 4059,
+      "loss": 8.249282836914062e-05
+    },
+    {
+      "text": "air,",
+      "startMs": 4059,
+      "endMs": 4279,
+      "loss": 0.4689326286315918
+    },
+    {
+      "text": " ",
+      "startMs": 4279,
+      "endMs": 4639,
+      "loss": 0.00026702880859375
+    },
+    {
+      "text": "released",
+      "startMs": 4639,
+      "endMs": 5039,
+      "loss": 0.0016214847564697266
+    },
+    {
+      "text": " ",
+      "startMs": 5039,
+      "endMs": 5119,
+      "loss": 0.01007080078125
+    },
+    {
+      "text": "from",
+      "startMs": 5119,
+      "endMs": 5239,
+      "loss": 0.00033348798751831055
+    },
+    {
+      "text": " ",
+      "startMs": 5239,
+      "endMs": 5319,
+      "loss": 0.000507354736328125
+    },
+    {
+      "text": "systems",
+      "startMs": 5319,
+      "endMs": 5819,
+      "loss": 0.005259394645690918
+    },
+    {
+      "text": " ",
+      "startMs": 5819,
+      "endMs": 5899,
+      "loss": 0.008544921875
+    },
+    {
+      "text": "sealed",
+      "startMs": 5900,
+      "endMs": 6259,
+      "loss": 0.00038452943166097003
+    },
+    {
+      "text": " ",
+      "startMs": 6259,
+      "endMs": 6319,
+      "loss": 0.005340576171875
+    },
+    {
+      "text": "for",
+      "startMs": 6319,
+      "endMs": 6440,
+      "loss": 0.00043328603108723957
+    },
+    {
+      "text": " ",
+      "startMs": 6440,
+      "endMs": 6500,
+      "loss": 0.0002899169921875
+    },
+    {
+      "text": "untold",
+      "startMs": 6500,
+      "endMs": 7039,
+      "loss": 0.001441359519958496
+    },
+    {
+      "text": " ",
+      "startMs": 7039,
+      "endMs": 7119,
+      "loss": 0.00131988525390625
+    },
+    {
+      "text": "millennia.",
+      "startMs": 7119,
+      "endMs": 7639,
+      "loss": 0.06768569946289063
+    },
+    {
+      "text": " ",
+      "startMs": 7639,
+      "endMs": 8559,
+      "loss": 0.0068359375
+    },
+    {
+      "text": "Breathing",
+      "startMs": 8559,
+      "endMs": 8920,
+      "loss": 0.0024593141343858507
+    },
+    {
+      "text": " ",
+      "startMs": 8920,
+      "endMs": 8979,
+      "loss": 0.0001697540283203125
+    },
+    {
+      "text": "becomes",
+      "startMs": 8979,
+      "endMs": 9500,
+      "loss": 0.0007571492876325335
+    },
+    {
+      "text": " ",
+      "startMs": 9500,
+      "endMs": 9519,
+      "loss": 0.00010395050048828125
+    },
+    {
+      "text": "difficult.",
+      "startMs": 9519,
+      "endMs": 9939,
+      "loss": 0.061712241172790526
+    },
+    {
+      "text": " ",
+      "startMs": 9939,
+      "endMs": 10760,
+      "loss": 0.005828857421875
+    },
+    {
+      "text": "Muscles",
+      "startMs": 10760,
+      "endMs": 11239,
+      "loss": 0.005691494260515485
+    },
+    {
+      "text": " ",
+      "startMs": 11239,
+      "endMs": 11279,
+      "loss": 0.00034332275390625
+    },
+    {
+      "text": "hesitate.",
+      "startMs": 11279,
+      "endMs": 11759,
+      "loss": 0.03710737493303087
+    },
+    {
+      "text": " ",
+      "startMs": 11759,
+      "endMs": 12420,
+      "loss": 0.00274658203125
+    },
+    {
+      "text": "Even",
+      "startMs": 12420,
+      "endMs": 12640,
+      "loss": 0.0033327341079711914
+    },
+    {
+      "text": " ",
+      "startMs": 12640,
+      "endMs": 12739,
+      "loss": 0.0015869140625
+    },
+    {
+      "text": "simple",
+      "startMs": 12739,
+      "endMs": 13019,
+      "loss": 0.00046128034591674805
+    },
+    {
+      "text": " ",
+      "startMs": 13019,
+      "endMs": 13119,
+      "loss": 0.0004711151123046875
+    },
+    {
+      "text": "actions",
+      "startMs": 13119,
+      "endMs": 13500,
+      "loss": 0.0018681798662458146
+    },
+    {
+      "text": " ",
+      "startMs": 13500,
+      "endMs": 13559,
+      "loss": 0.000720977783203125
+    },
+    {
+      "text": "demand",
+      "startMs": 13559,
+      "endMs": 13960,
+      "loss": 0.0002658367156982422
+    },
+    {
+      "text": " ",
+      "startMs": 13960,
+      "endMs": 14000,
+      "loss": 0.0050048828125
+    },
+    {
+      "text": "an",
+      "startMs": 14000,
+      "endMs": 14119,
+      "loss": 0.0013523101806640625
+    },
+    {
+      "text": " ",
+      "startMs": 14119,
+      "endMs": 14199,
+      "loss": 0.0101318359375
+    },
+    {
+      "text": "effort",
+      "startMs": 14199,
+      "endMs": 14500,
+      "loss": 0.0010370214780171712
+    },
+    {
+      "text": " ",
+      "startMs": 14500,
+      "endMs": 14739,
+      "loss": 0.09375
+    },
+    {
+      "text": "they",
+      "startMs": 14739,
+      "endMs": 14859,
+      "loss": 0.01194000244140625
+    },
+    {
+      "text": " ",
+      "startMs": 14859,
+      "endMs": 14879,
+      "loss": 0.00064849853515625
+    },
+    {
+      "text": "did",
+      "startMs": 14880,
+      "endMs": 15039,
+      "loss": 0.00112152099609375
+    },
+    {
+      "text": " ",
+      "startMs": 15039,
+      "endMs": 15059,
+      "loss": 0.026123046875
+    },
+    {
+      "text": "not",
+      "startMs": 15059,
+      "endMs": 15299,
+      "loss": 0.001272439956665039
+    },
+    {
+      "text": " ",
+      "startMs": 15299,
+      "endMs": 15599,
+      "loss": 0.275390625
+    },
+    {
+      "text": "moments",
+      "startMs": 15599,
+      "endMs": 15960,
+      "loss": 0.009438650948660714
+    },
+    {
+      "text": " ",
+      "startMs": 15960,
+      "endMs": 15979,
+      "loss": 0.004058837890625
+    },
+    {
+      "text": "before.",
+      "startMs": 15979,
+      "endMs": 16420,
+      "loss": 0.006436007363455636
+    },
+    {
+      "text": "\n",
+      "startMs": 16420,
+      "endMs": 17219,
+      "loss": 9.5
+    },
+    {
+      "text": "\n",
+      "startMs": 17219,
+      "endMs": 17259,
+      "loss": 3.375
+    },
+    {
+      "text": "Something",
+      "startMs": 17260,
+      "endMs": 17680,
+      "loss": 0.03169033262464735
+    },
+    {
+      "text": " ",
+      "startMs": 17680,
+      "endMs": 17699,
+      "loss": 0.001129150390625
+    },
+    {
+      "text": "in",
+      "startMs": 17699,
+      "endMs": 17819,
+      "loss": 0.00223541259765625
+    },
+    {
+      "text": " ",
+      "startMs": 17819,
+      "endMs": 17859,
+      "loss": 0.000926971435546875
+    },
+    {
+      "text": "this",
+      "startMs": 17859,
+      "endMs": 18000,
+      "loss": 0.00113677978515625
+    },
+    {
+      "text": " ",
+      "startMs": 18000,
+      "endMs": 18079,
+      "loss": 2.86102294921875e-05
+    },
+    {
+      "text": "room",
+      "startMs": 18079,
+      "endMs": 18479,
+      "loss": 0.0005680322647094727
+    },
+    {
+      "text": " ",
+      "startMs": 18479,
+      "endMs": 18539,
+      "loss": 0.000843048095703125
+    },
+    {
+      "text": "is",
+      "startMs": 18539,
+      "endMs": 18639,
+      "loss": 0.00145721435546875
+    },
+    {
+      "text": " ",
+      "startMs": 18639,
+      "endMs": 18760,
+      "loss": 6.246566772460938e-05
+    },
+    {
+      "text": "fighting",
+      "startMs": 18760,
+      "endMs": 19100,
+      "loss": 0.0008412003517150879
+    },
+    {
+      "text": " ",
+      "startMs": 19100,
+      "endMs": 19119,
+      "loss": 0.00081634521484375
+    },
+    {
+      "text": "you",
+      "startMs": 19119,
+      "endMs": 19340,
+      "loss": 0.0013863245646158855
+    },
+    {
+      "text": " ",
+      "startMs": 19340,
+      "endMs": 19359,
+      "loss": 0.00054168701171875
+    },
+    {
+      "text": "from",
+      "startMs": 19359,
+      "endMs": 19520,
+      "loss": 0.002287626266479492
+    },
+    {
+      "text": " ",
+      "startMs": 19520,
+      "endMs": 19539,
+      "loss": 0.000362396240234375
+    },
+    {
+      "text": "within.",
+      "startMs": 19539,
+      "endMs": 19979,
+      "loss": 0.02702386038643973
+    }
+  ]
+}

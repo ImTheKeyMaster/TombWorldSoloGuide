@@ -1,0 +1,480 @@
+{
+  "schemaVersion": 1,
+  "id": "outcome.04.victory",
+  "text": "The final breach tears through the sarcophagus.\n\nLiving metal splits beneath cascading emerald energy as the stasis systems collapse. Across the chamber, ancient mechanisms flicker and die.\n\nWhatever was meant to awaken here will remain entombed.\n\nMission accomplished.",
+  "durationMs": 20924,
+  "scriptHash": "5c62a613e8de5361545d0d4efe21a55a3c262d576e11b18548ff15b5178e4a7a",
+  "audioHash": "c170930f197372644b47a4257ffaee0868274bd8ca7b310aacc8466f0827af1c",
+  "alignmentLoss": 0.18072159316903152,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "The",
+      "startMs": 79,
+      "endMs": 199,
+      "loss": 1.9819691975911458
+    },
+    {
+      "text": " ",
+      "startMs": 199,
+      "endMs": 239,
+      "loss": 8.821487426757812e-05
+    },
+    {
+      "text": "final",
+      "startMs": 239,
+      "endMs": 500,
+      "loss": 0.000586390495300293
+    },
+    {
+      "text": " ",
+      "startMs": 500,
+      "endMs": 599,
+      "loss": 0.000125885009765625
+    },
+    {
+      "text": "breach",
+      "startMs": 599,
+      "endMs": 1079,
+      "loss": 0.05348310867945353
+    },
+    {
+      "text": " ",
+      "startMs": 1079,
+      "endMs": 1100,
+      "loss": 0.00083160400390625
+    },
+    {
+      "text": "tears",
+      "startMs": 1100,
+      "endMs": 1519,
+      "loss": 0.0025629043579101563
+    },
+    {
+      "text": " ",
+      "startMs": 1519,
+      "endMs": 1599,
+      "loss": 0.000591278076171875
+    },
+    {
+      "text": "through",
+      "startMs": 1599,
+      "endMs": 1819,
+      "loss": 0.00030234881809779575
+    },
+    {
+      "text": " ",
+      "startMs": 1819,
+      "endMs": 1859,
+      "loss": 0.000469207763671875
+    },
+    {
+      "text": "the",
+      "startMs": 1860,
+      "endMs": 1919,
+      "loss": 0.00048732757568359375
+    },
+    {
+      "text": " ",
+      "startMs": 1919,
+      "endMs": 1979,
+      "loss": 2.658367156982422e-05
+    },
+    {
+      "text": "sarcophagus.",
+      "startMs": 1979,
+      "endMs": 2740,
+      "loss": 0.014963785807291666
+    },
+    {
+      "text": "\n",
+      "startMs": 2740,
+      "endMs": 3619,
+      "loss": 11.375
+    },
+    {
+      "text": "\n",
+      "startMs": 3619,
+      "endMs": 3639,
+      "loss": 6.25
+    },
+    {
+      "text": "Living",
+      "startMs": 3639,
+      "endMs": 3899,
+      "loss": 0.00988239049911499
+    },
+    {
+      "text": " ",
+      "startMs": 3899,
+      "endMs": 3999,
+      "loss": 0.006256103515625
+    },
+    {
+      "text": "metal",
+      "startMs": 4000,
+      "endMs": 4279,
+      "loss": 0.0006972312927246094
+    },
+    {
+      "text": " ",
+      "startMs": 4279,
+      "endMs": 4399,
+      "loss": 0.01153564453125
+    },
+    {
+      "text": "splits",
+      "startMs": 4400,
+      "endMs": 4819,
+      "loss": 0.0003567337989807129
+    },
+    {
+      "text": " ",
+      "startMs": 4819,
+      "endMs": 4859,
+      "loss": 0.00335693359375
+    },
+    {
+      "text": "beneath",
+      "startMs": 4859,
+      "endMs": 5119,
+      "loss": 0.00019063268389020647
+    },
+    {
+      "text": " ",
+      "startMs": 5119,
+      "endMs": 5239,
+      "loss": 0.00156402587890625
+    },
+    {
+      "text": "cascading",
+      "startMs": 5239,
+      "endMs": 5899,
+      "loss": 0.00042961703406439885
+    },
+    {
+      "text": " ",
+      "startMs": 5899,
+      "endMs": 5980,
+      "loss": 0.002838134765625
+    },
+    {
+      "text": "emerald",
+      "startMs": 5980,
+      "endMs": 6299,
+      "loss": 0.0009530612400599889
+    },
+    {
+      "text": " ",
+      "startMs": 6299,
+      "endMs": 6399,
+      "loss": 0.0012359619140625
+    },
+    {
+      "text": "energy",
+      "startMs": 6399,
+      "endMs": 6759,
+      "loss": 9.62217648824056e-05
+    },
+    {
+      "text": " ",
+      "startMs": 6759,
+      "endMs": 7079,
+      "loss": 0.0093994140625
+    },
+    {
+      "text": "as",
+      "startMs": 7079,
+      "endMs": 7159,
+      "loss": 0.00034809112548828125
+    },
+    {
+      "text": " ",
+      "startMs": 7159,
+      "endMs": 7199,
+      "loss": 7.987022399902344e-06
+    },
+    {
+      "text": "the",
+      "startMs": 7199,
+      "endMs": 7259,
+      "loss": 0.00031896432240804035
+    },
+    {
+      "text": " ",
+      "startMs": 7259,
+      "endMs": 7359,
+      "loss": 7.05718994140625e-05
+    },
+    {
+      "text": "stasis",
+      "startMs": 7359,
+      "endMs": 7799,
+      "loss": 0.0032576719919840493
+    },
+    {
+      "text": " ",
+      "startMs": 7799,
+      "endMs": 7859,
+      "loss": 0.01153564453125
+    },
+    {
+      "text": "systems",
+      "startMs": 7859,
+      "endMs": 8359,
+      "loss": 0.0012615578515189035
+    },
+    {
+      "text": " ",
+      "startMs": 8359,
+      "endMs": 8399,
+      "loss": 0.00032806396484375
+    },
+    {
+      "text": "collapse.",
+      "startMs": 8399,
+      "endMs": 8939,
+      "loss": 0.003986292415195041
+    },
+    {
+      "text": " ",
+      "startMs": 8939,
+      "endMs": 9920,
+      "loss": 0.00110626220703125
+    },
+    {
+      "text": "Across",
+      "startMs": 9920,
+      "endMs": 10239,
+      "loss": 0.0005617340405782064
+    },
+    {
+      "text": " ",
+      "startMs": 10239,
+      "endMs": 10279,
+      "loss": 0.000316619873046875
+    },
+    {
+      "text": "the",
+      "startMs": 10279,
+      "endMs": 10380,
+      "loss": 0.00021334489186604819
+    },
+    {
+      "text": " ",
+      "startMs": 10380,
+      "endMs": 10439,
+      "loss": 2.5987625122070312e-05
+    },
+    {
+      "text": "chamber,",
+      "startMs": 10439,
+      "endMs": 10819,
+      "loss": 0.050001323223114014
+    },
+    {
+      "text": " ",
+      "startMs": 10819,
+      "endMs": 11199,
+      "loss": 1.811981201171875e-05
+    },
+    {
+      "text": "ancient",
+      "startMs": 11199,
+      "endMs": 11599,
+      "loss": 0.0002988917487008231
+    },
+    {
+      "text": " ",
+      "startMs": 11599,
+      "endMs": 11739,
+      "loss": 0.00012063980102539062
+    },
+    {
+      "text": "mechanisms",
+      "startMs": 11739,
+      "endMs": 12439,
+      "loss": 0.00024336576461791992
+    },
+    {
+      "text": " ",
+      "startMs": 12439,
+      "endMs": 12559,
+      "loss": 0.0029296875
+    },
+    {
+      "text": "flicker",
+      "startMs": 12559,
+      "endMs": 12939,
+      "loss": 0.00020842892783028738
+    },
+    {
+      "text": " ",
+      "startMs": 12939,
+      "endMs": 13199,
+      "loss": 0.005401611328125
+    },
+    {
+      "text": "and",
+      "startMs": 13199,
+      "endMs": 13299,
+      "loss": 0.0004080533981323242
+    },
+    {
+      "text": " ",
+      "startMs": 13299,
+      "endMs": 13439,
+      "loss": 6.532669067382812e-05
+    },
+    {
+      "text": "die.",
+      "startMs": 13439,
+      "endMs": 13779,
+      "loss": 0.017412185668945312
+    },
+    {
+      "text": "\n",
+      "startMs": 13779,
+      "endMs": 14619,
+      "loss": 8.0625
+    },
+    {
+      "text": "\n",
+      "startMs": 14619,
+      "endMs": 14639,
+      "loss": 3.109375
+    },
+    {
+      "text": "Whatever",
+      "startMs": 14639,
+      "endMs": 14960,
+      "loss": 0.016789227724075317
+    },
+    {
+      "text": " ",
+      "startMs": 14960,
+      "endMs": 15000,
+      "loss": 0.00014495849609375
+    },
+    {
+      "text": "was",
+      "startMs": 15000,
+      "endMs": 15119,
+      "loss": 0.00021819273630777994
+    },
+    {
+      "text": " ",
+      "startMs": 15119,
+      "endMs": 15199,
+      "loss": 8.821487426757812e-06
+    },
+    {
+      "text": "meant",
+      "startMs": 15199,
+      "endMs": 15479,
+      "loss": 9.431838989257813e-05
+    },
+    {
+      "text": " ",
+      "startMs": 15479,
+      "endMs": 15519,
+      "loss": 0.0003643035888671875
+    },
+    {
+      "text": "to",
+      "startMs": 15519,
+      "endMs": 15599,
+      "loss": 0.000164031982421875
+    },
+    {
+      "text": " ",
+      "startMs": 15599,
+      "endMs": 15659,
+      "loss": 2.9802322387695312e-05
+    },
+    {
+      "text": "awaken",
+      "startMs": 15659,
+      "endMs": 16100,
+      "loss": 0.0002985994021097819
+    },
+    {
+      "text": " ",
+      "startMs": 16100,
+      "endMs": 16139,
+      "loss": 0.0010223388671875
+    },
+    {
+      "text": "here",
+      "startMs": 16139,
+      "endMs": 16759,
+      "loss": 0.0002837181091308594
+    },
+    {
+      "text": " ",
+      "startMs": 16759,
+      "endMs": 16819,
+      "loss": 0.0260009765625
+    },
+    {
+      "text": "will",
+      "startMs": 16819,
+      "endMs": 16959,
+      "loss": 0.00024318695068359375
+    },
+    {
+      "text": " ",
+      "startMs": 16959,
+      "endMs": 17000,
+      "loss": 1.9788742065429688e-05
+    },
+    {
+      "text": "remain",
+      "startMs": 17000,
+      "endMs": 17639,
+      "loss": 0.00025083621342976886
+    },
+    {
+      "text": " ",
+      "startMs": 17639,
+      "endMs": 17699,
+      "loss": 0.00024318695068359375
+    },
+    {
+      "text": "entombed.",
+      "startMs": 17699,
+      "endMs": 18459,
+      "loss": 0.027170817057291668
+    },
+    {
+      "text": "\n",
+      "startMs": 18459,
+      "endMs": 19420,
+      "loss": 5.28125
+    },
+    {
+      "text": "\n",
+      "startMs": 19420,
+      "endMs": 19459,
+      "loss": 3.21875
+    },
+    {
+      "text": "Mission",
+      "startMs": 19459,
+      "endMs": 19840,
+      "loss": 0.015848534447806224
+    },
+    {
+      "text": " ",
+      "startMs": 19840,
+      "endMs": 19979,
+      "loss": 0.00051116943359375
+    },
+    {
+      "text": "accomplished.",
+      "startMs": 19979,
+      "endMs": 20659,
+      "loss": 0.2801646636082576
+    }
+  ]
+}

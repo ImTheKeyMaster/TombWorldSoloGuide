@@ -1,0 +1,510 @@
+{
+  "schemaVersion": 1,
+  "id": "deadly.objective-temporal-sphere",
+  "text": "Time thickens around the sphere.\n\nMovement becomes strangely uneven. A warrior seems to surge forward between heartbeats, then hang motionless while the rest of the chamber continues around them.\n\nControl of this device means control over the sequence of time itself.",
+  "durationMs": 19592,
+  "scriptHash": "992ce9cf662caeaf7eb39d27740787fdd336cc9a718ab0fb3b9f8df13feec13b",
+  "audioHash": "3d691f60938290c45b35be66f7a726839777373ba4e615f261088f8d642cd433",
+  "alignmentLoss": 0.1092482131072198,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "Time",
+      "startMs": 219,
+      "endMs": 639,
+      "loss": 0.5524485111236572
+    },
+    {
+      "text": " ",
+      "startMs": 639,
+      "endMs": 919,
+      "loss": 0.00170135498046875
+    },
+    {
+      "text": "thickens",
+      "startMs": 919,
+      "endMs": 1519,
+      "loss": 0.0019137859344482422
+    },
+    {
+      "text": " ",
+      "startMs": 1519,
+      "endMs": 1620,
+      "loss": 0.00160980224609375
+    },
+    {
+      "text": "around",
+      "startMs": 1620,
+      "endMs": 1919,
+      "loss": 0.0008492867151896158
+    },
+    {
+      "text": " ",
+      "startMs": 1919,
+      "endMs": 1959,
+      "loss": 0.0003490447998046875
+    },
+    {
+      "text": "the",
+      "startMs": 1959,
+      "endMs": 1999,
+      "loss": 0.0005715688069661459
+    },
+    {
+      "text": " ",
+      "startMs": 1999,
+      "endMs": 2079,
+      "loss": 0.0001068115234375
+    },
+    {
+      "text": "sphere.",
+      "startMs": 2079,
+      "endMs": 2500,
+      "loss": 0.0940044607434954
+    },
+    {
+      "text": "\n",
+      "startMs": 2500,
+      "endMs": 3359,
+      "loss": 7.125
+    },
+    {
+      "text": "\n",
+      "startMs": 3359,
+      "endMs": 3399,
+      "loss": 2.9375
+    },
+    {
+      "text": "Movement",
+      "startMs": 3399,
+      "endMs": 3959,
+      "loss": 0.0031267404556274414
+    },
+    {
+      "text": " ",
+      "startMs": 3959,
+      "endMs": 3999,
+      "loss": 0.0004749298095703125
+    },
+    {
+      "text": "becomes",
+      "startMs": 4000,
+      "endMs": 4639,
+      "loss": 0.0003231252942766462
+    },
+    {
+      "text": " ",
+      "startMs": 4639,
+      "endMs": 4659,
+      "loss": 0.00067138671875
+    },
+    {
+      "text": "strangely",
+      "startMs": 4659,
+      "endMs": 5259,
+      "loss": 0.00038378768497043185
+    },
+    {
+      "text": " ",
+      "startMs": 5259,
+      "endMs": 5319,
+      "loss": 0.00021457672119140625
+    },
+    {
+      "text": "uneven.",
+      "startMs": 5319,
+      "endMs": 5839,
+      "loss": 0.4729739597865513
+    },
+    {
+      "text": " ",
+      "startMs": 5839,
+      "endMs": 6679,
+      "loss": 0.0927734375
+    },
+    {
+      "text": "A",
+      "startMs": 6679,
+      "endMs": 6719,
+      "loss": 0.004638671875
+    },
+    {
+      "text": " ",
+      "startMs": 6719,
+      "endMs": 6859,
+      "loss": 0.000308990478515625
+    },
+    {
+      "text": "warrior",
+      "startMs": 6859,
+      "endMs": 7279,
+      "loss": 0.00040910925183977397
+    },
+    {
+      "text": " ",
+      "startMs": 7279,
+      "endMs": 7339,
+      "loss": 0.0022430419921875
+    },
+    {
+      "text": "seems",
+      "startMs": 7339,
+      "endMs": 7619,
+      "loss": 0.0006403923034667969
+    },
+    {
+      "text": " ",
+      "startMs": 7619,
+      "endMs": 7620,
+      "loss": 0.000331878662109375
+    },
+    {
+      "text": "to",
+      "startMs": 7620,
+      "endMs": 7779,
+      "loss": 0.0010180473327636719
+    },
+    {
+      "text": " ",
+      "startMs": 7779,
+      "endMs": 7839,
+      "loss": 0.0003490447998046875
+    },
+    {
+      "text": "surge",
+      "startMs": 7839,
+      "endMs": 8159,
+      "loss": 0.002371692657470703
+    },
+    {
+      "text": " ",
+      "startMs": 8159,
+      "endMs": 8260,
+      "loss": 0.0004329681396484375
+    },
+    {
+      "text": "forward",
+      "startMs": 8260,
+      "endMs": 8559,
+      "loss": 0.00039184093475341797
+    },
+    {
+      "text": " ",
+      "startMs": 8559,
+      "endMs": 8599,
+      "loss": 0.00579833984375
+    },
+    {
+      "text": "between",
+      "startMs": 8599,
+      "endMs": 8920,
+      "loss": 0.0014749935695103236
+    },
+    {
+      "text": " ",
+      "startMs": 8920,
+      "endMs": 9019,
+      "loss": 0.0003948211669921875
+    },
+    {
+      "text": "heartbeats,",
+      "startMs": 9019,
+      "endMs": 9500,
+      "loss": 0.018119183453646572
+    },
+    {
+      "text": " ",
+      "startMs": 9500,
+      "endMs": 9760,
+      "loss": 7.677078247070312e-05
+    },
+    {
+      "text": "then",
+      "startMs": 9760,
+      "endMs": 9920,
+      "loss": 0.00041604042053222656
+    },
+    {
+      "text": " ",
+      "startMs": 9920,
+      "endMs": 10000,
+      "loss": 0.000518798828125
+    },
+    {
+      "text": "hang",
+      "startMs": 10000,
+      "endMs": 10340,
+      "loss": 0.001322031021118164
+    },
+    {
+      "text": " ",
+      "startMs": 10340,
+      "endMs": 10399,
+      "loss": 0.008544921875
+    },
+    {
+      "text": "motionless",
+      "startMs": 10399,
+      "endMs": 11179,
+      "loss": 0.0009420990943908691
+    },
+    {
+      "text": " ",
+      "startMs": 11179,
+      "endMs": 11239,
+      "loss": 0.201171875
+    },
+    {
+      "text": "while",
+      "startMs": 11239,
+      "endMs": 11380,
+      "loss": 0.0015267372131347657
+    },
+    {
+      "text": " ",
+      "startMs": 11380,
+      "endMs": 11420,
+      "loss": 0.00079345703125
+    },
+    {
+      "text": "the",
+      "startMs": 11420,
+      "endMs": 11500,
+      "loss": 0.0008309682210286459
+    },
+    {
+      "text": " ",
+      "startMs": 11500,
+      "endMs": 11539,
+      "loss": 0.000476837158203125
+    },
+    {
+      "text": "rest",
+      "startMs": 11539,
+      "endMs": 11739,
+      "loss": 0.00018489360809326172
+    },
+    {
+      "text": " ",
+      "startMs": 11739,
+      "endMs": 11779,
+      "loss": 0.000934600830078125
+    },
+    {
+      "text": "of",
+      "startMs": 11779,
+      "endMs": 11860,
+      "loss": 0.0010790824890136719
+    },
+    {
+      "text": " ",
+      "startMs": 11860,
+      "endMs": 11880,
+      "loss": 0.000518798828125
+    },
+    {
+      "text": "the",
+      "startMs": 11880,
+      "endMs": 11979,
+      "loss": 0.00067901611328125
+    },
+    {
+      "text": " ",
+      "startMs": 11979,
+      "endMs": 12000,
+      "loss": 0.000270843505859375
+    },
+    {
+      "text": "chamber",
+      "startMs": 12000,
+      "endMs": 12420,
+      "loss": 0.0009444611413138253
+    },
+    {
+      "text": " ",
+      "startMs": 12420,
+      "endMs": 12460,
+      "loss": 0.000972747802734375
+    },
+    {
+      "text": "continues",
+      "startMs": 12460,
+      "endMs": 13039,
+      "loss": 0.0008552869160970052
+    },
+    {
+      "text": " ",
+      "startMs": 13039,
+      "endMs": 13099,
+      "loss": 0.00189971923828125
+    },
+    {
+      "text": "around",
+      "startMs": 13099,
+      "endMs": 13400,
+      "loss": 0.00042517979939778644
+    },
+    {
+      "text": " ",
+      "startMs": 13400,
+      "endMs": 13420,
+      "loss": 0.00616455078125
+    },
+    {
+      "text": "them.",
+      "startMs": 13420,
+      "endMs": 13579,
+      "loss": 0.00530548095703125
+    },
+    {
+      "text": "\n",
+      "startMs": 13579,
+      "endMs": 14560,
+      "loss": 8.375
+    },
+    {
+      "text": "\n",
+      "startMs": 14560,
+      "endMs": 14599,
+      "loss": 3.296875
+    },
+    {
+      "text": "Control",
+      "startMs": 14599,
+      "endMs": 15039,
+      "loss": 0.028464385441371372
+    },
+    {
+      "text": " ",
+      "startMs": 15039,
+      "endMs": 15099,
+      "loss": 0.003631591796875
+    },
+    {
+      "text": "of",
+      "startMs": 15099,
+      "endMs": 15199,
+      "loss": 0.002105712890625
+    },
+    {
+      "text": " ",
+      "startMs": 15199,
+      "endMs": 15239,
+      "loss": 0.00020599365234375
+    },
+    {
+      "text": "this",
+      "startMs": 15239,
+      "endMs": 15400,
+      "loss": 0.0011148452758789062
+    },
+    {
+      "text": " ",
+      "startMs": 15400,
+      "endMs": 15439,
+      "loss": 0.00013637542724609375
+    },
+    {
+      "text": "device",
+      "startMs": 15439,
+      "endMs": 15819,
+      "loss": 0.0007010499636332194
+    },
+    {
+      "text": " ",
+      "startMs": 15819,
+      "endMs": 15899,
+      "loss": 0.0062255859375
+    },
+    {
+      "text": "means",
+      "startMs": 15899,
+      "endMs": 16239,
+      "loss": 0.000563955307006836
+    },
+    {
+      "text": " ",
+      "startMs": 16239,
+      "endMs": 16260,
+      "loss": 0.0081787109375
+    },
+    {
+      "text": "control",
+      "startMs": 16260,
+      "endMs": 16799,
+      "loss": 0.007699285234723773
+    },
+    {
+      "text": " ",
+      "startMs": 16799,
+      "endMs": 16879,
+      "loss": 0.01104736328125
+    },
+    {
+      "text": "over",
+      "startMs": 16879,
+      "endMs": 17040,
+      "loss": 0.0036468505859375
+    },
+    {
+      "text": " ",
+      "startMs": 17040,
+      "endMs": 17059,
+      "loss": 0.0020599365234375
+    },
+    {
+      "text": "the",
+      "startMs": 17059,
+      "endMs": 17100,
+      "loss": 0.003448486328125
+    },
+    {
+      "text": " ",
+      "startMs": 17100,
+      "endMs": 17219,
+      "loss": 0.000667572021484375
+    },
+    {
+      "text": "sequence",
+      "startMs": 17219,
+      "endMs": 17600,
+      "loss": 0.0017767250537872314
+    },
+    {
+      "text": " ",
+      "startMs": 17600,
+      "endMs": 17639,
+      "loss": 0.003204345703125
+    },
+    {
+      "text": "of",
+      "startMs": 17639,
+      "endMs": 17739,
+      "loss": 0.00275421142578125
+    },
+    {
+      "text": " ",
+      "startMs": 17739,
+      "endMs": 17779,
+      "loss": 0.000621795654296875
+    },
+    {
+      "text": "time",
+      "startMs": 17779,
+      "endMs": 18100,
+      "loss": 0.0039081573486328125
+    },
+    {
+      "text": " ",
+      "startMs": 18100,
+      "endMs": 18199,
+      "loss": 0.00592041015625
+    },
+    {
+      "text": "itself.",
+      "startMs": 18199,
+      "endMs": 18760,
+      "loss": 0.027210031236921037
+    }
+  ]
+}

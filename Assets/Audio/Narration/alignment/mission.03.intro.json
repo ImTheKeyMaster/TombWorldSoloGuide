@@ -1,0 +1,618 @@
+{
+  "schemaVersion": 1,
+  "id": "mission.03.intro",
+  "text": "A signal flickers somewhere within the crypt.\n\nWeak. Intermittent. Buried beneath layers of living metal and ancient interference.\n\nSeveral locations could conceal the transponder, but only one contains what you came for.\n\nFind it.\n\nThen get the carrier out of the Tomb World before the signal disappears with them.",
+  "durationMs": 21812,
+  "scriptHash": "af4dd73c044703dfe644005609fdd6f99583a9b6faf7b168caabd19bc84ab0ba",
+  "audioHash": "efb852c5bbdade967d115078d880a9ae8c4d1f1a387d39aef8dac39e86fa2085",
+  "alignmentLoss": 0.16184109165554955,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "A",
+      "startMs": 79,
+      "endMs": 140,
+      "loss": 4.78125
+    },
+    {
+      "text": " ",
+      "startMs": 140,
+      "endMs": 199,
+      "loss": 0.0023040771484375
+    },
+    {
+      "text": "signal",
+      "startMs": 199,
+      "endMs": 620,
+      "loss": 0.0006757974624633789
+    },
+    {
+      "text": " ",
+      "startMs": 620,
+      "endMs": 779,
+      "loss": 0.0008392333984375
+    },
+    {
+      "text": "flickers",
+      "startMs": 779,
+      "endMs": 1199,
+      "loss": 0.0004401952028274536
+    },
+    {
+      "text": " ",
+      "startMs": 1199,
+      "endMs": 1399,
+      "loss": 0.004791259765625
+    },
+    {
+      "text": "somewhere",
+      "startMs": 1399,
+      "endMs": 1819,
+      "loss": 0.00015695889790852865
+    },
+    {
+      "text": " ",
+      "startMs": 1819,
+      "endMs": 1919,
+      "loss": 0.00075531005859375
+    },
+    {
+      "text": "within",
+      "startMs": 1919,
+      "endMs": 2180,
+      "loss": 0.00024580955505371094
+    },
+    {
+      "text": " ",
+      "startMs": 2180,
+      "endMs": 2240,
+      "loss": 0.00023937225341796875
+    },
+    {
+      "text": "the",
+      "startMs": 2240,
+      "endMs": 2299,
+      "loss": 0.0002512931823730469
+    },
+    {
+      "text": " ",
+      "startMs": 2299,
+      "endMs": 2359,
+      "loss": 7.867813110351562e-05
+    },
+    {
+      "text": "crypt.",
+      "startMs": 2359,
+      "endMs": 2699,
+      "loss": 0.23279349009195963
+    },
+    {
+      "text": "\n",
+      "startMs": 2699,
+      "endMs": 3379,
+      "loss": 7.5
+    },
+    {
+      "text": "\n",
+      "startMs": 3379,
+      "endMs": 3419,
+      "loss": 3.3125
+    },
+    {
+      "text": "Weak.",
+      "startMs": 3419,
+      "endMs": 3739,
+      "loss": 0.5521614074707031
+    },
+    {
+      "text": " ",
+      "startMs": 3739,
+      "endMs": 4420,
+      "loss": 0.007354736328125
+    },
+    {
+      "text": "Intermittent.",
+      "startMs": 4420,
+      "endMs": 5079,
+      "loss": 0.15951215303861177
+    },
+    {
+      "text": " ",
+      "startMs": 5079,
+      "endMs": 5779,
+      "loss": 0.04052734375
+    },
+    {
+      "text": "Buried",
+      "startMs": 5779,
+      "endMs": 6139,
+      "loss": 0.007581035296122233
+    },
+    {
+      "text": " ",
+      "startMs": 6139,
+      "endMs": 6199,
+      "loss": 0.00121307373046875
+    },
+    {
+      "text": "beneath",
+      "startMs": 6199,
+      "endMs": 6460,
+      "loss": 0.0003345353262765067
+    },
+    {
+      "text": " ",
+      "startMs": 6460,
+      "endMs": 6539,
+      "loss": 0.0004119873046875
+    },
+    {
+      "text": "layers",
+      "startMs": 6539,
+      "endMs": 6839,
+      "loss": 0.0003399054209391276
+    },
+    {
+      "text": " ",
+      "startMs": 6839,
+      "endMs": 6899,
+      "loss": 0.0016021728515625
+    },
+    {
+      "text": "of",
+      "startMs": 6899,
+      "endMs": 6980,
+      "loss": 0.0004069805145263672
+    },
+    {
+      "text": " ",
+      "startMs": 6980,
+      "endMs": 7079,
+      "loss": 4.100799560546875e-05
+    },
+    {
+      "text": "living",
+      "startMs": 7079,
+      "endMs": 7339,
+      "loss": 0.0005173087120056152
+    },
+    {
+      "text": " ",
+      "startMs": 7339,
+      "endMs": 7459,
+      "loss": 0.0035247802734375
+    },
+    {
+      "text": "metal",
+      "startMs": 7460,
+      "endMs": 7919,
+      "loss": 0.001582765579223633
+    },
+    {
+      "text": " ",
+      "startMs": 7919,
+      "endMs": 7979,
+      "loss": 0.0286865234375
+    },
+    {
+      "text": "and",
+      "startMs": 7980,
+      "endMs": 8099,
+      "loss": 0.0004935661951700846
+    },
+    {
+      "text": " ",
+      "startMs": 8099,
+      "endMs": 8239,
+      "loss": 0.00015354156494140625
+    },
+    {
+      "text": "ancient",
+      "startMs": 8239,
+      "endMs": 8679,
+      "loss": 0.00028516565050397603
+    },
+    {
+      "text": " ",
+      "startMs": 8679,
+      "endMs": 8779,
+      "loss": 0.000518798828125
+    },
+    {
+      "text": "interference.",
+      "startMs": 8779,
+      "endMs": 9460,
+      "loss": 0.016643331601069525
+    },
+    {
+      "text": "\n",
+      "startMs": 9460,
+      "endMs": 10260,
+      "loss": 5.5
+    },
+    {
+      "text": "\n",
+      "startMs": 10260,
+      "endMs": 10319,
+      "loss": 1.7109375
+    },
+    {
+      "text": "Several",
+      "startMs": 10319,
+      "endMs": 10579,
+      "loss": 0.005009327616010394
+    },
+    {
+      "text": " ",
+      "startMs": 10579,
+      "endMs": 10639,
+      "loss": 5.5789947509765625e-05
+    },
+    {
+      "text": "locations",
+      "startMs": 10639,
+      "endMs": 11219,
+      "loss": 0.00022847122616238065
+    },
+    {
+      "text": " ",
+      "startMs": 11219,
+      "endMs": 11319,
+      "loss": 0.000507354736328125
+    },
+    {
+      "text": "could",
+      "startMs": 11319,
+      "endMs": 11479,
+      "loss": 0.0003838062286376953
+    },
+    {
+      "text": " ",
+      "startMs": 11479,
+      "endMs": 11519,
+      "loss": 5.173683166503906e-05
+    },
+    {
+      "text": "conceal",
+      "startMs": 11519,
+      "endMs": 11960,
+      "loss": 0.0002580029623849051
+    },
+    {
+      "text": " ",
+      "startMs": 11960,
+      "endMs": 12000,
+      "loss": 0.00066375732421875
+    },
+    {
+      "text": "the",
+      "startMs": 12000,
+      "endMs": 12059,
+      "loss": 0.0011924107869466145
+    },
+    {
+      "text": " ",
+      "startMs": 12059,
+      "endMs": 12139,
+      "loss": 5.7697296142578125e-05
+    },
+    {
+      "text": "transponder,",
+      "startMs": 12139,
+      "endMs": 12800,
+      "loss": 0.05011192957560221
+    },
+    {
+      "text": " ",
+      "startMs": 12800,
+      "endMs": 12920,
+      "loss": 8.58306884765625e-05
+    },
+    {
+      "text": "but",
+      "startMs": 12920,
+      "endMs": 13039,
+      "loss": 0.00044528643290201825
+    },
+    {
+      "text": " ",
+      "startMs": 13039,
+      "endMs": 13119,
+      "loss": 0.0001316070556640625
+    },
+    {
+      "text": "only",
+      "startMs": 13119,
+      "endMs": 13339,
+      "loss": 0.00027760863304138184
+    },
+    {
+      "text": " ",
+      "startMs": 13339,
+      "endMs": 13460,
+      "loss": 0.00013637542724609375
+    },
+    {
+      "text": "one",
+      "startMs": 13460,
+      "endMs": 13699,
+      "loss": 0.0017701784769694011
+    },
+    {
+      "text": " ",
+      "startMs": 13699,
+      "endMs": 13759,
+      "loss": 0.0003643035888671875
+    },
+    {
+      "text": "contains",
+      "startMs": 13759,
+      "endMs": 14359,
+      "loss": 0.00038054585456848145
+    },
+    {
+      "text": " ",
+      "startMs": 14359,
+      "endMs": 14399,
+      "loss": 0.000385284423828125
+    },
+    {
+      "text": "what",
+      "startMs": 14399,
+      "endMs": 14519,
+      "loss": 0.0006757080554962158
+    },
+    {
+      "text": " ",
+      "startMs": 14519,
+      "endMs": 14579,
+      "loss": 0.00012111663818359375
+    },
+    {
+      "text": "you",
+      "startMs": 14579,
+      "endMs": 14679,
+      "loss": 0.00021537144978841147
+    },
+    {
+      "text": " ",
+      "startMs": 14679,
+      "endMs": 14719,
+      "loss": 0.00011968612670898438
+    },
+    {
+      "text": "came",
+      "startMs": 14719,
+      "endMs": 14960,
+      "loss": 0.00044155120849609375
+    },
+    {
+      "text": " ",
+      "startMs": 14960,
+      "endMs": 15019,
+      "loss": 0.00115203857421875
+    },
+    {
+      "text": "for.",
+      "startMs": 15019,
+      "endMs": 15219,
+      "loss": 0.009121179580688477
+    },
+    {
+      "text": "\n",
+      "startMs": 15219,
+      "endMs": 15220,
+      "loss": 5.78125
+    },
+    {
+      "text": "\n",
+      "startMs": 15219,
+      "endMs": 15220,
+      "loss": 1.6796875
+    },
+    {
+      "text": "Find",
+      "startMs": 16440,
+      "endMs": 16659,
+      "loss": 0.03776097297668457
+    },
+    {
+      "text": " ",
+      "startMs": 16659,
+      "endMs": 16699,
+      "loss": 0.00011157989501953125
+    },
+    {
+      "text": "it.",
+      "startMs": 16699,
+      "endMs": 16899,
+      "loss": 0.5896962483723959
+    },
+    {
+      "text": "\n",
+      "startMs": 16899,
+      "endMs": 17779,
+      "loss": 5.375
+    },
+    {
+      "text": "\n",
+      "startMs": 17779,
+      "endMs": 17799,
+      "loss": 2.703125
+    },
+    {
+      "text": "Then",
+      "startMs": 17799,
+      "endMs": 17940,
+      "loss": 0.015087127685546875
+    },
+    {
+      "text": " ",
+      "startMs": 17940,
+      "endMs": 18000,
+      "loss": 0.01953125
+    },
+    {
+      "text": "get",
+      "startMs": 18000,
+      "endMs": 18119,
+      "loss": 0.0006706317265828451
+    },
+    {
+      "text": " ",
+      "startMs": 18119,
+      "endMs": 18159,
+      "loss": 5.245208740234375e-05
+    },
+    {
+      "text": "the",
+      "startMs": 18159,
+      "endMs": 18219,
+      "loss": 0.0006551742553710938
+    },
+    {
+      "text": " ",
+      "startMs": 18219,
+      "endMs": 18299,
+      "loss": 2.47955322265625e-05
+    },
+    {
+      "text": "carrier",
+      "startMs": 18299,
+      "endMs": 18699,
+      "loss": 0.0016475234712873185
+    },
+    {
+      "text": " ",
+      "startMs": 18699,
+      "endMs": 18759,
+      "loss": 0.0002765655517578125
+    },
+    {
+      "text": "out",
+      "startMs": 18760,
+      "endMs": 18879,
+      "loss": 0.00047270456949869793
+    },
+    {
+      "text": " ",
+      "startMs": 18879,
+      "endMs": 18920,
+      "loss": 9.489059448242188e-05
+    },
+    {
+      "text": "of",
+      "startMs": 18920,
+      "endMs": 18979,
+      "loss": 0.0008258819580078125
+    },
+    {
+      "text": " ",
+      "startMs": 18979,
+      "endMs": 19020,
+      "loss": 3.790855407714844e-05
+    },
+    {
+      "text": "the",
+      "startMs": 19020,
+      "endMs": 19079,
+      "loss": 0.0005127588907877604
+    },
+    {
+      "text": " ",
+      "startMs": 19079,
+      "endMs": 19180,
+      "loss": 6.914138793945312e-05
+    },
+    {
+      "text": "Tomb",
+      "startMs": 19180,
+      "endMs": 19399,
+      "loss": 0.5914115905761719
+    },
+    {
+      "text": " ",
+      "startMs": 19399,
+      "endMs": 19459,
+      "loss": 0.09912109375
+    },
+    {
+      "text": "World",
+      "startMs": 19459,
+      "endMs": 19739,
+      "loss": 0.06334052085876465
+    },
+    {
+      "text": " ",
+      "startMs": 19739,
+      "endMs": 19779,
+      "loss": 0.023681640625
+    },
+    {
+      "text": "before",
+      "startMs": 19779,
+      "endMs": 20059,
+      "loss": 0.002089122931162516
+    },
+    {
+      "text": " ",
+      "startMs": 20059,
+      "endMs": 20119,
+      "loss": 8.821487426757812e-05
+    },
+    {
+      "text": "the",
+      "startMs": 20119,
+      "endMs": 20180,
+      "loss": 0.0007493098576863607
+    },
+    {
+      "text": " ",
+      "startMs": 20180,
+      "endMs": 20279,
+      "loss": 0.00019168853759765625
+    },
+    {
+      "text": "signal",
+      "startMs": 20279,
+      "endMs": 20559,
+      "loss": 0.0034055113792419434
+    },
+    {
+      "text": " ",
+      "startMs": 20559,
+      "endMs": 20659,
+      "loss": 0.000965118408203125
+    },
+    {
+      "text": "disappears",
+      "startMs": 20659,
+      "endMs": 21119,
+      "loss": 0.00039716958999633787
+    },
+    {
+      "text": " ",
+      "startMs": 21119,
+      "endMs": 21179,
+      "loss": 0.0008392333984375
+    },
+    {
+      "text": "with",
+      "startMs": 21180,
+      "endMs": 21319,
+      "loss": 0.00035327672958374023
+    },
+    {
+      "text": " ",
+      "startMs": 21319,
+      "endMs": 21359,
+      "loss": 0.00299072265625
+    },
+    {
+      "text": "them.",
+      "startMs": 21359,
+      "endMs": 21519,
+      "loss": 0.08910865783691406
+    }
+  ]
+}

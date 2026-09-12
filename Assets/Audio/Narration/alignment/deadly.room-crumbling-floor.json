@@ -1,0 +1,510 @@
+{
+  "schemaVersion": 1,
+  "id": "deadly.room-crumbling-floor",
+  "text": "The floor gives way beneath you.\n\nAncient plates crack and collapse into the darkness below. Every sudden movement sends another section breaking loose, forcing the strike team to move with deliberate care.\n\nSpeed is a luxury this chamber will not allow.",
+  "durationMs": 18834,
+  "scriptHash": "4819e62b09a050712724096f501855bb74f9578fd8d4f52508bfad0f498d2589",
+  "audioHash": "6bd33fc2e13146580688837946fa8e2c1974ea95da453ec93d7e71413b0b40c1",
+  "alignmentLoss": 0.1511754248085923,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "The",
+      "startMs": 99,
+      "endMs": 159,
+      "loss": 1.6779810587565105
+    },
+    {
+      "text": " ",
+      "startMs": 159,
+      "endMs": 259,
+      "loss": 3.0040740966796875e-05
+    },
+    {
+      "text": "floor",
+      "startMs": 259,
+      "endMs": 659,
+      "loss": 0.001473212242126465
+    },
+    {
+      "text": " ",
+      "startMs": 659,
+      "endMs": 859,
+      "loss": 0.000576019287109375
+    },
+    {
+      "text": "gives",
+      "startMs": 859,
+      "endMs": 1100,
+      "loss": 0.000481414794921875
+    },
+    {
+      "text": " ",
+      "startMs": 1100,
+      "endMs": 1179,
+      "loss": 0.00013065338134765625
+    },
+    {
+      "text": "way",
+      "startMs": 1179,
+      "endMs": 1399,
+      "loss": 0.0005995432535807291
+    },
+    {
+      "text": " ",
+      "startMs": 1399,
+      "endMs": 1459,
+      "loss": 0.0004177093505859375
+    },
+    {
+      "text": "beneath",
+      "startMs": 1459,
+      "endMs": 1779,
+      "loss": 0.0001389810017177037
+    },
+    {
+      "text": " ",
+      "startMs": 1779,
+      "endMs": 1839,
+      "loss": 0.000949859619140625
+    },
+    {
+      "text": "you.",
+      "startMs": 1839,
+      "endMs": 1979,
+      "loss": 0.06944513320922852
+    },
+    {
+      "text": "\n",
+      "startMs": 1979,
+      "endMs": 1980,
+      "loss": 12.0625
+    },
+    {
+      "text": "\n",
+      "startMs": 1979,
+      "endMs": 1980,
+      "loss": 6.0
+    },
+    {
+      "text": "Ancient",
+      "startMs": 3119,
+      "endMs": 3519,
+      "loss": 0.05439426217760358
+    },
+    {
+      "text": " ",
+      "startMs": 3519,
+      "endMs": 3639,
+      "loss": 0.00010061264038085938
+    },
+    {
+      "text": "plates",
+      "startMs": 3639,
+      "endMs": 4099,
+      "loss": 0.0003192027409871419
+    },
+    {
+      "text": " ",
+      "startMs": 4099,
+      "endMs": 4179,
+      "loss": 0.002471923828125
+    },
+    {
+      "text": "crack",
+      "startMs": 4179,
+      "endMs": 4599,
+      "loss": 0.00016376972198486328
+    },
+    {
+      "text": " ",
+      "startMs": 4599,
+      "endMs": 4659,
+      "loss": 0.00506591796875
+    },
+    {
+      "text": "and",
+      "startMs": 4659,
+      "endMs": 4759,
+      "loss": 0.0002764463424682617
+    },
+    {
+      "text": " ",
+      "startMs": 4759,
+      "endMs": 4859,
+      "loss": 3.933906555175781e-06
+    },
+    {
+      "text": "collapse",
+      "startMs": 4859,
+      "endMs": 5279,
+      "loss": 0.00010852515697479248
+    },
+    {
+      "text": " ",
+      "startMs": 5279,
+      "endMs": 5339,
+      "loss": 0.000789642333984375
+    },
+    {
+      "text": "into",
+      "startMs": 5339,
+      "endMs": 5500,
+      "loss": 0.0003701448440551758
+    },
+    {
+      "text": " ",
+      "startMs": 5500,
+      "endMs": 5559,
+      "loss": 3.647804260253906e-05
+    },
+    {
+      "text": "the",
+      "startMs": 5559,
+      "endMs": 5659,
+      "loss": 0.0008654197057088217
+    },
+    {
+      "text": " ",
+      "startMs": 5659,
+      "endMs": 5699,
+      "loss": 1.919269561767578e-05
+    },
+    {
+      "text": "darkness",
+      "startMs": 5699,
+      "endMs": 6099,
+      "loss": 0.00010368227958679199
+    },
+    {
+      "text": " ",
+      "startMs": 6099,
+      "endMs": 6199,
+      "loss": 0.0003528594970703125
+    },
+    {
+      "text": "below.",
+      "startMs": 6199,
+      "endMs": 6599,
+      "loss": 0.011896888415018717
+    },
+    {
+      "text": " ",
+      "startMs": 6599,
+      "endMs": 6600,
+      "loss": 0.0089111328125
+    },
+    {
+      "text": "Every",
+      "startMs": 7759,
+      "endMs": 8000,
+      "loss": 0.0006494283676147461
+    },
+    {
+      "text": " ",
+      "startMs": 8000,
+      "endMs": 8099,
+      "loss": 0.00010395050048828125
+    },
+    {
+      "text": "sudden",
+      "startMs": 8099,
+      "endMs": 8399,
+      "loss": 0.000352938969930013
+    },
+    {
+      "text": " ",
+      "startMs": 8399,
+      "endMs": 8460,
+      "loss": 0.00032806396484375
+    },
+    {
+      "text": "movement",
+      "startMs": 8460,
+      "endMs": 8840,
+      "loss": 0.00013259053230285645
+    },
+    {
+      "text": " ",
+      "startMs": 8840,
+      "endMs": 8920,
+      "loss": 0.0012664794921875
+    },
+    {
+      "text": "sends",
+      "startMs": 8920,
+      "endMs": 9179,
+      "loss": 0.0007078170776367188
+    },
+    {
+      "text": " ",
+      "startMs": 9179,
+      "endMs": 9219,
+      "loss": 7.82012939453125e-05
+    },
+    {
+      "text": "another",
+      "startMs": 9220,
+      "endMs": 9479,
+      "loss": 0.0001930509294782366
+    },
+    {
+      "text": " ",
+      "startMs": 9479,
+      "endMs": 9579,
+      "loss": 0.00025177001953125
+    },
+    {
+      "text": "section",
+      "startMs": 9579,
+      "endMs": 9920,
+      "loss": 0.00015345641544886997
+    },
+    {
+      "text": " ",
+      "startMs": 9920,
+      "endMs": 10019,
+      "loss": 0.0032196044921875
+    },
+    {
+      "text": "breaking",
+      "startMs": 10019,
+      "endMs": 10359,
+      "loss": 0.0002558082342147827
+    },
+    {
+      "text": " ",
+      "startMs": 10359,
+      "endMs": 10439,
+      "loss": 0.0004634857177734375
+    },
+    {
+      "text": "loose,",
+      "startMs": 10439,
+      "endMs": 10719,
+      "loss": 0.003858168919881185
+    },
+    {
+      "text": " ",
+      "startMs": 10719,
+      "endMs": 11279,
+      "loss": 3.314018249511719e-05
+    },
+    {
+      "text": "forcing",
+      "startMs": 11279,
+      "endMs": 11619,
+      "loss": 0.00012889930180140903
+    },
+    {
+      "text": " ",
+      "startMs": 11619,
+      "endMs": 11659,
+      "loss": 0.00014400482177734375
+    },
+    {
+      "text": "the",
+      "startMs": 11659,
+      "endMs": 11719,
+      "loss": 0.0004369815190633138
+    },
+    {
+      "text": " ",
+      "startMs": 11719,
+      "endMs": 11839,
+      "loss": 3.5762786865234375e-05
+    },
+    {
+      "text": "strike",
+      "startMs": 11840,
+      "endMs": 12079,
+      "loss": 0.0028176307678222656
+    },
+    {
+      "text": " ",
+      "startMs": 12079,
+      "endMs": 12179,
+      "loss": 0.0089111328125
+    },
+    {
+      "text": "team",
+      "startMs": 12179,
+      "endMs": 12420,
+      "loss": 0.0006975829601287842
+    },
+    {
+      "text": " ",
+      "startMs": 12420,
+      "endMs": 12460,
+      "loss": 0.001129150390625
+    },
+    {
+      "text": "to",
+      "startMs": 12460,
+      "endMs": 12519,
+      "loss": 0.000499725341796875
+    },
+    {
+      "text": " ",
+      "startMs": 12519,
+      "endMs": 12639,
+      "loss": 5.984306335449219e-05
+    },
+    {
+      "text": "move",
+      "startMs": 12639,
+      "endMs": 13219,
+      "loss": 0.0002759099006652832
+    },
+    {
+      "text": " ",
+      "startMs": 13219,
+      "endMs": 13279,
+      "loss": 0.0196533203125
+    },
+    {
+      "text": "with",
+      "startMs": 13279,
+      "endMs": 13399,
+      "loss": 0.00041300058364868164
+    },
+    {
+      "text": " ",
+      "startMs": 13399,
+      "endMs": 13479,
+      "loss": 0.00017547607421875
+    },
+    {
+      "text": "deliberate",
+      "startMs": 13479,
+      "endMs": 13979,
+      "loss": 0.0001511812210083008
+    },
+    {
+      "text": " ",
+      "startMs": 13979,
+      "endMs": 14039,
+      "loss": 0.00070953369140625
+    },
+    {
+      "text": "care.",
+      "startMs": 14039,
+      "endMs": 14399,
+      "loss": 0.002578449249267578
+    },
+    {
+      "text": "\n",
+      "startMs": 14399,
+      "endMs": 15359,
+      "loss": 9.75
+    },
+    {
+      "text": "\n",
+      "startMs": 15359,
+      "endMs": 15420,
+      "loss": 4.0
+    },
+    {
+      "text": "Speed",
+      "startMs": 15420,
+      "endMs": 16020,
+      "loss": 0.029584240913391114
+    },
+    {
+      "text": " ",
+      "startMs": 16020,
+      "endMs": 16100,
+      "loss": 0.0002460479736328125
+    },
+    {
+      "text": "is",
+      "startMs": 16100,
+      "endMs": 16199,
+      "loss": 0.00023412704467773438
+    },
+    {
+      "text": " ",
+      "startMs": 16199,
+      "endMs": 16239,
+      "loss": 1.6450881958007812e-05
+    },
+    {
+      "text": "a",
+      "startMs": 16239,
+      "endMs": 16279,
+      "loss": 0.00201416015625
+    },
+    {
+      "text": " ",
+      "startMs": 16279,
+      "endMs": 16399,
+      "loss": 0.00014019012451171875
+    },
+    {
+      "text": "luxury",
+      "startMs": 16399,
+      "endMs": 16920,
+      "loss": 0.00019631783167521158
+    },
+    {
+      "text": " ",
+      "startMs": 16920,
+      "endMs": 16959,
+      "loss": 0.00689697265625
+    },
+    {
+      "text": "this",
+      "startMs": 16959,
+      "endMs": 17159,
+      "loss": 0.00018733739852905273
+    },
+    {
+      "text": " ",
+      "startMs": 17159,
+      "endMs": 17219,
+      "loss": 5.1975250244140625e-05
+    },
+    {
+      "text": "chamber",
+      "startMs": 17219,
+      "endMs": 17619,
+      "loss": 0.0013135671615600586
+    },
+    {
+      "text": " ",
+      "startMs": 17619,
+      "endMs": 17659,
+      "loss": 0.00021266937255859375
+    },
+    {
+      "text": "will",
+      "startMs": 17659,
+      "endMs": 17819,
+      "loss": 0.00021117925643920898
+    },
+    {
+      "text": " ",
+      "startMs": 17819,
+      "endMs": 17859,
+      "loss": 8.106231689453125e-05
+    },
+    {
+      "text": "not",
+      "startMs": 17859,
+      "endMs": 18039,
+      "loss": 0.00011761983235677083
+    },
+    {
+      "text": " ",
+      "startMs": 18039,
+      "endMs": 18099,
+      "loss": 0.00084686279296875
+    },
+    {
+      "text": "allow.",
+      "startMs": 18100,
+      "endMs": 18559,
+      "loss": 0.08250363667805989
+    }
+  ]
+}

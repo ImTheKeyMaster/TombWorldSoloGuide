@@ -1,0 +1,510 @@
+{
+  "schemaVersion": 1,
+  "id": "deadly.objective-control-node",
+  "text": "The dormant console awakens.\n\nStreams of emerald symbols race across its surface as ancient command channels come back online. Somewhere deeper in the complex, systems begin responding to whoever controls this position.\n\nThis node offers access to the ancient command network.",
+  "durationMs": 19174,
+  "scriptHash": "e971f01976e0ae305db604a77f91eeb89c28a1218e0ac5df9c5a2ebba554ea2d",
+  "audioHash": "a8f13e27f3f3873361f5291edf3234147ea6e6805644ea11a3132ebe77e16869",
+  "alignmentLoss": 0.15126842519511347,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "The",
+      "startMs": 79,
+      "endMs": 159,
+      "loss": 1.6091111501057942
+    },
+    {
+      "text": " ",
+      "startMs": 159,
+      "endMs": 239,
+      "loss": 1.800060272216797e-05
+    },
+    {
+      "text": "dormant",
+      "startMs": 239,
+      "endMs": 599,
+      "loss": 0.019555091857910156
+    },
+    {
+      "text": " ",
+      "startMs": 599,
+      "endMs": 719,
+      "loss": 0.000530242919921875
+    },
+    {
+      "text": "console",
+      "startMs": 719,
+      "endMs": 1240,
+      "loss": 0.011690310069492884
+    },
+    {
+      "text": " ",
+      "startMs": 1240,
+      "endMs": 1360,
+      "loss": 0.00286865234375
+    },
+    {
+      "text": "awakens.",
+      "startMs": 1360,
+      "endMs": 2039,
+      "loss": 0.022290080785751343
+    },
+    {
+      "text": "\n",
+      "startMs": 2039,
+      "endMs": 2899,
+      "loss": 12.75
+    },
+    {
+      "text": "\n",
+      "startMs": 2899,
+      "endMs": 2939,
+      "loss": 5.65625
+    },
+    {
+      "text": "Streams",
+      "startMs": 2939,
+      "endMs": 3379,
+      "loss": 0.14302778244018555
+    },
+    {
+      "text": " ",
+      "startMs": 3379,
+      "endMs": 3419,
+      "loss": 3.409385681152344e-05
+    },
+    {
+      "text": "of",
+      "startMs": 3419,
+      "endMs": 3559,
+      "loss": 0.00017201900482177734
+    },
+    {
+      "text": " ",
+      "startMs": 3559,
+      "endMs": 3639,
+      "loss": 5.841255187988281e-06
+    },
+    {
+      "text": "emerald",
+      "startMs": 3639,
+      "endMs": 3980,
+      "loss": 0.0007205520357404437
+    },
+    {
+      "text": " ",
+      "startMs": 3980,
+      "endMs": 4099,
+      "loss": 0.0010833740234375
+    },
+    {
+      "text": "symbols",
+      "startMs": 4099,
+      "endMs": 4599,
+      "loss": 0.023140021732875278
+    },
+    {
+      "text": " ",
+      "startMs": 4599,
+      "endMs": 4699,
+      "loss": 0.004669189453125
+    },
+    {
+      "text": "race",
+      "startMs": 4699,
+      "endMs": 4960,
+      "loss": 0.00040781497955322266
+    },
+    {
+      "text": " ",
+      "startMs": 4960,
+      "endMs": 5079,
+      "loss": 0.0006561279296875
+    },
+    {
+      "text": "across",
+      "startMs": 5079,
+      "endMs": 5279,
+      "loss": 0.00014328956604003906
+    },
+    {
+      "text": " ",
+      "startMs": 5279,
+      "endMs": 5319,
+      "loss": 4.2438507080078125e-05
+    },
+    {
+      "text": "its",
+      "startMs": 5319,
+      "endMs": 5480,
+      "loss": 0.0009024937947591146
+    },
+    {
+      "text": " ",
+      "startMs": 5480,
+      "endMs": 5559,
+      "loss": 1.7404556274414062e-05
+    },
+    {
+      "text": "surface",
+      "startMs": 5559,
+      "endMs": 5960,
+      "loss": 0.00015899113246372769
+    },
+    {
+      "text": " ",
+      "startMs": 5960,
+      "endMs": 6199,
+      "loss": 0.056640625
+    },
+    {
+      "text": "as",
+      "startMs": 6199,
+      "endMs": 6319,
+      "loss": 0.000518798828125
+    },
+    {
+      "text": " ",
+      "startMs": 6319,
+      "endMs": 6459,
+      "loss": 8.58306884765625e-06
+    },
+    {
+      "text": "ancient",
+      "startMs": 6460,
+      "endMs": 6819,
+      "loss": 0.0005351645605904716
+    },
+    {
+      "text": " ",
+      "startMs": 6819,
+      "endMs": 6899,
+      "loss": 0.0003070831298828125
+    },
+    {
+      "text": "command",
+      "startMs": 6899,
+      "endMs": 7239,
+      "loss": 0.0029860224042619976
+    },
+    {
+      "text": " ",
+      "startMs": 7239,
+      "endMs": 7359,
+      "loss": 0.004608154296875
+    },
+    {
+      "text": "channels",
+      "startMs": 7359,
+      "endMs": 7719,
+      "loss": 0.00016953051090240479
+    },
+    {
+      "text": " ",
+      "startMs": 7719,
+      "endMs": 7819,
+      "loss": 0.000560760498046875
+    },
+    {
+      "text": "come",
+      "startMs": 7819,
+      "endMs": 7940,
+      "loss": 0.0003406703472137451
+    },
+    {
+      "text": " ",
+      "startMs": 7940,
+      "endMs": 8019,
+      "loss": 0.0021209716796875
+    },
+    {
+      "text": "back",
+      "startMs": 8019,
+      "endMs": 8199,
+      "loss": 0.00026857852935791016
+    },
+    {
+      "text": " ",
+      "startMs": 8199,
+      "endMs": 8260,
+      "loss": 0.000698089599609375
+    },
+    {
+      "text": "online.",
+      "startMs": 8260,
+      "endMs": 8779,
+      "loss": 0.020506875855582102
+    },
+    {
+      "text": " ",
+      "startMs": 8779,
+      "endMs": 9500,
+      "loss": 0.000957489013671875
+    },
+    {
+      "text": "Somewhere",
+      "startMs": 9500,
+      "endMs": 9840,
+      "loss": 0.0001589059829711914
+    },
+    {
+      "text": " ",
+      "startMs": 9840,
+      "endMs": 9899,
+      "loss": 0.00016117095947265625
+    },
+    {
+      "text": "deeper",
+      "startMs": 9899,
+      "endMs": 10179,
+      "loss": 0.00022061665852864584
+    },
+    {
+      "text": " ",
+      "startMs": 10179,
+      "endMs": 10239,
+      "loss": 0.00051116943359375
+    },
+    {
+      "text": "in",
+      "startMs": 10239,
+      "endMs": 10300,
+      "loss": 0.0002703666687011719
+    },
+    {
+      "text": " ",
+      "startMs": 10300,
+      "endMs": 10340,
+      "loss": 0.00023746490478515625
+    },
+    {
+      "text": "the",
+      "startMs": 10340,
+      "endMs": 10399,
+      "loss": 0.00042045116424560547
+    },
+    {
+      "text": " ",
+      "startMs": 10399,
+      "endMs": 10500,
+      "loss": 2.586841583251953e-05
+    },
+    {
+      "text": "complex,",
+      "startMs": 10500,
+      "endMs": 11019,
+      "loss": 0.006532192230224609
+    },
+    {
+      "text": " ",
+      "startMs": 11019,
+      "endMs": 11579,
+      "loss": 7.05718994140625e-05
+    },
+    {
+      "text": "systems",
+      "startMs": 11579,
+      "endMs": 11979,
+      "loss": 0.0007427760532924107
+    },
+    {
+      "text": " ",
+      "startMs": 11979,
+      "endMs": 12059,
+      "loss": 0.00018310546875
+    },
+    {
+      "text": "begin",
+      "startMs": 12059,
+      "endMs": 12359,
+      "loss": 0.00037758350372314454
+    },
+    {
+      "text": " ",
+      "startMs": 12359,
+      "endMs": 12399,
+      "loss": 0.0009918212890625
+    },
+    {
+      "text": "responding",
+      "startMs": 12399,
+      "endMs": 13039,
+      "loss": 0.00011254549026489258
+    },
+    {
+      "text": " ",
+      "startMs": 13039,
+      "endMs": 13099,
+      "loss": 0.000797271728515625
+    },
+    {
+      "text": "to",
+      "startMs": 13099,
+      "endMs": 13179,
+      "loss": 0.0007643699645996094
+    },
+    {
+      "text": " ",
+      "startMs": 13179,
+      "endMs": 13239,
+      "loss": 0.000102996826171875
+    },
+    {
+      "text": "whoever",
+      "startMs": 13239,
+      "endMs": 13619,
+      "loss": 0.00036646638597760884
+    },
+    {
+      "text": " ",
+      "startMs": 13619,
+      "endMs": 13719,
+      "loss": 0.0004444122314453125
+    },
+    {
+      "text": "controls",
+      "startMs": 13719,
+      "endMs": 14259,
+      "loss": 0.00016032159328460693
+    },
+    {
+      "text": " ",
+      "startMs": 14259,
+      "endMs": 14299,
+      "loss": 0.00067138671875
+    },
+    {
+      "text": "this",
+      "startMs": 14299,
+      "endMs": 14439,
+      "loss": 0.0009609460830688477
+    },
+    {
+      "text": " ",
+      "startMs": 14439,
+      "endMs": 14519,
+      "loss": 0.0003299713134765625
+    },
+    {
+      "text": "position.",
+      "startMs": 14519,
+      "endMs": 15000,
+      "loss": 0.0035317871305677625
+    },
+    {
+      "text": "\n",
+      "startMs": 15000,
+      "endMs": 15799,
+      "loss": 10.625
+    },
+    {
+      "text": "\n",
+      "startMs": 15799,
+      "endMs": 15819,
+      "loss": 4.65625
+    },
+    {
+      "text": "This",
+      "startMs": 15819,
+      "endMs": 15960,
+      "loss": 0.04783320426940918
+    },
+    {
+      "text": " ",
+      "startMs": 15960,
+      "endMs": 16059,
+      "loss": 2.014636993408203e-05
+    },
+    {
+      "text": "node",
+      "startMs": 16059,
+      "endMs": 16339,
+      "loss": 0.0073473453521728516
+    },
+    {
+      "text": " ",
+      "startMs": 16339,
+      "endMs": 16420,
+      "loss": 0.0004482269287109375
+    },
+    {
+      "text": "offers",
+      "startMs": 16420,
+      "endMs": 16699,
+      "loss": 0.00020682811737060547
+    },
+    {
+      "text": " ",
+      "startMs": 16699,
+      "endMs": 16799,
+      "loss": 4.744529724121094e-05
+    },
+    {
+      "text": "access",
+      "startMs": 16799,
+      "endMs": 17159,
+      "loss": 0.0002213120460510254
+    },
+    {
+      "text": " ",
+      "startMs": 17159,
+      "endMs": 17239,
+      "loss": 0.00052642822265625
+    },
+    {
+      "text": "to",
+      "startMs": 17239,
+      "endMs": 17299,
+      "loss": 0.000255584716796875
+    },
+    {
+      "text": " ",
+      "startMs": 17299,
+      "endMs": 17340,
+      "loss": 1.7642974853515625e-05
+    },
+    {
+      "text": "the",
+      "startMs": 17340,
+      "endMs": 17399,
+      "loss": 0.000704805056254069
+    },
+    {
+      "text": " ",
+      "startMs": 17399,
+      "endMs": 17539,
+      "loss": 1.4901161193847656e-05
+    },
+    {
+      "text": "ancient",
+      "startMs": 17539,
+      "endMs": 17859,
+      "loss": 0.015853490148271834
+    },
+    {
+      "text": " ",
+      "startMs": 17859,
+      "endMs": 17939,
+      "loss": 0.0017547607421875
+    },
+    {
+      "text": "command",
+      "startMs": 17940,
+      "endMs": 18359,
+      "loss": 0.003867626190185547
+    },
+    {
+      "text": " ",
+      "startMs": 18359,
+      "endMs": 18439,
+      "loss": 0.0037841796875
+    },
+    {
+      "text": "network.",
+      "startMs": 18440,
+      "endMs": 18899,
+      "loss": 0.11666837334632874
+    }
+  ]
+}

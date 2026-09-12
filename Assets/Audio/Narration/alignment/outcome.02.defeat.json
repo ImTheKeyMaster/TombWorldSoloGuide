@@ -1,0 +1,486 @@
+{
+  "schemaVersion": 1,
+  "id": "outcome.02.defeat",
+  "text": "The sealed network holds.\n\nThe openings you forced are not enough. Beyond them, ancient barriers remain intact as the tomb begins securing the damaged passages.\n\nThe route was never fully broken.\n\nThe way forward remains closed.\n\nMission failed.",
+  "durationMs": 17450,
+  "scriptHash": "2409cbd0cef8ac318c6dcfdc474b6a5eeaed5170ba27766de6d6fc6a750e56e0",
+  "audioHash": "e6ca3587099139616fd488a1be0274a67ce67552848d76a543794de374c13617",
+  "alignmentLoss": 0.250301921124361,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "The",
+      "startMs": 79,
+      "endMs": 159,
+      "loss": 1.7009843190511067
+    },
+    {
+      "text": " ",
+      "startMs": 159,
+      "endMs": 259,
+      "loss": 3.910064697265625e-05
+    },
+    {
+      "text": "sealed",
+      "startMs": 259,
+      "endMs": 599,
+      "loss": 0.008904616038004557
+    },
+    {
+      "text": " ",
+      "startMs": 599,
+      "endMs": 719,
+      "loss": 0.00035858154296875
+    },
+    {
+      "text": "network",
+      "startMs": 719,
+      "endMs": 1120,
+      "loss": 0.003806744303022112
+    },
+    {
+      "text": " ",
+      "startMs": 1120,
+      "endMs": 1220,
+      "loss": 0.000659942626953125
+    },
+    {
+      "text": "holds.",
+      "startMs": 1220,
+      "endMs": 1759,
+      "loss": 0.03899796803792318
+    },
+    {
+      "text": "\n",
+      "startMs": 1759,
+      "endMs": 2480,
+      "loss": 12.0625
+    },
+    {
+      "text": "\n",
+      "startMs": 2480,
+      "endMs": 2500,
+      "loss": 6.40625
+    },
+    {
+      "text": "The",
+      "startMs": 2500,
+      "endMs": 2559,
+      "loss": 0.06287844975789388
+    },
+    {
+      "text": " ",
+      "startMs": 2559,
+      "endMs": 2639,
+      "loss": 0.00048065185546875
+    },
+    {
+      "text": "openings",
+      "startMs": 2639,
+      "endMs": 3059,
+      "loss": 0.000424996018409729
+    },
+    {
+      "text": " ",
+      "startMs": 3059,
+      "endMs": 3099,
+      "loss": 0.00090789794921875
+    },
+    {
+      "text": "you",
+      "startMs": 3099,
+      "endMs": 3220,
+      "loss": 0.0002129077911376953
+    },
+    {
+      "text": " ",
+      "startMs": 3220,
+      "endMs": 3259,
+      "loss": 0.0028839111328125
+    },
+    {
+      "text": "forced",
+      "startMs": 3259,
+      "endMs": 3659,
+      "loss": 0.015202681223551432
+    },
+    {
+      "text": " ",
+      "startMs": 3659,
+      "endMs": 3819,
+      "loss": 0.0322265625
+    },
+    {
+      "text": "are",
+      "startMs": 3819,
+      "endMs": 3919,
+      "loss": 0.0005420049031575521
+    },
+    {
+      "text": " ",
+      "startMs": 3919,
+      "endMs": 3979,
+      "loss": 0.000244140625
+    },
+    {
+      "text": "not",
+      "startMs": 3980,
+      "endMs": 4119,
+      "loss": 0.00018052260080973306
+    },
+    {
+      "text": " ",
+      "startMs": 4119,
+      "endMs": 4179,
+      "loss": 4.57763671875e-05
+    },
+    {
+      "text": "enough.",
+      "startMs": 4179,
+      "endMs": 4659,
+      "loss": 0.1256878205708095
+    },
+    {
+      "text": " ",
+      "startMs": 4659,
+      "endMs": 5199,
+      "loss": 0.01153564453125
+    },
+    {
+      "text": "Beyond",
+      "startMs": 5199,
+      "endMs": 5500,
+      "loss": 0.00042575597763061523
+    },
+    {
+      "text": " ",
+      "startMs": 5500,
+      "endMs": 5539,
+      "loss": 9.1552734375e-05
+    },
+    {
+      "text": "them,",
+      "startMs": 5539,
+      "endMs": 5719,
+      "loss": 0.09553799629211426
+    },
+    {
+      "text": " ",
+      "startMs": 5719,
+      "endMs": 6019,
+      "loss": 1.5854835510253906e-05
+    },
+    {
+      "text": "ancient",
+      "startMs": 6019,
+      "endMs": 6339,
+      "loss": 0.0004563501902988979
+    },
+    {
+      "text": " ",
+      "startMs": 6339,
+      "endMs": 6459,
+      "loss": 0.0002155303955078125
+    },
+    {
+      "text": "barriers",
+      "startMs": 6460,
+      "endMs": 6920,
+      "loss": 0.00042332708835601807
+    },
+    {
+      "text": " ",
+      "startMs": 6920,
+      "endMs": 6980,
+      "loss": 0.00041961669921875
+    },
+    {
+      "text": "remain",
+      "startMs": 6980,
+      "endMs": 7299,
+      "loss": 0.0003937085469563802
+    },
+    {
+      "text": " ",
+      "startMs": 7299,
+      "endMs": 7359,
+      "loss": 0.00171661376953125
+    },
+    {
+      "text": "intact",
+      "startMs": 7359,
+      "endMs": 7839,
+      "loss": 0.0003560185432434082
+    },
+    {
+      "text": " ",
+      "startMs": 7839,
+      "endMs": 8119,
+      "loss": 0.0400390625
+    },
+    {
+      "text": "as",
+      "startMs": 8119,
+      "endMs": 8179,
+      "loss": 0.0005040168762207031
+    },
+    {
+      "text": " ",
+      "startMs": 8179,
+      "endMs": 8219,
+      "loss": 2.9325485229492188e-05
+    },
+    {
+      "text": "the",
+      "startMs": 8220,
+      "endMs": 8319,
+      "loss": 0.00041675567626953125
+    },
+    {
+      "text": " ",
+      "startMs": 8319,
+      "endMs": 8359,
+      "loss": 4.982948303222656e-05
+    },
+    {
+      "text": "tomb",
+      "startMs": 8359,
+      "endMs": 8599,
+      "loss": 0.004339694976806641
+    },
+    {
+      "text": " ",
+      "startMs": 8599,
+      "endMs": 8679,
+      "loss": 0.0013580322265625
+    },
+    {
+      "text": "begins",
+      "startMs": 8679,
+      "endMs": 8960,
+      "loss": 0.00048311551411946613
+    },
+    {
+      "text": " ",
+      "startMs": 8960,
+      "endMs": 9059,
+      "loss": 0.00104522705078125
+    },
+    {
+      "text": "securing",
+      "startMs": 9059,
+      "endMs": 9599,
+      "loss": 0.0001818835735321045
+    },
+    {
+      "text": " ",
+      "startMs": 9599,
+      "endMs": 9639,
+      "loss": 0.000797271728515625
+    },
+    {
+      "text": "the",
+      "startMs": 9639,
+      "endMs": 9699,
+      "loss": 0.0009067058563232422
+    },
+    {
+      "text": " ",
+      "startMs": 9699,
+      "endMs": 9800,
+      "loss": 0.000385284423828125
+    },
+    {
+      "text": "damaged",
+      "startMs": 9800,
+      "endMs": 10159,
+      "loss": 0.00032709326062883647
+    },
+    {
+      "text": " ",
+      "startMs": 10159,
+      "endMs": 10239,
+      "loss": 0.0006103515625
+    },
+    {
+      "text": "passages.",
+      "startMs": 10239,
+      "endMs": 10800,
+      "loss": 0.0018860366609361437
+    },
+    {
+      "text": "\n",
+      "startMs": 10800,
+      "endMs": 11479,
+      "loss": 7.0625
+    },
+    {
+      "text": "\n",
+      "startMs": 11479,
+      "endMs": 11519,
+      "loss": 4.0
+    },
+    {
+      "text": "The",
+      "startMs": 11519,
+      "endMs": 11579,
+      "loss": 0.01283574104309082
+    },
+    {
+      "text": " ",
+      "startMs": 11579,
+      "endMs": 11659,
+      "loss": 0.0007171630859375
+    },
+    {
+      "text": "route",
+      "startMs": 11659,
+      "endMs": 11880,
+      "loss": 0.0017337799072265625
+    },
+    {
+      "text": " ",
+      "startMs": 11880,
+      "endMs": 11939,
+      "loss": 0.0005035400390625
+    },
+    {
+      "text": "was",
+      "startMs": 11939,
+      "endMs": 12079,
+      "loss": 0.00023953119913736978
+    },
+    {
+      "text": " ",
+      "startMs": 12079,
+      "endMs": 12119,
+      "loss": 3.24249267578125e-05
+    },
+    {
+      "text": "never",
+      "startMs": 12119,
+      "endMs": 12339,
+      "loss": 7.026195526123047e-05
+    },
+    {
+      "text": " ",
+      "startMs": 12339,
+      "endMs": 12380,
+      "loss": 0.00015926361083984375
+    },
+    {
+      "text": "fully",
+      "startMs": 12380,
+      "endMs": 12599,
+      "loss": 0.0001013040542602539
+    },
+    {
+      "text": " ",
+      "startMs": 12599,
+      "endMs": 12659,
+      "loss": 0.000240325927734375
+    },
+    {
+      "text": "broken.",
+      "startMs": 12659,
+      "endMs": 13099,
+      "loss": 0.15306852545057023
+    },
+    {
+      "text": "\n",
+      "startMs": 13099,
+      "endMs": 13659,
+      "loss": 6.8125
+    },
+    {
+      "text": "\n",
+      "startMs": 13659,
+      "endMs": 13679,
+      "loss": 4.1875
+    },
+    {
+      "text": "The",
+      "startMs": 13679,
+      "endMs": 13739,
+      "loss": 0.0118865966796875
+    },
+    {
+      "text": " ",
+      "startMs": 13739,
+      "endMs": 13819,
+      "loss": 0.006622314453125
+    },
+    {
+      "text": "way",
+      "startMs": 13819,
+      "endMs": 14039,
+      "loss": 0.001280069351196289
+    },
+    {
+      "text": " ",
+      "startMs": 14039,
+      "endMs": 14099,
+      "loss": 0.000316619873046875
+    },
+    {
+      "text": "forward",
+      "startMs": 14099,
+      "endMs": 14539,
+      "loss": 0.00021985598972865513
+    },
+    {
+      "text": " ",
+      "startMs": 14539,
+      "endMs": 14619,
+      "loss": 0.004730224609375
+    },
+    {
+      "text": "remains",
+      "startMs": 14619,
+      "endMs": 15059,
+      "loss": 0.0006792885916573661
+    },
+    {
+      "text": " ",
+      "startMs": 15059,
+      "endMs": 15139,
+      "loss": 5.125999450683594e-05
+    },
+    {
+      "text": "closed.",
+      "startMs": 15139,
+      "endMs": 15719,
+      "loss": 0.05338335037231445
+    },
+    {
+      "text": "\n",
+      "startMs": 15719,
+      "endMs": 16239,
+      "loss": 5.8125
+    },
+    {
+      "text": "\n",
+      "startMs": 16239,
+      "endMs": 16299,
+      "loss": 3.375
+    },
+    {
+      "text": "Mission",
+      "startMs": 16299,
+      "endMs": 16600,
+      "loss": 0.016608459608895437
+    },
+    {
+      "text": " ",
+      "startMs": 16600,
+      "endMs": 16739,
+      "loss": 0.00118255615234375
+    },
+    {
+      "text": "failed.",
+      "startMs": 16739,
+      "endMs": 17180,
+      "loss": 0.3883390426635742
+    }
+  ]
+}

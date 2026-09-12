@@ -1,0 +1,522 @@
+{
+  "schemaVersion": 1,
+  "id": "outcome.03.victory",
+  "text": "The carrier crosses the boundary with the transponder still in hand.\n\nBehind them, the signal fades beneath layers of stone and living metal, but this time it is leaving the crypt with you.\n\nThe device is secure.\n\nExtraction successful.\n\nMission accomplished.",
+  "durationMs": 16744,
+  "scriptHash": "30cf70d309c196ee14524ff45b6d467b2994b8dc5bba284c058e4be1fa662371",
+  "audioHash": "bd76a4af2d9838e6c1e8f23f1ef6fd744c260b9381878aaf5a1b079b455378ee",
+  "alignmentLoss": 0.2885039984949767,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "The",
+      "startMs": 79,
+      "endMs": 159,
+      "loss": 1.3134447733561199
+    },
+    {
+      "text": " ",
+      "startMs": 159,
+      "endMs": 199,
+      "loss": 0.0001583099365234375
+    },
+    {
+      "text": "carrier",
+      "startMs": 199,
+      "endMs": 620,
+      "loss": 0.0028864145278930664
+    },
+    {
+      "text": " ",
+      "startMs": 620,
+      "endMs": 659,
+      "loss": 0.0002841949462890625
+    },
+    {
+      "text": "crosses",
+      "startMs": 659,
+      "endMs": 1039,
+      "loss": 0.00027307442256382534
+    },
+    {
+      "text": " ",
+      "startMs": 1039,
+      "endMs": 1079,
+      "loss": 0.000308990478515625
+    },
+    {
+      "text": "the",
+      "startMs": 1079,
+      "endMs": 1179,
+      "loss": 0.0003408988316853841
+    },
+    {
+      "text": " ",
+      "startMs": 1179,
+      "endMs": 1199,
+      "loss": 2.7060508728027344e-05
+    },
+    {
+      "text": "boundary",
+      "startMs": 1199,
+      "endMs": 1620,
+      "loss": 0.0002399235963821411
+    },
+    {
+      "text": " ",
+      "startMs": 1620,
+      "endMs": 1659,
+      "loss": 0.08056640625
+    },
+    {
+      "text": "with",
+      "startMs": 1659,
+      "endMs": 1779,
+      "loss": 0.0002506375312805176
+    },
+    {
+      "text": " ",
+      "startMs": 1779,
+      "endMs": 1819,
+      "loss": 5.4836273193359375e-05
+    },
+    {
+      "text": "the",
+      "startMs": 1819,
+      "endMs": 1879,
+      "loss": 0.000984509785970052
+    },
+    {
+      "text": " ",
+      "startMs": 1879,
+      "endMs": 1959,
+      "loss": 2.8133392333984375e-05
+    },
+    {
+      "text": "transponder",
+      "startMs": 1959,
+      "endMs": 2700,
+      "loss": 0.0037998286160555754
+    },
+    {
+      "text": " ",
+      "startMs": 2700,
+      "endMs": 2740,
+      "loss": 0.025146484375
+    },
+    {
+      "text": "still",
+      "startMs": 2740,
+      "endMs": 2939,
+      "loss": 0.001156783103942871
+    },
+    {
+      "text": " ",
+      "startMs": 2939,
+      "endMs": 2979,
+      "loss": 0.00075531005859375
+    },
+    {
+      "text": "in",
+      "startMs": 2980,
+      "endMs": 3059,
+      "loss": 0.0009800195693969727
+    },
+    {
+      "text": " ",
+      "startMs": 3059,
+      "endMs": 3139,
+      "loss": 0.00179290771484375
+    },
+    {
+      "text": "hand.",
+      "startMs": 3139,
+      "endMs": 3480,
+      "loss": 0.04336216449737549
+    },
+    {
+      "text": "\n",
+      "startMs": 3480,
+      "endMs": 4099,
+      "loss": 12.3125
+    },
+    {
+      "text": "\n",
+      "startMs": 4099,
+      "endMs": 4119,
+      "loss": 5.875
+    },
+    {
+      "text": "Behind",
+      "startMs": 4119,
+      "endMs": 4440,
+      "loss": 0.047103484471639
+    },
+    {
+      "text": " ",
+      "startMs": 4440,
+      "endMs": 4480,
+      "loss": 5.173683166503906e-05
+    },
+    {
+      "text": "them,",
+      "startMs": 4480,
+      "endMs": 4619,
+      "loss": 0.5672156810760498
+    },
+    {
+      "text": " ",
+      "startMs": 4619,
+      "endMs": 4719,
+      "loss": 0.00021266937255859375
+    },
+    {
+      "text": "the",
+      "startMs": 4719,
+      "endMs": 4819,
+      "loss": 0.00024334589640299478
+    },
+    {
+      "text": " ",
+      "startMs": 4819,
+      "endMs": 4879,
+      "loss": 0.00013637542724609375
+    },
+    {
+      "text": "signal",
+      "startMs": 4880,
+      "endMs": 5139,
+      "loss": 0.00011416276295979817
+    },
+    {
+      "text": " ",
+      "startMs": 5139,
+      "endMs": 5279,
+      "loss": 0.0021209716796875
+    },
+    {
+      "text": "fades",
+      "startMs": 5279,
+      "endMs": 5659,
+      "loss": 0.00038890838623046876
+    },
+    {
+      "text": " ",
+      "startMs": 5659,
+      "endMs": 5739,
+      "loss": 0.0035247802734375
+    },
+    {
+      "text": "beneath",
+      "startMs": 5739,
+      "endMs": 6000,
+      "loss": 0.00025522708892822266
+    },
+    {
+      "text": " ",
+      "startMs": 6000,
+      "endMs": 6099,
+      "loss": 0.000270843505859375
+    },
+    {
+      "text": "layers",
+      "startMs": 6099,
+      "endMs": 6359,
+      "loss": 0.0004009405771891276
+    },
+    {
+      "text": " ",
+      "startMs": 6359,
+      "endMs": 6399,
+      "loss": 7.390975952148438e-05
+    },
+    {
+      "text": "of",
+      "startMs": 6399,
+      "endMs": 6460,
+      "loss": 0.000446319580078125
+    },
+    {
+      "text": " ",
+      "startMs": 6460,
+      "endMs": 6579,
+      "loss": 8.58306884765625e-06
+    },
+    {
+      "text": "stone",
+      "startMs": 6579,
+      "endMs": 6959,
+      "loss": 0.00037653446197509765
+    },
+    {
+      "text": " ",
+      "startMs": 6959,
+      "endMs": 7000,
+      "loss": 0.001129150390625
+    },
+    {
+      "text": "and",
+      "startMs": 7000,
+      "endMs": 7119,
+      "loss": 0.000549475351969401
+    },
+    {
+      "text": " ",
+      "startMs": 7119,
+      "endMs": 7199,
+      "loss": 7.104873657226562e-05
+    },
+    {
+      "text": "living",
+      "startMs": 7199,
+      "endMs": 7440,
+      "loss": 0.0003895759582519531
+    },
+    {
+      "text": " ",
+      "startMs": 7440,
+      "endMs": 7500,
+      "loss": 0.0028533935546875
+    },
+    {
+      "text": "metal,",
+      "startMs": 7500,
+      "endMs": 7759,
+      "loss": 0.026805957158406574
+    },
+    {
+      "text": " ",
+      "startMs": 7759,
+      "endMs": 8359,
+      "loss": 0.0001697540283203125
+    },
+    {
+      "text": "but",
+      "startMs": 8359,
+      "endMs": 8460,
+      "loss": 0.0010151863098144531
+    },
+    {
+      "text": " ",
+      "startMs": 8460,
+      "endMs": 8519,
+      "loss": 0.001556396484375
+    },
+    {
+      "text": "this",
+      "startMs": 8519,
+      "endMs": 8679,
+      "loss": 0.0001609325408935547
+    },
+    {
+      "text": " ",
+      "startMs": 8679,
+      "endMs": 8739,
+      "loss": 4.7206878662109375e-05
+    },
+    {
+      "text": "time",
+      "startMs": 8739,
+      "endMs": 8979,
+      "loss": 0.00019991397857666016
+    },
+    {
+      "text": " ",
+      "startMs": 8979,
+      "endMs": 9019,
+      "loss": 0.0184326171875
+    },
+    {
+      "text": "it",
+      "startMs": 9019,
+      "endMs": 9079,
+      "loss": 0.001251220703125
+    },
+    {
+      "text": " ",
+      "startMs": 9079,
+      "endMs": 9139,
+      "loss": 0.00119781494140625
+    },
+    {
+      "text": "is",
+      "startMs": 9139,
+      "endMs": 9239,
+      "loss": 0.0007061958312988281
+    },
+    {
+      "text": " ",
+      "startMs": 9239,
+      "endMs": 9319,
+      "loss": 0.000423431396484375
+    },
+    {
+      "text": "leaving",
+      "startMs": 9319,
+      "endMs": 9619,
+      "loss": 0.0004623958042689732
+    },
+    {
+      "text": " ",
+      "startMs": 9619,
+      "endMs": 9659,
+      "loss": 0.0002002716064453125
+    },
+    {
+      "text": "the",
+      "startMs": 9659,
+      "endMs": 9719,
+      "loss": 0.0014379819234212239
+    },
+    {
+      "text": " ",
+      "startMs": 9719,
+      "endMs": 9819,
+      "loss": 6.818771362304688e-05
+    },
+    {
+      "text": "crypt",
+      "startMs": 9819,
+      "endMs": 10260,
+      "loss": 0.017158126831054686
+    },
+    {
+      "text": " ",
+      "startMs": 10260,
+      "endMs": 10319,
+      "loss": 0.0263671875
+    },
+    {
+      "text": "with",
+      "startMs": 10319,
+      "endMs": 10479,
+      "loss": 0.0011660456657409668
+    },
+    {
+      "text": " ",
+      "startMs": 10479,
+      "endMs": 10539,
+      "loss": 0.0003299713134765625
+    },
+    {
+      "text": "you.",
+      "startMs": 10539,
+      "endMs": 10719,
+      "loss": 0.007004290819168091
+    },
+    {
+      "text": "\n",
+      "startMs": 10719,
+      "endMs": 11579,
+      "loss": 8.0
+    },
+    {
+      "text": "\n",
+      "startMs": 11579,
+      "endMs": 11619,
+      "loss": 2.125
+    },
+    {
+      "text": "The",
+      "startMs": 11619,
+      "endMs": 11679,
+      "loss": 0.14101727803548178
+    },
+    {
+      "text": " ",
+      "startMs": 11679,
+      "endMs": 11739,
+      "loss": 0.0004100799560546875
+    },
+    {
+      "text": "device",
+      "startMs": 11739,
+      "endMs": 12219,
+      "loss": 0.0007996360460917155
+    },
+    {
+      "text": " ",
+      "startMs": 12219,
+      "endMs": 12299,
+      "loss": 0.000408172607421875
+    },
+    {
+      "text": "is",
+      "startMs": 12300,
+      "endMs": 12380,
+      "loss": 0.00025177001953125
+    },
+    {
+      "text": " ",
+      "startMs": 12380,
+      "endMs": 12460,
+      "loss": 3.1948089599609375e-05
+    },
+    {
+      "text": "secure.",
+      "startMs": 12460,
+      "endMs": 12960,
+      "loss": 0.14421626499720983
+    },
+    {
+      "text": "\n",
+      "startMs": 12960,
+      "endMs": 13619,
+      "loss": 9.375
+    },
+    {
+      "text": "\n",
+      "startMs": 13619,
+      "endMs": 13659,
+      "loss": 5.71875
+    },
+    {
+      "text": "Extraction",
+      "startMs": 13659,
+      "endMs": 14239,
+      "loss": 0.010374021530151368
+    },
+    {
+      "text": " ",
+      "startMs": 14239,
+      "endMs": 14340,
+      "loss": 0.08740234375
+    },
+    {
+      "text": "successful.",
+      "startMs": 14340,
+      "endMs": 14899,
+      "loss": 0.3163438818671487
+    },
+    {
+      "text": "\n",
+      "startMs": 14899,
+      "endMs": 15279,
+      "loss": 7.5625
+    },
+    {
+      "text": "\n",
+      "startMs": 15279,
+      "endMs": 15319,
+      "loss": 6.21875
+    },
+    {
+      "text": "Mission",
+      "startMs": 15319,
+      "endMs": 15619,
+      "loss": 0.011267048971993583
+    },
+    {
+      "text": " ",
+      "startMs": 15619,
+      "endMs": 15819,
+      "loss": 0.326171875
+    },
+    {
+      "text": "accomplished.",
+      "startMs": 15819,
+      "endMs": 16479,
+      "loss": 0.3221543568831224
+    }
+  ]
+}

@@ -2,6 +2,7 @@
   'use strict';
 
   const MANIFEST_URL = 'Assets/Audio/Narration/narration-manifest.json';
+  const ALIGNMENT_DIRECTORY_URL = 'Assets/Audio/Narration/alignment/';
   const ENABLED_KEY = 'tombWorldBattleGuide.narrationEnabled';
   const MASTER_ENABLED_KEY = 'tombWorldBattleGuide.gameAudioEnabled';
   const SILENT_UNLOCK_AUDIO = 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQIAAAAAAA==';
@@ -19,6 +20,14 @@
   let manifest = null;
   let initialization = null;
   let lastEntry = null;
+  let activeEntryId = null;
+  let activeManifestEntry = null;
+  let activeAlignment = null;
+  let activeAlignmentStatus = 'idle';
+  let lastEndReason = null;
+  let userPaused = false;
+  const alignmentCache = new Map();
+  const alignmentLoads = new Map();
   let audioUnlocked = false;
   let playbackRequest = 0;
   const automaticPlayback = new Set();
@@ -76,6 +85,118 @@
     }
   }
 
+  function alignmentUrl(id) {
+    return `${ALIGNMENT_DIRECTORY_URL}${String(id).replace(/[^A-Za-z0-9._-]/g, '_')}.json`;
+  }
+
+  function cloneAlignment(alignment) {
+    if (!alignment) return null;
+    return {
+      schemaVersion: alignment.schemaVersion,
+      qualityStatus: alignment.qualityStatus ?? null,
+      alignmentLoss: alignment.alignmentLoss ?? null,
+      words: alignment.words.map(word => ({ ...word }))
+    };
+  }
+
+  function getPlaybackState() {
+    const player = audio;
+    const currentTime = activeEntryId && Number.isFinite(player?.currentTime) && player.currentTime >= 0
+      ? Math.round(player.currentTime * 1000)
+      : 0;
+    const audioDuration = Number(player?.duration);
+    const manifestDuration = Number(activeManifestEntry?.durationMs);
+    const durationMs = activeEntryId
+      ? (Number.isFinite(audioDuration) && audioDuration >= 0
+          ? Math.round(audioDuration * 1000)
+          : (Number.isFinite(manifestDuration) && manifestDuration >= 0 ? Math.round(manifestDuration) : 0))
+      : 0;
+    const paused = Boolean(activeEntryId && (userPaused || pausedByMaster || player?.paused === true));
+    return {
+      active: Boolean(activeEntryId),
+      playing: Boolean(activeEntryId && activePlayback && !paused && player?.ended !== true),
+      paused,
+      pausedByMaster: Boolean(activeEntryId && pausedByMaster),
+      pausedByUser: Boolean(activeEntryId && userPaused),
+      id: activeEntryId,
+      category: activeManifestEntry?.category ?? null,
+      currentTimeMs: currentTime,
+      durationMs,
+      transcriptAvailable: Boolean(activeAlignment),
+      transcriptLoading: activeAlignmentStatus === 'loading',
+      transcript: activeAlignment?.text ?? null,
+      alignment: cloneAlignment(activeAlignment),
+      manifest: activeManifestEntry ? { ...activeManifestEntry } : null,
+      lastEndReason
+    };
+  }
+
+  function notifyPlaybackState() {
+    if (typeof global.dispatchEvent === 'function' && typeof global.CustomEvent === 'function') {
+      global.dispatchEvent(new global.CustomEvent('tombworldnarrationstatechange', { detail: getPlaybackState() }));
+    }
+  }
+
+  function clearActivePlayback(reason) {
+    activePlayback = false;
+    activeEntryId = null;
+    activeManifestEntry = null;
+    activeAlignment = null;
+    activeAlignmentStatus = 'idle';
+    pausedByMaster = false;
+    userPaused = false;
+    lastEndReason = reason;
+    notifyPlaybackState();
+  }
+
+  function validAlignment(alignment, id, entry) {
+    const validDuration = Number.isFinite(alignment?.durationMs) && alignment.durationMs >= 0
+      && alignment.durationMs === entry.durationMs;
+    return alignment?.schemaVersion === 1
+      && alignment.id === id
+      && typeof alignment.text === 'string' && alignment.text.trim().length > 0
+      && validDuration
+      && alignment.scriptHash === entry.scriptHash
+      && alignment.audioHash === entry.audioHash
+      && Array.isArray(alignment.words) && alignment.words.length > 0
+      && alignment.words.every(word => typeof word?.text === 'string' && word.text.length > 0
+        && Number.isFinite(word.startMs) && Number.isFinite(word.endMs)
+        && word.startMs >= 0 && word.startMs <= word.endMs);
+  }
+
+  function loadAlignment(id, entry, request) {
+    activeAlignmentStatus = 'loading';
+    const cached = alignmentCache.get(id);
+    const loading = cached
+      ? Promise.resolve(cached)
+      : (alignmentLoads.get(id) || (typeof global.fetch === 'function'
+          ? Promise.resolve().then(() => global.fetch(alignmentUrl(id)))
+            .then(response => response.ok ? response.json() : Promise.reject(new Error('Alignment unavailable')))
+            .then(data => {
+              if (!validAlignment(data, id, entry)) throw new Error('Invalid alignment');
+              alignmentCache.set(id, data);
+              alignmentLoads.delete(id);
+              return data;
+            })
+            .catch(error => {
+              alignmentLoads.delete(id);
+              throw error;
+            })
+          : Promise.reject(new Error('Alignment unavailable'))));
+    if (!cached && !alignmentLoads.has(id)) alignmentLoads.set(id, loading);
+    loading.then(alignment => {
+      if (request !== playbackRequest || activeEntryId !== id) return;
+      activeAlignment = alignment;
+      activeAlignmentStatus = 'available';
+      notifyPlaybackState();
+    }, () => {
+      if (request !== playbackRequest || activeEntryId !== id) return;
+      activeAlignment = null;
+      activeAlignmentStatus = 'unavailable';
+      notifyPlaybackState();
+    });
+  }
+
   function ensureAudio() {
     if (!audio && typeof global.Audio === 'function') {
       try {
@@ -88,9 +209,14 @@
   }
 
   function stopAudio() {
-    if (finishActiveEvent) finishActiveEvent();
-    activePlayback = false;
-    pausedByMaster = false;
+    if (finishActiveEvent) finishActiveEvent('stop');
+    const hadActivePlayback = Boolean(activeEntryId);
+    if (hadActivePlayback) clearActivePlayback('stop');
+    else {
+      activePlayback = false;
+      pausedByMaster = false;
+      userPaused = false;
+    }
     if (!audio) return;
     try {
       audio.pause();
@@ -123,6 +249,8 @@
     if (activePlayback || resetAudio) stopAudio();
     else {
       activePlayback = false;
+      if (activeEntryId) clearActivePlayback('stop');
+      else notifyPlaybackState();
     }
     notifyPlaybackActivity(false);
   }
@@ -132,9 +260,47 @@
     if (!player || !activePlayback || player.ended || player.paused === true) return false;
     try {
       player.pause();
+      userPaused = true;
       notifyPlaybackActivity(false);
+      notifyPlaybackState();
       return true;
     } catch { return false; }
+  }
+
+  function resumeNarration() {
+    const player = audio;
+    if (!player || !activePlayback || !userPaused || pausedByMaster || !isPlaybackEnabled() || player.ended || !player.src) {
+      return Promise.resolve(false);
+    }
+    let playback;
+    try { playback = player.play(); }
+    catch { return Promise.resolve(false); }
+    return Promise.resolve(playback).then(() => {
+      userPaused = false;
+      audioUnlocked = true;
+      notifyPlaybackActivity(true);
+      notifyPlaybackState();
+      return true;
+    }, () => false);
+  }
+
+  function skipCurrent() {
+    if (!activeEntryId) return false;
+    try { audio?.pause(); } catch { /* Completion remains deterministic if pausing fails. */ }
+    if (finishActiveEvent) {
+      finishActiveEvent('skip');
+      return true;
+    }
+    if (audio) {
+      audio.onended = null;
+      audio.onerror = null;
+    }
+    clearActivePlayback('skip');
+    notifyPlaybackActivity(false);
+    if (eventQueue.length && !eventQueueRunning && !deadlyEncounterQueueRunning) {
+      void drainEventQueue(eventQueueGeneration);
+    }
+    return true;
   }
 
   function pauseForMasterMute() {
@@ -144,10 +310,21 @@
       notifyPlaybackActivity(false);
       return false;
     }
+    if (pausedByMaster) {
+      notifyPlaybackActivity(false);
+      return true;
+    }
+    if (userPaused || player.paused) {
+      pausedByMaster = false;
+      notifyPlaybackActivity(false);
+      notifyPlaybackState();
+      return false;
+    }
     try {
       if (!player.paused) player.pause();
       pausedByMaster = true;
       notifyPlaybackActivity(false);
+      notifyPlaybackState();
       return true;
     } catch { return false; }
   }
@@ -172,10 +349,12 @@
         if (typeof global.dispatchEvent === 'function' && typeof global.CustomEvent === 'function') {
           global.dispatchEvent(new global.CustomEvent('tombworldnarrationusable'));
         }
+        notifyPlaybackState();
         return true;
       }, () => {
         audioUnlocked = false;
         notifyPlaybackActivity(false);
+        notifyPlaybackState();
         return false;
       });
     }
@@ -250,18 +429,27 @@
     if (supportsInAppVolumeControl()) player.volume = volumeMultiplier;
     player.src = new URL(entry.file, new URL(MANIFEST_URL, global.location?.href || 'http://localhost/')).href;
     activePlayback = true;
+    activeEntryId = id;
+    activeManifestEntry = entry;
+    activeAlignment = null;
+    activeAlignmentStatus = 'loading';
+    userPaused = false;
+    pausedByMaster = false;
+    lastEndReason = null;
     player.onended = () => {
       if (request !== playbackRequest) return;
-      activePlayback = false;
-      pausedByMaster = false;
+      clearActivePlayback('natural');
       notifyPlaybackActivity(false);
       if (eventQueue.length && !eventQueueRunning && !deadlyEncounterQueueRunning) void drainEventQueue(eventQueueGeneration);
     };
     try {
-      await player.play();
+      const playback = player.play();
+      loadAlignment(id, entry, request);
+      await playback;
       if (request !== playbackRequest || !isPlaybackEnabled()) return false;
       audioUnlocked = true;
       notifyPlaybackActivity(true);
+      notifyPlaybackState();
       if (typeof global.dispatchEvent === 'function' && typeof global.CustomEvent === 'function') {
         global.dispatchEvent(new global.CustomEvent('tombworldnarrationusable'));
       }
@@ -270,7 +458,7 @@
       return true;
     } catch {
       if (request === playbackRequest) {
-        activePlayback = false;
+        clearActivePlayback('stop');
         notifyPlaybackActivity(false);
       }
       return false;
@@ -288,7 +476,7 @@
 
       await new Promise(resolve => {
         let finished = false;
-        finishActiveEvent = () => {
+        finishActiveEvent = (reason = 'natural') => {
           if (finished) return;
           finished = true;
           if (audio) {
@@ -296,11 +484,13 @@
             audio.onerror = null;
           }
           finishActiveEvent = null;
-          activePlayback = false;
+          clearActivePlayback(reason);
+          notifyPlaybackActivity(false);
           resolve();
         };
-        audio.onended = finishActiveEvent;
-        audio.onerror = finishActiveEvent;
+        const finish = finishActiveEvent;
+        audio.onended = () => finish('natural');
+        audio.onerror = () => finish('stop');
       });
 
       if (playbackRequest !== requestBeforePlayback + 1) break;
@@ -373,7 +563,7 @@
           played = true;
           await new Promise(resolve => {
             let finished = false;
-            finishActiveEvent = () => {
+            finishActiveEvent = (reason = 'natural') => {
               if (finished) return;
               finished = true;
               if (audio) {
@@ -381,11 +571,13 @@
                 audio.onerror = null;
               }
               finishActiveEvent = null;
-              activePlayback = false;
+              clearActivePlayback(reason);
+              notifyPlaybackActivity(false);
               resolve();
             };
-            audio.onended = finishActiveEvent;
-            audio.onerror = finishActiveEvent;
+            const finish = finishActiveEvent;
+            audio.onended = () => finish('natural');
+            audio.onerror = () => finish('stop');
           });
           if (generation !== deadlyEncounterGeneration || playbackRequest !== requestBeforePlayback + 1) break;
         }
@@ -429,11 +621,12 @@
       pauseForMasterMute();
       audioUnlocked = false;
     }
+    notifyPlaybackState();
     notify();
   }
 
   global.TombWorldNarration = Object.freeze({
-    init, unlock, activateFromGesture, playMissionIntro, playEvent, playGradeEscalation, playOutcome, playDeadlyEncounter, replayLast, stop, pauseNarration,
+    init, unlock, activateFromGesture, playMissionIntro, playEvent, playGradeEscalation, playOutcome, playDeadlyEncounter, replayLast, stop, skipCurrent, pauseNarration, resumeNarration, getPlaybackState,
     setPreferenceEnabled, isPreferenceEnabled, setMasterEnabled, isMasterEnabled, isPlaybackEnabled, setVolumeMultiplier,
     canReplay: () => Boolean(lastEntry)
   });

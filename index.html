@@ -18,8 +18,8 @@
   <link rel="icon" href="Assets/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" sizes="180x180" href="Assets/icon-180.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=9.2.63">
-  <script async src="analytics.js?release=9.2.63"></script>
+  <link rel="stylesheet" href="styles.css?v=10.0.0">
+  <script async src="analytics.js?release=10.0.0"></script>
 </head>
 <body>
   <div id="gameBackground" aria-hidden="true"></div>
@@ -31,7 +31,7 @@
     </div>
     <div class="header-actions">
       <button class="header-menu-btn" id="gameMenuBtn" hidden>Game Menu</button>
-      <div class="version">V9.2.63</div>
+      <div class="version">V10.0.0</div>
       <button class="narration-speaker-btn" id="narrationSpeakerBtn" type="button" aria-label="Master audio on" aria-pressed="true" title="Master audio on">
         <svg class="narration-icon-enabled" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9v6h4l5 4V5L8 9H4z"></path><path d="M16 8.5c1.3 1.8 1.3 5.2 0 7M19 6c2.7 3.2 2.7 8.8 0 12"></path></svg>
         <svg class="narration-icon-disabled" viewBox="0 0 24 24" aria-hidden="true" focusable="false" hidden><path d="M4 9v6h4l5 4V5L8 9H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path><path d="M16 9 L21 15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path><path d="M21 9 L16 15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path></svg>
@@ -63,6 +63,26 @@
       </div>
     </div>
   </dialog>
+  <dialog id="narrationTranscriptDialog" class="narration-transcript-dialog" aria-labelledby="narrationTranscriptCategory">
+    <div class="narration-transcript-shell">
+      <header class="narration-transcript-header">
+        <p id="narrationTranscriptCategory" class="narration-transcript-eyebrow">NARRATION</p>
+        <button id="narrationTranscriptHide" class="narration-transcript-hide" type="button" aria-label="Hide transcript">×</button>
+      </header>
+      <div id="narrationTranscriptBody" class="narration-transcript-body">Loading transcript…</div>
+      <footer class="narration-transcript-footer">
+        <div id="narrationTranscriptProgress" class="narration-transcript-progress" role="progressbar" aria-label="Narration playback progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+        <div id="narrationTranscriptTime" class="narration-transcript-time">0:00 / 0:00</div>
+        <div class="narration-transcript-controls">
+          <button id="narrationTranscriptPause" class="btn primary" type="button">Pause</button>
+          <button id="narrationTranscriptSkip" class="btn ghost" type="button">Skip This Narration</button>
+          <button id="narrationTranscriptStop" class="btn danger" type="button">Stop All Narration</button>
+        </div>
+        <p id="narrationTranscriptPauseHelp" class="narration-transcript-help" hidden>Turn master audio on to resume narration.</p>
+      </footer>
+    </div>
+  </dialog>
+  <button id="narrationTranscriptReopen" class="btn secondary narration-transcript-reopen" type="button" hidden>Show Transcript</button>
   <div id="toast" class="toast" hidden></div>
   <div id="offlineInstallStatus" class="offline-install-status" role="status" aria-live="polite" aria-atomic="true" hidden>
     <div class="offline-install-copy">
@@ -78,14 +98,15 @@
     <button class="btn primary" id="updateAppBtn" type="button">Update App</button>
   </div>
   <input id="importInput" type="file" accept="application/json" hidden>
-  <script src="mission-engine.js?v=9.2.63"></script>
-  <script src="persistence.js?v=9.2.63"></script>
-  <script src="deadly-encounters.js?v=9.2.63"></script>
-  <script src="event-effects.js?v=9.2.63"></script>
-  <script src="audio-capabilities.js?v=9.2.63"></script>
-  <script src="narration.js?v=9.2.63"></script>
-  <script src="ambient.js?v=9.2.63"></script>
-  <script src="dice-sfx.js?v=9.2.63"></script>
-  <script src="app.js?v=9.2.63"></script>
+  <script src="mission-engine.js?v=10.0.0"></script>
+  <script src="persistence.js?v=10.0.0"></script>
+  <script src="deadly-encounters.js?v=10.0.0"></script>
+  <script src="event-effects.js?v=10.0.0"></script>
+  <script src="audio-capabilities.js?v=10.0.0"></script>
+  <script src="narration.js?v=10.0.0"></script>
+  <script src="narration-transcript.js?v=10.0.0"></script>
+  <script src="ambient.js?v=10.0.0"></script>
+  <script src="dice-sfx.js?v=10.0.0"></script>
+  <script src="app.js?v=10.0.0"></script>
 </body>
 </html>

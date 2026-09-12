@@ -1,0 +1,438 @@
+{
+  "schemaVersion": 1,
+  "id": "grade.1.stirring",
+  "text": "Deep within the crypt, dormant systems answer the intrusion.\n\nEmerald lights flicker into life. Ancient machines begin to move, slow and deliberate, as the tomb turns its attention toward the living.\n\nThe awakening has begun.",
+  "durationMs": 15491,
+  "scriptHash": "8a9e871f85aa052fc6907d158b6dd1005731bf5d6c55f13c3062d79a696150b5",
+  "audioHash": "a844c18b634c42a901ca6f6e9fabfe122503435986e8b09b46d7075ce1f5b46f",
+  "alignmentLoss": 0.1750429031583998,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "Deep",
+      "startMs": 99,
+      "endMs": 299,
+      "loss": 1.2969959080219269
+    },
+    {
+      "text": " ",
+      "startMs": 299,
+      "endMs": 340,
+      "loss": 0.00177764892578125
+    },
+    {
+      "text": "within",
+      "startMs": 340,
+      "endMs": 579,
+      "loss": 0.0006174643834431967
+    },
+    {
+      "text": " ",
+      "startMs": 579,
+      "endMs": 620,
+      "loss": 0.000576019287109375
+    },
+    {
+      "text": "the",
+      "startMs": 620,
+      "endMs": 680,
+      "loss": 0.0008759895960489908
+    },
+    {
+      "text": " ",
+      "startMs": 680,
+      "endMs": 759,
+      "loss": 7.867813110351562e-05
+    },
+    {
+      "text": "crypt,",
+      "startMs": 759,
+      "endMs": 1059,
+      "loss": 0.06547319889068604
+    },
+    {
+      "text": " ",
+      "startMs": 1059,
+      "endMs": 1459,
+      "loss": 0.000141143798828125
+    },
+    {
+      "text": "dormant",
+      "startMs": 1459,
+      "endMs": 1819,
+      "loss": 0.0011594636099679129
+    },
+    {
+      "text": " ",
+      "startMs": 1819,
+      "endMs": 1919,
+      "loss": 0.00054168701171875
+    },
+    {
+      "text": "systems",
+      "startMs": 1919,
+      "endMs": 2480,
+      "loss": 0.00028906549726213725
+    },
+    {
+      "text": " ",
+      "startMs": 2480,
+      "endMs": 2559,
+      "loss": 0.00457763671875
+    },
+    {
+      "text": "answer",
+      "startMs": 2559,
+      "endMs": 2859,
+      "loss": 0.00040404001871744793
+    },
+    {
+      "text": " ",
+      "startMs": 2859,
+      "endMs": 2879,
+      "loss": 0.0016632080078125
+    },
+    {
+      "text": "the",
+      "startMs": 2879,
+      "endMs": 2939,
+      "loss": 0.0006154378255208334
+    },
+    {
+      "text": " ",
+      "startMs": 2939,
+      "endMs": 2999,
+      "loss": 0.0001850128173828125
+    },
+    {
+      "text": "intrusion.",
+      "startMs": 3000,
+      "endMs": 3500,
+      "loss": 0.01093355417251587
+    },
+    {
+      "text": "\n",
+      "startMs": 3500,
+      "endMs": 4360,
+      "loss": 11.875
+    },
+    {
+      "text": "\n",
+      "startMs": 4360,
+      "endMs": 4440,
+      "loss": 5.875
+    },
+    {
+      "text": "Emerald",
+      "startMs": 4440,
+      "endMs": 4719,
+      "loss": 0.03695157596043178
+    },
+    {
+      "text": " ",
+      "startMs": 4719,
+      "endMs": 4779,
+      "loss": 0.00130462646484375
+    },
+    {
+      "text": "lights",
+      "startMs": 4779,
+      "endMs": 5239,
+      "loss": 0.004104197025299072
+    },
+    {
+      "text": " ",
+      "startMs": 5239,
+      "endMs": 5359,
+      "loss": 0.00194549560546875
+    },
+    {
+      "text": "flicker",
+      "startMs": 5359,
+      "endMs": 5619,
+      "loss": 0.00010570458003452845
+    },
+    {
+      "text": " ",
+      "startMs": 5619,
+      "endMs": 5719,
+      "loss": 0.0013885498046875
+    },
+    {
+      "text": "into",
+      "startMs": 5719,
+      "endMs": 5920,
+      "loss": 0.00019633769989013672
+    },
+    {
+      "text": " ",
+      "startMs": 5920,
+      "endMs": 6000,
+      "loss": 3.123283386230469e-05
+    },
+    {
+      "text": "life.",
+      "startMs": 6000,
+      "endMs": 6339,
+      "loss": 0.09174656867980957
+    },
+    {
+      "text": " ",
+      "startMs": 6339,
+      "endMs": 7099,
+      "loss": 0.00506591796875
+    },
+    {
+      "text": "Ancient",
+      "startMs": 7099,
+      "endMs": 7379,
+      "loss": 0.0006289141518729073
+    },
+    {
+      "text": " ",
+      "startMs": 7379,
+      "endMs": 7439,
+      "loss": 0.0001544952392578125
+    },
+    {
+      "text": "machines",
+      "startMs": 7440,
+      "endMs": 7960,
+      "loss": 0.0006676018238067627
+    },
+    {
+      "text": " ",
+      "startMs": 7960,
+      "endMs": 8039,
+      "loss": 0.00023746490478515625
+    },
+    {
+      "text": "begin",
+      "startMs": 8039,
+      "endMs": 8239,
+      "loss": 0.0010970115661621093
+    },
+    {
+      "text": " ",
+      "startMs": 8239,
+      "endMs": 8279,
+      "loss": 0.00177764892578125
+    },
+    {
+      "text": "to",
+      "startMs": 8279,
+      "endMs": 8360,
+      "loss": 0.00026917457580566406
+    },
+    {
+      "text": " ",
+      "startMs": 8360,
+      "endMs": 8439,
+      "loss": 4.6253204345703125e-05
+    },
+    {
+      "text": "move,",
+      "startMs": 8439,
+      "endMs": 8760,
+      "loss": 0.23773043155670165
+    },
+    {
+      "text": " ",
+      "startMs": 8760,
+      "endMs": 9119,
+      "loss": 6.866455078125e-05
+    },
+    {
+      "text": "slow",
+      "startMs": 9119,
+      "endMs": 9479,
+      "loss": 0.0005545318126678467
+    },
+    {
+      "text": " ",
+      "startMs": 9479,
+      "endMs": 9539,
+      "loss": 0.0277099609375
+    },
+    {
+      "text": "and",
+      "startMs": 9539,
+      "endMs": 9619,
+      "loss": 0.000537713368733724
+    },
+    {
+      "text": " ",
+      "startMs": 9619,
+      "endMs": 9679,
+      "loss": 1.6808509826660156e-05
+    },
+    {
+      "text": "deliberate,",
+      "startMs": 9679,
+      "endMs": 10100,
+      "loss": 0.0231644023548473
+    },
+    {
+      "text": " ",
+      "startMs": 10100,
+      "endMs": 10599,
+      "loss": 4.267692565917969e-05
+    },
+    {
+      "text": "as",
+      "startMs": 10599,
+      "endMs": 10679,
+      "loss": 0.0011043548583984375
+    },
+    {
+      "text": " ",
+      "startMs": 10679,
+      "endMs": 10719,
+      "loss": 2.944469451904297e-05
+    },
+    {
+      "text": "the",
+      "startMs": 10719,
+      "endMs": 10760,
+      "loss": 0.00041675567626953125
+    },
+    {
+      "text": " ",
+      "startMs": 10760,
+      "endMs": 10880,
+      "loss": 7.62939453125e-05
+    },
+    {
+      "text": "tomb",
+      "startMs": 10880,
+      "endMs": 11279,
+      "loss": 0.005049467086791992
+    },
+    {
+      "text": " ",
+      "startMs": 11279,
+      "endMs": 11340,
+      "loss": 0.0009918212890625
+    },
+    {
+      "text": "turns",
+      "startMs": 11340,
+      "endMs": 11639,
+      "loss": 0.00036585330963134766
+    },
+    {
+      "text": " ",
+      "startMs": 11639,
+      "endMs": 11679,
+      "loss": 0.0002956390380859375
+    },
+    {
+      "text": "its",
+      "startMs": 11679,
+      "endMs": 11779,
+      "loss": 0.0006925264994303385
+    },
+    {
+      "text": " ",
+      "startMs": 11779,
+      "endMs": 11840,
+      "loss": 0.00019073486328125
+    },
+    {
+      "text": "attention",
+      "startMs": 11840,
+      "endMs": 12359,
+      "loss": 0.00019821855756971572
+    },
+    {
+      "text": " ",
+      "startMs": 12359,
+      "endMs": 12399,
+      "loss": 0.0021209716796875
+    },
+    {
+      "text": "toward",
+      "startMs": 12399,
+      "endMs": 12699,
+      "loss": 0.000257571538289388
+    },
+    {
+      "text": " ",
+      "startMs": 12699,
+      "endMs": 12739,
+      "loss": 0.026611328125
+    },
+    {
+      "text": "the",
+      "startMs": 12739,
+      "endMs": 12799,
+      "loss": 0.0005880196889241537
+    },
+    {
+      "text": " ",
+      "startMs": 12799,
+      "endMs": 12880,
+      "loss": 8.0108642578125e-05
+    },
+    {
+      "text": "living.",
+      "startMs": 12880,
+      "endMs": 13159,
+      "loss": 0.01091109003339495
+    },
+    {
+      "text": "\n",
+      "startMs": 13159,
+      "endMs": 13819,
+      "loss": 8.6875
+    },
+    {
+      "text": "\n",
+      "startMs": 13819,
+      "endMs": 13840,
+      "loss": 3.9375
+    },
+    {
+      "text": "The",
+      "startMs": 13840,
+      "endMs": 13899,
+      "loss": 0.016448338826497395
+    },
+    {
+      "text": " ",
+      "startMs": 13899,
+      "endMs": 13960,
+      "loss": 0.01611328125
+    },
+    {
+      "text": "awakening",
+      "startMs": 13960,
+      "endMs": 14479,
+      "loss": 0.018330812454223633
+    },
+    {
+      "text": " ",
+      "startMs": 14479,
+      "endMs": 14599,
+      "loss": 0.0026702880859375
+    },
+    {
+      "text": "has",
+      "startMs": 14599,
+      "endMs": 14699,
+      "loss": 0.0007203420003255209
+    },
+    {
+      "text": " ",
+      "startMs": 14699,
+      "endMs": 14739,
+      "loss": 0.00012159347534179688
+    },
+    {
+      "text": "begun.",
+      "startMs": 14739,
+      "endMs": 15159,
+      "loss": 0.11133309205373128
+    }
+  ]
+}

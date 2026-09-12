@@ -1,0 +1,450 @@
+{
+  "schemaVersion": 1,
+  "id": "event.transdimensional-relocation",
+  "text": "Reality buckles.\n\nTwo warriors flicker out of existence and reappear where the other had been standing.\n\nNo movement. No warning.\n\nThe tomb has simply exchanged their positions.\n\nSwap the two selected operatives on the battlefield.",
+  "durationMs": 16718,
+  "scriptHash": "78d15757c56db8dc76c2c53d19efe672adc854545154eb409ac77c3013ed8b1b",
+  "audioHash": "6c4fa0066f63dc21bdb63eb78928111b42a38c2ce7cfe0b486c721559a8ef144",
+  "alignmentLoss": 0.30749068115696765,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "Reality",
+      "startMs": 79,
+      "endMs": 579,
+      "loss": 0.06414469650813512
+    },
+    {
+      "text": " ",
+      "startMs": 579,
+      "endMs": 659,
+      "loss": 0.0006103515625
+    },
+    {
+      "text": "buckles.",
+      "startMs": 659,
+      "endMs": 1179,
+      "loss": 0.07687509059906006
+    },
+    {
+      "text": "\n",
+      "startMs": 1179,
+      "endMs": 1240,
+      "loss": 12.875
+    },
+    {
+      "text": "\n",
+      "startMs": 1240,
+      "endMs": 2019,
+      "loss": 6.375
+    },
+    {
+      "text": "Two",
+      "startMs": 2019,
+      "endMs": 2139,
+      "loss": 0.06791440645853679
+    },
+    {
+      "text": " ",
+      "startMs": 2139,
+      "endMs": 2239,
+      "loss": 2.0265579223632812e-05
+    },
+    {
+      "text": "warriors",
+      "startMs": 2240,
+      "endMs": 2700,
+      "loss": 0.0004972666501998901
+    },
+    {
+      "text": " ",
+      "startMs": 2700,
+      "endMs": 2859,
+      "loss": 0.00121307373046875
+    },
+    {
+      "text": "flicker",
+      "startMs": 2859,
+      "endMs": 3159,
+      "loss": 0.00016219275338309153
+    },
+    {
+      "text": " ",
+      "startMs": 3159,
+      "endMs": 3219,
+      "loss": 0.0022125244140625
+    },
+    {
+      "text": "out",
+      "startMs": 3220,
+      "endMs": 3339,
+      "loss": 0.00035421053568522137
+    },
+    {
+      "text": " ",
+      "startMs": 3339,
+      "endMs": 3379,
+      "loss": 8.344650268554688e-05
+    },
+    {
+      "text": "of",
+      "startMs": 3379,
+      "endMs": 3419,
+      "loss": 0.0003032684326171875
+    },
+    {
+      "text": " ",
+      "startMs": 3419,
+      "endMs": 3499,
+      "loss": 2.0742416381835938e-05
+    },
+    {
+      "text": "existence",
+      "startMs": 3500,
+      "endMs": 4019,
+      "loss": 0.00010248025258382161
+    },
+    {
+      "text": " ",
+      "startMs": 4019,
+      "endMs": 4360,
+      "loss": 0.040283203125
+    },
+    {
+      "text": "and",
+      "startMs": 4360,
+      "endMs": 4440,
+      "loss": 0.0003554821014404297
+    },
+    {
+      "text": " ",
+      "startMs": 4440,
+      "endMs": 4519,
+      "loss": 9.655952453613281e-06
+    },
+    {
+      "text": "reappear",
+      "startMs": 4519,
+      "endMs": 5000,
+      "loss": 0.0031851530075073242
+    },
+    {
+      "text": " ",
+      "startMs": 5000,
+      "endMs": 5099,
+      "loss": 0.00075531005859375
+    },
+    {
+      "text": "where",
+      "startMs": 5099,
+      "endMs": 5239,
+      "loss": 0.000608372688293457
+    },
+    {
+      "text": " ",
+      "startMs": 5239,
+      "endMs": 5279,
+      "loss": 3.075599670410156e-05
+    },
+    {
+      "text": "the",
+      "startMs": 5279,
+      "endMs": 5339,
+      "loss": 0.000835418701171875
+    },
+    {
+      "text": " ",
+      "startMs": 5339,
+      "endMs": 5439,
+      "loss": 0.00012111663818359375
+    },
+    {
+      "text": "other",
+      "startMs": 5440,
+      "endMs": 5599,
+      "loss": 0.0009716033935546875
+    },
+    {
+      "text": " ",
+      "startMs": 5599,
+      "endMs": 5639,
+      "loss": 0.00107574462890625
+    },
+    {
+      "text": "had",
+      "startMs": 5639,
+      "endMs": 5759,
+      "loss": 0.002369403839111328
+    },
+    {
+      "text": " ",
+      "startMs": 5759,
+      "endMs": 5799,
+      "loss": 6.723403930664062e-05
+    },
+    {
+      "text": "been",
+      "startMs": 5799,
+      "endMs": 5939,
+      "loss": 0.00021907687187194824
+    },
+    {
+      "text": " ",
+      "startMs": 5939,
+      "endMs": 6000,
+      "loss": 0.000164031982421875
+    },
+    {
+      "text": "standing.",
+      "startMs": 6000,
+      "endMs": 6479,
+      "loss": 0.018473837110731337
+    },
+    {
+      "text": "\n",
+      "startMs": 6479,
+      "endMs": 6519,
+      "loss": 11.8125
+    },
+    {
+      "text": "\n",
+      "startMs": 6519,
+      "endMs": 7419,
+      "loss": 5.40625
+    },
+    {
+      "text": "No",
+      "startMs": 7419,
+      "endMs": 7500,
+      "loss": 0.08458089828491211
+    },
+    {
+      "text": " ",
+      "startMs": 7500,
+      "endMs": 7599,
+      "loss": 0.0001544952392578125
+    },
+    {
+      "text": "movement.",
+      "startMs": 7599,
+      "endMs": 8039,
+      "loss": 0.3066914876302083
+    },
+    {
+      "text": " ",
+      "startMs": 8039,
+      "endMs": 8559,
+      "loss": 0.0498046875
+    },
+    {
+      "text": "No",
+      "startMs": 8559,
+      "endMs": 8659,
+      "loss": 0.051891326904296875
+    },
+    {
+      "text": " ",
+      "startMs": 8659,
+      "endMs": 8739,
+      "loss": 0.000522613525390625
+    },
+    {
+      "text": "warning.",
+      "startMs": 8739,
+      "endMs": 9139,
+      "loss": 0.03126785159111023
+    },
+    {
+      "text": "\n",
+      "startMs": 9139,
+      "endMs": 9180,
+      "loss": 9.875
+    },
+    {
+      "text": "\n",
+      "startMs": 9180,
+      "endMs": 10059,
+      "loss": 6.21875
+    },
+    {
+      "text": "The",
+      "startMs": 10059,
+      "endMs": 10119,
+      "loss": 0.011449813842773438
+    },
+    {
+      "text": " ",
+      "startMs": 10119,
+      "endMs": 10199,
+      "loss": 0.00015735626220703125
+    },
+    {
+      "text": "tomb",
+      "startMs": 10199,
+      "endMs": 10479,
+      "loss": 0.011466741561889648
+    },
+    {
+      "text": " ",
+      "startMs": 10479,
+      "endMs": 10539,
+      "loss": 0.0004825592041015625
+    },
+    {
+      "text": "has",
+      "startMs": 10539,
+      "endMs": 10679,
+      "loss": 0.0011141300201416016
+    },
+    {
+      "text": " ",
+      "startMs": 10679,
+      "endMs": 10739,
+      "loss": 1.2278556823730469e-05
+    },
+    {
+      "text": "simply",
+      "startMs": 10739,
+      "endMs": 11099,
+      "loss": 0.00012596448262532553
+    },
+    {
+      "text": " ",
+      "startMs": 11099,
+      "endMs": 11199,
+      "loss": 3.7670135498046875e-05
+    },
+    {
+      "text": "exchanged",
+      "startMs": 11199,
+      "endMs": 11759,
+      "loss": 0.00018970171610514322
+    },
+    {
+      "text": " ",
+      "startMs": 11759,
+      "endMs": 11779,
+      "loss": 0.000537872314453125
+    },
+    {
+      "text": "their",
+      "startMs": 11779,
+      "endMs": 11920,
+      "loss": 0.00043127536773681643
+    },
+    {
+      "text": " ",
+      "startMs": 11920,
+      "endMs": 11979,
+      "loss": 5.6743621826171875e-05
+    },
+    {
+      "text": "positions.",
+      "startMs": 11979,
+      "endMs": 12619,
+      "loss": 0.03980395793914795
+    },
+    {
+      "text": "\n",
+      "startMs": 12619,
+      "endMs": 12659,
+      "loss": 7.03125
+    },
+    {
+      "text": "\n",
+      "startMs": 12659,
+      "endMs": 12660,
+      "loss": 3.421875
+    },
+    {
+      "text": "Swap",
+      "startMs": 13799,
+      "endMs": 14219,
+      "loss": 0.0175015926361084
+    },
+    {
+      "text": " ",
+      "startMs": 14219,
+      "endMs": 14259,
+      "loss": 0.006072998046875
+    },
+    {
+      "text": "the",
+      "startMs": 14259,
+      "endMs": 14359,
+      "loss": 0.0005153020222981771
+    },
+    {
+      "text": " ",
+      "startMs": 14359,
+      "endMs": 14420,
+      "loss": 0.00014019012451171875
+    },
+    {
+      "text": "two",
+      "startMs": 14420,
+      "endMs": 14599,
+      "loss": 0.0016076962153116863
+    },
+    {
+      "text": " ",
+      "startMs": 14599,
+      "endMs": 14659,
+      "loss": 0.000408172607421875
+    },
+    {
+      "text": "selected",
+      "startMs": 14659,
+      "endMs": 15039,
+      "loss": 0.00024418532848358154
+    },
+    {
+      "text": " ",
+      "startMs": 15039,
+      "endMs": 15099,
+      "loss": 0.00078582763671875
+    },
+    {
+      "text": "operatives",
+      "startMs": 15099,
+      "endMs": 15559,
+      "loss": 0.0004660964012145996
+    },
+    {
+      "text": " ",
+      "startMs": 15559,
+      "endMs": 15599,
+      "loss": 0.0012359619140625
+    },
+    {
+      "text": "on",
+      "startMs": 15599,
+      "endMs": 15679,
+      "loss": 0.0012331008911132812
+    },
+    {
+      "text": " ",
+      "startMs": 15679,
+      "endMs": 15719,
+      "loss": 7.009506225585938e-05
+    },
+    {
+      "text": "the",
+      "startMs": 15719,
+      "endMs": 15779,
+      "loss": 0.00028510888417561847
+    },
+    {
+      "text": " ",
+      "startMs": 15779,
+      "endMs": 15839,
+      "loss": 0.0002460479736328125
+    },
+    {
+      "text": "battlefield.",
+      "startMs": 15839,
+      "endMs": 16419,
+      "loss": 0.2137354016304016
+    }
+  ]
+}

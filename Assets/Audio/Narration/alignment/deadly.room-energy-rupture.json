@@ -1,0 +1,486 @@
+{
+  "schemaVersion": 1,
+  "id": "deadly.room-energy-rupture",
+  "text": "Emerald energy arcs across the chamber.\n\nAncient conduits have split open, sending violent discharges crawling through the walls. The closer you move to the surrounding structure, the more violently the energy responds.\n\nThe room itself has become a weapon.",
+  "durationMs": 17319,
+  "scriptHash": "8a9a74cc1cac0489640a237a2824bf8295f7a5ad20a5d285496bbe7a0ab04c3c",
+  "audioHash": "bce9ea62f4ca33a6b7bfc3f8eb006467cc905ec2f390b9b503f5dbdf2018142c",
+  "alignmentLoss": 0.10262847456950622,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "Emerald",
+      "startMs": 59,
+      "endMs": 379,
+      "loss": 0.24548755373273576
+    },
+    {
+      "text": " ",
+      "startMs": 379,
+      "endMs": 459,
+      "loss": 0.00173187255859375
+    },
+    {
+      "text": "energy",
+      "startMs": 459,
+      "endMs": 779,
+      "loss": 0.03371592362721761
+    },
+    {
+      "text": " ",
+      "startMs": 779,
+      "endMs": 919,
+      "loss": 0.000835418701171875
+    },
+    {
+      "text": "arcs",
+      "startMs": 919,
+      "endMs": 1379,
+      "loss": 0.011453628540039062
+    },
+    {
+      "text": " ",
+      "startMs": 1379,
+      "endMs": 1500,
+      "loss": 0.006256103515625
+    },
+    {
+      "text": "across",
+      "startMs": 1500,
+      "endMs": 1779,
+      "loss": 0.00023917357126871744
+    },
+    {
+      "text": " ",
+      "startMs": 1779,
+      "endMs": 1860,
+      "loss": 0.00011444091796875
+    },
+    {
+      "text": "the",
+      "startMs": 1860,
+      "endMs": 1899,
+      "loss": 0.0002703666687011719
+    },
+    {
+      "text": " ",
+      "startMs": 1899,
+      "endMs": 1979,
+      "loss": 8.58306884765625e-05
+    },
+    {
+      "text": "chamber.",
+      "startMs": 1979,
+      "endMs": 2379,
+      "loss": 0.04435396194458008
+    },
+    {
+      "text": "\n",
+      "startMs": 2379,
+      "endMs": 2380,
+      "loss": 6.625
+    },
+    {
+      "text": "\n",
+      "startMs": 2379,
+      "endMs": 2380,
+      "loss": 3.046875
+    },
+    {
+      "text": "Ancient",
+      "startMs": 3500,
+      "endMs": 3799,
+      "loss": 0.005724668502807617
+    },
+    {
+      "text": " ",
+      "startMs": 3799,
+      "endMs": 3939,
+      "loss": 0.0001049041748046875
+    },
+    {
+      "text": "conduits",
+      "startMs": 3939,
+      "endMs": 4400,
+      "loss": 0.0006743669509887695
+    },
+    {
+      "text": " ",
+      "startMs": 4400,
+      "endMs": 4440,
+      "loss": 0.000331878662109375
+    },
+    {
+      "text": "have",
+      "startMs": 4440,
+      "endMs": 4559,
+      "loss": 0.0009743571281433105
+    },
+    {
+      "text": " ",
+      "startMs": 4559,
+      "endMs": 4599,
+      "loss": 2.6345252990722656e-05
+    },
+    {
+      "text": "split",
+      "startMs": 4599,
+      "endMs": 4819,
+      "loss": 0.00012667179107666015
+    },
+    {
+      "text": " ",
+      "startMs": 4819,
+      "endMs": 4939,
+      "loss": 0.0038909912109375
+    },
+    {
+      "text": "open,",
+      "startMs": 4940,
+      "endMs": 5179,
+      "loss": 0.05798792839050293
+    },
+    {
+      "text": " ",
+      "startMs": 5179,
+      "endMs": 5319,
+      "loss": 0.00015544891357421875
+    },
+    {
+      "text": "sending",
+      "startMs": 5319,
+      "endMs": 5659,
+      "loss": 0.0002999305725097656
+    },
+    {
+      "text": " ",
+      "startMs": 5659,
+      "endMs": 5719,
+      "loss": 0.000579833984375
+    },
+    {
+      "text": "violent",
+      "startMs": 5719,
+      "endMs": 6039,
+      "loss": 0.0002465759004865374
+    },
+    {
+      "text": " ",
+      "startMs": 6039,
+      "endMs": 6139,
+      "loss": 0.0004787445068359375
+    },
+    {
+      "text": "discharges",
+      "startMs": 6139,
+      "endMs": 6779,
+      "loss": 0.0003685712814331055
+    },
+    {
+      "text": " ",
+      "startMs": 6779,
+      "endMs": 6899,
+      "loss": 0.0303955078125
+    },
+    {
+      "text": "crawling",
+      "startMs": 6899,
+      "endMs": 7259,
+      "loss": 0.00028374791145324707
+    },
+    {
+      "text": " ",
+      "startMs": 7259,
+      "endMs": 7319,
+      "loss": 0.000644683837890625
+    },
+    {
+      "text": "through",
+      "startMs": 7319,
+      "endMs": 7500,
+      "loss": 0.0002176591328212193
+    },
+    {
+      "text": " ",
+      "startMs": 7500,
+      "endMs": 7539,
+      "loss": 0.000156402587890625
+    },
+    {
+      "text": "the",
+      "startMs": 7539,
+      "endMs": 7619,
+      "loss": 0.0003008842468261719
+    },
+    {
+      "text": " ",
+      "startMs": 7619,
+      "endMs": 7679,
+      "loss": 8.392333984375e-05
+    },
+    {
+      "text": "walls.",
+      "startMs": 7679,
+      "endMs": 8139,
+      "loss": 0.10757178068161011
+    },
+    {
+      "text": " ",
+      "startMs": 8139,
+      "endMs": 9059,
+      "loss": 0.005615234375
+    },
+    {
+      "text": "The",
+      "startMs": 9059,
+      "endMs": 9119,
+      "loss": 0.0005249977111816406
+    },
+    {
+      "text": " ",
+      "startMs": 9119,
+      "endMs": 9179,
+      "loss": 1.895427703857422e-05
+    },
+    {
+      "text": "closer",
+      "startMs": 9179,
+      "endMs": 9460,
+      "loss": 0.0006046295166015625
+    },
+    {
+      "text": " ",
+      "startMs": 9460,
+      "endMs": 9500,
+      "loss": 0.00015926361083984375
+    },
+    {
+      "text": "you",
+      "startMs": 9500,
+      "endMs": 9619,
+      "loss": 0.0003673235575358073
+    },
+    {
+      "text": " ",
+      "startMs": 9619,
+      "endMs": 9659,
+      "loss": 0.00035858154296875
+    },
+    {
+      "text": "move",
+      "startMs": 9659,
+      "endMs": 9920,
+      "loss": 9.861588478088379e-05
+    },
+    {
+      "text": " ",
+      "startMs": 9920,
+      "endMs": 9960,
+      "loss": 0.003173828125
+    },
+    {
+      "text": "to",
+      "startMs": 9960,
+      "endMs": 10039,
+      "loss": 0.0006866455078125
+    },
+    {
+      "text": " ",
+      "startMs": 10039,
+      "endMs": 10079,
+      "loss": 0.000507354736328125
+    },
+    {
+      "text": "the",
+      "startMs": 10079,
+      "endMs": 10119,
+      "loss": 0.0004762013753255208
+    },
+    {
+      "text": " ",
+      "startMs": 10119,
+      "endMs": 10219,
+      "loss": 9.441375732421875e-05
+    },
+    {
+      "text": "surrounding",
+      "startMs": 10219,
+      "endMs": 10639,
+      "loss": 0.0001526312394575639
+    },
+    {
+      "text": " ",
+      "startMs": 10639,
+      "endMs": 10759,
+      "loss": 0.0006103515625
+    },
+    {
+      "text": "structure,",
+      "startMs": 10760,
+      "endMs": 11179,
+      "loss": 0.003434896469116211
+    },
+    {
+      "text": " ",
+      "startMs": 11179,
+      "endMs": 11899,
+      "loss": 3.337860107421875e-05
+    },
+    {
+      "text": "the",
+      "startMs": 11899,
+      "endMs": 11979,
+      "loss": 0.0009543100992838541
+    },
+    {
+      "text": " ",
+      "startMs": 11979,
+      "endMs": 12019,
+      "loss": 4.0531158447265625e-05
+    },
+    {
+      "text": "more",
+      "startMs": 12019,
+      "endMs": 12219,
+      "loss": 0.0003007352352142334
+    },
+    {
+      "text": " ",
+      "startMs": 12219,
+      "endMs": 12259,
+      "loss": 0.000518798828125
+    },
+    {
+      "text": "violently",
+      "startMs": 12259,
+      "endMs": 12779,
+      "loss": 0.00024958451588948566
+    },
+    {
+      "text": " ",
+      "startMs": 12779,
+      "endMs": 12880,
+      "loss": 0.003082275390625
+    },
+    {
+      "text": "the",
+      "startMs": 12880,
+      "endMs": 12960,
+      "loss": 0.0005044937133789062
+    },
+    {
+      "text": " ",
+      "startMs": 12960,
+      "endMs": 13039,
+      "loss": 1.3113021850585938e-05
+    },
+    {
+      "text": "energy",
+      "startMs": 13039,
+      "endMs": 13380,
+      "loss": 0.00045673052469889325
+    },
+    {
+      "text": " ",
+      "startMs": 13380,
+      "endMs": 13439,
+      "loss": 0.0004825592041015625
+    },
+    {
+      "text": "responds.",
+      "startMs": 13439,
+      "endMs": 14119,
+      "loss": 0.011097351710001627
+    },
+    {
+      "text": "\n",
+      "startMs": 14119,
+      "endMs": 14880,
+      "loss": 7.4375
+    },
+    {
+      "text": "\n",
+      "startMs": 14880,
+      "endMs": 14920,
+      "loss": 3.546875
+    },
+    {
+      "text": "The",
+      "startMs": 14920,
+      "endMs": 14960,
+      "loss": 0.016054789225260418
+    },
+    {
+      "text": " ",
+      "startMs": 14960,
+      "endMs": 15039,
+      "loss": 0.0172119140625
+    },
+    {
+      "text": "room",
+      "startMs": 15039,
+      "endMs": 15180,
+      "loss": 0.004217207431793213
+    },
+    {
+      "text": " ",
+      "startMs": 15180,
+      "endMs": 15219,
+      "loss": 0.000942230224609375
+    },
+    {
+      "text": "itself",
+      "startMs": 15219,
+      "endMs": 15739,
+      "loss": 0.00036720434824625653
+    },
+    {
+      "text": " ",
+      "startMs": 15739,
+      "endMs": 16059,
+      "loss": 0.5234375
+    },
+    {
+      "text": "has",
+      "startMs": 16059,
+      "endMs": 16199,
+      "loss": 0.003861109415690104
+    },
+    {
+      "text": " ",
+      "startMs": 16199,
+      "endMs": 16239,
+      "loss": 0.00021076202392578125
+    },
+    {
+      "text": "become",
+      "startMs": 16239,
+      "endMs": 16500,
+      "loss": 0.00015616416931152344
+    },
+    {
+      "text": " ",
+      "startMs": 16500,
+      "endMs": 16539,
+      "loss": 0.00084686279296875
+    },
+    {
+      "text": "a",
+      "startMs": 16539,
+      "endMs": 16559,
+      "loss": 0.004364013671875
+    },
+    {
+      "text": " ",
+      "startMs": 16559,
+      "endMs": 16639,
+      "loss": 0.0027618408203125
+    },
+    {
+      "text": "weapon.",
+      "startMs": 16639,
+      "endMs": 17039,
+      "loss": 0.22171527998788015
+    }
+  ]
+}

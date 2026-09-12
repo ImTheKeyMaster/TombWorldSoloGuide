@@ -1,0 +1,474 @@
+{
+  "schemaVersion": 1,
+  "id": "event.stirrings-of-horror",
+  "text": "Something moves far below.\n\nThe vibration is almost too faint to feel, but the tomb responds immediately. Systems awaken. Signals spread. Ancient machinery begins preparing for something deeper within the complex.\n\nThe Tomb World has become more dangerous.",
+  "durationMs": 19827,
+  "scriptHash": "3f9d3655b74a209a8974bac70e01cb2dfa8ff29ac3f92f9cf22de0d85ef69c4d",
+  "audioHash": "434165fad3f1bac7d86b5c2409188f2f17714ff0b77b07174b25cd03b01d0c47",
+  "alignmentLoss": 0.1254060361534357,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "Something",
+      "startMs": 159,
+      "endMs": 579,
+      "loss": 0.17416616280873617
+    },
+    {
+      "text": " ",
+      "startMs": 579,
+      "endMs": 620,
+      "loss": 0.00171661376953125
+    },
+    {
+      "text": "moves",
+      "startMs": 620,
+      "endMs": 1000,
+      "loss": 0.0013752460479736328
+    },
+    {
+      "text": " ",
+      "startMs": 1000,
+      "endMs": 1139,
+      "loss": 0.00022220611572265625
+    },
+    {
+      "text": "far",
+      "startMs": 1139,
+      "endMs": 1299,
+      "loss": 0.0012334187825520833
+    },
+    {
+      "text": " ",
+      "startMs": 1299,
+      "endMs": 1399,
+      "loss": 0.0002040863037109375
+    },
+    {
+      "text": "below.",
+      "startMs": 1399,
+      "endMs": 1819,
+      "loss": 0.13150465488433838
+    },
+    {
+      "text": "\n",
+      "startMs": 1819,
+      "endMs": 2679,
+      "loss": 4.03125
+    },
+    {
+      "text": "\n",
+      "startMs": 2679,
+      "endMs": 2699,
+      "loss": 2.9375
+    },
+    {
+      "text": "The",
+      "startMs": 2699,
+      "endMs": 2779,
+      "loss": 0.00818792978922526
+    },
+    {
+      "text": " ",
+      "startMs": 2779,
+      "endMs": 2819,
+      "loss": 0.00244140625
+    },
+    {
+      "text": "vibration",
+      "startMs": 2819,
+      "endMs": 3579,
+      "loss": 0.0006335841284857856
+    },
+    {
+      "text": " ",
+      "startMs": 3579,
+      "endMs": 3619,
+      "loss": 0.0020751953125
+    },
+    {
+      "text": "is",
+      "startMs": 3619,
+      "endMs": 3740,
+      "loss": 0.0009982585906982422
+    },
+    {
+      "text": " ",
+      "startMs": 3740,
+      "endMs": 3819,
+      "loss": 3.457069396972656e-05
+    },
+    {
+      "text": "almost",
+      "startMs": 3819,
+      "endMs": 4299,
+      "loss": 0.0007077455520629883
+    },
+    {
+      "text": " ",
+      "startMs": 4299,
+      "endMs": 4319,
+      "loss": 0.00019359588623046875
+    },
+    {
+      "text": "too",
+      "startMs": 4319,
+      "endMs": 4519,
+      "loss": 0.0003170967102050781
+    },
+    {
+      "text": " ",
+      "startMs": 4519,
+      "endMs": 4579,
+      "loss": 0.004547119140625
+    },
+    {
+      "text": "faint",
+      "startMs": 4579,
+      "endMs": 4880,
+      "loss": 0.0004352569580078125
+    },
+    {
+      "text": " ",
+      "startMs": 4880,
+      "endMs": 4920,
+      "loss": 0.003570556640625
+    },
+    {
+      "text": "to",
+      "startMs": 4920,
+      "endMs": 5039,
+      "loss": 0.00018596649169921875
+    },
+    {
+      "text": " ",
+      "startMs": 5039,
+      "endMs": 5119,
+      "loss": 0.0002727508544921875
+    },
+    {
+      "text": "feel,",
+      "startMs": 5119,
+      "endMs": 5339,
+      "loss": 0.35027079582214354
+    },
+    {
+      "text": " ",
+      "startMs": 5339,
+      "endMs": 5420,
+      "loss": 0.00032806396484375
+    },
+    {
+      "text": "but",
+      "startMs": 5420,
+      "endMs": 5539,
+      "loss": 0.0014559427897135417
+    },
+    {
+      "text": " ",
+      "startMs": 5539,
+      "endMs": 5579,
+      "loss": 0.0024566650390625
+    },
+    {
+      "text": "the",
+      "startMs": 5579,
+      "endMs": 5679,
+      "loss": 0.0007273356119791666
+    },
+    {
+      "text": " ",
+      "startMs": 5679,
+      "endMs": 5719,
+      "loss": 0.0003261566162109375
+    },
+    {
+      "text": "tomb",
+      "startMs": 5719,
+      "endMs": 6199,
+      "loss": 0.0070037841796875
+    },
+    {
+      "text": " ",
+      "startMs": 6199,
+      "endMs": 6259,
+      "loss": 0.006500244140625
+    },
+    {
+      "text": "responds",
+      "startMs": 6259,
+      "endMs": 6719,
+      "loss": 0.0014571547508239746
+    },
+    {
+      "text": " ",
+      "startMs": 6719,
+      "endMs": 6839,
+      "loss": 0.00099945068359375
+    },
+    {
+      "text": "immediately.",
+      "startMs": 6839,
+      "endMs": 7339,
+      "loss": 0.08090220888455708
+    },
+    {
+      "text": " ",
+      "startMs": 7339,
+      "endMs": 8219,
+      "loss": 0.0162353515625
+    },
+    {
+      "text": "Systems",
+      "startMs": 8220,
+      "endMs": 8659,
+      "loss": 0.002315299851553781
+    },
+    {
+      "text": " ",
+      "startMs": 8659,
+      "endMs": 8679,
+      "loss": 0.0002880096435546875
+    },
+    {
+      "text": "awaken.",
+      "startMs": 8679,
+      "endMs": 9159,
+      "loss": 0.4478698457990374
+    },
+    {
+      "text": " ",
+      "startMs": 9159,
+      "endMs": 9739,
+      "loss": 0.004608154296875
+    },
+    {
+      "text": "Signals",
+      "startMs": 9739,
+      "endMs": 10119,
+      "loss": 0.0018383775438581193
+    },
+    {
+      "text": " ",
+      "startMs": 10119,
+      "endMs": 10159,
+      "loss": 0.00090789794921875
+    },
+    {
+      "text": "spread.",
+      "startMs": 10159,
+      "endMs": 10539,
+      "loss": 0.05942698887416294
+    },
+    {
+      "text": " ",
+      "startMs": 10539,
+      "endMs": 10540,
+      "loss": 0.01312255859375
+    },
+    {
+      "text": "Ancient",
+      "startMs": 11599,
+      "endMs": 11899,
+      "loss": 0.0004418066569737026
+    },
+    {
+      "text": " ",
+      "startMs": 11899,
+      "endMs": 12000,
+      "loss": 0.0002155303955078125
+    },
+    {
+      "text": "machinery",
+      "startMs": 12000,
+      "endMs": 12579,
+      "loss": 0.0009772247738308376
+    },
+    {
+      "text": " ",
+      "startMs": 12579,
+      "endMs": 12619,
+      "loss": 0.0021209716796875
+    },
+    {
+      "text": "begins",
+      "startMs": 12619,
+      "endMs": 12960,
+      "loss": 0.0003224611282348633
+    },
+    {
+      "text": " ",
+      "startMs": 12960,
+      "endMs": 13039,
+      "loss": 0.0023040771484375
+    },
+    {
+      "text": "preparing",
+      "startMs": 13039,
+      "endMs": 13500,
+      "loss": 0.0018273591995239258
+    },
+    {
+      "text": " ",
+      "startMs": 13500,
+      "endMs": 13559,
+      "loss": 0.000972747802734375
+    },
+    {
+      "text": "for",
+      "startMs": 13559,
+      "endMs": 13679,
+      "loss": 0.0008198420206705729
+    },
+    {
+      "text": " ",
+      "startMs": 13679,
+      "endMs": 13719,
+      "loss": 0.000335693359375
+    },
+    {
+      "text": "something",
+      "startMs": 13719,
+      "endMs": 14180,
+      "loss": 0.0005242559644911024
+    },
+    {
+      "text": " ",
+      "startMs": 14180,
+      "endMs": 14199,
+      "loss": 0.000774383544921875
+    },
+    {
+      "text": "deeper",
+      "startMs": 14199,
+      "endMs": 14619,
+      "loss": 0.0015019575754801433
+    },
+    {
+      "text": " ",
+      "startMs": 14619,
+      "endMs": 14639,
+      "loss": 0.0029754638671875
+    },
+    {
+      "text": "within",
+      "startMs": 14639,
+      "endMs": 14900,
+      "loss": 0.003124872843424479
+    },
+    {
+      "text": " ",
+      "startMs": 14900,
+      "endMs": 14920,
+      "loss": 0.0025482177734375
+    },
+    {
+      "text": "the",
+      "startMs": 14920,
+      "endMs": 15000,
+      "loss": 0.003409703572591146
+    },
+    {
+      "text": " ",
+      "startMs": 15000,
+      "endMs": 15039,
+      "loss": 0.00014209747314453125
+    },
+    {
+      "text": "complex.",
+      "startMs": 15039,
+      "endMs": 15599,
+      "loss": 0.0052918195724487305
+    },
+    {
+      "text": "\n",
+      "startMs": 15599,
+      "endMs": 16559,
+      "loss": 7.375
+    },
+    {
+      "text": "\n",
+      "startMs": 16559,
+      "endMs": 16639,
+      "loss": 3.453125
+    },
+    {
+      "text": "The",
+      "startMs": 16639,
+      "endMs": 16739,
+      "loss": 0.0469818115234375
+    },
+    {
+      "text": " ",
+      "startMs": 16739,
+      "endMs": 16779,
+      "loss": 0.10302734375
+    },
+    {
+      "text": "Tomb",
+      "startMs": 16779,
+      "endMs": 17039,
+      "loss": 0.7945408821105957
+    },
+    {
+      "text": " ",
+      "startMs": 17039,
+      "endMs": 17139,
+      "loss": 0.01953125
+    },
+    {
+      "text": "World",
+      "startMs": 17139,
+      "endMs": 17479,
+      "loss": 0.24636383056640626
+    },
+    {
+      "text": " ",
+      "startMs": 17479,
+      "endMs": 17799,
+      "loss": 0.0244140625
+    },
+    {
+      "text": "has",
+      "startMs": 17799,
+      "endMs": 17940,
+      "loss": 0.004611968994140625
+    },
+    {
+      "text": " ",
+      "startMs": 17940,
+      "endMs": 17959,
+      "loss": 0.00014209747314453125
+    },
+    {
+      "text": "become",
+      "startMs": 17959,
+      "endMs": 18219,
+      "loss": 0.00028779109319051105
+    },
+    {
+      "text": " ",
+      "startMs": 18219,
+      "endMs": 18340,
+      "loss": 0.003570556640625
+    },
+    {
+      "text": "more",
+      "startMs": 18340,
+      "endMs": 18479,
+      "loss": 0.0008592605590820312
+    },
+    {
+      "text": " ",
+      "startMs": 18479,
+      "endMs": 18559,
+      "loss": 0.00262451171875
+    },
+    {
+      "text": "dangerous.",
+      "startMs": 18559,
+      "endMs": 19139,
+      "loss": 0.06369569301605224
+    }
+  ]
+}

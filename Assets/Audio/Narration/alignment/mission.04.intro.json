@@ -1,0 +1,696 @@
+{
+  "schemaVersion": 1,
+  "id": "mission.04.intro",
+  "text": "At the heart of the crypt, the sarcophagus pulses with dormant power.\n\nThe sarcophagus is already damaged, but the tomb is repairing it. Living metal flows across its fractured surface as ancient systems buried beneath the chamber stir to life.\n\nDestroy it before the crypt can make it whole again.\n\nWhatever sleeps inside must never awaken.",
+  "durationMs": 24189,
+  "scriptHash": "7a3dcc523b54a13e4143b41fc829c4fdcd1df6f983d16ba3eb1d34b3d839d711",
+  "audioHash": "bcd95522cc1db66203b0aee86ff28caedd2b006e38c3c49e1bfa28e53eb4b5bd",
+  "alignmentLoss": 0.10225552827382017,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "At",
+      "startMs": 59,
+      "endMs": 140,
+      "loss": 2.939971923828125
+    },
+    {
+      "text": " ",
+      "startMs": 140,
+      "endMs": 159,
+      "loss": 9.822845458984375e-05
+    },
+    {
+      "text": "the",
+      "startMs": 159,
+      "endMs": 239,
+      "loss": 0.0010776519775390625
+    },
+    {
+      "text": " ",
+      "startMs": 239,
+      "endMs": 319,
+      "loss": 6.67572021484375e-06
+    },
+    {
+      "text": "heart",
+      "startMs": 319,
+      "endMs": 539,
+      "loss": 0.004323387145996093
+    },
+    {
+      "text": " ",
+      "startMs": 539,
+      "endMs": 579,
+      "loss": 0.00020694732666015625
+    },
+    {
+      "text": "of",
+      "startMs": 579,
+      "endMs": 639,
+      "loss": 0.0002563595771789551
+    },
+    {
+      "text": " ",
+      "startMs": 639,
+      "endMs": 680,
+      "loss": 1.5854835510253906e-05
+    },
+    {
+      "text": "the",
+      "startMs": 680,
+      "endMs": 740,
+      "loss": 0.0004159212112426758
+    },
+    {
+      "text": " ",
+      "startMs": 740,
+      "endMs": 799,
+      "loss": 3.361701965332031e-05
+    },
+    {
+      "text": "crypt,",
+      "startMs": 799,
+      "endMs": 1100,
+      "loss": 0.08359678586324056
+    },
+    {
+      "text": " ",
+      "startMs": 1100,
+      "endMs": 1279,
+      "loss": 0.00018405914306640625
+    },
+    {
+      "text": "the",
+      "startMs": 1279,
+      "endMs": 1339,
+      "loss": 0.00043622652689615887
+    },
+    {
+      "text": " ",
+      "startMs": 1339,
+      "endMs": 1379,
+      "loss": 9.489059448242188e-05
+    },
+    {
+      "text": "sarcophagus",
+      "startMs": 1379,
+      "endMs": 2119,
+      "loss": 0.0024575320157137785
+    },
+    {
+      "text": " ",
+      "startMs": 2119,
+      "endMs": 2179,
+      "loss": 0.002349853515625
+    },
+    {
+      "text": "pulses",
+      "startMs": 2180,
+      "endMs": 2679,
+      "loss": 0.0008247693379720052
+    },
+    {
+      "text": " ",
+      "startMs": 2679,
+      "endMs": 2720,
+      "loss": 0.0031280517578125
+    },
+    {
+      "text": "with",
+      "startMs": 2720,
+      "endMs": 2839,
+      "loss": 0.0001895129680633545
+    },
+    {
+      "text": " ",
+      "startMs": 2839,
+      "endMs": 3000,
+      "loss": 0.0002460479736328125
+    },
+    {
+      "text": "dormant",
+      "startMs": 3000,
+      "endMs": 3359,
+      "loss": 0.00048603330339704243
+    },
+    {
+      "text": " ",
+      "startMs": 3359,
+      "endMs": 3479,
+      "loss": 0.00042724609375
+    },
+    {
+      "text": "power.",
+      "startMs": 3480,
+      "endMs": 3799,
+      "loss": 0.039319912592569985
+    },
+    {
+      "text": "\n",
+      "startMs": 3799,
+      "endMs": 4739,
+      "loss": 5.3125
+    },
+    {
+      "text": "\n",
+      "startMs": 4739,
+      "endMs": 4779,
+      "loss": 1.3125
+    },
+    {
+      "text": "The",
+      "startMs": 4779,
+      "endMs": 4839,
+      "loss": 0.006238540013631185
+    },
+    {
+      "text": " ",
+      "startMs": 4839,
+      "endMs": 4879,
+      "loss": 5.7220458984375e-05
+    },
+    {
+      "text": "sarcophagus",
+      "startMs": 4880,
+      "endMs": 5500,
+      "loss": 0.0011983784762295809
+    },
+    {
+      "text": " ",
+      "startMs": 5500,
+      "endMs": 5559,
+      "loss": 0.000522613525390625
+    },
+    {
+      "text": "is",
+      "startMs": 5559,
+      "endMs": 5659,
+      "loss": 0.0006000995635986328
+    },
+    {
+      "text": " ",
+      "startMs": 5659,
+      "endMs": 5719,
+      "loss": 1.0371208190917969e-05
+    },
+    {
+      "text": "already",
+      "startMs": 5719,
+      "endMs": 6139,
+      "loss": 9.519713265555245e-05
+    },
+    {
+      "text": " ",
+      "startMs": 6139,
+      "endMs": 6199,
+      "loss": 7.62939453125e-05
+    },
+    {
+      "text": "damaged,",
+      "startMs": 6199,
+      "endMs": 6619,
+      "loss": 0.08261464536190033
+    },
+    {
+      "text": " ",
+      "startMs": 6619,
+      "endMs": 7279,
+      "loss": 9.5367431640625e-05
+    },
+    {
+      "text": "but",
+      "startMs": 7279,
+      "endMs": 7359,
+      "loss": 0.00018544991811116537
+    },
+    {
+      "text": " ",
+      "startMs": 7359,
+      "endMs": 7399,
+      "loss": 6.0558319091796875e-05
+    },
+    {
+      "text": "the",
+      "startMs": 7399,
+      "endMs": 7500,
+      "loss": 8.074442545572917e-05
+    },
+    {
+      "text": " ",
+      "startMs": 7500,
+      "endMs": 7559,
+      "loss": 4.2438507080078125e-05
+    },
+    {
+      "text": "tomb",
+      "startMs": 7559,
+      "endMs": 8079,
+      "loss": 0.0011178255081176758
+    },
+    {
+      "text": " ",
+      "startMs": 8079,
+      "endMs": 8139,
+      "loss": 0.000675201416015625
+    },
+    {
+      "text": "is",
+      "startMs": 8139,
+      "endMs": 8260,
+      "loss": 0.00010395050048828125
+    },
+    {
+      "text": " ",
+      "startMs": 8260,
+      "endMs": 8319,
+      "loss": 4.506111145019531e-05
+    },
+    {
+      "text": "repairing",
+      "startMs": 8319,
+      "endMs": 8760,
+      "loss": 7.541974385579427e-05
+    },
+    {
+      "text": " ",
+      "startMs": 8760,
+      "endMs": 8800,
+      "loss": 0.0004482269287109375
+    },
+    {
+      "text": "it.",
+      "startMs": 8800,
+      "endMs": 8960,
+      "loss": 0.30214929580688477
+    },
+    {
+      "text": " ",
+      "startMs": 8960,
+      "endMs": 8961,
+      "loss": 0.0595703125
+    },
+    {
+      "text": "Living",
+      "startMs": 10039,
+      "endMs": 10300,
+      "loss": 0.0010611613591512044
+    },
+    {
+      "text": " ",
+      "startMs": 10300,
+      "endMs": 10399,
+      "loss": 0.00262451171875
+    },
+    {
+      "text": "metal",
+      "startMs": 10399,
+      "endMs": 10799,
+      "loss": 0.0012442588806152344
+    },
+    {
+      "text": " ",
+      "startMs": 10799,
+      "endMs": 10880,
+      "loss": 0.000934600830078125
+    },
+    {
+      "text": "flows",
+      "startMs": 10880,
+      "endMs": 11299,
+      "loss": 0.0005950927734375
+    },
+    {
+      "text": " ",
+      "startMs": 11299,
+      "endMs": 11399,
+      "loss": 0.0007781982421875
+    },
+    {
+      "text": "across",
+      "startMs": 11399,
+      "endMs": 11619,
+      "loss": 0.0001881122589111328
+    },
+    {
+      "text": " ",
+      "startMs": 11619,
+      "endMs": 11659,
+      "loss": 0.0003070831298828125
+    },
+    {
+      "text": "its",
+      "startMs": 11659,
+      "endMs": 11800,
+      "loss": 0.0004889170328776041
+    },
+    {
+      "text": " ",
+      "startMs": 11800,
+      "endMs": 11899,
+      "loss": 0.00011444091796875
+    },
+    {
+      "text": "fractured",
+      "startMs": 11899,
+      "endMs": 12319,
+      "loss": 0.00018661552005343966
+    },
+    {
+      "text": " ",
+      "startMs": 12319,
+      "endMs": 12420,
+      "loss": 0.000446319580078125
+    },
+    {
+      "text": "surface",
+      "startMs": 12420,
+      "endMs": 12920,
+      "loss": 0.00022344929831368581
+    },
+    {
+      "text": " ",
+      "startMs": 12920,
+      "endMs": 13119,
+      "loss": 0.26171875
+    },
+    {
+      "text": "as",
+      "startMs": 13119,
+      "endMs": 13239,
+      "loss": 0.0009174346923828125
+    },
+    {
+      "text": " ",
+      "startMs": 13239,
+      "endMs": 13399,
+      "loss": 4.315376281738281e-05
+    },
+    {
+      "text": "ancient",
+      "startMs": 13399,
+      "endMs": 13779,
+      "loss": 0.0003395591463361468
+    },
+    {
+      "text": " ",
+      "startMs": 13779,
+      "endMs": 13859,
+      "loss": 0.000278472900390625
+    },
+    {
+      "text": "systems",
+      "startMs": 13859,
+      "endMs": 14319,
+      "loss": 0.0005218131201607841
+    },
+    {
+      "text": " ",
+      "startMs": 14319,
+      "endMs": 14439,
+      "loss": 0.008544921875
+    },
+    {
+      "text": "buried",
+      "startMs": 14439,
+      "endMs": 14719,
+      "loss": 0.00023643175760904947
+    },
+    {
+      "text": " ",
+      "startMs": 14719,
+      "endMs": 14779,
+      "loss": 0.001068115234375
+    },
+    {
+      "text": "beneath",
+      "startMs": 14779,
+      "endMs": 15059,
+      "loss": 0.00019553729466029575
+    },
+    {
+      "text": " ",
+      "startMs": 15059,
+      "endMs": 15099,
+      "loss": 0.00080108642578125
+    },
+    {
+      "text": "the",
+      "startMs": 15099,
+      "endMs": 15199,
+      "loss": 0.00038103262583414715
+    },
+    {
+      "text": " ",
+      "startMs": 15199,
+      "endMs": 15259,
+      "loss": 3.504753112792969e-05
+    },
+    {
+      "text": "chamber",
+      "startMs": 15259,
+      "endMs": 15739,
+      "loss": 0.00039236886160714287
+    },
+    {
+      "text": " ",
+      "startMs": 15739,
+      "endMs": 15819,
+      "loss": 0.059326171875
+    },
+    {
+      "text": "stir",
+      "startMs": 15819,
+      "endMs": 16239,
+      "loss": 0.0006382465362548828
+    },
+    {
+      "text": " ",
+      "startMs": 16239,
+      "endMs": 16299,
+      "loss": 0.003265380859375
+    },
+    {
+      "text": "to",
+      "startMs": 16299,
+      "endMs": 16419,
+      "loss": 0.0008523464202880859
+    },
+    {
+      "text": " ",
+      "startMs": 16419,
+      "endMs": 16479,
+      "loss": 6.4849853515625e-05
+    },
+    {
+      "text": "life.",
+      "startMs": 16479,
+      "endMs": 16839,
+      "loss": 0.006554532051086426
+    },
+    {
+      "text": "\n",
+      "startMs": 16839,
+      "endMs": 17739,
+      "loss": 7.3125
+    },
+    {
+      "text": "\n",
+      "startMs": 17739,
+      "endMs": 17779,
+      "loss": 2.0625
+    },
+    {
+      "text": "Destroy",
+      "startMs": 17779,
+      "endMs": 18199,
+      "loss": 0.019940955298287526
+    },
+    {
+      "text": " ",
+      "startMs": 18199,
+      "endMs": 18259,
+      "loss": 0.000133514404296875
+    },
+    {
+      "text": "it",
+      "startMs": 18260,
+      "endMs": 18559,
+      "loss": 0.00046712160110473633
+    },
+    {
+      "text": " ",
+      "startMs": 18559,
+      "endMs": 18619,
+      "loss": 0.0791015625
+    },
+    {
+      "text": "before",
+      "startMs": 18619,
+      "endMs": 18879,
+      "loss": 7.836023966471355e-05
+    },
+    {
+      "text": " ",
+      "startMs": 18879,
+      "endMs": 18920,
+      "loss": 4.267692565917969e-05
+    },
+    {
+      "text": "the",
+      "startMs": 18920,
+      "endMs": 18979,
+      "loss": 0.00021294752756754556
+    },
+    {
+      "text": " ",
+      "startMs": 18979,
+      "endMs": 19100,
+      "loss": 2.5272369384765625e-05
+    },
+    {
+      "text": "crypt",
+      "startMs": 19100,
+      "endMs": 19420,
+      "loss": 0.011922502517700195
+    },
+    {
+      "text": " ",
+      "startMs": 19420,
+      "endMs": 19459,
+      "loss": 0.000667572021484375
+    },
+    {
+      "text": "can",
+      "startMs": 19459,
+      "endMs": 19579,
+      "loss": 0.0006224711736043295
+    },
+    {
+      "text": " ",
+      "startMs": 19579,
+      "endMs": 19639,
+      "loss": 2.7894973754882812e-05
+    },
+    {
+      "text": "make",
+      "startMs": 19639,
+      "endMs": 19760,
+      "loss": 7.259845733642578e-05
+    },
+    {
+      "text": " ",
+      "startMs": 19760,
+      "endMs": 19799,
+      "loss": 3.6716461181640625e-05
+    },
+    {
+      "text": "it",
+      "startMs": 19799,
+      "endMs": 19899,
+      "loss": 0.0005924701690673828
+    },
+    {
+      "text": " ",
+      "startMs": 19899,
+      "endMs": 19959,
+      "loss": 8.058547973632812e-05
+    },
+    {
+      "text": "whole",
+      "startMs": 19959,
+      "endMs": 20139,
+      "loss": 0.0006116151809692383
+    },
+    {
+      "text": " ",
+      "startMs": 20139,
+      "endMs": 20239,
+      "loss": 0.000946044921875
+    },
+    {
+      "text": "again.",
+      "startMs": 20239,
+      "endMs": 20579,
+      "loss": 0.052486817042032875
+    },
+    {
+      "text": "\n",
+      "startMs": 20579,
+      "endMs": 20600,
+      "loss": 5.75
+    },
+    {
+      "text": "\n",
+      "startMs": 20600,
+      "endMs": 21359,
+      "loss": 2.390625
+    },
+    {
+      "text": "Whatever",
+      "startMs": 21359,
+      "endMs": 21760,
+      "loss": 0.005742773413658142
+    },
+    {
+      "text": " ",
+      "startMs": 21760,
+      "endMs": 21840,
+      "loss": 0.00023651123046875
+    },
+    {
+      "text": "sleeps",
+      "startMs": 21840,
+      "endMs": 22119,
+      "loss": 0.0002439419428507487
+    },
+    {
+      "text": " ",
+      "startMs": 22119,
+      "endMs": 22199,
+      "loss": 6.67572021484375e-05
+    },
+    {
+      "text": "inside",
+      "startMs": 22199,
+      "endMs": 22779,
+      "loss": 0.00030875205993652344
+    },
+    {
+      "text": " ",
+      "startMs": 22779,
+      "endMs": 22859,
+      "loss": 0.0050048828125
+    },
+    {
+      "text": "must",
+      "startMs": 22859,
+      "endMs": 23039,
+      "loss": 0.00024834275245666504
+    },
+    {
+      "text": " ",
+      "startMs": 23039,
+      "endMs": 23119,
+      "loss": 3.266334533691406e-05
+    },
+    {
+      "text": "never",
+      "startMs": 23119,
+      "endMs": 23359,
+      "loss": 0.0003874540328979492
+    },
+    {
+      "text": " ",
+      "startMs": 23359,
+      "endMs": 23439,
+      "loss": 0.00028228759765625
+    },
+    {
+      "text": "awaken.",
+      "startMs": 23439,
+      "endMs": 23899,
+      "loss": 0.185222898210798
+    }
+  ]
+}

@@ -1,0 +1,564 @@
+{
+  "schemaVersion": 1,
+  "id": "outcome.01.victory",
+  "text": "The surviving warriors cross the boundary as the labyrinth shifts behind them.\n\nPassages fold closed. Walls grind together, swallowing the route you used only moments before.\n\nEnough of the team made it through.\n\nThe tomb tried to seal you inside.\n\nIt failed.\n\nMission accomplished.",
+  "durationMs": 19409,
+  "scriptHash": "ad80ec5db78182d309093bfd83c08a81f8ad5dac11e0137c04317e86414e0400",
+  "audioHash": "4f09040b7af2704dfcc3f897258ad762c38590b0eb4d30ef02a356e634c31833",
+  "alignmentLoss": 0.3125415216100977,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "The",
+      "startMs": 79,
+      "endMs": 159,
+      "loss": 1.2814664840698242
+    },
+    {
+      "text": " ",
+      "startMs": 159,
+      "endMs": 199,
+      "loss": 9.107589721679688e-05
+    },
+    {
+      "text": "surviving",
+      "startMs": 199,
+      "endMs": 639,
+      "loss": 0.0005224678251478407
+    },
+    {
+      "text": " ",
+      "startMs": 639,
+      "endMs": 699,
+      "loss": 6.341934204101562e-05
+    },
+    {
+      "text": "warriors",
+      "startMs": 699,
+      "endMs": 1079,
+      "loss": 0.0018752068281173706
+    },
+    {
+      "text": " ",
+      "startMs": 1079,
+      "endMs": 1179,
+      "loss": 0.0010833740234375
+    },
+    {
+      "text": "cross",
+      "startMs": 1179,
+      "endMs": 1419,
+      "loss": 0.0002770185470581055
+    },
+    {
+      "text": " ",
+      "startMs": 1419,
+      "endMs": 1439,
+      "loss": 0.00787353515625
+    },
+    {
+      "text": "the",
+      "startMs": 1439,
+      "endMs": 1500,
+      "loss": 0.00026992956797281903
+    },
+    {
+      "text": " ",
+      "startMs": 1500,
+      "endMs": 1579,
+      "loss": 9.441375732421875e-05
+    },
+    {
+      "text": "boundary",
+      "startMs": 1579,
+      "endMs": 2019,
+      "loss": 0.00037679076194763184
+    },
+    {
+      "text": " ",
+      "startMs": 2019,
+      "endMs": 2180,
+      "loss": 0.0166015625
+    },
+    {
+      "text": "as",
+      "startMs": 2180,
+      "endMs": 2279,
+      "loss": 0.0006213188171386719
+    },
+    {
+      "text": " ",
+      "startMs": 2279,
+      "endMs": 2319,
+      "loss": 2.110004425048828e-05
+    },
+    {
+      "text": "the",
+      "startMs": 2319,
+      "endMs": 2379,
+      "loss": 0.00044600168863932293
+    },
+    {
+      "text": " ",
+      "startMs": 2379,
+      "endMs": 2439,
+      "loss": 9.679794311523438e-05
+    },
+    {
+      "text": "labyrinth",
+      "startMs": 2440,
+      "endMs": 2879,
+      "loss": 0.007001333766513401
+    },
+    {
+      "text": " ",
+      "startMs": 2879,
+      "endMs": 3019,
+      "loss": 0.002685546875
+    },
+    {
+      "text": "shifts",
+      "startMs": 3019,
+      "endMs": 3439,
+      "loss": 0.0004886388778686523
+    },
+    {
+      "text": " ",
+      "startMs": 3439,
+      "endMs": 3499,
+      "loss": 0.00110626220703125
+    },
+    {
+      "text": "behind",
+      "startMs": 3500,
+      "endMs": 3819,
+      "loss": 0.00012185176213582356
+    },
+    {
+      "text": " ",
+      "startMs": 3819,
+      "endMs": 3839,
+      "loss": 0.000518798828125
+    },
+    {
+      "text": "them.",
+      "startMs": 3839,
+      "endMs": 4039,
+      "loss": 0.10585935115814209
+    },
+    {
+      "text": "\n",
+      "startMs": 4039,
+      "endMs": 4539,
+      "loss": 11.8125
+    },
+    {
+      "text": "\n",
+      "startMs": 4539,
+      "endMs": 4579,
+      "loss": 5.875
+    },
+    {
+      "text": "Passages",
+      "startMs": 4579,
+      "endMs": 5199,
+      "loss": 0.0038798898458480835
+    },
+    {
+      "text": " ",
+      "startMs": 5199,
+      "endMs": 5299,
+      "loss": 0.0135498046875
+    },
+    {
+      "text": "fold",
+      "startMs": 5299,
+      "endMs": 5559,
+      "loss": 0.0030193328857421875
+    },
+    {
+      "text": " ",
+      "startMs": 5559,
+      "endMs": 5659,
+      "loss": 0.318359375
+    },
+    {
+      "text": "closed.",
+      "startMs": 5659,
+      "endMs": 6199,
+      "loss": 0.383694018636431
+    },
+    {
+      "text": " ",
+      "startMs": 6199,
+      "endMs": 6699,
+      "loss": 0.0306396484375
+    },
+    {
+      "text": "Walls",
+      "startMs": 6699,
+      "endMs": 7119,
+      "loss": 0.012042999267578125
+    },
+    {
+      "text": " ",
+      "startMs": 7119,
+      "endMs": 7219,
+      "loss": 0.002593994140625
+    },
+    {
+      "text": "grind",
+      "startMs": 7219,
+      "endMs": 7659,
+      "loss": 0.004166412353515625
+    },
+    {
+      "text": " ",
+      "startMs": 7659,
+      "endMs": 7699,
+      "loss": 0.0089111328125
+    },
+    {
+      "text": "together,",
+      "startMs": 7699,
+      "endMs": 8059,
+      "loss": 0.008556193775600858
+    },
+    {
+      "text": " ",
+      "startMs": 8059,
+      "endMs": 8420,
+      "loss": 3.1948089599609375e-05
+    },
+    {
+      "text": "swallowing",
+      "startMs": 8420,
+      "endMs": 8859,
+      "loss": 5.8150291442871095e-05
+    },
+    {
+      "text": " ",
+      "startMs": 8859,
+      "endMs": 8899,
+      "loss": 0.0001678466796875
+    },
+    {
+      "text": "the",
+      "startMs": 8899,
+      "endMs": 8960,
+      "loss": 0.0002694527308146159
+    },
+    {
+      "text": " ",
+      "startMs": 8960,
+      "endMs": 9019,
+      "loss": 1.0371208190917969e-05
+    },
+    {
+      "text": "route",
+      "startMs": 9019,
+      "endMs": 9220,
+      "loss": 0.22956202030181885
+    },
+    {
+      "text": " ",
+      "startMs": 9220,
+      "endMs": 9279,
+      "loss": 0.00201416015625
+    },
+    {
+      "text": "you",
+      "startMs": 9279,
+      "endMs": 9420,
+      "loss": 0.0010377566019694011
+    },
+    {
+      "text": " ",
+      "startMs": 9420,
+      "endMs": 9559,
+      "loss": 0.00173187255859375
+    },
+    {
+      "text": "used",
+      "startMs": 9559,
+      "endMs": 9779,
+      "loss": 0.0005453228950500488
+    },
+    {
+      "text": " ",
+      "startMs": 9779,
+      "endMs": 9859,
+      "loss": 0.00640869140625
+    },
+    {
+      "text": "only",
+      "startMs": 9859,
+      "endMs": 10119,
+      "loss": 0.0003909766674041748
+    },
+    {
+      "text": " ",
+      "startMs": 10119,
+      "endMs": 10179,
+      "loss": 0.00021457672119140625
+    },
+    {
+      "text": "moments",
+      "startMs": 10179,
+      "endMs": 10479,
+      "loss": 0.00036845888410295757
+    },
+    {
+      "text": " ",
+      "startMs": 10479,
+      "endMs": 10559,
+      "loss": 0.000614166259765625
+    },
+    {
+      "text": "before.",
+      "startMs": 10559,
+      "endMs": 11039,
+      "loss": 0.0052487339292253766
+    },
+    {
+      "text": "\n",
+      "startMs": 11039,
+      "endMs": 11840,
+      "loss": 10.6875
+    },
+    {
+      "text": "\n",
+      "startMs": 11840,
+      "endMs": 11899,
+      "loss": 4.71875
+    },
+    {
+      "text": "Enough",
+      "startMs": 11899,
+      "endMs": 12119,
+      "loss": 0.010093947251637777
+    },
+    {
+      "text": " ",
+      "startMs": 12119,
+      "endMs": 12159,
+      "loss": 0.00012063980102539062
+    },
+    {
+      "text": "of",
+      "startMs": 12159,
+      "endMs": 12219,
+      "loss": 0.0009367465972900391
+    },
+    {
+      "text": " ",
+      "startMs": 12219,
+      "endMs": 12259,
+      "loss": 3.838539123535156e-05
+    },
+    {
+      "text": "the",
+      "startMs": 12259,
+      "endMs": 12340,
+      "loss": 0.00025526682535807293
+    },
+    {
+      "text": " ",
+      "startMs": 12340,
+      "endMs": 12399,
+      "loss": 0.00018596649169921875
+    },
+    {
+      "text": "team",
+      "startMs": 12399,
+      "endMs": 12779,
+      "loss": 0.00041747093200683594
+    },
+    {
+      "text": " ",
+      "startMs": 12779,
+      "endMs": 12859,
+      "loss": 0.000392913818359375
+    },
+    {
+      "text": "made",
+      "startMs": 12859,
+      "endMs": 13019,
+      "loss": 0.0007475316524505615
+    },
+    {
+      "text": " ",
+      "startMs": 13019,
+      "endMs": 13039,
+      "loss": 0.00017642974853515625
+    },
+    {
+      "text": "it",
+      "startMs": 13039,
+      "endMs": 13139,
+      "loss": 0.0008323192596435547
+    },
+    {
+      "text": " ",
+      "startMs": 13139,
+      "endMs": 13179,
+      "loss": 0.000152587890625
+    },
+    {
+      "text": "through.",
+      "startMs": 13179,
+      "endMs": 13559,
+      "loss": 0.098102867603302
+    },
+    {
+      "text": "\n",
+      "startMs": 13559,
+      "endMs": 14019,
+      "loss": 7.3125
+    },
+    {
+      "text": "\n",
+      "startMs": 14019,
+      "endMs": 14039,
+      "loss": 5.0625
+    },
+    {
+      "text": "The",
+      "startMs": 14039,
+      "endMs": 14159,
+      "loss": 0.010917027791341146
+    },
+    {
+      "text": " ",
+      "startMs": 14159,
+      "endMs": 14199,
+      "loss": 0.00159454345703125
+    },
+    {
+      "text": "tomb",
+      "startMs": 14199,
+      "endMs": 14619,
+      "loss": 0.007668018341064453
+    },
+    {
+      "text": " ",
+      "startMs": 14619,
+      "endMs": 14679,
+      "loss": 0.00131988525390625
+    },
+    {
+      "text": "tried",
+      "startMs": 14679,
+      "endMs": 14880,
+      "loss": 0.0005537033081054688
+    },
+    {
+      "text": " ",
+      "startMs": 14880,
+      "endMs": 14920,
+      "loss": 3.4332275390625e-05
+    },
+    {
+      "text": "to",
+      "startMs": 14920,
+      "endMs": 15039,
+      "loss": 0.0003592967987060547
+    },
+    {
+      "text": " ",
+      "startMs": 15039,
+      "endMs": 15079,
+      "loss": 3.838539123535156e-05
+    },
+    {
+      "text": "seal",
+      "startMs": 15079,
+      "endMs": 15319,
+      "loss": 0.00038754940032958984
+    },
+    {
+      "text": " ",
+      "startMs": 15319,
+      "endMs": 15380,
+      "loss": 0.00015735626220703125
+    },
+    {
+      "text": "you",
+      "startMs": 15380,
+      "endMs": 15479,
+      "loss": 0.0001302957534790039
+    },
+    {
+      "text": " ",
+      "startMs": 15479,
+      "endMs": 15539,
+      "loss": 0.000682830810546875
+    },
+    {
+      "text": "inside.",
+      "startMs": 15539,
+      "endMs": 16180,
+      "loss": 0.13809963635035924
+    },
+    {
+      "text": "\n",
+      "startMs": 16180,
+      "endMs": 16559,
+      "loss": 8.5
+    },
+    {
+      "text": "\n",
+      "startMs": 16559,
+      "endMs": 16600,
+      "loss": 5.8125
+    },
+    {
+      "text": "It",
+      "startMs": 16600,
+      "endMs": 16760,
+      "loss": 0.01952838897705078
+    },
+    {
+      "text": " ",
+      "startMs": 16760,
+      "endMs": 16840,
+      "loss": 0.0019989013671875
+    },
+    {
+      "text": "failed.",
+      "startMs": 16840,
+      "endMs": 17319,
+      "loss": 0.38883536202566965
+    },
+    {
+      "text": "\n",
+      "startMs": 17319,
+      "endMs": 17340,
+      "loss": 7.625
+    },
+    {
+      "text": "\n",
+      "startMs": 17340,
+      "endMs": 17819,
+      "loss": 3.984375
+    },
+    {
+      "text": "Mission",
+      "startMs": 17819,
+      "endMs": 18199,
+      "loss": 0.013976097106933594
+    },
+    {
+      "text": " ",
+      "startMs": 18199,
+      "endMs": 18459,
+      "loss": 0.0030975341796875
+    },
+    {
+      "text": "accomplished.",
+      "startMs": 18459,
+      "endMs": 19139,
+      "loss": 0.2324386559999906
+    }
+  ]
+}

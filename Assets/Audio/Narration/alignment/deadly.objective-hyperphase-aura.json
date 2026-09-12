@@ -1,0 +1,510 @@
+{
+  "schemaVersion": 1,
+  "id": "deadly.objective-hyperphase-aura",
+  "text": "The air around the objective begins to shimmer.\n\nEdges sharpen. Blades hum. Matter seems less certain here, as though the boundary between solid metal and empty space has begun to weaken.\n\nWeapons carried into the field suddenly feel far more dangerous.",
+  "durationMs": 18286,
+  "scriptHash": "d400712ed428fd5a531d53f07cc12dbf834439f7224f255da22f6c01cc12c8ca",
+  "audioHash": "2ac3f928361ec0ea79fa7776cc51d633a55490a1ee492f0a8a34952895c7060b",
+  "alignmentLoss": 0.17950385125729407,
+  "qualityStatus": "GOOD",
+  "words": [
+    {
+      "text": "The",
+      "startMs": 99,
+      "endMs": 239,
+      "loss": 1.2296029726664226
+    },
+    {
+      "text": " ",
+      "startMs": 239,
+      "endMs": 280,
+      "loss": 6.389617919921875e-05
+    },
+    {
+      "text": "air",
+      "startMs": 280,
+      "endMs": 500,
+      "loss": 0.001120607058207194
+    },
+    {
+      "text": " ",
+      "startMs": 500,
+      "endMs": 639,
+      "loss": 0.0001964569091796875
+    },
+    {
+      "text": "around",
+      "startMs": 639,
+      "endMs": 1000,
+      "loss": 0.00017062822977701822
+    },
+    {
+      "text": " ",
+      "startMs": 1000,
+      "endMs": 1059,
+      "loss": 0.00017833709716796875
+    },
+    {
+      "text": "the",
+      "startMs": 1059,
+      "endMs": 1100,
+      "loss": 0.00033525625864664715
+    },
+    {
+      "text": " ",
+      "startMs": 1100,
+      "endMs": 1179,
+      "loss": 1.8477439880371094e-05
+    },
+    {
+      "text": "objective",
+      "startMs": 1179,
+      "endMs": 1839,
+      "loss": 0.00040529833899603947
+    },
+    {
+      "text": " ",
+      "startMs": 1839,
+      "endMs": 1899,
+      "loss": 0.00153350830078125
+    },
+    {
+      "text": "begins",
+      "startMs": 1899,
+      "endMs": 2299,
+      "loss": 0.0003351569175720215
+    },
+    {
+      "text": " ",
+      "startMs": 2299,
+      "endMs": 2339,
+      "loss": 0.00011730194091796875
+    },
+    {
+      "text": "to",
+      "startMs": 2339,
+      "endMs": 2419,
+      "loss": 0.0003235340118408203
+    },
+    {
+      "text": " ",
+      "startMs": 2419,
+      "endMs": 2559,
+      "loss": 3.0159950256347656e-05
+    },
+    {
+      "text": "shimmer.",
+      "startMs": 2559,
+      "endMs": 2879,
+      "loss": 0.3478141278028488
+    },
+    {
+      "text": "\n",
+      "startMs": 2879,
+      "endMs": 3379,
+      "loss": 13.875
+    },
+    {
+      "text": "\n",
+      "startMs": 3379,
+      "endMs": 3399,
+      "loss": 8.125
+    },
+    {
+      "text": "Edges",
+      "startMs": 3399,
+      "endMs": 3859,
+      "loss": 0.005569076538085938
+    },
+    {
+      "text": " ",
+      "startMs": 3859,
+      "endMs": 4099,
+      "loss": 0.000911712646484375
+    },
+    {
+      "text": "sharpen.",
+      "startMs": 4099,
+      "endMs": 4559,
+      "loss": 0.10914979875087738
+    },
+    {
+      "text": " ",
+      "startMs": 4559,
+      "endMs": 5139,
+      "loss": 0.0341796875
+    },
+    {
+      "text": "Blades",
+      "startMs": 5139,
+      "endMs": 5599,
+      "loss": 0.011423170566558838
+    },
+    {
+      "text": " ",
+      "startMs": 5599,
+      "endMs": 5699,
+      "loss": 0.000797271728515625
+    },
+    {
+      "text": "hum.",
+      "startMs": 5699,
+      "endMs": 6119,
+      "loss": 0.05269169807434082
+    },
+    {
+      "text": " ",
+      "startMs": 6119,
+      "endMs": 6899,
+      "loss": 0.007537841796875
+    },
+    {
+      "text": "Matter",
+      "startMs": 6899,
+      "endMs": 7319,
+      "loss": 0.0004986127217610677
+    },
+    {
+      "text": " ",
+      "startMs": 7319,
+      "endMs": 7419,
+      "loss": 0.00023555755615234375
+    },
+    {
+      "text": "seems",
+      "startMs": 7419,
+      "endMs": 7699,
+      "loss": 0.00028970241546630857
+    },
+    {
+      "text": " ",
+      "startMs": 7699,
+      "endMs": 7759,
+      "loss": 2.1696090698242188e-05
+    },
+    {
+      "text": "less",
+      "startMs": 7759,
+      "endMs": 7980,
+      "loss": 0.0002345740795135498
+    },
+    {
+      "text": " ",
+      "startMs": 7980,
+      "endMs": 8019,
+      "loss": 0.00011396408081054688
+    },
+    {
+      "text": "certain",
+      "startMs": 8019,
+      "endMs": 8399,
+      "loss": 0.00021260125296456472
+    },
+    {
+      "text": " ",
+      "startMs": 8399,
+      "endMs": 8500,
+      "loss": 0.001373291015625
+    },
+    {
+      "text": "here,",
+      "startMs": 8500,
+      "endMs": 8739,
+      "loss": 0.15273079872131348
+    },
+    {
+      "text": " ",
+      "startMs": 8739,
+      "endMs": 9199,
+      "loss": 2.7179718017578125e-05
+    },
+    {
+      "text": "as",
+      "startMs": 9199,
+      "endMs": 9300,
+      "loss": 0.0005955696105957031
+    },
+    {
+      "text": " ",
+      "startMs": 9300,
+      "endMs": 9340,
+      "loss": 2.288818359375e-05
+    },
+    {
+      "text": "though",
+      "startMs": 9340,
+      "endMs": 9500,
+      "loss": 0.00023444493611653647
+    },
+    {
+      "text": " ",
+      "startMs": 9500,
+      "endMs": 9539,
+      "loss": 0.00021457672119140625
+    },
+    {
+      "text": "the",
+      "startMs": 9539,
+      "endMs": 9599,
+      "loss": 0.0006281137466430664
+    },
+    {
+      "text": " ",
+      "startMs": 9599,
+      "endMs": 9719,
+      "loss": 1.71661376953125e-05
+    },
+    {
+      "text": "boundary",
+      "startMs": 9719,
+      "endMs": 10099,
+      "loss": 0.0002947300672531128
+    },
+    {
+      "text": " ",
+      "startMs": 10099,
+      "endMs": 10179,
+      "loss": 0.000736236572265625
+    },
+    {
+      "text": "between",
+      "startMs": 10179,
+      "endMs": 10500,
+      "loss": 0.0004830360412597656
+    },
+    {
+      "text": " ",
+      "startMs": 10500,
+      "endMs": 10659,
+      "loss": 4.7206878662109375e-05
+    },
+    {
+      "text": "solid",
+      "startMs": 10659,
+      "endMs": 10979,
+      "loss": 0.0005780458450317383
+    },
+    {
+      "text": " ",
+      "startMs": 10979,
+      "endMs": 11099,
+      "loss": 0.002227783203125
+    },
+    {
+      "text": "metal",
+      "startMs": 11099,
+      "endMs": 11439,
+      "loss": 0.0004323720932006836
+    },
+    {
+      "text": " ",
+      "startMs": 11439,
+      "endMs": 11500,
+      "loss": 0.000934600830078125
+    },
+    {
+      "text": "and",
+      "startMs": 11500,
+      "endMs": 11599,
+      "loss": 0.0005766550699869791
+    },
+    {
+      "text": " ",
+      "startMs": 11599,
+      "endMs": 11719,
+      "loss": 9.393692016601562e-05
+    },
+    {
+      "text": "empty",
+      "startMs": 11719,
+      "endMs": 11960,
+      "loss": 0.000404810905456543
+    },
+    {
+      "text": " ",
+      "startMs": 11960,
+      "endMs": 12059,
+      "loss": 0.00087738037109375
+    },
+    {
+      "text": "space",
+      "startMs": 12059,
+      "endMs": 12420,
+      "loss": 0.0001911640167236328
+    },
+    {
+      "text": " ",
+      "startMs": 12420,
+      "endMs": 12479,
+      "loss": 0.0022125244140625
+    },
+    {
+      "text": "has",
+      "startMs": 12479,
+      "endMs": 12579,
+      "loss": 0.00048542022705078125
+    },
+    {
+      "text": " ",
+      "startMs": 12579,
+      "endMs": 12619,
+      "loss": 4.029273986816406e-05
+    },
+    {
+      "text": "begun",
+      "startMs": 12619,
+      "endMs": 12899,
+      "loss": 0.0003343343734741211
+    },
+    {
+      "text": " ",
+      "startMs": 12899,
+      "endMs": 12939,
+      "loss": 0.000438690185546875
+    },
+    {
+      "text": "to",
+      "startMs": 12939,
+      "endMs": 13019,
+      "loss": 0.00040596723556518555
+    },
+    {
+      "text": " ",
+      "startMs": 13019,
+      "endMs": 13079,
+      "loss": 5.030632019042969e-05
+    },
+    {
+      "text": "weaken.",
+      "startMs": 13079,
+      "endMs": 13420,
+      "loss": 0.004091926983424595
+    },
+    {
+      "text": "\n",
+      "startMs": 13420,
+      "endMs": 14259,
+      "loss": 9.5
+    },
+    {
+      "text": "\n",
+      "startMs": 14259,
+      "endMs": 14319,
+      "loss": 4.78125
+    },
+    {
+      "text": "Weapons",
+      "startMs": 14319,
+      "endMs": 14759,
+      "loss": 0.018254808017185757
+    },
+    {
+      "text": " ",
+      "startMs": 14759,
+      "endMs": 14819,
+      "loss": 0.00836181640625
+    },
+    {
+      "text": "carried",
+      "startMs": 14819,
+      "endMs": 15119,
+      "loss": 9.776864733014788e-05
+    },
+    {
+      "text": " ",
+      "startMs": 15119,
+      "endMs": 15179,
+      "loss": 4.7206878662109375e-05
+    },
+    {
+      "text": "into",
+      "startMs": 15179,
+      "endMs": 15339,
+      "loss": 0.0004725158214569092
+    },
+    {
+      "text": " ",
+      "startMs": 15339,
+      "endMs": 15379,
+      "loss": 2.1338462829589844e-05
+    },
+    {
+      "text": "the",
+      "startMs": 15380,
+      "endMs": 15479,
+      "loss": 0.00023674964904785156
+    },
+    {
+      "text": " ",
+      "startMs": 15479,
+      "endMs": 15539,
+      "loss": 4.220008850097656e-05
+    },
+    {
+      "text": "field",
+      "startMs": 15539,
+      "endMs": 16079,
+      "loss": 0.0001981973648071289
+    },
+    {
+      "text": " ",
+      "startMs": 16079,
+      "endMs": 16180,
+      "loss": 0.09765625
+    },
+    {
+      "text": "suddenly",
+      "startMs": 16180,
+      "endMs": 16479,
+      "loss": 0.0001894831657409668
+    },
+    {
+      "text": " ",
+      "startMs": 16479,
+      "endMs": 16619,
+      "loss": 0.00019550323486328125
+    },
+    {
+      "text": "feel",
+      "startMs": 16619,
+      "endMs": 16799,
+      "loss": 0.0002747476100921631
+    },
+    {
+      "text": " ",
+      "startMs": 16799,
+      "endMs": 16939,
+      "loss": 0.00101470947265625
+    },
+    {
+      "text": "far",
+      "startMs": 16940,
+      "endMs": 17180,
+      "loss": 0.0008474985758463541
+    },
+    {
+      "text": " ",
+      "startMs": 17180,
+      "endMs": 17239,
+      "loss": 0.00010061264038085938
+    },
+    {
+      "text": "more",
+      "startMs": 17239,
+      "endMs": 17399,
+      "loss": 0.00015097856521606445
+    },
+    {
+      "text": " ",
+      "startMs": 17399,
+      "endMs": 17500,
+      "loss": 0.0003643035888671875
+    },
+    {
+      "text": "dangerous.",
+      "startMs": 17500,
+      "endMs": 18019,
+      "loss": 0.034589409828186035
+    }
+  ]
+}
