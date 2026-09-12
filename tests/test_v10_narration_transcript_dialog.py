@@ -22,6 +22,11 @@ class NarrationTranscriptDialogTests(unittest.TestCase):
         self.assertIn('id="narrationTranscriptDialog"', INDEX)
         self.assertIn('id="narrationTranscriptReopen"', INDEX)
         self.assertIn('aria-label="Hide transcript"', INDEX)
+        self.assertIn('aria-labelledby="narrationTranscriptCategory"', INDEX)
+        self.assertNotIn('id="narrationTranscriptTitle"', INDEX)
+        self.assertNotIn('<h2 id="narrationTranscriptTitle">Narration</h2>', INDEX)
+        self.assertIn('id="narrationTranscriptSkip" class="btn ghost" type="button">Skip This Narration</button>', INDEX)
+        self.assertIn('id="narrationTranscriptStop" class="btn danger" type="button">Stop All Narration</button>', INDEX)
         self.assertLess(INDEX.index(f"narration.js?v={CURRENT_APP_VERSION}"), INDEX.index(f"narration-transcript.js?v={CURRENT_APP_VERSION}"))
         self.assertLess(INDEX.index(f"narration-transcript.js?v={CURRENT_APP_VERSION}"), INDEX.index(f"app.js?v={CURRENT_APP_VERSION}"))
 
@@ -72,12 +77,16 @@ function element(id){return elements[id]={id,hidden:false,open:false,isConnected
 const elements={},fill={style:{}};
 for(const id of ['narrationTranscriptDialog','narrationTranscriptReopen','narrationTranscriptCategory','narrationTranscriptBody','narrationTranscriptProgress','narrationTranscriptTime','narrationTranscriptHide','narrationTranscriptPause','narrationTranscriptSkip','narrationTranscriptStop','narrationTranscriptPauseHelp'])element(id);
 const origin=element('origin');document.activeElement=origin;
-const narration={getPlaybackState:()=>state,isMasterEnabled:()=>true,pauseNarration(){},resumeNarration(){},skipCurrent(){},stop(){}};
+let skipCalls=0,stopCalls=0;
+const narration={getPlaybackState:()=>state,isMasterEnabled:()=>true,pauseNarration(){},resumeNarration(){},skipCurrent(){skipCalls++},stop(){stopCalls++}};
 const context={document,TombWorldNarration:narration,requestAnimationFrame:()=>1,cancelAnimationFrame(){},addEventListener:(type,fn)=>{listeners[type]=fn;listenerCounts[type]=(listenerCounts[type]||0)+1},CustomEvent:function(){}};context.window=context;
 vm.createContext(context);vm.runInContext(fs.readFileSync('narration-transcript.js','utf8'),context);
 context.TombWorldNarrationTranscript.init();
 if(listenerCounts.tombworldnarrationstatechange!==1)throw Error('init attached duplicate state listeners');
 state={active:true,id:'mission.01.intro',category:'mission-intro',currentTimeMs:0,durationMs:1000,transcriptLoading:true};listeners.tombworldnarrationstatechange({detail:state});
+if(elements.narrationTranscriptCategory.textContent!=='MISSION BRIEFING')throw Error('category eyebrow was not updated');
+elements.narrationTranscriptSkip.listeners.click();elements.narrationTranscriptStop.listeners.click();
+if(skipCalls!==1||stopCalls!==1)throw Error('transcript controls changed narration actions');
 elements.narrationTranscriptHide.listeners.click();
 if(document.activeElement!==elements.narrationTranscriptReopen)throw Error('hide did not focus reopen');
 elements.narrationTranscriptReopen.listeners.click();
@@ -114,6 +123,11 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
         self.assertIn("env(safe-area-inset-bottom)", STYLES)
         transcript_body_rule = STYLES.split(".narration-transcript-body{", 1)[1].split("}", 1)[0]
         self.assertIn("min-height:0", transcript_body_rule)
+        self.assertIn("line-height:1.5", transcript_body_rule)
+        self.assertIn("white-space:pre-line", transcript_body_rule)
+        mobile_rule = STYLES.split("@media(max-width:480px)", 1)[1].split("@media", 1)[0]
+        self.assertIn("grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)", mobile_rule)
+        self.assertIn(".narration-transcript-controls .danger{grid-column:1/-1}", mobile_rule)
         self.assertNotIn("narration-transcript.js", WORKER)
         self.assertIn(f">V{CURRENT_APP_VERSION}<", INDEX)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
