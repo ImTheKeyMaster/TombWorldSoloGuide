@@ -23,6 +23,7 @@
   let activeEntryId = null;
   let activeManifestEntry = null;
   let activeAlignment = null;
+  let activeAlignmentStatus = 'idle';
   let lastEndReason = null;
   let userPaused = false;
   const alignmentCache = new Map();
@@ -122,6 +123,7 @@
       currentTimeMs: currentTime,
       durationMs,
       transcriptAvailable: Boolean(activeAlignment),
+      transcriptLoading: activeAlignmentStatus === 'loading',
       transcript: activeAlignment?.text ?? null,
       alignment: cloneAlignment(activeAlignment),
       manifest: activeManifestEntry ? { ...activeManifestEntry } : null,
@@ -140,6 +142,7 @@
     activeEntryId = null;
     activeManifestEntry = null;
     activeAlignment = null;
+    activeAlignmentStatus = 'idle';
     pausedByMaster = false;
     userPaused = false;
     lastEndReason = reason;
@@ -162,6 +165,7 @@
   }
 
   function loadAlignment(id, entry, request) {
+    activeAlignmentStatus = 'loading';
     const cached = alignmentCache.get(id);
     const loading = cached
       ? Promise.resolve(cached)
@@ -183,10 +187,12 @@
     loading.then(alignment => {
       if (request !== playbackRequest || activeEntryId !== id) return;
       activeAlignment = alignment;
+      activeAlignmentStatus = 'available';
       notifyPlaybackState();
     }, () => {
       if (request !== playbackRequest || activeEntryId !== id) return;
       activeAlignment = null;
+      activeAlignmentStatus = 'unavailable';
       notifyPlaybackState();
     });
   }
@@ -276,6 +282,25 @@
       notifyPlaybackState();
       return true;
     }, () => false);
+  }
+
+  function skipCurrent() {
+    if (!activeEntryId) return false;
+    try { audio?.pause(); } catch { /* Completion remains deterministic if pausing fails. */ }
+    if (finishActiveEvent) {
+      finishActiveEvent('skip');
+      return true;
+    }
+    if (audio) {
+      audio.onended = null;
+      audio.onerror = null;
+    }
+    clearActivePlayback('skip');
+    notifyPlaybackActivity(false);
+    if (eventQueue.length && !eventQueueRunning && !deadlyEncounterQueueRunning) {
+      void drainEventQueue(eventQueueGeneration);
+    }
+    return true;
   }
 
   function pauseForMasterMute() {
@@ -407,6 +432,7 @@
     activeEntryId = id;
     activeManifestEntry = entry;
     activeAlignment = null;
+    activeAlignmentStatus = 'loading';
     userPaused = false;
     pausedByMaster = false;
     lastEndReason = null;
@@ -600,7 +626,7 @@
   }
 
   global.TombWorldNarration = Object.freeze({
-    init, unlock, activateFromGesture, playMissionIntro, playEvent, playGradeEscalation, playOutcome, playDeadlyEncounter, replayLast, stop, pauseNarration, resumeNarration, getPlaybackState,
+    init, unlock, activateFromGesture, playMissionIntro, playEvent, playGradeEscalation, playOutcome, playDeadlyEncounter, replayLast, stop, skipCurrent, pauseNarration, resumeNarration, getPlaybackState,
     setPreferenceEnabled, isPreferenceEnabled, setMasterEnabled, isMasterEnabled, isPlaybackEnabled, setVolumeMultiplier,
     canReplay: () => Boolean(lastEntry)
   });
