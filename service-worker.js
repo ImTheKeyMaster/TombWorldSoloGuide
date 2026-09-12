@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '9.2.63';
+const APP_VERSION = '10.0.0';
 const CACHE_PREFIX = 'tomb-world-battle-guide-';
 const LEGACY_CACHE_PREFIXES = ['tomb-world-solo-guide-'];
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
@@ -10,7 +10,7 @@ const AMBIENT_CONFIG = './Assets/Audio/Narration/ambient-config.json';
 const BACKGROUND_MANIFEST = './Assets/Images/Backgrounds/manifest.json';
 const OFFLINE_PACKAGE_MARKER = './__offline-package-complete__';
 const PRECACHE_ASSETS = [
-  './', APP_SHELL, `./analytics.js?release=${APP_VERSION}`, `./event-effects.js?v=${APP_VERSION}`, `./audio-capabilities.js?v=${APP_VERSION}`, `./narration.js?v=${APP_VERSION}`, `./ambient.js?v=${APP_VERSION}`, `./dice-sfx.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`,
+  './', APP_SHELL, `./analytics.js?release=${APP_VERSION}`, `./event-effects.js?v=${APP_VERSION}`, `./audio-capabilities.js?v=${APP_VERSION}`, `./narration.js?v=${APP_VERSION}`, `./narration-transcript.js?v=${APP_VERSION}`, `./ambient.js?v=${APP_VERSION}`, `./dice-sfx.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`,
   './manifest.webmanifest', './Assets/icon.svg', './Assets/icon-180.png', './Assets/icon-192.png', './Assets/icon-512.png', './Assets/icon-1024.png', './Assets/Icons/move-to-shoot.svg', './Assets/Images/eliminated-necron-skull.png',
   './Assets/Images/defeat.png', './Assets/Images/victory.png',
   './Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3',
@@ -50,6 +50,13 @@ function narrationFiles(manifest) {
   const files=Object.values(manifest.entries||{})
     .filter(entry=>entry?.available===true&&typeof entry.file==='string'&&/^(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$)).+\.mp3$/i.test(entry.file))
     .map(entry=>`./Assets/Audio/Narration/${entry.file}`);
+  return [...new Set(files)];
+}
+
+function narrationAlignmentFiles(manifest) {
+  const files=Object.entries(manifest.entries||{})
+    .filter(([id,entry])=>entry?.available===true&&typeof id==='string')
+    .map(([id])=>`./Assets/Audio/Narration/alignment/${id.replace(/[^A-Za-z0-9._-]/g,'_')}.json`);
   return [...new Set(files)];
 }
 
@@ -121,10 +128,11 @@ async function prepareOfflinePackage({reportProgress=true}={}) {
     throw error;
   }
   const narration=narrationFiles(narrationManifest);
+  const alignments=narrationAlignmentFiles(narrationManifest);
   const ambient=ambientFile(ambientConfig);
   const backgrounds=(backgroundManifest.landscape||[]).map(filename=>`./Assets/Images/Backgrounds/${filename}`);
   if(!ambient)throw new Error('Ambient configuration does not identify a supported offline audio file.');
-  const assets=[NARRATION_MANIFEST,AMBIENT_CONFIG,BACKGROUND_MANIFEST,...narration,ambient,...backgrounds];
+  const assets=[NARRATION_MANIFEST,AMBIENT_CONFIG,BACKGROUND_MANIFEST,...narration,...alignments,ambient,...backgrounds];
   let completed=3;
   if(reportProgress)reportOfflineInstall('OFFLINE_INSTALL_START',completed,assets.length);
   const progress=()=>{
@@ -133,6 +141,7 @@ async function prepareOfflinePackage({reportProgress=true}={}) {
   };
   try {
     await precacheNarration(cache,narration,progress,true);
+    await precacheNarration(cache,alignments,progress,true);
     await precacheAmbient(cache,ambient,progress,true);
     for(const asset of backgrounds){
       await cacheMissingAsset(cache,asset);
@@ -150,16 +159,12 @@ async function ensureOfflinePackage() {
   const cache=await caches.open(CACHE_NAME);
   const marker=await cache.match(OFFLINE_PACKAGE_MARKER);
   if(marker){
-    offlinePreparationStatus={type:'OFFLINE_PACKAGE_READY'};
-    offlinePreparationClients.forEach(client=>postOfflineMessage(client,offlinePreparationStatus));
     const markerVersion=await marker.text();
-    if(markerVersion===APP_VERSION)return;
-    try {
-      await prepareOfflinePackage({reportProgress:false});
-    } catch(error) {
-      console.warn('Updated offline media will be checked again on the next standalone launch.',error);
+    if(markerVersion===APP_VERSION){
+      offlinePreparationStatus={type:'OFFLINE_PACKAGE_READY'};
+      offlinePreparationClients.forEach(client=>postOfflineMessage(client,offlinePreparationStatus));
+      return;
     }
-    return;
   }
   await prepareOfflinePackage();
 }

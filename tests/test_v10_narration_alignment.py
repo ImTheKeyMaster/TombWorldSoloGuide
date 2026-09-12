@@ -75,6 +75,30 @@ class NarrationAlignmentTests(unittest.TestCase):
             self.assertEqual(entry["category"], record["category"], entry_id)
             self.assertEqual(entry["file"], record["outputFile"], entry_id)
 
+    def test_repository_alignment_inventory_is_release_complete(self):
+        report = alignment.inventory(
+            ROOT / "Assets/Audio/Narration/narration-manifest.json",
+            ROOT / "Narration/scripts",
+            ROOT / "Assets/Audio/Narration",
+            ROOT / "Assets/Audio/Narration/alignment",
+        )
+        self.assertEqual({
+            "entries": 51,
+            "available": 51,
+            "unavailable": 0,
+            "valid": 51,
+            "missing": 0,
+            "stale": 0,
+            "invalid": 0,
+            "scriptMissing": 0,
+            "ambiguous": 0,
+            "scriptHashMismatch": 0,
+            "audioHashMismatch": 0,
+            "metadataMismatch": 0,
+            "audioMissing": 0,
+            "audioPathInvalid": 0,
+        }, report["totals"])
+
     def test_safe_deterministic_path_and_millisecond_rounding(self):
         self.assertEqual(self.output / "mission.03.intro.json",
                          alignment.alignment_path(self.output, "mission.03.intro"))

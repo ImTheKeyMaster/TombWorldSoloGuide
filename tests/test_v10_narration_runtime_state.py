@@ -138,9 +138,10 @@ Audio.instance.end();if(!await queued)throw Error('alignment failure stalled que
         self.assertNotRegex(NARRATION, r"(?i)api[_-]?key")
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text(encoding="utf-8"))
         self.assertIn("const STORAGE_KEY = 'tombWorldBattleGuide.v1';", (ROOT / "app.js").read_text(encoding="utf-8"))
-        self.assertEqual((9, 2, 63), tuple(map(int, CURRENT_APP_VERSION.split("."))))
+        self.assertEqual((10, 0, 0), tuple(map(int, CURRENT_APP_VERSION.split("."))))
         self.assertIn(f"const APP_VERSION = '{CURRENT_APP_VERSION}';", (ROOT / "app.js").read_text(encoding="utf-8"))
-        self.assertNotIn("alignment/", (ROOT / "service-worker.js").read_text(encoding="utf-8"))
+        self.assertIn("narrationAlignmentFiles(narrationManifest)",
+                      (ROOT / "service-worker.js").read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

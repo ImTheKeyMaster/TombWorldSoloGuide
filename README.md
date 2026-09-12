@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v9.2.63
+# Tomb World Battle Guide v10.0.0
+
+## v10.0.0 - Narration Cogitator
+
+**Version 10.0.0**
+
+- Added synchronized on-screen narration transcripts with word-by-word highlighting, elapsed time, and playback progress for the existing narration audio.
+- Added Pause / Resume, Skip This Narration, Stop All Narration, Hide / Show Transcript, and queue-safe narration controls.
+- Added mobile auto-follow with manual-scroll suspension and a sci-fi cogitator-style narration display.
+- Added permanent word-timing metadata for all current narration and included transcript alignment data in explicit offline preparation.
+- Preserved audio-only fallback when transcript metadata is unavailable; no ElevenLabs runtime dependency is required.
+- No gameplay save migration is required.
 
 ## v9.2.63
 
