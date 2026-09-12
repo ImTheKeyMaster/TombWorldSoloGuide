@@ -34,9 +34,9 @@ An alignment is `VALID` only when it is structurally usable and both hashes equa
 3. Run `RUN_NARRATION_PRODUCER.bat`.
 4. Use **Open API Key File**, put the active key after `ELEVENLABS_API_KEY=` in the local `.env`, save it, and choose **Recheck API Key**. Never commit `.env`.
 5. In **ALIGNMENT**, choose **Refresh Status** and resolve any missing-audio, missing-script, ambiguous, or script-hash-mismatch issue before submitting that entry.
-6. Choose **Generate Missing/Stale Alignments** and confirm. Processing is sequential. The producer skips unavailable entries and valid hash-matched files, reports each current ID, and stops on authentication, quota/payment, or rate-limit responses while safely retaining completed files.
+6. Choose **Generate Missing/Stale/Invalid Alignments** and confirm. Processing is sequential. The producer skips unavailable entries and valid hash-matched files, reports each current ID, and stops on authentication, quota/payment, or rate-limit responses while safely retaining completed files.
 7. Choose **Refresh Status** after completion. The target is every available entry reported valid, with zero missing, stale, invalid, or failed entries. Review entries marked `REVIEW` and their preserved loss values.
 
-The operation is restartable. If it is interrupted, repeat step 6: valid files are skipped and only missing/stale candidates are submitted, avoiding duplicate credit use. Individual cards also provide **Generate Alignment** or **Regenerate Alignment** for targeted retries.
+The operation is restartable. If it is interrupted, repeat step 6: valid files are skipped and only missing/stale/invalid candidates are submitted, avoiding duplicate credit use. Individual cards also provide **Generate Alignment** or **Regenerate Alignment** for targeted retries.
 
 Run `python -m unittest tests.test_v10_narration_alignment` from the repository root to validate mapping, schema, hashes, status detection, restart behavior, and mocked API handling without an API key or any network call.

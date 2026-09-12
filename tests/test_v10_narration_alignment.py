@@ -5,7 +5,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import requests
 
 
@@ -15,6 +15,7 @@ sys.path.insert(0, str(PRODUCER))
 SPEC = importlib.util.spec_from_file_location("narration_alignment", PRODUCER / "alignment.py")
 alignment = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(alignment)
+import server as producer_server
 
 
 class Response:
@@ -199,6 +200,24 @@ class NarrationAlignmentTests(unittest.TestCase):
         self.write_manifest(category="outcome")
         with self.assertRaisesRegex(ValueError, "metadata does not match"):
             self.generate()
+
+    def test_server_requires_explicit_credit_confirmation(self):
+        client = producer_server.app.test_client()
+        with patch.object(producer_server, "generate_alignment") as generate:
+            response = client.post("/api/alignments/event.sample", json={})
+            self.assertEqual(400, response.status_code)
+            self.assertIn("explicit credit confirmation", response.get_json()["error"])
+            generate.assert_not_called()
+
+            generate.return_value = {"qualityStatus": "GOOD", "alignmentLoss": 0.1}
+            response = client.post("/api/alignments/event.sample", json={"confirmation": True})
+            self.assertEqual(200, response.status_code)
+            generate.assert_called_once()
+
+    def test_batch_repairs_invalid_files_and_sends_confirmation(self):
+        browser = (PRODUCER / "static/producer.js").read_text(encoding="utf8")
+        self.assertIn("'STALE AUDIO','INVALID'", browser)
+        self.assertEqual(2, browser.count("body:JSON.stringify({confirmation:true})"))
 
 
 if __name__ == "__main__":

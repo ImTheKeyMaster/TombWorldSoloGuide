@@ -70,6 +70,9 @@ def status():
 def alignment_status(): return jsonify(inventory(MANIFEST,SCRIPTS,AUDIO,ALIGNMENTS))
 @app.post('/api/alignments/<path:entry_id>')
 def align_one(entry_id):
+ body=request.get_json(silent=True) or {}
+ if body.get('confirmation') is not True:
+  return jsonify(error='Alignment generation requires explicit credit confirmation.'),400
  try:
   result=generate_alignment(entry_id,MANIFEST,SCRIPTS,AUDIO,ALIGNMENTS,key(),requests.post)
   return jsonify(ok=True,id=entry_id,qualityStatus=result['qualityStatus'],alignmentLoss=result['alignmentLoss'])
