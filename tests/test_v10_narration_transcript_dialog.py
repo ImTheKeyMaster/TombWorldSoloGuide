@@ -51,6 +51,8 @@ class NarrationTranscriptDialogTests(unittest.TestCase):
         self.assertIn("await narration.resumeNarration()", TRANSCRIPT)
         self.assertIn("narration.skipCurrent()", TRANSCRIPT)
         self.assertIn("narration.stop()", TRANSCRIPT)
+        self.assertIn("lockPageScroll()", TRANSCRIPT)
+        self.assertIn("unlockPageScroll()", TRANSCRIPT)
         hide_handler = TRANSCRIPT.split("function hideTranscript()", 1)[1].split("hide.addEventListener", 1)[0]
         self.assertNotIn(".stop(", hide_handler)
         self.assertIn("event.preventDefault()", TRANSCRIPT)
@@ -128,9 +130,9 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
         self.assertIn("env(safe-area-inset-bottom)", STYLES)
         transcript_body_rule = STYLES.split(".narration-transcript-body{", 1)[1].split("}", 1)[0]
         self.assertIn("min-height:0", transcript_body_rule)
-        self.assertIn("line-height:1.5", transcript_body_rule)
+        self.assertIn("line-height:1.42", transcript_body_rule)
         self.assertIn("white-space:pre-wrap", transcript_body_rule)
-        self.assertIn(".narration-transcript-body p{margin:0 0 .75em}", STYLES)
+        self.assertIn(".narration-transcript-body p{margin:0 0 .55em}", STYLES)
         self.assertIn(".narration-transcript-body p:last-child{margin-bottom:0}", STYLES)
         mobile_rule = STYLES.split("@media(max-width:480px)", 1)[1].split("@media", 1)[0]
         self.assertIn("grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)", mobile_rule)
@@ -149,9 +151,14 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
         reopen_rule = STYLES.split(".narration-transcript-reopen{", 1)[1].split("}", 1)[0]
 
         self.assertIn("linear-gradient", dialog_rule)
+        self.assertIn("position:fixed", dialog_rule)
+        self.assertIn("inset:0", dialog_rule)
+        self.assertIn("height:min(680px", dialog_rule)
         self.assertIn("clip-path:polygon", dialog_rule)
         self.assertIn("filter:drop-shadow", dialog_rule)
-        self.assertIn("background-size:100% 4px", body_rule)
+        self.assertIn("repeating-linear-gradient", body_rule)
+        self.assertIn("radial-gradient", body_rule)
+        self.assertIn("inset 0 0 64px", body_rule)
         self.assertNotIn("repeating-linear-gradient", progress_fill_rule)
         self.assertIn("repeating-linear-gradient", progress_ticks_rule)
         self.assertIn("position:absolute", progress_ticks_rule)
