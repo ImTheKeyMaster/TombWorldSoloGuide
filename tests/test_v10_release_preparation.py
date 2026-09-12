@@ -12,8 +12,8 @@ README = (ROOT / "README.md").read_text(encoding="utf-8")
 WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 
 
-def test_v10_release_surfaces_and_saved_game_contract():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (10, 0, 0)
+def test_v1001_release_surfaces_and_saved_game_contract():
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (10, 0, 1)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
@@ -25,7 +25,7 @@ def test_v10_release_surfaces_and_saved_game_contract():
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
     assert README.startswith(
         f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n"
-        f"## v{CURRENT_APP_VERSION} - Narration Cogitator"
+        f"## v{CURRENT_APP_VERSION} - Narration Cogitator Polish"
     )
 
 

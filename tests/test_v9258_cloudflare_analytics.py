@@ -168,7 +168,7 @@ def test_disclosures_persistence_and_release_versions_are_consistent():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
-    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 10
+    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 11
     assert README.startswith(
         f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}"
     )
