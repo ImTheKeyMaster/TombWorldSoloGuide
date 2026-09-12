@@ -166,7 +166,7 @@
     const loading = cached
       ? Promise.resolve(cached)
       : (alignmentLoads.get(id) || (typeof global.fetch === 'function'
-          ? global.fetch(alignmentUrl(id))
+          ? Promise.resolve().then(() => global.fetch(alignmentUrl(id)))
             .then(response => response.ok ? response.json() : Promise.reject(new Error('Alignment unavailable')))
             .then(data => {
               if (!validAlignment(data, id, entry)) throw new Error('Invalid alignment');
@@ -458,8 +458,8 @@
           notifyPlaybackActivity(false);
           resolve();
         };
-        audio.onended = finishActiveEvent;
-        audio.onerror = finishActiveEvent;
+        audio.onended = () => finishActiveEvent?.('natural');
+        audio.onerror = () => finishActiveEvent?.('stop');
       });
 
       if (playbackRequest !== requestBeforePlayback + 1) break;
@@ -544,8 +544,8 @@
               notifyPlaybackActivity(false);
               resolve();
             };
-            audio.onended = finishActiveEvent;
-            audio.onerror = finishActiveEvent;
+            audio.onended = () => finishActiveEvent?.('natural');
+            audio.onerror = () => finishActiveEvent?.('stop');
           });
           if (generation !== deadlyEncounterGeneration || playbackRequest !== requestBeforePlayback + 1) break;
         }

@@ -10,8 +10,9 @@ NARRATION = (ROOT / "narration.js").read_text(encoding="utf-8")
 
 
 class NarrationRuntimeStateTests(unittest.TestCase):
-    def run_node(self, assertions, fetch_body=None):
+    def run_node(self, assertions, fetch_body=None, synchronous_fetch=False):
         fetch_body = fetch_body or "return {ok:true,json:async()=>url.includes('narration-manifest')?{entries}:alignment};"
+        fetch_keyword = "" if synchronous_fetch else "async "
         script = f"""
 const fs=require('fs'),vm=require('vm');
 const events=[],fetches=[],plays=[];
@@ -19,7 +20,7 @@ const entry={{available:true,file:'missions/01.mp3',category:'mission-intro',dur
 const entries={{'mission.01.intro':entry,'event.first':{{...entry,file:'events/first.mp3',category:'event'}},'event.second':{{...entry,file:'events/second.mp3',category:'event'}}}};
 const alignment={{schemaVersion:1,id:'mission.01.intro',text:'Complete transcript',durationMs:12000,scriptHash:'script',audioHash:'audio',qualityStatus:'REVIEW',alignmentLoss:.2,words:[{{text:'Complete',startMs:0,endMs:500,loss:.1}},{{text:' ',startMs:500,endMs:550,loss:.01}},{{text:'transcript',startMs:550,endMs:1000,loss:.1}}]}};
 class Audio{{constructor(){{this.src='';this.currentTime=0;this.duration=NaN;this.paused=true;this.ended=false;this.onended=null;this.onerror=null;Audio.instance=this}}play(){{this.paused=false;this.ended=false;plays.push(this.src);return Promise.resolve()}}pause(){{this.paused=true}}removeAttribute(){{this.src=''}}load(){{this.currentTime=0}}end(){{this.paused=true;this.ended=true;if(this.onended)this.onended()}}}}
-const context={{Audio,URL,location:{{href:'https://example.test/app/'}},localStorage:{{getItem:()=>null,setItem:()=>{{}}}},CustomEvent:function(type,options){{this.type=type;this.detail=options?.detail}},dispatchEvent:event=>events.push(event),fetch:async url=>{{fetches.push(String(url));{fetch_body}}}}};
+const context={{Audio,URL,location:{{href:'https://example.test/app/'}},localStorage:{{getItem:()=>null,setItem:()=>{{}}}},CustomEvent:function(type,options){{this.type=type;this.detail=options?.detail}},dispatchEvent:event=>events.push(event),fetch:{fetch_keyword}url=>{{fetches.push(String(url));{fetch_body}}}}};
 context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
 const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
 (async()=>{{const n=context.TombWorldNarration;{assertions}}})().catch(error=>{{console.error(error);process.exit(1)}});
@@ -82,6 +83,21 @@ if(fetches.filter(url=>url.includes('/alignment/')).length!==1||!n.getPlaybackSt
 if(!await n.playMissionIntro('shifting-labyrinth'))throw Error('audio blocked');await flush();
 if(plays.length!==1||!n.getPlaybackState().active||n.getPlaybackState().transcriptAvailable)throw Error('fallback failed');
 """, fetch_body)
+
+    def test_synchronous_alignment_fetch_failure_cannot_reject_audio_playback(self):
+        self.run_node(r"""
+if(!await n.playMissionIntro('shifting-labyrinth'))throw Error('synchronous fetch failure blocked audio');await flush();
+const state=n.getPlaybackState();
+if(!state.active||!state.playing||state.transcriptAvailable||plays.length!==1)throw Error('audio-only fallback state incorrect');
+""", "if(url.includes('narration-manifest'))return Promise.resolve({ok:true,json:async()=>({entries})});throw Error('synchronous offline failure');", True)
+
+    def test_queued_audio_error_is_not_reported_as_natural_completion(self):
+        self.run_node(r"""
+const queued=n.playEvent('first','error-1');await flush();
+Audio.instance.onerror();await queued;await flush();
+const state=n.getPlaybackState();
+if(state.active||state.lastEndReason!=='stop')throw Error('audio error was labeled as natural completion');
+""")
 
     def test_late_alignment_cannot_replace_new_active_entry_and_queue_continues(self):
         fetch_body = """
