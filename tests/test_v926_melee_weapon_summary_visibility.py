@@ -48,10 +48,11 @@ def test_continue_validation_is_still_target_and_weapon_based():
     assert "$('#openCombatResolution').disabled=!target||!weapon;" in WIZARD
 
 
-def test_macrocyte_question_is_unchanged():
+def test_macrocyte_question_is_limited_to_shooting():
     assert '<strong>Attacker is within 2&quot; of this Macrocyte</strong>' in APP
     assert "Required only if this attack incapacitates the Macrocyte." in APP
-    assert "$('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target);" in WIZARD
+    assert "$('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target,attackType);" in WIZARD
+    assert "attackType==='shoot'&&npo?.type==='Canoptek Macrocyte Warrior'" in APP
 
 
 def test_shoot_summary_is_hidden_only_until_a_weapon_is_selected():

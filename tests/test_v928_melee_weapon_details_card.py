@@ -71,7 +71,8 @@ def test_preselection_card_stays_hidden_visually_and_accessibly_with_reserved_sp
 
 def test_validation_macrocyte_and_shoot_paths_are_preserved():
     assert "$('#openCombatResolution').disabled=!target||!weapon;" in WIZARD
-    assert "$('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target);" in WIZARD
+    assert "$('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target,attackType);" in WIZARD
+    assert "attackType==='shoot'&&npo?.type==='Canoptek Macrocyte Warrior'" in APP
     assert '<strong>Attacker is within 2&quot; of this Macrocyte</strong>' in APP
     assert "runAutomaticCombatRolls" not in WIZARD
 

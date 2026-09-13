@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.5
+# Tomb World Battle Guide v10.0.6
+
+## v10.0.6
+
+### Macrocyte Melee Proximity
+
+- Melee Fight actions against Canoptek Macrocyte Warriors now automatically satisfy the Aggressive Defence within-2-inch condition.
+- Removed the redundant proximity checkbox from the melee attack setup.
+- Ranged attacks still ask for the tabletop proximity confirmation when required.
 
 ## v10.0.5
 
