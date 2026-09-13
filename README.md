@@ -1,4 +1,11 @@
-# Tomb World Battle Guide v10.0.2
+# Tomb World Battle Guide v10.0.3
+
+## v10.0.3 - Rounded Narration Cogitator
+
+**Version 10.0.3**
+
+- Replaced the Narration Cogitator's chamfered shell with a rounded blue monitor housing.
+- Rounded the close button frame to match while preserving narration behavior, layout, and CRT effects.
 
 ## v10.0.2 - Setup Heading Focus Polish
 
