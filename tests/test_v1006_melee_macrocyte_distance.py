@@ -29,17 +29,19 @@ def test_melee_does_not_render_a_distance_question_or_hidden_checkbox():
 def test_melee_records_and_carries_implicit_proximity():
     combat = source("function showPlayerCombatResolution", "async function previewPendingPlayerAttack")
     result = source("function buildFightResult", "function fightResultParticipantHtml")
-    assert "transaction.definitionAnswers.attackerWithinTwo=true" in combat
-    assert "attackerWithinTwo:true" in combat
+    assert "const attackerWithinTwo=target.type==='Canoptek Macrocyte Warrior'" in combat
+    assert "transaction.definitionAnswers.attackerWithinTwo=attackerWithinTwo" in combat
+    assert "onComplete:onResolved,attackerWithinTwo" in combat
     assert "attackerWithinTwo:Boolean(fight.attackerWithinTwo)" in result
 
 
 def test_resume_normalizes_legacy_melee_state_to_within_two():
     pending = source("function normalizePendingAttackResultLists", "function normalizeImpossiblePlayerCombat")
     fight = source("function normalizeFightState", "function otherFightRole")
-    assert "attackType==='melee'?results.map(result=>({...result,attackerWithinTwo:true})):results" in pending
+    assert "npo.id===result.targetId&&npo.type==='Canoptek Macrocyte Warrior'" in pending
     assert "meleeCombatDraft={...normalized.meleeCombatDraft,attackerWithinTwo:true}" in pending
-    assert "fight.attacker?.side==='player'?true:Boolean(fight.attackerWithinTwo)" in fight
+    assert "playerFightingMacrocyte" in fight
+    assert "attackerWithinTwo:playerFightingMacrocyte?true:Boolean(fight.attackerWithinTwo)" in fight
 
 
 def test_shooting_remains_player_confirmed_and_defaults_false():
