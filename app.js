@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '10.0.4';
+  const APP_VERSION = '10.0.5';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -9755,6 +9755,10 @@ function showPlayerActivation(){
     $('#ambientNoiseToggle').onclick=()=>{
       ambientEnabled=!ambientEnabled;
       localStorage.setItem(AMBIENT_ENABLED_PREFERENCE_KEY,String(ambientEnabled));
+      appliedAmbientEnabled=ambientEnabled;
+      reconcileAmbientActiveState();
+      if(shouldAmbientBeActive())void TombWorldAmbient.playFromGesture();
+      else TombWorldAmbient.stop();
       syncNarrationControls();
     };
     $('#diceRollToggle').onclick=()=>{

@@ -24,7 +24,7 @@ class HtmlAudioAmbientTests(unittest.TestCase):
         self.assertIn("void TombWorldAmbient.init();", APP)
         self.assertIn("const SAVE_VERSION = 3;", (ROOT / "persistence.js").read_text())
 
-    def test_gesture_calls_are_synchronous_and_menu_is_settings_only(self):
+    def test_gesture_calls_are_synchronous_and_menu_applies_ambient_immediately(self):
         gesture = AMBIENT[AMBIENT.index("function playFromGesture") : AMBIENT.index("function setActive")]
         self.assertIn("result = audio.play()", gesture)
         self.assertNotIn("await ", gesture[: gesture.index("audio.play()")])
@@ -33,9 +33,12 @@ class HtmlAudioAmbientTests(unittest.TestCase):
         mission = APP[APP.index("$$('.mission-choice')") : APP.index("$('#setupHome')")]
         self.assertIn("TombWorldAmbient.playFromGesture()", mission)
         menu = APP[APP.index("function showGameMenu") : APP.index("function showAbout")]
-        for operation in ("TombWorldAmbient.play", "TombWorldAmbient.stop", "TombWorldAmbient.reset", ".load()", "currentTime"):
+        for operation in ("TombWorldAmbient.reset", ".load()", "currentTime"):
             self.assertNotIn(operation, menu)
         self.assertIn("localStorage.setItem(AMBIENT_ENABLED_PREFERENCE_KEY,String(ambientEnabled))", menu)
+        self.assertIn("appliedAmbientEnabled=ambientEnabled", menu)
+        self.assertIn("if(shouldAmbientBeActive())void TombWorldAmbient.playFromGesture()", menu)
+        self.assertIn("else TombWorldAmbient.stop()", menu)
         self.assertIn("TombWorldNarration.setPreferenceEnabled", menu)
         self.assertNotIn("setMasterEnabled", menu)
 
