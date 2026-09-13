@@ -5704,15 +5704,6 @@ function showPlayerActivation(){
 
   function applyPendingPlayerDamage(stage){
     for(const pending of [...pendingAttackResults(stage,'shoot'),...pendingAttackResults(stage,'melee')]){
-      if(pending?.committed){
-        const n=state.roster.find(x=>x.id===pending.targetId);
-        const protectedForAction=n?.preventIncapacitationActionId===state.activationNumber;
-        if(n&&pending.after<=0&&!protectedForAction&&n.type==='Canoptek Macrocyte Warrior'&&pending.attackerWithinTwo&&!pending.aggressiveDefenseResolved){
-          const incapacitationId=`${state.turningPoint}:${state.activationNumber}:${pending.attackType}:${n.id}`;
-          showAggressiveDefenseResolution(stage,pending,n,incapacitationId);
-          return true;
-        }
-      }
       if(!pending||pending.committed)continue;
       if(pending.side==='player'||pending.defenderSide==='player'){
         const before=playerCurrentWounds(pending.targetId);
@@ -7116,7 +7107,8 @@ function showPlayerActivation(){
     if(!fight||fight.completed||fight.turn!==role)return false;
     const success=unresolvedFightSuccesses(fight,role).find(item=>item.id===successId);if(!success)return false;
     const actor=fight[role],target=fight[otherFightRole(role)],resolvingRemaining=!unresolvedFightSuccesses(fight,otherFightRole(role)).length,damage=success.kind==='critical'?actor.profile.crit:actor.profile.normal;
-    success.status='struck';const before=target.wounds,after=Math.max(0,before-damage);target.wounds=after;setFightOperativeWounds(target,after);
+    success.status='struck';const before=target.wounds,after=Math.max(0,before-damage);target.wounds=after;
+    if(!(fight.deferDefenderDamage&&target===fight.defender))setFightOperativeWounds(target,after);
     const shock=success.kind==='critical'?resolveFightShock(fight,role):null;
     const historyEntry={index:fight.resolutionIndex++,type:'strike',role,successId,successKind:success.kind,damage,before,after,targetSide:target.side,targetId:target.id,...(resolvingRemaining?{resolvingRemaining:true}:{}),...(shock?{shockDiscardedSuccessId:shock.id}:{})};fight.history.push(historyEntry);
     if(after<=0){fight.completed=true;fight.incapacitatedRole=otherFightRole(role);}else advanceFightTurn(fight);save();
@@ -7245,7 +7237,7 @@ function showPlayerActivation(){
   function buildFightResult(fight){
     const attackerDamageDealt=fightRoleDamage(fight,'attacker'),defenderDamageDealt=fightRoleDamage(fight,'defender');
     const participant=role=>({id:fight[role].id,name:fight[role].label,side:fight[role].side,before:fight[role].initialWounds,after:fight[role].wounds,incapacitated:fight[role].wounds<=0,damageDealt:role==='attacker'?attackerDamageDealt:defenderDamageDealt});
-    const result={resultVersion:2,transactionId:fight.id,attackType:'melee',attackerName:fight.attacker.label,defenderName:fight.defender.label,targetId:fight.defender.id,targetName:fight.defender.label,side:fight.defender.side,weaponName:fight.attacker.profile.name,profile:fight.attacker.profile,before:fight.defender.initialWounds,after:fight.defender.wounds,damage:attackerDamageDealt,damageDealt:attackerDamageDealt,damageSuffered:defenderDamageDealt,attackerDamageDealt,defenderDamageDealt,attackerBefore:fight.attacker.initialWounds,attackerAfter:fight.attacker.wounds,defenderBefore:fight.defender.initialWounds,defenderAfter:fight.defender.wounds,attackerIncapacitated:fight.attacker.wounds<=0,defenderIncapacitated:fight.defender.wounds<=0,attackerWithinTwo:Boolean(fight.attackerWithinTwo),participants:{attacker:participant('attacker'),defender:participant('defender')},committed:true,fightHistory:fight.history.map(item=>({...item})),fightTransactionId:fight.id};
+    const result={resultVersion:2,transactionId:fight.id,attackType:'melee',attackerName:fight.attacker.label,defenderName:fight.defender.label,targetId:fight.defender.id,targetName:fight.defender.label,side:fight.defender.side,weaponName:fight.attacker.profile.name,profile:fight.attacker.profile,before:fight.defender.initialWounds,after:fight.defender.wounds,damage:attackerDamageDealt,damageDealt:attackerDamageDealt,damageSuffered:defenderDamageDealt,attackerDamageDealt,defenderDamageDealt,attackerBefore:fight.attacker.initialWounds,attackerAfter:fight.attacker.wounds,defenderBefore:fight.defender.initialWounds,defenderAfter:fight.defender.wounds,attackerIncapacitated:fight.attacker.wounds<=0,defenderIncapacitated:fight.defender.wounds<=0,attackerWithinTwo:Boolean(fight.attackerWithinTwo),participants:{attacker:participant('attacker'),defender:participant('defender')},committed:!fight.deferDefenderDamage,fightHistory:fight.history.map(item=>({...item})),fightTransactionId:fight.id};
     result.explanation=fightResultExplanation(fight,result);return result;
   }
   function fightResultParticipantHtml(participant,role){
@@ -7302,9 +7294,9 @@ function showPlayerActivation(){
     participant.attackDice=participant.attackDice.map(item=>({...item}));participant.attackDiceComplete=true;fight.successes[role]=fightSuccessesFromDice(fight.id,role,participant.attackDice);
     const target=fight[otherFightRole(role)];const stun=applyStunForAttack({profile:participant.profile,attackDice:participant.attackDice,sourceAttackId:`${fight.id}:${role}`,targetId:target.id,targetName:target.label,targetSide:target.side});if(stun.message)fight.messages=[...(fight.messages||[]),stun.message];save();
   }
-  async function startSharedFight({id,attacker,defender,onComplete,attackerWithinTwo=false}){
+  async function startSharedFight({id,attacker,defender,onComplete,attackerWithinTwo=false,deferDefenderDamage=false}){
     activeFightContinuation=onComplete;let fight=state.fightState?.id===id?state.fightState:null;
-    if(!fight){fight={version:1,id,attacker:{...attacker},defender:{...defender},attackerWithinTwo:Boolean(attackerWithinTwo),successes:{attacker:[],defender:[]},turn:'attacker',resolutionIndex:0,history:[],ruleTriggers:{},blockCapacity:{attacker:shieldBlockCapacity(attacker),defender:shieldBlockCapacity(defender)},completed:false,resultCommitted:false};state.fightState=fight;save();}
+    if(!fight){fight={version:1,id,attacker:{...attacker},defender:{...defender},attackerWithinTwo:Boolean(attackerWithinTwo),deferDefenderDamage:Boolean(deferDefenderDamage),successes:{attacker:[],defender:[]},turn:'attacker',resolutionIndex:0,history:[],ruleTriggers:{},blockCapacity:{attacker:shieldBlockCapacity(attacker),defender:shieldBlockCapacity(defender)},completed:false,resultCommitted:false};state.fightState=fight;save();}
     for(const role of ['attacker','defender']){
       const participant=fight[role],current=participant.side==='player'?playerCurrentWounds(participant.id):state.roster.find(item=>item.id===participant.id)?.wounds;
       if(Number.isFinite(current)&&fight.history.length===0)participant.wounds=current;
@@ -7563,7 +7555,7 @@ function showPlayerActivation(){
       transaction.definitionAnswers.attackerWithinTwo=attackerWithinTwo;
       const attacker=fightParticipantState({side:'player',id:stage.playerOperativeId,label:playerName(stage.playerOperativeId),profile,wounds:playerCurrentWounds(stage.playerOperativeId),maxWounds:playerDefinition(stage.playerOperativeId)?.wounds});
       const defender=fightParticipantState({side:'npo',id:target.id,label:targetName,profile:retaliationProfile,wounds:target.wounds,maxWounds:target.maxWounds});
-      void startSharedFight({id:transactionId,attacker,defender,onComplete:onResolved,attackerWithinTwo});
+      void startSharedFight({id:transactionId,attacker,defender,onComplete:onResolved,attackerWithinTwo,deferDefenderDamage:true});
       return;
     }
     const attackerWithinTwo=Boolean($('#attackerWithinTwo')?.checked)||Boolean(result?.attackerWithinTwo);
