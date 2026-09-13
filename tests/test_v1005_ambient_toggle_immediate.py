@@ -16,7 +16,7 @@ def ambient_toggle_handler():
 
 
 def test_v1005_release_metadata_is_consistent():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (10, 0, 5)
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 5)
     index = (ROOT / "index.html").read_text(encoding="utf-8")
     worker = (ROOT / "service-worker.js").read_text(encoding="utf-8")
     readme = (ROOT / "README.md").read_text(encoding="utf-8")

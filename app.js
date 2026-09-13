@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '10.0.5';
+  const APP_VERSION = '10.0.6';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5563,8 +5563,10 @@ function showPlayerActivation(){
     for(const attackType of ['shoot','melee']){
       const listKey=attackType==='shoot'?'pendingShootResults':'pendingMeleeResults';
       const legacyKey=attackType==='shoot'?'pendingShoot':'pendingMelee';
-      normalized[listKey]=Array.isArray(stage[listKey])?stage[listKey].filter(isRecord):stage[legacyKey]?[stage[legacyKey]]:[];
+      const results=Array.isArray(stage[listKey])?stage[listKey].filter(isRecord):stage[legacyKey]?[stage[legacyKey]]:[];
+      normalized[listKey]=attackType==='melee'?results.map(result=>({...result,attackerWithinTwo:true})):results;
     }
+    if(isRecord(normalized.meleeCombatDraft))normalized.meleeCombatDraft={...normalized.meleeCombatDraft,attackerWithinTwo:true};
     return normalized;
   }
 
@@ -7020,7 +7022,7 @@ function showPlayerActivation(){
       if(!isRecord(participant)||!['player','npo'].includes(participant.side)||typeof participant.id!=='string'||!participant.id||!isRecord(participant.profile))return null;
       participants[role]={...participant,attackDice:Array.isArray(participant.attackDice)?participant.attackDice.filter(isRecord).map(item=>({...item})):[],attackDiceComplete:Boolean(participant.attackDiceComplete)};
     }
-    return {...fight,...participants,turn:['attacker','defender'].includes(fight.turn)?fight.turn:'attacker',resolutionIndex:Math.max(0,Number(fight.resolutionIndex||0)),successes:Object.fromEntries(['attacker','defender'].map(role=>[role,Array.isArray(fight.successes?.[role])?fight.successes[role].filter(isRecord).map(item=>({...item})):[]])),history:Array.isArray(fight.history)?fight.history.filter(isRecord).map(item=>({...item})):[],ruleTriggers:isRecord(fight.ruleTriggers)?{...fight.ruleTriggers}:{},completed:Boolean(fight.completed),resultAcknowledged:Boolean(fight.resultAcknowledged)};
+    return {...fight,...participants,attackerWithinTwo:fight.attacker?.side==='player'?true:Boolean(fight.attackerWithinTwo),turn:['attacker','defender'].includes(fight.turn)?fight.turn:'attacker',resolutionIndex:Math.max(0,Number(fight.resolutionIndex||0)),successes:Object.fromEntries(['attacker','defender'].map(role=>[role,Array.isArray(fight.successes?.[role])?fight.successes[role].filter(isRecord).map(item=>({...item})):[]])),history:Array.isArray(fight.history)?fight.history.filter(isRecord).map(item=>({...item})):[],ruleTriggers:isRecord(fight.ruleTriggers)?{...fight.ruleTriggers}:{},completed:Boolean(fight.completed),resultAcknowledged:Boolean(fight.resultAcknowledged)};
   }
   function otherFightRole(role){return role==='attacker'?'defender':'attacker';}
   function unresolvedFightSuccesses(fight,role){return (fight?.successes?.[role]||[]).filter(success=>success.status==='unresolved');}
@@ -7233,7 +7235,7 @@ function showPlayerActivation(){
   function buildFightResult(fight){
     const attackerDamageDealt=fightRoleDamage(fight,'attacker'),defenderDamageDealt=fightRoleDamage(fight,'defender');
     const participant=role=>({id:fight[role].id,name:fight[role].label,side:fight[role].side,before:fight[role].initialWounds,after:fight[role].wounds,incapacitated:fight[role].wounds<=0,damageDealt:role==='attacker'?attackerDamageDealt:defenderDamageDealt});
-    const result={resultVersion:2,transactionId:fight.id,attackType:'melee',attackerName:fight.attacker.label,defenderName:fight.defender.label,targetId:fight.defender.id,targetName:fight.defender.label,side:fight.defender.side,weaponName:fight.attacker.profile.name,profile:fight.attacker.profile,before:fight.defender.initialWounds,after:fight.defender.wounds,damage:attackerDamageDealt,damageDealt:attackerDamageDealt,damageSuffered:defenderDamageDealt,attackerDamageDealt,defenderDamageDealt,attackerBefore:fight.attacker.initialWounds,attackerAfter:fight.attacker.wounds,defenderBefore:fight.defender.initialWounds,defenderAfter:fight.defender.wounds,attackerIncapacitated:fight.attacker.wounds<=0,defenderIncapacitated:fight.defender.wounds<=0,participants:{attacker:participant('attacker'),defender:participant('defender')},committed:true,fightHistory:fight.history.map(item=>({...item})),fightTransactionId:fight.id};
+    const result={resultVersion:2,transactionId:fight.id,attackType:'melee',attackerName:fight.attacker.label,defenderName:fight.defender.label,targetId:fight.defender.id,targetName:fight.defender.label,side:fight.defender.side,weaponName:fight.attacker.profile.name,profile:fight.attacker.profile,before:fight.defender.initialWounds,after:fight.defender.wounds,damage:attackerDamageDealt,damageDealt:attackerDamageDealt,damageSuffered:defenderDamageDealt,attackerDamageDealt,defenderDamageDealt,attackerBefore:fight.attacker.initialWounds,attackerAfter:fight.attacker.wounds,defenderBefore:fight.defender.initialWounds,defenderAfter:fight.defender.wounds,attackerIncapacitated:fight.attacker.wounds<=0,defenderIncapacitated:fight.defender.wounds<=0,attackerWithinTwo:Boolean(fight.attackerWithinTwo),participants:{attacker:participant('attacker'),defender:participant('defender')},committed:true,fightHistory:fight.history.map(item=>({...item})),fightTransactionId:fight.id};
     result.explanation=fightResultExplanation(fight,result);return result;
   }
   function fightResultParticipantHtml(participant,role){
@@ -7290,9 +7292,9 @@ function showPlayerActivation(){
     participant.attackDice=participant.attackDice.map(item=>({...item}));participant.attackDiceComplete=true;fight.successes[role]=fightSuccessesFromDice(fight.id,role,participant.attackDice);
     const target=fight[otherFightRole(role)];const stun=applyStunForAttack({profile:participant.profile,attackDice:participant.attackDice,sourceAttackId:`${fight.id}:${role}`,targetId:target.id,targetName:target.label,targetSide:target.side});if(stun.message)fight.messages=[...(fight.messages||[]),stun.message];save();
   }
-  async function startSharedFight({id,attacker,defender,onComplete}){
+  async function startSharedFight({id,attacker,defender,onComplete,attackerWithinTwo=false}){
     activeFightContinuation=onComplete;let fight=state.fightState?.id===id?state.fightState:null;
-    if(!fight){fight={version:1,id,attacker:{...attacker},defender:{...defender},successes:{attacker:[],defender:[]},turn:'attacker',resolutionIndex:0,history:[],ruleTriggers:{},blockCapacity:{attacker:shieldBlockCapacity(attacker),defender:shieldBlockCapacity(defender)},completed:false,resultCommitted:false};state.fightState=fight;save();}
+    if(!fight){fight={version:1,id,attacker:{...attacker},defender:{...defender},attackerWithinTwo:Boolean(attackerWithinTwo),successes:{attacker:[],defender:[]},turn:'attacker',resolutionIndex:0,history:[],ruleTriggers:{},blockCapacity:{attacker:shieldBlockCapacity(attacker),defender:shieldBlockCapacity(defender)},completed:false,resultCommitted:false};state.fightState=fight;save();}
     for(const role of ['attacker','defender']){
       const participant=fight[role],current=participant.side==='player'?playerCurrentWounds(participant.id):state.roster.find(item=>item.id===participant.id)?.wounds;
       if(Number.isFinite(current)&&fight.history.length===0)participant.wounds=current;
@@ -7313,8 +7315,8 @@ function showPlayerActivation(){
     $('#cancelRetaliationWeapon').onclick=onCancel;confirm.onclick=()=>{const index=Number(select.value);onSelected(playerWeaponProfile(weapons[index],{operativeId,attackType:'melee',weaponIndex:index}));};
   }
 
-  function aggressiveDefenseFields(npo){
-    return npo?.type==='Canoptek Macrocyte Warrior'
+  function aggressiveDefenseFields(npo,attackType){
+    return attackType==='shoot'&&npo?.type==='Canoptek Macrocyte Warrior'
       ? '<label class="check-row compact-check"><input type="checkbox" id="attackerWithinTwo"><span><strong>Attacker is within 2&quot; of this Macrocyte</strong><small>Required only if this attack incapacitates the Macrocyte.</small></span></label>'
       : '';
   }
@@ -7455,7 +7457,7 @@ function showPlayerActivation(){
         weaponSummary.classList.toggle('melee-weapon-summary-pending',!weapon);
       }else weaponSummary.hidden=!weapon;
       weaponSummary.setAttribute('aria-hidden',String(!weapon));
-      $('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target);
+      $('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target,attackType);
       if(npoDefinition(target?.type)?.id==='skorpekh-destroyer'&&target.order==='Conceal')$('#aggressiveDefenseFields').insertAdjacentHTML('beforeend','<p class="muted"><strong>Hulking:</strong> while Concealed, this Skorpekh cannot use Light terrain to prevent it from being selected as a target.</p>');
       $('#openCombatResolution').disabled=!target||!weapon;
     };
@@ -7546,9 +7548,11 @@ function showPlayerActivation(){
       if(!retaliationProfile?.dice){showToast(`${targetName} has no melee weapon available to retaliate.`);showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel);return;}
       const actionIdentity=playerActionTransactionIdentity(stage,attackType);
       const transactionId=`fight:${actionIdentity.activationId}:${actionIdentity.actionId}:player:${stage.playerOperativeId}:npo:${target.id}:${profile.weaponId}:${retaliationProfile.weaponId}`;
+      const transaction=eventTransaction(transactionId,{definitionAnswers:{}});
+      transaction.definitionAnswers.attackerWithinTwo=true;
       const attacker=fightParticipantState({side:'player',id:stage.playerOperativeId,label:playerName(stage.playerOperativeId),profile,wounds:playerCurrentWounds(stage.playerOperativeId),maxWounds:playerDefinition(stage.playerOperativeId)?.wounds});
       const defender=fightParticipantState({side:'npo',id:target.id,label:targetName,profile:retaliationProfile,wounds:target.wounds,maxWounds:target.maxWounds});
-      void startSharedFight({id:transactionId,attacker,defender,onComplete:onResolved});
+      void startSharedFight({id:transactionId,attacker,defender,onComplete:onResolved,attackerWithinTwo:true});
       return;
     }
     const attackerWithinTwo=Boolean($('#attackerWithinTwo')?.checked)||Boolean(result?.attackerWithinTwo);
