@@ -28,7 +28,7 @@ class AudioSettingsMasterTests(unittest.TestCase):
         self.assertNotIn("TombWorldNarration.isEnabled()", APP + AMBIENT)
         self.assertNotIn("TombWorldNarration.setEnabled(", APP)
 
-    def test_menu_toggles_only_write_preferences(self):
+    def test_menu_audio_preferences_apply_with_category_specific_behavior(self):
         menu = APP[APP.index("function showGameMenu()") : APP.index("function showAbout()")]
         self.assertIn('id="narrationToggle"', menu)
         self.assertNotIn('id="gameAudioToggle"', menu)
@@ -37,7 +37,12 @@ class AudioSettingsMasterTests(unittest.TestCase):
         self.assertIn("setPreferenceEnabled", narration_handler)
         self.assertNotRegex(narration_handler, r"unlock|stop|setActive|reconcile|setMaster")
         self.assertIn("localStorage.setItem(AMBIENT_ENABLED_PREFERENCE_KEY", ambient_handler)
-        self.assertNotRegex(ambient_handler, r"unlock|stop|setActive|reconcile|setMaster")
+        self.assertIn("appliedAmbientEnabled=ambientEnabled", ambient_handler)
+        self.assertIn("if(ambientEnabled){", ambient_handler)
+        self.assertIn("reconcileAmbientActiveState()", ambient_handler)
+        self.assertIn("if(shouldAmbientBeActive())void TombWorldAmbient.playFromGesture()", ambient_handler)
+        self.assertIn("}else TombWorldAmbient.stop()", ambient_handler)
+        self.assertNotIn("setMasterEnabled", ambient_handler)
 
     def test_master_does_not_modify_preferences(self):
         master = APP[APP.index("async function setGameAudioEnabled") : APP.index("function playPendingBoardSetupMissionIntro")]

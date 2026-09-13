@@ -1,4 +1,10 @@
-# Tomb World Battle Guide v10.0.4
+# Tomb World Battle Guide v10.0.5
+
+## v10.0.5
+
+### Immediate Ambient Noise Control
+
+- The Game Menu Ambient Noise switch now immediately starts or fades out ambient playback while preserving the master, narration, and dice-roll settings.
 
 ## v10.0.4
 
