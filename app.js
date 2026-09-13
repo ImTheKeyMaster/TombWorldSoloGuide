@@ -5749,7 +5749,7 @@ function showPlayerActivation(){
             return true;
           }
           if(!isPvpMode()&&!transaction.acknowledged){
-            showReanimationProtocolsResolution(stage,pending,n,transaction);
+            showReanimationProtocolsResolution(stage,n,transaction);
             return true;
           }
           state.eventState.reanimationAttempts[eventAttemptKey]={roll:transaction.roll,transactionId:transaction.id,consumed:true};
@@ -5797,25 +5797,23 @@ function showPlayerActivation(){
     return false;
   }
 
-  function showReanimationProtocolsResolution(stage,pending,target,transaction){
+  function showReanimationProtocolsResolution(stage,target,transaction){
     const name=npoName(target),succeeded=transaction.roll>=4;
     missionDialogLocked=true;
     showModal('REANIMATION PROTOCOLS',`<p>${escapeHtml(name)} would be incapacitated.</p><div class="dice-row animated-roll" id="reanimationProtocolsDie">${rollingDieHtml()}</div><div id="reanimationProtocolsResult" hidden><p><strong>D6: ${transaction.roll}</strong></p><div class="summary-box"><strong>${succeeded?'REANIMATED':'REANIMATION FAILED'}</strong><p>${escapeHtml(name)} ${succeeded?'returns with 1 wound.':'is incapacitated.'}</p></div></div><div class="wizard-actions"><button class="btn primary" id="continueReanimationProtocols" disabled>Continue</button></div>`);
     const die=$('#reanimationProtocolsDie'),result=$('#reanimationProtocolsResult'),button=$('#continueReanimationProtocols');
-    void TombWorldDiceSfx.play();
-    const timer=setTimeout(()=>{
-      if(!die?.isConnected)return;
-      die.innerHTML=dieHtml({value:transaction.roll,ariaLabel:`Reanimation Protocols D6 result: ${transaction.roll}`});
-      die.classList.replace('animated-roll','settled');
+    const cancelAnimation=settleAnimatedDice([{row:die,dice:[{value:transaction.roll,ariaLabel:`Reanimation Protocols D6 result: ${transaction.roll}`}]}],()=>{
+      if(!result?.isConnected||!button?.isConnected)return;
       result.hidden=false;
       button.disabled=false;
-    },DICE_ROLL_ANIMATION_MS);
+    });
     button.onclick=()=>{
       if(button.disabled||transaction.acknowledged)return;
       button.disabled=true;
       transaction.acknowledged=true;
       state.combatState={side:'player',stage:{...stage}};
-      save();clearTimeout(timer);missionDialogLocked=false;closeModal();
+      if(!save()){transaction.acknowledged=false;button.disabled=false;return;}
+      cancelAnimation();missionDialogLocked=false;closeModal();
       if(!applyPendingPlayerDamage(stage))finishPlayerAttackResolution(stage);
     };
   }

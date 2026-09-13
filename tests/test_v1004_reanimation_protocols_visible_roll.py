@@ -20,17 +20,19 @@ def source(start, end):
 
 PIPELINE = source("function applyPendingPlayerDamage", "function showReanimationProtocolsResolution")
 PRESENTATION = source("function showReanimationProtocolsResolution", "function finalDiscardedFailedAttackDice")
+ANIMATOR = source("function settleAnimatedDice", "function projectedNpoWounds")
 
 
 def test_solo_roll_is_event_specific_and_visibly_animated():
     assert "if(!isPvpMode()&&!transaction.acknowledged)" in PIPELINE
-    assert "showReanimationProtocolsResolution(stage,pending,n,transaction)" in PIPELINE
+    assert "showReanimationProtocolsResolution(stage,n,transaction)" in PIPELINE
     assert "rollingDieHtml()" in PRESENTATION
     assert "animated-roll" in PRESENTATION
-    assert "DICE_ROLL_ANIMATION_MS" in PRESENTATION
-    assert "TombWorldDiceSfx.play()" in PRESENTATION
-    assert "dieHtml({value:transaction.roll" in PRESENTATION
-    assert "classList.replace('animated-roll','settled')" in PRESENTATION
+    assert "settleAnimatedDice" in PRESENTATION
+    assert "DICE_ROLL_ANIMATION_MS" in ANIMATOR
+    assert "TombWorldDiceSfx.play()" in ANIMATOR
+    assert "dice.map(dieHtml)" in ANIMATOR
+    assert "classList.replace('animated-roll','settled')" in ANIMATOR
     assert "id=\"continueReanimationProtocols\" disabled" in PRESENTATION
     assert "button.disabled=false" in PRESENTATION
     assert "requestDiceResults" not in PRESENTATION
@@ -62,6 +64,7 @@ def test_roll_and_continue_are_transactional_and_idempotent():
     assert PIPELINE.count("requestDiceResults({count:1,sides:6,title:'REANIMATION PROTOCOLS'") == 1
     assert "if(button.disabled||transaction.acknowledged)return" in PRESENTATION
     assert "transaction.acknowledged=true" in PRESENTATION
+    assert "if(!save()){transaction.acknowledged=false;button.disabled=false;return;}" in PRESENTATION
     assert PRESENTATION.index("transaction.acknowledged=true") < PRESENTATION.index("applyPendingPlayerDamage(stage)")
     assert "state.eventState.reanimationAttempts[eventAttemptKey]" in PIPELINE
     assert "transaction.committed=true" in PIPELINE
