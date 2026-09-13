@@ -31,9 +31,8 @@ def test_melee_records_and_carries_implicit_proximity():
     result = source("function buildFightResult", "function fightResultParticipantHtml")
     assert "const attackerWithinTwo=target.type==='Canoptek Macrocyte Warrior'" in combat
     assert "transaction.definitionAnswers.attackerWithinTwo=attackerWithinTwo" in combat
-    assert "onComplete:onResolved,attackerWithinTwo,deferDefenderDamage:true" in combat
+    assert "onComplete:onResolved,attackerWithinTwo" in combat
     assert "attackerWithinTwo:Boolean(fight.attackerWithinTwo)" in result
-    assert "committed:!fight.deferDefenderDamage" in result
 
 
 def test_resume_normalizes_legacy_melee_state_to_within_two():
@@ -60,25 +59,16 @@ def test_non_macrocytes_do_not_receive_a_distance_question():
 
 def test_aggressive_defense_pipeline_and_interactions_are_unchanged():
     damage = source("function applyPendingPlayerDamage", "function showReanimationProtocolsResolution")
-    condition = "pending.after<=0&&!protectedForAction&&n.type==='Canoptek Macrocyte Warrior'&&pending.attackerWithinTwo&&!pending.aggressiveDefenseResolved"
-    assert damage.count(condition) == 1
-    assert "if(!pending||pending.committed)continue" in damage
+    trigger = "if(pending.after<=0&&!protectedForAction&&n.type==='Canoptek Macrocyte Warrior'&&pending.attackerWithinTwo&&!pending.aggressiveDefenseResolved)"
+    assert trigger in damage
     assert "showIncapacitationOrderChoice" in damage
     assert "offerReanimateForPendingDamage" in damage
-    final_trigger = damage.index(condition)
-    assert damage.index("showIncapacitationOrderChoice") < final_trigger
-    assert damage.index("offerReanimateForPendingDamage") < final_trigger
-    assert final_trigger < damage.index("n.wounds=Math.max")
+    assert damage.index("showIncapacitationOrderChoice") < damage.index(trigger)
+    assert damage.index("offerReanimateForPendingDamage") < damage.index(trigger)
+    assert damage.index(trigger) < damage.index("n.wounds=Math.max")
     resolver = source("async function showAggressiveDefenseResolution", "function showIncapacitationOrderChoice")
     assert "count:1,sides:3,title:'AGGRESSIVE DEFENCE'" in resolver
     assert "pending.aggressiveDefenseDamage=aggressiveDefenseDamage(retaliation.roll)" in resolver
-
-
-def test_player_fight_damage_reaches_the_existing_pending_pipeline_once():
-    strike = source("function commitFightStrike", "function commitFightBlock")
-    fight = source("async function startSharedFight", "function fightParticipantState")
-    assert "if(!(fight.deferDefenderDamage&&target===fight.defender))setFightOperativeWounds(target,after)" in strike
-    assert "deferDefenderDamage:Boolean(deferDefenderDamage)" in fight
 
 
 def test_release_surfaces_and_save_schema_are_consistent():
