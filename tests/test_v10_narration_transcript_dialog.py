@@ -152,39 +152,62 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
 
     def test_cogitator_polish_is_lightweight_and_mobile_safe(self):
         dialog_rule = STYLES.split(".narration-transcript-dialog{", 1)[1].split("}", 1)[0]
+        open_dialog_rule = STYLES.split(".narration-transcript-dialog[open]{", 1)[1].split("}", 1)[0]
+        shell_rule = STYLES.split(".narration-transcript-shell{", 1)[1].split("}", 1)[0]
         body_rule = STYLES.split(".narration-transcript-body{", 1)[1].split("}", 1)[0]
+        header_rule = STYLES.split(".narration-transcript-header{", 1)[1].split("}", 1)[0]
+        footer_rule = STYLES.split(".narration-transcript-footer{", 1)[1].split("}", 1)[0]
         progress_rule = STYLES.split(".narration-transcript-progress{", 1)[1].split("}", 1)[0]
         progress_ticks_rule = STYLES.split(".narration-transcript-progress::after{", 1)[1].split("}", 1)[0]
         progress_fill_rule = STYLES.split(".narration-transcript-progress span{", 1)[1].split("}", 1)[0]
         help_rule = STYLES.split(".narration-transcript-help{", 1)[1].split("}", 1)[0]
         reopen_rule = STYLES.split(".narration-transcript-reopen{", 1)[1].split("}", 1)[0]
 
-        self.assertIn("linear-gradient", dialog_rule)
         self.assertIn("position:fixed", dialog_rule)
         self.assertIn("inset:0", dialog_rule)
-        shell_rule = STYLES.split(".narration-transcript-shell{", 1)[1].split("}", 1)[0]
         mobile_rule = STYLES.split("@media(max-width:480px)", 1)[1].split("@media", 1)[0]
         mobile_dialog_rule = mobile_rule.split(".narration-transcript-dialog{", 1)[1].split("}", 1)[0]
+        landscape_rule = STYLES.rsplit("@media(max-height:520px) and (orientation:landscape)", 1)[1]
 
-        self.assertIn("height:auto", dialog_rule)
-        self.assertIn("--narration-dialog-max-height:calc(100dvh", dialog_rule)
-        self.assertIn("max-height:var(--narration-dialog-max-height)", dialog_rule)
-        self.assertNotIn("height:min(680px", dialog_rule)
-        self.assertIn("grid-template-rows:auto auto auto", shell_rule)
+        self.assertIn("width:100%", dialog_rule)
+        self.assertIn("height:100%", dialog_rule)
+        self.assertIn("max-width:none", dialog_rule)
+        self.assertIn("max-height:none", dialog_rule)
+        self.assertIn("margin:0", dialog_rule)
+        self.assertIn("border:0", dialog_rule)
+        self.assertIn("background:transparent", dialog_rule)
+        self.assertIn("box-shadow:none", dialog_rule)
+        self.assertIn("filter:none", dialog_rule)
+        self.assertIn("clip-path:none", dialog_rule)
+        self.assertIn("display:grid", open_dialog_rule)
+        self.assertIn("place-items:center", open_dialog_rule)
+        self.assertIn("display:flex", shell_rule)
+        self.assertIn("flex-direction:column", shell_rule)
+        self.assertIn("height:auto", shell_rule)
         self.assertNotIn("height:100%", shell_rule)
-        self.assertIn("max-height:calc(var(--narration-dialog-max-height) - 10px)", shell_rule)
+        self.assertIn("max-height:calc(100dvh - var(--narration-safe-top) - var(--narration-safe-bottom))", shell_rule)
+        self.assertIn("width:min(700px,100%)", shell_rule)
+        self.assertIn("linear-gradient", shell_rule)
+        self.assertIn("clip-path:polygon", shell_rule)
+        self.assertIn("filter:drop-shadow", shell_rule)
+        self.assertIn(".narration-transcript-shell::before", STYLES)
+        self.assertNotIn(".narration-transcript-dialog::before", STYLES)
         self.assertIn("min-height:120px", body_rule)
-        self.assertIn("max-height:min(450px,50dvh)", body_rule)
+        self.assertIn("max-height:min(420px,48dvh)", body_rule)
+        self.assertIn("flex:0 1 auto", body_rule)
         self.assertIn("overflow:auto", body_rule)
         self.assertIn("overscroll-behavior:contain", body_rule)
-        self.assertIn("height:auto", mobile_dialog_rule)
-        self.assertIn("--narration-dialog-max-height:calc(100dvh", mobile_dialog_rule)
-        self.assertIn("max-height:var(--narration-dialog-max-height)", mobile_dialog_rule)
+        self.assertIn("flex:0 0 auto", header_rule)
+        self.assertIn("flex:0 0 auto", footer_rule)
+        self.assertIn("env(safe-area-inset-top)", dialog_rule)
+        self.assertIn("env(safe-area-inset-bottom)", dialog_rule)
+        self.assertIn("env(safe-area-inset-left)", dialog_rule)
+        self.assertIn("env(safe-area-inset-right)", dialog_rule)
+        self.assertIn("padding:var(--narration-safe-top) var(--narration-safe-right) var(--narration-safe-bottom) var(--narration-safe-left)", dialog_rule)
         self.assertIn("max-height:48dvh", mobile_rule)
+        self.assertNotIn("height:100%", landscape_rule)
         self.assertNotIn("100dvh - 300px", STYLES)
-        self.assertNotRegex(mobile_dialog_rule, r"(?:^|;)height:calc\(100dvh")
-        self.assertIn("clip-path:polygon", dialog_rule)
-        self.assertIn("filter:drop-shadow", dialog_rule)
+        self.assertNotRegex(mobile_dialog_rule, r"(?:^|;)height:")
         self.assertIn("repeating-linear-gradient", body_rule)
         self.assertIn("radial-gradient", body_rule)
         self.assertIn("inset 0 0 64px", body_rule)
