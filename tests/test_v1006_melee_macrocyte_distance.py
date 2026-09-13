@@ -59,13 +59,16 @@ def test_non_macrocytes_do_not_receive_a_distance_question():
 
 def test_aggressive_defense_pipeline_and_interactions_are_unchanged():
     damage = source("function applyPendingPlayerDamage", "function showReanimationProtocolsResolution")
-    trigger = "if(pending.after<=0&&!protectedForAction&&n.type==='Canoptek Macrocyte Warrior'&&pending.attackerWithinTwo&&!pending.aggressiveDefenseResolved)"
-    assert trigger in damage
+    condition = "pending.after<=0&&!protectedForAction&&n.type==='Canoptek Macrocyte Warrior'&&pending.attackerWithinTwo&&!pending.aggressiveDefenseResolved"
+    assert damage.count(condition) == 2
+    assert "if(pending?.committed)" in damage
+    assert damage.index(condition) < damage.index("if(!pending||pending.committed)continue")
     assert "showIncapacitationOrderChoice" in damage
     assert "offerReanimateForPendingDamage" in damage
-    assert damage.index("showIncapacitationOrderChoice") < damage.index(trigger)
-    assert damage.index("offerReanimateForPendingDamage") < damage.index(trigger)
-    assert damage.index(trigger) < damage.index("n.wounds=Math.max")
+    final_trigger = damage.rindex(condition)
+    assert damage.index("showIncapacitationOrderChoice") < final_trigger
+    assert damage.index("offerReanimateForPendingDamage") < final_trigger
+    assert final_trigger < damage.index("n.wounds=Math.max")
     resolver = source("async function showAggressiveDefenseResolution", "function showIncapacitationOrderChoice")
     assert "count:1,sides:3,title:'AGGRESSIVE DEFENCE'" in resolver
     assert "pending.aggressiveDefenseDamage=aggressiveDefenseDamage(retaliation.roll)" in resolver

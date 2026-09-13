@@ -5704,6 +5704,15 @@ function showPlayerActivation(){
 
   function applyPendingPlayerDamage(stage){
     for(const pending of [...pendingAttackResults(stage,'shoot'),...pendingAttackResults(stage,'melee')]){
+      if(pending?.committed){
+        const n=state.roster.find(x=>x.id===pending.targetId);
+        const protectedForAction=n?.preventIncapacitationActionId===state.activationNumber;
+        if(n&&pending.after<=0&&!protectedForAction&&n.type==='Canoptek Macrocyte Warrior'&&pending.attackerWithinTwo&&!pending.aggressiveDefenseResolved){
+          const incapacitationId=`${state.turningPoint}:${state.activationNumber}:${pending.attackType}:${n.id}`;
+          showAggressiveDefenseResolution(stage,pending,n,incapacitationId);
+          return true;
+        }
+      }
       if(!pending||pending.committed)continue;
       if(pending.side==='player'||pending.defenderSide==='player'){
         const before=playerCurrentWounds(pending.targetId);
