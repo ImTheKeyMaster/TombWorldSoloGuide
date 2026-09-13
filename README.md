@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.3
+# Tomb World Battle Guide v10.0.4
+
+## v10.0.4
+
+### Visible Reanimation Protocols Rolls
+
+- Reanimation Protocols now visibly displays its automatic Solo D6 roll whenever an eligible NPO would be incapacitated.
+- The Guide clearly shows whether the roll reanimated the NPO or failed.
+- Preserved the existing once-per-NPO, per-Turning-Point event behavior and incapacitation-effect ordering.
 
 ## v10.0.3 - Rounded Narration Cogitator
 

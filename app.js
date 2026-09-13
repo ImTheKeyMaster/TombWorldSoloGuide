@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '10.0.3';
+  const APP_VERSION = '10.0.4';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5748,6 +5748,10 @@ function showPlayerActivation(){
             }
             return true;
           }
+          if(!isPvpMode()&&!transaction.acknowledged){
+            showReanimationProtocolsResolution(stage,n,transaction);
+            return true;
+          }
           state.eventState.reanimationAttempts[eventAttemptKey]={roll:transaction.roll,transactionId:transaction.id,consumed:true};
           transaction.committed=true;
           state.npoRuleState.incapacitationTriggers.push(incapacitationId);
@@ -5791,6 +5795,27 @@ function showPlayerActivation(){
       if(checkGameEnd()&&!stage.sequential)return true;
     }
     return false;
+  }
+
+  function showReanimationProtocolsResolution(stage,target,transaction){
+    const name=npoName(target),succeeded=transaction.roll>=4;
+    missionDialogLocked=true;
+    showModal('REANIMATION PROTOCOLS',`<p>${escapeHtml(name)} would be incapacitated.</p><div class="dice-row animated-roll" id="reanimationProtocolsDie">${rollingDieHtml()}</div><div id="reanimationProtocolsResult" hidden><p><strong>D6: ${transaction.roll}</strong></p><div class="summary-box"><strong>${succeeded?'REANIMATED':'REANIMATION FAILED'}</strong><p>${escapeHtml(name)} ${succeeded?'returns with 1 wound.':'is incapacitated.'}</p></div></div><div class="wizard-actions"><button class="btn primary" id="continueReanimationProtocols" disabled>Continue</button></div>`);
+    const die=$('#reanimationProtocolsDie'),result=$('#reanimationProtocolsResult'),button=$('#continueReanimationProtocols');
+    const cancelAnimation=settleAnimatedDice([{row:die,dice:[{value:transaction.roll,ariaLabel:`Reanimation Protocols D6 result: ${transaction.roll}`}]}],()=>{
+      if(!result?.isConnected||!button?.isConnected)return;
+      result.hidden=false;
+      button.disabled=false;
+    });
+    button.onclick=()=>{
+      if(button.disabled||transaction.acknowledged)return;
+      button.disabled=true;
+      transaction.acknowledged=true;
+      state.combatState={side:'player',stage:{...stage}};
+      if(!save()){transaction.acknowledged=false;button.disabled=false;return;}
+      cancelAnimation();missionDialogLocked=false;closeModal();
+      if(!applyPendingPlayerDamage(stage))finishPlayerAttackResolution(stage);
+    };
   }
 
   function finalDiscardedFailedAttackDice(attackDice=[]){return attackDice.filter(die=>!die.retained&&die.kind==='miss').length;}
