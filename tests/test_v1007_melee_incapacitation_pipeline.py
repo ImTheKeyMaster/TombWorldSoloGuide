@@ -29,11 +29,12 @@ def test_lethal_macrocyte_fight_stages_then_runs_authoritative_pipeline():
         "resolveFightShock", "setFightOperativeWounds", "commitFightStrike",
         "fightRoleDamage", "fightResultExplanation", "buildFightResult",
         "pendingAttackResults", "continuePlayerMultiTargetAttack",
-        "acknowledgeFightResult", "applyPendingPlayerDamage",
+        "restoreFightContinuation", "acknowledgeFightResult",
+        "applyPendingPlayerDamage",
     ))
     script = f"""
 let aggressiveCalls=0, saves=0, fightCompletionInProgress=false, activeFightContinuation=null, resolvedStage=null;
-const state={{turningPoint:1,activationNumber:1,playerWounds:{{p:10}},playerCasualtyIds:[],playerRoster:['p'],roster:[{{id:'m',type:'Canoptek Macrocyte Warrior',wounds:3,ready:true,deployed:true,battlefieldState:'deployed'}}],npoRuleState:{{incapacitationTriggers:[],oncePerTurningPoint:{{}},stage3Triggers:{{}}}},eventState:{{reanimationAttempts:{{}}}},weaponRuleResolution:null,fightState:null}};
+const state={{turningPoint:1,activationNumber:1,playerWounds:{{p:10}},playerCasualtyIds:[],playerRoster:['p'],roster:[{{id:'m',type:'Canoptek Macrocyte Warrior',wounds:3,ready:true,deployed:true,battlefieldState:'deployed'}}],npoRuleState:{{incapacitationTriggers:[],oncePerTurningPoint:{{}},stage3Triggers:{{}}}},eventState:{{reanimationAttempts:{{}}}},weaponRuleResolution:null,fightState:null,combatState:null,lastActivation:null}};
 const save=()=>{{saves++;}}, playerOperativesRemaining=()=>1, weaponHasRule=()=>false;
 const resolveNpoIncapacitation=()=>({{candidates:[]}}), activeNpos=()=>state.roster.filter(n=>n.wounds>0&&n.deployed);
 const eventTransaction=()=>({{}}), isPvpMode=()=>false, npoDefinition=()=>({{id:'macrocyte'}});
@@ -41,7 +42,6 @@ const showAggressiveDefenseResolution=(stage,pending)=>{{aggressiveCalls++;pendi
 const showIncapacitationOrderChoice=offerReanimateForPendingDamage=showReanimationProtocolsResolution=()=>{{throw Error('unexpected prevention UI')}};
 const resolveMultiThreatEliminator=()=>{{}}, finishPlayerAttackResolution=()=>{{}}, checkGameEnd=()=>false;
 const playerName=id=>id, npoName=n=>n.type, log=()=>{{}}, applyTemporaryAplModifier=()=>{{}};
-const restoreFightContinuation=()=>activeFightContinuation;
 const resolvePendingPlayerAttacks=stage=>{{resolvedStage=stage;return applyPendingPlayerDamage(stage);}};
 {sources}
 const fight={{id:'fight-1',attackerWithinTwo:true,attacker:{{side:'player',id:'p',label:'Player',initialWounds:10,wounds:10,profile:{{name:'Blade',normal:4,crit:4}}}},defender:{{side:'npo',id:'m',label:'Macrocyte',initialWounds:3,wounds:3,profile:{{name:'Claws',normal:3,crit:3}}}},successes:{{attacker:[{{id:'hit',kind:'normal',status:'unresolved'}}],defender:[]}},turn:'attacker',resolutionIndex:0,history:[],ruleTriggers:{{}},completed:false}};
@@ -49,11 +49,10 @@ if(!commitFightStrike(fight,'attacker','hit')||fight.defender.wounds!==0||!fight
 if(state.roster[0].wounds!==3||!state.roster[0].deployed)process.exit(2);
 const result=buildFightResult(fight);
 if(result.committed||result.before!==3||result.after!==0||result.damage!==3||result.attackerWithinTwo!==true)process.exit(3);
-fight.result=result;state.fightState=fight;
 const stage={{playerOperativeId:'p',pendingMeleeResults:[]}};
-activeFightContinuation=pending=>continuePlayerMultiTargetAttack(stage,'melee',pending);
+fight.result=result;state.fightState=fight;state.combatState={{side:'player',stage}};
 const restoredFight=JSON.parse(JSON.stringify(fight));
-state.fightState=restoredFight;
+state.fightState=restoredFight;state.combatState=JSON.parse(JSON.stringify(state.combatState));activeFightContinuation=null;
 acknowledgeFightResult(restoredFight);
 if(!restoredFight.resultAcknowledged||state.fightState!==null||fightCompletionInProgress)process.exit(4);
 const pending=resolvedStage?.pendingMeleeResults[0];
