@@ -7108,7 +7108,7 @@ function showPlayerActivation(){
     const success=unresolvedFightSuccesses(fight,role).find(item=>item.id===successId);if(!success)return false;
     const actor=fight[role],target=fight[otherFightRole(role)],resolvingRemaining=!unresolvedFightSuccesses(fight,otherFightRole(role)).length,damage=success.kind==='critical'?actor.profile.crit:actor.profile.normal;
     success.status='struck';const before=target.wounds,after=Math.max(0,before-damage);target.wounds=after;
-    const pendingPlayerNpoIncapacitation=after<=0&&actor.side==='player'&&target.side==='npo';
+    const pendingPlayerNpoIncapacitation=after<=0&&fight.attacker.side==='player'&&role==='attacker'&&target.side==='npo';
     if(!pendingPlayerNpoIncapacitation)setFightOperativeWounds(target,after);
     const shock=success.kind==='critical'?resolveFightShock(fight,role):null;
     const historyEntry={index:fight.resolutionIndex++,type:'strike',role,successId,successKind:success.kind,damage,before,after,targetSide:target.side,targetId:target.id,...(resolvingRemaining?{resolvingRemaining:true}:{}),...(shock?{shockDiscardedSuccessId:shock.id}:{})};fight.history.push(historyEntry);

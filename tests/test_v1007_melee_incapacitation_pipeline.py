@@ -59,9 +59,26 @@ if(applyPendingPlayerDamage(stage)||aggressiveCalls!==1)process.exit(9);
 
 
 def test_nonlethal_and_opposite_direction_still_commit_immediately():
-    strike = body("commitFightStrike")
-    assert "pendingPlayerNpoIncapacitation=after<=0&&actor.side==='player'&&target.side==='npo'" in strike
-    assert "if(!pendingPlayerNpoIncapacitation)setFightOperativeWounds(target,after)" in strike
+    sources = "\n".join(body(name) for name in (
+        "otherFightRole", "unresolvedFightSuccesses", "advanceFightTurn",
+        "resolveFightShock", "setFightOperativeWounds", "commitFightStrike",
+    ))
+    script = f"""
+const state={{playerWounds:{{p:3}},playerCasualtyIds:[],playerRoster:['p'],roster:[{{id:'n',wounds:3,ready:true,deployed:true,battlefieldState:'deployed'}}]}};
+const save=()=>{{}},playerOperativesRemaining=()=>1,weaponHasRule=()=>false;
+const resolveRewardsOfAnnihilation=()=>{{}};
+{sources}
+const makeFight=(attacker,defender)=>({{id:'fight',attacker,defender,successes:{{attacker:[{{id:'a',kind:'normal',status:'unresolved'}}],defender:[{{id:'d',kind:'normal',status:'unresolved'}}]}},turn:'attacker',resolutionIndex:0,history:[],ruleTriggers:{{}},completed:false}});
+let fight=makeFight({{side:'player',id:'p',wounds:3,profile:{{normal:1,crit:1}}}},{{side:'npo',id:'n',wounds:3,profile:{{normal:3,crit:3}}}});
+commitFightStrike(fight,'attacker','a');
+if(state.roster[0].wounds!==2||fight.defender.wounds!==2||fight.completed)process.exit(1);
+state.roster[0].wounds=3;state.roster[0].deployed=true;state.roster[0].battlefieldState='deployed';
+fight=makeFight({{side:'npo',id:'n',wounds:3,profile:{{normal:3,crit:3}}}},{{side:'player',id:'p',wounds:3,profile:{{normal:3,crit:3}}}});
+fight.turn='defender';
+commitFightStrike(fight,'defender','d');
+if(state.roster[0].wounds!==0||state.roster[0].deployed||fight.attacker.wounds!==0)process.exit(2);
+"""
+    subprocess.run(["node", "-e", script], cwd=ROOT, check=True)
 
 
 def test_pipeline_transport_ui_and_save_contract_are_preserved():
