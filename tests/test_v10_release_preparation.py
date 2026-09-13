@@ -10,10 +10,11 @@ APP = (ROOT / "app.js").read_text(encoding="utf-8")
 INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
 README = (ROOT / "README.md").read_text(encoding="utf-8")
 WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
+STYLES = (ROOT / "styles.css").read_text(encoding="utf-8")
 
 
-def test_v1001_release_surfaces_and_saved_game_contract():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (10, 0, 1)
+def test_v1002_release_surfaces_and_saved_game_contract():
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (10, 0, 2)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
@@ -25,8 +26,15 @@ def test_v1001_release_surfaces_and_saved_game_contract():
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
     assert README.startswith(
         f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n"
-        f"## v{CURRENT_APP_VERSION} - Narration Cogitator Polish"
+        f"## v{CURRENT_APP_VERSION} - Setup Heading Focus Polish"
     )
+
+
+def test_setup_heading_focus_decoration_is_scoped_without_removing_focus_management():
+    assert ".wizard-shell .progress-head h2:focus,.wizard-shell .progress-head h2:focus-visible{outline:none;box-shadow:none}" in STYLES
+    assert "setupHeading.tabIndex=-1;setupHeading.focus({preventScroll:true});" in APP
+    assert "*:focus{outline:none}" not in STYLES.replace(" ", "")
+    assert ".btn:focus-visible" in STYLES
 
 
 def test_transcript_shell_and_manifest_derived_offline_media_contract():
