@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '10.0.7';
+  const APP_VERSION = '10.0.8';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -112,6 +112,7 @@ document.addEventListener('touchend',function(e){
   let appliedAmbientEnabled=TombWorldNarration.isMasterEnabled()&&ambientEnabled;
   let needsAudioGestureRecovery=false;
   let narrationGestureRecoveryRequired=false;
+  let diceGestureRecoveryRequired=false;
   let audioRecoveryHandler=null;
   const gradeNarrationInFlight=new Set();
   function shouldAmbientBeActive(){
@@ -125,6 +126,7 @@ document.addEventListener('touchend',function(e){
   }
   function armAudioGestureRecovery(event){
     if(event?.detail?.category==='ambient')return;
+    if(event?.detail?.category==='dice')diceGestureRecoveryRequired=true;
     needsAudioGestureRecovery=true;
     if(audioRecoveryHandler)return;
     audioRecoveryHandler=async()=>{
@@ -137,20 +139,22 @@ document.addEventListener('touchend',function(e){
     if(!TombWorldNarration.isMasterEnabled()){removeAudioGestureRecovery();return false;}
     const attempts=[];
     if(TombWorldNarration.isPlaybackEnabled()&&(!recoveryOnly||narrationGestureRecoveryRequired))attempts.push({category:'narration',promise:TombWorldNarration.activateFromGesture()});
+    if(TombWorldDiceSfx.isPreferenceEnabled()&&(!recoveryOnly||diceGestureRecoveryRequired))attempts.push({category:'dice',promise:TombWorldDiceSfx.activateFromGesture()});
     const results=await Promise.allSettled(attempts.map(attempt=>attempt.promise));
     reconcileAmbientActiveState();
     results.forEach((result,index)=>{
       const required=!(result.status==='fulfilled'&&result.value===true);
       if(attempts[index].category==='narration')narrationGestureRecoveryRequired=required;
+      if(attempts[index].category==='dice')diceGestureRecoveryRequired=required;
     });
-    if(!narrationGestureRecoveryRequired)removeAudioGestureRecovery();
+    if(!narrationGestureRecoveryRequired&&!diceGestureRecoveryRequired)removeAudioGestureRecovery();
     else if(attempts.length)armAudioGestureRecovery();
     if(!narrationGestureRecoveryRequired)void narrateVisibleGradeMilestone();
     return !narrationGestureRecoveryRequired;
   }
   function handleNarrationUsable(){
     narrationGestureRecoveryRequired=false;
-    removeAudioGestureRecovery();
+    if(!diceGestureRecoveryRequired)removeAudioGestureRecovery();
     void narrateVisibleGradeMilestone();
   }
   function syncNarrationControls(){
@@ -203,6 +207,7 @@ document.addEventListener('touchend',function(e){
       appliedAmbientEnabled=false;
       TombWorldAmbient.stop();
       narrationGestureRecoveryRequired=false;
+      diceGestureRecoveryRequired=false;
       TombWorldAmbient.removeGestureRecovery();
       removeAudioGestureRecovery();
     }
@@ -9773,7 +9778,15 @@ function showPlayerActivation(){
       syncNarrationControls();
     };
     $('#diceRollToggle').onclick=()=>{
-      TombWorldDiceSfx.setPreferenceEnabled(!TombWorldDiceSfx.isPreferenceEnabled());
+      const enabled=!TombWorldDiceSfx.isPreferenceEnabled();
+      TombWorldDiceSfx.setPreferenceEnabled(enabled);
+      if(enabled){
+        if(TombWorldNarration.isMasterEnabled())void TombWorldDiceSfx.activateFromGesture();
+      }else{
+        diceGestureRecoveryRequired=false;
+        TombWorldDiceSfx.stop();
+        if(!narrationGestureRecoveryRequired)removeAudioGestureRecovery();
+      }
       syncNarrationControls();
     };
     const gameVolume=$('#gameVolume');
