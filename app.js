@@ -7055,6 +7055,9 @@ function showPlayerActivation(){
     const npo=state.roster.find(item=>item.id===participant.id);if(!npo)return;
     npo.wounds=Math.max(0,wounds);if(npo.wounds<=0){npo.ready=false;npo.deployed=false;npo.battlefieldState='out-of-action';}
   }
+  function pendingPlayerNpoFightIncapacitation(fight){
+    return fight?.attacker?.side==='player'&&fight?.defender?.side==='npo'&&fight.defender.wounds<=0;
+  }
   function stage3Trigger(id,defaults={}){
     state.npoRuleState.stage3Triggers=state.npoRuleState.stage3Triggers||{};
     return state.npoRuleState.stage3Triggers[id]||(state.npoRuleState.stage3Triggers[id]={id,status:'pending',...defaults});
@@ -7108,8 +7111,7 @@ function showPlayerActivation(){
     const success=unresolvedFightSuccesses(fight,role).find(item=>item.id===successId);if(!success)return false;
     const actor=fight[role],target=fight[otherFightRole(role)],resolvingRemaining=!unresolvedFightSuccesses(fight,otherFightRole(role)).length,damage=success.kind==='critical'?actor.profile.crit:actor.profile.normal;
     success.status='struck';const before=target.wounds,after=Math.max(0,before-damage);target.wounds=after;
-    const pendingPlayerNpoIncapacitation=after<=0&&fight.attacker.side==='player'&&role==='attacker'&&target.side==='npo';
-    if(!pendingPlayerNpoIncapacitation)setFightOperativeWounds(target,after);
+    if(!pendingPlayerNpoFightIncapacitation(fight))setFightOperativeWounds(target,after);
     const shock=success.kind==='critical'?resolveFightShock(fight,role):null;
     const historyEntry={index:fight.resolutionIndex++,type:'strike',role,successId,successKind:success.kind,damage,before,after,targetSide:target.side,targetId:target.id,...(resolvingRemaining?{resolvingRemaining:true}:{}),...(shock?{shockDiscardedSuccessId:shock.id}:{})};fight.history.push(historyEntry);
     if(after<=0){fight.completed=true;fight.incapacitatedRole=otherFightRole(role);}else advanceFightTurn(fight);save();
@@ -7238,8 +7240,7 @@ function showPlayerActivation(){
   function buildFightResult(fight){
     const attackerDamageDealt=fightRoleDamage(fight,'attacker'),defenderDamageDealt=fightRoleDamage(fight,'defender');
     const participant=role=>({id:fight[role].id,name:fight[role].label,side:fight[role].side,before:fight[role].initialWounds,after:fight[role].wounds,incapacitated:fight[role].wounds<=0,damageDealt:role==='attacker'?attackerDamageDealt:defenderDamageDealt});
-    const pendingPlayerNpoIncapacitation=fight.attacker.side==='player'&&fight.defender.side==='npo'&&fight.defender.wounds<=0;
-    const result={resultVersion:2,transactionId:fight.id,attackType:'melee',attackerName:fight.attacker.label,defenderName:fight.defender.label,targetId:fight.defender.id,targetName:fight.defender.label,side:fight.defender.side,weaponName:fight.attacker.profile.name,profile:fight.attacker.profile,before:fight.defender.initialWounds,after:fight.defender.wounds,damage:attackerDamageDealt,damageDealt:attackerDamageDealt,damageSuffered:defenderDamageDealt,attackerDamageDealt,defenderDamageDealt,attackerBefore:fight.attacker.initialWounds,attackerAfter:fight.attacker.wounds,defenderBefore:fight.defender.initialWounds,defenderAfter:fight.defender.wounds,attackerIncapacitated:fight.attacker.wounds<=0,defenderIncapacitated:fight.defender.wounds<=0,attackerWithinTwo:Boolean(fight.attackerWithinTwo),participants:{attacker:participant('attacker'),defender:participant('defender')},committed:!pendingPlayerNpoIncapacitation,fightHistory:fight.history.map(item=>({...item})),fightTransactionId:fight.id};
+    const result={resultVersion:2,transactionId:fight.id,attackType:'melee',attackerName:fight.attacker.label,defenderName:fight.defender.label,targetId:fight.defender.id,targetName:fight.defender.label,side:fight.defender.side,weaponName:fight.attacker.profile.name,profile:fight.attacker.profile,before:fight.defender.initialWounds,after:fight.defender.wounds,damage:attackerDamageDealt,damageDealt:attackerDamageDealt,damageSuffered:defenderDamageDealt,attackerDamageDealt,defenderDamageDealt,attackerBefore:fight.attacker.initialWounds,attackerAfter:fight.attacker.wounds,defenderBefore:fight.defender.initialWounds,defenderAfter:fight.defender.wounds,attackerIncapacitated:fight.attacker.wounds<=0,defenderIncapacitated:fight.defender.wounds<=0,attackerWithinTwo:Boolean(fight.attackerWithinTwo),participants:{attacker:participant('attacker'),defender:participant('defender')},committed:!pendingPlayerNpoFightIncapacitation(fight),fightHistory:fight.history.map(item=>({...item})),fightTransactionId:fight.id};
     result.explanation=fightResultExplanation(fight,result);return result;
   }
   function fightResultParticipantHtml(participant,role){

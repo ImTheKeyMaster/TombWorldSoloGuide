@@ -26,7 +26,7 @@ def body(name):
 def test_lethal_macrocyte_fight_stages_then_runs_authoritative_pipeline():
     sources = "\n".join(body(name) for name in (
         "otherFightRole", "unresolvedFightSuccesses", "advanceFightTurn",
-        "resolveFightShock", "setFightOperativeWounds", "commitFightStrike",
+        "resolveFightShock", "setFightOperativeWounds", "pendingPlayerNpoFightIncapacitation", "commitFightStrike",
         "fightRoleDamage", "fightResultExplanation", "buildFightResult",
         "pendingAttackResults", "continuePlayerMultiTargetAttack",
         "restoreFightContinuation", "acknowledgeFightResult",
@@ -70,7 +70,7 @@ if(applyPendingPlayerDamage(resolvedStage)||aggressiveCalls!==1)process.exit(10)
 def test_nonlethal_and_opposite_direction_still_commit_immediately():
     sources = "\n".join(body(name) for name in (
         "otherFightRole", "unresolvedFightSuccesses", "advanceFightTurn",
-        "resolveFightShock", "setFightOperativeWounds", "commitFightStrike",
+        "resolveFightShock", "setFightOperativeWounds", "pendingPlayerNpoFightIncapacitation", "commitFightStrike",
     ))
     script = f"""
 const state={{playerWounds:{{p:3}},playerCasualtyIds:[],playerRoster:['p'],roster:[{{id:'n',wounds:3,ready:true,deployed:true,battlefieldState:'deployed'}}]}};
