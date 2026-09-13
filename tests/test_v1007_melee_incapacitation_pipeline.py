@@ -28,11 +28,12 @@ def test_lethal_macrocyte_fight_stages_then_runs_authoritative_pipeline():
         "otherFightRole", "unresolvedFightSuccesses", "advanceFightTurn",
         "resolveFightShock", "setFightOperativeWounds", "commitFightStrike",
         "fightRoleDamage", "fightResultExplanation", "buildFightResult",
-        "pendingAttackResults", "applyPendingPlayerDamage",
+        "pendingAttackResults", "continuePlayerMultiTargetAttack",
+        "acknowledgeFightResult", "applyPendingPlayerDamage",
     ))
     script = f"""
-let aggressiveCalls=0, saves=0;
-const state={{turningPoint:1,activationNumber:1,playerWounds:{{p:10}},playerCasualtyIds:[],playerRoster:['p'],roster:[{{id:'m',type:'Canoptek Macrocyte Warrior',wounds:3,ready:true,deployed:true,battlefieldState:'deployed'}}],npoRuleState:{{incapacitationTriggers:[],oncePerTurningPoint:{{}},stage3Triggers:{{}}}},eventState:{{reanimationAttempts:{{}}}}}};
+let aggressiveCalls=0, saves=0, fightCompletionInProgress=false, activeFightContinuation=null, resolvedStage=null;
+const state={{turningPoint:1,activationNumber:1,playerWounds:{{p:10}},playerCasualtyIds:[],playerRoster:['p'],roster:[{{id:'m',type:'Canoptek Macrocyte Warrior',wounds:3,ready:true,deployed:true,battlefieldState:'deployed'}}],npoRuleState:{{incapacitationTriggers:[],oncePerTurningPoint:{{}},stage3Triggers:{{}}}},eventState:{{reanimationAttempts:{{}}}},weaponRuleResolution:null,fightState:null}};
 const save=()=>{{saves++;}}, playerOperativesRemaining=()=>1, weaponHasRule=()=>false;
 const resolveNpoIncapacitation=()=>({{candidates:[]}}), activeNpos=()=>state.roster.filter(n=>n.wounds>0&&n.deployed);
 const eventTransaction=()=>({{}}), isPvpMode=()=>false, npoDefinition=()=>({{id:'macrocyte'}});
@@ -40,20 +41,29 @@ const showAggressiveDefenseResolution=(stage,pending)=>{{aggressiveCalls++;pendi
 const showIncapacitationOrderChoice=offerReanimateForPendingDamage=showReanimationProtocolsResolution=()=>{{throw Error('unexpected prevention UI')}};
 const resolveMultiThreatEliminator=()=>{{}}, finishPlayerAttackResolution=()=>{{}}, checkGameEnd=()=>false;
 const playerName=id=>id, npoName=n=>n.type, log=()=>{{}}, applyTemporaryAplModifier=()=>{{}};
+const restoreFightContinuation=()=>activeFightContinuation;
+const resolvePendingPlayerAttacks=stage=>{{resolvedStage=stage;return applyPendingPlayerDamage(stage);}};
 {sources}
 const fight={{id:'fight-1',attackerWithinTwo:true,attacker:{{side:'player',id:'p',label:'Player',initialWounds:10,wounds:10,profile:{{name:'Blade',normal:4,crit:4}}}},defender:{{side:'npo',id:'m',label:'Macrocyte',initialWounds:3,wounds:3,profile:{{name:'Claws',normal:3,crit:3}}}},successes:{{attacker:[{{id:'hit',kind:'normal',status:'unresolved'}}],defender:[]}},turn:'attacker',resolutionIndex:0,history:[],ruleTriggers:{{}},completed:false}};
 if(!commitFightStrike(fight,'attacker','hit')||fight.defender.wounds!==0||!fight.completed)process.exit(1);
 if(state.roster[0].wounds!==3||!state.roster[0].deployed)process.exit(2);
 const result=buildFightResult(fight);
 if(result.committed||result.before!==3||result.after!==0||result.damage!==3||result.attackerWithinTwo!==true)process.exit(3);
-const stage={{playerOperativeId:'p',pendingMeleeResults:[result]}};
-if(!applyPendingPlayerDamage(stage)||aggressiveCalls!==1)process.exit(4);
-if(result.pipelineObserved.after!==0||!result.pipelineObserved.within||result.pipelineObserved.targetWounds!==3)process.exit(5);
-if(state.roster[0].wounds!==3||result.committed)process.exit(6);
-result.aggressiveDefenseResolved=true;
-if(applyPendingPlayerDamage(stage)||!result.committed)process.exit(7);
-if(state.roster[0].wounds!==0||state.roster[0].deployed||state.roster[0].battlefieldState!=='out-of-action')process.exit(8);
-if(applyPendingPlayerDamage(stage)||aggressiveCalls!==1)process.exit(9);
+fight.result=result;state.fightState=fight;
+const stage={{playerOperativeId:'p',pendingMeleeResults:[]}};
+activeFightContinuation=pending=>continuePlayerMultiTargetAttack(stage,'melee',pending);
+const restoredFight=JSON.parse(JSON.stringify(fight));
+state.fightState=restoredFight;
+acknowledgeFightResult(restoredFight);
+if(!restoredFight.resultAcknowledged||state.fightState!==null||fightCompletionInProgress)process.exit(4);
+const pending=resolvedStage?.pendingMeleeResults[0];
+if(resolvedStage?.pendingMeleeResults.length!==1||pending.transactionId!==result.transactionId||aggressiveCalls!==1)process.exit(5);
+if(pending.pipelineObserved.after!==0||!pending.pipelineObserved.within||pending.pipelineObserved.targetWounds!==3)process.exit(6);
+if(state.roster[0].wounds!==3||pending.committed)process.exit(7);
+pending.aggressiveDefenseResolved=true;
+if(applyPendingPlayerDamage(resolvedStage)||!pending.committed)process.exit(8);
+if(state.roster[0].wounds!==0||state.roster[0].deployed||state.roster[0].battlefieldState!=='out-of-action')process.exit(9);
+if(applyPendingPlayerDamage(resolvedStage)||aggressiveCalls!==1)process.exit(10);
 """
     subprocess.run(["node", "-e", script], cwd=ROOT, check=True)
 
