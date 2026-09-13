@@ -12,12 +12,25 @@
   let volumeMultiplier = 1;
   const activeSources = new Set();
 
+  function requestGestureRecovery() {
+    if (!masterEnabled || !preferenceEnabled) return;
+    if (typeof window.dispatchEvent === 'function' && typeof window.CustomEvent === 'function') {
+      window.dispatchEvent(new window.CustomEvent('tombworldaudiorecoveryrequired', { detail: { category: 'dice' } }));
+    }
+  }
+
   function readPreference() {
     try { return localStorage.getItem(PREFERENCE_KEY) !== 'false'; }
     catch { return true; }
   }
 
   function ensureAudioContext() {
+    if (diceAudioContext?.state === 'closed') {
+      diceAudioContext = null;
+      diceGainNode = null;
+      decodedDiceBuffer = null;
+      bufferInitialization = null;
+    }
     if (diceAudioContext) return diceAudioContext;
     const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
     if (typeof AudioContextConstructor !== 'function') return null;
@@ -82,17 +95,27 @@
   function resumeThenStart(context) {
     let resumeRequest;
     try { resumeRequest = context.resume(); }
-    catch { return Promise.resolve(false); }
+    catch {
+      requestGestureRecovery();
+      return Promise.resolve(false);
+    }
     return Promise.resolve(resumeRequest)
       .then(() => decodedDiceBuffer ? startSource() : initializeBuffer().then(startSource))
-      .catch(() => false);
+      .then(started => {
+        if (!started) requestGestureRecovery();
+        return started;
+      })
+      .catch(() => {
+        requestGestureRecovery();
+        return false;
+      });
   }
 
   function play() {
     if (!masterEnabled || !preferenceEnabled) return Promise.resolve(false);
     const context = ensureAudioContext();
     if (!context) return Promise.resolve(false);
-    if (context.state === 'suspended') return resumeThenStart(context);
+    if (context.state !== 'running') return resumeThenStart(context);
     if (decodedDiceBuffer) return Promise.resolve(startSource());
     return initializeBuffer().then(initialized => initialized && startSource()).catch(() => false);
   }
@@ -101,9 +124,20 @@
     const context = ensureAudioContext();
     if (!context) return Promise.resolve(false);
     void initializeBuffer();
-    if (context.state !== 'suspended') return Promise.resolve(true);
-    try { return Promise.resolve(context.resume()).then(() => true).catch(() => false); }
-    catch { return Promise.resolve(false); }
+    if (context.state === 'running') return Promise.resolve(true);
+    try {
+      return Promise.resolve(context.resume()).then(() => {
+        const ready = context.state === 'running';
+        if (!ready) requestGestureRecovery();
+        return ready;
+      }).catch(() => {
+        requestGestureRecovery();
+        return false;
+      });
+    } catch {
+      requestGestureRecovery();
+      return Promise.resolve(false);
+    }
   }
 
   function setPreferenceEnabled(enabled) {

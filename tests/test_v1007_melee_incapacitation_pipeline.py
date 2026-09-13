@@ -96,6 +96,6 @@ def test_pipeline_transport_ui_and_save_contract_are_preserved():
     assert "Attacker is within 2\"" not in body("showPlayerCombatResolution")
     fields = body("aggressiveDefenseFields")
     assert "attackType==='shoot'" in fields and 'Attacker is within 2&quot; of this Macrocyte' in fields
-    assert CURRENT_APP_VERSION == "10.0.7"
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 7)
     assert "const SAVE_VERSION = 3;" in (ROOT / "persistence.js").read_text()
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP

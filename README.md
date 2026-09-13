@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.7
+# Tomb World Battle Guide v10.0.8
+
+## v10.0.8
+
+### Independent Ambient and Dice Audio Controls
+
+- Fully separated Ambient Noise and Dice Roll runtime behavior.
+- Turning Ambient Noise off no longer affects Dice Roll sound.
+- Dice Roll now prepares its own audio context independently when enabled.
+- Preserved the master audio override while keeping all category preferences independent.
 
 ## v10.0.7
 
