@@ -171,7 +171,7 @@ def test_shared_commit_api_runtime_semantics():
     import subprocess
     sources='\n'.join(body(name) for name in (
         'otherFightRole','unresolvedFightSuccesses','fightBlockTargets','advanceFightTurn',
-        'resolveFightShock','setFightOperativeWounds','commitFightStrike','commitFightBlock'
+        'resolveFightShock','setFightOperativeWounds','pendingPlayerNpoFightIncapacitation','commitFightStrike','commitFightBlock'
     ))
     script=f"""
 const state={{playerWounds:{{p:9}},playerCasualtyIds:[],playerReady:1,playerRoster:['p'],playerActivatedIds:[],roster:[{{id:'n',wounds:10,ready:true,deployed:true,battlefieldState:'deployed'}}]}};

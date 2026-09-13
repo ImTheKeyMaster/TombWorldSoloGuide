@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.6
+# Tomb World Battle Guide v10.0.7
+
+## v10.0.7
+
+### Melee Incapacitation Pipeline Fix
+
+- Player melee Fight results that would incapacitate an NPO now pass through the same incapacitation-effect pipeline as other Player attacks.
+- Fixed Aggressive Defence not triggering when a melee Fight incapacitated a Canoptek Macrocyte Warrior.
+- Preserved Reanimation Protocols, Macrocyte Reanimate, and simultaneous incapacitation-effect ordering for melee results.
+- Prevented premature NPO removal and duplicate melee damage.
 
 ## v10.0.6
 
