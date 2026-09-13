@@ -1,4 +1,11 @@
-# Tomb World Battle Guide v10.0.1
+# Tomb World Battle Guide v10.0.2
+
+## v10.0.2 - Setup Heading Focus Polish
+
+**Version 10.0.2**
+
+- Removed the visible focus decoration from programmatically focused setup-step headings.
+- Preserved setup-step focus management, interactive control focus indicators, gameplay behavior, and save schema version 3.
 
 ## v10.0.1 - Narration Cogitator Polish
 
