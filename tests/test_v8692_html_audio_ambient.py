@@ -37,8 +37,9 @@ class HtmlAudioAmbientTests(unittest.TestCase):
             self.assertNotIn(operation, menu)
         self.assertIn("localStorage.setItem(AMBIENT_ENABLED_PREFERENCE_KEY,String(ambientEnabled))", menu)
         self.assertIn("appliedAmbientEnabled=ambientEnabled", menu)
+        self.assertIn("if(ambientEnabled){", menu)
         self.assertIn("if(shouldAmbientBeActive())void TombWorldAmbient.playFromGesture()", menu)
-        self.assertIn("else TombWorldAmbient.stop()", menu)
+        self.assertIn("}else TombWorldAmbient.stop()", menu)
         self.assertIn("TombWorldNarration.setPreferenceEnabled", menu)
         self.assertNotIn("setMasterEnabled", menu)
 

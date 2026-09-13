@@ -38,9 +38,10 @@ class AudioSettingsMasterTests(unittest.TestCase):
         self.assertNotRegex(narration_handler, r"unlock|stop|setActive|reconcile|setMaster")
         self.assertIn("localStorage.setItem(AMBIENT_ENABLED_PREFERENCE_KEY", ambient_handler)
         self.assertIn("appliedAmbientEnabled=ambientEnabled", ambient_handler)
+        self.assertIn("if(ambientEnabled){", ambient_handler)
         self.assertIn("reconcileAmbientActiveState()", ambient_handler)
         self.assertIn("if(shouldAmbientBeActive())void TombWorldAmbient.playFromGesture()", ambient_handler)
-        self.assertIn("else TombWorldAmbient.stop()", ambient_handler)
+        self.assertIn("}else TombWorldAmbient.stop()", ambient_handler)
         self.assertNotIn("setMasterEnabled", ambient_handler)
 
     def test_master_does_not_modify_preferences(self):

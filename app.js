@@ -9756,9 +9756,10 @@ function showPlayerActivation(){
       ambientEnabled=!ambientEnabled;
       localStorage.setItem(AMBIENT_ENABLED_PREFERENCE_KEY,String(ambientEnabled));
       appliedAmbientEnabled=ambientEnabled;
-      reconcileAmbientActiveState();
-      if(shouldAmbientBeActive())void TombWorldAmbient.playFromGesture();
-      else TombWorldAmbient.stop();
+      if(ambientEnabled){
+        reconcileAmbientActiveState();
+        if(shouldAmbientBeActive())void TombWorldAmbient.playFromGesture();
+      }else TombWorldAmbient.stop();
       syncNarrationControls();
     };
     $('#diceRollToggle').onclick=()=>{

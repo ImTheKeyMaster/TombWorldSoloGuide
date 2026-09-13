@@ -34,9 +34,10 @@ def test_ambient_toggle_persists_then_immediately_applies_runtime_state():
         "ambientEnabled=!ambientEnabled",
         "localStorage.setItem(AMBIENT_ENABLED_PREFERENCE_KEY,String(ambientEnabled))",
         "appliedAmbientEnabled=ambientEnabled",
+        "if(ambientEnabled){",
         "reconcileAmbientActiveState()",
         "if(shouldAmbientBeActive())void TombWorldAmbient.playFromGesture()",
-        "else TombWorldAmbient.stop()",
+        "}else TombWorldAmbient.stop()",
         "syncNarrationControls()",
     ]
     positions = [handler.index(operation) for operation in operations]
