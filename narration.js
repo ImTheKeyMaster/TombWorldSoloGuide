@@ -42,6 +42,7 @@
   let activePlayback = false;
   let playbackStarted = false;
   let playbackStarting = false;
+  let playbackStartRequest = 0;
   let pausedByMaster = false;
   let notifiedPlaybackActivity = false;
   let volumeMultiplier = 1;
@@ -145,6 +146,7 @@
     activePlayback = false;
     playbackStarted = false;
     playbackStarting = false;
+    playbackStartRequest += 1;
     activeEntryId = null;
     activeDuplicateKey = null;
     activeManifestEntry = null;
@@ -312,6 +314,14 @@
 
   function pauseForMasterMute() {
     const player = audio;
+    if (player && playbackStarting) {
+      playbackStartRequest += 1;
+      playbackStarting = false;
+      try { player.pause(); } catch { /* The prepared narration remains available. */ }
+      notifyPlaybackActivity(false);
+      notifyPlaybackState();
+      return false;
+    }
     if (!player || !activePlayback || player.ended) {
       pausedByMaster = false;
       notifyPlaybackActivity(false);
@@ -438,6 +448,7 @@
     activePlayback = false;
     playbackStarted = false;
     playbackStarting = false;
+    playbackStartRequest += 1;
     activeEntryId = id;
     activeDuplicateKey = duplicateKey;
     activeManifestEntry = entry;
@@ -462,6 +473,7 @@
     if (!player || !activeEntryId || playbackStarted || playbackStarting || activePlayback || pausedByMaster
         || !isPlaybackEnabled() || player.ended || !player.src) return Promise.resolve(false);
     const request = playbackRequest;
+    const startRequest = ++playbackStartRequest;
     playbackStarting = true;
     let playback;
     try { playback = player.play(); }
@@ -470,9 +482,10 @@
       return Promise.resolve(false);
     }
     return Promise.resolve(playback).then(() => {
+      if (request !== playbackRequest || startRequest !== playbackStartRequest) return false;
       playbackStarting = false;
-      if (request !== playbackRequest || !activeEntryId || !isPlaybackEnabled()) {
-        try { player.pause(); } catch { /* A superseded start must remain inaudible. */ }
+      if (!activeEntryId || !isPlaybackEnabled()) {
+        try { player.pause(); } catch { /* A disabled start must remain inaudible. */ }
         return false;
       }
       playbackStarted = true;
@@ -487,6 +500,7 @@
       notify();
       return true;
     }, () => {
+      if (request !== playbackRequest || startRequest !== playbackStartRequest) return false;
       playbackStarting = false;
       notifyPlaybackState();
       return false;

@@ -68,6 +68,23 @@ def test_transcript_uses_three_state_control_and_unstarted_words_are_upcoming():
     assert "if (state.started) animationFrame" in TRANSCRIPT
 
 
+def test_pending_play_is_cancelled_by_master_toggle_without_stale_autoplay():
+    run_node(r"""
+const fs=require('fs'),vm=require('vm');let resolvePlay,plays=0;
+class Audio { constructor(){this.src='';this.currentTime=0;this.duration=12;this.paused=true;this.ended=false;Audio.instance=this}
+ play(){plays++;this.paused=false;return new Promise(resolve=>{resolvePlay=resolve})}
+ pause(){this.paused=true} removeAttribute(){this.src=''} load(){this.currentTime=0} }
+const entry={available:true,file:'intro.mp3',category:'mission-intro',durationMs:12000};
+const context={Audio,URL,location:{href:'https://example.test/'},localStorage:{getItem:()=>null,setItem(){}},fetch:async()=>({ok:true,json:async()=>({entries:{'mission.01.intro':entry}})}),dispatchEvent(){},CustomEvent:function(){}};
+context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
+(async()=>{const n=context.TombWorldNarration;await n.playMissionIntro('shifting-labyrinth');const pending=n.startNarration();n.setMasterEnabled(false);
+ if(!Audio.instance.paused)throw Error('master mute did not silence pending Play');n.setMasterEnabled(true);resolvePlay();
+ if(await pending)throw Error('cancelled Play succeeded');const state=n.getPlaybackState();
+ if(state.started||state.playing||!state.active||plays!==1)throw Error('master restore converted pending Play into autoplay');
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
+
 def test_release_surfaces_and_save_contract():
     assert CURRENT_APP_VERSION == "10.0.10"
     assert "const APP_VERSION = '10.0.10';" in (ROOT / "service-worker.js").read_text()

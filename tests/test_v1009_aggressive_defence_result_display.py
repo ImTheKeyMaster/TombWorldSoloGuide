@@ -88,6 +88,6 @@ def test_pipeline_proximity_summary_and_save_contract_are_preserved():
     assert "n.type==='Canoptek Macrocyte Warrior'&&pending.attackerWithinTwo&&!pending.aggressiveDefenseResolved" in pipeline
     assert pipeline.index("showAggressiveDefenseResolution") < pipeline.index("n.wounds=Math.max")
     assert "combatAbilityReminder(combat)" in source("function renderCombatResolution", "function showSharedCombatResolutionScreen")
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 9)
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (10, 0, 9)
     assert "const SAVE_VERSION = 3;" in (ROOT / "persistence.js").read_text(encoding="utf-8")
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
