@@ -21,6 +21,7 @@
   let initialization = null;
   let lastEntry = null;
   let activeEntryId = null;
+  let activeDuplicateKey = null;
   let activeManifestEntry = null;
   let activeAlignment = null;
   let activeAlignmentStatus = 'idle';
@@ -39,6 +40,9 @@
   let deadlyEncounterQueueRunning = false;
   let deadlyEncounterGeneration = 0;
   let activePlayback = false;
+  let playbackStarted = false;
+  let playbackStarting = false;
+  let playbackStartRequest = 0;
   let pausedByMaster = false;
   let notifiedPlaybackActivity = false;
   let volumeMultiplier = 1;
@@ -111,9 +115,10 @@
           ? Math.round(audioDuration * 1000)
           : (Number.isFinite(manifestDuration) && manifestDuration >= 0 ? Math.round(manifestDuration) : 0))
       : 0;
-    const paused = Boolean(activeEntryId && (userPaused || pausedByMaster || player?.paused === true));
+    const paused = Boolean(activeEntryId && playbackStarted && (userPaused || pausedByMaster || player?.paused === true));
     return {
       active: Boolean(activeEntryId),
+      started: Boolean(activeEntryId && playbackStarted),
       playing: Boolean(activeEntryId && activePlayback && !paused && player?.ended !== true),
       paused,
       pausedByMaster: Boolean(activeEntryId && pausedByMaster),
@@ -139,7 +144,11 @@
 
   function clearActivePlayback(reason) {
     activePlayback = false;
+    playbackStarted = false;
+    playbackStarting = false;
+    playbackStartRequest += 1;
     activeEntryId = null;
+    activeDuplicateKey = null;
     activeManifestEntry = null;
     activeAlignment = null;
     activeAlignmentStatus = 'idle';
@@ -246,7 +255,7 @@
     clearEventQueue();
     clearDeadlyEncounterQueue();
     playbackRequest += 1;
-    if (activePlayback || resetAudio) stopAudio();
+    if (activeEntryId || activePlayback || resetAudio) stopAudio();
     else {
       activePlayback = false;
       if (activeEntryId) clearActivePlayback('stop');
@@ -305,6 +314,14 @@
 
   function pauseForMasterMute() {
     const player = audio;
+    if (player && playbackStarting) {
+      playbackStartRequest += 1;
+      playbackStarting = false;
+      try { player.pause(); } catch { /* The prepared narration remains available. */ }
+      notifyPlaybackActivity(false);
+      notifyPlaybackState();
+      return false;
+    }
     if (!player || !activePlayback || player.ended) {
       pausedByMaster = false;
       notifyPlaybackActivity(false);
@@ -428,8 +445,13 @@
     stopAudio();
     if (supportsInAppVolumeControl()) player.volume = volumeMultiplier;
     player.src = new URL(entry.file, new URL(MANIFEST_URL, global.location?.href || 'http://localhost/')).href;
-    activePlayback = true;
+    try { player.currentTime = 0; } catch { /* Metadata loading may not have started yet. */ }
+    activePlayback = false;
+    playbackStarted = false;
+    playbackStarting = false;
+    playbackStartRequest += 1;
     activeEntryId = id;
+    activeDuplicateKey = duplicateKey;
     activeManifestEntry = entry;
     activeAlignment = null;
     activeAlignmentStatus = 'loading';
@@ -442,27 +464,48 @@
       notifyPlaybackActivity(false);
       if (eventQueue.length && !eventQueueRunning && !deadlyEncounterQueueRunning) void drainEventQueue(eventQueueGeneration);
     };
-    try {
-      const playback = player.play();
-      loadAlignment(id, entry, request);
-      await playback;
-      if (request !== playbackRequest || !isPlaybackEnabled()) return false;
+    loadAlignment(id, entry, request);
+    notifyPlaybackState();
+    return true;
+  }
+
+  function startNarration() {
+    const player = audio;
+    if (!player || !activeEntryId || playbackStarted || playbackStarting || activePlayback || pausedByMaster
+        || !isPlaybackEnabled() || player.ended || !player.src) return Promise.resolve(false);
+    const request = playbackRequest;
+    const startRequest = ++playbackStartRequest;
+    playbackStarting = true;
+    let playback;
+    try { playback = player.play(); }
+    catch {
+      playbackStarting = false;
+      return Promise.resolve(false);
+    }
+    return Promise.resolve(playback).then(() => {
+      if (request !== playbackRequest || startRequest !== playbackStartRequest) return false;
+      playbackStarting = false;
+      if (!activeEntryId || !isPlaybackEnabled()) {
+        try { player.pause(); } catch { /* A disabled start must remain inaudible. */ }
+        return false;
+      }
+      playbackStarted = true;
+      activePlayback = true;
       audioUnlocked = true;
       notifyPlaybackActivity(true);
       notifyPlaybackState();
       if (typeof global.dispatchEvent === 'function' && typeof global.CustomEvent === 'function') {
         global.dispatchEvent(new global.CustomEvent('tombworldnarrationusable'));
       }
-      lastEntry = { id, duplicateKey };
+      lastEntry = { id: activeEntryId, duplicateKey: activeDuplicateKey };
       notify();
       return true;
-    } catch {
-      if (request === playbackRequest) {
-        clearActivePlayback('stop');
-        notifyPlaybackActivity(false);
-      }
+    }, () => {
+      if (request !== playbackRequest || startRequest !== playbackStartRequest) return false;
+      playbackStarting = false;
+      notifyPlaybackState();
       return false;
-    }
+    });
   }
 
   async function drainEventQueue(generation) {
@@ -523,7 +566,7 @@
     if (automaticPlayback.has(duplicateKey)) return Promise.resolve(false);
     automaticPlayback.add(duplicateKey);
     const result = new Promise(resolve => eventQueue.push({ id, duplicateKey, resolve }));
-    if (!eventQueueRunning && !deadlyEncounterQueueRunning && !activePlayback) void drainEventQueue(eventQueueGeneration);
+    if (!eventQueueRunning && !deadlyEncounterQueueRunning && !activeEntryId) void drainEventQueue(eventQueueGeneration);
     return result.then(started => {
       if (!started) automaticPlayback.delete(duplicateKey);
       return started;
@@ -626,7 +669,7 @@
   }
 
   global.TombWorldNarration = Object.freeze({
-    init, unlock, activateFromGesture, playMissionIntro, playEvent, playGradeEscalation, playOutcome, playDeadlyEncounter, replayLast, stop, skipCurrent, pauseNarration, resumeNarration, getPlaybackState,
+    init, unlock, activateFromGesture, playMissionIntro, playEvent, playGradeEscalation, playOutcome, playDeadlyEncounter, replayLast, stop, skipCurrent, startNarration, pauseNarration, resumeNarration, getPlaybackState,
     setPreferenceEnabled, isPreferenceEnabled, setMasterEnabled, isMasterEnabled, isPlaybackEnabled, setVolumeMultiplier,
     canReplay: () => Boolean(lastEntry)
   });

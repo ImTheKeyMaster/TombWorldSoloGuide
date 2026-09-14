@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.9
+# Tomb World Battle Guide v10.0.10
+
+## v10.0.10
+
+### Player-Started Narration
+
+- Narration Cogitator now opens before narration audio begins.
+- New narrations initially show a Play control instead of starting automatically.
+- After playback begins, the control changes between Pause and Resume normally.
+- Transcript, queue, Skip, Stop All, and Hide/Show behavior remain available before playback starts.
+- Ambient ducking now begins only when narration actually plays.
 
 ## v10.0.9
 
