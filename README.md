@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.8
+# Tomb World Battle Guide v10.0.9
+
+## v10.0.9
+
+### Aggressive Defence Result Clarity
+
+- Aggressive Defence now explains the outcome of its D3 roll before the Player continues.
+- Rolls of 2 or 3 clearly show that the attacking operative suffers 1 retaliatory damage.
+- A roll of 1 clearly shows that no retaliatory damage is inflicted.
+- Preserved the existing Aggressive Defence rule, dice persistence, and damage resolution.
 
 ## v10.0.8
 
