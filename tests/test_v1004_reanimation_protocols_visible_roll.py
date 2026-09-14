@@ -99,7 +99,7 @@ def test_battle_log_only_records_the_committed_result():
 
 
 def test_v1004_release_surfaces_and_save_contract():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (10, 0, 4)
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 4)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 11

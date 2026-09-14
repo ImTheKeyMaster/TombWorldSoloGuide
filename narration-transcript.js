@@ -158,7 +158,7 @@
       time.textContent = `${formatTime(currentTimeMs)} / ${formatTime(durationMs)}`;
 
       const masterDisabled = narration.isMasterEnabled?.() === false || state.pausedByMaster;
-      pause.textContent = masterDisabled ? 'Paused' : (state.pausedByUser ? 'Resume' : 'Pause');
+      pause.textContent = !state.started ? 'Play' : (masterDisabled ? 'Paused' : (state.pausedByUser ? 'Resume' : 'Pause'));
       pause.disabled = masterDisabled;
       if (masterDisabled) pause.setAttribute('aria-describedby', 'narrationTranscriptPauseHelp');
       else pause.removeAttribute('aria-describedby');
@@ -189,6 +189,13 @@
 
     function updateWordHighlighting(state, force = false) {
       if (!mappedTranscript || !dialogOpen()) return;
+      if (!state.started) {
+        mappedTranscript.words.forEach((word, index) => setWordState(index, 'upcoming'));
+        currentWordIndex = -1;
+        spokenThroughIndex = -1;
+        previousCurrentTimeMs = 0;
+        return;
+      }
       const currentTimeMs = Number.isFinite(Number(state.currentTimeMs)) ? Math.max(0, Number(state.currentTimeMs)) : 0;
       const position = wordPositionAt(mappedTranscript.words, currentTimeMs);
       if (force || currentTimeMs < previousCurrentTimeMs) {
@@ -224,11 +231,11 @@
       if (!state.active || !dialogOpen()) return;
       updateProgress(state);
       updateWordHighlighting(state);
-      animationFrame = global.requestAnimationFrame(progressLoop);
+      if (state.started) animationFrame = global.requestAnimationFrame(progressLoop);
     }
 
     function startProgressLoop() {
-      if (animationFrame === null && dialogOpen()) {
+      if (animationFrame === null && dialogOpen() && narration.getPlaybackState().started) {
         animationFrame = global.requestAnimationFrame(progressLoop);
       }
     }
@@ -348,7 +355,8 @@
     pause.addEventListener('click', async () => {
       const state = narration.getPlaybackState();
       if (!state.active || narration.isMasterEnabled?.() === false || state.pausedByMaster) return;
-      if (state.pausedByUser) await narration.resumeNarration();
+      if (!state.started) await narration.startNarration();
+      else if (state.pausedByUser) await narration.resumeNarration();
       else narration.pauseNarration();
       handleState();
     });

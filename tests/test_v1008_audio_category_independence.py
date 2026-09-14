@@ -20,7 +20,7 @@ def run_node(script):
 
 
 def test_v1008_release_and_save_contract():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (10, 0, 9)
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 8)
     assert "const SAVE_VERSION = 3;" in (ROOT / "persistence.js").read_text(encoding="utf-8")
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
 

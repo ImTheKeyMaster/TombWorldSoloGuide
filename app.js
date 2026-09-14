@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '10.0.9';
+  const APP_VERSION = '10.0.10';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -19,7 +19,7 @@
     }
   }
   const TombWorldNarration=window.TombWorldNarration||Object.freeze({
-    init:()=>Promise.resolve(),unlock:()=>Promise.resolve(false),activateFromGesture:()=>Promise.resolve(false),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playGradeEscalation:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),stop:()=>{},setPreferenceEnabled:()=>{},isPreferenceEnabled:()=>true,setMasterEnabled:()=>{},isMasterEnabled:()=>true,isPlaybackEnabled:()=>true,setVolumeMultiplier:()=>{},canReplay:()=>false
+    init:()=>Promise.resolve(),unlock:()=>Promise.resolve(false),activateFromGesture:()=>Promise.resolve(false),playMissionIntro:()=>Promise.resolve(false),playEvent:()=>Promise.resolve(false),playGradeEscalation:()=>Promise.resolve(false),playOutcome:()=>Promise.resolve(false),playDeadlyEncounter:()=>Promise.resolve(false),replayLast:()=>Promise.resolve(false),startNarration:()=>Promise.resolve(false),stop:()=>{},setPreferenceEnabled:()=>{},isPreferenceEnabled:()=>true,setMasterEnabled:()=>{},isMasterEnabled:()=>true,isPlaybackEnabled:()=>true,setVolumeMultiplier:()=>{},canReplay:()=>false
   });
   const TombWorldAmbient=window.TombWorldAmbient||Object.freeze({init:()=>Promise.resolve(false),playFromGesture:()=>Promise.resolve(false),setActive:()=>{},setVolumeMultiplier:()=>{},stop:()=>{},reset:()=>{},removeGestureRecovery:()=>{}});
   function createDiceSfxFallback(){
