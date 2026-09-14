@@ -66,7 +66,8 @@ def test_rolling_hides_outcome_and_enables_continue_only_after_rendering():
 
 def test_committed_roll_is_reused_for_restore_and_pvp():
     resolver = source("async function showAggressiveDefenseResolution", "function showIncapacitationOrderChoice")
-    assert "const restoredRoll=Number.isInteger(retaliation.roll)" in resolver
+    assert "Number.isInteger(pending.aggressiveDefenseRoll)?pending.aggressiveDefenseRoll:null" in resolver
+    assert "if(restoredRoll)retaliation.roll=persistedRoll" in resolver
     assert "const animate=!isPvpMode()&&!restoredRoll" in resolver
     assert resolver.count("requestDiceResults(") == 1
     assert "pending.aggressiveDefenseRoll=retaliation.roll" in resolver

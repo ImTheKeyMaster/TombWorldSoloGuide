@@ -5864,7 +5864,11 @@ function showPlayerActivation(){
 
   async function showAggressiveDefenseResolution(stage,pending,target,incapacitationId){
     const retaliation=eventTransaction(`aggressive-defence:${incapacitationId}`);
-    const restoredRoll=Number.isInteger(retaliation.roll);
+    const persistedRoll=Number.isInteger(retaliation.roll)
+      ? retaliation.roll
+      : (Number.isInteger(pending.aggressiveDefenseRoll)?pending.aggressiveDefenseRoll:null);
+    const restoredRoll=persistedRoll!==null;
+    if(restoredRoll)retaliation.roll=persistedRoll;
     if(!Number.isInteger(retaliation.roll)){
       try{
         const requestKey=diceRequestKey('aggressive-defence',retaliation.id,target.id);
