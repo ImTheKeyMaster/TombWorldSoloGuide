@@ -52,11 +52,11 @@ class AggressiveDefenseD3Tests(unittest.TestCase):
 
     def test_result_card_identifies_retaliatory_damage_recipient_and_precedes_damage_summary(self):
         reminder = self.source("function combatAbilityReminder", "function cancelPendingPlayerCombat")
-        self.assertIn("D3 Roll: ${combat.aggressiveDefenseRoll}", reminder)
-        self.assertIn("String(combat.attackerName||'').trim()", reminder)
-        self.assertIn("No retaliatory damage inflicted${attackerName?` on ${escapeHtml(attackerName)}`:''}.", reminder)
-        self.assertIn("${escapeHtml(attackerName)} suffers", reminder)
-        self.assertIn("${aggressiveDamage} retaliatory damage.", reminder)
+        outcome = self.source("function aggressiveDefenseOutcome", "function aggressiveDefenseRollHtml")
+        self.assertIn("D3 ROLL: ${roll}", outcome)
+        self.assertIn("String(attackerName||'').trim()", outcome)
+        self.assertIn("${subject} suffers no damage.", outcome)
+        self.assertIn("${subject} suffers ${displayDamage} retaliatory damage.", outcome)
         self.assertNotIn("No damage inflicted.", reminder)
         renderer = self.source("function renderCombatResolution", "function showSharedCombatResolutionScreen")
         self.assertIn("renderEliminationSummary", renderer)
@@ -64,9 +64,8 @@ class AggressiveDefenseD3Tests(unittest.TestCase):
         self.assertLess(renderer.index("${combatAbilityReminder(combat)}"), renderer.index('<div class="damage-summary">'))
 
     def test_result_message_falls_back_when_attacker_name_is_unavailable(self):
-        reminder = self.source("function combatAbilityReminder", "function cancelPendingPlayerCombat")
-        self.assertIn("attackerName?`${escapeHtml(attackerName)} suffers`:'The attacking operative suffers'", reminder)
-        self.assertIn("attackerName?` on ${escapeHtml(attackerName)}`:''", reminder)
+        outcome = self.source("function aggressiveDefenseOutcome", "function aggressiveDefenseRollHtml")
+        self.assertIn("name?escapeHtml(name):'The attacking operative'", outcome)
 
     def test_existing_transactional_damage_application_is_preserved(self):
         apply_damage = self.source("function applyPendingPlayerDamage", "function completePlayerActivation")
@@ -92,7 +91,7 @@ class AggressiveDefenseD3Tests(unittest.TestCase):
     def test_result_message_includes_roll_and_only_appears_after_a_roll(self):
         reminder = self.source("function combatAbilityReminder", "function cancelPendingPlayerCombat")
         self.assertIn("Number.isInteger(combat.aggressiveDefenseRoll)", reminder)
-        self.assertIn("D3 Roll: ${combat.aggressiveDefenseRoll}", reminder)
+        self.assertIn("aggressiveDefenseOutcome(combat.aggressiveDefenseRoll,combat.attackerName)", reminder)
 
 
 if __name__ == "__main__":

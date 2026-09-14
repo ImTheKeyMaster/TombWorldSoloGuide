@@ -1362,6 +1362,9 @@ button.tracker-operative:hover{
 .combat-resolution-footer{margin-top:4px;padding-bottom:env(safe-area-inset-bottom)}
 .aggressive-defense-result{display:grid;gap:4px}
 .aggressive-defense-result strong{color:var(--green)}
+.aggressive-defense-result small{font-weight:800;letter-spacing:.08em}
+.aggressive-defense-result .retaliation{color:var(--green)}
+.aggressive-defense-result .no-retaliation{color:var(--muted)}
 .aggressive-defense-result p{margin:0}
 @media(max-width:600px){
   .combat-resolution-modal{width:calc(100% - 16px);max-height:calc(100dvh - 12px)}

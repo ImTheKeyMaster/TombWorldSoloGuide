@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '10.0.8';
+  const APP_VERSION = '10.0.9';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5864,6 +5864,11 @@ function showPlayerActivation(){
 
   async function showAggressiveDefenseResolution(stage,pending,target,incapacitationId){
     const retaliation=eventTransaction(`aggressive-defence:${incapacitationId}`);
+    const persistedRoll=Number.isInteger(retaliation.roll)
+      ? retaliation.roll
+      : (Number.isInteger(pending.aggressiveDefenseRoll)?pending.aggressiveDefenseRoll:null);
+    const restoredRoll=persistedRoll!==null;
+    if(restoredRoll)retaliation.roll=persistedRoll;
     if(!Number.isInteger(retaliation.roll)){
       try{
         const requestKey=diceRequestKey('aggressive-defence',retaliation.id,target.id);
@@ -5878,8 +5883,9 @@ function showPlayerActivation(){
     save();
     acknowledgeCurrentDiceRequest();
     missionDialogLocked=true;
-    const animate=!isPvpMode();
-    showModal('Aggressive Defence',`<p><strong>${escapeHtml(npoName(target))}</strong> was incapacitated by an enemy operative within 2 inches.</p><section class="combat-stage" aria-label="Aggressive Defence roll"><div class="dice-row ${animate?'animated-roll':'settled'}" id="aggressiveDefenseDie">${animate?rollingDieHtml():dieHtml({value:retaliation.roll,kind:'hit',retained:true})}</div><div id="aggressiveDefenseResult" aria-live="polite" ${animate?'hidden':''}><strong>D3 Roll: ${retaliation.roll}</strong><p>${pending.aggressiveDefenseDamage?'The attacking operative suffers 1 damage.':'The attacking operative suffers no damage.'}</p></div></section><div class="wizard-actions"><button class="btn primary" id="continueAggressiveDefense" ${animate?'disabled':''}>Continue</button></div>`);
+    const animate=!isPvpMode()&&!restoredRoll;
+    const outcome=aggressiveDefenseOutcome(retaliation.roll,playerName(stage.playerOperativeId));
+    showModal('Aggressive Defence',`<p><strong>${escapeHtml(npoName(target))}</strong> was incapacitated by an enemy operative within 2 inches.</p><section class="combat-stage" aria-label="Aggressive Defence roll"><div class="dice-row ${animate?'animated-roll':'settled'}" id="aggressiveDefenseDie">${animate?rollingDieHtml():dieHtml({value:retaliation.roll,kind:'hit',retained:true})}</div><div class="aggressive-defense-result" id="aggressiveDefenseResult" role="status" aria-live="polite" ${animate?'hidden':''} ${animate?'':`aria-label="${escapeHtml(outcome.announcement)}"`}>${animate?'':outcome.html}</div></section><div class="wizard-actions"><button class="btn primary" id="continueAggressiveDefense" ${animate?'disabled':''}>Continue</button></div>`);
     if(animate)void TombWorldDiceSfx.play();
     const button=$('#continueAggressiveDefense');
     const die=$('#aggressiveDefenseDie');
@@ -5887,7 +5893,10 @@ function showPlayerActivation(){
       if(!button?.isConnected)return;
       die.innerHTML=dieHtml({value:retaliation.roll,kind:'hit',retained:true});
       die.classList.replace('animated-roll','settled');
-      $('#aggressiveDefenseResult').innerHTML=`<strong>D3 Roll: ${retaliation.roll}</strong><p>${pending.aggressiveDefenseDamage?'The attacking operative suffers 1 damage.':'The attacking operative suffers no damage.'}</p>`;
+      const result=$('#aggressiveDefenseResult');
+      result.innerHTML=outcome.html;
+      result.setAttribute('aria-label',outcome.announcement);
+      result.hidden=false;
       button.disabled=false;
     },DICE_ROLL_ANIMATION_MS);
     button.onclick=()=>{
@@ -7340,6 +7349,19 @@ function showPlayerActivation(){
     return Math.max(0,Number(combat?.aggressiveDefenseDamage??combat?.aggressiveDefenceDamage)||0);
   }
 
+  function aggressiveDefenseOutcome(roll,attackerName=''){
+    const displayDamage=aggressiveDefenseDamage(roll);
+    const name=String(attackerName||'').trim();
+    const subject=name?escapeHtml(name):'The attacking operative';
+    const heading=displayDamage>0?'RETALIATION':'NO RETALIATORY DAMAGE';
+    const consequence=displayDamage>0?`${subject} suffers ${displayDamage} retaliatory damage.`:`${subject} suffers no damage.`;
+    const announcement=displayDamage>0
+      ? `D3 Roll ${roll}. Aggressive Defence retaliation. ${name||'The attacking operative'} suffers ${displayDamage} damage.`
+      : `D3 Roll ${roll}. No retaliatory damage. ${name||'The attacking operative'} suffers no damage.`;
+    const outcomeClass=displayDamage>0?'retaliation':'no-retaliation';
+    return {html:`<strong>D3 ROLL: ${roll}</strong><small class="${outcomeClass}">${heading}</small><p>${consequence}</p>`,announcement};
+  }
+
   function aggressiveDefenseRollHtml(){
     return `<section class="combat-stage" id="aggressiveDefenseRoll" aria-label="Aggressive Defence roll">
       <small>AGGRESSIVE DEFENSE CONSTRUCT</small>
@@ -7368,14 +7390,10 @@ function showPlayerActivation(){
     if(combat.aggressiveDefenseAnimating)return aggressiveDefenseRollHtml();
     const aggressiveDamage=aggressiveDefenseDamageValue(combat);
     if(Number.isInteger(combat.aggressiveDefenseRoll)||aggressiveDamage>0){
-      const attackerName=String(combat.attackerName||'').trim();
-      const retaliatoryDamageMessage=aggressiveDamage>0
-        ? `${attackerName?`${escapeHtml(attackerName)} suffers`:'The attacking operative suffers'} ${aggressiveDamage} retaliatory damage.`
-        : `No retaliatory damage inflicted${attackerName?` on ${escapeHtml(attackerName)}`:''}.`;
+      const outcome=aggressiveDefenseOutcome(combat.aggressiveDefenseRoll,combat.attackerName);
       return `<section class="combat-stage aggressive-defense-result" aria-label="Aggressive Defence result">
         <small>AGGRESSIVE DEFENSE CONSTRUCT</small>
-        <strong>D3 Roll: ${combat.aggressiveDefenseRoll}</strong>
-        <p>${retaliatoryDamageMessage}</p>
+        ${outcome.html}
       </section>`;
     }
     return '';
