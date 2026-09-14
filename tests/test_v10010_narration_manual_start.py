@@ -85,6 +85,25 @@ context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync
 """)
 
 
+def test_each_automatic_narration_type_prepares_without_playing():
+    run_node(r"""
+const fs=require('fs'),vm=require('vm');const plays=[];
+class Audio { constructor(){this.src='';this.currentTime=9;this.duration=12;this.paused=true;this.ended=false;Audio.instance=this}
+ play(){plays.push(this.src);this.paused=false;return Promise.resolve()} pause(){this.paused=true} removeAttribute(){this.src=''} load(){} }
+const base={available:true,file:'clip.mp3',durationMs:12000};
+const entries={'mission.01.intro':{...base,category:'mission-intro'},'event.one':{...base,category:'event'},'grade.1.stirring':{...base,category:'grade'},'outcome.01.victory':{...base,category:'outcome'},deadly:{...base,category:'deadly-encounter',deadlyEncounterFeatureId:'room'}};
+const context={Audio,URL,location:{href:'https://example.test/'},localStorage:{getItem:()=>null,setItem(){}},fetch:async()=>({ok:true,json:async()=>({entries})}),dispatchEvent(){},CustomEvent:function(){}};
+context.window=context;vm.createContext(context);vm.runInContext(fs.readFileSync('narration.js','utf8'),context);
+const n=context.TombWorldNarration,flush=()=>new Promise(r=>setTimeout(r,0));
+(async()=>{await n.playMissionIntro('shifting-labyrinth');if(plays.length||n.getPlaybackState().currentTimeMs!==0)throw Error('mission autoplayed');n.stop();
+ const event=n.playEvent('one','event');await flush();if(plays.length)throw Error('event autoplayed');n.stop();await event;
+ const grade=n.playGradeEscalation(1,'grade');await flush();if(plays.length)throw Error('grade autoplayed');n.stop();await grade;
+ await n.playOutcome('shifting-labyrinth','victory');if(plays.length)throw Error('outcome autoplayed');n.stop();
+ const deadly=n.playDeadlyEncounter('room','deadly');await flush();if(plays.length)throw Error('deadly encounter autoplayed');n.stop();await deadly;
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
+
 def test_release_surfaces_and_save_contract():
     assert CURRENT_APP_VERSION == "10.0.10"
     assert "const APP_VERSION = '10.0.10';" in (ROOT / "service-worker.js").read_text()

@@ -445,6 +445,7 @@
     stopAudio();
     if (supportsInAppVolumeControl()) player.volume = volumeMultiplier;
     player.src = new URL(entry.file, new URL(MANIFEST_URL, global.location?.href || 'http://localhost/')).href;
+    try { player.currentTime = 0; } catch { /* Metadata loading may not have started yet. */ }
     activePlayback = false;
     playbackStarted = false;
     playbackStarting = false;
