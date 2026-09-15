@@ -1,4 +1,10 @@
-# Tomb World Battle Guide v10.0.11
+# Tomb World Battle Guide v10.0.12
+
+## v10.0.12
+
+### Optional Rules Spacing Polish
+
+- Added subtle separation between the Tomb World Variant heading and its option cards on the setup screen.
 
 ## v10.0.11
 
