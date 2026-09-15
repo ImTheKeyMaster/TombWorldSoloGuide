@@ -62,7 +62,8 @@ const n=context.TombWorldNarration,flush=()=>new Promise(r=>setTimeout(r,0));
 
 def test_transcript_uses_three_state_control_and_unstarted_words_are_upcoming():
     assert "pause.textContent = !state.started ? 'Play'" in TRANSCRIPT
-    assert "if (!state.started) await narration.startNarration();" in TRANSCRIPT
+    assert "if (!state.started) {" in TRANSCRIPT
+    assert "await narration.startNarration();" in TRANSCRIPT
     assert "if (!state.started) {" in TRANSCRIPT
     assert "setWordState(index, 'upcoming')" in TRANSCRIPT
     assert "if (state.started) animationFrame" in TRANSCRIPT

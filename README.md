@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.12
+# Tomb World Battle Guide v10.0.13
+
+## v10.0.13
+
+### iPhone Dice Audio Recovery
+
+- Narration Play and Resume gestures now silently prepare enabled Dice Roll audio on iPhone.
+- Fixed Dice Roll sound remaining silent when Ambient Noise was disabled.
+- Ambient Noise, Narration, and Dice Roll preferences remain fully independent.
+- No Dice sound is played merely by pressing Narration Play or Resume.
 
 ## v10.0.12
 
