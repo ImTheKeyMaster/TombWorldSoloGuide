@@ -331,6 +331,14 @@
       autoFollowSuspendedUntil = Date.now() + AUTO_FOLLOW_SUSPEND_MS;
     }
 
+    function activateDiceFromNarrationGesture() {
+      const dice = global.TombWorldDiceSfx;
+      if (!dice?.isPreferenceEnabled?.()) return;
+      try {
+        void Promise.resolve(dice.activateFromGesture()).catch(() => false);
+      } catch { /* Narration remains available if Dice Web Audio cannot be activated. */ }
+    }
+
     hide.addEventListener('click', hideTranscript);
     dialog.addEventListener('close', () => {
       if (!dialogOpen()) unlockPageScroll();
@@ -355,8 +363,13 @@
     pause.addEventListener('click', async () => {
       const state = narration.getPlaybackState();
       if (!state.active || narration.isMasterEnabled?.() === false || state.pausedByMaster) return;
-      if (!state.started) await narration.startNarration();
-      else if (state.pausedByUser) await narration.resumeNarration();
+      if (!state.started) {
+        activateDiceFromNarrationGesture();
+        await narration.startNarration();
+      } else if (state.pausedByUser) {
+        activateDiceFromNarrationGesture();
+        await narration.resumeNarration();
+      }
       else narration.pauseNarration();
       handleState();
     });
