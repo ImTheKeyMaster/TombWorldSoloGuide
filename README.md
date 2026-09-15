@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.10
+# Tomb World Battle Guide v10.0.11
+
+## v10.0.11
+
+### Cleaner Optional Content Setup
+
+- "Other Optional Rules" is now collapsed by default to reduce setup-screen clutter.
+- Restless Tomb and Deadly Encounters remain available through an accessible expandable section.
+- Expanding or collapsing the section does not change selected optional-rule state.
 
 ## v10.0.10
 

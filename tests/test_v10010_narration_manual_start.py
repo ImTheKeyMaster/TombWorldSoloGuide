@@ -105,12 +105,12 @@ const n=context.TombWorldNarration,flush=()=>new Promise(r=>setTimeout(r,0));
 
 
 def test_release_surfaces_and_save_contract():
-    assert CURRENT_APP_VERSION == "10.0.10"
-    assert "const APP_VERSION = '10.0.10';" in (ROOT / "service-worker.js").read_text()
-    assert '<div class="version">V10.0.10</div>' in INDEX
-    assert INDEX.count("?v=10.0.10") == 11
-    assert "analytics.js?release=10.0.10" in INDEX
-    assert README.startswith("# Tomb World Battle Guide v10.0.10\n\n## v10.0.10")
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 10)
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in (ROOT / "service-worker.js").read_text()
+    assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
+    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 11
+    assert f"analytics.js?release={CURRENT_APP_VERSION}" in INDEX
+    assert README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}")
     assert "const SAVE_VERSION = 3;" in (ROOT / "persistence.js").read_text()
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in (ROOT / "app.js").read_text()
 

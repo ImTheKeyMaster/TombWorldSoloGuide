@@ -1473,7 +1473,7 @@ button.tracker-operative:hover{
 .optional-rules{display:grid;gap:12px}
 .optional-rules h4{margin-bottom:0}
 .variant-selector{min-width:0;margin:22px 0;padding:0;border:0}
-.variant-selector legend,.other-optional-rules h4{font-size:1rem;font-weight:850}
+.variant-selector legend{font-size:1rem;font-weight:850}
 .variant-card-grid{display:grid;gap:10px}
 .variant-card{display:flex;align-items:flex-start;gap:12px;min-width:0;padding:14px;border:1px solid var(--line);border-radius:14px;background:#091912;cursor:pointer}
 .variant-card:has(input:checked){border-color:var(--green);background:#102a1d;box-shadow:0 0 0 2px rgba(118,245,168,.12)}
@@ -1482,8 +1482,17 @@ button.tracker-operative:hover{
 .variant-card>span{min-width:0}
 .variant-card strong,.variant-card small{display:block;overflow-wrap:anywhere}
 .variant-card small{margin-top:4px;color:var(--muted);line-height:1.4}
-.other-optional-rules{margin-top:24px}
-.other-optional-rules h4{margin:0}
+.other-optional-rules{min-width:0;margin-top:24px;border:1px solid var(--line);border-radius:14px;background:#091912}
+.other-optional-rules summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:10px 14px;cursor:pointer;font-size:1rem;font-weight:850;list-style:none}
+.other-optional-rules summary::-webkit-details-marker{display:none}
+.other-optional-rules summary:hover{background:rgba(53,202,120,.06)}
+.other-optional-rules summary:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:13px}
+.other-optional-rules summary>span:first-child{display:flex;min-width:0;align-items:baseline;gap:6px;white-space:nowrap}
+.optional-rules-count{color:var(--muted);font-size:.75rem;font-weight:750;white-space:nowrap}
+.optional-rules-count::before{content:'\00b7';margin-right:6px}
+.optional-rules-chevron{width:9px;height:9px;flex:0 0 auto;border-right:2px solid var(--green);border-bottom:2px solid var(--green);transform:rotate(45deg) translateY(-2px);transition:transform .16s ease}
+.other-optional-rules[open] .optional-rules-chevron{transform:rotate(225deg) translate(-2px,-2px)}
+.other-optional-rules .optional-rules{padding:0 12px 12px}
 .rule-classification{display:block;width:max-content;max-width:100%;margin:4px 0 6px;padding:2px 7px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:.7rem;font-weight:800;line-height:1.35;overflow-wrap:anywhere}
 .rule-classification.official{border-color:var(--green2);color:var(--green)}
 .deadly-section{min-width:0;margin:14px 0;padding-top:10px;border-top:1px solid var(--line)}
@@ -1495,7 +1504,7 @@ button.tracker-operative:hover{
 .d33-result{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
 .d33-result span{display:inline-grid;place-items:center;min-width:42px;min-height:42px;padding:5px;border:1px solid var(--green2);border-radius:8px;color:var(--green);font-weight:900}
 .resolution-steps{padding-left:1.4rem}
-@media(max-width:390px){.optional-rules .check-row{align-items:flex-start}.rule-classification{width:auto}.deadly-section .game-menu-grid{grid-template-columns:1fr}}
+@media(max-width:390px){.optional-rules .check-row{align-items:flex-start}.other-optional-rules summary{padding-inline:12px}.optional-rules-count{font-size:.7rem}.rule-classification{width:auto}.deadly-section .game-menu-grid{grid-template-columns:1fr}}
 
 /* v8.6.12 combat summary wrapping */
 .combat-summary-grid,

@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '10.0.10';
+  const APP_VERSION = '10.0.11';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -482,6 +482,8 @@ document.addEventListener('touchend',function(e){
   let playerTeamLoadStatus='idle';
   let playerTeamLoadError=null;
   let setupNavigationInProgress=false;
+  let optionalRulesExpanded=false;
+  let lastRenderedSetupStepId=null;
   async function loadPlayerManifest(){
     const response=await fetch('Player_Operatives/manifest.json',{cache:'no-store'});
     if(!response.ok)throw new Error(`Unable to load manifest.json (${response.status})`);
@@ -3083,6 +3085,8 @@ document.addEventListener('touchend',function(e){
     if(!state.gameMode){renderGameModeSelection();return;}
     const steps=activeSetupSteps();
     const stepId=currentSetupStepId();
+    if(stepId==='options'&&lastRenderedSetupStepId!=='options')optionalRulesExpanded=false;
+    lastRenderedSetupStepId=stepId;
     if(stepId==='playerRoster'){
       if(!canBuildPlayerRoster()){
         if(playerTeamLoadStatus==='loading'){
@@ -3248,7 +3252,9 @@ document.addEventListener('touchend',function(e){
       const variantOptions=Object.values(TOMB_WORLD_VARIANTS).filter(variant=>variant.available).map(variant=>`<label class="variant-card"><input type="radio" name="tombWorldVariant" value="${escapeHtml(variant.id)}" aria-describedby="variant-${escapeHtml(variant.id)}-description" ${state.tombWorldVariant===variant.id?'checked':''}><span><strong>${escapeHtml(variant.name)}</strong>${variant.id==='standard'?'':`<span class="rule-classification official">Official Expansion - White Dwarf 517</span>`}<small id="variant-${escapeHtml(variant.id)}-description">${escapeHtml(variant.summary)}</small></span></label>`).join('');
       const deadlyOption=isPvpMode()?''
         : `<label class="check-row deadly-encounters-option"><input id="deadlyEncountersEnabled" type="checkbox" aria-label="Enable Deadly Encounters: Tomb Worlds official expansion" ${state.deadlyEncountersEnabled?'checked':''}><span><strong>Deadly Encounters: Tomb Worlds</strong><span class="rule-classification official">Official Expansion - White Dwarf 521</span><small>Official expansion. Reveal persistent Room and Objective Features using the official D33 tables when Player operatives explore the tomb. PvE Player actions reveal features; NPOs never reveal them, but revealed features can affect NPOs. This independent expansion increases battlefield complexity and danger.</small></span></label>`;
-      return `<h3>Choose optional game content</h3><p>Choose one variant for this battle. The starting Necron roster is generated after this step.</p><fieldset class="variant-selector"><legend>Tomb World Variant</legend><div class="variant-card-grid">${variantOptions}</div></fieldset><section class="other-optional-rules" aria-labelledby="other-optional-rules-heading"><h4 id="other-optional-rules-heading">Other Optional Rules</h4><div class="checklist optional-rules"><label class="check-row restless-tomb-option"><input id="restlessTombEnabled" type="checkbox" aria-label="Enable Restless Tomb house rule" ${state.restlessTombEnabled?'checked':''}><span><strong>Restless Tomb</strong><span class="rule-classification">House Rule</span><small>Beginning with Turning Point 2, resolve at least one Tomb World event during each Strategy Phase, regardless of Threat Grade. Turning Point 1 is unaffected, and standard event rules may require additional events at higher Threat. This optional house rule increases activity and difficulty.</small></span></label>${deadlyOption}</div></section><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext">Continue</button></div>`;
+      const optionalRuleCount=Number(state.restlessTombEnabled)+Number(!isPvpMode()&&state.deadlyEncountersEnabled);
+      const selectedCount=optionalRuleCount?`<span class="optional-rules-count">${optionalRuleCount} selected</span>`:'';
+      return `<h3>Choose optional game content</h3><p>Choose one variant for this battle. The starting Necron roster is generated after this step.</p><fieldset class="variant-selector"><legend>Tomb World Variant</legend><div class="variant-card-grid">${variantOptions}</div></fieldset><details class="other-optional-rules" ${optionalRulesExpanded?'open':''}><summary><span>Other Optional Rules${selectedCount}</span><span class="optional-rules-chevron" aria-hidden="true"></span></summary><div class="checklist optional-rules"><label class="check-row restless-tomb-option"><input id="restlessTombEnabled" type="checkbox" aria-label="Enable Restless Tomb house rule" ${state.restlessTombEnabled?'checked':''}><span><strong>Restless Tomb</strong><span class="rule-classification">House Rule</span><small>Beginning with Turning Point 2, resolve at least one Tomb World event during each Strategy Phase, regardless of Threat Grade. Turning Point 1 is unaffected, and standard event rules may require additional events at higher Threat. This optional house rule increases activity and difficulty.</small></span></label>${deadlyOption}</div></details><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext">Continue</button></div>`;
     }
     if(stepId==='deploy'){
       const generation=state.startingNpoGeneration;
@@ -3364,6 +3370,7 @@ document.addEventListener('touchend',function(e){
       save();render();
     }));
     $('#playerDeployed')?.addEventListener('change',e=>{state.playerDeployed=e.target.checked;save();render();});
+    $('.other-optional-rules')?.addEventListener('toggle',e=>{optionalRulesExpanded=e.target.open;});
     $('#restlessTombEnabled')?.addEventListener('change',e=>{state.restlessTombEnabled=e.target.checked;save();render();});
     $('#deadlyEncountersEnabled')?.addEventListener('change',e=>{if(isPvpMode())return;state.deadlyEncountersEnabled=e.target.checked;save();render();});
     $$('input[name="tombWorldVariant"]').forEach(input=>input.addEventListener('change',e=>{if(e.target.checked&&setTombWorldVariant(e.target.value)){save();render();}}));
@@ -9872,6 +9879,8 @@ function showPlayerActivation(){
     objectiveDefinition=null;
     missionActivationStarts.clear();
     expandedRosterCategories=null;
+    optionalRulesExpanded=false;
+    lastRenderedSetupStepId=null;
     save();
     updateGameBackground();
     render();
