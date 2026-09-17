@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '10.0.13';
+  const APP_VERSION = '10.0.14';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5398,7 +5398,7 @@ function showPlayerActivation(){
   function renderAttackSummary(attack){
     const lethal=newlyEliminated(attack);
     const hot=attack.hot;
-    const hotSummary=hot?`<div class="summary-box hot-attack-summary"><strong>Hot roll: ${hot.roll}</strong><p>${hot.damage?`Attacker suffered ${hot.damage} damage (${hot.woundsBefore} → ${hot.woundsAfter} wounds).`:'Attacker suffered no damage.'}</p></div>`:'';
+    const hotSummary=hot?`<div class="summary-box hot-attack-summary"><strong>D6 Roll: ${hot.roll}</strong><p>${hot.damage?`Attacker suffered ${hot.damage} damage (${hot.woundsBefore} → ${hot.woundsAfter} wounds).`:'Attacker suffered no damage.'}</p></div>`:'';
     return `<section class="attack-confirmation-card ${lethal?'eliminated':''}">
       <div class="attack-confirmation-heading">
         <small>${attack.attackType==='shoot'?'SHOOTING':'MELEE'}</small>
@@ -6581,6 +6581,11 @@ function showPlayerActivation(){
     return Number.isInteger(hit)&&hit>=2&&hit<=6?hit:null;
   }
 
+  const HOT_RULE_EXPLANATION='This weapon has the Hot rule. After it is used, the Guide checks whether the weapon overheats and injures the attacker.';
+  function hotRuleInstruction(){
+    return `${isPvpMode()?'Roll':'The Guide rolls'} one D6. If the result is lower than the weapon's Hit stat, the attacker suffers damage equal to twice the result.`;
+  }
+
   function normalizeHotResolution(record){
     if(!isRecord(record)||typeof record.id!=='string'||!record.id.startsWith('hot:'))return null;
     const rollValue=Number(record.roll),damageValue=Number(record.damage);
@@ -6636,8 +6641,8 @@ function showPlayerActivation(){
     if(!Number.isInteger(record.roll)){
       const name=record.attackerSide==='player'?playerName(record.attackerId):npoName(state.roster.find(npo=>npo.id===record.attackerId));
       const requestKey=`${record.id}:roll`;
-      const [value]=await requestDiceResults({count:1,sides:6,title:'HOT TEST',rollerLabel:name,requestKey,resumeKind:'hot',resumeData:{hotResolutionId:record.id},
-        instruction:`Roll 1D6 for ${record.weaponName||'this weapon'} and enter the result.`});
+      const [value]=await requestDiceResults({count:1,sides:6,title:'HOT WEAPON CHECK',rollerLabel:name,requestKey,resumeKind:'hot',resumeData:{hotResolutionId:record.id},
+        instruction:`${HOT_RULE_EXPLANATION} ${hotRuleInstruction()}`});
       record={...record,roll:value};
       state.hotResolution=record;
       save();
@@ -6676,17 +6681,17 @@ function showPlayerActivation(){
       showModal('Hot could not be resolved',`<p>The weapon's Hit stat could not be determined. The shooting attack was preserved and no Hot damage was applied.</p><div class="wizard-actions"><button class="btn primary" id="continueHot">Continue</button></div>`);
     }else{
       const name=record.attackerSide==='player'?playerName(record.attackerId):npoName(state.roster.find(npo=>npo.id===record.attackerId));
-      const comparison=record.damage?`${record.roll} is lower than ${record.effectiveHit}.`:`The result is not lower than the weapon's Hit stat.`;
-      const outcome=record.incapacitated?`${escapeHtml(name)} is incapacitated by Hot.`:record.damage?`${escapeHtml(name)} suffers ${record.damage} damage.<br>Wounds: ${record.woundsBefore} -&gt; ${record.woundsAfter}`:'No damage.';
+      const comparison=record.damage?`${record.roll} is lower than ${record.effectiveHit}.`:`${record.roll} is not lower than ${record.effectiveHit}.`;
+      const outcome=record.damage?`${escapeHtml(name)} suffers ${record.damage} damage.${record.incapacitated?' The operative is incapacitated.':`<br>Wounds: ${record.woundsBefore} -&gt; ${record.woundsAfter}`}`:'No damage.';
       const reducedMotion=isPvpMode()||matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const die=reducedMotion?dieHtml({value:record.roll,ariaLabel:`Hot roll: ${record.roll}`}):rollingDieHtml();
-      showModal('HOT',`<section class="combat-stage" aria-label="Hot result"><div class="dice-row ${reducedMotion?'settled':'animated-roll'}" id="hotRollDie">${die}</div><div id="hotRollResult" ${reducedMotion?'':'hidden'}><p><strong>Hot roll: ${record.roll}</strong><br>Hit stat: ${record.effectiveHit}+</p><p>${escapeHtml(comparison)}</p><strong>${outcome}</strong></div></section><div class="wizard-actions"><button class="btn primary" id="continueHot" ${reducedMotion?'':'disabled'}>Continue</button></div>`,undefined,`hot:${record.id}`);
+      const die=reducedMotion?dieHtml({value:record.roll,ariaLabel:`D6 roll: ${record.roll}`}):rollingDieHtml();
+      showModal('HOT WEAPON CHECK',`<p>${HOT_RULE_EXPLANATION}</p><p>${hotRuleInstruction()}</p><section class="combat-stage" aria-label="Hot Weapon Check result"><div class="dice-row ${reducedMotion?'settled':'animated-roll'}" id="hotRollDie">${die}</div><div id="hotRollResult" role="status" aria-live="polite" ${reducedMotion?'':'hidden'}><p><strong>D6 Roll: ${record.roll}</strong><br>Hit Stat: ${record.effectiveHit}+</p><p>${escapeHtml(comparison)}</p><strong>${outcome}</strong></div></section><div class="wizard-actions"><button class="btn primary" id="continueHot" ${reducedMotion?'':'disabled'}>Continue</button></div>`,undefined,`hot:${record.id}`);
       if(!reducedMotion){
         void TombWorldDiceSfx.play();
         setTimeout(()=>{
           const rollDie=$('#hotRollDie');
           if(!rollDie?.isConnected)return;
-          rollDie.innerHTML=dieHtml({value:record.roll,ariaLabel:`Hot roll: ${record.roll}`});
+          rollDie.innerHTML=dieHtml({value:record.roll,ariaLabel:`D6 roll: ${record.roll}`});
           rollDie.classList.replace('animated-roll','settled');
           $('#hotRollResult').hidden=false;
           $('#continueHot').disabled=false;

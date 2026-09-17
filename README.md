@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.0.13
+# Tomb World Battle Guide v10.0.14
+
+## v10.0.14
+
+### Clearer Hot Weapon Checks
+
+- Renamed the Hot resolution dialog to HOT WEAPON CHECK.
+- Added a concise explanation of why the Hot check occurs and how it can damage the attacker.
+- Solo now explicitly states that the Guide rolls the Hot D6 automatically.
+- PvP instructs the Player to roll the D6 through the existing manual dice flow.
+- Replaced the unclear "Hot roll" label with "D6 Roll."
+- Preserved all existing Hot timing, damage, persistence, and dice behavior.
 
 ## v10.0.13
 
