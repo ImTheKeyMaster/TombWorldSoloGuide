@@ -43,7 +43,7 @@ class Stage3CombatDiceProviderTests(unittest.TestCase):
     def test_combat_triggered_special_rolls_use_logical_provider_dice(self):
         expected = [
             ("DIMENSIONAL BANISHMENT", "count:2,sides:6"),
-            ("HOT TEST", "count:1,sides:6"),
+            ("HOT WEAPON CHECK", "count:1,sides:6"),
             ("COUNTERTEMPORAL SHIFTING", "count:qualifyingIndexes.length,sides:6"),
             ("REANIMATION PROTOCOLS", "count:1,sides:6"),
             ("AGGRESSIVE DEFENCE", "count:1,sides:3"),

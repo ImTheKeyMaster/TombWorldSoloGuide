@@ -120,7 +120,7 @@ process.stdout.write(JSON.stringify({valid,supportedD4,schemaDefaultPendingDice:
         for marker in (
             "subjugation-glyphs", "living-metal-flux", "maze-reforms", "initiative:tp",
             "reanimation-protocols", "aggressive-defence", "threat", "dimensional-banishment",
-            "'attack'", "'defense'", "HOT TEST", "countertemporal-shifting",
+            "'attack'", "'defense'", "HOT WEAPON CHECK", "countertemporal-shifting",
             "geomantic-disturbance", "nanoscarab-beam", "breach-sarcophagus"
         ):
             self.assertIn(marker, APP)
