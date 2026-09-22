@@ -49,7 +49,7 @@ def test_optional_card_statuses_derive_from_existing_authoritative_state():
     briefing = ready_briefing_source()
 
     assert "${state.restlessTombEnabled?'On':'Off'}" in briefing
-    assert ">House Rule</small>" in briefing
+    assert ">Official Expansion - White Dwarf 521</small>" in briefing
     assert "state.deadlyEncountersEnabled?'Enabled':'Disabled'" in briefing
     assert "const deadlyBriefing=isPvpMode()?'':" in briefing
     assert "Solo battles only" not in briefing

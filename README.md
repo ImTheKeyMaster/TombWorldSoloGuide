@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.14
+# Tomb World Battle Guide v10.0.15
+
+## v10.0.15
+
+### Official Restless Tomb Classification
+
+- Correctly identifies Restless Tomb as an official White Dwarf 521 expansion rule throughout the app.
+- Preserves Restless Tomb as an independent optional checkbox compatible with every Tomb World variant.
+- Reuses the existing green official-expansion badge styling and refreshes the application cache version.
 
 ## v10.0.14
 
@@ -1935,7 +1943,7 @@ After adding or removing files in `Assets/Images/Backgrounds/`, run `python3 too
 
 **Version 7.2.0 - Add Optional Restless Tomb Events**
 
-- Added the optional Restless Tomb house rule to Mission Briefing for all six missions.
+- Added the optional Restless Tomb rule to Mission Briefing for all six missions.
 - Beginning with Turning Point 2, the option guarantees a minimum of one Tomb World event during each Strategy Phase; standard event rules still control higher event counts.
 - Restless Tomb defaults to off and persists with the current battle through save, reload, export, and import.
 
