@@ -18,12 +18,13 @@ class RestlessTombMissionBriefingTests(unittest.TestCase):
         self.assertEqual(options.count('id="restlessTombEnabled"'), 1)
         self.assertIn('<label class="check-row restless-tomb-option">', options)
         self.assertIn('<input id="restlessTombEnabled" type="checkbox"', options)
-        self.assertIn('aria-label="Enable Restless Tomb house rule"', options)
+        self.assertIn('aria-label="Enable Restless Tomb official expansion"', options)
         self.assertIn('<strong>Restless Tomb</strong>', options)
+        self.assertIn('<span class="rule-classification official">Official Expansion - White Dwarf 521</span>', options)
         self.assertIn('Beginning with Turning Point 2', options)
         self.assertIn('Turning Point 1 is unaffected', options)
         self.assertIn('standard event rules may require additional events', options)
-        self.assertIn('optional house rule increases activity and difficulty', options)
+        self.assertIn('optional official expansion increases activity and difficulty', options)
         briefing = APP.split("return `<h3>Mission Briefing</h3>", 1)[1].split("function advanceSetupStep", 1)[0]
         self.assertNotIn('id="restlessTombEnabled"', briefing)
         self.assertIn('<strong id="briefing-restless-tomb-title">Restless Tomb</strong>', briefing)
@@ -35,6 +36,15 @@ class RestlessTombMissionBriefingTests(unittest.TestCase):
         mission_change = APP.split("$$('.mission-choice').forEach", 1)[1].split("$('#setupHome')", 1)[0]
         self.assertNotIn('restlessTombEnabled', mission_change)
         self.assertNotIn('restlessTombEnabled', APP.split('async function loadObjectiveMission', 1)[1].split('let playerManifest', 1)[0])
+
+    def test_option_remains_independent_from_every_tomb_world_variant(self):
+        options = APP.split("if(stepId==='options')", 1)[1].split("if(stepId==='deploy')", 1)[0]
+        self.assertIn('type="radio" name="tombWorldVariant"', options)
+        self.assertIn('<input id="restlessTombEnabled" type="checkbox"', options)
+        checkbox_change = APP.split("$('#restlessTombEnabled')?.addEventListener", 1)[1].split("$('#deadlyEncountersEnabled')", 1)[0]
+        variant_change = APP.split("$$('input[name=\"tombWorldVariant\"]')", 1)[1].split("$('#beginGame')", 1)[0]
+        self.assertNotIn('tombWorldVariant', checkbox_change)
+        self.assertNotIn('restlessTombEnabled', variant_change)
 
     def test_option_is_shared_by_all_missions_and_read_only_in_active_references(self):
         self.assertEqual(len(list((ROOT / 'Missions').glob('[0-9][0-9]-*.json'))), 6)

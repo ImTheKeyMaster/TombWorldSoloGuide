@@ -62,7 +62,7 @@ def test_continue_and_variant_selection_bindings_are_unchanged():
 
 
 def test_checkbox_accessible_names_are_retained():
-    assert 'aria-label="Enable Restless Tomb house rule"' in OPTIONS_RENDER
+    assert 'aria-label="Enable Restless Tomb official expansion"' in OPTIONS_RENDER
     assert 'aria-label="Enable Deadly Encounters: Tomb Worlds official expansion"' in OPTIONS_RENDER
 
 
