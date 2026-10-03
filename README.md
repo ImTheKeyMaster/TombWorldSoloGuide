@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.15
+# Tomb World Battle Guide v10.0.16
+
+## v10.0.16
+
+### Hidden Experimental UI Toggle
+
+- Adds a device-local, seven-tap developer panel for opting into the experimental Tomb visual design.
+- Applies the saved visual mode before the main stylesheet loads, with classic mode as the failure-safe default.
+- Introduces modest, fully scoped Tomb theme accents without changing gameplay or the classic presentation.
 
 ## v10.0.15
 
