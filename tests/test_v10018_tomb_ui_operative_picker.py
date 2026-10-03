@@ -196,6 +196,8 @@ def test_tomb_picker_has_small_height_landscape_and_explicit_portrait_recovery()
         '.tomb-operative-picker-shell',
         '.tomb-operative-picker',
         '.tomb-picker-intro',
+        '.tomb-picker-banner',
+        '.tomb-picker-heading',
         '.tomb-picker-actions',
     ):
         assert f'html[data-ui="tomb"] {selector}' in portrait
@@ -207,8 +209,17 @@ def test_tomb_picker_has_small_height_landscape_and_explicit_portrait_recovery()
         'align-content:start!important',
         'min-height:0!important',
         'gap:8px!important',
-        'overflow:visible!important',
+        'margin:4px 0 0!important',
+        'padding:0!important',
+        'overflow-x:visible!important',
+        'overflow-y:visible!important',
+        'overscroll-behavior:auto!important',
+        '-webkit-overflow-scrolling:auto!important',
         'position:static!important',
+        'align-self:auto!important',
+        'max-height:88px!important',
+        'text-align:center!important',
+        'margin-top:12px!important',
     ):
         assert reset in portrait
 

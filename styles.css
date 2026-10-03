@@ -1853,8 +1853,12 @@ html[data-ui="tomb"] .tomb-graphic-button:focus-visible{
   }
   html[data-ui="tomb"] .tomb-operative-picker-shell{
     display:block!important;
+    grid-template-columns:none!important;
+    grid-template-rows:none!important;
     height:auto!important;
     max-height:none!important;
+    margin:4px -4px -2px!important;
+    padding:10px 4px 4px!important;
     overflow:hidden!important;
   }
   html[data-ui="tomb"] .tomb-operative-picker{
@@ -1863,13 +1867,32 @@ html[data-ui="tomb"] .tomb-graphic-button:focus-visible{
     height:auto!important;
     min-height:0!important;
     gap:8px!important;
-    overflow:visible!important;
+    margin:4px 0 0!important;
+    padding:0!important;
+    overflow-x:visible!important;
+    overflow-y:visible!important;
+    overscroll-behavior:auto!important;
+    -webkit-overflow-scrolling:auto!important;
   }
-  html[data-ui="tomb"] .tomb-picker-intro,
+  html[data-ui="tomb"] .tomb-picker-intro{
+    position:static!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    align-self:auto!important;
+  }
+  html[data-ui="tomb"] .tomb-picker-banner{
+    max-height:88px!important;
+    margin:-16px auto -6px!important;
+  }
+  html[data-ui="tomb"] .tomb-picker-heading{
+    padding:0 8px 8px!important;
+    text-align:center!important;
+  }
   html[data-ui="tomb"] .tomb-picker-actions{
     position:static!important;
     grid-column:auto!important;
     grid-row:auto!important;
+    margin-top:12px!important;
   }
 }
 @media(orientation:landscape) and (max-height:500px){
