@@ -2,7 +2,8 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const APP_VERSION = '10.0.15';
+  const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
+  const APP_VERSION = '10.0.16';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -243,6 +244,9 @@ document.addEventListener('touchend',function(e){
   const operativeStatusToggle = $('#operativeStatusToggle');
   const modal = $('#modal');
   const modalBody = $('#modalBody');
+  const experimentalUiDialog = $('#experimentalUiDialog');
+  const experimentalUiToggle = $('#experimentalUiToggle');
+  const experimentalUiClose = $('#experimentalUiClose');
   const diceEntryDialog = $('#diceEntryDialog');
   const diceEntryTitle = $('#diceEntryTitle');
   const diceEntryRoller = $('#diceEntryRoller');
@@ -9958,6 +9962,39 @@ function showPlayerActivation(){
     syncNarrationControls();
     void TombWorldNarration.init();
   }
+
+  // Temporary compatibility flag: classic remains the default until the Tomb UI replaces it.
+  function setExperimentalUi(enabled){
+    if(!enabled){
+      try{localStorage.removeItem(EXPERIMENTAL_UI_KEY);}
+      catch{/* Classic remains the failure-safe mode when storage is unavailable. */}
+      document.documentElement.dataset.ui='classic';
+      return;
+    }
+    try{
+      localStorage.setItem(EXPERIMENTAL_UI_KEY,'tomb');
+      document.documentElement.dataset.ui='tomb';
+    }catch{
+      document.documentElement.dataset.ui='classic';
+      experimentalUiToggle.checked=false;
+    }
+  }
+  function showExperimentalUiPanel(){
+    experimentalUiToggle.checked=document.documentElement.dataset.ui==='tomb';
+    experimentalUiDialog.showModal();
+  }
+  let versionTapTimes=[];
+  document.addEventListener('pointerup',event=>{
+    if(!event.target.closest('.version,.screen-version'))return;
+    const now=Date.now();
+    versionTapTimes=versionTapTimes.filter(timestamp=>now-timestamp<=5000);
+    versionTapTimes.push(now);
+    if(versionTapTimes.length<7)return;
+    versionTapTimes=[];
+    showExperimentalUiPanel();
+  });
+  experimentalUiToggle.addEventListener('change',()=>setExperimentalUi(experimentalUiToggle.checked));
+  experimentalUiClose.addEventListener('click',()=>experimentalUiDialog.close());
 
   function renderStartupRecovery(error){
     console.error('[Startup] Application restoration could not continue.',error);
