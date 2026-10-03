@@ -1,5 +1,5 @@
 /* Tomb UI v2. Visual prototype only, isolated behind html[data-ui="tomb"]. */
-html[data-ui="tomb"] .tomb-v2-modal{
+html[data-ui="tomb"] .tomb-operative-picker-modal{
   width:min(760px,calc(100% - 18px));
   max-height:calc(100dvh - 18px);
   overflow:hidden;
@@ -7,14 +7,14 @@ html[data-ui="tomb"] .tomb-v2-modal{
   border-radius:18px;
   background:#020807;
 }
-html[data-ui="tomb"] .tomb-v2-modal .modal-inner{
+html[data-ui="tomb"] .tomb-operative-picker-modal .modal-inner{
   max-height:calc(100dvh - 18px);
   padding:0;
   overflow:auto;
   overscroll-behavior:contain;
   -webkit-overflow-scrolling:touch;
 }
-html[data-ui="tomb"] .tomb-v2-modal .modal-inner>h2{display:none}
+html[data-ui="tomb"] .tomb-operative-picker-modal .modal-inner>h2{display:none}
 html[data-ui="tomb"] .tomb-v2-shell{
   position:relative;
   isolation:isolate;
@@ -360,12 +360,12 @@ html[data-ui="tomb"] .tomb-v2-actions .tomb-graphic-button span{min-height:54px}
   html[data-ui="tomb"] .tomb-v2-bars i{width:13px}
 }
 @media(orientation:landscape) and (max-height:500px){
-  html[data-ui="tomb"] .tomb-v2-modal{
+  html[data-ui="tomb"] .tomb-operative-picker-modal{
     width:calc(100% - max(10px,env(safe-area-inset-left)) - max(10px,env(safe-area-inset-right)));
     max-width:1050px;
     max-height:calc(100dvh - 10px);
   }
-  html[data-ui="tomb"] .tomb-v2-modal .modal-inner{
+  html[data-ui="tomb"] .tomb-operative-picker-modal .modal-inner{
     max-height:calc(100dvh - 10px);
     overflow:auto!important;
   }
@@ -418,8 +418,8 @@ html[data-ui="tomb"] .tomb-v2-actions .tomb-graphic-button span{min-height:54px}
   html[data-ui="tomb"] .tomb-v2-actions .tomb-graphic-button span{min-height:42px}
 }
 @media(orientation:portrait){
-  html[data-ui="tomb"] .tomb-v2-modal,
-  html[data-ui="tomb"] .tomb-v2-modal .modal-inner,
+  html[data-ui="tomb"] .tomb-operative-picker-modal,
+  html[data-ui="tomb"] .tomb-operative-picker-modal .modal-inner,
   html[data-ui="tomb"] .tomb-v2-shell,
   html[data-ui="tomb"] .tomb-v2-operative-grid{
     height:auto!important;
