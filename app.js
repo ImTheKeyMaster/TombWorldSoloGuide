@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.17';
+  const APP_VERSION = '10.0.18';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5377,24 +5377,30 @@ function showTombPlayerOperativeSelection(candidates){
             <small>${escapeHtml(role)}</small>
             <span class="tomb-operative-state">READY</span>
           </span>
-          <span class="tomb-operative-stats"><b>APL ${escapeHtml(String(apl))}</b><small>${escapeHtml(String(wounds))}/${escapeHtml(String(maximum))} WOUNDS</small></span>
+          <span class="tomb-operative-stats">
+            <span class="tomb-operative-stat"><small>APL</small><b>${escapeHtml(String(apl))}</b></span>
+            <span class="tomb-operative-stat tomb-operative-wounds"><small>WOUNDS</small><b>${escapeHtml(String(wounds))}/${escapeHtml(String(maximum))}</b></span>
+          </span>
         </span>
       </button>`;
     }).join('');
     showModal(`${selectedPlayerTeamName().toUpperCase()} ACTIVATION`,`<section class="tomb-operative-picker-shell">
-      <img class="tomb-picker-banner" src="Assets/Images/TombUI/tomb-header.webp" alt="" aria-hidden="true">
-      <div class="tomb-picker-heading"><p class="eyebrow">OPERATIVE ACTION</p><h3>SELECT OPERATIVE</h3><p>Choose a Ready operative to begin its activation.</p></div>
+      <div class="tomb-picker-intro">
+        <img class="tomb-picker-banner" src="Assets/Images/TombUI/tomb-header.webp" alt="" aria-hidden="true">
+        <div class="tomb-picker-heading"><p class="eyebrow">OPERATIVE ACTION</p><h3>SELECT OPERATIVE</h3><p>Choose a Ready operative to begin its activation.</p></div>
+      </div>
       <div class="tomb-operative-picker" role="radiogroup" aria-label="Ready operatives">${cards}</div>
       <div class="tomb-picker-actions">
         <button class="tomb-graphic-button secondary" type="button" data-close><img src="Assets/Images/TombUI/button-secondary.webp" alt="" aria-hidden="true"><span>Close Guide</span></button>
         <button class="tomb-graphic-button primary" type="button" id="confirmTombPlayerSelection" disabled><img src="Assets/Images/TombUI/button-primary.webp" alt="" aria-hidden="true"><span>Continue</span></button>
       </div>
     </section>`);
+    modal.classList.add('tomb-operative-picker-modal');
     let selectedId='';
     const confirm=$('#confirmTombPlayerSelection');
-    $('[data-tomb-player-operative]',modal).forEach(button=>button.onclick=()=>{
+    $$('[data-tomb-player-operative]',modal).forEach(button=>button.onclick=()=>{
       selectedId=button.dataset.tombPlayerOperative;
-      $('[data-tomb-player-operative]',modal).forEach(card=>{
+      $$('[data-tomb-player-operative]',modal).forEach(card=>{
         const selected=card.dataset.tombPlayerOperative===selectedId;
         card.classList.toggle('selected',selected);
         card.setAttribute('aria-checked',String(selected));
@@ -9687,7 +9693,7 @@ function showPlayerActivation(){
     const shouldRestoreFocus=modal._skipFocusRestoreId!==activeControlId;
     modal._skipFocusRestoreId=null;
 
-    modal.classList.remove('combat-resolution-modal');
+    modal.classList.remove('combat-resolution-modal','tomb-operative-picker-modal');
     modalBody.innerHTML=`<div class="modal-inner"><h2 id="modalTitle">${escapeHtml(title)}</h2>${content}</div>`;
     modal.setAttribute('aria-labelledby','modalTitle');
     modal.setAttribute('tabindex','-1');
