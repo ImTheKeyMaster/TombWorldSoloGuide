@@ -366,7 +366,9 @@ html[data-ui="tomb"] .tomb-v2-actions .tomb-graphic-button span{min-height:54px}
     max-height:calc(100dvh - 10px);
   }
   html[data-ui="tomb"] .tomb-operative-picker-modal .modal-inner{
+    height:auto!important;
     max-height:calc(100dvh - 10px);
+    padding:0!important;
     overflow:auto!important;
   }
   html[data-ui="tomb"] .tomb-v2-shell{
