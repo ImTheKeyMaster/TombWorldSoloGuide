@@ -152,6 +152,8 @@ def test_tomb_picker_has_deliberate_visual_zones_and_small_height_landscape_layo
         assert zone in picker
     assert "aspect-ratio:3/1" in CSS
     assert 'html[data-ui="tomb"] .tomb-operative-frame' in CSS
+    assert "grid-template-columns:32% minmax(0,1fr) 17%" in CSS
+    assert re.search(r'\.tomb-operative-stats\{[^}]*flex-direction:column', CSS, re.DOTALL)
     landscape = CSS.split('@media(orientation:landscape) and (max-height:500px)', 1)[1]
     assert 'html[data-ui="tomb"] .modal.tomb-operative-picker-modal' in landscape
     assert 'env(safe-area-inset-top)' in landscape
