@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.16
+# Tomb World Battle Guide v10.0.17
+
+## v10.0.17
+
+### Experimental Tomb Operative Picker
+
+- Replaces the Player operative dropdown with large graphical tap cards only when the hidden Tomb UI is enabled.
+- Uses the new Tomb UI frame, banner, background, and button image assets while keeping operative names, roles, APL, wounds, accessibility, and selection state as live HTML.
+- Preserves the existing classic dropdown and activation logic unchanged when Experimental Tomb UI is off.
+- Precaches the Tomb UI asset pack for offline/PWA use.
 
 ## v10.0.16
 

@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.16';
+  const APP_VERSION = '10.0.17';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5359,12 +5359,62 @@ document.addEventListener('touchend',function(e){
     return Number(objectiveEngine?.getMissionHudModel().value||state.missionState?.destruction||0)<20;
   }
 
+function showTombPlayerOperativeSelection(candidates){
+    const readyFrame='Assets/Images/TombUI/operative-ready.webp';
+    const selectedFrame='Assets/Images/TombUI/operative-selected.webp';
+    const cards=candidates.map((id,index)=>{
+      const operative=livePlayerOperative(id)||playerDefinition(id)||{};
+      const role=operative.role||'Operative';
+      const apl=operative.apl??'—';
+      const wounds=playerCurrentWounds(id);
+      const maximum=Number(playerDefinition(id)?.wounds??operative.wounds??0);
+      return `<button class="tomb-operative-card" type="button" role="radio" aria-checked="false" data-tomb-player-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
+        <img class="tomb-operative-frame" src="${readyFrame}" alt="" aria-hidden="true">
+        <span class="tomb-operative-card-content">
+          <span class="tomb-operative-portrait-slot" aria-hidden="true"><span class="tomb-operative-monogram">${escapeHtml(playerName(id).slice(0,2).toUpperCase())}</span></span>
+          <span class="tomb-operative-copy">
+            <strong>${escapeHtml(playerName(id))}</strong>
+            <small>${escapeHtml(role)}</small>
+            <span class="tomb-operative-state">READY</span>
+          </span>
+          <span class="tomb-operative-stats"><b>APL ${escapeHtml(String(apl))}</b><small>${escapeHtml(String(wounds))}/${escapeHtml(String(maximum))} WOUNDS</small></span>
+        </span>
+      </button>`;
+    }).join('');
+    showModal(`${selectedPlayerTeamName().toUpperCase()} ACTIVATION`,`<section class="tomb-operative-picker-shell">
+      <img class="tomb-picker-banner" src="Assets/Images/TombUI/tomb-header.webp" alt="" aria-hidden="true">
+      <div class="tomb-picker-heading"><p class="eyebrow">OPERATIVE ACTION</p><h3>SELECT OPERATIVE</h3><p>Choose a Ready operative to begin its activation.</p></div>
+      <div class="tomb-operative-picker" role="radiogroup" aria-label="Ready operatives">${cards}</div>
+      <div class="tomb-picker-actions">
+        <button class="tomb-graphic-button secondary" type="button" data-close><img src="Assets/Images/TombUI/button-secondary.webp" alt="" aria-hidden="true"><span>Close Guide</span></button>
+        <button class="tomb-graphic-button primary" type="button" id="confirmTombPlayerSelection" disabled><img src="Assets/Images/TombUI/button-primary.webp" alt="" aria-hidden="true"><span>Continue</span></button>
+      </div>
+    </section>`);
+    let selectedId='';
+    const confirm=$('#confirmTombPlayerSelection');
+    $('[data-tomb-player-operative]',modal).forEach(button=>button.onclick=()=>{
+      selectedId=button.dataset.tombPlayerOperative;
+      $('[data-tomb-player-operative]',modal).forEach(card=>{
+        const selected=card.dataset.tombPlayerOperative===selectedId;
+        card.classList.toggle('selected',selected);
+        card.setAttribute('aria-checked',String(selected));
+        const frame=$('.tomb-operative-frame',card);
+        if(frame)frame.src=selected?selectedFrame:readyFrame;
+        const stateLabel=$('.tomb-operative-state',card);
+        if(stateLabel)stateLabel.textContent=selected?'SELECTED':'READY';
+      });
+      confirm.disabled=false;
+    });
+    confirm.onclick=()=>{if(selectedId)beginPlayerActivation(selectedId);};
+  }
+
 function showPlayerActivation(){
     const active=activePlayerActivation();
     if(active){void resumeCheckpointedGameplayContext();return;}
     const candidates=remainingPlayerOperatives();
     if(!candidates.length){state.playerReady=0;setNextActivation('npo');save();render();return;}
     if(candidates.length===1){beginPlayerActivation(candidates[0]);return;}
+    if(document.documentElement.dataset.ui==='tomb'){showTombPlayerOperativeSelection(candidates);return;}
     const options=candidates.map(id=>`<option value="${escapeHtml(id)}">${escapeHtml(playerName(id))}</option>`).join('');
     showModal(`${selectedPlayerTeamName().toUpperCase()} ACTIVATION`,`<p>Choose a Ready operative.</p><div class="field"><label for="humanPlayerSelection">Ready operative</label><select id="humanPlayerSelection" data-dialog-focus><option value="">Select a Ready operative</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmHumanPlayerSelection" disabled>Continue</button></div>`);
     $('#humanPlayerSelection').onchange=()=>{$('#confirmHumanPlayerSelection').disabled=!$('#humanPlayerSelection').value;};
