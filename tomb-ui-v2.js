@@ -77,7 +77,7 @@
       </div>
     </section>`);
 
-    modal.classList.add('tomb-operative-picker-modal','tomb-v2-modal');
+    modal.classList.add('tomb-operative-picker-modal');
     let selectedId='';
     const confirm=$('#confirmTombPlayerSelection');
     const preview=$('#tombV2PreviewText');
