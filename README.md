@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.18
+# Tomb World Battle Guide v10.0.19
+
+## v10.0.19
+
+### Tomb Operative Card Precision Layout
+
+- Gives the card's right-hand dial a single purpose by centering only the current/max wound value inside it and placing APL in its own adjacent zone.
+- Pins operative name, role, and readiness text to the artwork's fixed graphical channels, with a smaller treatment for long names.
+- Explicitly restores portrait picker sizing, spacing, overflow, and placement after repeated iPhone/PWA orientation changes.
+- Preserves the Tomb selection flow, classic UI, gameplay logic, and save schema version 3 unchanged.
 
 ## v10.0.18
 
