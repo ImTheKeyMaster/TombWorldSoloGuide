@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.17
+# Tomb World Battle Guide v10.0.18
+
+## v10.0.18
+
+### Experimental Tomb Operative Picker Stabilization
+
+- Fixes every Tomb operative card so it can be selected, switched, and continued through the existing activation path.
+- Aligns accessible live operative details with the graphical card compartments at phone portrait widths.
+- Adds a compact, safe-area-aware phone landscape layout with scrollable cards and persistent action controls.
+- Preserves classic mode, gameplay rules, activation sequencing, and save schema version 3 unchanged.
 
 ## v10.0.17
 
