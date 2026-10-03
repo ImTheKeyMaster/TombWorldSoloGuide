@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.18';
+  const APP_VERSION = '10.0.19';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5364,6 +5364,7 @@ function showTombPlayerOperativeSelection(candidates){
     const selectedFrame='Assets/Images/TombUI/operative-selected.webp';
     const cards=candidates.map((id,index)=>{
       const operative=livePlayerOperative(id)||playerDefinition(id)||{};
+      const name=playerName(id);
       const role=operative.role||'Operative';
       const apl=operative.apl??'—';
       const wounds=playerCurrentWounds(id);
@@ -5371,16 +5372,14 @@ function showTombPlayerOperativeSelection(candidates){
       return `<button class="tomb-operative-card" type="button" role="radio" aria-checked="false" data-tomb-player-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
         <img class="tomb-operative-frame" src="${readyFrame}" alt="" aria-hidden="true">
         <span class="tomb-operative-card-content">
-          <span class="tomb-operative-portrait-slot" aria-hidden="true"><span class="tomb-operative-monogram">${escapeHtml(playerName(id).slice(0,2).toUpperCase())}</span></span>
+          <span class="tomb-operative-portrait-slot" aria-hidden="true"><span class="tomb-operative-monogram">${escapeHtml(name.slice(0,2).toUpperCase())}</span></span>
           <span class="tomb-operative-copy">
-            <strong>${escapeHtml(playerName(id))}</strong>
+            <strong class="tomb-operative-name${name.length>18?' tomb-operative-name-long':''}">${escapeHtml(name)}</strong>
             <small>${escapeHtml(role)}</small>
             <span class="tomb-operative-state">READY</span>
           </span>
-          <span class="tomb-operative-stats">
-            <span class="tomb-operative-stat"><small>APL</small><b>${escapeHtml(String(apl))}</b></span>
-            <span class="tomb-operative-stat tomb-operative-wounds"><small>WOUNDS</small><b>${escapeHtml(String(wounds))}/${escapeHtml(String(maximum))}</b></span>
-          </span>
+          <span class="tomb-operative-apl">APL <b>${escapeHtml(String(apl))}</b></span>
+          <span class="tomb-operative-wounds"><b>${escapeHtml(String(wounds))}/${escapeHtml(String(maximum))}</b></span>
         </span>
       </button>`;
     }).join('');

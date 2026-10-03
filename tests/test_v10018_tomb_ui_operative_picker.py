@@ -18,7 +18,7 @@ def section(start, end):
 
 
 def test_release_surfaces_are_synchronized():
-    assert CURRENT_APP_VERSION == "10.0.18"
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 19)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f"V{CURRENT_APP_VERSION}" in INDEX
@@ -135,25 +135,51 @@ def test_tomb_picker_styles_are_scoped_to_experimental_ui():
     assert 'html[data-ui="tomb"] .tomb-operative-card' in CSS
     assert 'html[data-ui="tomb"] .tomb-graphic-button' in CSS
     assert 'Assets/Images/TombUI/tomb-background.webp' in CSS
-    picker_css = CSS.split('/* v10.0.18: experimental Tomb UI operative picker.', 1)[1]
+    picker_css = CSS.split('/* Experimental Tomb UI operative picker.', 1)[1]
     tomb_selector_lines = [line.strip() for line in picker_css.splitlines() if '.tomb-' in line and line.rstrip().endswith('{')]
     assert tomb_selector_lines
     assert all(line.startswith('html[data-ui="tomb"]') for line in tomb_selector_lines)
 
 
-def test_tomb_picker_has_deliberate_visual_zones_and_small_height_landscape_layout():
+def test_tomb_picker_has_dedicated_apl_and_wound_elements():
+    picker = section("function showTombPlayerOperativeSelection", "function showPlayerActivation()")
+    assert '<span class="tomb-operative-apl">APL <b>' in picker
+    wounds = re.search(r'<span class="tomb-operative-wounds">(.*?)</span>', picker, re.DOTALL)
+    assert wounds
+    assert "APL" not in wounds.group(1)
+    assert "WOUNDS" not in wounds.group(1)
+    assert "tomb-operative-stats" not in picker
+    assert 'class="tomb-operative-stat"' not in picker
+
+
+def test_tomb_picker_copy_uses_explicit_graphical_zones():
     picker = section("function showTombPlayerOperativeSelection", "function showPlayerActivation()")
     for zone in (
         "tomb-picker-intro",
         "tomb-operative-portrait-slot",
         "tomb-operative-copy",
-        "tomb-operative-stats",
+        "tomb-operative-apl",
+        "tomb-operative-wounds",
     ):
         assert zone in picker
     assert "aspect-ratio:3/1" in CSS
     assert 'html[data-ui="tomb"] .tomb-operative-frame' in CSS
-    assert "grid-template-columns:32% minmax(0,1fr) 17%" in CSS
-    assert re.search(r'\.tomb-operative-stats\{[^}]*flex-direction:column', CSS, re.DOTALL)
+    copy = re.search(r'html\[data-ui="tomb"\] \.tomb-operative-copy\{([^}]*)\}', CSS, re.DOTALL).group(1)
+    assert "position:absolute" in copy
+    assert "display:flex" not in copy
+    for selector, top in (
+        (r'\.tomb-operative-copy strong', "top:23%"),
+        (r'\.tomb-operative-copy small', "top:48%"),
+        (r'\.tomb-operative-state', "top:68%"),
+    ):
+        rule = re.search(rf'html\[data-ui="tomb"\] {selector}\{{([^}}]*)\}}', CSS, re.DOTALL).group(1)
+        assert "position:absolute" in rule
+        assert top in rule
+    assert "tomb-operative-name-long" in picker
+    assert "tomb-operative-name-long" in CSS
+
+
+def test_tomb_picker_has_small_height_landscape_and_explicit_portrait_recovery():
     landscape = CSS.split('@media(orientation:landscape) and (max-height:500px)', 1)[1]
     assert 'html[data-ui="tomb"] .modal.tomb-operative-picker-modal' in landscape
     assert 'env(safe-area-inset-top)' in landscape
@@ -161,6 +187,30 @@ def test_tomb_picker_has_deliberate_visual_zones_and_small_height_landscape_layo
     assert 'grid-template-columns:repeat(2,minmax(0,1fr))' in landscape
     assert 'overflow-y:auto' in landscape
     assert 'html[data-ui="tomb"] .tomb-picker-actions' in landscape
+    portrait = CSS.split('@media(orientation:portrait)', 1)[1].split(
+        '@media(orientation:landscape) and (max-height:500px)', 1
+    )[0]
+    for selector in (
+        '.modal.tomb-operative-picker-modal',
+        '.tomb-operative-picker-modal .modal-inner',
+        '.tomb-operative-picker-shell',
+        '.tomb-operative-picker',
+        '.tomb-picker-intro',
+        '.tomb-picker-actions',
+    ):
+        assert f'html[data-ui="tomb"] {selector}' in portrait
+    for reset in (
+        'display:block!important',
+        'height:auto!important',
+        'max-height:none!important',
+        'grid-template-columns:1fr!important',
+        'align-content:start!important',
+        'min-height:0!important',
+        'gap:8px!important',
+        'overflow:visible!important',
+        'position:static!important',
+    ):
+        assert reset in portrait
 
 
 def test_tomb_assets_are_precached_for_pwa_use():
