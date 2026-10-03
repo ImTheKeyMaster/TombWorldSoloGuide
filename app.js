@@ -9965,18 +9965,26 @@ function showPlayerActivation(){
 
   // Temporary compatibility flag: classic remains the default until the Tomb UI replaces it.
   function setExperimentalUi(enabled){
-    document.documentElement.dataset.ui=enabled?'tomb':'classic';
+    if(!enabled){
+      try{localStorage.removeItem(EXPERIMENTAL_UI_KEY);}
+      catch{/* Classic remains the failure-safe mode when storage is unavailable. */}
+      document.documentElement.dataset.ui='classic';
+      return;
+    }
     try{
-      if(enabled)localStorage.setItem(EXPERIMENTAL_UI_KEY,'tomb');
-      else localStorage.removeItem(EXPERIMENTAL_UI_KEY);
-    }catch{/* The visual choice still applies for the current session. */}
+      localStorage.setItem(EXPERIMENTAL_UI_KEY,'tomb');
+      document.documentElement.dataset.ui='tomb';
+    }catch{
+      document.documentElement.dataset.ui='classic';
+      experimentalUiToggle.checked=false;
+    }
   }
   function showExperimentalUiPanel(){
     experimentalUiToggle.checked=document.documentElement.dataset.ui==='tomb';
     experimentalUiDialog.showModal();
   }
   let versionTapTimes=[];
-  document.addEventListener('click',event=>{
+  document.addEventListener('pointerup',event=>{
     if(!event.target.closest('.version,.screen-version'))return;
     const now=Date.now();
     versionTapTimes=versionTapTimes.filter(timestamp=>now-timestamp<=5000);

@@ -25,8 +25,14 @@ def test_experimental_ui_is_isolated_and_hidden_behind_version_taps():
     assert "const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';" in APP
     assert "if(versionTapTimes.length<7)return;" in APP
     assert "now-timestamp<=5000" in APP
+    assert "document.addEventListener('pointerup'" in APP
+    assert "document.addEventListener('click',event=>" not in APP[APP.index("let versionTapTimes") : APP.index("experimentalUiToggle.addEventListener")]
     assert "Experimental Tomb UI" in INDEX
     assert "Enables the experimental Tomb World visual design on this device." in INDEX
+    assert 'aria-modal="true" aria-labelledby="experimentalUiTitle"' in INDEX
     assert 'html[data-ui="tomb"]' in CSS
     save_function = APP[APP.index("function save()") : APP.index("function migrateSupportedSave")]
     assert "EXPERIMENTAL_UI_KEY" not in save_function
+    setter = APP[APP.index("function setExperimentalUi") : APP.index("function showExperimentalUiPanel")]
+    assert setter.index("localStorage.setItem") < setter.index("dataset.ui='tomb'")
+    assert "dataset.ui='classic'" in setter
