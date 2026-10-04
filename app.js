@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.27';
+  const APP_VERSION = '10.0.28';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5391,29 +5391,16 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
       return `<span class="tomb-v2-monogram">${escapeHtml(playerName(id).slice(0,2).toUpperCase())}</span>`;
     }
     const portrait=TOMB_V2_DEATHWATCH_PORTRAITS[id]||'rifleman';
-    return `<span class="tomb-v2-portrait portrait-${portrait}" style="--tomb-v2-sprite:url('${TOMB_V2_PORTRAIT_SPRITE}')" aria-hidden="true"></span>`;
+    return `<img class="tomb-v2-portrait portrait-${portrait}" src="${TOMB_V2_PORTRAIT_SPRITE}" alt="" aria-hidden="true">`;
   }
 
-  function tombV2CardFrameParts(){
-    return `<span class="tomb-card-frame-parts" aria-hidden="true">
-      <span class="center"></span>
-      <span class="edge top"><img class="ready-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/ready/edge-top.svg" alt=""><img class="selected-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/selected/edge-top.svg" alt=""></span>
-      <span class="edge bottom"><img class="ready-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/ready/edge-bottom.svg" alt=""><img class="selected-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/selected/edge-bottom.svg" alt=""></span>
-      <span class="edge left"><img class="ready-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/ready/edge-left.svg" alt=""><img class="selected-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/selected/edge-left.svg" alt=""></span>
-      <span class="edge right"><img class="ready-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/ready/edge-right.svg" alt=""><img class="selected-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/selected/edge-right.svg" alt=""></span>
-      <span class="corner tl"><img class="ready-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/ready/corner-tl.svg" alt=""><img class="selected-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/selected/corner-tl.svg" alt=""></span>
-      <span class="corner tr"><img class="ready-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/ready/corner-tr.svg" alt=""><img class="selected-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/selected/corner-tr.svg" alt=""></span>
-      <span class="corner bl"><img class="ready-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/ready/corner-bl.svg" alt=""><img class="selected-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/selected/corner-bl.svg" alt=""></span>
-      <span class="corner br"><img class="ready-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/ready/corner-br.svg" alt=""><img class="selected-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/selected/corner-br.svg" alt=""></span>
-    </span>`;
-  }
 
   function showTombPlayerOperativeSelection(candidates){
     const firstApl=candidates.length?(playerDefinition(candidates[0])?.apl??livePlayerOperative(candidates[0])?.apl??'—'):'—';
     const cards=candidates.map((id,index)=>{
       const operative=livePlayerOperative(id)||playerDefinition(id)||{};
-      return `<button class="tomb-v2-card tomb-card-frame frame-ready" type="button" role="radio" aria-checked="false" data-tomb-player-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
-        ${tombV2CardFrameParts()}
+      return `<button class="tomb-v2-card" type="button" role="radio" aria-checked="false" data-tomb-player-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
+        <span class="tomb-card-skin" aria-hidden="true"></span>
         <span class="tomb-v2-card-content">
           <span class="tomb-v2-portrait-zone">${tombV2PlayerPortrait(id)}</span>
           <span class="tomb-v2-copy">
@@ -5437,14 +5424,15 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
       </div>
       <div class="tomb-v2-section-title"><span>✠</span><strong>SELECT OPERATIVE</strong></div>
       <div class="tomb-v2-operative-grid" role="radiogroup" aria-label="Ready operatives">${cards}</div>
-      <div class="tomb-v2-preview tomb-frame-preview">
-        <span class="tomb-nine-slice tomb-frame-background" aria-hidden="true"></span>
+      <div class="tomb-v2-preview">
+        <span class="tomb-preview-skin" aria-hidden="true"></span>
+        <span class="tomb-v2-preview-icon" aria-hidden="true">✠</span>
         <div class="tomb-v2-preview-copy"><span>ACTION PREVIEW</span><strong>OPERATIVE READY</strong><small id="tombV2PreviewText">Choose an operative to continue.</small></div>
-        <span class="tomb-nine-slice tomb-frame-foreground" aria-hidden="true"></span>
+        <span class="tomb-v2-preview-ornament" aria-hidden="true">⬡</span>
       </div>
       <div class="tomb-v2-actions">
-        <button class="tomb-graphic-button tomb-frame-button primary" type="button" id="confirmTombPlayerSelection" disabled><span class="tomb-nine-slice tomb-graphic-button__background" aria-hidden="true"></span><span class="tomb-graphic-button__label">Confirm Selection »</span></button>
-        <button class="tomb-graphic-button tomb-frame-button secondary" type="button" data-close><span class="tomb-nine-slice tomb-graphic-button__background" aria-hidden="true"></span><span class="tomb-graphic-button__label">Cancel</span></button>
+        <button class="tomb-v2-button primary" type="button" id="confirmTombPlayerSelection" disabled><span>Confirm Selection</span><i aria-hidden="true">»</i></button>
+        <button class="tomb-v2-button secondary" type="button" data-close><span>Cancel</span></button>
       </div>
     </section>`);
 
@@ -5460,8 +5448,6 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
         const selected=card.dataset.tombPlayerOperative===selectedId;
         card.classList.toggle('selected',selected);
         card.setAttribute('aria-checked',String(selected));
-        card.classList.toggle('frame-ready',!selected);
-        card.classList.toggle('frame-selected',selected);
         const status=$('.tomb-v2-status b',card);
         if(status)status.textContent=selected?'SELECTED':'READY';
       });
