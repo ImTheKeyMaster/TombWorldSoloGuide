@@ -63,13 +63,16 @@ def test_v2_card_uses_explicit_fixed_corners_and_directional_edges():
         assert f'class="{piece}"' in picker
     assert '--tomb-card-corner-width:12px' in CSS
     assert '--tomb-card-corner-height:12px' in CSS
-    assert '--tomb-card-frame-overlap:2px' in CSS
+    assert '--tomb-card-frame-overlap:3px' in CSS
     assert '.tomb-card-frame-parts>span{\n  position:absolute;' in CSS
     assert '.tomb-card-frame-parts .edge{\n  z-index:2;' in CSS
     assert '.tomb-card-frame-parts .corner{\n  z-index:3;' in CSS
     assert 'left:calc(var(--tomb-card-corner-width) - var(--tomb-card-frame-overlap));' in CSS
     assert 'top:calc(var(--tomb-card-corner-height) - var(--tomb-card-frame-overlap));' in CSS
     assert 'width:var(--tomb-card-corner-width);\n  height:var(--tomb-card-corner-height);' in CSS
+    assert 'object-fit:fill' in CSS
+    assert picker.count('<span class="edge ') == 4
+    assert picker.count('<span class="corner ') == 4
     pieces = ('corner-tl.svg', 'edge-top.svg', 'corner-tr.svg', 'edge-left.svg',
               'center.svg', 'edge-right.svg', 'corner-bl.svg', 'edge-bottom.svg',
               'corner-br.svg')

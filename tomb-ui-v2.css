@@ -196,7 +196,7 @@ html[data-ui="tomb"] .tomb-nine-slice{
 html[data-ui="tomb"] .tomb-card-frame-parts{
   --tomb-card-corner-width:12px;
   --tomb-card-corner-height:12px;
-  --tomb-card-frame-overlap:2px;
+  --tomb-card-frame-overlap:3px;
   position:absolute;
   inset:0;
   display:block;
@@ -209,13 +209,14 @@ html[data-ui="tomb"] .tomb-card-frame-parts>span{
   box-sizing:border-box;
   min-width:0;
   min-height:0;
-  background-position:center;
-  background-repeat:no-repeat;
 }
 html[data-ui="tomb"] .tomb-card-frame-parts .center{
   z-index:0;
-  inset:calc(var(--tomb-card-corner-height) - var(--tomb-card-frame-overlap)) calc(var(--tomb-card-corner-width) - var(--tomb-card-frame-overlap));
-  background-size:100% 100%;
+  inset:0;
+  background:center/100% 100% no-repeat url("Assets/Images/TombUI/v2/card-frame/ready/center.svg");
+}
+html[data-ui="tomb"] .tomb-card-frame.frame-selected .center{
+  background-image:url("Assets/Images/TombUI/v2/card-frame/selected/center.svg");
 }
 html[data-ui="tomb"] .tomb-card-frame-parts .edge{
   z-index:2;
@@ -225,21 +226,30 @@ html[data-ui="tomb"] .tomb-card-frame-parts .bottom{
   left:calc(var(--tomb-card-corner-width) - var(--tomb-card-frame-overlap));
   right:calc(var(--tomb-card-corner-width) - var(--tomb-card-frame-overlap));
   height:var(--tomb-card-corner-height);
-  background-size:100% var(--tomb-card-corner-height);
 }
 html[data-ui="tomb"] .tomb-card-frame-parts .left,
 html[data-ui="tomb"] .tomb-card-frame-parts .right{
   top:calc(var(--tomb-card-corner-height) - var(--tomb-card-frame-overlap));
   bottom:calc(var(--tomb-card-corner-height) - var(--tomb-card-frame-overlap));
   width:var(--tomb-card-corner-width);
-  background-size:var(--tomb-card-corner-width) 100%;
 }
 html[data-ui="tomb"] .tomb-card-frame-parts .corner{
   z-index:3;
   width:var(--tomb-card-corner-width);
   height:var(--tomb-card-corner-height);
-  background-size:var(--tomb-card-corner-width) var(--tomb-card-corner-height);
 }
+html[data-ui="tomb"] .tomb-card-frame-parts img{
+  position:absolute;
+  inset:0;
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:fill;
+  pointer-events:none;
+}
+html[data-ui="tomb"] .tomb-card-frame-parts .selected-piece,
+html[data-ui="tomb"] .tomb-card-frame.frame-selected .ready-piece{display:none}
+html[data-ui="tomb"] .tomb-card-frame.frame-selected .selected-piece{display:block}
 html[data-ui="tomb"] .tomb-card-frame-parts .tl{top:0;left:0}
 html[data-ui="tomb"] .tomb-card-frame-parts .top{top:0}
 html[data-ui="tomb"] .tomb-card-frame-parts .tr{top:0;right:0}
@@ -248,22 +258,9 @@ html[data-ui="tomb"] .tomb-card-frame-parts .right{right:0}
 html[data-ui="tomb"] .tomb-card-frame-parts .bl{bottom:0;left:0}
 html[data-ui="tomb"] .tomb-card-frame-parts .bottom{bottom:0}
 html[data-ui="tomb"] .tomb-card-frame-parts .br{right:0;bottom:0}
-html[data-ui="tomb"] .tomb-card-frame.frame-ready .tomb-card-frame-parts>span{
-  background-image:var(--ready-frame-piece);
-}
-html[data-ui="tomb"] .tomb-card-frame.frame-selected .tomb-card-frame-parts>span{
-  background-image:var(--selected-frame-piece);
+html[data-ui="tomb"] .tomb-card-frame.frame-selected .tomb-card-frame-parts{
   filter:drop-shadow(0 0 3px rgba(45,198,255,.7));
 }
-html[data-ui="tomb"] .tomb-card-frame-parts .tl{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/corner-tl.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/corner-tl.svg")}
-html[data-ui="tomb"] .tomb-card-frame-parts .top{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/edge-top.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/edge-top.svg")}
-html[data-ui="tomb"] .tomb-card-frame-parts .tr{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/corner-tr.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/corner-tr.svg")}
-html[data-ui="tomb"] .tomb-card-frame-parts .left{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/edge-left.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/edge-left.svg")}
-html[data-ui="tomb"] .tomb-card-frame-parts .center{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/center.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/center.svg")}
-html[data-ui="tomb"] .tomb-card-frame-parts .right{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/edge-right.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/edge-right.svg")}
-html[data-ui="tomb"] .tomb-card-frame-parts .bl{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/corner-bl.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/corner-bl.svg")}
-html[data-ui="tomb"] .tomb-card-frame-parts .bottom{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/edge-bottom.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/edge-bottom.svg")}
-html[data-ui="tomb"] .tomb-card-frame-parts .br{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/corner-br.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/corner-br.svg")}
 html[data-ui="tomb"] .tomb-v2-card-content{
   position:absolute;
   z-index:1;

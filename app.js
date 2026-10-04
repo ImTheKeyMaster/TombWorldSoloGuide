@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.26';
+  const APP_VERSION = '10.0.27';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5396,9 +5396,15 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
 
   function tombV2CardFrameParts(){
     return `<span class="tomb-card-frame-parts" aria-hidden="true">
-      <span class="corner tl"></span><span class="edge top"></span><span class="corner tr"></span>
-      <span class="edge left"></span><span class="center"></span><span class="edge right"></span>
-      <span class="corner bl"></span><span class="edge bottom"></span><span class="corner br"></span>
+      <span class="center"></span>
+      <span class="edge top"><img class="ready-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/ready/edge-top.svg" alt=""><img class="selected-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/selected/edge-top.svg" alt=""></span>
+      <span class="edge bottom"><img class="ready-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/ready/edge-bottom.svg" alt=""><img class="selected-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/selected/edge-bottom.svg" alt=""></span>
+      <span class="edge left"><img class="ready-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/ready/edge-left.svg" alt=""><img class="selected-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/selected/edge-left.svg" alt=""></span>
+      <span class="edge right"><img class="ready-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/ready/edge-right.svg" alt=""><img class="selected-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/selected/edge-right.svg" alt=""></span>
+      <span class="corner tl"><img class="ready-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/ready/corner-tl.svg" alt=""><img class="selected-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/selected/corner-tl.svg" alt=""></span>
+      <span class="corner tr"><img class="ready-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/ready/corner-tr.svg" alt=""><img class="selected-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/selected/corner-tr.svg" alt=""></span>
+      <span class="corner bl"><img class="ready-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/ready/corner-bl.svg" alt=""><img class="selected-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/selected/corner-bl.svg" alt=""></span>
+      <span class="corner br"><img class="ready-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/ready/corner-br.svg" alt=""><img class="selected-piece" src="${TOMB_V2_ASSET_ROOT}card-frame/selected/corner-br.svg" alt=""></span>
     </span>`;
   }
 
