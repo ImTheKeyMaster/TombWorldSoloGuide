@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.0.26
+# Tomb World Battle Guide v10.0.27
+
+## v10.0.27
+
+- Rebuilt operative card frames from eight explicit image elements with fixed corners, independently stretched edges, and 3px edge underlaps beneath the corners.
 
 ## v10.0.26
 
