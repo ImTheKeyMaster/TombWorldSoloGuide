@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.21';
+  const APP_VERSION = '10.0.22';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5394,34 +5394,6 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
     return `<span class="tomb-v2-portrait portrait-${portrait}" style="--tomb-v2-sprite:url('${TOMB_V2_PORTRAIT_SPRITE}')" aria-hidden="true"></span>`;
   }
 
-  let tombV2RelayoutFrame=0;
-  function relayoutTombV2Picker(){
-    if(document.documentElement.dataset.ui!=='tomb'||!modal.open||!modal.classList.contains('tomb-operative-picker-modal'))return;
-    cancelAnimationFrame(tombV2RelayoutFrame);
-    tombV2RelayoutFrame=requestAnimationFrame(()=>{
-      const shell=$('.tomb-v2-shell',modal);
-      const grid=$('.tomb-v2-operative-grid',modal);
-      const inner=$('.modal-inner',modal);
-      if(!shell||!grid||!inner)return;
-      const layout=window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches?'landscape':'portrait';
-      modal.dataset.tombLayout=layout;
-      [inner,shell,grid].forEach(element=>{
-        element.style.removeProperty('height');
-        element.style.removeProperty('min-height');
-        element.style.removeProperty('max-height');
-        element.style.removeProperty('align-content');
-        element.style.removeProperty('grid-template-columns');
-        element.style.removeProperty('gap');
-        element.style.removeProperty('row-gap');
-      });
-      void grid.offsetHeight;
-      grid.style.setProperty('align-content','start');
-    });
-  }
-
-  window.addEventListener('resize',relayoutTombV2Picker);
-  window.addEventListener('orientationchange',relayoutTombV2Picker);
-
   function showTombPlayerOperativeSelection(candidates){
     const firstApl=candidates.length?(playerDefinition(candidates[0])?.apl??livePlayerOperative(candidates[0])?.apl??'—'):'—';
     const cards=candidates.map((id,index)=>{
@@ -5462,7 +5434,6 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
     </section>`);
 
     modal.classList.add('tomb-operative-picker-modal');
-    relayoutTombV2Picker();
     let selectedId='';
     const confirm=$('#confirmTombPlayerSelection');
     const preview=$('#tombV2PreviewText');

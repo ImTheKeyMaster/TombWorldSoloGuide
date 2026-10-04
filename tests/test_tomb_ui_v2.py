@@ -56,7 +56,7 @@ def test_v2_picker_no_longer_renders_legacy_full_width_card_markup():
 def test_v2_portrait_layout_is_compact_two_column():
     assert "grid-template-columns:repeat(2,minmax(0,1fr))" in CSS
     assert ".tomb-v2-portrait" in CSS
-    assert "background-size:400% 200%" in CSS
+    assert "background-size:auto 200%" in CSS
 
 
 def test_v2_landscape_has_explicit_four_column_layout_and_portrait_reset():
@@ -78,11 +78,9 @@ def test_v2_affected_graphics_use_nine_slice_frames_instead_of_stretched_images(
     assert ".tomb-frame-button>.tomb-nine-slice" in CSS
 
 
-def test_v2_orientation_changes_run_explicit_tomb_relayout():
+def test_v2_orientation_changes_are_css_driven_without_cached_inline_geometry():
     picker = picker_source()
-    assert "function relayoutTombV2Picker()" in picker
-    assert "window.addEventListener('resize',relayoutTombV2Picker)" in picker
-    assert "window.addEventListener('orientationchange',relayoutTombV2Picker)" in picker
-    assert "modal.classList.add('tomb-operative-picker-modal');\n    relayoutTombV2Picker();" in picker
-    assert "element.style.removeProperty('height')" in picker
-    assert "element.style.removeProperty('row-gap')" in picker
+    assert "relayoutTombV2Picker" not in picker
+    assert "element.style" not in picker
+    landscape = CSS.split("@media(orientation:landscape) and (max-height:500px)", 1)[1]
+    assert "position:absolute" not in landscape
