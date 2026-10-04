@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.23';
+  const APP_VERSION = '10.0.24';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5409,6 +5409,7 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
           </span>
           <span class="tomb-v2-radio" aria-hidden="true"></span>
         </span>
+        <span class="tomb-nine-slice tomb-frame-edges" aria-hidden="true"></span>
         <span class="tomb-nine-slice tomb-frame-foreground" aria-hidden="true"></span>
       </button>`;
     }).join('');
