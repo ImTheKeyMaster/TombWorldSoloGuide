@@ -1576,7 +1576,7 @@ button.tracker-operative:hover{
 @media(max-height:520px) and (orientation:landscape){.narration-transcript-dialog{--narration-safe-top:max(6px,env(safe-area-inset-top));--narration-safe-right:max(6px,env(safe-area-inset-right));--narration-safe-bottom:max(6px,env(safe-area-inset-bottom));--narration-safe-left:max(6px,env(safe-area-inset-left))}.narration-transcript-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.9fr);grid-template-rows:auto auto}.narration-transcript-header{grid-column:1}.narration-transcript-body{grid-column:1;min-height:80px;max-height:42dvh}.narration-transcript-footer{grid-column:2;grid-row:1/3;display:flex;flex-direction:column;justify-content:center;border-top:0;border-left:1px solid rgba(103,195,255,.3)}.narration-transcript-controls{grid-template-columns:1fr}}
 
 
-/* v10.0.18: experimental Tomb UI operative picker.
+/* Experimental Tomb UI operative picker.
    Temporary and fully scoped to data-ui="tomb" until the new design replaces classic. */
 html[data-ui="tomb"] .tomb-operative-picker-shell{
   position:relative;
@@ -1671,15 +1671,13 @@ html[data-ui="tomb"] .tomb-operative-frame{
 html[data-ui="tomb"] .tomb-operative-card-content{
   position:absolute;
   inset:0;
-  display:grid;
-  grid-template-columns:32% minmax(0,1fr) 17%;
-  align-items:stretch;
   text-align:left;
 }
 html[data-ui="tomb"] .tomb-operative-portrait-slot{
+  position:absolute;
+  inset:0 68% 0 0;
   display:grid;
   place-items:center;
-  align-self:stretch;
   min-width:0;
   padding:17px 8px 13px 15px;
 }
@@ -1698,36 +1696,46 @@ html[data-ui="tomb"] .tomb-operative-monogram{
   letter-spacing:.1em;
 }
 html[data-ui="tomb"] .tomb-operative-copy{
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-  justify-content:flex-start;
+  position:absolute;
+  inset:0 29% 0 33%;
   min-width:0;
-  padding:20px 5px 13px 7px;
 }
 html[data-ui="tomb"] .tomb-operative-copy strong{
+  position:absolute;
+  top:23%;
+  left:0;
+  right:0;
   display:block;
-  overflow-wrap:anywhere;
+  overflow:hidden;
   color:#f1fbff;
-  max-width:100%;
-  font-size:clamp(.78rem,3.7vw,1.05rem);
+  font-size:clamp(.72rem,3.4vw,1.05rem);
   line-height:1.08;
   letter-spacing:.04em;
+  text-overflow:ellipsis;
   text-transform:uppercase;
+  white-space:nowrap;
 }
+html[data-ui="tomb"] .tomb-operative-copy .tomb-operative-name-long{font-size:clamp(.62rem,2.8vw,.88rem)}
 html[data-ui="tomb"] .tomb-operative-copy small{
+  position:absolute;
+  top:48%;
+  left:0;
+  right:0;
   display:block;
-  margin-top:3px;
-  overflow-wrap:anywhere;
+  overflow:hidden;
   color:#8aa4b1;
   font-size:clamp(.6rem,2.7vw,.72rem);
   line-height:1.1;
+  text-overflow:ellipsis;
+  white-space:nowrap;
 }
 html[data-ui="tomb"] .tomb-operative-state{
+  position:absolute;
+  top:68%;
+  left:0;
   display:inline-flex;
   align-items:center;
   gap:5px;
-  margin-top:6px;
   color:#6fd9ff;
   font-size:.66rem;
   font-weight:900;
@@ -1744,36 +1752,40 @@ html[data-ui="tomb"] .tomb-operative-state::before{
 html[data-ui="tomb"] .tomb-operative-card.selected .tomb-operative-state{
   color:#b7f0ff;
 }
-html[data-ui="tomb"] .tomb-operative-stats{
+html[data-ui="tomb"] .tomb-operative-apl{
+  position:absolute;
+  top:25%;
+  right:17%;
+  width:12%;
   display:flex;
-  flex-direction:column;
   justify-content:center;
   align-items:center;
-  gap:8px;
+  gap:4px;
   min-width:0;
-  padding:18px 10px 13px 2px;
-  text-align:center;
-}
-html[data-ui="tomb"] .tomb-operative-stat{
-  display:flex;
-  min-width:0;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-}
-html[data-ui="tomb"] .tomb-operative-stat b{
-  color:#c7f2ff;
-  font-size:clamp(.72rem,3vw,.86rem);
-  line-height:1;
-  white-space:nowrap;
-}
-html[data-ui="tomb"] .tomb-operative-stat small{
-  display:block;
-  margin:0 0 5px;
   color:#8198a3;
-  font-size:clamp(.48rem,2vw,.58rem);
+  font-size:clamp(.48rem,2vw,.6rem);
   line-height:1;
   letter-spacing:.03em;
+  text-align:center;
+  white-space:nowrap;
+}
+html[data-ui="tomb"] .tomb-operative-apl b{
+  color:#c7f2ff;
+  font-size:clamp(.7rem,2.8vw,.88rem);
+}
+html[data-ui="tomb"] .tomb-operative-wounds{
+  position:absolute;
+  top:57%;
+  right:0;
+  display:grid;
+  width:18%;
+  transform:translateY(-50%);
+  place-items:center;
+  color:#c7f2ff;
+  font-size:clamp(.8rem,3.7vw,1.08rem);
+  line-height:1;
+  text-align:center;
+  white-space:nowrap;
 }
 html[data-ui="tomb"] .tomb-picker-actions{
   display:grid;
@@ -1825,9 +1837,63 @@ html[data-ui="tomb"] .tomb-graphic-button:focus-visible{
 @media(max-width:390px){
   html[data-ui="tomb"] .tomb-operative-card{min-height:92px}
   html[data-ui="tomb"] .tomb-operative-monogram{width:44px;height:44px}
-  html[data-ui="tomb"] .tomb-operative-copy{padding-top:18px}
-  html[data-ui="tomb"] .tomb-operative-stats{gap:6px;padding-right:8px}
   html[data-ui="tomb"] .tomb-picker-actions{grid-template-columns:1fr 1.25fr}
+}
+@media(orientation:portrait){
+  html[data-ui="tomb"] .modal.tomb-operative-picker-modal{
+    height:auto!important;
+    max-height:calc(100dvh - 20px)!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+  }
+  html[data-ui="tomb"] .tomb-operative-picker-modal .modal-inner{
+    height:auto!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+  html[data-ui="tomb"] .tomb-operative-picker-shell{
+    display:block!important;
+    grid-template-columns:none!important;
+    grid-template-rows:none!important;
+    height:auto!important;
+    max-height:none!important;
+    margin:4px -4px -2px!important;
+    padding:10px 4px 4px!important;
+    overflow:hidden!important;
+  }
+  html[data-ui="tomb"] .tomb-operative-picker{
+    grid-template-columns:1fr!important;
+    align-content:start!important;
+    height:auto!important;
+    min-height:0!important;
+    gap:8px!important;
+    margin:4px 0 0!important;
+    padding:0!important;
+    overflow-x:visible!important;
+    overflow-y:visible!important;
+    overscroll-behavior:auto!important;
+    -webkit-overflow-scrolling:auto!important;
+  }
+  html[data-ui="tomb"] .tomb-picker-intro{
+    position:static!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    align-self:auto!important;
+  }
+  html[data-ui="tomb"] .tomb-picker-banner{
+    max-height:88px!important;
+    margin:-16px auto -6px!important;
+  }
+  html[data-ui="tomb"] .tomb-picker-heading{
+    padding:0 8px 8px!important;
+    text-align:center!important;
+  }
+  html[data-ui="tomb"] .tomb-picker-actions{
+    position:static!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    margin-top:12px!important;
+  }
 }
 @media(orientation:landscape) and (max-height:500px){
   html[data-ui="tomb"] .modal.tomb-operative-picker-modal{
@@ -1876,16 +1942,15 @@ html[data-ui="tomb"] .tomb-graphic-button:focus-visible{
     -webkit-overflow-scrolling:touch;
   }
   html[data-ui="tomb"] .tomb-operative-card{min-height:86px}
-  html[data-ui="tomb"] .tomb-operative-card-content{grid-template-columns:32% minmax(0,1fr) 17%}
   html[data-ui="tomb"] .tomb-operative-portrait-slot{padding:15px 4px 11px 10px}
   html[data-ui="tomb"] .tomb-operative-monogram{width:38px;height:38px;font-size:.7rem}
-  html[data-ui="tomb"] .tomb-operative-copy{padding:16px 2px 10px 4px}
   html[data-ui="tomb"] .tomb-operative-copy strong{font-size:clamp(.68rem,1.65vw,.88rem)}
+  html[data-ui="tomb"] .tomb-operative-copy .tomb-operative-name-long{font-size:clamp(.58rem,1.35vw,.74rem)}
   html[data-ui="tomb"] .tomb-operative-copy small{font-size:clamp(.54rem,1.35vw,.65rem)}
-  html[data-ui="tomb"] .tomb-operative-state{margin-top:4px;font-size:.55rem}
-  html[data-ui="tomb"] .tomb-operative-stats{gap:5px;padding:14px 7px 10px 1px}
-  html[data-ui="tomb"] .tomb-operative-stat b{font-size:clamp(.62rem,1.5vw,.78rem)}
-  html[data-ui="tomb"] .tomb-operative-stat small{font-size:clamp(.42rem,1.1vw,.52rem)}
+  html[data-ui="tomb"] .tomb-operative-state{font-size:.55rem}
+  html[data-ui="tomb"] .tomb-operative-apl{font-size:clamp(.42rem,1.1vw,.52rem)}
+  html[data-ui="tomb"] .tomb-operative-apl b{font-size:clamp(.62rem,1.5vw,.78rem)}
+  html[data-ui="tomb"] .tomb-operative-wounds{font-size:clamp(.68rem,1.7vw,.86rem)}
   html[data-ui="tomb"] .tomb-picker-actions{margin-top:7px}
   html[data-ui="tomb"] .tomb-graphic-button{min-height:46px}
 }
