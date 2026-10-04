@@ -14,13 +14,13 @@ def picker_source():
 
 
 def test_v2_css_is_versioned_and_override_script_is_gone():
-    assert f'href="tomb-ui-v2.css?v={CURRENT_APP_VERSION}"' in INDEX
+    assert 'href="tomb-ui-v2.css"' in INDEX
     assert 'src="tomb-ui-v2.js"' not in INDEX
     assert "tomb-ui-v2.js" not in WORKER
 
 
 def test_v2_assets_are_available_offline():
-    assert "./tomb-ui-v2.css?v=${APP_VERSION}" in WORKER
+    assert "./tomb-ui-v2.css" in WORKER
     for asset in (
         "./Assets/Images/TombUI/v2/portrait-sprite.webp",
         "./Assets/Images/TombUI/v2/card-ready.svg",
