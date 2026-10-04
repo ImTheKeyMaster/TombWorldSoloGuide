@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.24
+# Tomb World Battle Guide v10.0.25
+
+## v10.0.25
+
+### True Nine-Piece Operative Frames
+
+- Replaces the operative card border-image, clipping, and masking workaround with nine explicit graphical pieces: four fixed corners, four directionally stretching rails, and an independently expanding center.
+- Insets portraits, operative details, status, and selection controls into the center opening so content never covers the frame artwork.
+- Uses identical ready and selected geometry while preserving the compact two-column portrait and four-column landscape layouts.
+- Precaches every new ready and selected frame piece for offline play and keeps gameplay and save schema version 3 unchanged.
 
 ## v10.0.24
 

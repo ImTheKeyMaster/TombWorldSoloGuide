@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '10.0.24';
+const APP_VERSION = '10.0.25';
 const CACHE_PREFIX = 'tomb-world-battle-guide-';
 const LEGACY_CACHE_PREFIXES = ['tomb-world-solo-guide-'];
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
@@ -18,6 +18,7 @@ const PRECACHE_ASSETS = [
   './Assets/Images/TombUI/target-selected.webp', './Assets/Images/TombUI/card-disabled.webp',
   './Assets/Images/TombUI/action-preview.webp', './Assets/Images/TombUI/button-primary.webp', './Assets/Images/TombUI/button-secondary.webp',
   './Assets/Images/TombUI/v2/portrait-sprite.webp', './Assets/Images/TombUI/v2/card-ready.svg', './Assets/Images/TombUI/v2/card-selected.svg', './Assets/Images/TombUI/v2/card-valid.svg', './Assets/Images/TombUI/v2/card-disabled.svg', './Assets/Images/TombUI/v2/card-danger.svg',
+  ...['ready', 'selected'].flatMap(state => ['corner-tl.svg', 'edge-top.svg', 'corner-tr.svg', 'edge-left.svg', 'center.svg', 'edge-right.svg', 'corner-bl.svg', 'edge-bottom.svg', 'corner-br.svg'].map(piece => `./Assets/Images/TombUI/v2/card-frame/${state}/${piece}`)),
   './Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3',
   `./Assets/Maps/mission-01.png?v=${APP_VERSION}`, `./Assets/Maps/mission-02.png?v=${APP_VERSION}`, `./Assets/Maps/mission-03.png?v=${APP_VERSION}`,
   `./Assets/Maps/mission-04.png?v=${APP_VERSION}`, `./Assets/Maps/mission-05.png?v=${APP_VERSION}`, `./Assets/Maps/mission-06.png?v=${APP_VERSION}`,

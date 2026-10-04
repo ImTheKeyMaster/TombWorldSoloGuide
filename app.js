@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.24';
+  const APP_VERSION = '10.0.25';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5394,13 +5394,21 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
     return `<span class="tomb-v2-portrait portrait-${portrait}" style="--tomb-v2-sprite:url('${TOMB_V2_PORTRAIT_SPRITE}')" aria-hidden="true"></span>`;
   }
 
+  function tombV2CardFrameParts(){
+    return `<span class="tomb-card-frame-parts" aria-hidden="true">
+      <span class="corner tl"></span><span class="edge top"></span><span class="corner tr"></span>
+      <span class="edge left"></span><span class="center"></span><span class="edge right"></span>
+      <span class="corner bl"></span><span class="edge bottom"></span><span class="corner br"></span>
+    </span>`;
+  }
+
   function showTombPlayerOperativeSelection(candidates){
     const firstApl=candidates.length?(playerDefinition(candidates[0])?.apl??livePlayerOperative(candidates[0])?.apl??'—'):'—';
     const cards=candidates.map((id,index)=>{
       const operative=livePlayerOperative(id)||playerDefinition(id)||{};
-      return `<button class="tomb-v2-card tomb-frame-card frame-ready" type="button" role="radio" aria-checked="false" data-tomb-player-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
-        <span class="tomb-nine-slice tomb-frame-background" aria-hidden="true"></span>
-        <span class="tomb-v2-card-grid">
+      return `<button class="tomb-v2-card tomb-card-frame frame-ready" type="button" role="radio" aria-checked="false" data-tomb-player-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
+        ${tombV2CardFrameParts()}
+        <span class="tomb-v2-card-content">
           <span class="tomb-v2-portrait-zone">${tombV2PlayerPortrait(id)}</span>
           <span class="tomb-v2-copy">
             <strong>${escapeHtml(playerName(id))}</strong>
@@ -5409,8 +5417,6 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
           </span>
           <span class="tomb-v2-radio" aria-hidden="true"></span>
         </span>
-        <span class="tomb-nine-slice tomb-frame-edges" aria-hidden="true"></span>
-        <span class="tomb-nine-slice tomb-frame-foreground" aria-hidden="true"></span>
       </button>`;
     }).join('');
 
