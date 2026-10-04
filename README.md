@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.21
+# Tomb World Battle Guide v10.0.22
+
+## v10.0.22
+
+### Responsive Tomb UI Frame Corrections
+
+- Corrects the hidden Tomb operative picker so the logo and HUD occupy separate responsive grid regions without overlap.
+- Gives the nine-slice Action Preview a real content height and renders primary and secondary buttons at bounded, label-driven widths.
+- Preserves portrait proportions and operative-name space, while making orientation changes entirely CSS-driven with no cached inline geometry.
+- Preserves classic mode, gameplay and activation rules, and save schema version 3 unchanged.
 
 ## v10.0.21
 

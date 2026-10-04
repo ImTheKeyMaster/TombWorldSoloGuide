@@ -16,7 +16,7 @@ def section(start, end):
 
 
 def test_release_surfaces_are_synchronized():
-    assert CURRENT_APP_VERSION == "10.0.21"
+    assert CURRENT_APP_VERSION == "10.0.22"
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f"V{CURRENT_APP_VERSION}" in INDEX
