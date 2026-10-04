@@ -166,6 +166,7 @@ html[data-ui="tomb"] .tomb-v2-operative-grid{
 }
 html[data-ui="tomb"] .tomb-v2-card{
   position:relative;
+  isolation:isolate;
   width:100%;
   aspect-ratio:2.2/1;
   min-height:84px;
@@ -193,11 +194,17 @@ html[data-ui="tomb"] .tomb-nine-slice{
   pointer-events:none;
 }
 html[data-ui="tomb"] .tomb-frame-card>.tomb-nine-slice{
-  z-index:1;
   border-width:12px;
-  border-image-slice:42 44 fill;
   border-image-width:12px;
   border-image-repeat:stretch;
+}
+html[data-ui="tomb"] .tomb-frame-card>.tomb-frame-background{
+  z-index:0;
+  border-image-slice:42 44 fill;
+}
+html[data-ui="tomb"] .tomb-frame-card>.tomb-frame-foreground{
+  z-index:10;
+  border-image-slice:42 44;
 }
 html[data-ui="tomb"] .tomb-frame-card.frame-ready>.tomb-nine-slice{
   border-image-source:url("Assets/Images/TombUI/v2/card-ready.svg");
@@ -210,7 +217,7 @@ html[data-ui="tomb"] .tomb-frame-card.frame-target>.tomb-nine-slice{
 }
 html[data-ui="tomb"] .tomb-v2-card-grid{
   position:absolute;
-  z-index:2;
+  z-index:1;
   inset:0;
   display:grid;
   grid-template-columns:minmax(72px,34%) minmax(0,1fr) 38px;
@@ -323,6 +330,7 @@ html[data-ui="tomb"] .tomb-v2-card.selected .tomb-v2-radio{
 }
 html[data-ui="tomb"] .tomb-v2-preview{
   position:relative;
+  isolation:isolate;
   min-height:104px;
   margin-top:10px;
   overflow:hidden;
@@ -330,10 +338,17 @@ html[data-ui="tomb"] .tomb-v2-preview{
 html[data-ui="tomb"] .tomb-frame-preview>.tomb-nine-slice{
   border-width:19px 75px;
   border-image-source:url("Assets/Images/TombUI/action-preview.webp");
-  border-image-slice:48 190 fill;
   border-image-width:19px 75px;
   border-image-repeat:stretch;
   opacity:.94;
+}
+html[data-ui="tomb"] .tomb-frame-preview>.tomb-frame-background{
+  z-index:0;
+  border-image-slice:48 190 fill;
+}
+html[data-ui="tomb"] .tomb-frame-preview>.tomb-frame-foreground{
+  z-index:10;
+  border-image-slice:48 190;
 }
 html[data-ui="tomb"] .tomb-v2-preview-copy{
   position:relative;
@@ -371,19 +386,38 @@ html[data-ui="tomb"] .tomb-v2-actions{
 }
 html[data-ui="tomb"] .tomb-v2-actions .tomb-frame-button.primary{flex:0 1 310px;width:min(310px,100%)}
 html[data-ui="tomb"] .tomb-v2-actions .tomb-frame-button.secondary{flex:0 1 180px;width:min(180px,100%)}
-html[data-ui="tomb"] .tomb-v2-actions .tomb-graphic-button{min-height:54px}
-html[data-ui="tomb"] .tomb-v2-actions .tomb-graphic-button span{min-height:54px}
-html[data-ui="tomb"] .tomb-frame-button>.tomb-nine-slice{
+html[data-ui="tomb"] .tomb-v2-actions .tomb-graphic-button{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:54px;
+  isolation:isolate;
+}
+html[data-ui="tomb"] .tomb-frame-button>.tomb-graphic-button__background{
+  position:absolute;
+  inset:0;
+  z-index:0;
   min-height:0;
+  padding:0;
   border-width:11px 39px;
   border-image-slice:52 185 fill;
   border-image-width:11px 39px;
   border-image-repeat:stretch;
 }
-html[data-ui="tomb"] .tomb-frame-button.primary>.tomb-nine-slice{
+html[data-ui="tomb"] .tomb-frame-button>.tomb-graphic-button__label{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:inherit;
+  width:100%;
+  text-align:center;
+}
+html[data-ui="tomb"] .tomb-frame-button.primary>.tomb-graphic-button__background{
   border-image-source:url("Assets/Images/TombUI/button-primary.webp");
 }
-html[data-ui="tomb"] .tomb-frame-button.secondary>.tomb-nine-slice{
+html[data-ui="tomb"] .tomb-frame-button.secondary>.tomb-graphic-button__background{
   border-image-source:url("Assets/Images/TombUI/button-secondary.webp");
 }
 @media(max-width:365px){
@@ -460,9 +494,8 @@ html[data-ui="tomb"] .tomb-frame-button.secondary>.tomb-nine-slice{
     grid-area:actions;
     margin-top:5px;
   }
-  html[data-ui="tomb"] .tomb-v2-actions .tomb-graphic-button,
-  html[data-ui="tomb"] .tomb-v2-actions .tomb-graphic-button span{min-height:42px}
-  html[data-ui="tomb"] .tomb-frame-button>.tomb-nine-slice{
+  html[data-ui="tomb"] .tomb-v2-actions .tomb-graphic-button{min-height:42px}
+  html[data-ui="tomb"] .tomb-frame-button>.tomb-graphic-button__background{
     min-height:0;
     border-width:10px 36px;
     border-image-width:10px 36px;

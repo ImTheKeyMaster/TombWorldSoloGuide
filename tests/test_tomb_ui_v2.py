@@ -35,7 +35,7 @@ def test_v2_assets_are_available_offline():
 def test_v2_picker_is_integrated_into_app_runtime():
     picker = picker_source()
     assert "portrait-sprite.webp" in picker
-    assert 'class="tomb-nine-slice"' in picker
+    assert 'class="tomb-nine-slice tomb-frame-background"' in picker
     assert 'class="tomb-v2-shell"' in picker
     assert 'class="tomb-v2-operative-grid"' in picker
     assert "$$('[data-tomb-player-operative]',modal)" in picker
@@ -75,7 +75,7 @@ def test_v2_affected_graphics_use_nine_slice_frames_instead_of_stretched_images(
     assert "border-image-slice" in CSS
     assert ".tomb-frame-card.frame-target>.tomb-nine-slice" in CSS
     assert ".tomb-frame-preview>.tomb-nine-slice" in CSS
-    assert ".tomb-frame-button>.tomb-nine-slice" in CSS
+    assert ".tomb-frame-button>.tomb-graphic-button__background" in CSS
 
 
 def test_v2_orientation_changes_are_css_driven_without_cached_inline_geometry():

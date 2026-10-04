@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.22';
+  const APP_VERSION = '10.0.23';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5399,7 +5399,7 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
     const cards=candidates.map((id,index)=>{
       const operative=livePlayerOperative(id)||playerDefinition(id)||{};
       return `<button class="tomb-v2-card tomb-frame-card frame-ready" type="button" role="radio" aria-checked="false" data-tomb-player-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
-        <span class="tomb-nine-slice" aria-hidden="true"></span>
+        <span class="tomb-nine-slice tomb-frame-background" aria-hidden="true"></span>
         <span class="tomb-v2-card-grid">
           <span class="tomb-v2-portrait-zone">${tombV2PlayerPortrait(id)}</span>
           <span class="tomb-v2-copy">
@@ -5409,6 +5409,7 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
           </span>
           <span class="tomb-v2-radio" aria-hidden="true"></span>
         </span>
+        <span class="tomb-nine-slice tomb-frame-foreground" aria-hidden="true"></span>
       </button>`;
     }).join('');
 
@@ -5424,12 +5425,13 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
       <div class="tomb-v2-section-title"><span>✠</span><strong>SELECT OPERATIVE</strong></div>
       <div class="tomb-v2-operative-grid" role="radiogroup" aria-label="Ready operatives">${cards}</div>
       <div class="tomb-v2-preview tomb-frame-preview">
-        <span class="tomb-nine-slice" aria-hidden="true"></span>
+        <span class="tomb-nine-slice tomb-frame-background" aria-hidden="true"></span>
         <div class="tomb-v2-preview-copy"><span>ACTION PREVIEW</span><strong>OPERATIVE READY</strong><small id="tombV2PreviewText">Choose an operative to continue.</small></div>
+        <span class="tomb-nine-slice tomb-frame-foreground" aria-hidden="true"></span>
       </div>
       <div class="tomb-v2-actions">
-        <button class="tomb-graphic-button tomb-frame-button primary" type="button" id="confirmTombPlayerSelection" disabled><span class="tomb-nine-slice" aria-hidden="true"></span><span>Confirm Selection »</span></button>
-        <button class="tomb-graphic-button tomb-frame-button secondary" type="button" data-close><span class="tomb-nine-slice" aria-hidden="true"></span><span>Cancel</span></button>
+        <button class="tomb-graphic-button tomb-frame-button primary" type="button" id="confirmTombPlayerSelection" disabled><span class="tomb-nine-slice tomb-graphic-button__background" aria-hidden="true"></span><span class="tomb-graphic-button__label">Confirm Selection »</span></button>
+        <button class="tomb-graphic-button tomb-frame-button secondary" type="button" data-close><span class="tomb-nine-slice tomb-graphic-button__background" aria-hidden="true"></span><span class="tomb-graphic-button__label">Cancel</span></button>
       </div>
     </section>`);
 

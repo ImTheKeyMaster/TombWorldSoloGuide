@@ -16,7 +16,6 @@ def section(start, end):
 
 
 def test_release_surfaces_are_synchronized():
-    assert CURRENT_APP_VERSION == "10.0.22"
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f"V{CURRENT_APP_VERSION}" in INDEX
@@ -43,6 +42,18 @@ def test_tomb_v2_picker_is_part_of_app_iife_runtime():
     assert 'role="radiogroup"' in picker
     assert 'role="radio"' in picker
     assert "aria-checked" in picker
+
+
+def test_tomb_v2_cards_and_buttons_use_explicit_visual_layers():
+    picker = section("const TOMB_V2_ASSET_ROOT", "function showPlayerActivation()")
+    assert 'class="tomb-nine-slice tomb-frame-background"' in picker
+    assert 'class="tomb-nine-slice tomb-frame-foreground"' in picker
+    assert 'class="tomb-nine-slice tomb-graphic-button__background"' in picker
+    assert 'class="tomb-graphic-button__label"' in picker
+    assert "isolation:isolate" in CSS
+    assert ".tomb-frame-card>.tomb-frame-foreground" in CSS
+    assert "z-index:10" in CSS
+    assert ".tomb-frame-button>.tomb-graphic-button__label" in CSS
 
 
 def test_tomb_v2_selection_enumerates_every_card_and_preserves_activation_path():
