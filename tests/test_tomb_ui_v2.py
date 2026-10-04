@@ -1,23 +1,27 @@
 from pathlib import Path
 
+from versioning import CURRENT_APP_VERSION
+
 ROOT = Path(__file__).resolve().parents[1]
 INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
 WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
-JS = (ROOT / "tomb-ui-v2.js").read_text(encoding="utf-8")
+APP = (ROOT / "app.js").read_text(encoding="utf-8")
 CSS = (ROOT / "tomb-ui-v2.css").read_text(encoding="utf-8")
 
 
-def test_v2_assets_are_loaded_only_as_new_unique_files():
-    assert 'href="tomb-ui-v2.css"' in INDEX
-    assert 'src="tomb-ui-v2.js"' in INDEX
-    assert 'tomb-ui-v2.css?v=' not in INDEX
-    assert 'tomb-ui-v2.js?v=' not in INDEX
+def picker_source():
+    return APP.split("const TOMB_V2_ASSET_ROOT", 1)[1].split("function showPlayerActivation()", 1)[0]
+
+
+def test_v2_css_is_versioned_and_override_script_is_gone():
+    assert f'href="tomb-ui-v2.css?v={CURRENT_APP_VERSION}"' in INDEX
+    assert 'src="tomb-ui-v2.js"' not in INDEX
+    assert "tomb-ui-v2.js" not in WORKER
 
 
 def test_v2_assets_are_available_offline():
+    assert "./tomb-ui-v2.css?v=${APP_VERSION}" in WORKER
     for asset in (
-        "./tomb-ui-v2.css",
-        "./tomb-ui-v2.js",
         "./Assets/Images/TombUI/v2/portrait-sprite.webp",
         "./Assets/Images/TombUI/v2/card-ready.svg",
         "./Assets/Images/TombUI/v2/card-selected.svg",
@@ -28,14 +32,26 @@ def test_v2_assets_are_available_offline():
         assert asset in WORKER
 
 
-def test_v2_picker_uses_real_graphic_assets_and_live_selection_state():
-    assert "portrait-sprite.webp" in JS
-    assert "card-ready.svg" in JS
-    assert "card-selected.svg" in JS
-    assert "$$('[data-tomb-player-operative]',modal)" in JS
-    assert "beginPlayerActivation(selectedId)" in JS
-    assert "aria-checked" in JS
-    assert "SELECTED" in JS
+def test_v2_picker_is_integrated_into_app_runtime():
+    picker = picker_source()
+    assert "portrait-sprite.webp" in picker
+    assert "card-ready.svg" in picker
+    assert "card-selected.svg" in picker
+    assert 'class="tomb-v2-shell"' in picker
+    assert 'class="tomb-v2-operative-grid"' in picker
+    assert "$$('[data-tomb-player-operative]',modal)" in picker
+    assert "beginPlayerActivation(selectedId)" in picker
+    assert "aria-checked" in picker
+    assert "SELECTED" in picker
+
+
+def test_v2_picker_no_longer_renders_legacy_full_width_card_markup():
+    picker = picker_source()
+    assert "tomb-operative-card-content" not in picker
+    assert "tomb-operative-monogram" not in picker
+    assert "tomb-operative-wounds" not in picker
+    assert "operative-ready.webp" not in picker
+    assert "operative-selected.webp" not in picker
 
 
 def test_v2_portrait_layout_is_compact_two_column():
