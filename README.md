@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.0.25
+# Tomb World Battle Guide v10.0.26
+
+## v10.0.26
+
+- Rebuilt operative card borders as seamless, overlapping 9-slice frames and allowed the Action Preview frame to grow with wrapped text.
 
 ## v10.0.25
 
