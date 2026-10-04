@@ -202,9 +202,18 @@ html[data-ui="tomb"] .tomb-frame-card>.tomb-frame-background{
   z-index:0;
   border-image-slice:42 44 fill;
 }
+html[data-ui="tomb"] .tomb-frame-card>.tomb-frame-edges,
 html[data-ui="tomb"] .tomb-frame-card>.tomb-frame-foreground{
-  z-index:10;
   border-image-slice:42 44;
+}
+html[data-ui="tomb"] .tomb-frame-card>.tomb-frame-edges{
+  z-index:2;
+  clip-path:inset(0 12px);
+}
+html[data-ui="tomb"] .tomb-frame-card>.tomb-frame-foreground{
+  z-index:3;
+  -webkit-mask:linear-gradient(90deg,#000 0 12px,transparent 12px calc(100% - 12px),#000 calc(100% - 12px));
+  mask:linear-gradient(90deg,#000 0 12px,transparent 12px calc(100% - 12px),#000 calc(100% - 12px));
 }
 html[data-ui="tomb"] .tomb-frame-card.frame-ready>.tomb-nine-slice{
   border-image-source:url("Assets/Images/TombUI/v2/card-ready.svg");

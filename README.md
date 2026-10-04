@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.23
+# Tomb World Battle Guide v10.0.24
+
+## v10.0.24
+
+### Tomb UI Operative End-Cap Layering
+
+- Splits each operative card's decorative border into a stretchable center-edge layer and fixed end-cap layer.
+- Keeps the stretchable black center beneath the decorative left and right artwork in ready and selected states at every responsive width.
+- Preserves existing card dimensions, spacing, typography, portraits, responsive layouts, gameplay, and save schema version 3 unchanged.
 
 ## v10.0.23
 

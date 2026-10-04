@@ -53,6 +53,15 @@ def test_v2_picker_no_longer_renders_legacy_full_width_card_markup():
     assert "operative-selected.webp" not in picker
 
 
+def test_v2_card_end_caps_render_above_stretchable_edges():
+    picker = picker_source()
+    assert 'tomb-nine-slice tomb-frame-edges' in picker
+    assert 'clip-path:inset(0 12px)' in CSS
+    assert '.tomb-frame-card>.tomb-frame-edges{\n  z-index:2;' in CSS
+    assert '.tomb-frame-card>.tomb-frame-foreground{\n  z-index:3;' in CSS
+    assert 'mask:linear-gradient(90deg,#000 0 12px,transparent 12px calc(100% - 12px),#000 calc(100% - 12px))' in CSS
+
+
 def test_v2_portrait_layout_is_compact_two_column():
     assert "grid-template-columns:repeat(2,minmax(0,1fr))" in CSS
     assert ".tomb-v2-portrait" in CSS
