@@ -24,6 +24,13 @@ def test_v2_css_is_versioned_and_available_offline():
     assert "./Assets/Images/TombUI/v2/portrait-sprite.webp" in WORKER
 
 
+def test_release_is_10_0_22_on_every_version_surface():
+    assert CURRENT_APP_VERSION == "10.0.22"
+    assert "const APP_VERSION = '10.0.22';" in WORKER
+    assert '<div class="version">V10.0.22</div>' in INDEX
+    assert INDEX.count("?v=10.0.22") == 12
+
+
 def test_picker_uses_layout_first_markup_and_live_controls():
     picker = picker_source()
     assert 'class="tomb-v2-card"' in picker
@@ -58,6 +65,17 @@ def test_cards_are_responsive_css_grid_components_with_stable_ratio():
     assert "grid-template-columns:" in content
     assert "grid-auto-rows:auto" in grid
     assert "align-content:start" in grid
+
+
+def test_buttons_remain_layout_driven_instead_of_stretched_images():
+    picker = picker_source()
+    button = css_rule('html[data-ui="tomb"] .tomb-v2-button')
+    assert '<button class="tomb-v2-button primary"' in picker
+    assert '<button class="tomb-v2-button secondary"' in picker
+    assert "display:flex" in button
+    assert "clip-path:polygon(" in button
+    assert "object-fit:fill" not in button
+    assert "<img" not in picker.split('class="tomb-v2-actions"', 1)[1]
 
 
 def test_portrait_viewport_clips_content_and_supports_archetypes():
@@ -102,3 +120,4 @@ def test_classic_picker_and_save_schema_remain_unchanged():
     assert '<select id="humanPlayerSelection"' in classic
     assert "beginPlayerActivation($('#humanPlayerSelection').value)" in classic
     assert "const SAVE_VERSION = 3;" in PERSISTENCE
+    assert 'class="btn ghost" data-close>Close Guide</button>' in classic

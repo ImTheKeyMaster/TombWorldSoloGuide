@@ -1,9 +1,11 @@
-# Tomb World Battle Guide v10.0.28
+# Tomb World Battle Guide v10.0.22
 
-## v10.0.28
+## v10.0.22
 
-- Rebuilt the experimental Tomb operative picker as responsive CSS Grid components with content-driven panels and decorative-only skins.
-- Preserved the classic activation picker and save schema.
+### Tomb UI Visual Fidelity Polish
+
+- Enriches the hidden Tomb operative picker with layered cyan hero and metallic secondary buttons, cinematic portrait blending, a stronger selected state, and premium HUD frame ornamentation.
+- Keeps the corrected layout-first CSS Grid architecture, responsive portrait and landscape behavior, classic activation picker, gameplay logic, and save schema unchanged.
 
 ## v10.0.27
 
@@ -39,9 +41,7 @@
 - Preserves the scalable nine-slice geometry, existing card and preview dimensions, and CSS-driven portrait/landscape layouts.
 - Preserves classic mode, gameplay and activation rules, and save schema version 3 unchanged.
 
-## v10.0.22
-
-### Responsive Tomb UI Frame Corrections
+### Earlier v10.0.22 Responsive Frame Corrections
 
 - Corrects the hidden Tomb operative picker so the logo and HUD occupy separate responsive grid regions without overlap.
 - Gives the nine-slice Action Preview a real content height and renders primary and secondary buttons at bounded, label-driven widths.
