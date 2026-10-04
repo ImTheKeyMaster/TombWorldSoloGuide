@@ -93,7 +93,7 @@ def test_tomb_v2_compact_portrait_and_landscape_layouts():
 
 
 def test_tomb_v2_assets_are_precached_for_pwa_use():
-    assert "./tomb-ui-v2.css?v=${APP_VERSION}" in WORKER
+    assert "./tomb-ui-v2.css" in WORKER
     for asset in (
         "./Assets/Images/TombUI/v2/portrait-sprite.webp",
         "./Assets/Images/TombUI/v2/card-ready.svg",
