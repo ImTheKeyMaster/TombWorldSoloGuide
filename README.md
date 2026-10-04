@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.19
+# Tomb World Battle Guide v10.0.20
+
+## v10.0.20
+
+### Tomb UI v2 Runtime Integration
+
+- Integrates the mockup-style Tomb operative picker directly into the app runtime instead of attempting to override an internal IIFE function from a separate script.
+- Uses the compact two-column portrait layout, portrait sprite, HUD, selection-circle behavior, action preview, and graphical confirm/cancel controls from the Tomb UI v2 design.
+- Removes the ineffective external Tomb v2 override script from the page load path.
+- Advances the PWA/app cache version and versioned asset URLs so iPhone installs receive the new interface instead of continuing to serve the prior 10.0.18/10.0.19 picker.
+- Preserves classic UI, gameplay logic, save schema, and the existing experimental feature flag.
 
 ## v10.0.19
 
