@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.22
+# Tomb World Battle Guide v10.0.23
+
+## v10.0.23
+
+### Tomb UI Layering Corrections
+
+- Separates operative cards and the Action Preview into explicit background, content, and foreground frame layers so decorative edges remain continuously visible over portraits and copy.
+- Keeps Confirm and Cancel artwork inside each button's positioned background layer while centering labels above it in both active and disabled states.
+- Preserves the scalable nine-slice geometry, existing card and preview dimensions, and CSS-driven portrait/landscape layouts.
+- Preserves classic mode, gameplay and activation rules, and save schema version 3 unchanged.
 
 ## v10.0.22
 
