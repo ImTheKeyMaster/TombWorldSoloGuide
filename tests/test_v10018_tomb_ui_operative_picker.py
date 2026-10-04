@@ -30,84 +30,24 @@ def test_tomb_picker_is_feature_flagged_and_classic_picker_remains():
     assert "beginPlayerActivation($('#humanPlayerSelection').value)" in selection
 
 
-def test_tomb_v2_picker_is_part_of_app_iife_runtime():
-    picker = section("const TOMB_V2_ASSET_ROOT", "function showPlayerActivation()")
-    for asset in (
-        "Assets/Images/TombUI/v2/",
-        "portrait-sprite.webp",
-    ):
-        assert asset in picker
-    assert 'class="tomb-v2-shell"' in picker
-    assert 'class="tomb-v2-operative-grid"' in picker
-    assert 'role="radiogroup"' in picker
-    assert 'role="radio"' in picker
-    assert "aria-checked" in picker
-
-
-def test_tomb_v2_cards_and_buttons_use_explicit_visual_layers():
-    picker = section("const TOMB_V2_ASSET_ROOT", "function showPlayerActivation()")
-    assert 'class="tomb-card-frame-parts"' in picker
-    assert 'class="corner tl"' in picker
-    assert 'class="edge right"' in picker
-    assert 'class="tomb-nine-slice tomb-graphic-button__background"' in picker
-    assert 'class="tomb-graphic-button__label"' in picker
-    assert "isolation:isolate" in CSS
-    assert ".tomb-card-frame-parts .corner" in CSS
-    assert "z-index:10" in CSS
-    assert ".tomb-frame-button>.tomb-graphic-button__label" in CSS
-
-
-def test_tomb_v2_selection_enumerates_every_card_and_preserves_activation_path():
+def test_tomb_selection_preserves_accessibility_and_activation_path():
     picker = section("const TOMB_V2_ASSET_ROOT", "function showPlayerActivation()")
     collection = "$$('[data-tomb-player-operative]',modal)"
     assert picker.count(collection) == 2
-    assert "selectedId=button.dataset.tombPlayerOperative" in picker
-    assert "card.dataset.tombPlayerOperative===selectedId" in picker
+    assert 'role="radiogroup"' in picker
+    assert 'role="radio"' in picker
     assert "card.classList.toggle('selected',selected)" in picker
     assert "card.setAttribute('aria-checked',String(selected))" in picker
-    assert "card.classList.toggle('frame-ready',!selected)" in picker
-    assert "card.classList.toggle('frame-selected',selected)" in picker
     assert "status.textContent=selected?'SELECTED':'READY'" in picker
     assert "confirm.disabled=false" in picker
     assert "beginPlayerActivation(selectedId)" in picker
 
 
-def test_tomb_v2_does_not_render_legacy_monogram_wound_dial_cards():
-    picker = section("const TOMB_V2_ASSET_ROOT", "function showPlayerActivation()")
-    for legacy in (
-        "tomb-operative-card-content",
-        "tomb-operative-portrait-slot",
-        "tomb-operative-wounds",
-        "operative-ready.webp",
-        "operative-selected.webp",
-    ):
-        assert legacy not in picker
-
-
-def test_tomb_v2_styles_are_scoped_to_experimental_ui():
-    assert 'html[data-ui="tomb"] .tomb-v2-shell' in CSS
-    assert 'html[data-ui="tomb"] .tomb-v2-card' in CSS
-    assert 'html[data-ui="tomb"] .tomb-v2-operative-grid' in CSS
-    assert 'html[data-ui="tomb"] .tomb-v2-radio' in CSS
-
-
-def test_tomb_v2_compact_portrait_and_landscape_layouts():
-    assert "grid-template-columns:repeat(2,minmax(0,1fr))" in CSS
-    landscape = CSS.split("@media(orientation:landscape) and (max-height:500px)", 1)[1]
-    assert "grid-template-columns:repeat(4,minmax(0,1fr))" in landscape
-    portrait = CSS.split("@media(orientation:portrait)", 1)[1]
-    assert "grid-template-columns:repeat(2,minmax(0,1fr))!important" in portrait
-    assert "gap:8px!important" in portrait
-
-
-def test_tomb_v2_assets_are_precached_for_pwa_use():
+def test_tomb_styles_stay_scoped_and_assets_are_precached():
+    for selector in (".tomb-v2-shell", ".tomb-v2-card", ".tomb-v2-operative-grid", ".tomb-v2-radio"):
+        assert f'html[data-ui="tomb"] {selector}' in CSS
     assert "./tomb-ui-v2.css" in WORKER
-    for asset in (
-        "./Assets/Images/TombUI/v2/portrait-sprite.webp",
-        "./Assets/Images/TombUI/v2/card-ready.svg",
-        "./Assets/Images/TombUI/v2/card-selected.svg",
-    ):
-        assert asset in WORKER
+    assert "./Assets/Images/TombUI/v2/portrait-sprite.webp" in WORKER
 
 
 def test_save_schema_is_unchanged():

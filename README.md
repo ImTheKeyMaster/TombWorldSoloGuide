@@ -1,4 +1,9 @@
-# Tomb World Battle Guide v10.0.27
+# Tomb World Battle Guide v10.0.28
+
+## v10.0.28
+
+- Rebuilt the experimental Tomb operative picker as responsive CSS Grid components with content-driven panels and decorative-only skins.
+- Preserved the classic activation picker and save schema.
 
 ## v10.0.27
 
