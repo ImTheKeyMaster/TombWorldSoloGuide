@@ -61,11 +61,15 @@ def test_v2_card_uses_explicit_fixed_corners_and_directional_edges():
     for piece in ('corner tl', 'edge top', 'corner tr', 'edge left', 'center',
                   'edge right', 'corner bl', 'edge bottom', 'corner br'):
         assert f'class="{piece}"' in picker
-    assert 'grid-template-columns:12px minmax(0,1fr) 12px' in CSS
-    assert 'grid-template-rows:12px minmax(0,1fr) 12px' in CSS
+    assert '--tomb-card-corner-width:12px' in CSS
+    assert '--tomb-card-corner-height:12px' in CSS
+    assert '--tomb-card-frame-overlap:2px' in CSS
+    assert '.tomb-card-frame-parts>span{\n  position:absolute;' in CSS
     assert '.tomb-card-frame-parts .edge{\n  z-index:2;' in CSS
     assert '.tomb-card-frame-parts .corner{\n  z-index:3;' in CSS
-    assert 'width:12px;\n  height:12px;' in CSS
+    assert 'left:calc(var(--tomb-card-corner-width) - var(--tomb-card-frame-overlap));' in CSS
+    assert 'top:calc(var(--tomb-card-corner-height) - var(--tomb-card-frame-overlap));' in CSS
+    assert 'width:var(--tomb-card-corner-width);\n  height:var(--tomb-card-corner-height);' in CSS
     pieces = ('corner-tl.svg', 'edge-top.svg', 'corner-tr.svg', 'edge-left.svg',
               'center.svg', 'edge-right.svg', 'corner-bl.svg', 'edge-bottom.svg',
               'corner-br.svg')
@@ -107,6 +111,18 @@ def test_v2_reusable_graphics_remain_scalable_while_card_uses_nine_pieces():
     assert ".tomb-card-frame-parts" in CSS
     assert ".tomb-frame-preview>.tomb-nine-slice" in CSS
     assert ".tomb-frame-button>.tomb-graphic-button__background" in CSS
+
+
+def test_v2_action_preview_height_follows_wrapped_content():
+    preview_css = CSS.split('html[data-ui="tomb"] .tomb-v2-preview-copy{', 1)[1].split(
+        'html[data-ui="tomb"] .tomb-v2-actions{', 1
+    )[0]
+    assert 'height:auto' in preview_css
+    assert 'min-height:104px' in preview_css
+    assert 'flex-direction:column' in preview_css
+    assert 'justify-content:center' in preview_css
+    assert 'overflow-wrap:break-word' in preview_css
+    assert 'white-space:normal' in preview_css
 
 
 def test_v2_orientation_changes_are_css_driven_without_cached_inline_geometry():

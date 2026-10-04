@@ -194,15 +194,19 @@ html[data-ui="tomb"] .tomb-nine-slice{
   pointer-events:none;
 }
 html[data-ui="tomb"] .tomb-card-frame-parts{
+  --tomb-card-corner-width:12px;
+  --tomb-card-corner-height:12px;
+  --tomb-card-frame-overlap:2px;
   position:absolute;
   inset:0;
-  display:grid;
-  grid-template-columns:12px minmax(0,1fr) 12px;
-  grid-template-rows:12px minmax(0,1fr) 12px;
+  display:block;
+  box-sizing:border-box;
   pointer-events:none;
 }
 html[data-ui="tomb"] .tomb-card-frame-parts>span{
+  position:absolute;
   display:block;
+  box-sizing:border-box;
   min-width:0;
   min-height:0;
   background-position:center;
@@ -210,27 +214,40 @@ html[data-ui="tomb"] .tomb-card-frame-parts>span{
 }
 html[data-ui="tomb"] .tomb-card-frame-parts .center{
   z-index:0;
+  inset:calc(var(--tomb-card-corner-height) - var(--tomb-card-frame-overlap)) calc(var(--tomb-card-corner-width) - var(--tomb-card-frame-overlap));
   background-size:100% 100%;
 }
 html[data-ui="tomb"] .tomb-card-frame-parts .edge{
   z-index:2;
-  background-size:100% 100%;
+}
+html[data-ui="tomb"] .tomb-card-frame-parts .top,
+html[data-ui="tomb"] .tomb-card-frame-parts .bottom{
+  left:calc(var(--tomb-card-corner-width) - var(--tomb-card-frame-overlap));
+  right:calc(var(--tomb-card-corner-width) - var(--tomb-card-frame-overlap));
+  height:var(--tomb-card-corner-height);
+  background-size:100% var(--tomb-card-corner-height);
+}
+html[data-ui="tomb"] .tomb-card-frame-parts .left,
+html[data-ui="tomb"] .tomb-card-frame-parts .right{
+  top:calc(var(--tomb-card-corner-height) - var(--tomb-card-frame-overlap));
+  bottom:calc(var(--tomb-card-corner-height) - var(--tomb-card-frame-overlap));
+  width:var(--tomb-card-corner-width);
+  background-size:var(--tomb-card-corner-width) 100%;
 }
 html[data-ui="tomb"] .tomb-card-frame-parts .corner{
   z-index:3;
-  width:12px;
-  height:12px;
-  background-size:12px 12px;
+  width:var(--tomb-card-corner-width);
+  height:var(--tomb-card-corner-height);
+  background-size:var(--tomb-card-corner-width) var(--tomb-card-corner-height);
 }
-html[data-ui="tomb"] .tomb-card-frame-parts .tl{grid-area:1/1}
-html[data-ui="tomb"] .tomb-card-frame-parts .top{grid-area:1/2}
-html[data-ui="tomb"] .tomb-card-frame-parts .tr{grid-area:1/3}
-html[data-ui="tomb"] .tomb-card-frame-parts .left{grid-area:2/1}
-html[data-ui="tomb"] .tomb-card-frame-parts .center{grid-area:2/2}
-html[data-ui="tomb"] .tomb-card-frame-parts .right{grid-area:2/3}
-html[data-ui="tomb"] .tomb-card-frame-parts .bl{grid-area:3/1}
-html[data-ui="tomb"] .tomb-card-frame-parts .bottom{grid-area:3/2}
-html[data-ui="tomb"] .tomb-card-frame-parts .br{grid-area:3/3}
+html[data-ui="tomb"] .tomb-card-frame-parts .tl{top:0;left:0}
+html[data-ui="tomb"] .tomb-card-frame-parts .top{top:0}
+html[data-ui="tomb"] .tomb-card-frame-parts .tr{top:0;right:0}
+html[data-ui="tomb"] .tomb-card-frame-parts .left{left:0}
+html[data-ui="tomb"] .tomb-card-frame-parts .right{right:0}
+html[data-ui="tomb"] .tomb-card-frame-parts .bl{bottom:0;left:0}
+html[data-ui="tomb"] .tomb-card-frame-parts .bottom{bottom:0}
+html[data-ui="tomb"] .tomb-card-frame-parts .br{right:0;bottom:0}
 html[data-ui="tomb"] .tomb-card-frame.frame-ready .tomb-card-frame-parts>span{
   background-image:var(--ready-frame-piece);
 }
@@ -386,11 +403,14 @@ html[data-ui="tomb"] .tomb-frame-preview>.tomb-frame-foreground{
 html[data-ui="tomb"] .tomb-v2-preview-copy{
   position:relative;
   z-index:1;
-  display:grid;
-  align-content:center;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
   gap:2px;
+  height:auto;
   min-height:104px;
-  padding:18px 22px 18px clamp(72px,22%,150px);
+  min-width:0;
+  padding:18px 22px 22px clamp(72px,22%,150px);
   text-shadow:0 1px 3px #000;
 }
 html[data-ui="tomb"] .tomb-v2-preview-copy span{
@@ -405,9 +425,13 @@ html[data-ui="tomb"] .tomb-v2-preview-copy strong{
   letter-spacing:.08em;
 }
 html[data-ui="tomb"] .tomb-v2-preview-copy small{
+  display:block;
+  min-width:0;
   color:#77efa6;
   font-size:.64rem;
   line-height:1.35;
+  overflow-wrap:break-word;
+  white-space:normal;
 }
 html[data-ui="tomb"] .tomb-v2-actions{
   display:flex;
@@ -520,7 +544,7 @@ html[data-ui="tomb"] .tomb-frame-button.secondary>.tomb-graphic-button__backgrou
   }
   html[data-ui="tomb"] .tomb-v2-preview-copy{
     min-height:76px;
-    padding:9px 18px 9px clamp(70px,14%,126px);
+    padding:9px 18px 14px clamp(70px,14%,126px);
   }
   html[data-ui="tomb"] .tomb-v2-preview-copy strong{font-size:.72rem}
   html[data-ui="tomb"] .tomb-v2-actions{
