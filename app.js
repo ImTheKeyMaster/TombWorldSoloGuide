@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.20';
+  const APP_VERSION = '10.0.21';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5360,8 +5360,6 @@ document.addEventListener('touchend',function(e){
   }
 
 const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
-  const TOMB_V2_READY_FRAME=TOMB_V2_ASSET_ROOT+'card-ready.svg';
-  const TOMB_V2_SELECTED_FRAME=TOMB_V2_ASSET_ROOT+'card-selected.svg';
   const TOMB_V2_PORTRAIT_SPRITE=TOMB_V2_ASSET_ROOT+'portrait-sprite.webp';
   const TOMB_V2_DEATHWATCH_PORTRAITS={
     sergeant:'leader',
@@ -5396,12 +5394,40 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
     return `<span class="tomb-v2-portrait portrait-${portrait}" style="--tomb-v2-sprite:url('${TOMB_V2_PORTRAIT_SPRITE}')" aria-hidden="true"></span>`;
   }
 
+  let tombV2RelayoutFrame=0;
+  function relayoutTombV2Picker(){
+    if(document.documentElement.dataset.ui!=='tomb'||!modal.open||!modal.classList.contains('tomb-operative-picker-modal'))return;
+    cancelAnimationFrame(tombV2RelayoutFrame);
+    tombV2RelayoutFrame=requestAnimationFrame(()=>{
+      const shell=$('.tomb-v2-shell',modal);
+      const grid=$('.tomb-v2-operative-grid',modal);
+      const inner=$('.modal-inner',modal);
+      if(!shell||!grid||!inner)return;
+      const layout=window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches?'landscape':'portrait';
+      modal.dataset.tombLayout=layout;
+      [inner,shell,grid].forEach(element=>{
+        element.style.removeProperty('height');
+        element.style.removeProperty('min-height');
+        element.style.removeProperty('max-height');
+        element.style.removeProperty('align-content');
+        element.style.removeProperty('grid-template-columns');
+        element.style.removeProperty('gap');
+        element.style.removeProperty('row-gap');
+      });
+      void grid.offsetHeight;
+      grid.style.setProperty('align-content','start');
+    });
+  }
+
+  window.addEventListener('resize',relayoutTombV2Picker);
+  window.addEventListener('orientationchange',relayoutTombV2Picker);
+
   function showTombPlayerOperativeSelection(candidates){
     const firstApl=candidates.length?(playerDefinition(candidates[0])?.apl??livePlayerOperative(candidates[0])?.apl??'—'):'—';
     const cards=candidates.map((id,index)=>{
       const operative=livePlayerOperative(id)||playerDefinition(id)||{};
-      return `<button class="tomb-v2-card" type="button" role="radio" aria-checked="false" data-tomb-player-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
-        <img class="tomb-v2-card-frame" src="${TOMB_V2_READY_FRAME}" alt="" aria-hidden="true">
+      return `<button class="tomb-v2-card tomb-frame-card frame-ready" type="button" role="radio" aria-checked="false" data-tomb-player-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
+        <span class="tomb-nine-slice" aria-hidden="true"></span>
         <span class="tomb-v2-card-grid">
           <span class="tomb-v2-portrait-zone">${tombV2PlayerPortrait(id)}</span>
           <span class="tomb-v2-copy">
@@ -5425,17 +5451,18 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
       </div>
       <div class="tomb-v2-section-title"><span>✠</span><strong>SELECT OPERATIVE</strong></div>
       <div class="tomb-v2-operative-grid" role="radiogroup" aria-label="Ready operatives">${cards}</div>
-      <div class="tomb-v2-preview">
-        <img src="Assets/Images/TombUI/action-preview.webp" alt="" aria-hidden="true">
+      <div class="tomb-v2-preview tomb-frame-preview">
+        <span class="tomb-nine-slice" aria-hidden="true"></span>
         <div class="tomb-v2-preview-copy"><span>ACTION PREVIEW</span><strong>OPERATIVE READY</strong><small id="tombV2PreviewText">Choose an operative to continue.</small></div>
       </div>
       <div class="tomb-v2-actions">
-        <button class="tomb-graphic-button primary" type="button" id="confirmTombPlayerSelection" disabled><img src="Assets/Images/TombUI/button-primary.webp" alt="" aria-hidden="true"><span>Confirm Selection »</span></button>
-        <button class="tomb-graphic-button secondary" type="button" data-close><img src="Assets/Images/TombUI/button-secondary.webp" alt="" aria-hidden="true"><span>Cancel</span></button>
+        <button class="tomb-graphic-button tomb-frame-button primary" type="button" id="confirmTombPlayerSelection" disabled><span class="tomb-nine-slice" aria-hidden="true"></span><span>Confirm Selection »</span></button>
+        <button class="tomb-graphic-button tomb-frame-button secondary" type="button" data-close><span class="tomb-nine-slice" aria-hidden="true"></span><span>Cancel</span></button>
       </div>
     </section>`);
 
     modal.classList.add('tomb-operative-picker-modal');
+    relayoutTombV2Picker();
     let selectedId='';
     const confirm=$('#confirmTombPlayerSelection');
     const preview=$('#tombV2PreviewText');
@@ -5447,8 +5474,8 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
         const selected=card.dataset.tombPlayerOperative===selectedId;
         card.classList.toggle('selected',selected);
         card.setAttribute('aria-checked',String(selected));
-        const frame=$('.tomb-v2-card-frame',card);
-        if(frame)frame.src=selected?TOMB_V2_SELECTED_FRAME:TOMB_V2_READY_FRAME;
+        card.classList.toggle('frame-ready',!selected);
+        card.classList.toggle('frame-selected',selected);
         const status=$('.tomb-v2-status b',card);
         if(status)status.textContent=selected?'SELECTED':'READY';
       });

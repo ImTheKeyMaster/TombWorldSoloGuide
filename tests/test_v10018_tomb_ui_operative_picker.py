@@ -16,7 +16,7 @@ def section(start, end):
 
 
 def test_release_surfaces_are_synchronized():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 20)
+    assert CURRENT_APP_VERSION == "10.0.21"
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f"V{CURRENT_APP_VERSION}" in INDEX
@@ -35,12 +35,7 @@ def test_tomb_v2_picker_is_part_of_app_iife_runtime():
     picker = section("const TOMB_V2_ASSET_ROOT", "function showPlayerActivation()")
     for asset in (
         "Assets/Images/TombUI/v2/",
-        "card-ready.svg",
-        "card-selected.svg",
         "portrait-sprite.webp",
-        "Assets/Images/TombUI/action-preview.webp",
-        "Assets/Images/TombUI/button-primary.webp",
-        "Assets/Images/TombUI/button-secondary.webp",
     ):
         assert asset in picker
     assert 'class="tomb-v2-shell"' in picker
@@ -58,7 +53,8 @@ def test_tomb_v2_selection_enumerates_every_card_and_preserves_activation_path()
     assert "card.dataset.tombPlayerOperative===selectedId" in picker
     assert "card.classList.toggle('selected',selected)" in picker
     assert "card.setAttribute('aria-checked',String(selected))" in picker
-    assert "frame.src=selected?TOMB_V2_SELECTED_FRAME:TOMB_V2_READY_FRAME" in picker
+    assert "card.classList.toggle('frame-ready',!selected)" in picker
+    assert "card.classList.toggle('frame-selected',selected)" in picker
     assert "status.textContent=selected?'SELECTED':'READY'" in picker
     assert "confirm.disabled=false" in picker
     assert "beginPlayerActivation(selectedId)" in picker

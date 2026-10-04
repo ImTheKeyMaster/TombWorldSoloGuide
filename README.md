@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.20
+# Tomb World Battle Guide v10.0.21
+
+## v10.0.21
+
+### Scalable Tomb UI Frames
+
+- Rebuilds the hidden Tomb operative cards, selected and reusable target states, action preview, and primary/secondary buttons as nine-slice frame shells so corners and border thickness remain stable while their centers resize.
+- Adds dedicated masked Deathwatch portrait viewports with archetype focal positioning and gives the Action Preview enough vertical room for its live text.
+- Explicitly relays out the Tomb picker when it opens, resizes, or changes orientation, restoring its compact two-column portrait and multi-column landscape grids without stale row spacing.
+- Preserves classic mode, gameplay and activation rules, and save schema version 3 unchanged.
 
 ## v10.0.20
 

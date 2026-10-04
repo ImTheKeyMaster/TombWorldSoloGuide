@@ -14,7 +14,7 @@ def picker_source():
 
 
 def test_v2_css_is_versioned_and_override_script_is_gone():
-    assert 'href="tomb-ui-v2.css"' in INDEX
+    assert f'href="tomb-ui-v2.css?v={CURRENT_APP_VERSION}"' in INDEX
     assert 'src="tomb-ui-v2.js"' not in INDEX
     assert "tomb-ui-v2.js" not in WORKER
 
@@ -35,8 +35,7 @@ def test_v2_assets_are_available_offline():
 def test_v2_picker_is_integrated_into_app_runtime():
     picker = picker_source()
     assert "portrait-sprite.webp" in picker
-    assert "card-ready.svg" in picker
-    assert "card-selected.svg" in picker
+    assert 'class="tomb-nine-slice"' in picker
     assert 'class="tomb-v2-shell"' in picker
     assert 'class="tomb-v2-operative-grid"' in picker
     assert "$$('[data-tomb-player-operative]',modal)" in picker
@@ -66,3 +65,24 @@ def test_v2_landscape_has_explicit_four_column_layout_and_portrait_reset():
     assert "@media(orientation:portrait)" in CSS
     assert "height:auto!important" in CSS
     assert "gap:8px!important" in CSS
+
+
+def test_v2_affected_graphics_use_nine_slice_frames_instead_of_stretched_images():
+    picker = picker_source()
+    assert '<img class="tomb-v2-card-frame"' not in picker
+    assert '<img src="Assets/Images/TombUI/action-preview.webp"' not in picker
+    assert '<img src="Assets/Images/TombUI/button-' not in picker
+    assert "border-image-slice" in CSS
+    assert ".tomb-frame-card.frame-target>.tomb-nine-slice" in CSS
+    assert ".tomb-frame-preview>.tomb-nine-slice" in CSS
+    assert ".tomb-frame-button>.tomb-nine-slice" in CSS
+
+
+def test_v2_orientation_changes_run_explicit_tomb_relayout():
+    picker = picker_source()
+    assert "function relayoutTombV2Picker()" in picker
+    assert "window.addEventListener('resize',relayoutTombV2Picker)" in picker
+    assert "window.addEventListener('orientationchange',relayoutTombV2Picker)" in picker
+    assert "modal.classList.add('tomb-operative-picker-modal');\n    relayoutTombV2Picker();" in picker
+    assert "element.style.removeProperty('height')" in picker
+    assert "element.style.removeProperty('row-gap')" in picker
