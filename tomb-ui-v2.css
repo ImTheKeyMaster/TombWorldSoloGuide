@@ -172,10 +172,10 @@ html[data-ui="tomb"] .tomb-v2-card{
   min-height:84px;
   margin:0;
   padding:0;
-  overflow:hidden;
+  overflow:visible;
   border:0;
   border-radius:8px;
-  background:#02080b;
+  background:transparent;
   color:#effaff;
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
@@ -193,49 +193,73 @@ html[data-ui="tomb"] .tomb-nine-slice{
   border-color:transparent;
   pointer-events:none;
 }
-html[data-ui="tomb"] .tomb-frame-card>.tomb-nine-slice{
-  border-width:12px;
-  border-image-width:12px;
-  border-image-repeat:stretch;
+html[data-ui="tomb"] .tomb-card-frame-parts{
+  position:absolute;
+  inset:0;
+  display:grid;
+  grid-template-columns:12px minmax(0,1fr) 12px;
+  grid-template-rows:12px minmax(0,1fr) 12px;
+  pointer-events:none;
 }
-html[data-ui="tomb"] .tomb-frame-card>.tomb-frame-background{
+html[data-ui="tomb"] .tomb-card-frame-parts>span{
+  display:block;
+  min-width:0;
+  min-height:0;
+  background-position:center;
+  background-repeat:no-repeat;
+}
+html[data-ui="tomb"] .tomb-card-frame-parts .center{
   z-index:0;
-  border-image-slice:42 44 fill;
+  background-size:100% 100%;
 }
-html[data-ui="tomb"] .tomb-frame-card>.tomb-frame-edges,
-html[data-ui="tomb"] .tomb-frame-card>.tomb-frame-foreground{
-  border-image-slice:42 44;
-}
-html[data-ui="tomb"] .tomb-frame-card>.tomb-frame-edges{
+html[data-ui="tomb"] .tomb-card-frame-parts .edge{
   z-index:2;
-  clip-path:inset(0 12px);
+  background-size:100% 100%;
 }
-html[data-ui="tomb"] .tomb-frame-card>.tomb-frame-foreground{
+html[data-ui="tomb"] .tomb-card-frame-parts .corner{
   z-index:3;
-  -webkit-mask:linear-gradient(90deg,#000 0 12px,transparent 12px calc(100% - 12px),#000 calc(100% - 12px));
-  mask:linear-gradient(90deg,#000 0 12px,transparent 12px calc(100% - 12px),#000 calc(100% - 12px));
+  width:12px;
+  height:12px;
+  background-size:12px 12px;
 }
-html[data-ui="tomb"] .tomb-frame-card.frame-ready>.tomb-nine-slice{
-  border-image-source:url("Assets/Images/TombUI/v2/card-ready.svg");
+html[data-ui="tomb"] .tomb-card-frame-parts .tl{grid-area:1/1}
+html[data-ui="tomb"] .tomb-card-frame-parts .top{grid-area:1/2}
+html[data-ui="tomb"] .tomb-card-frame-parts .tr{grid-area:1/3}
+html[data-ui="tomb"] .tomb-card-frame-parts .left{grid-area:2/1}
+html[data-ui="tomb"] .tomb-card-frame-parts .center{grid-area:2/2}
+html[data-ui="tomb"] .tomb-card-frame-parts .right{grid-area:2/3}
+html[data-ui="tomb"] .tomb-card-frame-parts .bl{grid-area:3/1}
+html[data-ui="tomb"] .tomb-card-frame-parts .bottom{grid-area:3/2}
+html[data-ui="tomb"] .tomb-card-frame-parts .br{grid-area:3/3}
+html[data-ui="tomb"] .tomb-card-frame.frame-ready .tomb-card-frame-parts>span{
+  background-image:var(--ready-frame-piece);
 }
-html[data-ui="tomb"] .tomb-frame-card.frame-selected>.tomb-nine-slice{
-  border-image-source:url("Assets/Images/TombUI/v2/card-selected.svg");
+html[data-ui="tomb"] .tomb-card-frame.frame-selected .tomb-card-frame-parts>span{
+  background-image:var(--selected-frame-piece);
+  filter:drop-shadow(0 0 3px rgba(45,198,255,.7));
 }
-html[data-ui="tomb"] .tomb-frame-card.frame-target>.tomb-nine-slice{
-  border-image-source:url("Assets/Images/TombUI/v2/card-valid.svg");
-}
-html[data-ui="tomb"] .tomb-v2-card-grid{
+html[data-ui="tomb"] .tomb-card-frame-parts .tl{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/corner-tl.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/corner-tl.svg")}
+html[data-ui="tomb"] .tomb-card-frame-parts .top{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/edge-top.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/edge-top.svg")}
+html[data-ui="tomb"] .tomb-card-frame-parts .tr{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/corner-tr.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/corner-tr.svg")}
+html[data-ui="tomb"] .tomb-card-frame-parts .left{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/edge-left.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/edge-left.svg")}
+html[data-ui="tomb"] .tomb-card-frame-parts .center{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/center.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/center.svg")}
+html[data-ui="tomb"] .tomb-card-frame-parts .right{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/edge-right.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/edge-right.svg")}
+html[data-ui="tomb"] .tomb-card-frame-parts .bl{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/corner-bl.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/corner-bl.svg")}
+html[data-ui="tomb"] .tomb-card-frame-parts .bottom{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/edge-bottom.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/edge-bottom.svg")}
+html[data-ui="tomb"] .tomb-card-frame-parts .br{--ready-frame-piece:url("Assets/Images/TombUI/v2/card-frame/ready/corner-br.svg");--selected-frame-piece:url("Assets/Images/TombUI/v2/card-frame/selected/corner-br.svg")}
+html[data-ui="tomb"] .tomb-v2-card-content{
   position:absolute;
   z-index:1;
-  inset:0;
+  inset:12px;
   display:grid;
   grid-template-columns:minmax(72px,34%) minmax(0,1fr) 38px;
   align-items:stretch;
+  overflow:hidden;
 }
 html[data-ui="tomb"] .tomb-v2-portrait-zone{
   position:relative;
   min-width:0;
-  margin:7px 0 7px 8px;
+  margin:0;
   overflow:hidden;
   clip-path:polygon(5px 0,100% 0,100% 100%,5px 100%,0 calc(100% - 5px),0 5px);
   background:#03090c;
@@ -484,7 +508,7 @@ html[data-ui="tomb"] .tomb-frame-button.secondary>.tomb-graphic-button__backgrou
     min-height:70px;
     aspect-ratio:2.25/1;
   }
-  html[data-ui="tomb"] .tomb-v2-card-grid{grid-template-columns:minmax(58px,31%) minmax(0,1fr) 32px}
+  html[data-ui="tomb"] .tomb-v2-card-content{grid-template-columns:minmax(58px,31%) minmax(0,1fr) 32px}
   html[data-ui="tomb"] .tomb-v2-copy strong{font-size:clamp(.58rem,1.45vw,.78rem);letter-spacing:.025em}
   html[data-ui="tomb"] .tomb-v2-copy small{font-size:clamp(.44rem,1vw,.56rem)}
   html[data-ui="tomb"] .tomb-v2-status b{font-size:.45rem}

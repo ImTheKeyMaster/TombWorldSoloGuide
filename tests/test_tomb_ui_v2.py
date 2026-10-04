@@ -30,12 +30,15 @@ def test_v2_assets_are_available_offline():
         "./Assets/Images/TombUI/v2/card-danger.svg",
     ):
         assert asset in WORKER
+    assert "['ready', 'selected'].flatMap" in WORKER
+    assert "'corner-tl.svg', 'edge-top.svg', 'corner-tr.svg'" in WORKER
+    assert "'corner-bl.svg', 'edge-bottom.svg', 'corner-br.svg'" in WORKER
 
 
 def test_v2_picker_is_integrated_into_app_runtime():
     picker = picker_source()
     assert "portrait-sprite.webp" in picker
-    assert 'class="tomb-nine-slice tomb-frame-background"' in picker
+    assert 'class="tomb-card-frame-parts"' in picker
     assert 'class="tomb-v2-shell"' in picker
     assert 'class="tomb-v2-operative-grid"' in picker
     assert "$$('[data-tomb-player-operative]',modal)" in picker
@@ -53,13 +56,32 @@ def test_v2_picker_no_longer_renders_legacy_full_width_card_markup():
     assert "operative-selected.webp" not in picker
 
 
-def test_v2_card_end_caps_render_above_stretchable_edges():
+def test_v2_card_uses_explicit_fixed_corners_and_directional_edges():
     picker = picker_source()
-    assert 'tomb-nine-slice tomb-frame-edges' in picker
-    assert 'clip-path:inset(0 12px)' in CSS
-    assert '.tomb-frame-card>.tomb-frame-edges{\n  z-index:2;' in CSS
-    assert '.tomb-frame-card>.tomb-frame-foreground{\n  z-index:3;' in CSS
-    assert 'mask:linear-gradient(90deg,#000 0 12px,transparent 12px calc(100% - 12px),#000 calc(100% - 12px))' in CSS
+    for piece in ('corner tl', 'edge top', 'corner tr', 'edge left', 'center',
+                  'edge right', 'corner bl', 'edge bottom', 'corner br'):
+        assert f'class="{piece}"' in picker
+    assert 'grid-template-columns:12px minmax(0,1fr) 12px' in CSS
+    assert 'grid-template-rows:12px minmax(0,1fr) 12px' in CSS
+    assert '.tomb-card-frame-parts .edge{\n  z-index:2;' in CSS
+    assert '.tomb-card-frame-parts .corner{\n  z-index:3;' in CSS
+    assert 'width:12px;\n  height:12px;' in CSS
+    pieces = ('corner-tl.svg', 'edge-top.svg', 'corner-tr.svg', 'edge-left.svg',
+              'center.svg', 'edge-right.svg', 'corner-bl.svg', 'edge-bottom.svg',
+              'corner-br.svg')
+    for state in ('ready', 'selected'):
+        for piece in pieces:
+            assert (ROOT / 'Assets/Images/TombUI/v2/card-frame' / state / piece).is_file()
+
+
+def test_v2_card_shell_has_no_border_image_mask_or_clipping_workaround():
+    card_css = CSS.split('html[data-ui="tomb"] .tomb-card-frame-parts', 1)[1].split(
+        'html[data-ui="tomb"] .tomb-v2-portrait-zone', 1
+    )[0]
+    assert 'border-image' not in card_css
+    assert 'clip-path' not in card_css
+    assert 'mask:' not in card_css
+    assert 'tomb-frame-card' not in picker_source()
 
 
 def test_v2_portrait_layout_is_compact_two_column():
@@ -76,13 +98,13 @@ def test_v2_landscape_has_explicit_four_column_layout_and_portrait_reset():
     assert "gap:8px!important" in CSS
 
 
-def test_v2_affected_graphics_use_nine_slice_frames_instead_of_stretched_images():
+def test_v2_reusable_graphics_remain_scalable_while_card_uses_nine_pieces():
     picker = picker_source()
     assert '<img class="tomb-v2-card-frame"' not in picker
     assert '<img src="Assets/Images/TombUI/action-preview.webp"' not in picker
     assert '<img src="Assets/Images/TombUI/button-' not in picker
     assert "border-image-slice" in CSS
-    assert ".tomb-frame-card.frame-target>.tomb-nine-slice" in CSS
+    assert ".tomb-card-frame-parts" in CSS
     assert ".tomb-frame-preview>.tomb-nine-slice" in CSS
     assert ".tomb-frame-button>.tomb-graphic-button__background" in CSS
 
