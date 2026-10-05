@@ -416,3 +416,11 @@ html[data-ui="tomb"] .tomb-v2-button:focus-visible{
 @media(orientation:portrait){
   html[data-ui="tomb"] .tomb-v2-operative-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:auto;align-content:start}
 }
+
+/* Keep the operative picker actions inside the portrait frame's lower safe area. */
+html[data-ui="tomb"] .tomb-v2-actions{
+  padding:0 28px 34px;
+}
+@media(max-width:365px){
+  html[data-ui="tomb"] .tomb-v2-actions{padding-inline:22px;padding-bottom:32px}
+}
