@@ -1,4 +1,11 @@
-# Tomb World Battle Guide v10.0.31
+# Tomb World Battle Guide v10.0.32
+
+## v10.0.32
+
+### Tomb UI Button Seam Fix
+
+- Fixes the hidden experimental Tomb UI Confirm and Cancel button assembly so the stretchable center skin runs underneath the fixed endcaps instead of stopping short of them.
+- Removes the visible gaps between button center and endcaps in portrait and landscape while preserving the v3 button artwork, button geometry, portraits, cards, Action Preview, outer shell, gameplay logic, and classic UI.
 
 ## v10.0.31
 
