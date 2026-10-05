@@ -369,7 +369,7 @@ html[data-ui="tomb"] .tomb-v2-button.primary{
   flex:0 1 310px;
   width:min(310px,100%);
   background-image:url("Assets/Images/TombUI/v3/button-confirm-center.svg");
-  background-size:calc(100% - 70px) 100%;
+  background-size:100% 100%;
   color:#f3fcff;
   text-shadow:0 0 3px rgba(225,251,255,.95),0 0 9px rgba(101,218,255,.72);
   filter:
@@ -395,7 +395,7 @@ html[data-ui="tomb"] .tomb-v2-button.secondary{
   width:min(180px,100%);
   padding-inline:32px;
   background-image:url("Assets/Images/TombUI/v3/button-cancel-center.svg");
-  background-size:calc(100% - 56px) 100%;
+  background-size:100% 100%;
   color:#e3e8e8;
   text-shadow:0 1px 2px #000;
   filter:drop-shadow(0 3px 4px rgba(0,0,0,.5));
@@ -431,7 +431,7 @@ html[data-ui="tomb"] .tomb-v2-button:focus-visible{
   html[data-ui="tomb"] .tomb-v2-operative-grid{grid-area:cards;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:auto;gap:6px;align-content:start}
   html[data-ui="tomb"] .tomb-v2-card{aspect-ratio:2.7/1;padding:6px}html[data-ui="tomb"] .tomb-v2-card-content{grid-template-columns:minmax(38px,30%) minmax(0,1fr) 24px}html[data-ui="tomb"] .tomb-v2-copy strong{font-size:clamp(.52rem,1.2vw,.72rem)}html[data-ui="tomb"] .tomb-v2-copy small{font-size:clamp(.42rem,.9vw,.54rem)}html[data-ui="tomb"] .tomb-v2-status b{font-size:.42rem}html[data-ui="tomb"] .tomb-v2-radio{width:17px}
   html[data-ui="tomb"] .tomb-v2-preview{grid-area:preview;grid-template-columns:60px minmax(0,1fr) 55px;min-height:70px;margin-top:6px;padding:8px 12px}html[data-ui="tomb"] .tomb-v2-preview-copy strong{font-size:.72rem}
-  html[data-ui="tomb"] .tomb-v2-actions{grid-area:actions;margin-top:5px;gap:12px}html[data-ui="tomb"] .tomb-v2-button{min-height:42px;padding-block:6px}html[data-ui="tomb"] .tomb-v2-button.primary{background-size:calc(100% - 56px) 100%}html[data-ui="tomb"] .tomb-v2-button.primary::before,html[data-ui="tomb"] .tomb-v2-button.primary::after{width:34px}html[data-ui="tomb"] .tomb-v2-button.secondary{background-size:calc(100% - 46px) 100%}html[data-ui="tomb"] .tomb-v2-button.secondary::before,html[data-ui="tomb"] .tomb-v2-button.secondary::after{width:28px}
+  html[data-ui="tomb"] .tomb-v2-actions{grid-area:actions;margin-top:5px;gap:12px}html[data-ui="tomb"] .tomb-v2-button{min-height:42px;padding-block:6px}html[data-ui="tomb"] .tomb-v2-button.primary{background-size:100% 100%}html[data-ui="tomb"] .tomb-v2-button.primary::before,html[data-ui="tomb"] .tomb-v2-button.primary::after{width:34px}html[data-ui="tomb"] .tomb-v2-button.secondary{background-size:100% 100%}html[data-ui="tomb"] .tomb-v2-button.secondary::before,html[data-ui="tomb"] .tomb-v2-button.secondary::after{width:28px}
 }
 @media(orientation:portrait){
   html[data-ui="tomb"] .tomb-v2-operative-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:auto;align-content:start}
