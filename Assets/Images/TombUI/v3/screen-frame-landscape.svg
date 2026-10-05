@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 556">
+<defs><linearGradient id="m" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#77817f"/><stop offset=".18" stop-color="#141a19"/><stop offset=".52" stop-color="#4e5755"/><stop offset=".8" stop-color="#09100f"/><stop offset="1" stop-color="#858d89"/></linearGradient><filter id="g"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<path d="M18 49L48 18H1122L1152 49V507L1122 538H48L18 507Z" fill="none" stroke="#111817" stroke-width="22"/>
+<path d="M24 52L51 25H1119L1146 52V504L1119 531H51L24 504Z" fill="none" stroke="url(#m)" stroke-width="9"/>
+<path d="M31 55L55 32H1115L1139 55V501L1115 524H55L31 501Z" fill="none" stroke="#185343" stroke-width="4"/>
+<path d="M36 58L58 37H1112L1134 58V498L1112 519H58L36 498Z" fill="none" stroke="#58f19a" stroke-opacity=".42" stroke-width="1.5"/>
+<path d="M9 150h23v78H18v101H9M1161 150h-23v78h14v101h9" fill="url(#m)"/>
+<path d="M180 13h810l20 12-20 12H180l-20-12Z" fill="#050b0a" stroke="#626b68" stroke-width="2"/>
+<path d="M420 19h330" stroke="#4bf39a" stroke-opacity=".35"/>
+<g opacity=".7"><path d="M545 523h80l11 8-11 8h-80l-11-8Z" fill="#060c0b" stroke="#5c6562"/><path d="M585 516v30M574 523l11-7 11 7M574 539l11 7 11-7" stroke="#44e58b"/></g>
+</svg>
