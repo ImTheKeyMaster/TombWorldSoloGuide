@@ -21,6 +21,7 @@ def css_rule(selector):
 def test_tomb_picker_uses_v3_frame_as_non_obscuring_background_detail():
     picker = picker_source()
     frame = css_rule('html[data-ui="tomb"] .tomb-v3-screen-frame')
+    modal = css_rule('html[data-ui="tomb"] .tomb-operative-picker-modal')
     shell = css_rule('html[data-ui="tomb"] .tomb-v2-shell')
     content_layer = css_rule('html[data-ui="tomb"] .tomb-v2-shell>:not(.tomb-v3-screen-frame)')
     portrait_svg = (ROOT / "Assets/Images/TombUI/v3/screen-frame-portrait.svg").read_text(encoding="utf-8")
@@ -33,6 +34,9 @@ def test_tomb_picker_uses_v3_frame_as_non_obscuring_background_detail():
     assert "transform:scaleX(1.12)" in frame
     assert "screen-frame-portrait.svg" in frame
     assert "z-index:1" in content_layer
+    assert "border:0" in modal
+    assert "background:transparent" in modal
+    assert "box-shadow:none" in modal
     assert "padding:14px" in shell
     assert "min-height:0" in shell
     assert "overflow:hidden" in shell
