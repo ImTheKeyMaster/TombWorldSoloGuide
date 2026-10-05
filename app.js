@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.22';
+  const APP_VERSION = '10.0.30';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5360,7 +5360,7 @@ document.addEventListener('touchend',function(e){
   }
 
 const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
-  const TOMB_V2_PORTRAIT_SPRITE=TOMB_V2_ASSET_ROOT+'portrait-sprite.webp';
+  const TOMB_V2_PORTRAIT_SPRITE='Assets/Images/TombUI/v3/portraits.webp';
   const TOMB_V2_DEATHWATCH_PORTRAITS={
     sergeant:'leader',
     aegis:'rifleman',
