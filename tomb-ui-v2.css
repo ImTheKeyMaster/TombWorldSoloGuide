@@ -424,3 +424,9 @@ html[data-ui="tomb"] .tomb-v2-actions{
 @media(max-width:365px){
   html[data-ui="tomb"] .tomb-v2-actions{padding-inline:22px;padding-bottom:32px}
 }
+
+/* Keep operative picker actions inside the portrait frame's lower safe area. */
+html[data-ui="tomb"] .tomb-v2-actions{
+  padding:0 28px 34px;
+}
+@media(max-width:365px){html[data-ui="tomb"] .tomb-v2-actions{padding-inline:22px;padding-bottom:32px}}
