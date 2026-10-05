@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f587f"/>
+      <stop offset=".34" stop-color="#0a3c5b"/>
+      <stop offset=".72" stop-color="#06283d"/>
+      <stop offset="1" stop-color="#03101a"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#70dfff"/>
+      <stop offset=".5" stop-color="#c4f7ff"/>
+      <stop offset="1" stop-color="#5bcdf5"/>
+    </linearGradient>
+    <pattern id="hex" width="38" height="34" patternUnits="userSpaceOnUse">
+      <path d="M9 1h20l9 16-9 16H9L0 17Z" fill="none" stroke="#7ce5ff" stroke-opacity=".11"/>
+    </pattern>
+  </defs>
+  <path d="M34 4H474l42 27v58l-42 27H34L4 89V31Z" fill="#031019" stroke="#2b7fa3" stroke-width="5"/>
+  <path d="M38 8H469l37 25v54l-37 25H38L12 87V33Z" fill="url(#bg)" stroke="url(#edge)" stroke-width="2.5"/>
+  <path d="M43 15H464l31 21v48l-31 21H43L21 84V36Z" fill="url(#hex)" stroke="#163f52" stroke-width="1.5"/>
+  <path d="M44 15h82M44 105h82M394 15h69M394 105h69" stroke="#9beeff" stroke-opacity=".58" stroke-width="2"/>
+  <path d="M23 39l18-17h47M23 81l18 17h47M497 39l-18-17h-47M497 81l-18 17h-47" fill="none" stroke="#49bfe9" stroke-width="2"/>
+  <path d="M447 42l16 18-16 18M466 42l16 18-16 18" fill="none" stroke="#bdf5ff" stroke-width="4.5" stroke-linecap="square" stroke-linejoin="miter"/>
+  <path d="M56 23H396" stroke="#d8fbff" stroke-opacity=".22"/>
+  <path d="M56 97H396" stroke="#0b8ec8" stroke-opacity=".55"/>
+</svg>
