@@ -69,17 +69,14 @@ def test_cards_are_responsive_css_grid_components_with_stable_ratio():
 def test_buttons_remain_layout_driven_instead_of_stretched_images():
     picker = picker_source()
     button = css_rule('html[data-ui="tomb"] .tomb-v2-button')
-    skin = css_rule('html[data-ui="tomb"] .tomb-v2-button-skin')
     assert '<button class="tomb-v2-button primary"' in picker
     assert '<button class="tomb-v2-button secondary"' in picker
-    assert 'class="tomb-v2-button-skin"' in picker
+    assert 'tomb-v2-button-skin' not in picker
     assert "display:flex" in button
+    assert "background-size:100% 100%" in button
     assert "clip-path:none" in button
-    assert "display:grid" in skin
-    assert "grid-template-columns:var(--tomb-cap-width) minmax(0,1fr) var(--tomb-cap-width)" in skin
     assert "object-fit:fill" not in button
     assert "<img" not in picker.split('class="tomb-v2-actions"', 1)[1]
-
 
 def test_portrait_viewport_clips_content_and_supports_archetypes():
     viewport = css_rule('html[data-ui="tomb"] .tomb-v2-portrait-zone')
@@ -146,34 +143,23 @@ def test_selected_state_uses_layered_glow_without_geometry_change():
     assert "aspect-ratio:" not in selected
 
 
-def test_v3_buttons_use_explicit_three_cell_skin():
+def test_v3_buttons_use_single_seamless_vector_skins():
     picker = picker_source()
-    skin = css_rule('html[data-ui="tomb"] .tomb-v2-button-skin')
-    center = CSS.rsplit('html[data-ui="tomb"] .tomb-v2-button-center{', 1)[1].split("}", 1)[0]
-    assert picker.count('class="tomb-v2-button-skin"') == 2
-    assert "display:grid" in skin
-    assert "gap:0" in skin
-    assert "grid-template-columns:var(--tomb-cap-width) minmax(0,1fr) var(--tomb-cap-width)" in skin
-    assert "margin-inline:-3px" in center
-    for asset in (
-        "button-confirm-left.svg",
-        "button-confirm-center.svg",
-        "button-confirm-right.svg",
-        "button-cancel-left.svg",
-        "button-cancel-center.svg",
-        "button-cancel-right.svg",
-    ):
-        assert asset in CSS
-
-
-def test_v3_button_caps_are_fixed_and_landscape_only_changes_cap_width():
     primary = css_rule('html[data-ui="tomb"] .tomb-v2-button.primary')
     secondary = css_rule('html[data-ui="tomb"] .tomb-v2-button.secondary')
-    assert "--tomb-cap-width:42px" in primary
-    assert "--tomb-cap-width:35px" in secondary
-    landscape = CSS.split("@media(orientation:landscape) and (max-height:500px)", 1)[1]
-    assert ".tomb-v2-button.primary{--tomb-cap-width:34px}" in landscape
-    assert ".tomb-v2-button.secondary{--tomb-cap-width:28px}" in landscape
+    base = css_rule('html[data-ui="tomb"] .tomb-v2-button')
+    assert 'tomb-v2-button-skin' not in picker
+    assert "button-confirm-full.svg" in primary
+    assert "button-cancel-full.svg" in secondary
+    assert "button-confirm-left.svg" not in primary
+    assert "button-cancel-left.svg" not in secondary
+    assert "background-size:100% 100%" in base
+
+
+def test_v3_button_assets_are_precached():
+    service_worker = (ROOT / "service-worker.js").read_text()
+    assert "button-confirm-full.svg" in service_worker
+    assert "button-cancel-full.svg" in service_worker
 
 
 def test_v3_button_focus_indicator_remains_accessible():
