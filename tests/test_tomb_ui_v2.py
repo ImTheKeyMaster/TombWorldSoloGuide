@@ -152,6 +152,8 @@ def test_v3_buttons_use_fixed_caps_and_non_repeating_center():
     assert "button-cancel-center.svg" in secondary
     assert "background-size:100% 100%" in primary
     assert "background-size:100% 100%" in secondary
+    assert "clip-path:polygon(" in primary
+    assert "clip-path:polygon(" in secondary
     assert "button-confirm-left.svg" in CSS
     assert "button-confirm-right.svg" in CSS
     assert "button-cancel-left.svg" in CSS
