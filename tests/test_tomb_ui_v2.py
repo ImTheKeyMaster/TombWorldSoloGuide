@@ -25,10 +25,10 @@ def test_v2_css_is_versioned_and_available_offline():
 
 
 def test_release_is_10_0_30_on_every_version_surface():
-    assert CURRENT_APP_VERSION == "10.0.30"
-    assert "const APP_VERSION = '10.0.30';" in WORKER
-    assert '<div class="version">V10.0.30</div>' in INDEX
-    assert INDEX.count("?v=10.0.30") >= 12
+    assert CURRENT_APP_VERSION == "10.0.31"
+    assert "const APP_VERSION = '10.0.31';" in WORKER
+    assert '<div class="version">V10.0.31</div>' in INDEX
+    assert INDEX.count("?v=10.0.31") >= 12
 
 
 def test_picker_uses_layout_first_markup_and_live_controls():
@@ -139,3 +139,18 @@ def test_selected_state_uses_layered_glow_without_geometry_change():
     assert "width:" not in selected
     assert "height:" not in selected
     assert "aspect-ratio:" not in selected
+
+
+def test_v3_buttons_use_fixed_caps_and_non_repeating_center():
+    base = css_rule('html[data-ui="tomb"] .tomb-v2-button')
+    primary = css_rule('html[data-ui="tomb"] .tomb-v2-button.primary')
+    secondary = css_rule('html[data-ui="tomb"] .tomb-v2-button.secondary')
+    assert "background-repeat:no-repeat" in base
+    assert "button-confirm-center.svg" in primary
+    assert "button-cancel-center.svg" in secondary
+    assert "calc(100% -" in primary
+    assert "calc(100% -" in secondary
+    assert "button-confirm-left.svg" in CSS
+    assert "button-confirm-right.svg" in CSS
+    assert "button-cancel-left.svg" in CSS
+    assert "button-cancel-right.svg" in CSS
