@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.30
+# Tomb World Battle Guide v10.0.31
+
+## v10.0.31
+
+### Tomb UI Button Art Pass
+
+- Changes only the hidden experimental Tomb picker buttons.
+- Replaces the CSS-drawn Confirm Selection and Cancel skins with v3 three-piece art: fixed left/right endcaps plus a single non-repeating stretchable center.
+- Keeps button geometry, operative layout, portraits, selected-state glow, Action Preview, outer shell, gameplay logic, and classic UI unchanged.
+- Uses separate landscape endcap sizing so the buttons remain compact without distorting their silhouettes.
 
 ## v10.0.30
 

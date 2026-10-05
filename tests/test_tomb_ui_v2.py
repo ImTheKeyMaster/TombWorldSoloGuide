@@ -24,11 +24,10 @@ def test_v2_css_is_versioned_and_available_offline():
     assert "./Assets/Images/TombUI/v3/portraits.webp" in WORKER
 
 
-def test_release_is_10_0_30_on_every_version_surface():
-    assert CURRENT_APP_VERSION == "10.0.30"
-    assert "const APP_VERSION = '10.0.30';" in WORKER
-    assert '<div class="version">V10.0.30</div>' in INDEX
-    assert INDEX.count("?v=10.0.30") >= 12
+def test_release_version_surfaces_follow_current_app_version():
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
+    assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
+    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") >= 12
 
 
 def test_picker_uses_layout_first_markup_and_live_controls():
@@ -73,7 +72,8 @@ def test_buttons_remain_layout_driven_instead_of_stretched_images():
     assert '<button class="tomb-v2-button primary"' in picker
     assert '<button class="tomb-v2-button secondary"' in picker
     assert "display:flex" in button
-    assert "clip-path:polygon(" in button
+    assert "clip-path:none" in button
+    assert "background-repeat:no-repeat" in button
     assert "object-fit:fill" not in button
     assert "<img" not in picker.split('class="tomb-v2-actions"', 1)[1]
 
@@ -83,7 +83,9 @@ def test_portrait_viewport_clips_content_and_supports_archetypes():
     portrait = css_rule('html[data-ui="tomb"] .tomb-v2-portrait')
     assert "overflow:hidden" in viewport
     assert "height:100%" in viewport
-    assert "object-fit:cover" in portrait
+    assert "width:400%" in portrait
+    assert "height:auto" in portrait
+    assert "max-height:none" in portrait
     for archetype in ("leader", "rifleman", "melee", "heavy"):
         assert f".portrait-{archetype}" in CSS
 
@@ -139,3 +141,18 @@ def test_selected_state_uses_layered_glow_without_geometry_change():
     assert "width:" not in selected
     assert "height:" not in selected
     assert "aspect-ratio:" not in selected
+
+
+def test_v3_buttons_use_fixed_caps_and_non_repeating_center():
+    base = css_rule('html[data-ui="tomb"] .tomb-v2-button')
+    primary = css_rule('html[data-ui="tomb"] .tomb-v2-button.primary')
+    secondary = css_rule('html[data-ui="tomb"] .tomb-v2-button.secondary')
+    assert "background-repeat:no-repeat" in base
+    assert "button-confirm-center.svg" in primary
+    assert "button-cancel-center.svg" in secondary
+    assert "calc(100% -" in primary
+    assert "calc(100% -" in secondary
+    assert "button-confirm-left.svg" in CSS
+    assert "button-confirm-right.svg" in CSS
+    assert "button-cancel-left.svg" in CSS
+    assert "button-cancel-right.svg" in CSS
