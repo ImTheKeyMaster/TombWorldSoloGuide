@@ -18,26 +18,30 @@ def css_rule(selector):
     return CSS.split(selector + "{", 1)[1].split("}", 1)[0]
 
 
-def test_tomb_picker_uses_v3_outer_screen_frame_without_covering_content():
+def test_tomb_picker_uses_v3_frame_as_non_obscuring_background_detail():
     picker = picker_source()
     frame = css_rule('html[data-ui="tomb"] .tomb-v3-screen-frame')
     shell = css_rule('html[data-ui="tomb"] .tomb-v2-shell')
+    content_layer = css_rule('html[data-ui="tomb"] .tomb-v2-shell>:not(.tomb-v3-screen-frame)')
     portrait_svg = (ROOT / "Assets/Images/TombUI/v3/screen-frame-portrait.svg").read_text(encoding="utf-8")
     landscape_svg = (ROOT / "Assets/Images/TombUI/v3/screen-frame-landscape.svg").read_text(encoding="utf-8")
     assert 'class="tomb-v3-screen-frame"' in picker
     assert "position:absolute" in frame
     assert "inset:0" in frame
     assert "pointer-events:none" in frame
+    assert "z-index:0" in frame
+    assert "transform:scaleX(1.12)" in frame
     assert "screen-frame-portrait.svg" in frame
-    assert "100% 100%" in frame
+    assert "z-index:1" in content_layer
+    assert "padding:14px" in shell
+    assert "min-height:0" in shell
+    assert "overflow:hidden" in shell
     assert 'preserveAspectRatio="none"' in portrait_svg
     assert 'preserveAspectRatio="none"' in landscape_svg
-    assert "padding:34px clamp(34px,10vw,48px) 36px" in shell
-    assert "border:0" in shell
-    assert "clip-path:none" in shell
     landscape = CSS.split("@media(orientation:landscape) and (max-height:500px)", 1)[1]
     assert "screen-frame-landscape.svg" in landscape
-    assert 'padding:26px clamp(34px,5vw,54px) calc(26px + env(safe-area-inset-bottom))' in landscape
+    assert "transform:none" in landscape
+    assert 'padding:8px 10px calc(8px + env(safe-area-inset-bottom))' in landscape
 
 
 def test_tomb_confirm_has_no_chevron_and_classic_picker_is_untouched():
