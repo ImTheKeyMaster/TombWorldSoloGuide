@@ -19,18 +19,13 @@ html[data-ui="tomb"] .tomb-v2-shell{
   position:relative;
   isolation:isolate;
   min-height:100%;
-  padding:14px;
-  border:1px solid rgba(85,211,219,.5);
-  background:
-    linear-gradient(90deg,rgba(84,224,231,.7),transparent 12%,transparent 88%,rgba(84,224,231,.7)) top 5px center/calc(100% - 38px) 1px no-repeat,
-    linear-gradient(90deg,rgba(43,103,113,.72),transparent 20%,transparent 80%,rgba(43,103,113,.72)) bottom 7px center/calc(100% - 54px) 1px no-repeat,
-    linear-gradient(180deg,#071316,#020807 32%,#010707);
+  padding:34px clamp(34px,10vw,48px) 36px;
+  border:0;
+  background:linear-gradient(180deg,#071316,#020807 32%,#010707);
   box-shadow:
-    inset 0 0 0 3px rgba(2,8,9,.9),
-    inset 0 0 0 4px rgba(69,143,151,.18),
     inset 0 0 32px rgba(26,156,165,.09),
     0 0 20px rgba(36,175,186,.15);
-  clip-path:polygon(12px 0,calc(50% - 38px) 0,calc(50% - 30px) 5px,calc(50% + 30px) 5px,calc(50% + 38px) 0,calc(100% - 12px) 0,100% 12px,100% calc(100% - 18px),calc(100% - 18px) 100%,calc(50% + 44px) 100%,calc(50% + 34px) calc(100% - 7px),calc(50% - 34px) calc(100% - 7px),calc(50% - 44px) 100%,18px 100%,0 calc(100% - 18px),0 12px);
+  clip-path:none;
   color:#edf8ff;
 }
 html[data-ui="tomb"] .tomb-v3-screen-frame{
@@ -395,12 +390,12 @@ html[data-ui="tomb"] .tomb-v2-button:focus-visible{
   outline:2px solid #8ee7ff;
   outline-offset:3px;
 }
-@media(max-width:365px){html[data-ui="tomb"] .tomb-v2-shell{padding:10px}html[data-ui="tomb"] .tomb-v2-operative-grid{gap:6px}html[data-ui="tomb"] .tomb-v2-hud-cell{padding-inline:6px}html[data-ui="tomb"] .tomb-v2-bars{gap:2px}html[data-ui="tomb"] .tomb-v2-bars i{width:13px}}
+@media(max-width:365px){html[data-ui="tomb"] .tomb-v2-shell{padding:30px 32px 32px}html[data-ui="tomb"] .tomb-v2-operative-grid{gap:6px}html[data-ui="tomb"] .tomb-v2-hud-cell{padding-inline:6px}html[data-ui="tomb"] .tomb-v2-bars{gap:2px}html[data-ui="tomb"] .tomb-v2-bars i{width:13px}}
 @media(orientation:landscape) and (max-height:500px){
   html[data-ui="tomb"] .tomb-v3-screen-frame{background-image:url("Assets/Images/TombUI/v3/screen-frame-landscape.svg")}
   html[data-ui="tomb"] .tomb-operative-picker-modal{width:calc(100% - max(10px,env(safe-area-inset-left)) - max(10px,env(safe-area-inset-right)));max-width:1050px;max-height:calc(100dvh - 10px)}
   html[data-ui="tomb"] .tomb-operative-picker-modal .modal-inner{max-height:calc(100dvh - 10px);padding:0;overflow:auto}
-  html[data-ui="tomb"] .tomb-v2-shell{display:grid;grid-template-columns:minmax(210px,.72fr) minmax(0,1.6fr);grid-template-areas:"brand hud" "title title" "cards cards" "preview preview" "actions actions";column-gap:10px;padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
+  html[data-ui="tomb"] .tomb-v2-shell{display:grid;grid-template-columns:minmax(210px,.72fr) minmax(0,1.6fr);grid-template-areas:"brand hud" "title title" "cards cards" "preview preview" "actions actions";column-gap:10px;padding:26px clamp(34px,5vw,54px) calc(26px + env(safe-area-inset-bottom))}
   html[data-ui="tomb"] .tomb-v2-brand{grid-area:brand;min-height:42px;padding:4px 12px}html[data-ui="tomb"] .tomb-v2-brand-copy strong{font-size:1.15rem}html[data-ui="tomb"] .tomb-v2-brand-copy span{font-size:.45rem}
   html[data-ui="tomb"] .tomb-v2-hud{grid-area:hud;width:100%;margin:0}html[data-ui="tomb"] .tomb-v2-hud-cell{min-height:42px;padding:4px 7px}html[data-ui="tomb"] .tomb-v2-hud-cell>span{font-size:.44rem}html[data-ui="tomb"] .tomb-v2-bars i{width:12px;height:6px}
   html[data-ui="tomb"] .tomb-v2-section-title{grid-area:title;margin:5px 2px 6px;padding-bottom:4px}

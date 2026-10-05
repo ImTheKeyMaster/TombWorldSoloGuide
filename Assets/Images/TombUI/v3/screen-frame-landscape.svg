@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 556">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 556" preserveAspectRatio="none">
 <defs><linearGradient id="m" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#77817f"/><stop offset=".18" stop-color="#141a19"/><stop offset=".52" stop-color="#4e5755"/><stop offset=".8" stop-color="#09100f"/><stop offset="1" stop-color="#858d89"/></linearGradient><filter id="g"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
 <path d="M18 49L48 18H1122L1152 49V507L1122 538H48L18 507Z" fill="none" stroke="#111817" stroke-width="22"/>
 <path d="M24 52L51 25H1119L1146 52V504L1119 531H51L24 504Z" fill="none" stroke="url(#m)" stroke-width="9"/>
