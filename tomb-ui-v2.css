@@ -330,6 +330,7 @@ html[data-ui="tomb"] .tomb-v2-actions{
   margin-top:10px;
 }
 html[data-ui="tomb"] .tomb-v2-button{
+  --tomb-cap-width:42px;
   position:relative;
   isolation:isolate;
   display:flex;
@@ -340,9 +341,7 @@ html[data-ui="tomb"] .tomb-v2-button{
   padding:8px 38px;
   overflow:visible;
   border:0;
-  background-color:transparent;
-  background-position:center;
-  background-repeat:no-repeat;
+  background:none;
   color:#dce8eb;
   font:800 .75rem/1 system-ui,sans-serif;
   letter-spacing:.1em;
@@ -350,29 +349,40 @@ html[data-ui="tomb"] .tomb-v2-button{
   clip-path:none;
   box-shadow:none;
 }
-html[data-ui="tomb"] .tomb-v2-button::before,
-html[data-ui="tomb"] .tomb-v2-button::after{
-  content:"";
+html[data-ui="tomb"] .tomb-v2-button-skin{
   position:absolute;
-  z-index:-1;
-  top:0;
-  bottom:0;
-  width:var(--tomb-cap-width,42px);
+  z-index:0;
+  inset:0;
+  display:grid;
+  grid-template-columns:var(--tomb-cap-width) minmax(0,1fr) var(--tomb-cap-width);
+  gap:0;
   pointer-events:none;
+}
+html[data-ui="tomb"] .tomb-v2-button-cap,
+html[data-ui="tomb"] .tomb-v2-button-center{
+  min-width:0;
   background-position:center;
   background-repeat:no-repeat;
   background-size:100% 100%;
 }
-html[data-ui="tomb"] .tomb-v2-button::before{left:0}
-html[data-ui="tomb"] .tomb-v2-button::after{right:0}
+html[data-ui="tomb"] .tomb-v2-button-cap{
+  position:relative;
+  z-index:2;
+}
+html[data-ui="tomb"] .tomb-v2-button-center{
+  position:relative;
+  z-index:1;
+  margin-inline:-3px;
+}
+html[data-ui="tomb"] .tomb-v2-button-label,
+html[data-ui="tomb"] .tomb-v2-button i{
+  position:relative;
+  z-index:3;
+}
 html[data-ui="tomb"] .tomb-v2-button.primary{
   --tomb-cap-width:42px;
-  --tomb-clip-shoulder:14px;
   flex:0 1 310px;
   width:min(310px,100%);
-  background-image:url("Assets/Images/TombUI/v3/button-confirm-center.svg");
-  background-size:100% 100%;
-  clip-path:polygon(var(--tomb-clip-shoulder) 0,calc(100% - var(--tomb-clip-shoulder)) 0,100% 24%,100% 76%,calc(100% - var(--tomb-clip-shoulder)) 100%,var(--tomb-clip-shoulder) 100%,0 76%,0 24%);
   color:#f3fcff;
   text-shadow:0 0 3px rgba(225,251,255,.95),0 0 9px rgba(101,218,255,.72);
   filter:
@@ -380,10 +390,13 @@ html[data-ui="tomb"] .tomb-v2-button.primary{
     drop-shadow(0 0 8px rgba(60,197,255,.52))
     drop-shadow(0 0 18px rgba(0,132,255,.26));
 }
-html[data-ui="tomb"] .tomb-v2-button.primary::before{
+html[data-ui="tomb"] .tomb-v2-button.primary .left{
   background-image:url("Assets/Images/TombUI/v3/button-confirm-left.svg");
 }
-html[data-ui="tomb"] .tomb-v2-button.primary::after{
+html[data-ui="tomb"] .tomb-v2-button.primary .tomb-v2-button-center{
+  background-image:url("Assets/Images/TombUI/v3/button-confirm-center.svg");
+}
+html[data-ui="tomb"] .tomb-v2-button.primary .right{
   background-image:url("Assets/Images/TombUI/v3/button-confirm-right.svg");
 }
 html[data-ui="tomb"] .tomb-v2-button.primary i{
@@ -392,22 +405,21 @@ html[data-ui="tomb"] .tomb-v2-button.primary i{
   text-shadow:0 0 5px #a9efff,0 0 11px #56cfff;
 }
 html[data-ui="tomb"] .tomb-v2-button.secondary{
-  --tomb-cap-width:34px;
-  --tomb-clip-shoulder:12px;
+  --tomb-cap-width:35px;
   flex:0 1 180px;
   width:min(180px,100%);
   padding-inline:32px;
-  background-image:url("Assets/Images/TombUI/v3/button-cancel-center.svg");
-  background-size:100% 100%;
-  clip-path:polygon(var(--tomb-clip-shoulder) 0,calc(100% - var(--tomb-clip-shoulder)) 0,100% 26%,100% 74%,calc(100% - var(--tomb-clip-shoulder)) 100%,var(--tomb-clip-shoulder) 100%,0 74%,0 26%);
   color:#e3e8e8;
   text-shadow:0 1px 2px #000;
   filter:drop-shadow(0 3px 4px rgba(0,0,0,.5));
 }
-html[data-ui="tomb"] .tomb-v2-button.secondary::before{
+html[data-ui="tomb"] .tomb-v2-button.secondary .left{
   background-image:url("Assets/Images/TombUI/v3/button-cancel-left.svg");
 }
-html[data-ui="tomb"] .tomb-v2-button.secondary::after{
+html[data-ui="tomb"] .tomb-v2-button.secondary .tomb-v2-button-center{
+  background-image:url("Assets/Images/TombUI/v3/button-cancel-center.svg");
+}
+html[data-ui="tomb"] .tomb-v2-button.secondary .right{
   background-image:url("Assets/Images/TombUI/v3/button-cancel-right.svg");
 }
 html[data-ui="tomb"] .tomb-v2-button:disabled{
@@ -419,8 +431,8 @@ html[data-ui="tomb"] .tomb-v2-button:not(:disabled):active{
   transform:translateY(1px) scale(.995);
 }
 html[data-ui="tomb"] .tomb-v2-button:focus-visible{
-  outline:none;
-  box-shadow:inset 0 0 0 2px #8ee7ff,inset 0 0 10px rgba(82,211,255,.45);
+  outline:2px solid #8ee7ff;
+  outline-offset:3px;
 }
 @media(max-width:365px){html[data-ui="tomb"] .tomb-v2-shell{padding:10px}html[data-ui="tomb"] .tomb-v2-operative-grid{gap:6px}html[data-ui="tomb"] .tomb-v2-hud-cell{padding-inline:6px}html[data-ui="tomb"] .tomb-v2-bars{gap:2px}html[data-ui="tomb"] .tomb-v2-bars i{width:13px}}
 @media(orientation:landscape) and (max-height:500px){
@@ -433,7 +445,7 @@ html[data-ui="tomb"] .tomb-v2-button:focus-visible{
   html[data-ui="tomb"] .tomb-v2-operative-grid{grid-area:cards;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:auto;gap:6px;align-content:start}
   html[data-ui="tomb"] .tomb-v2-card{aspect-ratio:2.7/1;padding:6px}html[data-ui="tomb"] .tomb-v2-card-content{grid-template-columns:minmax(38px,30%) minmax(0,1fr) 24px}html[data-ui="tomb"] .tomb-v2-copy strong{font-size:clamp(.52rem,1.2vw,.72rem)}html[data-ui="tomb"] .tomb-v2-copy small{font-size:clamp(.42rem,.9vw,.54rem)}html[data-ui="tomb"] .tomb-v2-status b{font-size:.42rem}html[data-ui="tomb"] .tomb-v2-radio{width:17px}
   html[data-ui="tomb"] .tomb-v2-preview{grid-area:preview;grid-template-columns:60px minmax(0,1fr) 55px;min-height:70px;margin-top:6px;padding:8px 12px}html[data-ui="tomb"] .tomb-v2-preview-copy strong{font-size:.72rem}
-  html[data-ui="tomb"] .tomb-v2-actions{grid-area:actions;margin-top:5px;gap:12px}html[data-ui="tomb"] .tomb-v2-button{min-height:42px;padding-block:6px}html[data-ui="tomb"] .tomb-v2-button.primary{--tomb-cap-width:34px;--tomb-clip-shoulder:11px;background-size:100% 100%}html[data-ui="tomb"] .tomb-v2-button.secondary{--tomb-cap-width:28px;--tomb-clip-shoulder:10px;background-size:100% 100%}
+  html[data-ui="tomb"] .tomb-v2-actions{grid-area:actions;margin-top:5px;gap:12px}html[data-ui="tomb"] .tomb-v2-button{min-height:42px;padding-block:6px}html[data-ui="tomb"] .tomb-v2-button.primary{--tomb-cap-width:34px}html[data-ui="tomb"] .tomb-v2-button.secondary{--tomb-cap-width:28px}
 }
 @media(orientation:portrait){
   html[data-ui="tomb"] .tomb-v2-operative-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:auto;align-content:start}

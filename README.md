@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.32
+# Tomb World Battle Guide v10.0.33
+
+## v10.0.33
+
+### Tomb UI Composite Button Skin Fix
+
+- Rebuilds only the hidden experimental Tomb UI Confirm and Cancel button skin assembly.
+- Replaces parent-background plus pseudo-element composition with an explicit three-cell skin layer: fixed left cap, stretchable center, fixed right cap.
+- The center overlaps 3px beneath both endcaps to eliminate antialias seams and visible gaps.
+- Keeps button dimensions, labels, portraits, operative cards, Action Preview, outer frame, gameplay logic, save schema, and classic UI unchanged.
 
 ## v10.0.32
 
