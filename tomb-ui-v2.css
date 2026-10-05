@@ -370,6 +370,7 @@ html[data-ui="tomb"] .tomb-v2-button.primary{
   width:min(310px,100%);
   background-image:url("Assets/Images/TombUI/v3/button-confirm-center.svg");
   background-size:100% 100%;
+  clip-path:polygon(22px 0,calc(100% - 22px) 0,100% 24%,100% 76%,calc(100% - 22px) 100%,22px 100%,0 76%,0 24%);
   color:#f3fcff;
   text-shadow:0 0 3px rgba(225,251,255,.95),0 0 9px rgba(101,218,255,.72);
   filter:
@@ -396,6 +397,7 @@ html[data-ui="tomb"] .tomb-v2-button.secondary{
   padding-inline:32px;
   background-image:url("Assets/Images/TombUI/v3/button-cancel-center.svg");
   background-size:100% 100%;
+  clip-path:polygon(18px 0,calc(100% - 18px) 0,100% 26%,100% 74%,calc(100% - 18px) 100%,18px 100%,0 74%,0 26%);
   color:#e3e8e8;
   text-shadow:0 1px 2px #000;
   filter:drop-shadow(0 3px 4px rgba(0,0,0,.5));
