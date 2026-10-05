@@ -359,8 +359,7 @@ html[data-ui="tomb"] .tomb-v2-button{
   clip-path:none;
   box-shadow:none;
 }
-html[data-ui="tomb"] .tomb-v2-button>span,
-html[data-ui="tomb"] .tomb-v2-button>i{
+html[data-ui="tomb"] .tomb-v2-button>span{
   position:relative;
   z-index:1;
 }
@@ -374,11 +373,6 @@ html[data-ui="tomb"] .tomb-v2-button.primary{
     drop-shadow(0 0 2px rgba(189,245,255,.85))
     drop-shadow(0 0 8px rgba(60,197,255,.52))
     drop-shadow(0 0 18px rgba(0,132,255,.26));
-}
-html[data-ui="tomb"] .tomb-v2-button.primary i{
-  font-size:1.15rem;
-  color:#d7f9ff;
-  text-shadow:0 0 5px #a9efff,0 0 11px #56cfff;
 }
 html[data-ui="tomb"] .tomb-v2-button.secondary{
   flex:0 1 180px;
