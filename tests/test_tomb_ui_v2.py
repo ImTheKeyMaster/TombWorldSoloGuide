@@ -34,7 +34,9 @@ def test_tomb_picker_uses_v3_outer_screen_frame_without_layout_side_effects():
 def test_tomb_confirm_has_no_chevron_and_classic_picker_is_untouched():
     picker = picker_source()
     tomb_confirm = picker.split('id="confirmTombPlayerSelection"', 1)[1].split("</button>", 1)[0]
+    confirm_skin = (ROOT / "Assets/Images/TombUI/v3/button-confirm-full.svg").read_text(encoding="utf-8")
     assert "»" not in tomb_confirm
+    assert "M447 42l16 18-16 18" not in confirm_skin
     classic = APP.split("function showPlayerActivation()", 1)[1].split("function playerActivationSummary", 1)[0]
     assert '<select id="humanPlayerSelection"' in classic
     assert 'id="confirmHumanPlayerSelection"' in classic
