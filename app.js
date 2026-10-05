@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.34';
+  const APP_VERSION = '10.0.35';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5414,6 +5414,7 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
     }).join('');
 
     showModal('OPERATIVE ACTION',`<section class="tomb-v2-shell">
+      <span class="tomb-v3-screen-frame" aria-hidden="true"></span>
       <header class="tomb-v2-brand">
         <div class="tomb-v2-brand-copy"><strong>TOMB WORLD SOLO</strong><span>OPERATIVE ACTION</span></div>
       </header>
@@ -5431,7 +5432,7 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
         <span class="tomb-v2-preview-ornament" aria-hidden="true">⬡</span>
       </div>
       <div class="tomb-v2-actions">
-        <button class="tomb-v2-button primary" type="button" id="confirmTombPlayerSelection" disabled><span>Confirm Selection</span><i aria-hidden="true">»</i></button>
+        <button class="tomb-v2-button primary" type="button" id="confirmTombPlayerSelection" disabled><span>Confirm Selection</span></button>
         <button class="tomb-v2-button secondary" type="button" data-close><span>Cancel</span></button>
       </div>
     </section>`);
