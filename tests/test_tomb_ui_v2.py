@@ -169,3 +169,21 @@ def test_v3_button_center_extends_under_fixed_endcaps():
     assert "button-confirm-right.svg" in CSS
     assert "button-cancel-left.svg" in CSS
     assert "button-cancel-right.svg" in CSS
+
+
+def test_v3_button_clip_scales_with_landscape_caps():
+    primary = css_rule('html[data-ui="tomb"] .tomb-v2-button.primary')
+    secondary = css_rule('html[data-ui="tomb"] .tomb-v2-button.secondary')
+    assert "--tomb-cap-width:42px" in primary
+    assert "--tomb-clip-shoulder:22px" in primary
+    assert "--tomb-cap-width:34px" in secondary
+    assert "--tomb-clip-shoulder:18px" in secondary
+    landscape = CSS.split("@media(orientation:landscape) and (max-height:500px)", 1)[1]
+    assert "--tomb-cap-width:34px;--tomb-clip-shoulder:18px" in landscape
+    assert "--tomb-cap-width:28px;--tomb-clip-shoulder:15px" in landscape
+
+
+def test_v3_button_focus_indicator_is_inside_clipped_silhouette():
+    focus = css_rule('html[data-ui="tomb"] .tomb-v2-button:focus-visible')
+    assert "outline:none" in focus
+    assert "inset 0 0 0 2px #8ee7ff" in focus
