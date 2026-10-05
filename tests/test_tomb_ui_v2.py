@@ -150,9 +150,40 @@ def test_v3_buttons_use_fixed_caps_and_non_repeating_center():
     assert "background-repeat:no-repeat" in base
     assert "button-confirm-center.svg" in primary
     assert "button-cancel-center.svg" in secondary
-    assert "calc(100% -" in primary
-    assert "calc(100% -" in secondary
+    assert "background-size:100% 100%" in primary
+    assert "background-size:100% 100%" in secondary
+    assert "clip-path:polygon(" in primary
+    assert "clip-path:polygon(" in secondary
     assert "button-confirm-left.svg" in CSS
     assert "button-confirm-right.svg" in CSS
     assert "button-cancel-left.svg" in CSS
     assert "button-cancel-right.svg" in CSS
+
+
+def test_v3_button_center_extends_under_fixed_endcaps():
+    primary = css_rule('html[data-ui="tomb"] .tomb-v2-button.primary')
+    secondary = css_rule('html[data-ui="tomb"] .tomb-v2-button.secondary')
+    assert "background-size:100% 100%" in primary
+    assert "background-size:100% 100%" in secondary
+    assert "button-confirm-left.svg" in CSS
+    assert "button-confirm-right.svg" in CSS
+    assert "button-cancel-left.svg" in CSS
+    assert "button-cancel-right.svg" in CSS
+
+
+def test_v3_button_clip_scales_with_landscape_caps():
+    primary = css_rule('html[data-ui="tomb"] .tomb-v2-button.primary')
+    secondary = css_rule('html[data-ui="tomb"] .tomb-v2-button.secondary')
+    assert "--tomb-cap-width:42px" in primary
+    assert "--tomb-clip-shoulder:14px" in primary
+    assert "--tomb-cap-width:34px" in secondary
+    assert "--tomb-clip-shoulder:12px" in secondary
+    landscape = CSS.split("@media(orientation:landscape) and (max-height:500px)", 1)[1]
+    assert "--tomb-cap-width:34px;--tomb-clip-shoulder:11px" in landscape
+    assert "--tomb-cap-width:28px;--tomb-clip-shoulder:10px" in landscape
+
+
+def test_v3_button_focus_indicator_is_inside_clipped_silhouette():
+    focus = css_rule('html[data-ui="tomb"] .tomb-v2-button:focus-visible')
+    assert "outline:none" in focus
+    assert "inset 0 0 0 2px #8ee7ff" in focus
