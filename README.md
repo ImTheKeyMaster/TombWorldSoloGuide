@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.35
+# Tomb World Battle Guide v10.0.36
+
+## v10.0.36
+
+### Tomb UI Frame Fit Correction
+
+- Corrects the v3 outer-frame regression seen on iPhone where the portrait frame preserved its native aspect ratio, became an inset inner frame, and covered HUD, operative cards, Action Preview, and buttons.
+- Makes the portrait and landscape SVG frames stretch to the shell bounds while preserving their decorative geometry.
+- Insets Tomb UI content into the frame's clear interior and removes the older shell border/clip treatment so there is only one primary frame.
+- Preserves the Tomb-only Confirm Selection chevron removal, Classic UI, gameplay logic, save schema, and responsive two-column/four-column card layouts.
 
 ## v10.0.35
 
