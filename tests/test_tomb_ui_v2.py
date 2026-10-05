@@ -21,14 +21,14 @@ def css_rule(selector):
 def test_v2_css_is_versioned_and_available_offline():
     assert f'href="tomb-ui-v2.css?v={CURRENT_APP_VERSION}"' in INDEX
     assert "./tomb-ui-v2.css" in WORKER
-    assert "./Assets/Images/TombUI/v2/portrait-sprite.webp" in WORKER
+    assert "./Assets/Images/TombUI/v3/portraits.webp" in WORKER
 
 
-def test_release_is_10_0_22_on_every_version_surface():
-    assert CURRENT_APP_VERSION == "10.0.22"
-    assert "const APP_VERSION = '10.0.22';" in WORKER
-    assert '<div class="version">V10.0.22</div>' in INDEX
-    assert INDEX.count("?v=10.0.22") == 12
+def test_release_is_10_0_30_on_every_version_surface():
+    assert CURRENT_APP_VERSION == "10.0.30"
+    assert "const APP_VERSION = '10.0.30';" in WORKER
+    assert '<div class="version">V10.0.30</div>' in INDEX
+    assert INDEX.count("?v=10.0.30") >= 12
 
 
 def test_picker_uses_layout_first_markup_and_live_controls():
@@ -121,3 +121,21 @@ def test_classic_picker_and_save_schema_remain_unchanged():
     assert "beginPlayerActivation($('#humanPlayerSelection').value)" in classic
     assert "const SAVE_VERSION = 3;" in PERSISTENCE
     assert 'class="btn ghost" data-close>Close Guide</button>' in classic
+
+
+def test_picker_uses_v3_portrait_sprite_without_v3_layout_skin():
+    picker = picker_source()
+    assert "Assets/Images/TombUI/v3/portraits.webp" in picker
+    assert "tomb-ui-v3.css" not in INDEX
+    portrait = css_rule('html[data-ui="tomb"] .tomb-v2-portrait')
+    assert "width:400%" in portrait
+    assert "height:auto" in portrait
+    assert "max-height:none" in portrait
+
+
+def test_selected_state_uses_layered_glow_without_geometry_change():
+    selected = css_rule('html[data-ui="tomb"] .tomb-v2-card.selected')
+    assert selected.count("0 0") >= 4
+    assert "width:" not in selected
+    assert "height:" not in selected
+    assert "aspect-ratio:" not in selected

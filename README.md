@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.22
+# Tomb World Battle Guide v10.0.30
+
+## v10.0.30
+
+### Tomb UI Portrait + Selected-State Pass
+
+- Changes only the hidden experimental Tomb operative picker.
+- Switches Deathwatch portrait artwork to the v3 cinematic portrait sprite while preserving the proven v2 layout, frame, buttons, outer shell, and responsive behavior.
+- Renders the sprite at its natural aspect ratio instead of forcing a vertically stretched height, reducing portrait distortion.
+- Strengthens the selected-card cyan bloom with layered glow while keeping selected and unselected card geometry identical.
+- Leaves classic UI, gameplay logic, save schema, Action Preview, buttons, and outer frame unchanged.
 
 ## v10.0.22
 
