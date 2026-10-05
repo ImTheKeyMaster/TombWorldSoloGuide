@@ -73,7 +73,8 @@ def test_buttons_remain_layout_driven_instead_of_stretched_images():
     assert '<button class="tomb-v2-button primary"' in picker
     assert '<button class="tomb-v2-button secondary"' in picker
     assert "display:flex" in button
-    assert "clip-path:polygon(" in button
+    assert "clip-path:none" in button
+    assert "background-repeat:no-repeat" in button
     assert "object-fit:fill" not in button
     assert "<img" not in picker.split('class="tomb-v2-actions"', 1)[1]
 
@@ -83,7 +84,9 @@ def test_portrait_viewport_clips_content_and_supports_archetypes():
     portrait = css_rule('html[data-ui="tomb"] .tomb-v2-portrait')
     assert "overflow:hidden" in viewport
     assert "height:100%" in viewport
-    assert "object-fit:cover" in portrait
+    assert "width:400%" in portrait
+    assert "height:auto" in portrait
+    assert "max-height:none" in portrait
     for archetype in ("leader", "rifleman", "melee", "heavy"):
         assert f".portrait-{archetype}" in CSS
 
