@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.33';
+  const APP_VERSION = '10.0.34';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5431,14 +5431,8 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
         <span class="tomb-v2-preview-ornament" aria-hidden="true">⬡</span>
       </div>
       <div class="tomb-v2-actions">
-        <button class="tomb-v2-button primary" type="button" id="confirmTombPlayerSelection" disabled>
-          <span class="tomb-v2-button-skin" aria-hidden="true"><span class="tomb-v2-button-cap left"></span><span class="tomb-v2-button-center"></span><span class="tomb-v2-button-cap right"></span></span>
-          <span class="tomb-v2-button-label">Confirm Selection</span><i aria-hidden="true">»</i>
-        </button>
-        <button class="tomb-v2-button secondary" type="button" data-close>
-          <span class="tomb-v2-button-skin" aria-hidden="true"><span class="tomb-v2-button-cap left"></span><span class="tomb-v2-button-center"></span><span class="tomb-v2-button-cap right"></span></span>
-          <span class="tomb-v2-button-label">Cancel</span>
-        </button>
+        <button class="tomb-v2-button primary" type="button" id="confirmTombPlayerSelection" disabled><span>Confirm Selection</span><i aria-hidden="true">»</i></button>
+        <button class="tomb-v2-button secondary" type="button" data-close><span>Cancel</span></button>
       </div>
     </section>`);
 
