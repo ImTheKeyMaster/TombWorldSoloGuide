@@ -1,4 +1,18 @@
-# Tomb World Battle Guide v10.0.22
+# Tomb World Battle Guide v10.0.29
+
+## v10.0.29
+
+### Tomb UI v3 High-Fidelity Art Integration
+
+- Wires the merged v3 art pack into the hidden experimental Tomb operative picker.
+- Uses separate portrait and landscape HUD frame overlays so the outer chassis scales against dedicated reference artboards instead of stretching one composition across both orientations.
+- Replaces the plain card skin with v3 ready/selected card art while preserving the layout-first CSS Grid component and stable card aspect ratio.
+- Switches operative portraits to the new cinematic v3 portrait sprite.
+- Replaces the CSS-drawn selection circle with the v3 selected/unselected control art.
+- Skins Action Preview with the new v3 HUD panel.
+- Uses three-piece Confirm and Cancel skins with fixed endcaps and a stretchable center section, preventing the button distortion seen in landscape.
+- Adds stronger layered cyan glow for selected cards and the primary action without changing component geometry.
+- Keeps classic UI, gameplay logic, save schema, and the hidden experimental toggle unchanged.
 
 ## v10.0.22
 

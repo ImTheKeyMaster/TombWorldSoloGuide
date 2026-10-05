@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '10.0.22';
+const APP_VERSION = '10.0.29';
 const CACHE_PREFIX = 'tomb-world-battle-guide-';
 const LEGACY_CACHE_PREFIXES = ['tomb-world-solo-guide-'];
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
@@ -10,7 +10,7 @@ const AMBIENT_CONFIG = './Assets/Audio/Narration/ambient-config.json';
 const BACKGROUND_MANIFEST = './Assets/Images/Backgrounds/manifest.json';
 const OFFLINE_PACKAGE_MARKER = './__offline-package-complete__';
 const PRECACHE_ASSETS = [
-  './', APP_SHELL, `./analytics.js?release=${APP_VERSION}`, `./event-effects.js?v=${APP_VERSION}`, `./audio-capabilities.js?v=${APP_VERSION}`, `./narration.js?v=${APP_VERSION}`, `./narration-transcript.js?v=${APP_VERSION}`, `./ambient.js?v=${APP_VERSION}`, `./dice-sfx.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`, `./tomb-ui-v2.css?v=${APP_VERSION}`,
+  './', APP_SHELL, `./analytics.js?release=${APP_VERSION}`, `./event-effects.js?v=${APP_VERSION}`, `./audio-capabilities.js?v=${APP_VERSION}`, `./narration.js?v=${APP_VERSION}`, `./narration-transcript.js?v=${APP_VERSION}`, `./ambient.js?v=${APP_VERSION}`, `./dice-sfx.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`, `./tomb-ui-v2.css?v=${APP_VERSION}`, `./tomb-ui-v3.css?v=${APP_VERSION}`,
   './manifest.webmanifest', './Assets/icon.svg', './Assets/icon-180.png', './Assets/icon-192.png', './Assets/icon-512.png', './Assets/icon-1024.png', './Assets/Icons/move-to-shoot.svg', './Assets/Images/eliminated-necron-skull.png',
   './Assets/Images/defeat.png', './Assets/Images/victory.png',
   './Assets/Images/TombUI/tomb-background.webp', './Assets/Images/TombUI/tomb-header.webp',
@@ -18,6 +18,24 @@ const PRECACHE_ASSETS = [
   './Assets/Images/TombUI/target-selected.webp', './Assets/Images/TombUI/card-disabled.webp',
   './Assets/Images/TombUI/action-preview.webp', './Assets/Images/TombUI/button-primary.webp', './Assets/Images/TombUI/button-secondary.webp',
   './Assets/Images/TombUI/v2/portrait-sprite.webp', './Assets/Images/TombUI/v2/card-ready.svg', './Assets/Images/TombUI/v2/card-selected.svg', './Assets/Images/TombUI/v2/card-valid.svg', './Assets/Images/TombUI/v2/card-disabled.svg', './Assets/Images/TombUI/v2/card-danger.svg',
+  './Assets/Images/TombUI/v3/portraits.webp',
+  './Assets/Images/TombUI/v3/screen-frame-portrait.svg',
+  './Assets/Images/TombUI/v3/screen-frame-landscape.svg',
+  './Assets/Images/TombUI/v3/header.svg',
+  './Assets/Images/TombUI/v3/card-ready.svg',
+  './Assets/Images/TombUI/v3/card-selected.svg',
+  './Assets/Images/TombUI/v3/card-injured.svg',
+  './Assets/Images/TombUI/v3/card-disabled.svg',
+  './Assets/Images/TombUI/v3/action-preview.svg',
+  './Assets/Images/TombUI/v3/button-confirm-left.svg',
+  './Assets/Images/TombUI/v3/button-confirm-center.svg',
+  './Assets/Images/TombUI/v3/button-confirm-right.svg',
+  './Assets/Images/TombUI/v3/button-cancel-left.svg',
+  './Assets/Images/TombUI/v3/button-cancel-center.svg',
+  './Assets/Images/TombUI/v3/button-cancel-right.svg',
+  './Assets/Images/TombUI/v3/select-unselected.svg',
+  './Assets/Images/TombUI/v3/select-selected.svg',
+  './Assets/Images/TombUI/v3/manifest.json',
   ...['ready', 'selected'].flatMap(state => ['corner-tl.svg', 'edge-top.svg', 'corner-tr.svg', 'edge-left.svg', 'center.svg', 'edge-right.svg', 'corner-bl.svg', 'edge-bottom.svg', 'corner-br.svg'].map(piece => `./Assets/Images/TombUI/v2/card-frame/${state}/${piece}`)),
   './Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3',
   `./Assets/Maps/mission-01.png?v=${APP_VERSION}`, `./Assets/Maps/mission-02.png?v=${APP_VERSION}`, `./Assets/Maps/mission-03.png?v=${APP_VERSION}`,
