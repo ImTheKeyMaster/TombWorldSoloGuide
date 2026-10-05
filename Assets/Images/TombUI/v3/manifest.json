@@ -45,16 +45,8 @@
     },
     "actionPreview": "action-preview.svg",
     "buttons": {
-      "confirm": [
-        "button-confirm-left.svg",
-        "button-confirm-center.svg",
-        "button-confirm-right.svg"
-      ],
-      "cancel": [
-        "button-cancel-left.svg",
-        "button-cancel-center.svg",
-        "button-cancel-right.svg"
-      ]
+      "confirm": "button-confirm-full.svg",
+      "cancel": "button-cancel-full.svg"
     }
   }
 }

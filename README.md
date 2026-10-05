@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.34
+# Tomb World Battle Guide v10.0.35
+
+## v10.0.35
+
+### Tomb UI Outer Frame Pass
+
+- Removes the decorative chevron from the Experimental Tomb UI Confirm Selection button only; the classic interface is untouched.
+- Integrates the existing v3 portrait and landscape screen-frame artwork as a non-interactive overlay around the operative picker.
+- Adds metallic rails, corner hardware, green edge accents, and side detailing without changing the proven responsive layout or content geometry.
+- Precaches both frame assets for offline/PWA use and keeps gameplay logic, save schema, operative cards, Action Preview, and Classic UI unchanged.
 
 ## v10.0.34
 
