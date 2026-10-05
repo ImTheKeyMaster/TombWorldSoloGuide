@@ -160,6 +160,15 @@ def test_v3_button_assets_are_precached():
     service_worker = (ROOT / "service-worker.js").read_text()
     assert "button-confirm-full.svg" in service_worker
     assert "button-cancel-full.svg" in service_worker
+    for retired_piece in (
+        "button-confirm-left.svg",
+        "button-confirm-center.svg",
+        "button-confirm-right.svg",
+        "button-cancel-left.svg",
+        "button-cancel-center.svg",
+        "button-cancel-right.svg",
+    ):
+        assert retired_piece not in service_worker
 
 
 def test_v3_button_focus_indicator_remains_accessible():
