@@ -367,7 +367,7 @@ html[data-ui="tomb"] .tomb-v2-button::before{left:0}
 html[data-ui="tomb"] .tomb-v2-button::after{right:0}
 html[data-ui="tomb"] .tomb-v2-button.primary{
   --tomb-cap-width:42px;
-  --tomb-clip-shoulder:22px;
+  --tomb-clip-shoulder:14px;
   flex:0 1 310px;
   width:min(310px,100%);
   background-image:url("Assets/Images/TombUI/v3/button-confirm-center.svg");
@@ -393,7 +393,7 @@ html[data-ui="tomb"] .tomb-v2-button.primary i{
 }
 html[data-ui="tomb"] .tomb-v2-button.secondary{
   --tomb-cap-width:34px;
-  --tomb-clip-shoulder:18px;
+  --tomb-clip-shoulder:12px;
   flex:0 1 180px;
   width:min(180px,100%);
   padding-inline:32px;
@@ -433,7 +433,7 @@ html[data-ui="tomb"] .tomb-v2-button:focus-visible{
   html[data-ui="tomb"] .tomb-v2-operative-grid{grid-area:cards;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:auto;gap:6px;align-content:start}
   html[data-ui="tomb"] .tomb-v2-card{aspect-ratio:2.7/1;padding:6px}html[data-ui="tomb"] .tomb-v2-card-content{grid-template-columns:minmax(38px,30%) minmax(0,1fr) 24px}html[data-ui="tomb"] .tomb-v2-copy strong{font-size:clamp(.52rem,1.2vw,.72rem)}html[data-ui="tomb"] .tomb-v2-copy small{font-size:clamp(.42rem,.9vw,.54rem)}html[data-ui="tomb"] .tomb-v2-status b{font-size:.42rem}html[data-ui="tomb"] .tomb-v2-radio{width:17px}
   html[data-ui="tomb"] .tomb-v2-preview{grid-area:preview;grid-template-columns:60px minmax(0,1fr) 55px;min-height:70px;margin-top:6px;padding:8px 12px}html[data-ui="tomb"] .tomb-v2-preview-copy strong{font-size:.72rem}
-  html[data-ui="tomb"] .tomb-v2-actions{grid-area:actions;margin-top:5px;gap:12px}html[data-ui="tomb"] .tomb-v2-button{min-height:42px;padding-block:6px}html[data-ui="tomb"] .tomb-v2-button.primary{--tomb-cap-width:34px;--tomb-clip-shoulder:18px;background-size:100% 100%}html[data-ui="tomb"] .tomb-v2-button.secondary{--tomb-cap-width:28px;--tomb-clip-shoulder:15px;background-size:100% 100%}
+  html[data-ui="tomb"] .tomb-v2-actions{grid-area:actions;margin-top:5px;gap:12px}html[data-ui="tomb"] .tomb-v2-button{min-height:42px;padding-block:6px}html[data-ui="tomb"] .tomb-v2-button.primary{--tomb-cap-width:34px;--tomb-clip-shoulder:11px;background-size:100% 100%}html[data-ui="tomb"] .tomb-v2-button.secondary{--tomb-cap-width:28px;--tomb-clip-shoulder:10px;background-size:100% 100%}
 }
 @media(orientation:portrait){
   html[data-ui="tomb"] .tomb-v2-operative-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:auto;align-content:start}
