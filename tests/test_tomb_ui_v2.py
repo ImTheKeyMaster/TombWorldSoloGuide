@@ -149,7 +149,7 @@ def test_selected_state_uses_layered_glow_without_geometry_change():
 def test_v3_buttons_use_explicit_three_cell_skin():
     picker = picker_source()
     skin = css_rule('html[data-ui="tomb"] .tomb-v2-button-skin')
-    center = css_rule('html[data-ui="tomb"] .tomb-v2-button-center')
+    center = CSS.rsplit('html[data-ui="tomb"] .tomb-v2-button-center{', 1)[1].split("}", 1)[0]
     assert picker.count('class="tomb-v2-button-skin"') == 2
     assert "display:grid" in skin
     assert "gap:0" in skin
