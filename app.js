@@ -5416,7 +5416,7 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
     showModal('OPERATIVE ACTION',`<section class="tomb-v2-shell">
       <span class="tomb-v3-screen-frame" aria-hidden="true"></span>
       <header class="tomb-v2-brand">
-        <div class="tomb-v2-brand-copy"><strong>TOMB WORLD SOLO</strong><span>OPERATIVE ACTION</span></div>
+        <div class="tomb-v2-brand-copy"><strong>TOMB WORLD GUIDE</strong><span>OPERATIVE ACTION</span></div>
       </header>
       <div class="tomb-v2-hud" aria-label="Battle status">
         <div class="tomb-v2-hud-cell threat"><span>THREAT LEVEL</span><div class="tomb-v2-bars">${tombV2ThreatBars(state.threat)}</div><strong>${escapeHtml(String(state.threat??0))}</strong></div>
