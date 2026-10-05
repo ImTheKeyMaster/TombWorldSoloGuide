@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.36
+# Tomb World Battle Guide v10.0.37
+
+## v10.0.37
+
+### Tomb UI Frame Layering Correction
+
+- Moves the v3 frame behind the picker content so its top plate and side rails cannot cover the title, HUD, operative cards, Action Preview, or buttons.
+- Restores the compact pre-frame content padding in portrait and landscape instead of shrinking the usable layout around the artwork.
+- Pushes the portrait side rails outward and clips the decorative layer at the shell edge so the frame reads as a perimeter bezel rather than an inner coffin-shaped panel.
+- Removes the shell's forced minimum height so portrait dialogs shrink to their content instead of leaving a large empty lower area.
+- Preserves the Tomb-only Confirm Selection chevron removal, Classic UI, gameplay logic, save schema, and responsive card layouts.
 
 ## v10.0.36
 
