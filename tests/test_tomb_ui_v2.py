@@ -69,11 +69,14 @@ def test_cards_are_responsive_css_grid_components_with_stable_ratio():
 def test_buttons_remain_layout_driven_instead_of_stretched_images():
     picker = picker_source()
     button = css_rule('html[data-ui="tomb"] .tomb-v2-button')
+    skin = css_rule('html[data-ui="tomb"] .tomb-v2-button-skin')
     assert '<button class="tomb-v2-button primary"' in picker
     assert '<button class="tomb-v2-button secondary"' in picker
+    assert 'class="tomb-v2-button-skin"' in picker
     assert "display:flex" in button
     assert "clip-path:none" in button
-    assert "background-repeat:no-repeat" in button
+    assert "display:grid" in skin
+    assert "grid-template-columns:var(--tomb-cap-width) minmax(0,1fr) var(--tomb-cap-width)" in skin
     assert "object-fit:fill" not in button
     assert "<img" not in picker.split('class="tomb-v2-actions"', 1)[1]
 
@@ -143,47 +146,37 @@ def test_selected_state_uses_layered_glow_without_geometry_change():
     assert "aspect-ratio:" not in selected
 
 
-def test_v3_buttons_use_fixed_caps_and_non_repeating_center():
-    base = css_rule('html[data-ui="tomb"] .tomb-v2-button')
-    primary = css_rule('html[data-ui="tomb"] .tomb-v2-button.primary')
-    secondary = css_rule('html[data-ui="tomb"] .tomb-v2-button.secondary')
-    assert "background-repeat:no-repeat" in base
-    assert "button-confirm-center.svg" in primary
-    assert "button-cancel-center.svg" in secondary
-    assert "background-size:100% 100%" in primary
-    assert "background-size:100% 100%" in secondary
-    assert "clip-path:polygon(" in primary
-    assert "clip-path:polygon(" in secondary
-    assert "button-confirm-left.svg" in CSS
-    assert "button-confirm-right.svg" in CSS
-    assert "button-cancel-left.svg" in CSS
-    assert "button-cancel-right.svg" in CSS
+def test_v3_buttons_use_explicit_three_cell_skin():
+    picker = picker_source()
+    skin = css_rule('html[data-ui="tomb"] .tomb-v2-button-skin')
+    center = css_rule('html[data-ui="tomb"] .tomb-v2-button-center')
+    assert picker.count('class="tomb-v2-button-skin"') == 2
+    assert "display:grid" in skin
+    assert "gap:0" in skin
+    assert "grid-template-columns:var(--tomb-cap-width) minmax(0,1fr) var(--tomb-cap-width)" in skin
+    assert "margin-inline:-3px" in center
+    for asset in (
+        "button-confirm-left.svg",
+        "button-confirm-center.svg",
+        "button-confirm-right.svg",
+        "button-cancel-left.svg",
+        "button-cancel-center.svg",
+        "button-cancel-right.svg",
+    ):
+        assert asset in CSS
 
 
-def test_v3_button_center_extends_under_fixed_endcaps():
-    primary = css_rule('html[data-ui="tomb"] .tomb-v2-button.primary')
-    secondary = css_rule('html[data-ui="tomb"] .tomb-v2-button.secondary')
-    assert "background-size:100% 100%" in primary
-    assert "background-size:100% 100%" in secondary
-    assert "button-confirm-left.svg" in CSS
-    assert "button-confirm-right.svg" in CSS
-    assert "button-cancel-left.svg" in CSS
-    assert "button-cancel-right.svg" in CSS
-
-
-def test_v3_button_clip_scales_with_landscape_caps():
+def test_v3_button_caps_are_fixed_and_landscape_only_changes_cap_width():
     primary = css_rule('html[data-ui="tomb"] .tomb-v2-button.primary')
     secondary = css_rule('html[data-ui="tomb"] .tomb-v2-button.secondary')
     assert "--tomb-cap-width:42px" in primary
-    assert "--tomb-clip-shoulder:14px" in primary
-    assert "--tomb-cap-width:34px" in secondary
-    assert "--tomb-clip-shoulder:12px" in secondary
+    assert "--tomb-cap-width:35px" in secondary
     landscape = CSS.split("@media(orientation:landscape) and (max-height:500px)", 1)[1]
-    assert "--tomb-cap-width:34px;--tomb-clip-shoulder:11px" in landscape
-    assert "--tomb-cap-width:28px;--tomb-clip-shoulder:10px" in landscape
+    assert ".tomb-v2-button.primary{--tomb-cap-width:34px}" in landscape
+    assert ".tomb-v2-button.secondary{--tomb-cap-width:28px}" in landscape
 
 
-def test_v3_button_focus_indicator_is_inside_clipped_silhouette():
+def test_v3_button_focus_indicator_remains_accessible():
     focus = css_rule('html[data-ui="tomb"] .tomb-v2-button:focus-visible')
-    assert "outline:none" in focus
-    assert "inset 0 0 0 2px #8ee7ff" in focus
+    assert "outline:2px solid #8ee7ff" in focus
+    assert "outline-offset:3px" in focus
