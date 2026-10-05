@@ -24,11 +24,10 @@ def test_v2_css_is_versioned_and_available_offline():
     assert "./Assets/Images/TombUI/v3/portraits.webp" in WORKER
 
 
-def test_release_is_10_0_30_on_every_version_surface():
-    assert CURRENT_APP_VERSION == "10.0.31"
-    assert "const APP_VERSION = '10.0.31';" in WORKER
-    assert '<div class="version">V10.0.31</div>' in INDEX
-    assert INDEX.count("?v=10.0.31") >= 12
+def test_release_version_surfaces_follow_current_app_version():
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
+    assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
+    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") >= 12
 
 
 def test_picker_uses_layout_first_markup_and_live_controls():
