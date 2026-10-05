@@ -24,12 +24,11 @@ def test_v2_css_is_versioned_and_available_offline():
     assert "./Assets/Images/TombUI/v2/portrait-sprite.webp" in WORKER
 
 
-def test_release_version_surfaces_follow_current_app_version():
-    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
-    assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
-    assert f'app.js?v={CURRENT_APP_VERSION}' in INDEX
-    assert f'tomb-ui-v2.css?v={CURRENT_APP_VERSION}' in INDEX
-    assert f'tomb-ui-v3.css?v={CURRENT_APP_VERSION}' in INDEX
+def test_release_is_10_0_22_on_every_version_surface():
+    assert CURRENT_APP_VERSION == "10.0.22"
+    assert "const APP_VERSION = '10.0.22';" in WORKER
+    assert '<div class="version">V10.0.22</div>' in INDEX
+    assert INDEX.count("?v=10.0.22") == 12
 
 
 def test_picker_uses_layout_first_markup_and_live_controls():
