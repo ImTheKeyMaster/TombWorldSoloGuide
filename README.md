@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.33
+# Tomb World Battle Guide v10.0.34
+
+## v10.0.34
+
+### Seamless Tomb UI Buttons
+
+- Replaces the segmented Confirm and Cancel button assemblies with single scalable SVG skins.
+- Removes the separate left/center/right pieces that could render with visible gaps on iPhone.
+- Keeps the existing button dimensions, interaction behavior, operative cards, Action Preview, gameplay logic, save schema, and classic UI unchanged.
+- Adds the new button skins to the service-worker precache so the experimental Tomb UI remains available offline.
 
 ## v10.0.33
 
