@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 120" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#343b3d"/>
+      <stop offset=".42" stop-color="#171c1d"/>
+      <stop offset="1" stop-color="#07090a"/>
+    </linearGradient>
+    <pattern id="grain" width="8" height="8" patternUnits="userSpaceOnUse">
+      <path d="M0 7 7 0" stroke="#fff" stroke-opacity=".035"/>
+    </pattern>
+  </defs>
+  <path d="M31 4h238l27 27v58l-27 27H31L4 89V31Z" fill="#050707" stroke="#4d5554" stroke-width="5"/>
+  <path d="M34 8h232l22 25v54l-22 25H34L12 87V33Z" fill="url(#bg)" stroke="#9aa3a1" stroke-width="2.5"/>
+  <path d="M39 15h222l18 22v46l-18 22H39L21 83V37Z" fill="url(#grain)" stroke="#4f5755" stroke-width="1.5"/>
+  <path d="M25 39l16-17h45M25 81l16 17h45M275 39l-16-17h-45M275 81l-16 17h-45" fill="none" stroke="#646d6b" stroke-width="2"/>
+  <path d="M53 22h194M53 98h194" stroke="#dce4e1" stroke-opacity=".16"/>
+</svg>
