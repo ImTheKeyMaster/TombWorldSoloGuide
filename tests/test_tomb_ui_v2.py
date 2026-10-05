@@ -18,10 +18,34 @@ def css_rule(selector):
     return CSS.split(selector + "{", 1)[1].split("}", 1)[0]
 
 
+def test_tomb_picker_uses_v3_outer_screen_frame_without_layout_side_effects():
+    picker = picker_source()
+    frame = css_rule('html[data-ui="tomb"] .tomb-v3-screen-frame')
+    assert 'class="tomb-v3-screen-frame"' in picker
+    assert "position:absolute" in frame
+    assert "inset:0" in frame
+    assert "pointer-events:none" in frame
+    assert "screen-frame-portrait.svg" in frame
+    assert "100% 100%" in frame
+    landscape = CSS.split("@media(orientation:landscape) and (max-height:500px)", 1)[1]
+    assert "screen-frame-landscape.svg" in landscape
+
+
+def test_tomb_confirm_has_no_chevron_and_classic_picker_is_untouched():
+    picker = picker_source()
+    tomb_confirm = picker.split('id="confirmTombPlayerSelection"', 1)[1].split("</button>", 1)[0]
+    assert "»" not in tomb_confirm
+    classic = APP.split("function showPlayerActivation()", 1)[1].split("function playerActivationSummary", 1)[0]
+    assert '<select id="humanPlayerSelection"' in classic
+    assert 'id="confirmHumanPlayerSelection"' in classic
+
+
 def test_v2_css_is_versioned_and_available_offline():
     assert f'href="tomb-ui-v2.css?v={CURRENT_APP_VERSION}"' in INDEX
     assert "./tomb-ui-v2.css" in WORKER
     assert "./Assets/Images/TombUI/v3/portraits.webp" in WORKER
+    assert "./Assets/Images/TombUI/v3/screen-frame-portrait.svg" in WORKER
+    assert "./Assets/Images/TombUI/v3/screen-frame-landscape.svg" in WORKER
 
 
 def test_release_version_surfaces_follow_current_app_version():
