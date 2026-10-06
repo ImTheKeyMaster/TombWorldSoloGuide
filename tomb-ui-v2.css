@@ -632,3 +632,21 @@ html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{transform:translateX(-75%)
   html[data-ui="tomb"] .tomb-v2-preview-copy small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   html[data-ui="tomb"] .tomb-v2-actions{padding:0 28px 8px}
 }
+
+/* v10.0.53: one operative per portrait viewport; no vertical sprite-row bleed */
+html[data-ui="tomb"] .tomb-v2-portrait-zone{
+  position:relative;overflow:hidden;
+  background:#03090c;
+}
+html[data-ui="tomb"] .tomb-v2-portrait{
+  position:absolute!important;
+  top:0!important;bottom:auto!important;left:0!important;
+  width:400%!important;height:auto!important;
+  max-width:none!important;max-height:none!important;
+  object-fit:initial!important;object-position:initial!important;
+  transform-origin:top left!important;
+}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-leader{transform:translateX(0)!important}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-rifleman{transform:translateX(-25%)!important}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-melee{transform:translateX(-50%)!important}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{transform:translateX(-75%)!important}
