@@ -315,12 +315,12 @@ html[data-ui="tomb"] .tomb-v2-preview{
   position:relative;
   isolation:isolate;
   display:grid;
-  grid-template-columns:clamp(48px,15%,92px) minmax(0,1fr) clamp(42px,12%,76px);
+  grid-template-columns:minmax(0,1fr);
   align-items:center;
   min-height:88px;
   height:auto;
   margin-top:10px;
-  padding:14px 12px;
+  padding:14px 28px;
   overflow:hidden;
   border:1px solid rgba(82,188,211,.55);
   background:radial-gradient(circle at 13% 50%,rgba(48,179,205,.18),transparent 28%),linear-gradient(100deg,rgba(3,25,32,.98),rgba(4,13,17,.96));
@@ -328,7 +328,7 @@ html[data-ui="tomb"] .tomb-v2-preview{
   clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);
 }
 html[data-ui="tomb"] .tomb-v2-preview-icon{font-size:clamp(1.5rem,7vw,2.8rem);color:#61d5ed;text-align:center;text-shadow:0 0 12px rgba(68,208,236,.65)}
-html[data-ui="tomb"] .tomb-v2-preview-copy{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0;padding:2px 6px;text-shadow:0 1px 3px #000}
+html[data-ui="tomb"] .tomb-v2-preview-copy{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0;padding:2px 6px;text-align:left;text-shadow:0 1px 3px #000}
 html[data-ui="tomb"] .tomb-v2-preview-copy span{color:#66d8ff;font-size:.55rem;font-weight:900;letter-spacing:.2em}
 html[data-ui="tomb"] .tomb-v2-preview-copy strong{color:#f2fbff;font-size:clamp(.72rem,2.3vw,.9rem);letter-spacing:.08em}
 html[data-ui="tomb"] .tomb-v2-preview-copy small{display:block;min-width:0;color:#77efa6;font-size:clamp(.58rem,1.8vw,.68rem);line-height:1.35;overflow-wrap:anywhere;white-space:normal}
