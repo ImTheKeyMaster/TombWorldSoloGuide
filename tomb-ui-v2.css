@@ -511,3 +511,40 @@ html[data-ui="tomb"] .tomb-v2-portrait.portrait-leader{transform:translateX(0) s
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-rifleman{transform:translateX(-25%) scale(1.16);transform-origin:33.333% 50%}
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-melee{transform:translateX(-50%) scale(1.16);transform-origin:66.667% 50%}
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{transform:translateX(-75%) scale(1.16);transform-origin:100% 50%}
+
+/* v10.0.47: symmetric continuous chamfer + portrait flush to top/left/bottom */
+html[data-ui="tomb"] .tomb-v2-card{
+  --card-chamfer:6px;
+  padding:1.5px;
+  border:0;
+  background:var(--accent,#4ba7c2);
+  clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px);
+}
+html[data-ui="tomb"] .tomb-v2-card::before,
+html[data-ui="tomb"] .tomb-v2-card::after{content:none!important}
+html[data-ui="tomb"] .tomb-v2-card-content{
+  width:100%;height:100%;padding:0;gap:8px;
+  background:linear-gradient(100deg,rgba(5,25,31,.99),rgba(1,10,14,.99));
+  clip-path:polygon(5px 0,calc(100% - 5px) 0,100% 5px,100% calc(100% - 5px),calc(100% - 5px) 100%,5px 100%,0 calc(100% - 5px),0 5px);
+}
+html[data-ui="tomb"] .tomb-v2-card.selected .tomb-v2-card-content{
+  background:linear-gradient(105deg,rgba(8,47,61,.99),rgba(1,14,20,.99));
+}
+html[data-ui="tomb"] .tomb-v2-portrait-zone{
+  align-self:stretch;height:100%;min-height:100%;margin:0;overflow:hidden;
+  clip-path:polygon(5px 0,100% 0,100% 100%,0 100%,0 5px);
+  background:#03090c;
+}
+html[data-ui="tomb"] .tomb-v2-portrait-zone::after{
+  background:linear-gradient(90deg,transparent 62%,rgba(1,9,13,.78) 100%);
+  box-shadow:inset -5px 0 9px rgba(0,5,8,.4);
+}
+html[data-ui="tomb"] .tomb-v2-portrait{
+  position:absolute;top:0;left:0;display:block;width:400%;height:auto;max-width:none;max-height:none;
+  object-fit:initial;object-position:initial;
+  filter:contrast(1.12) saturate(1.08) brightness(.98) drop-shadow(0 5px 5px rgba(0,0,0,.72));
+}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-leader{transform:translateX(0) scale(1.34);transform-origin:0 50%}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-rifleman{transform:translateX(-25%) scale(1.34);transform-origin:33.333% 50%}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-melee{transform:translateX(-50%) scale(1.34);transform-origin:66.667% 50%}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{transform:translateX(-75%) scale(1.34);transform-origin:100% 50%}
