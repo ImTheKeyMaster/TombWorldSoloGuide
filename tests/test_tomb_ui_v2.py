@@ -62,7 +62,7 @@ def test_tomb_confirm_has_no_chevron_and_classic_picker_is_untouched():
 def test_v2_css_is_versioned_and_available_offline():
     assert f'href="tomb-ui-v2.css?v={CURRENT_APP_VERSION}"' in INDEX
     assert "./tomb-ui-v2.css" in WORKER
-    assert "./Assets/Images/TombUI/v3/portraits.webp" in WORKER
+    assert "./Assets/Images/TombUI/v3/portrait-leader.webp" in WORKER\n    assert "./Assets/Images/TombUI/v3/portrait-rifleman.webp" in WORKER\n    assert "./Assets/Images/TombUI/v3/portrait-melee.webp" in WORKER\n    assert "./Assets/Images/TombUI/v3/portrait-heavy.webp" in WORKER
     assert "./Assets/Images/TombUI/v3/screen-frame-portrait.svg" in WORKER
     assert "./Assets/Images/TombUI/v3/screen-frame-landscape.svg" in WORKER
 
