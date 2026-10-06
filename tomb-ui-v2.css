@@ -405,3 +405,38 @@ html[data-ui="tomb"] .tomb-v2-actions{
   padding:0 28px 34px;
 }
 @media(max-width:365px){html[data-ui="tomb"] .tomb-v2-actions{padding-inline:22px;padding-bottom:32px}}
+
+/* v10.0.43: closer mockup color and corner-highlight treatment */
+html[data-ui="tomb"] .tomb-v2-card{
+  --accent:#4ba7c2;
+  border-color:color-mix(in srgb,var(--accent) 88%,#d8fbff 12%);
+  background:
+    linear-gradient(135deg,rgba(28,78,91,.5),transparent 42%),
+    radial-gradient(circle at 25% 30%,rgba(78,190,210,.11) 0 2px,transparent 2.5px) 0 0/14px 12px,
+    linear-gradient(100deg,rgba(4,22,28,.99),rgba(1,9,13,.99));
+  box-shadow:inset 0 0 15px rgba(38,151,176,.12),0 0 4px color-mix(in srgb,var(--accent) 28%,transparent);
+}
+html[data-ui="tomb"] .tomb-v2-card.selected{
+  --accent:#39d7ff;
+  border-color:#64e2ff;
+  background:linear-gradient(135deg,rgba(25,142,187,.38),transparent 46%),linear-gradient(100deg,rgba(4,38,51,.99),rgba(1,13,20,.99));
+  box-shadow:0 0 2px #d8fbff,0 0 9px rgba(55,213,255,.92),0 0 20px rgba(0,150,255,.48),inset 0 0 17px rgba(49,206,245,.18);
+}
+html[data-ui="tomb"] .tomb-v2-card::before,
+html[data-ui="tomb"] .tomb-v2-card::after{
+  content:"";position:absolute;z-index:4;pointer-events:none;width:18px;height:18px;opacity:.9;
+}
+html[data-ui="tomb"] .tomb-v2-card::before{
+  left:1px;top:1px;border-left:1px solid color-mix(in srgb,var(--accent) 58%,#fff 42%);border-top:1px solid color-mix(in srgb,var(--accent) 58%,#fff 42%);
+  clip-path:polygon(0 5px,5px 0,100% 0,100% 2px,6px 2px,2px 6px,2px 100%,0 100%);
+}
+html[data-ui="tomb"] .tomb-v2-card::after{
+  right:1px;bottom:1px;border-right:1px solid color-mix(in srgb,var(--accent) 58%,#fff 42%);border-bottom:1px solid color-mix(in srgb,var(--accent) 58%,#fff 42%);
+  clip-path:polygon(100% 0,100% 100%,0 100%,0 calc(100% - 2px),calc(100% - 6px) calc(100% - 2px),calc(100% - 2px) calc(100% - 6px),calc(100% - 2px) 0);
+}
+html[data-ui="tomb"] .tomb-v2-card.selected::before,
+html[data-ui="tomb"] .tomb-v2-card.selected::after{filter:drop-shadow(0 0 4px #72e8ff);opacity:1}
+html[data-ui="tomb"] .tomb-v2-status i{background:#64ff9a;box-shadow:0 0 10px rgba(70,255,140,.9)}
+html[data-ui="tomb"] .tomb-v2-status b{color:#72f5a4}
+html[data-ui="tomb"] .tomb-v2-card.selected .tomb-v2-status i{background:#39d7ff;box-shadow:0 0 10px rgba(57,215,255,.95)}
+html[data-ui="tomb"] .tomb-v2-card.selected .tomb-v2-status b{color:#55dcff}
