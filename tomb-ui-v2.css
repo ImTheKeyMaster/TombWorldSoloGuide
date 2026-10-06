@@ -572,3 +572,14 @@ html[data-ui="tomb"] .tomb-v2-portrait.portrait-leader{left:0}
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-rifleman{left:-110%}
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-melee{left:-220%}
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{left:-330%}
+
+/* v10.0.50: scaled sprite remains exactly aligned to its four equal horizontal cells */
+html[data-ui="tomb"] .tomb-v2-portrait{
+  top:auto;bottom:0;left:0;
+  width:440%;height:auto;max-width:none;max-height:none;
+  transform-origin:left bottom!important;
+}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-leader{transform:translateX(0)!important}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-rifleman{transform:translateX(-25%)!important}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-melee{transform:translateX(-50%)!important}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{transform:translateX(-75%)!important}
