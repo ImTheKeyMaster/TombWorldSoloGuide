@@ -633,7 +633,7 @@ html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{transform:translateX(-75%)
   html[data-ui="tomb"] .tomb-v2-actions{padding:0 28px 8px}
 }
 
-/* v10.0.53: one operative per portrait viewport; no vertical sprite-row bleed */
+/* v10.0.54: one operative per portrait viewport; no vertical sprite-row bleed */
 html[data-ui="tomb"] .tomb-v2-portrait-zone{
   position:relative;overflow:hidden;
   background:#03090c;
@@ -650,3 +650,37 @@ html[data-ui="tomb"] .tomb-v2-portrait.portrait-leader{transform:translateX(0)!i
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-rifleman{transform:translateX(-25%)!important}
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-melee{transform:translateX(-50%)!important}
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{transform:translateX(-75%)!important}
+
+/* v10.0.54: individual portraits remove sprite positioning entirely */
+html[data-ui="tomb"] .tomb-v2-portrait-zone{position:relative;overflow:hidden}
+html[data-ui="tomb"] .tomb-v2-portrait{
+  position:absolute!important;inset:0!important;
+  width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;
+  object-fit:cover!important;object-position:left bottom!important;
+  transform:none!important;
+}
+html[data-ui="tomb"] .tomb-v2-copy{min-width:0}
+html[data-ui="tomb"] .tomb-v2-copy strong{
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font-size:clamp(13px,2.7vw,16px);
+}
+@media (orientation:landscape) and (max-height:600px){
+  html[data-ui="tomb"] .tomb-v2-shell{
+    grid-template-columns:minmax(220px,.72fr) minmax(0,1.65fr);
+    grid-template-areas:"brand hud" "title title" "cards cards" "preview preview" "actions actions";
+    grid-template-rows:auto auto auto auto auto;
+    gap:6px 10px;
+  }
+  html[data-ui="tomb"] .tomb-v2-operative-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    grid-auto-rows:88px;
+    gap:8px;
+  }
+  html[data-ui="tomb"] .tomb-v2-card{height:88px;min-height:0;aspect-ratio:auto}
+  html[data-ui="tomb"] .tomb-v2-card-content{grid-template-columns:minmax(70px,30%) minmax(0,1fr) 24px;gap:8px}
+  html[data-ui="tomb"] .tomb-v2-preview{height:68px;min-height:68px;padding:8px 18px}
+  html[data-ui="tomb"] .tomb-v2-preview-copy span{font-size:11px}
+  html[data-ui="tomb"] .tomb-v2-preview-copy strong{font-size:16px}
+  html[data-ui="tomb"] .tomb-v2-preview-copy small{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  html[data-ui="tomb"] .tomb-v2-actions{padding:0 24px 6px}
+}
