@@ -79,7 +79,7 @@ def test_picker_uses_layout_first_markup_and_live_controls():
     assert 'class="tomb-card-skin"' in picker
     assert 'class="tomb-v2-card-content"' in picker
     assert 'class="tomb-v2-portrait-zone"' in picker
-    assert 'class="tomb-v2-portrait portrait-${portrait}"' in picker
+    assert '<img class="tomb-v2-portrait"' in picker
     assert 'class="tomb-v2-radio"' in picker
     assert 'class="tomb-v2-button primary"' in picker
     assert 'class="tomb-v2-button secondary"' in picker
@@ -170,7 +170,7 @@ def test_classic_picker_and_save_schema_remain_unchanged():
 
 def test_picker_uses_v3_portrait_sprite_without_v3_layout_skin():
     picker = picker_source()
-    assert "Assets/Images/TombUI/v3/portraits.webp" in picker
+    assert "Assets/Images/TombUI/v3/portrait-" in picker
     assert "tomb-ui-v3.css" not in INDEX
     portrait = css_rule('html[data-ui="tomb"] .tomb-v2-portrait')
     assert "width:400%" in portrait
