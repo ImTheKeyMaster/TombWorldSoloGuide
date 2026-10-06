@@ -750,3 +750,17 @@ html[data-ui="tomb"] .tomb-v2-portrait{
  html[data-ui="tomb"] .tomb-v2-copy small{font-size:clamp(.56rem,2.1vw,.69rem)}
  html[data-ui="tomb"] .tomb-v2-status{font-size:clamp(.5rem,1.85vw,.61rem)}
 }
+
+/* v10.0.58: physical per-archetype images; no sprite offsets or background-position math */
+html[data-ui="tomb"] .tomb-v2-portrait-zone{position:relative;overflow:hidden}
+html[data-ui="tomb"] .tomb-v2-portrait{
+ position:absolute!important;top:0!important;left:0!important;right:auto!important;bottom:auto!important;
+ width:100%!important;height:auto!important;min-height:100%!important;
+ object-fit:cover!important;object-position:left top!important;
+ background:none!important;transform:none!important;
+}
+html[data-ui="tomb"] .tomb-v2-card-content{grid-template-columns:minmax(0,34%) minmax(0,1fr) 30px!important}
+html[data-ui="tomb"] .tomb-v2-copy{min-width:0!important;overflow:visible!important}
+html[data-ui="tomb"] .tomb-v2-copy strong{font-size:clamp(.62rem,2.35vw,.84rem)!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important}
+html[data-ui="tomb"] .tomb-v2-copy small{font-size:clamp(.55rem,2vw,.7rem)!important;white-space:nowrap!important}
+html[data-ui="tomb"] .tomb-v2-status{font-size:clamp(.48rem,1.85vw,.62rem)!important;white-space:nowrap!important}
