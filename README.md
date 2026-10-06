@@ -1,6 +1,6 @@
-# Tomb World Battle Guide v10.0.38
+# Tomb World Battle Guide v10.0.39
 
-## v10.0.38
+## v10.0.39
 
 ### Tomb UI Frame Layering Correction
 
