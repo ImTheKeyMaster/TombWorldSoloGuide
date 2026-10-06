@@ -633,7 +633,7 @@ html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{transform:translateX(-75%)
   html[data-ui="tomb"] .tomb-v2-actions{padding:0 28px 8px}
 }
 
-/* v10.0.57: one operative per portrait viewport; no vertical sprite-row bleed */
+/* v10.0.58: one operative per portrait viewport; no vertical sprite-row bleed */
 html[data-ui="tomb"] .tomb-v2-portrait-zone{
   position:relative;overflow:hidden;
   background:#03090c;
@@ -651,7 +651,7 @@ html[data-ui="tomb"] .tomb-v2-portrait.portrait-rifleman{transform:translateX(-2
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-melee{transform:translateX(-50%)!important}
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{transform:translateX(-75%)!important}
 
-/* v10.0.57: individual portraits remove sprite positioning entirely */
+/* v10.0.58: individual portraits remove sprite positioning entirely */
 html[data-ui="tomb"] .tomb-v2-portrait-zone{position:relative;overflow:hidden}
 html[data-ui="tomb"] .tomb-v2-portrait{
   position:absolute!important;inset:0!important;
@@ -685,7 +685,7 @@ html[data-ui="tomb"] .tomb-v2-copy strong{
   html[data-ui="tomb"] .tomb-v2-actions{padding:0 24px 6px}
 }
 
-/* v10.0.57: Safari-safe portrait cells; one viewport per operative with no nested SVG resources */
+/* v10.0.58: Safari-safe portrait cells; one viewport per operative with no nested SVG resources */
 html[data-ui="tomb"] .tomb-v2-portrait{
   position:absolute!important;inset:0!important;
   display:block!important;width:100%!important;height:100%!important;
@@ -706,7 +706,7 @@ html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{background-position:100% 0
   }
 }
 
-/* v10.0.57: enlarge each isolated portrait cell inside its clipped viewport */
+/* v10.0.58: enlarge each isolated portrait cell inside its clipped viewport */
 html[data-ui="tomb"] .tomb-v2-portrait-zone{position:relative;overflow:hidden}
 html[data-ui="tomb"] .tomb-v2-portrait{
  position:absolute!important;left:0!important;bottom:0!important;top:auto!important;right:auto!important;
@@ -723,7 +723,7 @@ html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{background-position:100% 0
  html[data-ui="tomb"] .tomb-v2-copy strong{font-size:clamp(.68rem,2.8vw,.9rem);letter-spacing:.02em;white-space:nowrap;overflow:visible;text-overflow:clip}
 }
 
-/* v10.0.57: stop portrait zoom from consuming the copy column */
+/* v10.0.58: stop portrait zoom from consuming the copy column */
 @media (orientation:portrait){
  html[data-ui="tomb"] .tomb-v2-card-content{grid-template-columns:106px minmax(0,1fr) 30px;gap:10px}
  html[data-ui="tomb"] .tomb-v2-portrait{width:100%!important;height:100%!important;left:0!important;bottom:0!important}
@@ -734,4 +734,19 @@ html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{background-position:100% 0
  }
  html[data-ui="tomb"] .tomb-v2-copy small{font-size:clamp(.58rem,2.25vw,.72rem);white-space:nowrap}
  html[data-ui="tomb"] .tomb-v2-status{font-size:clamp(.52rem,2vw,.64rem);white-space:nowrap}
+}
+
+/* v10.0.58: real per-operative image files, anchored bottom-left */
+html[data-ui="tomb"] .tomb-v2-portrait-zone{position:relative;overflow:hidden}
+html[data-ui="tomb"] .tomb-v2-portrait{
+ position:absolute!important;left:0!important;bottom:0!important;top:auto!important;right:auto!important;
+ width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;
+ object-fit:cover!important;object-position:left bottom!important;
+ background:none!important;transform:none!important;
+}
+@media (orientation:portrait){
+ html[data-ui="tomb"] .tomb-v2-card-content{grid-template-columns:94px minmax(0,1fr) 30px;gap:8px}
+ html[data-ui="tomb"] .tomb-v2-copy strong{font-size:clamp(.64rem,2.45vw,.82rem);white-space:nowrap;overflow:visible;text-overflow:clip}
+ html[data-ui="tomb"] .tomb-v2-copy small{font-size:clamp(.56rem,2.1vw,.69rem)}
+ html[data-ui="tomb"] .tomb-v2-status{font-size:clamp(.5rem,1.85vw,.61rem)}
 }
