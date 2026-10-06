@@ -348,7 +348,7 @@ html[data-ui="tomb"] .tomb-v2-button{
   align-items:center;
   justify-content:center;
   gap:8px;
-  min-height:52px;
+  min-height:58px;
   padding:8px 38px;
   overflow:visible;
   border:0;
@@ -375,8 +375,8 @@ html[data-ui="tomb"] .tomb-v2-button.primary{
   text-shadow:0 0 3px rgba(225,251,255,.95),0 0 9px rgba(101,218,255,.72);
   filter:
     drop-shadow(0 0 2px rgba(189,245,255,.85))
-    drop-shadow(0 0 8px rgba(60,197,255,.52))
-    drop-shadow(0 0 18px rgba(0,132,255,.26));
+    drop-shadow(0 0 10px rgba(60,197,255,.62))
+    drop-shadow(0 0 22px rgba(0,132,255,.34));
 }
 html[data-ui="tomb"] .tomb-v2-button.secondary{
   flex:0 1 180px;
