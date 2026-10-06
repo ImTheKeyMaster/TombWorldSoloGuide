@@ -1,0 +1,38 @@
+name: Build portrait files
+on:
+  push:
+    branches: [fix-real-portrait-files-v10-0-58]
+permissions:
+  contents: write
+jobs:
+  crop:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pillow
+      - name: Crop top-row portraits
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          p=Path('Assets/Images/TombUI/v3')
+          im=Image.open(p/'portraits.webp')
+          w,h=im.size
+          cw,ch=w//4,h//2
+          names=['leader','rifleman','melee','heavy']
+          for i,name in enumerate(names):
+              cell=im.crop((i*cw,0,(i+1)*cw,ch))
+              cell.save(p/f'portrait-{name}.webp','WEBP',quality=95,method=6)
+          print('source',im.size,'cell',(cw,ch))
+          PY
+      - name: Commit portrait files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Assets/Images/TombUI/v3/portrait-*.webp
+          git commit -m "Generate individual operative portrait files"
+          git push
