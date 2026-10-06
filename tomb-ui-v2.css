@@ -633,7 +633,7 @@ html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{transform:translateX(-75%)
   html[data-ui="tomb"] .tomb-v2-actions{padding:0 28px 8px}
 }
 
-/* v10.0.54: one operative per portrait viewport; no vertical sprite-row bleed */
+/* v10.0.55: one operative per portrait viewport; no vertical sprite-row bleed */
 html[data-ui="tomb"] .tomb-v2-portrait-zone{
   position:relative;overflow:hidden;
   background:#03090c;
@@ -651,7 +651,7 @@ html[data-ui="tomb"] .tomb-v2-portrait.portrait-rifleman{transform:translateX(-2
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-melee{transform:translateX(-50%)!important}
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{transform:translateX(-75%)!important}
 
-/* v10.0.54: individual portraits remove sprite positioning entirely */
+/* v10.0.55: individual portraits remove sprite positioning entirely */
 html[data-ui="tomb"] .tomb-v2-portrait-zone{position:relative;overflow:hidden}
 html[data-ui="tomb"] .tomb-v2-portrait{
   position:absolute!important;inset:0!important;
@@ -683,4 +683,25 @@ html[data-ui="tomb"] .tomb-v2-copy strong{
   html[data-ui="tomb"] .tomb-v2-preview-copy strong{font-size:16px}
   html[data-ui="tomb"] .tomb-v2-preview-copy small{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   html[data-ui="tomb"] .tomb-v2-actions{padding:0 24px 6px}
+}
+
+/* v10.0.55: Safari-safe portrait cells; one viewport per operative with no nested SVG resources */
+html[data-ui="tomb"] .tomb-v2-portrait{
+  position:absolute!important;inset:0!important;
+  display:block!important;width:100%!important;height:100%!important;
+  background-image:url("Assets/Images/TombUI/v3/portraits.webp")!important;
+  background-repeat:no-repeat!important;
+  background-size:400% 200%!important;
+  transform:none!important;
+}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-leader{background-position:0% 0%!important}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-rifleman{background-position:33.333333% 0%!important}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-melee{background-position:66.666667% 0%!important}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{background-position:100% 0%!important}
+@media (orientation:portrait){
+  html[data-ui="tomb"] .tomb-v2-copy strong{
+    white-space:normal;overflow:visible;text-overflow:clip;
+    overflow-wrap:normal;word-break:normal;
+    font-size:clamp(.72rem,3.15vw,.94rem);
+  }
 }
