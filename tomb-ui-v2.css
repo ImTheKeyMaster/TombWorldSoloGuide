@@ -560,3 +560,15 @@ html[data-ui="tomb"] .tomb-v2-portrait.portrait-leader{left:0}
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-rifleman{left:-100%}
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-melee{left:-200%}
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{left:-300%}
+
+/* v10.0.49: anchor operative art to the pill's bottom-left and scale within the clipped sprite viewport */
+html[data-ui="tomb"] .tomb-v2-portrait-zone{position:relative;overflow:hidden}
+html[data-ui="tomb"] .tomb-v2-portrait{
+  top:auto;bottom:0;
+  width:440%;height:auto;max-width:none;max-height:none;
+  transform:none!important;transform-origin:left bottom!important;
+}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-leader{left:0}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-rifleman{left:-110%}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-melee{left:-220%}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{left:-330%}
