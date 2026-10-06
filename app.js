@@ -5427,9 +5427,7 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
       <div class="tomb-v2-operative-grid" role="radiogroup" aria-label="Ready operatives">${cards}</div>
       <div class="tomb-v2-preview">
         <span class="tomb-preview-skin" aria-hidden="true"></span>
-        <span class="tomb-v2-preview-icon" aria-hidden="true">✠</span>
         <div class="tomb-v2-preview-copy"><span>ACTION PREVIEW</span><strong>OPERATIVE READY</strong><small id="tombV2PreviewText">Choose an operative to continue.</small></div>
-        <span class="tomb-v2-preview-ornament" aria-hidden="true">⬡</span>
       </div>
       <div class="tomb-v2-actions">
         <button class="tomb-v2-button primary" type="button" id="confirmTombPlayerSelection" disabled><span>Confirm Selection</span></button>
