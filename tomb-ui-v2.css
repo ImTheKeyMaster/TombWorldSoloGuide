@@ -486,3 +486,28 @@ html[data-ui="tomb"] .tomb-v2-portrait{
   width:100%;height:100%;max-width:none;object-fit:cover;object-position:center center;
   transform:scale(1.08);transform-origin:center center;
 }
+
+/* v10.0.46: preserve the original sprite crop; enlarge it to the card edges */
+html[data-ui="tomb"] .tomb-v2-card{
+  --card-chamfer:5px;
+  clip-path:polygon(5px 0,calc(100% - 5px) 0,100% 5px,100% calc(100% - 5px),calc(100% - 5px) 100%,5px 100%,0 calc(100% - 5px),0 5px);
+}
+html[data-ui="tomb"] .tomb-v2-card::before{
+  inset:0;
+  clip-path:polygon(5px 0,calc(100% - 5px) 0,100% 5px,100% calc(100% - 5px),calc(100% - 5px) 100%,5px 100%,0 calc(100% - 5px),0 5px,1.5px 5.6px,1.5px calc(100% - 5.6px),5.6px calc(100% - 1.5px),calc(100% - 5.6px) calc(100% - 1.5px),calc(100% - 1.5px) calc(100% - 5.6px),calc(100% - 1.5px) 5.6px,calc(100% - 5.6px) 1.5px,5.6px 1.5px,1.5px 5.6px);
+}
+html[data-ui="tomb"] .tomb-v2-card-content{padding:1.5px;gap:8px}
+html[data-ui="tomb"] .tomb-v2-portrait-zone{
+  align-self:stretch;height:100%;min-height:100%;margin:0;overflow:hidden;
+  clip-path:polygon(4px 0,100% 0,100% 100%,0 100%,0 4px);
+}
+html[data-ui="tomb"] .tomb-v2-portrait{
+  position:absolute;top:0;left:0;display:block;
+  width:400%;height:auto;max-width:none;max-height:none;
+  object-fit:initial;object-position:initial;
+  filter:contrast(1.12) saturate(1.08) brightness(.96) drop-shadow(0 5px 5px rgba(0,0,0,.72));
+}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-leader{transform:translateX(0) scale(1.16);transform-origin:0 50%}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-rifleman{transform:translateX(-25%) scale(1.16);transform-origin:33.333% 50%}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-melee{transform:translateX(-50%) scale(1.16);transform-origin:66.667% 50%}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{transform:translateX(-75%) scale(1.16);transform-origin:100% 50%}
