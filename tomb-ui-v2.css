@@ -548,3 +548,15 @@ html[data-ui="tomb"] .tomb-v2-portrait.portrait-leader{transform:translateX(0) s
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-rifleman{transform:translateX(-25%) scale(1.34);transform-origin:33.333% 50%}
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-melee{transform:translateX(-50%) scale(1.34);transform-origin:66.667% 50%}
 html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{transform:translateX(-75%) scale(1.34);transform-origin:100% 50%}
+
+/* v10.0.48: crop sprite before scaling so adjacent sprite rows/tiles cannot bleed in */
+html[data-ui="tomb"] .tomb-v2-portrait-zone{overflow:hidden}
+html[data-ui="tomb"] .tomb-v2-portrait{
+  width:400%;height:auto;max-width:none;max-height:none;
+  transform:none!important;
+  transform-origin:initial!important;
+}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-leader{left:0}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-rifleman{left:-100%}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-melee{left:-200%}
+html[data-ui="tomb"] .tomb-v2-portrait.portrait-heavy{left:-300%}
