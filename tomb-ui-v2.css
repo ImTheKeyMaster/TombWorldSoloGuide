@@ -440,3 +440,27 @@ html[data-ui="tomb"] .tomb-v2-status i{background:#64ff9a;box-shadow:0 0 10px rg
 html[data-ui="tomb"] .tomb-v2-status b{color:#72f5a4}
 html[data-ui="tomb"] .tomb-v2-card.selected .tomb-v2-status i{background:#39d7ff;box-shadow:0 0 10px rgba(57,215,255,.95)}
 html[data-ui="tomb"] .tomb-v2-card.selected .tomb-v2-status b{color:#55dcff}
+
+/* v10.0.44: mockup-style operative cards: clean fill, one truly continuous chamfered line */
+html[data-ui="tomb"] .tomb-v2-card{
+  border:0;
+  border-radius:0;
+  background:linear-gradient(100deg,rgba(5,25,31,.99),rgba(1,10,14,.99));
+  box-shadow:none;
+  clip-path:polygon(5px 0,calc(100% - 5px) 0,100% 5px,100% calc(100% - 5px),calc(100% - 5px) 100%,5px 100%,0 calc(100% - 5px),0 5px);
+}
+html[data-ui="tomb"] .tomb-v2-card::before{
+  content:"";position:absolute;z-index:4;pointer-events:none;inset:0;width:auto;height:auto;opacity:1;
+  background:var(--accent,#4ba7c2);
+  border:0;filter:none;
+  clip-path:polygon(5px 0,calc(100% - 5px) 0,100% 5px,100% calc(100% - 5px),calc(100% - 5px) 100%,5px 100%,0 calc(100% - 5px),0 5px,1px 5px,1px calc(100% - 6px),6px calc(100% - 1px),calc(100% - 6px) calc(100% - 1px),calc(100% - 1px) calc(100% - 6px),calc(100% - 1px) 6px,calc(100% - 6px) 1px,6px 1px,1px 6px,1px 5px);
+}
+html[data-ui="tomb"] .tomb-v2-card::after{content:none}
+html[data-ui="tomb"] .tomb-v2-card.selected{
+  background:linear-gradient(105deg,rgba(8,47,61,.99),rgba(1,14,20,.99));
+  box-shadow:0 0 8px rgba(57,215,255,.72),0 0 16px rgba(0,150,255,.26),inset 0 0 15px rgba(49,206,245,.12);
+}
+html[data-ui="tomb"] .tomb-v2-card.selected::before{
+  background:#65e4ff;
+  filter:drop-shadow(0 0 3px rgba(101,228,255,.9));
+}
