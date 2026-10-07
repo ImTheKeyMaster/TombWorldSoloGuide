@@ -195,6 +195,20 @@ def test_landscape_picker_scrolls_on_outer_modal_for_ios():
     assert "overflow:auto" not in inner
 
 
+def test_frame_safe_areas_keep_content_inside_portrait_and_landscape_rails():
+    release_css = CSS.split("/* v10.0.65: keep all Tomb picker content inside the decorative frame opening. */", 1)[1]
+    portrait = release_css.split("@media (orientation:portrait){", 1)[1].split("@media (orientation:landscape)", 1)[0]
+    landscape = release_css.split("@media (orientation:landscape) and (max-height:600px){", 1)[1]
+    assert "padding-top:38px" in portrait
+    assert "padding-right:18px" in portrait
+    assert "padding-left:18px" in portrait
+    assert "padding-top:clamp(34px,8dvh,46px)" in landscape
+    assert "padding-right:clamp(46px,5vw,64px)" in landscape
+    assert "padding-bottom:clamp(36px,8dvh,48px)" in landscape
+    assert "padding-left:clamp(46px,5vw,64px)" in landscape
+    assert "grid-template-columns:repeat(3,minmax(0,1fr))" in CSS
+
+
 def test_orientation_changes_never_write_visual_dimensions_in_javascript():
     picker = picker_source()
     for forbidden in ("orientationchange", "resize", ".style.height", ".style.width",
