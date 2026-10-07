@@ -83,6 +83,19 @@ def test_release_version_surfaces_follow_current_app_version():
     assert INDEX.count(f"?v={CURRENT_APP_VERSION}") >= 12
 
 
+def test_hud_uses_dedicated_icons_and_live_apl_meter():
+    picker = picker_source()
+    assert "tombV2HudIcon('threat')" in picker
+    assert "tombV2HudIcon('tp')" in picker
+    assert "tombV2HudIcon('apl')" in picker
+    assert 'class="tomb-v2-hud-label"' in picker
+    assert 'class="tomb-v2-hud-value"' in picker
+    assert 'id="tombV2AplDots"' in picker
+    assert "aplDots.innerHTML=tombV2AplDots(definition.apl)" in picker
+    assert "grid-template-columns:1.1fr 1.1fr .86fr" in CSS
+    assert "max-width:12px" in CSS
+
+
 def test_picker_uses_layout_first_markup_and_live_controls():
     picker = picker_source()
     assert 'class="tomb-v2-card"' in picker
