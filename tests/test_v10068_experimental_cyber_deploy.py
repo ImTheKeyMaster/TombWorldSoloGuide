@@ -49,6 +49,13 @@ def test_preview_changes_outer_dialog_and_actions_but_not_checklist_pills():
     assert f"{scope} .checklist" not in CSS
 
 
+def test_clipped_cyber_buttons_use_visible_inset_focus_treatment():
+    focus = CSS.split('.wizard-actions .btn:focus-visible,', 1)[1].split("}", 1)[0]
+    assert "outline:none" in focus
+    assert "inset 0 0 0 2px #effdff" in focus
+    assert "outline-offset" not in focus
+
+
 def test_mobile_preview_preserves_production_fixed_action_clearance():
     mobile = CSS.split("@media(max-width:600px){", 1)[1].split("@media(prefers-reduced-motion:reduce)", 1)[0]
     card = mobile.split('html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] > .wizard-card{', 1)[1].split("}", 1)[0]
