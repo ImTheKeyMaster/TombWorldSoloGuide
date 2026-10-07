@@ -1139,7 +1139,7 @@ html[data-ui="tomb"] .tomb-v2-shell{
 }
 @media (orientation:portrait){
   html[data-ui="tomb"] .tomb-v2-shell{
-    padding-top:38px;
+    padding-top:52px;
     padding-right:18px;
     padding-bottom:24px;
     padding-left:18px;
