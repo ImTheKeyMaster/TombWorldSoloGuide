@@ -30,6 +30,21 @@ def test_cyber_deploy_preview_is_strictly_experimental_and_deploy_only():
     assert '.wizard-shell[data-setup-step="ready"]' not in CSS
 
 
+def test_cyber_typography_does_not_inherit_into_inner_pills():
+    scope = 'html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"]'
+    shell = CSS.split(f"{scope}{{", 1)[1].split("}", 1)[0]
+    progress = CSS.split(f"{scope} .progress-head{{", 1)[1].split("}", 1)[0]
+    title = CSS.split(f"{scope} > .wizard-card > h3{{", 1)[1].split("}", 1)[0]
+    buttons = CSS.split(f"{scope} .wizard-actions .btn,", 1)[1].split("}", 1)[0]
+    assert "--cyber-font:" in shell
+    assert "font-family:" not in shell
+    assert "font-family:var(--cyber-font)" in progress
+    assert "font-family:var(--cyber-font)" in title
+    assert "font-family:var(--cyber-font)" in buttons
+    assert f"{scope} .check-row" not in CSS
+    assert f"{scope} .deployment-check" not in CSS
+
+
 def test_preview_changes_outer_dialog_and_actions_but_not_checklist_pills():
     scope = 'html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"]'
     assert f"{scope} > .wizard-card" in CSS
