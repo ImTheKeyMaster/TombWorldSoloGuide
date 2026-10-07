@@ -1598,7 +1598,6 @@ html[data-ui="tomb"] .experimental-deploy-cyber-card{
     inset 0 0 0 1px rgba(115,230,236,.22),
     inset 0 0 28px rgba(44,174,183,.05),
     0 18px 50px rgba(0,0,0,.42);
-  backdrop-filter:saturate(150%) blur(7px);
 }
 html[data-ui="tomb"] .experimental-deploy-cyber-card::before{
   content:"";
@@ -1676,6 +1675,9 @@ html[data-ui="tomb"] .experimental-deploy-cyber-card>.wizard-actions{
   padding-top:16px;
 }
 @media(min-width:601px){
+  html[data-ui="tomb"] .experimental-deploy-cyber-card{
+    backdrop-filter:saturate(150%) blur(7px);
+  }
   html[data-ui="tomb"] .experimental-deploy-cyber-card>.wizard-actions{
     position:relative;
   }
