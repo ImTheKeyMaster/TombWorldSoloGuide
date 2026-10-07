@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.64
+# Tomb World Battle Guide v10.0.65
+
+## v10.0.65
+
+### Frame Safe-Area Correction
+
+- Moves portrait content below the decorative top rail so the Tomb World title card no longer overlaps the frame.
+- Adds proportional landscape top, bottom, left, and right gutters that follow the frame's visible inner opening.
+- Keeps the existing landscape outer-modal scrolling behavior so additional content remains reachable on iPhone.
+- Preserves the three-column landscape roster, HUD styling, selected-card hierarchy, physical portraits, Classic UI, gameplay logic, and save schema.
 
 ## v10.0.64
 
