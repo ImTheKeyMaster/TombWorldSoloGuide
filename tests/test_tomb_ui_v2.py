@@ -49,6 +49,8 @@ def test_tomb_picker_uses_v3_frame_as_non_obscuring_background_detail():
     assert 'id="emerald"' in portrait_svg
     assert 'id="emerald"' in landscape_svg
     assert "M31 48L49 31H381L399 48" in portrait_svg
+    assert "M40 44L63 29H1107L1130 44" in landscape_svg
+    assert 'translate(585 18) scale(.7)' in landscape_svg
     landscape = CSS.split("@media(orientation:landscape) and (max-height:500px)", 1)[1]
     assert "screen-frame-landscape.svg" in landscape
     assert "transform:none" in landscape
