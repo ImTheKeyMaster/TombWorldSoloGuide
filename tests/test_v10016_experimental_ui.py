@@ -30,9 +30,10 @@ def test_experimental_ui_is_isolated_and_hidden_behind_version_taps():
     assert "Experimental Tomb UI" in INDEX
     assert "Currently previews new styling on Deploy Kill Teams only." in INDEX
     assert 'aria-modal="true" aria-labelledby="experimentalUiTitle"' in INDEX
-    experimental_css = CSS.split("/* v", 1)[1] if "experimental-only cyberpunk treatment" in CSS else ""
-    non_experimental_css = CSS.replace("/* v" + experimental_css, "") if experimental_css else CSS
-    assert 'html[data-ui="tomb"]' not in non_experimental_css
+    experimental_marker = CSS.index("experimental-only cyberpunk treatment")
+    experimental_block_start = CSS.rfind("/*", 0, experimental_marker)
+    assert experimental_block_start >= 0
+    assert 'html[data-ui="tomb"]' not in CSS[:experimental_block_start]
     assert 'tomb-ui-v2.css' not in INDEX
     assert 'Assets/Images/TombUI' not in INDEX
     save_function = APP[APP.index("function save()") : APP.index("function migrateSupportedSave")]
