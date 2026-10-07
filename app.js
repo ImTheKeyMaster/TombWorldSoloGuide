@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.66';
+  const APP_VERSION = '10.0.67';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5359,145 +5359,12 @@ document.addEventListener('touchend',function(e){
     return Number(objectiveEngine?.getMissionHudModel().value||state.missionState?.destruction||0)<20;
   }
 
-const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
-  const TOMB_V2_PORTRAIT_ROOT='Assets/Images/TombUI/v3/portrait-';
-  const TOMB_V2_DEATHWATCH_PORTRAITS={
-    sergeant:'leader',
-    aegis:'rifleman',
-    marksman:'rifleman',
-    disruptor:'rifleman',
-    gunner:'rifleman',
-    blademaster:'melee',
-    demolisher:'melee',
-    headtaker:'melee',
-    breacher:'heavy',
-    bombard:'heavy',
-    'horde-slayer':'heavy'
-  };
-
-  function tombV2ThreatBars(value){
-    const threat=Math.max(0,Number(value)||0);
-    const filled=Math.min(5,Math.ceil(threat/3));
-    return Array.from({length:5},(_,index)=>`<i class="${index<filled?'on':''}"></i>`).join('');
-  }
-
-  function tombV2TurningPointDots(value){
-    const point=Math.max(0,Math.min(4,Number(value)||0));
-    return Array.from({length:4},(_,index)=>`<i class="${index<point?'on':''}"></i>`).join('');
-  }
-
-  function tombV2AplDots(value){
-    const apl=Math.max(0,Math.min(4,Number(value)||0));
-    return Array.from({length:4},(_,index)=>`<i class="${index<apl?'on':''}"></i>`).join('');
-  }
-
-  function tombV2HudIcon(kind){
-    const icons={
-      threat:'<svg viewBox="0 0 32 32" focusable="false"><path d="M16 3.5c-6.4 0-10.7 4.3-10.7 10.1 0 4.3 2.2 7.6 6 9.1v4.8h3.1v-3.1h3.2v3.1h3.1v-4.8c3.8-1.5 6-4.8 6-9.1C26.7 7.8 22.4 3.5 16 3.5Z"/><circle cx="11.9" cy="14.1" r="2.2"/><circle cx="20.1" cy="14.1" r="2.2"/><path d="m13.1 20.1 2.9-2.4 2.9 2.4"/></svg>',
-      tp:'<svg viewBox="0 0 32 32" focusable="false"><path d="M16 2.7 9.2 12v17.2h13.6V12L16 2.7Z"/><path d="M16 2.7v26.5M9.2 12h13.6"/><circle cx="16" cy="16.2" r="2.5"/></svg>',
-      apl:'<svg viewBox="0 0 32 32" focusable="false"><path d="m7.2 11.2 8.8-7 8.8 7M7.2 17.7l8.8-7 8.8 7M7.2 24.2l8.8-7 8.8 7"/></svg>'
-    };
-    return `<span class="tomb-v2-hud-icon" aria-hidden="true">${icons[kind]||''}</span>`;
-  }
-
-  function tombV2PlayerPortrait(id){
-    if(selectedPlayerTeamName().toLowerCase()!=='deathwatch'){
-      return `<span class="tomb-v2-monogram">${escapeHtml(playerName(id).slice(0,2).toUpperCase())}</span>`;
-    }
-    const portrait=TOMB_V2_DEATHWATCH_PORTRAITS[id]||'rifleman';
-    return `<img class="tomb-v2-portrait" src="${TOMB_V2_PORTRAIT_ROOT}${portrait}.webp" alt="" aria-hidden="true">`;
-  }
-
-
-  function showTombPlayerOperativeSelection(candidates){
-    const firstDefinition=candidates.length?playerDefinition(candidates[0]):null;
-    const firstApl=candidates.length?effectiveApl(candidates[0],Number(firstDefinition?.apl||3)):'—';
-    const cards=candidates.map((id,index)=>{
-      const operative=livePlayerOperative(id)||playerDefinition(id)||{};
-      return `<button class="tomb-v2-card" type="button" role="radio" aria-checked="false" data-tomb-player-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
-        <span class="tomb-card-skin" aria-hidden="true"></span>
-        <span class="tomb-v2-card-content">
-          <span class="tomb-v2-portrait-zone">${tombV2PlayerPortrait(id)}</span>
-          <span class="tomb-v2-copy">
-            <strong>${escapeHtml(playerName(id))}</strong>
-            <small>${escapeHtml(operative.role||'Operative')}</small>
-            <span class="tomb-v2-status"><i></i><b>READY</b></span>
-          </span>
-          <span class="tomb-v2-radio" aria-hidden="true"></span>
-        </span>
-      </button>`;
-    }).join('');
-
-    showModal('OPERATIVE ACTION',`<section class="tomb-v2-shell">
-      <span class="tomb-v3-screen-frame" aria-hidden="true"></span>
-      <header class="tomb-v2-brand">
-        <div class="tomb-v2-brand-copy"><strong>TOMB WORLD GUIDE</strong><span>OPERATIVE ACTION</span></div>
-      </header>
-      <div class="tomb-v2-hud" aria-label="Battle status">
-        <div class="tomb-v2-hud-cell threat">
-          ${tombV2HudIcon('threat')}
-          <span class="tomb-v2-hud-label">THREAT LEVEL</span>
-          <div class="tomb-v2-bars" aria-hidden="true">${tombV2ThreatBars(state.threat)}</div>
-          <strong class="tomb-v2-hud-value">${escapeHtml(String(state.threat??0))}</strong>
-        </div>
-        <div class="tomb-v2-hud-cell tp">
-          ${tombV2HudIcon('tp')}
-          <span class="tomb-v2-hud-label">TURNING POINT</span>
-          <div class="tomb-v2-dots" aria-hidden="true">${tombV2TurningPointDots(state.turningPoint)}</div>
-          <strong class="tomb-v2-hud-value">${escapeHtml(String(state.turningPoint??0))}</strong>
-        </div>
-        <div class="tomb-v2-hud-cell apl">
-          ${tombV2HudIcon('apl')}
-          <span class="tomb-v2-hud-label">APL</span>
-          <div class="tomb-v2-dots tomb-v2-apl-dots" id="tombV2AplDots" aria-hidden="true">${tombV2AplDots(firstApl)}</div>
-          <strong class="tomb-v2-hud-value" id="tombV2Apl">${escapeHtml(String(firstApl))}</strong>
-        </div>
-      </div>
-      <div class="tomb-v2-section-title"><span>✠</span><strong>SELECT OPERATIVE</strong></div>
-      <div class="tomb-v2-operative-grid" role="radiogroup" aria-label="Ready operatives">${cards}</div>
-      <div class="tomb-v2-preview">
-        <span class="tomb-preview-skin" aria-hidden="true"></span>
-        <div class="tomb-v2-preview-copy"><span>ACTION PREVIEW</span><strong>OPERATIVE READY</strong><small id="tombV2PreviewText">Choose an operative to continue.</small></div>
-      </div>
-      <div class="tomb-v2-actions">
-        <button class="tomb-v2-button primary" type="button" id="confirmTombPlayerSelection" disabled><span>Confirm Selection</span></button>
-        <button class="tomb-v2-button secondary" type="button" data-close><span>Cancel</span></button>
-      </div>
-    </section>`);
-
-    modal.classList.add('tomb-operative-picker-modal');
-    let selectedId='';
-    const confirm=$('#confirmTombPlayerSelection');
-    const preview=$('#tombV2PreviewText');
-    const apl=$('#tombV2Apl');
-    const aplDots=$('#tombV2AplDots');
-
-    modal.querySelectorAll('[data-tomb-player-operative]').forEach(button=>button.onclick=()=>{
-      selectedId=button.dataset.tombPlayerOperative;
-      $$('[data-tomb-player-operative]',modal).forEach(card=>{
-        const selected=card.dataset.tombPlayerOperative===selectedId;
-        card.classList.toggle('selected',selected);
-        card.setAttribute('aria-checked',String(selected));
-        const status=$('.tomb-v2-status b',card);
-        if(status)status.textContent=selected?'SELECTED':'READY';
-      });
-      const definition=playerDefinition(selectedId)||livePlayerOperative(selectedId)||{};
-      const selectedApl=effectiveApl(selectedId,Number(definition.apl||3));
-      if(apl)apl.textContent=String(selectedApl);
-      if(aplDots)aplDots.innerHTML=tombV2AplDots(selectedApl);
-      if(preview)preview.textContent=`${playerName(selectedId)} selected. Confirm to begin activation.`;
-      confirm.disabled=false;
-    });
-    confirm.onclick=()=>{if(selectedId)beginPlayerActivation(selectedId);};
-  }
-
-  function showPlayerActivation(){
+function showPlayerActivation(){
     const active=activePlayerActivation();
     if(active){void resumeCheckpointedGameplayContext();return;}
     const candidates=remainingPlayerOperatives();
     if(!candidates.length){state.playerReady=0;setNextActivation('npo');save();render();return;}
     if(candidates.length===1){beginPlayerActivation(candidates[0]);return;}
-    if(document.documentElement.dataset.ui==='tomb'){showTombPlayerOperativeSelection(candidates);return;}
     const options=candidates.map(id=>`<option value="${escapeHtml(id)}">${escapeHtml(playerName(id))}</option>`).join('');
     showModal(`${selectedPlayerTeamName().toUpperCase()} ACTIVATION`,`<p>Choose a Ready operative.</p><div class="field"><label for="humanPlayerSelection">Ready operative</label><select id="humanPlayerSelection" data-dialog-focus><option value="">Select a Ready operative</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmHumanPlayerSelection" disabled>Continue</button></div>`);
     $('#humanPlayerSelection').onchange=()=>{$('#confirmHumanPlayerSelection').disabled=!$('#humanPlayerSelection').value;};
@@ -9770,7 +9637,7 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
     const shouldRestoreFocus=modal._skipFocusRestoreId!==activeControlId;
     modal._skipFocusRestoreId=null;
 
-    modal.classList.remove('combat-resolution-modal','tomb-operative-picker-modal');
+    modal.classList.remove('combat-resolution-modal');
     modalBody.innerHTML=`<div class="modal-inner"><h2 id="modalTitle">${escapeHtml(title)}</h2>${content}</div>`;
     modal.setAttribute('aria-labelledby','modalTitle');
     modal.setAttribute('tabindex','-1');
