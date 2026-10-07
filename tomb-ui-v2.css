@@ -1062,3 +1062,57 @@ html[data-ui="tomb"] .tomb-v2-hud-cell.apl>.tomb-v2-dots i.on{
   html[data-ui="tomb"] .tomb-v2-hud-cell>.tomb-v2-dots i{flex-basis:6px;width:6px!important;height:6px!important}
   html[data-ui="tomb"] .tomb-v2-hud-cell.apl>.tomb-v2-dots i{flex-basis:5px;width:5px!important;height:5px!important}
 }
+
+
+/* v10.0.63: selected-card hierarchy and continuous HUD pill frames */
+html[data-ui="tomb"] .tomb-v2-card{
+  --accent:#416f7c;
+  background:var(--accent);
+  box-shadow:0 0 3px rgba(51,121,139,.12);
+}
+html[data-ui="tomb"] .tomb-v2-card.selected{
+  --accent:#65e4ff;
+  background:var(--accent);
+  box-shadow:
+    0 0 2px rgba(216,251,255,.98),
+    0 0 9px rgba(71,216,255,.92),
+    0 0 20px rgba(0,151,255,.46),
+    inset 0 0 14px rgba(58,207,245,.14);
+}
+html[data-ui="tomb"] .tomb-v2-card.selected .tomb-v2-card-content{
+  background:
+    linear-gradient(105deg,rgba(8,52,67,.99),rgba(1,15,21,.99));
+}
+
+html[data-ui="tomb"] .tomb-v2-hud-cell{
+  border:0;
+  isolation:isolate;
+  background:#4c8996;
+  box-shadow:
+    0 0 5px rgba(65,158,177,.14),
+    0 0 12px rgba(0,0,0,.18);
+}
+html[data-ui="tomb"] .tomb-v2-hud-cell::before{
+  content:none;
+}
+html[data-ui="tomb"] .tomb-v2-hud-cell::after{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:1px;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 18% 55%,rgba(66,207,189,.08),transparent 36%),
+    linear-gradient(150deg,rgba(7,31,36,.98),rgba(2,12,16,.99));
+  clip-path:polygon(
+    6px 0,
+    100% 0,
+    100% calc(100% - 6px),
+    calc(100% - 6px) 100%,
+    0 100%,
+    0 6px
+  );
+}
+html[data-ui="tomb"] .tomb-v2-hud-cell>*{
+  z-index:1;
+}
