@@ -10,11 +10,12 @@ html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"]{
   --cyber-panel:rgba(3,12,16,.965);
   --cyber-panel-2:rgba(7,24,28,.94);
   --cyber-cut:22px;
-  font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+  --cyber-font:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
 }
 
 html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] .progress-head{
   position:relative;
+  font-family:var(--cyber-font);
   align-items:flex-end;
   padding:8px 10px 12px 18px;
   border-left:2px solid var(--cyber-accent);
@@ -130,6 +131,7 @@ html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] > .wizard-card::aft
 
 html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] > .wizard-card > h3{
   position:relative;
+  font-family:var(--cyber-font);
   margin:0 0 14px;
   padding:7px 0 12px;
   color:#f0fdff;
@@ -170,7 +172,7 @@ html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] .setup-bulk-row .bt
   --cyber-button-cut:10px;
   border-radius:0;
   clip-path:polygon(0 0,100% 0,100% calc(100% - var(--cyber-button-cut)),calc(100% - var(--cyber-button-cut)) 100%,0 100%);
-  font-family:inherit;
+  font-family:var(--cyber-font);
   text-transform:uppercase;
   letter-spacing:.075em;
   transition:background-color .16s ease,color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease;
