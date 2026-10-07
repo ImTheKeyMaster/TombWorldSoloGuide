@@ -48,6 +48,7 @@ def test_tomb_picker_uses_v3_frame_as_non_obscuring_background_detail():
     assert 'class="frame-cracks"' in landscape_svg
     assert 'id="emerald"' in portrait_svg
     assert 'id="emerald"' in landscape_svg
+    assert "M31 48L49 31H381L399 48" in portrait_svg
     landscape = CSS.split("@media(orientation:landscape) and (max-height:500px)", 1)[1]
     assert "screen-frame-landscape.svg" in landscape
     assert "transform:none" in landscape
@@ -213,7 +214,7 @@ def test_frame_safe_areas_keep_content_inside_portrait_and_landscape_rails():
     release_css = CSS.split("/* v10.0.65: keep all Tomb picker content inside the decorative frame opening. */", 1)[1]
     portrait = release_css.split("@media (orientation:portrait){", 1)[1].split("@media (orientation:landscape)", 1)[0]
     landscape = release_css.split("@media (orientation:landscape) and (max-height:600px){", 1)[1]
-    assert "padding-top:38px" in portrait
+    assert "padding-top:52px" in portrait
     assert "padding-right:18px" in portrait
     assert "padding-left:18px" in portrait
     assert "padding-top:clamp(34px,8dvh,46px)" in landscape
