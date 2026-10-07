@@ -209,6 +209,15 @@ html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] .setup-bulk-row .bt
   box-shadow:none;
 }
 
+@media(forced-colors:active){
+  html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] .wizard-actions .btn:focus-visible,
+  html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] .setup-bulk-row .btn:focus-visible{
+    outline:2px solid Highlight;
+    outline-offset:-3px;
+    forced-color-adjust:auto;
+  }
+}
+
 @media(hover:hover) and (pointer:fine){
   html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] .wizard-actions .btn:not(:disabled):hover,
   html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] .setup-bulk-row .btn:not(:disabled):hover{
