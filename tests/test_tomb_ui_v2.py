@@ -73,7 +73,8 @@ def test_v2_css_is_versioned_and_available_offline():
 def test_physical_portraits_preserve_aspect_ratio_by_orientation():
     portrait_override = CSS.rsplit("@media (orientation:portrait){", 1)[1].split("}", 2)[0]
     assert "width:auto!important;height:100%!important" in portrait_override
-    compact_landscape = CSS.rsplit("@media (orientation:landscape) and (max-height:600px){", 1)[1]
+    marker = '@media (orientation:landscape) and (max-height:600px){\n html[data-ui="tomb"] img.tomb-v2-portrait{'
+    compact_landscape = CSS.split(marker, 1)[1].split("}", 1)[0]
     assert "width:100%!important;height:auto!important" in compact_landscape
 
 
