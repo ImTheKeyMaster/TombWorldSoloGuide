@@ -96,6 +96,8 @@ def test_hud_uses_dedicated_icons_and_live_apl_meter():
     assert "modal.querySelectorAll(\'[data-tomb-player-operative]\').forEach" in picker
     assert "grid-template-columns:1.1fr 1.1fr .86fr" in CSS
     assert "max-width:12px" in CSS
+    assert "(max-width:740px)" in CSS
+    assert "grid-template-columns:16px minmax(0,1fr) 18px" in CSS
 
 
 def test_picker_uses_layout_first_markup_and_live_controls():
