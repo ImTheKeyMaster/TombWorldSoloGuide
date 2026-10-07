@@ -1042,3 +1042,23 @@ html[data-ui="tomb"] .tomb-v2-hud-cell.apl>.tomb-v2-dots i.on{
   html[data-ui="tomb"] .tomb-v2-hud-cell>.tomb-v2-hud-label{font-size:9px;letter-spacing:.12em}
   html[data-ui="tomb"] .tomb-v2-hud-cell>.tomb-v2-hud-value{font-size:22px}
 }
+
+
+@media (orientation:landscape) and (max-height:600px) and (max-width:740px){
+  html[data-ui="tomb"] .tomb-v2-hud{
+    grid-template-columns:1fr 1fr 1fr;
+    gap:6px;
+  }
+  html[data-ui="tomb"] .tomb-v2-hud-cell{
+    grid-template-columns:16px minmax(0,1fr) 18px;
+    column-gap:2px;
+    padding:5px 5px 4px;
+  }
+  html[data-ui="tomb"] .tomb-v2-hud-cell>.tomb-v2-hud-icon{width:14px;height:18px}
+  html[data-ui="tomb"] .tomb-v2-hud-cell>.tomb-v2-hud-label{font-size:7.5px;letter-spacing:.06em}
+  html[data-ui="tomb"] .tomb-v2-hud-cell>.tomb-v2-hud-value{font-size:18px}
+  html[data-ui="tomb"] .tomb-v2-hud-cell>.tomb-v2-bars,
+  html[data-ui="tomb"] .tomb-v2-hud-cell>.tomb-v2-dots{gap:1px}
+  html[data-ui="tomb"] .tomb-v2-hud-cell>.tomb-v2-dots i{flex-basis:6px;width:6px!important;height:6px!important}
+  html[data-ui="tomb"] .tomb-v2-hud-cell.apl>.tomb-v2-dots i{flex-basis:5px;width:5px!important;height:5px!important}
+}
