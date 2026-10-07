@@ -5410,7 +5410,8 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
 
 
   function showTombPlayerOperativeSelection(candidates){
-    const firstApl=candidates.length?(playerDefinition(candidates[0])?.apl??livePlayerOperative(candidates[0])?.apl??'—'):'—';
+    const firstDefinition=candidates.length?playerDefinition(candidates[0]):null;
+    const firstApl=candidates.length?effectiveApl(candidates[0],Number(firstDefinition?.apl||3)):'—';
     const cards=candidates.map((id,index)=>{
       const operative=livePlayerOperative(id)||playerDefinition(id)||{};
       return `<button class="tomb-v2-card" type="button" role="radio" aria-checked="false" data-tomb-player-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
@@ -5481,8 +5482,9 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
         if(status)status.textContent=selected?'SELECTED':'READY';
       });
       const definition=playerDefinition(selectedId)||livePlayerOperative(selectedId)||{};
-      if(apl)apl.textContent=String(definition.apl??'—');
-      if(aplDots)aplDots.innerHTML=tombV2AplDots(definition.apl);
+      const selectedApl=effectiveApl(selectedId,Number(definition.apl||3));
+      if(apl)apl.textContent=String(selectedApl);
+      if(aplDots)aplDots.innerHTML=tombV2AplDots(selectedApl);
       if(preview)preview.textContent=`${playerName(selectedId)} selected. Confirm to begin activation.`;
       confirm.disabled=false;
     });
