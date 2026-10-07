@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.63
+# Tomb World Battle Guide v10.0.64
+
+## v10.0.64
+
+### Landscape Scrolling Repair
+
+- Restores vertical scrolling in the Tomb operative picker when an iPhone is rotated to landscape.
+- Moves landscape scrolling to the outer modal, matching the working portrait architecture and avoiding the global modal-inner overflow override.
+- Keeps momentum scrolling and vertical pan gestures enabled on iOS while preserving the landscape frame, HUD, operative cards, and action controls.
+- Leaves gameplay logic, Classic UI, physical portraits, and save schema unchanged.
 
 ## v10.0.63
 
