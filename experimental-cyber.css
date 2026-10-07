@@ -242,7 +242,9 @@ html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] .setup-bulk-row .bt
   }
 
   html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] > .wizard-card{
-    padding:20px 18px;
+    padding-top:20px;
+    padding-right:18px;
+    padding-left:18px;
   }
 
   html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] > .wizard-card > h3::before{
