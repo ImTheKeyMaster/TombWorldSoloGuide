@@ -1672,9 +1672,13 @@ html[data-ui="tomb"] .experimental-deploy-cyber-card .setup-bulk-row{
   margin-top:18px;
 }
 html[data-ui="tomb"] .experimental-deploy-cyber-card>.wizard-actions{
-  position:relative;
   margin-top:26px;
   padding-top:16px;
+}
+@media(min-width:601px){
+  html[data-ui="tomb"] .experimental-deploy-cyber-card>.wizard-actions{
+    position:relative;
+  }
 }
 html[data-ui="tomb"] .experimental-deploy-cyber-card>.wizard-actions::before{
   content:"";
