@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.70
+# Tomb World Battle Guide v10.0.71
+
+## v10.0.71
+
+### Experimental Armored Deploy Corners
+
+- Removes the discarded Deploy Kill Teams watermark prototype.
+- Adds four compact original armored corner plates to the Deploy Kill Teams card while Experimental Tomb UI is enabled.
+- Uses worn gunmetal plates, recessed rivets, a restrained cyan power groove, and one faint fracture detail for a grim-dark military-industrial feel.
+- Keeps the existing card geometry, buttons, spacing, checklist, and gameplay behavior unchanged.
+- Leaves Current mode and every other setup screen unchanged.
 
 ## v10.0.70
 
