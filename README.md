@@ -1,14 +1,14 @@
-# Tomb World Battle Guide v10.0.68
+# Tomb World Battle Guide v10.0.69
 
-## v10.0.68
+## v10.0.69
 
-### Experimental Cyberpunk Deploy Dialog
+### Experimental Styling Reverted
 
-- Introduces the first clean-slate Experimental-mode visual study on Deploy Kill Teams only.
-- Adapts the visual language of Jhey's Cyberpunk Glitch Upgrade Modal: clipped panel geometry, cyan technical accents, translucent dark glass, warm offset glitch shadowing, hard-edged actions, and a short reveal transition.
-- Keeps checklist rows and other inner pills unchanged so the outer dialog treatment can be evaluated independently.
-- Scopes every new rule to Experimental mode and the deploy setup step; Current mode remains visually and behaviorally unchanged.
-- Uses only native HTML/CSS/JavaScript already supported by the app. No Babel, Tweakpane, external font, audio, or new runtime dependency is introduced.
+- Restores the clean Experimental-mode baseline from v10.0.67.
+- Removes the Cyberpunk Glitch Deploy Kill Teams styling experiment and its dedicated stylesheet/tests.
+- Keeps the hidden seven-tap Current/Experimental selector and device-local mode setting.
+- Experimental mode again intentionally mirrors Current mode until the next visual direction is chosen.
+- Bumps the release/cache version so devices discard the briefly deployed experimental styling.
 
 ## v10.0.67
 

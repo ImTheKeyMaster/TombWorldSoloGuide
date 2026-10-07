@@ -19,7 +19,7 @@ def test_v1002_release_surfaces_and_saved_game_contract():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     assert f"analytics.js?release={CURRENT_APP_VERSION}" in INDEX
-    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 12
+    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 11
     assert "?v=9.2.63" not in INDEX
     assert "const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;" in WORKER
     assert "const SAVE_VERSION = 3;" in (ROOT / "persistence.js").read_text(encoding="utf-8")
