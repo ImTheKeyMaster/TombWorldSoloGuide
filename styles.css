@@ -1731,6 +1731,7 @@ html[data-ui="tomb"] .experimental-deploy-cyber-card>.wizard-actions .btn:focus-
 @media(max-width:600px){
   html[data-ui="tomb"] .experimental-deploy-cyber-card{
     --cyber-corner:14px;
+    clip-path:none;
   }
   html[data-ui="tomb"] .experimental-deploy-cyber-card::after{
     top:9px;
