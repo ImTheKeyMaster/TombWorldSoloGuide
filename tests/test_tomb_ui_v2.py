@@ -208,6 +208,13 @@ def test_frame_safe_areas_keep_content_inside_portrait_and_landscape_rails():
     assert "padding-bottom:clamp(36px,8dvh,48px)" in landscape
     assert "padding-left:clamp(46px,5vw,64px)" in landscape
     assert "grid-template-columns:repeat(3,minmax(0,1fr))" in CSS
+    narrow = release_css.split("@media (orientation:landscape) and (max-height:600px) and (max-width:740px){", 1)[1]
+    assert "padding-right:34px" in narrow
+    assert "padding-left:34px" in narrow
+    assert "flex-wrap:nowrap" in narrow
+    assert "gap:8px" in narrow
+    assert "flex:1 1 0" in narrow
+    assert "min-width:120px" in narrow
 
 
 def test_orientation_changes_never_write_visual_dimensions_in_javascript():
