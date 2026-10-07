@@ -1574,7 +1574,6 @@ button.tracker-operative:hover{
 html[data-ui="tomb"] .deploy-watermark-card{
   position:relative;
   isolation:isolate;
-  overflow:hidden;
 }
 html[data-ui="tomb"] .deploy-watermark-card::before{
   content:"";
