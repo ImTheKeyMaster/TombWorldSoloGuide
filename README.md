@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.67
+# Tomb World Battle Guide v10.0.68
+
+## v10.0.68
+
+### Experimental Cyberpunk Deploy Card
+
+- Adds the first clean-slate experimental styling pass to the Deploy Kill Teams main setup card only.
+- Adapts clipped corners, cyan accent rails, dark translucent glass, technical heading treatment, and a very restrained glitch cue from the referenced Cyberpunk Glitch Upgrade Modal.
+- Keeps checklist rows/pills inside the card on their existing styling so the main dialog treatment can be evaluated independently.
+- Scopes every visual override to `html[data-ui="tomb"] .experimental-deploy-cyber-card`, leaving Current mode unchanged.
+- Uses only existing HTML/CSS/vanilla JavaScript architecture; no Babel, Tweakpane, fonts, packages, or external runtime dependencies are added.
 
 ## v10.0.67
 
