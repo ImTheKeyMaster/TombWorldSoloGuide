@@ -1,13 +1,14 @@
-# Tomb World Battle Guide v10.0.61
+# Tomb World Battle Guide v10.0.62
 
-## v10.0.61
+## v10.0.62
 
-### Portrait Sizing and Test Repair
+### HUD Visual Refinement
 
-- Keeps individual operative portraits anchored to the top-left without stretching them in portrait orientation.
-- Uses width-driven proportional portrait sizing in compact landscape so operative art fills the portrait column without distortion.
-- Repairs the Tomb UI portrait asset assertions so pytest can collect and run the test module again.
-- Preserves the v3 frame containment, HUD layout, Classic UI, gameplay logic, save schema, and physical per-operative portrait files.
+- Rebuilds the battle-status HUD around dedicated threat, turning-point, and APL icons with a clearer information hierarchy.
+- Uses compact flexible meters so the Threat Level value stays visible on narrow iPhone portrait layouts.
+- Adds a live APL pip meter that updates with the selected operative while preserving the existing APL number.
+- Strengthens panel framing, neon accents, value contrast, and compact-landscape alignment without changing gameplay state or calculations.
+- Preserves the physical per-operative portraits, v3 frame containment, Classic UI, gameplay logic, and save schema.
 
 
 ## v10.0.36
