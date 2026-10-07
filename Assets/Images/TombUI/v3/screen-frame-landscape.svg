@@ -1,11 +1,110 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 556" preserveAspectRatio="none">
-<defs><linearGradient id="m" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#77817f"/><stop offset=".18" stop-color="#141a19"/><stop offset=".52" stop-color="#4e5755"/><stop offset=".8" stop-color="#09100f"/><stop offset="1" stop-color="#858d89"/></linearGradient><filter id="g"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<path d="M18 49L48 18H1122L1152 49V507L1122 538H48L18 507Z" fill="none" stroke="#111817" stroke-width="22"/>
-<path d="M24 52L51 25H1119L1146 52V504L1119 531H51L24 504Z" fill="none" stroke="url(#m)" stroke-width="9"/>
-<path d="M31 55L55 32H1115L1139 55V501L1115 524H55L31 501Z" fill="none" stroke="#185343" stroke-width="4"/>
-<path d="M36 58L58 37H1112L1134 58V498L1112 519H58L36 498Z" fill="none" stroke="#58f19a" stroke-opacity=".42" stroke-width="1.5"/>
-<path d="M9 150h23v78H18v101H9M1161 150h-23v78h14v101h9" fill="url(#m)"/>
-<path d="M180 13h810l20 12-20 12H180l-20-12Z" fill="#050b0a" stroke="#626b68" stroke-width="2"/>
-<path d="M420 19h330" stroke="#4bf39a" stroke-opacity=".35"/>
-<g opacity=".7"><path d="M545 523h80l11 8-11 8h-80l-11-8Z" fill="#060c0b" stroke="#5c6562"/><path d="M585 516v30M574 523l11-7 11 7M574 539l11 7 11-7" stroke="#44e58b"/></g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 556" preserveAspectRatio="none" data-frame-style="graphical-v1">
+<defs>
+  <linearGradient id="iron" x1="0" y1="0" x2="1" y2="1">
+    <stop stop-color="#101716"/><stop offset=".18" stop-color="#515b58"/><stop offset=".34" stop-color="#080d0c"/>
+    <stop offset=".58" stop-color="#26302e"/><stop offset=".8" stop-color="#050908"/><stop offset="1" stop-color="#66706c"/>
+  </linearGradient>
+  <linearGradient id="bevel" x1="0" y1="0" x2="0" y2="1">
+    <stop stop-color="#8b9490"/><stop offset=".16" stop-color="#2b3331"/><stop offset=".52" stop-color="#0a0e0d"/>
+    <stop offset=".83" stop-color="#46504c"/><stop offset="1" stop-color="#0c1110"/>
+  </linearGradient>
+  <linearGradient id="green" x1="0" y1="0" x2="1" y2="0">
+    <stop stop-color="#07291d"/><stop offset=".22" stop-color="#42ef91"/><stop offset=".5" stop-color="#b6ffd2"/>
+    <stop offset=".78" stop-color="#3be88d"/><stop offset="1" stop-color="#08291e"/>
+  </linearGradient>
+  <radialGradient id="emerald" cx=".5" cy=".5" r=".65">
+    <stop stop-color="#bdffd5"/><stop offset=".28" stop-color="#51ff9b"/><stop offset=".7" stop-color="#0d7548"/><stop offset="1" stop-color="#020e09"/>
+  </radialGradient>
+  <pattern id="grain" width="13" height="13" patternUnits="userSpaceOnUse">
+    <path d="M0 11L11 0M6 13L13 6" stroke="#d1d8d5" stroke-opacity=".045" stroke-width=".7"/>
+    <circle cx="3" cy="4" r=".6" fill="#fff" fill-opacity=".03"/>
+  </pattern>
+  <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+    <feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+</defs>
+
+<rect width="1170" height="556" fill="none"/>
+
+<!-- heavy chassis -->
+<path d="M8 50L50 8H1120L1162 50V506L1120 548H50L8 506Z
+         M40 62L63 35H1107L1130 62V494L1107 521H63L40 494Z"
+      fill="url(#iron)" fill-rule="evenodd" stroke="#050908" stroke-width="4"/>
+<path d="M8 50L50 8H1120L1162 50V506L1120 548H50L8 506Z
+         M40 62L63 35H1107L1130 62V494L1107 521H63L40 494Z"
+      fill="url(#grain)" fill-rule="evenodd" opacity=".9"/>
+
+<path d="M26 56L57 22H1113L1144 56V500L1113 534H57L26 500Z"
+      fill="none" stroke="url(#bevel)" stroke-width="9"/>
+<path d="M34 61L61 30H1109L1136 61V495L1109 526H61L34 495Z"
+      fill="none" stroke="#10231f" stroke-width="4"/>
+<path d="M39 64L65 36H1105L1131 64V492L1105 520H65L39 492Z"
+      fill="none" stroke="#3bea8c" stroke-opacity=".67" stroke-width="1.8" filter="url(#glow)"/>
+
+<!-- aggressive corner armor -->
+<g fill="url(#bevel)" stroke="#0a100f" stroke-width="2">
+  <path d="M9 49L50 8H139L111 29H67L38 60V128L10 108Z"/>
+  <path d="M1161 49L1120 8H1031L1059 29H1103L1132 60V128L1160 108Z"/>
+  <path d="M9 507L50 548H144L112 526H67L38 496V429L10 449Z"/>
+  <path d="M1161 507L1120 548H1026L1058 526H1103L1132 496V429L1160 449Z"/>
+</g>
+
+<!-- segmented side towers -->
+<g fill="url(#bevel)" stroke="#121817" stroke-width="2">
+  <path d="M3 143H34L43 160V242L34 259H3L14 235V167Z"/>
+  <path d="M3 282H34L43 299V381L34 398H3L14 374V306Z"/>
+  <path d="M1167 143H1136L1127 160V242L1136 259H1167L1156 235V167Z"/>
+  <path d="M1167 282H1136L1127 299V381L1136 398H1167L1156 374V306Z"/>
+</g>
+<g stroke="#50f19a" stroke-opacity=".6" stroke-width="1.6" filter="url(#glow)">
+  <path d="M35 158V244M35 297V383M1135 158V244M1135 297V383"/>
+</g>
+
+<!-- top crown rail -->
+<path d="M204 8H966L997 26L966 44H204L173 26Z" fill="#050a09" stroke="url(#bevel)" stroke-width="4"/>
+<path d="M249 15H921L941 26L921 37H249L229 26Z" fill="#07110f" stroke="#1a3c32"/>
+<path d="M290 22H880" stroke="url(#green)" stroke-width="1.6" opacity=".74" filter="url(#glow)"/>
+<path d="M174 25L142 16L159 29L143 40L179 34M996 25L1028 16L1011 29L1027 40L991 34"
+      fill="none" stroke="#5c6662" stroke-width="3"/>
+
+<!-- top medallion -->
+<g transform="translate(585 27)">
+  <circle r="22" fill="#040908" stroke="#3e4844" stroke-width="4"/>
+  <circle r="16" fill="url(#emerald)" stroke="#68ffab" stroke-width="1.2" filter="url(#glow)"/>
+  <path d="M-8-5C-8-12 8-12 8-5V1C8 5 5 8 3 9V14H-3V9C-5 8-8 5-8 1Z" fill="#091912" stroke="#c8ffdd" stroke-width="1"/>
+  <circle cx="-3.2" cy="-3" r="2" fill="#80ffb1"/><circle cx="3.2" cy="-3" r="2" fill="#80ffb1"/>
+  <path d="M-2 3H2M-6 11H6" stroke="#78ffad" stroke-width="1"/>
+</g>
+
+<!-- lower altar and techno glyph -->
+<path d="M420 528H750L778 546H392Z" fill="#050a09" stroke="url(#bevel)" stroke-width="3"/>
+<path d="M514 520H656L674 533L656 546H514L496 533Z" fill="#06100d" stroke="#4f5a56"/>
+<g transform="translate(585 533)" stroke="#5af49c" fill="none" stroke-width="1.4" filter="url(#glow)" opacity=".86">
+  <circle r="6"/><path d="M0-21V21M-9-12L0-21L9-12M-9 12L0 21L9 12M-23 0H-9M9 0H23"/>
+</g>
+
+<!-- side techno sigils -->
+<g stroke="#6bffac" fill="none" stroke-width="1.5" filter="url(#glow)" opacity=".72">
+  <path d="M22 88V130M15 99L22 88L29 99M15 119L22 130L29 119"/>
+  <circle cx="22" cy="109" r="5"/>
+  <path d="M1148 88V130M1141 99L1148 88L1155 99M1141 119L1148 130L1155 119"/>
+  <circle cx="1148" cy="109" r="5"/>
+</g>
+
+<!-- rivets -->
+<g fill="#0a100f" stroke="#838d89" stroke-width=".9" opacity=".82">
+  <circle cx="63" cy="51" r="2.4"/><circle cx="1107" cy="51" r="2.4"/>
+  <circle cx="63" cy="505" r="2.4"/><circle cx="1107" cy="505" r="2.4"/>
+  <circle cx="24" cy="194" r="2.2"/><circle cx="24" cy="347" r="2.2"/>
+  <circle cx="1146" cy="194" r="2.2"/><circle cx="1146" cy="347" r="2.2"/>
+</g>
+
+<!-- fractured scoring -->
+<g class="frame-cracks" fill="none" stroke="#98a29e" stroke-opacity=".38" stroke-width="1.1">
+  <path d="M60 12L74 22L67 34L83 43L76 56M1110 12L1096 22L1103 34L1087 43L1094 56"/>
+  <path d="M12 211L23 220L18 232L30 242M12 351L24 359L18 371L30 381"/>
+  <path d="M1158 211L1147 220L1152 232L1140 242M1158 351L1146 359L1152 371L1140 381"/>
+  <path d="M61 541L77 531L89 537L104 525M1109 541L1093 531L1081 537L1066 525"/>
+  <path d="M132 12L145 21L139 32M1038 12L1025 21L1031 32"/>
+</g>
 </svg>
