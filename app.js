@@ -5471,7 +5471,7 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
     const apl=$('#tombV2Apl');
     const aplDots=$('#tombV2AplDots');
 
-    $('[data-tomb-player-operative]',modal).forEach(button=>button.onclick=()=>{
+    modal.querySelectorAll('[data-tomb-player-operative]').forEach(button=>button.onclick=()=>{
       selectedId=button.dataset.tombPlayerOperative;
       $$('[data-tomb-player-operative]',modal).forEach(card=>{
         const selected=card.dataset.tombPlayerOperative===selectedId;
