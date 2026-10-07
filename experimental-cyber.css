@@ -115,6 +115,9 @@ html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] > .wizard-card::bef
     drop-shadow(-4px 0 0 rgba(126,223,229,.45))
     drop-shadow(5px 6px 0 rgba(255,98,71,.13))
     drop-shadow(0 18px 30px rgba(0,0,0,.36));
+}
+
+html[data-ui="tomb"] .wizard-shell.deploy-reveal[data-setup-step="deploy"] > .wizard-card::before{
   animation:tw-cyber-frame-reveal .34s cubic-bezier(.2,.75,.2,1) both;
 }
 
@@ -266,7 +269,7 @@ html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] .setup-bulk-row .bt
 }
 
 @media(prefers-reduced-motion:reduce){
-  html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] > .wizard-card::before{
+  html[data-ui="tomb"] .wizard-shell.deploy-reveal[data-setup-step="deploy"] > .wizard-card::before{
     animation:none;
   }
 
