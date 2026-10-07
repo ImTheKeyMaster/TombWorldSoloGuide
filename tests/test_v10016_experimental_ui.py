@@ -28,9 +28,11 @@ def test_experimental_ui_is_isolated_and_hidden_behind_version_taps():
     assert "document.addEventListener('pointerup'" in APP
     assert "document.addEventListener('click',event=>" not in APP[APP.index("let versionTapTimes") : APP.index("experimentalUiToggle.addEventListener")]
     assert "Experimental Tomb UI" in INDEX
-    assert "It currently mirrors the current interface." in INDEX
+    assert "Currently previews new styling on Deploy Kill Teams only." in INDEX
     assert 'aria-modal="true" aria-labelledby="experimentalUiTitle"' in INDEX
-    assert 'html[data-ui="tomb"]' not in CSS
+    experimental_css = CSS.split("/* v", 1)[1] if "experimental-only cyberpunk treatment" in CSS else ""
+    non_experimental_css = CSS.replace("/* v" + experimental_css, "") if experimental_css else CSS
+    assert 'html[data-ui="tomb"]' not in non_experimental_css
     assert 'tomb-ui-v2.css' not in INDEX
     assert 'Assets/Images/TombUI' not in INDEX
     save_function = APP[APP.index("function save()") : APP.index("function migrateSupportedSave")]
@@ -50,6 +52,6 @@ def test_experimental_deploy_cyber_style_is_strictly_scoped():
 
 
 def test_experimental_deploy_pass_does_not_restyle_checklist_rows():
-    experimental_css = CSS.split("/* v10.0.68: experimental-only cyberpunk treatment", 1)[1]
+    experimental_css = CSS.split("experimental-only cyberpunk treatment", 1)[1]
     assert 'html[data-ui="tomb"] .experimental-deploy-cyber-card .check-row' not in experimental_css
     assert 'html[data-ui="tomb"] .experimental-deploy-cyber-card .deployment-check' not in experimental_css
