@@ -215,6 +215,28 @@ def test_selected_state_uses_layered_glow_without_geometry_change():
     assert "aspect-ratio:" not in selected
 
 
+def test_final_card_frame_hierarchy_keeps_selected_border_brightest():
+    release_css = CSS.split("/* v10.0.63: selected-card hierarchy and continuous HUD pill frames */", 1)[1]
+    base = release_css.split('html[data-ui="tomb"] .tomb-v2-card{', 1)[1].split("}", 1)[0]
+    selected = release_css.split('html[data-ui="tomb"] .tomb-v2-card.selected{', 1)[1].split("}", 1)[0]
+    assert "--accent:#416f7c" in base
+    assert "--accent:#65e4ff" in selected
+    assert "background:var(--accent)" in selected
+    assert selected.count("0 0") >= 4
+
+
+def test_hud_pills_use_one_contiguous_chamfered_outline():
+    release_css = CSS.split("/* v10.0.63: selected-card hierarchy and continuous HUD pill frames */", 1)[1]
+    cell = release_css.split('html[data-ui="tomb"] .tomb-v2-hud-cell{', 1)[1].split("}", 1)[0]
+    inner = release_css.split('html[data-ui="tomb"] .tomb-v2-hud-cell::after{', 1)[1].split("}", 1)[0]
+    top_fragment = release_css.split('html[data-ui="tomb"] .tomb-v2-hud-cell::before{', 1)[1].split("}", 1)[0]
+    assert "border:0" in cell
+    assert "background:#4c8996" in cell
+    assert "content:none" in top_fragment
+    assert "inset:1px" in inner
+    assert "clip-path:polygon(" in inner
+
+
 def test_v3_buttons_use_single_seamless_vector_skins():
     picker = picker_source()
     primary = css_rule('html[data-ui="tomb"] .tomb-v2-button.primary')
