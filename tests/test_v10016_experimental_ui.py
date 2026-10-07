@@ -56,3 +56,11 @@ def test_experimental_deploy_pass_does_not_restyle_checklist_rows():
     experimental_css = CSS.split("experimental-only cyberpunk treatment", 1)[1]
     assert 'html[data-ui="tomb"] .experimental-deploy-cyber-card .check-row' not in experimental_css
     assert 'html[data-ui="tomb"] .experimental-deploy-cyber-card .deployment-check' not in experimental_css
+
+
+def test_experimental_deploy_preserves_fixed_mobile_action_bar():
+    experimental_css = CSS.split("experimental-only cyberpunk treatment", 1)[1]
+    actions = experimental_css.split('html[data-ui="tomb"] .experimental-deploy-cyber-card>.wizard-actions{', 1)[1].split("}", 1)[0]
+    assert "position:relative" not in actions
+    desktop = experimental_css.split("@media(min-width:601px){", 1)[1].split("}", 2)[0]
+    assert "position:relative" in desktop
