@@ -92,7 +92,7 @@ def test_hud_uses_dedicated_icons_and_live_apl_meter():
     assert 'class="tomb-v2-hud-value"' in picker
     assert 'id="tombV2AplDots"' in picker
     assert "aplDots.innerHTML=tombV2AplDots(definition.apl)" in picker
-    assert "$(\'[data-tomb-player-operative]\',modal).forEach" in picker
+    assert "modal.querySelectorAll(\'[data-tomb-player-operative]\').forEach" in picker
     assert "grid-template-columns:1.1fr 1.1fr .86fr" in CSS
     assert "max-width:12px" in CSS
 
