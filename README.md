@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.62
+# Tomb World Battle Guide v10.0.63
+
+## v10.0.63
+
+### Selection Hierarchy and Continuous HUD Frames
+
+- Restores the intended operative-card hierarchy: selected cards use the brightest electric-cyan frame and glow, while unselected cards use the quieter blue-gray frame seen in the visual reference.
+- Fixes the specificity conflict that allowed the selected card fill to replace its outer frame color.
+- Rebuilds each HUD pill as one continuous chamfered outline around a separate inner panel, eliminating the broken-looking border at the clipped corners.
+- Preserves the v10.0.62 HUD icons, live effective-APL meter, physical portraits, Classic UI, gameplay logic, and save schema.
 
 ## v10.0.62
 
