@@ -73,7 +73,8 @@ def test_v2_css_is_versioned_and_available_offline():
 def test_physical_portraits_preserve_aspect_ratio_by_orientation():
     portrait_override = CSS.rsplit("@media (orientation:portrait){", 1)[1].split("}", 2)[0]
     assert "width:auto!important;height:100%!important" in portrait_override
-    compact_landscape = CSS.rsplit("@media (orientation:landscape) and (max-height:600px){", 1)[1]
+    marker = '@media (orientation:landscape) and (max-height:600px){\n html[data-ui="tomb"] img.tomb-v2-portrait{'
+    compact_landscape = CSS.split(marker, 1)[1].split("}", 1)[0]
     assert "width:100%!important;height:auto!important" in compact_landscape
 
 
@@ -81,6 +82,24 @@ def test_release_version_surfaces_follow_current_app_version():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     assert INDEX.count(f"?v={CURRENT_APP_VERSION}") >= 12
+
+
+def test_hud_uses_dedicated_icons_and_live_apl_meter():
+    picker = picker_source()
+    assert "tombV2HudIcon('threat')" in picker
+    assert "tombV2HudIcon('tp')" in picker
+    assert "tombV2HudIcon('apl')" in picker
+    assert 'class="tomb-v2-hud-label"' in picker
+    assert 'class="tomb-v2-hud-value"' in picker
+    assert 'id="tombV2AplDots"' in picker
+    assert "effectiveApl(candidates[0],Number(firstDefinition?.apl||3))" in picker
+    assert "selectedApl=effectiveApl(selectedId,Number(definition.apl||3))" in picker
+    assert "aplDots.innerHTML=tombV2AplDots(selectedApl)" in picker
+    assert "modal.querySelectorAll(\'[data-tomb-player-operative]\').forEach" in picker
+    assert "grid-template-columns:1.1fr 1.1fr .86fr" in CSS
+    assert "max-width:12px" in CSS
+    assert "(max-width:740px)" in CSS
+    assert "grid-template-columns:16px minmax(0,1fr) 18px" in CSS
 
 
 def test_picker_uses_layout_first_markup_and_live_controls():
