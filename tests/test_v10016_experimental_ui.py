@@ -68,3 +68,6 @@ def test_experimental_deploy_preserves_fixed_mobile_action_bar():
     assert 'html[data-ui="tomb"] .experimental-deploy-cyber-card{' in desktop
     assert "backdrop-filter:saturate(150%) blur(7px)" in desktop
     assert "position:relative" in desktop
+    mobile = experimental_css.split("@media(max-width:600px){", 1)[1]
+    mobile_card = mobile.split('html[data-ui="tomb"] .experimental-deploy-cyber-card{', 1)[1].split("}", 1)[0]
+    assert "clip-path:none" in mobile_card
