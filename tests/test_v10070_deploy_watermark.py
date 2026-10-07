@@ -32,6 +32,8 @@ def test_watermark_is_experimental_only_and_noninteractive():
     assert "opacity:.055" in before
     assert "z-index:0" in before
     assert f"{scope}>*" in CSS
+    card = CSS.split(f"{scope}{", 1)[1].split("}", 1)[0]
+    assert "overflow:hidden" not in card
 
 
 def test_watermark_asset_is_precached_and_originally_named():
