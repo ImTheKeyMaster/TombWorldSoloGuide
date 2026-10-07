@@ -81,14 +81,7 @@ html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] .progress-bar span:
 }
 
 html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] > .wizard-card{
-  position:relative;
-  isolation:isolate;
-  overflow:visible;
-  border:0;
-  border-radius:0;
-  background:transparent;
-  box-shadow:none;
-  clip-path:polygon(
+  --cyber-frame-clip:polygon(
     0 0,
     calc(100% - var(--cyber-cut)) 0,
     100% var(--cyber-cut),
@@ -96,11 +89,13 @@ html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] > .wizard-card{
     calc(100% - var(--cyber-cut)) 100%,
     0 100%
   );
-  filter:
-    drop-shadow(-4px 0 0 rgba(126,223,229,.45))
-    drop-shadow(5px 6px 0 rgba(255,98,71,.13))
-    drop-shadow(0 18px 30px rgba(0,0,0,.36));
-  animation:tw-cyber-panel-reveal .34s cubic-bezier(.2,.75,.2,1) both;
+  position:relative;
+  isolation:isolate;
+  overflow:visible;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
 }
 
 html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] > .wizard-card::before,
@@ -108,13 +103,18 @@ html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] > .wizard-card::aft
   content:"";
   position:absolute;
   pointer-events:none;
-  clip-path:inherit;
+  clip-path:var(--cyber-frame-clip);
 }
 
 html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] > .wizard-card::before{
   z-index:-2;
   inset:0;
   background:var(--cyber-accent);
+  filter:
+    drop-shadow(-4px 0 0 rgba(126,223,229,.45))
+    drop-shadow(5px 6px 0 rgba(255,98,71,.13))
+    drop-shadow(0 18px 30px rgba(0,0,0,.36));
+  animation:tw-cyber-frame-reveal .34s cubic-bezier(.2,.75,.2,1) both;
 }
 
 html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] > .wizard-card::after{
@@ -225,7 +225,7 @@ html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] .setup-bulk-row .bt
   }
 }
 
-@keyframes tw-cyber-panel-reveal{
+@keyframes tw-cyber-frame-reveal{
   0%{opacity:.2;transform:translateX(-10px);filter:drop-shadow(-10px 0 0 rgba(126,223,229,.15))}
   36%{opacity:.85}
   52%{opacity:.58;transform:translateX(2px)}
@@ -251,7 +251,7 @@ html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] .setup-bulk-row .bt
 }
 
 @media(prefers-reduced-motion:reduce){
-  html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] > .wizard-card{
+  html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] > .wizard-card::before{
     animation:none;
   }
 
