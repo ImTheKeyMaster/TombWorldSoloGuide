@@ -7,7 +7,7 @@
 - Replaces the simple line-based picker frame with a much richer game-HUD frame inspired by the supplied mockup.
 - Adds layered dark metal/stone rails, armored corners, segmented side towers, illuminated green seams, rivets, fracture scoring, a crown medallion, and a bottom techno-glyph.
 - Uses separately composed portrait and landscape artwork so the frame keeps its proportions in both orientations.
-- Leaves the v10.0.65 frame safe areas, scrolling, HUD, operative cards, action controls, Classic UI, gameplay logic, and save schema unchanged.
+- Preserves the v10.0.65 scrolling and side/bottom safe-area behavior, while increasing the portrait top safe area from 38px to 52px so the title sits fully inside the heavier graphical crown.
 
 ## v10.0.65
 
