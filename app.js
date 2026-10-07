@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.61';
+  const APP_VERSION = '10.0.62';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5386,6 +5386,20 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
     return Array.from({length:4},(_,index)=>`<i class="${index<point?'on':''}"></i>`).join('');
   }
 
+  function tombV2AplDots(value){
+    const apl=Math.max(0,Math.min(4,Number(value)||0));
+    return Array.from({length:4},(_,index)=>`<i class="${index<apl?'on':''}"></i>`).join('');
+  }
+
+  function tombV2HudIcon(kind){
+    const icons={
+      threat:'<svg viewBox="0 0 32 32" focusable="false"><path d="M16 3.5c-6.4 0-10.7 4.3-10.7 10.1 0 4.3 2.2 7.6 6 9.1v4.8h3.1v-3.1h3.2v3.1h3.1v-4.8c3.8-1.5 6-4.8 6-9.1C26.7 7.8 22.4 3.5 16 3.5Z"/><circle cx="11.9" cy="14.1" r="2.2"/><circle cx="20.1" cy="14.1" r="2.2"/><path d="m13.1 20.1 2.9-2.4 2.9 2.4"/></svg>',
+      tp:'<svg viewBox="0 0 32 32" focusable="false"><path d="M16 2.7 9.2 12v17.2h13.6V12L16 2.7Z"/><path d="M16 2.7v26.5M9.2 12h13.6"/><circle cx="16" cy="16.2" r="2.5"/></svg>',
+      apl:'<svg viewBox="0 0 32 32" focusable="false"><path d="m7.2 11.2 8.8-7 8.8 7M7.2 17.7l8.8-7 8.8 7M7.2 24.2l8.8-7 8.8 7"/></svg>'
+    };
+    return `<span class="tomb-v2-hud-icon" aria-hidden="true">${icons[kind]||''}</span>`;
+  }
+
   function tombV2PlayerPortrait(id){
     if(selectedPlayerTeamName().toLowerCase()!=='deathwatch'){
       return `<span class="tomb-v2-monogram">${escapeHtml(playerName(id).slice(0,2).toUpperCase())}</span>`;
@@ -5419,9 +5433,24 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
         <div class="tomb-v2-brand-copy"><strong>TOMB WORLD GUIDE</strong><span>OPERATIVE ACTION</span></div>
       </header>
       <div class="tomb-v2-hud" aria-label="Battle status">
-        <div class="tomb-v2-hud-cell threat"><span>THREAT LEVEL</span><div class="tomb-v2-bars">${tombV2ThreatBars(state.threat)}</div><strong>${escapeHtml(String(state.threat??0))}</strong></div>
-        <div class="tomb-v2-hud-cell tp"><span>TURNING POINT</span><div class="tomb-v2-dots">${tombV2TurningPointDots(state.turningPoint)}</div><strong>${escapeHtml(String(state.turningPoint??0))}</strong></div>
-        <div class="tomb-v2-hud-cell apl"><span>APL</span><div class="tomb-v2-apl-icon">≋</div><strong id="tombV2Apl">${escapeHtml(String(firstApl))}</strong></div>
+        <div class="tomb-v2-hud-cell threat">
+          ${tombV2HudIcon('threat')}
+          <span class="tomb-v2-hud-label">THREAT LEVEL</span>
+          <div class="tomb-v2-bars" aria-hidden="true">${tombV2ThreatBars(state.threat)}</div>
+          <strong class="tomb-v2-hud-value">${escapeHtml(String(state.threat??0))}</strong>
+        </div>
+        <div class="tomb-v2-hud-cell tp">
+          ${tombV2HudIcon('tp')}
+          <span class="tomb-v2-hud-label">TURNING POINT</span>
+          <div class="tomb-v2-dots" aria-hidden="true">${tombV2TurningPointDots(state.turningPoint)}</div>
+          <strong class="tomb-v2-hud-value">${escapeHtml(String(state.turningPoint??0))}</strong>
+        </div>
+        <div class="tomb-v2-hud-cell apl">
+          ${tombV2HudIcon('apl')}
+          <span class="tomb-v2-hud-label">APL</span>
+          <div class="tomb-v2-dots tomb-v2-apl-dots" id="tombV2AplDots" aria-hidden="true">${tombV2AplDots(firstApl)}</div>
+          <strong class="tomb-v2-hud-value" id="tombV2Apl">${escapeHtml(String(firstApl))}</strong>
+        </div>
       </div>
       <div class="tomb-v2-section-title"><span>✠</span><strong>SELECT OPERATIVE</strong></div>
       <div class="tomb-v2-operative-grid" role="radiogroup" aria-label="Ready operatives">${cards}</div>
@@ -5440,8 +5469,9 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
     const confirm=$('#confirmTombPlayerSelection');
     const preview=$('#tombV2PreviewText');
     const apl=$('#tombV2Apl');
+    const aplDots=$('#tombV2AplDots');
 
-    $$('[data-tomb-player-operative]',modal).forEach(button=>button.onclick=()=>{
+    $('[data-tomb-player-operative]',modal).forEach(button=>button.onclick=()=>{
       selectedId=button.dataset.tombPlayerOperative;
       $$('[data-tomb-player-operative]',modal).forEach(card=>{
         const selected=card.dataset.tombPlayerOperative===selectedId;
@@ -5452,6 +5482,7 @@ const TOMB_V2_ASSET_ROOT='Assets/Images/TombUI/v2/';
       });
       const definition=playerDefinition(selectedId)||livePlayerOperative(selectedId)||{};
       if(apl)apl.textContent=String(definition.apl??'—');
+      if(aplDots)aplDots.innerHTML=tombV2AplDots(definition.apl);
       if(preview)preview.textContent=`${playerName(selectedId)} selected. Confirm to begin activation.`;
       confirm.disabled=false;
     });
