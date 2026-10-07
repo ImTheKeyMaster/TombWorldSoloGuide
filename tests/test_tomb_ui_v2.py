@@ -181,6 +181,20 @@ def test_portrait_and_landscape_column_counts_are_css_driven():
     assert "grid-template-columns:repeat(2,minmax(0,1fr))" in portrait
 
 
+def test_landscape_picker_scrolls_on_outer_modal_for_ios():
+    landscape = CSS.split("@media(orientation:landscape) and (max-height:500px)", 1)[1].split("@media(orientation:portrait)", 1)[0]
+    modal = landscape.split('html[data-ui="tomb"] .tomb-operative-picker-modal{', 1)[1].split("}", 1)[0]
+    inner = landscape.split('html[data-ui="tomb"] .tomb-operative-picker-modal .modal-inner{', 1)[1].split("}", 1)[0]
+    assert "overflow-y:auto!important" in modal
+    assert "overflow-x:hidden!important" in modal
+    assert "-webkit-overflow-scrolling:touch" in modal
+    assert "touch-action:pan-y" in modal
+    assert "max-height:calc(100dvh - 10px)!important" in modal
+    assert "max-height:none!important" in inner
+    assert "overflow:visible!important" in inner
+    assert "overflow:auto" not in inner
+
+
 def test_orientation_changes_never_write_visual_dimensions_in_javascript():
     picker = picker_source()
     for forbidden in ("orientationchange", "resize", ".style.height", ".style.width",
