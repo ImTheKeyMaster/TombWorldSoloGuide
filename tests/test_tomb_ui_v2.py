@@ -62,9 +62,19 @@ def test_tomb_confirm_has_no_chevron_and_classic_picker_is_untouched():
 def test_v2_css_is_versioned_and_available_offline():
     assert f'href="tomb-ui-v2.css?v={CURRENT_APP_VERSION}"' in INDEX
     assert "./tomb-ui-v2.css" in WORKER
-    assert "./Assets/Images/TombUI/v3/portrait-leader.webp" in WORKER\n    assert "./Assets/Images/TombUI/v3/portrait-rifleman.webp" in WORKER\n    assert "./Assets/Images/TombUI/v3/portrait-melee.webp" in WORKER\n    assert "./Assets/Images/TombUI/v3/portrait-heavy.webp" in WORKER
+    assert "./Assets/Images/TombUI/v3/portrait-leader.webp" in WORKER
+    assert "./Assets/Images/TombUI/v3/portrait-rifleman.webp" in WORKER
+    assert "./Assets/Images/TombUI/v3/portrait-melee.webp" in WORKER
+    assert "./Assets/Images/TombUI/v3/portrait-heavy.webp" in WORKER
     assert "./Assets/Images/TombUI/v3/screen-frame-portrait.svg" in WORKER
     assert "./Assets/Images/TombUI/v3/screen-frame-landscape.svg" in WORKER
+
+
+def test_physical_portraits_preserve_aspect_ratio_by_orientation():
+    portrait_override = CSS.rsplit("@media (orientation:portrait){", 1)[1].split("}", 2)[0]
+    assert "width:auto!important;height:100%!important" in portrait_override
+    compact_landscape = CSS.rsplit("@media (orientation:landscape) and (max-height:600px){", 1)[1]
+    assert "width:100%!important;height:auto!important" in compact_landscape
 
 
 def test_release_version_surfaces_follow_current_app_version():
