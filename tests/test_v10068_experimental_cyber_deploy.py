@@ -33,9 +33,15 @@ def test_cyber_deploy_preview_is_strictly_experimental_and_deploy_only():
 def test_preview_changes_outer_dialog_and_actions_but_not_checklist_pills():
     scope = 'html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"]'
     assert f"{scope} > .wizard-card" in CSS
-    assert "clip-path:polygon(" in CSS
+    card_rule = CSS.split(f"{scope} > .wizard-card{{", 1)[1].split("}", 1)[0]
+    before_rule = CSS.split(f"{scope} > .wizard-card::before{{", 1)[1].split("}", 1)[0]
+    assert "--cyber-frame-clip:polygon(" in card_rule
+    assert "clip-path:" not in card_rule
+    assert "\n  filter:" not in card_rule
+    assert "\n  animation:" not in card_rule
     assert "--cyber-accent:#7edfe5" in CSS
-    assert "drop-shadow(5px 6px 0 rgba(255,98,71,.13))" in CSS
+    assert "clip-path:var(--cyber-frame-clip)" in CSS
+    assert "drop-shadow(5px 6px 0 rgba(255,98,71,.13))" in before_rule
     assert f"{scope} .wizard-actions .btn" in CSS
     assert f"{scope} .setup-bulk-row .btn" in CSS
     assert f"{scope} .check-row" not in CSS
@@ -45,4 +51,4 @@ def test_preview_changes_outer_dialog_and_actions_but_not_checklist_pills():
 
 def test_classic_stylesheet_has_no_experimental_cyber_rules():
     assert "--cyber-accent" not in CLASSIC_CSS
-    assert "tw-cyber-panel-reveal" not in CLASSIC_CSS
+    assert "tw-cyber-frame-reveal" not in CLASSIC_CSS
