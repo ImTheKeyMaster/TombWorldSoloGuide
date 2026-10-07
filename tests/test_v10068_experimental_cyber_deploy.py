@@ -49,6 +49,16 @@ def test_preview_changes_outer_dialog_and_actions_but_not_checklist_pills():
     assert f"{scope} .checklist" not in CSS
 
 
+def test_mobile_preview_preserves_production_fixed_action_clearance():
+    mobile = CSS.split("@media(max-width:600px){", 1)[1].split("@media(prefers-reduced-motion:reduce)", 1)[0]
+    card = mobile.split('html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] > .wizard-card{', 1)[1].split("}", 1)[0]
+    assert "padding-top:20px" in card
+    assert "padding-right:18px" in card
+    assert "padding-left:18px" in card
+    assert "padding:" not in card
+    assert "padding-bottom:" not in card
+
+
 def test_classic_stylesheet_has_no_experimental_cyber_rules():
     assert "--cyber-accent" not in CLASSIC_CSS
     assert "tw-cyber-frame-reveal" not in CLASSIC_CSS
