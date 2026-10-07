@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.65
+# Tomb World Battle Guide v10.0.66
+
+## v10.0.66
+
+### Graphical Tomb Frame
+
+- Replaces the simple line-based picker frame with a much richer game-HUD frame inspired by the supplied mockup.
+- Adds layered dark metal/stone rails, armored corners, segmented side towers, illuminated green seams, rivets, fracture scoring, a crown medallion, and a bottom techno-glyph.
+- Uses separately composed portrait and landscape artwork so the frame keeps its proportions in both orientations.
+- Leaves the v10.0.65 frame safe areas, scrolling, HUD, operative cards, action controls, Classic UI, gameplay logic, and save schema unchanged.
 
 ## v10.0.65
 
