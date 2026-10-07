@@ -79,6 +79,6 @@ def test_release_surfaces_and_save_schema_are_consistent():
     assert f"const APP_VERSION = '{expected}';" in WORKER
     assert f'<div class="version">V{expected}</div>' in INDEX
     assert f"analytics.js?release={expected}" in INDEX
-    assert INDEX.count(f"?v={expected}") == 11
+    assert INDEX.count(f"?v={expected}") == 12
     assert "const SAVE_VERSION = 3;" in PERSISTENCE
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
