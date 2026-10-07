@@ -1195,3 +1195,13 @@ html[data-ui="tomb"] .tomb-v2-shell{
     padding-left:14px;
   }
 }
+
+
+/* v10.0.66: graphical frame artwork should read as a full HUD chassis, not a faint line overlay. */
+html[data-ui="tomb"] .tomb-v3-screen-frame{
+  opacity:1;
+  filter:
+    drop-shadow(0 0 2px rgba(128,255,190,.22))
+    drop-shadow(0 0 8px rgba(25,177,117,.15))
+    drop-shadow(0 10px 18px rgba(0,0,0,.7));
+}
