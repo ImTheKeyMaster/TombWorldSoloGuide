@@ -28,17 +28,17 @@
 
 <!-- heavy chassis -->
 <path d="M8 50L50 8H1120L1162 50V506L1120 548H50L8 506Z
-         M40 62L63 35H1107L1130 62V494L1107 521H63L40 494Z"
+         M40 44L63 29H1107L1130 44V494L1107 521H63L40 494Z"
       fill="url(#iron)" fill-rule="evenodd" stroke="#050908" stroke-width="4"/>
 <path d="M8 50L50 8H1120L1162 50V506L1120 548H50L8 506Z
          M40 62L63 35H1107L1130 62V494L1107 521H63L40 494Z"
       fill="url(#grain)" fill-rule="evenodd" opacity=".9"/>
 
-<path d="M26 56L57 22H1113L1144 56V500L1113 534H57L26 500Z"
+<path d="M26 44L57 20H1113L1144 44V500L1113 534H57L26 500Z"
       fill="none" stroke="url(#bevel)" stroke-width="9"/>
-<path d="M34 61L61 30H1109L1136 61V495L1109 526H61L34 495Z"
+<path d="M34 43L61 28H1109L1136 43V495L1109 526H61L34 495Z"
       fill="none" stroke="#10231f" stroke-width="4"/>
-<path d="M39 64L65 36H1105L1131 64V492L1105 520H65L39 492Z"
+<path d="M39 46L65 32H1105L1131 46V492L1105 520H65L39 492Z"
       fill="none" stroke="#3bea8c" stroke-opacity=".67" stroke-width="1.8" filter="url(#glow)"/>
 
 <!-- aggressive corner armor -->
@@ -61,14 +61,14 @@
 </g>
 
 <!-- top crown rail -->
-<path d="M204 8H966L997 26L966 44H204L173 26Z" fill="#050a09" stroke="url(#bevel)" stroke-width="4"/>
-<path d="M249 15H921L941 26L921 37H249L229 26Z" fill="#07110f" stroke="#1a3c32"/>
-<path d="M290 22H880" stroke="url(#green)" stroke-width="1.6" opacity=".74" filter="url(#glow)"/>
-<path d="M174 25L142 16L159 29L143 40L179 34M996 25L1028 16L1011 29L1027 40L991 34"
+<path d="M204 4H966L990 18L966 34H204L180 18Z" fill="#050a09" stroke="url(#bevel)" stroke-width="4"/>
+<path d="M249 9H921L935 18L921 28H249L235 18Z" fill="#07110f" stroke="#1a3c32"/>
+<path d="M290 15H880" stroke="url(#green)" stroke-width="1.6" opacity=".74" filter="url(#glow)"/>
+<path d="M181 18L151 10L166 20L152 30L184 25M989 18L1019 10L1004 20L1018 30L986 25"
       fill="none" stroke="#5c6662" stroke-width="3"/>
 
 <!-- top medallion -->
-<g transform="translate(585 27)">
+<g transform="translate(585 18) scale(.7)">
   <circle r="22" fill="#040908" stroke="#3e4844" stroke-width="4"/>
   <circle r="16" fill="url(#emerald)" stroke="#68ffab" stroke-width="1.2" filter="url(#glow)"/>
   <path d="M-8-5C-8-12 8-12 8-5V1C8 5 5 8 3 9V14H-3V9C-5 8-8 5-8 1Z" fill="#091912" stroke="#c8ffdd" stroke-width="1"/>
