@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from versioning import CURRENT_APP_VERSION
+
 ROOT = Path(__file__).resolve().parents[1]
 APP = (ROOT / "app.js").read_text()
 INDEX = (ROOT / "index.html").read_text()
@@ -9,7 +11,7 @@ WORKER = (ROOT / "service-worker.js").read_text()
 
 
 def test_experimental_cyber_stylesheet_is_versioned_and_cached():
-    assert 'experimental-cyber.css?v=10.0.68' in INDEX
+    assert f'experimental-cyber.css?v={CURRENT_APP_VERSION}' in INDEX
     assert './experimental-cyber.css?v=${APP_VERSION}' in WORKER
 
 
@@ -69,6 +71,13 @@ def test_clipped_cyber_buttons_use_visible_inset_focus_treatment():
     assert "outline:none" in focus
     assert "inset 0 0 0 2px #effdff" in focus
     assert "outline-offset" not in focus
+
+
+def test_forced_colors_restores_visible_focus_outline_inside_clipped_buttons():
+    forced = CSS.split("@media(forced-colors:active){", 1)[1].split("}", 1)[0]
+    assert ".wizard-actions .btn:focus-visible" in forced
+    assert "outline:2px solid Highlight" in forced
+    assert "outline-offset:-3px" in forced
 
 
 def test_mobile_preview_preserves_production_fixed_action_clearance():
