@@ -1,14 +1,14 @@
-# Tomb World Battle Guide v10.0.60
+# Tomb World Battle Guide v10.0.61
 
-## v10.0.60
+## v10.0.61
 
-### Tomb UI Frame Layering Correction
+### Portrait Sizing and Test Repair
 
-- Moves the v3 frame behind the picker content so its top plate and side rails cannot cover the title, HUD, operative cards, Action Preview, or buttons.
-- Restores the compact pre-frame content padding in portrait and landscape instead of shrinking the usable layout around the artwork.
-- Pushes the portrait side rails outward and clips the decorative layer at the shell edge so the frame reads as a perimeter bezel rather than an inner coffin-shaped panel.
-- Removes the shell's forced minimum height so portrait dialogs shrink to their content instead of leaving a large empty lower area.
-- Preserves the Tomb-only Confirm Selection chevron removal, Classic UI, gameplay logic, save schema, and responsive card layouts.
+- Keeps individual operative portraits anchored to the top-left without stretching them in portrait orientation.
+- Uses width-driven proportional portrait sizing in compact landscape so operative art fills the portrait column without distortion.
+- Repairs the Tomb UI portrait asset assertions so pytest can collect and run the test module again.
+- Preserves the v3 frame containment, HUD layout, Classic UI, gameplay logic, save schema, and physical per-operative portrait files.
+
 
 ## v10.0.36
 
