@@ -28,18 +28,18 @@
 
 <!-- deep armored chassis with transparent screen opening -->
 <path d="M7 58L36 10H394L423 58V874L395 922H35L7 874Z
-         M31 67L49 38H381L399 67V865L381 894H49L31 865Z"
+         M31 48L49 31H381L399 48V865L381 894H49L31 865Z"
       fill="url(#iron)" fill-rule="evenodd" stroke="#050908" stroke-width="3"/>
 <path d="M7 58L36 10H394L423 58V874L395 922H35L7 874Z
-         M31 67L49 38H381L399 67V865L381 894H49L31 865Z"
+         M31 48L49 31H381L399 48V865L381 894H49L31 865Z"
       fill="url(#grain)" fill-rule="evenodd" opacity=".9"/>
 
 <!-- inner machined bevel and emissive seam -->
-<path d="M24 63L45 28H385L406 63V869L385 904H45L24 869Z"
+<path d="M24 50L45 27H385L406 50V869L385 904H45L24 869Z"
       fill="none" stroke="url(#bevel)" stroke-width="8"/>
-<path d="M29 66L48 34H382L401 66V866L382 898H48L29 866Z"
+<path d="M29 48L48 31H382L401 48V866L382 898H48L29 866Z"
       fill="none" stroke="#132522" stroke-width="4"/>
-<path d="M31 69L50 38H380L399 69V863L380 894H50L31 863Z"
+<path d="M31 51L50 34H380L399 51V863L380 894H50L31 863Z"
       fill="none" stroke="#35e889" stroke-opacity=".67" stroke-width="1.6" filter="url(#glow)"/>
 
 <!-- heavy corner armor -->
