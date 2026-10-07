@@ -17,8 +17,20 @@ def test_experimental_cyber_stylesheet_is_versioned_and_cached():
 
 def test_setup_markup_exposes_step_without_changing_bindings():
     render_setup = APP[APP.index("function renderSetup()") : APP.index("function renderGameModeSelection()")]
-    assert 'class="wizard-shell" data-setup-step="${stepId}"' in render_setup
+    assert "const deployRevealClass=stepId==='deploy'&&lastRenderedSetupStepId!=='deploy'?' deploy-reveal':'';" in render_setup
+    assert 'class="wizard-shell${deployRevealClass}" data-setup-step="${stepId}"' in render_setup
+    assert render_setup.index("const deployRevealClass=") < render_setup.index("lastRenderedSetupStepId=stepId;")
     assert "bindSetup(stepId);" in render_setup
+
+
+def test_frame_reveal_is_gated_to_initial_deploy_entry():
+    scope = 'html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"]'
+    base_before = CSS.split(f"{scope} > .wizard-card::before{{", 1)[1].split("}", 1)[0]
+    reveal_scope = 'html[data-ui="tomb"] .wizard-shell.deploy-reveal[data-setup-step="deploy"] > .wizard-card::before'
+    assert "animation:" not in base_before
+    assert reveal_scope in CSS
+    reveal_rule = CSS.split(f"{reveal_scope}{{", 1)[1].split("}", 1)[0]
+    assert "animation:tw-cyber-frame-reveal" in reveal_rule
 
 
 def test_cyber_deploy_preview_is_strictly_experimental_and_deploy_only():
