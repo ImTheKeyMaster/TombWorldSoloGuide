@@ -102,7 +102,7 @@ def test_v1004_release_surfaces_and_save_contract():
     assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (10, 0, 4)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
-    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 11
+    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 12
     assert f"analytics.js?release={CURRENT_APP_VERSION}" in INDEX
     assert README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}")
     assert "### Visible Reanimation Protocols Rolls" in README
