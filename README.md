@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.69
+# Tomb World Battle Guide v10.0.70
+
+## v10.0.70
+
+### Experimental Deploy Watermark
+
+- Adds one original grim-dark watermark to the Deploy Kill Teams card while Experimental Tomb UI is enabled.
+- Uses a weathered skull, segmented mechanical halo, cracked targeting ring, and invented machine glyphs without recognizable faction insignia.
+- Keeps the watermark faint and non-interactive behind existing content, with no layout, control, checklist, or gameplay changes.
+- Leaves Current mode and every other setup screen unchanged.
+- Precaches the SVG for offline use and bumps the app/cache version.
 
 ## v10.0.69
 
