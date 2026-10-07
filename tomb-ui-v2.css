@@ -1167,3 +1167,31 @@ html[data-ui="tomb"] .tomb-v2-shell{
     box-sizing:border-box;
   }
 }
+
+
+@media (orientation:landscape) and (max-height:600px) and (max-width:740px){
+  html[data-ui="tomb"] .tomb-v2-shell{
+    padding-right:34px;
+    padding-left:34px;
+  }
+  html[data-ui="tomb"] .tomb-v2-actions{
+    flex-wrap:nowrap;
+    gap:8px;
+    padding-right:8px;
+    padding-left:8px;
+  }
+  html[data-ui="tomb"] .tomb-v2-button.primary{
+    flex:1 1 0;
+    width:auto;
+    min-width:0;
+    padding-right:14px;
+    padding-left:14px;
+  }
+  html[data-ui="tomb"] .tomb-v2-button.secondary{
+    flex:0 1 150px;
+    width:auto;
+    min-width:120px;
+    padding-right:14px;
+    padding-left:14px;
+  }
+}
