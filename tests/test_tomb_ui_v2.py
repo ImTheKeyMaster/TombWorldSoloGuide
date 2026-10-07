@@ -42,10 +42,23 @@ def test_tomb_picker_uses_v3_frame_as_non_obscuring_background_detail():
     assert "overflow:hidden" in shell
     assert 'preserveAspectRatio="none"' in portrait_svg
     assert 'preserveAspectRatio="none"' in landscape_svg
+    assert 'data-frame-style="graphical-v1"' in portrait_svg
+    assert 'data-frame-style="graphical-v1"' in landscape_svg
+    assert 'class="frame-cracks"' in portrait_svg
+    assert 'class="frame-cracks"' in landscape_svg
+    assert 'id="emerald"' in portrait_svg
+    assert 'id="emerald"' in landscape_svg
     landscape = CSS.split("@media(orientation:landscape) and (max-height:500px)", 1)[1]
     assert "screen-frame-landscape.svg" in landscape
     assert "transform:none" in landscape
     assert 'padding:8px 10px calc(8px + env(safe-area-inset-bottom))' in landscape
+
+
+def test_graphical_frame_is_rendered_at_full_strength():
+    release_css = CSS.split("/* v10.0.66: graphical frame artwork should read as a full HUD chassis, not a faint line overlay. */", 1)[1]
+    frame = release_css.split('html[data-ui="tomb"] .tomb-v3-screen-frame{', 1)[1].split("}", 1)[0]
+    assert "opacity:1" in frame
+    assert "drop-shadow" in frame
 
 
 def test_tomb_confirm_has_no_chevron_and_classic_picker_is_untouched():
