@@ -193,8 +193,10 @@ html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] .setup-bulk-row .bt
 
 html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] .wizard-actions .btn:focus-visible,
 html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] .setup-bulk-row .btn:focus-visible{
-  outline:2px solid #effdff;
-  outline-offset:3px;
+  outline:none;
+  box-shadow:
+    inset 0 0 0 2px #effdff,
+    inset 0 0 0 4px rgba(3,20,22,.78);
 }
 
 html[data-ui="tomb"] .wizard-shell[data-setup-step="deploy"] .wizard-actions .btn:disabled,
