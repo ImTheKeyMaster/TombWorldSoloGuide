@@ -38,3 +38,18 @@ def test_experimental_ui_is_isolated_and_hidden_behind_version_taps():
     setter = APP[APP.index("function setExperimentalUi") : APP.index("function showExperimentalUiPanel")]
     assert setter.index("localStorage.setItem") < setter.index("dataset.ui='tomb'")
     assert "dataset.ui='classic'" in setter
+
+
+def test_experimental_deploy_cyber_style_is_strictly_scoped():
+    deploy_renderer = APP[APP.index("app.innerHTML=`<div class=\"wizard-shell\"") : APP.index("bindSetup(stepId);")]
+    assert "experimental-deploy-cyber-card" in deploy_renderer
+    assert "stepId==='deploy'" in deploy_renderer
+    assert 'html[data-ui="tomb"] .experimental-deploy-cyber-card{' in CSS
+    assert '.experimental-deploy-cyber-card{' not in CSS.replace('html[data-ui="tomb"] .experimental-deploy-cyber-card{', '')
+    assert "tomb-ui-v2.css" not in INDEX
+
+
+def test_experimental_deploy_pass_does_not_restyle_checklist_rows():
+    experimental_css = CSS.split("/* v10.0.68: experimental-only cyberpunk treatment", 1)[1]
+    assert 'html[data-ui="tomb"] .experimental-deploy-cyber-card .check-row' not in experimental_css
+    assert 'html[data-ui="tomb"] .experimental-deploy-cyber-card .deployment-check' not in experimental_css
