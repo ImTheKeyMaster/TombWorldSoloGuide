@@ -1595,7 +1595,7 @@ html[data-ui="tomb"] .deploy-telemetry-card::before{
   opacity:.72;
 }
 html[data-ui="tomb"] .deploy-telemetry-card::after{
-  content:"01\A02\A03\A04";
+  content:"01\A 02\A 03\A 04";
   position:absolute;
   top:22px;
   right:10px;
