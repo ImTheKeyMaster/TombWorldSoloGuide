@@ -1570,50 +1570,62 @@ button.tracker-operative:hover{
 @media(max-width:480px){.narration-transcript-dialog{--narration-safe-top:max(12px,env(safe-area-inset-top));--narration-safe-right:max(8px,env(safe-area-inset-right));--narration-safe-bottom:max(12px,env(safe-area-inset-bottom));--narration-safe-left:max(8px,env(safe-area-inset-left))}.narration-transcript-shell{padding:2px}.narration-transcript-header{padding:11px 12px}.narration-transcript-eyebrow{max-width:calc(100% - 58px);overflow-wrap:anywhere}.narration-transcript-body{max-height:48dvh;padding:13px 16px}.narration-transcript-footer{padding:13px 12px}.narration-transcript-controls{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)}.narration-transcript-controls .danger{grid-column:1/-1}.narration-transcript-reopen{right:max(10px,env(safe-area-inset-right));max-width:calc(100% - 20px)}}
 @media(max-height:520px) and (orientation:landscape){.narration-transcript-dialog{--narration-safe-top:max(6px,env(safe-area-inset-top));--narration-safe-right:max(6px,env(safe-area-inset-right));--narration-safe-bottom:max(6px,env(safe-area-inset-bottom));--narration-safe-left:max(6px,env(safe-area-inset-left))}.narration-transcript-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.9fr);grid-template-rows:auto auto}.narration-transcript-header{grid-column:1}.narration-transcript-body{grid-column:1;min-height:80px;max-height:42dvh}.narration-transcript-footer{grid-column:2;grid-row:1/3;display:flex;flex-direction:column;justify-content:center;border-top:0;border-left:1px solid rgba(103,195,255,.3)}.narration-transcript-controls{grid-template-columns:1fr}}
 
-/* v10.0.72: experimental-only etched-metal surface for Deploy Kill Teams. */
-html[data-ui="tomb"] .deploy-etched-card{
+/* v10.0.73: experimental-only deployment telemetry rail for Deploy Kill Teams. */
+html[data-ui="tomb"] .deploy-telemetry-card{
   position:relative;
   isolation:isolate;
 }
-html[data-ui="tomb"] .deploy-etched-card::before{
+html[data-ui="tomb"] .deploy-telemetry-card::before{
   content:"";
   position:absolute;
-  inset:1px;
+  top:18px;
+  right:8px;
+  bottom:18px;
+  width:14px;
   z-index:0;
   pointer-events:none;
-  border-radius:inherit;
+  border-left:1px solid rgba(116,150,158,.20);
+  border-right:1px solid rgba(116,150,158,.10);
   background:
-    repeating-linear-gradient(90deg,rgba(184,205,199,.026) 0 1px,transparent 1px 11px),
-    repeating-linear-gradient(176deg,transparent 0 31px,rgba(213,226,222,.028) 31px 32px,transparent 32px 67px),
-    linear-gradient(127deg,transparent 0 33.8%,rgba(172,194,188,.035) 34.1%,transparent 34.7% 61.8%,rgba(103,195,255,.035) 62.1%,transparent 62.7%),
-    radial-gradient(ellipse at 23% 34%,rgba(188,207,201,.035),transparent 24%),
-    radial-gradient(ellipse at 79% 68%,rgba(0,0,0,.08),transparent 28%);
-  opacity:.82;
+    linear-gradient(#67c3ff,#67c3ff) 50% 17%/6px 2px no-repeat,
+    linear-gradient(#67c3ff,#67c3ff) 50% 68%/8px 2px no-repeat,
+    repeating-linear-gradient(to bottom,rgba(135,163,168,.34) 0 1px,transparent 1px 9px) 50% 0/8px 100% no-repeat,
+    linear-gradient(to bottom,transparent,rgba(103,195,255,.10) 22%,rgba(103,195,255,.04) 52%,transparent);
+  box-shadow:inset 3px 0 0 rgba(4,13,15,.20),inset -3px 0 0 rgba(4,13,15,.14);
+  opacity:.72;
 }
-html[data-ui="tomb"] .deploy-etched-card::after{
-  content:"";
+html[data-ui="tomb"] .deploy-telemetry-card::after{
+  content:"01\A 02\A 03\A 04";
   position:absolute;
-  inset:1px;
+  top:22px;
+  right:10px;
   z-index:0;
   pointer-events:none;
-  border-radius:inherit;
-  background:
-    linear-gradient(28deg,transparent 0 48%,rgba(161,184,179,.16) 49% 50%,transparent 51%) 74% 22%/82px 28px no-repeat,
-    linear-gradient(151deg,transparent 0 48%,rgba(161,184,179,.13) 49% 50%,transparent 51%) 82% 31%/64px 24px no-repeat,
-    linear-gradient(18deg,transparent 0 48%,rgba(161,184,179,.10) 49% 50%,transparent 51%) 28% 72%/92px 24px no-repeat,
-    linear-gradient(90deg,transparent,rgba(103,195,255,.24) 42% 58%,transparent) 73% 47%/126px 1px no-repeat;
-  opacity:.34;
-  filter:drop-shadow(0 0 4px rgba(103,195,255,.12));
+  width:10px;
+  color:rgba(135,163,168,.58);
+  font:700 5px/4.65 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  letter-spacing:0;
+  white-space:pre;
+  text-align:center;
+  text-shadow:0 0 5px rgba(103,195,255,.08);
 }
-html[data-ui="tomb"] .deploy-etched-card>*{
+html[data-ui="tomb"] .deploy-telemetry-card>*{
   position:relative;
   z-index:1;
 }
 @media(max-width:600px){
-  html[data-ui="tomb"] .deploy-etched-card::before{opacity:.68}
-  html[data-ui="tomb"] .deploy-etched-card::after{opacity:.28}
+  html[data-ui="tomb"] .deploy-telemetry-card::before{
+    right:6px;
+    width:12px;
+    opacity:.62;
+  }
+  html[data-ui="tomb"] .deploy-telemetry-card::after{
+    right:7px;
+    font-size:4.5px;
+    opacity:.82;
+  }
 }
 @media(forced-colors:active){
-  html[data-ui="tomb"] .deploy-etched-card::before,
-  html[data-ui="tomb"] .deploy-etched-card::after{display:none}
+  html[data-ui="tomb"] .deploy-telemetry-card::before,
+  html[data-ui="tomb"] .deploy-telemetry-card::after{display:none}
 }
