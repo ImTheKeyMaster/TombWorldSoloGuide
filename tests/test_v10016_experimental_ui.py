@@ -28,9 +28,9 @@ def test_experimental_ui_is_isolated_and_hidden_behind_version_taps():
     assert "document.addEventListener('pointerup'" in APP
     assert "document.addEventListener('click',event=>" not in APP[APP.index("let versionTapTimes") : APP.index("experimentalUiToggle.addEventListener")]
     assert "Experimental Tomb UI" in INDEX
-    assert "Currently previews layered, slowly billowing atmospheric fog on Deploy Kill Teams." in INDEX
+    assert "Currently previews broken, faded true-hex honeycomb clusters on Deploy Kill Teams." in INDEX
     assert 'aria-modal="true" aria-labelledby="experimentalUiTitle"' in INDEX
-    assert 'html[data-ui="tomb"] .deploy-billowing-fog-card' in CSS
+    assert 'html[data-ui="tomb"] .deploy-true-hex-card' in CSS
     assert 'tomb-ui-v2.css' not in INDEX
     assert 'Assets/Images/TombUI' not in INDEX
     save_function = APP[APP.index("function save()") : APP.index("function migrateSupportedSave")]
