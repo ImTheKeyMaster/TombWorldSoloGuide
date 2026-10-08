@@ -1570,69 +1570,93 @@ button.tracker-operative:hover{
 @media(max-width:480px){.narration-transcript-dialog{--narration-safe-top:max(12px,env(safe-area-inset-top));--narration-safe-right:max(8px,env(safe-area-inset-right));--narration-safe-bottom:max(12px,env(safe-area-inset-bottom));--narration-safe-left:max(8px,env(safe-area-inset-left))}.narration-transcript-shell{padding:2px}.narration-transcript-header{padding:11px 12px}.narration-transcript-eyebrow{max-width:calc(100% - 58px);overflow-wrap:anywhere}.narration-transcript-body{max-height:48dvh;padding:13px 16px}.narration-transcript-footer{padding:13px 12px}.narration-transcript-controls{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)}.narration-transcript-controls .danger{grid-column:1/-1}.narration-transcript-reopen{right:max(10px,env(safe-area-inset-right));max-width:calc(100% - 20px)}}
 @media(max-height:520px) and (orientation:landscape){.narration-transcript-dialog{--narration-safe-top:max(6px,env(safe-area-inset-top));--narration-safe-right:max(6px,env(safe-area-inset-right));--narration-safe-bottom:max(6px,env(safe-area-inset-bottom));--narration-safe-left:max(6px,env(safe-area-inset-left))}.narration-transcript-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.9fr);grid-template-rows:auto auto}.narration-transcript-header{grid-column:1}.narration-transcript-body{grid-column:1;min-height:80px;max-height:42dvh}.narration-transcript-footer{grid-column:2;grid-row:1/3;display:flex;flex-direction:column;justify-content:center;border-top:0;border-left:1px solid rgba(103,195,255,.3)}.narration-transcript-controls{grid-template-columns:1fr}}
 
-/* v10.0.76: experimental-only broken hex field + atmospheric fog for Deploy Kill Teams. */
-html[data-ui="tomb"] .deploy-hex-fog-card{
+/* v10.0.77: experimental-only layered billowing fog for Deploy Kill Teams. */
+html[data-ui="tomb"] .deploy-billowing-fog-card{
   position:relative;
   isolation:isolate;
+  overflow:hidden;
 }
-html[data-ui="tomb"] .deploy-hex-fog-card::before{
+html[data-ui="tomb"] .deploy-billowing-fog-card::before{
   content:"";
   position:absolute;
-  inset:1px;
+  inset:-18% -12% -22% -14%;
   z-index:0;
   pointer-events:none;
-  border-radius:inherit;
   background:
-    repeating-linear-gradient(30deg,rgba(108,174,188,.15) 0 1px,transparent 1px 18px),
-    repeating-linear-gradient(150deg,rgba(108,174,188,.12) 0 1px,transparent 1px 18px),
-    repeating-linear-gradient(90deg,rgba(108,174,188,.08) 0 1px,transparent 1px 31px);
-  background-size:36px 62px;
-  background-position:0 0,0 0,0 0;
-  -webkit-mask-image:radial-gradient(ellipse at 50% 46%,transparent 0 42%,rgba(0,0,0,.18) 56%,#000 79%);
-  mask-image:radial-gradient(ellipse at 50% 46%,transparent 0 42%,rgba(0,0,0,.18) 56%,#000 79%);
-  opacity:.72;
+    radial-gradient(ellipse 24% 18% at 4% 76%,rgba(151,174,178,.30) 0 24%,rgba(113,142,149,.16) 42%,transparent 70%),
+    radial-gradient(ellipse 31% 24% at 18% 92%,rgba(118,147,153,.28) 0 22%,rgba(90,119,126,.15) 44%,transparent 72%),
+    radial-gradient(ellipse 28% 20% at 36% 84%,rgba(137,163,168,.20) 0 22%,rgba(102,129,136,.10) 43%,transparent 70%),
+    radial-gradient(ellipse 23% 19% at 78% 10%,rgba(130,159,166,.22) 0 21%,rgba(94,125,133,.11) 44%,transparent 72%),
+    radial-gradient(ellipse 29% 22% at 96% 22%,rgba(147,170,174,.27) 0 23%,rgba(106,135,141,.13) 45%,transparent 72%),
+    radial-gradient(ellipse 26% 20% at 90% 80%,rgba(123,153,159,.24) 0 22%,rgba(91,119,126,.12) 44%,transparent 71%),
+    radial-gradient(ellipse 32% 23% at 67% 98%,rgba(110,140,147,.18) 0 23%,rgba(82,109,116,.08) 45%,transparent 73%);
+  -webkit-mask-image:radial-gradient(ellipse at 50% 48%,rgba(0,0,0,.16) 0 28%,rgba(0,0,0,.55) 56%,#000 88%);
+  mask-image:radial-gradient(ellipse at 50% 48%,rgba(0,0,0,.16) 0 28%,rgba(0,0,0,.55) 56%,#000 88%);
+  filter:blur(15px) saturate(.52);
+  opacity:.62;
+  transform:translate3d(-2%,1%,0) scale(1.05);
+  animation:deployFogDriftA 18s ease-in-out infinite alternate;
 }
-html[data-ui="tomb"] .deploy-hex-fog-card::after{
+html[data-ui="tomb"] .deploy-billowing-fog-card::after{
   content:"";
   position:absolute;
-  inset:1px;
+  inset:-22% -18% -18% -12%;
   z-index:0;
   pointer-events:none;
-  border-radius:inherit;
   background:
-    radial-gradient(ellipse at 4% 20%,rgba(129,158,164,.13) 0 10%,transparent 34%),
-    radial-gradient(ellipse at 12% 82%,rgba(88,118,126,.15) 0 12%,transparent 38%),
-    radial-gradient(ellipse at 88% 16%,rgba(99,135,145,.11) 0 9%,transparent 33%),
-    radial-gradient(ellipse at 98% 72%,rgba(120,150,156,.14) 0 11%,transparent 37%),
-    radial-gradient(ellipse at 50% 106%,rgba(79,108,116,.10) 0 13%,transparent 42%);
-  opacity:.86;
-  filter:saturate(.72);
+    radial-gradient(ellipse 22% 16% at 6% 24%,rgba(118,149,156,.22) 0 24%,rgba(87,116,124,.11) 46%,transparent 73%),
+    radial-gradient(ellipse 27% 20% at 22% 12%,rgba(139,164,169,.19) 0 22%,rgba(99,127,134,.09) 44%,transparent 72%),
+    radial-gradient(ellipse 34% 25% at 12% 64%,rgba(103,134,142,.20) 0 23%,rgba(76,104,112,.10) 47%,transparent 74%),
+    radial-gradient(ellipse 26% 18% at 54% 104%,rgba(126,153,158,.19) 0 24%,rgba(91,120,126,.09) 46%,transparent 73%),
+    radial-gradient(ellipse 28% 22% at 82% 92%,rgba(143,168,172,.21) 0 23%,rgba(102,130,136,.10) 45%,transparent 72%),
+    radial-gradient(ellipse 24% 18% at 102% 58%,rgba(129,158,164,.25) 0 23%,rgba(94,123,130,.12) 46%,transparent 73%);
+  -webkit-mask-image:radial-gradient(ellipse at 48% 50%,rgba(0,0,0,.10) 0 32%,rgba(0,0,0,.46) 58%,#000 90%);
+  mask-image:radial-gradient(ellipse at 48% 50%,rgba(0,0,0,.10) 0 32%,rgba(0,0,0,.46) 58%,#000 90%);
+  filter:blur(24px) saturate(.45);
+  opacity:.46;
+  transform:translate3d(2%,-1%,0) scale(1.10);
+  animation:deployFogDriftB 26s ease-in-out infinite alternate;
 }
-html[data-ui="tomb"] .deploy-hex-fog-card>*{
+html[data-ui="tomb"] .deploy-billowing-fog-card>*{
   position:relative;
   z-index:1;
 }
+@keyframes deployFogDriftA{
+  0%{transform:translate3d(-4%,3%,0) scale(1.02)}
+  45%{transform:translate3d(1%,-1%,0) scale(1.10)}
+  100%{transform:translate3d(4%,-3%,0) scale(1.06)}
+}
+@keyframes deployFogDriftB{
+  0%{transform:translate3d(3%,-2%,0) scale(1.11)}
+  52%{transform:translate3d(-2%,2%,0) scale(1.04)}
+  100%{transform:translate3d(-5%,1%,0) scale(1.12)}
+}
 @media(max-width:600px){
-  html[data-ui="tomb"] .deploy-hex-fog-card::before{
-    background-size:30px 52px;
-    -webkit-mask-image:radial-gradient(ellipse at 50% 44%,transparent 0 49%,rgba(0,0,0,.12) 62%,#000 88%);
-    mask-image:radial-gradient(ellipse at 50% 44%,transparent 0 49%,rgba(0,0,0,.12) 62%,#000 88%);
-    opacity:.52;
+  html[data-ui="tomb"] .deploy-billowing-fog-card::before{
+    inset:-12% -18% -15% -18%;
+    filter:blur(12px) saturate(.48);
+    opacity:.44;
+    animation-duration:22s;
   }
-  html[data-ui="tomb"] .deploy-hex-fog-card::after{
-    background:
-      radial-gradient(ellipse at 1% 18%,rgba(129,158,164,.10) 0 9%,transparent 31%),
-      radial-gradient(ellipse at 7% 88%,rgba(88,118,126,.12) 0 10%,transparent 34%),
-      radial-gradient(ellipse at 99% 24%,rgba(99,135,145,.09) 0 8%,transparent 29%),
-      radial-gradient(ellipse at 100% 82%,rgba(120,150,156,.11) 0 9%,transparent 32%);
-    opacity:.72;
+  html[data-ui="tomb"] .deploy-billowing-fog-card::after{
+    inset:-14% -20% -12% -16%;
+    filter:blur(18px) saturate(.42);
+    opacity:.32;
+    animation-duration:30s;
   }
 }
 @media(max-width:380px){
-  html[data-ui="tomb"] .deploy-hex-fog-card::before{opacity:.42}
-  html[data-ui="tomb"] .deploy-hex-fog-card::after{opacity:.58}
+  html[data-ui="tomb"] .deploy-billowing-fog-card::before{opacity:.36}
+  html[data-ui="tomb"] .deploy-billowing-fog-card::after{opacity:.24}
+}
+@media(prefers-reduced-motion:reduce){
+  html[data-ui="tomb"] .deploy-billowing-fog-card::before,
+  html[data-ui="tomb"] .deploy-billowing-fog-card::after{
+    animation:none;
+    transform:none;
+  }
 }
 @media(forced-colors:active){
-  html[data-ui="tomb"] .deploy-hex-fog-card::before,
-  html[data-ui="tomb"] .deploy-hex-fog-card::after{display:none}
+  html[data-ui="tomb"] .deploy-billowing-fog-card::before,
+  html[data-ui="tomb"] .deploy-billowing-fog-card::after{display:none}
 }
