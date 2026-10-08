@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.73
+# Tomb World Battle Guide v10.0.74
+
+## v10.0.74
+
+### Experimental Deploy Inspection Markings
+
+- Removes the discarded deployment telemetry rail experiment from Deploy Kill Teams.
+- Adds visual direction #5: worn inspection stamps and field markings inside the Deploy Kill Teams card while Experimental Tomb UI is enabled.
+- Uses an original "DEPLOYMENT AUTHORIZED" stencil, sector/grid identifiers, barcode-like inventory marks, and restrained hazard chevrons.
+- Keeps the existing card geometry, buttons, spacing, checklist, gameplay behavior, Current mode, and all other setup screens unchanged.
+- Uses CSS-only decorative layers with no new image assets, scripts, or runtime dependencies.
 
 ## v10.0.73
 
