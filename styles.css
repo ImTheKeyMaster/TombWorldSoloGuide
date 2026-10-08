@@ -1570,55 +1570,50 @@ button.tracker-operative:hover{
 @media(max-width:480px){.narration-transcript-dialog{--narration-safe-top:max(12px,env(safe-area-inset-top));--narration-safe-right:max(8px,env(safe-area-inset-right));--narration-safe-bottom:max(12px,env(safe-area-inset-bottom));--narration-safe-left:max(8px,env(safe-area-inset-left))}.narration-transcript-shell{padding:2px}.narration-transcript-header{padding:11px 12px}.narration-transcript-eyebrow{max-width:calc(100% - 58px);overflow-wrap:anywhere}.narration-transcript-body{max-height:48dvh;padding:13px 16px}.narration-transcript-footer{padding:13px 12px}.narration-transcript-controls{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)}.narration-transcript-controls .danger{grid-column:1/-1}.narration-transcript-reopen{right:max(10px,env(safe-area-inset-right));max-width:calc(100% - 20px)}}
 @media(max-height:520px) and (orientation:landscape){.narration-transcript-dialog{--narration-safe-top:max(6px,env(safe-area-inset-top));--narration-safe-right:max(6px,env(safe-area-inset-right));--narration-safe-bottom:max(6px,env(safe-area-inset-bottom));--narration-safe-left:max(6px,env(safe-area-inset-left))}.narration-transcript-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.9fr);grid-template-rows:auto auto}.narration-transcript-header{grid-column:1}.narration-transcript-body{grid-column:1;min-height:80px;max-height:42dvh}.narration-transcript-footer{grid-column:2;grid-row:1/3;display:flex;flex-direction:column;justify-content:center;border-top:0;border-left:1px solid rgba(103,195,255,.3)}.narration-transcript-controls{grid-template-columns:1fr}}
 
-/* v10.0.71: experimental-only armored corner details for Deploy Kill Teams. */
-html[data-ui="tomb"] .deploy-armored-card{
+/* v10.0.72: experimental-only etched-metal surface for Deploy Kill Teams. */
+html[data-ui="tomb"] .deploy-etched-card{
   position:relative;
   isolation:isolate;
 }
-html[data-ui="tomb"] .deploy-armored-card>.deploy-corner{
+html[data-ui="tomb"] .deploy-etched-card::before{
+  content:"";
   position:absolute;
-  z-index:2;
-  width:38px;
-  height:38px;
+  inset:1px;
+  z-index:0;
   pointer-events:none;
-  opacity:.86;
-  clip-path:polygon(0 0,100% 0,100% 9px,14px 9px,14px 100%,0 100%);
-  background:linear-gradient(145deg,#2a393e 0%,#141e21 52%,#080d0f 100%);
-  box-shadow:inset 0 0 0 1px rgba(157,188,193,.18),inset 0 0 10px rgba(0,0,0,.5);
-  filter:drop-shadow(0 1px 1px rgba(0,0,0,.75));
+  border-radius:inherit;
+  background:
+    repeating-linear-gradient(90deg,rgba(184,205,199,.026) 0 1px,transparent 1px 11px),
+    repeating-linear-gradient(176deg,transparent 0 31px,rgba(213,226,222,.028) 31px 32px,transparent 32px 67px),
+    linear-gradient(127deg,transparent 0 33.8%,rgba(172,194,188,.035) 34.1%,transparent 34.7% 61.8%,rgba(103,195,255,.035) 62.1%,transparent 62.7%),
+    radial-gradient(ellipse at 23% 34%,rgba(188,207,201,.035),transparent 24%),
+    radial-gradient(ellipse at 79% 68%,rgba(0,0,0,.08),transparent 28%);
+  opacity:.82;
 }
-html[data-ui="tomb"] .deploy-armored-card>.deploy-corner::before{
+html[data-ui="tomb"] .deploy-etched-card::after{
   content:"";
   position:absolute;
-  top:5px;
-  left:5px;
-  width:4px;
-  height:4px;
-  border-radius:50%;
-  background:#60747a;
-  box-shadow:12px 0 0 #60747a,0 0 0 1px rgba(3,8,9,.75),12px 0 0 1px rgba(3,8,9,.75);
+  inset:1px;
+  z-index:0;
+  pointer-events:none;
+  border-radius:inherit;
+  background:
+    linear-gradient(28deg,transparent 0 48%,rgba(161,184,179,.16) 49% 50%,transparent 51%) 74% 22%/82px 28px no-repeat,
+    linear-gradient(151deg,transparent 0 48%,rgba(161,184,179,.13) 49% 50%,transparent 51%) 82% 31%/64px 24px no-repeat,
+    linear-gradient(18deg,transparent 0 48%,rgba(161,184,179,.10) 49% 50%,transparent 51%) 28% 72%/92px 24px no-repeat,
+    linear-gradient(90deg,transparent,rgba(103,195,255,.24) 42% 58%,transparent) 73% 47%/126px 1px no-repeat;
+  opacity:.34;
+  filter:drop-shadow(0 0 4px rgba(103,195,255,.12));
 }
-html[data-ui="tomb"] .deploy-armored-card>.deploy-corner::after{
-  content:"";
-  position:absolute;
-  top:11px;
-  left:4px;
-  width:19px;
-  height:2px;
-  background:linear-gradient(90deg,rgba(103,195,255,.15),#67c3ff 45% 72%,rgba(103,195,255,.08));
-  box-shadow:0 0 5px rgba(103,195,255,.32);
+html[data-ui="tomb"] .deploy-etched-card>*{
+  position:relative;
+  z-index:1;
 }
-html[data-ui="tomb"] .deploy-armored-card>.deploy-corner-nw{
-  top:-1px;
-  left:-1px;
-  background:linear-gradient(132deg,transparent 0 55%,rgba(151,178,183,.24) 56% 57%,transparent 58%),linear-gradient(145deg,#2a393e 0%,#141e21 52%,#080d0f 100%);
-}
-html[data-ui="tomb"] .deploy-armored-card>.deploy-corner-ne{top:-1px;right:-1px;transform:rotate(90deg)}
-html[data-ui="tomb"] .deploy-armored-card>.deploy-corner-se{right:-1px;bottom:-1px;transform:rotate(180deg)}
-html[data-ui="tomb"] .deploy-armored-card>.deploy-corner-sw{bottom:-1px;left:-1px;transform:rotate(270deg)}
 @media(max-width:600px){
-  html[data-ui="tomb"] .deploy-armored-card>.deploy-corner{width:32px;height:32px;opacity:.82}
+  html[data-ui="tomb"] .deploy-etched-card::before{opacity:.68}
+  html[data-ui="tomb"] .deploy-etched-card::after{opacity:.28}
 }
 @media(forced-colors:active){
-  html[data-ui="tomb"] .deploy-armored-card>.deploy-corner{display:none}
+  html[data-ui="tomb"] .deploy-etched-card::before,
+  html[data-ui="tomb"] .deploy-etched-card::after{display:none}
 }

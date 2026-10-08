@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.71';
+  const APP_VERSION = '10.0.72';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3119,7 +3119,7 @@ document.addEventListener('touchend',function(e){
     if(stepId==='deploy')ensureStartingNpoGeneration();
     if(stepId==='deploy')satisfyEmptyStartingNpoDeployment();
     const details=setupStepDefinitions[stepId];
-    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>${details.title}</h2><p>${details.subtitle}</p></div><div class="step-count">${state.setupStep+1} / ${steps.length}</div></div><div class="progress-bar"><span style="width:${((state.setupStep+1)/steps.length)*100}%"></span></div><section class="wizard-card${stepId==='deploy'?' deploy-armored-card':''}"${stepId==='team'?` aria-busy="${playerTeamLoadStatus==='loading'}"`:''}>${stepId==='deploy'?'<span class="deploy-corner deploy-corner-nw" aria-hidden="true"></span><span class="deploy-corner deploy-corner-ne" aria-hidden="true"></span><span class="deploy-corner deploy-corner-se" aria-hidden="true"></span><span class="deploy-corner deploy-corner-sw" aria-hidden="true"></span>':''}${setupContent(stepId)}</section></div>`;
+    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>${details.title}</h2><p>${details.subtitle}</p></div><div class="step-count">${state.setupStep+1} / ${steps.length}</div></div><div class="progress-bar"><span style="width:${((state.setupStep+1)/steps.length)*100}%"></span></div><section class="wizard-card${stepId==='deploy'?' deploy-etched-card':''}"${stepId==='team'?` aria-busy="${playerTeamLoadStatus==='loading'}"`:''}>${setupContent(stepId)}</section></div>`;
     bindSetup(stepId);
   }
   function renderGameModeSelection(){

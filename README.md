@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.71
+# Tomb World Battle Guide v10.0.72
+
+## v10.0.72
+
+### Experimental Etched-Metal Deploy Surface
+
+- Removes the discarded armored corner-plate experiment from Deploy Kill Teams.
+- Adds a subtle etched-metal surface treatment to the Deploy Kill Teams card while Experimental Tomb UI is enabled.
+- Uses faint machining lines, irregular abrasion scratches, hairline fracture scoring, and one restrained cyan power trace.
+- Keeps the existing card geometry, buttons, spacing, checklist, gameplay behavior, and Current mode unchanged.
+- Uses CSS-only decorative layers with no new runtime dependencies or image assets.
 
 ## v10.0.71
 
