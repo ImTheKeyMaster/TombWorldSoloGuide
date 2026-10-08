@@ -1593,7 +1593,7 @@ html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art{
 }
 html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left{
   left:-54px;
-  top:4%;
+  top:0;
   opacity:.78;
   -webkit-mask-image:radial-gradient(ellipse at 0 42%,#000 0 34%,rgba(0,0,0,.82) 54%,rgba(0,0,0,.34) 76%,transparent 100%);
   mask-image:radial-gradient(ellipse at 0 42%,#000 0 34%,rgba(0,0,0,.82) 54%,rgba(0,0,0,.34) 76%,transparent 100%);
@@ -1646,7 +1646,7 @@ html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left>i:nth-child(7)::
 html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right>i:nth-child(14)::after{
   background:rgba(18,50,47,.72);
 }
-html[data-ui="tomb"] .deploy-true-hex-card>*:not(.deploy-hex-art){
+html[data-ui="tomb"] .deploy-true-hex-card>*:not(.deploy-hex-art):not(.wizard-actions){
   position:relative;
   z-index:1;
 }
@@ -1660,7 +1660,7 @@ html[data-ui="tomb"] .deploy-true-hex-card>*:not(.deploy-hex-art){
   }
   html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left{
     left:-56px;
-    top:3%;
+    top:0;
     opacity:.58;
   }
   html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right{
