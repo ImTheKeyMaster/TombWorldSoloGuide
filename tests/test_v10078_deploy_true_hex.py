@@ -62,11 +62,16 @@ def test_hex_clusters_are_broken_faded_and_edge_anchored():
     assert "rgba(103,195,255,.62)" in block
 
 
-def test_hex_stacking_does_not_override_mobile_fixed_action_footer():
+def test_hex_stacking_preserves_mobile_fixed_footer_and_desktop_layering():
     block = CSS.split("experimental-only true honeycomb hex clusters", 1)[1]
     assert ".deploy-true-hex-card>*:not(.deploy-hex-art):not(.wizard-actions)" in block
     assert ".deploy-true-hex-card>*:not(.deploy-hex-art){" not in block
     assert ".wizard-shell>.wizard-card>.wizard-actions{position:fixed" in CSS
+    assert "@media(min-width:601px)" in block
+    desktop = block.split("@media(min-width:601px)", 1)[1]
+    assert ".deploy-true-hex-card>.wizard-actions" in desktop
+    assert "position:relative" in desktop
+    assert "z-index:1" in desktop
 
 
 def test_phone_layout_shrinks_hexes_without_consuming_content_space():
