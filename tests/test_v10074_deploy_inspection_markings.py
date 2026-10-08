@@ -28,8 +28,11 @@ def test_inspection_markings_are_experimental_only_and_noninteractive():
     scope = 'html[data-ui="tomb"] .deploy-stamps-card'
     assert scope in CSS
     assert 'html[data-ui="classic"] .deploy-stamps-card' not in CSS
+    assert ".deploy-stamp-authorized,.deploy-field-code{display:none}" in CSS
     authorized = CSS.split(f"{scope}>.deploy-stamp-authorized{{", 1)[1].split("}", 1)[0]
     field_code = CSS.split(f"{scope}>.deploy-field-code{{", 1)[1].split("}", 1)[0]
+    assert "display:block" in authorized
+    assert "display:block" in field_code
     assert "pointer-events:none" in authorized
     assert "pointer-events:none" in field_code
     assert "z-index:0" in authorized
