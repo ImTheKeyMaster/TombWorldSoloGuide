@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.77
+# Tomb World Battle Guide v10.0.78
+
+## v10.0.78
+
+### Experimental True Honeycomb Hex Field
+
+- Removes the rejected fog-only treatment from Deploy Kill Teams.
+- Rebuilds the hex concept with individually clipped six-sided CSS cells arranged in a real staggered honeycomb grid rather than intersecting diagonal lines.
+- Places broken/faded hex clusters along the left edge and lower-right edge to match the approved mockup direction while leaving the content center clear.
+- Uses only HTML decoration plus CSS clip-path, gradients, opacity, and responsive sizing; no image assets or SVGs.
+- Shrinks and thins the clusters on narrow phones without consuming layout space or changing Current mode.
 
 ## v10.0.77
 
