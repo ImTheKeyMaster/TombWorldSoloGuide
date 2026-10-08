@@ -9,8 +9,8 @@ INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
 WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 
 
-def test_release_surfaces_are_v10078_or_newer():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 78)
+def test_release_surfaces_are_v10079_or_newer():
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 79)
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
 
@@ -54,10 +54,24 @@ def test_hex_clusters_are_broken_faded_and_edge_anchored():
     assert ".deploy-hex-art-right" in block
     assert "left:-54px" in block
     assert "right:-72px" in block
+    left = block.split(".deploy-hex-art-left{", 1)[1].split("}", 1)[0]
+    assert "top:0" in left
     assert "-webkit-mask-image:radial-gradient" in block
     assert "mask-image:radial-gradient" in block
     assert "opacity:.14" in block
     assert "rgba(103,195,255,.62)" in block
+
+
+def test_hex_stacking_preserves_mobile_fixed_footer_and_desktop_layering():
+    block = CSS.split("experimental-only true honeycomb hex clusters", 1)[1]
+    assert ".deploy-true-hex-card>*:not(.deploy-hex-art):not(.wizard-actions)" in block
+    assert ".deploy-true-hex-card>*:not(.deploy-hex-art){" not in block
+    assert ".wizard-shell>.wizard-card>.wizard-actions{position:fixed" in CSS
+    assert "@media(min-width:601px)" in block
+    desktop = block.split("@media(min-width:601px)", 1)[1]
+    assert ".deploy-true-hex-card>.wizard-actions" in desktop
+    assert "position:relative" in desktop
+    assert "z-index:1" in desktop
 
 
 def test_phone_layout_shrinks_hexes_without_consuming_content_space():

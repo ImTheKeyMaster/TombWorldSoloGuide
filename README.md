@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.78
+# Tomb World Battle Guide v10.0.79
+
+## v10.0.79
+
+### Experimental Hex Placement + Mobile Footer Fix
+
+- Anchors the left true-honeycomb cluster directly to the top edge of the Deploy Kill Teams card with no gap.
+- Restores the existing mobile Back / Deployment Complete fixed footer by excluding wizard actions from the hex content stacking rule.
+- Keeps the true six-sided honeycomb geometry, broken/faded pattern, phone scaling, Current mode, and gameplay unchanged.
+- Adds regression coverage for both the top-edge anchor and preservation of the fixed mobile wizard action footer.
 
 ## v10.0.78
 
