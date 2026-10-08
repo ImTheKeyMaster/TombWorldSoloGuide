@@ -37,7 +37,7 @@ def test_telemetry_rail_is_experimental_only_and_noninteractive():
 def test_telemetry_rail_has_ticks_numbers_and_restrained_cyan_indicators():
     block = CSS.split("experimental-only deployment telemetry rail", 1)[1]
     assert "repeating-linear-gradient(to bottom" in block
-    assert 'content:"01\\A02\\A03\\A04"' in block
+    assert 'content:"01\\A 02\\A 03\\A 04"' in block
     assert "#67c3ff" in block
     assert "width:14px" in block
     assert "ui-monospace" in block
