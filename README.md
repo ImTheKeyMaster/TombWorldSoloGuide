@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.72
+# Tomb World Battle Guide v10.0.73
+
+## v10.0.73
+
+### Experimental Deploy Telemetry Rail
+
+- Removes the discarded etched-metal surface experiment from Deploy Kill Teams.
+- Adds visual direction #3: a narrow decorative telemetry rail inside the Deploy Kill Teams card while Experimental Tomb UI is enabled.
+- Uses tiny numbered ticks, fragmented machine marks, a muted vertical instrumentation line, and restrained cyan status indicators.
+- Keeps the existing card geometry, buttons, spacing, checklist, gameplay behavior, Current mode, and all other setup screens unchanged.
+- Uses CSS-only decorative layers with no new image assets or runtime dependencies.
 
 ## v10.0.72
 
