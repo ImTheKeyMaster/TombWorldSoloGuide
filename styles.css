@@ -1650,6 +1650,12 @@ html[data-ui="tomb"] .deploy-true-hex-card>*:not(.deploy-hex-art):not(.wizard-ac
   position:relative;
   z-index:1;
 }
+@media(min-width:601px){
+  html[data-ui="tomb"] .deploy-true-hex-card>.wizard-actions{
+    position:relative;
+    z-index:1;
+  }
+}
 @media(max-width:600px){
   html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art{
     --hex-w:30px;
