@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.74
+# Tomb World Battle Guide v10.0.75
+
+## v10.0.75
+
+### Clean Experimental Baseline
+
+- Removes the discarded inspection-stamp and field-marking experiment from Deploy Kill Teams.
+- Experimental Tomb UI again mirrors the Current interface while preserving the hidden selector for future prototypes.
+- Removes all deploy-specific decorative markup and styling from the five rejected visual experiments.
+- Leaves gameplay, layout, controls, and Current mode unchanged.
 
 ## v10.0.74
 
