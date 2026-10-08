@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.76
+# Tomb World Battle Guide v10.0.77
+
+## v10.0.77
+
+### Experimental Billowing Atmospheric Fog
+
+- Removes the rejected broken-hex treatment from Deploy Kill Teams.
+- Replaces it with fog alone: two overlapping CSS-generated cloud layers made from many soft radial lobes rather than one broad gradient.
+- Gives the two fog banks different blur radii, opacity, scale, and slow drift paths so they appear to waft and billow independently.
+- Reduces density and movement on phone-sized screens and disables motion when reduced-motion is requested.
+- Keeps the existing Deploy layout, controls, gameplay behavior, and Current mode unchanged.
 
 ## v10.0.76
 
