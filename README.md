@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.75
+# Tomb World Battle Guide v10.0.76
+
+## v10.0.76
+
+### Experimental Broken Hex + Atmospheric Fog
+
+- Adds a new Experimental-only Deploy Kill Teams treatment combining a faint broken hex field with low atmospheric fog.
+- Keeps the hex geometry concentrated around the perimeter so content remains clear on phone-sized screens.
+- Uses only CSS gradients, masks, opacity, and pseudo-elements; no raster/SVG artwork or new runtime dependencies.
+- Scales the pattern density and fog intensity down on narrow screens while preserving the existing card layout and Current mode.
 
 ## v10.0.75
 
