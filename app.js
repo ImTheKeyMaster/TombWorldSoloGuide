@@ -3119,7 +3119,7 @@ document.addEventListener('touchend',function(e){
     if(stepId==='deploy')ensureStartingNpoGeneration();
     if(stepId==='deploy')satisfyEmptyStartingNpoDeployment();
     const details=setupStepDefinitions[stepId];
-    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>${details.title}</h2><p>${details.subtitle}</p></div><div class="step-count">${state.setupStep+1} / ${steps.length}</div></div><div class="progress-bar"><span style="width:${((state.setupStep+1)/steps.length)*100}%"></span></div><section class="wizard-card${stepId==='deploy'?' deploy-stamps-card':''}"${stepId==='team'?` aria-busy="${playerTeamLoadStatus==='loading'}"`:''}>${setupContent(stepId)}</section></div>`;
+    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>${details.title}</h2><p>${details.subtitle}</p></div><div class="step-count">${state.setupStep+1} / ${steps.length}</div></div><div class="progress-bar"><span style="width:${((state.setupStep+1)/steps.length)*100}%"></span></div><section class="wizard-card${stepId==='deploy'?' deploy-stamps-card':''}"${stepId==='team'?` aria-busy="${playerTeamLoadStatus==='loading'}"`:''}>${stepId==='deploy'?'<span class="deploy-stamp-authorized" aria-hidden="true">DEPLOYMENT AUTHORIZED</span><span class="deploy-field-code" aria-hidden="true">SECTOR 07 · GRID K-19 · INSPECT 442</span>':''}${setupContent(stepId)}</section></div>`;
     bindSetup(stepId);
   }
   function renderGameModeSelection(){
