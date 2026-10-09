@@ -9,8 +9,8 @@ INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
 WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 
 
-def test_release_surfaces_are_v10080_or_newer():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 80)
+def test_release_surfaces_are_v10081_or_newer():
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 81)
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
 
@@ -48,16 +48,18 @@ def test_each_cell_is_an_actual_six_sided_hexagon():
     assert "translateX(calc(var(--hex-w) / 2))" in block
 
 
-def test_hex_clusters_are_broken_faded_and_edge_anchored():
+def test_hex_clusters_are_broken_faded_and_mirrored():
     block = CSS.split("experimental-only true honeycomb hex clusters", 1)[1]
     assert ".deploy-hex-art-left" in block
     assert ".deploy-hex-art-right" in block
-    assert "left:-54px" in block
-    assert "right:-72px" in block
-    left = block.split(".deploy-hex-art-left{", 1)[1].split("}", 1)[0]
-    assert "top:0" in left
-    assert "-webkit-mask-image:radial-gradient" in block
-    assert "mask-image:radial-gradient" in block
+    upper = block.split(".deploy-hex-art-left{", 1)[1].split("}", 1)[0]
+    lower = block.split(".deploy-hex-art-right{", 1)[1].split("}", 1)[0]
+    assert "right:-54px" in upper
+    assert "top:0" in upper
+    assert "ellipse at 100% 42%" in upper
+    assert "left:-72px" in lower
+    assert "bottom:-26px" in lower
+    assert "ellipse at 0 100%" in lower
     assert "opacity:.10" in block
     assert "color:rgba(118,245,168,.26)" in block
     assert "rgba(118,245,168,.38)" in block
@@ -70,8 +72,8 @@ def test_green_hex_theme_is_restrained_for_readability():
     assert "opacity:.64" in block
     assert "opacity:.50" in block
     assert "color:rgba(118,245,168,.20)" in block
-    assert "left:-66px;opacity:.42" in block
-    assert "right:-74px;opacity:.32" in block
+    assert "right:-66px;opacity:.42" in block
+    assert "left:-74px;opacity:.32" in block
     assert "rgba(104,181,195" not in block
     assert "rgba(103,195,255,.62)" not in block
 

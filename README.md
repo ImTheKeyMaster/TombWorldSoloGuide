@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.80
+# Tomb World Battle Guide v10.0.81
+
+## v10.0.81
+
+### Experimental Hex Cluster Mirror
+
+- Mirrors the approved true-honeycomb Deploy composition.
+- Moves the upper cluster from the top-left edge to the top-right edge.
+- Moves the lower cluster from the bottom-right edge to the bottom-left edge.
+- Mirrors the fade masks and phone offsets with the clusters while preserving green color, opacity, geometry, footer behavior, and responsive sizing.
+- Keeps Current mode and gameplay unchanged.
 
 ## v10.0.80
 
