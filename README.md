@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.81
+# Tomb World Battle Guide v10.0.82
+
+## v10.0.82
+
+### Experimental Honeycomb Across New Game Setup
+
+- Extends the approved mirrored green honeycomb treatment from Deploy Kill Teams to every screen carrying the New Game Setup flow.
+- Covers game-mode selection, Kill Team selection, roster-loading/error states, and every normal setup step: Mission, Killzone, Team, Roster, Options, Deploy, and Ready.
+- Reuses one decorative markup helper and one shared CSS treatment so placement, fading, green palette, and phone behavior stay consistent.
+- Preserves each screen's existing layout, fixed mobile action footer, controls, loading state, Current mode, and gameplay behavior.
 
 ## v10.0.81
 

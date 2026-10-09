@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.81';
+  const APP_VERSION = '10.0.82';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3054,12 +3054,15 @@ document.addEventListener('touchend',function(e){
     const reason=loading?'The selected Kill Team is still loading.':playerTeamLoadStatus==='error'?'The selected Kill Team could not be loaded.':'Select a Kill Team first.';
     return `<button class="btn primary" id="${id}" ${canBuildPlayerRoster()?'':`disabled aria-disabled="true" title="${reason}"`}>${loading?'Loading Team...':'Build Roster'}</button>`;
   }
+  function setupHexArt(){
+    return '<div class="setup-hex-art setup-hex-art-upper" aria-hidden="true">'+('<i></i>'.repeat(25))+'</div><div class="setup-hex-art setup-hex-art-lower" aria-hidden="true">'+('<i></i>'.repeat(20))+'</div>';
+  }
   function renderTeamSelection(){
     const cards=(playerManifest?.teams||[]).map(team=>`<button type="button" class="team-select-card ${state.playerTeamId===team.id?'selected':''}" data-player-team="${escapeHtml(team.id)}">
       <div class="team-select-card-head"><div><strong>${escapeHtml(team.name)}</strong><small>${escapeHtml(team.faction||'Kill Team')}</small></div>${state.playerTeamId===team.id?'<span>✓</span>':''}</div>
       <p>${escapeHtml(team.description||'')}</p>
     </button>`).join('');
-    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Choose Kill Team</h2><p>Select the player-controlled Kill Team for this battle.</p></div></div><section class="wizard-card" aria-busy="${playerTeamLoadStatus==='loading'}">${playerTeamLoadingAnnouncement()}<div class="team-select-grid">${cards}</div>${playerTeamLoadPresentation()}<div class="wizard-actions"><button class="btn ghost" id="teamSelectHome">Back</button>${buildPlayerRosterButton('teamSelectNext')}</div></section></div>`;
+    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Choose Kill Team</h2><p>Select the player-controlled Kill Team for this battle.</p></div></div><section class="wizard-card setup-true-hex-card" aria-busy="${playerTeamLoadStatus==='loading'}">${setupHexArt()}${playerTeamLoadingAnnouncement()}<div class="team-select-grid">${cards}</div>${playerTeamLoadPresentation()}<div class="wizard-actions"><button class="btn ghost" id="teamSelectHome">Back</button>${buildPlayerRosterButton('teamSelectNext')}</div></section></div>`;
     $('#teamSelectHome').onclick=()=>{state.screen='home';save();render();};
     $('#teamSelectNext').onclick=()=>{if(!canBuildPlayerRoster()){showToast('Wait for the selected Kill Team to finish loading.');return;}state.screen='setup';state.setupStep=activeSetupSteps().indexOf('playerRoster');save();render();};
     $$('[data-player-team]').forEach(button=>button.onclick=()=>selectPlayerTeam(button.dataset.playerTeam));
@@ -3095,14 +3098,14 @@ document.addEventListener('touchend',function(e){
       if(!canBuildPlayerRoster()){
         if(playerTeamLoadStatus==='loading'){
           const teamStep=steps.indexOf('team');
-          app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Build Player Roster</h2><p>Loading the selected Kill Team before displaying its operatives.</p></div></div><section class="wizard-card" aria-busy="true">${playerTeamLoadingAnnouncement()}${teamStep>=0?'<div class="wizard-actions"><button class="btn ghost" id="playerRosterLoadBack">Back</button></div>':''}</section></div>`;
+          app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Build Player Roster</h2><p>Loading the selected Kill Team before displaying its operatives.</p></div></div><section class="wizard-card setup-true-hex-card" aria-busy="true">${setupHexArt()}${playerTeamLoadingAnnouncement()}${teamStep>=0?'<div class="wizard-actions"><button class="btn ghost" id="playerRosterLoadBack">Back</button></div>':''}</section></div>`;
           $('#playerRosterLoadBack')?.addEventListener('click',()=>{state.setupStep=teamStep;save();render();});
           return;
         }
         const teamStep=steps.indexOf('team');
         if(teamStep<0){
           const failed=playerTeamLoadStatus==='error';
-          app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Build Player Roster</h2><p>Loading the selected Kill Team before displaying its operatives.</p></div></div><section class="wizard-card" aria-busy="${!failed}">${failed?'<p role="alert">Unable to load this Kill Team.</p>':playerTeamLoadingAnnouncement()}${failed?'<div class="wizard-actions"><button class="btn primary" id="retryPlayerTeamLoad" aria-label="Retry selected Kill Team load">Retry Team Load</button></div>':''}</section></div>`;
+          app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Build Player Roster</h2><p>Loading the selected Kill Team before displaying its operatives.</p></div></div><section class="wizard-card setup-true-hex-card" aria-busy="${!failed}">${setupHexArt()}${failed?'<p role="alert">Unable to load this Kill Team.</p>':playerTeamLoadingAnnouncement()}${failed?'<div class="wizard-actions"><button class="btn primary" id="retryPlayerTeamLoad" aria-label="Retry selected Kill Team load">Retry Team Load</button></div>':''}</section></div>`;
           $('#retryPlayerTeamLoad')?.addEventListener('click',()=>loadPlayerTeamData(state.playerTeamId).catch(()=>{}));
           return;
         }
@@ -3119,12 +3122,11 @@ document.addEventListener('touchend',function(e){
     if(stepId==='deploy')ensureStartingNpoGeneration();
     if(stepId==='deploy')satisfyEmptyStartingNpoDeployment();
     const details=setupStepDefinitions[stepId];
-    const deployHexArt=stepId==='deploy'?'<div class="deploy-hex-art deploy-hex-art-left" aria-hidden="true">'+('<i></i>'.repeat(25))+'</div><div class="deploy-hex-art deploy-hex-art-right" aria-hidden="true">'+('<i></i>'.repeat(20))+'</div>':'';
-    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>${details.title}</h2><p>${details.subtitle}</p></div><div class="step-count">${state.setupStep+1} / ${steps.length}</div></div><div class="progress-bar"><span style="width:${((state.setupStep+1)/steps.length)*100}%"></span></div><section class="wizard-card${stepId==='deploy'?' deploy-true-hex-card':''}"${stepId==='team'?` aria-busy="${playerTeamLoadStatus==='loading'}"`:''}>${deployHexArt}${setupContent(stepId)}</section></div>`;
+    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>${details.title}</h2><p>${details.subtitle}</p></div><div class="step-count">${state.setupStep+1} / ${steps.length}</div></div><div class="progress-bar"><span style="width:${((state.setupStep+1)/steps.length)*100}%"></span></div><section class="wizard-card setup-true-hex-card"${stepId==='team'?` aria-busy="${playerTeamLoadStatus==='loading'}"`:''}>${setupHexArt()}${setupContent(stepId)}</section></div>`;
     bindSetup(stepId);
   }
   function renderGameModeSelection(){
-    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Choose Game Mode</h2><p>Choose who will control the Necrons for this battle.</p></div></div><section class="wizard-card"><div class="team-select-grid game-mode-grid">
+    app.innerHTML=`<div class="wizard-shell"><div class="progress-head"><div><p class="eyebrow">NEW GAME SETUP</p><h2>Choose Game Mode</h2><p>Choose who will control the Necrons for this battle.</p></div></div><section class="wizard-card setup-true-hex-card">${setupHexArt()}<div class="team-select-grid game-mode-grid">
       <button type="button" class="team-select-card" data-game-mode="solo" aria-label="Solo: play your Kill Team against Necrons controlled by the Guide"><div class="team-select-card-head"><div><strong>Solo</strong><small>Guide-controlled Necrons</small></div></div><p>Play your Kill Team against Necrons controlled by the Guide.</p></button>
       <button type="button" class="team-select-card" data-game-mode="pvp" aria-label="Player vs. Player: one player controls the selected Kill Team and the second player controls the Necrons"><div class="team-select-card-head"><div><strong>Player vs. Player</strong><small>Two players</small></div></div><p>One player controls the selected Kill Team. The second player controls the Necrons.</p></button>
       </div><div class="wizard-actions"><button class="btn ghost" id="gameModeBack" type="button">Back</button></div></section></div>`;
