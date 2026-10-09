@@ -1570,14 +1570,14 @@ button.tracker-operative:hover{
 @media(max-width:480px){.narration-transcript-dialog{--narration-safe-top:max(12px,env(safe-area-inset-top));--narration-safe-right:max(8px,env(safe-area-inset-right));--narration-safe-bottom:max(12px,env(safe-area-inset-bottom));--narration-safe-left:max(8px,env(safe-area-inset-left))}.narration-transcript-shell{padding:2px}.narration-transcript-header{padding:11px 12px}.narration-transcript-eyebrow{max-width:calc(100% - 58px);overflow-wrap:anywhere}.narration-transcript-body{max-height:48dvh;padding:13px 16px}.narration-transcript-footer{padding:13px 12px}.narration-transcript-controls{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)}.narration-transcript-controls .danger{grid-column:1/-1}.narration-transcript-reopen{right:max(10px,env(safe-area-inset-right));max-width:calc(100% - 20px)}}
 @media(max-height:520px) and (orientation:landscape){.narration-transcript-dialog{--narration-safe-top:max(6px,env(safe-area-inset-top));--narration-safe-right:max(6px,env(safe-area-inset-right));--narration-safe-bottom:max(6px,env(safe-area-inset-bottom));--narration-safe-left:max(6px,env(safe-area-inset-left))}.narration-transcript-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.9fr);grid-template-rows:auto auto}.narration-transcript-header{grid-column:1}.narration-transcript-body{grid-column:1;min-height:80px;max-height:42dvh}.narration-transcript-footer{grid-column:2;grid-row:1/3;display:flex;flex-direction:column;justify-content:center;border-top:0;border-left:1px solid rgba(103,195,255,.3)}.narration-transcript-controls{grid-template-columns:1fr}}
 
-/* v10.0.78: experimental-only true honeycomb hex clusters for Deploy Kill Teams. */
-.deploy-hex-art{display:none}
-html[data-ui="tomb"] .deploy-true-hex-card{
+/* v10.0.82: experimental-only true honeycomb hex clusters across New Game Setup. */
+.setup-hex-art{display:none}
+html[data-ui="tomb"] .setup-true-hex-card{
   position:relative;
   isolation:isolate;
   overflow:hidden;
 }
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art{
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art{
   --hex-w:42px;
   --hex-h:48.5px;
   --hex-step:36.4px;
@@ -1591,21 +1591,21 @@ html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art{
   color:rgba(118,245,168,.26);
   filter:drop-shadow(0 0 4px rgba(118,245,168,.07));
 }
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left{
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-upper{
   right:-54px;
   top:0;
   opacity:.64;
   -webkit-mask-image:radial-gradient(ellipse at 100% 42%,#000 0 34%,rgba(0,0,0,.82) 54%,rgba(0,0,0,.34) 76%,transparent 100%);
   mask-image:radial-gradient(ellipse at 100% 42%,#000 0 34%,rgba(0,0,0,.82) 54%,rgba(0,0,0,.34) 76%,transparent 100%);
 }
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right{
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-lower{
   left:-72px;
   bottom:-26px;
   opacity:.50;
   -webkit-mask-image:radial-gradient(ellipse at 0 100%,#000 0 28%,rgba(0,0,0,.78) 52%,rgba(0,0,0,.28) 76%,transparent 100%);
   mask-image:radial-gradient(ellipse at 0 100%,#000 0 28%,rgba(0,0,0,.78) 52%,rgba(0,0,0,.28) 76%,transparent 100%);
 }
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art>i{
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art>i{
   width:var(--hex-w);
   height:var(--hex-h);
   position:relative;
@@ -1613,73 +1613,73 @@ html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art>i{
   background:currentColor;
   clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
 }
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art>i::after{
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art>i::after{
   content:"";
   position:absolute;
   inset:1.35px;
   background:rgba(8,24,17,.96);
   clip-path:inherit;
 }
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art>i:nth-child(n+6):nth-child(-n+10),
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art>i:nth-child(n+16):nth-child(-n+20){
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art>i:nth-child(n+6):nth-child(-n+10),
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art>i:nth-child(n+16):nth-child(-n+20){
   transform:translateX(calc(var(--hex-w) / 2));
 }
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left>i:nth-child(3),
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left>i:nth-child(5),
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left>i:nth-child(9),
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left>i:nth-child(14),
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left>i:nth-child(18),
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left>i:nth-child(24),
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right>i:nth-child(2),
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right>i:nth-child(6),
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right>i:nth-child(13),
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right>i:nth-child(17){
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-upper>i:nth-child(3),
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-upper>i:nth-child(5),
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-upper>i:nth-child(9),
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-upper>i:nth-child(14),
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-upper>i:nth-child(18),
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-upper>i:nth-child(24),
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-lower>i:nth-child(2),
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-lower>i:nth-child(6),
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-lower>i:nth-child(13),
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-lower>i:nth-child(17){
   opacity:.10;
 }
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left>i:nth-child(7),
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left>i:nth-child(16),
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right>i:nth-child(8),
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right>i:nth-child(14){
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-upper>i:nth-child(7),
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-upper>i:nth-child(16),
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-lower>i:nth-child(8),
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-lower>i:nth-child(14){
   color:rgba(118,245,168,.38);
 }
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left>i:nth-child(7)::after,
-html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right>i:nth-child(14)::after{
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-upper>i:nth-child(7)::after,
+html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-lower>i:nth-child(14)::after{
   background:rgba(15,42,28,.82);
 }
-html[data-ui="tomb"] .deploy-true-hex-card>*:not(.deploy-hex-art):not(.wizard-actions){
+html[data-ui="tomb"] .setup-true-hex-card>*:not(.setup-hex-art):not(.wizard-actions){
   position:relative;
   z-index:1;
 }
 @media(min-width:601px){
-  html[data-ui="tomb"] .deploy-true-hex-card>.wizard-actions{
+  html[data-ui="tomb"] .setup-true-hex-card>.wizard-actions{
     position:relative;
     z-index:1;
   }
 }
 @media(max-width:600px){
-  html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art{
+  html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art{
     --hex-w:30px;
     --hex-h:34.6px;
     --hex-step:26px;
     width:calc(var(--hex-w) * 5.5);
     color:rgba(118,245,168,.20);
   }
-  html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left{
+  html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-upper{
     right:-56px;
     top:0;
     opacity:.50;
   }
-  html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right{
+  html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-lower{
     left:-68px;
     bottom:-18px;
     opacity:.40;
   }
-  html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art>i::after{inset:1px}
+  html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art>i::after{inset:1px}
 }
 @media(max-width:380px){
-  html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left{right:-66px;opacity:.42}
-  html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right{left:-74px;opacity:.32}
+  html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-upper{right:-66px;opacity:.42}
+  html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art-lower{left:-74px;opacity:.32}
 }
 @media(forced-colors:active){
-  html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art{display:none}
+  html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art{display:none}
 }
