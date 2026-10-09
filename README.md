@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.79
+# Tomb World Battle Guide v10.0.80
+
+## v10.0.80
+
+### Experimental Hex Theme Refinement
+
+- Changes the true-honeycomb Deploy decoration from cyan/blue to the app's existing green theme.
+- Reduces base, cluster, highlight, and phone opacities so the hex field stays decorative without competing with checklist text.
+- Softens the glow while preserving the approved hex geometry, top anchor, broken/faded pattern, mobile footer behavior, and responsive sizing.
+- Keeps Current mode and gameplay unchanged.
 
 ## v10.0.79
 
