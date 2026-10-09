@@ -1588,20 +1588,20 @@ html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art{
   z-index:0;
   pointer-events:none;
   width:calc(var(--hex-w) * 5.5);
-  color:rgba(104,181,195,.44);
-  filter:drop-shadow(0 0 5px rgba(103,195,255,.09));
+  color:rgba(118,245,168,.26);
+  filter:drop-shadow(0 0 4px rgba(118,245,168,.07));
 }
 html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left{
   left:-54px;
   top:0;
-  opacity:.78;
+  opacity:.64;
   -webkit-mask-image:radial-gradient(ellipse at 0 42%,#000 0 34%,rgba(0,0,0,.82) 54%,rgba(0,0,0,.34) 76%,transparent 100%);
   mask-image:radial-gradient(ellipse at 0 42%,#000 0 34%,rgba(0,0,0,.82) 54%,rgba(0,0,0,.34) 76%,transparent 100%);
 }
 html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right{
   right:-72px;
   bottom:-26px;
-  opacity:.64;
+  opacity:.50;
   -webkit-mask-image:radial-gradient(ellipse at 100% 100%,#000 0 28%,rgba(0,0,0,.78) 52%,rgba(0,0,0,.28) 76%,transparent 100%);
   mask-image:radial-gradient(ellipse at 100% 100%,#000 0 28%,rgba(0,0,0,.78) 52%,rgba(0,0,0,.28) 76%,transparent 100%);
 }
@@ -1634,17 +1634,17 @@ html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right>i:nth-child(2),
 html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right>i:nth-child(6),
 html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right>i:nth-child(13),
 html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right>i:nth-child(17){
-  opacity:.14;
+  opacity:.10;
 }
 html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left>i:nth-child(7),
 html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left>i:nth-child(16),
 html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right>i:nth-child(8),
 html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right>i:nth-child(14){
-  color:rgba(103,195,255,.62);
+  color:rgba(118,245,168,.38);
 }
 html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left>i:nth-child(7)::after,
 html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right>i:nth-child(14)::after{
-  background:rgba(18,50,47,.72);
+  background:rgba(15,42,28,.82);
 }
 html[data-ui="tomb"] .deploy-true-hex-card>*:not(.deploy-hex-art):not(.wizard-actions){
   position:relative;
@@ -1662,23 +1662,23 @@ html[data-ui="tomb"] .deploy-true-hex-card>*:not(.deploy-hex-art):not(.wizard-ac
     --hex-h:34.6px;
     --hex-step:26px;
     width:calc(var(--hex-w) * 5.5);
-    color:rgba(104,181,195,.34);
+    color:rgba(118,245,168,.20);
   }
   html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left{
     left:-56px;
     top:0;
-    opacity:.58;
+    opacity:.50;
   }
   html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right{
     right:-68px;
     bottom:-18px;
-    opacity:.48;
+    opacity:.40;
   }
   html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art>i::after{inset:1px}
 }
 @media(max-width:380px){
-  html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left{left:-66px;opacity:.48}
-  html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right{right:-74px;opacity:.38}
+  html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-left{left:-66px;opacity:.42}
+  html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art-right{right:-74px;opacity:.32}
 }
 @media(forced-colors:active){
   html[data-ui="tomb"] .deploy-true-hex-card>.deploy-hex-art{display:none}
