@@ -59,7 +59,9 @@ def test_hex_clusters_are_broken_faded_and_edge_anchored():
     assert "-webkit-mask-image:radial-gradient" in block
     assert "mask-image:radial-gradient" in block
     assert "opacity:.10" in block
-    assert "color:rgba(118,245,168,.26)" in block\n    assert "rgba(118,245,168,.38)" in block\n    assert "filter:drop-shadow(0 0 4px rgba(118,245,168,.07))" in block
+    assert "color:rgba(118,245,168,.26)" in block
+    assert "rgba(118,245,168,.38)" in block
+    assert "filter:drop-shadow(0 0 4px rgba(118,245,168,.07))" in block
 
 
 def test_green_hex_theme_is_restrained_for_readability():
