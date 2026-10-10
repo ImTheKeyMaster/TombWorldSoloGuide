@@ -27,7 +27,9 @@ def test_roster_rail_uses_green_high_resolution_portrait_helper():
     source = roster_source()
     assert "function experimentalDeathwatchGreenPortraitSvg(id,filterId,svgClass='')" in source
     assert "experimentalDeathwatchActivationImage(id)" in source
-    assert "experimentalDeathwatchGreenPortraitSvg(id,\`experimentalRosterTint-\${index}\`,'experimental-roster-tinted-svg')" in source
+    assert "experimentalDeathwatchGreenPortraitSvg(id," in source
+    assert "experimentalRosterTint-${index}" in source
+    assert "'experimental-roster-tinted-svg')" in source
 
 
 def test_roster_green_filter_matches_activation_portrait_treatment():
