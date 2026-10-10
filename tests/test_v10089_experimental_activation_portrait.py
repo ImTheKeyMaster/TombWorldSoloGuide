@@ -18,7 +18,7 @@ def activation_source():
 
 def portrait_css():
     return CSS.split(
-        "v10.0.93: Photoshop-matched colorize and hard clip at the Movement boundary.",
+        "v10.0.95: Preserve side-facing portrait edges and reach the Movement border.",
         1,
     )[1]
 
