@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 from versioning import CURRENT_APP_VERSION
 
@@ -8,6 +9,7 @@ CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
 INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
 WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 SERGEANT = ROOT / "Assets" / "Images" / "TombUI" / "DeathwatchRoster" / "sergeant-fixed.svg"
+DEATHWATCH = json.loads((ROOT / "Player_Operatives" / "DeathWatch.json").read_text(encoding="utf-8"))
 
 
 def roster_source():
@@ -45,8 +47,8 @@ def test_roster_portraits_use_bottom_aligned_contain_not_cover():
 
 
 def test_phone_portrait_height_matches_the_five_slot_roster():
+    assert DEATHWATCH["rosterSize"] == 5
     assert 'height:min(64px,calc((100vw - 90px)/5))' in CSS
-    assert 'assert DEATHWATCH["rosterSize"] == 5' not in APP
 
 
 def test_detail_panel_has_visible_stand_in_before_selection():
