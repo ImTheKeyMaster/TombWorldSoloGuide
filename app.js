@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.98';
+  const APP_VERSION = '10.0.99';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5416,6 +5416,17 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
       </div>
     </section>`);
     modal.classList.add('experimental-roster-rail-modal');
+
+    const updateRosterNameDensity=()=>{
+      $$('[data-roster-operative]',modal).forEach(button=>{
+        const name=button.querySelector('.experimental-roster-name');
+        if(!name)return;
+        button.classList.remove('single-line-name');
+        const lineHeight=parseFloat(getComputedStyle(name).lineHeight)||0;
+        if(lineHeight&&name.scrollHeight<=lineHeight*1.35)button.classList.add('single-line-name');
+      });
+    };
+    requestAnimationFrame(updateRosterNameDensity);
 
     let selectedId='';
     const confirm=$('#confirmExperimentalRosterSelection');
