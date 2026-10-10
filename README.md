@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.0.92
+# Tomb World Battle Guide v10.0.93
+
+## v10.0.93
+
+### Photoshop-Matched Activation Portrait
+
+- Rebuilds the Deathwatch activation portrait treatment to mirror the approved Photoshop workflow: grayscale first, then RGB colorization approximating Hue 135, Saturation 23, Lightness 0.
+- Uses HSL-derived lookup tables across the grayscale range so highlights and midtones retain the mockup's pale green character instead of drifting too dark or too saturated.
+- Keeps the luminance-keyed transparent background treatment and a lighter sharpening pass for crisp miniature detail.
+- Clips the portrait container at its lower edge so the miniature reaches the Movement panel but never paints into it.
+- Remains limited to Experimental Tomb UI + Deathwatch.
+
 
 ## v10.0.92
 

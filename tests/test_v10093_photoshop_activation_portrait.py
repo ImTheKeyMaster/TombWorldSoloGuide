@@ -1,0 +1,72 @@
+from pathlib import Path
+
+from versioning import CURRENT_APP_VERSION
+
+ROOT = Path(__file__).resolve().parents[1]
+APP = (ROOT / "app.js").read_text(encoding="utf-8")
+CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
+INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
+WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
+
+
+def portrait_source():
+    return APP[
+        APP.index("function renderHumanActivationShell")
+        : APP.index("function renderHumanPlayerActionPicker")
+    ]
+
+
+def portrait_css():
+    return CSS.split(
+        "v10.0.93: Photoshop-matched colorize and hard clip at the Movement boundary.",
+        1,
+    )[1].split(".fight-sequence", 1)[0]
+
+
+def test_release_is_v10093_or_newer():
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 93)
+    assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
+
+
+def test_portrait_grayscales_before_colorization():
+    source = portrait_source()
+    gray = ".2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0"
+    assert gray in source
+    assert 'result="grayKeyed"' in source
+
+
+def test_colorization_matches_hue_135_saturation_23_lightness_zero_curve():
+    source = portrait_source()
+    assert 'tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"' in source
+    assert 'tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"' in source
+    assert 'tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"' in source
+
+
+def test_background_is_keyed_out_and_portrait_stays_crisp():
+    source = portrait_source()
+    assert '1.063 3.576 .361 0 -.28' in source
+    assert '<feFuncA type="linear" slope="1.08" intercept="-.01"' in source
+    assert '<feConvolveMatrix in="colorized"' in source
+    assert 'kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0"' in source
+
+
+def test_portrait_is_clipped_at_movement_boundary():
+    block = portrait_css()
+    portrait = block.split(
+        'html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{',
+        1,
+    )[1].split("}", 1)[0]
+    assert "min-height:208px" in portrait
+    assert "overflow:hidden" in portrait
+    assert "background:transparent" in portrait
+
+
+def test_change_remains_experimental_and_deathwatch_only():
+    source = APP[
+        APP.index("function renderHumanPlayerActionPicker")
+        : APP.index("function playerSequentialStage")
+    ]
+    assert "document.documentElement.dataset.ui==='tomb'" in source
+    assert "selectedPlayerTeamName().toLowerCase()==='deathwatch'" in source
