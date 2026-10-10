@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.95
+# Tomb World Battle Guide v10.0.96
+
+## v10.0.96
+
+### Flush Activation Portrait Anchoring
+
+- Shifts the Experimental Deathwatch activation portrait to the modal's right edge so the miniature visually touches the activation frame instead of stopping at the modal's inner padding.
+- Pulls the Movement group up to the activation header boundary so the portrait reaches and touches the Movement frame with no visible gap.
+- Adds a dedicated alpha clamp after sharpening that removes the remaining low-opacity source background while preserving the approved grayscale/colorized miniature treatment.
+- Keeps the high-resolution 384×384 activation art, side-safe overflow, and Experimental Deathwatch-only scope.
+
 
 ## v10.0.95
 
