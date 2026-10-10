@@ -68,12 +68,10 @@ def test_roster_assets_are_individual_complete_and_precached():
     definition_ids = {item["id"] for item in DEATHWATCH["operatives"]}
     assert definition_ids == set(OPERATIVES)
     for operative_id in OPERATIVES:
-        asset = ASSET_ROOT / f"{operative_id}.svg"
+        asset = ASSET_ROOT / f"{operative_id}.webp"
         assert asset.is_file(), operative_id
-        svg = asset.read_text(encoding="utf-8")
-        assert 'viewBox="0 0 160 160"' in svg, operative_id
-        assert "M15 149h130" in svg, operative_id
-        worker_path = f"./Assets/Images/TombUI/DeathwatchRoster/{operative_id}.svg"
+        assert asset.stat().st_size > 3000, operative_id
+        worker_path = f"./Assets/Images/TombUI/DeathwatchRoster/{operative_id}.webp"
         assert worker_path in WORKER
     assert "DeathwatchRoster/" in APP
     assert "sprite" not in APP[APP.index("const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT") : APP.index("function showPlayerActivation")].lower()
