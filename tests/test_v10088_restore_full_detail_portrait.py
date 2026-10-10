@@ -40,4 +40,4 @@ def test_dialog_height_is_reserved_by_the_detail_panel_not_by_shrinking_the_port
         'html[data-ui="tomb"] .experimental-roster-detail-image{', 1
     )[1].split("}", 1)[0]
     assert "align-self:stretch" in frame
-    assert "height:156px" not in frame
+    assert all(not declaration.strip().startswith("height:") for declaration in frame.split(";"))
