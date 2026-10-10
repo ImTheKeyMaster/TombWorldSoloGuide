@@ -1760,7 +1760,7 @@ html[data-ui="tomb"] .experimental-roster-item.selected{
 html[data-ui="tomb"] .experimental-roster-image{
   display:block;
   width:100%;
-  aspect-ratio:1;
+  height:clamp(64px,11vw,96px);
   overflow:hidden;
   border-radius:6px;
 }
@@ -1907,6 +1907,7 @@ html[data-ui="tomb"] .experimental-roster-actions{margin-top:0}
   html[data-ui="tomb"] .experimental-roster-picker{gap:7px}
   html[data-ui="tomb"] .experimental-roster-instruction{font-size:.76rem}
   html[data-ui="tomb"] .experimental-roster-item{min-height:78px;padding:3px 3px 25px}
+  html[data-ui="tomb"] .experimental-roster-image{height:52px}
   html[data-ui="tomb"] .experimental-roster-name{font-size:.58rem}
   html[data-ui="tomb"] .experimental-roster-detail{
     grid-template-columns:88px minmax(0,1fr);
