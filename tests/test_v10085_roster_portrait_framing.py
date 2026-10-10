@@ -44,6 +44,11 @@ def test_roster_portraits_use_bottom_aligned_contain_not_cover():
     assert "object-fit:cover" not in image
 
 
+def test_phone_portrait_height_matches_the_five_slot_roster():
+    assert 'height:min(64px,calc((100vw - 90px)/5))' in CSS
+    assert 'assert DEATHWATCH["rosterSize"] == 5' not in APP
+
+
 def test_detail_panel_has_visible_stand_in_before_selection():
     source = roster_source()
     assert 'class="experimental-roster-detail-image placeholder"' in source
