@@ -1448,7 +1448,7 @@ button.tracker-operative:hover{
   .human-npo-action .human-action-status{max-width:48%}
 }
 
-/* v10.0.89: Experimental Deathwatch activation portrait. */
+/* v10.0.91: Experimental Deathwatch activation portrait with luminance-keyed alpha. */
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait{
   position:relative;
   isolation:isolate;
@@ -1474,23 +1474,23 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimenta
   position:relative;
   z-index:0;
   align-self:stretch;
-  min-height:166px;
+  min-height:174px;
   overflow:hidden;
   pointer-events:none;
   transform:translateY(-38px);
   margin-bottom:-38px;
-  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 66%,transparent 100%);
-  mask-image:linear-gradient(to bottom,#000 0%,#000 66%,transparent 100%);
+  background:transparent;
 }
-html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait img{
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{
+  position:absolute;
+  top:-18px;
+  right:-20%;
   display:block;
-  width:100%;
-  height:128%;
-  object-fit:cover;
-  object-position:center top;
-  opacity:.42;
-  filter:grayscale(1) sepia(1) saturate(2.35) hue-rotate(72deg) brightness(1.1) contrast(1.15);
-  mix-blend-mode:screen;
+  width:170%;
+  height:auto;
+  max-width:none;
+  overflow:visible;
+  background:transparent;
 }
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>:not(h2):not(.activation-profile-strip):not(.experimental-activation-portrait){
   grid-column:1 / -1;
@@ -1501,13 +1501,14 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>:not(h2):not
     column-gap:9px;
   }
   html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{
-    min-height:150px;
+    min-height:158px;
     transform:translateY(-32px);
     margin-bottom:-32px;
   }
-  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait img{
-    height:132%;
-    opacity:.38;
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{
+    top:-14px;
+    right:-24%;
+    width:178%;
   }
 }
 @media(max-width:380px){
@@ -1515,49 +1516,11 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>:not(h2):not
     grid-template-columns:minmax(0,1fr) 112px;
   }
   html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{
-    min-height:138px;
+    min-height:144px;
     transform:translateY(-26px);
     margin-bottom:-26px;
   }
-}
-
-
-/* v10.0.90: Match the Experimental activation portrait to the high-contrast mockup. */
-html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{
-  min-height:174px;
-  overflow:hidden;
-  background:transparent;
-  -webkit-mask-image:none;
-  mask-image:none;
-}
-html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait img{
-  position:absolute;
-  top:-18px;
-  right:-20%;
-  width:170%;
-  height:auto;
-  max-width:none;
-  object-fit:contain;
-  object-position:center top;
-  opacity:.96;
-  background:transparent;
-  filter:grayscale(1) sepia(.24) saturate(1.55) hue-rotate(72deg) brightness(1.03) contrast(1.65);
-  mix-blend-mode:lighten;
-  transform:none;
-}
-@media(max-width:520px){
-  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{
-    min-height:158px;
-  }
-  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait img{
-    top:-14px;
-    right:-24%;
-    width:178%;
-    opacity:.96;
-  }
-}
-@media(max-width:380px){
-  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait img{
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{
     top:-10px;
     right:-27%;
     width:184%;
