@@ -1448,7 +1448,7 @@ button.tracker-operative:hover{
   .human-npo-action .human-action-status{max-width:48%}
 }
 
-/* v10.0.93: Photoshop-matched colorize and hard clip at the Movement boundary. */
+/* v10.0.95: Preserve side-facing portrait edges and reach the Movement border. */
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait{
   position:relative;
   isolation:isolate;
@@ -1461,12 +1461,16 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>h2{
   grid-column:1;
   grid-row:1;
   align-self:end;
+  position:relative;
+  z-index:1;
 }
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.activation-profile-strip{
   grid-column:1;
   grid-row:2;
   align-self:start;
   margin:.45rem 0 0;
+  position:relative;
+  z-index:1;
 }
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{
   grid-column:2;
@@ -1475,7 +1479,8 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimenta
   z-index:0;
   align-self:stretch;
   min-height:208px;
-  overflow:hidden;
+  overflow:visible;
+  clip-path:inset(-96px -96px 0 -96px);
   pointer-events:none;
   transform:translateY(-38px);
   margin-bottom:-38px;
@@ -1483,8 +1488,8 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimenta
 }
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{
   position:absolute;
-  top:-14px;
-  right:-18%;
+  top:4px;
+  right:-10%;
   display:block;
   width:176%;
   height:auto;
@@ -1506,8 +1511,8 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>:not(h2):not
     margin-bottom:-32px;
   }
   html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{
-    top:-10px;
-    right:-22%;
+    top:2px;
+    right:-12%;
     width:184%;
   }
 }
@@ -1521,8 +1526,8 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>:not(h2):not
     margin-bottom:-26px;
   }
   html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{
-    top:-8px;
-    right:-25%;
+    top:2px;
+    right:-14%;
     width:190%;
   }
 }
