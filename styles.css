@@ -1448,6 +1448,79 @@ button.tracker-operative:hover{
   .human-npo-action .human-action-status{max-width:48%}
 }
 
+/* v10.0.89: Experimental Deathwatch activation portrait. */
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait{
+  position:relative;
+  isolation:isolate;
+  grid-template-columns:minmax(0,1fr) minmax(145px,34%);
+  grid-template-rows:auto auto;
+  column-gap:12px;
+  row-gap:6px;
+}
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>h2{
+  grid-column:1;
+  grid-row:1;
+  align-self:end;
+}
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.activation-profile-strip{
+  grid-column:1;
+  grid-row:2;
+  align-self:start;
+  margin:.45rem 0 0;
+}
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{
+  grid-column:2;
+  grid-row:1 / span 2;
+  position:relative;
+  z-index:0;
+  align-self:stretch;
+  min-height:166px;
+  overflow:hidden;
+  pointer-events:none;
+  transform:translateY(-38px);
+  margin-bottom:-38px;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 66%,transparent 100%);
+  mask-image:linear-gradient(to bottom,#000 0%,#000 66%,transparent 100%);
+}
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait img{
+  display:block;
+  width:100%;
+  height:128%;
+  object-fit:cover;
+  object-position:center top;
+  opacity:.42;
+  filter:grayscale(1) sepia(1) saturate(2.35) hue-rotate(72deg) brightness(1.1) contrast(1.15);
+  mix-blend-mode:screen;
+}
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>:not(h2):not(.activation-profile-strip):not(.experimental-activation-portrait){
+  grid-column:1 / -1;
+}
+@media(max-width:520px){
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait{
+    grid-template-columns:minmax(0,1fr) minmax(122px,32%);
+    column-gap:9px;
+  }
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{
+    min-height:150px;
+    transform:translateY(-32px);
+    margin-bottom:-32px;
+  }
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait img{
+    height:132%;
+    opacity:.38;
+  }
+}
+@media(max-width:380px){
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait{
+    grid-template-columns:minmax(0,1fr) 112px;
+  }
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{
+    min-height:138px;
+    transform:translateY(-26px);
+    margin-bottom:-26px;
+  }
+}
+
 .fight-sequence{display:grid;gap:14px}
 .fight-pools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .fight-pool{display:grid;gap:7px;padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.18)}

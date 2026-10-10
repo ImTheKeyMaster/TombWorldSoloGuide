@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.88
+# Tomb World Battle Guide v10.0.89
+
+## v10.0.89
+
+### Experimental Activation Operative Portrait
+
+- Adds a subtle green-scale image of the active Deathwatch operative to the upper-right of the human activation screen.
+- Reuses the existing Deathwatch Roster Rail portrait for the active operative, including the corrected Sergeant source.
+- Uses a muted green HUD treatment with screen blending and a lower fade so the portrait reads as atmosphere rather than primary content.
+- Keeps the image non-interactive and reserves its own header column so it does not cover activation text or action controls.
+- Applies only to Experimental Tomb UI + Deathwatch. Current mode and all other Kill Teams remain unchanged.
 
 ## v10.0.88
 
