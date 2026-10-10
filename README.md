@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.89
+# Tomb World Battle Guide v10.0.90
+
+## v10.0.90
+
+### Experimental Activation Portrait Polish
+
+- Enlarges the Deathwatch activation portrait to match the approved mockup proportions more closely.
+- Raises contrast so miniature details read clearly against the dark activation panel.
+- Uses a lightening blend with contrast-crushed source backgrounds so the portrait visually behaves like a transparent cutout instead of a visible square image.
+- Removes the previous lower fade and keeps the portrait clipped naturally by the activation header area.
+- Preserves the existing Experimental Tomb UI + Deathwatch-only scope. Current mode and other Kill Teams remain unchanged.
 
 ## v10.0.89
 
