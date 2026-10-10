@@ -22,36 +22,43 @@ def test_release_surfaces_are_v10087_or_newer():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
 
 
-def test_detail_image_frame_has_fixed_desktop_height():
+def test_detail_panel_reserves_desktop_portrait_footprint():
     block = roster_css()
-    rule = block.split(
+    detail = block.split(
+        'html[data-ui="tomb"] .experimental-roster-detail{', 1
+    )[1].split("}", 1)[0]
+    assert "min-height:206px" in detail
+
+    frame = block.split(
         'html[data-ui="tomb"] .experimental-roster-detail-image{', 1
     )[1].split("}", 1)[0]
-    assert "align-self:center" in rule
-    assert "height:156px" in rule
-    assert "min-height:156px" in rule
+    assert "align-self:stretch" in frame
+    assert "min-height:156px" in frame
+    assert "height:156px" not in frame
 
     image = block.split(
         'html[data-ui="tomb"] .experimental-roster-detail-image img{', 1
     )[1].split("}", 1)[0]
     assert "height:100%" in image
-    assert "max-height:none" in image
+    assert "max-height:180px" in image
 
 
-def test_detail_image_frame_has_fixed_phone_height():
+def test_detail_panel_reserves_phone_portrait_footprint():
     block = roster_css()
     mobile = block.split("@media(max-width:600px)", 1)[1].split(
         "@media(max-height:520px)", 1
     )[0]
-    assert 'experimental-roster-detail-image{height:112px;min-height:112px}' in mobile
-    assert 'experimental-roster-detail-image img{max-height:none}' in mobile
+    assert "min-height:142px" in mobile
+    assert 'experimental-roster-detail-image{min-height:112px}' in mobile
+    assert 'experimental-roster-detail-image img{max-height:122px}' in mobile
 
 
-def test_detail_image_frame_has_fixed_compact_landscape_height():
+def test_detail_panel_reserves_compact_landscape_portrait_footprint():
     block = roster_css()
     landscape = block.split("@media(max-height:520px) and (orientation:landscape)", 1)[1]
-    assert 'experimental-roster-detail-image{height:80px;min-height:80px}' in landscape
-    assert 'experimental-roster-detail-image img{max-height:none}' in landscape
+    assert "min-height:104px" in landscape
+    assert 'experimental-roster-detail-image{min-height:80px}' in landscape
+    assert 'experimental-roster-detail-image img{max-height:88px}' in landscape
 
 
 def test_fix_remains_experimental_only():
