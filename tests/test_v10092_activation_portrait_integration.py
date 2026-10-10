@@ -11,7 +11,7 @@ WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 
 def portrait_css():
     return CSS.split(
-        "v10.0.93: Photoshop-matched colorize and hard clip at the Movement boundary.",
+        "v10.0.95: Preserve side-facing portrait edges and reach the Movement border.",
         1,
     )[1].split(".fight-sequence", 1)[0]
 
@@ -59,10 +59,11 @@ def test_portrait_can_reach_movement_panel_without_black_box_clipping():
         1,
     )[1].split("}", 1)[0]
     assert "min-height:208px" in portrait
-    assert "overflow:hidden" in portrait
+    assert "overflow:visible" in portrait
+    assert "clip-path:inset(-96px -96px 0 -96px)" in portrait
     assert "background:transparent" in portrait
-    assert "top:-14px" in art
-    assert "right:-18%" in art
+    assert "top:4px" in art
+    assert "right:-10%" in art
     assert "width:176%" in art
 
 
