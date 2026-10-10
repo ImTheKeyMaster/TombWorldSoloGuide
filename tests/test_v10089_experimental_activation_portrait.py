@@ -18,7 +18,7 @@ def activation_source():
 
 def portrait_css():
     return CSS.split(
-        "v10.0.91: Experimental Deathwatch activation portrait with luminance-keyed alpha.",
+        "v10.0.92: Brighter, sharper Experimental Deathwatch activation portrait with integrated vertical reach.",
         1,
     )[1]
 
