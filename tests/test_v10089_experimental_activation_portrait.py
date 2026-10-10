@@ -18,7 +18,7 @@ def activation_source():
 
 def portrait_css():
     return CSS.split(
-        "v10.0.92: Brighter, sharper Experimental Deathwatch activation portrait with integrated vertical reach.",
+        "v10.0.93: Photoshop-matched colorize and hard clip at the Movement boundary.",
         1,
     )[1]
 
