@@ -1,4 +1,16 @@
-# Tomb World Battle Guide v10.0.94
+# Tomb World Battle Guide v10.0.95
+
+## v10.0.95
+
+### Activation Portrait Framing
+
+- Keeps the high-resolution Deathwatch activation portraits from v10.0.94.
+- Opens the portrait clipping region on the left and right so side-facing poses are not cut off at the portrait column edge.
+- Keeps the lower edge clipped at the activation header boundary so artwork still cannot paint into the Movement panel.
+- Lowers the portrait artwork slightly so the miniature reaches and visually touches the Movement panel border.
+- Keeps the operative name and profile chips above any portrait overflow for readability.
+- Remains limited to Experimental Tomb UI + Deathwatch.
+
 
 ## v10.0.94
 
