@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.85
+# Tomb World Battle Guide v10.0.86
+
+## v10.0.86
+
+### Experimental Roster Rail Polish
+
+- Rounds the outer corners of the first and last operative cells so the selector follows the curved rail instead of appearing clipped.
+- Removes the small triangular selection marker; the green selected border/glow remains the only selection treatment.
+- Reserves the full stats and description footprint before selection so the activation dialog no longer changes height when the first operative is chosen.
+- Keeps the detail stand-in image, keyboard behavior, gameplay logic, Current UI, and non-Deathwatch activation flows unchanged.
 
 ## v10.0.85
 
