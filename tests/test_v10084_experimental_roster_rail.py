@@ -101,3 +101,13 @@ def test_new_roster_styles_are_experimental_only():
 def test_experimental_panel_copy_mentions_roster_rail():
     assert "Experimental Tomb UI" in INDEX
     assert "Deathwatch Roster Rail" in INDEX
+
+
+def test_mobile_roster_labels_remain_readable_and_can_wrap():
+    block = CSS.split("Experimental Deathwatch Roster Rail. Current UI is intentionally untouched.", 1)[1]
+    assert "font-size:clamp(.6rem,1.55vw,.7rem)" in block
+    assert "white-space:normal" in block
+    assert "-webkit-line-clamp:2" in block
+    mobile = block.split("@media(max-width:600px)", 1)[1].split("@media(max-height:520px)", 1)[0]
+    assert "font-size:.62rem" in mobile
+    assert "padding:4px 2px 29px" in mobile
