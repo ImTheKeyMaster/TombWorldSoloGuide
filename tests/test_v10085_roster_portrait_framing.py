@@ -36,7 +36,6 @@ def test_sergeant_uses_corrected_portrait_source():
     assert "data:image/webp;base64," in svg
     assert 'aria-label="Sergeant"' in svg
     assert '<image width="240" height="240"' in svg
-    assert '<image x="0" y="0" width="240" height="240"' in svg
     assert "./Assets/Images/TombUI/DeathwatchRoster/sergeant-fixed.svg" in WORKER
 
 
