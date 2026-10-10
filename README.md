@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.0.91
+# Tomb World Battle Guide v10.0.92
+
+## v10.0.92
+
+### Activation Portrait Brightness and Integration
+
+- Lifts Deathwatch portrait shadows and midtones so armor, weapon, and face details read much closer to the approved mockup.
+- Adds a light sharpening pass inside the SVG filter without reintroducing the muddy CSS post-processing removed in v10.0.91.
+- Preserves more dark miniature detail by softening the luminance-key threshold while keeping the studio background transparent.
+- Enlarges the portrait slightly and allows it to extend naturally down toward the Movement panel, where the later-painted Movement card clips the lower miniature and visually integrates it into the activation layout.
+- Keeps the change limited to Experimental Tomb UI + Deathwatch.
+
 
 ## v10.0.91
 
