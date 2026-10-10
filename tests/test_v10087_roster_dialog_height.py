@@ -34,7 +34,7 @@ def test_detail_panel_reserves_desktop_portrait_footprint():
     )[1].split("}", 1)[0]
     assert "align-self:stretch" in frame
     assert "min-height:156px" in frame
-    assert "height:156px" not in frame
+    assert all(not declaration.strip().startswith("height:") for declaration in frame.split(";"))
 
     image = block.split(
         'html[data-ui="tomb"] .experimental-roster-detail-image img{', 1
