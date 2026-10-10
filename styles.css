@@ -1764,11 +1764,15 @@ html[data-ui="tomb"] .experimental-roster-image{
   overflow:hidden;
   border-radius:6px;
 }
+html[data-ui="tomb"] .experimental-roster-image{
+  background:#050d09;
+}
 html[data-ui="tomb"] .experimental-roster-image img{
   display:block;
   width:100%;
   height:100%;
-  object-fit:cover;
+  object-fit:contain;
+  object-position:center bottom;
 }
 html[data-ui="tomb"] .experimental-roster-name{
   position:absolute;
@@ -1835,6 +1839,16 @@ html[data-ui="tomb"] .experimental-roster-detail-image img{
   height:100%;
   max-height:180px;
   object-fit:contain;
+  object-position:center bottom;
+}
+html[data-ui="tomb"] .experimental-roster-detail-image.placeholder img{
+  width:46%;
+  height:46%;
+  max-width:78px;
+  max-height:78px;
+  object-position:center;
+  opacity:.28;
+  filter:grayscale(1) brightness(1.5) drop-shadow(0 0 10px rgba(118,245,168,.18));
 }
 html[data-ui="tomb"] .experimental-roster-detail-copy{min-width:0}
 html[data-ui="tomb"] .experimental-roster-detail-copy .eyebrow{margin:0 0 4px}
@@ -1881,6 +1895,7 @@ html[data-ui="tomb"] .experimental-roster-actions{margin-top:0}
   html[data-ui="tomb"] .experimental-roster-picker{gap:10px}
   html[data-ui="tomb"] .experimental-roster-rail-shell{padding:4px}
   html[data-ui="tomb"] .experimental-roster-item{min-height:96px;padding:4px 2px 29px}
+  html[data-ui="tomb"] .experimental-roster-image{height:min(64px,calc((100vw - 90px)/5))}
   html[data-ui="tomb"] .experimental-roster-name{font-size:.62rem;letter-spacing:0}
   html[data-ui="tomb"] .experimental-roster-detail{
     grid-template-columns:108px minmax(0,1fr);

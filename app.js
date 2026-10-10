@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.84';
+  const APP_VERSION = '10.0.85';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5363,8 +5363,10 @@ document.addEventListener('touchend',function(e){
   }
 
 const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/DeathwatchRoster/';
+  const EXPERIMENTAL_DEATHWATCH_SERGEANT_IMAGE=`${EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT}sergeant-fixed.svg`;
 
   function experimentalDeathwatchRosterImage(id){
+    if(id==='sergeant')return EXPERIMENTAL_DEATHWATCH_SERGEANT_IMAGE;
     return `${EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT}${encodeURIComponent(id)}.webp`;
   }
 
@@ -5383,7 +5385,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
         <div class="experimental-roster-rail" role="radiogroup" aria-label="Ready Deathwatch operatives">${items}</div>
       </div>
       <section class="experimental-roster-detail" aria-live="polite">
-        <div class="experimental-roster-detail-image" aria-hidden="true"><img id="experimentalRosterDetailImage" alt="" hidden></div>
+        <div class="experimental-roster-detail-image placeholder" aria-hidden="true"><img id="experimentalRosterDetailImage" src="Assets/icon.svg" alt=""></div>
         <div class="experimental-roster-detail-copy">
           <p class="eyebrow">DEATHWATCH OPERATIVE</p>
           <h3 id="experimentalRosterDetailName">Choose an operative</h3>
@@ -5417,7 +5419,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
       const definition=playerDefinition(selectedId)||operative;
       const apl=effectiveApl(selectedId,Number(definition.apl||3));
       detailImage.src=experimentalDeathwatchRosterImage(selectedId);
-      detailImage.hidden=false;
+      detailImage.closest('.experimental-roster-detail-image')?.classList.remove('placeholder');
       detailName.textContent=playerName(selectedId);
       detailRole.textContent=operative.role||'Operative';
       stats.innerHTML=`<span><small>APL</small><strong>${escapeHtml(String(apl))}</strong></span><span><small>MOVE</small><strong>${escapeHtml(String(operative.move??'—'))}"</strong></span><span><small>SAVE</small><strong>${escapeHtml(String(operative.save??'—'))}+</strong></span><span><small>WOUNDS</small><strong>${escapeHtml(String(playerCurrentWounds(selectedId)))} / ${escapeHtml(String(definition.wounds??'—'))}</strong></span>`;

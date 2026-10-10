@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '10.0.84';
+const APP_VERSION = '10.0.85';
 const CACHE_PREFIX = 'tomb-world-battle-guide-';
 const LEGACY_CACHE_PREFIXES = ['tomb-world-solo-guide-'];
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
@@ -13,7 +13,7 @@ const PRECACHE_ASSETS = [
   './', APP_SHELL, `./analytics.js?release=${APP_VERSION}`, `./event-effects.js?v=${APP_VERSION}`, `./audio-capabilities.js?v=${APP_VERSION}`, `./narration.js?v=${APP_VERSION}`, `./narration-transcript.js?v=${APP_VERSION}`, `./ambient.js?v=${APP_VERSION}`, `./dice-sfx.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`,
   './manifest.webmanifest', './Assets/icon.svg', './Assets/icon-180.png', './Assets/icon-192.png', './Assets/icon-512.png', './Assets/icon-1024.png', './Assets/Icons/move-to-shoot.svg', './Assets/Images/eliminated-necron-skull.png',
   './Assets/Images/defeat.png', './Assets/Images/victory.png',
-  './Assets/Images/TombUI/DeathwatchRoster/sergeant.webp', './Assets/Images/TombUI/DeathwatchRoster/aegis.webp',
+  './Assets/Images/TombUI/DeathwatchRoster/sergeant.webp', './Assets/Images/TombUI/DeathwatchRoster/sergeant-fixed.svg', './Assets/Images/TombUI/DeathwatchRoster/aegis.webp',
   './Assets/Images/TombUI/DeathwatchRoster/breacher.webp', './Assets/Images/TombUI/DeathwatchRoster/blademaster.webp',
   './Assets/Images/TombUI/DeathwatchRoster/marksman.webp', './Assets/Images/TombUI/DeathwatchRoster/demolisher.webp',
   './Assets/Images/TombUI/DeathwatchRoster/horde-slayer.webp', './Assets/Images/TombUI/DeathwatchRoster/headtaker.webp',
