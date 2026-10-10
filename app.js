@@ -5365,7 +5365,7 @@ document.addEventListener('touchend',function(e){
 const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/DeathwatchRoster/';
 
   function experimentalDeathwatchRosterImage(id){
-    return `${EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT}${encodeURIComponent(id)}.webp`;
+    return `${EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT}${encodeURIComponent(id)}.svg`;
   }
 
   function showExperimentalDeathwatchRosterRail(candidates){
