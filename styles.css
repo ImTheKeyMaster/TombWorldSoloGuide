@@ -1650,6 +1650,9 @@ html[data-ui="tomb"] .setup-true-hex-card>*:not(.setup-hex-art):not(.wizard-acti
   position:relative;
   z-index:1;
 }
+html[data-ui="tomb"] .setup-true-hex-card>.wizard-actions .btn.ghost{
+  background:#07140f;
+}
 @media(min-width:601px){
   html[data-ui="tomb"] .setup-true-hex-card>.wizard-actions{
     position:relative;
