@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.85';
+  const APP_VERSION = '10.0.86';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5375,7 +5375,6 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
       return `<button type="button" class="experimental-roster-item" role="radio" aria-checked="false" tabindex="${index===0?'0':'-1'}" data-roster-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
         <span class="experimental-roster-image"><img src="${experimentalDeathwatchRosterImage(id)}" alt="" aria-hidden="true"></span>
         <span class="experimental-roster-name">${escapeHtml(playerName(id))}</span>
-        <span class="experimental-roster-notch" aria-hidden="true"></span>
       </button>`;
     }).join('');
 
@@ -5389,8 +5388,13 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
         <div class="experimental-roster-detail-copy">
           <p class="eyebrow">DEATHWATCH OPERATIVE</p>
           <h3 id="experimentalRosterDetailName">Choose an operative</h3>
-          <p id="experimentalRosterDetailRole">Select a portrait above to review the operative before beginning its activation.</p>
-          <div class="experimental-roster-stats" id="experimentalRosterStats" hidden></div>
+          <p id="experimentalRosterDetailRole">Select an operative above.</p>
+          <div class="experimental-roster-stats placeholder" id="experimentalRosterStats" aria-hidden="true">
+            <span><small>APL</small><strong>—</strong></span>
+            <span><small>MOVE</small><strong>—</strong></span>
+            <span><small>SAVE</small><strong>—</strong></span>
+            <span><small>WOUNDS</small><strong>—</strong></span>
+          </div>
         </div>
       </section>
       <div class="wizard-actions experimental-roster-actions">
@@ -5423,7 +5427,8 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
       detailName.textContent=playerName(selectedId);
       detailRole.textContent=operative.role||'Operative';
       stats.innerHTML=`<span><small>APL</small><strong>${escapeHtml(String(apl))}</strong></span><span><small>MOVE</small><strong>${escapeHtml(String(operative.move??'—'))}"</strong></span><span><small>SAVE</small><strong>${escapeHtml(String(operative.save??'—'))}+</strong></span><span><small>WOUNDS</small><strong>${escapeHtml(String(playerCurrentWounds(selectedId)))} / ${escapeHtml(String(definition.wounds??'—'))}</strong></span>`;
-      stats.hidden=false;
+      stats.classList.remove('placeholder');
+      stats.removeAttribute('aria-hidden');
       confirm.disabled=false;
     };
 
