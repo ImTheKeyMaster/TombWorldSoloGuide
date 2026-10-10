@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.97';
+  const APP_VERSION = '10.0.98';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5377,10 +5377,16 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     return `${EXPERIMENTAL_DEATHWATCH_ACTIVATION_IMAGE_ROOT}${encodeURIComponent(id)}.webp`;
   }
 
+  function experimentalDeathwatchGreenPortraitSvg(id,filterId,svgClass=''){
+    const safeFilterId=escapeHtml(filterId);
+    const safeClass=escapeHtml(svgClass);
+    return `<svg class="${safeClass}" viewBox="0 0 384 384" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><defs><filter id="${safeFilterId}" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values=".2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 1.063 3.576 .361 0 -.28" result="grayKeyed"/><feComponentTransfer in="grayKeyed" result="tightKey"><feFuncA type="table" tableValues="0 0 0 0 .2 .65 .9 1 1"/></feComponentTransfer><feComponentTransfer in="grayKeyed" result="colorized"><feFuncR type="table" tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"/><feFuncG type="table" tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"/><feFuncB type="table" tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"/><feFuncA type="linear" slope="1.08" intercept="-.01"/></feComponentTransfer><feConvolveMatrix in="colorized" order="3" kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0" divisor="1" preserveAlpha="true" result="sharpened"/><feComposite in="sharpened" in2="tightKey" operator="in" result="finalPortrait"/></filter></defs><image href="${escapeHtml(experimentalDeathwatchActivationImage(id))}" x="0" y="0" width="384" height="384" preserveAspectRatio="xMidYMid meet" filter="url(#${safeFilterId})"/></svg>`;
+  }
+
   function showExperimentalDeathwatchRosterRail(candidates){
     const items=candidates.map((id,index)=>{
       return `<button type="button" class="experimental-roster-item" role="radio" aria-checked="false" tabindex="${index===0?'0':'-1'}" data-roster-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
-        <span class="experimental-roster-image"><img src="${experimentalDeathwatchRosterImage(id)}" alt="" aria-hidden="true"></span>
+        <span class="experimental-roster-image">${experimentalDeathwatchGreenPortraitSvg(id,`experimentalRosterTint-${index}`,'experimental-roster-tinted-svg')}</span>
         <span class="experimental-roster-name">${escapeHtml(playerName(id))}</span>
       </button>`;
     }).join('');
@@ -5391,7 +5397,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
         <div class="experimental-roster-rail" role="radiogroup" aria-label="Ready Deathwatch operatives">${items}</div>
       </div>
       <section class="experimental-roster-detail" aria-live="polite">
-        <div class="experimental-roster-detail-image placeholder" aria-hidden="true"><img id="experimentalRosterDetailImage" src="Assets/icon.svg" alt=""></div>
+        <div class="experimental-roster-detail-image placeholder" id="experimentalRosterDetailImage" aria-hidden="true"><img src="Assets/icon.svg" alt=""></div>
         <div class="experimental-roster-detail-copy">
           <p class="eyebrow">DEATHWATCH OPERATIVE</p>
           <h3 id="experimentalRosterDetailName">Choose an operative</h3>
@@ -5429,8 +5435,8 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
       const operative=livePlayerOperative(selectedId)||playerDefinition(selectedId)||{};
       const definition=playerDefinition(selectedId)||operative;
       const apl=effectiveApl(selectedId,Number(definition.apl||3));
-      detailImage.src=experimentalDeathwatchRosterImage(selectedId);
-      detailImage.closest('.experimental-roster-detail-image')?.classList.remove('placeholder');
+      detailImage.innerHTML=experimentalDeathwatchGreenPortraitSvg(selectedId,'experimentalRosterDetailTint','experimental-roster-tinted-svg');
+      detailImage.classList.remove('placeholder');
       detailName.textContent=playerName(selectedId);
       detailRole.textContent=operative.role||'Operative';
       stats.innerHTML=`<span><small>APL</small><strong>${escapeHtml(String(apl))}</strong></span><span><small>MOVE</small><strong>${escapeHtml(String(operative.move??'—'))}"</strong></span><span><small>SAVE</small><strong>${escapeHtml(String(operative.save??'—'))}+</strong></span><span><small>WOUNDS</small><strong>${escapeHtml(String(playerCurrentWounds(selectedId)))} / ${escapeHtml(String(definition.wounds??'—'))}</strong></span>`;

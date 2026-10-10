@@ -55,9 +55,9 @@ def test_phone_portrait_height_matches_the_five_slot_roster():
 def test_detail_panel_has_visible_stand_in_before_selection():
     source = roster_source()
     assert 'class="experimental-roster-detail-image placeholder"' in source
-    assert 'id="experimentalRosterDetailImage" src="Assets/icon.svg"' in source
-    assert 'id="experimentalRosterDetailImage" alt="" hidden' not in source
-    assert "classList.remove('placeholder')" in source
+    assert 'class="experimental-roster-detail-image placeholder" id="experimentalRosterDetailImage"' in source
+    assert '<img src="Assets/icon.svg" alt="">' in source
+    assert "detailImage.classList.remove('placeholder')" in source
     assert "confirmExperimentalRosterSelection" in source
 
 

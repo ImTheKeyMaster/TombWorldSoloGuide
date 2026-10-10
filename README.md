@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.97
+# Tomb World Battle Guide v10.0.98
+
+## v10.0.98
+
+### Green Deathwatch Roster Rail
+
+- Applies the same green grayscale/colorization, sharpening, and hardened background transparency used on the Deathwatch activation portraits to the Roster Rail thumbnails.
+- Applies the same treatment to the selected operative preview in the Roster Rail detail panel.
+- Uses the existing high-resolution Deathwatch activation portrait assets as the source so the Roster Rail keeps the improved miniature detail from recent activation-screen work.
+- Leaves the Current/classic operative picker unchanged and remains limited to Experimental Tomb UI + Deathwatch.
+
 
 ## v10.0.97
 
