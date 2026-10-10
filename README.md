@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.87
+# Tomb World Battle Guide v10.0.88
+
+## v10.0.88
+
+### Restore Full Operative Detail Portrait
+
+- Restores the pre-10.0.87 Deathwatch detail portrait behavior so the full miniature is visible instead of being constrained to the smaller fixed image box.
+- Reserves enough height in the unselected detail panel to match the selected portrait footprint, avoiding the first-selection dialog jump without shrinking the miniature.
+- Preserves the stand-in image, reserved stats/copy footprint, rounded rail ends, selection behavior, Current UI, and non-Deathwatch activation flows.
 
 ## v10.0.87
 
