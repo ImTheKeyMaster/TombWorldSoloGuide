@@ -5418,7 +5418,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     modal.classList.add('experimental-roster-rail-modal');
 
     const updateRosterNameDensity=()=>{
-      $('[data-roster-operative]',modal).forEach(button=>{
+      $$('[data-roster-operative]',modal).forEach(button=>{
         const name=button.querySelector('.experimental-roster-name');
         if(!name)return;
         button.classList.remove('single-line-name');
