@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.93';
+  const APP_VERSION = '10.0.94';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5094,7 +5094,7 @@ document.addEventListener('touchend',function(e){
     }).filter(Boolean).join('');
     const history=completedActions.length?`<section class="summary-box human-completed-actions"><strong>Completed Actions</strong><ul>${completedActions.map(action=>`<li>✓ ${escapeHtml(action.summary||action.name)}</li>`).join('')}</ul></section>`:'';
     const bookkeeping=onFirstRoomEntry?'<div class="activation-bookkeeping" aria-label="Activation bookkeeping"><button type="button" class="btn ghost" id="firstRoomEntry">FIRST ROOM ENTRY</button></div>':'';
-    showModal(title,`<div class="human-activation-shell${portraitUrl?' has-operative-portrait':''}">${portraitUrl?`<div class="experimental-activation-portrait" aria-hidden="true"><svg class="experimental-activation-portrait-svg" viewBox="0 0 192 192" preserveAspectRatio="xMidYMin meet" focusable="false"><defs><filter id="experimentalActivationPortraitCutout" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values=".2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 1.063 3.576 .361 0 -.28" result="grayKeyed"/><feComponentTransfer in="grayKeyed" result="colorized"><feFuncR type="table" tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"/><feFuncG type="table" tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"/><feFuncB type="table" tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"/><feFuncA type="linear" slope="1.08" intercept="-.01"/></feComponentTransfer><feConvolveMatrix in="colorized" order="3" kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0" divisor="1" preserveAlpha="true"/></filter></defs><image href="${escapeHtml(portraitUrl)}" x="0" y="0" width="192" height="192" preserveAspectRatio="xMidYMin meet" filter="url(#experimentalActivationPortraitCutout)"/></svg></div>`:''}<h2>${escapeHtml(name)}</h2><div class="activation-profile-strip" role="status" aria-label="Activation profile"><span>Wounds: ${wounds}/${maxWounds}</span><span><strong>${remainingAp} / ${startingAp} AP remaining</strong></span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${effects.map(effect=>`<span>${escapeHtml(effect)}</span>`).join('')}</div>${bookkeeping}${history}<div class="activation-groups">${groups}</div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="endHumanActivation">End Activation</button></div></div>`,undefined,'human-activation');
+    showModal(title,`<div class="human-activation-shell${portraitUrl?' has-operative-portrait':''}">${portraitUrl?`<div class="experimental-activation-portrait" aria-hidden="true"><svg class="experimental-activation-portrait-svg" viewBox="0 0 512 512" preserveAspectRatio="xMidYMin meet" focusable="false"><defs><filter id="experimentalActivationPortraitCutout" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values=".2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 1.063 3.576 .361 0 -.28" result="grayKeyed"/><feComponentTransfer in="grayKeyed" result="colorized"><feFuncR type="table" tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"/><feFuncG type="table" tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"/><feFuncB type="table" tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"/><feFuncA type="linear" slope="1.08" intercept="-.01"/></feComponentTransfer><feConvolveMatrix in="colorized" order="3" kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0" divisor="1" preserveAlpha="true"/></filter></defs><image href="${escapeHtml(portraitUrl)}" x="0" y="0" width="512" height="512" preserveAspectRatio="xMidYMin meet" filter="url(#experimentalActivationPortraitCutout)"/></svg></div>`:''}<h2>${escapeHtml(name)}</h2><div class="activation-profile-strip" role="status" aria-label="Activation profile"><span>Wounds: ${wounds}/${maxWounds}</span><span><strong>${remainingAp} / ${startingAp} AP remaining</strong></span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${effects.map(effect=>`<span>${escapeHtml(effect)}</span>`).join('')}</div>${bookkeeping}${history}<div class="activation-groups">${groups}</div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="endHumanActivation">End Activation</button></div></div>`,undefined,'human-activation');
     $$('[data-human-action]',modalBody).forEach(button=>button.onclick=()=>onAction(button.dataset.humanAction));
     if(onFirstRoomEntry)$('#firstRoomEntry').onclick=onFirstRoomEntry;
     $('#endHumanActivation').onclick=onEnd;
@@ -5119,7 +5119,7 @@ document.addEventListener('touchend',function(e){
       onEnd:confirmEndHumanPlayerActivation,
       onFirstRoomEntry:unawakenedScoutRooms().length?()=>beginRoomAwakeningSelection('first-entry'):null,
       portraitUrl:document.documentElement.dataset.ui==='tomb'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'
-        ?experimentalDeathwatchRosterImage(activation.operativeId):''
+        ?experimentalDeathwatchActivationImage(activation.operativeId):''
     });
     renderOperativeStatusPanel(activation.operativeId);
   }
@@ -5365,11 +5365,16 @@ document.addEventListener('touchend',function(e){
   }
 
 const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/DeathwatchRoster/';
+  const EXPERIMENTAL_DEATHWATCH_ACTIVATION_IMAGE_ROOT='Assets/Images/TombUI/DeathwatchActivation/';
   const EXPERIMENTAL_DEATHWATCH_SERGEANT_IMAGE=`${EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT}sergeant-fixed.svg`;
 
   function experimentalDeathwatchRosterImage(id){
     if(id==='sergeant')return EXPERIMENTAL_DEATHWATCH_SERGEANT_IMAGE;
     return `${EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT}${encodeURIComponent(id)}.webp`;
+  }
+
+  function experimentalDeathwatchActivationImage(id){
+    return `${EXPERIMENTAL_DEATHWATCH_ACTIVATION_IMAGE_ROOT}${encodeURIComponent(id)}.webp`;
   }
 
   function showExperimentalDeathwatchRosterRail(candidates){
