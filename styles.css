@@ -1775,16 +1775,19 @@ html[data-ui="tomb"] .experimental-roster-name{
   left:2px;
   right:2px;
   bottom:4px;
+  display:-webkit-box;
   overflow:hidden;
   color:#a9c3b4;
-  font-size:clamp(.48rem,1.55vw,.66rem);
+  font-size:clamp(.6rem,1.55vw,.7rem);
   font-weight:900;
-  letter-spacing:.035em;
-  line-height:1.15;
+  letter-spacing:.02em;
+  line-height:1.05;
+  overflow-wrap:anywhere;
   text-align:center;
-  text-overflow:ellipsis;
   text-transform:uppercase;
-  white-space:nowrap;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  white-space:normal;
 }
 html[data-ui="tomb"] .experimental-roster-item.selected .experimental-roster-name{color:var(--green)}
 html[data-ui="tomb"] .experimental-roster-notch{
@@ -1877,8 +1880,8 @@ html[data-ui="tomb"] .experimental-roster-actions{margin-top:0}
   html[data-ui="tomb"] .modal.experimental-roster-rail-modal .modal-inner{padding:18px 14px}
   html[data-ui="tomb"] .experimental-roster-picker{gap:10px}
   html[data-ui="tomb"] .experimental-roster-rail-shell{padding:4px}
-  html[data-ui="tomb"] .experimental-roster-item{min-height:86px;padding:4px 2px 17px}
-  html[data-ui="tomb"] .experimental-roster-name{font-size:.48rem;letter-spacing:0}
+  html[data-ui="tomb"] .experimental-roster-item{min-height:96px;padding:4px 2px 29px}
+  html[data-ui="tomb"] .experimental-roster-name{font-size:.62rem;letter-spacing:0}
   html[data-ui="tomb"] .experimental-roster-detail{
     grid-template-columns:108px minmax(0,1fr);
     gap:11px;
@@ -1903,7 +1906,8 @@ html[data-ui="tomb"] .experimental-roster-actions{margin-top:0}
   html[data-ui="tomb"] .modal.experimental-roster-rail-modal .modal-inner>h2{font-size:1.1rem;margin-bottom:4px}
   html[data-ui="tomb"] .experimental-roster-picker{gap:7px}
   html[data-ui="tomb"] .experimental-roster-instruction{font-size:.76rem}
-  html[data-ui="tomb"] .experimental-roster-item{min-height:70px;padding:3px 3px 16px}
+  html[data-ui="tomb"] .experimental-roster-item{min-height:78px;padding:3px 3px 25px}
+  html[data-ui="tomb"] .experimental-roster-name{font-size:.58rem}
   html[data-ui="tomb"] .experimental-roster-detail{
     grid-template-columns:88px minmax(0,1fr);
     min-height:92px;
