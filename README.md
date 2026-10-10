@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.90
+# Tomb World Battle Guide v10.0.91
+
+## v10.0.91
+
+### Crisp Transparent Activation Portraits
+
+- Replaces the black-background blend treatment with an SVG luminance-keyed alpha cutout, so the Deathwatch miniature actually renders over the activation panel with transparent surrounding pixels.
+- Removes CSS grayscale/sepia/contrast and blend-mode processing that was crushing miniature detail.
+- Keeps a crisp high-contrast green-scale treatment inside the SVG filter while preserving bright armor and weapon detail.
+- Retains the approved larger mockup-style scale and upper-right placement.
+- Applies only to Experimental Tomb UI + Deathwatch. Current mode and other Kill Teams remain unchanged.
 
 ## v10.0.90
 
