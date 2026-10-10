@@ -1845,6 +1845,7 @@ html[data-ui="tomb"] .experimental-roster-picker{
 html[data-ui="tomb"] .experimental-roster-instruction{
   margin:0!important;
 }
+html[data-ui="tomb"] .experimental-roster-instruction:focus{outline:none}
 html[data-ui="tomb"] .experimental-roster-rail-shell{
   position:relative;
   overflow:hidden;

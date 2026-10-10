@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.99
+# Tomb World Battle Guide v10.0.100
+
+## v10.0.100
+
+### Unselected Deathwatch Roster Rail on Open
+
+- Keeps every Ready operative visually unselected when the experimental Deathwatch activation picker opens.
+- Focuses the non-interactive roster instruction on dialog open rather than automatically focusing the first operative, avoiding the false selection highlight on iPhone.
+- Preserves green selected-state styling, keyboard focus indicators when navigating the rail, and disabled Begin Activation until a real selection is made.
+- Classic picker and other kill teams are unchanged.
+
 
 ## v10.0.99
 

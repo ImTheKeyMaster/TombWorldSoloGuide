@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.99';
+  const APP_VERSION = '10.0.100';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5385,14 +5385,14 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
 
   function showExperimentalDeathwatchRosterRail(candidates){
     const items=candidates.map((id,index)=>{
-      return `<button type="button" class="experimental-roster-item" role="radio" aria-checked="false" tabindex="${index===0?'0':'-1'}" data-roster-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
+      return `<button type="button" class="experimental-roster-item" role="radio" aria-checked="false" tabindex="${index===0?'0':'-1'}" data-roster-operative="${escapeHtml(id)}">
         <span class="experimental-roster-image">${experimentalDeathwatchGreenPortraitSvg(id,`experimentalRosterTint-${index}`,'experimental-roster-tinted-svg')}</span>
         <span class="experimental-roster-name">${escapeHtml(playerName(id))}</span>
       </button>`;
     }).join('');
 
     showModal('DEATHWATCH ACTIVATION',`<section class="experimental-roster-picker">
-      <p class="experimental-roster-instruction">Select a Ready operative from the roster rail.</p>
+      <p class="experimental-roster-instruction" tabindex="-1" data-dialog-focus>Select a Ready operative from the roster rail.</p>
       <div class="experimental-roster-rail-shell">
         <div class="experimental-roster-rail" role="radiogroup" aria-label="Ready Deathwatch operatives">${items}</div>
       </div>
