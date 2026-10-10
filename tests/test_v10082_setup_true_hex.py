@@ -9,8 +9,8 @@ INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
 WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 
 
-def test_release_surfaces_are_v10082_or_newer():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 82)
+def test_release_surfaces_are_v10083_or_newer():
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 83)
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
 
@@ -96,6 +96,14 @@ def test_setup_actions_keep_existing_mobile_and_desktop_layering():
     assert ".setup-true-hex-card>.wizard-actions" in desktop
     assert "position:relative" in desktop
     assert "z-index:1" in desktop
+
+
+def test_experimental_setup_back_buttons_are_opaque_over_hex_art():
+    block = CSS.split("experimental-only true honeycomb hex clusters across New Game Setup", 1)[1]
+    assert 'html[data-ui="tomb"] .setup-true-hex-card>.wizard-actions .btn.ghost' in block
+    opaque = block.split('html[data-ui="tomb"] .setup-true-hex-card>.wizard-actions .btn.ghost{', 1)[1].split("}", 1)[0]
+    assert "background:#07140f" in opaque
+    assert 'html[data-ui="classic"] .setup-true-hex-card>.wizard-actions .btn.ghost' not in CSS
 
 
 def test_phone_layout_keeps_approved_responsive_hexes():

@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.82
+# Tomb World Battle Guide v10.0.83
+
+## v10.0.83
+
+### Opaque Setup Back Buttons
+
+- Makes the ghost-style Back buttons inside Experimental New Game Setup cards fully opaque so honeycomb artwork cannot show through the button surface.
+- Uses the existing dark app surface color while preserving the button border, typography, dimensions, and interaction behavior.
+- Applies only to Experimental setup cards; Current mode and non-setup ghost buttons remain unchanged.
 
 ## v10.0.82
 
