@@ -63,12 +63,23 @@ def test_unselected_detail_reserves_the_selected_stats_footprint():
     assert "visibility:hidden" in placeholder
 
 
-def test_detail_description_reserves_two_lines_before_and_after_selection():
+def test_detail_copy_reserves_the_same_mobile_footprint_before_and_after_selection():
+    source = roster_source()
+    assert '<p id="experimentalRosterDetailRole">Select an operative above.</p>' in source
+
     block = roster_css()
     detail = block.split(
         'html[data-ui="tomb"] .experimental-roster-detail-copy>p:not(.eyebrow){', 1
     )[1].split("}", 1)[0]
     assert "min-height:2.4em" in detail
+
+    mobile = block.split("@media(max-width:600px)", 1)[1].split(
+        "@media(max-height:520px)", 1
+    )[0]
+    heading = mobile.split(
+        'html[data-ui="tomb"] .experimental-roster-detail-copy h3{', 1
+    )[1].split("}", 1)[0]
+    assert "min-height:2.4em" in heading
 
 
 def test_polish_remains_experimental_only_and_current_picker_is_unchanged():
