@@ -1892,7 +1892,7 @@ html[data-ui="tomb"] .experimental-roster-actions{margin-top:0}
   }
   html[data-ui="tomb"] .experimental-roster-detail-image{min-height:112px}
   html[data-ui="tomb"] .experimental-roster-detail-image img{max-height:122px}
-  html[data-ui="tomb"] .experimental-roster-detail-copy h3{font-size:1.25rem}
+  html[data-ui="tomb"] .experimental-roster-detail-copy h3{min-height:2.4em;font-size:1.25rem}
   html[data-ui="tomb"] .experimental-roster-detail-copy>p:not(.eyebrow){margin:3px 0 7px;font-size:.78rem}
   html[data-ui="tomb"] .experimental-roster-stats{gap:3px}
   html[data-ui="tomb"] .experimental-roster-stats span{padding:5px 2px}
