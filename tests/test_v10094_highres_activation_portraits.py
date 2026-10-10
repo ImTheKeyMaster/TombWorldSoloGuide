@@ -41,12 +41,12 @@ def test_activation_screen_uses_dedicated_high_resolution_asset_root():
     assert "?experimentalDeathwatchActivationImage(activation.operativeId):''" in source
 
 
-def test_roster_rail_keeps_its_existing_assets():
+def test_roster_rail_can_reuse_high_resolution_activation_assets():
     source = activation_source()
-    assert "function experimentalDeathwatchRosterImage(id)" in source
-    assert "EXPERIMENTAL_DEATHWATCH_SERGEANT_IMAGE" in source
+    assert "function experimentalDeathwatchActivationImage(id)" in source
+    assert "function experimentalDeathwatchGreenPortraitSvg(id,filterId,svgClass='')" in source
     assert 'experimental-roster-image' in source
-    assert "experimentalDeathwatchRosterImage(id)" in source
+    assert "experimentalDeathwatchActivationImage(id)" in source
 
 
 def test_activation_svg_processes_at_384_square_resolution():
