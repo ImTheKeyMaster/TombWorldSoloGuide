@@ -5370,7 +5370,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
 
   function showExperimentalDeathwatchRosterRail(candidates){
     const items=candidates.map((id,index)=>{
-      return `<button type="button" class="experimental-roster-item" role="radio" aria-checked="false" data-roster-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
+      return `<button type="button" class="experimental-roster-item" role="radio" aria-checked="false" tabindex="${index===0?'0':'-1'}" data-roster-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
         <span class="experimental-roster-image"><img src="${experimentalDeathwatchRosterImage(id)}" alt="" aria-hidden="true"></span>
         <span class="experimental-roster-name">${escapeHtml(playerName(id))}</span>
         <span class="experimental-roster-notch" aria-hidden="true"></span>
@@ -5411,6 +5411,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
         const selected=button.dataset.rosterOperative===selectedId;
         button.classList.toggle('selected',selected);
         button.setAttribute('aria-checked',String(selected));
+        button.tabIndex=selected?0:-1;
       });
       const operative=livePlayerOperative(selectedId)||playerDefinition(selectedId)||{};
       const definition=playerDefinition(selectedId)||operative;
