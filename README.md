@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.86
+# Tomb World Battle Guide v10.0.87
+
+## v10.0.87
+
+### Stable Experimental Activation Dialog Height
+
+- Locks the Deathwatch detail-image frame to a fixed height at desktop, phone, and compact-landscape breakpoints so loading the first selected operative cannot enlarge the grid row.
+- Keeps the stand-in icon, reserved stats footprint, rounded rail ends, and selection styling unchanged.
+- Remains isolated to Experimental Tomb UI; Current mode and non-Deathwatch activation flows are unchanged.
 
 ## v10.0.86
 
