@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.0.98
+# Tomb World Battle Guide v10.0.99
+
+## v10.0.99
+
+### Mobile Roster Rail Name Spacing
+
+- Detects Roster Rail operative names that fit on a single line on small screens.
+- When a name does not wrap, reduces the otherwise reserved two-line name space and gives that room back to the operative portrait.
+- Keeps the larger reserve for names that actually need two lines, preventing overlap or truncation.
+- Desktop Roster Rail sizing is unchanged.
+- Remains limited to Experimental Tomb UI + Deathwatch.
+
 
 ## v10.0.98
 
