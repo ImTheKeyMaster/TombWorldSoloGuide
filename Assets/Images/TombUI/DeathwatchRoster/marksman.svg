@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Marksman">
+  <defs>
+    <linearGradient id="armor-marksman" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#22352d"/>
+      <stop offset=".55" stop-color="#0b1712"/>
+      <stop offset="1" stop-color="#050a08"/>
+    </linearGradient>
+    <radialGradient id="glow-marksman" cx="50%" cy="38%" r="62%">
+      <stop offset="0" stop-color="#76f5a8" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#76f5a8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="160" height="160" fill="#040a07"/>
+  <rect width="160" height="160" fill="url(#glow-marksman)"/>
+  <path d="M45 148v-18c0-18 12-31 26-37h18c14 6 26 19 26 37v18z" fill="url(#armor-marksman)" stroke="#355645" stroke-width="3"/>
+  <path d="M25 148v-18c0-17 9-29 27-34l19 9-4 43z" fill="#101f18" stroke="#355645" stroke-width="3"/>
+  <path d="M135 148v-18c0-17-9-29-27-34l-19 9 4 43z" fill="#101f18" stroke="#355645" stroke-width="3"/>
+  <path d="M57 55c0-19 10-31 23-31s23 12 23 31v25c0 11-9 21-23 21S57 91 57 80z" fill="url(#armor-marksman)" stroke="#466b58" stroke-width="3"/>
+  <path d="M62 57h36l-5 20H67z" fill="#07100c" stroke="#76f5a8" stroke-opacity=".55" stroke-width="2"/>
+  <path d="M69 64h9v5h-9zM82 64h9v5h-9z" fill="#76f5a8" opacity=".88"/>
+  <path d="M80 78v13M69 86h22" stroke="#355645" stroke-width="3"/>
+  <path d="M48 50l10-9M112 50l-10-9M56 34l8-8M104 34l-8-8" stroke="#365849" stroke-width="3" stroke-linecap="round"/>
+  <path d="M60 101l20 14 20-14" fill="none" stroke="#76f5a8" stroke-opacity=".28" stroke-width="3"/>
+  <path d="M15 149h130" stroke="#76f5a8" stroke-opacity=".5" stroke-width="2"/>
+  <circle cx='119' cy='52' r='9' fill='none' stroke='#76f5a8' stroke-width='4'/><path d='M119 38v28M105 52h28' stroke='#76f5a8' stroke-width='2'/>
+  <text x="80" y="157" fill="#76f5a8" fill-opacity=".58" font-family="system-ui,sans-serif" font-size="6" text-anchor="middle" letter-spacing="1.2">MARKSMAN</text>
+</svg>
