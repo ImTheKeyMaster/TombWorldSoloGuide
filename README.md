@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.96
+# Tomb World Battle Guide v10.0.97
+
+## v10.0.97
+
+### Responsive Activation Portrait Framing
+
+- In landscape layouts with enough horizontal room, expands the portrait's left clipping allowance so wide side-facing poses can extend farther left instead of being unnecessarily cut off.
+- In portrait layouts, restores a small visual gap between the weapon/loadout pill and the Movement frame.
+- Lowers the portrait by the same portrait-only amount so the miniature still touches the Movement frame exactly, preserving the no-gap image-to-Movement treatment from v10.0.96.
+- Keeps the right-edge anchoring, hardened transparency, high-resolution activation assets, and Experimental Deathwatch-only scope.
+
 
 ## v10.0.96
 
