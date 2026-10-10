@@ -5370,7 +5370,6 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
 
   function showExperimentalDeathwatchRosterRail(candidates){
     const items=candidates.map((id,index)=>{
-      const operative=livePlayerOperative(id)||playerDefinition(id)||{};
       return `<button type="button" class="experimental-roster-item" role="radio" aria-checked="false" data-roster-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
         <span class="experimental-roster-image"><img src="${experimentalDeathwatchRosterImage(id)}" alt="" aria-hidden="true"></span>
         <span class="experimental-roster-name">${escapeHtml(playerName(id))}</span>
