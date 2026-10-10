@@ -1532,6 +1532,37 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>:not(h2):not
   }
 }
 
+
+/* v10.0.96: Flush Deathwatch activation portrait to the frame and Movement border. */
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{
+  transform:translate(24px,-38px);
+}
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{
+  right:-12%;
+}
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.activation-groups{
+  margin-top:-6px;
+  position:relative;
+  z-index:1;
+}
+@media(max-width:520px){
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{
+    transform:translate(18px,-32px);
+  }
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{
+    right:-13%;
+  }
+}
+@media(max-width:380px){
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{
+    transform:translate(18px,-26px);
+  }
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{
+    right:-15%;
+  }
+}
+
+
 .fight-sequence{display:grid;gap:14px}
 .fight-pools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .fight-pool{display:grid;gap:7px;padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.18)}
