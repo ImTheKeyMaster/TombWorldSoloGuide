@@ -5388,7 +5388,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
         <div class="experimental-roster-detail-copy">
           <p class="eyebrow">DEATHWATCH OPERATIVE</p>
           <h3 id="experimentalRosterDetailName">Choose an operative</h3>
-          <p id="experimentalRosterDetailRole">Select a portrait above to review the operative before beginning its activation.</p>
+          <p id="experimentalRosterDetailRole">Select an operative above.</p>
           <div class="experimental-roster-stats placeholder" id="experimentalRosterStats" aria-hidden="true">
             <span><small>APL</small><strong>—</strong></span>
             <span><small>MOVE</small><strong>—</strong></span>
