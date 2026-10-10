@@ -1825,6 +1825,8 @@ html[data-ui="tomb"] .setup-true-hex-card>.wizard-actions .btn.ghost{
 }
 
 
+/* v10.0.99: Reclaim unused mobile name space for larger Roster Rail portraits. */
+
 /* v10.0.98: Match Roster Rail portraits to the green activation treatment. */
 html[data-ui="tomb"] .experimental-roster-tinted-svg{
   display:block;
@@ -2040,6 +2042,8 @@ html[data-ui="tomb"] .experimental-roster-actions{margin-top:0}
   html[data-ui="tomb"] .experimental-roster-item{min-height:96px;padding:4px 2px 29px}
   html[data-ui="tomb"] .experimental-roster-image{height:min(64px,calc((100vw - 90px)/5))}
   html[data-ui="tomb"] .experimental-roster-name{font-size:.62rem;letter-spacing:0}
+  html[data-ui="tomb"] .experimental-roster-item.single-line-name{padding-bottom:18px}
+  html[data-ui="tomb"] .experimental-roster-item.single-line-name .experimental-roster-image{height:min(75px,calc((100vw - 90px)/5 + 11px))}
   html[data-ui="tomb"] .experimental-roster-detail{
     grid-template-columns:108px minmax(0,1fr);
     gap:11px;
