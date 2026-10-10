@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.83';
+  const APP_VERSION = '10.0.84';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5362,12 +5362,94 @@ document.addEventListener('touchend',function(e){
     return Number(objectiveEngine?.getMissionHudModel().value||state.missionState?.destruction||0)<20;
   }
 
+const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/DeathwatchRoster/';
+
+  function experimentalDeathwatchRosterImage(id){
+    return `${EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT}${encodeURIComponent(id)}.webp`;
+  }
+
+  function showExperimentalDeathwatchRosterRail(candidates){
+    const items=candidates.map((id,index)=>{
+      return `<button type="button" class="experimental-roster-item" role="radio" aria-checked="false" tabindex="${index===0?'0':'-1'}" data-roster-operative="${escapeHtml(id)}" ${index===0?'data-dialog-focus':''}>
+        <span class="experimental-roster-image"><img src="${experimentalDeathwatchRosterImage(id)}" alt="" aria-hidden="true"></span>
+        <span class="experimental-roster-name">${escapeHtml(playerName(id))}</span>
+        <span class="experimental-roster-notch" aria-hidden="true"></span>
+      </button>`;
+    }).join('');
+
+    showModal('DEATHWATCH ACTIVATION',`<section class="experimental-roster-picker">
+      <p class="experimental-roster-instruction">Select a Ready operative from the roster rail.</p>
+      <div class="experimental-roster-rail-shell">
+        <div class="experimental-roster-rail" role="radiogroup" aria-label="Ready Deathwatch operatives">${items}</div>
+      </div>
+      <section class="experimental-roster-detail" aria-live="polite">
+        <div class="experimental-roster-detail-image" aria-hidden="true"><img id="experimentalRosterDetailImage" alt="" hidden></div>
+        <div class="experimental-roster-detail-copy">
+          <p class="eyebrow">DEATHWATCH OPERATIVE</p>
+          <h3 id="experimentalRosterDetailName">Choose an operative</h3>
+          <p id="experimentalRosterDetailRole">Select a portrait above to review the operative before beginning its activation.</p>
+          <div class="experimental-roster-stats" id="experimentalRosterStats" hidden></div>
+        </div>
+      </section>
+      <div class="wizard-actions experimental-roster-actions">
+        <button class="btn ghost" data-close>Close Guide</button>
+        <button class="btn primary" id="confirmExperimentalRosterSelection" disabled>Begin Activation</button>
+      </div>
+    </section>`);
+    modal.classList.add('experimental-roster-rail-modal');
+
+    let selectedId='';
+    const confirm=$('#confirmExperimentalRosterSelection');
+    const detailImage=$('#experimentalRosterDetailImage');
+    const detailName=$('#experimentalRosterDetailName');
+    const detailRole=$('#experimentalRosterDetailRole');
+    const stats=$('#experimentalRosterStats');
+
+    const selectOperative=id=>{
+      selectedId=id;
+      $$('[data-roster-operative]',modal).forEach(button=>{
+        const selected=button.dataset.rosterOperative===selectedId;
+        button.classList.toggle('selected',selected);
+        button.setAttribute('aria-checked',String(selected));
+        button.tabIndex=selected?0:-1;
+      });
+      const operative=livePlayerOperative(selectedId)||playerDefinition(selectedId)||{};
+      const definition=playerDefinition(selectedId)||operative;
+      const apl=effectiveApl(selectedId,Number(definition.apl||3));
+      detailImage.src=experimentalDeathwatchRosterImage(selectedId);
+      detailImage.hidden=false;
+      detailName.textContent=playerName(selectedId);
+      detailRole.textContent=operative.role||'Operative';
+      stats.innerHTML=`<span><small>APL</small><strong>${escapeHtml(String(apl))}</strong></span><span><small>MOVE</small><strong>${escapeHtml(String(operative.move??'—'))}"</strong></span><span><small>SAVE</small><strong>${escapeHtml(String(operative.save??'—'))}+</strong></span><span><small>WOUNDS</small><strong>${escapeHtml(String(playerCurrentWounds(selectedId)))} / ${escapeHtml(String(definition.wounds??'—'))}</strong></span>`;
+      stats.hidden=false;
+      confirm.disabled=false;
+    };
+
+    $$('[data-roster-operative]',modal).forEach(button=>{
+      button.onclick=()=>selectOperative(button.dataset.rosterOperative);
+      button.onkeydown=event=>{
+        if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+        event.preventDefault();
+        const controls=$$('[data-roster-operative]',modal);
+        const current=controls.indexOf(button);
+        const next=event.key==='Home'?0:event.key==='End'?controls.length-1:event.key==='ArrowLeft'?(current-1+controls.length)%controls.length:(current+1)%controls.length;
+        controls[next].focus();
+        selectOperative(controls[next].dataset.rosterOperative);
+      };
+    });
+    confirm.onclick=()=>{if(selectedId)beginPlayerActivation(selectedId);};
+  }
+
 function showPlayerActivation(){
     const active=activePlayerActivation();
     if(active){void resumeCheckpointedGameplayContext();return;}
     const candidates=remainingPlayerOperatives();
     if(!candidates.length){state.playerReady=0;setNextActivation('npo');save();render();return;}
     if(candidates.length===1){beginPlayerActivation(candidates[0]);return;}
+    if(document.documentElement.dataset.ui==='tomb'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'){
+      showExperimentalDeathwatchRosterRail(candidates);
+      return;
+    }
     const options=candidates.map(id=>`<option value="${escapeHtml(id)}">${escapeHtml(playerName(id))}</option>`).join('');
     showModal(`${selectedPlayerTeamName().toUpperCase()} ACTIVATION`,`<p>Choose a Ready operative.</p><div class="field"><label for="humanPlayerSelection">Ready operative</label><select id="humanPlayerSelection" data-dialog-focus><option value="">Select a Ready operative</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmHumanPlayerSelection" disabled>Continue</button></div>`);
     $('#humanPlayerSelection').onchange=()=>{$('#confirmHumanPlayerSelection').disabled=!$('#humanPlayerSelection').value;};
@@ -9640,7 +9722,7 @@ function showPlayerActivation(){
     const shouldRestoreFocus=modal._skipFocusRestoreId!==activeControlId;
     modal._skipFocusRestoreId=null;
 
-    modal.classList.remove('combat-resolution-modal');
+    modal.classList.remove('combat-resolution-modal','experimental-roster-rail-modal');
     modalBody.innerHTML=`<div class="modal-inner"><h2 id="modalTitle">${escapeHtml(title)}</h2>${content}</div>`;
     modal.setAttribute('aria-labelledby','modalTitle');
     modal.setAttribute('tabindex','-1');

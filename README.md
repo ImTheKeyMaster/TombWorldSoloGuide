@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.0.83
+# Tomb World Battle Guide v10.0.84
+
+## v10.0.84
+
+### Experimental Deathwatch Roster Rail
+
+- Replaces the plain Ready-operative dropdown with a compact graphical Roster Rail only when Experimental Tomb UI is enabled for Deathwatch.
+- Uses eleven uniformly aligned Deathwatch operative portraits with their bases set to a consistent bottom position.
+- Keeps selection inside one integrated horizontal rail, with a single larger detail panel for the chosen operative.
+- Preserves the existing Current-mode dropdown exactly, and leaves non-Deathwatch activation selection unchanged.
+- Adds keyboard radio-style navigation, responsive iPhone portrait/landscape styling, and offline precaching for the new portrait assets.
+- Does not change activation rules, save data, roster legality, or gameplay state.
 
 ## v10.0.83
 
