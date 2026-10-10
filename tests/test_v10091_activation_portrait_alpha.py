@@ -30,7 +30,7 @@ def test_activation_art_uses_svg_luminance_key_for_true_rendered_alpha():
 
 def test_no_muddy_css_post_processing_remains_on_activation_portrait():
     block = CSS.split(
-        "v10.0.92: Brighter, sharper Experimental Deathwatch activation portrait with integrated vertical reach.",
+        "v10.0.93: Photoshop-matched colorize and hard clip at the Movement boundary.",
         1,
     )[1].split(".fight-sequence", 1)[0]
     assert "mix-blend-mode" not in block
