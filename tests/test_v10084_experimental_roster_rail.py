@@ -60,7 +60,9 @@ def test_roster_rail_uses_integrated_radio_style_selection_and_keyboard_navigati
     assert 'aria-checked="false"' in rail
     assert "$$('[data-roster-operative]',modal).forEach" in rail
     assert "['ArrowLeft','ArrowRight','Home','End']" in rail
+    assert 'tabindex="${index===0?\'0\':\'-1\'}"' in rail
     assert "button.setAttribute('aria-checked',String(selected));" in rail
+    assert "button.tabIndex=selected?0:-1;" in rail
     assert "confirm.disabled=false;" in rail
 
 
@@ -87,6 +89,8 @@ def test_roster_rail_stays_one_row_and_fits_the_max_deathwatch_roster():
     item = block.split('html[data-ui="tomb"] .experimental-roster-item{', 1)[1].split("}", 1)[0]
     assert "flex:1 1 0" in item
     assert "min-width:0" in item
+    image = block.split('html[data-ui="tomb"] .experimental-roster-image{', 1)[1].split("}", 1)[0]
+    assert "height:clamp(64px,11vw,96px)" in image
 
 
 def test_new_roster_styles_are_experimental_only():
