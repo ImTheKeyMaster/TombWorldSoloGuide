@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.0.93
+# Tomb World Battle Guide v10.0.94
+
+## v10.0.94
+
+### High-Resolution Deathwatch Activation Portraits
+
+- Adds a dedicated 512×512 activation portrait set generated from the newly supplied high-resolution Deathwatch source artwork.
+- The activation screen no longer enlarges the 192×192 Roster Rail images, eliminating the primary source of lost miniature detail.
+- Keeps the approved Photoshop-style treatment from v10.0.93: grayscale first, Hue 135 / Saturation 23 / Lightness 0 colorization, luminance-keyed background removal, and light sharpening.
+- Runs that treatment at the full 512×512 SVG resolution before the browser scales the result into the activation card.
+- Leaves the Roster Rail artwork unchanged and keeps the feature limited to Experimental Tomb UI + Deathwatch.
+
 
 ## v10.0.93
 
