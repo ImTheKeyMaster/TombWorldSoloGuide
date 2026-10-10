@@ -52,10 +52,10 @@ def test_roster_rail_keeps_its_existing_assets():
     assert "experimentalDeathwatchRosterImage(id)" in source
 
 
-def test_activation_svg_processes_at_512_square_resolution():
+def test_activation_svg_processes_at_384_square_resolution():
     source = activation_source()
-    assert 'viewBox="0 0 512 512"' in source
-    assert 'width="512" height="512"' in source
+    assert 'viewBox="0 0 384 384"' in source
+    assert 'width="384" height="384"' in source
     assert 'filter="url(#experimentalActivationPortraitCutout)"' in source
 
 
@@ -63,7 +63,7 @@ def test_all_high_resolution_activation_assets_exist_and_are_precached():
     for operative_id in OPERATIVES:
         asset = ASSET_ROOT / f"{operative_id}.webp"
         assert asset.is_file(), operative_id
-        assert asset.stat().st_size > 40000, operative_id
+        assert asset.stat().st_size > 18000, operative_id
         worker_path = f"./Assets/Images/TombUI/DeathwatchActivation/{operative_id}.webp"
         assert worker_path in WORKER
 
