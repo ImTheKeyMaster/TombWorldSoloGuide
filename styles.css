@@ -1448,7 +1448,7 @@ button.tracker-operative:hover{
   .human-npo-action .human-action-status{max-width:48%}
 }
 
-/* v10.0.91: Experimental Deathwatch activation portrait with luminance-keyed alpha. */
+/* v10.0.92: Brighter, sharper Experimental Deathwatch activation portrait with integrated vertical reach. */
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait{
   position:relative;
   isolation:isolate;
@@ -1474,8 +1474,8 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimenta
   position:relative;
   z-index:0;
   align-self:stretch;
-  min-height:174px;
-  overflow:hidden;
+  min-height:208px;
+  overflow:visible;
   pointer-events:none;
   transform:translateY(-38px);
   margin-bottom:-38px;
@@ -1483,10 +1483,10 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimenta
 }
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{
   position:absolute;
-  top:-18px;
-  right:-20%;
+  top:-14px;
+  right:-18%;
   display:block;
-  width:170%;
+  width:176%;
   height:auto;
   max-width:none;
   overflow:visible;
@@ -1501,14 +1501,14 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>:not(h2):not
     column-gap:9px;
   }
   html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{
-    min-height:158px;
+    min-height:188px;
     transform:translateY(-32px);
     margin-bottom:-32px;
   }
   html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{
-    top:-14px;
-    right:-24%;
-    width:178%;
+    top:-10px;
+    right:-22%;
+    width:184%;
   }
 }
 @media(max-width:380px){
@@ -1516,14 +1516,14 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>:not(h2):not
     grid-template-columns:minmax(0,1fr) 112px;
   }
   html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{
-    min-height:144px;
+    min-height:172px;
     transform:translateY(-26px);
     margin-bottom:-26px;
   }
   html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{
-    top:-10px;
-    right:-27%;
-    width:184%;
+    top:-8px;
+    right:-25%;
+    width:190%;
   }
 }
 
