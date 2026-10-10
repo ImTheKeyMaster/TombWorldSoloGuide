@@ -34,7 +34,7 @@ def test_activation_portrait_is_deathwatch_experimental_only():
     source = activation_source()
     assert "portraitUrl:document.documentElement.dataset.ui==='tomb'" in source
     assert "selectedPlayerTeamName().toLowerCase()==='deathwatch'" in source
-    assert "?experimentalDeathwatchRosterImage(activation.operativeId):''" in source
+    assert "?experimentalDeathwatchActivationImage(activation.operativeId):''" in source
     assert "portraitUrl=''" in source
     assert "has-operative-portrait" in source
     assert "experimental-activation-portrait" in source
