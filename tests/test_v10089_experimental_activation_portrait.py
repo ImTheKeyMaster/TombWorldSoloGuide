@@ -18,7 +18,8 @@ def activation_source():
 
 def portrait_css():
     return CSS.split(
-        "v10.0.89: Experimental Deathwatch activation portrait.", 1
+        "v10.0.91: Experimental Deathwatch activation portrait with luminance-keyed alpha.",
+        1,
     )[1]
 
 
@@ -42,18 +43,22 @@ def test_activation_portrait_is_deathwatch_experimental_only():
 def test_activation_portrait_is_decorative_and_noninteractive():
     source = activation_source()
     assert 'class="experimental-activation-portrait" aria-hidden="true"' in source
-    assert 'alt=""' in source
+    assert 'class="experimental-activation-portrait-svg"' in source
+    assert 'focusable="false"' in source
     block = portrait_css()
     assert "pointer-events:none" in block
 
 
-def test_green_scale_hud_treatment_is_scoped_to_experimental_ui():
+def test_portrait_uses_alpha_cutout_instead_of_css_blending():
+    source = activation_source()
     block = portrait_css()
-    assert 'html[data-ui="tomb"] .human-activation-shell.has-operative-portrait' in block
-    assert 'html[data-ui="classic"] .human-activation-shell.has-operative-portrait' not in block
-    assert "filter:grayscale(1) sepia(1) saturate(2.35) hue-rotate(72deg)" in block
-    assert "mix-blend-mode:screen" in block
-    assert "mask-image:linear-gradient(to bottom" in block
+    assert 'id="experimentalActivationPortraitCutout"' in source
+    assert "<feColorMatrix" in source
+    assert "<feComponentTransfer" in source
+    assert '<feFuncA type="linear"' in source
+    assert "mix-blend-mode" not in block
+    assert "filter:grayscale" not in block
+    assert "mask-image:linear-gradient" not in block
 
 
 def test_portrait_has_its_own_header_column_and_does_not_cover_controls():
@@ -63,12 +68,14 @@ def test_portrait_has_its_own_header_column_and_does_not_cover_controls():
     )[1].split("}", 1)[0]
     assert "grid-template-columns:minmax(0,1fr) minmax(145px,34%)" in shell
     portrait = block.split(
-        'html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{', 1
+        'html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{',
+        1,
     )[1].split("}", 1)[0]
     assert "grid-column:2" in portrait
     assert "grid-row:1 / span 2" in portrait
     rest = block.split(
-        'html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>:not(h2):not(.activation-profile-strip):not(.experimental-activation-portrait){', 1
+        'html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>:not(h2):not(.activation-profile-strip):not(.experimental-activation-portrait){',
+        1,
     )[1].split("}", 1)[0]
     assert "grid-column:1 / -1" in rest
 
