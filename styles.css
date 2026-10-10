@@ -1448,7 +1448,7 @@ button.tracker-operative:hover{
   .human-npo-action .human-action-status{max-width:48%}
 }
 
-/* v10.0.92: Brighter, sharper Experimental Deathwatch activation portrait with integrated vertical reach. */
+/* v10.0.93: Photoshop-matched colorize and hard clip at the Movement boundary. */
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait{
   position:relative;
   isolation:isolate;
@@ -1475,7 +1475,7 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimenta
   z-index:0;
   align-self:stretch;
   min-height:208px;
-  overflow:visible;
+  overflow:hidden;
   pointer-events:none;
   transform:translateY(-38px);
   margin-bottom:-38px;
