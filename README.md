@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.84
+# Tomb World Battle Guide v10.0.85
+
+## v10.0.85
+
+### Experimental Roster Portrait Framing Fix
+
+- Bottom-aligns Experimental Deathwatch Roster Rail portraits and switches the rail to non-destructive image fitting so tall operatives such as Marksman and Gunner keep their heads visible.
+- Restores the Sergeant portrait with a corrected embedded source while leaving the existing roster asset set intact.
+- Adds an intentional dimmed Tomb World icon as the detail-panel stand-in before an operative is selected.
+- Keeps Begin Activation disabled until a real operative is selected and preserves the Current UI and all non-Deathwatch activation flows unchanged.
 
 ## v10.0.84
 
