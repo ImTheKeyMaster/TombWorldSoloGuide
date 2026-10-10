@@ -1809,7 +1809,8 @@ html[data-ui="tomb"] .experimental-roster-detail{
 html[data-ui="tomb"] .experimental-roster-detail-image{
   display:grid;
   place-items:center;
-  align-self:stretch;
+  align-self:center;
+  height:156px;
   min-height:156px;
   overflow:hidden;
   border:1px solid rgba(118,245,168,.14);
@@ -1820,7 +1821,7 @@ html[data-ui="tomb"] .experimental-roster-detail-image img{
   display:block;
   width:100%;
   height:100%;
-  max-height:180px;
+  max-height:none;
   object-fit:contain;
   object-position:center bottom;
 }
@@ -1890,8 +1891,8 @@ html[data-ui="tomb"] .experimental-roster-actions{margin-top:0}
     min-height:132px;
     padding:9px;
   }
-  html[data-ui="tomb"] .experimental-roster-detail-image{min-height:112px}
-  html[data-ui="tomb"] .experimental-roster-detail-image img{max-height:122px}
+  html[data-ui="tomb"] .experimental-roster-detail-image{height:112px;min-height:112px}
+  html[data-ui="tomb"] .experimental-roster-detail-image img{max-height:none}
   html[data-ui="tomb"] .experimental-roster-detail-copy h3{min-height:2.4em;font-size:1.25rem}
   html[data-ui="tomb"] .experimental-roster-detail-copy>p:not(.eyebrow){margin:3px 0 7px;font-size:.78rem}
   html[data-ui="tomb"] .experimental-roster-stats{gap:3px}
@@ -1916,8 +1917,8 @@ html[data-ui="tomb"] .experimental-roster-actions{margin-top:0}
     min-height:92px;
     padding:7px;
   }
-  html[data-ui="tomb"] .experimental-roster-detail-image{min-height:80px}
-  html[data-ui="tomb"] .experimental-roster-detail-image img{max-height:88px}
+  html[data-ui="tomb"] .experimental-roster-detail-image{height:80px;min-height:80px}
+  html[data-ui="tomb"] .experimental-roster-detail-image img{max-height:none}
   html[data-ui="tomb"] .experimental-roster-detail-copy .eyebrow{display:none}
   html[data-ui="tomb"] .experimental-roster-detail-copy h3{font-size:1.05rem}
   html[data-ui="tomb"] .experimental-roster-detail-copy>p:not(.eyebrow){margin:2px 0 5px;font-size:.7rem}
