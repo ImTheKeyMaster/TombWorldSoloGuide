@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.88';
+  const APP_VERSION = '10.0.89';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5080,7 +5080,7 @@ document.addEventListener('touchend',function(e){
     return {status:'Available',disabled:false,reason:'Available'};
   }
 
-  function renderHumanActivationShell({title,name,wounds,maxWounds,baseApl,effectiveAp,remainingAp,startingAp,order,loadout,effects=[],completedActions=[],actions,onAction,onEnd,onFirstRoomEntry}){
+  function renderHumanActivationShell({title,name,wounds,maxWounds,baseApl,effectiveAp,remainingAp,startingAp,order,loadout,effects=[],completedActions=[],actions,onAction,onEnd,onFirstRoomEntry,portraitUrl=''}){
     const groups=HUMAN_ACTION_GROUPS.map(group=>{
       const items=actions.filter(action=>action.group===group.id);
       if(!items.length)return '';
@@ -5094,7 +5094,7 @@ document.addEventListener('touchend',function(e){
     }).filter(Boolean).join('');
     const history=completedActions.length?`<section class="summary-box human-completed-actions"><strong>Completed Actions</strong><ul>${completedActions.map(action=>`<li>✓ ${escapeHtml(action.summary||action.name)}</li>`).join('')}</ul></section>`:'';
     const bookkeeping=onFirstRoomEntry?'<div class="activation-bookkeeping" aria-label="Activation bookkeeping"><button type="button" class="btn ghost" id="firstRoomEntry">FIRST ROOM ENTRY</button></div>':'';
-    showModal(title,`<div class="human-activation-shell"><h2>${escapeHtml(name)}</h2><div class="activation-profile-strip" role="status" aria-label="Activation profile"><span>Wounds: ${wounds}/${maxWounds}</span><span><strong>${remainingAp} / ${startingAp} AP remaining</strong></span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${effects.map(effect=>`<span>${escapeHtml(effect)}</span>`).join('')}</div>${bookkeeping}${history}<div class="activation-groups">${groups}</div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="endHumanActivation">End Activation</button></div></div>`,undefined,'human-activation');
+    showModal(title,`<div class="human-activation-shell${portraitUrl?' has-operative-portrait':''}">${portraitUrl?`<div class="experimental-activation-portrait" aria-hidden="true"><img src="${escapeHtml(portraitUrl)}" alt=""></div>`:''}<h2>${escapeHtml(name)}</h2><div class="activation-profile-strip" role="status" aria-label="Activation profile"><span>Wounds: ${wounds}/${maxWounds}</span><span><strong>${remainingAp} / ${startingAp} AP remaining</strong></span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${effects.map(effect=>`<span>${escapeHtml(effect)}</span>`).join('')}</div>${bookkeeping}${history}<div class="activation-groups">${groups}</div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="endHumanActivation">End Activation</button></div></div>`,undefined,'human-activation');
     $$('[data-human-action]',modalBody).forEach(button=>button.onclick=()=>onAction(button.dataset.humanAction));
     if(onFirstRoomEntry)$('#firstRoomEntry').onclick=onFirstRoomEntry;
     $('#endHumanActivation').onclick=onEnd;
@@ -5117,7 +5117,9 @@ document.addEventListener('touchend',function(e){
       order:state.playerOperativeStates?.[activation.operativeId]?.order||'Tabletop',loadout,effects,
       completedActions:activation.resolvedActions||[],actions,onAction:selectHumanPlayerAction,
       onEnd:confirmEndHumanPlayerActivation,
-      onFirstRoomEntry:unawakenedScoutRooms().length?()=>beginRoomAwakeningSelection('first-entry'):null
+      onFirstRoomEntry:unawakenedScoutRooms().length?()=>beginRoomAwakeningSelection('first-entry'):null,
+      portraitUrl:document.documentElement.dataset.ui==='tomb'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'
+        ?experimentalDeathwatchRosterImage(activation.operativeId):''
     });
     renderOperativeStatusPanel(activation.operativeId);
   }
