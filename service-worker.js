@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '10.0.93';
+const APP_VERSION = '10.0.94';
 const CACHE_PREFIX = 'tomb-world-battle-guide-';
 const LEGACY_CACHE_PREFIXES = ['tomb-world-solo-guide-'];
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
@@ -19,6 +19,17 @@ const PRECACHE_ASSETS = [
   './Assets/Images/TombUI/DeathwatchRoster/horde-slayer.webp', './Assets/Images/TombUI/DeathwatchRoster/headtaker.webp',
   './Assets/Images/TombUI/DeathwatchRoster/gunner.webp', './Assets/Images/TombUI/DeathwatchRoster/bombard.webp',
   './Assets/Images/TombUI/DeathwatchRoster/disruptor.webp',
+  './Assets/Images/TombUI/DeathwatchActivation/sergeant.webp',
+  './Assets/Images/TombUI/DeathwatchActivation/aegis.webp',
+  './Assets/Images/TombUI/DeathwatchActivation/breacher.webp',
+  './Assets/Images/TombUI/DeathwatchActivation/blademaster.webp',
+  './Assets/Images/TombUI/DeathwatchActivation/marksman.webp',
+  './Assets/Images/TombUI/DeathwatchActivation/demolisher.webp',
+  './Assets/Images/TombUI/DeathwatchActivation/horde-slayer.webp',
+  './Assets/Images/TombUI/DeathwatchActivation/headtaker.webp',
+  './Assets/Images/TombUI/DeathwatchActivation/gunner.webp',
+  './Assets/Images/TombUI/DeathwatchActivation/bombard.webp',
+  './Assets/Images/TombUI/DeathwatchActivation/disruptor.webp',
   './Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3',
   `./Assets/Maps/mission-01.png?v=${APP_VERSION}`, `./Assets/Maps/mission-02.png?v=${APP_VERSION}`, `./Assets/Maps/mission-03.png?v=${APP_VERSION}`,
   `./Assets/Maps/mission-04.png?v=${APP_VERSION}`, `./Assets/Maps/mission-05.png?v=${APP_VERSION}`, `./Assets/Maps/mission-06.png?v=${APP_VERSION}`,
