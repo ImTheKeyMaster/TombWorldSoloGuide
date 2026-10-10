@@ -24,10 +24,7 @@ OPERATIVES = (
 
 
 def activation_source():
-    return APP[
-        APP.index("const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT")
-        : APP.index("function playerSequentialStage")
-    ]
+    return APP
 
 
 def test_release_is_v10094_or_newer():
