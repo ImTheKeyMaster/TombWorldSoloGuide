@@ -33,22 +33,29 @@ def test_roster_detects_single_line_names_after_render():
     assert "requestAnimationFrame(updateRosterNameDensity)" in source
 
 
+def roster_css():
+    return CSS.split(
+        "Experimental Deathwatch Roster Rail. Current UI is intentionally untouched.",
+        1,
+    )[1]
+
+
 def test_small_screens_reclaim_only_single_line_name_space():
-    mobile = CSS.split("@media(max-width:600px){", 1)[1].split("@media(max-height:520px)", 1)[0]
+    mobile = roster_css().split("@media(max-width:600px){", 1)[1].split("@media(max-height:520px)", 1)[0]
     assert ".experimental-roster-item{min-height:96px;padding:4px 2px 29px}" in mobile
     assert ".experimental-roster-item.single-line-name{padding-bottom:18px}" in mobile
     assert ".experimental-roster-item.single-line-name .experimental-roster-image{height:min(75px,calc((100vw - 90px)/5 + 11px))}" in mobile
 
 
 def test_wrapped_names_keep_existing_two_line_reserve():
-    mobile = CSS.split("@media(max-width:600px){", 1)[1].split("@media(max-height:520px)", 1)[0]
+    mobile = roster_css().split("@media(max-width:600px){", 1)[1].split("@media(max-height:520px)", 1)[0]
     assert ".experimental-roster-item{min-height:96px;padding:4px 2px 29px}" in mobile
     assert ".experimental-roster-name{font-size:.62rem;letter-spacing:0}" in mobile
     assert "-webkit-line-clamp:2" in CSS
 
 
 def test_desktop_roster_sizing_is_unchanged():
-    base = CSS.split("Experimental Deathwatch Roster Rail. Current UI is intentionally untouched.", 1)[1].split("@media(max-width:600px)", 1)[0]
+    base = roster_css().split("@media(max-width:600px)", 1)[0]
     assert "min-height:104px" in base
     assert "padding:5px 4px 18px" in base
     assert "height:clamp(64px,11vw,96px)" in base
