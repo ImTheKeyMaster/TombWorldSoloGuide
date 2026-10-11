@@ -20,46 +20,47 @@ def test_release_is_v100104_or_newer():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
 
 
-def test_necron_portraits_use_explicit_source_framing_instead_of_css_zoom():
+def test_necron_portraits_use_centered_source_framing_instead_of_css_zoom():
     source = section("function experimentalNecronPortraitFrame", "function experimentalNecronPortraitMarkup")
-    assert "if(npo.type==='Canoptek Scarab Swarm')return {x:-55,y:-188,size:500};" in source
-    assert "if(npo.type==='Necron Warrior')return {x:-40,y:-90,size:460};" in source
-    assert "return {x:-14,y:-14,size:412};" in source
+    assert "if(npo.type==='Canoptek Scarab Swarm')return {x:-32,y:-140,size:450};" in source
+    assert "if(npo.type==='Necron Warrior')return {x:-30,y:-62,size:430};" in source
+    assert "return {x:-8,y:-8,size:400};" in source
     assert 'x="${frame.x}" y="${frame.y}" width="${frame.size}" height="${frame.size}"' in source
+    assert "experimental-necron-framed-svg" in source
 
     assert "brightness(1.62)" not in CSS
     assert "transform:scale(1.34)" not in CSS
 
 
-def test_necron_colorization_matches_deathwatch_before_background_keying():
+def test_necron_filter_uses_the_exact_deathwatch_green_pipeline():
     deathwatch = section("function experimentalDeathwatchGreenPortraitSvg", "const EXPERIMENTAL_NECRON_IMAGE_ROOT")
     necron = section("function experimentalNecronGreenPortraitSvg", "function experimentalNecronPortraitMarkup")
 
-    for lookup in (
+    for shared in (
+        'values=".2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 1.063 3.576 .361 0 -.28" result="grayKeyed"',
+        'in="grayKeyed" result="tightKey"',
+        'tableValues="0 0 0 0 .2 .65 .9 1 1"',
+        'in="grayKeyed" result="colorized"',
         'tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"',
         'tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"',
         'tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"',
         'kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0"',
     ):
-        assert lookup in deathwatch
-        assert lookup in necron
-
-    assert 'result="portraitGray"' in necron
-    assert 'in="portraitGray" result="colorized"' in necron
-    assert 'result="backgroundKey"' in necron
-    assert '1.063 3.576 .361 0 -1.15' in necron
+        assert shared in deathwatch
+        assert shared in necron
 
 
-def test_roster_returns_to_shared_deathwatch_sizing():
+def test_framing_clips_in_roster_and_activation_views():
     block = CSS.split(
-        "v10.0.104: Necron portraits use intrinsic SVG crop/framing and the shared green treatment without CSS brightening.",
+        "v10.0.104: Necron portraits use intrinsic SVG crop/framing and the exact Deathwatch green treatment.",
         1,
     )[1].split(
         "v10.0.101: Experimental Necron Roster Rail reuses the Deathwatch rail",
         1,
     )[0]
-    assert ".experimental-necron-roster-picker .experimental-roster-tinted-svg{" in block
+    assert ".experimental-necron-framed-svg{" in block
     assert "overflow:hidden" in block
+    assert ".experimental-necron-roster-picker .experimental-roster-tinted-svg{" in block
     assert "transform:none" in block
     assert "filter:none" in block
     assert ".experimental-roster-image{" not in block
