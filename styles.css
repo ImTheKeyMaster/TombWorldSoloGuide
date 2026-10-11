@@ -1881,45 +1881,11 @@ html[data-ui="tomb"] .setup-true-hex-card>.wizard-actions .btn.ghost{
 }
 
 
-/* v10.0.103: Make Experimental Necron Roster Rail portraits larger and easier to read. */
-html[data-ui="tomb"] .experimental-necron-roster-picker .experimental-roster-image{
-  height:clamp(78px,13vw,108px);
-}
-html[data-ui="tomb"] .experimental-necron-roster-picker .experimental-roster-item{
-  min-height:118px;
-  padding-top:2px;
-}
-html[data-ui="tomb"] .experimental-necron-roster-picker .experimental-roster-image .experimental-roster-tinted-svg{
-  transform:scale(1.34);
-  transform-origin:50% 62%;
-  filter:brightness(1.62) contrast(1.08);
-}
-html[data-ui="tomb"] .experimental-necron-roster-picker .experimental-roster-detail-image .experimental-roster-tinted-svg{
-  transform:scale(1.16);
-  transform-origin:50% 58%;
-  filter:brightness(1.50) contrast(1.07);
-}
-@media(max-width:600px){
-  html[data-ui="tomb"] .experimental-necron-roster-picker .experimental-roster-item{
-    min-height:106px;
-  }
-  html[data-ui="tomb"] .experimental-necron-roster-picker .experimental-roster-image{
-    height:min(76px,calc((100vw - 76px)/4.5));
-  }
-  html[data-ui="tomb"] .experimental-necron-roster-picker .experimental-roster-image .experimental-roster-tinted-svg{
-    transform:scale(1.42);
-  }
-}
-@media(max-height:520px) and (orientation:landscape){
-  html[data-ui="tomb"] .experimental-necron-roster-picker .experimental-roster-item{
-    min-height:88px;
-  }
-  html[data-ui="tomb"] .experimental-necron-roster-picker .experimental-roster-image{
-    height:62px;
-  }
-  html[data-ui="tomb"] .experimental-necron-roster-picker .experimental-roster-image .experimental-roster-tinted-svg{
-    transform:scale(1.38);
-  }
+/* v10.0.104: Necron portraits use intrinsic SVG crop/framing and the shared green treatment without CSS brightening. */
+html[data-ui="tomb"] .experimental-necron-roster-picker .experimental-roster-tinted-svg{
+  overflow:hidden;
+  transform:none;
+  filter:none;
 }
 
 /* v10.0.101: Experimental Necron Roster Rail reuses the Deathwatch rail with horizontal overflow for larger ready rosters. */
