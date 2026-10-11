@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.0.102
+# Tomb World Battle Guide v10.0.103
+
+## v10.0.103
+
+### Brighter, Larger Necron Roster Portraits
+
+- Enlarges the Experimental Necron Roster Rail portrait area without changing the Deathwatch Roster Rail.
+- Zooms the Necron portrait artwork inside each rail slot so the miniature occupies substantially more of the available frame.
+- Brightens and slightly increases contrast on the green Necron treatment so dark armor details remain legible against the Tomb UI background.
+- Applies a lighter version of the same visibility improvement to the selected Necron detail portrait.
+- Includes responsive sizing for phone and short-landscape layouts while preserving existing horizontal scrolling behavior.
+
 
 ## v10.0.102
 
