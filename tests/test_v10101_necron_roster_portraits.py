@@ -58,16 +58,22 @@ def test_portrait_mapping_matches_supported_tomb_world_npo_types():
 
 
 def test_necron_portraits_use_same_green_filter_treatment_as_deathwatch():
+    deathwatch = section("function experimentalDeathwatchGreenPortraitSvg", "const EXPERIMENTAL_NECRON_IMAGE_ROOT")
     source = section("function experimentalNecronGreenPortraitSvg", "function experimentalNecronPortraitMarkup")
-    assert 'result="grayKeyed"' in source
-    assert '1.063 3.576 .361 0 -1.85' in source
-    assert 'result="tightKey"' in source
-    assert 'tableValues="0 0 0 0 .2 .65 .9 1 1"' in source
-    assert 'tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"' in source
-    assert 'tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"' in source
-    assert 'tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"' in source
-    assert 'kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0"' in source
-    assert '<feComposite in="sharpened" in2="tightKey" operator="in" result="finalPortrait"' in source
+
+    for shared in (
+        'values=".2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 1.063 3.576 .361 0 -.28" result="grayKeyed"',
+        'in="grayKeyed" result="tightKey"',
+        'tableValues="0 0 0 0 .2 .65 .9 1 1"',
+        'in="grayKeyed" result="colorized"',
+        'tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"',
+        'tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"',
+        'tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"',
+        'kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0"',
+        '<feComposite in="sharpened" in2="tightKey" operator="in" result="finalPortrait"',
+    ):
+        assert shared in deathwatch
+        assert shared in source
 
 
 def test_experimental_necron_picker_uses_roster_rail_and_starts_unselected():
