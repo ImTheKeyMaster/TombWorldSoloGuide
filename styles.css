@@ -1585,6 +1585,60 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.activation-
 }
 
 
+
+/* v10.0.101: Experimental Necron activation artwork. */
+html[data-ui="tomb"] .experimental-necron-activation-header.has-operative-portrait{
+  position:relative;
+  isolation:isolate;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(150px,34%);
+  column-gap:12px;
+  min-height:190px;
+  align-items:center;
+}
+html[data-ui="tomb"] .experimental-necron-activation-copy{
+  position:relative;
+  z-index:1;
+  min-width:0;
+}
+html[data-ui="tomb"] .experimental-necron-activation-copy h2{margin-top:0}
+html[data-ui="tomb"] .experimental-necron-activation-portrait{
+  position:relative;
+  align-self:stretch;
+  min-height:190px;
+  overflow:visible;
+  pointer-events:none;
+}
+html[data-ui="tomb"] .experimental-necron-wizard-svg{
+  position:absolute;
+  right:-18px;
+  bottom:0;
+  display:block;
+  width:152%;
+  height:auto;
+  max-width:none;
+  overflow:visible;
+}
+@media(max-width:520px){
+  html[data-ui="tomb"] .experimental-necron-activation-header.has-operative-portrait{
+    grid-template-columns:minmax(0,1fr) 120px;
+    column-gap:8px;
+    min-height:160px;
+  }
+  html[data-ui="tomb"] .experimental-necron-activation-portrait{min-height:160px}
+  html[data-ui="tomb"] .experimental-necron-wizard-svg{
+    right:-12px;
+    width:162%;
+  }
+}
+@media(max-width:380px){
+  html[data-ui="tomb"] .experimental-necron-activation-header.has-operative-portrait{
+    grid-template-columns:minmax(0,1fr) 104px;
+  }
+  html[data-ui="tomb"] .experimental-necron-wizard-svg{width:168%}
+}
+
+
 .fight-sequence{display:grid;gap:14px}
 .fight-pools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .fight-pool{display:grid;gap:7px;padding:12px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.18)}
@@ -1824,6 +1878,27 @@ html[data-ui="tomb"] .setup-true-hex-card>.wizard-actions .btn.ghost{
   html[data-ui="tomb"] .setup-true-hex-card>.setup-hex-art{display:none}
 }
 
+
+/* v10.0.101: Experimental Necron Roster Rail reuses the Deathwatch rail with horizontal overflow for larger ready rosters. */
+html[data-ui="tomb"] .experimental-necron-roster-rail{
+  overflow-x:auto;
+  overflow-y:hidden;
+  overscroll-behavior-x:contain;
+  scroll-snap-type:x proximity;
+  scrollbar-width:thin;
+}
+html[data-ui="tomb"] .experimental-necron-roster-rail .experimental-roster-item{
+  flex:0 0 clamp(112px,18vw,142px);
+  scroll-snap-align:start;
+}
+html[data-ui="tomb"] .experimental-necron-roster-picker .experimental-roster-detail-copy>p:not(.eyebrow){
+  min-height:0;
+}
+@media(max-width:600px){
+  html[data-ui="tomb"] .experimental-necron-roster-rail .experimental-roster-item{
+    flex-basis:112px;
+  }
+}
 
 /* v10.0.99: Reclaim unused mobile name space for larger Roster Rail portraits. */
 
