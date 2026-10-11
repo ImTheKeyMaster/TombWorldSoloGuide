@@ -2306,6 +2306,8 @@ html[data-ui="tomb"] .attack-confirmation-card.has-target-portrait .attack-confi
   html[data-ui="tomb"] .blast-result-portrait{width:186px;height:226px;right:-10px;top:-17px}
 }
 
+/* Avoid residual artwork when switching from Experimental to Current Mode without a re-render. */
+html:not([data-ui="tomb"]) .reinforcement-placement-portrait{display:none}
 /* Reinforcement placement portraits: top-right artwork behind the existing checkbox and instructions. */
 html[data-ui="tomb"] .reinforcement-placement-row.has-portrait{
   position:relative;
