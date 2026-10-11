@@ -83,7 +83,7 @@ def test_experimental_necron_picker_uses_roster_rail_and_starts_unselected():
     assert "let selectedId='';" in source
     assert 'id="confirmExperimentalNecronSelection" disabled' in source
     assert "button.classList.toggle('selected',selected)" in source
-    assert "$('[data-roster-npo]',modal)" in source
+    assert source.count("$('[data-roster-npo]',modal)") >= 3
     assert "Begin Activation" in source
 
 
