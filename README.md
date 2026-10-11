@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.101
+# Tomb World Battle Guide v10.0.102
+
+## v10.0.102
+
+### Necron Activation Portrait Alignment
+
+- Fixes the Experimental solo Necron Activation wizard so tall Necron portraits fit completely inside the activation header instead of extending above the modal and being clipped.
+- Keeps the portrait bottom-aligned with the activation header while constraining its rendered height to the available header height.
+- Preserves the existing green treatment, right-side placement, Roster Rail, human-controlled Necron activation portrait, and Current UI behavior.
+
 
 ## v10.0.101
 
