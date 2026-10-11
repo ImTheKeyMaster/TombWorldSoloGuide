@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.107
+# Tomb World Battle Guide v10.0.109
+
+## v10.0.109
+
+### Exact supplied green Necron portraits
+
+- Replaces all 11 Experimental Tomb UI Necron portrait assets with crops made directly from the user's supplied green-colorized transparent PNGs.
+- No recoloring, grayscale conversion, background removal, masking, or runtime color filters are applied.
+- The supplied transparency is preserved and each source is only centered, cropped, and scaled for portrait use.
+- Maps the supplied models to the Geomancer, two Tomb Crawlers, Macrocyte Accelerator, Macrocyte Reanimator, three Macrocyte Warriors, Scarab Swarm, Gauss Flayer Warrior, and Gauss Reaper Warrior.
+- Bumps the app and service-worker cache so stale portrait assets from v10.0.107 are replaced.
 
 ## v10.0.107
 
