@@ -2406,3 +2406,14 @@ html[data-ui="tomb"] .fight-result-card.has-fight-portrait dl{
     top:-14px;
   }
 }
+
+/* Fight Result: fit the full miniature vertically instead of ending the image midway down tall cards. */
+html[data-ui="tomb"] .fight-result-card .fight-portrait{
+  inset:0 0 0 auto;
+  width:min(100%,190px);
+  max-width:none;
+  height:100%;
+}
+html[data-ui="tomb"] .fight-result-card .fight-portrait-artwork{
+  transform:none;
+}

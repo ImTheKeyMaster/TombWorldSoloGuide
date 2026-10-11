@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.117
+# Tomb World Battle Guide v10.0.118
+
+## v10.0.118
+
+### Fight Result portrait full-height framing
+
+- Prevent the Deathwatch and Necron Fight Result portraits from ending abruptly above the bottoms of taller participant cards. Artwork now fits within each card's full height, with its original aspect ratio preserved.
+- Keep the translucent artwork behind participant names, damage, wounds, and eliminated status while preserving card dimensions, the two-column iPhone layout, and the Current UI fallback.
+- Leave Fight Roll portrait framing and all fight resolution mechanics unchanged.
 
 ## v10.0.117
 
