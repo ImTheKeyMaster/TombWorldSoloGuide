@@ -1,4 +1,17 @@
-# Tomb World Battle Guide v10.0.105
+# Tomb World Battle Guide v10.0.106
+
+## v10.0.106
+
+### Larger Necron Portraits and Cleaner Cutouts
+
+- Makes the Experimental Necron miniatures substantially larger inside the existing portrait frames so individual operatives are easier to identify at a glance.
+- Uses model-family-specific framing for Warriors, Tomb Crawlers, Geomancer, Macrocytes, and Scarabs instead of one generic zoom.
+- Intentionally allows some base cropping where needed so the miniature itself occupies more of the frame.
+- Strengthens the dedicated background alpha key and makes its transfer ramp more decisive so the remaining photographed tabletop/background blobs are removed.
+- Preserves the v10.0.105 Photoshop-style colorization equivalent to approximately Hue 135, Saturation 23, Lightness 0.
+- Keeps the same framed/colorized helper for the roster rail, selected detail portrait, human-controlled Necron activation portrait, and solo activation portrait.
+- Current UI remains unchanged.
+
 
 ## v10.0.105
 
