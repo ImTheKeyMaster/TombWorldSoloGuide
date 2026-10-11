@@ -1,4 +1,17 @@
-# Tomb World Battle Guide v10.0.100
+# Tomb World Battle Guide v10.0.101
+
+## v10.0.101
+
+### Experimental Necron Roster Rail and Activation Portraits
+
+- Adds high-resolution portrait assets created from the supplied Tomb World Necron miniatures and matches them to the app's supported physical NPO types.
+- Applies the same grayscale-first green colorization, sharpening, and hardened background transparency used by the Deathwatch portrait treatment.
+- Replaces the Experimental Mode Necron activation dropdown with the same Roster Rail interaction used for Deathwatch, including an operative detail panel and no initial selection.
+- Allows the Necron rail to scroll horizontally when more Ready Necrons are present than can comfortably fit in the dialog.
+- Adds the selected Necron portrait to the human-controlled Necron Activation shell and to the Solo Necron activation wizard header.
+- Image mapping uses the supplied Scarab Swarm, Geomancer, two Tomb Crawlers, three Macrocyte Warriors, Macrocyte Accelerator, Macrocyte Reanimator, and Gauss Flayer / Gauss Reaper Necron Warriors.
+- Current UI remains unchanged; expansion NPOs without supplied portrait artwork retain the standard icon fallback.
+
 
 ## v10.0.100
 
@@ -2315,7 +2328,7 @@ After adding or removing files in `Assets/Images/Backgrounds/`, run `python3 too
 
 The Guide uses the physical NPO models in the Tomb World box: the **Canoptek Circle**, **Necron Warriors**, and **Canoptek Scarab Swarms**. The Canoptek Circle consists of the **Geomancer**, **Canoptek Tomb Crawler**, **Canoptek Macrocyte Warrior**, **Canoptek Macrocyte Accelerator**, and **Canoptek Macrocyte Reanimator**. Together with the Necron Warrior and Canoptek Scarab Swarm, these are the seven active NPO types.
 
-Rosters draw from the 21 physical models available in the box. Applicable loadouts are selected per operative instance, and user-facing NPO lists use alphabetical, natural-number ordering. NPO portraits are intentionally not displayed, and the Obelisk Node Matrix is not supported by the app.
+Rosters draw from the 21 physical models available in the box. Applicable loadouts are selected per operative instance, and user-facing NPO lists use alphabetical, natural-number ordering. NPO portraits are intentionally not displayed in Current UI. Experimental Tomb UI adds portraits for supported Tomb World Necron activation flows; expansion NPOs without supplied art use the standard icon fallback. The Obelisk Node Matrix is not supported by the app.
 
 Current and older saves are handled by the v7 migration system. Known legacy aliases are normalized safely. An active battle containing an unsupported retired NPO must return to setup and regenerate its NPO roster after the player confirms the migration notice; canceling leaves the original saved data unchanged.
 

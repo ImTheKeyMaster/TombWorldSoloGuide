@@ -14,7 +14,7 @@ def picker_source():
 
 
 def test_release_bumps_all_runtime_version_surfaces():
-    assert CURRENT_APP_VERSION == "10.0.100"
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 100)
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER

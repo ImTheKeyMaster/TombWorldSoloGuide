@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '10.0.100';
+const APP_VERSION = '10.0.101';
 const CACHE_PREFIX = 'tomb-world-battle-guide-';
 const LEGACY_CACHE_PREFIXES = ['tomb-world-solo-guide-'];
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
@@ -30,6 +30,17 @@ const PRECACHE_ASSETS = [
   './Assets/Images/TombUI/DeathwatchActivation/gunner.webp',
   './Assets/Images/TombUI/DeathwatchActivation/bombard.webp',
   './Assets/Images/TombUI/DeathwatchActivation/disruptor.webp',
+  './Assets/Images/TombUI/NecronActivation/canoptek-macrocyte-accelerator.webp',
+  './Assets/Images/TombUI/NecronActivation/canoptek-macrocyte-reanimator.webp',
+  './Assets/Images/TombUI/NecronActivation/canoptek-macrocyte-warrior-1.webp',
+  './Assets/Images/TombUI/NecronActivation/canoptek-macrocyte-warrior-2.webp',
+  './Assets/Images/TombUI/NecronActivation/canoptek-macrocyte-warrior-3.webp',
+  './Assets/Images/TombUI/NecronActivation/canoptek-scarab-swarm.webp',
+  './Assets/Images/TombUI/NecronActivation/canoptek-tomb-crawler-1.webp',
+  './Assets/Images/TombUI/NecronActivation/canoptek-tomb-crawler-2.webp',
+  './Assets/Images/TombUI/NecronActivation/geomancer.webp',
+  './Assets/Images/TombUI/NecronActivation/necron-warrior-gauss-flayer.webp',
+  './Assets/Images/TombUI/NecronActivation/necron-warrior-gauss-reaper.webp',
   './Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3',
   `./Assets/Maps/mission-01.png?v=${APP_VERSION}`, `./Assets/Maps/mission-02.png?v=${APP_VERSION}`, `./Assets/Maps/mission-03.png?v=${APP_VERSION}`,
   `./Assets/Maps/mission-04.png?v=${APP_VERSION}`, `./Assets/Maps/mission-05.png?v=${APP_VERSION}`, `./Assets/Maps/mission-06.png?v=${APP_VERSION}`,
