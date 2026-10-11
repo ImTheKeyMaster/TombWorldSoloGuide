@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.116
+# Tomb World Battle Guide v10.0.117
+
+## v10.0.117
+
+### Portraits on Fight Roll and Fight Result cards
+
+- Show existing green Deathwatch and transparent Necron portraits behind each participant's roll and result card, including eliminated models.
+- Frame the miniature head/upper half at the top right within each card, with dice, wound counts, and other text layered above it. The image is decorative and has no effect on card dimensions or controls.
+- Look up miniature images by stable combat participant ID and side; maintain safe fallback for unsupported Kill Teams or missing images.
+- Current Mode hides artwork immediately, and Experimental Mode shows it even when the cards were already rendered. Fight resolution state, rolls, damage, and Continue behavior are unchanged.
 
 ## v10.0.116
 

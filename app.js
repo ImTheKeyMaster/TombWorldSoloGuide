@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.116';
+  const APP_VERSION = '10.0.117';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -7475,9 +7475,21 @@ function showPlayerActivation(){
     if(!critical&&!normal)return '<strong>No retained successes</strong>';
     return `<strong>${critical?`${critical} Critical ${critical===1?'Success':'Successes'}`:''}${critical&&normal?'<br>':''}${normal?`${normal} Normal ${normal===1?'Success':'Successes'}`:''}</strong>`;
   }
+  function fightParticipantPortrait(participant,role){
+    if(!participant?.id)return '';
+    let artwork='';
+    if(participant.side==='npo'){
+      const npo=state.roster.find(item=>item.id===participant.id);
+      if(npo)artwork=experimentalNecronPortraitSvg(npo,`fightPortraitNecron-${role}`,'fight-portrait-artwork');
+    }else if(participant.side==='player'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'&&playerDefinition(participant.id)){
+      artwork=experimentalDeathwatchGreenPortraitSvg(participant.id,`fightPortraitDeathwatch-${role}`,'fight-portrait-artwork');
+    }
+    return artwork?`<span class="fight-portrait fight-portrait-${role}" aria-hidden="true">${artwork}</span>`:'';
+  }
   function fightRollParticipantHtml(fight,role,animate){
     const participant=fight[role],profile=participant.profile,dice=participant.attackDice.map(fightDiePresentation);
-    return `<section class="combat-stage fight-roll-pool" aria-label="${escapeHtml(participant.label)} Fight roll"><small>${escapeHtml(participant.label)}</small><strong>${escapeHtml(profile.name)} · ${profile.dice} dice · ${profile.hit}+ · ${profile.normal}/${profile.crit}</strong><div class="dice-row ${animate?'animated-roll':'settled'}" data-fight-roll-dice="${role}">${dice.map(die=>animate?rollingDieHtml():dieHtml(die)).join('')}</div>${attackRuleAppliedHtml(dice)}${severeAppliedHtml(dice)}<div class="fight-roll-result"><small>RESULT</small>${fightRollSummary(dice)}</div></section>`;
+    const portrait=fightParticipantPortrait(participant,role);
+    return `<section class="combat-stage fight-roll-pool${portrait?' has-fight-portrait':''}" aria-label="${escapeHtml(participant.label)} Fight roll">${portrait}<small>${escapeHtml(participant.label)}</small><strong>${escapeHtml(profile.name)} · ${profile.dice} dice · ${profile.hit}+ · ${profile.normal}/${profile.crit}</strong><div class="dice-row ${animate?'animated-roll':'settled'}" data-fight-roll-dice="${role}">${dice.map(die=>animate?rollingDieHtml():dieHtml(die)).join('')}</div>${attackRuleAppliedHtml(dice)}${severeAppliedHtml(dice)}<div class="fight-roll-result"><small>RESULT</small>${fightRollSummary(dice)}</div></section>`;
   }
   function fightWeaponRulesHtml(fight){
     return ['attacker','defender'].map(role=>{
@@ -7559,7 +7571,8 @@ function showPlayerActivation(){
     result.explanation=fightResultExplanation(fight,result);return result;
   }
   function fightResultParticipantHtml(participant,role){
-    return `<section class="fight-result-card" aria-label="${escapeHtml(participant.name)}, ${role} participant"><h3>${escapeHtml(participant.name)}</h3><dl><div><dt>Damage Dealt</dt><dd>${participant.damageDealt}</dd></div><div><dt>Wounds</dt><dd>${participant.before} <span aria-hidden="true">→</span><span class="sr-only">to</span> ${participant.after}</dd></div></dl>${participant.incapacitated?'<strong class="fight-eliminated">ELIMINATED</strong>':''}</section>`;
+    const portrait=fightParticipantPortrait(participant,role);
+    return `<section class="fight-result-card${portrait?' has-fight-portrait':''}" aria-label="${escapeHtml(participant.name)}, ${role} participant">${portrait}<h3>${escapeHtml(participant.name)}</h3><dl><div><dt>Damage Dealt</dt><dd>${participant.damageDealt}</dd></div><div><dt>Wounds</dt><dd>${participant.before} <span aria-hidden="true">→</span><span class="sr-only">to</span> ${participant.after}</dd></div></dl>${participant.incapacitated?'<strong class="fight-eliminated">ELIMINATED</strong>':''}</section>`;
   }
   function acknowledgeFightResult(fight){
     fight.resultAcknowledged=true;save();
