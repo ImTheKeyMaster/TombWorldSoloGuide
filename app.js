@@ -5408,7 +5408,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
 
   function experimentalNecronPortraitFrame(npo){
     if(!npo)return {x:0,y:0,size:384};
-    if(npo.type==='Canoptek Scarab Swarm')return {x:-32,y:-140,size:450};
+    if(npo.type==='Canoptek Scarab Swarm')return {x:-28,y:-143,size:440};
     if(npo.type==='Necron Warrior')return {x:-30,y:-62,size:430};
     return {x:-8,y:-8,size:400};
   }
