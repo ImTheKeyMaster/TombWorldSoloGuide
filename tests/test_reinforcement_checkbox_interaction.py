@@ -16,7 +16,7 @@ class ReinforcementCheckboxInteractionTests(unittest.TestCase):
         placement_markup = re.search(
             r"const placements=.*?\.join\(''\);", APP, re.DOTALL
         ).group(0)
-        self.assertIn('<label class="check-row">', placement_markup)
+        self.assertIn('<label class="check-row reinforcement-placement-row', placement_markup)
         self.assertIn("data-reinforcement-placement", placement_markup)
         self.assertNotIn("data-reinforcement-hatchway", APP)
         self.assertNotIn("recordReinforcementHatchway", APP)

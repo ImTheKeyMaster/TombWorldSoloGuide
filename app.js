@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.114';
+  const APP_VERSION = '10.0.115';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -4046,6 +4046,11 @@ document.addEventListener('touchend',function(e){
     return `${strategyProgressHtml('events')}<h2 id="strategy-step-heading">Resolve Tomb World Events</h2>${content}${strategyNavigationHtml({backId:'backStrategyActions',backLabel:'Back to Strategy Actions',continueId:'continueStrategyReview',continueLabel:'Continue to Reinforcements',disabled:blocked,disabledReason:blocked?'Resolve the required Tomb World event or redraw before continuing.':''})}`;
   }
 
+  function reinforcementPlacementPortrait(npo){
+    const artwork=experimentalNecronPortraitSvg(npo,`reinforcementPlacement-${npo.id}`,'reinforcement-placement-artwork');
+    return artwork?`<span class="reinforcement-placement-portrait" aria-hidden="true">${artwork}</span>`:'';
+  }
+
   function strategyReviewStepHtml(d){
     const deployingNpos=sortedNposForDisplay((state.reinforcementState.operativeIds||[]).map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean));
     const deployedNpos=deployingNpos.filter(npo=>npo.reinforcement?.placementConfirmed);
@@ -4059,7 +4064,7 @@ document.addEventListener('touchend',function(e){
     const reinforcementCard=deployingNpos.length||blockedCount
       ? `<section class="card reinforcement-card" aria-live="polite"><p class="eyebrow">REINFORCEMENTS</p><p>The Guide automatically determined and generated this Turning Point’s reinforcements. Place the generated models using the instructions below.</p>${deployedSection}${pendingSection}${blockedCount?`<div class="reinforcement-blocked" role="status"><h3>${deployingNpos.length?`${blockedCount} additional reinforcement${blockedCount===1?'':'s'} could not be deployed`:'No reinforcements could be deployed'}</h3><p>${blockedReason}</p></div>`:''}</section>`
       : '<div class="summary-box strategy-empty-message">The Guide automatically determined that no reinforcements were generated this Turning Point.</div>';
-    const placements=deployingNpos.map(npo=>`<label class="check-row"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong>${isHumanNpoReplacementPending(npo)?`<span class="field"><span>Choose NPO</span><select aria-label="Choose replacement for ${escapeHtml(npoName(npo))}" data-reinforcement-replacement="${escapeHtml(npo.id)}">${npo.replacementOptions.map(type=>`<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('')}</select></span>`:''}<small>Randomly determine an open hatchway, set up this operative with a Conceal order following the Tomb World reinforcement placement restrictions, then confirm.</small></span></label>`).join('');
+    const placements=deployingNpos.map(npo=>{const portrait=reinforcementPlacementPortrait(npo);return `<label class="check-row reinforcement-placement-row${portrait?' has-portrait':''}"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong>${isHumanNpoReplacementPending(npo)?`<span class="field"><span>Choose NPO</span><select aria-label="Choose replacement for ${escapeHtml(npoName(npo))}" data-reinforcement-replacement="${escapeHtml(npo.id)}">${npo.replacementOptions.map(type=>`<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('')}</select></span>`:''}<small>Randomly determine an open hatchway, set up this operative with a Conceal order following the Tomb World reinforcement placement restrictions, then confirm.</small></span>${portrait}</label>`;}).join('');
     const showStatTooltips=!window.matchMedia('(max-width:600px)').matches;
     const tooltipAttrs=text=>showStatTooltips?` tabindex="0" data-tooltip="${text}"`:'';
     const infoDot=showStatTooltips?'<span class="info-dot">i</span>':'';
