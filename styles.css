@@ -1880,14 +1880,14 @@ html[data-ui="tomb"] .setup-true-hex-card>.wizard-actions .btn.ghost{
 
 
 /* v10.0.101: Experimental Necron Roster Rail reuses the Deathwatch rail with horizontal overflow for larger ready rosters. */
-html[data-ui="tomb"] .experimental-roster-rail.experimental-necron-roster-rail{
+html[data-ui="tomb"] .experimental-roster-rail.experimental-necron-roster-rail.is-overflowing{
   overflow-x:auto;
   overflow-y:hidden;
   overscroll-behavior-x:contain;
   scroll-snap-type:x proximity;
   scrollbar-width:thin;
 }
-html[data-ui="tomb"] .experimental-necron-roster-rail .experimental-roster-item{
+html[data-ui="tomb"] .experimental-necron-roster-rail.is-overflowing .experimental-roster-item{
   flex:0 0 clamp(112px,18vw,142px);
   scroll-snap-align:start;
 }
@@ -1895,7 +1895,7 @@ html[data-ui="tomb"] .experimental-necron-roster-picker .experimental-roster-det
   min-height:0;
 }
 @media(max-width:600px){
-  html[data-ui="tomb"] .experimental-necron-roster-rail .experimental-roster-item{
+  html[data-ui="tomb"] .experimental-necron-roster-rail.is-overflowing .experimental-roster-item{
     flex-basis:112px;
   }
 }
