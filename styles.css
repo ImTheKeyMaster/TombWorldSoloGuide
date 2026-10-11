@@ -2170,3 +2170,23 @@ html[data-ui="tomb"] .experimental-roster-actions{margin-top:0}
   html[data-ui="tomb"] .experimental-roster-detail-copy>p:not(.eyebrow){margin:2px 0 5px;font-size:.7rem}
   html[data-ui="tomb"] .experimental-roster-actions .btn{min-height:40px;padding:8px 12px}
 }
+
+/* v10.0.111: Experimental Deathwatch target rail. Other target selectors are untouched. */
+html[data-ui="tomb"] .npo-target-roster-label{margin:0 0 8px;color:var(--muted);font-size:.75rem;font-weight:800}
+html[data-ui="tomb"] .npo-target-roster-shell{width:100%;max-width:100%;min-width:0}
+html[data-ui="tomb"] .npo-target-roster-rail{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+html[data-ui="tomb"] .npo-target-roster-rail .npo-target-roster-item{display:flex;flex:0 0 clamp(108px,20vw,136px);flex-direction:column;align-items:stretch;min-width:0;min-height:153px;padding:6px 5px 8px;scroll-snap-align:start}
+html[data-ui="tomb"] .npo-target-roster-item .experimental-roster-image{flex:0 0 91px;height:91px}
+html[data-ui="tomb"] .npo-target-roster-item .experimental-roster-name{position:static;left:auto;right:auto;bottom:auto;display:-webkit-box;width:100%;min-height:2.2em;margin:3px 0 0;line-height:1.1;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+html[data-ui="tomb"] .npo-target-roster-wounds{display:block;margin-top:auto;color:#a9c3b4;font-size:.72rem;font-weight:800;line-height:1.25;text-align:center;white-space:nowrap}
+html[data-ui="tomb"] .npo-target-roster-item.selected .npo-target-roster-wounds{color:var(--green)}
+@media(max-width:600px){
+  html[data-ui="tomb"] .npo-target-roster-rail .npo-target-roster-item{flex-basis:112px;min-height:146px;padding:5px 4px 8px}
+  html[data-ui="tomb"] .npo-target-roster-item .experimental-roster-image{flex-basis:82px;height:82px}
+  html[data-ui="tomb"] .npo-target-roster-item .experimental-roster-name{font-size:.65rem}
+  html[data-ui="tomb"] .npo-target-roster-wounds{font-size:.68rem}
+}
+@media(max-height:520px) and (orientation:landscape){
+  html[data-ui="tomb"] .npo-target-roster-rail .npo-target-roster-item{min-height:124px;padding:3px 4px 5px}
+  html[data-ui="tomb"] .npo-target-roster-item .experimental-roster-image{flex-basis:62px;height:62px}
+}

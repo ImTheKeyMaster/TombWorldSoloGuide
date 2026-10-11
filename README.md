@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.110
+# Tomb World Battle Guide v10.0.111
+
+## v10.0.111
+
+### Experimental Necron attack target roster rail
+
+- Adds a compact, horizontally scrollable Deathwatch portrait rail to the unconfirmed Shoot/Fight target-selection step in Experimental Mode.
+- Displays each eligible target's name and live current/max wound count below its image, with a single selected highlight and no details panel.
+- Preserves target priority, target eligibility, confirmation, combat state, existing Current UI dropdowns, and other Kill Teams.
+- Adds accessible target names, keyboard navigation, and focused regression coverage.
 
 ## v10.0.110
 
