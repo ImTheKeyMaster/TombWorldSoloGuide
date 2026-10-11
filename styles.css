@@ -2260,3 +2260,48 @@ html[data-ui="tomb"] .player-combat-target-item.selected .player-combat-target-w
   html[data-ui="tomb"] .player-combat-target-rail .player-combat-target-item{min-height:122px;padding:3px 3px 4px}
   html[data-ui="tomb"] .player-combat-target-item .experimental-roster-image{flex-basis:58px;height:58px}
 }
+
+/* Experimental Blast/Torrent completion: target artwork behind unchanged result pills. */
+html[data-ui="tomb"] .attack-confirmation-card.has-target-portrait{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+}
+html[data-ui="tomb"] .blast-result-portrait{
+  position:absolute;
+  z-index:0;
+  top:-21px;
+  right:-12px;
+  width:204px;
+  height:250px;
+  max-width:72%;
+  pointer-events:none;
+  opacity:.66;
+  -webkit-mask-image:linear-gradient(90deg,transparent 1%,rgba(0,0,0,.75) 30%,#000 58%);
+  mask-image:linear-gradient(90deg,transparent 1%,rgba(0,0,0,.75) 30%,#000 58%);
+}
+html[data-ui="tomb"] .blast-result-portrait-artwork{
+  display:block;
+  width:100%;
+  height:100%;
+  overflow:visible;
+  transform:scale(1.3);
+  transform-origin:top right;
+}
+html[data-ui="tomb"] .attack-confirmation-card.has-target-portrait>.attack-confirmation-heading,
+html[data-ui="tomb"] .attack-confirmation-card.has-target-portrait>.attack-confirmation-target,
+html[data-ui="tomb"] .attack-confirmation-card.has-target-portrait>.attack-confirmation-stats,
+html[data-ui="tomb"] .attack-confirmation-card.has-target-portrait>.hot-attack-summary{
+  position:relative;
+  z-index:1;
+}
+html[data-ui="tomb"] .attack-confirmation-card.has-target-portrait>.attack-confirmation-heading,
+html[data-ui="tomb"] .attack-confirmation-card.has-target-portrait>.attack-confirmation-target{
+  text-shadow:0 1px 5px #06110d,0 0 10px #06110d;
+}
+html[data-ui="tomb"] .attack-confirmation-card.has-target-portrait .attack-confirmation-stats>div{
+  background:rgba(6,24,15,.87);
+}
+@media(max-width:600px){
+  html[data-ui="tomb"] .blast-result-portrait{width:186px;height:226px;right:-10px;top:-17px}
+}
