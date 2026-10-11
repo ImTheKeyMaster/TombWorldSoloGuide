@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.109
+# Tomb World Battle Guide v10.0.110
+
+## v10.0.110
+
+### Crisp, cache-safe Necron portraits
+
+- Restores all 11 of the exact supplied green transparent Necron images as 384 x 384 portraits, preserving their colors, transparency, and operative associations.
+- Adds a release version to Necron image URLs in both the SVG renderer and the service-worker precache so outdated HTTP and PWA image caches cannot keep serving previous portraits.
+- Preserves the Experimental roster/activation UI and leaves the Current UI unchanged.
+- Updates binary asset hashes and validates the portraits' dimensions and transparency.
 
 ## v10.0.109
 
