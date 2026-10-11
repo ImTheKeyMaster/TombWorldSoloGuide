@@ -1,4 +1,17 @@
-# Tomb World Battle Guide v10.0.104
+# Tomb World Battle Guide v10.0.105
+
+## v10.0.105
+
+### Transparent Necron Portrait Backgrounds
+
+- Separates subject colorization from background extraction so the photographed tabletop/background is removed instead of being colorized into a green-gray blob.
+- Keeps the Photoshop-equivalent colorization requested by the user: grayscale first, then RGB colorize at approximately Hue 135, Saturation 23, Lightness 0.
+- Preserves that colorization with the existing lookup tables while using a dedicated, stronger alpha mask only for background removal.
+- Uses a softer alpha ramp after the cutoff so dark miniature detail is retained instead of disappearing with the background.
+- Re-centers the Gauss Flayer Warrior after background removal while preserving the separate Gauss Reaper framing.
+- The same transparent-background treatment feeds the roster rail, selected detail portrait, human-controlled Necron activation portrait, and solo Necron activation portrait.
+- Current UI remains unchanged.
+
 
 ## v10.0.104
 
