@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.112
+# Tomb World Battle Guide v10.0.113
+
+## v10.0.113
+
+### Experimental Necron target rail for player attacks
+
+- Replaces the Target NPO/Necron dropdown on the player Shoot/Melee attack preparation screen with a horizontally scrollable Necron portrait rail in Experimental Tomb UI when there are multiple targets.
+- Reuses the existing transparent Necron artwork, displaying each target's numbered name and projected current/max wounds below the image, with only the selected target highlighted.
+- Keeps Weapon selection, combat eligibility, weapon-rule checks, and Continue behavior unchanged, using the existing hidden `combatTarget` ID as the integration point.
+- Retains the original dropdown in Current Mode and the existing automatic/read-only single-target behavior.
 
 ## v10.0.112
 

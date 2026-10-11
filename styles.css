@@ -2228,3 +2228,35 @@ html[data-ui="tomb"] .npo-target-roster-item.selected .npo-target-roster-wounds{
 @media(max-width:600px){
   .combat-summary-grid .combat-participant-portrait{width:146px;height:146px;right:-14px}
 }
+
+/* Experimental player-attack Necron target picker. Other selectors stay unchanged. */
+html[data-ui="tomb"] .player-combat-target-label{margin:0 0 8px;color:var(--muted);font-weight:800;font-size:.8rem}
+html[data-ui="tomb"] .player-combat-target-shell{min-width:0;width:100%;max-width:100%}
+html[data-ui="tomb"] .player-combat-target-rail{
+  overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x proximity;
+  -webkit-overflow-scrolling:touch;scrollbar-width:thin
+}
+html[data-ui="tomb"] .player-combat-target-rail .player-combat-target-item{
+  display:flex;flex:0 0 118px;flex-direction:column;align-items:stretch;
+  min-width:0;min-height:157px;padding:5px 4px 7px;scroll-snap-align:start
+}
+html[data-ui="tomb"] .player-combat-target-item .experimental-roster-image{flex:0 0 91px;height:91px}
+html[data-ui="tomb"] .player-combat-target-item .experimental-roster-name{
+  position:static;left:auto;right:auto;bottom:auto;display:-webkit-box;
+  width:100%;min-height:2.1em;margin:3px 0 1px;line-height:1.05;
+  -webkit-box-orient:vertical;-webkit-line-clamp:2
+}
+html[data-ui="tomb"] .player-combat-target-wounds{
+  display:block;margin-top:auto;text-align:center;white-space:nowrap;
+  color:#a9c3b4;font-size:.68rem;font-weight:850
+}
+html[data-ui="tomb"] .player-combat-target-item.selected .player-combat-target-wounds{color:var(--green)}
+@media(max-width:600px){
+  html[data-ui="tomb"] .player-combat-target-rail .player-combat-target-item{flex-basis:110px;min-height:146px;padding:5px 3px 6px}
+  html[data-ui="tomb"] .player-combat-target-item .experimental-roster-image{flex-basis:80px;height:80px}
+  html[data-ui="tomb"] .player-combat-target-item .experimental-roster-name{font-size:.63rem}
+}
+@media(max-height:520px) and (orientation:landscape){
+  html[data-ui="tomb"] .player-combat-target-rail .player-combat-target-item{min-height:122px;padding:3px 3px 4px}
+  html[data-ui="tomb"] .player-combat-target-item .experimental-roster-image{flex-basis:58px;height:58px}
+}
