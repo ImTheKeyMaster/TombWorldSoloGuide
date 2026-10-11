@@ -1880,7 +1880,7 @@ html[data-ui="tomb"] .setup-true-hex-card>.wizard-actions .btn.ghost{
 
 
 /* v10.0.101: Experimental Necron Roster Rail reuses the Deathwatch rail with horizontal overflow for larger ready rosters. */
-html[data-ui="tomb"] .experimental-necron-roster-rail{
+html[data-ui="tomb"] .experimental-roster-rail.experimental-necron-roster-rail{
   overflow-x:auto;
   overflow-y:hidden;
   overscroll-behavior-x:contain;
