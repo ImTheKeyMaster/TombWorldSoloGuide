@@ -23,7 +23,10 @@ def test_release_is_v100104_or_newer():
 def test_necron_portraits_use_centered_source_framing_instead_of_css_zoom():
     source = section("function experimentalNecronPortraitFrame", "function experimentalNecronPortraitMarkup")
     assert "if(npo.type==='Canoptek Scarab Swarm')return {x:-28,y:-143,size:440};" in source
-    assert "if(npo.type==='Necron Warrior')return {x:-30,y:-62,size:430};" in source
+    assert "if(npo.type==='Necron Warrior'){" in source
+    assert "npo.weaponId==='gauss-reaper'" in source
+    assert "? {x:-30,y:-62,size:430}" in source
+    assert ": {x:18,y:-62,size:430}" in source
     assert "return {x:-8,y:-8,size:400};" in source
     assert 'x="${frame.x}" y="${frame.y}" width="${frame.size}" height="${frame.size}"' in source
     assert "experimental-necron-framed-svg" in source
@@ -32,15 +35,11 @@ def test_necron_portraits_use_centered_source_framing_instead_of_css_zoom():
     assert "transform:scale(1.34)" not in CSS
 
 
-def test_necron_filter_uses_the_exact_deathwatch_green_pipeline():
+def test_necron_colorization_keeps_the_deathwatch_photoshop_equivalent_lookup():
     deathwatch = section("function experimentalDeathwatchGreenPortraitSvg", "const EXPERIMENTAL_NECRON_IMAGE_ROOT")
     necron = section("function experimentalNecronGreenPortraitSvg", "function experimentalNecronPortraitMarkup")
 
     for shared in (
-        'values=".2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 1.063 3.576 .361 0 -.28" result="grayKeyed"',
-        'in="grayKeyed" result="tightKey"',
-        'tableValues="0 0 0 0 .2 .65 .9 1 1"',
-        'in="grayKeyed" result="colorized"',
         'tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"',
         'tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"',
         'tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"',
