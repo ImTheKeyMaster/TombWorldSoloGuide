@@ -32,6 +32,7 @@ def test_selection_and_keyboard_support():
     for snippet in ["classList.toggle('selected',selected)","button.setAttribute('aria-checked',String(selected))","['ArrowLeft','ArrowRight','Home','End']","nextButton.scrollIntoView({block:'nearest',inline:'nearest'})","state.npoAttackTargetId=id;","updateNpoTargetConfirmationAvailability();","if(!eligibleNpoAttackTargets().includes(id))"]:
         assert snippet in RENDER
     assert 'data-dialog-focus' in RENDER
+    assert "const targetButtons=$$('[data-npo-target-id]',modal);" in RENDER
 
 def test_confirm_target_retains_original_action_checks():
     confirm=APP.split('function confirmNpoAttackTarget(n,decision)',1)[1].split('function openNpoCombat(',1)[0]
