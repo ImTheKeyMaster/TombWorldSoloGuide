@@ -46,8 +46,9 @@ def test_artwork_clips_inside_pills_without_affecting_grid_heights():
     assert 'position:relative' in styles
     assert 'overflow:hidden' in styles
     assert 'position:absolute' in styles
-    assert 'top:-3px' in styles and 'right:-5px' in styles
-    assert 'max-width:78%' in styles
+    assert 'top:-3px' in styles and 'right:-16px' in styles
+    assert 'width:154px' in styles and 'height:154px' in styles
+    assert 'width:146px;height:146px;right:-14px' in styles
     assert 'facing-left .combat-participant-artwork' in styles
     assert 'transform:scaleX(-1)' in styles
     assert 'height:' not in styles.split('combat-summary-grid .combat-participant-pill{',1)[1].split('}',1)[0]
