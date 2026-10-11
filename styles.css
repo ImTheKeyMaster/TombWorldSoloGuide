@@ -1586,6 +1586,7 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.activation-
 
 
 
+/* v10.0.102: Keep Necron wizard portraits fully inside the activation header. */
 /* v10.0.101: Experimental Necron activation artwork. */
 html[data-ui="tomb"] .experimental-necron-activation-header.has-operative-portrait{
   position:relative;
@@ -1615,8 +1616,9 @@ html[data-ui="tomb"] .experimental-necron-wizard-svg{
   bottom:0;
   display:block;
   width:152%;
-  height:auto;
+  height:100%;
   max-width:none;
+  max-height:100%;
   overflow:visible;
 }
 @media(max-width:520px){
