@@ -22,12 +22,14 @@ def test_release_is_v100104_or_newer():
 
 def test_necron_portraits_use_centered_source_framing_instead_of_css_zoom():
     source = section("function experimentalNecronPortraitFrame", "function experimentalNecronPortraitMarkup")
-    assert "if(npo.type==='Canoptek Scarab Swarm')return {x:-28,y:-143,size:440};" in source
+    assert "if(npo.type==='Canoptek Scarab Swarm')return {x:-34,y:-151,size:452};" in source
     assert "if(npo.type==='Necron Warrior'){" in source
     assert "npo.weaponId==='gauss-reaper'" in source
-    assert "? {x:-30,y:-62,size:430}" in source
-    assert ": {x:18,y:-62,size:430}" in source
-    assert "return {x:-8,y:-8,size:400};" in source
+    assert "? {x:-60,y:-90,size:500}" in source
+    assert ": {x:0,y:-100,size:500}" in source
+    assert "if(npo.type==='Canoptek Tomb Crawler')return {x:-40,y:-32,size:460};" in source
+    assert "if(npo.type==='Geomancer')return {x:-35,y:-30,size:455};" in source
+    assert "if(npo.type==='Canoptek Macrocyte Warrior')return {x:-43,y:-30,size:470};" in source
     assert 'x="${frame.x}" y="${frame.y}" width="${frame.size}" height="${frame.size}"' in source
     assert "experimental-necron-framed-svg" in source
 

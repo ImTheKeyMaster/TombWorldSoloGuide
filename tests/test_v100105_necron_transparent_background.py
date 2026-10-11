@@ -29,9 +29,9 @@ def test_colorization_matches_requested_photoshop_h135_s23_l0_lookup():
 def test_background_removal_is_separate_from_grayscale_colorization():
     source = section("function experimentalNecronGreenPortraitSvg", "function experimentalNecronPortraitMarkup")
     assert 'result="portraitGray"' in source
-    assert 'values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.063 3.576 .361 0 -1.25" result="backgroundKey"' in source
+    assert 'values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.063 3.576 .361 0 -1.42" result="backgroundKey"' in source
     assert 'in="backgroundKey" result="subjectMask"' in source
-    assert 'tableValues="0 0 .45 .85 1 1 1 1 1"' in source
+    assert 'tableValues="0 0 0 .10 .45 .80 1 1 1"' in source
     assert 'in="portraitGray" result="colorized"' in source
     assert 'in2="subjectMask" operator="in" result="finalPortrait"' in source
     assert '1.063 3.576 .361 0 -.28" result="grayKeyed"' not in source
@@ -41,8 +41,8 @@ def test_gauss_flayer_recenters_after_background_is_removed():
     source = section("function experimentalNecronPortraitFrame", "function experimentalNecronGreenPortraitSvg")
     assert "if(npo.type==='Necron Warrior'){" in source
     assert "npo.weaponId==='gauss-reaper'" in source
-    assert "? {x:-30,y:-62,size:430}" in source
-    assert ": {x:18,y:-62,size:430}" in source
+    assert "? {x:-60,y:-90,size:500}" in source
+    assert ": {x:0,y:-100,size:500}" in source
 
 
 def test_transparent_cutout_helper_is_shared_by_all_experimental_necron_portraits():
