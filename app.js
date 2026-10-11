@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.112';
+  const APP_VERSION = '10.0.113';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -7691,6 +7691,20 @@ function showPlayerActivation(){
     return {activationId:`${state.turningPoint}:${state.activationNumber}`,actionId:attackType};
   }
 
+  function experimentalPlayerAttackTargetRail(targets,stage,preferredTargetId,targetSideLabel){
+    const selectedId=targets.some(npo=>npo.id===preferredTargetId)?preferredTargetId:'';
+    const items=targets.map((npo,index)=>{
+      const selected=npo.id===selectedId;
+      const current=projectedNpoWounds(npo.id,stage);
+      const maximum=npo.maxWounds;
+      return `<button type="button" class="experimental-roster-item player-combat-target-item${selected?' selected':''}" role="radio" aria-checked="${selected}" tabindex="${selected||(!selectedId&&index===0)?'0':'-1'}" data-player-combat-target="${escapeHtml(npo.id)}" aria-label="${escapeHtml(`${npoName(npo)}, ${current} of ${maximum} wounds, save ${npo.save}+`)}">
+        <span class="experimental-roster-image">${experimentalNecronPortraitMarkup(npo,`playerCombatTargetPortrait-${index}`,'experimental-roster-tinted-svg')}</span>
+        <span class="experimental-roster-name">${escapeHtml(npoName(npo))}</span>
+        <span class="player-combat-target-wounds">${escapeHtml(String(current))}/${escapeHtml(String(maximum))} wounds</span>
+      </button>`;
+    }).join('');
+    return `<div class="field player-combat-target-field"><p id="playerCombatTargetLabel" class="player-combat-target-label">Target ${escapeHtml(targetSideLabel)}</p><div class="experimental-roster-rail-shell player-combat-target-shell"><div class="experimental-roster-rail player-combat-target-rail" role="radiogroup" aria-labelledby="playerCombatTargetLabel">${items}</div></div><input type="hidden" id="combatTarget" value="${escapeHtml(selectedId)}"></div>`;
+  }
   function showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel,preferredTargetId=''){
     const targetSideLabel=isPvpMode()?'Necron':'NPO';
     const targets=sortedNposForDisplay(activeNpos().filter(n=>projectedNpoWounds(n.id,stage)>0));
@@ -7719,7 +7733,10 @@ function showPlayerActivation(){
     }
 
     const singleTarget=targets.length===1?targets[0]:null;
-    const targetControl=singleTarget
+    const useExperimentalTargetRail=document.documentElement.dataset.ui==='tomb'&&!singleTarget;
+    const targetControl=useExperimentalTargetRail
+      ? experimentalPlayerAttackTargetRail(targets,stage,preferredTargetId,targetSideLabel)
+      : singleTarget
       ? `<div class="field"><label>Target ${targetSideLabel}</label><div class="readonly-select">${escapeHtml(npoName(singleTarget))} · Wounds ${projectedNpoWounds(singleTarget.id,stage)}/${singleTarget.maxWounds} · Save ${singleTarget.save}+</div><input type="hidden" id="combatTarget" value="${singleTarget.id}"></div>`
       : `<div class="field"><label for="combatTarget">Target ${targetSideLabel}</label><select id="combatTarget"><option value="">Select a target ${targetSideLabel}...</option>${targets.map(n=>`<option value="${n.id}"${n.id===preferredTargetId?' selected':''}>${escapeHtml(npoName(n))} · Wounds ${projectedNpoWounds(n.id,stage)}/${n.maxWounds} · Save ${n.save}+</option>`).join('')}</select></div>`;
     const weaponFieldClass='field weapon-field';
@@ -7739,7 +7756,7 @@ function showPlayerActivation(){
       : '';
     showModal(`Resolve ${attackLabel} Attack`,`
       ${priorElimination}
-      <p>Select the target and attack profile before rolling.</p>
+      <p ${useExperimentalTargetRail?'tabindex="-1" data-dialog-focus':''}>Select the target and attack profile before rolling.</p>
       ${targetControl}
       ${weaponControl}
       ${darkDistance}
@@ -7767,6 +7784,33 @@ function showPlayerActivation(){
       $('#openCombatResolution').disabled=!target||!weapon;
     };
     targetSelect.addEventListener('change',renderChoices);
+    if(useExperimentalTargetRail){
+      const buttons=$$('[data-player-combat-target]',modal);
+      const selectTarget=id=>{
+        if(!targets.some(npo=>npo.id===id))return;
+        targetSelect.value=id;
+        buttons.forEach(button=>{
+          const selected=button.dataset.playerCombatTarget===id;
+          button.classList.toggle('selected',selected);
+          button.setAttribute('aria-checked',String(selected));
+          button.tabIndex=selected?0:-1;
+        });
+        renderChoices();
+      };
+      buttons.forEach(button=>{
+        button.onclick=()=>selectTarget(button.dataset.playerCombatTarget);
+        button.onkeydown=event=>{
+          if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+          event.preventDefault();
+          const current=buttons.indexOf(button);
+          const next=event.key==='Home'?0:event.key==='End'?buttons.length-1:event.key==='ArrowLeft'?(current-1+buttons.length)%buttons.length:(current+1)%buttons.length;
+          const nextButton=buttons[next];
+          nextButton.focus();
+          nextButton.scrollIntoView({block:'nearest',inline:'nearest'});
+          selectTarget(nextButton.dataset.playerCombatTarget);
+        };
+      });
+    }
     weaponSelect.addEventListener('change',renderChoices);
     $('#cancelPendingAttack').onclick=()=>cancelPendingPlayerCombat(stage,attackType,onCancel);
     $('#openCombatResolution').onclick=()=>{
