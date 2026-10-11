@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.106';
+  const APP_VERSION = '10.0.107';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5406,34 +5406,16 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     return '';
   }
 
-  function experimentalNecronPortraitFrame(npo){
-    if(!npo)return {x:0,y:0,size:384};
-    if(npo.type==='Canoptek Scarab Swarm')return {x:-34,y:-151,size:452};
-    if(npo.type==='Necron Warrior'){
-      return npo.weaponId==='gauss-reaper'
-        ? {x:-60,y:-90,size:500}
-        : {x:0,y:-100,size:500};
-    }
-    if(npo.type==='Canoptek Tomb Crawler')return {x:-40,y:-32,size:460};
-    if(npo.type==='Geomancer')return {x:-35,y:-30,size:455};
-    if(npo.type==='Canoptek Macrocyte Accelerator')return {x:-43,y:-34,size:470};
-    if(npo.type==='Canoptek Macrocyte Reanimator')return {x:-43,y:-34,size:470};
-    if(npo.type==='Canoptek Macrocyte Warrior')return {x:-43,y:-30,size:470};
-    return {x:-28,y:-28,size:448};
-  }
-
-  function experimentalNecronGreenPortraitSvg(npo,filterId,svgClass=''){
+  function experimentalNecronPortraitSvg(npo,filterId,svgClass=''){
     const href=experimentalNecronPortraitImage(npo);
     if(!href)return '';
-    const safeFilterId=escapeHtml(filterId);
     const safeClass=escapeHtml(svgClass);
     const frameClass=`${safeClass} experimental-necron-framed-svg`.trim();
-    const frame=experimentalNecronPortraitFrame(npo);
-    return `<svg class="${frameClass}" viewBox="0 0 384 384" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><defs><filter id="${safeFilterId}" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB"><feColorMatrix in="SourceGraphic" type="matrix" values=".2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 0 0 0 1 0" result="portraitGray"/><feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.063 3.576 .361 0 -1.42" result="backgroundKey"/><feComponentTransfer in="backgroundKey" result="subjectMask"><feFuncA type="table" tableValues="0 0 0 .10 .45 .80 1 1 1"/></feComponentTransfer><feComponentTransfer in="portraitGray" result="colorized"><feFuncR type="table" tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"/><feFuncG type="table" tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"/><feFuncB type="table" tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"/><feFuncA type="linear" slope="1.08" intercept="-.01"/></feComponentTransfer><feConvolveMatrix in="colorized" order="3" kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0" divisor="1" preserveAlpha="true" result="sharpened"/><feComposite in="sharpened" in2="subjectMask" operator="in" result="finalPortrait"/></filter></defs><image href="${escapeHtml(href)}" x="${frame.x}" y="${frame.y}" width="${frame.size}" height="${frame.size}" preserveAspectRatio="xMidYMid meet" filter="url(#${safeFilterId})"/></svg>`;
+    return `<svg class="${frameClass}" viewBox="0 0 384 384" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><image href="${escapeHtml(href)}" x="0" y="0" width="384" height="384" preserveAspectRatio="xMidYMid meet"/></svg>`;
   }
 
   function experimentalNecronPortraitMarkup(npo,filterId,svgClass=''){
-    const portrait=experimentalNecronGreenPortraitSvg(npo,filterId,svgClass);
+    const portrait=experimentalNecronPortraitSvg(npo,filterId,svgClass);
     return portrait||'<img src="Assets/icon.svg" alt="" aria-hidden="true">';
   }
 
@@ -8318,7 +8300,7 @@ function showPlayerActivation(){
       order:n.order,loadout:definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name||npoWeapon(definition,n.weaponId)?.name||'',effects:modifiers,
       completedActions:(activation.resolvedActions||[]).map(action=>({...action,summary:conciseNpoActionName(action)})),actions:catalog,
       onAction:actionId=>selectHumanNpoAction(n,actionId),onEnd:()=>confirmEndHumanNpoActivation(n),
-      portraitMarkup:document.documentElement.dataset.ui==='tomb'?experimentalNecronGreenPortraitSvg(n,'experimentalNecronHumanActivationTint','experimental-activation-portrait-svg'):''});
+      portraitMarkup:document.documentElement.dataset.ui==='tomb'?experimentalNecronPortraitSvg(n,'experimentalNecronHumanActivationTint','experimental-activation-portrait-svg'):''});
     renderOperativeStatusPanel();
   }
 
@@ -8349,7 +8331,7 @@ function showPlayerActivation(){
     const loadout=definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name||npoWeapon(definition,n.weaponId)?.name;
     const engrammatic=n.wounds<n.maxWounds&&activeNpos().some(item=>npoDefinition(item.type)?.id==='royal-warden')?`<p class="muted">${escapeHtml(STAGE3_RULE_TEXT.engrammatic)}</p>`:'';
     const profile=`<div class="activation-profile-strip" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>AP remaining: ${state.lastActivation.remainingAp}/${state.lastActivation.startingAp}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Next movement uses Molecular Breach</span>':''}</div>`;
-    const portrait=document.documentElement.dataset.ui==='tomb'?experimentalNecronGreenPortraitSvg(n,'experimentalNecronWizardTint','experimental-necron-wizard-svg'):'';
+    const portrait=document.documentElement.dataset.ui==='tomb'?experimentalNecronPortraitSvg(n,'experimentalNecronWizardTint','experimental-necron-wizard-svg'):'';
     const header=portrait
       ? `<div class="experimental-necron-activation-header has-operative-portrait"><div class="experimental-necron-activation-copy"><h2 id="activeNpoQuestionHeading">${escapeHtml(opponentSingularLabel())} Activation: ${escapeHtml(npoName(n))}</h2>${engrammatic}${profile}</div><div class="experimental-necron-activation-portrait" aria-hidden="true">${portrait}</div></div>`
       : `<h2 id="activeNpoQuestionHeading">${escapeHtml(opponentSingularLabel())} Activation: ${escapeHtml(npoName(n))}</h2>${engrammatic}${profile}`;
