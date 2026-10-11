@@ -8934,7 +8934,7 @@ function showPlayerActivation(){
     $('[data-close]',modal)?.addEventListener('click',closeModal);
     $('#aiBack')?.addEventListener('click',()=>backFromNpoAttackSelection(n));
     $('#npoPriorityTarget')?.addEventListener('change',event=>{state.npoAttackTargetId=event.currentTarget.value||null;save();updateNpoTargetConfirmationAvailability();});
-    const targetButtons=$('[data-npo-target-id]',modal);
+    const targetButtons=$$('[data-npo-target-id]',modal);
     if(targetButtons.length){
       const selectTarget=id=>{
         if(!eligibleNpoAttackTargets().includes(id)){
