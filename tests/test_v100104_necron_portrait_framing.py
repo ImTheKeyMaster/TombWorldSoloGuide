@@ -22,7 +22,7 @@ def test_release_is_v100104_or_newer():
 
 def test_necron_portraits_use_centered_source_framing_instead_of_css_zoom():
     source = section("function experimentalNecronPortraitFrame", "function experimentalNecronPortraitMarkup")
-    assert "if(npo.type==='Canoptek Scarab Swarm')return {x:-32,y:-140,size:450};" in source
+    assert "if(npo.type==='Canoptek Scarab Swarm')return {x:-28,y:-143,size:440};" in source
     assert "if(npo.type==='Necron Warrior')return {x:-30,y:-62,size:430};" in source
     assert "return {x:-8,y:-8,size:400};" in source
     assert 'x="${frame.x}" y="${frame.y}" width="${frame.size}" height="${frame.size}"' in source
