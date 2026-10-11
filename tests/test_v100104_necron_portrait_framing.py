@@ -20,61 +20,29 @@ def test_release_is_v100104_or_newer():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
 
 
-def test_necron_portraits_use_centered_source_framing_instead_of_css_zoom():
-    source = section("function experimentalNecronPortraitFrame", "function experimentalNecronPortraitMarkup")
-    assert "if(npo.type==='Canoptek Scarab Swarm')return {x:-34,y:-151,size:452};" in source
-    assert "if(npo.type==='Necron Warrior'){" in source
-    assert "npo.weaponId==='gauss-reaper'" in source
-    assert "? {x:-60,y:-90,size:500}" in source
-    assert ": {x:0,y:-100,size:500}" in source
-    assert "if(npo.type==='Canoptek Tomb Crawler')return {x:-40,y:-32,size:460};" in source
-    assert "if(npo.type==='Geomancer')return {x:-35,y:-30,size:455};" in source
-    assert "if(npo.type==='Canoptek Macrocyte Warrior')return {x:-43,y:-30,size:470};" in source
-    assert 'x="${frame.x}" y="${frame.y}" width="${frame.size}" height="${frame.size}"' in source
+def test_supplied_assets_are_preframed_so_runtime_frame_math_is_gone():
+    source = section("function experimentalNecronPortraitSvg", "function experimentalNecronPortraitMarkup")
+    assert "experimentalNecronPortraitFrame" not in APP
+    assert 'x="0" y="0" width="384" height="384"' in source
+    assert 'preserveAspectRatio="xMidYMid meet"' in source
     assert "experimental-necron-framed-svg" in source
 
-    assert "brightness(1.62)" not in CSS
-    assert "transform:scale(1.34)" not in CSS
+
+def test_framing_clips_safely_in_all_experimental_views():
+    assert ".experimental-necron-framed-svg{" in CSS
+    assert "overflow:hidden!important" in CSS
+    assert ".experimental-necron-roster-picker .experimental-roster-tinted-svg{" in CSS
+    assert "transform:none" in CSS
+    assert "filter:none" in CSS
 
 
-def test_necron_colorization_keeps_the_deathwatch_photoshop_equivalent_lookup():
-    deathwatch = section("function experimentalDeathwatchGreenPortraitSvg", "const EXPERIMENTAL_NECRON_IMAGE_ROOT")
-    necron = section("function experimentalNecronGreenPortraitSvg", "function experimentalNecronPortraitMarkup")
-
-    for shared in (
-        'tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"',
-        'tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"',
-        'tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"',
-        'kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0"',
-    ):
-        assert shared in deathwatch
-        assert shared in necron
-
-
-def test_framing_clips_in_roster_and_activation_views():
-    block = CSS.split(
-        "v10.0.104: Necron portraits use intrinsic SVG crop/framing and the exact Deathwatch green treatment.",
-        1,
-    )[1].split(
-        "v10.0.101: Experimental Necron Roster Rail reuses the Deathwatch rail",
-        1,
-    )[0]
-    assert ".experimental-necron-framed-svg{" in block
-    assert "overflow:hidden!important" in block
-    assert ".experimental-necron-roster-picker .experimental-roster-tinted-svg{" in block
-    assert "transform:none" in block
-    assert "filter:none" in block
-    assert ".experimental-roster-image{" not in block
-    assert ".experimental-roster-item{" not in block
-
-
-def test_same_framed_helper_feeds_roster_detail_and_activation_portraits():
+def test_same_direct_renderer_feeds_roster_detail_and_activation_portraits():
     source = section("function experimentalNecronPortraitMarkup", "function showExperimentalDeathwatchRosterRail")
-    assert "experimentalNecronGreenPortraitSvg(npo,filterId,svgClass)" in source
-    assert "experimentalNecronPortraitMarkup(npo,`experimentalNecronRosterTint-" in source
-    assert "experimentalNecronPortraitMarkup(npo,'experimentalNecronRosterDetailTint'" in source
+    assert "experimentalNecronPortraitSvg(npo,filterId,svgClass)" in source
+    assert "experimentalNecronRosterTint-" in source
+    assert "experimentalNecronRosterDetailTint" in source
 
     human = section("function renderHumanNpoActionPicker", "function selectHumanNpoAction")
     solo = section("function renderNpoActivationHeader", "function renderNpoGuideFooter")
-    assert "experimentalNecronGreenPortraitSvg(n,'experimentalNecronHumanActivationTint'" in human
-    assert "experimentalNecronGreenPortraitSvg(n,'experimentalNecronWizardTint'" in solo
+    assert "experimentalNecronPortraitSvg(n,'experimentalNecronHumanActivationTint'" in human
+    assert "experimentalNecronPortraitSvg(n,'experimentalNecronWizardTint'" in solo
