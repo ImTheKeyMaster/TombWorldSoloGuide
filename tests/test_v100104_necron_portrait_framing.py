@@ -59,7 +59,7 @@ def test_framing_clips_in_roster_and_activation_views():
         1,
     )[0]
     assert ".experimental-necron-framed-svg{" in block
-    assert "overflow:hidden" in block
+    assert "overflow:hidden!important" in block
     assert ".experimental-necron-roster-picker .experimental-roster-tinted-svg{" in block
     assert "transform:none" in block
     assert "filter:none" in block
