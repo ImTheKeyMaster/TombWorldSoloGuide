@@ -2190,3 +2190,41 @@ html[data-ui="tomb"] .npo-target-roster-item.selected .npo-target-roster-wounds{
   html[data-ui="tomb"] .npo-target-roster-rail .npo-target-roster-item{min-height:124px;padding:3px 4px 5px}
   html[data-ui="tomb"] .npo-target-roster-item .experimental-roster-image{flex-basis:62px;height:62px}
 }
+
+/* Combat participant portraits: decorative art is clipped within the original grid cells. */
+.combat-summary-grid .combat-participant-pill{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+}
+.combat-summary-grid .combat-participant-pill>small,
+.combat-summary-grid .combat-participant-pill>.combat-summary-value{
+  position:relative;
+  z-index:1;
+  text-shadow:0 1px 4px #04100a,0 0 8px #04100a;
+}
+.combat-summary-grid .combat-participant-portrait{
+  position:absolute;
+  top:-3px;
+  right:-16px;
+  width:154px;
+  height:154px;
+  opacity:.85;
+  pointer-events:none;
+  z-index:0;
+  -webkit-mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.85) 48%,#000);
+  mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.85) 48%,#000);
+}
+.combat-summary-grid .combat-participant-artwork{
+  display:block;
+  width:100%;
+  height:100%;
+  overflow:visible;
+  transform-origin:center center;
+}
+.combat-summary-grid .combat-participant-portrait.facing-left .combat-participant-artwork{
+  transform:scaleX(-1);
+}
+@media(max-width:600px){
+  .combat-summary-grid .combat-participant-portrait{width:146px;height:146px;right:-14px}
+}

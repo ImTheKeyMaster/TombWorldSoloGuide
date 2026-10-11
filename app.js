@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.111';
+  const APP_VERSION = '10.0.112';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5695,12 +5695,24 @@ function showPlayerActivation(){
     return `${profile.dice} dice · ${profile.hit}+`;
   }
 
-  function showSharedCombatResolutionScreen({title,attackerName,defenderName,attackType,weaponName,attackLabel='',defenseLabel,cancelId,continueId,guidanceHtml='',rulesHtml='',extraHtml='',detailsHtml=''}){
+  function combatParticipantPortrait(side,operative,position){
+    if(!operative)return '';
+    let portrait='';
+    if(side==='npo'){
+      portrait=experimentalNecronPortraitSvg(operative,`combatPortraitNecron-${position}`,'combat-participant-artwork');
+    }else if(side==='player'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'&&playerDefinition(operative)){
+      portrait=experimentalDeathwatchGreenPortraitSvg(operative,`combatPortraitDeathwatch-${position}`,'combat-participant-artwork');
+    }
+    if(!portrait)return '';
+    return `<span class="combat-participant-portrait ${position==='defender'?'facing-left':'facing-right'}" aria-hidden="true">${portrait}</span>`;
+  }
+
+  function showSharedCombatResolutionScreen({title,attackerName,defenderName,attackerPortrait='',defenderPortrait='',attackType,weaponName,attackLabel='',defenseLabel,cancelId,continueId,guidanceHtml='',rulesHtml='',extraHtml='',detailsHtml=''}){
     showModal(title,`
       <section class="dedicated-combat-screen" aria-label="Combat resolution screen">
         <div class="damage-summary combat-participants compact-combat-profile combat-summary-grid${attackLabel?' has-attack-profile':''}">
-          <div><small>Attacker</small><strong class="combat-summary-value">${escapeHtml(attackerName)}</strong></div>
-          <div><small>Defender</small><strong class="combat-summary-value">${escapeHtml(defenderName)}</strong></div>
+          <div class="combat-participant-pill"><small>Attacker</small><strong class="combat-summary-value">${escapeHtml(attackerName)}</strong>${attackerPortrait}</div>
+          <div class="combat-participant-pill"><small>Defender</small><strong class="combat-summary-value">${escapeHtml(defenderName)}</strong>${defenderPortrait}</div>
           <div><small>Attack type</small><strong class="combat-summary-value">${attackType==='shoot'?'Shooting':'Melee'}</strong></div>
           <div><small>Weapon</small><strong class="combat-summary-value">${escapeHtml(weaponName)}</strong></div>
           ${attackLabel?`<div><small>Attack</small><strong class="combat-summary-value">${escapeHtml(attackLabel)}</strong></div>`:''}
@@ -7852,6 +7864,8 @@ function showPlayerActivation(){
     const attackerWithinTwo=Boolean($('#attackerWithinTwo')?.checked)||Boolean(result?.attackerWithinTwo);
     const screen=showSharedCombatResolutionScreen({
       title:`Resolve ${attackLabel} Attack`,attackerName:playerName(stage.playerOperativeId),defenderName:targetName,
+      attackerPortrait:combatParticipantPortrait('player',stage.playerOperativeId,'attacker'),
+      defenderPortrait:combatParticipantPortrait(targetSide,targetSide==='player'?targetId:target,'defender'),
       attackType,weaponName:weapon.name,attackLabel:attackType==='shoot'?combatAttackLabel(profile):'',
       defenseLabel:`${Math.max(0,3-profile.ap)} dice · ${target.save}+`,
       cancelId:'cancelPendingAttack',continueId:'continuePendingAttack',
@@ -9161,6 +9175,8 @@ function showPlayerActivation(){
     const guidance=npoCombatGuidanceHtml(n,{attackType,profile:initialProfile});
     const screen=showSharedCombatResolutionScreen({
       title:'Resolve Combat',attackerName:npoName(n),defenderName:targetName,attackType,
+      attackerPortrait:combatParticipantPortrait('npo',n,'attacker'),
+      defenderPortrait:combatParticipantPortrait(targetSide,targetSide==='player'?target.id:target,'defender'),
       weaponName:initialProfile?.name||'—',attackLabel:initialProfile?combatAttackLabel(initialProfile):'—',defenseLabel:`3 dice · ${target.save||3}+`,
       cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',
       guidanceHtml:`<div id="npoCombatGuidance">${guidance}</div>`,
