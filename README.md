@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.0.107
+# Tomb World Battle Guide v10.0.108
+
+## v10.0.108
+
+### Restore the supplied green transparent Necron portraits
+
+- Uses the exact green-colorized transparent Necron artwork supplied by the user in this chat rather than the raw/natural-color source photos introduced in v10.0.107.
+- Centers and crops the supplied artwork at the asset level for consistent roster and detail framing.
+- Keeps the supplied coloring and transparency intact. No runtime grayscale, hue/saturation recoloring, background keying, alpha masking, or sharpening is applied.
+- Preserves the existing operative mapping for Tomb Crawlers, Scarab Swarm, Gauss Flayer/Reaper Warriors, Geomancer, Accelerator, Reanimator, and Macrocyte Warriors 1-3.
+- Refreshes the service-worker cache so previously cached v10.0.107 portrait assets are replaced on update.
+- Current UI remains unchanged.
 
 ## v10.0.107
 
