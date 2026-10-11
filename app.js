@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.100';
+  const APP_VERSION = '10.0.101';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2942,7 +2942,7 @@ document.addEventListener('touchend',function(e){
     const npoRoster=`<section class="help-section">
       <h3>Tomb World NPO roster</h3>
       <p>The supported pool uses the physical models in the Tomb World box: the <strong>Canoptek Circle</strong> (Geomancer, Canoptek Tomb Crawler, Canoptek Macrocyte Warrior, Canoptek Macrocyte Accelerator, and Canoptek Macrocyte Reanimator), <strong>Necron Warriors</strong>, and <strong>Canoptek Scarab Swarms</strong>.</p>
-      <p>NPO lists are alphabetical, and applicable loadouts are selected for each operative instance. NPO portraits are intentionally not displayed. The Obelisk Node Matrix is not supported by the Guide.</p>
+      <p>NPO lists are alphabetical, and applicable loadouts are selected for each operative instance. NPO portraits are intentionally not displayed in Current UI. Experimental Tomb UI adds portraits to supported Tomb World Necron activation flows. The Obelisk Node Matrix is not supported by the Guide.</p>
       <p>Current saves and older saves use the v7 migration flow. If an active legacy battle contains an unsupported retired NPO, the Guide asks before returning that battle to setup so a legal roster can be regenerated.</p>
     </section>`;
 
@@ -4986,6 +4986,10 @@ document.addEventListener('touchend',function(e){
     const candidates=readyNpos();
     if(candidates.length===1){state.activeNpoId=candidates[0].id;beginNpoActivation(candidates[0]);return;}
     const options=sortedNposForDisplay(candidates).map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(npoName(n))}</option>`).join('');
+    if(document.documentElement.dataset.ui==='tomb'){
+      showExperimentalNecronRosterRail(candidates);
+      return;
+    }
     if(isPvpMode()){
       showModal('Necron Activation',`<p>Choose a Ready Necron to activate.</p><div class="field"><label for="officialNpoSelection">Ready Necron</label><select id="officialNpoSelection" data-dialog-focus><option value="">Select a Ready Necron</option>${options}</select></div><div class="wizard-actions"><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmNpoSelection" disabled>Continue</button></div>`);
       $('#officialNpoSelection').onchange=()=>{$('#confirmNpoSelection').disabled=!$('#officialNpoSelection').value;};
@@ -5381,6 +5385,131 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     const safeFilterId=escapeHtml(filterId);
     const safeClass=escapeHtml(svgClass);
     return `<svg class="${safeClass}" viewBox="0 0 384 384" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><defs><filter id="${safeFilterId}" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values=".2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 1.063 3.576 .361 0 -.28" result="grayKeyed"/><feComponentTransfer in="grayKeyed" result="tightKey"><feFuncA type="table" tableValues="0 0 0 0 .2 .65 .9 1 1"/></feComponentTransfer><feComponentTransfer in="grayKeyed" result="colorized"><feFuncR type="table" tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"/><feFuncG type="table" tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"/><feFuncB type="table" tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"/><feFuncA type="linear" slope="1.08" intercept="-.01"/></feComponentTransfer><feConvolveMatrix in="colorized" order="3" kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0" divisor="1" preserveAlpha="true" result="sharpened"/><feComposite in="sharpened" in2="tightKey" operator="in" result="finalPortrait"/></filter></defs><image href="${escapeHtml(experimentalDeathwatchActivationImage(id))}" x="0" y="0" width="384" height="384" preserveAspectRatio="xMidYMid meet" filter="url(#${safeFilterId})"/></svg>`;
+  }
+
+  const EXPERIMENTAL_NECRON_IMAGE_ROOT='Assets/Images/TombUI/NecronActivation/';
+
+  function experimentalNecronPortraitImage(npo){
+    if(!npo)return '';
+    if(npo.type==='Canoptek Scarab Swarm')return `${EXPERIMENTAL_NECRON_IMAGE_ROOT}canoptek-scarab-swarm.webp`;
+    if(npo.type==='Necron Warrior')return `${EXPERIMENTAL_NECRON_IMAGE_ROOT}${npo.weaponId==='gauss-reaper'?'necron-warrior-gauss-reaper':'necron-warrior-gauss-flayer'}.webp`;
+    if(npo.type==='Canoptek Tomb Crawler')return `${EXPERIMENTAL_NECRON_IMAGE_ROOT}canoptek-tomb-crawler-${Number(npo.displayNumber)===2?2:1}.webp`;
+    if(npo.type==='Geomancer')return `${EXPERIMENTAL_NECRON_IMAGE_ROOT}geomancer.webp`;
+    if(npo.type==='Canoptek Macrocyte Accelerator')return `${EXPERIMENTAL_NECRON_IMAGE_ROOT}canoptek-macrocyte-accelerator.webp`;
+    if(npo.type==='Canoptek Macrocyte Reanimator')return `${EXPERIMENTAL_NECRON_IMAGE_ROOT}canoptek-macrocyte-reanimator.webp`;
+    if(npo.type==='Canoptek Macrocyte Warrior'){
+      const number=Math.max(1,Math.min(3,Number(npo.displayNumber)||1));
+      return `${EXPERIMENTAL_NECRON_IMAGE_ROOT}canoptek-macrocyte-warrior-${number}.webp`;
+    }
+    return '';
+  }
+
+  function experimentalNecronGreenPortraitSvg(npo,filterId,svgClass=''){
+    const href=experimentalNecronPortraitImage(npo);
+    if(!href)return '';
+    const safeFilterId=escapeHtml(filterId);
+    const safeClass=escapeHtml(svgClass);
+    return `<svg class="${safeClass}" viewBox="0 0 384 384" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><defs><filter id="${safeFilterId}" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values=".2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 1.063 3.576 .361 0 -.28" result="grayKeyed"/><feComponentTransfer in="grayKeyed" result="tightKey"><feFuncA type="table" tableValues="0 0 0 0 .2 .65 .9 1 1"/></feComponentTransfer><feComponentTransfer in="grayKeyed" result="colorized"><feFuncR type="table" tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"/><feFuncG type="table" tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"/><feFuncB type="table" tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"/><feFuncA type="linear" slope="1.08" intercept="-.01"/></feComponentTransfer><feConvolveMatrix in="colorized" order="3" kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0" divisor="1" preserveAlpha="true" result="sharpened"/><feComposite in="sharpened" in2="tightKey" operator="in" result="finalPortrait"/></filter></defs><image href="${escapeHtml(href)}" x="0" y="0" width="384" height="384" preserveAspectRatio="xMidYMid meet" filter="url(#${safeFilterId})"/></svg>`;
+  }
+
+  function experimentalNecronPortraitMarkup(npo,filterId,svgClass=''){
+    const portrait=experimentalNecronGreenPortraitSvg(npo,filterId,svgClass);
+    return portrait||'<img src="Assets/icon.svg" alt="" aria-hidden="true">';
+  }
+
+  function showExperimentalNecronRosterRail(candidates){
+    const ordered=sortedNposForDisplay(candidates);
+    const items=ordered.map((npo,index)=>`<button type="button" class="experimental-roster-item" role="radio" aria-checked="false" tabindex="${index===0?'0':'-1'}" data-roster-npo="${escapeHtml(npo.id)}">
+      <span class="experimental-roster-image">${experimentalNecronPortraitMarkup(npo,`experimentalNecronRosterTint-${index}`,'experimental-roster-tinted-svg')}</span>
+      <span class="experimental-roster-name">${escapeHtml(npoName(npo))}</span>
+    </button>`).join('');
+    const instruction=isPvpMode()
+      ? 'Select a Ready Necron from the roster rail.'
+      : `Use the Threat Principle: choose a Necron that can threaten or use an ability, is not in cover, then is closest to a ${escapeHtml(playerSideLabel())} operative. Resolve any remaining tie randomly, then select that Ready Necron below.`;
+
+    showModal(isPvpMode()?'NECRON ACTIVATION':'SELECT NECRON TO ACTIVATE',`<section class="experimental-roster-picker experimental-necron-roster-picker">
+      <p class="experimental-roster-instruction" tabindex="-1" data-dialog-focus>${instruction}</p>
+      <div class="experimental-roster-rail-shell">
+        <div class="experimental-roster-rail experimental-necron-roster-rail" role="radiogroup" aria-label="Ready Necron operatives">${items}</div>
+      </div>
+      <section class="experimental-roster-detail" aria-live="polite">
+        <div class="experimental-roster-detail-image placeholder" id="experimentalNecronRosterDetailImage" aria-hidden="true"><img src="Assets/icon.svg" alt=""></div>
+        <div class="experimental-roster-detail-copy">
+          <p class="eyebrow">NECRON OPERATIVE</p>
+          <h3 id="experimentalNecronRosterDetailName">Choose a Necron</h3>
+          <p id="experimentalNecronRosterDetailRole">Select an operative above.</p>
+          <div class="experimental-roster-stats placeholder" id="experimentalNecronRosterStats" aria-hidden="true">
+            <span><small>APL</small><strong>—</strong></span>
+            <span><small>MOVE</small><strong>—</strong></span>
+            <span><small>SAVE</small><strong>—</strong></span>
+            <span><small>WOUNDS</small><strong>—</strong></span>
+          </div>
+        </div>
+      </section>
+      <div class="wizard-actions experimental-roster-actions">
+        <button class="btn ghost" data-close>Close Guide</button>
+        <button class="btn primary" id="confirmExperimentalNecronSelection" disabled>Begin Activation</button>
+      </div>
+    </section>`);
+    modal.classList.add('experimental-roster-rail-modal','experimental-necron-roster-modal');
+
+    const updateRosterNameDensity=()=>{
+      $('[data-roster-npo]',modal).forEach(button=>{
+        const name=button.querySelector('.experimental-roster-name');
+        if(!name)return;
+        button.classList.remove('single-line-name');
+        const lineHeight=parseFloat(getComputedStyle(name).lineHeight)||0;
+        if(lineHeight&&name.scrollHeight<=lineHeight*1.35)button.classList.add('single-line-name');
+      });
+    };
+    requestAnimationFrame(updateRosterNameDensity);
+
+    let selectedId='';
+    const confirm=$('#confirmExperimentalNecronSelection');
+    const detailImage=$('#experimentalNecronRosterDetailImage');
+    const detailName=$('#experimentalNecronRosterDetailName');
+    const detailRole=$('#experimentalNecronRosterDetailRole');
+    const stats=$('#experimentalNecronRosterStats');
+
+    const selectNpo=id=>{
+      selectedId=id;
+      $('[data-roster-npo]',modal).forEach(button=>{
+        const selected=button.dataset.rosterNpo===selectedId;
+        button.classList.toggle('selected',selected);
+        button.setAttribute('aria-checked',String(selected));
+        button.tabIndex=selected?0:-1;
+      });
+      const npo=readyNpos().find(item=>item.id===selectedId)||candidates.find(item=>item.id===selectedId);
+      if(!npo)return;
+      const definition=npoDefinition(npo.type)||{};
+      const loadout=definition.loadoutOptions?.find(option=>option.id===npo.weaponId)?.name||npoWeapon(definition,npo.weaponId)?.name||definition.faction||'Necron operative';
+      detailImage.innerHTML=experimentalNecronPortraitMarkup(npo,'experimentalNecronRosterDetailTint','experimental-roster-tinted-svg');
+      detailImage.classList.remove('placeholder');
+      detailName.textContent=npoName(npo);
+      detailRole.textContent=loadout;
+      stats.innerHTML=`<span><small>APL</small><strong>${escapeHtml(String(effectiveApl(npo.id,definition.apl??npo.apl??2)))}</strong></span><span><small>MOVE</small><strong>${escapeHtml(String(definition.move??npo.move??'—'))}"</strong></span><span><small>SAVE</small><strong>${escapeHtml(String(definition.save??npo.save??'—'))}+</strong></span><span><small>WOUNDS</small><strong>${escapeHtml(String(npo.wounds))} / ${escapeHtml(String(npo.maxWounds??definition.wounds??'—'))}</strong></span>`;
+      stats.classList.remove('placeholder');
+      stats.removeAttribute('aria-hidden');
+      confirm.disabled=false;
+    };
+
+    $('[data-roster-npo]',modal).forEach(button=>{
+      button.onclick=()=>selectNpo(button.dataset.rosterNpo);
+      button.onkeydown=event=>{
+        if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+        event.preventDefault();
+        const controls=$('[data-roster-npo]',modal);
+        const current=controls.indexOf(button);
+        const next=event.key==='Home'?0:event.key==='End'?controls.length-1:event.key==='ArrowLeft'?(current-1+controls.length)%controls.length:(current+1)%controls.length;
+        controls[next].focus();
+        selectNpo(controls[next].dataset.rosterNpo);
+      };
+    });
+    confirm.onclick=()=>{
+      const npo=readyNpos().find(item=>item.id===selectedId);
+      if(npo)beginNpoActivation(npo);
+      else{closeModal();render();showToast('That Necron is no longer Ready. Choose another Ready Necron.');}
+    };
   }
 
   function showExperimentalDeathwatchRosterRail(candidates){
@@ -8167,7 +8296,8 @@ function showPlayerActivation(){
       baseApl:definition.apl,effectiveAp:activation.effectiveApl,remainingAp:activation.remainingAp,startingAp:activation.startingAp,
       order:n.order,loadout:definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name||npoWeapon(definition,n.weaponId)?.name||'',effects:modifiers,
       completedActions:(activation.resolvedActions||[]).map(action=>({...action,summary:conciseNpoActionName(action)})),actions:catalog,
-      onAction:actionId=>selectHumanNpoAction(n,actionId),onEnd:()=>confirmEndHumanNpoActivation(n)});
+      onAction:actionId=>selectHumanNpoAction(n,actionId),onEnd:()=>confirmEndHumanNpoActivation(n),
+      portraitUrl:document.documentElement.dataset.ui==='tomb'?experimentalNecronPortraitImage(n):''});
     renderOperativeStatusPanel();
   }
 
@@ -8197,7 +8327,12 @@ function showPlayerActivation(){
     const pendingBreach=(state.npoRuleState.pendingMovementEffects||[]).some(item=>item.targetId===n.id&&item.ruleId==='molecular-breach');
     const loadout=definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name||npoWeapon(definition,n.weaponId)?.name;
     const engrammatic=n.wounds<n.maxWounds&&activeNpos().some(item=>npoDefinition(item.type)?.id==='royal-warden')?`<p class="muted">${escapeHtml(STAGE3_RULE_TEXT.engrammatic)}</p>`:'';
-    return `<h2 id="activeNpoQuestionHeading">${escapeHtml(opponentSingularLabel())} Activation: ${escapeHtml(npoName(n))}</h2>${engrammatic}<div class="activation-profile-strip" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>AP remaining: ${state.lastActivation.remainingAp}/${state.lastActivation.startingAp}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Next movement uses Molecular Breach</span>':''}</div>${renderNpoActionProgress()}`;
+    const profile=`<div class="activation-profile-strip" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>AP remaining: ${state.lastActivation.remainingAp}/${state.lastActivation.startingAp}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Next movement uses Molecular Breach</span>':''}</div>`;
+    const portrait=document.documentElement.dataset.ui==='tomb'?experimentalNecronGreenPortraitSvg(n,'experimentalNecronWizardTint','experimental-necron-wizard-svg'):'';
+    const header=portrait
+      ? `<div class="experimental-necron-activation-header has-operative-portrait"><div class="experimental-necron-activation-copy"><h2 id="activeNpoQuestionHeading">${escapeHtml(opponentSingularLabel())} Activation: ${escapeHtml(npoName(n))}</h2>${engrammatic}${profile}</div><div class="experimental-necron-activation-portrait" aria-hidden="true">${portrait}</div></div>`
+      : `<h2 id="activeNpoQuestionHeading">${escapeHtml(opponentSingularLabel())} Activation: ${escapeHtml(npoName(n))}</h2>${engrammatic}${profile}`;
+    return `${header}${renderNpoActionProgress()}`;
   }
 
   function renderNpoGuideFooter({backDisabled=false}={}){
