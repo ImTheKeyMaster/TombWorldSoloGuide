@@ -7,17 +7,17 @@ ROOT = Path(__file__).resolve().parents[1]
 ASSET_ROOT = ROOT / "Assets" / "Images" / "TombUI" / "NecronActivation"
 
 EXPECTED_SHA256 = {
-    "canoptek-macrocyte-accelerator.webp": "efd779a89da9f52d2f5cd9701d3eeb9660141888a1156c0358eb216abc6aa701",
-    "canoptek-macrocyte-reanimator.webp": "307a8b44ded81a5766dfb7011646519d5cdd1a4b912ed39d07327c4e6da1916c",
-    "canoptek-macrocyte-warrior-1.webp": "c5226fd44e95ffa5d65235cab8a9022b7fed4930ab30b1d25e544b883673ad72",
-    "canoptek-macrocyte-warrior-2.webp": "50c509ba389b472c678e363e570d52af0e34cfa333770f62283e1c6a370fd3dd",
-    "canoptek-macrocyte-warrior-3.webp": "373c9c06e43cd8ccf3a48747f7983bc651ac33837bd1a66f9d4603de3d908cea",
-    "canoptek-scarab-swarm.webp": "b1c12e60d7ac5cccbf407f158c18642d63edfe63c2a283cc6c8ec10a2e7b11d3",
-    "canoptek-tomb-crawler-1.webp": "47d4d993033c668e3af607f2eca0b4d777648ea112f2483cf58dd10533c3086d",
-    "canoptek-tomb-crawler-2.webp": "476c4a12acf8e9b32f9a5783376fdacd318e13ff6729d9bcddfeb4eb0ec2a078",
-    "geomancer.webp": "79c6661e2b26315a4feb18ff080bc5fb85f7f29120c9725565f4563c70e71377",
-    "necron-warrior-gauss-flayer.webp": "6590049c6374efc14d58e4225e6de40d334cd11839020d859780966e76d03e6a",
-    "necron-warrior-gauss-reaper.webp": "e682e3ade82bee37b0009f845c30b38eb28da1cc92fb90de9500dab67a8192c1",
+    "canoptek-macrocyte-accelerator.webp": "bc33f936a169ee23fb3ed525dc15613cafc56db88d4a8a08ee0f9f1b24859d8d",
+    "canoptek-macrocyte-reanimator.webp": "3b9c57c4f896ce8249b905548b6455b259d0e4360c8f7ba25b79b71164612565",
+    "canoptek-macrocyte-warrior-1.webp": "23e7f6e146fb5e00504b8d5de4c2baa466b34394c949d62fca789a98ecacf699",
+    "canoptek-macrocyte-warrior-2.webp": "66704a0d179bd30b3d19462860832ce56b39f678f8f221c4f5ea123825aa8009",
+    "canoptek-macrocyte-warrior-3.webp": "3f7876268802442aa2790b704c4f5a73d8a459f65759a2d7d427d790096ef5e3",
+    "canoptek-scarab-swarm.webp": "ab3b355d97fec8362c0c5b7ddfc34af906d49d9e421707c715035ba2fe0e5c73",
+    "canoptek-tomb-crawler-1.webp": "be5683855171672ca153f8148a8b22dc91e2183a19811dc25668f89a24618820",
+    "canoptek-tomb-crawler-2.webp": "f7e617108cff729eefe6be754299084764e90ff0a26dde9d988199e888408885",
+    "geomancer.webp": "7954e22e29937a87a00cd955b9658cf49b32c5731311c458b6046d8931eb7996",
+    "necron-warrior-gauss-flayer.webp": "aada3bde2a49dcd51dcbbf87713232716ae0478c0168a40825df303d72a744e7",
+    "necron-warrior-gauss-reaper.webp": "77504024d95e0a2327d304c3702c72f5bc15c02ec08c4f6774a69d738ff35100",
 }
 
 
