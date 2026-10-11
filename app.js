@@ -5421,6 +5421,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
 
   function showExperimentalNecronRosterRail(candidates){
     const ordered=sortedNposForDisplay(candidates);
+    const railOverflowClass=ordered.length>5?' is-overflowing':'';
     const items=ordered.map((npo,index)=>`<button type="button" class="experimental-roster-item" role="radio" aria-checked="false" tabindex="${index===0?'0':'-1'}" data-roster-npo="${escapeHtml(npo.id)}">
       <span class="experimental-roster-image">${experimentalNecronPortraitMarkup(npo,`experimentalNecronRosterTint-${index}`,'experimental-roster-tinted-svg')}</span>
       <span class="experimental-roster-name">${escapeHtml(npoName(npo))}</span>
@@ -5432,7 +5433,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     showModal(isPvpMode()?'NECRON ACTIVATION':'SELECT NECRON TO ACTIVATE',`<section class="experimental-roster-picker experimental-necron-roster-picker">
       <p class="experimental-roster-instruction" tabindex="-1" data-dialog-focus>${instruction}</p>
       <div class="experimental-roster-rail-shell">
-        <div class="experimental-roster-rail experimental-necron-roster-rail" role="radiogroup" aria-label="Ready Necron operatives">${items}</div>
+        <div class="experimental-roster-rail experimental-necron-roster-rail${railOverflowClass}" role="radiogroup" aria-label="Ready Necron operatives">${items}</div>
       </div>
       <section class="experimental-roster-detail" aria-live="polite">
         <div class="experimental-roster-detail-image placeholder" id="experimentalNecronRosterDetailImage" aria-hidden="true"><img src="Assets/icon.svg" alt=""></div>
