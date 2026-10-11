@@ -5451,7 +5451,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
         <button class="btn primary" id="confirmExperimentalNecronSelection" disabled>Begin Activation</button>
       </div>
     </section>`);
-    modal.classList.add('experimental-roster-rail-modal','experimental-necron-roster-modal');
+    modal.classList.add('experimental-roster-rail-modal');
 
     const updateRosterNameDensity=()=>{
       $('[data-roster-npo]',modal).forEach(button=>{
