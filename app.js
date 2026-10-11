@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.109';
+  const APP_VERSION = '10.0.110';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5409,9 +5409,10 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
   function experimentalNecronPortraitSvg(npo,filterId,svgClass=''){
     const href=experimentalNecronPortraitImage(npo);
     if(!href)return '';
+    const versionedHref=`${href}?v=${APP_VERSION}`;
     const safeClass=escapeHtml(svgClass);
     const frameClass=`${safeClass} experimental-necron-framed-svg`.trim();
-    return `<svg class="${frameClass}" viewBox="0 0 384 384" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><image href="${escapeHtml(href)}" x="0" y="0" width="384" height="384" preserveAspectRatio="xMidYMid meet"/></svg>`;
+    return `<svg class="${frameClass}" viewBox="0 0 384 384" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><image href="${escapeHtml(versionedHref)}" x="0" y="0" width="384" height="384" preserveAspectRatio="xMidYMid meet"/></svg>`;
   }
 
   function experimentalNecronPortraitMarkup(npo,filterId,svgClass=''){
