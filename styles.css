@@ -1881,7 +1881,7 @@ html[data-ui="tomb"] .setup-true-hex-card>.wizard-actions .btn.ghost{
 }
 
 
-/* v10.0.104: Necron portraits use intrinsic SVG crop/framing and the exact Deathwatch green treatment. */
+/* v10.0.107: Supplied Necron portraits are pre-colored transparent cutouts; only viewport clipping remains. */
 html[data-ui="tomb"] .experimental-necron-framed-svg{
   overflow:hidden!important;
 }

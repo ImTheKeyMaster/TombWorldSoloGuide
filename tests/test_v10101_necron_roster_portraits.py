@@ -39,7 +39,7 @@ def test_supplied_necron_portraits_are_present_and_precached():
     for filename in ASSETS:
         asset = ASSET_ROOT / filename
         assert asset.is_file(), filename
-        assert asset.stat().st_size > 15000, filename
+        assert asset.stat().st_size > 5000, filename
         assert f"./Assets/Images/TombUI/NecronActivation/{filename}" in WORKER
 
 
@@ -57,23 +57,19 @@ def test_portrait_mapping_matches_supported_tomb_world_npo_types():
     assert "Math.max(1,Math.min(3,Number(npo.displayNumber)||1))" in source
 
 
-def test_necron_portraits_keep_deathwatch_colorization_with_separate_background_mask():
-    deathwatch = section("function experimentalDeathwatchGreenPortraitSvg", "const EXPERIMENTAL_NECRON_IMAGE_ROOT")
-    source = section("function experimentalNecronGreenPortraitSvg", "function experimentalNecronPortraitMarkup")
-
-    for shared in (
-        'tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"',
-        'tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"',
-        'tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"',
-        'kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0"',
+def test_necron_portraits_use_supplied_precolored_transparent_assets_without_runtime_filter():
+    source = section("function experimentalNecronPortraitSvg", "function experimentalNecronPortraitMarkup")
+    assert '<image href="' in source
+    assert 'x="0" y="0" width="384" height="384"' in source
+    for old_filter_piece in (
+        "<filter",
+        "feColorMatrix",
+        "backgroundKey",
+        "subjectMask",
+        "tableValues=",
+        "feConvolveMatrix",
     ):
-        assert shared in deathwatch
-        assert shared in source
-
-    assert 'result="portraitGray"' in source
-    assert 'result="backgroundKey"' in source
-    assert 'result="subjectMask"' in source
-    assert 'in2="subjectMask" operator="in" result="finalPortrait"' in source
+        assert old_filter_piece not in source
 
 
 def test_experimental_necron_picker_uses_roster_rail_and_starts_unselected():
@@ -118,10 +114,10 @@ def test_necron_rail_scrolls_when_many_ready_operatives_are_present():
 
 def test_necron_portrait_is_used_in_both_activation_experiences():
     human = section("function renderHumanNpoActionPicker", "function selectHumanNpoAction")
-    assert "portraitMarkup:document.documentElement.dataset.ui==='tomb'?experimentalNecronGreenPortraitSvg(n,'experimentalNecronHumanActivationTint','experimental-activation-portrait-svg'):''" in human
+    assert "portraitMarkup:document.documentElement.dataset.ui==='tomb'?experimentalNecronPortraitSvg(n,'experimentalNecronHumanActivationTint','experimental-activation-portrait-svg'):''" in human
 
     solo = section("function renderNpoActivationHeader", "function renderNpoGuideFooter")
-    assert "experimentalNecronGreenPortraitSvg(n,'experimentalNecronWizardTint','experimental-necron-wizard-svg')" in solo
+    assert "experimentalNecronPortraitSvg(n,'experimentalNecronWizardTint','experimental-necron-wizard-svg')" in solo
     assert 'class="experimental-necron-activation-header has-operative-portrait"' in solo
     assert 'class="experimental-necron-activation-portrait"' in solo
 

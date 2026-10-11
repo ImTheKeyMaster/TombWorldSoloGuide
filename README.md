@@ -1,4 +1,16 @@
-# Tomb World Battle Guide v10.0.106
+# Tomb World Battle Guide v10.0.107
+
+## v10.0.107
+
+### Supplied Transparent Necron Portraits
+
+- Replaces all 11 Necron portrait assets with the user's supplied pre-colored transparent cutouts.
+- Centers and crops each supplied source into a transparent square portrait asset before it reaches the UI.
+- Removes the runtime Necron grayscale, green colorization, background-key, alpha-mask, and sharpening pipeline. The supplied artwork is rendered as-is.
+- Keeps the existing operative-to-portrait mapping: two Tomb Crawlers, Scarab Swarm, Gauss Flayer and Gauss Reaper Warriors, Geomancer, Accelerator, Reanimator, and three numbered Macrocyte Warriors.
+- Uses the same direct transparent portrait renderer in the Necron roster rail, selected detail panel, human-controlled activation view, and solo activation view.
+- Keeps Current UI unchanged.
+
 
 ## v10.0.106
 
