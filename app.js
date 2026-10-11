@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.103';
+  const APP_VERSION = '10.0.104';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5406,12 +5406,20 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     return '';
   }
 
+  function experimentalNecronPortraitFrame(npo){
+    if(!npo)return {x:0,y:0,size:384};
+    if(npo.type==='Canoptek Scarab Swarm')return {x:-55,y:-188,size:500};
+    if(npo.type==='Necron Warrior')return {x:-40,y:-90,size:460};
+    return {x:-14,y:-14,size:412};
+  }
+
   function experimentalNecronGreenPortraitSvg(npo,filterId,svgClass=''){
     const href=experimentalNecronPortraitImage(npo);
     if(!href)return '';
     const safeFilterId=escapeHtml(filterId);
     const safeClass=escapeHtml(svgClass);
-    return `<svg class="${safeClass}" viewBox="0 0 384 384" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><defs><filter id="${safeFilterId}" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values=".2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 1.063 3.576 .361 0 -1.85" result="grayKeyed"/><feComponentTransfer in="grayKeyed" result="tightKey"><feFuncA type="table" tableValues="0 0 0 0 .2 .65 .9 1 1"/></feComponentTransfer><feComponentTransfer in="grayKeyed" result="colorized"><feFuncR type="table" tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"/><feFuncG type="table" tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"/><feFuncB type="table" tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"/><feFuncA type="linear" slope="1.08" intercept="-.01"/></feComponentTransfer><feConvolveMatrix in="colorized" order="3" kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0" divisor="1" preserveAlpha="true" result="sharpened"/><feComposite in="sharpened" in2="tightKey" operator="in" result="finalPortrait"/></filter></defs><image href="${escapeHtml(href)}" x="0" y="0" width="384" height="384" preserveAspectRatio="xMidYMid meet" filter="url(#${safeFilterId})"/></svg>`;
+    const frame=experimentalNecronPortraitFrame(npo);
+    return `<svg class="${safeClass}" viewBox="0 0 384 384" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><defs><filter id="${safeFilterId}" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB"><feColorMatrix in="SourceGraphic" type="matrix" values=".2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 0 0 0 1 0" result="portraitGray"/><feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.063 3.576 .361 0 -1.15" result="backgroundKey"/><feComponentTransfer in="backgroundKey" result="tightKey"><feFuncA type="table" tableValues="0 0 0 0 .2 .65 .9 1 1"/></feComponentTransfer><feComponentTransfer in="portraitGray" result="colorized"><feFuncR type="table" tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"/><feFuncG type="table" tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"/><feFuncB type="table" tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"/><feFuncA type="linear" slope="1.08" intercept="-.01"/></feComponentTransfer><feConvolveMatrix in="colorized" order="3" kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0" divisor="1" preserveAlpha="true" result="sharpened"/><feComposite in="sharpened" in2="tightKey" operator="in" result="finalPortrait"/></filter></defs><image href="${escapeHtml(href)}" x="${frame.x}" y="${frame.y}" width="${frame.size}" height="${frame.size}" preserveAspectRatio="xMidYMid meet" filter="url(#${safeFilterId})"/></svg>`;
   }
 
   function experimentalNecronPortraitMarkup(npo,filterId,svgClass=''){
