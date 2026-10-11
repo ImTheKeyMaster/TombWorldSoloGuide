@@ -1881,9 +1881,11 @@ html[data-ui="tomb"] .setup-true-hex-card>.wizard-actions .btn.ghost{
 }
 
 
-/* v10.0.104: Necron portraits use intrinsic SVG crop/framing and the shared green treatment without CSS brightening. */
-html[data-ui="tomb"] .experimental-necron-roster-picker .experimental-roster-tinted-svg{
+/* v10.0.104: Necron portraits use intrinsic SVG crop/framing and the exact Deathwatch green treatment. */
+html[data-ui="tomb"] .experimental-necron-framed-svg{
   overflow:hidden;
+}
+html[data-ui="tomb"] .experimental-necron-roster-picker .experimental-roster-tinted-svg{
   transform:none;
   filter:none;
 }
