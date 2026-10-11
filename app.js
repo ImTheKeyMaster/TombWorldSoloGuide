@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.115';
+  const APP_VERSION = '10.0.116';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5658,13 +5658,17 @@ function showPlayerActivation(){
     const id=result.targetId;
     const targetSide=result.side||result.defenderSide||sequence?.orderedTargets?.find(item=>item.targetId===id)?.targetSide;
     let portrait='';
+    let scarabClass='';
     if(targetSide==='player'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'&&playerDefinition(id)){
       portrait=experimentalDeathwatchGreenPortraitSvg(id,'blastResultPlayerPortrait','blast-result-portrait-artwork');
     }else if(targetSide==='npo'){
       const npo=state.roster.find(item=>item.id===id);
-      if(npo)portrait=experimentalNecronPortraitSvg(npo,'blastResultNecronPortrait','blast-result-portrait-artwork');
+      if(npo){
+        portrait=experimentalNecronPortraitSvg(npo,'blastResultNecronPortrait','blast-result-portrait-artwork');
+        if(portrait&&npo.type==='Canoptek Scarab Swarm')scarabClass=' scarab-swarm-portrait';
+      }
     }
-    return portrait?`<span class="blast-result-portrait" aria-hidden="true">${portrait}</span>`:'';
+    return portrait?`<span class="blast-result-portrait${scarabClass}" aria-hidden="true">${portrait}</span>`:'';
   }
 
   function renderAttackSummary(attack,{portraitHtml=''}={}){

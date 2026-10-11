@@ -1,4 +1,11 @@
-# Tomb World Battle Guide v10.0.115
+# Tomb World Battle Guide v10.0.116
+
+## v10.0.116
+
+### Scarab Swarm Blast/Torrent portrait framing
+
+- Move only the **Canoptek Scarab Swarm** result portrait upward in Experimental Mode's Blast/Torrent Attack Complete cards, revealing more of the swarm above the Damage and Wounds pills.
+- Preserve the existing size, top-right alignment, opacity, text/pill layering, and every other operative portrait. No combat or saved-state changes.
 
 ## v10.0.115
 
