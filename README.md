@@ -8,7 +8,7 @@
 - Uses explicit source-image framing so Necron Warriors and Scarab Swarms are cropped around the miniature instead of showing excess empty source area, while the taller Necron models receive a small consistent crop.
 - Centers each crop in the same 384 × 384 portrait viewport used by Deathwatch, so the Roster Rail and detail portrait use the same layout behavior.
 - Runs Necron artwork through the same grayscale-first green colorization and sharpening values as Deathwatch.
-- Keeps a separate, milder Necron-only background transparency key so photographed tabletop/background remnants are removed without stripping as much dark miniature detail.
+- Uses the exact Deathwatch grayscale, transparency key, green lookup tables, alpha transfer, and sharpening pipeline instead of the stronger Necron-only key that was stripping dark miniature detail.
 - The same framing and color treatment is reused by the Necron activation portraits; Current UI remains unchanged.
 
 
