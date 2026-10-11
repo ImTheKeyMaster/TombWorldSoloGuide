@@ -4047,7 +4047,6 @@ document.addEventListener('touchend',function(e){
   }
 
   function reinforcementPlacementPortrait(npo){
-    if(document.documentElement.dataset.ui!=='tomb')return '';
     const artwork=experimentalNecronPortraitSvg(npo,`reinforcementPlacement-${npo.id}`,'reinforcement-placement-artwork');
     return artwork?`<span class="reinforcement-placement-portrait" aria-hidden="true">${artwork}</span>`:'';
   }
