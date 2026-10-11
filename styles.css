@@ -2306,6 +2306,9 @@ html[data-ui="tomb"] .attack-confirmation-card.has-target-portrait .attack-confi
   html[data-ui="tomb"] .blast-result-portrait{width:186px;height:226px;right:-10px;top:-17px}
 }
 
+/* Scarab Swarm sits lower within its transparent image; raise only its Blast/Torrent portrait. */
+html[data-ui="tomb"] .blast-result-portrait.scarab-swarm-portrait{top:-66px}
+
 /* Avoid residual artwork when switching from Experimental to Current Mode without a re-render. */
 html:not([data-ui="tomb"]) .reinforcement-placement-portrait{display:none}
 /* Reinforcement placement portraits: top-right artwork behind the existing checkbox and instructions. */

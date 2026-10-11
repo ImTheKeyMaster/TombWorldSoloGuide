@@ -44,3 +44,12 @@ def test_image_behind_damage_wounds_with_no_impact_on_pill_layout():
     assert 'z-index:0' in block and 'z-index:1' in block
     assert 'background:rgba(6,24,15,.87)' in block
     assert '@media(max-width:600px)' in block
+
+
+def test_only_scarab_swarm_receives_higher_portrait_position():
+    assert "if(portrait&&npo.type==='Canoptek Scarab Swarm')" in HELPER
+    assert "scarabClass=' scarab-swarm-portrait'" in HELPER
+    assert 'blast-result-portrait${scarabClass}' in HELPER
+    assert "scarabClass" not in SUMMARY
+    assert 'html[data-ui="tomb"] .blast-result-portrait.scarab-swarm-portrait{top:-66px}' in CSS
+    assert "html[data-ui=\"tomb\"] .blast-result-portrait{width:186px;height:226px;right:-10px;top:-17px}" in CSS
