@@ -2206,10 +2206,9 @@ html[data-ui="tomb"] .npo-target-roster-item.selected .npo-target-roster-wounds{
 .combat-summary-grid .combat-participant-portrait{
   position:absolute;
   top:-3px;
-  right:-5px;
-  width:112px;
-  height:112px;
-  max-width:78%;
+  right:-16px;
+  width:154px;
+  height:154px;
   opacity:.85;
   pointer-events:none;
   z-index:0;
@@ -2227,5 +2226,5 @@ html[data-ui="tomb"] .npo-target-roster-item.selected .npo-target-roster-wounds{
   transform:scaleX(-1);
 }
 @media(max-width:600px){
-  .combat-summary-grid .combat-participant-portrait{width:104px;height:104px;right:-7px}
+  .combat-summary-grid .combat-participant-portrait{width:146px;height:146px;right:-14px}
 }
