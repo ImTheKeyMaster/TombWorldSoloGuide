@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.113';
+  const APP_VERSION = '10.0.114';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5648,11 +5648,26 @@ function showPlayerActivation(){
     </section>`;
   }
 
-  function renderAttackSummary(attack){
+  function multiTargetSummaryPortrait(result,sequence){
+    if(document.documentElement.dataset.ui!=='tomb'||!result?.targetId)return '';
+    const id=result.targetId;
+    const targetSide=result.side||result.defenderSide||sequence?.orderedTargets?.find(item=>item.targetId===id)?.targetSide;
+    let portrait='';
+    if(targetSide==='player'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'&&playerDefinition(id)){
+      portrait=experimentalDeathwatchGreenPortraitSvg(id,'blastResultPlayerPortrait','blast-result-portrait-artwork');
+    }else if(targetSide==='npo'){
+      const npo=state.roster.find(item=>item.id===id);
+      if(npo)portrait=experimentalNecronPortraitSvg(npo,'blastResultNecronPortrait','blast-result-portrait-artwork');
+    }
+    return portrait?`<span class="blast-result-portrait" aria-hidden="true">${portrait}</span>`:'';
+  }
+
+  function renderAttackSummary(attack,{portraitHtml=''}={}){
     const lethal=newlyEliminated(attack);
     const hot=attack.hot;
     const hotSummary=hot?`<div class="summary-box hot-attack-summary"><strong>D6 Roll: ${hot.roll}</strong><p>${hot.damage?`Attacker suffered ${hot.damage} damage (${hot.woundsBefore} → ${hot.woundsAfter} wounds).`:'Attacker suffered no damage.'}</p></div>`:'';
-    return `<section class="attack-confirmation-card ${lethal?'eliminated':''}">
+    return `<section class="attack-confirmation-card ${lethal?'eliminated':''}${portraitHtml?' has-target-portrait':''}">
+      ${portraitHtml}
       <div class="attack-confirmation-heading">
         <small>${attack.attackType==='shoot'?'SHOOTING':'MELEE'}</small>
         ${lethal?'<span class="eliminated-badge">☠ ELIMINATED</span>':''}
@@ -7155,7 +7170,7 @@ function showPlayerActivation(){
     const ruleName=String(sequence?.ruleId||'multi-target').toUpperCase();
     const rows=results.map(result=>result.skipped
       ? `<div class="attack-confirmation-card"><strong>${escapeHtml(result.targetName||result.targetId)}</strong><p>Skipped: ${escapeHtml(result.skipReason||'Target unavailable')}</p></div>`
-      : renderAttackSummary(result)).join('');
+      : renderAttackSummary(result,{portraitHtml:multiTargetSummaryPortrait(result,sequence)})).join('');
     const pending=attackerSide==='player'?'<p class="muted">These results remain pending until this combat action is committed.</p>':'';
     const buttonLabel=attackerSide==='player'?'Continue Player Activation':'Continue Activation';
     showModal(`${ruleName} ATTACK COMPLETE`,`<div class="modal-inner"><div aria-live="polite">${rows}</div>${pending}<div class="wizard-actions"><button class="btn primary" id="continueMultiTargetSummary">${buttonLabel}</button></div></div>`);

@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.113
+# Tomb World Battle Guide v10.0.114
+
+## v10.0.114
+
+### Experimental Blast/Torrent completion portrait
+
+- Displays a large, top-right portrait of the **damaged target** behind the Attack Complete result card in Experimental Mode, using the existing Deathwatch or Necron artwork.
+- Resolves the image by the result's stable target ID and defender side, including Blast friendly-fire targets. Incapacitated Necrons are still found in the full saved roster.
+- Crops to the miniature's head/upper body, with the existing Damage and Wounds pills layered above the art for readability; preserves the original card dimensions and button behavior.
+- Leaves Current Mode, targets without known portraits, and other attack-summary contexts unchanged. No combat calculations or save-state changes.
 
 ## v10.0.113
 
