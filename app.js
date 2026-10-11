@@ -5454,7 +5454,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     modal.classList.add('experimental-roster-rail-modal');
 
     const updateRosterNameDensity=()=>{
-      $('[data-roster-npo]',modal).forEach(button=>{
+      $$('[data-roster-npo]',modal).forEach(button=>{
         const name=button.querySelector('.experimental-roster-name');
         if(!name)return;
         button.classList.remove('single-line-name');
@@ -5473,7 +5473,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
 
     const selectNpo=id=>{
       selectedId=id;
-      $('[data-roster-npo]',modal).forEach(button=>{
+      $$('[data-roster-npo]',modal).forEach(button=>{
         const selected=button.dataset.rosterNpo===selectedId;
         button.classList.toggle('selected',selected);
         button.setAttribute('aria-checked',String(selected));
@@ -5493,12 +5493,12 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
       confirm.disabled=false;
     };
 
-    $('[data-roster-npo]',modal).forEach(button=>{
+    $$('[data-roster-npo]',modal).forEach(button=>{
       button.onclick=()=>selectNpo(button.dataset.rosterNpo);
       button.onkeydown=event=>{
         if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
         event.preventDefault();
-        const controls=$('[data-roster-npo]',modal);
+        const controls=$$('[data-roster-npo]',modal);
         const current=controls.indexOf(button);
         const next=event.key==='Home'?0:event.key==='End'?controls.length-1:event.key==='ArrowLeft'?(current-1+controls.length)%controls.length:(current+1)%controls.length;
         controls[next].focus();
