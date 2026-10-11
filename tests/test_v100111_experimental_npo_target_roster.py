@@ -40,7 +40,7 @@ def test_confirm_target_retains_original_action_checks():
         assert snippet in confirm
 
 def test_horizontal_mobile_layout_is_scoped_to_tomb_mode():
-    block=CSS.split('/* v10.0.111: Experimental Deathwatch target rail.',1)[1]
+    block=CSS.split('Experimental Deathwatch target rail.',1)[1]
     assert 'html[data-ui="tomb"] .npo-target-roster-rail' in block
     assert 'overflow-x:auto' in block
     assert 'html[data-ui="tomb"] .npo-target-roster-wounds' in block
