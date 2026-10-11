@@ -77,7 +77,8 @@ def test_experimental_necron_picker_uses_roster_rail_and_starts_unselected():
     assert 'class="experimental-roster-name"' in source
     assert 'class="experimental-roster-detail"' in source
     assert 'class="experimental-roster-stats placeholder"' in source
-    assert 'class="experimental-roster-rail experimental-necron-roster-rail"' in source
+    assert "const railOverflowClass=ordered.length>5?' is-overflowing':''" in source
+    assert 'class="experimental-roster-rail experimental-necron-roster-rail${railOverflowClass}"' in source
     assert 'tabindex="-1" data-dialog-focus' in source
     assert "let selectedId='';" in source
     assert 'id="confirmExperimentalNecronSelection" disabled' in source
@@ -102,10 +103,10 @@ def test_necron_picker_preserves_solo_threat_principle_and_classic_select():
 
 
 def test_necron_rail_scrolls_when_many_ready_operatives_are_present():
-    assert 'html[data-ui="tomb"] .experimental-roster-rail.experimental-necron-roster-rail{' in CSS
+    assert 'html[data-ui="tomb"] .experimental-roster-rail.experimental-necron-roster-rail.is-overflowing{' in CSS
     assert "overflow-x:auto" in CSS
     assert "scroll-snap-type:x proximity" in CSS
-    assert 'html[data-ui="tomb"] .experimental-necron-roster-rail .experimental-roster-item{' in CSS
+    assert 'html[data-ui="tomb"] .experimental-necron-roster-rail.is-overflowing .experimental-roster-item{' in CSS
     assert "flex:0 0 clamp(112px,18vw,142px)" in CSS
 
 
