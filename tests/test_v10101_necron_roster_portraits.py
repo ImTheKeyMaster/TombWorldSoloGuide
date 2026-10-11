@@ -60,6 +60,7 @@ def test_portrait_mapping_matches_supported_tomb_world_npo_types():
 def test_necron_portraits_use_same_green_filter_treatment_as_deathwatch():
     source = section("function experimentalNecronGreenPortraitSvg", "function experimentalNecronPortraitMarkup")
     assert 'result="grayKeyed"' in source
+    assert '1.063 3.576 .361 0 -1.85' in source
     assert 'result="tightKey"' in source
     assert 'tableValues="0 0 0 0 .2 .65 .9 1 1"' in source
     assert 'tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"' in source
@@ -110,7 +111,7 @@ def test_necron_rail_scrolls_when_many_ready_operatives_are_present():
 
 def test_necron_portrait_is_used_in_both_activation_experiences():
     human = section("function renderHumanNpoActionPicker", "function selectHumanNpoAction")
-    assert "portraitUrl:document.documentElement.dataset.ui==='tomb'?experimentalNecronPortraitImage(n):''" in human
+    assert "portraitMarkup:document.documentElement.dataset.ui==='tomb'?experimentalNecronGreenPortraitSvg(n,'experimentalNecronHumanActivationTint','experimental-activation-portrait-svg'):''" in human
 
     solo = section("function renderNpoActivationHeader", "function renderNpoGuideFooter")
     assert "experimentalNecronGreenPortraitSvg(n,'experimentalNecronWizardTint','experimental-necron-wizard-svg')" in solo
@@ -119,6 +120,9 @@ def test_necron_portrait_is_used_in_both_activation_experiences():
 
     assert 'html[data-ui="tomb"] .experimental-necron-activation-header.has-operative-portrait{' in CSS
     assert 'html[data-ui="tomb"] .experimental-necron-wizard-svg{' in CSS
+    shell = section("function renderHumanActivationShell", "function renderHumanPlayerActionPicker")
+    assert "portraitUrl='',portraitMarkup=''" in shell
+    assert "const resolvedPortraitMarkup=portraitMarkup||(portraitUrl?" in shell
 
 
 def test_current_ui_remains_without_new_necron_portraits():
