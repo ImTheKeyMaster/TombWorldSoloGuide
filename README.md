@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.114
+# Tomb World Battle Guide v10.0.115
+
+## v10.0.115
+
+### Necron portraits on reinforcement placement cards
+
+- Experimental Mode's **Deploy Reinforcements and Review** checklist now places the correct Necron upper-body miniature at the top-right of each reinforcement card, behind the existing name, loadout, instructions, and checkbox.
+- Reuses the green transparent artwork and mapping already used for Necron activation and Blast summaries; no additional assets or portrait manipulation are needed.
+- Portraits are decorative and cropped by the original checklist card, which retains its height, selection controls, confirmation state, and placement logic.
+- Original Mode, reinforcement overview, generated names, and game logic remain unchanged.
 
 ## v10.0.114
 
