@@ -15,7 +15,8 @@ def test_version_consistency():
     assert f'V{CURRENT_APP_VERSION}' in INDEX
 
 def test_reinforcements_use_existing_operatives_and_artwork():
-    assert "document.documentElement.dataset.ui!=='tomb'" in PORTRAIT
+    assert "document.documentElement.dataset.ui!=='tomb'" not in PORTRAIT
+    assert 'return artwork?' in PORTRAIT
     assert 'experimentalNecronPortraitSvg(npo,' in PORTRAIT
     assert 'reinforcement-placement-artwork' in PORTRAIT
     assert 'aria-hidden="true"' in PORTRAIT
@@ -31,7 +32,7 @@ def test_art_is_layered_under_the_text_and_checkbox_without_card_height_changes(
     styles=CSS.split('/* Reinforcement placement portraits:',1)[1]
     assert 'position:relative' in styles
     assert 'overflow:hidden' in styles
-    assert 'html:not([data-ui="tomb"]) .reinforcement-placement-portrait{display:none}' in styles
+    assert 'html:not([data-ui="tomb"]) .reinforcement-placement-portrait{display:none}' in CSS
     assert 'isolation:isolate' in styles
     assert '>input' in styles
     assert '>span:not(.reinforcement-placement-portrait)' in styles
