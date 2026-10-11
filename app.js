@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.110';
+  const APP_VERSION = '10.0.111';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8805,8 +8805,23 @@ function showPlayerActivation(){
     return `${crits} critical · ${hits} normal · ${misses} miss`;
   }
 
+  function experimentalNpoTargetRosterRail(eligibleTargetIds){
+    const selectedId=String(state.npoAttackTargetId||'');
+    const items=eligibleTargetIds.map((id,index)=>{
+      const selected=id===selectedId;
+      const current=Math.max(0,Number(playerCurrentWounds(id)||0));
+      const maximum=Number(playerDefinition(id)?.wounds);
+      const woundLabel=Number.isFinite(maximum)&&maximum>0?`${current}/${maximum} wounds`:`${current} wounds`;
+      return `<button type="button" class="experimental-roster-item npo-target-roster-item${selected?' selected':''}" role="radio" aria-checked="${selected}" tabindex="${selected||(!selectedId&&index===0)?'0':'-1'}" data-npo-target-id="${escapeHtml(id)}" aria-label="${escapeHtml(playerTargetAriaLabel(id))}">
+        <span class="experimental-roster-image">${experimentalDeathwatchGreenPortraitSvg(id,`experimentalNpoTargetTint-${index}`,'experimental-roster-tinted-svg')}</span>
+        <span class="experimental-roster-name">${escapeHtml(playerName(id))}</span>
+        <span class="npo-target-roster-wounds">${escapeHtml(woundLabel)}</span>
+      </button>`;
+    }).join('');
+    return `<div class="experimental-roster-rail-shell npo-target-roster-shell"><div class="experimental-roster-rail npo-target-roster-rail" role="radiogroup" aria-label="Eligible attack targets">${items}</div></div>`;
+  }
   function updateNpoTargetConfirmationAvailability(){
-    const targetId=String($('#npoPriorityTarget')?.tagName==='SELECT'?$('#npoPriorityTarget').value:'');
+    const targetId=String($('#npoPriorityTarget')?.tagName==='SELECT'?$('#npoPriorityTarget').value:state.npoAttackTargetId||'');
     const button=$('#confirmNpoTarget');
     if(button)button.disabled=!eligibleNpoAttackTargets().includes(targetId||String(state.npoAttackTargetId||''));
   }
@@ -8883,9 +8898,12 @@ function showPlayerActivation(){
     }
     const targetOptions=eligibleTargetIds.map(id=>`<option value="${escapeHtml(id)}" ${state.npoAttackTargetId===id?'selected':''}>${escapeHtml(playerTargetLabel(id))}</option>`).join('');
     const targetName=state.npoAttackTargetId?playerTargetLabel(state.npoAttackTargetId):'';
-    const targetField=targetConfirmed||(!isPvpMode()&&eligibleTargetIds.length===1)
-      ? `<input id="npoPriorityTarget" value="${escapeHtml(targetName)}" readonly>`
-      : `<select id="npoPriorityTarget" ${attackResolved?'disabled':''}><option value="" ${state.npoAttackTargetId?'':'selected'}>${isPvpMode()?'Choose an eligible target.':'Select the first operative that matches the priority above.'}</option>${targetOptions}</select>`;
+    const useExperimentalTargetRail=document.documentElement.dataset.ui==='tomb'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'&&attackRequired&&!targetConfirmed&&eligibleTargetIds.length>0;
+    const targetField=useExperimentalTargetRail
+      ? experimentalNpoTargetRosterRail(eligibleTargetIds)
+      : targetConfirmed||(!isPvpMode()&&eligibleTargetIds.length===1)
+        ? `<input id="npoPriorityTarget" value="${escapeHtml(targetName)}" readonly>`
+        : `<select id="npoPriorityTarget" ${attackResolved?'disabled':''}><option value="" ${state.npoAttackTargetId?'':'selected'}>${isPvpMode()?'Choose an eligible target.':'Select the first operative that matches the priority above.'}</option>${targetOptions}</select>`;
     const targetPriority=!isPvpMode()&&decision.target.length?`<p>Choose the target in this order:</p><ol>${decision.target.map(item=>`<li>${escapeHtml(item)}</li>`).join('')}</ol><p>Randomize only if still tied.</p>`:'';
     const attackSummary=attackResolved&&state.npoAttackSummary?{
       ...state.npoAttackSummary,
@@ -8894,9 +8912,9 @@ function showPlayerActivation(){
     }:null;
     const eliminationAction=newlyEliminated(attackSummary)?` Eliminated ${escapeHtml(attackSummary.targetName)}.`:'';
     modalBody.innerHTML=`<div class="modal-inner ai-result">
-      <div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div>
+      <div class="ai-result-title"><div><h2 ${useExperimentalTargetRail?'tabindex="-1" data-dialog-focus':''}>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div>
       ${attackRequired&&questionHistory.length?`<div class="npo-question-flow">${renderCompletedNpoQuestions(questionHistory.filter(item=>item.type!=='selected'))}</div>`:''}
-      <div class="npo-result-card"><div><small>${isPvpMode()?'SELECTED ACTION':'NEXT ACTION'}</small><strong>${escapeHtml(decision.action)}</strong><p>${escapeHtml(decision.reason)}</p><div class="npo-target-priority">${isPvpMode()?'':`<small>TARGET PRIORITY</small>`}${targetPriority}${attackRequired?`<div class="field target-selection"><label for="npoPriorityTarget">Select Target</label>${targetField}</div>`:''}</div></div></div>
+      <div class="npo-result-card"><div><small>${isPvpMode()?'SELECTED ACTION':'NEXT ACTION'}</small><strong>${escapeHtml(decision.action)}</strong><p>${escapeHtml(decision.reason)}</p><div class="npo-target-priority">${isPvpMode()?'':`<small>TARGET PRIORITY</small>`}${targetPriority}${attackRequired?`<div class="field target-selection">${useExperimentalTargetRail?'<p class="npo-target-roster-label">Select Target</p>':'<label for="npoPriorityTarget">Select Target</label>'}${targetField}</div>`:''}</div></div></div>
       ${attackRequired&&!targetConfirmed&&(isPvpMode()||eligibleTargetIds.length>1)?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
       ${attackRequired&&!targetConfirmed&&!isPvpMode()&&eligibleTargetIds.length===1?`<button class="btn secondary big-action" id="resolveNpoTarget">Resolve Combat</button>`:''}
       ${attackSummary?`${renderEliminationSummary(attackSummary)}<section class="card npo-attack-summary">
@@ -8916,6 +8934,40 @@ function showPlayerActivation(){
     $('[data-close]',modal)?.addEventListener('click',closeModal);
     $('#aiBack')?.addEventListener('click',()=>backFromNpoAttackSelection(n));
     $('#npoPriorityTarget')?.addEventListener('change',event=>{state.npoAttackTargetId=event.currentTarget.value||null;save();updateNpoTargetConfirmationAvailability();});
+    const targetButtons=$('[data-npo-target-id]',modal);
+    if(targetButtons.length){
+      const selectTarget=id=>{
+        if(!eligibleNpoAttackTargets().includes(id)){
+          state.npoAttackTargetId=null;
+          save();
+          renderNpoDecisionResult(n,decision,[],state.lastActivation?.answers||{},false,false,true,false,state.lastActivation?.questionHistory||[]);
+          showToast(`That ${playerSideLabel()} operative is no longer an eligible target. Select another target.`);
+          return;
+        }
+        state.npoAttackTargetId=id;
+        save();
+        targetButtons.forEach(button=>{
+          const selected=button.dataset.npoTargetId===id;
+          button.classList.toggle('selected',selected);
+          button.setAttribute('aria-checked',String(selected));
+          button.tabIndex=selected?0:-1;
+        });
+        updateNpoTargetConfirmationAvailability();
+      };
+      targetButtons.forEach(button=>{
+        button.onclick=()=>selectTarget(button.dataset.npoTargetId);
+        button.onkeydown=event=>{
+          if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+          event.preventDefault();
+          const current=targetButtons.indexOf(button);
+          const next=event.key==='Home'?0:event.key==='End'?targetButtons.length-1:event.key==='ArrowLeft'?(current-1+targetButtons.length)%targetButtons.length:(current+1)%targetButtons.length;
+          const nextButton=targetButtons[next];
+          nextButton.focus();
+          nextButton.scrollIntoView({block:'nearest',inline:'nearest'});
+          selectTarget(nextButton.dataset.npoTargetId);
+        };
+      });
+    }
     const resolveTargetButton=$('#resolveNpoTarget');
     if(resolveTargetButton)resolveTargetButton.onclick=()=>{
       if(resolveTargetButton.disabled)return;
