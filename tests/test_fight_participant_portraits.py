@@ -54,3 +54,17 @@ def test_art_behind_content_clipped_and_gated_by_mode_without_height_changes():
     assert 'text-shadow' in style
     assert '@media(max-width:600px)' in style
     assert 'min-height:' not in style
+
+def test_fight_result_portraits_fit_card_height_without_clipping_the_base():
+    # Fight Result cards can grow when operative names wrap or ELIMINATED is shown.
+    # Unlike Fight Roll, their portrait container must use that live card height.
+    style=CSS.split('/* Fight Result: fit the full miniature vertically',1)[1]
+    result_card=style.split('html[data-ui="tomb"] .fight-result-card .fight-portrait{',1)[1].split('}',1)[0]
+    result_art=style.split('html[data-ui="tomb"] .fight-result-card .fight-portrait-artwork{',1)[1].split('}',1)[0]
+    assert 'inset:0 0 0 auto' in result_card
+    assert 'height:100%' in result_card
+    assert 'width:min(100%,190px)' in result_card
+    assert 'max-width:none' in result_card
+    assert 'transform:none' in result_art
+    assert 'html[data-ui="tomb"] .fight-roll-pool .fight-portrait{' in CSS
+    assert 'html:not([data-ui="tomb"]) .fight-portrait{display:none}' in CSS
