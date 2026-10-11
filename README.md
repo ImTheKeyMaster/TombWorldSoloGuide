@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.111
+# Tomb World Battle Guide v10.0.112
+
+## v10.0.112
+
+### Combat participant portraits
+
+- Places a cropped upper-body Necron attacker and Deathwatch defender portrait inside their respective Resolve Combat summary pills when matching artwork exists, including the reverse player-attack case.
+- Anchors both transparent green portrait treatments to each pill's upper right, and mirrors the defender artwork left toward the attacker while the attacker remains right-facing.
+- Clips artwork to the original summary pill bounds without changing height or adding detail panels; keeps both pills the same grid-row height.
+- Preserves all combat resolution data, non-portrait summary fields, save compatibility, and fallback for Kill Teams without portrait assets.
 
 ## v10.0.111
 
