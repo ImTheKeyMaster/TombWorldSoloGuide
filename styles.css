@@ -2349,3 +2349,60 @@ html[data-ui="tomb"] .reinforcement-placement-artwork{
 @media(max-width:600px){
   html[data-ui="tomb"] .reinforcement-placement-portrait{top:-16px;right:-10px;width:174px;height:195px}
 }
+
+/* Decorative upper-body portraits inside Fight Roll and Fight Result participant cards. */
+html:not([data-ui="tomb"]) .fight-portrait{display:none}
+html[data-ui="tomb"] .fight-roll-pool.has-fight-portrait,
+html[data-ui="tomb"] .fight-result-card.has-fight-portrait{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+}
+html[data-ui="tomb"] .fight-portrait{
+  position:absolute;
+  z-index:0;
+  top:-22px;
+  right:-13px;
+  width:188px;
+  height:216px;
+  max-width:77%;
+  opacity:.44;
+  pointer-events:none;
+  -webkit-mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.75) 32%,#000 65%);
+  mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.75) 32%,#000 65%);
+}
+html[data-ui="tomb"] .fight-portrait-artwork{
+  display:block;
+  width:100%;
+  height:100%;
+  overflow:visible;
+  transform:scale(1.3);
+  transform-origin:top right;
+}
+html[data-ui="tomb"] .fight-roll-pool.has-fight-portrait>*:not(.fight-portrait),
+html[data-ui="tomb"] .fight-result-card.has-fight-portrait>*:not(.fight-portrait){
+  position:relative;
+  z-index:1;
+}
+html[data-ui="tomb"] .fight-roll-pool.has-fight-portrait>small,
+html[data-ui="tomb"] .fight-roll-pool.has-fight-portrait>strong,
+html[data-ui="tomb"] .fight-result-card.has-fight-portrait>h3{
+  text-shadow:0 1px 5px #06110d,0 0 10px #06110d;
+}
+html[data-ui="tomb"] .fight-result-card.has-fight-portrait dl{
+  text-shadow:0 1px 5px #06110d,0 0 9px #06110d;
+}
+@media(max-width:600px){
+  html[data-ui="tomb"] .fight-roll-pool .fight-portrait{
+    width:164px;
+    height:190px;
+    right:-9px;
+    top:-15px;
+  }
+  html[data-ui="tomb"] .fight-result-card .fight-portrait{
+    width:150px;
+    height:175px;
+    right:-13px;
+    top:-14px;
+  }
+}
