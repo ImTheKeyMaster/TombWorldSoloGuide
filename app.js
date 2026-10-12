@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.122';
+  const APP_VERSION = '10.0.123';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5532,7 +5532,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     showModal('DEATHWATCH ACTIVATION',`<section class="experimental-roster-picker">
       <p class="experimental-roster-instruction" tabindex="-1" data-dialog-focus>Select a Ready operative from the roster rail.</p>
       <div class="experimental-roster-rail-shell">
-        <div class="experimental-roster-rail" role="radiogroup" aria-label="Ready Deathwatch operatives">${items}</div>
+        <div class="experimental-roster-rail experimental-deathwatch-roster-rail" role="radiogroup" aria-label="Ready Deathwatch operatives">${items}</div>
       </div>
       <section class="experimental-roster-detail" aria-live="polite">
         <div class="experimental-roster-detail-image placeholder" id="experimentalRosterDetailImage" aria-hidden="true"><img src="Assets/icon.svg" alt=""></div>
