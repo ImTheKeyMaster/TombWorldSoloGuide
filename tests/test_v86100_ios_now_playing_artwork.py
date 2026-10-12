@@ -72,7 +72,7 @@ for (const context of [
         self.assertIn('"file": "Ambient/caverns_25.ogg"', (ROOT / "Assets/Audio/Narration/ambient-config.json").read_text(encoding="utf-8"))
 
     def test_all_artwork_is_precached(self):
-        for filename in ("icon.svg", "icon-180.png", "icon-192.png", "icon-512.png", "icon-1024.png"):
+        for filename in ("favicon.ico", "icon-180.png", "icon-192.png", "icon-512.png", "icon-1024.png", "icon-maskable-192.png", "icon-maskable-512.png"):
             self.assertIn(f"'./Assets/{filename}'", WORKER)
 
     def test_release_and_save_versions(self):
