@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.123';
+  const APP_VERSION = '10.0.124';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2964,7 +2964,7 @@ document.addEventListener('touchend',function(e){
     const savedGame=saved?.report?.requiresRegeneration?null:saved?.state;
     const canContinue=Boolean(savedGame?.missionId&&savedGame?.screen==='game');
     app.innerHTML=`<section class="hero-card">
-      <img class="hero-symbol" src="Assets/icon.svg" alt="">
+      <img class="hero-symbol" src="Assets/icon-192.png" alt="">
       <p class="eyebrow">A STEP-BY-STEP DIGITAL GAME MASTER</p>
       <h2>Enter the Tomb</h2>
       <p>Choose a mission, build the board, deploy the correct NPO roster, and follow one clear next action through every Turning Point.</p>
@@ -5422,7 +5422,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
 
   function experimentalNecronPortraitMarkup(npo,filterId,svgClass=''){
     const portrait=experimentalNecronPortraitSvg(npo,filterId,svgClass);
-    return portrait||'<img src="Assets/icon.svg" alt="" aria-hidden="true">';
+    return portrait||'<img src="Assets/icon-192.png" alt="" aria-hidden="true">';
   }
 
   function showExperimentalNecronRosterRail(candidates){
@@ -5442,7 +5442,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
         <div class="experimental-roster-rail experimental-necron-roster-rail${railOverflowClass}" role="radiogroup" aria-label="Ready Necron operatives">${items}</div>
       </div>
       <section class="experimental-roster-detail" aria-live="polite">
-        <div class="experimental-roster-detail-image placeholder" id="experimentalNecronRosterDetailImage" aria-hidden="true"><img src="Assets/icon.svg" alt=""></div>
+        <div class="experimental-roster-detail-image placeholder" id="experimentalNecronRosterDetailImage" aria-hidden="true"><img src="Assets/icon-192.png" alt=""></div>
         <div class="experimental-roster-detail-copy">
           <p class="eyebrow">NECRON OPERATIVE</p>
           <h3 id="experimentalNecronRosterDetailName">Choose a Necron</h3>
@@ -5535,7 +5535,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
         <div class="experimental-roster-rail experimental-deathwatch-roster-rail" role="radiogroup" aria-label="Ready Deathwatch operatives">${items}</div>
       </div>
       <section class="experimental-roster-detail" aria-live="polite">
-        <div class="experimental-roster-detail-image placeholder" id="experimentalRosterDetailImage" aria-hidden="true"><img src="Assets/icon.svg" alt=""></div>
+        <div class="experimental-roster-detail-image placeholder" id="experimentalRosterDetailImage" aria-hidden="true"><img src="Assets/icon-192.png" alt=""></div>
         <div class="experimental-roster-detail-copy">
           <p class="eyebrow">DEATHWATCH OPERATIVE</p>
           <h3 id="experimentalRosterDetailName">Choose an operative</h3>

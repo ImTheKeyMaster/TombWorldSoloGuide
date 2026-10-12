@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.123
+# Tomb World Battle Guide v10.0.124
+
+## v10.0.124
+
+### New coffin-inspired PWA app icons
+
+- Replace the old icon with the selected emerald coffin/portal art in Apple touch (180px), standard Android/PWA (192px and 512px), and a 1024px master PNG.
+- Add Android adaptive maskable versions at 192px and 512px; register them in the PWA manifest.
+- Use the new art for desktop and app-header icons, including an ICO favicon fallback.
+- Refresh the service worker's cache version and precache the new artwork for offline use.
+- Keep all gameplay rules, screens, and saved games unchanged.
 
 ## v10.0.123
 
@@ -3078,7 +3088,7 @@ The application includes the PDF locally and uses pre-rendered crops of pages 17
 Upload the **contents of this folder while preserving the folder structure**. In particular:
 
 - `index.html`, `app.js`, `styles.css`, `service-worker.js`, and `manifest.webmanifest` must remain at the repository root.
-- `Assets/icon.svg` must remain inside `Assets`.
+- `Assets/icon-192.png`, `Assets/icon-512.png`, and `Assets/icon-180.png` must remain inside `Assets`.
 - All six map files must remain inside `Assets/Maps`.
 - `Assets/Tomb-World-Mission-Pack.pdf` must remain inside `Assets`.
 
