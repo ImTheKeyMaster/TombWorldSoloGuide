@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.124
+# Tomb World Battle Guide v10.0.125
+
+## v10.0.125
+
+### Preload Deathwatch activation roster thumbnails
+
+- Preload and decode the small Deathwatch roster portraits when the Deathwatch team finishes loading in Experimental UI; keep decoded images available for reuse.
+- Also warm the portraits when Experimental UI is enabled or when the activation roster dialog opens, avoiding repeat downloads or decode work.
+- Retain the existing SVG green tinting, selection controls, layout, and game/save behavior.
 
 ## v10.0.124
 
