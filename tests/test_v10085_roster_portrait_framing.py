@@ -56,7 +56,7 @@ def test_detail_panel_has_visible_stand_in_before_selection():
     source = roster_source()
     assert 'class="experimental-roster-detail-image placeholder"' in source
     assert 'class="experimental-roster-detail-image placeholder" id="experimentalRosterDetailImage"' in source
-    assert '<img src="Assets/icon.svg" alt="">' in source
+    assert '<img src="Assets/icon-192.png" alt="">' in source
     assert "detailImage.classList.remove('placeholder')" in source
     assert "confirmExperimentalRosterSelection" in source
 
