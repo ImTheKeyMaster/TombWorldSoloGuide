@@ -2357,6 +2357,7 @@ html[data-ui="tomb"] .fight-result-card.has-fight-portrait{
   position:relative;
   isolation:isolate;
   overflow:hidden;
+  container-type:inline-size;
 }
 html[data-ui="tomb"] .fight-portrait{
   position:absolute;
@@ -2416,6 +2417,20 @@ html[data-ui="tomb"] .fight-result-card .fight-portrait{
 }
 html[data-ui="tomb"] .fight-result-card .fight-portrait-artwork{
   transform:none;
+}
+
+/* Adapt Fight Roll/Result portrait fade to each card's available width, not the device orientation. */
+@container (min-width:440px){
+  html[data-ui="tomb"] .fight-portrait{
+    -webkit-mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.88) 23%,#000 50%);
+    mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.88) 23%,#000 50%);
+  }
+}
+@container (min-width:560px){
+  html[data-ui="tomb"] .fight-portrait{
+    -webkit-mask-image:none;
+    mask-image:none;
+  }
 }
 
 /* Recovery: show an actionable startup error without modifying stored save data. */

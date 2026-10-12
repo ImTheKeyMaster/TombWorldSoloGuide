@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.120
+# Tomb World Battle Guide v10.0.121
+
+## v10.0.121
+
+### Responsive Fight portrait fade
+
+- Preserve the existing protective portrait fade on narrow Fight Roll and Fight Result cards.
+- Use each card's available width to soften the fade from 440px and remove it at 560px, including landscape and desktop modals without requiring an orientation check.
+- Preserve original portrait sizing, opacity, clipping, card layout, and combat behavior.
 
 ## v10.0.120
 
