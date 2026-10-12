@@ -92,4 +92,4 @@ def test_release_is_consistent():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
-    assert README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\\n\\n## v{CURRENT_APP_VERSION}")
+    assert README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}")
