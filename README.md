@@ -8,7 +8,7 @@
 - Preserve saved Fight dice, results, wounds, continuation state, and the entire battle. The Recovery screen no longer repeats for saves affected by this initialization bug.
 - Include a behavioral regression check that restores a saved Fight while global state is undefined, including Macrocyte Warrior proximity handling.
 
-## v10.0.120
+## v10.0.119
 
 ### Safe startup recovery diagnostics
 
