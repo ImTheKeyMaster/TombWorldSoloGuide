@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.124';
+  const APP_VERSION = '10.0.125';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -535,6 +535,7 @@ document.addEventListener('touchend',function(e){
       loadedPlayerTeamId=teamId;
       state.playerTeamFile=entry.file;
       playerTeamLoadStatus='loaded';
+      if(data.teamName?.toLowerCase()==='deathwatch')warmDeathwatchRosterImages(data.operatives.map(operative=>operative.id));
       const operativeIds=new Set(data.operatives.map(operative=>operative.id));
       if((state.playerRoster||[]).some(id=>!operativeIds.has(id)))clearPlayerTeamDependentState();
       assignPlayerDisplayNumbers();
@@ -5388,6 +5389,22 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     return `${EXPERIMENTAL_DEATHWATCH_ACTIVATION_IMAGE_ROOT}${encodeURIComponent(id)}.webp`;
   }
 
+  // Keep decoded roster portraits available before Safari renders them inside filtered SVGs.
+  const warmedDeathwatchRosterImages=new Map();
+  function warmDeathwatchRosterImages(ids){
+    if(document.documentElement.dataset.ui!=='tomb')return;
+    for(const id of ids){
+      const src=experimentalDeathwatchRosterImage(id);
+      if(warmedDeathwatchRosterImages.has(src))continue;
+      const image=new Image();
+      warmedDeathwatchRosterImages.set(src,image);
+      image.decoding='async';
+      image.onerror=()=>{if(warmedDeathwatchRosterImages.get(src)===image)warmedDeathwatchRosterImages.delete(src);};
+      image.src=src;
+      if(typeof image.decode==='function')void image.decode().catch(()=>{});
+    }
+  }
+
   function experimentalDeathwatchGreenPortraitSvg(id,filterId,svgClass=''){
     const safeFilterId=escapeHtml(filterId);
     const safeClass=escapeHtml(svgClass);
@@ -5522,6 +5539,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
   }
 
   function showExperimentalDeathwatchRosterRail(candidates){
+    warmDeathwatchRosterImages(candidates);
     const items=candidates.map((id,index)=>{
       return `<button type="button" class="experimental-roster-item" role="radio" aria-checked="false" tabindex="${index===0?'0':'-1'}" data-roster-operative="${escapeHtml(id)}">
         <span class="experimental-roster-image">${experimentalDeathwatchGreenPortraitSvg(id,`experimentalRosterTint-${index}`,'experimental-roster-tinted-svg')}</span>
@@ -10378,6 +10396,7 @@ function showPlayerActivation(){
     try{
       localStorage.setItem(EXPERIMENTAL_UI_KEY,'tomb');
       document.documentElement.dataset.ui='tomb';
+      if(selectedPlayerTeamName().toLowerCase()==='deathwatch')warmDeathwatchRosterImages(playerTeamData?.operatives?.map(operative=>operative.id)||[]);
     }catch{
       document.documentElement.dataset.ui='classic';
       experimentalUiToggle.checked=false;
