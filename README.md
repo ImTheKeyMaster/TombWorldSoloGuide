@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.122
+# Tomb World Battle Guide v10.0.123
+
+## v10.0.123
+
+### Readable Deathwatch roster rail names
+
+- Give all ready Deathwatch operative tiles an equal minimum width of 120px so long names such as Demolisher stay unbroken.
+- Allow horizontal swiping within the rail on small screens, while wider screens expand the tiles evenly to fill the available width.
+- Keep existing miniature art, selection, keyboard navigation, Necron rosters, and Current UI behavior unchanged.
 
 ## v10.0.122
 
