@@ -51,7 +51,7 @@ const cache={
 const context={
   URL,Request,Response,Headers,console,
   caches:{open:async()=>{metrics.opens++;return cache;},keys:async()=>[],delete:async()=>true},
-  fetch:async()=>{metrics.fetches++;return new Response('ok',{status:200});},
+  fetch:async()=>{metrics.fetches++;return {ok:true,status:200,type:'basic',clone(){return this;}};},
   self:{location:{origin:'https://example.test'},clients:{claim:async()=>{}},
     addEventListener:(type,callback)=>listeners[type]=callback,skipWaiting:()=>{}}
 };
