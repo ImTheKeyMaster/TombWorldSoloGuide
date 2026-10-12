@@ -1,0 +1,39 @@
+name: One-time coffin icon asset build
+on:
+  push:
+    branches:
+      - feat/coffin-app-icon-v10-0-124
+permissions:
+  contents: write
+jobs:
+  make-assets:
+    if: contains(github.event.head_commit.message, 'Generate replacement icons')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/coffin-app-icon-v10-0-124
+      - run: python -m pip install pillow
+      - name: Create PNG and SVG icon variants
+        shell: bash
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          import base64, io
+          root=Path('Assets')
+          parts=[(root/f'.icon-input-{i}.txt').read_text().strip() for i in range(4)]
+          raw=base64.b64decode(''.join(parts),validate=True)
+          image=Image.open(io.BytesIO(raw)).convert('RGB')
+          assert image.size==(512,512)
+          for size in (180,192,512,1024):
+            image.resize((size,size),Image.Resampling.LANCZOS).save(root/f'icon-{size}.png',optimize=True)
+          data=base64.b64encode(raw).decode('ascii')
+          svg=f"""<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><title>Tomb Guide</title><image x="0" y="0" width="512" height="512" href="data:image/webp;base64,{data}"/></svg>"""
+          (root/'icon.svg').write_text(svg,encoding='utf-8')
+          print('generated icon PNG sizes: ',[(size,(root/f'icon-{size}.png').stat().st_size) for size in (180,192,512,1024)])
+          PY
+          git rm Assets/.icon-input-*.txt
+          git add Assets/icon-180.png Assets/icon-192.png Assets/icon-512.png Assets/icon-1024.png Assets/icon.svg
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Generate coffin PWA icon PNGs from selected artwork [skip ci]'
+          git push
