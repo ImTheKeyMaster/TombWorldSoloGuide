@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.118
+# Tomb World Battle Guide v10.0.119
+
+## v10.0.119
+
+### Safe startup recovery diagnostics
+
+- Show the actual startup error on the Recovery screen so an initialization or network failure is not mistaken for a corrupted game save.
+- Keep the original saved game untouched when recovery is displayed and distinguish loading failures from save failures.
+- Make **Export Save** more prominent; append its download anchor to the document and delay revoking the temporary URL to improve reliability on iPhone.
+- Preserve Retry Loading and all normal gameplay, UI, and saved-game formats.
 
 ## v10.0.118
 

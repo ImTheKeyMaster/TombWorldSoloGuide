@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.118';
+  const APP_VERSION = '10.0.119';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -10402,13 +10402,23 @@ function showPlayerActivation(){
 
   function renderStartupRecovery(error){
     console.error('[Startup] Application restoration could not continue.',error);
-    app.innerHTML=`<section class="card startup-recovery" role="alert"><p class="eyebrow">RECOVERY</p><h2>Your saved game could not be loaded</h2><p>Your stored save has been preserved. Retry loading, or export a backup before troubleshooting.</p><div class="wizard-actions"><button class="btn primary" id="retryStartup">Retry Loading</button><button class="btn ghost" id="exportStoredSave">Export Save</button></div></section>`;
+    const explanation=String(error?.message||error||'Unknown startup error');
+    app.innerHTML=`<section class="card startup-recovery" role="alert"><p class="eyebrow">RECOVERY</p><h2>The Guide could not finish loading</h2><p>Your stored save has not been deleted. This may be a loading or game-state error. Export your save before troubleshooting.</p><p class="startup-recovery-error"><strong>Error:</strong> <span>${escapeHtml(explanation)}</span></p><div class="wizard-actions"><button class="btn primary" id="retryStartup">Retry Loading</button><button class="btn secondary" id="exportStoredSave">Export Save</button></div></section>`;
     $('#retryStartup').onclick=()=>window.location.reload();
     $('#exportStoredSave').onclick=()=>{
-      const stored=localStorage.getItem(STORAGE_KEY);
+      let stored;
+      try{stored=localStorage.getItem(STORAGE_KEY);}
+      catch(storageError){showToast('Save storage could not be accessed.');return;}
       if(!stored){showToast('No stored save is available to export.');return;}
-      const blob=new Blob([stored],{type:'application/json'}),link=document.createElement('a');
-      link.href=URL.createObjectURL(blob);link.download='tomb-world-battle-guide-recovery-save.json';link.click();URL.revokeObjectURL(link.href);
+      const blob=new Blob([stored],{type:'application/json'});
+      const link=document.createElement('a');
+      const downloadUrl=URL.createObjectURL(blob);
+      link.href=downloadUrl;
+      link.download='tomb-world-battle-guide-recovery-save.json';
+      link.hidden=true;
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(()=>{link.remove();URL.revokeObjectURL(downloadUrl);},15000);
     };
     bindCommon();
   }

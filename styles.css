@@ -2417,3 +2417,7 @@ html[data-ui="tomb"] .fight-result-card .fight-portrait{
 html[data-ui="tomb"] .fight-result-card .fight-portrait-artwork{
   transform:none;
 }
+
+/* Recovery: show an actionable startup error without modifying stored save data. */
+.startup-recovery-error{overflow-wrap:anywhere;word-break:break-word;padding:12px;border:1px solid var(--line);border-radius:10px;background:#07140f;color:var(--muted);font-size:.84rem}
+.startup-recovery-error strong{color:var(--text)}
