@@ -2171,6 +2171,24 @@ html[data-ui="tomb"] .experimental-roster-actions{margin-top:0}
   html[data-ui="tomb"] .experimental-roster-actions .btn{min-height:40px;padding:8px 12px}
 }
 
+/* v10.0.123: Give ready Deathwatch operatives equally wide, scrollable rail tiles. */
+html[data-ui="tomb"] .experimental-deathwatch-roster-rail{
+  overflow-x:auto;
+  overflow-y:hidden;
+  overscroll-behavior-x:contain;
+  scroll-snap-type:x proximity;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+}
+html[data-ui="tomb"] .experimental-deathwatch-roster-rail .experimental-roster-item{
+  flex:1 0 120px;
+  scroll-snap-align:start;
+}
+html[data-ui="tomb"] .experimental-deathwatch-roster-rail .experimental-roster-name{
+  overflow-wrap:normal;
+  word-break:normal;
+}
+
 /* v10.0.111: Experimental Deathwatch target rail. Other target selectors are untouched. */
 html[data-ui="tomb"] .npo-target-roster-label{margin:0 0 8px;color:var(--muted);font-size:.75rem;font-weight:800}
 html[data-ui="tomb"] .npo-target-roster-shell{width:100%;max-width:100%;min-width:0}
