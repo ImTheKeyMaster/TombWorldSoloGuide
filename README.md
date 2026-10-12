@@ -3088,7 +3088,7 @@ The application includes the PDF locally and uses pre-rendered crops of pages 17
 Upload the **contents of this folder while preserving the folder structure**. In particular:
 
 - `index.html`, `app.js`, `styles.css`, `service-worker.js`, and `manifest.webmanifest` must remain at the repository root.
-- `Assets/icon.svg` must remain inside `Assets`.
+- `Assets/icon-192.png`, `Assets/icon-512.png`, and `Assets/icon-180.png` must remain inside `Assets`.
 - All six map files must remain inside `Assets/Maps`.
 - `Assets/Tomb-World-Mission-Pack.pdf` must remain inside `Assets`.
 
