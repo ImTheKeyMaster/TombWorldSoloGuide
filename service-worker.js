@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '10.0.121';
+const APP_VERSION = '10.0.122';
 const CACHE_PREFIX = 'tomb-world-battle-guide-';
 const LEGACY_CACHE_PREFIXES = ['tomb-world-solo-guide-'];
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
@@ -296,6 +296,8 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  // Reference PDFs are hosted online but must not be included in the PWA cache.
+  if (/\.pdf$/i.test(url.pathname)) return;
   if (request.mode === 'navigate' || url.pathname.endsWith('/index.html')) {
     event.respondWith(networkFirst(request));
     return;
@@ -304,7 +306,7 @@ self.addEventListener('fetch', event => {
     event.respondWith(networkFirst(request));
     return;
   }
-  if (/\.(?:png|svg|jpe?g|gif|webp|ico|pdf|mp3|ogg)$/i.test(url.pathname)) {
+  if (/\.(?:png|svg|jpe?g|gif|webp|ico|mp3|ogg)$/i.test(url.pathname)) {
     event.respondWith(cacheFirst(request));
   }
 });
