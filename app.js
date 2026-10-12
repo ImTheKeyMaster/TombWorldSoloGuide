@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.119';
+  const APP_VERSION = '10.0.120';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -1402,7 +1402,7 @@ document.addEventListener('touchend',function(e){
       stage3Triggers:isRecord(importedRuleState.stage3Triggers)?Object.fromEntries(Object.entries(importedRuleState.stage3Triggers).filter(([,trigger])=>isRecord(trigger)).map(([id,trigger])=>[id,{...trigger}])):{}
     };
     merged.fightState=isRecord(raw?.fightState)&&raw.fightState.version===1
-      ? normalizeFightState(raw.fightState)
+      ? normalizeFightState(raw.fightState,merged.roster)
       : null;
     // Aggregate pre-v9.1.1 melee drafts cannot be converted into alternating
     // Strike/Block state. Reset only that unfinished action; preserve the battle.
@@ -7329,7 +7329,7 @@ function showPlayerActivation(){
       return true;
     }finally{fightResumePending=false;}
   }
-  function normalizeFightState(fight){
+  function normalizeFightState(fight,roster){
     if(!isRecord(fight)||fight.version!==1||typeof fight.id!=='string'||!fight.id)return null;
     const participants={};
     for(const role of ['attacker','defender']){
@@ -7337,7 +7337,7 @@ function showPlayerActivation(){
       if(!isRecord(participant)||!['player','npo'].includes(participant.side)||typeof participant.id!=='string'||!participant.id||!isRecord(participant.profile))return null;
       participants[role]={...participant,attackDice:Array.isArray(participant.attackDice)?participant.attackDice.filter(isRecord).map(item=>({...item})):[],attackDiceComplete:Boolean(participant.attackDiceComplete)};
     }
-    const playerFightingMacrocyte=fight.attacker?.side==='player'&&state.roster.some(npo=>npo.id===fight.defender?.id&&npo.type==='Canoptek Macrocyte Warrior');
+    const playerFightingMacrocyte=fight.attacker?.side==='player'&&roster.some(npo=>npo.id===fight.defender?.id&&npo.type==='Canoptek Macrocyte Warrior');
     return {...fight,...participants,attackerWithinTwo:playerFightingMacrocyte?true:Boolean(fight.attackerWithinTwo),turn:['attacker','defender'].includes(fight.turn)?fight.turn:'attacker',resolutionIndex:Math.max(0,Number(fight.resolutionIndex||0)),successes:Object.fromEntries(['attacker','defender'].map(role=>[role,Array.isArray(fight.successes?.[role])?fight.successes[role].filter(isRecord).map(item=>({...item})):[]])),history:Array.isArray(fight.history)?fight.history.filter(isRecord).map(item=>({...item})):[],ruleTriggers:isRecord(fight.ruleTriggers)?{...fight.ruleTriggers}:{},completed:Boolean(fight.completed),resultAcknowledged:Boolean(fight.resultAcknowledged)};
   }
   function otherFightRole(role){return role==='attacker'?'defender':'attacker';}
