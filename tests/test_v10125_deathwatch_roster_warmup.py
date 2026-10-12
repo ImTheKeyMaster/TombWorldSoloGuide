@@ -63,4 +63,4 @@ def test_version_surfaces_agree():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f"V{CURRENT_APP_VERSION}" in INDEX
     assert f"styles.css?v={CURRENT_APP_VERSION}" in INDEX
-    assert README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\\n\\n## v{CURRENT_APP_VERSION}")
+    assert README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}")
