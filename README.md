@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.121
+# Tomb World Battle Guide v10.0.122
+
+## v10.0.122
+
+### Keep reference PDFs out of PWA caching
+
+- Keep the Tomb World Mission Pack and the nine Kill Team reference PDFs in the repository for development and rules checks.
+- Confirm no PDF is in the core offline precache or the extended offline media package.
+- Bypass service-worker caching for every PDF URL, including direct PDF navigation; PDFs remain available normally over the network.
+- Preserve game mechanics, saved games, and all existing offline gameplay assets.
 
 ## v10.0.121
 
