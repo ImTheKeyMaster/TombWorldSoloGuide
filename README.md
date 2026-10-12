@@ -1,6 +1,14 @@
-# Tomb World Battle Guide v10.0.119
+# Tomb World Battle Guide v10.0.120
 
-## v10.0.119
+## v10.0.120
+
+### Restore saved Fights without a startup crash
+
+- Normalize an in-progress Fight using the restored NPO roster rather than reading global game state before it is initialized.
+- Preserve saved Fight dice, results, wounds, continuation state, and the entire battle. The Recovery screen no longer repeats for saves affected by this initialization bug.
+- Include a behavioral regression check that restores a saved Fight while global state is undefined, including Macrocyte Warrior proximity handling.
+
+## v10.0.120
 
 ### Safe startup recovery diagnostics
 
