@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.123
+# Tomb World Battle Guide v10.0.124
+
+## v10.0.124
+
+### New coffin-inspired PWA app icons
+
+- Replace the old icon with the selected emerald coffin/portal art in Apple touch (180px), standard Android/PWA (192px and 512px), and a 1024px master PNG.
+- Add Android adaptive maskable versions at 192px and 512px; register them in the PWA manifest.
+- Use the new art for desktop and app-header icons, including an ICO favicon fallback.
+- Refresh the service worker's cache version and precache the new artwork for offline use.
+- Keep all gameplay rules, screens, and saved games unchanged.
 
 ## v10.0.123
 
