@@ -103,7 +103,6 @@ necrons.app.skipRemainingActivations();
 check(necrons.npos.every(n=>!n.ready)&&necrons.state.nextSide==='player'
   &&necrons.state.activationFinishedForTurningPoint.npo,'Necron skip flow changed');
 console.log('Skip after Close Guide and dirty activation guards passed');
-`);
 """
     result=subprocess.run(["node","-e",js],cwd=ROOT,text=True,capture_output=True)
     assert result.returncode==0,result.stderr or result.stdout
@@ -113,5 +112,5 @@ def test_release_version_and_save_key_unchanged():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
-    assert README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\\n\\n## v{CURRENT_APP_VERSION}")
+    assert README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}")
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
