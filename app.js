@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.125';
+  const APP_VERSION = '10.0.126';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2594,6 +2594,12 @@ document.addEventListener('touchend',function(e){
     if(plural)return `${teamName} Operatives`;
     return `${/^[aeiou]/i.test(teamName)?'an':'a'} ${teamName} Operative`;
   }
+  function canSkipUnstartedPlayerActivation(){
+    const activation=activePlayerActivation();
+    return Boolean(activation&&state.nextSide==='player'&&!activation.pendingAction
+      &&!(activation.resolvedActions||[]).length&&!(activation.completedActionIds||[]).length
+      &&!(activation.actionSequence||0));
+  }
   function canSkipRemainingActivations(){
     if(state.phase!=='firefight'||state.completed||state.gameEnd)return false;
     const side=state.nextSide;
@@ -2601,7 +2607,7 @@ document.addEventListener('touchend',function(e){
     if(side==='player'&&playerOperativesRemaining()<=0)return false;
     if(side==='npo'&&readyNpos().length<=0)return false;
     const activation=state.lastActivation;
-    if(activation&&!activation.committed&&!activation.completed)return false;
+    if(activation&&!activation.committed&&!activation.completed&&!canSkipUnstartedPlayerActivation())return false;
     const safe=!state.pendingDice&&!state.combatState&&!state.fightState&&!state.missionActionContext&&!state.weaponRuleResolution&&!state.hotResolution;
     if(!safe)return false;
     if(!isPvpMode()&&side==='npo')return true;
@@ -4368,13 +4374,23 @@ document.addEventListener('touchend',function(e){
 
   let skipRemainingActivationsPending=false;
   function confirmSkipRemainingActivations(){
-    if(!canSkipRemainingActivations()||skipRemainingActivationsPending)return;
+    if(skipRemainingActivationsPending)return;
+    if(!canSkipRemainingActivations()){
+      const active=activePlayerActivation();
+      if(active&&state.nextSide==='player'){
+        showModal('Activation in Progress',`<p>${escapeHtml(playerName(active.operativeId))} has an unfinished activation with recorded actions or a pending step. Resume and end this activation before skipping the remaining operatives.</p><div class="wizard-actions"><button type="button" class="btn ghost" data-close>Back</button><button type="button" class="btn primary" id="resumeActivationBeforeSkip">Resume Activation</button></div>`);
+        $('#resumeActivationBeforeSkip').onclick=()=>{void resumeCheckpointedGameplayContext();};
+      }
+      return;
+    }
     const side=state.nextSide;
     const sideName=activationSideName(side),otherName=activationSideName(side==='player'?'npo':'player');
     const models=activationModelLabel(side,{plural:true});
     const otherModels=side==='player'?'Necrons':`${otherName} operatives`;
     const readiness=side==='player'?'ready':'eligible';
-    showModal(`SKIP REMAINING ${models.toUpperCase()}?`,`<p>All remaining ${readiness} ${escapeHtml(models)} will be treated as finished for this Turning Point. ${escapeHtml(otherModels)} may continue to activate.</p><div class="wizard-actions"><button type="button" class="btn ghost" data-close data-dialog-focus>BACK</button><button type="button" class="btn secondary" id="confirmSkipRemainingActivations">SKIP ${escapeHtml(sideName.toUpperCase())}</button></div>`);
+    const activeSkip=side==='player'&&canSkipUnstartedPlayerActivation()
+      ?` This includes ${escapeHtml(playerName(state.lastActivation.operativeId))}'s current, untouched activation; no actions will be recorded for it.`:'';
+    showModal(`SKIP REMAINING ${models.toUpperCase()}?`,`<p>All remaining ${readiness} ${escapeHtml(models)} will be treated as finished for this Turning Point.${activeSkip} ${escapeHtml(otherModels)} may continue to activate.</p><div class="wizard-actions"><button type="button" class="btn ghost" data-close data-dialog-focus>BACK</button><button type="button" class="btn secondary" id="confirmSkipRemainingActivations">SKIP ${escapeHtml(sideName.toUpperCase())}</button></div>`);
     $('#confirmSkipRemainingActivations').onclick=skipRemainingActivations;
   }
 
@@ -4383,7 +4399,12 @@ document.addEventListener('touchend',function(e){
     skipRemainingActivationsPending=true;
     const side=state.nextSide;
     if(side==='player'){
+      const unstartedId=canSkipUnstartedPlayerActivation()?state.lastActivation.operativeId:null;
       const unresolvedPlayerIds=remainingPlayerOperatives();
+      if(unstartedId){
+        state.lastActivation=null;
+        log(`${playerName(unstartedId)}'s untouched activation skipped.`);
+      }
       state.playerActivatedIds=[...new Set([...(state.playerActivatedIds||[]),...unresolvedPlayerIds])];
       state.playerReady=0;
     }else{
