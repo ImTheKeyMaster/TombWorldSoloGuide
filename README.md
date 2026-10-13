@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.125
+# Tomb World Battle Guide v10.0.126
+
+## v10.0.126
+
+### Skip remaining operatives after closing an unfinished player guide
+
+- Allow skipping an untouched, active player activation along with the remaining operatives, after explicit confirmation, while preserving the normal skip turn scheduler.
+- Prevent silently ignoring Skip Remaining when the active operative already has actions recorded or work pending; explain why and offer Resume Activation.
+- Preserve completed actions, mission resolution, saved games, and Necron skip behavior.
 
 ## v10.0.125
 
