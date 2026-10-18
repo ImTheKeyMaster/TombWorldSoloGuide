@@ -99,9 +99,6 @@ const elements=Object.fromEntries(names.map(x=>[x,{
 }]));
 const root={querySelector:key=>elements[key],querySelectorAll:key=>
   key==='[data-roster-operative]'?buttons:[]};
-const env=new Function('root','buttons','elements','focused','begin',binding+`
-const $=(selector,scope)=>scope.querySelector(selector);
-`); // Binder's dependencies are injected below, not via this unused factory.
 const bind=new Function('deps',`
 const {$$,$,requestAnimationFrame,getComputedStyle,livePlayerOperative,playerDefinition,
  effectiveApl,playerCurrentWounds,experimentalDeathwatchGreenPortraitSvg,
