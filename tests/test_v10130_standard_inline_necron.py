@@ -34,7 +34,7 @@ const make=new Function('d','const {state,setNextActivation,playerOperativesRema
   'experimentalDeathwatchRosterMarkup,remainingPlayerOperatives,activationProgressLabel,'+
   'escapeHtml,skipRemainingActivationsControl,activationModelLabel,readyNpos,isPvpMode,'+
   'opponentSingularLabel,experimentalNecronRosterMarkup}=d;'+
-  'function nextStepCard(){'+next+'};return nextStepCard');
+  'function nextStepCard(){'+next+';return nextStepCard');
 const check=(condition,message)=>{if(!condition)throw Error(message)};
 function card(experimental,count,active=false,side='npo'){
   const state={completed:false,phase:'firefight',nextSide:side,npoActivated:0,
