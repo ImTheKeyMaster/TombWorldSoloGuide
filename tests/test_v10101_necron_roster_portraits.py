@@ -73,7 +73,7 @@ def test_necron_portraits_use_supplied_precolored_transparent_assets_without_run
 
 
 def test_experimental_necron_picker_uses_roster_rail_and_starts_unselected():
-    source = section("function showExperimentalNecronRosterRail", "function showExperimentalDeathwatchRosterRail")
+    source = section("function experimentalNecronRosterMarkup", "function experimentalDeathwatchRosterMarkup")
     assert 'class="experimental-roster-item"' in source
     assert 'class="experimental-roster-image"' in source
     assert 'class="experimental-roster-name"' in source
@@ -85,7 +85,7 @@ def test_experimental_necron_picker_uses_roster_rail_and_starts_unselected():
     assert "let selectedId='';" in source
     assert 'id="confirmExperimentalNecronSelection" disabled' in source
     assert "button.classList.toggle('selected',selected)" in source
-    assert source.count("$('[data-roster-npo]',modal)") >= 3
+    assert source.count("$(['data-roster-npo'],root)") >= 3
     assert "Begin Activation" in source
 
 
