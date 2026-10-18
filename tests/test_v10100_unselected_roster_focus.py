@@ -10,7 +10,7 @@ WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 
 
 def picker_source():
-    return APP.split("function showExperimentalDeathwatchRosterRail(candidates)", 1)[1].split("function showPlayerActivation()", 1)[0]
+    return APP.split("function experimentalDeathwatchRosterMarkup(candidates", 1)[1].split("function showPlayerActivation()", 1)[0]
 
 
 def test_release_bumps_all_runtime_version_surfaces():
