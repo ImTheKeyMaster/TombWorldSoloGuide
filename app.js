@@ -5554,7 +5554,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
         button.setAttribute('aria-checked',String(selected));
         button.tabIndex=selected?0:-1;
       });
-      const npo=readyNpos().find(item=>item.id===selectedId)||candidates.find(item=>item.id===selectedId);
+      const npo=readyNpos().find(item=>item.id===selectedId);
       if(!npo)return;
       const definition=npoDefinition(npo.type)||{};
       const loadout=definition.loadoutOptions?.find(option=>option.id===npo.weaponId)?.name||npoWeapon(definition,npo.weaponId)?.name||definition.faction||'Necron operative';
