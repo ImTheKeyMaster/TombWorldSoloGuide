@@ -115,7 +115,9 @@ return bindExperimentalDeathwatchRosterRail;
   playerDefinition:id=>({id,role:'Veteran',apl:3,move:6,save:3,wounds:13}),
   effectiveApl:()=>3,playerCurrentWounds:()=>13,
   experimentalDeathwatchGreenPortraitSvg:id=>'<svg>'+id+'</svg>',
-  playerName:id=>id,escapeHtml:String,beginPlayerActivation:id=>{begun=id;active=true;return true;},
+  playerName:id=>id,escapeHtml:String,beginPlayerActivation:(id,{refreshPlayCard=false}={})=>{
+    begun=id;active=true;if(refreshPlayCard)renders++;return true;
+  },
   activePlayerActivation:()=>active?{operativeId:begun}:null,
   resumeCheckpointedGameplayContext:()=>{resumes++;},render:()=>{renders++;}
 });
@@ -136,6 +138,13 @@ elements['#confirmExperimentalRosterSelection'].onclick();
 check(begun==='demolisher'&&resumes===1&&renders===1,
   'Reusing the stale picker overwrote an active operative instead of resuming');
 """)
+
+
+def test_inline_refresh_occurs_before_action_modal_updates_active_sidebar():
+    begin = APP[APP.index("function beginPlayerActivation(") : APP.index("function playerHumanActionCatalog(")]
+    assert "if(refreshPlayCard)render();" in begin
+    assert begin.index("save();") < begin.index("if(refreshPlayCard)render();") < begin.index("renderHumanPlayerActionPicker();")
+    assert "beginPlayerActivation(selectedId,{refreshPlayCard:root.id==='experimentalInlineDeathwatchPicker'});" in APP
 
 
 def test_release_gate_and_mobile_layout():
