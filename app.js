@@ -5661,7 +5661,11 @@ ${inline?'':'<button class="btn ghost" data-close>Close Guide</button>'}
         selectOperative(controls[next].dataset.rosterOperative);
       };
     });
-    confirm.onclick=()=>{if(selectedId)beginPlayerActivation(selectedId);};
+    confirm.onclick=()=>{
+      if(!selectedId)return;
+      if(activePlayerActivation()){void resumeCheckpointedGameplayContext();return;}
+      if(beginPlayerActivation(selectedId)&&root.id==='experimentalInlineDeathwatchPicker')render();
+    };
   }
 
 function showPlayerActivation(){
