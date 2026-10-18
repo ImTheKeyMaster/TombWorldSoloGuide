@@ -5540,7 +5540,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     requestAnimationFrame(updateRosterNameDensity);
 
     let selectedId='';
-    const confirm=$('#confirmExperimentalNecronSelection');
+    const confirm=$('#confirmExperimentalNecronSelection',root);
     const detailImage=$('#experimentalNecronRosterDetailImage',root);
     const detailName=$('#experimentalNecronRosterDetailName',root);
     const detailRole=$('#experimentalNecronRosterDetailRole',root);
