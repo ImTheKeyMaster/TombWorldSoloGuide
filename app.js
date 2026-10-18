@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.129';
+  const APP_VERSION = '10.0.130';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3908,15 +3908,11 @@ document.addEventListener('touchend',function(e){
       return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>${escapeHtml(teamName)} Activation</h2><p>Activate one ${escapeHtml(teamName)} operative on the tabletop. After it completes, the Guide will alternate to a Necron if one is ready.</p><button class="btn primary big-action" id="playerActivation">${escapeHtml(action)}</button>${skipRemainingActivationsControl()}</section>`;
     }
     if(state.nextSide==='npo' && readyNpos().length>0){
-      if(experimentalFeaturesEnabled()){
-        const active=state.activeNpoId&&state.lastActivation?.npoId===state.activeNpoId&&!state.lastActivation.committed?state.lastActivation:null;
-        const selection=active
-          ?`<p>${escapeHtml(active.name||opponentSingularLabel())} has an activation in progress.</p><button class="btn primary big-action" id="npoActivation">Resume Activation</button>`
-          :experimentalNecronRosterMarkup(readyNpos(),{inline:true});
-        return `<section class="next-card npo-activation-card experimental-inline-necron-card"><span class="phase">NECRON ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">Necron Activation</h2>${selection}${skipRemainingActivationsControl()}</section>`;
-      }
-      const action=state.npoActivated>0?'Activate Next Necron':`Activate ${activationModelLabel('npo')}`;
-      return `<section class="next-card npo-activation-card"><span class="phase">NECRON ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">Necron Activation</h2><p class="npo-activation-meta">${isPvpMode()?'Choose a Ready Necron to activate.':'Identify the next ready Necron using the Threat Principle.'}</p><button class="btn primary big-action" id="npoActivation">${escapeHtml(action)}</button>${skipRemainingActivationsControl()}</section>`;
+      const active=state.activeNpoId&&state.lastActivation?.npoId===state.activeNpoId&&!state.lastActivation.committed?state.lastActivation:null;
+      const selection=active
+        ?`<p>${escapeHtml(active.name||opponentSingularLabel())} has an activation in progress.</p><button class="btn primary big-action" id="npoActivation">Resume Activation</button>`
+        :experimentalNecronRosterMarkup(readyNpos(),{inline:true});
+      return `<section class="next-card npo-activation-card experimental-inline-necron-card"><span class="phase">NECRON ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">Necron Activation</h2>${selection}${skipRemainingActivationsControl()}</section>`;
     }
     setNextActivation(state.nextSide==='player'?'npo':'player');
     save();
