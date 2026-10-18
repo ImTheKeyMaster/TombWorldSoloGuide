@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.126
+# Tomb World Battle Guide v10.0.127
+
+## v10.0.127
+
+### Promote Tomb UI to standard and preserve an experimental playground
+
+- Make the established Tomb UI the default for all users and saved games, including the setup styling, Deathwatch and Necron roster rails, activation portraits, and target rails. Retire the legacy Classic UI switch without altering gameplay or saved-game data.
+- Keep the seven-taps-on-version Experimental panel as a separately stored, opt-in "Experimental Features" switch for future previews. It does not change the standard interface until a future feature deliberately uses the flag.
+- Ignore the old `tombWorldSolo.experimentalUI.v1` preference on launch, so previous classic/experimental choices cannot accidentally restore Classic mode. Preserve the existing game save and all other preferences.
+- Preserve current visual styling, assets, and PWA caching behavior apart from the release version.
 
 ## v10.0.126
 
