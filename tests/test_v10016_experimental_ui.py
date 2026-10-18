@@ -1,40 +1,55 @@
+"""Regression coverage for the former experimental UI, now the standard experience."""
+
 from pathlib import Path
 
 from versioning import CURRENT_APP_VERSION
 
 ROOT = Path(__file__).resolve().parents[1]
-INDEX = (ROOT / "index.html").read_text()
-APP = (ROOT / "app.js").read_text()
-CSS = (ROOT / "styles.css").read_text()
+INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
+APP = (ROOT / "app.js").read_text(encoding="utf-8")
+CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
 
 
 def test_release_version_is_consistent():
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 16)
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 127)
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
 
 
-def test_experimental_ui_defaults_to_classic_and_bootstraps_early():
-    assert '<html lang="en" data-ui="classic">' in INDEX
-    assert "localStorage.getItem('tombWorldSolo.experimentalUI.v1') === 'tomb'" in INDEX
-    assert INDEX.index("tombWorldSolo.experimentalUI.v1") < INDEX.index('href="styles.css')
-    assert "document.documentElement.dataset.ui = 'classic'" in INDEX
+def test_tomb_ui_is_the_default_before_css_and_when_storage_fails():
+    assert '<html lang="en" data-ui="tomb" data-experimental="off">' in INDEX
+    assert "document.documentElement.dataset.ui = 'classic'" not in INDEX
+    assert "document.documentElement.dataset.ui='classic'" not in APP
+    assert "tombWorldSolo.experimentalUI.v1" not in INDEX
+    assert "tombWorldSolo.experimentalUI.v1" not in APP
+    assert INDEX.index('data-ui="tomb"') < INDEX.index('href="styles.css')
+    assert "html[data-ui=\"tomb\"] .setup-true-hex-card" in CSS
 
 
-def test_experimental_ui_is_isolated_and_hidden_behind_version_taps():
-    assert "const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';" in APP
+def test_experimental_playground_is_separate_from_standard_ui():
+    key = "tombWorldSolo.experimentalFeatures.v1"
+    assert key in INDEX
+    assert f"const EXPERIMENTAL_FEATURES_KEY = '{key}';" in APP
+    assert INDEX.index(key) < INDEX.index('href="styles.css')
+    assert "document.documentElement.dataset.experimental = 'on';" in INDEX
+    assert "function experimentalFeaturesEnabled()" in APP
+    setter = APP[APP.index("function setExperimentalFeatures") : APP.index("function showExperimentalUiPanel")]
+    assert "document.documentElement.dataset.experimental=enabled?'on':'off';" in setter
+    assert "localStorage.setItem(EXPERIMENTAL_FEATURES_KEY,'on');" in setter
+    assert "localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);" in setter
+    assert "dataset.ui=" not in setter
+    assert "experimentalUiToggle.checked=experimentalFeaturesEnabled();" in APP
+    assert "Experimental Features" in INDEX
+    assert "No preview-only features are currently enabled." in INDEX
+
+
+def test_hidden_version_tap_access_still_works_and_saves_are_unaffected():
     assert "if(versionTapTimes.length<7)return;" in APP
     assert "now-timestamp<=5000" in APP
     assert "document.addEventListener('pointerup'" in APP
-    assert "document.addEventListener('click',event=>" not in APP[APP.index("let versionTapTimes") : APP.index("experimentalUiToggle.addEventListener")]
-    assert "Experimental Tomb UI" in INDEX
-    assert "Currently previews setup honeycomb clusters and the Deathwatch Roster Rail." in INDEX
     assert 'aria-modal="true" aria-labelledby="experimentalUiTitle"' in INDEX
-    assert 'html[data-ui="tomb"] .setup-true-hex-card' in CSS
-    assert 'tomb-ui-v2.css' not in INDEX
-    assert 'Assets/Images/TombUI' not in INDEX
+    assert 'id="experimentalUiToggle" type="checkbox" role="switch"' in INDEX
+    assert "experimentalUiToggle.addEventListener('change',()=>setExperimentalFeatures(experimentalUiToggle.checked));" in APP
     save_function = APP[APP.index("function save()") : APP.index("function migrateSupportedSave")]
-    assert "EXPERIMENTAL_UI_KEY" not in save_function
-    setter = APP[APP.index("function setExperimentalUi") : APP.index("function showExperimentalUiPanel")]
-    assert setter.index("localStorage.setItem") < setter.index("dataset.ui='tomb'")
-    assert "dataset.ui='classic'" in setter
+    assert "EXPERIMENTAL_FEATURES_KEY" not in save_function
+    assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
