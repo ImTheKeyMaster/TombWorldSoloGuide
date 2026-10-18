@@ -2,8 +2,8 @@
   'use strict';
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
-  const EXPERIMENTAL_UI_KEY = 'tombWorldSolo.experimentalUI.v1';
-  const APP_VERSION = '10.0.126';
+  const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
+  const APP_VERSION = '10.0.127';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -10406,25 +10406,21 @@ function showPlayerActivation(){
     void TombWorldNarration.init();
   }
 
-  // Temporary compatibility flag: classic remains the default until the Tomb UI replaces it.
-  function setExperimentalUi(enabled){
-    if(!enabled){
-      try{localStorage.removeItem(EXPERIMENTAL_UI_KEY);}
-      catch{/* Classic remains the failure-safe mode when storage is unavailable. */}
-      document.documentElement.dataset.ui='classic';
-      return;
-    }
+  // The Tomb UI is standard. Future trials use an independent, opt-in feature flag.
+  function experimentalFeaturesEnabled(){
+    return document.documentElement.dataset.experimental==='on';
+  }
+  function setExperimentalFeatures(enabled){
+    document.documentElement.dataset.experimental=enabled?'on':'off';
     try{
-      localStorage.setItem(EXPERIMENTAL_UI_KEY,'tomb');
-      document.documentElement.dataset.ui='tomb';
-      if(selectedPlayerTeamName().toLowerCase()==='deathwatch')warmDeathwatchRosterImages(playerTeamData?.operatives?.map(operative=>operative.id)||[]);
+      if(enabled)localStorage.setItem(EXPERIMENTAL_FEATURES_KEY,'on');
+      else localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);
     }catch{
-      document.documentElement.dataset.ui='classic';
-      experimentalUiToggle.checked=false;
+      // Preview mode still works for this session if preferences cannot be saved.
     }
   }
   function showExperimentalUiPanel(){
-    experimentalUiToggle.checked=document.documentElement.dataset.ui==='tomb';
+    experimentalUiToggle.checked=experimentalFeaturesEnabled();
     experimentalUiDialog.showModal();
   }
   let versionTapTimes=[];
@@ -10437,7 +10433,7 @@ function showPlayerActivation(){
     versionTapTimes=[];
     showExperimentalUiPanel();
   });
-  experimentalUiToggle.addEventListener('change',()=>setExperimentalUi(experimentalUiToggle.checked));
+  experimentalUiToggle.addEventListener('change',()=>setExperimentalFeatures(experimentalUiToggle.checked));
   experimentalUiClose.addEventListener('click',()=>experimentalUiDialog.close());
 
   function renderStartupRecovery(error){
