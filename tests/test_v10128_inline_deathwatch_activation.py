@@ -86,7 +86,7 @@ check(modal.includes('data-close>Close Guide')&&
   !modal.includes('experimentalInlineDeathwatchPicker'), 'Existing modal markup changed');
 
 const classes=()=>({add:()=>{},remove:()=>{},toggle:()=>{}});
-let focused=null,begun=null;
+let focused=null,begun=null,renders=0,resumes=0,active=false;
 const buttons=['breacher','demolisher'].map(id=>({
   dataset:{rosterOperative:id},classList:classes(),tabIndex:0,
   querySelector:()=>({scrollHeight:10}),setAttribute(k,v){this[k]=v;},
@@ -97,12 +97,13 @@ const names=['#confirmExperimentalRosterSelection','#experimentalRosterDetailIma
 const elements=Object.fromEntries(names.map(x=>[x,{
   disabled:true,classList:classes(),removeAttribute:()=>{},innerHTML:'',textContent:''
 }]));
-const root={querySelector:key=>elements[key],querySelectorAll:key=>
+const root={id:'experimentalInlineDeathwatchPicker',querySelector:key=>elements[key],querySelectorAll:key=>
   key==='[data-roster-operative]'?buttons:[]};
 const bind=new Function('deps',`
 const {$$,$,requestAnimationFrame,getComputedStyle,livePlayerOperative,playerDefinition,
  effectiveApl,playerCurrentWounds,experimentalDeathwatchGreenPortraitSvg,
- playerName,escapeHtml,beginPlayerActivation}=deps;
+ playerName,escapeHtml,beginPlayerActivation,activePlayerActivation,
+ resumeCheckpointedGameplayContext,render}=deps;
 ${binding}
 return bindExperimentalDeathwatchRosterRail;
 `)({
@@ -114,7 +115,9 @@ return bindExperimentalDeathwatchRosterRail;
   playerDefinition:id=>({id,role:'Veteran',apl:3,move:6,save:3,wounds:13}),
   effectiveApl:()=>3,playerCurrentWounds:()=>13,
   experimentalDeathwatchGreenPortraitSvg:id=>'<svg>'+id+'</svg>',
-  playerName:id=>id,escapeHtml:String,beginPlayerActivation:id=>{begun=id;}
+  playerName:id=>id,escapeHtml:String,beginPlayerActivation:id=>{begun=id;active=true;return true;},
+  activePlayerActivation:()=>active?{operativeId:begun}:null,
+  resumeCheckpointedGameplayContext:()=>{resumes++;},render:()=>{renders++;}
 });
 bind(root);
 check(elements['#confirmExperimentalRosterSelection'].disabled,
@@ -127,7 +130,11 @@ buttons[0].onkeydown({key:'ArrowRight',preventDefault(){}});
 check(focused===buttons[1] && elements['#experimentalRosterDetailName'].textContent==='demolisher',
   'Keyboard selection failed');
 elements['#confirmExperimentalRosterSelection'].onclick();
-check(begun==='demolisher', 'Begin Activation did not start the selected operative');
+check(begun==='demolisher'&&renders===1, 'Inline Begin did not start and replace the roster with Resume');
+buttons[0].onclick();
+elements['#confirmExperimentalRosterSelection'].onclick();
+check(begun==='demolisher'&&resumes===1&&renders===1,
+  'Reusing the stale picker overwrote an active operative instead of resuming');
 """)
 
 
