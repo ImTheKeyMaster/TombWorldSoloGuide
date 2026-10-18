@@ -102,9 +102,9 @@ def test_new_roster_styles_are_experimental_only():
     assert 'html[data-ui="classic"] .experimental-roster' not in CSS
 
 
-def test_experimental_panel_copy_mentions_roster_rail():
-    assert "Experimental Tomb UI" in INDEX
-    assert "Deathwatch Roster Rail" in INDEX
+def test_experimental_panel_now_describes_future_previews():
+    assert "Experimental Features" in INDEX
+    assert "roster rails, activation portraits, and Tomb styling are now standard" in INDEX
 
 
 def test_mobile_roster_labels_remain_readable_and_can_wrap():
