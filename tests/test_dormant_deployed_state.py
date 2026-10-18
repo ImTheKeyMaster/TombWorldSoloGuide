@@ -24,7 +24,11 @@ class DormantDeployedStateTests(unittest.TestCase):
     def test_all_deployed_dormant_npos_have_no_activation_button(self):
         activation = self.source("function nextStepCard()", "function missionStrategyPending")
         self.assertIn("readyNpos().length>0", activation)
-        self.assertEqual(activation.count('id="npoActivation"'), 1)
+        # Both the Standard button and the Experimental resume button stay under the Ready guard.
+        guarded = activation.split("if(state.nextSide==='npo' && readyNpos().length>0){", 1)
+        self.assertEqual(len(guarded), 2)
+        self.assertNotIn('id="npoActivation"', guarded[0])
+        self.assertIn('id="npoActivation"', guarded[1])
         self.assertIn("Activate ${activationModelLabel('npo')}", activation)
 
     def test_awakened_battlefield_uses_normal_activation_without_banner(self):
