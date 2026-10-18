@@ -151,7 +151,7 @@ def test_necron_begin_refreshes_card_before_wizard_and_keeps_standard_unchanged(
     begin = APP.split("function beginNpoActivation(", 1)[1].split("function showNpoSelection()", 1)[0]
     assert "refreshPlayCard=false" in begin
     assert begin.index("save();") < begin.index("if(refreshPlayCard)render();") < begin.index("continueNpoActivation();")
-    assert "beginNpoActivation(n,{refreshPlayCard:root.id==='experimentalInlineNecronPicker'})" in APP
+    assert "beginNpoActivation(npo,{refreshPlayCard:root.id==='experimentalInlineNecronPicker'})" in APP
     assert "showExperimentalNecronRosterRail(candidates);" in APP
     assert "if(inlineNecronPicker)bindExperimentalNecronRosterRail(inlineNecronPicker);" in APP
 
