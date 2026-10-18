@@ -5611,7 +5611,7 @@ ${inline?'':'<button class="btn ghost" data-close>Close Guide</button>'}
 
   function bindExperimentalDeathwatchRosterRail(root){
     const updateRosterNameDensity=()=>{
-      $('[data-roster-operative]',root).forEach(button=>{
+      $$('[data-roster-operative]',root).forEach(button=>{
         const name=button.querySelector('.experimental-roster-name');
         if(!name)return;
         button.classList.remove('single-line-name');
@@ -5630,7 +5630,7 @@ ${inline?'':'<button class="btn ghost" data-close>Close Guide</button>'}
 
     const selectOperative=id=>{
       selectedId=id;
-      $('[data-roster-operative]',root).forEach(button=>{
+      $$('[data-roster-operative]',root).forEach(button=>{
         const selected=button.dataset.rosterOperative===selectedId;
         button.classList.toggle('selected',selected);
         button.setAttribute('aria-checked',String(selected));
@@ -5649,12 +5649,12 @@ ${inline?'':'<button class="btn ghost" data-close>Close Guide</button>'}
       confirm.disabled=false;
     };
 
-    $('[data-roster-operative]',root).forEach(button=>{
+    $$('[data-roster-operative]',root).forEach(button=>{
       button.onclick=()=>selectOperative(button.dataset.rosterOperative);
       button.onkeydown=event=>{
         if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
         event.preventDefault();
-        const controls=$('[data-roster-operative]',root);
+        const controls=$$('[data-roster-operative]',root);
         const current=controls.indexOf(button);
         const next=event.key==='Home'?0:event.key==='End'?controls.length-1:event.key==='ArrowLeft'?(current-1+controls.length)%controls.length:(current+1)%controls.length;
         controls[next].focus();
