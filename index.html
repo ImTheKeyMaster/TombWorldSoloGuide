@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-ui="classic">
+<html lang="en" data-ui="tomb" data-experimental="off">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
@@ -11,13 +11,13 @@
   <meta name="apple-mobile-web-app-title" content="Tomb World Guide">
   <title>Tomb World Battle Guide</title>
   <script>
-    // Temporary compatibility flag: remove when the Tomb UI becomes the production design.
+    // Standard Tomb UI is always active; future experimental features are opt-in.
     try {
-      if (localStorage.getItem('tombWorldSolo.experimentalUI.v1') === 'tomb') {
-        document.documentElement.dataset.ui = 'tomb';
+      if (localStorage.getItem('tombWorldSolo.experimentalFeatures.v1') === 'on') {
+        document.documentElement.dataset.experimental = 'on';
       }
     } catch {
-      document.documentElement.dataset.ui = 'classic';
+      // Storage is optional. Standard Tomb UI remains available.
     }
   </script>
   <style>
@@ -27,22 +27,22 @@
   </style>
   <link rel="icon" href="Assets/favicon.ico" type="image/x-icon">
   <link rel="icon" href="Assets/icon-192.png" type="image/png">
-  <link rel="apple-touch-icon" sizes="180x180" href="Assets/icon-180.png?v=10.0.126">
+  <link rel="apple-touch-icon" sizes="180x180" href="Assets/icon-180.png?v=10.0.127">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=10.0.126">
-  <script async src="analytics.js?release=10.0.126"></script>
+  <link rel="stylesheet" href="styles.css?v=10.0.127">
+  <script async src="analytics.js?release=10.0.127"></script>
 </head>
 <body>
   <div id="gameBackground" aria-hidden="true"></div>
   <div class="ambient-grid" aria-hidden="true"></div>
   <header class="app-header">
     <div class="brand">
-      <img src="Assets/icon-192.png?v=10.0.126" alt="" class="brand-icon">
+      <img src="Assets/icon-192.png?v=10.0.127" alt="" class="brand-icon">
       <div><span>UNOFFICIAL TOMB WORLD PLAY AID</span><h1>Tomb World Battle Guide</h1></div>
     </div>
     <div class="header-actions">
       <button class="header-menu-btn" id="gameMenuBtn" hidden>Game Menu</button>
-      <div class="version">V10.0.126</div>
+      <div class="version">V10.0.127</div>
       <button class="narration-speaker-btn" id="narrationSpeakerBtn" type="button" aria-label="Master audio on" aria-pressed="true" title="Master audio on">
         <svg class="narration-icon-enabled" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9v6h4l5 4V5L8 9H4z"></path><path d="M16 8.5c1.3 1.8 1.3 5.2 0 7M19 6c2.7 3.2 2.7 8.8 0 12"></path></svg>
         <svg class="narration-icon-disabled" viewBox="0 0 24 24" aria-hidden="true" focusable="false" hidden><path d="M4 9v6h4l5 4V5L8 9H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path><path d="M16 9 L21 15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path><path d="M21 9 L16 15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path></svg>
@@ -65,8 +65,8 @@
       <h2 id="experimentalUiTitle">Experimental</h2>
       <label class="experimental-ui-option" for="experimentalUiToggle">
         <span>
-          <strong>Experimental Tomb UI</strong>
-          <small>Selects the experimental interface on this device. Currently previews setup honeycomb clusters, Deathwatch and Necron Roster Rails, and activation portraits.</small>
+          <strong>Experimental Features</strong>
+          <small>Opt in to future previews on this device. The roster rails, activation portraits, and Tomb styling are now standard in both modes. No preview-only features are currently enabled.</small>
         </span>
         <input id="experimentalUiToggle" type="checkbox" role="switch">
       </label>
@@ -122,15 +122,15 @@
     <button class="btn primary" id="updateAppBtn" type="button">Update App</button>
   </div>
   <input id="importInput" type="file" accept="application/json" hidden>
-  <script src="mission-engine.js?v=10.0.126"></script>
-  <script src="persistence.js?v=10.0.126"></script>
-  <script src="deadly-encounters.js?v=10.0.126"></script>
-  <script src="event-effects.js?v=10.0.126"></script>
-  <script src="audio-capabilities.js?v=10.0.126"></script>
-  <script src="narration.js?v=10.0.126"></script>
-  <script src="narration-transcript.js?v=10.0.126"></script>
-  <script src="ambient.js?v=10.0.126"></script>
-  <script src="dice-sfx.js?v=10.0.126"></script>
-  <script src="app.js?v=10.0.126"></script>
+  <script src="mission-engine.js?v=10.0.127"></script>
+  <script src="persistence.js?v=10.0.127"></script>
+  <script src="deadly-encounters.js?v=10.0.127"></script>
+  <script src="event-effects.js?v=10.0.127"></script>
+  <script src="audio-capabilities.js?v=10.0.127"></script>
+  <script src="narration.js?v=10.0.127"></script>
+  <script src="narration-transcript.js?v=10.0.127"></script>
+  <script src="ambient.js?v=10.0.127"></script>
+  <script src="dice-sfx.js?v=10.0.127"></script>
+  <script src="app.js?v=10.0.127"></script>
 </body>
 </html>
