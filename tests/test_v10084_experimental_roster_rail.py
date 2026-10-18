@@ -58,7 +58,7 @@ def test_roster_rail_uses_integrated_radio_style_selection_and_keyboard_navigati
     assert 'role="radiogroup"' in rail
     assert 'role="radio"' in rail
     assert 'aria-checked="false"' in rail
-    assert "$('[data-roster-operative]',root).forEach" in rail
+    assert "$$('[data-roster-operative]',root).forEach" in rail
     assert "['ArrowLeft','ArrowRight','Home','End']" in rail
     assert 'tabindex="${index===0?\'0\':\'-1\'}"' in rail
     assert "button.setAttribute('aria-checked',String(selected));" in rail
