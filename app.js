@@ -5058,7 +5058,7 @@ document.addEventListener('touchend',function(e){
     return state.lastActivation?.side==='player'&&!state.lastActivation.committed?state.lastActivation:null;
   }
 
-  function beginPlayerActivation(operativeId){
+  function beginPlayerActivation(operativeId,{refreshPlayCard=false}={}){
     const operative=playerDefinition(operativeId);
     if(!operative||!remainingPlayerOperatives().includes(operativeId))return false;
     const baseApl=Number(operative.apl||3),apl=effectiveApl(operativeId,baseApl);
@@ -5068,7 +5068,9 @@ document.addEventListener('touchend',function(e){
       completedActionIds:[],resolvedActions:[],pendingAction:null,committed:false,completed:false
     };
     notifyMissionActivationStarted('player',operativeId);
-    save();renderHumanPlayerActionPicker();
+    save();
+    if(refreshPlayCard)render();
+    renderHumanPlayerActionPicker();
     return true;
   }
 
@@ -5664,7 +5666,7 @@ ${inline?'':'<button class="btn ghost" data-close>Close Guide</button>'}
     confirm.onclick=()=>{
       if(!selectedId)return;
       if(activePlayerActivation()){void resumeCheckpointedGameplayContext();return;}
-      if(beginPlayerActivation(selectedId)&&root.id==='experimentalInlineDeathwatchPicker')render();
+      beginPlayerActivation(selectedId,{refreshPlayCard:root.id==='experimentalInlineDeathwatchPicker'});
     };
   }
 
