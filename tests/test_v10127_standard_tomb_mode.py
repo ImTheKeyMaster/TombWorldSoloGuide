@@ -38,25 +38,39 @@ const begin=app.indexOf('function experimentalFeaturesEnabled()');
 const end=app.indexOf('function showExperimentalUiPanel()',begin);
 assert(begin>=0&&end>begin,'Could not locate experimental flag setter');
 const fragment=app.slice(begin,end);
-const create=new Function('document','localStorage','EXPERIMENTAL_FEATURES_KEY',fragment+
+const create=new Function('document','localStorage','EXPERIMENTAL_FEATURES_KEY',
+  'state','modal','render',fragment+
   ';return {setExperimentalFeatures,experimentalFeaturesEnabled};');
 const root={documentElement:{dataset:{ui:'tomb',experimental:'off'}}},settings={};
+const state={screen:'game',phase:'firefight'},modal={open:false};
+let refreshes=0;
+const render=()=>{refreshes++;};
 const localStorage={
   setItem:(key,value)=>{settings[key]=value;},
   removeItem:key=>{delete settings[key];}
 };
-const controls=create(root,localStorage,'tombWorldSolo.experimentalFeatures.v1');
+const controls=create(root,localStorage,'tombWorldSolo.experimentalFeatures.v1',
+  state,modal,render);
 controls.setExperimentalFeatures(true);
 assert(root.documentElement.dataset.ui==='tomb'&&controls.experimentalFeaturesEnabled()
-  &&settings['tombWorldSolo.experimentalFeatures.v1']==='on','Preview enable switched production or was not saved');
+  &&settings['tombWorldSolo.experimentalFeatures.v1']==='on'&&refreshes===1,
+  'Preview enable changed production, failed to save or did not refresh the active card');
 controls.setExperimentalFeatures(false);
 assert(root.documentElement.dataset.ui==='tomb'&&!controls.experimentalFeaturesEnabled()
-  &&!Object.keys(settings).length,'Preview disable changed production or failed to clear preference');
+  &&!Object.keys(settings).length&&refreshes===2,
+  'Preview disable changed production, failed to clear preference or failed to refresh');
 const unavailable=create(root,{setItem:()=>{throw Error('denied')},
-  removeItem:()=>{throw Error('denied')}},'tombWorldSolo.experimentalFeatures.v1');
+  removeItem:()=>{throw Error('denied')}},'tombWorldSolo.experimentalFeatures.v1',
+  state,modal,render);
 unavailable.setExperimentalFeatures(true);
-assert(unavailable.experimentalFeaturesEnabled()&&root.documentElement.dataset.ui==='tomb',
-  'Denied storage disabled working preview mode or production UI');
+assert(unavailable.experimentalFeaturesEnabled()&&root.documentElement.dataset.ui==='tomb'&&refreshes===3,
+  'Denied storage disabled working preview mode, refresh or production UI');
+state.phase='strategy';
+controls.setExperimentalFeatures(false);
+assert(refreshes===3,'Experimental toggle must not force a refresh outside Firefight');
+state.phase='firefight';modal.open=true;
+controls.setExperimentalFeatures(true);
+assert(refreshes===3,'Experimental toggle must not rebuild behind a gameplay modal');
 console.log('standard/experimental modes independent and storage-safe');
 """
     result = subprocess.run(["node", "-e", js], cwd=ROOT, capture_output=True, text=True)
