@@ -11,7 +11,7 @@ WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 
 def roster_source():
     return APP[
-        APP.index("function showExperimentalDeathwatchRosterRail")
+        APP.index("function experimentalDeathwatchRosterMarkup")
         : APP.index("function showPlayerActivation()")
     ]
 
