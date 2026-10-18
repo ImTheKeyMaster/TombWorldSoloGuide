@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.0.128
+# Tomb World Battle Guide v10.0.129
+
+## v10.0.129
+
+### Experimental inline Necron activation selection
+
+- With Experimental Features enabled, place the existing Necron roster rail, detail/portrait, and Begin Activation directly in the Necron activation card; include Skip Remaining Necrons below the selector.
+- Reuse the same Necron rail markup and event bindings as Standard mode, including the Threat Principle explanation, scrollable roster, keyboard controls, live Ready validation, and stats.
+- Resume an in-progress Necron activation without allowing another to start; refresh the card before launching its activation wizard to keep the underlying screen current.
+- Leave Standard mode's Necron activation button and modal unchanged, as well as the previous Deathwatch preview and all gameplay/save data.
+- Improve responsive spacing for the inline Necron rail and keep its styling behind the Experimental Features flag.
+
 
 ## v10.0.128
 

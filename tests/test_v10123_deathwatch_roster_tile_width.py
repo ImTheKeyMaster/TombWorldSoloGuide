@@ -16,7 +16,7 @@ DEATHWATCH = APP.split(
     "function experimentalDeathwatchRosterMarkup(candidates", 1
 )[1].split("function showPlayerActivation()", 1)[0]
 NECRON = APP.split(
-    "function showExperimentalNecronRosterRail(candidates)", 1
+    "function experimentalNecronRosterMarkup(candidates", 1
 )[1].split("function experimentalDeathwatchRosterMarkup(candidates", 1)[0]
 RULES = CSS.split(
     "/* v10.0.123: Give ready Deathwatch operatives equally wide, scrollable rail tiles. */", 1

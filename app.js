@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.128';
+  const APP_VERSION = '10.0.129';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3908,6 +3908,13 @@ document.addEventListener('touchend',function(e){
       return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>${escapeHtml(teamName)} Activation</h2><p>Activate one ${escapeHtml(teamName)} operative on the tabletop. After it completes, the Guide will alternate to a Necron if one is ready.</p><button class="btn primary big-action" id="playerActivation">${escapeHtml(action)}</button>${skipRemainingActivationsControl()}</section>`;
     }
     if(state.nextSide==='npo' && readyNpos().length>0){
+      if(experimentalFeaturesEnabled()){
+        const active=state.activeNpoId&&state.lastActivation?.npoId===state.activeNpoId&&!state.lastActivation.committed?state.lastActivation:null;
+        const selection=active
+          ?`<p>${escapeHtml(active.name||opponentSingularLabel())} has an activation in progress.</p><button class="btn primary big-action" id="npoActivation">Resume Activation</button>`
+          :experimentalNecronRosterMarkup(readyNpos(),{inline:true});
+        return `<section class="next-card npo-activation-card experimental-inline-necron-card"><span class="phase">NECRON ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">Necron Activation</h2>${selection}${skipRemainingActivationsControl()}</section>`;
+      }
       const action=state.npoActivated>0?'Activate Next Necron':`Activate ${activationModelLabel('npo')}`;
       return `<section class="next-card npo-activation-card"><span class="phase">NECRON ACTIVATION · ${activationProgressLabel()}</span><h2 class="npo-activation-title">Necron Activation</h2><p class="npo-activation-meta">${isPvpMode()?'Choose a Ready Necron to activate.':'Identify the next ready Necron using the Threat Principle.'}</p><button class="btn primary big-action" id="npoActivation">${escapeHtml(action)}</button>${skipRemainingActivationsControl()}</section>`;
     }
@@ -4359,6 +4366,8 @@ document.addEventListener('touchend',function(e){
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
     const inlineDeathwatchPicker=$('#experimentalInlineDeathwatchPicker');
     if(inlineDeathwatchPicker)bindExperimentalDeathwatchRosterRail(inlineDeathwatchPicker);
+    const inlineNecronPicker=$('#experimentalInlineNecronPicker');
+    if(inlineNecronPicker)bindExperimentalNecronRosterRail(inlineNecronPicker);
     $('#npoActivation')?.addEventListener('click',showNpoSelection);
     $('#skipRemainingActivations')?.addEventListener('click',confirmSkipRemainingActivations);
     $('#missionHud')?.addEventListener('click',showMissionDetails);
@@ -5003,7 +5012,7 @@ document.addEventListener('touchend',function(e){
     const result=legal[roll(legal.length)-1];return {...result,weaponId:generatedWeaponId(result)};
   }
   function nextNpo(){return readyNpos().find(n=>n.id===state.activeNpoId)||null;}
-  function beginNpoActivation(n){
+  function beginNpoActivation(n,{refreshPlayCard=false}={}){
     const definition=npoDefinition(n.type),apl=effectiveApl(n.id,definition.apl);
     state.activeNpoId=n.id;
     state.lastActivation={
@@ -5014,6 +5023,7 @@ document.addEventListener('touchend',function(e){
     };
     notifyMissionActivationStarted('npo',n.id);
     save();
+    if(refreshPlayCard)render();
     continueNpoActivation();
   }
 
@@ -5474,7 +5484,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     return portrait||'<img src="Assets/icon-192.png" alt="" aria-hidden="true">';
   }
 
-  function showExperimentalNecronRosterRail(candidates){
+  function experimentalNecronRosterMarkup(candidates,{inline=false}={}){
     const ordered=sortedNposForDisplay(candidates);
     const railOverflowClass=ordered.length>5?' is-overflowing':'';
     const items=ordered.map((npo,index)=>`<button type="button" class="experimental-roster-item" role="radio" aria-checked="false" tabindex="${index===0?'0':'-1'}" data-roster-npo="${escapeHtml(npo.id)}">
@@ -5485,7 +5495,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
       ? 'Select a Ready Necron from the roster rail.'
       : `Use the Threat Principle: choose a Necron that can threaten or use an ability, is not in cover, then is closest to a ${escapeHtml(playerSideLabel())} operative. Resolve any remaining tie randomly, then select that Ready Necron below.`;
 
-    showModal(isPvpMode()?'NECRON ACTIVATION':'SELECT NECRON TO ACTIVATE',`<section class="experimental-roster-picker experimental-necron-roster-picker">
+    return `<section class="experimental-roster-picker experimental-necron-roster-picker"${inline?' id="experimentalInlineNecronPicker"':''}>
       <p class="experimental-roster-instruction" tabindex="-1" data-dialog-focus>${instruction}</p>
       <div class="experimental-roster-rail-shell">
         <div class="experimental-roster-rail experimental-necron-roster-rail${railOverflowClass}" role="radiogroup" aria-label="Ready Necron operatives">${items}</div>
@@ -5505,14 +5515,21 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
         </div>
       </section>
       <div class="wizard-actions experimental-roster-actions">
-        <button class="btn ghost" data-close>Close Guide</button>
+        ${inline?'':'<button class="btn ghost" data-close>Close Guide</button>'}
         <button class="btn primary" id="confirmExperimentalNecronSelection" disabled>Begin Activation</button>
       </div>
-    </section>`);
-    modal.classList.add('experimental-roster-rail-modal');
+    </section>`;
+  }
 
+  function showExperimentalNecronRosterRail(candidates){
+    showModal(isPvpMode()?'NECRON ACTIVATION':'SELECT NECRON TO ACTIVATE',experimentalNecronRosterMarkup(candidates));
+    modal.classList.add('experimental-roster-rail-modal');
+    bindExperimentalNecronRosterRail(modal);
+  }
+
+  function bindExperimentalNecronRosterRail(root){
     const updateRosterNameDensity=()=>{
-      $$('[data-roster-npo]',modal).forEach(button=>{
+      $$('[data-roster-npo]',root).forEach(button=>{
         const name=button.querySelector('.experimental-roster-name');
         if(!name)return;
         button.classList.remove('single-line-name');
@@ -5523,21 +5540,21 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     requestAnimationFrame(updateRosterNameDensity);
 
     let selectedId='';
-    const confirm=$('#confirmExperimentalNecronSelection');
-    const detailImage=$('#experimentalNecronRosterDetailImage');
-    const detailName=$('#experimentalNecronRosterDetailName');
-    const detailRole=$('#experimentalNecronRosterDetailRole');
-    const stats=$('#experimentalNecronRosterStats');
+    const confirm=$('#confirmExperimentalNecronSelection',root);
+    const detailImage=$('#experimentalNecronRosterDetailImage',root);
+    const detailName=$('#experimentalNecronRosterDetailName',root);
+    const detailRole=$('#experimentalNecronRosterDetailRole',root);
+    const stats=$('#experimentalNecronRosterStats',root);
 
     const selectNpo=id=>{
       selectedId=id;
-      $$('[data-roster-npo]',modal).forEach(button=>{
+      $$('[data-roster-npo]',root).forEach(button=>{
         const selected=button.dataset.rosterNpo===selectedId;
         button.classList.toggle('selected',selected);
         button.setAttribute('aria-checked',String(selected));
         button.tabIndex=selected?0:-1;
       });
-      const npo=readyNpos().find(item=>item.id===selectedId)||candidates.find(item=>item.id===selectedId);
+      const npo=readyNpos().find(item=>item.id===selectedId);
       if(!npo)return;
       const definition=npoDefinition(npo.type)||{};
       const loadout=definition.loadoutOptions?.find(option=>option.id===npo.weaponId)?.name||npoWeapon(definition,npo.weaponId)?.name||definition.faction||'Necron operative';
@@ -5551,12 +5568,12 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
       confirm.disabled=false;
     };
 
-    $$('[data-roster-npo]',modal).forEach(button=>{
+    $$('[data-roster-npo]',root).forEach(button=>{
       button.onclick=()=>selectNpo(button.dataset.rosterNpo);
       button.onkeydown=event=>{
         if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
         event.preventDefault();
-        const controls=$$('[data-roster-npo]',modal);
+        const controls=$$('[data-roster-npo]',root);
         const current=controls.indexOf(button);
         const next=event.key==='Home'?0:event.key==='End'?controls.length-1:event.key==='ArrowLeft'?(current-1+controls.length)%controls.length:(current+1)%controls.length;
         controls[next].focus();
@@ -5564,9 +5581,14 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
       };
     });
     confirm.onclick=()=>{
+      if(state.activeNpoId&&state.lastActivation?.npoId===state.activeNpoId&&!state.lastActivation.committed){continueNpoActivation();return;}
       const npo=readyNpos().find(item=>item.id===selectedId);
-      if(npo)beginNpoActivation(npo);
-      else{closeModal();render();showToast('That Necron is no longer Ready. Choose another Ready Necron.');}
+      if(npo)beginNpoActivation(npo,{refreshPlayCard:root.id==='experimentalInlineNecronPicker'});
+      else{
+        if(root.id!=='experimentalInlineNecronPicker')closeModal();
+        render();
+        showToast('That Necron is no longer Ready. Choose another Ready Necron.');
+      }
     };
   }
 

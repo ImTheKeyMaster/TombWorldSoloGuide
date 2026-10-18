@@ -28,7 +28,7 @@ const {state,setNextActivation,playerOperativesRemaining,activationSideName,
 experimentalFeaturesEnabled,activePlayerActivation,playerName,
 experimentalDeathwatchRosterMarkup,remainingPlayerOperatives,activationProgressLabel,
 escapeHtml,skipRemainingActivationsControl,activationModelLabel,readyNpos,
-isPvpMode,opponentSingularLabel}=ctx;
+isPvpMode,opponentSingularLabel,experimentalNecronRosterMarkup}=ctx;
 ${body};
 return nextStepCard;
 `);
@@ -44,7 +44,8 @@ function card({experimental=false,team='Deathwatch',side='player',active=null,co
     activationProgressLabel:()=> 'ACTIVATION 2 OF 13',escapeHtml:String,
     skipRemainingActivationsControl:()=>'<button id="skipRemainingActivations">Skip Remaining</button>',
     activationModelLabel:()=> 'a Deathwatch Operative',readyNpos:()=>[{id:'n1'}],
-    isPvpMode:()=>false,opponentSingularLabel:()=> 'Necron'
+    isPvpMode:()=>false,opponentSingularLabel:()=> 'Necron',
+    experimentalNecronRosterMarkup:(operatives,options)=>`<div id="experimentalInlineNecronPicker">NECRON ${operatives.length},${options.inline}</div>`
   })();
 }
 const check=(x,message)=>{if(!x)throw Error(message);};
@@ -61,8 +62,11 @@ check(resumed.includes('Resume Activation')&&!resumed.includes('experimentalInli
 check(card({experimental:true,team:'Kasrkin'}).includes('id="playerActivation"'),
   'Other Kill Teams changed');
 const necron=card({experimental:true,side:'npo'});
-check(necron.includes('id="npoActivation"')&&!necron.includes('experimentalInlineDeathwatchPicker'),
-  'Necron screen changed');
+check(necron.includes('id="experimentalInlineNecronPicker"')&&
+  !necron.includes('experimentalInlineDeathwatchPicker'),
+  'Necron activation should use its new inline preview, not Deathwatch');
+check(card({experimental:false,side:'npo'}).includes('id="npoActivation"'),
+  'Standard Necron activation button changed');
 """)
 
 

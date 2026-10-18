@@ -20,7 +20,7 @@ def test_release_surfaces_keep_save_key_and_schema_unchanged():
     assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (9, 2, 41)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
-    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 10
+    assert INDEX.count(f"?v={CURRENT_APP_VERSION}") == 13
     assert README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}")
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
     assert "const SAVE_VERSION = 3;" in (ROOT / "persistence.js").read_text(encoding="utf-8")
@@ -54,8 +54,9 @@ def test_activation_cards_use_contextual_names_and_stack_skip_after_primary():
     assert "<h2>${escapeHtml(teamName)} Activation</h2>" in cards
     assert "<h2 class=\"npo-activation-title\">Necron Activation</h2>" in cards
     assert "state.npoActivated>0?'Activate Next Necron'" in cards
-    assert cards.count("${skipRemainingActivationsControl()}") == 2
-    assert cards.count("${skipRemainingActivationsControl()}</section>") == 2
+    # Both sides retain Skip Remaining in Standard and Experimental activation cards.
+    assert cards.count("${skipRemainingActivationsControl()}") == 4
+    assert cards.count("${skipRemainingActivationsControl()}</section>") == 4
     assert ".skip-remaining-activations{width:100%;margin-top:10px}" in STYLES
     assert "NPO Activation" not in cards
 
