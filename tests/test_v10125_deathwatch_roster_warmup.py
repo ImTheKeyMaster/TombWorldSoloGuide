@@ -14,8 +14,7 @@ README = (ROOT / "README.md").read_text(encoding="utf-8")
 
 def test_warmups_are_started_before_activation_and_after_team_load():
     assert "if(data.teamName?.toLowerCase()==='deathwatch')warmDeathwatchRosterImages(data.operatives.map(operative=>operative.id));" in APP
-    assert "function showExperimentalDeathwatchRosterRail(candidates){\n    warmDeathwatchRosterImages(candidates);" in APP
-    assert "if(selectedPlayerTeamName().toLowerCase()==='deathwatch')warmDeathwatchRosterImages(playerTeamData?.operatives?.map(operative=>operative.id)||[]);" in APP
+    assert "function experimentalDeathwatchRosterMarkup(candidates,{inline=false}={}){\n    warmDeathwatchRosterImages(candidates);" in APP
     assert "experimentalDeathwatchGreenPortraitSvg(id," in APP
     assert "detailImage.innerHTML=experimentalDeathwatchGreenPortraitSvg(" in APP
 

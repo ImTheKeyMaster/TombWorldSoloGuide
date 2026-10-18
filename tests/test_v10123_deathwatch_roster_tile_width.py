@@ -13,11 +13,11 @@ WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 README = (ROOT / "README.md").read_text(encoding="utf-8")
 
 DEATHWATCH = APP.split(
-    "function showExperimentalDeathwatchRosterRail(candidates)", 1
+    "function experimentalDeathwatchRosterMarkup(candidates", 1
 )[1].split("function showPlayerActivation()", 1)[0]
 NECRON = APP.split(
     "function showExperimentalNecronRosterRail(candidates)", 1
-)[1].split("function showExperimentalDeathwatchRosterRail(candidates)", 1)[0]
+)[1].split("function experimentalDeathwatchRosterMarkup(candidates", 1)[0]
 RULES = CSS.split(
     "/* v10.0.123: Give ready Deathwatch operatives equally wide, scrollable rail tiles. */", 1
 )[1].split(

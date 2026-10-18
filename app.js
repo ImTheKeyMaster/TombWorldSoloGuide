@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.127';
+  const APP_VERSION = '10.0.128';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3897,6 +3897,13 @@ document.addEventListener('touchend',function(e){
     if(state.phase==='end'){save();return nextStepCard();}
     if(state.nextSide==='player' && playerOperativesRemaining()>0){
       const teamName=activationSideName('player');
+      if(experimentalFeaturesEnabled()&&teamName.toLowerCase()==='deathwatch'){
+        const active=activePlayerActivation();
+        const selection=active
+          ?`<p>${escapeHtml(playerName(active.operativeId))} has an activation in progress.</p><button class="btn primary big-action" id="playerActivation">Resume Activation</button>`
+          :experimentalDeathwatchRosterMarkup(remainingPlayerOperatives(),{inline:true});
+        return `<section class="next-card experimental-inline-deathwatch-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>${escapeHtml(teamName)} Activation</h2>${selection}${skipRemainingActivationsControl()}</section>`;
+      }
       const action=state.playerActivated>0?`Activate Next ${teamName} Operative`:`Activate ${activationModelLabel('player')}`;
       return `<section class="next-card"><span class="phase">FIREFIGHT PHASE · ${activationProgressLabel()}</span><h2>${escapeHtml(teamName)} Activation</h2><p>Activate one ${escapeHtml(teamName)} operative on the tabletop. After it completes, the Guide will alternate to a Necron if one is ready.</p><button class="btn primary big-action" id="playerActivation">${escapeHtml(action)}</button>${skipRemainingActivationsControl()}</section>`;
     }
@@ -4350,6 +4357,8 @@ document.addEventListener('touchend',function(e){
     $('#retryMissionReady')?.addEventListener('click',continueTurningPointStart);
     $('#retryStrategyDice')?.addEventListener('click',finishTurningPointStart);
     $('#playerActivation')?.addEventListener('click',()=>showPlayerActivation());
+    const inlineDeathwatchPicker=$('#experimentalInlineDeathwatchPicker');
+    if(inlineDeathwatchPicker)bindExperimentalDeathwatchRosterRail(inlineDeathwatchPicker);
     $('#npoActivation')?.addEventListener('click',showNpoSelection);
     $('#skipRemainingActivations')?.addEventListener('click',confirmSkipRemainingActivations);
     $('#missionHud')?.addEventListener('click',showMissionDetails);
@@ -5049,7 +5058,7 @@ document.addEventListener('touchend',function(e){
     return state.lastActivation?.side==='player'&&!state.lastActivation.committed?state.lastActivation:null;
   }
 
-  function beginPlayerActivation(operativeId){
+  function beginPlayerActivation(operativeId,{refreshPlayCard=false}={}){
     const operative=playerDefinition(operativeId);
     if(!operative||!remainingPlayerOperatives().includes(operativeId))return false;
     const baseApl=Number(operative.apl||3),apl=effectiveApl(operativeId,baseApl);
@@ -5059,7 +5068,9 @@ document.addEventListener('touchend',function(e){
       completedActionIds:[],resolvedActions:[],pendingAction:null,committed:false,completed:false
     };
     notifyMissionActivationStarted('player',operativeId);
-    save();renderHumanPlayerActionPicker();
+    save();
+    if(refreshPlayCard)render();
+    renderHumanPlayerActionPicker();
     return true;
   }
 
@@ -5559,7 +5570,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     };
   }
 
-  function showExperimentalDeathwatchRosterRail(candidates){
+  function experimentalDeathwatchRosterMarkup(candidates,{inline=false}={}){
     warmDeathwatchRosterImages(candidates);
     const items=candidates.map((id,index)=>{
       return `<button type="button" class="experimental-roster-item" role="radio" aria-checked="false" tabindex="${index===0?'0':'-1'}" data-roster-operative="${escapeHtml(id)}">
@@ -5568,7 +5579,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
       </button>`;
     }).join('');
 
-    showModal('DEATHWATCH ACTIVATION',`<section class="experimental-roster-picker">
+    return `<section class="experimental-roster-picker"${inline?' id="experimentalInlineDeathwatchPicker"':''}>
       <p class="experimental-roster-instruction" tabindex="-1" data-dialog-focus>Select a Ready operative from the roster rail.</p>
       <div class="experimental-roster-rail-shell">
         <div class="experimental-roster-rail experimental-deathwatch-roster-rail" role="radiogroup" aria-label="Ready Deathwatch operatives">${items}</div>
@@ -5588,14 +5599,21 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
         </div>
       </section>
       <div class="wizard-actions experimental-roster-actions">
-        <button class="btn ghost" data-close>Close Guide</button>
+${inline?'':'<button class="btn ghost" data-close>Close Guide</button>'}
         <button class="btn primary" id="confirmExperimentalRosterSelection" disabled>Begin Activation</button>
       </div>
-    </section>`);
-    modal.classList.add('experimental-roster-rail-modal');
+    </section>`;
+  }
 
+  function showExperimentalDeathwatchRosterRail(candidates){
+    showModal('DEATHWATCH ACTIVATION',experimentalDeathwatchRosterMarkup(candidates));
+    modal.classList.add('experimental-roster-rail-modal');
+    bindExperimentalDeathwatchRosterRail(modal);
+  }
+
+  function bindExperimentalDeathwatchRosterRail(root){
     const updateRosterNameDensity=()=>{
-      $$('[data-roster-operative]',modal).forEach(button=>{
+      $$('[data-roster-operative]',root).forEach(button=>{
         const name=button.querySelector('.experimental-roster-name');
         if(!name)return;
         button.classList.remove('single-line-name');
@@ -5606,15 +5624,15 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     requestAnimationFrame(updateRosterNameDensity);
 
     let selectedId='';
-    const confirm=$('#confirmExperimentalRosterSelection');
-    const detailImage=$('#experimentalRosterDetailImage');
-    const detailName=$('#experimentalRosterDetailName');
-    const detailRole=$('#experimentalRosterDetailRole');
-    const stats=$('#experimentalRosterStats');
+    const confirm=$('#confirmExperimentalRosterSelection',root);
+    const detailImage=$('#experimentalRosterDetailImage',root);
+    const detailName=$('#experimentalRosterDetailName',root);
+    const detailRole=$('#experimentalRosterDetailRole',root);
+    const stats=$('#experimentalRosterStats',root);
 
     const selectOperative=id=>{
       selectedId=id;
-      $$('[data-roster-operative]',modal).forEach(button=>{
+      $$('[data-roster-operative]',root).forEach(button=>{
         const selected=button.dataset.rosterOperative===selectedId;
         button.classList.toggle('selected',selected);
         button.setAttribute('aria-checked',String(selected));
@@ -5633,19 +5651,23 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
       confirm.disabled=false;
     };
 
-    $$('[data-roster-operative]',modal).forEach(button=>{
+    $$('[data-roster-operative]',root).forEach(button=>{
       button.onclick=()=>selectOperative(button.dataset.rosterOperative);
       button.onkeydown=event=>{
         if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
         event.preventDefault();
-        const controls=$$('[data-roster-operative]',modal);
+        const controls=$$('[data-roster-operative]',root);
         const current=controls.indexOf(button);
         const next=event.key==='Home'?0:event.key==='End'?controls.length-1:event.key==='ArrowLeft'?(current-1+controls.length)%controls.length:(current+1)%controls.length;
         controls[next].focus();
         selectOperative(controls[next].dataset.rosterOperative);
       };
     });
-    confirm.onclick=()=>{if(selectedId)beginPlayerActivation(selectedId);};
+    confirm.onclick=()=>{
+      if(!selectedId)return;
+      if(activePlayerActivation()){void resumeCheckpointedGameplayContext();return;}
+      beginPlayerActivation(selectedId,{refreshPlayCard:root.id==='experimentalInlineDeathwatchPicker'});
+    };
   }
 
 function showPlayerActivation(){
@@ -10418,6 +10440,7 @@ function showPlayerActivation(){
     }catch{
       // Preview mode still works for this session if preferences cannot be saved.
     }
+    if(state.screen==='game'&&state.phase==='firefight'&&!modal.open)render();
   }
   function showExperimentalUiPanel(){
     experimentalUiToggle.checked=experimentalFeaturesEnabled();

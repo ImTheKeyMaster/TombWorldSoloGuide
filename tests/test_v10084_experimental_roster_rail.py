@@ -54,11 +54,11 @@ def test_current_mode_dropdown_path_is_preserved():
 
 
 def test_roster_rail_uses_integrated_radio_style_selection_and_keyboard_navigation():
-    rail = APP[APP.index("function showExperimentalDeathwatchRosterRail") : APP.index("function showPlayerActivation")]
+    rail = APP[APP.index("function experimentalDeathwatchRosterMarkup") : APP.index("function showPlayerActivation")]
     assert 'role="radiogroup"' in rail
     assert 'role="radio"' in rail
     assert 'aria-checked="false"' in rail
-    assert "$$('[data-roster-operative]',modal).forEach" in rail
+    assert "$$('[data-roster-operative]',root).forEach" in rail
     assert "['ArrowLeft','ArrowRight','Home','End']" in rail
     assert 'tabindex="${index===0?\'0\':\'-1\'}"' in rail
     assert "button.setAttribute('aria-checked',String(selected));" in rail

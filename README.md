@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.127
+# Tomb World Battle Guide v10.0.128
+
+## v10.0.128
+
+### Experimental inline Deathwatch activation selection
+
+- With Experimental Features enabled, show the existing Deathwatch roster rail, portrait/details, and Begin Activation directly in the Fight Phase activation card; include the existing Skip Remaining Deathwatch Operatives control below.
+- Reuse the same operative selector markup and binding code as the existing standard dialog so portraits, readiness filtering, stats, keyboard controls, and activation validation stay consistent.
+- Keep Standard mode's original card and modal flow unchanged. Necron selection, other Kill Teams, combat, and game state are unaffected.
+- Switching Experimental Features on or off refreshes the currently visible Fight Phase card without modifying the save.
 
 ## v10.0.127
 
