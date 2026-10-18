@@ -134,6 +134,16 @@ check(begun.length===1&&renders===1&&toasts===1&&closed===0,
 state.activeNpoId='n1';state.lastActivation={npoId:'n1',committed:false};
 nodes[ids[0]].onclick();
 check(resumed===1&&begun.length===1,'A second click must resume the active Necron');
+state.activeNpoId=null;state.lastActivation=null;ready=[...npos];
+const modalRoot={...root,id:'standardNecronDialog'};
+bind(modalRoot);
+buttons[0].onclick();nodes[ids[0]].onclick();
+check(begun.length===2&&begun[1][0].id==='n1'&&
+  begun[1][1].refreshPlayCard===false,
+  'Standard modal Begin Activation should preserve its existing non-refresh flow');
+ready=[];nodes[ids[0]].onclick();
+check(closed===1&&toasts===2,
+  'A stale selection in Standard mode should close its dialog and show a warning');
 """)
 
 
