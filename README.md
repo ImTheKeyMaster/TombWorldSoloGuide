@@ -1,4 +1,16 @@
-# Tomb World Battle Guide v10.0.129
+# Tomb World Battle Guide v10.0.130
+
+## v10.0.130
+
+### Promote combined Necron activation to Standard mode
+
+- The inline Necron roster rail, ready-operative selection, operative portraits, details, and Begin Activation now appear directly in the standard Necron Activation card in both Standard and Experimental modes.
+- Keep Skip Remaining Necrons beneath the roster and preserve Threat Principle guidance, keyboard/scrollable selection, live Ready validation, unfinished-activation resume, and mission bookkeeping.
+- Keep the Experimental Features toggle available and functioning for the existing Deathwatch-only inline activation preview and future experiments. Standard Deathwatch, other teams, rules, and saved games are unchanged.
+- Retain the older Necron modal picker implementation as a compatible fallback for direct selection entry, but the regular activation card no longer opens an extra picker.
+- Update responsive Necron inline card styling so it applies regardless of the experimental preference; bump cache and release references.
+
+
 
 ## v10.0.129
 

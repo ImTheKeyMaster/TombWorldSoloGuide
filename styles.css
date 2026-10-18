@@ -2481,24 +2481,24 @@ html[data-experimental="on"] .experimental-inline-deathwatch-card .skip-remainin
   }
 }
 
-/* v10.0.129: Experimental-only inline Necron roster follows the Deathwatch preview layout. */
-html[data-experimental="on"] .experimental-inline-necron-card{min-width:0}
-html[data-experimental="on"] .experimental-inline-necron-card .experimental-roster-picker{
+/* v10.0.130: Standard inline Necron roster shares the Tomb UI layout in both modes. */
+html[data-ui="tomb"] .experimental-inline-necron-card{min-width:0}
+html[data-ui="tomb"] .experimental-inline-necron-card .experimental-roster-picker{
   min-width:0;
   margin-top:18px;
 }
-html[data-experimental="on"] .experimental-inline-necron-card .experimental-roster-actions{
+html[data-ui="tomb"] .experimental-inline-necron-card .experimental-roster-actions{
   justify-content:flex-end;
 }
-html[data-experimental="on"] .experimental-inline-necron-card .experimental-roster-actions .btn{
+html[data-ui="tomb"] .experimental-inline-necron-card .experimental-roster-actions .btn{
   min-width:170px;
 }
-html[data-experimental="on"] .experimental-inline-necron-card .skip-remaining-activations{
+html[data-ui="tomb"] .experimental-inline-necron-card .skip-remaining-activations{
   margin-top:14px;
 }
 @media(max-width:600px){
-  html[data-experimental="on"] .experimental-inline-necron-card .experimental-roster-picker{margin-top:12px}
-  html[data-experimental="on"] .experimental-inline-necron-card .experimental-roster-actions .btn{
+  html[data-ui="tomb"] .experimental-inline-necron-card .experimental-roster-picker{margin-top:12px}
+  html[data-ui="tomb"] .experimental-inline-necron-card .experimental-roster-actions .btn{
     min-width:0;
     width:100%;
   }

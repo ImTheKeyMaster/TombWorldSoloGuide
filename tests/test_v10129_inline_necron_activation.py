@@ -18,7 +18,7 @@ def run_js(script):
     assert result.returncode == 0, result.stderr or result.stdout
 
 
-def test_inline_and_standard_necron_activation_card_modes():
+def test_necron_activation_card_is_consolidated_in_both_modes():
     run_js(r"""
 const fs=require('node:fs'),app=fs.readFileSync('app.js','utf8');
 const block=(a,b)=>app.slice(app.indexOf(a),app.indexOf(b,app.indexOf(a)));
@@ -47,16 +47,17 @@ function card({experimental=false,side='npo',active=false,count=2}={}){
   })();
 }
 const standard=card(),inline=card({experimental:true});
-check(standard.includes('id="npoActivation"')&&!standard.includes('experimentalInlineNecronPicker'),
-  'Standard mode must keep the Activate a Necron button');
+check(standard.includes('id="experimentalInlineNecronPicker"')&&
+  standard.includes('id="skipRemainingActivations"')&&!standard.includes('id="npoActivation"'),
+  'Standard mode must show the consolidated roster and Skip Remaining');
 check(inline.includes('id="experimentalInlineNecronPicker"')&&
   inline.includes('id="skipRemainingActivations"')&&!inline.includes('id="npoActivation"'),
-  'Experimental mode must replace the button with the roster and Skip Remaining');
-check(card({experimental:true,count:1}).includes('1:true'),
-  'Experimental mode should show the single ready Necron');
-check(card({experimental:true,active:true}).includes('Resume Activation')&&
-  !card({experimental:true,active:true}).includes('experimentalInlineNecronPicker'),
-  'An unfinished activation must resume instead of showing another selector');
+  'Experimental mode must retain the same consolidated Necron roster');
+check(card({count:1}).includes('1:true')&&card({experimental:true,count:1}).includes('1:true'),
+  'Both modes should show the single ready Necron');
+check([card({active:true}),card({experimental:true,active:true})].every(
+  page=>page.includes('Resume Activation')&&!page.includes('experimentalInlineNecronPicker')),
+  'An unfinished activation must resume in either mode');
 check(card({experimental:true,side:'player'}).includes('DEATHWATCH'),
   'Deathwatch preview must remain unaffected');
 """)
@@ -156,12 +157,13 @@ def test_necron_begin_refreshes_card_before_wizard_and_keeps_standard_unchanged(
     assert "if(inlineNecronPicker)bindExperimentalNecronRosterRail(inlineNecronPicker);" in APP
 
 
-def test_necron_release_and_styles_are_opt_in_only():
+def test_necron_release_and_styles_are_standard_with_experimental_area_available():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     assert README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}")
-    assert "Experimental Features" in INDEX and "Deathwatch and Necron activation cards" in INDEX
-    assert 'html[data-experimental="on"] .experimental-inline-necron-card' in CSS
+    assert "Experimental Features" in INDEX and "combined Necron activation screen is now standard" in INDEX
+    assert 'html[data-ui="tomb"] .experimental-inline-necron-card' in CSS
+    assert 'html[data-experimental="on"] .experimental-inline-necron-card' not in CSS
     assert "html[data-experimental=\"on\"] .experimental-inline-deathwatch-card" in CSS
     assert "@media(max-width:600px)" in CSS

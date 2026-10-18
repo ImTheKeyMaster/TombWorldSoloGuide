@@ -53,10 +53,10 @@ def test_activation_cards_use_contextual_names_and_stack_skip_after_primary():
     assert "Activate ${activationModelLabel('player')}" in cards
     assert "<h2>${escapeHtml(teamName)} Activation</h2>" in cards
     assert "<h2 class=\"npo-activation-title\">Necron Activation</h2>" in cards
-    assert "state.npoActivated>0?'Activate Next Necron'" in cards
-    # Both sides retain Skip Remaining in Standard and Experimental activation cards.
-    assert cards.count("${skipRemainingActivationsControl()}") == 4
-    assert cards.count("${skipRemainingActivationsControl()}</section>") == 4
+    assert 'experimentalNecronRosterMarkup(readyNpos(),{inline:true})' in cards
+    # Deathwatch has Standard and Experimental cards; Necron has one shared card.
+    assert cards.count("${skipRemainingActivationsControl()}") == 3
+    assert cards.count("${skipRemainingActivationsControl()}</section>") == 3
     assert ".skip-remaining-activations{width:100%;margin-top:10px}" in STYLES
     assert "NPO Activation" not in cards
 

@@ -65,8 +65,9 @@ const necron=card({experimental:true,side:'npo'});
 check(necron.includes('id="experimentalInlineNecronPicker"')&&
   !necron.includes('experimentalInlineDeathwatchPicker'),
   'Necron activation should use its new inline preview, not Deathwatch');
-check(card({experimental:false,side:'npo'}).includes('id="npoActivation"'),
-  'Standard Necron activation button changed');
+check(card({experimental:false,side:'npo'}).includes('id="experimentalInlineNecronPicker"')&&
+  !card({experimental:false,side:'npo'}).includes('id="npoActivation"'),
+  'Combined Necron activation must now be standard');
 """)
 
 
