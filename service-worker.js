@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '10.0.130';
+const APP_VERSION = '10.0.131';
 const CACHE_PREFIX = 'tomb-world-battle-guide-';
 const LEGACY_CACHE_PREFIXES = ['tomb-world-solo-guide-'];
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
@@ -19,6 +19,17 @@ const PRECACHE_ASSETS = [
   './Assets/Images/TombUI/DeathwatchRoster/horde-slayer.webp', './Assets/Images/TombUI/DeathwatchRoster/headtaker.webp',
   './Assets/Images/TombUI/DeathwatchRoster/gunner.webp', './Assets/Images/TombUI/DeathwatchRoster/bombard.webp',
   './Assets/Images/TombUI/DeathwatchRoster/disruptor.webp',
+  './Assets/Images/TombUI/DeathKorps/Death_Korps_bruiser.png',
+  './Assets/Images/TombUI/DeathKorps/Death_Korps_confidant.png',
+  './Assets/Images/TombUI/DeathKorps/Death_Korps_gunner.png',
+  './Assets/Images/TombUI/DeathKorps/Death_Korps_sapper.png',
+  './Assets/Images/TombUI/DeathKorps/Death_Korps_spotter.png',
+  './Assets/Images/TombUI/DeathKorps/Death_Korps_trooper_1.png',
+  './Assets/Images/TombUI/DeathKorps/Death_Korps_trooper_2.png',
+  './Assets/Images/TombUI/DeathKorps/Death_Korps_veteran.png',
+  './Assets/Images/TombUI/DeathKorps/Death_Korps_vox_operator.png',
+  './Assets/Images/TombUI/DeathKorps/Death_Korps_zealot.png',
+  './Assets/Images/TombUI/DeathKorps/Death_Korps_watchmaster.png',
   './Assets/Images/TombUI/DeathwatchActivation/sergeant.webp',
   './Assets/Images/TombUI/DeathwatchActivation/aegis.webp',
   './Assets/Images/TombUI/DeathwatchActivation/breacher.webp',

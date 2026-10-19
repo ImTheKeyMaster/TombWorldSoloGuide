@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.130';
+  const APP_VERSION = '10.0.131';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5455,7 +5455,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
   // User-photographed Death Korps cutouts. Unphotographed variants remain neutral placeholders.
   const DEATH_KORPS_PORTRAIT_ROOT='Assets/Images/TombUI/DeathKorps/';
   const DEATH_KORPS_PORTRAITS=Object.freeze({
-    confidant:'confidant',sapper:'sapper',spotter:'spotter',
+    watchmaster:'watchmaster',confidant:'confidant',sapper:'sapper',spotter:'spotter',
     'gunner-flamer':'gunner',zealot:'zealot',bruiser:'bruiser',
     'trooper-1':'trooper_1','trooper-2':'trooper_2',
     'trooper-3':'trooper_1','trooper-4':'trooper_2',
