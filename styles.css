@@ -2520,3 +2520,10 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimenta
     width:210%;right:-20%;
   }
 }
+
+/* v10.0.134: Soften the left edge of oversized activation portraits.
+   Mask only the artwork, not the frame, text, or overlapping Movement panel. */
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:not(:has(image[href*="/marksman.webp"])) .experimental-activation-portrait-svg{
+  -webkit-mask-image:linear-gradient(to right,transparent 0%,rgba(0,0,0,.3) 12%,#000 32%);
+  mask-image:linear-gradient(to right,transparent 0%,rgba(0,0,0,.3) 12%,#000 32%);
+}
