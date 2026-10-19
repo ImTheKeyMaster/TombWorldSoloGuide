@@ -5782,6 +5782,8 @@ function showPlayerActivation(){
     let scarabClass='';
     if(targetSide==='player'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'&&playerDefinition(id)){
       portrait=experimentalDeathwatchGreenPortraitSvg(id,'blastResultPlayerPortrait','blast-result-portrait-artwork');
+    }else if(targetSide==='player'&&selectedPlayerTeamName().toLowerCase()==='death korps'&&playerDefinition(id)){
+      portrait=deathKorpsCombatPortraitSvg(id,'blast-result-portrait-artwork');
     }else if(targetSide==='npo'){
       const npo=state.roster.find(item=>item.id===id);
       if(npo){
@@ -5840,6 +5842,11 @@ function showPlayerActivation(){
     return `${profile.dice} dice · ${profile.hit}+`;
   }
 
+  function deathKorpsCombatPortraitSvg(id,svgClass=''){
+    const src=deathKorpsPortraitImage(id);
+    if(!src)return '';
+    return `<svg class="${escapeHtml(svgClass)}" viewBox="0 0 384 384" preserveAspectRatio="xMidYMin meet" aria-hidden="true" focusable="false"><image href="${escapeHtml(src)}" x="0" y="0" width="384" height="384" preserveAspectRatio="xMidYMin meet"/></svg>`;
+  }
   function combatParticipantPortrait(side,operative,position){
     if(!operative)return '';
     let portrait='';
@@ -5847,6 +5854,8 @@ function showPlayerActivation(){
       portrait=experimentalNecronPortraitSvg(operative,`combatPortraitNecron-${position}`,'combat-participant-artwork');
     }else if(side==='player'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'&&playerDefinition(operative)){
       portrait=experimentalDeathwatchGreenPortraitSvg(operative,`combatPortraitDeathwatch-${position}`,'combat-participant-artwork');
+    }else if(side==='player'&&selectedPlayerTeamName().toLowerCase()==='death korps'&&playerDefinition(operative)){
+      portrait=deathKorpsCombatPortraitSvg(operative,'combat-participant-artwork');
     }
     if(!portrait)return '';
     return `<span class="combat-participant-portrait ${position==='defender'?'facing-left':'facing-right'}" aria-hidden="true">${portrait}</span>`;
@@ -7604,6 +7613,8 @@ function showPlayerActivation(){
       if(npo)artwork=experimentalNecronPortraitSvg(npo,`fightPortraitNecron-${role}`,'fight-portrait-artwork');
     }else if(participant.side==='player'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'&&playerDefinition(participant.id)){
       artwork=experimentalDeathwatchGreenPortraitSvg(participant.id,`fightPortraitDeathwatch-${role}`,'fight-portrait-artwork');
+    }else if(participant.side==='player'&&selectedPlayerTeamName().toLowerCase()==='death korps'&&playerDefinition(participant.id)){
+      artwork=deathKorpsCombatPortraitSvg(participant.id,'fight-portrait-artwork');
     }
     return artwork?`<span class="fight-portrait fight-portrait-${role}" aria-hidden="true">${artwork}</span>`:'';
   }
