@@ -2223,31 +2223,6 @@ html[data-ui="tomb"] .npo-target-roster-item.selected .npo-target-roster-wounds{
   z-index:1;
   text-shadow:0 1px 4px #04100a,0 0 8px #04100a;
 }
-.combat-summary-grid .combat-participant-portrait{
-  position:absolute;
-  top:-3px;
-  right:-16px;
-  width:154px;
-  height:154px;
-  opacity:.85;
-  pointer-events:none;
-  z-index:0;
-  -webkit-mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.85) 48%,#000);
-  mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.85) 48%,#000);
-}
-.combat-summary-grid .combat-participant-artwork{
-  display:block;
-  width:100%;
-  height:100%;
-  overflow:visible;
-  transform-origin:center center;
-}
-.combat-summary-grid .combat-participant-portrait.facing-left .combat-participant-artwork{
-  transform:scaleX(-1);
-}
-@media(max-width:600px){
-  .combat-summary-grid .combat-participant-portrait{width:146px;height:146px;right:-14px}
-}
 
 /* Experimental player-attack Necron target picker. Other selectors stay unchanged. */
 html[data-ui="tomb"] .player-combat-target-label{margin:0 0 8px;color:var(--muted);font-weight:800;font-size:.8rem}
@@ -2540,4 +2515,26 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimenta
    against the modal background so a portrait underneath never covers text. */
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.human-completed-actions{
   background:linear-gradient(rgba(41,127,78,.15),rgba(41,127,78,.15)),var(--bg);
+}
+
+/* v10.0.137: Shooting attacks use the existing Fight Roll portrait treatment.
+   Combat summary metadata stays text-only; portraits follow their dice pools. */
+html[data-ui="tomb"] .dedicated-combat-screen .shooting-roll-pool.has-fight-portrait{
+  min-height:142px;
+}
+html[data-ui="tomb"] .dedicated-combat-screen .shooting-roll-pool>.shooting-roll-participant{
+  color:var(--green);
+  font-size:.84rem;
+  line-height:1.25;
+  max-width:65%;
+  text-shadow:0 1px 5px #06110d,0 0 10px #06110d;
+}
+html[data-ui="tomb"] .dedicated-combat-screen .shooting-roll-pool.has-fight-portrait>.dice-row{
+  max-width:75%;
+  flex-wrap:wrap;
+}
+@media(max-width:600px){
+  html[data-ui="tomb"] .dedicated-combat-screen .shooting-roll-pool.has-fight-portrait{
+    min-height:130px;
+  }
 }
