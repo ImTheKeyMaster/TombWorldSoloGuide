@@ -536,6 +536,7 @@ document.addEventListener('touchend',function(e){
       state.playerTeamFile=entry.file;
       playerTeamLoadStatus='loaded';
       if(data.teamName?.toLowerCase()==='deathwatch')warmDeathwatchRosterImages(data.operatives.map(operative=>operative.id));
+      if(data.teamName?.toLowerCase()==='death korps')warmDeathKorpsPortraitImages(data.operatives.map(operative=>operative.id));
       const operativeIds=new Set(data.operatives.map(operative=>operative.id));
       if((state.playerRoster||[]).some(id=>!operativeIds.has(id)))clearPlayerTeamDependentState();
       assignPlayerDisplayNumbers();
@@ -3897,7 +3898,7 @@ document.addEventListener('touchend',function(e){
     if(state.phase==='end'){save();return nextStepCard();}
     if(state.nextSide==='player' && playerOperativesRemaining()>0){
       const teamName=activationSideName('player');
-      if(experimentalFeaturesEnabled()&&teamName.toLowerCase()==='deathwatch'){
+      if((experimentalFeaturesEnabled()&&teamName.toLowerCase()==='deathwatch')||teamName.toLowerCase()==='death korps'){
         const active=activePlayerActivation();
         const selection=active
           ?`<p>${escapeHtml(playerName(active.operativeId))} has an activation in progress.</p><button class="btn primary big-action" id="playerActivation">Resume Activation</button>`
@@ -5464,6 +5465,21 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     const filename=DEATH_KORPS_PORTRAITS[id];
     return filename?`${DEATH_KORPS_PORTRAIT_ROOT}Death_Korps_${filename}.png`:'';
   }
+  // Warm once per unique photograph when the Death Korps team is selected.
+  // Browsers retain decoded images and their HTTP cache for subsequent rail/detail/activation use.
+  const warmedDeathKorpsPortraits=new Map();
+  function warmDeathKorpsPortraitImages(ids){
+    for(const id of ids){
+      const src=deathKorpsPortraitImage(id);
+      if(!src||warmedDeathKorpsPortraits.has(src))continue;
+      const image=new Image();
+      warmedDeathKorpsPortraits.set(src,image);
+      image.decoding='async';
+      image.onerror=()=>{if(warmedDeathKorpsPortraits.get(src)===image)warmedDeathKorpsPortraits.delete(src);};
+      image.src=src;
+      if(typeof image.decode==='function')void image.decode().catch(()=>{});
+    }
+  }
   function playerRosterPortraitMarkup(id,filterId,svgClass=''){
     if(selectedPlayerTeamName().toLowerCase()!=='death korps')return experimentalDeathwatchGreenPortraitSvg(id,filterId,svgClass);
     const src=deathKorpsPortraitImage(id);
@@ -5615,6 +5631,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
 
   function experimentalDeathwatchRosterMarkup(candidates,{inline=false}={}){
     if(selectedPlayerTeamName().toLowerCase()==='deathwatch')warmDeathwatchRosterImages(candidates);
+    if(selectedPlayerTeamName().toLowerCase()==='death korps')warmDeathKorpsPortraitImages(candidates);
     const items=candidates.map((id,index)=>{
       return `<button type="button" class="experimental-roster-item" role="radio" aria-checked="false" tabindex="${index===0?'0':'-1'}" data-roster-operative="${escapeHtml(id)}">
         <span class="experimental-roster-image">${playerRosterPortraitMarkup(id,`experimentalRosterTint-${index}`,'experimental-roster-tinted-svg')}</span>
