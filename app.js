@@ -5169,7 +5169,9 @@ document.addEventListener('touchend',function(e){
       onEnd:confirmEndHumanPlayerActivation,
       onFirstRoomEntry:unawakenedScoutRooms().length?()=>beginRoomAwakeningSelection('first-entry'):null,
       portraitUrl:document.documentElement.dataset.ui==='tomb'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'
-        ?experimentalDeathwatchActivationImage(activation.operativeId):''
+        ?experimentalDeathwatchActivationImage(activation.operativeId):'',
+      portraitMarkup:document.documentElement.dataset.ui==='tomb'&&selectedPlayerTeamName().toLowerCase()==='death korps'&&deathKorpsPortraitImage(activation.operativeId)
+        ?`<svg class="experimental-activation-portrait-svg" viewBox="0 0 384 384" preserveAspectRatio="xMidYMin meet" aria-hidden="true"><image href="${escapeHtml(deathKorpsPortraitImage(activation.operativeId))}" x="0" y="0" width="384" height="384" preserveAspectRatio="xMidYMin meet"/></svg>`:''
     });
     renderOperativeStatusPanel(activation.operativeId);
   }
@@ -5449,6 +5451,29 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     return `<svg class="${safeClass}" viewBox="0 0 384 384" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><defs><filter id="${safeFilterId}" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values=".2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 1.063 3.576 .361 0 -.28" result="grayKeyed"/><feComponentTransfer in="grayKeyed" result="tightKey"><feFuncA type="table" tableValues="0 0 0 0 .2 .65 .9 1 1"/></feComponentTransfer><feComponentTransfer in="grayKeyed" result="colorized"><feFuncR type="table" tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"/><feFuncG type="table" tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"/><feFuncB type="table" tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"/><feFuncA type="linear" slope="1.08" intercept="-.01"/></feComponentTransfer><feConvolveMatrix in="colorized" order="3" kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0" divisor="1" preserveAlpha="true" result="sharpened"/><feComposite in="sharpened" in2="tightKey" operator="in" result="finalPortrait"/></filter></defs><image href="${escapeHtml(experimentalDeathwatchActivationImage(id))}" x="0" y="0" width="384" height="384" preserveAspectRatio="xMidYMid meet" filter="url(#${safeFilterId})"/></svg>`;
   }
 
+  // User-photographed Death Korps cutouts. Unphotographed variants remain neutral placeholders.
+  const DEATH_KORPS_PORTRAIT_ROOT='Assets/Images/TombUI/DeathKorps/';
+  const DEATH_KORPS_PORTRAITS=Object.freeze({
+    confidant:'confidant',sapper:'sapper',spotter:'spotter',
+    'gunner-flamer':'gunner',zealot:'zealot',bruiser:'bruiser',
+    'trooper-1':'trooper_1','trooper-2':'trooper_2',
+    'trooper-3':'trooper_1','trooper-4':'trooper_2',
+    'vox-operator':'vox_operator',veteran:'veteran'
+  });
+  function deathKorpsPortraitImage(id){
+    const filename=DEATH_KORPS_PORTRAITS[id];
+    return filename?`${DEATH_KORPS_PORTRAIT_ROOT}Death_Korps_${filename}.png`:'';
+  }
+  function playerRosterPortraitMarkup(id,filterId,svgClass=''){
+    if(selectedPlayerTeamName().toLowerCase()!=='death korps')return experimentalDeathwatchGreenPortraitSvg(id,filterId,svgClass);
+    const src=deathKorpsPortraitImage(id);
+    if(!src)return '<span class="death-korps-portrait-placeholder" aria-hidden="true">?</span>';
+    return `<svg class="${escapeHtml(svgClass)}" viewBox="0 0 384 384" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><image href="${escapeHtml(src)}" x="0" y="0" width="384" height="384" preserveAspectRatio="xMidYMid meet"/></svg>`;
+  }
+  function usesPlayerPortraitRail(){
+    return document.documentElement.dataset.ui==='tomb'&&['deathwatch','death korps'].includes(selectedPlayerTeamName().toLowerCase());
+  }
+
   const EXPERIMENTAL_NECRON_IMAGE_ROOT='Assets/Images/TombUI/NecronActivation/';
 
   function experimentalNecronPortraitImage(npo){
@@ -5589,10 +5614,10 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
   }
 
   function experimentalDeathwatchRosterMarkup(candidates,{inline=false}={}){
-    warmDeathwatchRosterImages(candidates);
+    if(selectedPlayerTeamName().toLowerCase()==='deathwatch')warmDeathwatchRosterImages(candidates);
     const items=candidates.map((id,index)=>{
       return `<button type="button" class="experimental-roster-item" role="radio" aria-checked="false" tabindex="${index===0?'0':'-1'}" data-roster-operative="${escapeHtml(id)}">
-        <span class="experimental-roster-image">${experimentalDeathwatchGreenPortraitSvg(id,`experimentalRosterTint-${index}`,'experimental-roster-tinted-svg')}</span>
+        <span class="experimental-roster-image">${playerRosterPortraitMarkup(id,`experimentalRosterTint-${index}`,'experimental-roster-tinted-svg')}</span>
         <span class="experimental-roster-name">${escapeHtml(playerName(id))}</span>
       </button>`;
     }).join('');
@@ -5605,7 +5630,7 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
       <section class="experimental-roster-detail" aria-live="polite">
         <div class="experimental-roster-detail-image placeholder" id="experimentalRosterDetailImage" aria-hidden="true"><img src="Assets/icon-192.png" alt=""></div>
         <div class="experimental-roster-detail-copy">
-          <p class="eyebrow">DEATHWATCH OPERATIVE</p>
+          <p class="eyebrow">${escapeHtml(selectedPlayerTeamName().toUpperCase())} OPERATIVE</p>
           <h3 id="experimentalRosterDetailName">Choose an operative</h3>
           <p id="experimentalRosterDetailRole">Select an operative above.</p>
           <div class="experimental-roster-stats placeholder" id="experimentalRosterStats" aria-hidden="true">
@@ -5624,7 +5649,7 @@ ${inline?'':'<button class="btn ghost" data-close>Close Guide</button>'}
   }
 
   function showExperimentalDeathwatchRosterRail(candidates){
-    showModal('DEATHWATCH ACTIVATION',experimentalDeathwatchRosterMarkup(candidates));
+    showModal(`${selectedPlayerTeamName().toUpperCase()} ACTIVATION`,experimentalDeathwatchRosterMarkup(candidates));
     modal.classList.add('experimental-roster-rail-modal');
     bindExperimentalDeathwatchRosterRail(modal);
   }
@@ -5659,7 +5684,7 @@ ${inline?'':'<button class="btn ghost" data-close>Close Guide</button>'}
       const operative=livePlayerOperative(selectedId)||playerDefinition(selectedId)||{};
       const definition=playerDefinition(selectedId)||operative;
       const apl=effectiveApl(selectedId,Number(definition.apl||3));
-      detailImage.innerHTML=experimentalDeathwatchGreenPortraitSvg(selectedId,'experimentalRosterDetailTint','experimental-roster-tinted-svg');
+      detailImage.innerHTML=playerRosterPortraitMarkup(selectedId,'experimentalRosterDetailTint','experimental-roster-tinted-svg');
       detailImage.classList.remove('placeholder');
       detailName.textContent=playerName(selectedId);
       detailRole.textContent=operative.role||'Operative';
@@ -5694,7 +5719,7 @@ function showPlayerActivation(){
     const candidates=remainingPlayerOperatives();
     if(!candidates.length){state.playerReady=0;setNextActivation('npo');save();render();return;}
     if(candidates.length===1){beginPlayerActivation(candidates[0]);return;}
-    if(document.documentElement.dataset.ui==='tomb'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'){
+    if(usesPlayerPortraitRail()){
       showExperimentalDeathwatchRosterRail(candidates);
       return;
     }
