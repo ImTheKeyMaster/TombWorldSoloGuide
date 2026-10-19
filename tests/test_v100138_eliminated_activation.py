@@ -96,7 +96,7 @@ function scenario({wounds=0,casualty=true,pendingAction='melee',active=true,atta
   const dead=scenario();
   assert(dead.handlers.finishingCurrentHumanPlayerAction(dead.stage,'confidant'));
   await dead.handlers.completePlayerActivation(dead.stage);
-  await Promise.resolve();
+  await new Promise(resolve=>setImmediate(resolve));
   assert.equal(dead.activation.resolvedActions.length,1);
   assert.equal(dead.activation.resolvedActions[0].name,'Fight');
   assert.equal(dead.activation.committed,true);
@@ -109,13 +109,21 @@ function scenario({wounds=0,casualty=true,pendingAction='melee',active=true,atta
   assert(!dead.events.some(event=>event.startsWith('TOAST:')));
   assert(!dead.events.includes('SHOW_AP_SCREEN'));
 
-  // A lethal shooting side-effect (Hot or retaliation) must finish identically.
-  const shot=scenario({attack:'shoot',hot:true});
+  // Death during an ordinary shooting side-effect also completes the action.
+  const shot=scenario({attack:'shoot',pendingAction:'shoot'});
+  assert(shot.handlers.finishingCurrentHumanPlayerAction(shot.stage,'confidant'));
   await shot.handlers.completePlayerActivation(shot.stage);
-  await Promise.resolve();
+  await new Promise(resolve=>setImmediate(resolve));
   assert.equal(shot.activation.resolvedActions[0].name,'Shoot');
   assert.equal(shot.state.lastActivation,null);
   assert.equal(shot.state.nextSide,'npo');
+  assert(!shot.events.some(event=>event.startsWith('TOAST:')));
+
+  // Hot self-damage retains the same completion behavior.
+  const overheated=scenario({attack:'shoot',pendingAction:'shoot',hot:true});
+  await overheated.handlers.completePlayerActivation(overheated.stage);
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(overheated.state.lastActivation,null);
 
   // Surviving attackers still return to their remaining-AP choices.
   const healthy=scenario({wounds:4,casualty:false});
@@ -128,7 +136,7 @@ function scenario({wounds=0,casualty=true,pendingAction='melee',active=true,atta
   const mismatch=scenario({pendingAction:'move'});
   assert(!mismatch.handlers.finishingCurrentHumanPlayerAction(mismatch.stage,'confidant'));
   await mismatch.handlers.completePlayerActivation(mismatch.stage);
-  await Promise.resolve();
+  await new Promise(resolve=>setImmediate(resolve));
   assert.equal(mismatch.state.lastActivation,null);
   assert(!mismatch.events.includes('SHOW_AP_SCREEN'));
 
