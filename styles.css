@@ -2504,26 +2504,19 @@ html[data-ui="tomb"] .experimental-inline-necron-card .skip-remaining-activation
   }
 }
 
-/* v10.0.132: Anchor every player portrait to the Movement panel without cropping tall figures. */
+/* v10.0.133: Restore the cropped upper-miniature composition. The Movement
+   panel overlays the portrait's lower edge, instead of showing the full base. */
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{
-  transform:none;
-  margin-bottom:0;
-  clip-path:none;
-  min-height:208px;
-  overflow:visible;
+  clip-path:inset(-96px -96px 0 -96px);
 }
-html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{
-  top:auto;
-  bottom:0;
-  right:-12%;
-  width:176%;
-  height:auto;
+/* Some cutouts have more empty space below the figure than Marksman.
+   Enlarge those portraits slightly while retaining the same clipped frame. */
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:not(:has(image[href*="/marksman.webp"])) .experimental-activation-portrait-svg{
+  width:200%;
+  right:-19%;
 }
 @media(max-width:520px){
-  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{min-height:188px}
-  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{width:184%;right:-13%}
-}
-@media(max-width:380px){
-  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{min-height:172px}
-  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{width:190%;right:-15%}
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:not(:has(image[href*="/marksman.webp"])) .experimental-activation-portrait-svg{
+    width:210%;right:-20%;
+  }
 }
