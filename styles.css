@@ -1499,6 +1499,8 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimenta
 }
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>:not(h2):not(.activation-profile-strip):not(.experimental-activation-portrait){
   grid-column:1 / -1;
+  position:relative;
+  z-index:1;
 }
 @media(max-width:520px){
   html[data-ui="tomb"] .human-activation-shell.has-operative-portrait{
@@ -2504,10 +2506,11 @@ html[data-ui="tomb"] .experimental-inline-necron-card .skip-remaining-activation
   }
 }
 
-/* v10.0.133: Restore the cropped upper-miniature composition. The Movement
-   panel overlays the portrait's lower edge, instead of showing the full base. */
+/* v10.0.136: Let the portrait continue behind the first card, whether
+   Completed Actions, Movement, or another activation panel. Preserve the
+   upper miniature crop and the previously approved horizontal treatment. */
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{
-  clip-path:inset(-96px -96px 0 -96px);
+  clip-path:inset(-96px -96px -64px -96px);
 }
 /* Some cutouts have more empty space below the figure than Marksman.
    Enlarge those portraits slightly while retaining the same clipped frame. */
@@ -2525,10 +2528,16 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimenta
    newly visible pixels back toward the text. The Movement border still layers
    above the artwork; Marksman's already-correct framing stays untouched. */
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:not(:has(image[href*="/marksman.webp"])){
-  clip-path:inset(-96px -96px 0 -220px);
+  clip-path:inset(-96px -96px -64px -220px);
 }
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:not(:has(image[href*="/marksman.webp"])) .experimental-activation-portrait-svg{
   transform:translateX(-24px);
   -webkit-mask-image:linear-gradient(to right,transparent 0%,rgba(0,0,0,.28) 7%,rgba(0,0,0,.72) 13%,#000 21%);
   mask-image:linear-gradient(to right,transparent 0%,rgba(0,0,0,.28) 7%,rgba(0,0,0,.72) 13%,#000 21%);
+}
+
+/* v10.0.136: Completed Actions has a translucent legacy fill. Composite it
+   against the modal background so a portrait underneath never covers text. */
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.human-completed-actions{
+  background:linear-gradient(rgba(41,127,78,.15),rgba(41,127,78,.15)),var(--bg);
 }
