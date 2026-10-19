@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.136';
+  const APP_VERSION = '10.0.137';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5817,6 +5817,10 @@ function showPlayerActivation(){
     const elimination=renderEliminationSummary({
       ...combat,side:combat.defenderSide,targetName:combat.defenderName
     });
+    const diceStages=combat.recordedOutcome
+      ? '<div class="combat-stage"><small>TABLETOP RESOLUTION</small><p>Physical dice and retained successes resolved by the player.</p></div>'
+      : combatDiceStageHtml('attacker','ATTACK DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div>`,severeAppliedHtml(combat.attackDice,combat.severeApplied))
+        +combatDiceStageHtml('defender','DEFENSE DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No defense dice rolled</span>'}</div>`,combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':'');
     return `<section class="combat-resolution" aria-label="Combat resolution">
       ${showParticipants?`<div class="damage-summary combat-participants">
         <div><small>Attacker</small><strong>${escapeHtml(combat.attackerName)}</strong></div>
@@ -5824,7 +5828,7 @@ function showPlayerActivation(){
         <div><small>Attack type</small><strong>${combat.attackType==='shoot'?'Shooting':'Melee'}</strong></div>
         ${combat.recordedOutcome?'':`<div><small>Retained saves</small><strong>${combat.retainedSaves??(combat.coverRetained?1:0)}</strong></div>`}
       </div>`:''}
-      ${combat.recordedOutcome?'<div class="combat-stage"><small>TABLETOP RESOLUTION</small><p>Physical dice and retained successes resolved by the player.</p></div>':`<div class="combat-stage"><small>ATTACK DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div>${severeAppliedHtml(combat.attackDice,combat.severeApplied)}</div><div class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No defense dice rolled</span>'}</div>${combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':''}</div>`}
+      ${diceStages}
       ${elimination}
       ${combatAbilityReminder(combat)}
       ${(combat.eventMessages||combat.profile?.eventMessages||[]).map(message=>`<div class="summary-box"><strong>${escapeHtml(message)}</strong></div>`).join('')}
@@ -5847,26 +5851,23 @@ function showPlayerActivation(){
     if(!src)return '';
     return `<svg class="${escapeHtml(svgClass)}" viewBox="0 0 384 384" preserveAspectRatio="xMidYMin meet" aria-hidden="true" focusable="false"><image href="${escapeHtml(src)}" x="0" y="0" width="384" height="384" preserveAspectRatio="xMidYMin meet"/></svg>`;
   }
-  function combatParticipantPortrait(side,operative,position){
-    if(!operative)return '';
-    let portrait='';
-    if(side==='npo'){
-      portrait=experimentalNecronPortraitSvg(operative,`combatPortraitNecron-${position}`,'combat-participant-artwork');
-    }else if(side==='player'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'&&playerDefinition(operative)){
-      portrait=experimentalDeathwatchGreenPortraitSvg(operative,`combatPortraitDeathwatch-${position}`,'combat-participant-artwork');
-    }else if(side==='player'&&selectedPlayerTeamName().toLowerCase()==='death korps'&&playerDefinition(operative)){
-      portrait=deathKorpsCombatPortraitSvg(operative,'combat-participant-artwork');
-    }
-    if(!portrait)return '';
-    return `<span class="combat-participant-portrait ${position==='defender'?'facing-left':'facing-right'}" aria-hidden="true">${portrait}</span>`;
+  // Shared shooting dice cards reuse the Fight Roll portrait markup and styling.
+  // Templates live in the current combat modal so restored/animated rolls
+  // never display a portrait belonging to a previous opponent.
+  function combatDiceStageHtml(role,heading,diceRow,details=''){
+    const slot=role==='attacker'?'Attacker':'Defender';
+    const portrait=$(`#combat${slot}PortraitTemplate`)?.innerHTML||'';
+    const name=$(`#combat${slot}Name`)?.textContent||'';
+    return `<section class="combat-stage fight-roll-pool shooting-roll-pool${portrait?' has-fight-portrait':''}" aria-label="${escapeHtml(heading)}${name?` for ${escapeHtml(name)}`:''}">${portrait}<small>${escapeHtml(heading)}</small>${name?`<strong class="shooting-roll-participant">${escapeHtml(name)}</strong>`:''}${diceRow}${details}</section>`;
   }
-
   function showSharedCombatResolutionScreen({title,attackerName,defenderName,attackerPortrait='',defenderPortrait='',attackType,weaponName,attackLabel='',defenseLabel,cancelId,continueId,guidanceHtml='',rulesHtml='',extraHtml='',detailsHtml=''}){
     showModal(title,`
       <section class="dedicated-combat-screen" aria-label="Combat resolution screen">
+        <template id="combatAttackerPortraitTemplate">${attackerPortrait}</template>
+        <template id="combatDefenderPortraitTemplate">${defenderPortrait}</template>
         <div class="damage-summary combat-participants compact-combat-profile combat-summary-grid${attackLabel?' has-attack-profile':''}">
-          <div class="combat-participant-pill"><small>Attacker</small><strong class="combat-summary-value">${escapeHtml(attackerName)}</strong>${attackerPortrait}</div>
-          <div class="combat-participant-pill"><small>Defender</small><strong class="combat-summary-value">${escapeHtml(defenderName)}</strong>${defenderPortrait}</div>
+          <div class="combat-participant-pill"><small>Attacker</small><strong class="combat-summary-value" id="combatAttackerName">${escapeHtml(attackerName)}</strong></div>
+          <div class="combat-participant-pill"><small>Defender</small><strong class="combat-summary-value" id="combatDefenderName">${escapeHtml(defenderName)}</strong></div>
           <div><small>Attack type</small><strong class="combat-summary-value">${attackType==='shoot'?'Shooting':'Melee'}</strong></div>
           <div><small>Weapon</small><strong class="combat-summary-value">${escapeHtml(weaponName)}</strong></div>
           ${attackLabel?`<div><small>Attack</small><strong class="combat-summary-value">${escapeHtml(attackLabel)}</strong></div>`:''}
@@ -7364,7 +7365,8 @@ function showPlayerActivation(){
         if(isPvpMode()&&!rolledAttackDice&&onAttackComplete){onAttackComplete(attackDice);acknowledgeDiceRequest(`${requestKeyBase}:attack`);}
         else if(onAttackComplete)onAttackComplete(attackDice);
         const animate=!isPvpMode()&&!rolledAttackDice;
-        container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row ${animate?'animated-roll':'settled'}">${animate?attackDice.map(()=>rollingDieHtml()).join(''):attackDice.map(dieHtml).join('')}</div></section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row"><span class="muted">Rolling after the attack…</span></div></section>`;
+        container.innerHTML=combatDiceStageHtml('attacker','ATTACK DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}">${animate?attackDice.map(()=>rollingDieHtml()).join(''):attackDice.map(dieHtml).join('')}</div>`)
+                  +combatDiceStageHtml('defender','DEFENSE DICE','<div class="dice-row"><span class="muted">Rolling after the attack…</span></div>');
         if(animate&&attackDice.length)void TombWorldDiceSfx.play();
         if(animate)await new Promise(resolve=>{timer=setTimeout(resolve,DICE_ROLL_ANIMATION_MS);});
         if(cancelled||!container.isConnected)return;
@@ -7377,7 +7379,8 @@ function showPlayerActivation(){
         const showDefenseAnimation=!devastatingIncapacitated&&animateDefense;
         const automaticMessages=automaticWeaponRuleMessages(profile,attackDice);
         const saturateMessage=attackType==='shoot'&&weaponHasRule(profile,'saturate')?'<p role="status">Saturate: cover saves cannot be retained.</p>':'';
-        container.innerHTML=`<section class="combat-stage"><small>ATTACK DICE</small><div class="dice-row settled" data-combat-attack-dice>${attackDice.map(dieHtml).join('')}</div>${severeAppliedHtml(attackDice)}${attackRuleAppliedHtml(attackDice)}${automaticMessages.map(message=>`<p role="status">${escapeHtml(message)}</p>`).join('')}</section><section class="combat-stage"><small>DEFENSE DICE</small><div class="dice-row ${showDefenseAnimation?'animated-roll':'settled'}" data-combat-save-dice>${defenseDice.length?(showDefenseAnimation?defenseDice.map(()=>rollingDieHtml()).join(''):defenseDice.map(dieHtml).join('')):'<span class="muted">No defense dice rolled</span>'}</div>${saturateMessage}</section>`;
+        container.innerHTML=combatDiceStageHtml('attacker','ATTACK DICE',`<div class="dice-row settled" data-combat-attack-dice>${attackDice.map(dieHtml).join('')}</div>`,severeAppliedHtml(attackDice)+attackRuleAppliedHtml(attackDice)+automaticMessages.map(message=>`<p role="status">${escapeHtml(message)}</p>`).join(''))
+                  +combatDiceStageHtml('defender','DEFENSE DICE',`<div class="dice-row ${showDefenseAnimation?'animated-roll':'settled'}" data-combat-save-dice>${defenseDice.length?(showDefenseAnimation?defenseDice.map(()=>rollingDieHtml()).join(''):defenseDice.map(dieHtml).join('')):'<span class="muted">No defense dice rolled</span>'}</div>`,saturateMessage);
         attackDice.immediateEffects={devastatingDamage,devastatingIncapacitated};
         if(showDefenseAnimation){
           timer=settleCombatDice({attackDice,saveDice:defenseDice},()=>{timer=null;if(container.isConnected)onComplete(attackDice,defenseDice);},container);
@@ -8077,8 +8080,8 @@ function showPlayerActivation(){
     const attackerWithinTwo=Boolean($('#attackerWithinTwo')?.checked)||Boolean(result?.attackerWithinTwo);
     const screen=showSharedCombatResolutionScreen({
       title:`Resolve ${attackLabel} Attack`,attackerName:playerName(stage.playerOperativeId),defenderName:targetName,
-      attackerPortrait:combatParticipantPortrait('player',stage.playerOperativeId,'attacker'),
-      defenderPortrait:combatParticipantPortrait(targetSide,targetSide==='player'?targetId:target,'defender'),
+      attackerPortrait:fightParticipantPortrait({side:'player',id:stage.playerOperativeId},'attacker'),
+      defenderPortrait:fightParticipantPortrait({side:targetSide,id:targetId},'defender'),
       attackType,weaponName:weapon.name,attackLabel:attackType==='shoot'?combatAttackLabel(profile):'',
       defenseLabel:`${Math.max(0,3-profile.ap)} dice · ${target.save}+`,
       cancelId:'cancelPendingAttack',continueId:'continuePendingAttack',
@@ -9388,8 +9391,8 @@ function showPlayerActivation(){
     const guidance=npoCombatGuidanceHtml(n,{attackType,profile:initialProfile});
     const screen=showSharedCombatResolutionScreen({
       title:'Resolve Combat',attackerName:npoName(n),defenderName:targetName,attackType,
-      attackerPortrait:combatParticipantPortrait('npo',n,'attacker'),
-      defenderPortrait:combatParticipantPortrait(targetSide,targetSide==='player'?target.id:target,'defender'),
+      attackerPortrait:fightParticipantPortrait({side:'npo',id:n.id},'attacker'),
+      defenderPortrait:fightParticipantPortrait({side:targetSide,id:target.id},'defender'),
       weaponName:initialProfile?.name||'—',attackLabel:initialProfile?combatAttackLabel(initialProfile):'—',defenseLabel:`3 dice · ${target.save||3}+`,
       cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',
       guidanceHtml:`<div id="npoCombatGuidance">${guidance}</div>`,
