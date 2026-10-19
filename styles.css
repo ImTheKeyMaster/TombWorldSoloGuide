@@ -2457,25 +2457,25 @@ html[data-ui="tomb"] .fight-result-card .fight-portrait-artwork{
 
 
 /* v10.0.128: Inline Deathwatch roster replaces the activation card only in Experimental Features. */
-html[data-experimental="on"] .experimental-inline-deathwatch-card{
+html[data-ui="tomb"] .experimental-inline-deathwatch-card{
   min-width:0;
 }
-html[data-experimental="on"] .experimental-inline-deathwatch-card .experimental-roster-picker{
+html[data-ui="tomb"] .experimental-inline-deathwatch-card .experimental-roster-picker{
   min-width:0;
   margin-top:18px;
 }
-html[data-experimental="on"] .experimental-inline-deathwatch-card .experimental-roster-actions{
+html[data-ui="tomb"] .experimental-inline-deathwatch-card .experimental-roster-actions{
   justify-content:flex-end;
 }
-html[data-experimental="on"] .experimental-inline-deathwatch-card .experimental-roster-actions .btn{
+html[data-ui="tomb"] .experimental-inline-deathwatch-card .experimental-roster-actions .btn{
   min-width:170px;
 }
-html[data-experimental="on"] .experimental-inline-deathwatch-card .skip-remaining-activations{
+html[data-ui="tomb"] .experimental-inline-deathwatch-card .skip-remaining-activations{
   margin-top:14px;
 }
 @media(max-width:600px){
-  html[data-experimental="on"] .experimental-inline-deathwatch-card .experimental-roster-picker{margin-top:12px}
-  html[data-experimental="on"] .experimental-inline-deathwatch-card .experimental-roster-actions .btn{
+  html[data-ui="tomb"] .experimental-inline-deathwatch-card .experimental-roster-picker{margin-top:12px}
+  html[data-ui="tomb"] .experimental-inline-deathwatch-card .experimental-roster-actions .btn{
     min-width:0;
     width:100%;
   }
@@ -2502,4 +2502,28 @@ html[data-ui="tomb"] .experimental-inline-necron-card .skip-remaining-activation
     min-width:0;
     width:100%;
   }
+}
+
+/* v10.0.132: Anchor every player portrait to the Movement panel without cropping tall figures. */
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{
+  transform:none;
+  margin-bottom:0;
+  clip-path:none;
+  min-height:208px;
+  overflow:visible;
+}
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{
+  top:auto;
+  bottom:0;
+  right:-12%;
+  width:176%;
+  height:auto;
+}
+@media(max-width:520px){
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{min-height:188px}
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{width:184%;right:-13%}
+}
+@media(max-width:380px){
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{min-height:172px}
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{width:190%;right:-15%}
 }
