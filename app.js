@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.137';
+  const APP_VERSION = '10.0.138';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5065,6 +5065,20 @@ document.addEventListener('touchend',function(e){
     return state.lastActivation?.side==='player'&&!state.lastActivation.committed?state.lastActivation:null;
   }
 
+  function playerActivationOperativeEliminated(operativeId){
+    return playerCurrentWounds(operativeId)<=0||(state.playerCasualtyIds||[]).includes(operativeId);
+  }
+
+  // Completing a previously started action is different from choosing a Ready
+  // operative. A Fight or retaliatory effect may incapacitate the actor before
+  // the action is committed, but that action must still be recorded and closed.
+  function finishingCurrentHumanPlayerAction(stage,operativeId){
+    const activation=activePlayerActivation();
+    return Boolean(stage?.sequential&&activation?.operativeId===operativeId
+      &&activation.pendingAction?.activationId===activation.activationId
+      &&activation.pendingAction?.actionId===stage.humanActionId);
+  }
+
   function beginPlayerActivation(operativeId,{refreshPlayCard=false}={}){
     const operative=playerDefinition(operativeId);
     if(!operative||!remainingPlayerOperatives().includes(operativeId))return false;
@@ -5154,6 +5168,7 @@ document.addEventListener('touchend',function(e){
   function renderHumanPlayerActionPicker(){
     const activation=activePlayerActivation();
     if(!activation)return showPlayerActivation();
+    if(playerActivationOperativeEliminated(activation.operativeId)){void completeHumanPlayerActivation();return;}
     if(activation.remainingAp<=0){void completeHumanPlayerActivation();return;}
     const operative=playerDefinition(activation.operativeId);
     const effects=[...(state.npoRuleState?.aplModifiers||[]),...(state.eventState?.playerAplModifiers||[])]
@@ -5269,7 +5284,7 @@ document.addEventListener('touchend',function(e){
   function continueAfterCommittedHumanAction(){
     const activation=activePlayerActivation();
     if(!activation)return false;
-    if(playerCurrentWounds(activation.operativeId)<=0||activation.remainingAp<=0){void completeHumanPlayerActivation();return true;}
+    if(playerActivationOperativeEliminated(activation.operativeId)||activation.remainingAp<=0){void completeHumanPlayerActivation();return true;}
     renderHumanPlayerActionPicker();
     return true;
   }
@@ -6383,15 +6398,21 @@ function showPlayerActivation(){
     const operativeId=String(stage.playerOperativeId||'');
     const incapacitatedByCurrentHot=state.hotResolution?.attackerSide==='player'
       &&state.hotResolution.attackerId===operativeId&&state.hotResolution.incapacitated;
-    if(!remainingPlayerOperatives().includes(operativeId)){
-      if(!incapacitatedByCurrentHot){
-        state.combatState=null;
-        showToast('That operative is no longer available to activate.');
-        closeModal();
-        setNextActivation('player');
-        save();render();
+    if(!remainingPlayerOperatives().includes(operativeId)
+      &&!incapacitatedByCurrentHot
+      &&!finishingCurrentHumanPlayerAction(stage,operativeId)){
+      state.combatState=null;
+      // Never leave an eliminated operative's old activation open with AP.
+      // A matching, valid pending action takes the regular commit path below.
+      if(activePlayerActivation()?.operativeId===operativeId&&playerActivationOperativeEliminated(operativeId)){
+        void completeHumanPlayerActivation();
         return;
       }
+      showToast('That operative is no longer available to activate.');
+      closeModal();
+      setNextActivation('player');
+      save();render();
+      return;
     }
     if(stage.sequential&&stage.threatCheckResult&&!stage.threatCheckResult.acknowledged){
       renderThreatCheckResult(stage);
