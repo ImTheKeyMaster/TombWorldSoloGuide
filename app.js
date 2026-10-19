@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.131';
+  const APP_VERSION = '10.0.132';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3898,7 +3898,7 @@ document.addEventListener('touchend',function(e){
     if(state.phase==='end'){save();return nextStepCard();}
     if(state.nextSide==='player' && playerOperativesRemaining()>0){
       const teamName=activationSideName('player');
-      if((experimentalFeaturesEnabled()&&teamName.toLowerCase()==='deathwatch')||teamName.toLowerCase()==='death korps'){
+      if(['deathwatch','death korps'].includes(teamName.toLowerCase())&&document.documentElement.dataset.ui==='tomb'){
         const active=activePlayerActivation();
         const selection=active
           ?`<p>${escapeHtml(playerName(active.operativeId))} has an activation in progress.</p><button class="btn primary big-action" id="playerActivation">Resume Activation</button>`
