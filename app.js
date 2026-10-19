@@ -5856,9 +5856,11 @@ function showPlayerActivation(){
   // never display a portrait belonging to a previous opponent.
   function combatDiceStageHtml(role,heading,diceRow,details=''){
     const slot=role==='attacker'?'Attacker':'Defender';
-    const portrait=$(`#combat${slot}PortraitTemplate`)?.innerHTML||'';
-    const name=$(`#combat${slot}Name`)?.textContent||'';
-    return `<section class="combat-stage fight-roll-pool shooting-roll-pool${portrait?' has-fight-portrait':''}" aria-label="${escapeHtml(heading)}${name?` for ${escapeHtml(name)}`:''}">${portrait}<small>${escapeHtml(heading)}</small>${name?`<strong class="shooting-roll-participant">${escapeHtml(name)}</strong>`:''}${diceRow}${details}</section>`;
+    const portrait=document.documentElement.dataset.ui==='tomb'
+      ? $(`#combat${slot}PortraitTemplate`)?.innerHTML||'' : '';
+    const name=portrait?$('#combat'+slot+'Name')?.textContent||'':'';
+    const portraitClass=portrait?' fight-roll-pool shooting-roll-pool has-fight-portrait':'';
+    return `<section class="combat-stage${portraitClass}" aria-label="${escapeHtml(heading)}${name?` for ${escapeHtml(name)}`:''}">${portrait}<small>${escapeHtml(heading)}</small>${name?`<strong class="shooting-roll-participant">${escapeHtml(name)}</strong>`:''}${diceRow}${details}</section>`;
   }
   function showSharedCombatResolutionScreen({title,attackerName,defenderName,attackerPortrait='',defenderPortrait='',attackType,weaponName,attackLabel='',defenseLabel,cancelId,continueId,guidanceHtml='',rulesHtml='',extraHtml='',detailsHtml=''}){
     showModal(title,`
