@@ -2521,9 +2521,14 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimenta
   }
 }
 
-/* v10.0.134: Soften the left edge of oversized activation portraits.
-   Mask only the artwork, not the frame, text, or overlapping Movement panel. */
+/* v10.0.135: Reveal the miniature beyond the old left crop, then fade the
+   newly visible pixels back toward the text. The Movement border still layers
+   above the artwork; Marksman's already-correct framing stays untouched. */
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:not(:has(image[href*="/marksman.webp"])){
+  clip-path:inset(-96px -96px 0 -220px);
+}
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:not(:has(image[href*="/marksman.webp"])) .experimental-activation-portrait-svg{
-  -webkit-mask-image:linear-gradient(to right,transparent 0%,rgba(0,0,0,.3) 12%,#000 32%);
-  mask-image:linear-gradient(to right,transparent 0%,rgba(0,0,0,.3) 12%,#000 32%);
+  transform:translateX(-24px);
+  -webkit-mask-image:linear-gradient(to right,transparent 0%,rgba(0,0,0,.28) 7%,rgba(0,0,0,.72) 13%,#000 21%);
+  mask-image:linear-gradient(to right,transparent 0%,rgba(0,0,0,.28) 7%,rgba(0,0,0,.72) 13%,#000 21%);
 }
