@@ -1,4 +1,16 @@
-# Tomb World Battle Guide v10.0.130
+# Tomb World Battle Guide v10.0.138
+
+## v10.0.138
+
+### Finish an incapacitated operative's in-progress activation
+
+- Allow a Fight, shooting attack, or retaliatory effect to finish committing an already-started player action even when the attacker is eliminated during resolution.
+- Record its resolved actions and apply action/Threat bookkeeping once, then automatically finish the eliminated operative's activation instead of returning to a screen with unused AP.
+- On a saved-game resume or other attempt to reopen the activation, finish an eliminated operative's stale activation rather than display actionable controls.
+- Preserve the normal Ready-operative validation for new activations and advance turn order through the existing completion path.
+- Bump the app shell and service-worker cache to v10.0.138.
+
+
 
 ## v10.0.130
 
