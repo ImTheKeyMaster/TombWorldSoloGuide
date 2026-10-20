@@ -145,7 +145,7 @@ def test_version_and_offline_cache_are_consistent():
 
 
 def test_narrow_iphone_columns_are_experimental_only():
-    narrow = CSS.split(f"/* v{CURRENT_APP_VERSION}: prevent the shared", 1)[1]
+    narrow = CSS.split("single-column fallback in Experimental Fight Resolution only. */", 1)[1]
     assert "@media(max-width:374px)" in narrow
     assert '.experimental-fight-pools{\n    grid-template-columns:repeat(2,minmax(0,1fr));' in narrow
     assert 'html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pools' in narrow
