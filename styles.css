@@ -2604,7 +2604,7 @@ html[data-ui="tomb"] #modal:not(.human-activation-modal){
   -webkit-overflow-scrolling:touch;
   touch-action:pan-y;
 }
-html:has(#modal[open]),body:has(#modal[open]){
+html[data-ui="tomb"]:has(#modal[open]),html[data-ui="tomb"] body:has(#modal[open]){
   overflow:hidden!important;
   overscroll-behavior:none!important;
 }
