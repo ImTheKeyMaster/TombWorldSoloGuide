@@ -67,7 +67,10 @@ def test_marker_retry_update_reuse_and_cleanup_contracts_are_present():
     assert "const OFFLINE_PACKAGE_MARKER = './__offline-package-complete__';" in WORKER
     preparation = source_between(WORKER, "async function prepareOfflinePackage", "async function ensureOfflinePackage")
     assert preparation.index("for(const asset of backgrounds)") < preparation.index("cache.put(OFFLINE_PACKAGE_MARKER")
-    assert "if(await cache.match(path)||await archivedCacheMatch(path))return;" in WORKER
+    assert "if(await cache.match(path))return;" in WORKER
+    assert "await archivedCacheEntry(path)" in WORKER
+    assert "await archived.cache.delete(path,{ignoreSearch:true});" in WORKER
+    assert "await cleanSupersededCaches();" in WORKER
     assert "if(markerVersion===APP_VERSION)" in WORKER
     assert "async function archivedCacheMatch(request)" in WORKER
     assert "await archivedCacheMatch(path)" in WORKER
