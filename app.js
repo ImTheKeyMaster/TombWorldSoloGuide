@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.147';
+  const APP_VERSION = '10.0.148';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -7791,7 +7791,7 @@ function showPlayerActivation(){
         <strong class="experimental-fight-card-name">${escapeHtml(participant.label)}</strong>
         <small class="experimental-fight-card-weapon">${escapeHtml(participant.profile.name)}</small>
         <div class="experimental-fight-card-wounds"><strong>${participant.wounds}/${participant.maxWounds}</strong><span>wounds</span></div>
-        <div class="experimental-fight-card-successes" aria-label="Unresolved successes: ${critical} critical, ${normal} normal"><span aria-label="${critical} critical successes">★ ${critical}</span><span aria-label="${normal} normal successes">● ${normal}</span></div>
+        <div class="experimental-fight-card-successes" aria-label="Unresolved successes: ${critical} critical, ${normal} normal"><span aria-label="${critical} critical successes">Crits ${critical}</span><span aria-label="${normal} normal successes">Normal ${normal}</span></div>
       </div>
     </section>`;
   }
