@@ -1,4 +1,11 @@
-# Tomb World Battle Guide v10.0.143
+# Tomb World Battle Guide v10.0.144
+
+## v10.0.144
+
+### Player operative loadout names
+
+- Show roster numbers before parenthesized loadouts across Kill Teams, for example Gunner 3 (Meltagun), without changing operative IDs or saved roster numbering.
+- Preserve unnumbered variants, existing numbered Troopers and Warriors, and non-variant operative names.
 
 ## v10.0.143
 
