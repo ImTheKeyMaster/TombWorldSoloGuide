@@ -106,7 +106,7 @@ api.setManifest({teams:[{id:'korps',file:'DeathKorps.json'}]});
   const resumed=api.loadPlayerTeamData('korps');
   await resumed;
   assert.equal(api.canBuildPlayerRoster(),true,'saved-game startup unexpectedly waited for portraits');
-}).catch(error=>{console.error(error);process.exitCode=1;});
+})().catch(error=>{console.error(error);process.exitCode=1;});
 """)
 
 
