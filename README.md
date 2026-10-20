@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.146
+# Tomb World Battle Guide v10.0.147
+
+## v10.0.147
+
+### Experimental Fight Resolution narrow-screen layout hardening
+
+- Keep the two Experimental combatant portraits and status cards side by side on narrow iPhones (including 320px layouts). The existing Standard Mode one-column fallback remains unchanged.
+- Reduce narrow-screen padding, miniature overlays and success-count spacing without changing underlying images, action buttons or combat mechanics.
+- Extend the existing Experimental Fight Resolution regression test with Strike, Block and Shield dispatch checks and CSS isolation assertions.
+- Refresh the application and offline cache version consistently.
 
 ## v10.0.146
 
