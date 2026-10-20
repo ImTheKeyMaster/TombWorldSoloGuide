@@ -76,7 +76,7 @@ async function dispatch(path,headers){
 
 
 def test_offline_audio_precaching_remains_complete_response_based():
-    assert "cache.addAll(PRECACHE_ASSETS)" in WORKER
+    assert "cache.addAll(CORE_PRECACHE_ASSETS)" in WORKER
     assert "./Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3" in WORKER
     assert "await cache.addAll(files);" in WORKER
     assert "await cacheMissingAsset(cache,file);" in WORKER
