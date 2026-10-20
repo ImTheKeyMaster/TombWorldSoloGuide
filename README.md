@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.140
+# Tomb World Battle Guide v10.0.141
+
+## v10.0.141
+
+### NPO shooting and fighting target selection rail
+
+- Replace the dropdown with the existing horizontally scrollable portrait target rail when a Necron selects a Death Korps or Deathwatch operative to Shoot or Fight.
+- Reuse the correct miniature photographs and artwork for the selected team, with live wound totals, selected styling and accessible keyboard/arrow controls.
+- Preserve the original target priority instructions, eligibility validation, confirmation behavior, saved target selections, and combat resolution. Keep dropdowns for unsupported teams and layouts.
+- Apply the same behavior in Standard and Experimental Tomb modes, and update the release and offline cache to v10.0.141.
 
 ## v10.0.140
 
