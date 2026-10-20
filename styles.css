@@ -2755,3 +2755,24 @@ html[data-ui="tomb"][data-experimental="on"] .experimental-fight-help p{
     font-size:.82rem;
   }
 }
+
+/* v10.0.147: prevent the shared <375px single-column fallback in Experimental Fight Resolution only. */
+@media(max-width:374px){
+  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pools{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:6px;
+  }
+  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool{
+    padding:7px;
+  }
+  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .fight-portrait{
+    width:65px;
+    height:90px;
+    max-width:60%;
+    opacity:.22;
+  }
+  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .experimental-fight-card-successes{
+    gap:6px;
+    font-size:.84rem;
+  }
+}

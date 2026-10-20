@@ -29,7 +29,7 @@ for(const enabled of [false,true]){
     successes:{attacker:[hit],defender:[defend]},turn:'attacker',history:[],completed:false,
     blockCapacity:{attacker:1}
   };
-  let html='',strikes=0,blocks=0;
+  let html='',strikes=0,blocks=0,shieldSelections=0;
   const strikeControls=[{dataset:{fightStrike:'hit'}}];
   const blockControls=[{dataset:{fightBlocker:'hit',fightBlockTarget:'defend'}}];
   const ctx={
@@ -47,6 +47,7 @@ for(const enabled of [false,true]){
     $$:s=>s==='[data-fight-strike]'?strikeControls:s==='[data-fight-blocker]'?blockControls:[],
     commitFightStrike:()=>{strikes++;fight.completed=true;return true;},
     commitFightBlock:()=>{blocks++;fight.completed=true;return true;},
+    showFightBlockSelection:()=>{shieldSelections++;},
     finishFight:()=>{},save:()=>{}
   };
   const render=new Function('ctx','with(ctx){'+code+'\nreturn renderFightResolution;}')(ctx);
@@ -80,6 +81,17 @@ for(const enabled of [false,true]){
   strikeControls[0].onclick();
   assert.equal(strikes,1,'Strike must call the existing engine exactly once');
   assert.equal(blocks,0,'Strike must not invoke Block');
+  fight.completed=false;
+  blockControls[0].onclick();
+  assert.equal(blocks,1,'Regular Block must call the existing engine exactly once');
+  assert.equal(strikes,1,'Block must not invoke Strike');
+  fight.completed=false;
+  fight.blockCapacity.attacker=2;
+  render();
+  assert.match(html,/BLOCK · SHIELD/);
+  blockControls[0].onclick();
+  assert.equal(shieldSelections,1,'Shield must use existing target-selection flow');
+  assert.equal(blocks,1,'Shield selection must not directly commit a Block');
 }
 """
     result = subprocess.run(["node", "-e", script], cwd=ROOT, capture_output=True, text=True)
@@ -130,3 +142,14 @@ def test_version_and_offline_cache_are_consistent():
     assert f"V{CURRENT_APP_VERSION}" in HTML
     assert f"app.js?v={CURRENT_APP_VERSION}" in HTML
     assert f"styles.css?v={CURRENT_APP_VERSION}" in HTML
+
+
+def test_narrow_iphone_columns_are_experimental_only():
+    narrow = CSS.split("single-column fallback in Experimental Fight Resolution only. */", 1)[1]
+    assert "@media(max-width:374px)" in narrow
+    assert '.experimental-fight-pools{\n    grid-template-columns:repeat(2,minmax(0,1fr));' in narrow
+    assert 'html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pools' in narrow
+    assert ".fight-pools{grid-template-columns:1fr}" in CSS
+    assert "@media(max-width:390px)" in CSS
+    assert 'html[data-ui="tomb"] #modal:not(.human-activation-modal)' in CSS
+    assert 'overflow-y:auto;' in CSS
