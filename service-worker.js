@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '10.0.141';
+const APP_VERSION = '10.0.142';
 const CACHE_PREFIX = 'tomb-world-battle-guide-';
 const LEGACY_CACHE_PREFIXES = ['tomb-world-solo-guide-'];
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
@@ -64,6 +64,11 @@ const PRECACHE_ASSETS = [
   './Player_Operatives/DeathWatch.json', './Player_Operatives/Kasrkin.json', './Player_Operatives/TempestusAquilons.json', './Player_Operatives/SpectreSquad.json', './Player_Operatives/ScoutSquad.json'
 ];
 
+// Cache the bootable app and game data before attempting larger images or audio.
+// iOS can reject a single large Cache.addAll() update under storage pressure.
+const CORE_PRECACHE_ASSETS=PRECACHE_ASSETS.filter(path=>!/\.(?:png|svg|jpe?g|gif|webp|ico|mp3|ogg)(?:\?|$)/i.test(path));
+const OPTIONAL_PRECACHE_ASSETS=PRECACHE_ASSETS.filter(path=>!CORE_PRECACHE_ASSETS.includes(path));
+
 const canCache = response => response && response.status === 200 && response.type === 'basic';
 const isTombWorldCache = name => name.startsWith(CACHE_PREFIX) || LEGACY_CACHE_PREFIXES.some(prefix => name.startsWith(prefix));
 const installPercent = (completed, total) => Math.min(100, Math.max(0, Math.round((completed / total) * 100)));
@@ -105,6 +110,14 @@ function ambientFile(config) {
   return `./Assets/Audio/Narration/${file}`;
 }
 
+async function archivedCacheMatch(request) {
+  for(const name of (await caches.keys()).filter(name=>isTombWorldCache(name)&&name!==CACHE_NAME).reverse()){
+    const response=await (await caches.open(name)).match(request,{ignoreSearch:true});
+    if(response)return response;
+  }
+  return null;
+}
+
 async function cacheJson(cache,path) {
   let response;
   try {
@@ -112,14 +125,14 @@ async function cacheJson(cache,path) {
     if(!response.ok)throw new Error(`${path} returned ${response.status}`);
     await cache.put(path,response.clone());
   } catch(error) {
-    response=await cache.match(path);
+    response=await cache.match(path)||await archivedCacheMatch(path);
     if(!response)throw error;
   }
   return response.json();
 }
 
 async function cacheMissingAsset(cache,path) {
-  if(await cache.match(path))return;
+  if(await cache.match(path)||await archivedCacheMatch(path))return;
   await cache.add(path);
 }
 
@@ -171,7 +184,7 @@ async function prepareOfflinePackage({reportProgress=true}={}) {
   const ambient=ambientFile(ambientConfig);
   const backgrounds=(backgroundManifest.landscape||[]).map(filename=>`./Assets/Images/Backgrounds/${filename}`);
   if(!ambient)throw new Error('Ambient configuration does not identify a supported offline audio file.');
-  const assets=[NARRATION_MANIFEST,AMBIENT_CONFIG,BACKGROUND_MANIFEST,...narration,...alignments,ambient,...backgrounds];
+  const assets=[...OPTIONAL_PRECACHE_ASSETS,NARRATION_MANIFEST,AMBIENT_CONFIG,BACKGROUND_MANIFEST,...narration,...alignments,ambient,...backgrounds];
   let completed=3;
   if(reportProgress)reportOfflineInstall('OFFLINE_INSTALL_START',completed,assets.length);
   const progress=()=>{
@@ -179,6 +192,10 @@ async function prepareOfflinePackage({reportProgress=true}={}) {
     if(reportProgress)reportOfflineInstall('OFFLINE_INSTALL_PROGRESS',completed,assets.length);
   };
   try {
+    for(const asset of OPTIONAL_PRECACHE_ASSETS){
+      await cacheMissingAsset(cache,asset);
+      progress();
+    }
     await precacheNarration(cache,narration,progress,true);
     await precacheNarration(cache,alignments,progress,true);
     await precacheAmbient(cache,ambient,progress,true);
@@ -208,35 +225,15 @@ async function ensureOfflinePackage() {
   await prepareOfflinePackage();
 }
 
-async function copyExtendedAssetsFromOldCaches(names) {
-  const destination=await caches.open(CACHE_NAME);
-  for(const name of names.filter(name=>isTombWorldCache(name)&&name!==CACHE_NAME)){
-    try {
-      const source=await caches.open(name);
-      for(const request of await source.keys()){
-        const pathname=new URL(request.url).pathname;
-        const isExtended=pathname.includes('/Assets/Audio/Narration/')||pathname.includes('/Assets/Images/Backgrounds/')||pathname.endsWith('/__offline-package-complete__');
-        if(!isExtended||await destination.match(request))continue;
-        const response=await source.match(request);
-        if(response)await destination.put(request,response);
-      }
-    } catch(error) {
-      console.warn(`Offline media could not be reused from cache "${name}".`,error);
-    }
-  }
-}
-
 self.addEventListener('install',event=>{
-  event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(PRECACHE_ASSETS)));
+  // A single failed large image must never prevent the offline app shell installing.
+  event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(CORE_PRECACHE_ASSETS)));
 });
 
 self.addEventListener('activate',event=>{
-  event.waitUntil((async()=>{
-    const names=await caches.keys();
-    await copyExtendedAssetsFromOldCaches(names);
-    await Promise.all(names.filter(name=>isTombWorldCache(name)&&name!==CACHE_NAME).map(name=>caches.delete(name)));
-    await self.clients.claim();
-  })());
+  // Keep previous caches as fallbacks until an offline package can be rebuilt.
+  // Deleting them here can strand an iPhone with a blank screen after an update.
+  event.waitUntil(self.clients.claim());
 });
 
 self.addEventListener('message',event=>{
@@ -287,15 +284,17 @@ async function cachedFallback(cache, request, failedResponse) {
   const cached = await cache.match(request);
   if (cached) return cached;
   if (request.mode === 'navigate' || new URL(request.url).pathname.endsWith('/index.html')) {
-    return (await cache.match(APP_SHELL)) || failedResponse || Response.error();
+    return (await cache.match(APP_SHELL)) || await archivedCacheMatch(APP_SHELL) || failedResponse || Response.error();
   }
+  const archived=await archivedCacheMatch(request);
+  if(archived)return archived;
   return failedResponse || Response.error();
 }
 
 async function cacheFirst(request) {
   if (request.headers.has('range')) return fetch(request);
   const cache = await caches.open(CACHE_NAME);
-  const cached = await cache.match(request);
+  const cached = await cache.match(request)||await archivedCacheMatch(request);
   if (cached) return cached;
   const response = await fetch(request);
   await cacheResponse(cache, request, response);
