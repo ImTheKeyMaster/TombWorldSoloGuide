@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.140';
+  const APP_VERSION = '10.0.141';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -9066,7 +9066,7 @@ function showPlayerActivation(){
       const maximum=Number(playerDefinition(id)?.wounds);
       const woundLabel=Number.isFinite(maximum)&&maximum>0?`${current}/${maximum} wounds`:`${current} wounds`;
       return `<button type="button" class="experimental-roster-item npo-target-roster-item${selected?' selected':''}" role="radio" aria-checked="${selected}" tabindex="${selected||(!selectedId&&index===0)?'0':'-1'}" data-npo-target-id="${escapeHtml(id)}" aria-label="${escapeHtml(playerTargetAriaLabel(id))}">
-        <span class="experimental-roster-image">${experimentalDeathwatchGreenPortraitSvg(id,`experimentalNpoTargetTint-${index}`,'experimental-roster-tinted-svg')}</span>
+        <span class="experimental-roster-image">${playerRosterPortraitMarkup(id,`npoTargetPortrait-${index}`,'experimental-roster-tinted-svg')}</span>
         <span class="experimental-roster-name">${escapeHtml(playerName(id))}</span>
         <span class="npo-target-roster-wounds">${escapeHtml(woundLabel)}</span>
       </button>`;
@@ -9151,7 +9151,7 @@ function showPlayerActivation(){
     }
     const targetOptions=eligibleTargetIds.map(id=>`<option value="${escapeHtml(id)}" ${state.npoAttackTargetId===id?'selected':''}>${escapeHtml(playerTargetLabel(id))}</option>`).join('');
     const targetName=state.npoAttackTargetId?playerTargetLabel(state.npoAttackTargetId):'';
-    const useExperimentalTargetRail=document.documentElement.dataset.ui==='tomb'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'&&attackRequired&&!targetConfirmed&&eligibleTargetIds.length>0;
+    const useExperimentalTargetRail=usesPlayerPortraitRail()&&attackRequired&&!targetConfirmed&&eligibleTargetIds.length>0;
     const targetField=useExperimentalTargetRail
       ? experimentalNpoTargetRosterRail(eligibleTargetIds)
       : targetConfirmed||(!isPvpMode()&&eligibleTargetIds.length===1)
