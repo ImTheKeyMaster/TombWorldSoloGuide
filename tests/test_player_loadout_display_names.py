@@ -21,7 +21,7 @@ const make=new Function('playerDefinition','npoDefinition','state',
   helpers+';return {playerName,playerDisplayIdentity};');
 const {playerName}=make(id=>definitions.find(entry=>entry.id===id)||null,()=>null,state);
 const check=(team,ids,numbers,expected)=>{
-  definitions=JSON.parse(fs.readFileSync('Player_Operatives/'+team+'.json','utf8')).operatives;
+  definitions=JSON.parse(fs.readFileSync('Player_Operatives/'+team,'utf8')).operatives;
   state.playerRoster=[...ids];
   state.playerDisplayNumbers={...numbers};
   assert.deepEqual(ids.map(playerName),expected,team);
