@@ -44,13 +44,13 @@ def test_game_menu_and_other_modal_screens_avoid_ios_top_bar():
 
 def test_background_stays_stationary_while_native_dialog_scrolls():
     rule = scoped_declaration(
-        'html:has(#modal[open]),body:has(#modal[open])'
+        'html[data-ui="tomb"]:has(#modal[open]),html[data-ui="tomb"] body:has(#modal[open])'
     )
     assert "overflow:hidden!important;" in rule
     assert "overscroll-behavior:none!important;" in rule
     legacy = re.search(r"body\.modal-open\s*\{[^}]*overflow:auto!important", CSS)
     assert legacy, "Expected the historical background-scroll override"
-    assert CSS.index('html:has(#modal[open]),body:has(#modal[open])') > legacy.start()
+    assert CSS.index('html[data-ui="tomb"]:has(#modal[open]),html[data-ui="tomb"] body:has(#modal[open])') > legacy.start()
     assert "modal.scrollTop=0;" in APP
     assert "modalBody.scrollTop=0;" in APP
     assert ".modal .modal-inner" in CSS
