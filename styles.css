@@ -2556,7 +2556,7 @@ html[data-ui="tomb"] #modal.human-activation-modal{
   -webkit-overflow-scrolling:touch;
   touch-action:pan-y;
 }
-html[data-ui="tomb"] #modal.human-activation-modal>.modal-inner{
+html[data-ui="tomb"] #modal.human-activation-modal #modalBody>.modal-inner{
   max-height:none!important;
   overflow:visible!important;
   padding-bottom:calc(28px + env(safe-area-inset-bottom));
