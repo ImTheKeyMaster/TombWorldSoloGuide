@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.147
+# Tomb World Battle Guide v10.0.148
+
+## v10.0.148
+
+### Experimental Fight Resolution success-count labels
+
+- Replace the star and dot glyphs in Experimental Fight Resolution combatant cards with plain-text `Crits` and `Normal` labels for remaining successes.
+- Keep card positions, portrait assets, count calculations, accessibility labels, and all action handlers unchanged.
+- Preserve the original Standard Mode Fight Resolution appearance and combat mechanics.
+- Refresh the application shell and offline cache to V10.0.148.
 
 ## v10.0.147
 
