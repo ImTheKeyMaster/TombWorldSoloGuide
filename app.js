@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.143';
+  const APP_VERSION = '10.0.144';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -704,10 +704,11 @@ document.addEventListener('touchend',function(e){
     const definition=playerDefinition(id);
     const sourceName=definition?.name||String(id);
     const match=definition?.officialName?sourceName.match(/^(.*?)\s+\d+(\s*\(.*\))?$/):null;
+    const variant=definition?.officialName&&!match?sourceName.match(/^(.*?)\s+(\([^()]+\))$/):null;
     return {
-      groupName:definition?.officialName||match?.[1]||sourceName,
-      baseName:match?.[1]||sourceName,
-      suffix:match?.[2]||''
+      groupName:definition?.officialName||match?.[1]||variant?.[1]||sourceName,
+      baseName:match?.[1]||variant?.[1]||sourceName,
+      suffix:match?.[2]||(variant?` ${variant[2]}`:'')
     };
   }
   function operativeName(operative,side){
