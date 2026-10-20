@@ -45,8 +45,12 @@ def test_activation_dialog_scrolls_vertically_inside_safe_areas():
     ):
         assert expected in rule, f"Missing iPhone scroll behavior: {expected}"
     assert "overflow:visible!important" not in rule
+    # The actual markup is #modal > #modalBody > .modal-inner, not a direct child.
+    assert '<dialog id="modal" class="modal"' in HTML
+    assert '<div id="modalBody"></div>' in HTML
+    assert 'modalBody.innerHTML=`<div class="modal-inner"' in APP
     assert re.search(
-        r'#modal\.human-activation-modal>\.modal-inner\s*\{[^}]*'
+        r'#modal\.human-activation-modal #modalBody>\.modal-inner\s*\{[^}]*'
         r'overflow:visible!important;[^}]*padding-bottom:calc\(28px \+ env\(safe-area-inset-bottom\)\);',
         CSS,
     ), "Modal inner must not form a competing scroll region or hide the footer"
