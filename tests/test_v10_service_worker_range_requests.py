@@ -32,7 +32,7 @@ const response=(body,status)=>{
   Object.defineProperty(value,'type',{value:'basic'});
   return value;
 };
-const context={URL,Request,Response,console,caches:{open:async()=>{cacheOpenCount+=1;return cache;}},
+const context={URL,Request,Response,console,caches:{open:async()=>{cacheOpenCount+=1;return cache;},keys:async()=>[]},
   fetch:async request=>{
     fetchRequests.push(request);
     if(request.url.endsWith('partial.mp3'))return response('part',206);
@@ -76,7 +76,7 @@ async function dispatch(path,headers){
 
 
 def test_offline_audio_precaching_remains_complete_response_based():
-    assert "cache.addAll(PRECACHE_ASSETS)" in WORKER
+    assert "cache.addAll(CORE_PRECACHE_ASSETS)" in WORKER
     assert "./Assets/Audio/Narration/SFX/dice-roll-flem0527-750ms-50.mp3" in WORKER
     assert "await cache.addAll(files);" in WORKER
     assert "await cacheMissingAsset(cache,file);" in WORKER

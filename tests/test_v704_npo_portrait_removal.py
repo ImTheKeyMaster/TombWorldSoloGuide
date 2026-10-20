@@ -90,7 +90,7 @@ class NpoPortraitRemovalTests(unittest.TestCase):
         self.assertIn(f"V{CURRENT_APP_VERSION}", INDEX)
         for asset in ("app.js", "mission-engine.js", "persistence.js", "styles.css"):
             self.assertIn(f"{asset}?v={CURRENT_APP_VERSION}", INDEX)
-        self.assertIn("cache.addAll(PRECACHE_ASSETS)", WORKER)
+        self.assertIn("cache.addAll(CORE_PRECACHE_ASSETS)", WORKER)
 
     def test_matrix_interface_remains_excluded(self):
         self.assertNotIn("obelisk node matrix support", APP.lower())
