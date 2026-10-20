@@ -48,10 +48,9 @@ def test_background_stays_stationary_while_native_dialog_scrolls():
     )
     assert "overflow:hidden!important;" in rule
     assert "overscroll-behavior:none!important;" in rule
-    assert "body.modal-open{overflow:auto!important" in CSS
-    assert CSS.index('html:has(#modal[open]),body:has(#modal[open])') > CSS.index(
-        "body.modal-open{overflow:auto!important"
-    )
+    legacy = re.search(r"body\\.modal-open\\s*\\{[^}]*overflow:auto!important", CSS)
+    assert legacy, "Expected the historical background-scroll override"
+    assert CSS.index('html:has(#modal[open]),body:has(#modal[open])') > legacy.start()
     assert "modal.scrollTop=0;" in APP
     assert "modalBody.scrollTop=0;" in APP
     assert ".modal .modal-inner" in CSS
