@@ -703,7 +703,9 @@ document.addEventListener('touchend',function(e){
   function playerDisplayIdentity(id){
     const definition=playerDefinition(id);
     const sourceName=definition?.name||String(id);
-    const match=definition?.officialName?sourceName.match(/^(.*?)\s+\d+(\s*\(.*\))?$/):null;
+    const match=definition?.officialName
+      ? sourceName.match(/^(.*?)(?:\s+\d+)?(\s*\([^()]*\))$/)||sourceName.match(/^(.*?)\s+\d+$/)
+      : null;
     const variant=definition?.officialName&&!match?sourceName.match(/^(.*?)\s+(\([^()]+\))$/):null;
     return {
       groupName:definition?.officialName||match?.[1]||variant?.[1]||sourceName,
