@@ -88,7 +88,7 @@ const dependencies={
   warmDeathwatchRosterImages:()=>{throw Error('incorrect faction warmup');}
 };
 const api=new Function('ctx','with(ctx){'+code+
-  '\nreturn {loadPlayerTeamData,canBuildPlayerRoster,setManifest:data=>playerManifest=data};'
+  '\nreturn {loadPlayerTeamData,canBuildPlayerRoster,setManifest:data=>playerManifest=data};}'
 )(dependencies);
 api.setManifest({teams:[{id:'korps',file:'DeathKorps.json'}]});
 (async()=>{
