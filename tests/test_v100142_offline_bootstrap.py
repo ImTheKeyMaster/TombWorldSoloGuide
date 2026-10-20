@@ -175,3 +175,78 @@ def test_static_contract_version_and_no_saved_game_changes():
     assert f"styles.css?v={CURRENT_APP_VERSION}" in HTML
     assert f"app.js?v={CURRENT_APP_VERSION}" in HTML
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
+
+
+def test_reuses_unversioned_media_refreshes_versioned_art_and_prunes_only_when_ready():
+    run_node(r"""
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const scope='https://example.test/app/',old='tomb-world-battle-guide-older';
+const key=v=>new URL(typeof v==='string'?v:v.url,scope).href;
+const listeners={},data=new Map([[old,new Map([
+  [key('./Assets/Images/TombUI/DeathKorps/Death_Korps_gunner.png'),new Response('old gunner')],
+  [key('./Assets/Maps/mission-01.png?v=old'),new Response('old map')]
+])]]);
+const added=[],removed=[];
+const cacheFor=name=>{
+  if(!data.has(name))data.set(name,new Map());
+  const values=data.get(name);
+  return {
+    async addAll(paths){for(const p of paths)values.set(key(p),new Response('bootstrap'));},
+    async match(req,options){
+      const k=key(req);if(values.has(k))return values.get(k).clone();
+      if(options?.ignoreSearch){
+        for(const [url,value] of values)
+          if(new URL(url).pathname===new URL(k).pathname)return value.clone();
+      }
+    },
+    async add(path){added.push(path);values.set(key(path),new Response('fresh:'+path));},
+    async put(path,response){values.set(key(path),response.clone());},
+    async delete(req,options){
+      const k=key(req);
+      for(const url of [...values.keys()])
+        if(url===k||(options?.ignoreSearch&&new URL(url).pathname===new URL(k).pathname))values.delete(url);
+      return true;
+    },
+    async keys(){return [...values.keys()].map(url=>new Request(url));}
+  };
+};
+const manifests={
+  'narration-manifest':{entries:{}},
+  'ambient-config':{schemaVersion:1,file:'Ambient/caverns.ogg'},
+  'Backgrounds/manifest':{landscape:[]}
+};
+const context={
+ URL,Request,Response,console,
+ caches:{
+  open:async name=>cacheFor(name),
+  keys:async()=>[...data.keys()],
+  delete:async name=>{removed.push(name);return data.delete(name);}
+ },
+ fetch:async url=>{
+  const match=Object.entries(manifests).find(([k])=>String(url).includes(k));
+  return new Response(match?JSON.stringify(match[1]):'media',{status:200});
+ },
+ self:{location:{origin:'https://example.test'},clients:{claim:async()=>{}},addEventListener:(n,h)=>listeners[n]=h}
+};
+vm.createContext(context);vm.runInContext(fs.readFileSync('service-worker.js','utf8'),context);
+async function dispatch(type,message){
+  let pending;
+  listeners[type]({data:message,source:{postMessage:()=>{}},waitUntil:p=>pending=p});
+  await pending;
+}
+(async()=>{
+  await dispatch('install');
+  assert(data.has(old),'older offline assets were deleted during install');
+  await dispatch('activate');
+  assert(data.has(old),'older offline assets were deleted before package preparation');
+  await dispatch('message',{type:'ENSURE_OFFLINE_PACKAGE'});
+  const current=[...data.keys()].find(name=>name!==old);
+  assert(current,'missing current cache');
+  assert.equal(await (await cacheFor(current).match('./Assets/Images/TombUI/DeathKorps/Death_Korps_gunner.png')).text(),'old gunner');
+  assert.equal(await (await cacheFor(current).match('./Assets/Maps/mission-01.png?v='+current.split('-').at(-1))).text(),'fresh:./Assets/Maps/mission-01.png?v='+current.split('-').at(-1));
+  assert(!added.includes('./Assets/Images/TombUI/DeathKorps/Death_Korps_gunner.png'),'unversioned image re-downloaded instead of being moved');
+  assert(added.some(x=>x.startsWith('./Assets/Maps/mission-01.png?v=')),'new map version did not download');
+  assert(!data.has(old)&&removed.includes(old),'old caches not pruned after full package completion');
+  assert(await cacheFor(current).match('./__offline-package-complete__'),'package readiness marker not written');
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
