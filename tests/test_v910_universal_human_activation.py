@@ -114,6 +114,7 @@ const state={lastActivation:{side:'player',committed:false,activationId:'a1',ope
 const activePlayerActivation=()=>state.lastActivation.side==='player'&&!state.lastActivation.committed?state.lastActivation:null;
 const pendingAttackResults=(stage,type)=>type==='shoot'?[{targetId:'n1',targetName:'Warrior 1',before:8,after:3,damage:5,attackType:'shoot'}]:[];
 const log=()=>{},save=()=>true,acknowledgeCurrentDiceRequest=()=>{},playerCurrentWounds=()=>8;
+const playerActivationOperativeEliminated=operativeId=>playerCurrentWounds(operativeId)<=0||(state.playerCasualtyIds||[]).includes(operativeId);
 let renders=0;const renderHumanPlayerActionPicker=()=>{renders++},completeHumanPlayerActivation=()=>{};
 const playerName=()=> 'Operative';
 eval(extract('function commitHumanPlayerAction','function confirmEndHumanPlayerActivation'));
@@ -312,7 +313,8 @@ def test_end_activation_confirmations_cover_ap_and_zero_actions():
 
 def test_zero_ap_and_self_incapacitation_complete_automatically():
     commit = source("commitHumanPlayerAction", "confirmEndHumanPlayerActivation")
-    assert "playerCurrentWounds(activation.operativeId)<=0||activation.remainingAp<=0" in commit
+    assert "playerActivationOperativeEliminated(activation.operativeId)||activation.remainingAp<=0" in commit
+    assert "playerCurrentWounds(operativeId)<=0||(state.playerCasualtyIds||[]).includes(operativeId)" in APP
     assert "completeHumanPlayerActivation" in commit
 
 
