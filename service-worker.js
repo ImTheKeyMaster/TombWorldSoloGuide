@@ -110,12 +110,20 @@ function ambientFile(config) {
   return `./Assets/Audio/Narration/${file}`;
 }
 
-async function archivedCacheMatch(request) {
+async function archivedCacheEntry(request) {
   for(const name of (await caches.keys()).filter(name=>isTombWorldCache(name)&&name!==CACHE_NAME).reverse()){
-    const response=await (await caches.open(name)).match(request,{ignoreSearch:true});
-    if(response)return response;
+    const cache=await caches.open(name);
+    const response=await cache.match(request,{ignoreSearch:true});
+    if(response)return {cache,response};
   }
   return null;
+}
+async function archivedCacheMatch(request) {
+  return (await archivedCacheEntry(request))?.response||null;
+}
+async function cleanSupersededCaches() {
+  const names=await caches.keys();
+  await Promise.all(names.filter(name=>isTombWorldCache(name)&&name!==CACHE_NAME).map(name=>caches.delete(name)));
 }
 
 async function cacheJson(cache,path) {
@@ -127,12 +135,25 @@ async function cacheJson(cache,path) {
   } catch(error) {
     response=await cache.match(path)||await archivedCacheMatch(path);
     if(!response)throw error;
+    // The new package must own its manifests before older caches can be pruned.
+    await cache.put(path,response.clone());
   }
   return response.json();
 }
 
 async function cacheMissingAsset(cache,path) {
-  if(await cache.match(path)||await archivedCacheMatch(path))return;
+  if(await cache.match(path))return;
+  // A new versioned map/portrait must be fetched fresh, never silently replaced
+  // by an old image whose only matching URL differs by ?v=.
+  if(!/[?&](?:v|release)=/.test(path)){
+    const archived=await archivedCacheEntry(path);
+    if(archived){
+      await cache.put(path,archived.response.clone());
+      // Move unversioned media rather than duplicating entire audio libraries.
+      await archived.cache.delete(path,{ignoreSearch:true});
+      return;
+    }
+  }
   await cache.add(path);
 }
 
@@ -208,6 +229,7 @@ async function prepareOfflinePackage({reportProgress=true}={}) {
     throw error;
   }
   await cache.put(OFFLINE_PACKAGE_MARKER,new Response(APP_VERSION,{headers:{'Content-Type':'text/plain'}}));
+  try{await cleanSupersededCaches();}catch(error){console.warn('Old offline caches could not be cleaned up.',error);}
   if(reportProgress)reportOfflineInstall('OFFLINE_INSTALL_COMPLETE',assets.length,assets.length);
 }
 
@@ -217,6 +239,7 @@ async function ensureOfflinePackage() {
   if(marker){
     const markerVersion=await marker.text();
     if(markerVersion===APP_VERSION){
+      try{await cleanSupersededCaches();}catch(error){console.warn('Old offline caches could not be cleaned up.',error);}
       offlinePreparationStatus={type:'OFFLINE_PACKAGE_READY'};
       offlinePreparationClients.forEach(client=>postOfflineMessage(client,offlinePreparationStatus));
       return;
@@ -294,9 +317,19 @@ async function cachedFallback(cache, request, failedResponse) {
 async function cacheFirst(request) {
   if (request.headers.has('range')) return fetch(request);
   const cache = await caches.open(CACHE_NAME);
-  const cached = await cache.match(request)||await archivedCacheMatch(request);
+  const cached = await cache.match(request);
   if (cached) return cached;
-  const response = await fetch(request);
+  // Versioned artwork may have changed. Try the current version first,
+  // falling back to old offline imagery only when the network is unavailable.
+  if(/[?&](?:v|release)=/.test(request.url)){
+    try{
+      const response=await fetch(request);
+      if(response.ok){await cacheResponse(cache,request,response);return response;}
+    }catch{}
+  }
+  const archived=await archivedCacheMatch(request);
+  if(archived)return archived;
+  const response=await fetch(request);
   await cacheResponse(cache, request, response);
   return response;
 }
