@@ -2608,3 +2608,150 @@ html[data-ui="tomb"]:has(#modal[open]),html[data-ui="tomb"] body:has(#modal[open
   overflow:hidden!important;
   overscroll-behavior:none!important;
 }
+
+/* v10.0.146: opt-in compact Fight Resolution. Standard markup and styles untouched. */
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-sequence{
+  gap:12px;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pools{
+  gap:8px;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  min-width:0;
+  display:block;
+  padding:11px;
+  border-radius:14px;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .fight-portrait{
+  top:-5px;
+  right:-8px;
+  width:98px;
+  height:120px;
+  max-width:68%;
+  opacity:.29;
+  pointer-events:none;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.8) 40%,#000 80%);
+  mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.8) 40%,#000 80%);
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .fight-portrait-artwork{
+  transform:none;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool-details{
+  position:relative;
+  z-index:1;
+  display:grid;
+  gap:4px;
+  min-width:0;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-status{
+  justify-self:start;
+  color:var(--muted);
+  font-size:.61rem;
+  font-weight:900;
+  letter-spacing:.07em;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-status.is-acting{
+  border-radius:999px;
+  background:var(--green);
+  color:#062012;
+  padding:3px 6px;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-name{
+  display:block;
+  font-size:.89rem;
+  line-height:1.22;
+  font-weight:850;
+  overflow-wrap:anywhere;
+  text-shadow:0 1px 5px #06110d,0 0 9px #06110d;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-weapon{
+  display:block;
+  font-size:.75rem;
+  line-height:1.2;
+  color:var(--muted);
+  overflow-wrap:anywhere;
+  text-shadow:0 1px 5px #06110d;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .experimental-fight-card-wounds{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:5px;
+  margin-top:4px;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-wounds strong{
+  font-size:1.15rem;
+  font-weight:900;
+  line-height:1.1;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-wounds span{
+  font-size:.69rem;
+  color:var(--muted);
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .experimental-fight-card-successes{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:9px;
+  margin-top:5px;
+  padding-top:8px;
+  border-top:1px solid var(--line);
+  font-size:.95rem;
+  font-weight:850;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-turn{
+  gap:10px;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-turn-header{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:6px 10px;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-turn-heading{
+  margin:0;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-turn-operative{
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:4px 8px;
+  color:var(--green);
+  font-size:.75rem;
+  font-weight:850;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-turn>p,
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-footnote{
+  margin:0;
+  color:var(--muted);
+  line-height:1.35;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-help{
+  border-top:1px solid var(--line);
+  padding-top:9px;
+  font-size:.8rem;
+  color:var(--muted);
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-help summary{
+  cursor:pointer;
+  color:var(--text);
+  font-weight:750;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-help p{
+  margin:8px 0 0;
+}
+@media(max-width:390px){
+  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool{
+    padding:9px;
+  }
+  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .fight-portrait{
+    width:78px;
+    height:100px;
+    opacity:.25;
+  }
+  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-name{
+    font-size:.82rem;
+  }
+}

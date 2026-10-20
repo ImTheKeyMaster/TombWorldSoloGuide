@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.145';
+  const APP_VERSION = '10.0.146';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -7780,6 +7780,41 @@ function showPlayerActivation(){
     if(fight.resultAcknowledged){acknowledgeFightResult(fight);return;}
     renderFightResult(fight);
   }
+  function experimentalFightPoolHtml(fight,role){
+    const participant=fight[role],pool=unresolvedFightSuccesses(fight,role);
+    const critical=pool.filter(item=>item.kind==='critical').length,normal=pool.length-critical;
+    const active=fight.turn===role,portrait=fightParticipantPortrait(participant,role);
+    return `<section class="fight-pool experimental-fight-pool${active?' active':''}${portrait?' has-fight-portrait':''}" aria-label="${active?'Acting now: ':''}${escapeHtml(participant.label)}">
+      ${portrait}
+      <div class="experimental-fight-pool-details">
+        <span class="experimental-fight-card-status${active?' is-acting':''}">${active?'ACTING NOW':participant.side==='player'?'OPERATIVE':'NECRON'}</span>
+        <strong class="experimental-fight-card-name">${escapeHtml(participant.label)}</strong>
+        <small class="experimental-fight-card-weapon">${escapeHtml(participant.profile.name)}</small>
+        <div class="experimental-fight-card-wounds"><strong>${participant.wounds}/${participant.maxWounds}</strong><span>wounds</span></div>
+        <div class="experimental-fight-card-successes" aria-label="Unresolved successes: ${critical} critical, ${normal} normal"><span aria-label="${critical} critical successes">★ ${critical}</span><span aria-label="${normal} normal successes">● ${normal}</span></div>
+      </div>
+    </section>`;
+  }
+  function experimentalFightResolutionHtml(fight,role,participant,strikes,blocks,capacity){
+    const soloPlayerTurn=!isPvpMode()&&participant.side==='player';
+    const heading=soloPlayerTurn?'Your Turn':`${escapeHtml(participant.label)}'s Turn`;
+    const help=isPvpMode()
+      ?'Starting with the attacker, players alternate resolving one success as a Strike or Block.'
+      :'You and the NPO alternate resolving one success. You choose for your operative. The Guide automatically resolves the NPO’s response.';
+    return `<div class="fight-sequence experimental-fight-sequence">
+      <div class="fight-pools experimental-fight-pools">${experimentalFightPoolHtml(fight,'attacker')}${experimentalFightPoolHtml(fight,'defender')}</div>
+      ${fightLastResolutionHtml(fight)}
+      <section class="fight-turn experimental-fight-turn" aria-label="Acting now: ${escapeHtml(participant.label)}">
+        <div class="experimental-fight-turn-header"><h3 class="fight-turn-heading">${heading}</h3>${soloPlayerTurn?`<span class="experimental-fight-turn-operative">${escapeHtml(participant.label)}</span>`:''}</div>
+        <p>Choose one unresolved success.</p>
+        ${capacity>1?'<p class="experimental-fight-shield-note"><strong>Shield:</strong> a Block can stop up to two legal successes.</p>':''}
+        <section class="fight-action-group" aria-labelledby="fightStrikeHeading"><h4 id="fightStrikeHeading">STRIKE</h4><div class="fight-actions">${strikes}</div></section>
+        ${blocks?`<section class="fight-action-group" aria-labelledby="fightBlockHeading"><h4 id="fightBlockHeading">${capacity>1?'BLOCK · SHIELD':'BLOCK'}</h4><div class="fight-actions">${blocks}</div></section>`:''}
+      </section>
+      <p class="experimental-fight-footnote">Damage and blocks apply immediately.</p>
+      <details class="experimental-fight-help"><summary>How Fight Resolution works</summary><p>${help}</p></details>
+    </div>`;
+  }
   function renderFightResolution(){
     const fight=state.fightState;if(!fight||fight.pendingStage3)return;if(fight.completed){finishFight(fight);return;}
     if(!unresolvedFightSuccesses(fight,fight.turn).length){
@@ -7796,7 +7831,7 @@ function showPlayerActivation(){
     const capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
     const blocks=actions.blocks.map(({blocker,target})=>`<button class="btn secondary fight-action" data-fight-blocker="${escapeHtml(blocker.id)}" data-fight-block-target="${escapeHtml(target.id)}" aria-label="Block enemy ${target.kind} success using ${blocker.kind} success"><strong>${titleCaseRuleId(blocker.kind)} Success</strong><span>${capacity>1?'Block up to 2 legal enemy successes':`Block 1 enemy ${titleCaseRuleId(target.kind)}`}</span></button>`).join('');
     const intro=isPvpMode()?'Starting with the attacker, players alternate resolving one success as a Strike or Block.':'You and the NPO alternate resolving one success. You choose for your operative. The Guide automatically resolves the NPO’s response.';
-    showModal('Fight Resolution',`<div class="fight-sequence"><p>${intro}</p><div class="fight-pools">${fightPoolHtml(fight,'attacker')}${fightPoolHtml(fight,'defender')}</div>${fightLastResolutionHtml(fight)}<section class="fight-turn" aria-label="Acting now: ${escapeHtml(participant.label)}"><h3 class="fight-turn-heading">${escapeHtml(participant.label)}'s Turn</h3><p>Choose how ${escapeHtml(participant.label)} uses one of its unresolved successes.</p>${capacity>1?'<p><strong>Shield:</strong> this Block can block up to two unresolved successes.</p>':''}<section class="fight-action-group" aria-labelledby="fightStrikeHeading"><h4 id="fightStrikeHeading">STRIKE</h4><div class="fight-actions">${strikes}</div></section>${blocks?`<section class="fight-action-group" aria-labelledby="fightBlockHeading"><h4 id="fightBlockHeading">${capacity>1?'BLOCK · SHIELD':'BLOCK'}</h4><div class="fight-actions">${blocks}</div></section>`:''}</section><p class="muted">Choose one success to resolve. Damage and Blocks commit immediately.</p></div>`);
+    showModal('Fight Resolution',experimentalFeaturesEnabled()&&document.documentElement.dataset.ui==='tomb'?experimentalFightResolutionHtml(fight,role,participant,strikes,blocks,capacity):`<div class="fight-sequence"><p>${intro}</p><div class="fight-pools">${fightPoolHtml(fight,'attacker')}${fightPoolHtml(fight,'defender')}</div>${fightLastResolutionHtml(fight)}<section class="fight-turn" aria-label="Acting now: ${escapeHtml(participant.label)}"><h3 class="fight-turn-heading">${escapeHtml(participant.label)}'s Turn</h3><p>Choose how ${escapeHtml(participant.label)} uses one of its unresolved successes.</p>${capacity>1?'<p><strong>Shield:</strong> this Block can block up to two unresolved successes.</p>':''}<section class="fight-action-group" aria-labelledby="fightStrikeHeading"><h4 id="fightStrikeHeading">STRIKE</h4><div class="fight-actions">${strikes}</div></section>${blocks?`<section class="fight-action-group" aria-labelledby="fightBlockHeading"><h4 id="fightBlockHeading">${capacity>1?'BLOCK · SHIELD':'BLOCK'}</h4><div class="fight-actions">${blocks}</div></section>`:''}</section><p class="muted">Choose one success to resolve. Damage and Blocks commit immediately.</p></div>`);
     $$('[data-fight-strike]',modal).forEach(button=>button.onclick=()=>{commitFightStrike(fight,role,button.dataset.fightStrike);renderFightResolution();});
     $$('[data-fight-blocker]',modal).forEach(button=>button.onclick=()=>{if(capacity>1)showFightBlockSelection(fight,role,button.dataset.fightBlocker,button.dataset.fightBlockTarget);else{commitFightBlock(fight,role,button.dataset.fightBlocker,[button.dataset.fightBlockTarget]);renderFightResolution();}});
   }
