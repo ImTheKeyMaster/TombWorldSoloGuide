@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.141
+# Tomb World Battle Guide v10.0.142
+
+## v10.0.142
+
+### Reliable iPhone offline startup and service-worker updates
+
+- Precache the HTML, JavaScript, CSS, manifests, and game definitions as the required startup bundle. Prepare larger optional portraits, maps, icons, audio, and backgrounds after installation, rather than allowing one large asset to abort the offline app update.
+- Preserve older offline caches during an update and reuse their media and fallback files when the network is unavailable. Avoid copying large offline audio caches during service-worker activation.
+- Keep offline-preparation progress reporting and retries; do not alter save storage, gameplay, activation screens, or miniature artwork.
+- Update the app shell and cache version consistently to v10.0.142.
 
 ## v10.0.141
 
