@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.144';
+  const APP_VERSION = '10.0.145';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -531,12 +531,20 @@ document.addEventListener('touchend',function(e){
       const data=await response.json();
       validatePlayerTeamData(data,entry.file);
       if(requestId!==playerTeamLoadRequestId||state.playerTeamId!==teamId)return null;
+      // Begin portrait downloads as soon as team data arrives. During new-game
+      // setup, keep the roster step locked until Death Korps photos are ready.
+      if(data.teamName?.toLowerCase()==='deathwatch')warmDeathwatchRosterImages(data.operatives.map(operative=>operative.id));
+      if(data.teamName?.toLowerCase()==='death korps'){
+        const portraitsReady=warmDeathKorpsPortraitImages(data.operatives.map(operative=>operative.id));
+        if(state.screen==='setup'){
+          await Promise.race([portraitsReady,new Promise(resolve=>setTimeout(resolve,12000))]);
+          if(requestId!==playerTeamLoadRequestId||state.playerTeamId!==teamId)return null;
+        }
+      }
       playerTeamData=data;
       loadedPlayerTeamId=teamId;
       state.playerTeamFile=entry.file;
       playerTeamLoadStatus='loaded';
-      if(data.teamName?.toLowerCase()==='deathwatch')warmDeathwatchRosterImages(data.operatives.map(operative=>operative.id));
-      if(data.teamName?.toLowerCase()==='death korps')warmDeathKorpsPortraitImages(data.operatives.map(operative=>operative.id));
       const operativeIds=new Set(data.operatives.map(operative=>operative.id));
       if((state.playerRoster||[]).some(id=>!operativeIds.has(id)))clearPlayerTeamDependentState();
       assignPlayerDisplayNumbers();
@@ -5481,20 +5489,39 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     const filename=DEATH_KORPS_PORTRAITS[id];
     return filename?`${DEATH_KORPS_PORTRAIT_ROOT}Death_Korps_${filename}.png`:'';
   }
-  // Warm once per unique photograph when the Death Korps team is selected.
-  // Browsers retain decoded images and their HTTP cache for subsequent rail/detail/activation use.
+  // Keep one decoded image per unique photograph across roster, combat, and
+  // activation screens. Return readiness so team setup can wait for first use.
   const warmedDeathKorpsPortraits=new Map();
+  const readyDeathKorpsPortraits=new Map();
   function warmDeathKorpsPortraitImages(ids){
+    const pending=[];
     for(const id of ids){
       const src=deathKorpsPortraitImage(id);
-      if(!src||warmedDeathKorpsPortraits.has(src))continue;
+      if(!src)continue;
+      if(warmedDeathKorpsPortraits.has(src)){
+        pending.push(readyDeathKorpsPortraits.get(src));
+        continue;
+      }
       const image=new Image();
       warmedDeathKorpsPortraits.set(src,image);
       image.decoding='async';
-      image.onerror=()=>{if(warmedDeathKorpsPortraits.get(src)===image)warmedDeathKorpsPortraits.delete(src);};
+      const loaded=new Promise(resolve=>{
+        image.onload=resolve;
+        image.onerror=()=>{
+          if(warmedDeathKorpsPortraits.get(src)===image){
+            warmedDeathKorpsPortraits.delete(src);
+            readyDeathKorpsPortraits.delete(src);
+          }
+          resolve();
+        };
+      });
       image.src=src;
-      if(typeof image.decode==='function')void image.decode().catch(()=>{});
+      const decoded=typeof image.decode==='function'?image.decode().catch(()=>{}):Promise.resolve();
+      const ready=Promise.all([loaded,decoded]).then(()=>{});
+      readyDeathKorpsPortraits.set(src,ready);
+      pending.push(ready);
     }
+    return Promise.all(pending);
   }
   function playerRosterPortraitMarkup(id,filterId,svgClass=''){
     if(selectedPlayerTeamName().toLowerCase()!=='death korps')return experimentalDeathwatchGreenPortraitSvg(id,filterId,svgClass);
