@@ -69,12 +69,14 @@ def test_marker_retry_update_reuse_and_cleanup_contracts_are_present():
     assert preparation.index("for(const asset of backgrounds)") < preparation.index("cache.put(OFFLINE_PACKAGE_MARKER")
     assert "if(await cache.match(path))return;" in WORKER
     assert "if(markerVersion===APP_VERSION)" in WORKER
-    assert "copyExtendedAssetsFromOldCaches(names)" in WORKER
-    assert "await copyExtendedAssetsFromOldCaches(names);" in WORKER
-    assert ".map(name=>caches.delete(name))" in WORKER
+    assert "async function archivedCacheMatch(request)" in WORKER
+    assert "await archivedCacheMatch(path)" in WORKER
+    assert "cache.addAll(CORE_PRECACHE_ASSETS)" in WORKER
+    assert "cache.addAll(PRECACHE_ASSETS)" not in WORKER
+    assert "event.waitUntil(self.clients.claim());" in WORKER
     assert "OFFLINE_INSTALL_ERROR" in WORKER
     assert "It will be retried next time." in APP
-    assert "Offline media could not be reused from cache" in WORKER
+    assert "Keep previous caches as fallbacks" in WORKER
 
 
 def test_status_delivery_is_failure_isolated_and_shared_with_concurrent_clients():
