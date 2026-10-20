@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.144
+# Tomb World Battle Guide v10.0.145
+
+## v10.0.145
+
+### Finish Death Korps miniature portrait loading during new-game setup
+
+- Team selection already started loading its Death Korps photographs, but did not wait for network downloads or decoding before enabling Build Roster. On a newly installed device the first activation could still display an empty miniature for several seconds.
+- Track a single image and readiness promise per unique Death Korps photo, retaining and reusing completed images across roster rails, combat, and activation screens.
+- While setting up a new game, wait for images to load and decode before unlocking the roster step; cap the wait at 12 seconds to avoid trapping players if assets are unavailable.
+- Existing saves continue to open without a new setup delay; failed assets can be retried and changing teams cancels stale selection outcomes.
+- Preserve the existing UI, artwork, gameplay, offline behavior, and V10.0.144 loadout naming.
 
 ## v10.0.144
 
