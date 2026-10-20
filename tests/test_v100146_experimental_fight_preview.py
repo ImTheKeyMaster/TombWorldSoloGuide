@@ -67,8 +67,9 @@ for(const enabled of [false,true]){
     assert.match(html,/Gunner \(Flamer\)/);
     assert.match(html,/7\/7/);
     assert.match(html,/21\/21/);
-    assert.match(html,/★ 0/);
-    assert.match(html,/● 1/);
+    assert.match(html,/Crits 0/);
+    assert.match(html,/Normal 1/);
+    assert.doesNotMatch(html,/★|●/);
     assert.match(html,/How Fight Resolution works/);
   }else{
     assert.match(html,/legacy-attacker/);
@@ -119,6 +120,9 @@ def test_standard_template_and_gameplay_are_unchanged():
     assert "You and the NPO alternate resolving one success." in src
     assert "Choose how ${escapeHtml(participant.label)} uses one of its unresolved successes." in src
     assert "Damage and Blocks commit immediately." in src
+    original_pool = APP.split("  function fightPoolHtml(", 1)[1].split("  function fightDiePresentation(", 1)[0]
+    assert "★ Critical × ${critical}" in original_pool
+    assert "● Normal × ${normal}" in original_pool
     assert "semanticFightActions(fight,role)" in src
     assert "soloNpoFightDecision(fight,role)" in src
     assert "commitFightStrike(fight,role,button.dataset.fightStrike)" in src
