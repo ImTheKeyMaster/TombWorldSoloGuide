@@ -163,13 +163,14 @@ const dispatch=async name=>{
 };
 (async()=>{
   await dispatch('install');
-  assert.equal(added.length,2);
+  assert.equal(added.length,1);
   assert.equal(added[0].name,'tomb-world-battle-guide-__CURRENT_APP_VERSION__');
   assert.ok(added[0].assets.includes('./index.html'));
   assert.ok(added[0].assets.includes('./app.js?v=__CURRENT_APP_VERSION__'));
-  assert.deepEqual(added[1].assets,['./Assets/Images/Backgrounds/Landscape-01.png']);
+  assert.ok(!added[0].assets.includes('./Assets/Images/Backgrounds/Landscape-01.png'));
+  assert.ok(!added[0].assets.includes('./Assets/Images/TombUI/DeathKorps/Death_Korps_gunner.png'));
   await dispatch('activate');
-  assert.deepEqual(deleted,['tomb-world-solo-guide-7.0.6','tomb-world-battle-guide-8.6.108']);
+  assert.deepEqual(deleted,[]); // Older offline media remains available during upgrades.
 })().catch(error=>{console.error(error);process.exitCode=1;});
 """
         script = script.replace("__CURRENT_APP_VERSION__", CURRENT_APP_VERSION)
