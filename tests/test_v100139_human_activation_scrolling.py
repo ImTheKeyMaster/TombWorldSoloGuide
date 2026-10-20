@@ -3,6 +3,8 @@
 from pathlib import Path
 import re
 
+from versioning import CURRENT_APP_VERSION
+
 ROOT = Path(__file__).resolve().parents[1]
 APP = (ROOT / "app.js").read_text(encoding="utf-8")
 CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
@@ -64,8 +66,8 @@ def test_activation_artwork_and_combat_logic_are_unchanged():
 
 
 def test_version_is_coordinated_for_offline_refresh():
-    assert "const APP_VERSION = '10.0.139';" in APP
-    assert "const APP_VERSION = '10.0.139';" in SW
-    assert "V10.0.139" in HTML
-    assert 'styles.css?v=10.0.139' in HTML
-    assert 'app.js?v=10.0.139' in HTML
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in SW
+    assert f"V{CURRENT_APP_VERSION}" in HTML
+    assert f"styles.css?v={CURRENT_APP_VERSION}" in HTML
+    assert f"app.js?v={CURRENT_APP_VERSION}" in HTML
