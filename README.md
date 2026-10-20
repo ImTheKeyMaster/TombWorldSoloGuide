@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.139
+# Tomb World Battle Guide v10.0.140
+
+## v10.0.140
+
+### Match Death Korps activation portrait framing to Deathwatch
+
+- Reduce the visual scale of Death Korps miniature portraits on human activation screens in both portrait and landscape orientations to match Deathwatch miniature framing.
+- Adjust horizontal positioning and vertical offset while preserving the transparent source artwork, left-side fade, and Movement-panel overlap.
+- Keep Deathwatch portraits, all roster rails, combat art, gameplay mechanics, and Standard/Experimental behavior unchanged.
+- Update the app shell and service-worker cache to v10.0.140.
 
 ## v10.0.139
 

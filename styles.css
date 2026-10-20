@@ -2561,3 +2561,28 @@ html[data-ui="tomb"] #modal.human-activation-modal #modalBody>.modal-inner{
   overflow:visible!important;
   padding-bottom:calc(28px + env(safe-area-inset-bottom));
 }
+
+/* v10.0.140: Death Korps photographs fill more of their source frames than
+   Deathwatch portraits. Scale only the Korps activation SVG down so the
+   miniature reads at the same size without changing the existing crop/fade,
+   image resources, or Movement-panel overlap. */
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:has(image[href*="Death_Korps_"]) .experimental-activation-portrait-svg{
+  width:150%;
+  right:-8%;
+  top:10px;
+  transform:none;
+}
+@media(max-width:520px){
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:has(image[href*="Death_Korps_"]) .experimental-activation-portrait-svg{
+    width:157%;
+    right:-8%;
+    top:12px;
+  }
+}
+@media(max-width:380px){
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:has(image[href*="Death_Korps_"]) .experimental-activation-portrait-svg{
+    width:160%;
+    right:-9%;
+    top:10px;
+  }
+}
