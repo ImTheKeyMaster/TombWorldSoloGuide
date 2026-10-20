@@ -2538,3 +2538,26 @@ html[data-ui="tomb"] .dedicated-combat-screen .shooting-roll-pool.has-fight-port
     min-height:130px;
   }
 }
+
+/* v10.0.139: iPhone human activation scroll containment.
+   Keep the open activation inside the visible/safe-area viewport and scroll
+   the native dialog itself, including gestures starting over action buttons.
+   The artwork, cards, and other dialogs retain their existing layout. */
+html[data-ui="tomb"] #modal.human-activation-modal{
+  position:fixed;
+  top:max(16px,env(safe-area-inset-top));
+  bottom:max(16px,env(safe-area-inset-bottom));
+  margin:auto;
+  max-height:calc(100vh - max(16px,env(safe-area-inset-top)) - max(16px,env(safe-area-inset-bottom)));
+  max-height:calc(100dvh - max(16px,env(safe-area-inset-top)) - max(16px,env(safe-area-inset-bottom)));
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+}
+html[data-ui="tomb"] #modal.human-activation-modal #modalBody>.modal-inner{
+  max-height:none!important;
+  overflow:visible!important;
+  padding-bottom:calc(28px + env(safe-area-inset-bottom));
+}

@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.138
+# Tomb World Battle Guide v10.0.139
+
+## v10.0.139
+
+### iPhone activation scrolling
+
+- Keep Death Korps and Deathwatch activation dialogs within iPhone safe areas, with a single native vertical scroll region even when swiping over action buttons.
+- Ensure users can scroll to the Mission / Battlefield actions and End Activation footer without scrolling the background page.
+- Restrict the change to human activation dialogs, preserving artwork, game mechanics, and the Standard/Experimental modes.
+- Bump the app shell and offline cache to v10.0.139.
 
 ## v10.0.138
 

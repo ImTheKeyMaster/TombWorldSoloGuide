@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.138';
+  const APP_VERSION = '10.0.139';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -10201,6 +10201,8 @@ function showPlayerActivation(){
 
     modal.classList.remove('combat-resolution-modal','experimental-roster-rail-modal');
     modalBody.innerHTML=`<div class="modal-inner"><h2 id="modalTitle">${escapeHtml(title)}</h2>${content}</div>`;
+    // Scroll the long human activation within its own dialog on iOS, not the page.
+    modal.classList.toggle('human-activation-modal',Boolean(modalBody.querySelector('.human-activation-shell')));
     modal.setAttribute('aria-labelledby','modalTitle');
     modal.setAttribute('tabindex','-1');
     if(!modal.open)modal.showModal();
