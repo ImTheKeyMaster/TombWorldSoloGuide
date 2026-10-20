@@ -2191,7 +2191,7 @@ html[data-ui="tomb"] .experimental-deathwatch-roster-rail .experimental-roster-n
   word-break:normal;
 }
 
-/* v10.0.111: Experimental Deathwatch target rail. Other target selectors are untouched. */
+/* NPO target selection rail for Deathwatch and Death Korps; other target selectors are unchanged. */
 html[data-ui="tomb"] .npo-target-roster-label{margin:0 0 8px;color:var(--muted);font-size:.75rem;font-weight:800}
 html[data-ui="tomb"] .npo-target-roster-shell{width:100%;max-width:100%;min-width:0}
 html[data-ui="tomb"] .npo-target-roster-rail{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
