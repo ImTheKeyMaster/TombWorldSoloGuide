@@ -32,7 +32,7 @@ const response=(body,status)=>{
   Object.defineProperty(value,'type',{value:'basic'});
   return value;
 };
-const context={URL,Request,Response,console,caches:{open:async()=>{cacheOpenCount+=1;return cache;}},
+const context={URL,Request,Response,console,caches:{open:async()=>{cacheOpenCount+=1;return cache;},keys:async()=>[]},
   fetch:async request=>{
     fetchRequests.push(request);
     if(request.url.endsWith('partial.mp3'))return response('part',206);
