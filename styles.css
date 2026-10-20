@@ -2675,7 +2675,7 @@ html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-weapon{
   overflow-wrap:anywhere;
   text-shadow:0 1px 5px #06110d;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-wounds{
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .experimental-fight-card-wounds{
   display:flex;
   flex-wrap:wrap;
   align-items:baseline;
@@ -2691,7 +2691,7 @@ html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-wounds spa
   font-size:.69rem;
   color:var(--muted);
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-successes{
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .experimental-fight-card-successes{
   display:flex;
   flex-wrap:wrap;
   align-items:center;
