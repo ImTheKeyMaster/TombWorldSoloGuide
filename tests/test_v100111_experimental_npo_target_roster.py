@@ -15,14 +15,14 @@ def test_release_versions_match():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
 
-def test_rail_is_limited_to_experimental_deathwatch_attacks():
-    assert "document.documentElement.dataset.ui==='tomb'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'&&attackRequired&&!targetConfirmed&&eligibleTargetIds.length>0" in RENDER
+def test_rail_is_available_for_both_supported_player_teams():
+    assert "usesPlayerPortraitRail()&&attackRequired&&!targetConfirmed&&eligibleTargetIds.length>0" in RENDER
     assert 'experimentalNpoTargetRosterRail(eligibleTargetIds)' in RENDER
     assert '<select id="npoPriorityTarget"' in RENDER
     assert '<input id="npoPriorityTarget"' in RENDER
 
 def test_rail_uses_live_wounds_names_portraits_and_stable_ids():
-    for expression in ['eligibleTargetIds.map((id,index)=>{','playerCurrentWounds(id)','playerDefinition(id)?.wounds','experimentalDeathwatchGreenPortraitSvg(id,','escapeHtml(playerName(id))','escapeHtml(woundLabel)','data-npo-target-id=','playerTargetAriaLabel(id)']:
+    for expression in ['eligibleTargetIds.map((id,index)=>{','playerCurrentWounds(id)','playerDefinition(id)?.wounds','playerRosterPortraitMarkup(id,','escapeHtml(playerName(id))','escapeHtml(woundLabel)','data-npo-target-id=','playerTargetAriaLabel(id)']:
         assert expression in HELPER
     assert 'experimental-roster-detail' not in HELPER
 
@@ -40,7 +40,7 @@ def test_confirm_target_retains_original_action_checks():
         assert snippet in confirm
 
 def test_horizontal_mobile_layout_is_scoped_to_tomb_mode():
-    block=CSS.split('Experimental Deathwatch target rail.',1)[1]
+    block=CSS.split('NPO target selection rail for Deathwatch and Death Korps;',1)[1]
     assert 'html[data-ui="tomb"] .npo-target-roster-rail' in block
     assert 'overflow-x:auto' in block
     assert 'html[data-ui="tomb"] .npo-target-roster-wounds' in block
