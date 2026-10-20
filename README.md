@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.142
+# Tomb World Battle Guide v10.0.143
+
+## v10.0.143
+
+### General dialog safe-area scrolling on iPhone
+
+- Keep general Tomb dialogs, including Game Menu, inside the iPhone status-bar and home-indicator safe areas with a single native scrolling region.
+- Prevent the background document from competing for touch scrolling while the main dialog is open.
+- Preserve all card, text, button, artwork, and screen layout sizing; leave the separate Deathwatch and Death Korps activation dialog framing and scrolling rules unchanged.
+- Continue using the original green styling and dialog backdrop, without introducing a gradient or mask on content.
+- Release V10.0.143 consistently in the app, index assets, and offline service worker.
 
 ## v10.0.142
 

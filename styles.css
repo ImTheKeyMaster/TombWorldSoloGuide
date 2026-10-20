@@ -2586,3 +2586,25 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimenta
     top:10px;
   }
 }
+
+/* v10.0.143: Contain general Tomb dialogs within the actual iPhone viewport.
+   Earlier v1.4.0d dialog scrolling used 100dvh - 20px and no document
+   scroll lock, which lets long dialogs slip under iOS status/home bars.
+   Activation portraits retain their separate, approved v10.0.139 sizing. */
+html[data-ui="tomb"] #modal:not(.human-activation-modal){
+  position:fixed;
+  top:max(16px,env(safe-area-inset-top));
+  bottom:max(16px,env(safe-area-inset-bottom));
+  margin:auto;
+  max-height:calc(100vh - max(16px,env(safe-area-inset-top)) - max(16px,env(safe-area-inset-bottom)));
+  max-height:calc(100dvh - max(16px,env(safe-area-inset-top)) - max(16px,env(safe-area-inset-bottom)));
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+}
+html[data-ui="tomb"]:has(#modal[open]),html[data-ui="tomb"] body:has(#modal[open]){
+  overflow:hidden!important;
+  overscroll-behavior:none!important;
+}
