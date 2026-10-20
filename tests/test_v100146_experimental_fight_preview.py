@@ -67,12 +67,15 @@ for(const enabled of [false,true]){
     assert.match(html,/Gunner \(Flamer\)/);
     assert.match(html,/7\/7/);
     assert.match(html,/21\/21/);
-    assert.match(html,/★ 0/);
-    assert.match(html,/● 1/);
+    assert.match(html,/Crits 0/);
+    assert.match(html,/Normal 1/);
+    assert.doesNotMatch(html,/★|●/);
     assert.match(html,/How Fight Resolution works/);
   }else{
     assert.match(html,/legacy-attacker/);
     assert.match(html,/legacy-defender/);
+    assert.match(html,/★ Critical × 0/);
+    assert.match(html,/● Normal × 1/);
     assert.match(html,/Gunner \(Flamer\)'s Turn/);
     assert.match(html,/You and the NPO alternate resolving one success/);
     assert.match(html,/Choose one success to resolve. Damage and Blocks commit immediately/);
