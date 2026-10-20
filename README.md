@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.145
+# Tomb World Battle Guide v10.0.146
+
+## v10.0.146
+
+### Experimental compact Fight Resolution preview
+
+- Experimental Mode now has compact combatant cards showing the acting operative, wounds, remaining critical/normal successes and existing Deathwatch, Death Korps, and Necron miniature portraits.
+- Reduce repeated Fight Resolution instructions to a compact action prompt. Full turn-taking explanation is available under an optional details disclosure.
+- Preserve the original Standard Mode Fight Resolution HTML exactly, including its instructions and actions. No changes to damage, Strike, Block, shield, automated responses, dice, or saved fight state.
+- Keep all new CSS isolated to the experimental Fight Resolution wrapper and experimental UI switch. Other fight screens and normal mode remain unchanged.
+- Refresh the app shell and offline cache to V10.0.146.
 
 ## v10.0.145
 
