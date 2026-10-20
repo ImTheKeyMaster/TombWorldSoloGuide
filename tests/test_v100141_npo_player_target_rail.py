@@ -29,6 +29,7 @@ const section=(start,end)=>{
   return src.slice(a,b);
 };
 const code=[
+  section('  const DEATH_KORPS_PORTRAIT_ROOT=', '  // Warm once per unique photograph'),
   section('  function playerRosterPortraitMarkup(', '  function usesPlayerPortraitRail('),
   section('  function experimentalNpoTargetRosterRail(', '  function updateNpoTargetConfirmationAvailability(')
 ].join('\n');
@@ -37,7 +38,6 @@ for(const team of ['Deathwatch','Death Korps']){
   const context={
     state,selectedPlayerTeamName:()=>team,
     experimentalDeathwatchGreenPortraitSvg:id=>'<svg data-deathwatch="'+id+'"></svg>',
-    deathKorpsPortraitImage:id=>'Assets/Images/TombUI/DeathKorps/Death_Korps_'+id+'.png',
     playerCurrentWounds:id=>id==='confidant'?4:7,
     playerDefinition:id=>({wounds:9}),
     playerName:id=>id==='confidant'?'Confidant':'Gunner (Flamer)',
@@ -55,7 +55,7 @@ for(const team of ['Deathwatch','Death Korps']){
   assert.match(html,/7\/9 wounds/);
   if(team==='Death Korps'){
     assert.match(html,/Death_Korps_confidant\.png/);
-    assert.match(html,/Death_Korps_gunner-flamer\.png/);
+    assert.match(html,/Death_Korps_gunner\.png/);
     assert.doesNotMatch(html,/data-deathwatch=/);
   }else{
     assert.match(html,/data-deathwatch="confidant"/);
