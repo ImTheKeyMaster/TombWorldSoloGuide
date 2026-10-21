@@ -7366,9 +7366,12 @@ function showPlayerActivation(){
   }
 
   function experimentalSweepingTargetProgress(resolution){
+    // Freshly selected Torrent targets have orderedTargetIds but have not yet
+    // populated totalSequences. Use the target list until the sequence advances.
+    const total=resolution?.orderedTargetIds?.length||resolution?.totalSequences||0;
     if(!experimentalFeaturesEnabled()||document.documentElement.dataset.ui!=='tomb'
-      ||resolution?.profileKey!=='sweeping'||resolution.totalSequences<2)return '';
-    return `<p class="experimental-sweeping-progress" aria-live="polite">Target ${resolution.currentSequenceIndex+1} of ${resolution.totalSequences}</p>`;
+      ||resolution?.profileKey!=='sweeping'||total<2)return '';
+    return `<p class="experimental-sweeping-progress" aria-live="polite">Target ${Number(resolution.currentSequenceIndex||0)+1} of ${total}</p>`;
   }
 
   function weaponRuleSequenceProgress(resolution,targetName,wounds=''){
