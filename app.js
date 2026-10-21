@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.153';
+  const APP_VERSION = '10.0.154';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5973,9 +5973,9 @@ function showPlayerActivation(){
     const roll=container.querySelector('.animated-roll');
     if(!roll)return;
     const stage=roll.closest('.combat-stage')||roll;
-    // For a multi-target Sweeping attack, keep the promoted counter in view
+    // Keep the multi-target counter in view
     // along with the first animated dice card rather than scrolling past it.
-    const progress=container.closest?.('.dedicated-combat-screen')?.querySelector('.experimental-sweeping-progress');
+    const progress=container.closest?.('.dedicated-combat-screen')?.querySelector('.multi-target-attack-progress');
     const anchor=progress&&stage===container.querySelector('.combat-stage')?progress:stage;
     const stageBounds=stage.getBoundingClientRect(),anchorBounds=anchor.getBoundingClientRect(),dialogBounds=modal.getBoundingClientRect();
     if(anchorBounds.top>=dialogBounds.top+12&&stageBounds.bottom<=dialogBounds.bottom-12)return;
@@ -7369,21 +7369,29 @@ function showPlayerActivation(){
     };
   }
 
-  function experimentalSweepingTargetProgress(resolution){
-    // Freshly selected Torrent targets have orderedTargetIds but have not yet
-    // populated totalSequences. Use the target list until the sequence advances.
-    const total=resolution?.orderedTargetIds?.length||resolution?.totalSequences||0;
-    if(document.documentElement.dataset.ui!=='tomb'
-      ||resolution?.profileKey!=='sweeping'||total<2)return '';
-    return `<p class="experimental-sweeping-progress" aria-live="polite">Target ${Number(resolution.currentSequenceIndex||0)+1} of ${total}</p>`;
+  function multiTargetSequenceCount(resolution){
+    if(!resolution)return 0;
+    // Freshly selected targets may not have totalSequences until the sequence advances.
+    if(Array.isArray(resolution.orderedTargetIds))return resolution.orderedTargetIds.length;
+    const total=Number(resolution.totalSequences);
+    return Number.isInteger(total)&&total>0?total:0;
+  }
+
+  function multiTargetAttackProgress(resolution){
+    const total=multiTargetSequenceCount(resolution);
+    if(document.documentElement.dataset.ui!=='tomb'||total<2)return '';
+    const index=Number(resolution.currentSequenceIndex??0);
+    if(!Number.isInteger(index)||index<0||index>=total)return '';
+    return `<p class="multi-target-attack-progress" aria-live="polite">Target ${index+1} of ${total}</p>`;
   }
 
   function weaponRuleSequenceProgress(resolution,targetName,wounds=''){
-    if(!resolution||resolution.totalSequences<2)return '';
-    const displayRule=resolution.profileKey==='sweeping'?'Sweeping':resolution.ruleId;
+    const total=multiTargetSequenceCount(resolution);
+    if(total<2)return '';
+    const displayRule=resolution.profileKey==='sweeping'?'Sweeping':resolution.ruleId||'multi-target';
     const label=displayRule[0].toUpperCase()+displayRule.slice(1);
     const weapon=resolution.weaponName?`<strong>${escapeHtml(resolution.weaponName)}</strong><br>`:'';
-    return `<p class="weapon-rule-progress" aria-live="polite"><strong>${label.toUpperCase()} ATTACK</strong><br>${weapon}Target ${resolution.currentSequenceIndex+1} of ${resolution.totalSequences}<br>${escapeHtml(targetName)}${wounds?` (${escapeHtml(wounds)})`:''}</p>`;
+    return `<p class="weapon-rule-progress" aria-live="polite"><strong>${label.toUpperCase()} ATTACK</strong><br>${weapon}Target ${Number(resolution.currentSequenceIndex??0)+1} of ${total}<br>${escapeHtml(targetName)}${wounds?` (${escapeHtml(wounds)})`:''}</p>`;
   }
 
   function showMultiTargetAttackSummary(sequence,attackerSide,onContinue){
@@ -8204,8 +8212,8 @@ function showPlayerActivation(){
       defenseLabel:`${Math.max(0,3-profile.ap)} dice · ${target.save}+`,
       cancelId:'cancelPendingAttack',continueId:'continuePendingAttack',
       rulesHtml:weaponRulesHtml(profile),
-      progressHtml:experimentalSweepingTargetProgress(sequence),
-      detailsHtml:experimentalSweepingTargetProgress(sequence)?'':weaponRuleSequenceProgress(sequence,targetName,`${targetSide==='player'?playerCurrentWounds(targetId):projectedNpoWounds(targetId,stage)}/${target.maxWounds||playerDefinition(targetId)?.wounds||0} wounds`)
+      progressHtml:multiTargetAttackProgress(sequence),
+      detailsHtml:multiTargetAttackProgress(sequence)?'':weaponRuleSequenceProgress(sequence,targetName,`${targetSide==='player'?playerCurrentWounds(targetId):projectedNpoWounds(targetId,stage)}/${target.maxWounds||playerDefinition(targetId)?.wounds||0} wounds`)
     });
 
     $('#cancelPendingAttack').onclick=()=>{
@@ -9559,8 +9567,8 @@ function showPlayerActivation(){
       guidanceHtml:experimentalWeaponSelection?'':`<div id="npoCombatGuidance">${guidance}</div>`,
       rulesHtml:`<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`,
       extraHtml:`${profileControl}${willBeDone}${enforcerQuestion}`,
-      progressHtml:experimentalSweepingTargetProgress(sequence),
-      detailsHtml:experimentalSweepingTargetProgress(sequence)?'':weaponRuleSequenceProgress(sequence,targetName,`${target.wounds}/${target.maxWounds||playerDefinition(target.id)?.wounds||0} wounds`)
+      progressHtml:multiTargetAttackProgress(sequence),
+      detailsHtml:multiTargetAttackProgress(sequence)?'':weaponRuleSequenceProgress(sequence,targetName,`${target.wounds}/${target.maxWounds||playerDefinition(target.id)?.wounds||0} wounds`)
     });
     const cancel=()=>{
       if(combatTimer)combatTimer();

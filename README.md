@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.153
+# Tomb World Battle Guide v10.0.154
+
+## v10.0.154
+
+### Consistent compact progress for all multi-target attacks
+
+- Standard Tomb UI shows a green `Target X of Y` label above the combat dice for Blast, Torrent, Sweeping, and any other attack with two or more selected targets.
+- Remove the redundant bottom-of-screen weapon/attacker/target details during these attacks for both Player and NPO resolution, in Standard and Experimental modes.
+- Suppress malformed `Target 1 of undefined` footers when Blast or Torrent has only one confirmed target or a saved sequence has no known target count.
+- Preserve the classic presentation, dice scrolling, saved-game format, combat rules, and damage/activation processing. Refresh the offline cache to V10.0.154.
 
 ## v10.0.153
 

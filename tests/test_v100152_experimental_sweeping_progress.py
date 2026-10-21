@@ -1,4 +1,4 @@
-"""Experimental-only compact Sweeping target count above animated dice."""
+"""Compact multi-target progress above animated dice in Standard and Experimental Tomb UI."""
 
 from pathlib import Path
 import subprocess
@@ -21,7 +21,7 @@ def test_sweeping_compact_label_runtime_and_standard_full_details():
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const app=fs.readFileSync('app.js','utf8');
 const source=(a,b)=>app.slice(app.indexOf('  '+a),app.indexOf('  '+b,app.indexOf('  '+a)));
-const progress=source('function experimentalSweepingTargetProgress(', 'function showMultiTargetAttackSummary(');
+const progress=source('function multiTargetSequenceCount(', 'function showMultiTargetAttackSummary(');
 const shared=source('function showSharedCombatResolutionScreen(', 'function showCombatResumeRecovery(');
 let enabled=true,ui='tomb',markup='',scrolls=0;
 const ctx={
@@ -35,23 +35,29 @@ const ctx={
   $:selector=>({selector})
 };
 const api=new Function('ctx','with(ctx){'+progress+shared+
-  '\nreturn {experimentalSweepingTargetProgress,weaponRuleSequenceProgress,showSharedCombatResolutionScreen};}')(ctx);
+  '\nreturn {multiTargetAttackProgress,weaponRuleSequenceProgress,showSharedCombatResolutionScreen};}')(ctx);
 const sequence={ruleId:'torrent',profileKey:'sweeping',weaponName:'Twin gauss reapers',currentSequenceIndex:1,totalSequences:3};
-const label=api.experimentalSweepingTargetProgress(sequence);
-assert.match(label,/^<p class="experimental-sweeping-progress" aria-live="polite">Target 2 of 3<\/p>$/);
+const label=api.multiTargetAttackProgress(sequence);
+assert.match(label,/^<p class="multi-target-attack-progress" aria-live="polite">Target 2 of 3<\/p>$/);
 assert.doesNotMatch(label,/Sweeping|Twin gauss|Gunner|wounds|ATTACK/);
-assert.match(api.experimentalSweepingTargetProgress({...sequence,currentSequenceIndex:0}),/Target 1 of 3/);
-assert.match(api.experimentalSweepingTargetProgress({...sequence,currentSequenceIndex:2}),/Target 3 of 3/);
+assert.match(api.multiTargetAttackProgress({...sequence,currentSequenceIndex:0}),/Target 1 of 3/);
+assert.match(api.multiTargetAttackProgress({...sequence,currentSequenceIndex:2}),/Target 3 of 3/);
 const fresh={ruleId:'torrent',profileKey:'sweeping',orderedTargetIds:['sergeant','gunner','blademaster'],currentSequenceIndex:0};
-assert.match(api.experimentalSweepingTargetProgress(fresh),/Target 1 of 3/,'freshly selected secondary targets have no totalSequences yet');
-assert.match(api.experimentalSweepingTargetProgress({...fresh,currentSequenceIndex:1}),/Target 2 of 3/);
-assert.equal(api.experimentalSweepingTargetProgress({...fresh,orderedTargetIds:['sergeant']}),'','single-target Sweeping must not show the counter');
-assert.equal(api.experimentalSweepingTargetProgress({...fresh,orderedTargetIds:[]}),'' ,'empty target list must not show a counter');
-assert.equal(api.experimentalSweepingTargetProgress({...fresh,orderedTargetIds:null,totalSequences:3}),api.experimentalSweepingTargetProgress({...fresh,totalSequences:3}));
-assert.equal(api.experimentalSweepingTargetProgress({...sequence,totalSequences:1}),'');
-assert.equal(api.experimentalSweepingTargetProgress({...sequence,profileKey:'focused'}),'');
-assert.equal(api.experimentalSweepingTargetProgress({...sequence,profileKey:'blast',ruleId:'blast'}),'');
-assert.equal(api.experimentalSweepingTargetProgress(null),'');
+assert.match(api.multiTargetAttackProgress(fresh),/Target 1 of 3/,'freshly selected secondary targets have no totalSequences yet');
+assert.match(api.multiTargetAttackProgress({...fresh,currentSequenceIndex:1}),/Target 2 of 3/);
+assert.equal(api.multiTargetAttackProgress({...fresh,orderedTargetIds:['sergeant']}),'','single-target attacks must not show the counter');
+assert.equal(api.multiTargetAttackProgress({...fresh,orderedTargetIds:[]}),'' ,'empty target list must not show a counter');
+assert.equal(api.multiTargetAttackProgress({...fresh,orderedTargetIds:null,totalSequences:3}),api.multiTargetAttackProgress({...fresh,totalSequences:3}));
+assert.equal(api.multiTargetAttackProgress({...sequence,totalSequences:1}),'');
+assert.match(api.multiTargetAttackProgress({...sequence,profileKey:'focused'}),/Target 2 of 3/);
+assert.match(api.multiTargetAttackProgress({...sequence,profileKey:'blast',ruleId:'blast'}),/Target 2 of 3/);
+assert.match(api.multiTargetAttackProgress({...sequence,profileKey:'torrent',ruleId:'torrent'}),/Target 2 of 3/);
+assert.equal(api.multiTargetAttackProgress({...sequence,orderedTargetIds:['marksman'],totalSequences:undefined}),'');
+assert.equal(api.multiTargetAttackProgress({...sequence,totalSequences:undefined}),'');
+assert.equal(api.weaponRuleSequenceProgress({...sequence,orderedTargetIds:['marksman'],totalSequences:undefined},'Marksman'),'');
+assert.equal(api.weaponRuleSequenceProgress({...sequence,totalSequences:undefined},'Marksman'),'');
+assert.match(api.weaponRuleSequenceProgress({...fresh,profileKey:'blast',ruleId:'blast'},'Marksman'),/Target 1 of 3/);
+assert.equal(api.multiTargetAttackProgress(null),'');
 const full=api.weaponRuleSequenceProgress(sequence,'Gunner','2/15 wounds');
 assert.match(full,/SWEEPING ATTACK/);
 assert.match(full,/Twin gauss reapers/);
@@ -71,7 +77,7 @@ assert.match(markup,/<div id="combatDetails"><\/div>/);
 assert.doesNotMatch(markup,/SWEEPING ATTACK|Target 2 of 3<br>|Gunner \(2\/15 wounds\)/);
 assert.equal(scrolls,1);
 enabled=false;
-assert.equal(api.experimentalSweepingTargetProgress(sequence),label,'Standard Tomb UI shows compact Sweeping progress too');
+assert.equal(api.multiTargetAttackProgress(sequence),label,'Standard Tomb UI shows compact Sweeping progress too');
 api.showSharedCombatResolutionScreen({
   title:'Resolve Combat',attackerName:'Crawler',defenderName:'Gunner',
   attackType:'shoot',weaponName:'Sweeping',defenseLabel:'3 dice · 3+',
@@ -81,7 +87,7 @@ assert.match(markup,/SWEEPING ATTACK/);
 assert.match(markup,/Gunner \(2\/15 wounds\)/);
 assert(markup.indexOf('id="automaticCombat"')<markup.indexOf('SWEEPING ATTACK'));
 enabled=true;ui='classic';
-assert.equal(api.experimentalSweepingTargetProgress(sequence),'');
+assert.equal(api.multiTargetAttackProgress(sequence),'');
 """
     result = subprocess.run(["node", "-e", script], cwd=ROOT, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr or result.stdout
@@ -91,8 +97,8 @@ def test_both_player_and_npo_flows_use_existing_sequence_without_changing_mechan
     player = source("  function showPlayerCombatResolution(", "  async function previewPendingPlayerAttack(")
     npo = source("  function showNpoAttackWizard(", "  function spinnerField(")
     for wizard in (player, npo):
-        assert "progressHtml:experimentalSweepingTargetProgress(sequence)," in wizard
-        assert "detailsHtml:experimentalSweepingTargetProgress(sequence)?'':weaponRuleSequenceProgress(sequence," in wizard
+        assert "progressHtml:multiTargetAttackProgress(sequence)," in wizard
+        assert "detailsHtml:multiTargetAttackProgress(sequence)?'':weaponRuleSequenceProgress(sequence," in wizard
         assert "showSharedCombatResolutionScreen({" in wizard
     assert "progressHtml=''" in source("  function showSharedCombatResolutionScreen(", "  function showCombatResumeRecovery(")
     assert "renderCombatResolution(" in APP
@@ -102,12 +108,12 @@ def test_both_player_and_npo_flows_use_existing_sequence_without_changing_mechan
 
 
 def test_mobile_order_and_green_label_are_experiment_scoped():
-    rules = CSS.split("/* Experimental Sweeping: show only", 1)[1]
-    assert 'html[data-ui="tomb"] .combat-resolution-modal .experimental-sweeping-progress{' in rules
+    rules = CSS.split("/* Multi-target attacks: show only", 1)[1]
+    assert 'html[data-ui="tomb"] .combat-resolution-modal .multi-target-attack-progress{' in rules
     assert "color:var(--green);" in rules
     assert "font-weight:850;" in rules
-    assert ".experimental-sweeping-progress ~ #combatDetails:empty{display:none}" in rules
-    assert ".dedicated-combat-screen > .experimental-sweeping-progress{order:2}" in rules
+    assert ".multi-target-attack-progress ~ #combatDetails:empty{display:none}" in rules
+    assert ".dedicated-combat-screen > .multi-target-attack-progress{order:2}" in rules
     assert "(max-width:600px)" in rules
     assert "(orientation:landscape) and (pointer:coarse)" in rules
     assert ".dedicated-combat-screen > #automaticCombat{order:2}" in CSS
@@ -136,7 +142,7 @@ let currentStage='attack';
 const attackStage={getBoundingClientRect:()=>({top:570,bottom:720})};
 const defenseStage={getBoundingClientRect:()=>({top:730,bottom:880})};
 const roll={closest:selector=>selector==='.combat-stage'?(currentStage==='attack'?attackStage:defenseStage):null};
-const screen={querySelector:selector=>selector==='.experimental-sweeping-progress'?progress:null};
+const screen={querySelector:selector=>selector==='.multi-target-attack-progress'?progress:null};
 const container={
   isConnected:true,
   querySelector:selector=>selector==='.animated-roll'?roll:selector==='.combat-stage'?attackStage:null,

@@ -17,7 +17,7 @@ def test_promoted_tomb_ui_is_not_gated_by_the_preview_toggle():
     assert '[data-experimental="on"]' not in CSS
     assert 'html[data-ui="tomb"] .experimental-fight-pool' in CSS
     assert 'html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > #automaticCombat{order:2}' in CSS
-    assert 'html[data-ui="tomb"] .combat-resolution-modal .experimental-sweeping-progress{' in CSS
+    assert 'html[data-ui="tomb"] .combat-resolution-modal .multi-target-attack-progress{' in CSS
     assert "document.documentElement.dataset.ui==='tomb'?experimentalFightResolutionHtml" in APP
     assert "const experimentalWeaponSelection=document.documentElement.dataset.ui==='tomb'&&attackType==='shoot'" in APP
     assert "if(document.documentElement.dataset.ui!=='tomb'" in APP

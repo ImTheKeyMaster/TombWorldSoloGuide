@@ -2791,15 +2791,15 @@ html[data-ui="tomb"] .experimental-fight-help p{
   html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > .combat-resolution-footer{order:6}
 }
 
-/* Experimental Sweeping: show only the current target count immediately above the dice. */
-html[data-ui="tomb"] .combat-resolution-modal .experimental-sweeping-progress{
+/* Multi-target attacks: show only the target count immediately above the dice. */
+html[data-ui="tomb"] .combat-resolution-modal .multi-target-attack-progress{
   margin:2px 0 0;
   color:var(--green);
   font-size:1rem;
   font-weight:850;
   line-height:1.35;
 }
-html[data-ui="tomb"] .combat-resolution-modal .experimental-sweeping-progress ~ #combatDetails:empty{display:none}
+html[data-ui="tomb"] .combat-resolution-modal .multi-target-attack-progress ~ #combatDetails:empty{display:none}
 @media (max-width:600px), (max-width:950px) and (max-height:520px) and (orientation:landscape) and (pointer:coarse){
-  html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > .experimental-sweeping-progress{order:2}
+  html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > .multi-target-attack-progress{order:2}
 }
