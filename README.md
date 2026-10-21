@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.156
+# Tomb World Battle Guide v10.0.157
+
+## v10.0.157
+
+### Preview Weapon Rules alongside Weapon Guidance
+
+- Experimental Mode shows profile-specific Weapon Rules beneath Weapon Guidance on the Necron Select Weapon dialog; both update as the selected profile changes.
+- Experimental shooting combat dice/results no longer repeat the full Weapon Rules list, for Necron or Player attacks; actual rule effects and damage remain visible during resolution.
+- Show the Select Weapon step for single-profile Necron attacks with rules even when there is no guidance, and retain the Player weapon-selection step for single-weapon shooting attacks with rules, so rules are always accessible before dice.
+- Standard Mode and classic UI retain their existing weapon selection, guidance and combat rules screens; save data and rules mechanics are unchanged.
+- Update app shell/offline cache to V10.0.157.
 
 ## v10.0.156
 
