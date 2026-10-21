@@ -21,7 +21,7 @@ def source(start, end):
 def test_mobile_dice_order_is_experimental_only_and_keeps_inputs_accessible():
     css = CSS.split("/* Experimental mobile Resolve Combat:", 1)[1]
     assert f"@media {MOBILE_QUERY}{{" in css
-    root = 'html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > '
+    root = 'html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > '
     for selector, order in (
         ("*", 1),
         (".compact-combat-profile", 0),
@@ -52,7 +52,7 @@ def test_animation_visibility_hook_is_scoped_and_runs_before_timers():
     helper = source("const EXPERIMENTAL_COMBAT_MOBILE_QUERY=", "function displaySharedCombatResult(")
     assert MOBILE_QUERY in helper
     for fragment in (
-        "!experimentalFeaturesEnabled()",
+        "document.documentElement.dataset.ui!=='tomb'",
         "document.documentElement.dataset.ui!=='tomb'",
         "window.matchMedia?.(EXPERIMENTAL_COMBAT_MOBILE_QUERY)?.matches",
         "!modal.open||!container?.isConnected",
@@ -101,7 +101,8 @@ stage.getBoundingClientRect=()=>({top:120,bottom:300});
 reveal(container);
 assert.equal(modal.scrollTop,0,'already-visible dice should not jump');
 stage.getBoundingClientRect=()=>({top:570,bottom:720});
-enabled=false;reveal(container);assert.equal(modal.scrollTop,0,'Standard UI stays untouched');
+enabled=false;reveal(container);assert.equal(modal.scrollTop,542,'Standard Tomb UI also reveals the animated dice');
+modal.scrollTop=0;
 enabled=true;mobile=false;reveal(container);assert.equal(modal.scrollTop,0,'desktop stays untouched');
 mobile=true;ui='classic';reveal(container);assert.equal(modal.scrollTop,0,'non-Tomb UI stays untouched');
 ui='tomb';modal.open=false;reveal(container);assert.equal(modal.scrollTop,0,'closed modal stays untouched');
