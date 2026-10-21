@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.151
+# Tomb World Battle Guide v10.0.152
+
+## v10.0.152
+
+### Experimental Sweeping target progress above shooting dice
+
+- During multi-target Sweeping shooting attacks, replace the verbose bottom-of-screen attack progress (weapon heading, target name and wounds) with a concise green `Target X of Y` label directly above the dice.
+- Keep the count correct as the attack advances to each secondary target, including resumed multi-target sequences. Reuse the existing sequence index and total count without changing combat mechanics.
+- Apply only in Experimental Tomb UI. Standard Mode and non-Sweeping Blast/Torrent progress remain unchanged.
+- Preserve miniature portraits, damage calculations, attack sequencing, saved-game compatibility and the V10.0.149 dice-animation visibility logic.
 
 ## v10.0.151
 
