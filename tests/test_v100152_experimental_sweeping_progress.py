@@ -42,6 +42,12 @@ assert.match(label,/^<p class="experimental-sweeping-progress" aria-live="polite
 assert.doesNotMatch(label,/Sweeping|Twin gauss|Gunner|wounds|ATTACK/);
 assert.match(api.experimentalSweepingTargetProgress({...sequence,currentSequenceIndex:0}),/Target 1 of 3/);
 assert.match(api.experimentalSweepingTargetProgress({...sequence,currentSequenceIndex:2}),/Target 3 of 3/);
+const fresh={ruleId:'torrent',profileKey:'sweeping',orderedTargetIds:['sergeant','gunner','blademaster'],currentSequenceIndex:0};
+assert.match(api.experimentalSweepingTargetProgress(fresh),/Target 1 of 3/,'freshly selected secondary targets have no totalSequences yet');
+assert.match(api.experimentalSweepingTargetProgress({...fresh,currentSequenceIndex:1}),/Target 2 of 3/);
+assert.equal(api.experimentalSweepingTargetProgress({...fresh,orderedTargetIds:['sergeant']}),'','single-target Sweeping must not show the counter');
+assert.equal(api.experimentalSweepingTargetProgress({...fresh,orderedTargetIds:[]}),'' ,'empty target list must not show a counter');
+assert.equal(api.experimentalSweepingTargetProgress({...fresh,orderedTargetIds:null,totalSequences:3}),api.experimentalSweepingTargetProgress({...fresh,totalSequences:3}));
 assert.equal(api.experimentalSweepingTargetProgress({...sequence,totalSequences:1}),'');
 assert.equal(api.experimentalSweepingTargetProgress({...sequence,profileKey:'focused'}),'');
 assert.equal(api.experimentalSweepingTargetProgress({...sequence,profileKey:'blast',ruleId:'blast'}),'');
