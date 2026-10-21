@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.148
+# Tomb World Battle Guide v10.0.149
+
+## v10.0.149
+
+### Experimental mobile Resolve Combat dice-first presentation
+
+- On mobile portrait and narrow touch landscape screens in Experimental Mode, display required weapon choices first, followed by animated Attack Dice, Defense Dice, combat results, and then weapon guidance/rules.
+- Bring the currently animating dice card into the visible portion of the scrolling combat dialog before rendering its first animation frame, including attack, defense, and result animations.
+- Preserve desktop and Standard Mode ordering, and leave gameplay mechanics, dice timing, sound, persistence, portraits, and saved-game behavior unchanged.
+- Update the app shell and service-worker cache to V10.0.149.
 
 ## v10.0.148
 

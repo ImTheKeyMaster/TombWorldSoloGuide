@@ -2776,3 +2776,17 @@ html[data-ui="tomb"][data-experimental="on"] .experimental-fight-help p{
     font-size:.84rem;
   }
 }
+
+/* Experimental mobile Resolve Combat: show dice and their results before rule guidance.
+   Leave selections above the roll and Standard/desktop document order unchanged. */
+@media (max-width:600px), (max-width:950px) and (max-height:520px) and (orientation:landscape) and (pointer:coarse){
+  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > *{order:1}
+  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > .compact-combat-profile{order:0}
+  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > #automaticCombat{order:2}
+  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > #combatResults{order:3}
+  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > #npoCombatGuidance,
+  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > #npoCombatRules,
+  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > .weapon-rules{order:4}
+  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > #combatDetails{order:5}
+  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > .combat-resolution-footer{order:6}
+}
