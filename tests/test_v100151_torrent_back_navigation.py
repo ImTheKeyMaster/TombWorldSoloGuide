@@ -86,6 +86,7 @@ assert.equal(selectorShown[0][3],1,'previous Sweeping profile selected');
 assert.equal(ctx.rollStarted,false,'cancel pending roll state');
 assert(saved>=2,'persist clearing the provisional rule state');
 
+ctx.showNpoAttackWizard=(...args)=>{backRouted.push(args);};
 function checkBack(rule,experimental,priorSequence=null){
   state.weaponRuleResolution=rule;
   ctx.experimentalWeaponSelection=experimental;
@@ -108,6 +109,7 @@ state.lastActivation.combatDraft={selecting:true,attackType:'shoot',targetId:tar
 ctx.experimentalWeaponSelection=true;ctx.sequence=null;
 ctx.npoAttackProfiles=()=>[profiles[0]];
 state.weaponRuleResolution=null;
+ctx.showNpoAttackWizard=(...args)=>{backRouted.push(args);openWizard(...args);};
 back();
 assert.equal(selectorShown.at(-1)[3],0,'single profile Back returns to selection instead of repeating Torrent');
 """
