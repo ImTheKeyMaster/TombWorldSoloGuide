@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.149
+# Tomb World Battle Guide v10.0.150
+
+## v10.0.150
+
+### Experimental Necron weapon guidance at selection
+
+- Move Necron Weapon Guidance from Resolve Combat to a new weapon-selection step in Experimental Mode. Update that guidance immediately when the weapon profile changes, including profile-specific guidance and general abilities.
+- Show the selection step for multi-profile Necron shooting attacks and single-profile attacks with relevant guidance. Keep weapon choices visible before dice roll and retain access to Weapon Rules during resolution.
+- Preserve existing player weapon-selection summaries, special-rule checks, saved combat drafts, and all Standard Mode screens and behavior.
+- Keep dice-first mobile presentation, portrait artwork, combat mechanics, and cache compatibility unchanged.
 
 ## v10.0.149
 
