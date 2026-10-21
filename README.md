@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.0.161
+# Tomb World Battle Guide v10.0.162
+
+## v10.0.162
+
+### Experimental applied weapon effects on combat results
+
+- In Experimental Tomb UI only, shooting combat results now display a compact "Applied effects" list directly beneath the dice pools when weapon rules actually changed the result.
+- Derive feedback from recorded results: Piercing/Piercing Crits reductions, Severe and Rending conversions, Accurate retained hits, Balanced/Ceaseless re-rolls, Lethal critical classifications, Devastating damage and applied Stun.
+- Never list a rule merely because a weapon has it. Hide the list entirely when no effect triggered, and avoid claiming a Piercing defense reduction if Devastating incapacitated the defender before rolling saves.
+- Suppress duplicate Severe and Stun explanations in Experimental results while leaving other combat events intact.
+- Preserve Standard Mode shooting results, weapon selection, game mechanics, multi-target behavior, player and Necron combat, and persisted attack results.
+- Refresh offline assets to V10.0.162.
 
 ## v10.0.161
 
