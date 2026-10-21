@@ -5973,9 +5973,13 @@ function showPlayerActivation(){
     const roll=container.querySelector('.animated-roll');
     if(!roll)return;
     const stage=roll.closest('.combat-stage')||roll;
-    const stageBounds=stage.getBoundingClientRect(),dialogBounds=modal.getBoundingClientRect();
-    if(stageBounds.top>=dialogBounds.top+12&&stageBounds.bottom<=dialogBounds.bottom-12)return;
-    modal.scrollTop=Math.max(0,modal.scrollTop+stageBounds.top-dialogBounds.top-12);
+    // For a multi-target Sweeping attack, keep the target counter in view
+    // along with the first animated dice card rather than scrolling past it.
+    const progress=container.closest?.('.dedicated-combat-screen')?.querySelector('.experimental-sweeping-progress');
+    const anchor=progress&&stage===container.querySelector('.combat-stage')?progress:stage;
+    const stageBounds=stage.getBoundingClientRect(),anchorBounds=anchor.getBoundingClientRect(),dialogBounds=modal.getBoundingClientRect();
+    if(anchorBounds.top>=dialogBounds.top+12&&stageBounds.bottom<=dialogBounds.bottom-12)return;
+    modal.scrollTop=Math.max(0,modal.scrollTop+anchorBounds.top-dialogBounds.top-12);
   }
 
   function displaySharedCombatResult(combat,{pending=false,animate=false,waiting=false,message='',onContinue,extraHtml=''}={}){
