@@ -36,7 +36,7 @@ function execute({experimental=true,screen='setup',step='deploy',generated=true,
   newIds:['old-npo'],journal:[{message:'old'}],
   playerTeamId:'deathwatch',playerRoster:['player-01'],playerDeployed:true
  };
- const state=structuredClone(original);
+ const state=JSON.parse(JSON.stringify(original));
  const context={
   state,experimentalFeaturesEnabled:()=>experimental,
   currentSetupStepId:()=>step,
