@@ -119,3 +119,53 @@ def test_version_references():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     assert f"app.js?v={CURRENT_APP_VERSION}" in INDEX
+
+
+def test_animation_auto_scroll_keeps_counter_visible_above_attack_dice():
+    script = r"""
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const app=fs.readFileSync('app.js','utf8');
+const start=app.indexOf("  const EXPERIMENTAL_COMBAT_MOBILE_QUERY=");
+const end=app.indexOf("  function displaySharedCombatResult(",start);
+assert(start>0&&end>start);
+const part=app.slice(start,end);
+let ui='tomb',enabled=true,mobile=true;
+const viewport={top:16,bottom:620};
+const progress={getBoundingClientRect:()=>({top:536,bottom:557})};
+let currentStage='attack';
+const attackStage={getBoundingClientRect:()=>({top:570,bottom:720})};
+const defenseStage={getBoundingClientRect:()=>({top:730,bottom:880})};
+const roll={closest:selector=>selector==='.combat-stage'?(currentStage==='attack'?attackStage:defenseStage):null};
+const screen={querySelector:selector=>selector==='.experimental-sweeping-progress'?progress:null};
+const container={
+  isConnected:true,
+  querySelector:selector=>selector==='.animated-roll'?roll:selector==='.combat-stage'?attackStage:null,
+  closest:selector=>selector==='.dedicated-combat-screen'?screen:null
+};
+const modal={open:true,scrollTop:0,getBoundingClientRect:()=>viewport};
+const ctx={experimentalFeaturesEnabled:()=>enabled,document:{documentElement:{get dataset(){return {ui}}}},
+  window:{matchMedia:()=>({matches:mobile})},modal};
+const reveal=new Function('ctx','with(ctx){'+part+'\nreturn revealExperimentalCombatDice;}')(ctx);
+reveal(container);
+assert.equal(modal.scrollTop,508,'first attack should scroll to the green counter, not past it');
+modal.scrollTop=0;
+currentStage='defense';
+reveal(container);
+assert.equal(modal.scrollTop,702,'defense animation should still scroll to the active defense card');
+modal.scrollTop=0;
+currentStage='attack';
+progress.getBoundingClientRect=()=>({top:180,bottom:201});
+attackStage.getBoundingClientRect=()=>({top:214,bottom:370});
+reveal(container);
+assert.equal(modal.scrollTop,0,'already visible progress and dice do not jump');
+modal.scrollTop=0;enabled=false;
+progress.getBoundingClientRect=()=>({top:536,bottom:557});
+attackStage.getBoundingClientRect=()=>({top:570,bottom:720});
+reveal(container);
+assert.equal(modal.scrollTop,0,'Standard mode remains untouched');
+enabled=true;mobile=false;
+reveal(container);
+assert.equal(modal.scrollTop,0,'desktop remains untouched');
+"""
+    result = subprocess.run(["node", "-e", script], cwd=ROOT, capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr or result.stdout
