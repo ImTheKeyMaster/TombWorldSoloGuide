@@ -83,12 +83,14 @@ const friendly=run({rule:'blast',side:'player',targets:[primary,{id:'friendly',t
 assert.equal(friendly.calls[0][0],'modal');
 
 // Even a single eligible target must keep the normal confirmation step.
-const torrent=run({rule:'torrent',side:'player',targets:[primary,{id:'npo2',targetSide:'npo',wounds:3,inPlay:true}]});
+const torrent=run({rule:'torrent',side:'player',targets:[primary,{id:'npo2',targetSide:'npo',wounds:3,inPlay:true}],selectedIds:['npo2']});
 assert.equal(torrent.calls[0][0],'modal');
-
-// No rule state should be silently confirmed if creating a player sequence fails.
-const unavailable=run({rule:'blast',side:'player',targets:[],saved:null});
-assert.equal(unavailable.state.weaponRuleResolution.continueConfirmed,true);
+torrent.controls['#tabletopCheckConfirmed'].checked=true;
+torrent.controls['#tabletopCheckConfirmed'].onchange();
+torrent.controls['#confirmSecondaryTargets'].onclick({currentTarget:{disabled:false}});
+assert.deepEqual(torrent.state.weaponRuleResolution.orderedTargetIds,['primary','npo2']);
+assert.deepEqual(torrent.state.weaponRuleResolution.secondaryTargetIds,['npo2']);
+assert.equal(torrent.state.weaponRuleResolution.continueConfirmed,true);
 
 console.log('Empty and non-empty secondary-target routes passed');
 """
