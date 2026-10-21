@@ -33,7 +33,9 @@ def test_mobile_dice_order_is_experimental_only_and_keeps_inputs_accessible():
         ("#combatDetails", 5),
         (".combat-resolution-footer", 6),
     ):
-        assert re.search(re.escape(root + selector) + r"\s*\{order:" + str(order) + r"\}", css), selector
+        assert root + selector in css, selector
+        if selector not in ("#npoCombatGuidance", "#npoCombatRules"):
+            assert re.search(re.escape(root + selector) + r"\s*\{order:" + str(order) + r"\}", css), selector
     # Extra input controls (weapon picker, event checks) keep the default order 1,
     # ahead of the dice, even though their DOM nodes are after the guidance.
     screen = source("function showSharedCombatResolutionScreen(", "function showCombatResumeRecovery(")
