@@ -3319,7 +3319,7 @@ document.addEventListener('touchend',function(e){
       const playerRoster=inlineOperativeList((state.playerRoster||[]).map(id=>escapeHtml(playerName(id))));
       const playerRosterHtml=playerRoster?`<span class="deployment-roster">${playerRoster}</span>`:'';
       const rerollControl=experimentalFeaturesEnabled()&&hasStartingNpos
-        ? '<div class="setup-bulk-row"><button type="button" class="btn secondary" id="rerollStartingNpoRoster">Re-roll Necron Roster</button></div><p class="muted">Generate a new Necron roster and starting deployment roll. Reconfirm the Necron models you place.</p>'
+        ? '<div class="experimental-roster-reroll"><button type="button" class="experimental-roster-reroll-button" id="rerollStartingNpoRoster" aria-label="Re-roll Necron roster and starting deployment" title="Generate another Necron roster and starting deployment roll">&#8635; Re-roll roster</button></div>'
         : '';
       const deploymentDetails=presentSideTerminology(mission().startingNpos?.deployment||'Use the mission deployment rules.');
       const allNposPlaced=startingNpoDeploymentComplete(generation);
