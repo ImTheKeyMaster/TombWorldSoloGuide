@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.158';
+  const APP_VERSION = '10.0.159';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2861,6 +2861,30 @@ document.addEventListener('touchend',function(e){
     state.newIds=[]; log(`${m.name}: selected ${generation.deploymentCount} of ${state.roster.length} starting NPOs (${formula}).`); return {count:state.roster.length,formula};
   }
 
+  function rerollStartingNpoRoster(){
+    if(state.screen!=='setup'||currentSetupStepId()!=='deploy'||!experimentalFeaturesEnabled()||!state.startingNpoGeneration)return false;
+    const previous={
+      roster:state.roster,startingNpoGeneration:state.startingNpoGeneration,
+      variantState:state.variantState,setupChecks:{...state.setupChecks},
+      newIds:state.newIds,journal:[...state.journal]
+    };
+    // Variant replacement transactions must not carry over to the newly rolled force.
+    state.variantState={...state.variantState,crownworldFirstCrawlerConsumed:false,replacementTransactions:{}};
+    const generation=startingNpoRoll();
+    let result=null;
+    try{result=generateRoster(generation);}
+    catch(error){console.error('[NPO roster] Experimental re-roll failed.',error);}
+    if(!result){
+      Object.assign(state,previous);
+      save();render();
+      return false;
+    }
+    state.startingNpoGeneration=generation;
+    state.setupChecks['starting-npos']=false;
+    save();render();
+    return true;
+  }
+
   function ensureStartingNpoGeneration(){
     if(state.startingNpoGeneration)return false;
     if(state.roster.length){
@@ -3294,6 +3318,9 @@ document.addEventListener('touchend',function(e){
       const deployedNpoRoster=inlineOperativeList(sortedNposForDisplay(generation.deployedNpoIds.map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean)).map(npo=>escapeHtml(npoName(npo))));
       const playerRoster=inlineOperativeList((state.playerRoster||[]).map(id=>escapeHtml(playerName(id))));
       const playerRosterHtml=playerRoster?`<span class="deployment-roster">${playerRoster}</span>`:'';
+      const rerollControl=experimentalFeaturesEnabled()
+        ? '<div class="setup-bulk-row"><button type="button" class="btn secondary" id="rerollStartingNpoRoster">Re-roll Necron Roster</button></div><p class="muted">Generate a new Necron roster and starting deployment roll. Reconfirm the Necron models you place.</p>'
+        : '';
       const deploymentDetails=presentSideTerminology(mission().startingNpos?.deployment||'Use the mission deployment rules.');
       const allNposPlaced=startingNpoDeploymentComplete(generation);
       const npoDeploymentSatisfied=!hasStartingNpos||allNposPlaced;
@@ -3302,7 +3329,7 @@ document.addEventListener('touchend',function(e){
       const allPlacementChecked=requiredPlacementChecks.every(check=>state.setupChecks[check.id]);
       const {minRoster,maxRoster}=playerRosterLimits();
       const playerValid=playerRosterValidation().valid;
-      return `<h3>Deploy Kill Teams</h3><p>The Guide automatically generated the starting ${escapeHtml(opponentSingularLabel())} roster. Place that roster and the selected ${escapeHtml(playerSideLabel())} roster, then confirm every mission deployment requirement.</p>${missionRoll}${factionGuidanceHtml()}${hasStartingNpos?`<div class="setup-bulk-row"><button class="btn secondary" id="checkAllDeployment" ${playerValid&&state.playerDeployed&&npoDeploymentSatisfied&&allPlacementChecked?'disabled':''}>Check All</button></div>`:''}<div class="checklist deployment-checklist">${deploymentRow}${setupChecklistHtml(otherPlacementChecks)}<label class="check-row deployment-check"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${playerValid?'':'disabled'}><span><strong>Deploy ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||(isPvpMode()?'Kill Team':'Player'))} Kill Team</strong>${playerRosterHtml}<small>All selected ${escapeHtml(playerSideLabel())} operatives are on the battlefield.</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${playerValid&&state.playerDeployed&&npoDeploymentSatisfied&&allPlacementChecked?'':'disabled'}>Deployment Complete</button></div>`;
+      return `<h3>Deploy Kill Teams</h3><p>The Guide automatically generated the starting ${escapeHtml(opponentSingularLabel())} roster. Place that roster and the selected ${escapeHtml(playerSideLabel())} roster, then confirm every mission deployment requirement.</p>${missionRoll}${rerollControl}${factionGuidanceHtml()}${hasStartingNpos?`<div class="setup-bulk-row"><button class="btn secondary" id="checkAllDeployment" ${playerValid&&state.playerDeployed&&npoDeploymentSatisfied&&allPlacementChecked?'disabled':''}>Check All</button></div>`:''}<div class="checklist deployment-checklist">${deploymentRow}${setupChecklistHtml(otherPlacementChecks)}<label class="check-row deployment-check"><input id="playerDeployed" type="checkbox" ${state.playerDeployed?'checked':''} ${playerValid?'':'disabled'}><span><strong>Deploy ${escapeHtml(playerTeamData?.teamName||playerTeamEntry()?.name||(isPvpMode()?'Kill Team':'Player'))} Kill Team</strong>${playerRosterHtml}<small>All selected ${escapeHtml(playerSideLabel())} operatives are on the battlefield.</small></span></label></div><div class="wizard-actions"><button class="btn ghost" id="setupBack">Back</button><button class="btn primary" id="setupNext" ${playerValid&&state.playerDeployed&&npoDeploymentSatisfied&&allPlacementChecked?'':'disabled'}>Deployment Complete</button></div>`;
     }
     const m=mission();
     const rules=(m.rules||[]).map(rule=>`<div class="mission-rule"><strong>${escapeHtml(presentSideTerminology(rule.name||'Special Rule'))}</strong>${rule.timing?`<small>${escapeHtml(presentSideTerminology(rule.timing))}</small>`:''}<p>${escapeHtml(presentSideTerminology(rule.summary||''))}</p></div>`).join('');
@@ -3359,6 +3386,7 @@ document.addEventListener('touchend',function(e){
     $('#checkAllSetup')?.addEventListener('click',()=>{missionSetupChecks('killzone').forEach(check=>{state.setupChecks[check.id]=true;});save();render();});
     $('#randomPlayerTeam')?.addEventListener('click',()=>{randomPlayerRoster();save();render();});
     if(stepId==='deploy')runStartingNpoGeneration();
+    $('#rerollStartingNpoRoster')?.addEventListener('click',rerollStartingNpoRoster);
     $('#npoDeployed')?.addEventListener('change',e=>{
       setStartingNposDeployed(e.target.checked);
       save();render();
@@ -10755,7 +10783,8 @@ function showPlayerActivation(){
     }catch{
       // Preview mode still works for this session if preferences cannot be saved.
     }
-    if(state.screen==='game'&&state.phase==='firefight'&&!modal.open)render();
+    if(state.screen==='setup'&&currentSetupStepId()==='deploy')render();
+    else if(state.screen==='game'&&state.phase==='firefight'&&!modal.open)render();
   }
   function showExperimentalUiPanel(){
     experimentalUiToggle.checked=experimentalFeaturesEnabled();
