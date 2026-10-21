@@ -1,4 +1,4 @@
-"""Experimental-only Fight Resolution preview and Standard Mode isolation."""
+"""Promoted Fight Resolution renders identically in Standard and Experimental Tomb UI."""
 
 from pathlib import Path
 import subprocess
@@ -58,7 +58,7 @@ for(const enabled of [false,true]){
   assert.match(html,/id="fightBlockHeading"/);
   assert.equal(typeof strikeControls[0].onclick,'function');
   assert.equal(typeof blockControls[0].onclick,'function');
-  if(enabled){
+  {
     assert.match(html,/experimental-fight-sequence/);
     assert.equal((html.match(/experimental-fight-pool-details/g)||[]).length,2);
     assert.match(html,/fight-portrait-attacker/);
@@ -71,13 +71,6 @@ for(const enabled of [false,true]){
     assert.match(html,/Normal 1/);
     assert.doesNotMatch(html,/★|●/);
     assert.match(html,/How Fight Resolution works/);
-  }else{
-    assert.match(html,/legacy-attacker/);
-    assert.match(html,/legacy-defender/);
-    assert.match(html,/Gunner \(Flamer\)'s Turn/);
-    assert.match(html,/You and the NPO alternate resolving one success/);
-    assert.match(html,/Choose one success to resolve. Damage and Blocks commit immediately/);
-    assert.doesNotMatch(html,/experimental-fight-sequence/);
   }
   strikeControls[0].onclick();
   assert.equal(strikes,1,'Strike must call the existing engine exactly once');
@@ -115,7 +108,7 @@ def test_standard_template_and_gameplay_are_unchanged():
     src = APP.split("  function renderFightResolution(){", 1)[1].split(
         "  async function rollFightParticipant(", 1
     )[0]
-    assert "experimentalFeaturesEnabled()&&document.documentElement.dataset.ui==='tomb'" in src
+    assert "document.documentElement.dataset.ui==='tomb'" in src
     assert ':\u0060<div class="fight-sequence"><p>${intro}</p>' in src
     assert "You and the NPO alternate resolving one success." in src
     assert "Choose how ${escapeHtml(participant.label)} uses one of its unresolved successes." in src
@@ -135,7 +128,7 @@ def test_preview_css_cannot_leak_into_standard_or_other_screens():
     assert "pointer-events:none;" in section
     assert ".experimental-fight-pool .experimental-fight-card-wounds" in section
     assert ".experimental-fight-pool .experimental-fight-card-successes" in section
-    assert "html[data-ui=\"tomb\"][data-experimental=\"on\"]" in section
+    assert "html[data-ui=\"tomb\"]" in section
     assert "experimental-fight-pool" in section
     assert "@media(max-width:390px)" in section
 
@@ -152,7 +145,7 @@ def test_narrow_iphone_columns_are_experimental_only():
     narrow = CSS.split("single-column fallback in Experimental Fight Resolution only. */", 1)[1]
     assert "@media(max-width:374px)" in narrow
     assert '.experimental-fight-pools{\n    grid-template-columns:repeat(2,minmax(0,1fr));' in narrow
-    assert 'html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pools' in narrow
+    assert 'html[data-ui="tomb"] .experimental-fight-pools' in narrow
     assert ".fight-pools{grid-template-columns:1fr}" in CSS
     assert "@media(max-width:390px)" in CSS
     assert 'html[data-ui="tomb"] #modal:not(.human-activation-modal)' in CSS

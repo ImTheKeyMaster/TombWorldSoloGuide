@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.152';
+  const APP_VERSION = '10.0.153';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5963,17 +5963,17 @@ function showPlayerActivation(){
     });
   }
 
-  // Only the Experimental mobile combat presentation adjusts the dialog scroll.
+  // The promoted mobile combat presentation adjusts dialog scroll in Tomb UI.
   // Keep the currently animated roll visible before its first painted frame.
   const EXPERIMENTAL_COMBAT_MOBILE_QUERY='(max-width:600px), (max-width:950px) and (max-height:520px) and (orientation:landscape) and (pointer:coarse)';
   function revealExperimentalCombatDice(container){
-    if(!experimentalFeaturesEnabled()||document.documentElement.dataset.ui!=='tomb'
+    if(document.documentElement.dataset.ui!=='tomb'
       ||!window.matchMedia?.(EXPERIMENTAL_COMBAT_MOBILE_QUERY)?.matches
       ||!modal.open||!container?.isConnected)return;
     const roll=container.querySelector('.animated-roll');
     if(!roll)return;
     const stage=roll.closest('.combat-stage')||roll;
-    // For a multi-target Sweeping attack, keep the target counter in view
+    // For a multi-target Sweeping attack, keep the promoted counter in view
     // along with the first animated dice card rather than scrolling past it.
     const progress=container.closest?.('.dedicated-combat-screen')?.querySelector('.experimental-sweeping-progress');
     const anchor=progress&&stage===container.querySelector('.combat-stage')?progress:stage;
@@ -7373,7 +7373,7 @@ function showPlayerActivation(){
     // Freshly selected Torrent targets have orderedTargetIds but have not yet
     // populated totalSequences. Use the target list until the sequence advances.
     const total=resolution?.orderedTargetIds?.length||resolution?.totalSequences||0;
-    if(!experimentalFeaturesEnabled()||document.documentElement.dataset.ui!=='tomb'
+    if(document.documentElement.dataset.ui!=='tomb'
       ||resolution?.profileKey!=='sweeping'||total<2)return '';
     return `<p class="experimental-sweeping-progress" aria-live="polite">Target ${Number(resolution.currentSequenceIndex||0)+1} of ${total}</p>`;
   }
@@ -7863,7 +7863,7 @@ function showPlayerActivation(){
     const capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
     const blocks=actions.blocks.map(({blocker,target})=>`<button class="btn secondary fight-action" data-fight-blocker="${escapeHtml(blocker.id)}" data-fight-block-target="${escapeHtml(target.id)}" aria-label="Block enemy ${target.kind} success using ${blocker.kind} success"><strong>${titleCaseRuleId(blocker.kind)} Success</strong><span>${capacity>1?'Block up to 2 legal enemy successes':`Block 1 enemy ${titleCaseRuleId(target.kind)}`}</span></button>`).join('');
     const intro=isPvpMode()?'Starting with the attacker, players alternate resolving one success as a Strike or Block.':'You and the NPO alternate resolving one success. You choose for your operative. The Guide automatically resolves the NPO’s response.';
-    showModal('Fight Resolution',experimentalFeaturesEnabled()&&document.documentElement.dataset.ui==='tomb'?experimentalFightResolutionHtml(fight,role,participant,strikes,blocks,capacity):`<div class="fight-sequence"><p>${intro}</p><div class="fight-pools">${fightPoolHtml(fight,'attacker')}${fightPoolHtml(fight,'defender')}</div>${fightLastResolutionHtml(fight)}<section class="fight-turn" aria-label="Acting now: ${escapeHtml(participant.label)}"><h3 class="fight-turn-heading">${escapeHtml(participant.label)}'s Turn</h3><p>Choose how ${escapeHtml(participant.label)} uses one of its unresolved successes.</p>${capacity>1?'<p><strong>Shield:</strong> this Block can block up to two unresolved successes.</p>':''}<section class="fight-action-group" aria-labelledby="fightStrikeHeading"><h4 id="fightStrikeHeading">STRIKE</h4><div class="fight-actions">${strikes}</div></section>${blocks?`<section class="fight-action-group" aria-labelledby="fightBlockHeading"><h4 id="fightBlockHeading">${capacity>1?'BLOCK · SHIELD':'BLOCK'}</h4><div class="fight-actions">${blocks}</div></section>`:''}</section><p class="muted">Choose one success to resolve. Damage and Blocks commit immediately.</p></div>`);
+    showModal('Fight Resolution',document.documentElement.dataset.ui==='tomb'?experimentalFightResolutionHtml(fight,role,participant,strikes,blocks,capacity):`<div class="fight-sequence"><p>${intro}</p><div class="fight-pools">${fightPoolHtml(fight,'attacker')}${fightPoolHtml(fight,'defender')}</div>${fightLastResolutionHtml(fight)}<section class="fight-turn" aria-label="Acting now: ${escapeHtml(participant.label)}"><h3 class="fight-turn-heading">${escapeHtml(participant.label)}'s Turn</h3><p>Choose how ${escapeHtml(participant.label)} uses one of its unresolved successes.</p>${capacity>1?'<p><strong>Shield:</strong> this Block can block up to two unresolved successes.</p>':''}<section class="fight-action-group" aria-labelledby="fightStrikeHeading"><h4 id="fightStrikeHeading">STRIKE</h4><div class="fight-actions">${strikes}</div></section>${blocks?`<section class="fight-action-group" aria-labelledby="fightBlockHeading"><h4 id="fightBlockHeading">${capacity>1?'BLOCK · SHIELD':'BLOCK'}</h4><div class="fight-actions">${blocks}</div></section>`:''}</section><p class="muted">Choose one success to resolve. Damage and Blocks commit immediately.</p></div>`);
     $$('[data-fight-strike]',modal).forEach(button=>button.onclick=()=>{commitFightStrike(fight,role,button.dataset.fightStrike);renderFightResolution();});
     $$('[data-fight-blocker]',modal).forEach(button=>button.onclick=()=>{if(capacity>1)showFightBlockSelection(fight,role,button.dataset.fightBlocker,button.dataset.fightBlockTarget);else{commitFightBlock(fight,role,button.dataset.fightBlocker,[button.dataset.fightBlockTarget]);renderFightResolution();}});
   }
@@ -9524,7 +9524,7 @@ function showPlayerActivation(){
       const candidate=canonicalAttackProfile(profile);
       return candidate.weaponId===initialProfile.weaponId&&candidate.profileId===initialProfile.profileId;
     }):-1;
-    const experimentalWeaponSelection=experimentalFeaturesEnabled()&&document.documentElement.dataset.ui==='tomb'&&attackType==='shoot';
+    const experimentalWeaponSelection=document.documentElement.dataset.ui==='tomb'&&attackType==='shoot';
     if(experimentalWeaponSelection&&!weaponConfirmed&&!resumeGuided&&!locked&&!rollingCombat&&!sameCombat
       &&(forceWeaponSelection||availableProfiles.length>1||npoCombatGuidanceHtml(n,{attackType,profile:initialProfile}))){
       showExperimentalNpoWeaponSelection(n,availableProfiles,attackType,selectedProfileIndex,index=>{

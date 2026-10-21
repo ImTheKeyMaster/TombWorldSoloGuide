@@ -120,7 +120,7 @@ assert.equal(selectorShown.at(-1)[3],0,'single profile Back returns to selection
 def test_change_is_opt_in_and_does_not_alter_combat_engine():
     wizard = APP.split("  function showNpoAttackWizard(", 1)[1].split("  function spinnerField(", 1)[0]
     assert "forceWeaponSelection=false" in wizard
-    assert "experimentalFeaturesEnabled()&&document.documentElement.dataset.ui==='tomb'&&attackType==='shoot'" in wizard
+    assert "document.documentElement.dataset.ui==='tomb'&&attackType==='shoot'" in wizard
     assert "forceWeaponSelection||availableProfiles.length>1" in wizard
     assert "pendingRule?.primaryTargetId===target.id&&!pendingRule.continueConfirmed" in wizard
     assert "!(pendingRule.completedTargetIds||[]).length" in wizard

@@ -71,7 +71,7 @@ assert.match(markup,/<div id="combatDetails"><\/div>/);
 assert.doesNotMatch(markup,/SWEEPING ATTACK|Target 2 of 3<br>|Gunner \(2\/15 wounds\)/);
 assert.equal(scrolls,1);
 enabled=false;
-assert.equal(api.experimentalSweepingTargetProgress(sequence),'');
+assert.equal(api.experimentalSweepingTargetProgress(sequence),label,'Standard Tomb UI shows compact Sweeping progress too');
 api.showSharedCombatResolutionScreen({
   title:'Resolve Combat',attackerName:'Crawler',defenderName:'Gunner',
   attackType:'shoot',weaponName:'Sweeping',defenseLabel:'3 dice · 3+',
@@ -103,7 +103,7 @@ def test_both_player_and_npo_flows_use_existing_sequence_without_changing_mechan
 
 def test_mobile_order_and_green_label_are_experiment_scoped():
     rules = CSS.split("/* Experimental Sweeping: show only", 1)[1]
-    assert 'html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .experimental-sweeping-progress{' in rules
+    assert 'html[data-ui="tomb"] .combat-resolution-modal .experimental-sweeping-progress{' in rules
     assert "color:var(--green);" in rules
     assert "font-weight:850;" in rules
     assert ".experimental-sweeping-progress ~ #combatDetails:empty{display:none}" in rules
@@ -162,7 +162,8 @@ modal.scrollTop=0;enabled=false;
 progress.getBoundingClientRect=()=>({top:536,bottom:557});
 attackStage.getBoundingClientRect=()=>({top:570,bottom:720});
 reveal(container);
-assert.equal(modal.scrollTop,0,'Standard mode remains untouched');
+assert.equal(modal.scrollTop,508,'Standard Tomb UI also keeps Sweeping progress visible');
+modal.scrollTop=0;
 enabled=true;mobile=false;
 reveal(container);
 assert.equal(modal.scrollTop,0,'desktop remains untouched');

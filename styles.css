@@ -2610,13 +2610,13 @@ html[data-ui="tomb"]:has(#modal[open]),html[data-ui="tomb"] body:has(#modal[open
 }
 
 /* v10.0.146: opt-in compact Fight Resolution. Standard markup and styles untouched. */
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-sequence{
+html[data-ui="tomb"] .experimental-fight-sequence{
   gap:12px;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pools{
+html[data-ui="tomb"] .experimental-fight-pools{
   gap:8px;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool{
+html[data-ui="tomb"] .experimental-fight-pool{
   position:relative;
   isolation:isolate;
   overflow:hidden;
@@ -2625,7 +2625,7 @@ html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool{
   padding:11px;
   border-radius:14px;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .fight-portrait{
+html[data-ui="tomb"] .experimental-fight-pool .fight-portrait{
   top:-5px;
   right:-8px;
   width:98px;
@@ -2636,30 +2636,30 @@ html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .fight-por
   -webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.8) 40%,#000 80%);
   mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.8) 40%,#000 80%);
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .fight-portrait-artwork{
+html[data-ui="tomb"] .experimental-fight-pool .fight-portrait-artwork{
   transform:none;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool-details{
+html[data-ui="tomb"] .experimental-fight-pool-details{
   position:relative;
   z-index:1;
   display:grid;
   gap:4px;
   min-width:0;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-status{
+html[data-ui="tomb"] .experimental-fight-card-status{
   justify-self:start;
   color:var(--muted);
   font-size:.61rem;
   font-weight:900;
   letter-spacing:.07em;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-status.is-acting{
+html[data-ui="tomb"] .experimental-fight-card-status.is-acting{
   border-radius:999px;
   background:var(--green);
   color:#062012;
   padding:3px 6px;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-name{
+html[data-ui="tomb"] .experimental-fight-card-name{
   display:block;
   font-size:.89rem;
   line-height:1.22;
@@ -2667,7 +2667,7 @@ html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-name{
   overflow-wrap:anywhere;
   text-shadow:0 1px 5px #06110d,0 0 9px #06110d;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-weapon{
+html[data-ui="tomb"] .experimental-fight-card-weapon{
   display:block;
   font-size:.75rem;
   line-height:1.2;
@@ -2675,23 +2675,23 @@ html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-weapon{
   overflow-wrap:anywhere;
   text-shadow:0 1px 5px #06110d;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .experimental-fight-card-wounds{
+html[data-ui="tomb"] .experimental-fight-pool .experimental-fight-card-wounds{
   display:flex;
   flex-wrap:wrap;
   align-items:baseline;
   gap:5px;
   margin-top:4px;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-wounds strong{
+html[data-ui="tomb"] .experimental-fight-card-wounds strong{
   font-size:1.15rem;
   font-weight:900;
   line-height:1.1;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-wounds span{
+html[data-ui="tomb"] .experimental-fight-card-wounds span{
   font-size:.69rem;
   color:var(--muted);
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .experimental-fight-card-successes{
+html[data-ui="tomb"] .experimental-fight-pool .experimental-fight-card-successes{
   display:flex;
   flex-wrap:wrap;
   align-items:center;
@@ -2702,19 +2702,19 @@ html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .experimen
   font-size:.95rem;
   font-weight:850;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-turn{
+html[data-ui="tomb"] .experimental-fight-turn{
   gap:10px;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-turn-header{
+html[data-ui="tomb"] .experimental-fight-turn-header{
   display:flex;
   flex-wrap:wrap;
   align-items:center;
   gap:6px 10px;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-turn-heading{
+html[data-ui="tomb"] .experimental-fight-turn-heading{
   margin:0;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-turn-operative{
+html[data-ui="tomb"] .experimental-fight-turn-operative{
   border:1px solid var(--line);
   border-radius:999px;
   padding:4px 8px;
@@ -2722,56 +2722,56 @@ html[data-ui="tomb"][data-experimental="on"] .experimental-fight-turn-operative{
   font-size:.75rem;
   font-weight:850;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-turn>p,
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-footnote{
+html[data-ui="tomb"] .experimental-fight-turn>p,
+html[data-ui="tomb"] .experimental-fight-footnote{
   margin:0;
   color:var(--muted);
   line-height:1.35;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-help{
+html[data-ui="tomb"] .experimental-fight-help{
   border-top:1px solid var(--line);
   padding-top:9px;
   font-size:.8rem;
   color:var(--muted);
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-help summary{
+html[data-ui="tomb"] .experimental-fight-help summary{
   cursor:pointer;
   color:var(--text);
   font-weight:750;
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-help p{
+html[data-ui="tomb"] .experimental-fight-help p{
   margin:8px 0 0;
 }
 @media(max-width:390px){
-  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool{
+  html[data-ui="tomb"] .experimental-fight-pool{
     padding:9px;
   }
-  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .fight-portrait{
+  html[data-ui="tomb"] .experimental-fight-pool .fight-portrait{
     width:78px;
     height:100px;
     opacity:.25;
   }
-  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-card-name{
+  html[data-ui="tomb"] .experimental-fight-card-name{
     font-size:.82rem;
   }
 }
 
 /* v10.0.147: prevent the shared <375px single-column fallback in Experimental Fight Resolution only. */
 @media(max-width:374px){
-  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pools{
+  html[data-ui="tomb"] .experimental-fight-pools{
     grid-template-columns:repeat(2,minmax(0,1fr));
     gap:6px;
   }
-  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool{
+  html[data-ui="tomb"] .experimental-fight-pool{
     padding:7px;
   }
-  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .fight-portrait{
+  html[data-ui="tomb"] .experimental-fight-pool .fight-portrait{
     width:65px;
     height:90px;
     max-width:60%;
     opacity:.22;
   }
-  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .experimental-fight-card-successes{
+  html[data-ui="tomb"] .experimental-fight-pool .experimental-fight-card-successes{
     gap:6px;
     font-size:.84rem;
   }
@@ -2780,26 +2780,26 @@ html[data-ui="tomb"][data-experimental="on"] .experimental-fight-help p{
 /* Experimental mobile Resolve Combat: show dice and their results before rule guidance.
    Leave selections above the roll and Standard/desktop document order unchanged. */
 @media (max-width:600px), (max-width:950px) and (max-height:520px) and (orientation:landscape) and (pointer:coarse){
-  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > *{order:1}
-  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > .compact-combat-profile{order:0}
-  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > #automaticCombat{order:2}
-  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > #combatResults{order:3}
-  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > #npoCombatGuidance,
-  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > #npoCombatRules,
-  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > .weapon-rules{order:4}
-  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > #combatDetails{order:5}
-  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > .combat-resolution-footer{order:6}
+  html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > *{order:1}
+  html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > .compact-combat-profile{order:0}
+  html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > #automaticCombat{order:2}
+  html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > #combatResults{order:3}
+  html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > #npoCombatGuidance,
+  html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > #npoCombatRules,
+  html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > .weapon-rules{order:4}
+  html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > #combatDetails{order:5}
+  html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > .combat-resolution-footer{order:6}
 }
 
 /* Experimental Sweeping: show only the current target count immediately above the dice. */
-html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .experimental-sweeping-progress{
+html[data-ui="tomb"] .combat-resolution-modal .experimental-sweeping-progress{
   margin:2px 0 0;
   color:var(--green);
   font-size:1rem;
   font-weight:850;
   line-height:1.35;
 }
-html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .experimental-sweeping-progress ~ #combatDetails:empty{display:none}
+html[data-ui="tomb"] .combat-resolution-modal .experimental-sweeping-progress ~ #combatDetails:empty{display:none}
 @media (max-width:600px), (max-width:950px) and (max-height:520px) and (orientation:landscape) and (pointer:coarse){
-  html[data-ui="tomb"][data-experimental="on"] .combat-resolution-modal .dedicated-combat-screen > .experimental-sweeping-progress{order:2}
+  html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > .experimental-sweeping-progress{order:2}
 }

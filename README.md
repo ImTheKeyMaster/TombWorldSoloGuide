@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.0.152
+# Tomb World Battle Guide v10.0.153
+
+## v10.0.153
+
+### Promote current Experimental combat improvements to Standard Mode
+
+- Make compact portrait Fight Resolution, text Crits/Normal success counters, clearer action buttons and collapsible help the default Tomb UI experience in both Standard and Experimental modes.
+- Make mobile shooting Dice/Results-first order and auto-scroll-to-animation standard, keeping desktop layouts unchanged.
+- Make the Necron Select Weapon step with live profile-specific guidance and safe Torrent/Blast Back handling standard.
+- Keep the compact green Sweeping Target X of Y counter above shooting dice for multi-target attacks in both modes.
+- Preserve the Experimental switch, separate storage key and independent playground for future work; existing features no longer depend on the switch.
+- No game-rule, damage, action/activation, saved-game schema or portrait asset changes. Refresh app and offline cache to V10.0.153.
 
 ## v10.0.152
 
