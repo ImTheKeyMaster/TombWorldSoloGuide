@@ -229,9 +229,9 @@ html.desktop-game-background #gameBackground{opacity:1}
 /* v1.3.3 setup and combat refinements */
 .setup-bulk-row{display:flex;justify-content:flex-end;margin:14px 0 4px}
 .setup-bulk-row .btn{min-width:120px}
-.experimental-roster-reroll{display:flex;justify-content:flex-end;margin:-8px 0 12px}
-.experimental-roster-reroll-button{appearance:none;border:0;background:transparent;color:var(--muted);font-size:.83rem;font-weight:750;min-height:44px;padding:8px 2px 8px 12px;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(118,245,168,.25);text-underline-offset:3px}
-.experimental-roster-reroll-button:hover,.experimental-roster-reroll-button:focus-visible{color:var(--green);text-decoration-color:currentColor}
+.setup-roster-reroll{display:flex;justify-content:flex-end;margin:-8px 0 12px}
+.setup-roster-reroll-button{appearance:none;border:0;background:transparent;color:var(--muted);font-size:.83rem;font-weight:750;min-height:44px;padding:8px 2px 8px 12px;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(118,245,168,.25);text-underline-offset:3px}
+.setup-roster-reroll-button:hover,.setup-roster-reroll-button:focus-visible{color:var(--green);text-decoration-color:currentColor}
 .combat-fieldset{border:0;padding:0;margin:0;min-width:0}
 .combat-fieldset:disabled{opacity:.48}
 .combat-fieldset:disabled .wizard-actions .btn.ghost{opacity:1}
