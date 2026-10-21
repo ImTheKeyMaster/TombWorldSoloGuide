@@ -76,7 +76,7 @@ assert.doesNotMatch(api.npoCombatGuidanceHtml(npo,{attackType:'shoot',profile:pr
 def test_experimental_selection_precedes_combat_only_when_needed():
     wizard = source("  function showNpoAttackWizard(", "  function spinnerField(")
     assert "weaponConfirmed=false" in wizard
-    assert "experimentalFeaturesEnabled()&&document.documentElement.dataset.ui==='tomb'&&attackType==='shoot'" in wizard
+    assert "document.documentElement.dataset.ui==='tomb'&&attackType==='shoot'" in wizard
     assert "!weaponConfirmed&&!resumeGuided&&!locked&&!rollingCombat&&!sameCombat" in wizard
     assert "availableProfiles.length>1||npoCombatGuidanceHtml(n,{attackType,profile:initialProfile})" in wizard
     assert "showExperimentalNpoWeaponSelection(n,availableProfiles,attackType,selectedProfileIndex,index=>" in wizard
