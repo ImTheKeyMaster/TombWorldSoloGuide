@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.155
+# Tomb World Battle Guide v10.0.156
+
+## v10.0.156
+
+### Skip empty Blast/Torrent secondary-target checks
+
+- Skip the secondary-target checklist automatically when no other living, in-play operative can be selected. Continue directly to the primary target's combat dice in both player and NPO shooting flows.
+- Preserve normal tabletop checks and selection whenever additional candidates exist, including friendly operatives for Blast.
+- Keep primary-target identity, Seek Light answers, rule-resolution persistence, and existing combat/damage sequencing intact.
+- Update the PWA shell and offline cache to V10.0.156.
 
 ## v10.0.155
 
