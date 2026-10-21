@@ -25,12 +25,12 @@ const end=source.indexOf('  function ensureStartingNpoGeneration(',begin);
 assert.ok(begin>0&&end>begin);
 const method=source.slice(begin,end);
 
-function execute({experimental=true,screen='setup',step='deploy',generated=true,fail=false,throws=false}={}){
+function execute({experimental=true,screen='setup',step='deploy',generated=true,noStarting=false,fail=false,throws=false}={}){
  const calls=[];
  const original={
   screen,phase:'setup',missionId:'mission-03',tombWorldVariant:'flayer-curse',
   roster:[{id:'old-npo',type:'Necron Warrior',wounds:8}],
-  startingNpoGeneration:generated?{missionRoll:7,dice:[1,3],deployedNpoIds:['old-npo'],reserveNpoIds:[],animationShown:true}:null,
+  startingNpoGeneration:generated?{missionRoll:noStarting?0:7,dice:noStarting?[]:[1,3],deployedNpoIds:noStarting?[]:['old-npo'],reserveNpoIds:noStarting?['old-npo']:[],animationShown:true}:null,
   setupChecks:{'starting-npos':true,'player-zone':true},
   variantState:{crownworldFirstCrawlerConsumed:true,replacementTransactions:{'starting:0:necron':{selectedType:'Necron Warrior'}}},
   newIds:['old-npo'],journal:[{message:'old'}],
@@ -75,7 +75,7 @@ assert.equal(success.state.missionId,'mission-03');
 assert.equal(success.state.tombWorldVariant,'flayer-curse');
 assert.deepEqual(success.state.variantState.replacementTransactions,{});
 
-for(const option of [{experimental:false},{screen:'game'},{step:'ready'},{step:'options'},{generated:false}]){
+for(const option of [{experimental:false},{screen:'game'},{step:'ready'},{step:'options'},{generated:false},{noStarting:true}]){
  const output=execute(option);
  assert.equal(output.ok,false);
  assert.deepEqual(output.state,output.original);
@@ -96,17 +96,36 @@ console.log('Experimental setup roster re-roll: success, guards and failure reco
 def test_reroll_button_and_mode_switch_are_deploy_only():
     # The button is created only in the deployment branch and only with Experimental enabled.
     deploy = APP.split("    if(stepId==='deploy'){", 1)[1].split('    const m=mission();', 1)[0]
-    assert "const rerollControl=experimentalFeaturesEnabled()" in deploy
+    assert "const rerollControl=experimentalFeaturesEnabled()&&hasStartingNpos" in deploy
     assert 'id="rerollStartingNpoRoster"' in deploy
-    assert 'Re-roll Necron Roster' in deploy
+    assert 'experimental-roster-reroll-button' in deploy
+    assert 'Re-roll roster' in deploy
     assert '${missionRoll}${rerollControl}' in deploy
-    assert 'Reconfirm the Necron models you place.' in deploy
 
     binding = APP.split('  function bindSetup(stepId){', 1)[1].split('  function runStartingNpoGeneration(){', 1)[0]
     assert "if(stepId==='deploy')runStartingNpoGeneration();" in binding
     assert "$('#rerollStartingNpoRoster')?.addEventListener('click',rerollStartingNpoRoster);" in binding
     toggle = APP.split('  function setExperimentalFeatures(enabled){', 1)[1].split('  function showExperimentalUiPanel(){', 1)[0]
     assert "if(state.screen==='setup'&&currentSetupStepId()==='deploy')render();" in toggle
+
+
+def test_reroll_render_condition_matches_mission_and_experimental_mode():
+    script = r"""
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const app=fs.readFileSync('app.js','utf8');
+const start=app.indexOf('      const rerollControl=experimentalFeaturesEnabled()&&hasStartingNpos');
+const end=app.indexOf('      const deploymentDetails=',start);
+assert.ok(start>0&&end>start);
+const expression=app.slice(start,end);
+const render=(experimental,hasStartingNpos)=>new Function('experimentalFeaturesEnabled','hasStartingNpos',expression+'return rerollControl;')(()=>experimental,hasStartingNpos);
+assert.match(render(true,true),/id="rerollStartingNpoRoster"/);
+assert.match(render(true,true),/Re-roll roster/);
+assert.doesNotMatch(render(true,true),/setup-bulk-row|btn secondary|Reconfirm the Necron models you place/);
+assert.equal(render(true,false),'','No starting Necrons means there is nothing to re-roll');
+assert.equal(render(false,true),'','Standard mode must remain unchanged');
+assert.equal(render(false,false),'');
+"""
+    node_check(script)
 
 
 def test_release_and_persistence_are_compatible():

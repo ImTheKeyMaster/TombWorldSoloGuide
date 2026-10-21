@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.159';
+  const APP_VERSION = '10.0.160';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2862,7 +2862,7 @@ document.addEventListener('touchend',function(e){
   }
 
   function rerollStartingNpoRoster(){
-    if(state.screen!=='setup'||currentSetupStepId()!=='deploy'||!experimentalFeaturesEnabled()||!state.startingNpoGeneration)return false;
+    if(state.screen!=='setup'||currentSetupStepId()!=='deploy'||!experimentalFeaturesEnabled()||!state.startingNpoGeneration?.deployedNpoIds?.length)return false;
     const previous={
       roster:state.roster,startingNpoGeneration:state.startingNpoGeneration,
       variantState:state.variantState,setupChecks:{...state.setupChecks},
@@ -3318,8 +3318,8 @@ document.addEventListener('touchend',function(e){
       const deployedNpoRoster=inlineOperativeList(sortedNposForDisplay(generation.deployedNpoIds.map(id=>state.roster.find(npo=>npo.id===id)).filter(Boolean)).map(npo=>escapeHtml(npoName(npo))));
       const playerRoster=inlineOperativeList((state.playerRoster||[]).map(id=>escapeHtml(playerName(id))));
       const playerRosterHtml=playerRoster?`<span class="deployment-roster">${playerRoster}</span>`:'';
-      const rerollControl=experimentalFeaturesEnabled()
-        ? '<div class="setup-bulk-row"><button type="button" class="btn secondary" id="rerollStartingNpoRoster">Re-roll Necron Roster</button></div><p class="muted">Generate a new Necron roster and starting deployment roll. Reconfirm the Necron models you place.</p>'
+      const rerollControl=experimentalFeaturesEnabled()&&hasStartingNpos
+        ? '<div class="experimental-roster-reroll"><button type="button" class="experimental-roster-reroll-button" id="rerollStartingNpoRoster" aria-label="Re-roll Necron roster and starting deployment" title="Generate another Necron roster and starting deployment roll">&#8635; Re-roll roster</button></div>'
         : '';
       const deploymentDetails=presentSideTerminology(mission().startingNpos?.deployment||'Use the mission deployment rules.');
       const allNposPlaced=startingNpoDeploymentComplete(generation);
