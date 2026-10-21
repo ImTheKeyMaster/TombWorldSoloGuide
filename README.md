@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.0.161
+# Tomb World Battle Guide v10.0.162
+
+## v10.0.162
+
+### Experimental shooting results: Rules Applied
+
+- Experimental Tomb UI shows a concise **RULES APPLIED** panel on automated shooting results when actual dice or damage prove a weapon rule had an effect; otherwise no panel appears.
+- Display confirmed Severe and Rending critical conversions, Lethal critical thresholds, Accurate retained successes, Balanced/Ceaseless rerolls, the actual Piercing/Piercing Crits defense-dice reduction, and Devastating immediate damage.
+- Do not infer effects from the weapon's rule list alone: Piercing Crits only credits greater reductions actually used, Devastating incapacitations do not falsely credit skipped defense rolls, and physically recorded combat does not fabricate rule applications.
+- In Experimental Mode, move the existing Severe note into the applied-effects panel rather than repeating it beneath the dice. Keep elimination, damage, wound calculations, and triggered event messages exactly as before.
+- Standard Mode, Classic UI, weapon guidance/selection, melee combat, and game-state mechanics stay unchanged. Experimental remains opt-in.
+- Refresh PWA cache and assets for V10.0.162.
 
 ## v10.0.161
 

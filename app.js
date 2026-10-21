@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.161';
+  const APP_VERSION = '10.0.162';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5884,13 +5884,58 @@ function showPlayerActivation(){
     </section>`;
   }
 
+  // Only show rules that demonstrably changed this shooting resolution.
+  // Derive each entry from the committed dice/results so saved combat renders identically.
+  function appliedShootingRuleMessages(combat){
+    if(combat?.attackType!=='shoot'||combat.recordedOutcome||!Array.isArray(combat.attackDice)||!combat.attackDice.length)return [];
+    const attackDice=combat.attackDice,profile=combat.profile||{},messages=[];
+    const conversions=type=>attackDice.filter(die=>die[type]).length;
+    const severe=conversions('severeConverted');
+    if(severe)messages.push(`Severe: ${severe} normal ${severe===1?'success became a critical success':'successes became critical successes'}.`);
+    const rending=conversions('rendingConverted');
+    if(rending)messages.push(`Rending: ${rending} normal ${rending===1?'success became a critical success':'successes became critical successes'}.`);
+    const lethal=Number(profile.critThreshold||6);
+    const lethalCrits=lethal<6?attackDice.filter(die=>die.retained&&die.kind==='crit'&&Number(die.value)>=lethal&&Number(die.value)<6&&!die.severeConverted&&!die.rendingConverted).length:0;
+    if(lethalCrits)messages.push(`Lethal ${lethal}+: ${lethalCrits} ${lethalCrits===1?'roll counted':'rolls counted'} as critical.`);
+    const accurate=attackDice.filter(die=>die.retained&&String(die.automatic||'').toLowerCase().startsWith('accurate')).length;
+    if(accurate)messages.push(`Accurate: ${accurate} normal ${accurate===1?'success retained':'successes retained'} automatically.`);
+    for(const rule of ['balanced','ceaseless']){
+      const count=attackDice.filter(die=>die.rerolledBy===rule).length;
+      if(count)messages.push(`${rule[0].toUpperCase()+rule.slice(1)}: ${count} ${count===1?'die':'dice'} re-rolled.`);
+    }
+    // When Devastating incapacitated the defender, no defense dice were requested;
+    // do not misleadingly credit Piercing for eliminating a roll that never happened.
+    if(!combat.devastatingIncapacitated&&Array.isArray(combat.saveDice)){
+      const baseline=3,actual=effectiveDefenseDiceCount(profile,attackDice,baseline);
+      if(actual<baseline&&combat.saveDice.length===actual){
+        const piercing=Math.max(0,Number(profile.ap||0));
+        const criticalPresent=attackDice.some(die=>die.retained&&die.kind==='crit');
+        const critPiercing=criticalPresent?weaponRuleValue(profile,'piercing-crits'):0;
+        const applied=critPiercing>piercing?`Piercing Crits ${critPiercing}`:`Piercing ${piercing}`;
+        messages.push(`${applied}: defense dice ${baseline} → ${actual}.`);
+      }
+    }
+    const devastating=weaponRuleValue(profile,'devastating');
+    const damage=Number(combat.devastatingDamage||0);
+    if(devastating>0&&damage>0)messages.push(`Devastating ${devastating}: ${damage} immediate damage from critical successes.`);
+    return messages;
+  }
+
+  function experimentalAppliedShootingRulesHtml(combat){
+    if(document.documentElement.dataset.ui!=='tomb'||!experimentalFeaturesEnabled())return '';
+    const messages=appliedShootingRuleMessages(combat);
+    return messages.length
+      ? `<section class="combat-applied-rules" aria-label="Rules applied"><small>RULES APPLIED</small><ul>${messages.map(message=>`<li>${escapeHtml(message)}</li>`).join('')}</ul></section>`
+      : '';
+  }
+
   function renderCombatResolution(combat,{pending=false,animate=true,showParticipants=true}={}){
     const elimination=renderEliminationSummary({
       ...combat,side:combat.defenderSide,targetName:combat.defenderName
     });
     const diceStages=combat.recordedOutcome
       ? '<div class="combat-stage"><small>TABLETOP RESOLUTION</small><p>Physical dice and retained successes resolved by the player.</p></div>'
-      : combatDiceStageHtml('attacker','ATTACK DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div>`,severeAppliedHtml(combat.attackDice,combat.severeApplied))
+      : combatDiceStageHtml('attacker','ATTACK DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div>`,experimentalAppliedShootingRulesHtml(combat)?'':severeAppliedHtml(combat.attackDice,combat.severeApplied))
         +combatDiceStageHtml('defender','DEFENSE DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No defense dice rolled</span>'}</div>`,combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':'');
     return `<section class="combat-resolution" aria-label="Combat resolution">
       ${showParticipants?`<div class="damage-summary combat-participants">
@@ -5900,6 +5945,7 @@ function showPlayerActivation(){
         ${combat.recordedOutcome?'':`<div><small>Retained saves</small><strong>${combat.retainedSaves??(combat.coverRetained?1:0)}</strong></div>`}
       </div>`:''}
       ${diceStages}
+      ${experimentalAppliedShootingRulesHtml(combat)}
       ${elimination}
       ${combatAbilityReminder(combat)}
       ${(combat.eventMessages||combat.profile?.eventMessages||[]).map(message=>`<div class="summary-box"><strong>${escapeHtml(message)}</strong></div>`).join('')}
