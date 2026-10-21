@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.155';
+  const APP_VERSION = '10.0.156';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -7342,6 +7342,18 @@ function showPlayerActivation(){
       : `Torrent attacks each selected valid enemy target within ${distance} inches of the primary target.`;
     const saved=state.weaponRuleResolution;
     const sameStep=saved?.ruleId===ruleId&&saved?.primaryTargetId===primaryTargetId&&saved?.profileKey===profileKey;
+    // With no other living, in-play candidate, the secondary-target list is empty.
+    // Continue with just the primary target instead of displaying a confirmation dialog.
+    if(!eligible.length){
+      const resolution=createWeaponRuleResolution({activationId:activationId||`${state.turningPoint}:${state.activationNumber}`,actionId:actionId||(attackerSide==='npo'?'npo-attack':'player-attack'),attackerSide,attackerId,weaponId,weaponName,profileKey,profileName,weaponRules,ruleId,primaryTargetId,targetDescriptors:[{targetId:primaryTargetId,targetSide:attackerSide==='player'?'npo':'player'}]});
+      if(resolution){
+        const seekLightAnswer=saved?.primaryTargetId===primaryTargetId?saved.seekLightAnswer:null;
+        state.weaponRuleResolution={...resolution,continueConfirmed:true,...(seekLightAnswer?{seekLightAnswer}:{})};
+        save();
+        onContinue(state.weaponRuleResolution);
+        return;
+      }
+    }
     showModal(ruleId[0].toUpperCase()+ruleId.slice(1),`<p id="secondaryTargetHelp">${escapeHtml(question)}</p><p class="muted">${escapeHtml(help)}</p><div class="checklist" aria-describedby="secondaryTargetHelp">${eligible.length?eligible.map(weaponRuleTargetOption).join(''):'<p class="muted">No other operatives are available.</p>'}</div><label class="check-row required-confirmation-row"><input id="tabletopCheckConfirmed" type="checkbox"><span>I have confirmed visibility and distance on the tabletop.</span></label><div class="wizard-actions"><button class="btn ghost" id="secondaryTargetsBack">Back</button><button class="btn ghost" data-close>Close Guide</button><button class="btn primary" id="confirmSecondaryTargets" disabled>Continue</button></div>`);
     $$('[data-weapon-rule-target]').forEach(input=>{input.checked=sameStep?(saved.secondaryTargetIds||[]).includes(input.value):false;});
     const confirmation=$('#tabletopCheckConfirmed');
