@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.151';
+  const APP_VERSION = '10.0.152';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5905,7 +5905,7 @@ function showPlayerActivation(){
     const portraitClass=portrait?' fight-roll-pool shooting-roll-pool has-fight-portrait':'';
     return `<section class="combat-stage${portraitClass}" aria-label="${escapeHtml(heading)}${name?` for ${escapeHtml(name)}`:''}">${portrait}<small>${escapeHtml(heading)}</small>${name?`<strong class="shooting-roll-participant">${escapeHtml(name)}</strong>`:''}${diceRow}${details}</section>`;
   }
-  function showSharedCombatResolutionScreen({title,attackerName,defenderName,attackerPortrait='',defenderPortrait='',attackType,weaponName,attackLabel='',defenseLabel,cancelId,continueId,guidanceHtml='',rulesHtml='',extraHtml='',detailsHtml=''}){
+  function showSharedCombatResolutionScreen({title,attackerName,defenderName,attackerPortrait='',defenderPortrait='',attackType,weaponName,attackLabel='',defenseLabel,cancelId,continueId,guidanceHtml='',rulesHtml='',extraHtml='',detailsHtml='',progressHtml=''}){
     showModal(title,`
       <section class="dedicated-combat-screen" aria-label="Combat resolution screen">
         <template id="combatAttackerPortraitTemplate">${attackerPortrait}</template>
@@ -5921,6 +5921,7 @@ function showPlayerActivation(){
         ${guidanceHtml}
         ${rulesHtml}
         ${extraHtml}
+        ${progressHtml}
         <div id="automaticCombat" class="combat-results combat-dice-area" aria-live="polite"></div>
         <div id="combatResults" class="combat-results" aria-live="polite"></div>
         <div id="combatDetails">${detailsHtml}</div>
@@ -7364,6 +7365,12 @@ function showPlayerActivation(){
     };
   }
 
+  function experimentalSweepingTargetProgress(resolution){
+    if(!experimentalFeaturesEnabled()||document.documentElement.dataset.ui!=='tomb'
+      ||resolution?.profileKey!=='sweeping'||resolution.totalSequences<2)return '';
+    return `<p class="experimental-sweeping-progress" aria-live="polite">Target ${resolution.currentSequenceIndex+1} of ${resolution.totalSequences}</p>`;
+  }
+
   function weaponRuleSequenceProgress(resolution,targetName,wounds=''){
     if(!resolution||resolution.totalSequences<2)return '';
     const displayRule=resolution.profileKey==='sweeping'?'Sweeping':resolution.ruleId;
@@ -8190,7 +8197,8 @@ function showPlayerActivation(){
       defenseLabel:`${Math.max(0,3-profile.ap)} dice · ${target.save}+`,
       cancelId:'cancelPendingAttack',continueId:'continuePendingAttack',
       rulesHtml:weaponRulesHtml(profile),
-      detailsHtml:weaponRuleSequenceProgress(sequence,targetName,`${targetSide==='player'?playerCurrentWounds(targetId):projectedNpoWounds(targetId,stage)}/${target.maxWounds||playerDefinition(targetId)?.wounds||0} wounds`)
+      progressHtml:experimentalSweepingTargetProgress(sequence),
+      detailsHtml:experimentalSweepingTargetProgress(sequence)?'':weaponRuleSequenceProgress(sequence,targetName,`${targetSide==='player'?playerCurrentWounds(targetId):projectedNpoWounds(targetId,stage)}/${target.maxWounds||playerDefinition(targetId)?.wounds||0} wounds`)
     });
 
     $('#cancelPendingAttack').onclick=()=>{
@@ -9544,7 +9552,8 @@ function showPlayerActivation(){
       guidanceHtml:experimentalWeaponSelection?'':`<div id="npoCombatGuidance">${guidance}</div>`,
       rulesHtml:`<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`,
       extraHtml:`${profileControl}${willBeDone}${enforcerQuestion}`,
-      detailsHtml:weaponRuleSequenceProgress(sequence,targetName,`${target.wounds}/${target.maxWounds||playerDefinition(target.id)?.wounds||0} wounds`)
+      progressHtml:experimentalSweepingTargetProgress(sequence),
+      detailsHtml:experimentalSweepingTargetProgress(sequence)?'':weaponRuleSequenceProgress(sequence,targetName,`${target.wounds}/${target.maxWounds||playerDefinition(target.id)?.wounds||0} wounds`)
     });
     const cancel=()=>{
       if(combatTimer)combatTimer();
