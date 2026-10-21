@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.150';
+  const APP_VERSION = '10.0.151';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -9446,7 +9446,7 @@ function showPlayerActivation(){
     updateGuidance();
   }
 
-  function showNpoAttackWizard(n,attackDice,onDone,onCancel,animateCombat=false,resumeGuided=false,weaponConfirmed=false){
+  function showNpoAttackWizard(n,attackDice,onDone,onCancel,animateCombat=false,resumeGuided=false,weaponConfirmed=false,forceWeaponSelection=false){
     const target=selectedNpoAttackTarget();
     if(!target&&state.weaponRuleResolution?.currentTargetId){
       const attackType=state.lastActivation?.action?.includes('Fight')?'melee':'shoot';
@@ -9511,7 +9511,7 @@ function showPlayerActivation(){
     }):-1;
     const experimentalWeaponSelection=experimentalFeaturesEnabled()&&document.documentElement.dataset.ui==='tomb'&&attackType==='shoot';
     if(experimentalWeaponSelection&&!weaponConfirmed&&!resumeGuided&&!locked&&!rollingCombat&&!sameCombat
-      &&(availableProfiles.length>1||npoCombatGuidanceHtml(n,{attackType,profile:initialProfile}))){
+      &&(forceWeaponSelection||availableProfiles.length>1||npoCombatGuidanceHtml(n,{attackType,profile:initialProfile}))){
       showExperimentalNpoWeaponSelection(n,availableProfiles,attackType,selectedProfileIndex,index=>{
         const profile=canonicalAttackProfile(availableProfiles[index]);
         state.lastActivation={...state.lastActivation,combatDraft:{selecting:true,attackType,targetId:target.id,targetName:targetName,profile}};
@@ -9666,7 +9666,22 @@ function showPlayerActivation(){
       if(profileIndex<0||!Number.isInteger(profileIndex))return;
       const baseProfile=canonicalAttackProfile(availableProfiles[profileIndex]);
       if(!restoredRoll&&!guidedConfirmed&&!state.weaponRuleResolution?.continueConfirmed){
-        const back=()=>{rollStarted=false;showNpoAttackWizard(n,attackDice,onDone,onCancel,false);};
+        const back=()=>{
+          rollStarted=false;
+          // The target checklist saves a provisional multi-target profile. When
+          // backing out before confirmation, release that lock before reopening
+          // the Experimental weapon selector. Already completed targets remain locked.
+          if(experimentalWeaponSelection){
+            const pendingRule=state.weaponRuleResolution;
+            if(pendingRule?.primaryTargetId===target.id&&!pendingRule.continueConfirmed
+              &&!(pendingRule.completedTargetIds||[]).length
+              &&!(sequence?.completedTargetIds||[]).length){
+              state.weaponRuleResolution=null;
+              save();
+            }
+          }
+          showNpoAttackWizard(n,attackDice,onDone,onCancel,false,false,false,experimentalWeaponSelection);
+        };
         const resume=()=>resumeCombatAfterWeaponRuleCheck({
           render:()=>showNpoAttackWizard(n,attackDice,onDone,onCancel,false,true),
           onMounted:mounted=>mounted.startAutomaticCombat(null,true),
