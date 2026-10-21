@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.150
+# Tomb World Battle Guide v10.0.151
+
+## v10.0.151
+
+### Experimental Torrent and Blast Back navigation
+
+- Back from a pre-roll Torrent/Blast (or Seek Light) tabletop check now returns to the Experimental Necron weapon-selection step, preserving the selected weapon profile.
+- Clear only unconfirmed secondary-target/visibility answers before revisiting weapon selection, avoiding an accidental multi-target profile lock. Preserve completed attacks and confirmed multi-target outcomes.
+- Allow a Back path for guided single-profile attacks even when the initial weapon-selection step was automatically skipped.
+- Keep Standard Mode navigation, combat mechanics, save structure, and dice behavior unchanged.
+- Update app and offline cache versions to V10.0.151.
 
 ## v10.0.150
 
