@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.154
+# Tomb World Battle Guide v10.0.155
+
+## v10.0.155
+
+### Skip redundant pre-roll combat confirmation in Standard Mode
+
+- After selecting a Necron shooting profile, continue immediately to any necessary Blast/Torrent target or Seek Light check, then roll combat dice, without an unchanged intermediate Resolve Combat confirmation.
+- Display event-specific room questions on a small, dedicated Attack conditions step only when genuinely required, preserving their answers for the attack.
+- Preserve the true combat dice/results screen, existing damage and multi-target order, Classic UI, Back navigation, and saved-game compatibility.
+- Update the offline cache and displayed version to V10.0.155.
+
 
 ## v10.0.154
 

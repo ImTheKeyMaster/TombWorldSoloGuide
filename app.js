@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.154';
+  const APP_VERSION = '10.0.155';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -9469,6 +9469,19 @@ function showPlayerActivation(){
     updateGuidance();
   }
 
+  function showNpoAttackConditionCheck({willBeDone='',enforcerQuestion='',onBack,onContinue}){
+    showModal('Attack conditions',`<p class="muted">Confirm the active event conditions before rolling.</p>
+      ${willBeDone}${enforcerQuestion}
+      <div class="wizard-actions"><button class="btn ghost" id="backNpoAttackConditions">Back</button><button class="btn primary" id="confirmNpoAttackConditions">Continue</button></div>`);
+    $('#backNpoAttackConditions').onclick=onBack;
+    $('#confirmNpoAttackConditions').onclick=()=>{
+      const answers={};
+      if(willBeDone)answers.sameRoomAsC1=Boolean($('#sameRoomAsC1')?.checked);
+      if(enforcerQuestion)answers.sameRoomAsRoyalWarden=Boolean($('#sameRoomAsRoyalWarden')?.checked);
+      onContinue(answers);
+    };
+  }
+
   function showNpoAttackWizard(n,attackDice,onDone,onCancel,animateCombat=false,resumeGuided=false,weaponConfirmed=false,forceWeaponSelection=false){
     const target=selectedNpoAttackTarget();
     if(!target&&state.weaponRuleResolution?.currentTargetId){
@@ -9566,7 +9579,7 @@ function showPlayerActivation(){
       cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',
       guidanceHtml:experimentalWeaponSelection?'':`<div id="npoCombatGuidance">${guidance}</div>`,
       rulesHtml:`<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`,
-      extraHtml:`${profileControl}${willBeDone}${enforcerQuestion}`,
+      extraHtml:`${profileControl}${experimentalWeaponSelection?'':`${willBeDone}${enforcerQuestion}`}`,
       progressHtml:multiTargetAttackProgress(sequence),
       detailsHtml:multiTargetAttackProgress(sequence)?'':weaponRuleSequenceProgress(sequence,targetName,`${target.wounds}/${target.maxWounds||playerDefinition(target.id)?.wounds||0} wounds`)
     });
@@ -9683,6 +9696,26 @@ function showPlayerActivation(){
     let rollStarted=false;
     const startAutomaticCombat=(restoredRoll=null,guidedConfirmed=false)=>{
       if(rollStarted)return;
+      // An already selected profile needs only rule-specific questions, not
+      // another full pre-roll combat confirmation screen.
+      if(experimentalWeaponSelection&&!restoredRoll&&!guidedConfirmed){
+        const conditions=eventTransaction(`attack:${state.turningPoint}:${state.activationNumber}:npo:${n.id}:${target.id}`,{definitionAnswers:{}});
+        const askWillBeDone=Boolean(willBeDone)&&conditions.definitionAnswers.sameRoomAsC1===undefined;
+        const askEnforcer=Boolean(enforcerQuestion)&&conditions.definitionAnswers.sameRoomAsRoyalWarden===undefined;
+        if(askWillBeDone||askEnforcer){
+          showNpoAttackConditionCheck({
+            willBeDone:askWillBeDone?willBeDone:'',
+            enforcerQuestion:askEnforcer?enforcerQuestion:'',
+            onBack:()=>{if(locked)cancel();else showNpoAttackWizard(n,attackDice,onDone,onCancel,false,false,false,true);},
+            onContinue:answers=>{
+              Object.assign(conditions.definitionAnswers,answers);
+              save();
+              showNpoAttackWizard(n,attackDice,onDone,onCancel,false,false,true);
+            }
+          });
+          return;
+        }
+      }
       const profileIndex=restoredRoll
         ? availableProfiles.findIndex(profile=>canonicalAttackProfile(profile).weaponId===restoredRoll.profile.weaponId&&canonicalAttackProfile(profile).profileId===restoredRoll.profile.profileId)
         : locked?availableProfiles.findIndex(profile=>canonicalAttackProfile(profile).weaponId===sequence.weaponId&&canonicalAttackProfile(profile).profileId===sequence.profileKey)
@@ -9791,6 +9824,7 @@ function showPlayerActivation(){
     });
     if(sameCombat)void displayCombat(saved,animateCombat);
     else if(rollingCombat)startAutomaticCombat(saved);
+    else if(experimentalWeaponSelection&&!resumeGuided&&(selectingCombat||availableProfiles.length===1))startAutomaticCombat();
     else if(availableProfiles.length===1&&willBeDone){
       screen.continueButton.disabled=false;
       screen.continueButton.textContent='Roll Attack';
