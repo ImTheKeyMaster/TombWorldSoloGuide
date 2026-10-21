@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.159
+# Tomb World Battle Guide v10.0.160
+
+## v10.0.160
+
+### Refine Experimental Necron roster re-roll
+
+- Only offer the Experimental Necron re-roll when the selected mission actually starts with deployed Necrons. Missions showing **Starting Necrons: None** have no re-roll action.
+- Enforce the same safeguard in the re-roll handler, so a hidden control cannot accidentally regenerate a roster for missions without starting Necrons.
+- Replace the prominent full-width green re-roll button and explanatory paragraph with a subtle, right-aligned, compact text action beneath the starting roster. Retain a usable touch target and an accessible explanation.
+- Keep Standard Mode unchanged, retain the option for applicable missions and preserve all game setup information and the earlier re-roll failure recovery.
+- Bump PWA shell and cache to V10.0.160.
 
 ## v10.0.159
 
