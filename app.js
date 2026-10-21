@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.149';
+  const APP_VERSION = '10.0.150';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -6734,7 +6734,7 @@ function showPlayerActivation(){
     return contexts.size===1?[...contexts.values()][0]:null;
   }
 
-  function npoCombatGuidanceHtml(npo,{attackType,profile}={}){
+  function npoCombatGuidanceHtml(npo,{attackType,profile,matchProfile=false}={}){
     if(isPvpMode())return '';
     const definition=npoDefinition(npo?.type);
     const weaponSentinel=(definition?.abilities||[]).find(ability=>ability.id==='weapon-sentinel');
@@ -6746,7 +6746,7 @@ function showPlayerActivation(){
         : null;
     const injuredReminder=npo&&npo.wounds<npo.maxWounds&&activeNpos().some(item=>npoDefinition(item.type)?.id==='royal-warden')?{text:STAGE3_RULE_TEXT.engrammatic,attackType}:null;
     const items=[guidance,weaponSentinel&&{text:`${weaponSentinel.name}: ${weaponSentinel.text}`,attackType:'shoot'},injuredReminder]
-      .filter(item=>item?.text&&item.attackType===attackType&&(!profile||!item.weaponId||item.weaponId===profile.weaponId));
+      .filter(item=>item?.text&&item.attackType===attackType&&(!profile||(!item.weaponId||item.weaponId===profile.weaponId)&&(!matchProfile||!item.profileId||item.profileId===profile.profileId)));
     return items.length?`<div class="summary-box"><strong>Weapon guidance</strong><ul>${items.map(item=>`<li>${escapeHtml(item.text)}</li>`).join('')}</ul></div>`:'';
   }
 
@@ -9420,7 +9420,33 @@ function showPlayerActivation(){
     finally{rewardsQueueInProgress=false;}
   }
 
-  function showNpoAttackWizard(n,attackDice,onDone,onCancel,animateCombat=false,resumeGuided=false){
+  function showExperimentalNpoWeaponSelection(n,profiles,attackType,selectedIndex,onContinue,onCancel){
+    const initial=selectedIndex>=0?selectedIndex:profiles.length===1?0:-1;
+    const choices=profiles.map((weapon,index)=>`<option value="${index}" ${index===initial?'selected':''}>${escapeHtml(canonicalAttackProfile(weapon).name)}</option>`).join('');
+    showModal('Select Weapon',`<p>Choose a weapon profile before resolving the attack.</p>
+      <div class="field"><label for="experimentalNpoWeaponProfile">Weapon</label>
+        <select id="experimentalNpoWeaponProfile"><option value="" ${initial<0?'selected ':''}disabled>Choose a profile...</option>${choices}</select>
+      </div>
+      <div id="experimentalNpoWeaponGuidance" aria-live="polite"></div>
+      <div class="wizard-actions"><button class="btn ghost" id="cancelExperimentalNpoWeapon">Cancel</button><button class="btn primary" id="confirmExperimentalNpoWeapon" disabled>Continue to Combat</button></div>`);
+    const select=$('#experimentalNpoWeaponProfile'),guidance=$('#experimentalNpoWeaponGuidance'),confirm=$('#confirmExperimentalNpoWeapon');
+    const updateGuidance=()=>{
+      const index=select.value===''?-1:Number(select.value);
+      const profile=Number.isInteger(index)&&profiles[index]?canonicalAttackProfile(profiles[index]):null;
+      guidance.innerHTML=profile?npoCombatGuidanceHtml(n,{attackType,profile,matchProfile:true}):'';
+      confirm.disabled=!profile;
+    };
+    select.addEventListener('change',updateGuidance);
+    $('#cancelExperimentalNpoWeapon').onclick=onCancel;
+    confirm.onclick=()=>{
+      if(confirm.disabled)return;
+      const index=Number(select.value);
+      if(select.value!==''&&Number.isInteger(index)&&profiles[index])onContinue(index);
+    };
+    updateGuidance();
+  }
+
+  function showNpoAttackWizard(n,attackDice,onDone,onCancel,animateCombat=false,resumeGuided=false,weaponConfirmed=false){
     const target=selectedNpoAttackTarget();
     if(!target&&state.weaponRuleResolution?.currentTargetId){
       const attackType=state.lastActivation?.action?.includes('Fight')?'melee':'shoot';
@@ -9483,7 +9509,23 @@ function showPlayerActivation(){
       const candidate=canonicalAttackProfile(profile);
       return candidate.weaponId===initialProfile.weaponId&&candidate.profileId===initialProfile.profileId;
     }):-1;
-    const profileControl=availableProfiles.length>1&&!locked&&!sameCombat&&!rollingCombat
+    const experimentalWeaponSelection=experimentalFeaturesEnabled()&&document.documentElement.dataset.ui==='tomb'&&attackType==='shoot';
+    if(experimentalWeaponSelection&&!weaponConfirmed&&!resumeGuided&&!locked&&!rollingCombat&&!sameCombat
+      &&(availableProfiles.length>1||npoCombatGuidanceHtml(n,{attackType,profile:initialProfile}))){
+      showExperimentalNpoWeaponSelection(n,availableProfiles,attackType,selectedProfileIndex,index=>{
+        const profile=canonicalAttackProfile(availableProfiles[index]);
+        state.lastActivation={...state.lastActivation,combatDraft:{selecting:true,attackType,targetId:target.id,targetName:targetName,profile}};
+        save();
+        showNpoAttackWizard(n,attackDice,onDone,onCancel,false,false,true);
+      },()=>{
+        state.lastActivation={...state.lastActivation,combatDraft:null};
+        if(sequence){state.weaponRuleResolution=null;state.npoAttackTargetId=null;}
+        save();
+        onCancel?.();
+      });
+      return;
+    }
+    const profileControl=!experimentalWeaponSelection&&availableProfiles.length>1&&!locked&&!sameCombat&&!rollingCombat
       ? `<div class="field compact-combat-choice"><label for="npoCombatProfile">Choose Weapon Profile</label><select id="npoCombatProfile"><option value="" ${selectedProfileIndex<0?'selected ':''}disabled>Choose a profile...</option>${availableProfiles.map((profile,index)=>`<option value="${index}" ${index===selectedProfileIndex?'selected':''}>${escapeHtml(canonicalAttackProfile(profile).name)}</option>`).join('')}</select></div>`
       : '';
     const willBeDone=tombWorldEventActive('my-will-be-done')&&!sameCombat&&!rollingCombat
@@ -9499,7 +9541,7 @@ function showPlayerActivation(){
       defenderPortrait:fightParticipantPortrait({side:targetSide,id:target.id},'defender'),
       weaponName:initialProfile?.name||'—',attackLabel:initialProfile?combatAttackLabel(initialProfile):'—',defenseLabel:`3 dice · ${target.save||3}+`,
       cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',
-      guidanceHtml:`<div id="npoCombatGuidance">${guidance}</div>`,
+      guidanceHtml:experimentalWeaponSelection?'':`<div id="npoCombatGuidance">${guidance}</div>`,
       rulesHtml:`<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`,
       extraHtml:`${profileControl}${willBeDone}${enforcerQuestion}`,
       detailsHtml:weaponRuleSequenceProgress(sequence,targetName,`${target.wounds}/${target.maxWounds||playerDefinition(target.id)?.wounds||0} wounds`)
