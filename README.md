@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.157
+# Tomb World Battle Guide v10.0.158
+
+## v10.0.158
+
+### Promote weapon rules on selection to Standard
+
+- The approved weapon-selection layout is now shared by Standard and Experimental Tomb UI. Necron weapon profile choices show live Weapon Guidance and Weapon Rules, and shooting results focus on dice, damage, and rule effects instead of repeating the full rule list.
+- A single-profile shooting weapon with rules still has a selection step to review those rules before rolling, for both Player and Necron flows. Rule-free single-profile attacks can continue directly to combat.
+- Preserve Classic presentation, selected weapons, shooting mechanics, Blast/Torrent secondary targets, navigation, persistence, and the independent Experimental switch for future enhancements.
+- Refresh PWA resources and offline cache to v10.0.158.
 
 ## v10.0.157
 

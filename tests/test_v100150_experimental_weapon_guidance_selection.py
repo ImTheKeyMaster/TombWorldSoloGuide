@@ -24,7 +24,7 @@ const snippet=(a,b)=>app.slice(app.indexOf('  '+a),app.indexOf('  '+b,app.indexO
 const guidance=snippet('function normalizedGuidanceMatchText(', 'function recordedCombat(');
 const selection=snippet('function showExperimentalNpoWeaponSelection(', 'function showNpoAttackWizard(');
 let markup='',title='',continued=[],cancelled=0,showCalls=0;
-const controls=Object.fromEntries(['#experimentalNpoWeaponProfile','#experimentalNpoWeaponGuidance','#confirmExperimentalNpoWeapon','#cancelExperimentalNpoWeapon'].map(id=>[id,{value:'',innerHTML:'',disabled:true,onclick:null,listeners:{},addEventListener(event,handler){this.listeners[event]=handler;}}]));
+const controls=Object.fromEntries(['#experimentalNpoWeaponProfile','#experimentalNpoWeaponGuidance','#experimentalNpoWeaponRules','#confirmExperimentalNpoWeapon','#cancelExperimentalNpoWeapon'].map(id=>[id,{value:'',innerHTML:'',disabled:true,onclick:null,listeners:{},addEventListener(event,handler){this.listeners[event]=handler;}}]));
 const definition={
   id:'crawler',
   abilities:[{id:'weapon-sentinel',name:'Weapon Sentinel',text:'Keep its cover save.'}],
@@ -33,7 +33,8 @@ const definition={
 };
 const ctx={
   $:id=>controls[id],
-  previewWeaponRulesAtSelection:()=>false,
+  tombWeaponRulesAtSelection:()=>true,
+  weaponRulesHtml:profile=>profile?.name?'Rules: '+profile.name:'',
   showModal:(name,value)=>{title=name;markup=value;showCalls++;},
   escapeHtml:x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'),
   canonicalAttackProfile:x=>x,
@@ -49,6 +50,7 @@ api.showExperimentalNpoWeaponSelection(npo,profiles,'shoot',-1,index=>continued.
 assert.equal(title,'Select Weapon');
 assert.match(markup,/experimentalNpoWeaponProfile/);
 assert.match(markup,/experimentalNpoWeaponGuidance/);
+assert.match(markup,/experimentalNpoWeaponRules/);
 assert.match(markup,/Continue to Combat/);
 assert.match(markup,/Choose a profile/);
 assert.equal(controls['#confirmExperimentalNpoWeapon'].disabled,true);
@@ -56,11 +58,13 @@ assert.equal(controls['#experimentalNpoWeaponGuidance'].innerHTML,'');
 controls['#experimentalNpoWeaponProfile'].value='0';
 controls['#experimentalNpoWeaponProfile'].listeners.change();
 assert.match(controls['#experimentalNpoWeaponGuidance'].innerHTML,/Use Sweeping/);
+assert.match(controls['#experimentalNpoWeaponRules'].innerHTML,/Rules: Sweeping/);
 assert.match(controls['#experimentalNpoWeaponGuidance'].innerHTML,/Weapon Sentinel/);
 assert.equal(controls['#confirmExperimentalNpoWeapon'].disabled,false);
 controls['#experimentalNpoWeaponProfile'].value='1';
 controls['#experimentalNpoWeaponProfile'].listeners.change();
 assert.doesNotMatch(controls['#experimentalNpoWeaponGuidance'].innerHTML,/Use Sweeping/);
+assert.match(controls['#experimentalNpoWeaponRules'].innerHTML,/Rules: Focused/);
 assert.match(controls['#experimentalNpoWeaponGuidance'].innerHTML,/Weapon Sentinel/);
 controls['#confirmExperimentalNpoWeapon'].onclick();
 assert.deepEqual(continued,[1],'Confirmed profile must be the currently selected weapon');
@@ -86,7 +90,7 @@ def test_experimental_selection_precedes_combat_only_when_needed():
     assert "if(sequence){state.weaponRuleResolution=null;state.npoAttackTargetId=null;}" in wizard
     assert "const profileControl=!experimentalWeaponSelection&&availableProfiles.length>1" in wizard
     assert "guidanceHtml:experimentalWeaponSelection?'':" in wizard
-    assert "rulesHtml:previewWeaponRulesAtSelection()?'':`<div id=\"npoCombatRules\">" in wizard
+    assert "rulesHtml:tombWeaponRulesAtSelection()?'':`<div id=\"npoCombatRules\">" in wizard
     assert "else if(rollingCombat)startAutomaticCombat(saved)" in wizard
     assert "else if(selectingCombat){" in wizard
     assert "if(weapon)weapon.textContent=profile.name" in wizard
