@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.148';
+  const APP_VERSION = '10.0.149';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5962,6 +5962,21 @@ function showPlayerActivation(){
     });
   }
 
+  // Only the Experimental mobile combat presentation adjusts the dialog scroll.
+  // Keep the currently animated roll visible before its first painted frame.
+  const EXPERIMENTAL_COMBAT_MOBILE_QUERY='(max-width:600px), (max-width:950px) and (max-height:520px) and (orientation:landscape) and (pointer:coarse)';
+  function revealExperimentalCombatDice(container){
+    if(!experimentalFeaturesEnabled()||document.documentElement.dataset.ui!=='tomb'
+      ||!window.matchMedia?.(EXPERIMENTAL_COMBAT_MOBILE_QUERY)?.matches
+      ||!modal.open||!container?.isConnected)return;
+    const roll=container.querySelector('.animated-roll');
+    if(!roll)return;
+    const stage=roll.closest('.combat-stage')||roll;
+    const stageBounds=stage.getBoundingClientRect(),dialogBounds=modal.getBoundingClientRect();
+    if(stageBounds.top>=dialogBounds.top+12&&stageBounds.bottom<=dialogBounds.bottom-12)return;
+    modal.scrollTop=Math.max(0,modal.scrollTop+stageBounds.top-dialogBounds.top-12);
+  }
+
   function displaySharedCombatResult(combat,{pending=false,animate=false,waiting=false,message='',onContinue,extraHtml=''}={}){
     const results=$('#combatResults');
     const dice=$('#automaticCombat');
@@ -5980,6 +5995,7 @@ function showPlayerActivation(){
     button.textContent='Continue';
     button.disabled=!visualComplete;
     button.onclick=()=>{if(visualComplete&&onContinue)onContinue();};
+    if(animate)revealExperimentalCombatDice(results);
     if(animate)settleCombatDice(combat,()=>{
       visualComplete=!waiting;
       if(button.isConnected)button.disabled=waiting;
@@ -7418,6 +7434,7 @@ function showPlayerActivation(){
         const animate=!isPvpMode()&&!rolledAttackDice;
         container.innerHTML=combatDiceStageHtml('attacker','ATTACK DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}">${animate?attackDice.map(()=>rollingDieHtml()).join(''):attackDice.map(dieHtml).join('')}</div>`)
                   +combatDiceStageHtml('defender','DEFENSE DICE','<div class="dice-row"><span class="muted">Rolling after the attack…</span></div>');
+        if(animate)revealExperimentalCombatDice(container);
         if(animate&&attackDice.length)void TombWorldDiceSfx.play();
         if(animate)await new Promise(resolve=>{timer=setTimeout(resolve,DICE_ROLL_ANIMATION_MS);});
         if(cancelled||!container.isConnected)return;
@@ -7434,6 +7451,7 @@ function showPlayerActivation(){
                   +combatDiceStageHtml('defender','DEFENSE DICE',`<div class="dice-row ${showDefenseAnimation?'animated-roll':'settled'}" data-combat-save-dice>${defenseDice.length?(showDefenseAnimation?defenseDice.map(()=>rollingDieHtml()).join(''):defenseDice.map(dieHtml).join('')):'<span class="muted">No defense dice rolled</span>'}</div>`,saturateMessage);
         attackDice.immediateEffects={devastatingDamage,devastatingIncapacitated};
         if(showDefenseAnimation){
+          revealExperimentalCombatDice(container);
           timer=settleCombatDice({attackDice,saveDice:defenseDice},()=>{timer=null;if(container.isConnected)onComplete(attackDice,defenseDice);},container);
         }else {onComplete(attackDice,defenseDice);if(isPvpMode()&&!rolledDefenseDice&&!devastatingIncapacitated&&defenseCount>0)acknowledgeDiceRequest(`${requestKeyBase}:defense`);}
       }catch(error){
