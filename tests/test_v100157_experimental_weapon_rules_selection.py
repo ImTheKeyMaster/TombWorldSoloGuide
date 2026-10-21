@@ -1,4 +1,4 @@
-"""Regression tests for previewing Experimental weapon rules during selection."""
+"""Regression tests for weapon rules during selection in Standard and Experimental modes."""
 
 from pathlib import Path
 import subprocess
@@ -20,21 +20,21 @@ def test_weapon_selection_dynamic_rules_and_mode_isolation():
     script = r"""
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const src=fs.readFileSync('app.js','utf8');
-const flag=src.slice(src.indexOf('  function previewWeaponRulesAtSelection('),src.indexOf('  function normalizedGuidanceMatchText('));
+const flag=src.slice(src.indexOf('  function tombWeaponRulesAtSelection('),src.indexOf('  function normalizedGuidanceMatchText('));
 const chooser=src.slice(src.indexOf('  function showExperimentalNpoWeaponSelection('),src.indexOf('  function showNpoAttackConditionCheck('));
 
-function simulate(preview,profiles){
+function simulate(experimental,profiles){
  const select={value:profiles.length===1?'0':'',addEventListener(event,fn){this[event]=fn;}};
  const controls={'#experimentalNpoWeaponProfile':select,
  '#experimentalNpoWeaponGuidance':{innerHTML:''},'#experimentalNpoWeaponRules':{innerHTML:''},
  '#confirmExperimentalNpoWeapon':{disabled:true},'#cancelExperimentalNpoWeapon':{}};
  let markup='',chosen=null;
- const ctx={document:{documentElement:{dataset:{ui:'tomb',experimental:preview?'on':'off'}}},
- experimentalFeaturesEnabled:()=>preview,canonicalAttackProfile:x=>x,escapeHtml:x=>x,
+ const ctx={document:{documentElement:{dataset:{ui:'tomb',experimental:experimental?'on':'off'}}},
+ canonicalAttackProfile:x=>x,escapeHtml:x=>x,
  npoCombatGuidanceHtml:(n,{profile})=>'Guidance '+profile.id,
  weaponRulesHtml:profile=>profile?.rules?.length?'<section>Rules '+profile.id+'</section>':'',
  showModal:(title,html)=>{assert.equal(title,'Select Weapon');markup=html;},
- $:selector=>selector==='#experimentalNpoWeaponRules'&&!preview?null:controls[selector]};
+ $:selector=>controls[selector]};
  const fn=new Function('ctx','with(ctx){'+flag+chooser+'return showExperimentalNpoWeaponSelection;}')(ctx);
  fn({},profiles,'shoot',-1,i=>chosen=i,()=>{});
  return {markup,controls,select,get chosen(){return chosen;}};
@@ -58,9 +58,10 @@ test=simulate(true,[{id:'single',rules:['Severe']}]);
 assert.equal(test.controls['#confirmExperimentalNpoWeapon'].disabled,false);
 assert.equal(test.controls['#experimentalNpoWeaponRules'].innerHTML,'<section>Rules single</section>');
 test=simulate(false,profiles);
-assert.doesNotMatch(test.markup,/experimentalNpoWeaponRules/);
+assert.match(test.markup,/experimentalNpoWeaponRules/);
 test.select.value='0';test.select.change();
 assert.equal(test.controls['#experimentalNpoWeaponGuidance'].innerHTML,'Guidance focused');
+assert.equal(test.controls['#experimentalNpoWeaponRules'].innerHTML,'<section>Rules focused</section>');
 """
     node_check(script)
 
@@ -77,14 +78,14 @@ function necron({preview=false,single=false,rule=false,guidance=false}={}){
  availableProfiles,initialProfile:single?availableProfiles[0]:null,
  weaponConfirmed:false,resumeGuided:false,locked:null,rollingCombat:false,sameCombat:false,
  forceWeaponSelection:false,selectedProfileIndex:single?0:-1,
- previewWeaponRulesAtSelection:()=>preview,weaponRulesHtml:p=>p?.rules?.length?'rules':'',
+ tombWeaponRulesAtSelection:()=>true,weaponRulesHtml:p=>p?.rules?.length?'rules':'',
  npoCombatGuidanceHtml:()=>guidance?'guidance':'',
  showExperimentalNpoWeaponSelection:()=>calls.push('select')};
  new Function('ctx','with(ctx){'+choose+'}')(ctx);
  return calls.length;
 }
 assert.equal(necron({preview:true,single:true,rule:true}),1);
-assert.equal(necron({preview:false,single:true,rule:true}),0);
+assert.equal(necron({preview:false,single:true,rule:true}),1);
 assert.equal(necron({preview:true,single:true,rule:false}),0);
 assert.equal(necron({preview:false,single:false,rule:true}),1);
 assert.equal(necron({preview:true,single:false,rule:true}),1);
@@ -97,11 +98,11 @@ for(const preview of [false,true])for(const hasRules of [false,true]){
  const ctx={weapons:[{}],stage:{playerOperativeId:'p'},attackType:'shoot',
  singleTarget:{id:'t',type:'warrior'},npoDefinition:()=>({id:'warrior'}),activeNpos:()=>[],
  playerWeaponProfile:()=>({rules:hasRules?['Piercing 1']:[]}),weaponHasRule:()=>false,
- previewWeaponRulesAtSelection:()=>preview,weaponRulesHtml:profile=>profile?.rules?.length?'rules':'',
+ tombWeaponRulesAtSelection:()=>true,weaponRulesHtml:profile=>profile?.rules?.length?'rules':'',
  isPvpMode:()=>false,darkDistance:false,showPlayerCombatResolution:()=>calls.push('auto'),
  onResolved:()=>{},onCancel:()=>{}};
  new Function('ctx','with(ctx){'+fast+'}')(ctx);
- assert.equal(calls.length,preview&&hasRules?0:1);
+ assert.equal(calls.length,hasRules?0:1);
 }
 assert.match(player,/weaponRulesHtml\(profile,\{semanticHeading:true\}\)/);
 """
@@ -119,7 +120,7 @@ function renderNecron(preview){
  const ctx={n:{id:'n'},target:{id:'t',wounds:5,maxWounds:10,save:3},targetSide:'player',
  targetName:'Target',attackType:'shoot',initialProfile:{name:'Gun'},experimentalWeaponSelection:true,
  profileControl:'',willBeDone:'',enforcerQuestion:'',sequence:null,
- previewWeaponRulesAtSelection:()=>preview,
+ tombWeaponRulesAtSelection:()=>true,
  npoCombatGuidanceHtml:()=>'<div>Guidance</div>',npoName:()=>'NPO',
  fightParticipantPortrait:()=>'',combatAttackLabel:()=>'4 dice',weaponRulesHtml:()=>'<section>Rules</section>',
  multiTargetAttackProgress:()=>'',weaponRuleSequenceProgress:()=>'',playerDefinition:()=>({wounds:5}),
@@ -128,9 +129,9 @@ function renderNecron(preview){
  return opts;
 }
 assert.equal(renderNecron(true).rulesHtml,'');
-assert.match(renderNecron(false).rulesHtml,/npoCombatRules/);
+assert.equal(renderNecron(false).rulesHtml,'');
 const player=src.slice(src.indexOf('  function showPlayerCombatResolution('),src.indexOf('  function displayPendingPlayerCombat('));
-assert.match(player,/rulesHtml:previewWeaponRulesAtSelection\(\)\?'':weaponRulesHtml\(profile\)/);
+assert.match(player,/rulesHtml:tombWeaponRulesAtSelection\(\)\?'':weaponRulesHtml\(profile\)/);
 assert.match(src,/if\(rules\)rules.innerHTML=profile\?weaponRulesHtml\(profile\):''/);
 """
     node_check(script)
@@ -141,4 +142,4 @@ def test_shell_version_and_save_compatibility():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in HTML
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
-    assert "return document.documentElement.dataset.ui==='tomb'&&experimentalFeaturesEnabled();" in APP
+    assert "return document.documentElement.dataset.ui==='tomb';" in APP
