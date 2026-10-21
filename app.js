@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.161';
+  const APP_VERSION = '10.0.162';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5884,13 +5884,61 @@ function showPlayerActivation(){
     </section>`;
   }
 
+
+  // Experimental feedback is derived from the resolved dice, not a weapon's rule list.
+  function experimentalAppliedWeaponEffectsEnabled(){
+    return document.documentElement.dataset.ui==='tomb'&&experimentalFeaturesEnabled();
+  }
+  function appliedWeaponEffectMessages(combat){
+    if(combat?.attackType!=='shoot'||combat.recordedOutcome||!Array.isArray(combat.attackDice)||!combat.attackDice.length)return [];
+    const dice=combat.attackDice,profile=combat.profile||{},messages=[];
+    const severe=dice.filter(die=>die.severeConverted).length;
+    if(severe)messages.push(`Severe: ${severe} normal ${severe===1?'hit became a critical hit':'hits became critical hits'}`);
+    const rending=dice.filter(die=>die.rendingConverted).length;
+    if(rending)messages.push(`Rending: ${rending} normal ${rending===1?'hit became a critical hit':'hits became critical hits'}`);
+    const accurate=dice.filter(die=>die.retained&&/^Accurate/i.test(String(die.automatic||''))).length;
+    if(accurate)messages.push(`Accurate: ${accurate} normal ${accurate===1?'hit':'hits'} retained automatically`);
+    for(const rule of ['balanced','ceaseless']){
+      const count=dice.filter(die=>die.rerolledBy===rule).length;
+      if(count)messages.push(`${rule[0].toUpperCase()+rule.slice(1)}: ${count} attack ${count===1?'die':'dice'} re-rolled`);
+    }
+    const lethal=Number(profile.critThreshold||6);
+    if(lethal>=2&&lethal<6){
+      const hits=dice.filter(die=>die.retained&&die.kind==='crit'&&!die.originalKind&&Number(die.value)>=lethal&&Number(die.value)<6).length;
+      if(hits)messages.push(`Lethal ${lethal}+: ${hits} ${hits===1?'roll counted':'rolls counted'} as critical`);
+    }
+    // A Devastating kill skips the defense roll entirely: don't report
+    // a reduction to dice the defender never actually rolled.
+    if(!combat.devastatingIncapacitated&&Array.isArray(combat.saveDice)){
+      const piercing=Math.max(0,Number(profile.ap||0)),crits=weaponRuleValue(profile,'piercing-crits');
+      const piercingCrits=dice.some(die=>die.retained&&die.kind==='crit')?crits:0;
+      const defenseCount=effectiveDefenseDiceCount(profile,dice,3);
+      if(defenseCount<3){
+        const useCriticalRule=piercingCrits>piercing;
+        messages.push(`${useCriticalRule?'Piercing Crits':'Piercing'} ${useCriticalRule?piercingCrits:piercing}: defense dice 3 → ${defenseCount}`);
+      }
+    }
+    const devastating=Math.max(0,Number(combat.devastatingDamage||0));
+    if(devastating>0)messages.push(`Devastating: ${devastating} immediate damage from critical hits`);
+    for(const event of combat.eventMessages||[]){
+      if(/^Stun applied:/i.test(event))messages.push(String(event).replace(/^Stun applied:/i,'Stun:'));
+    }
+    return messages;
+  }
+  function appliedWeaponEffectsHtml(combat){
+    const messages=appliedWeaponEffectMessages(combat);
+    return messages.length
+      ? `<section class="applied-weapon-effects" aria-label="Applied weapon effects"><strong>APPLIED EFFECTS</strong><ul>${messages.map(message=>`<li>${escapeHtml(message)}</li>`).join('')}</ul></section>`
+      : '';
+  }
   function renderCombatResolution(combat,{pending=false,animate=true,showParticipants=true}={}){
+    const appliedEffects=experimentalAppliedWeaponEffectsEnabled()&&combat.attackType==='shoot'&&!combat.recordedOutcome;
     const elimination=renderEliminationSummary({
       ...combat,side:combat.defenderSide,targetName:combat.defenderName
     });
     const diceStages=combat.recordedOutcome
       ? '<div class="combat-stage"><small>TABLETOP RESOLUTION</small><p>Physical dice and retained successes resolved by the player.</p></div>'
-      : combatDiceStageHtml('attacker','ATTACK DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div>`,severeAppliedHtml(combat.attackDice,combat.severeApplied))
+      : combatDiceStageHtml('attacker','ATTACK DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div>`,(appliedEffects?'':severeAppliedHtml(combat.attackDice,combat.severeApplied)))
         +combatDiceStageHtml('defender','DEFENSE DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No defense dice rolled</span>'}</div>`,combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':'');
     return `<section class="combat-resolution" aria-label="Combat resolution">
       ${showParticipants?`<div class="damage-summary combat-participants">
@@ -5900,9 +5948,10 @@ function showPlayerActivation(){
         ${combat.recordedOutcome?'':`<div><small>Retained saves</small><strong>${combat.retainedSaves??(combat.coverRetained?1:0)}</strong></div>`}
       </div>`:''}
       ${diceStages}
+      ${appliedEffects?appliedWeaponEffectsHtml(combat):''}
       ${elimination}
       ${combatAbilityReminder(combat)}
-      ${(combat.eventMessages||combat.profile?.eventMessages||[]).map(message=>`<div class="summary-box"><strong>${escapeHtml(message)}</strong></div>`).join('')}
+      ${(combat.eventMessages||combat.profile?.eventMessages||[]).filter(message=>!appliedEffects||!/^Stun applied:/i.test(message)).map(message=>`<div class="summary-box"><strong>${escapeHtml(message)}</strong></div>`).join('')}
       ${combat.dimensionalBanishmentTriggered?`<div class="summary-box"><strong>Normal attack damage:</strong> ${combat.before} → ${combat.dimensionalBanishmentRemainingWounds}<br><strong>Dimensional Banishment:</strong> ${combat.dimensionalBanishmentIncapacitated?'incapacitated':'survived'}</div>`:''}
       <div class="damage-summary">
         <div><small>${combat.recordedOutcome?'Retained normal successes':'Unsaved normal hits'}</small><strong>${combat.normalRemaining}</strong></div>
