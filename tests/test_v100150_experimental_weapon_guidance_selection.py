@@ -33,6 +33,7 @@ const definition={
 };
 const ctx={
   $:id=>controls[id],
+  previewWeaponRulesAtSelection:()=>false,
   showModal:(name,value)=>{title=name;markup=value;showCalls++;},
   escapeHtml:x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'),
   canonicalAttackProfile:x=>x,
@@ -85,7 +86,7 @@ def test_experimental_selection_precedes_combat_only_when_needed():
     assert "if(sequence){state.weaponRuleResolution=null;state.npoAttackTargetId=null;}" in wizard
     assert "const profileControl=!experimentalWeaponSelection&&availableProfiles.length>1" in wizard
     assert "guidanceHtml:experimentalWeaponSelection?'':" in wizard
-    assert "rulesHtml:`<div id=\"npoCombatRules\">" in wizard
+    assert "rulesHtml:previewWeaponRulesAtSelection()?'':`<div id=\"npoCombatRules\">" in wizard
     assert "else if(rollingCombat)startAutomaticCombat(saved)" in wizard
     assert "else if(selectingCombat){" in wizard
     assert "if(weapon)weapon.textContent=profile.name" in wizard
