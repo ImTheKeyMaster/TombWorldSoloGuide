@@ -78,7 +78,7 @@ def test_experimental_selection_precedes_combat_only_when_needed():
     assert "weaponConfirmed=false" in wizard
     assert "experimentalFeaturesEnabled()&&document.documentElement.dataset.ui==='tomb'&&attackType==='shoot'" in wizard
     assert "!weaponConfirmed&&!resumeGuided&&!locked&&!rollingCombat&&!sameCombat" in wizard
-    assert "availableProfiles.length>1||npoCombatGuidanceHtml(n,{attackType,profile:initialProfile})" in wizard
+    assert "forceWeaponSelection||availableProfiles.length>1||npoCombatGuidanceHtml(n,{attackType,profile:initialProfile})" in wizard
     assert "showExperimentalNpoWeaponSelection(n,availableProfiles,attackType,selectedProfileIndex,index=>" in wizard
     assert "combatDraft:{selecting:true,attackType,targetId:target.id,targetName:targetName,profile}" in wizard
     assert "showNpoAttackWizard(n,attackDice,onDone,onCancel,false,false,true)" in wizard
