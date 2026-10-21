@@ -1,4 +1,4 @@
-"""Regression tests for Experimental weapon rules on selection (V10.0.157)."""
+"""Regression tests for previewing Experimental weapon rules during selection."""
 
 from pathlib import Path
 import subprocess
