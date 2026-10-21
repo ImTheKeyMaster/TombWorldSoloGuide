@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.160
+# Tomb World Battle Guide v10.0.161
+
+## v10.0.161
+
+### Promote Necron roster re-roll to Standard
+
+- Offer the approved subtle **Re-roll roster** action in both Standard and Experimental Tomb setup flows, on Deploy Kill Teams when one or more starting Necrons are selected for deployment.
+- Keep the action completely hidden and inactive for missions with no starting Necrons and after the battle begins.
+- Re-roll the legal Necron roster and starting deployment dice, reset Necron deployment confirmation, and preserve mission, player roster/deployment, optional rules and the previous force on generation failure.
+- Preserve the independent Experimental Mode toggle for future features, without affecting this now-standard functionality.
+- Refresh app and offline assets to V10.0.161.
 
 ## v10.0.160
 

@@ -1,4 +1,4 @@
-"""Regression checks for experimental-only setup roster re-roll."""
+"""Regression checks for roster re-roll in Standard and Experimental setup."""
 
 from pathlib import Path
 import subprocess
@@ -60,8 +60,9 @@ function execute({experimental=true,screen='setup',step='deploy',generated=true,
  const reroll=new Function('ctx','with(ctx){'+method+'return rerollStartingNpoRoster;}')(context);
  return {ok:reroll(),state,original,calls};
 }
-const success=execute();
-assert.equal(success.ok,true);
+for(const experimental of [false,true]){
+ const success=execute({experimental});
+ assert.equal(success.ok,true);
 assert.deepEqual(success.calls,['roll','generate','save','render']);
 assert.deepEqual(success.state.roster.map(n=>n.id),['new-npo']);
 assert.deepEqual(success.state.startingNpoGeneration.deployedNpoIds,['new-npo']);
@@ -74,8 +75,9 @@ assert.equal(success.state.playerDeployed,true);
 assert.equal(success.state.missionId,'mission-03');
 assert.equal(success.state.tombWorldVariant,'flayer-curse');
 assert.deepEqual(success.state.variantState.replacementTransactions,{});
+}
 
-for(const option of [{experimental:false},{screen:'game'},{step:'ready'},{step:'options'},{generated:false},{noStarting:true}]){
+for(const option of [{screen:'game'},{step:'ready'},{step:'options'},{generated:false},{noStarting:true},{experimental:false,noStarting:true}]){
  const output=execute(option);
  assert.equal(output.ok,false);
  assert.deepEqual(output.state,output.original);
@@ -88,17 +90,17 @@ for(const option of [{fail:true},{throws:true}]){
  assert.ok(output.calls.includes('save'));
  assert.ok(output.calls.includes('render'));
 }
-console.log('Experimental setup roster re-roll: success, guards and failure recovery passed');
+console.log('Standard and Experimental roster re-roll: success, guards and recovery passed');
 """
     node_check(script)
 
 
 def test_reroll_button_and_mode_switch_are_deploy_only():
-    # The button is created only in the deployment branch and only with Experimental enabled.
+    # The button is created only during deployment when the mission has starting Necrons.
     deploy = APP.split("    if(stepId==='deploy'){", 1)[1].split('    const m=mission();', 1)[0]
-    assert "const rerollControl=experimentalFeaturesEnabled()&&hasStartingNpos" in deploy
+    assert "const rerollControl=hasStartingNpos" in deploy
     assert 'id="rerollStartingNpoRoster"' in deploy
-    assert 'experimental-roster-reroll-button' in deploy
+    assert 'setup-roster-reroll-button' in deploy
     assert 'Re-roll roster' in deploy
     assert '${missionRoll}${rerollControl}' in deploy
 
@@ -109,11 +111,11 @@ def test_reroll_button_and_mode_switch_are_deploy_only():
     assert "if(state.screen==='setup'&&currentSetupStepId()==='deploy')render();" in toggle
 
 
-def test_reroll_render_condition_matches_mission_and_experimental_mode():
+def test_reroll_render_condition_matches_mission_in_both_modes():
     script = r"""
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const app=fs.readFileSync('app.js','utf8');
-const start=app.indexOf('      const rerollControl=experimentalFeaturesEnabled()&&hasStartingNpos');
+const start=app.indexOf('      const rerollControl=hasStartingNpos');
 const end=app.indexOf('      const deploymentDetails=',start);
 assert.ok(start>0&&end>start);
 const expression=app.slice(start,end);
@@ -122,8 +124,9 @@ assert.match(render(true,true),/id="rerollStartingNpoRoster"/);
 assert.match(render(true,true),/Re-roll roster/);
 assert.doesNotMatch(render(true,true),/setup-bulk-row|btn secondary|Reconfirm the Necron models you place/);
 assert.equal(render(true,false),'','No starting Necrons means there is nothing to re-roll');
-assert.equal(render(false,true),'','Standard mode must remain unchanged');
+assert.match(render(false,true),/id="rerollStartingNpoRoster"/,'Standard setup offers the same re-roll');
 assert.equal(render(false,false),'');
+assert.equal(render(false,true),render(true,true),'Both modes share the same subdued control');
 """
     node_check(script)
 
