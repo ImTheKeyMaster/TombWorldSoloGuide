@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.156';
+  const APP_VERSION = '10.0.157';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -6706,6 +6706,10 @@ function showPlayerActivation(){
     return summaries?`<section class="weapon-rules">${heading}<ul>${summaries}</ul></section>`:'';
   }
 
+  function previewWeaponRulesAtSelection(){
+    return document.documentElement.dataset.ui==='tomb'&&experimentalFeaturesEnabled();
+  }
+
   function normalizedGuidanceMatchText(value){
     return String(value||'').toLowerCase().replace(/&/g,' and ').replace(/[^a-z0-9\s]/g,' ').trim().replace(/\s+/g,' ');
   }
@@ -8160,7 +8164,8 @@ function showPlayerActivation(){
     const singleProfile=weapons.length===1?playerWeaponProfile(weapons[0],{operativeId:stage.playerOperativeId,attackType,weaponIndex:0}):null;
     const requiresStage3TargetCheck=attackType==='shoot'&&(npoDefinition(singleTarget?.type)?.id==='royal-warden'&&activeNpos().some(item=>npoDefinition(item.type)?.id==='lychguard'&&item.order==='Engage')||npoDefinition(singleTarget?.type)?.id==='skorpekh-destroyer'&&singleTarget.order==='Conceal');
     const requiresTabletopCheck=requiresStage3TargetCheck||singleProfile&&['seek-light','blast','torrent'].some(ruleId=>weaponHasRule(singleProfile,ruleId));
-    if(!isPvpMode()&&singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte Warrior'&&!darkDistance&&!requiresTabletopCheck)showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
+    const previewRulesRequireSelection=attackType==='shoot'&&previewWeaponRulesAtSelection()&&Boolean(weaponRulesHtml(singleProfile));
+    if(!isPvpMode()&&singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte Warrior'&&!darkDistance&&!requiresTabletopCheck&&!previewRulesRequireSelection)showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
   }
 
   function showPlayerCombatResolution(stage,attackType,targetId,weaponIndex,onResolved,onCancel,{result=null,animate=true,moreThanEight=false,deferRoll=false,committedAttackDice=null,committedDefenseDice=null}={}){
@@ -8223,7 +8228,7 @@ function showPlayerActivation(){
       attackType,weaponName:weapon.name,attackLabel:attackType==='shoot'?combatAttackLabel(profile):'',
       defenseLabel:`${Math.max(0,3-profile.ap)} dice · ${target.save}+`,
       cancelId:'cancelPendingAttack',continueId:'continuePendingAttack',
-      rulesHtml:weaponRulesHtml(profile),
+      rulesHtml:previewWeaponRulesAtSelection()?'':weaponRulesHtml(profile),
       progressHtml:multiTargetAttackProgress(sequence),
       detailsHtml:multiTargetAttackProgress(sequence)?'':weaponRuleSequenceProgress(sequence,targetName,`${targetSide==='player'?playerCurrentWounds(targetId):projectedNpoWounds(targetId,stage)}/${target.maxWounds||playerDefinition(targetId)?.wounds||0} wounds`)
     });
@@ -9463,12 +9468,14 @@ function showPlayerActivation(){
         <select id="experimentalNpoWeaponProfile"><option value="" ${initial<0?'selected ':''}disabled>Choose a profile...</option>${choices}</select>
       </div>
       <div id="experimentalNpoWeaponGuidance" aria-live="polite"></div>
+      ${previewWeaponRulesAtSelection()?'<div id="experimentalNpoWeaponRules" aria-live="polite"></div>':''}
       <div class="wizard-actions"><button class="btn ghost" id="cancelExperimentalNpoWeapon">Cancel</button><button class="btn primary" id="confirmExperimentalNpoWeapon" disabled>Continue to Combat</button></div>`);
-    const select=$('#experimentalNpoWeaponProfile'),guidance=$('#experimentalNpoWeaponGuidance'),confirm=$('#confirmExperimentalNpoWeapon');
+    const select=$('#experimentalNpoWeaponProfile'),guidance=$('#experimentalNpoWeaponGuidance'),rules=$('#experimentalNpoWeaponRules'),confirm=$('#confirmExperimentalNpoWeapon');
     const updateGuidance=()=>{
       const index=select.value===''?-1:Number(select.value);
       const profile=Number.isInteger(index)&&profiles[index]?canonicalAttackProfile(profiles[index]):null;
       guidance.innerHTML=profile?npoCombatGuidanceHtml(n,{attackType,profile,matchProfile:true}):'';
+      if(rules)rules.innerHTML=profile?weaponRulesHtml(profile):'';
       confirm.disabled=!profile;
     };
     select.addEventListener('change',updateGuidance);
@@ -9559,7 +9566,8 @@ function showPlayerActivation(){
     }):-1;
     const experimentalWeaponSelection=document.documentElement.dataset.ui==='tomb'&&attackType==='shoot';
     if(experimentalWeaponSelection&&!weaponConfirmed&&!resumeGuided&&!locked&&!rollingCombat&&!sameCombat
-      &&(forceWeaponSelection||availableProfiles.length>1||npoCombatGuidanceHtml(n,{attackType,profile:initialProfile}))){
+      &&(forceWeaponSelection||availableProfiles.length>1||npoCombatGuidanceHtml(n,{attackType,profile:initialProfile})
+        ||(previewWeaponRulesAtSelection()&&weaponRulesHtml(initialProfile)))){
       showExperimentalNpoWeaponSelection(n,availableProfiles,attackType,selectedProfileIndex,index=>{
         const profile=canonicalAttackProfile(availableProfiles[index]);
         state.lastActivation={...state.lastActivation,combatDraft:{selecting:true,attackType,targetId:target.id,targetName:targetName,profile}};
@@ -9590,7 +9598,7 @@ function showPlayerActivation(){
       weaponName:initialProfile?.name||'—',attackLabel:initialProfile?combatAttackLabel(initialProfile):'—',defenseLabel:`3 dice · ${target.save||3}+`,
       cancelId:'cancelNpoAttack',continueId:'completeNpoCombat',
       guidanceHtml:experimentalWeaponSelection?'':`<div id="npoCombatGuidance">${guidance}</div>`,
-      rulesHtml:`<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`,
+      rulesHtml:previewWeaponRulesAtSelection()?'':`<div id="npoCombatRules">${weaponRulesHtml(initialProfile)}</div>`,
       extraHtml:`${profileControl}${experimentalWeaponSelection?'':`${willBeDone}${enforcerQuestion}`}`,
       progressHtml:multiTargetAttackProgress(sequence),
       detailsHtml:multiTargetAttackProgress(sequence)?'':weaponRuleSequenceProgress(sequence,targetName,`${target.wounds}/${target.maxWounds||playerDefinition(target.id)?.wounds||0} wounds`)
