@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.158
+# Tomb World Battle Guide v10.0.159
+
+## v10.0.159
+
+### Experimental Necron roster re-roll during setup
+
+- In Experimental Mode, the Deploy Kill Teams step offers Re-roll Necron Roster. This generates a fresh legal Necron pool plus a new mission starting-deployment dice roll, retaining the selected mission, player roster, and optional rules.
+- Re-roll discards the former Necron roster and its starting-placement confirmation. Other board and player deployment checkboxes are retained, and the new deployment must be confirmed before continuing.
+- Reset variant-specific generated roster replacement transactions on each re-roll, so replacement decisions are fresh; preserve the previous complete roster and setup state if generation fails.
+- Only allow the action while on the setup deployment step with Experimental Mode enabled. Standard Mode has no re-roll control and is unchanged. Changing Experimental Mode on that step refreshes the control without restarting setup.
+- App shell and offline cache version incremented to v10.0.159.
 
 ## v10.0.158
 
