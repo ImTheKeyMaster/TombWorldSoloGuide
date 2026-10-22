@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.163';
+  const APP_VERSION = '10.0.164';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5504,17 +5504,28 @@ const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT='Assets/Images/TombUI/Deathwatch
     return `<svg class="${safeClass}" viewBox="0 0 384 384" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><defs><filter id="${safeFilterId}" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values=".2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 1.063 3.576 .361 0 -.28" result="grayKeyed"/><feComponentTransfer in="grayKeyed" result="tightKey"><feFuncA type="table" tableValues="0 0 0 0 .2 .65 .9 1 1"/></feComponentTransfer><feComponentTransfer in="grayKeyed" result="colorized"><feFuncR type="table" tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"/><feFuncG type="table" tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"/><feFuncB type="table" tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"/><feFuncA type="linear" slope="1.08" intercept="-.01"/></feComponentTransfer><feConvolveMatrix in="colorized" order="3" kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0" divisor="1" preserveAlpha="true" result="sharpened"/><feComposite in="sharpened" in2="tightKey" operator="in" result="finalPortrait"/></filter></defs><image href="${escapeHtml(experimentalDeathwatchActivationImage(id))}" x="0" y="0" width="384" height="384" preserveAspectRatio="xMidYMid meet" filter="url(#${safeFilterId})"/></svg>`;
   }
 
-  // User-photographed Death Korps cutouts. Unphotographed variants remain neutral placeholders.
+  // User-photographed Death Korps cutouts. Standard retains the established photos.
   const DEATH_KORPS_PORTRAIT_ROOT='Assets/Images/TombUI/DeathKorps/';
   const DEATH_KORPS_PORTRAITS=Object.freeze({
     watchmaster:'watchmaster',confidant:'confidant',sapper:'sapper',spotter:'spotter',
-    'gunner-flamer':'gunner',zealot:'zealot',bruiser:'bruiser',
+    'gunner-flamer':'gunner_flamer',zealot:'zealot',bruiser:'bruiser',
     'trooper-1':'trooper_1','trooper-2':'trooper_2',
     'trooper-3':'trooper_1','trooper-4':'trooper_2',
     'vox-operator':'vox_operator',veteran:'veteran'
   });
+  // New variant photos are an Experimental-only preview until approved.
+  const DEATH_KORPS_EXPERIMENTAL_PORTRAITS=Object.freeze({
+    'gunner-grenade-launcher':'gunner_grenade',
+    'gunner-meltagun':'gunner-meltagun',
+    'gunner-plasma-gun':'gunner_plasma',
+    medic:'medic',sniper:'sniper',
+    'trooper-3':'trooper_3','trooper-4':'trooper_4',
+    'trooper-5':'trooper_5',
+    'vox-operator':'vox-operator_2'
+  });
   function deathKorpsPortraitImage(id){
-    const filename=DEATH_KORPS_PORTRAITS[id];
+    const experimental=typeof document!=='undefined'&&document.documentElement?.dataset?.experimental==='on';
+    const filename=(experimental&&DEATH_KORPS_EXPERIMENTAL_PORTRAITS[id])||DEATH_KORPS_PORTRAITS[id];
     return filename?`${DEATH_KORPS_PORTRAIT_ROOT}Death_Korps_${filename}.png`:'';
   }
   // Keep one decoded image per unique photograph across roster, combat, and
