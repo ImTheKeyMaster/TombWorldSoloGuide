@@ -1,4 +1,4 @@
-"""Experimental-only audit of weapon rule effects in shooting result screens."""
+"""Shared Tomb UI audit of weapon rule effects in shooting result screens."""
 
 from pathlib import Path
 import subprocess
@@ -29,15 +29,14 @@ const rules=take('weaponHasRule','normalizedWeaponRuleId')
 const feedback=take('appliedShootingRuleMessages','renderCombatResolution');
 const context={
  document:{documentElement:{dataset:{ui:'tomb'}}},
- experimentalFeaturesEnabled:()=>true,
  escapeHtml:s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
 };
-const api=new Function('ctx','with(ctx){'+rules+feedback+'return {appliedShootingRuleMessages,experimentalAppliedShootingRulesHtml};}')(context);
+const api=new Function('ctx','with(ctx){'+rules+feedback+'return {appliedShootingRuleMessages,shootingRulesAppliedHtml};}')(context);
 const die=(value,kind='hit',props={})=>({value,kind,retained:kind!=='miss',...props});
 const render=(profile,dice,saves=3,more={})=>{
  const combat={attackType:'shoot',recordedOutcome:false,profile,
  attackDice:dice,saveDice:Array.from({length:saves},()=>die(2,'miss')), ...more};
- return {messages:api.appliedShootingRuleMessages(combat),html:api.experimentalAppliedShootingRulesHtml(combat)};
+ return {messages:api.appliedShootingRuleMessages(combat),html:api.shootingRulesAppliedHtml(combat)};
 };
 const piercing=render({ap:1,rules:['Piercing 1']},[die(4)],2);
 assert.deepEqual(piercing.messages,['Piercing 1: defense dice 3 → 2.']);
@@ -60,22 +59,23 @@ assert.match(render({rules:['Rending']},[die(4,'crit',{rendingConverted:true})])
 assert.match(render({rules:['Accurate 1']},[die(3,'hit',{automatic:'Accurate 1'})]).html,/Accurate/);
 assert.match(render({rules:['Balanced']},[die(5,'hit',{rerolledBy:'balanced'})]).html,/Balanced/);
 assert.match(render({rules:['Ceaseless']},[die(5,'hit',{rerolledBy:'ceaseless'})]).html,/Ceaseless/);
-assert.equal(api.experimentalAppliedShootingRulesHtml({
+assert.equal(api.shootingRulesAppliedHtml({
  ...{attackType:'shoot',recordedOutcome:true,profile:{ap:1,rules:['Piercing 1']}},
  attackDice:[die(4)],saveDice:[die(2,'miss'),die(3,'hit')]
 }),'','Physical-tabletop resolution must not infer effects');
-assert.equal(api.experimentalAppliedShootingRulesHtml({
+assert.equal(api.shootingRulesAppliedHtml({
  attackType:'fight',recordedOutcome:false,profile:{ap:1,rules:['Piercing 1']},
  attackDice:[die(4)],saveDice:[die(2,'miss'),die(3,'hit')]
 }),'','Only shooting screens are in scope');
-context.experimentalFeaturesEnabled=()=>false;
-assert.equal(api.experimentalAppliedShootingRulesHtml({
- attackType:'shoot',recordedOutcome:false,profile:{ap:1,rules:['Piercing 1']},
- attackDice:[die(4)],saveDice:[die(2,'miss'),die(3,'hit')]
-}),'','Standard mode remains unchanged');
-context.experimentalFeaturesEnabled=()=>true;
+for(const mode of ['off','on']){
+ context.document.documentElement.dataset.experimental=mode;
+ assert.match(api.shootingRulesAppliedHtml({
+  attackType:'shoot',recordedOutcome:false,profile:{ap:1,rules:['Piercing 1']},
+  attackDice:[die(4)],saveDice:[die(2,'miss'),die(3,'hit')]
+ }),/Piercing 1: defense dice 3 → 2/,'Both Standard and Experimental Tomb UI show applied rules');
+}
 context.document.documentElement.dataset.ui='classic';
-assert.equal(api.experimentalAppliedShootingRulesHtml({
+assert.equal(api.shootingRulesAppliedHtml({
  attackType:'shoot',recordedOutcome:false,profile:{ap:1,rules:['Piercing 1']},
  attackDice:[die(4)],saveDice:[die(2,'miss'),die(3,'hit')]
 }),'','Classic UI remains unchanged');
@@ -85,13 +85,14 @@ assert.equal(api.experimentalAppliedShootingRulesHtml({
 
 def test_results_keep_damage_eliminations_and_standard_severe_feedback():
     screen = APP.split('  function renderCombatResolution(', 1)[1].split('  function combatAttackLabel(', 1)[0]
-    assert '${experimentalAppliedShootingRulesHtml(combat)}' in screen
-    assert "experimentalAppliedShootingRulesHtml(combat)?'':severeAppliedHtml(combat.attackDice,combat.severeApplied)" in screen
+    assert '${shootingRulesAppliedHtml(combat)}' in screen
+    assert "shootingRulesAppliedHtml(combat)?'':severeAppliedHtml(combat.attackDice,combat.severeApplied)" in screen
     assert '${elimination}' in screen
     assert '${combat.damage}' in screen
     assert '${combat.before} → ${combat.after}' in screen
     assert "function experimentalFeaturesEnabled(){" in APP
-    assert 'html[data-ui="tomb"][data-experimental="on"] .combat-applied-rules' in CSS
+    assert 'html[data-ui="tomb"] .combat-applied-rules' in CSS
+    assert 'html[data-ui="tomb"][data-experimental="on"] .combat-applied-rules' not in CSS
 
 
 def test_version_and_persistence_unchanged():
