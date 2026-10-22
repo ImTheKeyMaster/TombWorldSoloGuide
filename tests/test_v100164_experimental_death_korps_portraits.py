@@ -81,7 +81,7 @@ const imagesToWarm=['trooper-1','trooper-3','gunner-flamer','medic'];
  assert.equal(api.warmedDeathKorpsPortraits.size,4);
  document.documentElement.dataset.experimental='off';
  assert.match(url('trooper-3'),/trooper_1\.png$/,'Experimental photos leaked into Standard');
- const next=api.warmDeathKorpsPortraitImages(['trooper-3','gunner-flamer']);
+ const next=api.warmDeathKorpsPortraitImages(['trooper-3','vox-operator']);
  assert.equal(pictures.length,5,'Previously cached matching photos must be reused');
  pictures[4].onload();
  await next;
