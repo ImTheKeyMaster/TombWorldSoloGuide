@@ -198,15 +198,15 @@ html.desktop-game-background #gameBackground{opacity:1}
 .dice-entry-dialog{max-height:calc(100dvh - 20px);overflow:auto;overscroll-behavior:contain}.dice-entry-inner{padding-bottom:calc(24px + env(safe-area-inset-bottom))}.dice-entry-roller{margin-bottom:0;color:var(--green)!important;font-weight:850}.dice-entry-results{min-height:44px;align-content:flex-start}.dice-entry-progress{font-weight:850;color:var(--text)!important}.dice-entry-keypad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.dice-entry-keypad .btn{min-width:0;min-height:52px;font-size:1.15rem;touch-action:manipulation}.dice-entry-actions .btn{min-width:0}.dice-entry-actions #diceEntryCommit{flex:1 1 auto}
 @media(max-width:390px){.dice-entry-dialog{width:calc(100% - 16px)}.dice-entry-inner{padding:18px 16px calc(18px + env(safe-area-inset-bottom))}.dice-entry-actions{gap:8px}.dice-entry-actions .btn{padding-inline:12px}}
 .severe-applied{margin:6px 0 0;color:var(--green);font-size:.85rem;font-weight:750;line-height:1.4}
-/* Experimental: compact effects audit on shooting results (not full weapon rules). */
-html[data-ui="tomb"][data-experimental="on"] .combat-applied-rules{
+/* Compact applied weapon effects audit for Standard and Experimental shooting results. */
+html[data-ui="tomb"] .combat-applied-rules{
   margin:10px 0 16px;
   padding:11px 13px;
   border:1px solid rgba(118,245,168,.22);
   border-radius:12px;
   background:rgba(21,58,38,.22);
 }
-html[data-ui="tomb"][data-experimental="on"] .combat-applied-rules>small{
+html[data-ui="tomb"] .combat-applied-rules>small{
   display:block;
   margin-bottom:6px;
   font-size:.7rem;
@@ -214,21 +214,21 @@ html[data-ui="tomb"][data-experimental="on"] .combat-applied-rules>small{
   letter-spacing:.1em;
   color:var(--green);
 }
-html[data-ui="tomb"][data-experimental="on"] .combat-applied-rules ul{
+html[data-ui="tomb"] .combat-applied-rules ul{
   list-style:none;
   margin:0;
   padding:0;
   display:grid;
   gap:5px;
 }
-html[data-ui="tomb"][data-experimental="on"] .combat-applied-rules li{
+html[data-ui="tomb"] .combat-applied-rules li{
   position:relative;
   padding-left:17px;
   color:var(--muted);
   font-size:.86rem;
   line-height:1.42;
 }
-html[data-ui="tomb"][data-experimental="on"] .combat-applied-rules li::before{
+html[data-ui="tomb"] .combat-applied-rules li::before{
   content:"✓";
   position:absolute;
   left:0;
