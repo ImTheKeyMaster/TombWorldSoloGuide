@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.0.162
+# Tomb World Battle Guide v10.0.163
+
+## v10.0.163
+
+### Promote Rules Applied shooting feedback to Standard
+
+- Promote the approved compact **RULES APPLIED** shooting-combat summary from Experimental to the Standard Tomb UI, keeping the same look and actual-effects-only logic.
+- Only show verified changes to dice, successful attacks and damage from Severe, Rending, Lethal, Accurate, Balanced/Ceaseless, Piercing/Piercing Crits and Devastating; no panel when no rule changed anything.
+- Preserve accurate result handling for physical dice records, no-defense-roll Devastating incapacitations, and unchanged Classic UI and melee.
+- Keep the Severe conversion note consolidated into the rules-applied panel instead of duplicating it under attack dice.
+- Leave the independent Experimental Mode toggle available for future enhancements.
+- Update app version and offline cache to V10.0.163.
 
 ## v10.0.162
 
