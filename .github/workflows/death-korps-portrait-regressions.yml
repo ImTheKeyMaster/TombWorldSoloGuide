@@ -42,6 +42,6 @@ jobs:
             tests/test_v100145_death_korps_preload.py \
             tests/test_v100140_death_korps_activation_framing.py \
             tests/test_v100141_npo_player_target_rail.py \
-            tests/test_combat_participant_portraits.py \
+            tests/test_v100153_promote_combat_features.py \
             tests/test_v8629_player_multitarget_combat_resume.py \
             tests/test_v851_guided_combat_resume.py
