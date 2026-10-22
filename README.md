@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.164
+# Tomb World Battle Guide v10.0.165
+
+## v10.0.165
+
+### Promote Death Korps miniature photos to Standard Mode
+
+- Promote the approved Experimental portrait associations for Gunner (Grenade Launcher, Meltagun, Plasma Gun), Medic, Sniper, Troopers 3/4, and alternate Vox-Operator to both Standard and Experimental modes.
+- Retain the corrected Gunner (Flamer) filename and other existing portraits. Keep the fifth Trooper photograph registered for a future operative identity without changing roster rules.
+- Continue using the same portrait lookup for roster, activation, combat and image preloading; preserve combat mechanics, game state and Back/resume behavior.
+- Keep the independent Experimental toggle available for future changes. Refresh version and PWA cache to V10.0.165.
 
 ## v10.0.164
 
