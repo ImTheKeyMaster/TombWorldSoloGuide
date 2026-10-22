@@ -29,7 +29,7 @@ const section=(start,end)=>{
   return src.slice(a,b);
 };
 const code=[
-  section('  const DEATH_KORPS_PORTRAIT_ROOT=', '  // Warm once per unique photograph'),
+  section('  const DEATH_KORPS_PORTRAIT_ROOT=', '  function playerRosterPortraitMarkup('),
   section('  function playerRosterPortraitMarkup(', '  function usesPlayerPortraitRail('),
   section('  function experimentalNpoTargetRosterRail(', '  function updateNpoTargetConfirmationAvailability(')
 ].join('\n');
@@ -55,7 +55,7 @@ for(const team of ['Deathwatch','Death Korps']){
   assert.match(html,/7\/9 wounds/);
   if(team==='Death Korps'){
     assert.match(html,/Death_Korps_confidant\.png/);
-    assert.match(html,/Death_Korps_gunner\.png/);
+    assert.match(html,/Death_Korps_gunner_flamer\.png/);
     assert.doesNotMatch(html,/data-deathwatch=/);
   }else{
     assert.match(html,/data-deathwatch="confidant"/);
