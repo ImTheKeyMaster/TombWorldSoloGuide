@@ -56,8 +56,8 @@ Promise.resolve().then(async()=>{
   assert.equal(images.length,3,'decoded photos stay reusable');
   const failure=api.warmDeathKorpsPortraitImages(['confidant']);
   assert.equal(images.length,4);
-  images[2].onerror();
-  images[2].failDecode(Error('network'));
+  images[3].onerror();
+  images[3].failDecode(Error('network'));
   await failure;
   assert(!api.warmedDeathKorpsPortraits.has(api.deathKorpsPortraitImage('confidant')));
   api.warmDeathKorpsPortraitImages(['confidant']);
