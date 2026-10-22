@@ -1,0 +1,47 @@
+name: Death Korps portrait regression checks
+
+on:
+  pull_request:
+    paths:
+      - app.js
+      - service-worker.js
+      - index.html
+      - tests/test_v100164_experimental_death_korps_portraits.py
+      - tests/test_v100145_death_korps_preload.py
+  push:
+    branches:
+      - main
+    paths:
+      - app.js
+      - service-worker.js
+      - index.html
+      - tests/test_v100164_experimental_death_korps_portraits.py
+  workflow_dispatch:
+
+jobs:
+  verify-portraits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse JavaScript
+        run: |
+          node --check app.js
+          node --check service-worker.js
+      - name: Install test runner
+        run: python -m pip install pytest
+      - name: Check Death Korps and combat regression tests
+        run: |
+          python -m pytest -q \
+            tests/test_v100164_experimental_death_korps_portraits.py \
+            tests/test_v100145_death_korps_preload.py \
+            tests/test_v100140_death_korps_activation_framing.py \
+            tests/test_v100141_npo_player_target_rail.py \
+            tests/test_combat_participant_portraits.py \
+            tests/test_v8629_player_multitarget_combat_resume.py \
+            tests/test_v851_guided_combat_resume.py
