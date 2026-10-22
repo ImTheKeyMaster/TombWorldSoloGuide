@@ -35,14 +35,16 @@ class MockImage {
 const api=new Function('Image',app.slice(begin,end)+
   '\nreturn {warmDeathKorpsPortraitImages,warmedDeathKorpsPortraits,readyDeathKorpsPortraits,deathKorpsPortraitImage};'
 )(MockImage);
-const ids=['trooper-1','trooper-3','gunner-flamer','unknown'];
+const ids=['trooper-1','trooper-3','trooper-3','gunner-flamer','unknown'];
 let done=false;
 const first=api.warmDeathKorpsPortraitImages(ids).then(()=>{done=true;});
-assert.equal(images.length,2,'same trooper photo should download only once');
+assert.equal(images.length,3,'each distinct operative photo should preload once');
+assert.notEqual(images[0].src,api.deathKorpsPortraitImage('trooper-3'));
+assert.equal(images[1].src,api.deathKorpsPortraitImage('trooper-3'));
 assert.equal(images[0].decoding,'async');
 assert.equal(images[0].src,api.deathKorpsPortraitImage('trooper-1'));
 api.warmDeathKorpsPortraitImages(ids);
-assert.equal(images.length,2,'repeated warmup should reuse existing images');
+assert.equal(images.length,3,'repeated warmup should reuse existing images');
 images.forEach(image=>image.onload());
 Promise.resolve().then(async()=>{
   assert.equal(done,false,'load events alone must not release team setup before decode');
@@ -51,15 +53,15 @@ Promise.resolve().then(async()=>{
   assert.equal(done,true);
   const repeat=api.warmDeathKorpsPortraitImages(ids);
   await repeat;
-  assert.equal(images.length,2,'decoded photos stay reusable');
+  assert.equal(images.length,3,'decoded photos stay reusable');
   const failure=api.warmDeathKorpsPortraitImages(['confidant']);
-  assert.equal(images.length,3);
-  images[2].onerror();
-  images[2].failDecode(Error('network'));
+  assert.equal(images.length,4);
+  images[3].onerror();
+  images[3].failDecode(Error('network'));
   await failure;
   assert(!api.warmedDeathKorpsPortraits.has(api.deathKorpsPortraitImage('confidant')));
   api.warmDeathKorpsPortraitImages(['confidant']);
-  assert.equal(images.length,4,'failed portrait must be retryable');
+  assert.equal(images.length,5,'failed portrait must be retryable');
 }).catch(error=>{console.error(error);process.exitCode=1;});
 """)
 
