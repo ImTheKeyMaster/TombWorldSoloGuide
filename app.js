@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.162';
+  const APP_VERSION = '10.0.163';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5921,8 +5921,8 @@ function showPlayerActivation(){
     return messages;
   }
 
-  function experimentalAppliedShootingRulesHtml(combat){
-    if(document.documentElement.dataset.ui!=='tomb'||!experimentalFeaturesEnabled())return '';
+  function shootingRulesAppliedHtml(combat){
+    if(document.documentElement.dataset.ui!=='tomb')return '';
     const messages=appliedShootingRuleMessages(combat);
     return messages.length
       ? `<section class="combat-applied-rules" aria-label="Rules applied"><small>RULES APPLIED</small><ul>${messages.map(message=>`<li>${escapeHtml(message)}</li>`).join('')}</ul></section>`
@@ -5935,7 +5935,7 @@ function showPlayerActivation(){
     });
     const diceStages=combat.recordedOutcome
       ? '<div class="combat-stage"><small>TABLETOP RESOLUTION</small><p>Physical dice and retained successes resolved by the player.</p></div>'
-      : combatDiceStageHtml('attacker','ATTACK DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div>`,experimentalAppliedShootingRulesHtml(combat)?'':severeAppliedHtml(combat.attackDice,combat.severeApplied))
+      : combatDiceStageHtml('attacker','ATTACK DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div>`,shootingRulesAppliedHtml(combat)?'':severeAppliedHtml(combat.attackDice,combat.severeApplied))
         +combatDiceStageHtml('defender','DEFENSE DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No defense dice rolled</span>'}</div>`,combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':'');
     return `<section class="combat-resolution" aria-label="Combat resolution">
       ${showParticipants?`<div class="damage-summary combat-participants">
@@ -5945,7 +5945,7 @@ function showPlayerActivation(){
         ${combat.recordedOutcome?'':`<div><small>Retained saves</small><strong>${combat.retainedSaves??(combat.coverRetained?1:0)}</strong></div>`}
       </div>`:''}
       ${diceStages}
-      ${experimentalAppliedShootingRulesHtml(combat)}
+      ${shootingRulesAppliedHtml(combat)}
       ${elimination}
       ${combatAbilityReminder(combat)}
       ${(combat.eventMessages||combat.profile?.eventMessages||[]).map(message=>`<div class="summary-box"><strong>${escapeHtml(message)}</strong></div>`).join('')}
