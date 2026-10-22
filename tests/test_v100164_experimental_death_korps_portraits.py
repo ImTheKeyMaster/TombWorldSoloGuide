@@ -77,7 +77,7 @@ const imagesToWarm=['trooper-1','trooper-3','gunner-flamer','medic'];
  await waiting;
  assert.equal(api.warmedDeathKorpsPortraits.size,4);
  document.documentElement.dataset.experimental='off';
- assert.match(url('trooper-3'),/trooper_3\\.png$/,'Standard must retain the promoted Trooper 3 image');
+ assert.match(url('trooper-3'),/trooper_3\.png$/,'Standard must retain the promoted Trooper 3 image');
  const next=api.warmDeathKorpsPortraitImages(['trooper-3','vox-operator']);
  assert.equal(pictures.length,5,'Previously cached matching photos must be reused');
  pictures[4].onload();
