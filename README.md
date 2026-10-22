@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.163
+# Tomb World Battle Guide v10.0.164
+
+## v10.0.164
+
+### Preview additional Death Korps miniature photos in Experimental Mode
+
+- Associate new Gunner (Grenade Launcher, Meltagun, Plasma Gun), Medic, Sniper and Trooper 3/4 photographs with their operative IDs when Experimental Mode is enabled.
+- Preview the alternate Vox-Operator image in Experimental Mode. Register the fifth Trooper photograph for a future `trooper-5` identity without adding an operative or changing roster rules.
+- Correct the renamed Gunner (Flamer) image path in both modes, retaining all other Standard portrait assignments.
+- Pre-cache every referenced Death Korps image for offline use. Preserve preloading, combat, activation, save state and navigation behavior.
+- Update app shell and service-worker cache to V10.0.164.
 
 ## v10.0.163
 
