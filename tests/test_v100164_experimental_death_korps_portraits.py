@@ -1,4 +1,4 @@
-"""Experimental Death Korps portrait variants preserve Standard behavior."""
+"""Approved Death Korps portraits render consistently in Standard and Experimental modes."""
 import re
 import subprocess
 from pathlib import Path
@@ -25,7 +25,7 @@ NEW_IMAGES = (
 )
 
 
-def test_portrait_variants_resolve_to_real_images_and_respect_mode():
+def test_approved_portraits_resolve_in_both_modes():
     script = r"""
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -54,23 +54,20 @@ const expected={
   'trooper-3':'trooper_3','trooper-4':'trooper_4',
   'trooper-5':'trooper_5','vox-operator':'vox-operator_2'
 };
-assert.equal(url('gunner-flamer'),'Assets/Images/TombUI/DeathKorps/Death_Korps_gunner_flamer.png');
-assert.equal(url('gunner-meltagun'),'');
-assert.equal(url('gunner-grenade-launcher'),'');
-assert.equal(url('gunner-plasma-gun'),'');
-assert.equal(url('medic'),'');
-assert.equal(url('sniper'),'');
-assert.equal(url('trooper-5'),'');
-assert.match(url('trooper-3'),/trooper_1\.png$/);
-assert.match(url('trooper-4'),/trooper_2\.png$/);
-assert.match(url('vox-operator'),/vox_operator\.png$/);
-document.documentElement.dataset.experimental='on';
-for(const [id,file] of Object.entries(expected)){
- const path=url(id);
- assert.equal(path,'Assets/Images/TombUI/DeathKorps/Death_Korps_'+file+'.png',id);
- assert(fs.existsSync(path),'missing portrait: '+path);
+for(const mode of ['off','on']){
+ document.documentElement.dataset.experimental=mode;
+ for(const [id,file] of Object.entries(expected)){
+  const path=url(id);
+  assert.equal(path,'Assets/Images/TombUI/DeathKorps/Death_Korps_'+file+'.png',mode+': '+id);
+  assert(fs.existsSync(path),'missing portrait: '+path);
+ }
+ assert.equal(url('nonexistent'),'');
+ assert.equal(url('watchmaster'),'Assets/Images/TombUI/DeathKorps/Death_Korps_watchmaster.png');
+ assert.equal(url('trooper-1'),'Assets/Images/TombUI/DeathKorps/Death_Korps_trooper_1.png');
+ assert.equal(url('trooper-2'),'Assets/Images/TombUI/DeathKorps/Death_Korps_trooper_2.png');
+ assert.equal(url('confidant'),'Assets/Images/TombUI/DeathKorps/Death_Korps_confidant.png');
 }
-assert.equal(url('nonexistent'),'');
+document.documentElement.dataset.experimental='on';
 const imagesToWarm=['trooper-1','trooper-3','gunner-flamer','medic'];
 (async()=>{
  const waiting=api.warmDeathKorpsPortraitImages(imagesToWarm);
@@ -80,7 +77,7 @@ const imagesToWarm=['trooper-1','trooper-3','gunner-flamer','medic'];
  await waiting;
  assert.equal(api.warmedDeathKorpsPortraits.size,4);
  document.documentElement.dataset.experimental='off';
- assert.match(url('trooper-3'),/trooper_1\.png$/,'Experimental photos leaked into Standard');
+ assert.match(url('trooper-3'),/trooper_3\\.png$/,'Standard must retain the promoted Trooper 3 image');
  const next=api.warmDeathKorpsPortraitImages(['trooper-3','vox-operator']);
  assert.equal(pictures.length,5,'Previously cached matching photos must be reused');
  pictures[4].onload();
@@ -99,8 +96,8 @@ def test_all_new_portraits_are_precached_and_old_path_is_not():
         assert (IMAGES / name).is_file(), f"Missing file: {name}"
         assert f"./Assets/Images/TombUI/DeathKorps/{name}" in SW
     assert "Death_Korps_gunner.png" not in SW
-    assert "DEATH_KORPS_EXPERIMENTAL_PORTRAITS" in APP
-    assert "dataset?.experimental==='on'" in APP
+    assert "DEATH_KORPS_EXPERIMENTAL_PORTRAITS" not in APP
+    assert "const filename=DEATH_KORPS_PORTRAITS[id];" in APP
 
 
 def test_version_and_existing_portrait_surfaces_stay_intact():
