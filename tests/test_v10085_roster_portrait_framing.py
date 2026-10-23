@@ -71,6 +71,6 @@ def test_detail_placeholder_is_dimmed_and_selected_portrait_bottom_aligned():
 
 def test_fix_remains_experimental_only_and_current_picker_is_unchanged():
     source = APP[APP.index("function showPlayerActivation()") : APP.index("function playerActivationSummary")]
-    assert "document.documentElement.dataset.ui==='tomb'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'" in source
+    assert "if(usesPlayerPortraitRail()){" in source
     assert '<select id="humanPlayerSelection" data-dialog-focus>' in source
     assert 'html[data-ui="classic"] .experimental-roster' not in CSS
