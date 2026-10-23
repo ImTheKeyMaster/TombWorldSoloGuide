@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.168
+# Tomb World Battle Guide v10.0.169
+
+## v10.0.169
+
+### Promote approved Deathwatch green portraits and remove obsolete assets
+
+- Use the 11 already-green cutouts from `Assets/Images/TombUI/Deathwatch/` for every Deathwatch operative in Standard and Experimental, across roster, activation, shooting, fight, and multi-target screens.
+- Retain the approved compact-card opacity (0.52 for Fight Roll/Result and shooting dice; 0.38 for Fight Resolution, 0.36 / 0.34 on narrow devices), with no added brightness filter and with original masks/framing.
+- Remove the old `DeathwatchRoster` / `DeathwatchActivation` WebPs and Sergeant SVG, obsolete SVG grayscale/chroma-key color conversion, experimental artwork gate and old cache references. Keep the original user-supplied PNG filenames unchanged.
+- Preserve operative IDs, roster composition, combat mechanics, persistence, image warmup/offline behavior and independent Experimental toggle. Refresh the app and PWA cache to V10.0.169.
 
 ## v10.0.168
 
