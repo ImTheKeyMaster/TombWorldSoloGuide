@@ -2844,9 +2844,9 @@ html[data-ui="tomb"] .combat-resolution-modal .multi-target-attack-progress ~ #c
   html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > .multi-target-attack-progress{order:2}
 }
 
-/* v10.0.167-168: Tune supplied Deathwatch portrait contrast to match the
-   neighboring Necron art in combat cards. Keep the original framing and
-   masks; only Experimental Deathwatch is affected. */
+/* v10.0.167: Experimental-only visibility for supplied green Deathwatch
+   cutouts in compact combat cards. v10.0.168 removes excess filter brightness
+   and tunes alpha closer to neighboring Necron models. Standard is unchanged. */
 html[data-ui="tomb"][data-experimental="on"] .fight-portrait.supplied-deathwatch-portrait{
   opacity:.52;
 }
