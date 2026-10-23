@@ -1,4 +1,4 @@
-"""Experimental-only unified elimination card regressions."""
+"""Shared Standard and Experimental elimination card regressions."""
 
 from pathlib import Path
 import subprocess
@@ -10,7 +10,7 @@ APP = (ROOT / "app.js").read_text(encoding="utf-8")
 CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
 
 
-def test_eliminations_have_consistent_experimental_markup_without_affecting_standard():
+def test_eliminations_have_consistent_promoted_markup_without_affecting_classic():
     script = r"""
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -58,7 +58,10 @@ const surviving={...dying,after:6,incapacitated:false};
 for(const output of [
   experiment.fight(dying,'attacker'),
   experiment.fight(dying,'defender'),
-  experiment.core.renderAttackSummary(target,{portraitHtml:'<span class="blast-result-portrait"></span>'})
+  standard.fight(dying,'attacker'),
+  standard.fight(dying,'defender'),
+  experiment.core.renderAttackSummary(target,{portraitHtml:'<span class="blast-result-portrait"></span>'}),
+  standard.core.renderAttackSummary(target,{portraitHtml:'<span class="blast-result-portrait"></span>'})
 ]){
   assert.match(output,/experimental-eliminated-card/);
   assert.match(output,/>ELIMINATED<\/strong>/);
@@ -72,20 +75,31 @@ assert.match(combat,/experimental-eliminated-label/);
 assert.match(combat,/Wounds/);
 assert.match(combat,/1 → 0/);
 assert.equal(experiment.core.renderEliminationSummary(target),'');
+assert.equal(standard.core.renderEliminationSummary(target),'');
+assert.equal(standard.combat(target,{animate:false}),combat,'Standard and Experimental share the recorded-result fallback');
 const summary=experiment.core.renderAttackSummary(target,{portraitHtml:'<span class="blast-result-portrait"></span>'});
 assert.doesNotMatch(summary,/eliminated-badge|☠/);
 assert.match(summary,/blast-result-portrait/);
 assert.match(summary,/class="attack-confirmation-stats"/);
 
-for(const preExisting of [standard,classic]){
-  assert.doesNotMatch(preExisting.fight(dying,'attacker'),/experimental-eliminated-card/);
-  assert.match(preExisting.fight(dying,'attacker'),/class="fight-eliminated">ELIMINATED/);
-  assert.doesNotMatch(preExisting.combat(target,{animate:false}),/experimental-eliminated-card/);
-  assert.match(preExisting.combat(target,{animate:false}),/elimination-banner/);
-  assert.match(preExisting.core.renderAttackSummary(target),/eliminated-badge/);
-  assert.doesNotMatch(preExisting.core.renderAttackSummary(target),/experimental-eliminated-label/);
+for(const promoted of [standard,experiment]){
+  const attack=promoted.core.renderAttackSummary(target);
+  assert.match(attack,/experimental-eliminated-card/);
+  assert.match(attack,/experimental-eliminated-label/);
+  assert.doesNotMatch(attack,/eliminated-badge|☠/);
+  assert.match(promoted.fight(dying,'attacker'),/experimental-eliminated-card/);
+  assert.match(promoted.fight(dying,'defender'),/experimental-eliminated-card/);
+  assert.doesNotMatch(promoted.combat(target,{animate:false}),/elimination-banner/);
+  assert.match(promoted.combat(target,{animate:false}),/experimental-eliminated-label/);
+  assert.equal(promoted.core.renderEliminationSummary(target),'');
 }
+assert.doesNotMatch(classic.fight(dying,'attacker'),/experimental-eliminated-card/);
+assert.match(classic.fight(dying,'attacker'),/class="fight-eliminated">ELIMINATED/);
+assert.match(classic.combat(target,{animate:false}),/elimination-banner/);
+assert.match(classic.core.renderAttackSummary(target),/eliminated-badge/);
+assert.doesNotMatch(classic.core.renderAttackSummary(target),/experimental-eliminated-label/);
 assert.doesNotMatch(experiment.fight(surviving,'attacker'),/experimental-eliminated-card|fight-eliminated/);
+assert.doesNotMatch(standard.fight(surviving,'attacker'),/experimental-eliminated-card|fight-eliminated/);
 assert.doesNotMatch(experiment.combat({...target,before:3,after:1},{animate:false}),/experimental-eliminated-card|experimental-eliminated-label/);
 assert.doesNotMatch(experiment.core.renderAttackSummary({...target,before:3,after:1}),/experimental-eliminated-card|experimental-eliminated-label/);
 """
@@ -96,9 +110,10 @@ assert.doesNotMatch(experiment.core.renderAttackSummary({...target,before:3,afte
     assert run.returncode == 0, run.stderr or run.stdout
 
 
-def test_experimental_css_is_scoped_and_keeps_default_dark_background():
-    preview = CSS.split("/* v10.0.171: Preview a consistent", 1)[1]
-    assert 'html[data-ui="tomb"][data-experimental="on"]' in preview
+def test_promoted_css_is_shared_and_keeps_default_dark_background():
+    preview = CSS.split("/* v10.0.171/173: Approved text-first", 1)[1]
+    assert 'html[data-ui="tomb"]' in preview
+    assert '[data-experimental="on"]' not in preview
     assert '.fight-result-card.experimental-eliminated-card' in preview
     assert '.combat-stage.experimental-eliminated-card' in preview
     assert '.attack-confirmation-card.experimental-eliminated-card' in preview
@@ -107,7 +122,7 @@ def test_experimental_css_is_scoped_and_keeps_default_dark_background():
     assert ".combat-resolution.experimental-eliminated-card" not in preview
     assert "font-size:1.08rem" in preview
     assert 'background:rgba(125,25,25,.2)' not in preview
-    # Standard's existing banner, badge, and red fill remain untouched.
+    # Classic's legacy banner and badge remain available; Tomb overrides the fill.
     assert ".elimination-banner{" in CSS
     assert ".eliminated-badge{" in CSS
     assert ".attack-confirmation-card.eliminated{" in CSS
