@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.166';
+  const APP_VERSION = '10.0.167';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -7830,7 +7830,10 @@ function showPlayerActivation(){
     }else if(participant.side==='player'&&selectedPlayerTeamName().toLowerCase()==='death korps'&&playerDefinition(participant.id)){
       artwork=deathKorpsCombatPortraitSvg(participant.id,'fight-portrait-artwork');
     }
-    return artwork?`<span class="fight-portrait fight-portrait-${role}" aria-hidden="true">${artwork}</span>`:'';
+    // Only supplied Deathwatch cutouts receive the Experimental compact-card lift.
+    const suppliedDeathwatch=participant.side==='player'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'
+      &&!!experimentalDeathwatchSuppliedPortraitImage(participant.id);
+    return artwork?`<span class="fight-portrait fight-portrait-${role}${suppliedDeathwatch?' supplied-deathwatch-portrait':''}" aria-hidden="true">${artwork}</span>`:'';
   }
   function fightRollParticipantHtml(fight,role,animate){
     const participant=fight[role],profile=participant.profile,dice=participant.attackDice.map(fightDiePresentation);
