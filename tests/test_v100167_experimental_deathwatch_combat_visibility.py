@@ -59,18 +59,19 @@ assert.equal(portrait({side:'player',id:null},'attacker'),'');
 def test_brightness_is_scoped_to_compact_previews_and_preserves_existing_geometry():
     assert "opacity:.44;" in CSS
     assert "opacity:.29;" in CSS
-    updated = CSS.split("/* v10.0.167: Experimental-only visibility for supplied green Deathwatch", 1)[1]
+    updated = CSS.split("/* v10.0.167-168: Tune supplied Deathwatch portrait contrast", 1)[1]
     selector = 'html[data-ui="tomb"][data-experimental="on"]'
     assert f"{selector} .fight-portrait.supplied-deathwatch-portrait{{" in updated
-    assert "opacity:.76;" in updated
+    assert "opacity:.52;" in updated
     assert f"{selector} .fight-portrait.supplied-deathwatch-portrait .fight-portrait-artwork{{" in updated
-    assert "filter:brightness(1.3) contrast(1.08);" in updated
+    assert "filter:none;" in updated
+    assert "filter:brightness(" not in updated
     assert f"{selector} .experimental-fight-pool .fight-portrait.supplied-deathwatch-portrait{{" in updated
-    assert "opacity:.70;" in updated
+    assert "opacity:.38;" in updated
     assert "@media(max-width:390px)" in updated
-    assert "opacity:.65" in updated
+    assert "opacity:.36" in updated
     assert "@media(max-width:374px)" in updated
-    assert "opacity:.60" in updated
+    assert "opacity:.34" in updated
     assert "transform:" not in updated
     assert "width:" not in updated.replace("max-width:", "")
     assert "height:" not in updated
@@ -79,6 +80,10 @@ def test_brightness_is_scoped_to_compact_previews_and_preserves_existing_geometr
     assert "html[data-experimental=\"off\"]" not in updated
     assert "death-korps" not in updated
     assert "necron" not in updated
+    # The bright supplied PNGs no longer get extra luminance, and the
+    # portrait alpha now sits near the unmodified neighboring Necron.
+    assert abs(0.52 - 0.44) <= 0.10
+    assert abs(0.38 - 0.29) <= 0.10
 
 
 def test_same_portrait_is_used_by_shooting_dice_fight_roll_result_and_resolution():
