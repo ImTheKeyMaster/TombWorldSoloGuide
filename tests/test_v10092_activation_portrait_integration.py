@@ -32,21 +32,17 @@ def test_release_is_v10092_or_newer():
 
 def test_portrait_filter_matches_photoshop_colorize_and_keeps_light_sharpening():
     source = activation_source()
-    assert 'result="grayKeyed"' in source
-    assert 'result="colorized"' in source
-    assert '<feFuncR type="table"' in source
-    assert '<feFuncG type="table"' in source
-    assert '<feFuncB type="table"' in source
-    assert '<feConvolveMatrix in="colorized"' in source
-    assert 'kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0"' in source
-    assert 'preserveAlpha="true"' in source
-
+    assert "deathwatchPortraitImage(activation.operativeId)" in source
+    assert "colorized" not in source
+    assert "grayKeyed" not in source
+    assert "feConvolveMatrix" not in source
+    assert "experimentalActivationPortraitCutout" not in source
 
 def test_portrait_preserves_background_alpha_key():
     source = activation_source()
-    assert '1.063 3.576 .361 0 -.28' in source
-    assert '<feFuncA type="linear" slope="1.08" intercept="-.01"' in source
-
+    assert "experimentalActivationPortraitCutout" not in source
+    assert "<image href=" in source
+    assert "preserveAspectRatio=" in source
 
 def test_portrait_can_reach_movement_panel_without_black_box_clipping():
     block = portrait_css()
