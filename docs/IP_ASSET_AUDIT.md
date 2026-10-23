@@ -1,16 +1,24 @@
 # Intellectual-Property Asset Audit — v8.6.19
 
+## 2026-10-23 author-provided miniature photography clarification
+
+The project creator reports that miniature photographs used for the companion depict models in the creator's personal collection and that the photography was produced independently, rather than copied from official Games Workshop promotional photography. This clarification is reflected in the app's **About > Miniature Photography** notice.
+
+Relevant current in-app miniature portrait collections include `Assets/Images/TombUI/DeathKorps/`, `Assets/Images/TombUI/Deathwatch/`, and `Assets/Images/TombUI/NecronActivation/`. These paths identify image sets to document individually, not a completed item-by-item provenance or rights clearance. The creator's statement is recorded here; the original files, photographer, edit history, and any derivative/third-party components have **not** been independently verified for each image.
+
+Photographing an owned model does not transfer rights to Games Workshop miniature designs, characters, names, logos, or distinctive likenesses. This clarification does not apply to separately sourced game publications, mission maps, icons, backgrounds, or other art. The original v8.6.19 inventory and its classifications are retained below as a historical audit, pending per-asset verification.
+
 ## Scope and method
 
 This focused repository audit inventories image and publication assets, reviews references in `index.html`, `app.js`, `styles.css`, player/mission JSON, and `service-worker.js`, and searches for logos, product photography, publication scans, data-card artwork, PDF extracts, third-party copyright notices, and substantial rules text. It is a provenance and deployment review, not a legal conclusion. A disclaimer does not grant permission to use any asset.
 
-No repository record establishes that any image is `Original`, `User-created`, `AI-generated`, or `Third-party with documented permission`. Those classifications are therefore not assigned merely from appearance. Items with missing provenance are conservatively classified `Third-party source unclear`; apparent publication-derived files are classified `Likely official Games Workshop material` and flagged for review.
+At the time of the original v8.6.19 audit, no repository record established that any image was `Original`, `User-created`, `AI-generated`, or `Third-party with documented permission`. Those classifications are therefore not assigned merely from appearance. Items with missing provenance are conservatively classified `Third-party source unclear`; apparent publication-derived files are classified `Likely official Games Workshop material` and flagged for review.
 
 ## Key findings
 
 - **High-priority review:** the deployed `Assets/Tomb-World-Mission-Pack.pdf` is identified in existing project text as a Games Workshop publication, and all six deployed mission maps are expressly described in the UI as extracts from it.
 - **High-priority review:** nine rules/datacard PDFs under `docs/` appear to reproduce third-party publications. They are not deployed by the application, but they are present in the public repository.
-- **Unclear provenance:** all player-operative portraits, result/status art, the icon, and landscape backgrounds lack source, authorship, permission, or licence records. The backgrounds therefore cannot responsibly be labeled original or AI-generated until the author supplies provenance.
+- **Unclear provenance (original audit):** at the time of v8.6.19, all player-operative portraits, result/status art, the icon, and landscape backgrounds lacked source, authorship, permission, or licence records. The backgrounds therefore cannot responsibly be labeled original or AI-generated until the author supplies provenance.
 - No separate Games Workshop or Warhammer logo file was identified by filename. The app icon and eliminated-state skull should nevertheless receive a visual rights review because provenance is absent.
 - The deployed app contains concise names, characteristics, weapon profiles, mission summaries, and rules guidance in JavaScript and JSON. These are functional data/text rather than standalone media assets, but their source, extent of copying, and permission should be reviewed alongside the binary assets. Existing compliance documents identify the bundled publications as transcription sources.
 
