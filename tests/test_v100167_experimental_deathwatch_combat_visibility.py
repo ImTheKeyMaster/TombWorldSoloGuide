@@ -59,7 +59,7 @@ assert.equal(portrait({side:'player',id:null},'attacker'),'');
 def test_brightness_is_scoped_to_compact_previews_and_preserves_existing_geometry():
     assert "opacity:.44;" in CSS
     assert "opacity:.29;" in CSS
-    updated = CSS.split("/* v10.0.167-168: Tune supplied Deathwatch portrait contrast", 1)[1]
+    updated = CSS.split("/* v10.0.167: Experimental-only visibility for supplied green Deathwatch", 1)[1]
     selector = 'html[data-ui="tomb"][data-experimental="on"]'
     assert f"{selector} .fight-portrait.supplied-deathwatch-portrait{{" in updated
     assert "opacity:.52;" in updated
