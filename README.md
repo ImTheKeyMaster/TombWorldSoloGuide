@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.167
+# Tomb World Battle Guide v10.0.168
+
+## v10.0.168
+
+### Calibrate Experimental Deathwatch combat portraits against Necron artwork
+
+- Remove the extra brightness/contrast filter applied to supplied green Deathwatch PNGs in compact combat cards.
+- Tune their alpha to better match neighboring Necron portraits: 0.52 in shooting dice and Fight Roll/Result cards, and 0.38 in compact Fight Resolution cards (slightly lower on narrow phones).
+- Preserve visual framing, fade masks, overlay text, roster/selection/activation portraits, Standard Mode rendering and all non-Deathwatch artwork.
+- No changes to operative data, combat decisions or saved game state. Refresh app and PWA asset cache to V10.0.168.
 
 ## v10.0.167
 
