@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.171';
+  const APP_VERSION = '10.0.172';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5968,8 +5968,8 @@ function showPlayerActivation(){
     const diceStages=combat.recordedOutcome
       ? '<div class="combat-stage"><small>TABLETOP RESOLUTION</small><p>Physical dice and retained successes resolved by the player.</p></div>'
       : combatDiceStageHtml('attacker','ATTACK DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div>`,shootingRulesAppliedHtml(combat)?'':severeAppliedHtml(combat.attackDice,combat.severeApplied))
-        +combatDiceStageHtml('defender','DEFENSE DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No defense dice rolled</span>'}</div>`,combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':'');
-    return `<section class="combat-resolution${experimentalElimination?' experimental-eliminated-card':''}" aria-label="Combat resolution">
+        +combatDiceStageHtml('defender','DEFENSE DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No defense dice rolled</span>'}</div>`,combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':'',experimentalElimination);
+    return `<section class="combat-resolution" aria-label="Combat resolution">
       ${showParticipants?`<div class="damage-summary combat-participants">
         <div><small>Attacker</small><strong>${escapeHtml(combat.attackerName)}</strong></div>
         <div><small>Defender</small><strong>${escapeHtml(combat.defenderName)}</strong></div>
@@ -5988,7 +5988,7 @@ function showPlayerActivation(){
         <div><small>${pending?'Pending damage':'Total damage'}</small><strong>${combat.damage}</strong></div>
         <div><small>Wounds</small><strong>${combat.before} → ${combat.after}</strong></div>
       </div>
-      ${experimentalElimination?'<strong class="experimental-eliminated-label">ELIMINATED</strong>':''}
+      ${experimentalElimination&&combat.recordedOutcome?'<strong class="experimental-eliminated-label">ELIMINATED</strong>':''}
     </section>`;
   }
 
@@ -6004,13 +6004,14 @@ function showPlayerActivation(){
   // Shared shooting dice cards reuse the Fight Roll portrait markup and styling.
   // Templates live in the current combat modal so restored/animated rolls
   // never display a portrait belonging to a previous opponent.
-  function combatDiceStageHtml(role,heading,diceRow,details=''){
+  function combatDiceStageHtml(role,heading,diceRow,details='',eliminated=false){
     const slot=role==='attacker'?'Attacker':'Defender';
+    const defeatedDefender=role==='defender'&&eliminated;
     const portrait=document.documentElement.dataset.ui==='tomb'
       ? $(`#combat${slot}PortraitTemplate`)?.innerHTML||'' : '';
     const name=portrait?$('#combat'+slot+'Name')?.textContent||'':'';
     const portraitClass=portrait?' fight-roll-pool shooting-roll-pool has-fight-portrait':'';
-    return `<section class="combat-stage${portraitClass}" aria-label="${escapeHtml(heading)}${name?` for ${escapeHtml(name)}`:''}">${portrait}<small>${escapeHtml(heading)}</small>${name?`<strong class="shooting-roll-participant">${escapeHtml(name)}</strong>`:''}${diceRow}${details}</section>`;
+    return `<section class="combat-stage${portraitClass}${defeatedDefender?' experimental-eliminated-card':''}" aria-label="${escapeHtml(heading)}${name?` for ${escapeHtml(name)}`:''}${defeatedDefender?', eliminated':''}">${portrait}<small>${escapeHtml(heading)}</small>${name?`<strong class="shooting-roll-participant">${escapeHtml(name)}</strong>`:''}${diceRow}${details}${defeatedDefender?'<strong class="experimental-eliminated-label">ELIMINATED</strong>':''}</section>`;
   }
   function showSharedCombatResolutionScreen({title,attackerName,defenderName,attackerPortrait='',defenderPortrait='',attackType,weaponName,attackLabel='',defenseLabel,cancelId,continueId,guidanceHtml='',rulesHtml='',extraHtml='',detailsHtml='',progressHtml=''}){
     showModal(title,`

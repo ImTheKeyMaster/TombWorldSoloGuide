@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.171
+# Tomb World Battle Guide v10.0.172
+
+## v10.0.172
+
+### Experimental: mark eliminated defenders within their Defense Dice card
+
+- For shared automatic shooting/combat resolution, apply the red elimination border and prominent ELIMINATED text to the defeated defender's Defense Dice card, matching Fight Result participant cards.
+- Remove the red border from the entire combat resolution section; keep the attack dice card, rules applied, stats, and outer result panel neutral.
+- When an attack uses tabletop-recorded results without a Defense Dice card, retain the elimination text in the neutral resolution summary rather than losing the status.
+- Keep Standard and Classic behavior unchanged, including original elimination banners; preserve Fight Result, multi-target cards, portraits, dice animations, and game state.
 
 ## v10.0.171
 
