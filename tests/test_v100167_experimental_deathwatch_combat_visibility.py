@@ -72,7 +72,7 @@ def test_brightness_is_scoped_to_compact_previews_and_preserves_existing_geometr
     assert "@media(max-width:374px)" in updated
     assert "opacity:.60" in updated
     assert "transform:" not in updated
-    assert "width:" not in updated
+    assert "width:" not in updated.replace("max-width:", "")
     assert "height:" not in updated
     assert "z-index:" not in updated
     assert "pointer-events:" not in updated
