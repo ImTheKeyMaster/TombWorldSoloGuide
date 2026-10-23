@@ -42,7 +42,7 @@ def test_both_fight_roll_and_fight_result_render_portraits():
     assert "fightResultParticipantHtml(result.participants.defender,'defender')" in COMPLETE
 
 def test_art_behind_content_clipped_and_gated_by_mode_without_height_changes():
-    style=CSS.split('/* Decorative upper-body portraits inside Fight Roll and Fight Result participant cards.',1)[1]
+    style=CSS.split('/* Decorative upper-body portraits inside Fight Roll and Fight Result participant cards.',1)[1].split('/* Fight Result:',1)[0]
     assert 'html:not([data-ui="tomb"]) .fight-portrait{display:none}' in style
     assert '.fight-roll-pool.has-fight-portrait' in style
     assert '.fight-result-card.has-fight-portrait' in style
