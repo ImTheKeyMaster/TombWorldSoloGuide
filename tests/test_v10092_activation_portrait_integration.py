@@ -19,7 +19,7 @@ def portrait_css():
 def activation_source():
     return APP[
         APP.index("function renderHumanActivationShell")
-        : APP.index("function renderHumanPlayerActionPicker")
+        : APP.index("function playerSequentialStage")
     ]
 
 
