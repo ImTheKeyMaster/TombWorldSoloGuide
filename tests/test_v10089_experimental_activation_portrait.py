@@ -20,7 +20,7 @@ def portrait_css():
     return CSS.split(
         "v10.0.95: Preserve side-facing portrait edges and reach the Movement border.",
         1,
-    )[1]
+    )[1].split("/* v10.0.96:", 1)[0]
 
 
 def test_release_surfaces_are_v10089_or_newer():
