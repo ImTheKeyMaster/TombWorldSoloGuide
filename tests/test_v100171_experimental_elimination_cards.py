@@ -58,7 +58,6 @@ const surviving={...dying,after:6,incapacitated:false};
 for(const output of [
   experiment.fight(dying,'attacker'),
   experiment.fight(dying,'defender'),
-  experiment.combat(target,{animate:false}),
   experiment.core.renderAttackSummary(target,{portraitHtml:'<span class="blast-result-portrait"></span>'})
 ]){
   assert.match(output,/experimental-eliminated-card/);
@@ -68,7 +67,8 @@ const fight=experiment.fight(dying,'defender');
 assert.match(fight,/class="fight-eliminated">ELIMINATED<\/strong>/);
 assert.match(fight,/Wounds/);
 const combat=experiment.combat(target,{animate:false});
-assert.doesNotMatch(combat,/elimination-banner|eliminated-badge/);
+assert.doesNotMatch(combat,/elimination-banner|eliminated-badge|experimental-eliminated-card/);
+assert.match(combat,/experimental-eliminated-label/);
 assert.match(combat,/Wounds/);
 assert.match(combat,/1 → 0/);
 assert.equal(experiment.core.renderEliminationSummary(target),'');
@@ -100,11 +100,11 @@ def test_experimental_css_is_scoped_and_keeps_default_dark_background():
     preview = CSS.split("/* v10.0.171: Preview a consistent", 1)[1]
     assert 'html[data-ui="tomb"][data-experimental="on"]' in preview
     assert '.fight-result-card.experimental-eliminated-card' in preview
-    assert '.combat-resolution.experimental-eliminated-card' in preview
+    assert '.combat-stage.experimental-eliminated-card' in preview
     assert '.attack-confirmation-card.experimental-eliminated-card' in preview
     assert "border:2px solid var(--danger,#ef6b6b)" in preview
     assert "background:rgba(16,51,34,.45)" in preview
-    assert "background:rgba(0,0,0,.18)" in preview
+    assert ".combat-resolution.experimental-eliminated-card" not in preview
     assert "font-size:1.08rem" in preview
     assert 'background:rgba(125,25,25,.2)' not in preview
     # Standard's existing banner, badge, and red fill remain untouched.
