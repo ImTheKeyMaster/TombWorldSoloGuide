@@ -47,7 +47,7 @@ assert.equal(draw({side:'player',id:null},'attacker'),'');
 
 
 def test_final_brightness_is_unconditional_and_changes_no_geometry():
-    css = CSS.split("/* v10.0.169: Approved Deathwatch combat portrait transparency", 1)[1].split('/* v10.0.171: Preview a consistent', 1)[0]
+    css = CSS.split("/* v10.0.169: Approved Deathwatch combat portrait transparency", 1)[1].split('/* v10.0.171/173: Approved text-first', 1)[0]
     selector = 'html[data-ui="tomb"]'
     assert f"{selector} .fight-portrait.deathwatch-portrait{{" in css
     assert "opacity:.52;" in css
