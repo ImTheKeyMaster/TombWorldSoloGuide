@@ -2858,19 +2858,19 @@ html[data-ui="tomb"] .experimental-fight-pool .fight-portrait.deathwatch-portrai
 }
 
 
-/* v10.0.171: Preview a consistent, text-first elimination state.
-   Standard and Classic retain their current result cards and banners. */
-html[data-ui="tomb"][data-experimental="on"] .fight-result-card.experimental-eliminated-card,
-html[data-ui="tomb"][data-experimental="on"] .attack-confirmation-card.experimental-eliminated-card,
-html[data-ui="tomb"][data-experimental="on"] .combat-stage.experimental-eliminated-card{
+/* v10.0.171/173: Approved text-first elimination state in Tomb UI.
+   Standard and Experimental share the borders and labels; Classic is unchanged. */
+html[data-ui="tomb"] .fight-result-card.experimental-eliminated-card,
+html[data-ui="tomb"] .attack-confirmation-card.experimental-eliminated-card,
+html[data-ui="tomb"] .combat-stage.experimental-eliminated-card{
   border:2px solid var(--danger,#ef6b6b);
 }
-html[data-ui="tomb"][data-experimental="on"] .attack-confirmation-card.experimental-eliminated-card{
+html[data-ui="tomb"] .attack-confirmation-card.experimental-eliminated-card{
   background:rgba(16,51,34,.45);
 }
-html[data-ui="tomb"][data-experimental="on"] .experimental-eliminated-card .experimental-eliminated-label,
-html[data-ui="tomb"][data-experimental="on"] .combat-resolution>.experimental-eliminated-label,
-html[data-ui="tomb"][data-experimental="on"] .fight-result-card.experimental-eliminated-card .fight-eliminated{
+html[data-ui="tomb"] .experimental-eliminated-card .experimental-eliminated-label,
+html[data-ui="tomb"] .combat-resolution>.experimental-eliminated-label,
+html[data-ui="tomb"] .fight-result-card.experimental-eliminated-card .fight-eliminated{
   display:block;
   position:relative;
   z-index:1;
@@ -2885,3 +2885,6 @@ html[data-ui="tomb"][data-experimental="on"] .fight-result-card.experimental-eli
 
 /* v10.0.172: The eliminated defender's dice card owns the red border.
    The containing result panel remains neutral in Experimental mode. */
+
+/* v10.0.173: Approved red-outline elimination cards are standard in Tomb UI;
+   retain Experimental mode for future changes. */
