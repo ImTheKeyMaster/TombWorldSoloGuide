@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.173
+# Tomb World Battle Guide v10.0.174
+
+## v10.0.174
+
+### Clarify ownership of personal miniature photographs in About
+
+- Add a dedicated Miniature Photography section to the About page explaining that the miniature photos feature the creator's personally owned models and independently produced photography, not official Games Workshop product photographs.
+- Affirm that the physical miniatures and original photography do not transfer any copyright, trademark, design, or character rights belonging to Games Workshop or other rights holders.
+- Preserve the Games Workshop disclaimer, other About sections, navigation, privacy and gameplay. Update the historic IP asset audit with a dated author-provided provenance clarification without expanding it to maps, backgrounds, or other imagery.
+- Refresh app shell, service-worker cache, and version labels to v10.0.174.
 
 ## v10.0.173
 
