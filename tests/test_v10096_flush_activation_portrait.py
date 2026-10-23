@@ -53,21 +53,17 @@ def test_movement_frame_is_pulled_up_to_portrait_boundary():
 
 def test_low_opacity_background_is_hard_clamped_after_sharpening():
     source = activation_source()
-    assert 'result="tightKey"' in source
-    assert '<feFuncA type="table" tableValues="0 0 0 0 .2 .65 .9 1 1"' in source
-    assert 'result="sharpened"' in source
-    assert '<feComposite in="sharpened" in2="tightKey" operator="in" result="finalPortrait"' in source
-
+    assert "tightKey" not in source
+    assert "sharpened" not in source
+    assert "<feComposite" not in source
+    assert "const resolvedPortraitMarkup=portraitMarkup;" in source
 
 def test_existing_photoshop_colorization_and_high_res_source_remain_intact():
     source = activation_source()
     assert 'viewBox="0 0 384 384"' in source
-    assert 'result="grayKeyed"' in source
-    assert 'result="colorized"' in source
-    assert 'tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"' in source
-    assert 'tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"' in source
-    assert 'tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"' in source
-
+    assert "deathwatchPortraitImage(activation.operativeId)" in source
+    assert "grayKeyed" not in source
+    assert "colorized" not in source
 
 def test_change_remains_experimental_deathwatch_only():
     source = APP[
