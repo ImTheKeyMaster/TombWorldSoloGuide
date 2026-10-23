@@ -32,13 +32,12 @@ def test_release_surfaces_are_v10089_or_newer():
 
 def test_activation_portrait_is_deathwatch_experimental_only():
     source = activation_source()
-    assert "portraitUrl:document.documentElement.dataset.ui==='tomb'" in source
+    assert "portraitMarkup:document.documentElement.dataset.ui==='tomb'" in source
     assert "selectedPlayerTeamName().toLowerCase()==='deathwatch'" in source
-    assert "?experimentalDeathwatchActivationImage(activation.operativeId):''" in source
-    assert "portraitUrl=''" in source
+    assert "deathwatchPortraitImage(activation.operativeId)" in source
+    assert "portraitUrl" not in source
     assert "has-operative-portrait" in source
     assert "experimental-activation-portrait" in source
-
 
 def test_activation_portrait_is_decorative_and_noninteractive():
     source = activation_source()
@@ -52,14 +51,13 @@ def test_activation_portrait_is_decorative_and_noninteractive():
 def test_portrait_uses_alpha_cutout_instead_of_css_blending():
     source = activation_source()
     block = portrait_css()
-    assert 'id="experimentalActivationPortraitCutout"' in source
-    assert "<feColorMatrix" in source
-    assert "<feComponentTransfer" in source
-    assert '<feFuncA type="linear"' in source
+    assert 'class="experimental-activation-portrait-svg"' in source
+    assert 'href="${escapeHtml(deathwatchPortraitImage(activation.operativeId))}"' in source
+    assert "experimentalActivationPortraitCutout" not in source
+    assert "feColorMatrix" not in source
     assert "mix-blend-mode" not in block
     assert "filter:grayscale" not in block
     assert "mask-image:linear-gradient" not in block
-
 
 def test_portrait_has_its_own_header_column_and_does_not_cover_controls():
     block = portrait_css()
@@ -82,4 +80,6 @@ def test_portrait_has_its_own_header_column_and_does_not_cover_controls():
 
 def test_current_mode_activation_has_no_portrait_by_default():
     source = activation_source()
-    assert "portraitUrl=''" in source
+    assert "portraitMarkup=''" in source
+    assert "portraitUrl" not in source
+    assert "deathwatchPortraitImage(activation.operativeId)" in source
