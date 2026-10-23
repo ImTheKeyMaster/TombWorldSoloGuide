@@ -47,17 +47,13 @@ def test_black_source_background_is_converted_to_alpha():
     source = activation_source()
     block = portrait_css()
     portrait = block.split(
-        'html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{',
-        1,
+        'html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{', 1
     )[1].split("}", 1)[0]
     assert "background:transparent" in portrait
-    assert 'result="grayKeyed"' in source
-    assert 'slope="1.08"' in source
-    assert 'intercept="-.01"' in source
+    assert "deathwatchPortraitImage(activation.operativeId)" in source
+    assert "grayKeyed" not in source
+    assert "feComponentTransfer" not in source
     assert 'mix-blend-mode:lighten' not in block
-    assert 'contrast(1.65)' not in block
-    assert 'grayscale(1)' not in block
-
 
 def test_portrait_polish_remains_experimental_only():
     block = portrait_css()
