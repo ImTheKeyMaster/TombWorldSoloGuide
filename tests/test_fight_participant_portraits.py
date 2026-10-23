@@ -23,7 +23,7 @@ def test_correct_existing_images_using_participant_side_and_id():
     assert "participant.side==='player'" in HELPER
     assert "selectedPlayerTeamName().toLowerCase()==='deathwatch'" in HELPER
     assert 'playerDefinition(participant.id)' in HELPER
-    assert 'experimentalDeathwatchGreenPortraitSvg(participant.id,' in HELPER
+    assert 'deathwatchPortraitSvg(participant.id,' in HELPER
     assert "return artwork?" in HELPER
     assert 'aria-hidden="true"' in HELPER
 

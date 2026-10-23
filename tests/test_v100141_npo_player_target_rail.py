@@ -37,7 +37,7 @@ for(const team of ['Deathwatch','Death Korps']){
   const state={npoAttackTargetId:'confidant'};
   const context={
     state,selectedPlayerTeamName:()=>team,
-    experimentalDeathwatchGreenPortraitSvg:id=>'<svg data-deathwatch="'+id+'"></svg>',
+    deathwatchPortraitSvg:id=>'<svg data-deathwatch="'+id+'"></svg>',
     playerCurrentWounds:id=>id==='confidant'?4:7,
     playerDefinition:id=>({wounds:9}),
     playerName:id=>id==='confidant'?'Confidant':'Gunner (Flamer)',

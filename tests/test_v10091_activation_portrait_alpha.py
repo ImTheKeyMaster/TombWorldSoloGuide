@@ -19,14 +19,13 @@ def test_release_is_v10091_or_newer():
 def test_activation_art_uses_svg_luminance_key_for_true_rendered_alpha():
     source = APP[
         APP.index("function renderHumanActivationShell")
-        : APP.index("function renderHumanPlayerActionPicker")
+        : APP.index("function playerSequentialStage")
     ]
     assert '<svg class="experimental-activation-portrait-svg"' in source
-    assert '<filter id="experimentalActivationPortraitCutout"' in source
-    assert '<feColorMatrix type="matrix"' in source
-    assert '<feFuncA type="linear" slope="1.08" intercept="-.01"' in source
-    assert '<image href="${escapeHtml(portraitUrl)}"' in source
-
+    assert 'href="${escapeHtml(deathwatchPortraitImage(activation.operativeId))}"' in source
+    assert "experimentalActivationPortraitCutout" not in source
+    assert "<feColorMatrix" not in source
+    assert "const resolvedPortraitMarkup=portraitMarkup;" in source
 
 def test_no_muddy_css_post_processing_remains_on_activation_portrait():
     block = CSS.split(

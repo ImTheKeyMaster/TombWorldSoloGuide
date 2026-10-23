@@ -1,4 +1,4 @@
-"""Experimental-only inline Deathwatch activation without changing Standard mode."""
+"""Inline Deathwatch activation is shared across Standard and Experimental."""
 
 from pathlib import Path
 import subprocess
@@ -28,7 +28,7 @@ const {state,setNextActivation,playerOperativesRemaining,activationSideName,
 experimentalFeaturesEnabled,activePlayerActivation,playerName,
 experimentalDeathwatchRosterMarkup,remainingPlayerOperatives,activationProgressLabel,
 escapeHtml,skipRemainingActivationsControl,activationModelLabel,readyNpos,
-isPvpMode,opponentSingularLabel,experimentalNecronRosterMarkup}=ctx;
+isPvpMode,opponentSingularLabel,experimentalNecronRosterMarkup,document}=ctx;
 ${body};
 return nextStepCard;
 `);
@@ -37,7 +37,7 @@ function card({experimental=false,team='Deathwatch',side='player',active=null,co
     npoActivated:1,initiative:'player'};
   return create({state,setNextActivation:()=>{},playerOperativesRemaining:()=>count,
     activationSideName:x=>x==='player'?team:'Necron',
-    experimentalFeaturesEnabled:()=>experimental,activePlayerActivation:()=>active,
+    experimentalFeaturesEnabled:()=>experimental,document:{documentElement:{dataset:{ui:'tomb'}}},activePlayerActivation:()=>active,
     playerName:id=>id,
     experimentalDeathwatchRosterMarkup:(ids,options)=>`<div id="experimentalInlineDeathwatchPicker">ROSTER ${ids.length},${options.inline}</div>`,
     remainingPlayerOperatives:()=>Array.from({length:count},(_,i)=>String(i)),
@@ -50,8 +50,8 @@ function card({experimental=false,team='Deathwatch',side='player',active=null,co
 }
 const check=(x,message)=>{if(!x)throw Error(message);};
 const standard=card();
-check(standard.includes('id="playerActivation"')&&!standard.includes('experimentalInlineDeathwatchPicker'),
-  'Standard mode no longer shows its existing activation button');
+check(standard.includes('ROSTER 4,true')&&!standard.includes('id="playerActivation"'),
+  'Standard mode must show the promoted inline portrait roster');
 const inline=card({experimental:true});
 check(inline.includes('ROSTER 4,true')&&inline.includes('id="skipRemainingActivations"')&&
   !inline.includes('id="playerActivation"'), 'Experimental Deathwatch card not consolidated');
@@ -78,10 +78,10 @@ const block=(begin,end)=>source.slice(source.indexOf(begin),source.indexOf(end,s
 const markup=block('function experimentalDeathwatchRosterMarkup(', 'function showExperimentalDeathwatchRosterRail(');
 const binding=block('function bindExperimentalDeathwatchRosterRail(', 'function showPlayerActivation()');
 const check=(x,message)=>{if(!x)throw Error(message);};
-const createMarkup=new Function('warmDeathwatchRosterImages','escapeHtml',
-  'experimentalDeathwatchGreenPortraitSvg','playerName',markup+
+const createMarkup=new Function('warmDeathwatchPortraitImages','warmDeathKorpsPortraitImages',
+  'selectedPlayerTeamName','escapeHtml','playerRosterPortraitMarkup','playerName',markup+
   ';return experimentalDeathwatchRosterMarkup');
-const mk=createMarkup(()=>{},String,id=>'<svg>'+id+'</svg>',id=>id);
+const mk=createMarkup(()=>{},()=>{},()=> 'deathwatch',String,id=>'<svg>'+id+'</svg>',id=>id);
 const inline=mk(['breacher','demolisher'],{inline:true});
 const modal=mk(['breacher','demolisher']);
 check(inline.includes('id="experimentalInlineDeathwatchPicker"')&&
@@ -106,7 +106,7 @@ const root={id:'experimentalInlineDeathwatchPicker',querySelector:key=>elements[
   key==='[data-roster-operative]'?buttons:[]};
 const bind=new Function('deps',`
 const {$$,$,requestAnimationFrame,getComputedStyle,livePlayerOperative,playerDefinition,
- effectiveApl,playerCurrentWounds,experimentalDeathwatchGreenPortraitSvg,
+ effectiveApl,playerCurrentWounds,playerRosterPortraitMarkup,
  playerName,escapeHtml,beginPlayerActivation,activePlayerActivation,
  resumeCheckpointedGameplayContext,render}=deps;
 ${binding}
@@ -119,7 +119,7 @@ return bindExperimentalDeathwatchRosterRail;
   livePlayerOperative:id=>({id,role:'Veteran',move:6,save:3,wounds:13}),
   playerDefinition:id=>({id,role:'Veteran',apl:3,move:6,save:3,wounds:13}),
   effectiveApl:()=>3,playerCurrentWounds:()=>13,
-  experimentalDeathwatchGreenPortraitSvg:id=>'<svg>'+id+'</svg>',
+  playerRosterPortraitMarkup:id=>'<svg>'+id+'</svg>',
   playerName:id=>id,escapeHtml:String,beginPlayerActivation:(id,{refreshPlayCard=false}={})=>{
     begun=id;active=true;if(refreshPlayCard)renders++;return true;
   },
@@ -158,9 +158,9 @@ def test_release_gate_and_mobile_layout():
     assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in INDEX
     assert README.startswith(f"# Tomb World Battle Guide v{CURRENT_APP_VERSION}\n\n## v{CURRENT_APP_VERSION}")
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
-    assert "experimentalFeaturesEnabled()&&teamName.toLowerCase()==='deathwatch'" in APP
+    assert "['deathwatch','death korps'].includes(teamName.toLowerCase())&&document.documentElement.dataset.ui==='tomb'" in APP
     assert "if(inlineDeathwatchPicker)bindExperimentalDeathwatchRosterRail(inlineDeathwatchPicker);" in APP
-    assert 'html[data-experimental="on"] .experimental-inline-deathwatch-card' in CSS
+    assert 'html[data-ui="tomb"] .experimental-inline-deathwatch-card' in CSS
     assert "@media(max-width:600px)" in CSS
     assert "experimentalDeathwatchRosterMarkup(remainingPlayerOperatives(),{inline:true})" in APP
     assert "showExperimentalDeathwatchRosterRail(candidates);" in APP

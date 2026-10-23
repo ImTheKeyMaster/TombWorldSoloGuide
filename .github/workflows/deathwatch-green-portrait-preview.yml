@@ -1,4 +1,4 @@
-name: Experimental Deathwatch green portrait preview
+name: Deathwatch green portrait regressions
 
 on:
   pull_request:
@@ -46,6 +46,18 @@ jobs:
           python -m pytest -q \
             tests/test_v100166_experimental_deathwatch_supplied_portraits.py \
             tests/test_v100167_experimental_deathwatch_combat_visibility.py \
+            tests/test_v10084_experimental_roster_rail.py \
+            tests/test_v10085_roster_portrait_framing.py \
+            tests/test_v10089_experimental_activation_portrait.py \
+            tests/test_v10090_activation_portrait_polish.py \
+            tests/test_v10091_activation_portrait_alpha.py \
+            tests/test_v10092_activation_portrait_integration.py \
+            tests/test_v10093_photoshop_activation_portrait.py \
+            tests/test_v10094_highres_activation_portraits.py \
+            tests/test_v10095_activation_portrait_framing.py \
+            tests/test_v10096_flush_activation_portrait.py \
+            tests/test_v10125_deathwatch_roster_warmup.py \
+            tests/test_v10128_inline_deathwatch_activation.py \
             tests/test_v10016_experimental_ui.py \
             tests/test_v100164_experimental_death_korps_portraits.py \
             tests/test_v100145_death_korps_preload.py \

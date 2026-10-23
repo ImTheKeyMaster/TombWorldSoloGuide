@@ -30,13 +30,13 @@ def test_death_korps_only_not_deathwatch_or_roster():
     assert "Death_Korps_${filename}.png" in APP
     assert "portraitMarkup:document.documentElement.dataset.ui==='tomb'" in APP
     assert "selectedPlayerTeamName().toLowerCase()==='death korps'" in APP
-    assert "experimentalDeathwatchActivationImage(activation.operativeId)" in APP
+    assert "deathwatchPortraitImage(activation.operativeId)" in APP
     assert 'experimental-activation-portrait' in APP
     assert "Death_Korps_" in KORPS_SELECTOR
     assert "Deathwatch" not in KORPS_SELECTOR
     assert "experimental-roster" not in KORPS_SELECTOR
-    # These targeted rules must win over the older, general non-Marksman zoom.
-    assert CSS.index(KORPS_SELECTOR) > CSS.index('/* v10.0.135: Reveal the miniature')
+    # These targeted rules must win over the older general Deathwatch zoom.
+    assert CSS.index(KORPS_SELECTOR) > CSS.index('/* v10.0.135/169: Reveal the portrait')
 
 
 def test_landscape_desktop_matches_deathwatch_figure_footprint():
@@ -71,7 +71,7 @@ def test_existing_activation_scroll_and_portrait_layering_are_preserved():
     assert "overflow-y:auto;" in CSS
     assert "grid-row:1 / span 2;" in CSS
     assert "pointer-events:none;" in CSS
-    assert "experimental-activation-portrait:not(:has(image[href*=" in CSS
+    assert "experimental-activation-portrait .experimental-activation-portrait-svg" in CSS
 
 
 def test_release_version_and_cache_are_consistent():

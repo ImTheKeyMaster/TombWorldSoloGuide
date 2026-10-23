@@ -32,25 +32,21 @@ def test_release_is_v10093_or_newer():
 
 def test_portrait_grayscales_before_colorization():
     source = portrait_source()
-    gray = ".2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0"
-    assert gray in source
-    assert 'result="grayKeyed"' in source
-
+    assert "deathwatchPortraitImage(activation.operativeId)" in APP
+    assert "grayKeyed" not in source
+    assert ".2126 .7152 .0722" not in source
 
 def test_colorization_matches_hue_135_saturation_23_lightness_zero_curve():
     source = portrait_source()
-    assert 'tableValues="0 .0963 .1925 .2888 .385 .5388 .6925 .8463 1"' in source
-    assert 'tableValues="0 .1537 .3075 .4612 .615 .7112 .8075 .9037 1"' in source
-    assert 'tableValues="0 .1106 .2213 .3319 .4425 .5819 .7213 .8606 1"' in source
-
+    assert "<feFuncR" not in source
+    assert "<feFuncG" not in source
+    assert "<feFuncB" not in source
 
 def test_background_is_keyed_out_and_portrait_stays_crisp():
     source = portrait_source()
-    assert '1.063 3.576 .361 0 -.28' in source
-    assert '<feFuncA type="linear" slope="1.08" intercept="-.01"' in source
-    assert '<feConvolveMatrix in="colorized"' in source
-    assert 'kernelMatrix="0 -.05 0 -.05 1.20 -.05 0 -.05 0"' in source
-
+    assert "feConvolveMatrix" not in source
+    assert "tightKey" not in source
+    assert "const resolvedPortraitMarkup=portraitMarkup;" in source
 
 def test_portrait_is_clipped_at_movement_boundary():
     block = portrait_css()

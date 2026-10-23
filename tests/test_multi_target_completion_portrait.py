@@ -22,7 +22,7 @@ def test_portrait_is_experimental_only_and_uses_damaged_target_identity():
     assert 'sequence?.orderedTargets?' in HELPER
     assert "selectedPlayerTeamName().toLowerCase()==='deathwatch'" in HELPER
     assert 'playerDefinition(id)' in HELPER
-    assert 'experimentalDeathwatchGreenPortraitSvg(id,' in HELPER
+    assert 'deathwatchPortraitSvg(id,' in HELPER
     assert "state.roster.find(item=>item.id===id)" in HELPER
     assert 'experimentalNecronPortraitSvg(npo,' in HELPER
     assert 'aria-hidden="true"' in HELPER

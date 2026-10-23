@@ -14,10 +14,8 @@ SW = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 
 def test_promoted_tomb_ui_is_not_gated_by_the_preview_toggle():
     assert APP.count("experimentalFeaturesEnabled()") == 2  # definition + panel checkbox
-    # Previously promoted Tomb UI rules remain unconditional. Only the new
-    # Deathwatch compact-portrait preview may use the opt-in CSS attribute.
-    promoted_css = CSS.split("/* v10.0.167: Experimental-only visibility for supplied green Deathwatch", 1)[0]
-    assert '[data-experimental="on"]' not in promoted_css
+    # All approved portrait and promoted UI styling is shared by both modes.
+    assert '[data-experimental="on"]' not in CSS
     assert 'html[data-ui="tomb"] .experimental-fight-pool' in CSS
     assert 'html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > #automaticCombat{order:2}' in CSS
     assert 'html[data-ui="tomb"] .combat-resolution-modal .multi-target-attack-progress{' in CSS
@@ -74,7 +72,7 @@ def test_future_experiments_remain_independent_and_versioned():
     assert "localStorage.setItem(EXPERIMENTAL_FEATURES_KEY,'on');" in APP
     assert "localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);" in APP
     assert "experimentalUiToggle.checked=experimentalFeaturesEnabled();" in APP
-    assert "Preview the supplied green Deathwatch portraits in Experimental Mode" in INDEX
+    assert "The approved green Deathwatch portraits are now standard" in INDEX
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in SW

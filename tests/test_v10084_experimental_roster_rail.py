@@ -9,7 +9,7 @@ CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
 INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
 WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 DEATHWATCH = json.loads((ROOT / "Player_Operatives" / "DeathWatch.json").read_text(encoding="utf-8"))
-ASSET_ROOT = ROOT / "Assets" / "Images" / "TombUI" / "DeathwatchRoster"
+ASSET_ROOT = ROOT / "Assets" / "Images" / "TombUI" / "Deathwatch"
 OPERATIVES = (
     "sergeant",
     "aegis",
@@ -38,7 +38,7 @@ def test_release_surfaces_are_v10084_or_newer():
 
 def test_roster_rail_is_strictly_experimental_and_deathwatch_only():
     picker = activation_picker_source()
-    gate = "document.documentElement.dataset.ui==='tomb'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'"
+    gate = "if(usesPlayerPortraitRail()){"
     assert gate in picker
     assert "showExperimentalDeathwatchRosterRail(candidates);" in picker
     assert picker.index("showExperimentalDeathwatchRosterRail(candidates);") < picker.index('id="humanPlayerSelection"')
@@ -70,13 +70,15 @@ def test_roster_assets_are_individual_complete_and_precached():
     definition_ids = {item["id"] for item in DEATHWATCH["operatives"]}
     assert definition_ids == set(OPERATIVES)
     for operative_id in OPERATIVES:
-        asset = ASSET_ROOT / f"{operative_id}.webp"
+        mapped = { "horde-slayer": "horder-slayer", "headtaker": "headtake" }.get(operative_id, operative_id)
+        asset = ASSET_ROOT / f"Deathwatch_{mapped}.png"
         assert asset.is_file(), operative_id
-        assert asset.stat().st_size > 3000, operative_id
-        worker_path = f"./Assets/Images/TombUI/DeathwatchRoster/{operative_id}.webp"
+        assert asset.stat().st_size > 100000, operative_id
+        worker_path = f"./Assets/Images/TombUI/Deathwatch/Deathwatch_{mapped}.png"
         assert worker_path in WORKER
-    assert "DeathwatchRoster/" in APP
-    assert "sprite" not in APP[APP.index("const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT") : APP.index("function showPlayerActivation")].lower()
+    assert "DEATHWATCH_PORTRAIT_ROOT" in APP
+    assert "DeathwatchRoster/" not in APP
+    assert "sprite" not in APP[APP.index("const DEATHWATCH_PORTRAIT_ROOT") : APP.index("function showPlayerActivation")].lower()
 
 
 def test_roster_rail_stays_one_row_and_fits_the_max_deathwatch_roster():
