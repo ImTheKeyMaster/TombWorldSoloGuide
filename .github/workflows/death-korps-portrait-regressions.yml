@@ -8,6 +8,7 @@ on:
       - index.html
       - tests/test_v100164_experimental_death_korps_portraits.py
       - tests/test_v100145_death_korps_preload.py
+      - tests/test_v100153_promote_combat_features.py
   push:
     branches:
       - main
@@ -16,6 +17,7 @@ on:
       - service-worker.js
       - index.html
       - tests/test_v100164_experimental_death_korps_portraits.py
+      - tests/test_v100153_promote_combat_features.py
   workflow_dispatch:
 
 jobs:
