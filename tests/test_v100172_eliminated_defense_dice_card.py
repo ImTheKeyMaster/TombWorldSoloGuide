@@ -1,4 +1,4 @@
-"""Check Experimental elimination styling targets Defense Dice, not the outer result."""
+"""Check promoted elimination styling targets Defense Dice in both Tomb modes."""
 
 from pathlib import Path
 import subprocess
@@ -10,7 +10,7 @@ APP = (ROOT / "app.js").read_text(encoding="utf-8")
 CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
 
 
-def test_defense_dice_card_receives_elimination_status_in_experimental_only():
+def test_defense_dice_card_receives_elimination_status_in_both_tomb_modes():
     script = r"""
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const app=fs.readFileSync('app.js','utf8');
@@ -54,8 +54,9 @@ function extractStage(html,label){
   return {classes:stage[1],html:stage[0]};
 }
 const exp=api('tomb','on'),standard=api('tomb','off'),classic=api('classic','on');
+for(const render of [exp,standard]){
 for(const type of ['shoot','melee']){
-  const output=exp({...wounded,attackType:type},{animate:false,showParticipants:false});
+  const output=render({...wounded,attackType:type},{animate:false,showParticipants:false});
   const attacker=extractStage(output,'ATTACK DICE');
   const defender=extractStage(output,'DEFENSE DICE');
   assert.match(output,/^<section class="combat-resolution" aria-label="Combat resolution">/,
@@ -70,18 +71,21 @@ for(const type of ['shoot','melee']){
   assert.doesNotMatch(output,/elimination-banner|eliminated-badge/);
   assert.equal((output.match(/>ELIMINATED<\/strong>/g)||[]).length,1);
   assert.match(output,/Wounds/,'preserve damage and wounds');
-}
+}}
 const animated=exp(wounded,{animate:true});
 assert.match(extractStage(animated,'DEFENSE DICE').html,/animated-roll/);
 assert.match(extractStage(animated,'DEFENSE DICE').classes,/experimental-eliminated-card/);
+assert.match(extractStage(standard(wounded,{animate:true}),'DEFENSE DICE').classes,/experimental-eliminated-card/);
 for(const output of [
  exp({...wounded,before:3,after:1},{animate:false}),
- exp({...wounded,before:0,after:0},{animate:false})
+ exp({...wounded,before:0,after:0},{animate:false}),
+ standard({...wounded,before:3,after:1},{animate:false}),
+ standard({...wounded,before:0,after:0},{animate:false})
 ]){
   assert.doesNotMatch(output,/experimental-eliminated-card|experimental-eliminated-label/);
   assert.doesNotMatch(extractStage(output,'DEFENSE DICE').html,/ELIMINATED/);
 }
-for(const render of [standard,classic]){
+for(const render of [classic]){
   const output=render(wounded,{animate:false});
   assert.match(output,/elimination-banner/,'previous mode must retain its banner');
   assert.doesNotMatch(output,/experimental-eliminated-card|experimental-eliminated-label/);
@@ -91,6 +95,8 @@ const tabletop=exp({...wounded,recordedOutcome:true},{animate:false});
 assert.match(tabletop,/TABLETOP RESOLUTION/);
 assert.doesNotMatch(tabletop,/experimental-eliminated-card/);
 assert.match(tabletop,/>ELIMINATED<\/strong>/,'manual tabletop results still announce elimination');
+assert.equal(standard({...wounded,recordedOutcome:true},{animate:false}),tabletop,
+ 'recorded tabletop elimination is the same in Standard and Experimental');
 """
     result = subprocess.run(
         ["node", "-e", script], cwd=ROOT, text=True, capture_output=True, timeout=30
@@ -99,12 +105,13 @@ assert.match(tabletop,/>ELIMINATED<\/strong>/,'manual tabletop results still ann
 
 
 def test_scoped_css_and_unmodified_legacy_elimination_surfaces():
-    preview = CSS.split("/* v10.0.171: Preview a consistent", 1)[1]
-    assert 'html[data-ui="tomb"][data-experimental="on"] .combat-stage.experimental-eliminated-card' in preview
+    preview = CSS.split("/* v10.0.171/173: Approved text-first", 1)[1]
+    assert 'html[data-ui="tomb"] .combat-stage.experimental-eliminated-card' in preview
+    assert '[data-experimental="on"]' not in preview
     assert '.combat-resolution.experimental-eliminated-card' not in preview
     assert "border:2px solid var(--danger,#ef6b6b)" in preview
     assert 'background:rgba(125,25,25,.2)' not in preview
-    assert 'html[data-ui="tomb"][data-experimental="on"] .experimental-eliminated-card .experimental-eliminated-label' in preview
+    assert 'html[data-ui="tomb"] .experimental-eliminated-card .experimental-eliminated-label' in preview
     assert '.fight-result-card.experimental-eliminated-card' in preview
     assert '.attack-confirmation-card.experimental-eliminated-card' in preview
     assert "background:rgba(0,0,0,.18)" in CSS

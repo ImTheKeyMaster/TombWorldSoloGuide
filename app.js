@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.172';
+  const APP_VERSION = '10.0.173';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5866,7 +5866,7 @@ function showPlayerActivation(){
   }
 
   function renderEliminationSummary(attack){
-    if(!newlyEliminated(attack)||document.documentElement.dataset.ui==='tomb'&&document.documentElement.dataset.experimental==='on')return '';
+    if(!newlyEliminated(attack)||document.documentElement.dataset.ui==='tomb')return '';
     const side=attack.side==='player'?'PLAYER':'NPO';
     return `<section class="elimination-banner" aria-label="${side} eliminated">
       <span class="elimination-icon" aria-hidden="true">☠</span>
@@ -5896,21 +5896,21 @@ function showPlayerActivation(){
 
   function renderAttackSummary(attack,{portraitHtml=''}={}){
     const lethal=newlyEliminated(attack);
-    const experimentalElimination=lethal&&document.documentElement.dataset.ui==='tomb'&&document.documentElement.dataset.experimental==='on';
+    const tombElimination=lethal&&document.documentElement.dataset.ui==='tomb';
     const hot=attack.hot;
     const hotSummary=hot?`<div class="summary-box hot-attack-summary"><strong>D6 Roll: ${hot.roll}</strong><p>${hot.damage?`Attacker suffered ${hot.damage} damage (${hot.woundsBefore} → ${hot.woundsAfter} wounds).`:'Attacker suffered no damage.'}</p></div>`:'';
-    return `<section class="attack-confirmation-card ${lethal?'eliminated':''}${portraitHtml?' has-target-portrait':''}${experimentalElimination?' experimental-eliminated-card':''}">
+    return `<section class="attack-confirmation-card ${lethal?'eliminated':''}${portraitHtml?' has-target-portrait':''}${tombElimination?' experimental-eliminated-card':''}">
       ${portraitHtml}
       <div class="attack-confirmation-heading">
         <small>${attack.attackType==='shoot'?'SHOOTING':'MELEE'}</small>
-        ${lethal&&!experimentalElimination?'<span class="eliminated-badge">☠ ELIMINATED</span>':''}
+        ${lethal&&!tombElimination?'<span class="eliminated-badge">☠ ELIMINATED</span>':''}
       </div>
       <strong class="attack-confirmation-target">${escapeHtml(attack.targetName)}</strong>
       <div class="attack-confirmation-stats">
         <div><small>Damage</small><strong>${attack.damage}</strong></div>
         <div><small>Wounds</small><strong>${attack.before} → <span class="${lethal?'zero-wounds':''}">${attack.after}</span></strong></div>
       </div>
-      ${experimentalElimination?'<strong class="experimental-eliminated-label">ELIMINATED</strong>':''}
+      ${tombElimination?'<strong class="experimental-eliminated-label">ELIMINATED</strong>':''}
       ${hotSummary}
     </section>`;
   }
@@ -5961,14 +5961,14 @@ function showPlayerActivation(){
   }
 
   function renderCombatResolution(combat,{pending=false,animate=true,showParticipants=true}={}){
-    const experimentalElimination=newlyEliminated(combat)&&document.documentElement.dataset.ui==='tomb'&&document.documentElement.dataset.experimental==='on';
+    const tombElimination=newlyEliminated(combat)&&document.documentElement.dataset.ui==='tomb';
     const elimination=renderEliminationSummary({
       ...combat,side:combat.defenderSide,targetName:combat.defenderName
     });
     const diceStages=combat.recordedOutcome
       ? '<div class="combat-stage"><small>TABLETOP RESOLUTION</small><p>Physical dice and retained successes resolved by the player.</p></div>'
       : combatDiceStageHtml('attacker','ATTACK DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-attack-dice>${combat.attackDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join('')}</div>`,shootingRulesAppliedHtml(combat)?'':severeAppliedHtml(combat.attackDice,combat.severeApplied))
-        +combatDiceStageHtml('defender','DEFENSE DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No defense dice rolled</span>'}</div>`,combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':'',experimentalElimination);
+        +combatDiceStageHtml('defender','DEFENSE DICE',`<div class="dice-row ${animate?'animated-roll':'settled'}" data-combat-save-dice>${combat.saveDice.length?combat.saveDice.map(d=>animate?rollingDieHtml():dieHtml(d)).join(''):'<span class="muted">No defense dice rolled</span>'}</div>`,combat.coverRetained?'<span class="cover-retain">+ 1 retained normal cover save</span>':'',tombElimination);
     return `<section class="combat-resolution" aria-label="Combat resolution">
       ${showParticipants?`<div class="damage-summary combat-participants">
         <div><small>Attacker</small><strong>${escapeHtml(combat.attackerName)}</strong></div>
@@ -5988,7 +5988,7 @@ function showPlayerActivation(){
         <div><small>${pending?'Pending damage':'Total damage'}</small><strong>${combat.damage}</strong></div>
         <div><small>Wounds</small><strong>${combat.before} → ${combat.after}</strong></div>
       </div>
-      ${experimentalElimination&&combat.recordedOutcome?'<strong class="experimental-eliminated-label">ELIMINATED</strong>':''}
+      ${tombElimination&&combat.recordedOutcome?'<strong class="experimental-eliminated-label">ELIMINATED</strong>':''}
     </section>`;
   }
 
@@ -7924,8 +7924,8 @@ function showPlayerActivation(){
   }
   function fightResultParticipantHtml(participant,role){
     const portrait=fightParticipantPortrait(participant,role);
-    const experimentalElimination=participant.incapacitated&&document.documentElement.dataset.ui==='tomb'&&document.documentElement.dataset.experimental==='on';
-    return `<section class="fight-result-card${portrait?' has-fight-portrait':''}${experimentalElimination?' experimental-eliminated-card':''}" aria-label="${escapeHtml(participant.name)}, ${role} participant">${portrait}<h3>${escapeHtml(participant.name)}</h3><dl><div><dt>Damage Dealt</dt><dd>${participant.damageDealt}</dd></div><div><dt>Wounds</dt><dd>${participant.before} <span aria-hidden="true">→</span><span class="sr-only">to</span> ${participant.after}</dd></div></dl>${participant.incapacitated?'<strong class="fight-eliminated">ELIMINATED</strong>':''}</section>`;
+    const tombElimination=participant.incapacitated&&document.documentElement.dataset.ui==='tomb';
+    return `<section class="fight-result-card${portrait?' has-fight-portrait':''}${tombElimination?' experimental-eliminated-card':''}" aria-label="${escapeHtml(participant.name)}, ${role} participant">${portrait}<h3>${escapeHtml(participant.name)}</h3><dl><div><dt>Damage Dealt</dt><dd>${participant.damageDealt}</dd></div><div><dt>Wounds</dt><dd>${participant.before} <span aria-hidden="true">→</span><span class="sr-only">to</span> ${participant.after}</dd></div></dl>${participant.incapacitated?'<strong class="fight-eliminated">ELIMINATED</strong>':''}</section>`;
   }
   function acknowledgeFightResult(fight){
     fight.resultAcknowledged=true;save();

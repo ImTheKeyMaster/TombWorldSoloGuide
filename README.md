@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.172
+# Tomb World Battle Guide v10.0.173
+
+## v10.0.173
+
+### Promote approved elimination styling to Standard
+
+- Make the approved red outline and prominent uppercase ELIMINATED label standard on Fight Result participants, eliminated Defense Dice cards, and chained/multi-target attack summaries in Tomb UI.
+- Keep the eliminated defender's border on the Defense Dice card, not the surrounding shooting/combat result; retain neutral dark card backgrounds without the old badge or redundant elimination banner.
+- Retain an elimination label for manually recorded tabletop resolution where no Defense Dice card is rendered.
+- Preserve existing Classic presentation, combat mechanics, dice animation, portraits, wounds, saves, and battle history. Standard and Experimental now share the approved appearance; Experimental remains available for future enhancements.
 
 ## v10.0.172
 
