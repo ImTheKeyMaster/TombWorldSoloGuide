@@ -2844,21 +2844,21 @@ html[data-ui="tomb"] .combat-resolution-modal .multi-target-attack-progress ~ #c
   html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > .multi-target-attack-progress{order:2}
 }
 
-/* v10.0.167: Experimental-only visibility for supplied green Deathwatch
-   cutouts in compact combat cards. Text, masks and positioning stay intact;
-   other factions and Standard use the approved baseline. */
+/* v10.0.167-168: Tune supplied Deathwatch portrait contrast to match the
+   neighboring Necron art in combat cards. Keep the original framing and
+   masks; only Experimental Deathwatch is affected. */
 html[data-ui="tomb"][data-experimental="on"] .fight-portrait.supplied-deathwatch-portrait{
-  opacity:.76;
+  opacity:.52;
 }
 html[data-ui="tomb"][data-experimental="on"] .fight-portrait.supplied-deathwatch-portrait .fight-portrait-artwork{
-  filter:brightness(1.3) contrast(1.08);
+  filter:none;
 }
 html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .fight-portrait.supplied-deathwatch-portrait{
-  opacity:.70;
+  opacity:.38;
 }
 @media(max-width:390px){
-  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .fight-portrait.supplied-deathwatch-portrait{opacity:.65}
+  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .fight-portrait.supplied-deathwatch-portrait{opacity:.36}
 }
 @media(max-width:374px){
-  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .fight-portrait.supplied-deathwatch-portrait{opacity:.60}
+  html[data-ui="tomb"][data-experimental="on"] .experimental-fight-pool .fight-portrait.supplied-deathwatch-portrait{opacity:.34}
 }
