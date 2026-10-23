@@ -40,7 +40,7 @@ def test_experimental_playground_is_separate_from_standard_ui():
     assert "dataset.ui=" not in setter
     assert "experimentalUiToggle.checked=experimentalFeaturesEnabled();" in APP
     assert "Experimental Features" in INDEX
-    assert "Preview the supplied green Deathwatch portraits in Experimental Mode" in INDEX
+    assert "The approved green Deathwatch portraits are now standard" in INDEX
 
 
 def test_hidden_version_tap_access_still_works_and_saves_are_unaffected():
