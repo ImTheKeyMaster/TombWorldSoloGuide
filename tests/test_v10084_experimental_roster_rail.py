@@ -38,7 +38,7 @@ def test_release_surfaces_are_v10084_or_newer():
 
 def test_roster_rail_is_strictly_experimental_and_deathwatch_only():
     picker = activation_picker_source()
-    gate = "document.documentElement.dataset.ui==='tomb'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'"
+    gate = "if(usesPlayerPortraitRail()){"
     assert gate in picker
     assert "showExperimentalDeathwatchRosterRail(candidates);" in picker
     assert picker.index("showExperimentalDeathwatchRosterRail(candidates);") < picker.index('id="humanPlayerSelection"')
