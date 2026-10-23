@@ -30,7 +30,7 @@ def test_death_korps_only_not_deathwatch_or_roster():
     assert "Death_Korps_${filename}.png" in APP
     assert "portraitMarkup:document.documentElement.dataset.ui==='tomb'" in APP
     assert "selectedPlayerTeamName().toLowerCase()==='death korps'" in APP
-    assert "experimentalDeathwatchActivationImage(activation.operativeId)" in APP
+    assert "deathwatchPortraitImage(activation.operativeId)" in APP
     assert 'experimental-activation-portrait' in APP
     assert "Death_Korps_" in KORPS_SELECTOR
     assert "Deathwatch" not in KORPS_SELECTOR
