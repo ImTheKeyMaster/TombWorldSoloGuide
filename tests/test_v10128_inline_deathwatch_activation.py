@@ -78,10 +78,10 @@ const block=(begin,end)=>source.slice(source.indexOf(begin),source.indexOf(end,s
 const markup=block('function experimentalDeathwatchRosterMarkup(', 'function showExperimentalDeathwatchRosterRail(');
 const binding=block('function bindExperimentalDeathwatchRosterRail(', 'function showPlayerActivation()');
 const check=(x,message)=>{if(!x)throw Error(message);};
-const createMarkup=new Function('warmDeathwatchRosterImages','escapeHtml',
-  'experimentalDeathwatchGreenPortraitSvg','playerName',markup+
+const createMarkup=new Function('warmDeathwatchPortraitImages','warmDeathKorpsPortraitImages',
+  'selectedPlayerTeamName','escapeHtml','playerRosterPortraitMarkup','playerName',markup+
   ';return experimentalDeathwatchRosterMarkup');
-const mk=createMarkup(()=>{},String,id=>'<svg>'+id+'</svg>',id=>id);
+const mk=createMarkup(()=>{},()=>{},()=> 'deathwatch',String,id=>'<svg>'+id+'</svg>',id=>id);
 const inline=mk(['breacher','demolisher'],{inline:true});
 const modal=mk(['breacher','demolisher']);
 check(inline.includes('id="experimentalInlineDeathwatchPicker"')&&
@@ -106,7 +106,7 @@ const root={id:'experimentalInlineDeathwatchPicker',querySelector:key=>elements[
   key==='[data-roster-operative]'?buttons:[]};
 const bind=new Function('deps',`
 const {$$,$,requestAnimationFrame,getComputedStyle,livePlayerOperative,playerDefinition,
- effectiveApl,playerCurrentWounds,experimentalDeathwatchGreenPortraitSvg,
+ effectiveApl,playerCurrentWounds,playerRosterPortraitMarkup,
  playerName,escapeHtml,beginPlayerActivation,activePlayerActivation,
  resumeCheckpointedGameplayContext,render}=deps;
 ${binding}
@@ -119,7 +119,7 @@ return bindExperimentalDeathwatchRosterRail;
   livePlayerOperative:id=>({id,role:'Veteran',move:6,save:3,wounds:13}),
   playerDefinition:id=>({id,role:'Veteran',apl:3,move:6,save:3,wounds:13}),
   effectiveApl:()=>3,playerCurrentWounds:()=>13,
-  experimentalDeathwatchGreenPortraitSvg:id=>'<svg>'+id+'</svg>',
+  playerRosterPortraitMarkup:id=>'<svg>'+id+'</svg>',
   playerName:id=>id,escapeHtml:String,beginPlayerActivation:(id,{refreshPlayCard=false}={})=>{
     begun=id;active=true;if(refreshPlayCard)renders++;return true;
   },
