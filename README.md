@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.169
+# Tomb World Battle Guide v10.0.170
+
+## v10.0.170
+
+### Restore SVG portraits when the iOS PWA resumes
+
+- Repaint external SVG image elements after returning from background, restoring operative portraits without rotating the phone.
+- Listen for visibility changes, back/forward cache restores, and window focus; debounce foreground events and skip work while hidden.
+- Replace only decorative SVG image nodes; preserve active activation/combat state, AP, scroll position, user inputs, portrait styling, image URLs, and offline resources.
+- Include a foreground/background regression harness. Standard and Experimental modes share the fix.
 
 ## v10.0.169
 

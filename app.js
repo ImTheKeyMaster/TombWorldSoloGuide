@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.169';
+  const APP_VERSION = '10.0.170';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2469,6 +2469,31 @@ document.addEventListener('touchend',function(e){
   else operativeStatusMedia.addListener?.(scheduleOperativeStatusLayout);
   window.addEventListener('resize',()=>{syncAppHeaderHeight();scheduleOperativeStatusLayout();});
   window.addEventListener('orientationchange',()=>{syncAppHeaderHeight();scheduleOperativeStatusLayout();});
+
+  // iOS PWA resume can leave external SVG <image> resources visually blank
+  // until a viewport resize. Recreate only those paint nodes on foreground,
+  // preserving the active dialog, scroll position and unsaved game UI state.
+  let svgPortraitResumeTimer=null;
+  function refreshSvgPortraitsAfterResume(){
+    svgPortraitResumeTimer=null;
+    if(document.visibilityState==='hidden')return;
+    document.querySelectorAll('svg image[href]').forEach(image=>{
+      image.replaceWith(image.cloneNode(true));
+    });
+  }
+  function scheduleSvgPortraitRefresh(){
+    if(document.visibilityState==='hidden')return;
+    clearTimeout(svgPortraitResumeTimer);
+    svgPortraitResumeTimer=setTimeout(refreshSvgPortraitsAfterResume,100);
+  }
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible')scheduleSvgPortraitRefresh();
+  });
+  window.addEventListener('pageshow',event=>{
+    if(event.persisted)scheduleSvgPortraitRefresh();
+  });
+  window.addEventListener('focus',scheduleSvgPortraitRefresh);
+
 
   function normalizeSarcophagusControllers(value,max=livingPlayerOperativeCount()){
     const limit=Math.max(0,Math.round(Number(max)||0));
