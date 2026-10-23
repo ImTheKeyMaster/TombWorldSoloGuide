@@ -1,0 +1,51 @@
+name: Experimental Deathwatch green portrait preview
+
+on:
+  pull_request:
+    paths:
+      - app.js
+      - index.html
+      - service-worker.js
+      - tests/test_v100166_experimental_deathwatch_supplied_portraits.py
+      - tests/test_v10016_experimental_ui.py
+  push:
+    branches:
+      - main
+    paths:
+      - app.js
+      - index.html
+      - service-worker.js
+      - tests/test_v100166_experimental_deathwatch_supplied_portraits.py
+  workflow_dispatch:
+
+jobs:
+  verify-deathwatch-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate JavaScript syntax
+        run: |
+          node --check app.js
+          node --check service-worker.js
+      - name: Install test runner
+        run: python -m pip install pytest
+      - name: Run new preview and existing combat and portrait regressions
+        run: |
+          python -m pytest -q \
+            tests/test_v100166_experimental_deathwatch_supplied_portraits.py \
+            tests/test_v10016_experimental_ui.py \
+            tests/test_v100164_experimental_death_korps_portraits.py \
+            tests/test_v100145_death_korps_preload.py \
+            tests/test_v10089_experimental_activation_portrait.py \
+            tests/test_v10092_activation_portrait_integration.py \
+            tests/test_v10094_highres_activation_portraits.py \
+            tests/test_fight_participant_portraits.py \
+            tests/test_multi_target_completion_portrait.py \
+            tests/test_v100153_promote_combat_features.py \
+            tests/test_v8629_player_multitarget_combat_resume.py

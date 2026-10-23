@@ -71,7 +71,7 @@ def test_future_experiments_remain_independent_and_versioned():
     assert "localStorage.setItem(EXPERIMENTAL_FEATURES_KEY,'on');" in APP
     assert "localStorage.removeItem(EXPERIMENTAL_FEATURES_KEY);" in APP
     assert "experimentalUiToggle.checked=experimentalFeaturesEnabled();" in APP
-    assert "No preview-only features are currently enabled." in INDEX
+    assert "Preview the supplied green Deathwatch portraits in Experimental Mode" in INDEX
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in SW

@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.165
+# Tomb World Battle Guide v10.0.166
+
+## v10.0.166
+
+### Preview supplied green Deathwatch portraits in Experimental Mode
+
+- Experimental Mode uses the 11 newly supplied transparent green portraits from `Assets/Images/TombUI/Deathwatch/` in the operative roster rail, detail selection, activation, combat/Fight, and multi-target results, without the older SVG green-key filter.
+- Match the supplied `Deathwatch_headtake.png` and `Deathwatch_horder-slayer.png` to the existing `headtaker` and `horde-slayer` operative IDs without changing their rules or names.
+- Standard Mode retains the original DeathwatchRoster and DeathwatchActivation photos and green SVG treatment, including the existing Sergeant SVG. The old folders remain in place for a later promotion decision.
+- Warm the appropriate portrait set when Deathwatch is selected. Precache the 11 new preview portraits for offline use. Preserve existing Death Korps, Necron, gameplay, state and navigation behavior.
+- Release V10.0.166 with the independent Experimental Mode toggle.
 
 ## v10.0.165
 
