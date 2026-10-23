@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.166
+# Tomb World Battle Guide v10.0.167
+
+## v10.0.167
+
+### Brighten supplied Deathwatch portraits in Experimental combat cards
+
+- Give the supplied green Deathwatch PNG portraits higher contrast and opacity in Shooting Attack/Defense dice cards, Fight Roll/Result cards and compact Fight Resolution participant cards, only when Experimental Mode is enabled.
+- Preserve the approved portrait framing, masks, text layering and interaction, and keep the roster selection, detail and activation portraits unchanged.
+- Standard Mode, other Kill Teams, Necron portraits and Classic UI continue using the original rendering. No combat mechanics or save formats change.
+- Update app and PWA cache version to V10.0.167.
 
 ## v10.0.166
 
