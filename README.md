@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.170
+# Tomb World Battle Guide v10.0.171
+
+## v10.0.171
+
+### Preview consistent elimination cards in Experimental mode
+
+- Experimental Fight Result, Resolve Combat, and chained/multi-target attack summary cards now show a thin red outline with a prominent all-caps ELIMINATED label inside the affected card.
+- Remove the separate elimination banner/pill on Experimental combat screens and the small eliminated badge on Experimental multi-target summaries.
+- Keep the original dark card fill instead of the red-tinted eliminated background. Retain damage, wounds, dice, portraits, accessibility and game progression.
+- Standard and Classic keep their pre-existing elimination presentation; the new preview requires the Experimental toggle.
 
 ## v10.0.170
 

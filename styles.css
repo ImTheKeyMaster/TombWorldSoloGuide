@@ -2856,3 +2856,33 @@ html[data-ui="tomb"] .experimental-fight-pool .fight-portrait.deathwatch-portrai
 @media(max-width:374px){
   html[data-ui="tomb"] .experimental-fight-pool .fight-portrait.deathwatch-portrait{opacity:.34}
 }
+
+
+/* v10.0.171: Preview a consistent, text-first elimination state.
+   Standard and Classic retain their current result cards and banners. */
+html[data-ui="tomb"][data-experimental="on"] .fight-result-card.experimental-eliminated-card,
+html[data-ui="tomb"][data-experimental="on"] .attack-confirmation-card.experimental-eliminated-card,
+html[data-ui="tomb"][data-experimental="on"] .combat-resolution.experimental-eliminated-card{
+  border:2px solid var(--danger,#ef6b6b);
+}
+html[data-ui="tomb"][data-experimental="on"] .attack-confirmation-card.experimental-eliminated-card{
+  background:rgba(16,51,34,.45);
+}
+html[data-ui="tomb"][data-experimental="on"] .combat-resolution.experimental-eliminated-card{
+  padding:12px;
+  border-radius:12px;
+  background:rgba(0,0,0,.18);
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-eliminated-card .experimental-eliminated-label,
+html[data-ui="tomb"][data-experimental="on"] .fight-result-card.experimental-eliminated-card .fight-eliminated{
+  display:block;
+  position:relative;
+  z-index:1;
+  margin-top:12px;
+  color:var(--danger,#ef6b6b);
+  font-size:1.08rem;
+  font-weight:950;
+  letter-spacing:.06em;
+  line-height:1.25;
+  text-shadow:0 1px 5px #06110d;
+}
