@@ -42,7 +42,8 @@ def test_supplied_portraits_are_mapped_to_actual_deathwatch_ids_and_precached():
         assert path.is_file(), f"Missing preview image for {operative_id}: {filename}"
         assert path.stat().st_size > 100_000, filename
         assert f"'./Assets/Images/TombUI/Deathwatch/{filename}'" in WORKER
-        assert f"{operative_id}:'{filename}'" in APP
+        key = f"'{operative_id}'" if "-" in operative_id else operative_id
+        assert f"{key}:'{filename}'" in APP
     assert "DeathwatchRoster/sergeant-fixed.svg" in WORKER
     assert "DeathwatchActivation/sergeant.webp" in WORKER
     assert "const CORE_PRECACHE_ASSETS=PRECACHE_ASSETS.filter" in WORKER
