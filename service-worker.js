@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '10.0.168';
+const APP_VERSION = '10.0.169';
 const CACHE_PREFIX = 'tomb-world-battle-guide-';
 const LEGACY_CACHE_PREFIXES = ['tomb-world-solo-guide-'];
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
@@ -13,12 +13,6 @@ const PRECACHE_ASSETS = [
   './', APP_SHELL, `./analytics.js?release=${APP_VERSION}`, `./event-effects.js?v=${APP_VERSION}`, `./audio-capabilities.js?v=${APP_VERSION}`, `./narration.js?v=${APP_VERSION}`, `./narration-transcript.js?v=${APP_VERSION}`, `./ambient.js?v=${APP_VERSION}`, `./dice-sfx.js?v=${APP_VERSION}`, `./app.js?v=${APP_VERSION}`, `./mission-engine.js?v=${APP_VERSION}`, `./persistence.js?v=${APP_VERSION}`, `./deadly-encounters.js?v=${APP_VERSION}`, `./styles.css?v=${APP_VERSION}`,
   './manifest.webmanifest', './Assets/favicon.ico', './Assets/icon-180.png', './Assets/icon-192.png', './Assets/icon-512.png', './Assets/icon-1024.png', './Assets/icon-maskable-192.png', './Assets/icon-maskable-512.png', './Assets/Icons/move-to-shoot.svg', './Assets/Images/eliminated-necron-skull.png',
   './Assets/Images/defeat.png', './Assets/Images/victory.png',
-  './Assets/Images/TombUI/DeathwatchRoster/sergeant.webp', './Assets/Images/TombUI/DeathwatchRoster/sergeant-fixed.svg', './Assets/Images/TombUI/DeathwatchRoster/aegis.webp',
-  './Assets/Images/TombUI/DeathwatchRoster/breacher.webp', './Assets/Images/TombUI/DeathwatchRoster/blademaster.webp',
-  './Assets/Images/TombUI/DeathwatchRoster/marksman.webp', './Assets/Images/TombUI/DeathwatchRoster/demolisher.webp',
-  './Assets/Images/TombUI/DeathwatchRoster/horde-slayer.webp', './Assets/Images/TombUI/DeathwatchRoster/headtaker.webp',
-  './Assets/Images/TombUI/DeathwatchRoster/gunner.webp', './Assets/Images/TombUI/DeathwatchRoster/bombard.webp',
-  './Assets/Images/TombUI/DeathwatchRoster/disruptor.webp',
   './Assets/Images/TombUI/Deathwatch/Deathwatch_aegis.png',
   './Assets/Images/TombUI/Deathwatch/Deathwatch_blademaster.png',
   './Assets/Images/TombUI/Deathwatch/Deathwatch_bombard.png',
@@ -50,17 +44,6 @@ const PRECACHE_ASSETS = [
   './Assets/Images/TombUI/DeathKorps/Death_Korps_vox_operator.png',
   './Assets/Images/TombUI/DeathKorps/Death_Korps_zealot.png',
   './Assets/Images/TombUI/DeathKorps/Death_Korps_watchmaster.png',
-  './Assets/Images/TombUI/DeathwatchActivation/sergeant.webp',
-  './Assets/Images/TombUI/DeathwatchActivation/aegis.webp',
-  './Assets/Images/TombUI/DeathwatchActivation/breacher.webp',
-  './Assets/Images/TombUI/DeathwatchActivation/blademaster.webp',
-  './Assets/Images/TombUI/DeathwatchActivation/marksman.webp',
-  './Assets/Images/TombUI/DeathwatchActivation/demolisher.webp',
-  './Assets/Images/TombUI/DeathwatchActivation/horde-slayer.webp',
-  './Assets/Images/TombUI/DeathwatchActivation/headtaker.webp',
-  './Assets/Images/TombUI/DeathwatchActivation/gunner.webp',
-  './Assets/Images/TombUI/DeathwatchActivation/bombard.webp',
-  './Assets/Images/TombUI/DeathwatchActivation/disruptor.webp',
   `./Assets/Images/TombUI/NecronActivation/canoptek-macrocyte-accelerator.webp?v=${APP_VERSION}`,
   `./Assets/Images/TombUI/NecronActivation/canoptek-macrocyte-reanimator.webp?v=${APP_VERSION}`,
   `./Assets/Images/TombUI/NecronActivation/canoptek-macrocyte-warrior-1.webp?v=${APP_VERSION}`,
