@@ -7,7 +7,10 @@ on:
       - index.html
       - service-worker.js
       - tests/test_v100166_experimental_deathwatch_supplied_portraits.py
+      - tests/test_v100167_experimental_deathwatch_combat_visibility.py
+      - styles.css
       - tests/test_v10016_experimental_ui.py
+      - tests/test_v100153_promote_combat_features.py
   push:
     branches:
       - main
@@ -16,6 +19,9 @@ on:
       - index.html
       - service-worker.js
       - tests/test_v100166_experimental_deathwatch_supplied_portraits.py
+      - tests/test_v100167_experimental_deathwatch_combat_visibility.py
+      - styles.css
+      - tests/test_v100153_promote_combat_features.py
   workflow_dispatch:
 
 jobs:
@@ -39,6 +45,7 @@ jobs:
         run: |
           python -m pytest -q \
             tests/test_v100166_experimental_deathwatch_supplied_portraits.py \
+            tests/test_v100167_experimental_deathwatch_combat_visibility.py \
             tests/test_v10016_experimental_ui.py \
             tests/test_v100164_experimental_death_korps_portraits.py \
             tests/test_v100145_death_korps_preload.py \
