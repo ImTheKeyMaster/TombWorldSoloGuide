@@ -71,7 +71,7 @@ def test_existing_activation_scroll_and_portrait_layering_are_preserved():
     assert "overflow-y:auto;" in CSS
     assert "grid-row:1 / span 2;" in CSS
     assert "pointer-events:none;" in CSS
-    assert "experimental-activation-portrait:not(:has(image[href*=" in CSS
+    assert "experimental-activation-portrait .experimental-activation-portrait-svg" in CSS
 
 
 def test_release_version_and_cache_are_consistent():
