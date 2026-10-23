@@ -2529,23 +2529,22 @@ html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimenta
 }
 /* Some cutouts have more empty space below the figure than Marksman.
    Enlarge those portraits slightly while retaining the same clipped frame. */
-html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:not(:has(image[href*="/marksman.webp"])) .experimental-activation-portrait-svg{
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{
   width:200%;
   right:-19%;
 }
 @media(max-width:520px){
-  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:not(:has(image[href*="/marksman.webp"])) .experimental-activation-portrait-svg{
+  html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{
     width:210%;right:-20%;
   }
 }
 
-/* v10.0.135: Reveal the miniature beyond the old left crop, then fade the
-   newly visible pixels back toward the text. The Movement border still layers
-   above the artwork; Marksman's already-correct framing stays untouched. */
-html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:not(:has(image[href*="/marksman.webp"])){
+/* v10.0.135/169: Reveal the portrait's left silhouette, with the Movement
+   panel layered above it. All green Deathwatch PNGs share this framing. */
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait{
   clip-path:inset(-96px -96px -64px -220px);
 }
-html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:not(:has(image[href*="/marksman.webp"])) .experimental-activation-portrait-svg{
+html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait .experimental-activation-portrait-svg{
   transform:translateX(-24px);
   -webkit-mask-image:linear-gradient(to right,transparent 0%,rgba(0,0,0,.28) 7%,rgba(0,0,0,.72) 13%,#000 21%);
   mask-image:linear-gradient(to right,transparent 0%,rgba(0,0,0,.28) 7%,rgba(0,0,0,.72) 13%,#000 21%);
