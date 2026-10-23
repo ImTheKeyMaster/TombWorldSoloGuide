@@ -10,6 +10,7 @@ on:
       - tests/test_v100167_experimental_deathwatch_combat_visibility.py
       - styles.css
       - tests/test_v10016_experimental_ui.py
+      - tests/test_v100153_promote_combat_features.py
   push:
     branches:
       - main
@@ -20,6 +21,7 @@ on:
       - tests/test_v100166_experimental_deathwatch_supplied_portraits.py
       - tests/test_v100167_experimental_deathwatch_combat_visibility.py
       - styles.css
+      - tests/test_v100153_promote_combat_features.py
   workflow_dispatch:
 
 jobs:
