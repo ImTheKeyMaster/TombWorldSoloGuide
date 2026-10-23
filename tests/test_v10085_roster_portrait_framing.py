@@ -8,13 +8,13 @@ APP = (ROOT / "app.js").read_text(encoding="utf-8")
 CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
 INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
 WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
-SERGEANT = ROOT / "Assets" / "Images" / "TombUI" / "DeathwatchRoster" / "sergeant-fixed.svg"
+SERGEANT = ROOT / "Assets" / "Images" / "TombUI" / "Deathwatch" / "Deathwatch_sergeant.png"
 DEATHWATCH = json.loads((ROOT / "Player_Operatives" / "DeathWatch.json").read_text(encoding="utf-8"))
 
 
 def roster_source():
     return APP[
-        APP.index("const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT")
+        APP.index("const DEATHWATCH_PORTRAIT_ROOT")
         : APP.index("function showPlayerActivation()")
     ]
 
@@ -26,17 +26,15 @@ def test_release_surfaces_are_v10085_or_newer():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
 
 
-def test_sergeant_uses_corrected_portrait_source():
+def test_sergeant_uses_approved_green_portrait_source():
     source = roster_source()
-    assert "EXPERIMENTAL_DEATHWATCH_SERGEANT_IMAGE" in source
-    assert "sergeant-fixed.svg" in source
-    assert "if(id==='sergeant')return EXPERIMENTAL_DEATHWATCH_SERGEANT_IMAGE;" in source
+    assert "DEATHWATCH_PORTRAIT_ROOT" in source
+    assert "Deathwatch_sergeant.png" in source
     assert SERGEANT.is_file()
-    svg = SERGEANT.read_text(encoding="utf-8")
-    assert "data:image/webp;base64," in svg
-    assert 'aria-label="Sergeant"' in svg
-    assert '<image width="240" height="240"' in svg
-    assert "./Assets/Images/TombUI/DeathwatchRoster/sergeant-fixed.svg" in WORKER
+    assert SERGEANT.stat().st_size > 100000
+    assert "./Assets/Images/TombUI/Deathwatch/Deathwatch_sergeant.png" in WORKER
+    assert "DeathwatchRoster/" not in source
+    assert "DeathwatchActivation/" not in source
 
 
 def test_roster_portraits_use_bottom_aligned_contain_not_cover():
