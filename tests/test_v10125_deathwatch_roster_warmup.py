@@ -1,60 +1,60 @@
-"""Regression tests for eagerly warming Deathwatch roster thumbnails."""
+"""Approved Deathwatch green portraits are eagerly decoded and reused."""
 
 from pathlib import Path
 import subprocess
-
 from versioning import CURRENT_APP_VERSION
 
-ROOT = Path(__file__).resolve().parents[1]
-APP = (ROOT / "app.js").read_text(encoding="utf-8")
-INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
-WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
-README = (ROOT / "README.md").read_text(encoding="utf-8")
+ROOT=Path(__file__).resolve().parents[1]
+APP=(ROOT/"app.js").read_text(encoding="utf-8")
+INDEX=(ROOT/"index.html").read_text(encoding="utf-8")
+WORKER=(ROOT/"service-worker.js").read_text(encoding="utf-8")
+README=(ROOT/"README.md").read_text(encoding="utf-8")
 
 
-def test_warmups_are_started_before_activation_and_after_team_load():
-    assert "if(data.teamName?.toLowerCase()==='deathwatch')warmDeathwatchRosterImages(data.operatives.map(operative=>operative.id));" in APP
-    assert "function experimentalDeathwatchRosterMarkup(candidates,{inline=false}={}){\n    warmDeathwatchRosterImages(candidates);" in APP
-    assert "experimentalDeathwatchGreenPortraitSvg(id," in APP
-    assert "detailImage.innerHTML=experimentalDeathwatchGreenPortraitSvg(" in APP
+def test_warmup_started_on_team_load_and_roster_activation():
+    assert "if(data.teamName?.toLowerCase()==='deathwatch')warmDeathwatchPortraitImages(data.operatives.map(operative=>operative.id));" in APP
+    assert "if(selectedPlayerTeamName().toLowerCase()==='deathwatch')warmDeathwatchPortraitImages(candidates);" in APP
+    assert "function deathwatchPortraitSvg(id,svgClass='')" in APP
+    assert "detailImage.innerHTML=playerRosterPortraitMarkup(" in APP
 
 
-def test_warmup_decodes_once_keeps_images_and_can_retry_failed_downloads():
-    script = r"""
-const fs=require('node:fs');
+def test_warmup_decodes_once_reuses_images_and_retries_failures():
+    js=r"""
+const assert=require('node:assert/strict'),fs=require('node:fs');
 const source=fs.readFileSync('app.js','utf8');
-const start=source.indexOf("const EXPERIMENTAL_DEATHWATCH_ROSTER_IMAGE_ROOT=");
-const end=source.indexOf("function experimentalDeathwatchGreenPortraitSvg(",start);
-if(start<0||end<=start)throw Error('Cannot locate the Deathwatch portrait helpers');
-const section=source.slice(start,end);
-const created=[];
-class MockImage {
-  constructor(){this.decoding='';this.src='';this.onerror=null;this.decodeCalls=0;created.push(this);}
-  decode(){this.decodeCalls++;return Promise.resolve();}
+const start=source.indexOf('const DEATHWATCH_PORTRAIT_ROOT=');
+const end=source.indexOf('function deathwatchPortraitSvg(',start);
+assert(start>=0&&end>start);
+const pictures=[];
+class Image{
+ constructor(){this.decoding='';this.onerror=null;this.src='';this.decodeCalls=0;pictures.push(this);}
+ decode(){this.decodeCalls++;return Promise.resolve();}
 }
-const document={documentElement:{dataset:{ui:'tomb'}}};
-const {warmDeathwatchRosterImages:warm,cache,rosterSrc}=new Function('Image','document',section+
-  'return {warmDeathwatchRosterImages,cache:warmedDeathwatchRosterImages,rosterSrc:experimentalDeathwatchRosterImage};'
-)(MockImage,document);
+const document={documentElement:{dataset:{ui:'tomb',experimental:'off'}}};
+const api=new Function('Image','document',source.slice(start,end)+
+ '\nreturn {warm:warmDeathwatchPortraitImages,cache:warmedDeathwatchPortraitImages,url:deathwatchPortraitImage};'
+)(Image,document);
 const ids=['sergeant','aegis','bombard','demolisher'];
-warm(ids);
-if(created.length!==ids.length)throw Error('Expected one portrait per operative');
-if(!created.every(image=>image.decodeCalls===1&&image.decoding==='async'))throw Error('Missing eager decode');
-if(created[0].src!=='Assets/Images/TombUI/DeathwatchRoster/sergeant-fixed.svg')throw Error('Sergeant SVG not warmed');
-if(created[1].src!=='Assets/Images/TombUI/DeathwatchRoster/aegis.webp')throw Error('Roster WebP path incorrect');
-warm(ids);
-if(created.length!==ids.length)throw Error('Images were downloaded/decoded again');
+api.warm(ids);
+assert.equal(pictures.length,4);
+assert(pictures.every(x=>x.decoding==='async'&&x.decodeCalls===1));
+assert.equal(pictures[0].src,'Assets/Images/TombUI/Deathwatch/Deathwatch_sergeant.png');
+assert.equal(pictures[1].src,'Assets/Images/TombUI/Deathwatch/Deathwatch_aegis.png');
+api.warm(ids);
+assert.equal(pictures.length,4);
+document.documentElement.dataset.experimental='on';
+api.warm(ids);
+assert.equal(pictures.length,4,'Both modes should share cached photographs');
+pictures[1].onerror();
+assert(!api.cache.has(api.url('aegis')));
+api.warm(['aegis']);
+assert.equal(pictures.length,5);
 document.documentElement.dataset.ui='classic';
-warm(['gunner']);
-if(created.length!==ids.length)throw Error('Classic UI should not load experimental thumbnails');
-document.documentElement.dataset.ui='tomb';
-created[1].onerror();
-if(cache.has(rosterSrc('aegis')))throw Error('Failed request must be retryable');
-warm(['aegis']);
-if(created.length!==ids.length+1)throw Error('Failed portrait was not retried');
+api.warm(['gunner']);
+assert.equal(pictures.length,5);
 """
-    result = subprocess.run(["node", "-e", script], cwd=ROOT, capture_output=True, text=True)
-    assert result.returncode == 0, result.stderr
+    result=subprocess.run(["node","-e",js],cwd=ROOT,text=True,capture_output=True,timeout=30)
+    assert result.returncode==0,result.stderr or result.stdout
 
 
 def test_version_surfaces_agree():
