@@ -8067,7 +8067,7 @@ function showPlayerActivation(){
     if(!human){const choice=soloNpoFightDecision(fight,role);if(choice.type==='block')commitFightBlock(fight,role,choice.successId,choice.targetSuccessIds);else commitFightStrike(fight,role,choice.successId);renderFightResolution();return;}
     const actions=semanticFightActions(fight,role);
     const capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
-    if(document.documentElement.dataset.ui==='tomb'&&document.documentElement.dataset.experimental==='on'&&experimentalFeaturesEnabled()){
+    if(document.documentElement.dataset.ui==='tomb'&&document.documentElement.dataset.experimental==='on'){
       showModal('Fight Resolution',experimentalActionFirstFightHtml(fight,role,participant,actions,capacity));
       bindExperimentalActionFirstFight(fight,role,capacity);
       return;
