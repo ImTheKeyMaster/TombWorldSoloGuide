@@ -103,7 +103,7 @@ assert.doesNotMatch(escaped.notice,/Claws <Danger>/);
 
 
 def test_display_is_experimental_only_and_versioned():
-    assert CURRENT_APP_VERSION == "10.0.177"
+    assert CURRENT_APP_VERSION == "10.0.178"
     assert "experimentalFightBlockUnavailableHtml(fight,role,actions)" in APP
     assert "if(document.documentElement.dataset.ui==='tomb'&&document.documentElement.dataset.experimental==='on')" in APP
     assert "if(weaponHasRule(opponent.profile,'brutal')&&blocker.kind!=='critical')return [];" in APP
@@ -112,3 +112,23 @@ def test_display_is_experimental_only_and_versioned():
     assert "role=\"note\"" in APP
     assert "aria-labelledby=\"fightBlockUnavailableHeading\"" in APP
     assert "data-exp-fight-choice=\"block\"" in APP
+
+
+def test_unavailable_block_slash_is_clipped_to_shield():
+    """The slash cannot protrude beyond its shield at any rendered size."""
+    import re
+
+    icon = APP.split('function experimentalFightBlockUnavailableHtml(', 1)[1].split(
+        '  function experimentalActionFirstFightHtml(', 1
+    )[0]
+    shield = (
+        'M12 2 20 5.5V12c0 4.8-3.2 8.2-8 10-4.8-1.8-8-5.2-8-10V5.5L12 2Z'
+    )
+    assert '<clipPath id="experimentalFightBlockShieldClip">' in icon
+    assert f'<path d="{shield}"/></clipPath>' in icon
+    assert '<path d="m5 19 14-14" clip-path="url(#experimentalFightBlockShieldClip)"/>' in icon
+    assert icon.index('clip-path="url(#experimentalFightBlockShieldClip)"') < icon.rindex(
+        f'<path d="{shield}"/>'
+    ), 'Draw the shield outline above the clipped diagonal'
+    assert icon.count('experimentalFightBlockShieldClip') == 2
+    assert 'experimentalFightBlockUnavailableHtml(fight,role,actions)' in APP
