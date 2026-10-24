@@ -1,4 +1,4 @@
-"""Experimental-only unavailable Block explanation for Brutal attacks (v10.0.177)."""
+"""Experimental-only unavailable Block explanations for Fight resolution (v10.0.179)."""
 from pathlib import Path
 import subprocess
 
@@ -81,14 +81,19 @@ assert(ownCrit.actions.blocks.length>0,'Critical can Block Brutal attacks');
 assert.equal(ownCrit.notice,'');
 assert.doesNotMatch(ownCrit.card,/BLOCK UNAVAILABLE/);
 
-const onlyEnemyCrit=build({enemy:[success('enemy-critical','critical')]});
+const onlyEnemyCrit=build({enemy:[success('enemy-critical','critical')],brutal:false});
 assert.equal(onlyEnemyCrit.actions.blocks.length,0);
-assert.equal(onlyEnemyCrit.notice,'','Do not attribute ordinary critical-block restriction to Brutal');
-assert.doesNotMatch(onlyEnemyCrit.card,/BLOCK UNAVAILABLE/);
+assert.match(onlyEnemyCrit.notice,/The enemy has only critical successes/);
+assert.match(onlyEnemyCrit.notice,/You need a critical success to Block one/);
+assert.doesNotMatch(onlyEnemyCrit.notice,/Brutal/);
+assert.match(onlyEnemyCrit.card,/BLOCK UNAVAILABLE/);
 
 const enemySpent=build({enemy:[]});
-assert.equal(enemySpent.notice,'','No enemy success to Block');
-assert.doesNotMatch(enemySpent.card,/BLOCK UNAVAILABLE/);
+assert.equal(enemySpent.actions.blocks.length,0);
+assert.match(enemySpent.notice,/No unresolved enemy successes remain to cancel/);
+assert.match(enemySpent.notice,/tabletop rules also allow a Block with none remaining/);
+assert.doesNotMatch(enemySpent.notice,/Brutal/);
+assert.match(enemySpent.card,/BLOCK UNAVAILABLE/);
 
 const onlyOwnCritical=build({own:[success('own-critical','critical')]});
 assert(onlyOwnCritical.actions.blocks.length>0);
@@ -103,7 +108,7 @@ assert.doesNotMatch(escaped.notice,/Claws <Danger>/);
 
 
 def test_display_is_experimental_only_and_versioned():
-    assert CURRENT_APP_VERSION == "10.0.178"
+    assert CURRENT_APP_VERSION == "10.0.179"
     assert "experimentalFightBlockUnavailableHtml(fight,role,actions)" in APP
     assert "if(document.documentElement.dataset.ui==='tomb'&&document.documentElement.dataset.experimental==='on')" in APP
     assert "if(weaponHasRule(opponent.profile,'brutal')&&blocker.kind!=='critical')return [];" in APP

@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.178
+# Tomb World Battle Guide v10.0.179
+
+## v10.0.179
+
+### Experimental: explain all missing Block choices in Fight Resolution
+
+- Keep the existing muted shield-and-slash BLOCK UNAVAILABLE notice and show it whenever no legal Block can be offered in the Experimental action-first Fight screen.
+- Explain Brutal when an enemy Brutal weapon permits only critical Blocks and the active operative has none, including when the enemy retains only critical successes.
+- Explain the ordinary normal-versus-critical restriction when the enemy has only critical successes and the active operative only normal successes.
+- Explain when the opponent has no unresolved successes to cancel, accurately noting that tabletop rules still permit blocking without a target, whereas the Guide only offers target-canceling Blocks.
+- Never show the notice when legal Blocks are available, when the active operative has no successes, or as a replacement for normal PVP/NPO resolution. Preserve Strike/Block mechanics, dice, turn handling and Standard/Classic UI.
 
 ## v10.0.178
 

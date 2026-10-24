@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.178';
+  const APP_VERSION = '10.0.179';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8014,14 +8014,25 @@ function showPlayerActivation(){
     const opponentRole=otherFightRole(role);
     const enemy=unresolvedFightSuccesses(fight,opponentRole);
     const opponent=fight[opponentRole];
-    if(!own.some(success=>success.kind==='normal')||
-       own.some(success=>success.kind==='critical')||
-       !enemy.some(success=>success.kind==='normal')||
-       !weaponHasRule(opponent.profile,'brutal'))return '';
-    const weapon=escapeHtml(opponent.profile.name||'enemy weapon');
+    // Explain every absent Block option without implying that a rules-legal
+    // Block with no remaining enemy success is prohibited on the tabletop.
+    if(!own.length)return '';
+    let reason='';
+    if(!enemy.length){
+      reason='No unresolved enemy successes remain to cancel. The Guide only offers a Block when there is a success to cancel; tabletop rules also allow a Block with none remaining.';
+    }else if(own.some(success=>success.kind==='critical')){
+      // A critical success can Block either kind of enemy success,
+      // even against Brutal. A missing option here would be a bug.
+      return '';
+    }else if(weaponHasRule(opponent.profile,'brutal')){
+      const weapon=escapeHtml(opponent.profile.name||'enemy weapon');
+      reason=`<strong>Brutal (${weapon}):</strong> Only critical successes can Block this enemy's attacks. You have no critical successes remaining.`;
+    }else if(enemy.every(success=>success.kind==='critical')){
+      reason='The enemy has only critical successes. You need a critical success to Block one.';
+    }else return '';
     return `<section class="experimental-fight-block-unavailable" role="note" aria-labelledby="fightBlockUnavailableHeading">
       <span class="experimental-fight-block-unavailable-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><defs><clipPath id="experimentalFightBlockShieldClip"><path d="M12 2 20 5.5V12c0 4.8-3.2 8.2-8 10-4.8-1.8-8-5.2-8-10V5.5L12 2Z" fill="white" stroke="none"/></clipPath></defs><path d="m5 19 14-14" clip-path="url(#experimentalFightBlockShieldClip)"/><path d="M12 2 20 5.5V12c0 4.8-3.2 8.2-8 10-4.8-1.8-8-5.2-8-10V5.5L12 2Z"/></svg></span>
-      <div><h5 id="fightBlockUnavailableHeading">BLOCK UNAVAILABLE</h5><p><strong>Brutal (${weapon}):</strong> Only critical successes can Block this enemy's attacks. You have no critical successes remaining.</p></div>
+      <div><h5 id="fightBlockUnavailableHeading">BLOCK UNAVAILABLE</h5><p>${reason}</p></div>
     </section>`;
   }
   function experimentalActionFirstFightHtml(fight,role,participant,actions,capacity){
