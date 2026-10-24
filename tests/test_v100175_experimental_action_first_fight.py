@@ -41,7 +41,7 @@ function runCase({mode='tomb',enabled=true,shield=false,choice='strike',noBlocks
   if(shield)fight.blockCapacity.attacker=2;
   if(npoTurn)fight.turn='defender';
   const states={choices:[],markup:'',modals:0,strikes:[],blocks:[],shields:[],finished:0};
-  const confirm={disabled:true},summary={textContent:''};
+  const confirm={disabled:true};
   const modal={querySelectorAll:()=>states.choices};
   const ctx={
     state:{fightState:fight},
@@ -64,7 +64,7 @@ function runCase({mode='tomb',enabled=true,shield=false,choice='strike',noBlocks
         .map(match=>controlFromTag(match[0]));
     },
     modal,
-    $:selector=>selector==='#confirmExperimentalFightChoice'?confirm:summary,
+    $:selector=>selector==='#confirmExperimentalFightChoice'?confirm:null,
     $$:()=>[],
     commitFightStrike:(f,role,id)=>{states.strikes.push([role,id]);f.completed=true;return true;},
     commitFightBlock:(f,role,id,targets)=>{states.blocks.push([role,id,targets]);f.completed=true;return true;},
@@ -89,7 +89,15 @@ function runCase({mode='tomb',enabled=true,shield=false,choice='strike',noBlocks
   assert.match(states.markup,/experimental-fight-choice-screen/);
   assert.match(states.markup,/Choose your action/);
   assert.match(states.markup,/Confirm your action/);
-  assert.match(states.markup,/Guide handles the NPO/);
+  assert.doesNotMatch(states.markup,/>Your Turn<|experimental-fight-turn-header/);
+  assert.doesNotMatch(states.markup,/Guide handles the NPO/);
+  assert.doesNotMatch(states.markup,/experimentalFightSelectionSummary|experimental-fight-footnote/);
+  assert.match(states.markup,/Keeps your crit for a possible later Block, if you act again/);
+  assert.match(states.markup,/More damage now, but spends your critical Block option/);
+  assert.match(states.markup,/Deal 2 damage<\/span>/);
+  assert.doesNotMatch(states.markup,/Deal 2 damage to Canoptek/);
+  assert.match(states.markup,/M21\.2 2\.8 18\.9 10/); // sword icon
+  assert.match(states.markup,/M12 2 21 5\.5V12/); // shield icon
   assert.doesNotMatch(states.markup,/Choose their block/i);
   assert.match(states.markup,/Crits 1/);
   assert.match(states.markup,/Normal 1/);
@@ -114,7 +122,7 @@ function runCase({mode='tomb',enabled=true,shield=false,choice='strike',noBlocks
   option.onclick();
   assert.equal(option['aria-pressed'],'true');
   assert.equal(confirm.disabled,false);
-  assert.match(summary.textContent,choice==='strike'?/Deal 4 damage/:/Block an enemy|Choose up to 2/);
+  assert.doesNotMatch(states.markup,/class="experimental-fight-choice-summary"/);
   assert.equal(states.strikes.length,0,'Selecting does not resolve automatically');
   assert.equal(states.blocks.length,0);
   confirm.onclick();
@@ -139,7 +147,7 @@ runCase({npoTurn:true});
 def test_css_and_version_boundary():
     from versioning import CURRENT_APP_VERSION
 
-    assert CURRENT_APP_VERSION == "10.0.175"
+    assert CURRENT_APP_VERSION == "10.0.176"
     assert "document.documentElement.dataset.experimental==='on'" in APP
     assert "experimentalActionFirstFightHtml(fight,role,participant,actions,capacity)" in APP
     assert "bindExperimentalActionFirstFight(fight,role,capacity)" in APP
@@ -147,4 +155,5 @@ def test_css_and_version_boundary():
     assert 'html[data-ui="tomb"][data-experimental="on"] .experimental-fight-choice-screen' in section
     assert ".experimental-fight-option.is-selected" in section
     assert "focus-visible" in section
+    assert ".experimental-fight-strike-advice" in section
     assert "@media(max-width:374px)" in section
