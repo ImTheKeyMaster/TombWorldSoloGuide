@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.179';
+  const APP_VERSION = '10.0.180';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -7983,7 +7983,7 @@ function showPlayerActivation(){
     </div>`;
   }
 
-  // Experimental-only Action First Fight Resolution. Keep the Standard Tomb UI unchanged.
+  // Shared Tomb UI Action First Fight Resolution. Classic retains its existing flow.
   // Contextual advice is shown only when both normal and critical successes remain.
   // It does not imply that the player is guaranteed another turn before the NPO acts.
   function experimentalFightStrikeAdvice(fight,role,success,damage,actions){
@@ -8109,7 +8109,7 @@ function showPlayerActivation(){
     if(!human){const choice=soloNpoFightDecision(fight,role);if(choice.type==='block')commitFightBlock(fight,role,choice.successId,choice.targetSuccessIds);else commitFightStrike(fight,role,choice.successId);renderFightResolution();return;}
     const actions=semanticFightActions(fight,role);
     const capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
-    if(document.documentElement.dataset.ui==='tomb'&&document.documentElement.dataset.experimental==='on'){
+    if(document.documentElement.dataset.ui==='tomb'){
       showModal('Fight Resolution',experimentalActionFirstFightHtml(fight,role,participant,actions,capacity));
       bindExperimentalActionFirstFight(fight,role,capacity);
       return;
