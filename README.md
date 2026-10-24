@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.177
+# Tomb World Battle Guide v10.0.178
+
+## v10.0.178
+
+### Experimental: keep the BLOCK UNAVAILABLE icon's diagonal inside the shield
+
+- Clip the diagonal slash to the existing shield outline, preventing the line from extending beyond the shield while retaining the original shape and muted icon styling.
+- Leave the Experimental Brutal notice conditions, action choices, fight logic, Standard and Classic screens unchanged.
+- Refresh PWA asset and offline cache versions to v10.0.178.
+
 
 ## v10.0.177
 

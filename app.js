@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.177';
+  const APP_VERSION = '10.0.178';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8020,7 +8020,7 @@ function showPlayerActivation(){
        !weaponHasRule(opponent.profile,'brutal'))return '';
     const weapon=escapeHtml(opponent.profile.name||'enemy weapon');
     return `<section class="experimental-fight-block-unavailable" role="note" aria-labelledby="fightBlockUnavailableHeading">
-      <span class="experimental-fight-block-unavailable-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 20 5.5V12c0 4.8-3.2 8.2-8 10-4.8-1.8-8-5.2-8-10V5.5L12 2Z"/><path d="m5 19 14-14"/></svg></span>
+      <span class="experimental-fight-block-unavailable-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><defs><clipPath id="experimentalFightBlockShieldClip"><path d="M12 2 20 5.5V12c0 4.8-3.2 8.2-8 10-4.8-1.8-8-5.2-8-10V5.5L12 2Z" fill="white" stroke="none"/></clipPath></defs><path d="m5 19 14-14" clip-path="url(#experimentalFightBlockShieldClip)"/><path d="M12 2 20 5.5V12c0 4.8-3.2 8.2-8 10-4.8-1.8-8-5.2-8-10V5.5L12 2Z"/></svg></span>
       <div><h5 id="fightBlockUnavailableHeading">BLOCK UNAVAILABLE</h5><p><strong>Brutal (${weapon}):</strong> Only critical successes can Block this enemy's attacks. You have no critical successes remaining.</p></div>
     </section>`;
   }
