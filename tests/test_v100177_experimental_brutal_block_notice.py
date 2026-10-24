@@ -125,7 +125,7 @@ def test_unavailable_block_slash_is_clipped_to_shield():
         'M12 2 20 5.5V12c0 4.8-3.2 8.2-8 10-4.8-1.8-8-5.2-8-10V5.5L12 2Z'
     )
     assert '<clipPath id="experimentalFightBlockShieldClip">' in icon
-    assert f'<path d="{shield}"/></clipPath>' in icon
+    assert f'<path d="{shield}" fill="white" stroke="none"/></clipPath>' in icon
     assert '<path d="m5 19 14-14" clip-path="url(#experimentalFightBlockShieldClip)"/>' in icon
     assert icon.index('clip-path="url(#experimentalFightBlockShieldClip)"') < icon.rindex(
         f'<path d="{shield}"/>'
