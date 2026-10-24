@@ -1,4 +1,4 @@
-"""Exhaustive reason-matrix checks for Experimental Fight Block guidance."""
+"""Exhaustive reason-matrix checks for shared Tomb Fight Block guidance."""
 
 from pathlib import Path
 import subprocess
@@ -100,7 +100,7 @@ assert(legal>0&&unavailable>0);
     assert result.returncode == 0, result.stderr or result.stdout
 
 
-def test_experimental_scope_existing_shield_and_game_rules_preserved():
+def test_tomb_scope_existing_shield_and_game_rules_preserved():
     guidance=APP.split("  function experimentalFightBlockUnavailableHtml(",1)[1].split(
         "  function experimentalActionFirstFightHtml(",1)[0]
     assert "if(actions.blocks.length)return ''" in guidance
@@ -113,8 +113,9 @@ def test_experimental_scope_existing_shield_and_game_rules_preserved():
     assert "tabletop rules also allow a Block with none remaining" in guidance
     assert "commitFightBlock" not in guidance
     assert "setFightOperativeWounds" not in guidance
-    assert "html[data-ui=\"tomb\"][data-experimental=\"on\"]" in CSS
-    assert "if(document.documentElement.dataset.ui==='tomb'&&document.documentElement.dataset.experimental==='on')" in APP
+    assert "html[data-ui=\"tomb\"] .experimental-fight-choice-screen" in CSS
+    assert '[data-experimental="on"]' not in CSS
+    assert "if(document.documentElement.dataset.ui==='tomb'){" in APP
     assert "if(weaponHasRule(opponent.profile,'brutal')&&blocker.kind!=='critical')return [];" in APP
 
 
