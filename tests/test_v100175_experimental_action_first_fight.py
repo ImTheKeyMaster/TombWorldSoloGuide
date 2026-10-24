@@ -162,3 +162,44 @@ def test_css_and_version_boundary():
     assert "focus-visible" in section
     assert ".experimental-fight-strike-advice" in section
     assert "@media(max-width:374px)" in section
+
+
+def test_tactical_advice_depends_on_remaining_successes_and_enemy_blocks():
+    script = r"""
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const source=fs.readFileSync('app.js','utf8');
+const start=source.indexOf('  function experimentalFightStrikeAdvice(');
+const end=source.indexOf('  function experimentalActionFirstFightHtml(',start);
+assert(start>=0&&end>start);
+const critical={id:'c',kind:'critical',status:'unresolved'};
+const critical2={id:'c2',kind:'critical',status:'unresolved'};
+const normal={id:'n',kind:'normal',status:'unresolved'};
+const enemyCritical={id:'ec',kind:'critical',status:'unresolved'};
+const enemyNormal={id:'en',kind:'normal',status:'unresolved'};
+const fight={successes:{attacker:[critical,normal],defender:[enemyCritical,enemyNormal]}};
+const actions={
+  strikes:[{success:critical,damage:3},{success:normal,damage:2}],
+  blocks:[{blocker:critical,target:enemyCritical},{blocker:critical,target:enemyNormal}]
+};
+const ctx={
+  unresolvedFightSuccesses:(f,role)=>f.successes[role].filter(s=>s.status==='unresolved'),
+  otherFightRole:role=>role==='attacker'?'defender':'attacker'
+};
+const advice=new Function('ctx','with(ctx){'+source.slice(start,end)+'\nreturn experimentalFightStrikeAdvice;}')(ctx);
+assert.match(advice(fight,'attacker',normal,2,actions),/possible later Block, if you act again/);
+assert.match(advice(fight,'attacker',critical,3,actions),/More damage now, but spends your critical Block option/);
+const withoutBlock={...actions,blocks:[]};
+assert.doesNotMatch(advice(fight,'attacker',normal,2,withoutBlock),/later Block/);
+assert.match(advice(fight,'attacker',critical,3,withoutBlock),/spends your crit/);
+fight.successes.attacker=[critical,critical2,normal];
+assert.match(advice(fight,'attacker',critical,3,actions),/another crit remains/);
+fight.successes.attacker=[critical];
+assert.equal(advice(fight,'attacker',critical,3,actions),'');
+fight.successes.attacker=[normal];
+assert.equal(advice(fight,'attacker',normal,2,actions),'');
+fight.successes.attacker=[critical,normal];
+fight.successes.defender=[enemyNormal];
+assert.match(advice(fight,'attacker',normal,2,actions),/Keeps your crit for later in this fight/);
+"""
+    result = subprocess.run(["node", "-e", script], cwd=ROOT, capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr or result.stdout
