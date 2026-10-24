@@ -1,4 +1,16 @@
-# Tomb World Battle Guide v10.0.175
+# Tomb World Battle Guide v10.0.176
+
+## v10.0.176
+
+### Experimental: streamline Fight Resolution choices
+
+- Remove the redundant Your Turn heading, instruction line, dynamic action-summary paragraph, and footnote from only the new Experimental Fight screen, while keeping the active model cards and the Confirm button.
+- Use filled sword and shield silhouettes matching the original action-first mockup rather than the thin improvised spear/shield outlines.
+- Give concise conditional tactical guidance directly in Strike cards whenever normal and critical successes both remain. Describe preserving the critical for a later Block as a possibility, not a guarantee of another turn.
+- Shorten Strike copy to Deal N damage because the opponent is identified in the header cards.
+- Keep Standard, Classic, automated NPO actions, Shield targeting, fight calculations, and battle result behavior untouched.
+- Refresh app and offline-cache versions to v10.0.176.
+
 
 ## v10.0.175
 
