@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.179
+# Tomb World Battle Guide v10.0.180
+
+## v10.0.180
+
+### Promote Action First Fight and Block-unavailable explanations to Standard
+
+- Promote the approved Action First Fight Resolution choices, two-step Choose/Confirm interaction, Strike advice, and BLOCK UNAVAILABLE explanations from Experimental into Standard Tomb UI.
+- Explain when no legal Block option exists because the opponent retains only critical successes, an enemy Brutal weapon requires critical Blocks, or there are no unresolved enemy successes to cancel (noting the Guide's no-target Block limitation).
+- Preserve legal Block and Shield choices, existing dice, turn logic, saved fights and game mechanics. Classic retains its previous Fight Resolution layout and behavior.
+- Keep the Experimental toggle available for future previews, without changing the approved Standard/Experimental Fight UX.
 
 ## v10.0.179
 
