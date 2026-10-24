@@ -8024,7 +8024,7 @@ function showPlayerActivation(){
     </div>`;
   }
   function bindExperimentalActionFirstFight(fight,role,capacity){
-    const choices=$('[data-exp-fight-choice]',modal);
+    const choices=Array.from(modal.querySelectorAll('[data-exp-fight-choice]'));
     const confirm=$('#confirmExperimentalFightChoice'),summary=$('#experimentalFightSelectionSummary');
     let selected=null;
     choices.forEach(button=>button.onclick=()=>{
