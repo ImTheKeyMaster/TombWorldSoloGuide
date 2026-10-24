@@ -92,8 +92,13 @@ function runCase({mode='tomb',enabled=true,shield=false,choice='strike',noBlocks
   assert.doesNotMatch(states.markup,/>Your Turn<|experimental-fight-turn-header/);
   assert.doesNotMatch(states.markup,/Guide handles the NPO/);
   assert.doesNotMatch(states.markup,/experimentalFightSelectionSummary|experimental-fight-footnote/);
-  assert.match(states.markup,/Keeps your crit for a possible later Block, if you act again/);
-  assert.match(states.markup,/More damage now, but spends your critical Block option/);
+  if(noBlocks){
+    assert.match(states.markup,/Keeps your crit for later in this fight/);
+    assert.match(states.markup,/More damage now; spends your crit/);
+  }else{
+    assert.match(states.markup,/Keeps your crit for a possible later Block, if you act again/);
+    assert.match(states.markup,/More damage now, but spends your critical Block option/);
+  }
   assert.match(states.markup,/Deal 2 damage<\/span>/);
   assert.doesNotMatch(states.markup,/Deal 2 damage to Canoptek/);
   assert.match(states.markup,/M21\.2 2\.8 18\.9 10/); // sword icon
