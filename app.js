@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.175';
+  const APP_VERSION = '10.0.176';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -7984,19 +7984,43 @@ function showPlayerActivation(){
   }
 
   // Experimental-only Action First Fight Resolution. Keep the Standard Tomb UI unchanged.
+  // Contextual advice is shown only when both normal and critical successes remain.
+  // It does not imply that the player is guaranteed another turn before the NPO acts.
+  function experimentalFightStrikeAdvice(fight,role,success,damage,actions){
+    const own=unresolvedFightSuccesses(fight,role);
+    const criticalCount=own.filter(item=>item.kind==='critical').length;
+    const normalCount=own.filter(item=>item.kind==='normal').length;
+    if(!criticalCount||!normalCount)return '';
+    const enemyCritical=unresolvedFightSuccesses(fight,otherFightRole(role)).some(item=>item.kind==='critical');
+    const canBlockCritical=actions.blocks.some(item=>item.blocker.kind==='critical'&&item.target.kind==='critical');
+    if(success.kind==='normal'){
+      return enemyCritical&&canBlockCritical
+        ?'Keeps your crit for a possible later Block, if you act again.'
+        :'Keeps your crit for later in this fight.';
+    }
+    const normalStrike=actions.strikes.find(item=>item.success.kind==='normal');
+    const moreDamage=normalStrike&&damage>normalStrike.damage;
+    if(criticalCount>1)return moreDamage?'More damage now; another crit remains.':'Another crit remains for later.';
+    if(enemyCritical&&canBlockCritical)return moreDamage
+      ?'More damage now, but spends your critical Block option.'
+      :'Spends your critical Block option.';
+    return moreDamage?'More damage now; spends your crit.':'Spends your crit now.';
+  }
   function experimentalActionFirstFightHtml(fight,role,participant,actions,capacity){
-    const enemy=fight[otherFightRole(role)],soloPlayerTurn=!isPvpMode()&&participant.side==='player';
-    const heading=soloPlayerTurn?'Your Turn':`${escapeHtml(participant.label)}'s Turn`;
+    const enemy=fight[otherFightRole(role)];
     const help=isPvpMode()
       ?'Starting with the attacker, players alternate resolving one success as a Strike or Block.'
       :'You and the NPO alternate resolving one success. You choose for your operative. The Guide automatically resolves the NPO’s response.';
-    const strikes=actions.strikes.map(({success,damage})=>`<button type="button" class="experimental-fight-option" data-exp-fight-choice="strike" data-fight-strike="${escapeHtml(success.id)}" data-exp-fight-kind="${escapeHtml(success.kind)}" data-exp-fight-damage="${damage}" aria-pressed="false" aria-label="Strike with ${success.kind} success, deal ${damage} damage to ${escapeHtml(enemy.label)}">
-      <span class="experimental-fight-option-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 4.5 5 5M4 20l6-6m0 0 5-9 4 4-9 5Zm-4 4 4-4"/></svg></span>
-      <span class="experimental-fight-option-copy"><strong>${titleCaseRuleId(success.kind)} Success</strong><span>Deal ${damage} damage to ${escapeHtml(enemy.label)}</span></span>
-      <span class="experimental-fight-option-radio" aria-hidden="true"></span>
-    </button>`).join('');
+    const strikes=actions.strikes.map(({success,damage})=>{
+      const advice=experimentalFightStrikeAdvice(fight,role,success,damage,actions);
+      return `<button type="button" class="experimental-fight-option" data-exp-fight-choice="strike" data-fight-strike="${escapeHtml(success.id)}" data-exp-fight-kind="${escapeHtml(success.kind)}" data-exp-fight-damage="${damage}" aria-pressed="false" aria-label="Strike with ${success.kind} success, deal ${damage} damage to ${escapeHtml(enemy.label)}${advice?`. ${advice}`:''}">
+        <span class="experimental-fight-option-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M21.2 2.8 18.9 10l-7.2 7.2-4-4 7.2-7.2 6.3-3.2Z"/><path d="m5.9 11.7 6.4 6.4-1.5 1.5-6.4-6.4z"/><path d="m8.1 17.1-4.4 4.4-1.5-1.5 4.4-4.4z"/></svg></span>
+        <span class="experimental-fight-option-copy"><strong>${titleCaseRuleId(success.kind)} Success</strong><span>Deal ${damage} damage</span>${advice?`<small class="experimental-fight-strike-advice">${escapeHtml(advice)}</small>`:''}</span>
+        <span class="experimental-fight-option-radio" aria-hidden="true"></span>
+      </button>`;
+    }).join('');
     const blocks=actions.blocks.map(({blocker,target})=>`<button type="button" class="experimental-fight-option" data-exp-fight-choice="block" data-fight-blocker="${escapeHtml(blocker.id)}" data-fight-block-target="${escapeHtml(target.id)}" data-exp-fight-kind="${escapeHtml(blocker.kind)}" data-exp-fight-target-kind="${escapeHtml(target.kind)}" aria-pressed="false" aria-label="Block ${target.kind} enemy success using ${blocker.kind} success${capacity>1?', Shield up to two successes':''}">
-      <span class="experimental-fight-option-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg></span>
+      <span class="experimental-fight-option-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 2 21 5.5V12c0 5.5-3.7 9.2-9 11-5.3-1.8-9-5.5-9-11V5.5L12 2Z"/><path d="M12 5.5 6.3 7.7V12c0 3.5 2 6 5.7 7.6V5.5Z" fill="#092319"/></svg></span>
       <span class="experimental-fight-option-copy"><strong>${titleCaseRuleId(blocker.kind)} Success</strong><span>${capacity>1?'Shield: choose up to 2 enemy successes':`Cancel 1 enemy ${titleCaseRuleId(target.kind)} Success`}</span></span>
       <span class="experimental-fight-option-radio" aria-hidden="true"></span>
     </button>`).join('');
@@ -8004,8 +8028,6 @@ function showPlayerActivation(){
       <div class="fight-pools experimental-fight-pools">${experimentalFightPoolHtml(fight,'attacker')}${experimentalFightPoolHtml(fight,'defender')}</div>
       ${fightLastResolutionHtml(fight)}
       <section class="fight-turn experimental-fight-turn" aria-label="Acting now: ${escapeHtml(participant.label)}">
-        <div class="experimental-fight-turn-header"><h3 class="fight-turn-heading">${heading}</h3>${soloPlayerTurn?`<span class="experimental-fight-turn-operative">${escapeHtml(participant.label)}</span>`:''}</div>
-        <p>Choose what your operative does. The Guide handles the NPO's turn.</p>
         <div class="experimental-fight-step"><span class="experimental-fight-step-number" aria-hidden="true">1</span><h4>Choose your action</h4></div>
         <section class="experimental-fight-choice-group" aria-labelledby="fightStrikeHeading">
           <h5 id="fightStrikeHeading">STRIKE <span>Deal damage</span></h5>
@@ -8016,16 +8038,14 @@ function showPlayerActivation(){
           <div class="experimental-fight-option-list">${blocks}</div>
         </section>`:''}
         <div class="experimental-fight-step"><span class="experimental-fight-step-number" aria-hidden="true">2</span><h4>Confirm your action</h4></div>
-        <p class="experimental-fight-choice-summary" id="experimentalFightSelectionSummary" role="status" aria-live="polite">Select a Strike or Block above.</p>
         <button type="button" class="btn primary experimental-fight-confirm" id="confirmExperimentalFightChoice" disabled>Resolve Selected Action</button>
       </section>
-      <p class="experimental-fight-footnote">Each action uses one of your successes. Damage and blocks apply when confirmed.</p>
       <details class="experimental-fight-help"><summary>How Fight Resolution works</summary><p>${help}</p></details>
     </div>`;
   }
   function bindExperimentalActionFirstFight(fight,role,capacity){
     const choices=Array.from(modal.querySelectorAll('[data-exp-fight-choice]'));
-    const confirm=$('#confirmExperimentalFightChoice'),summary=$('#experimentalFightSelectionSummary');
+    const confirm=$('#confirmExperimentalFightChoice');
     let selected=null;
     choices.forEach(button=>button.onclick=()=>{
       selected=button;
@@ -8034,13 +8054,6 @@ function showPlayerActivation(){
         choice.classList.toggle('is-selected',chosen);
         choice.setAttribute('aria-pressed',String(chosen));
       });
-      if(button.dataset.expFightChoice==='strike'){
-        summary.textContent=`Strike with a ${titleCaseRuleId(button.dataset.expFightKind)} Success. Deal ${button.dataset.expFightDamage} damage.`;
-      }else{
-        summary.textContent=capacity>1
-          ?`Block using a ${titleCaseRuleId(button.dataset.expFightKind)} Success. Choose up to 2 legal enemy successes next.`
-          :`Block an enemy ${titleCaseRuleId(button.dataset.expFightTargetKind)} Success using your ${titleCaseRuleId(button.dataset.expFightKind)} Success.`;
-      }
       confirm.disabled=false;
     });
     confirm.onclick=()=>{
