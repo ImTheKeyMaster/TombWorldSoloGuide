@@ -1,4 +1,16 @@
-# Tomb World Battle Guide v10.0.176
+# Tomb World Battle Guide v10.0.177
+
+## v10.0.177
+
+### Experimental: explain when Brutal prevents a Block
+
+- In Experimental Fight Resolution, show a compact noninteractive "BLOCK UNAVAILABLE" note when the opponent's Brutal melee weapon prevents your remaining normal success from blocking an enemy normal success.
+- Identify the actual opponent weapon in the note, explain the critical-success requirement, and clarify that no critical successes remain.
+- Do not show the note when Block is legal, the opponent has no unresolved normal successes, or the lack of a Block is unrelated to Brutal.
+- Leave Standard and Classic layouts, action-selection and confirmation, the shared Fight engine, and automatic solo NPO choices unchanged.
+- Refresh the PWA shell and offline cache to v10.0.177.
+
+
 
 ## v10.0.176
 

@@ -2977,3 +2977,24 @@ html[data-ui="tomb"][data-experimental="on"] .experimental-fight-choice-screen .
   html[data-ui="tomb"][data-experimental="on"] .experimental-fight-choice-screen .experimental-fight-option-copy>span{font-size:.78rem}
   html[data-ui="tomb"][data-experimental="on"] .experimental-fight-choice-screen .experimental-fight-option-copy .experimental-fight-strike-advice{font-size:.7rem}
 }
+
+/* v10.0.177: only Experimental Fight resolution explains rule-locked Block choices. */
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-choice-screen .experimental-fight-block-unavailable{
+  display:flex;align-items:flex-start;gap:11px;min-width:0;padding:12px 13px;
+  border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.035);
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-choice-screen .experimental-fight-block-unavailable-icon{
+  display:grid;place-items:center;flex:none;width:32px;height:32px;color:var(--muted);
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-choice-screen .experimental-fight-block-unavailable div{
+  min-width:0;display:grid;gap:5px;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-choice-screen .experimental-fight-block-unavailable h5{
+  margin:0;color:var(--text);font-size:.8rem;font-weight:900;letter-spacing:.09em;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-choice-screen .experimental-fight-block-unavailable p{
+  margin:0;color:var(--muted);font-size:.8rem;line-height:1.4;overflow-wrap:anywhere;
+}
+html[data-ui="tomb"][data-experimental="on"] .experimental-fight-choice-screen .experimental-fight-block-unavailable p strong{
+  color:var(--text);font-weight:800;
+}
