@@ -1,4 +1,4 @@
-"""Experimental Action First Fight Resolution regression coverage (v10.0.175)."""
+"""Approved Action First Fight Resolution in Standard and Experimental."""
 from pathlib import Path
 import subprocess
 
@@ -7,7 +7,7 @@ APP = (ROOT / "app.js").read_text(encoding="utf-8")
 CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
 
 
-def test_action_first_choice_flow_and_standard_isolation():
+def test_action_first_choice_flow_standard_and_experimental_parity():
     script = r"""
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -80,8 +80,8 @@ function runCase({mode='tomb',enabled=true,shield=false,choice='strike',noBlocks
     assert.deepEqual(states.strikes,[['defender','npo-normal']]);
     return;
   }
-  if(!enabled||mode!=='tomb'){
-    assert.equal(states.choices.length,0,'Standard and Classic retain existing presentation');
+  if(mode!=='tomb'){
+    assert.equal(states.choices.length,0,'Classic retains existing presentation');
     assert.doesNotMatch(states.markup,/experimental-fight-choice-screen/);
     assert.match(states.markup,/fight-action/);
     return;
@@ -152,12 +152,13 @@ runCase({npoTurn:true});
 def test_css_and_version_boundary():
     from versioning import CURRENT_APP_VERSION
 
-    assert CURRENT_APP_VERSION == "10.0.176"
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 180)
     assert "document.documentElement.dataset.experimental==='on'" in APP
     assert "experimentalActionFirstFightHtml(fight,role,participant,actions,capacity)" in APP
     assert "bindExperimentalActionFirstFight(fight,role,capacity)" in APP
-    section = CSS.split("v10.0.175: opt-in Action First Fight choices", 1)[1]
-    assert 'html[data-ui="tomb"][data-experimental="on"] .experimental-fight-choice-screen' in section
+    section = CSS.split("v10.0.175/180: Approved Action First Fight choices", 1)[1]
+    assert 'html[data-ui="tomb"] .experimental-fight-choice-screen' in section
+    assert '[data-experimental="on"]' not in section
     assert ".experimental-fight-option.is-selected" in section
     assert "focus-visible" in section
     assert ".experimental-fight-strike-advice" in section

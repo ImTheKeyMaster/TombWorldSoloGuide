@@ -1,4 +1,4 @@
-"""Experimental-only unavailable Block explanations for Fight resolution (v10.0.179)."""
+"""Shared Tomb Fight Block explanations for Standard and Experimental."""
 from pathlib import Path
 import subprocess
 
@@ -107,13 +107,14 @@ assert.doesNotMatch(escaped.notice,/Claws <Danger>/);
     assert result.returncode == 0, result.stderr or result.stdout
 
 
-def test_display_is_experimental_only_and_versioned():
-    assert CURRENT_APP_VERSION == "10.0.179"
+def test_display_is_shared_and_versioned():
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 180)
     assert "experimentalFightBlockUnavailableHtml(fight,role,actions)" in APP
-    assert "if(document.documentElement.dataset.ui==='tomb'&&document.documentElement.dataset.experimental==='on')" in APP
+    assert "if(document.documentElement.dataset.ui==='tomb'){" in APP
     assert "if(weaponHasRule(opponent.profile,'brutal')&&blocker.kind!=='critical')return [];" in APP
-    portion = CSS.split("v10.0.177: only Experimental Fight resolution", 1)[1]
-    assert 'html[data-ui="tomb"][data-experimental="on"] .experimental-fight-choice-screen .experimental-fight-block-unavailable' in portion
+    portion = CSS.split("v10.0.177/180: Shared Tomb UI Fight resolution", 1)[1]
+    assert 'html[data-ui="tomb"] .experimental-fight-choice-screen .experimental-fight-block-unavailable' in portion
+    assert '[data-experimental="on"]' not in portion
     assert "role=\"note\"" in APP
     assert "aria-labelledby=\"fightBlockUnavailableHeading\"" in APP
     assert "data-exp-fight-choice=\"block\"" in APP

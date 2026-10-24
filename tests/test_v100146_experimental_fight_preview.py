@@ -16,76 +16,74 @@ def test_both_rendering_modes_and_strike_action_runtime():
     script = r"""
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const source=fs.readFileSync('app.js','utf8');
-const start=source.indexOf('  function experimentalFightPoolHtml(');
-const end=source.indexOf('  async function rollFightParticipant(',start);
-assert(start>0&&end>start);
-const code=source.slice(start,end);
-for(const enabled of [false,true]){
-  const hit={id:'hit',kind:'normal',status:'unresolved'};
-  const defend={id:'defend',kind:'normal',status:'unresolved'};
-  const fight={
-    attacker:{side:'player',id:'gunner-flamer',label:'Gunner (Flamer)',wounds:7,maxWounds:7,profile:{name:'Bayonet'}},
-    defender:{side:'npo',id:'crawler',label:'Canoptek Tomb Crawler',wounds:21,maxWounds:21,profile:{name:'Claws'}},
-    successes:{attacker:[hit],defender:[defend]},turn:'attacker',history:[],completed:false,
-    blockCapacity:{attacker:1}
-  };
-  let html='',strikes=0,blocks=0,shieldSelections=0;
-  const strikeControls=[{dataset:{fightStrike:'hit'}}];
-  const blockControls=[{dataset:{fightBlocker:'hit',fightBlockTarget:'defend'}}];
-  const ctx={
-    state:{fightState:fight},document:{documentElement:{dataset:{ui:'tomb'}}},
-    experimentalFeaturesEnabled:()=>enabled,isPvpMode:()=>false,
-    unresolvedFightSuccesses:(f,role)=>f.successes[role].filter(x=>x.status==='unresolved'),
-    equivalentRemainingFightStrikes:()=>null,
-    semanticFightActions:()=>({strikes:[{success:hit,damage:2}],blocks:[{blocker:hit,target:defend}]}),
-    titleCaseRuleId:s=>s[0].toUpperCase()+s.slice(1),
-    escapeHtml:s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'),
-    fightParticipantPortrait:(participant,role)=>'<span class="fight-portrait fight-portrait-'+role+'"><svg class="fight-portrait-artwork"></svg></span>',
-    fightPoolHtml:(f,role)=>'<section class="fight-pool legacy-'+role+'">ORIGINAL CARD</section>',
-    fightLastResolutionHtml:()=>'<section class="fight-last-resolution">EXCHANGE</section>',
-    showModal:(title,value)=>{assert.equal(title,'Fight Resolution');html=value;},modal:{},
-    $$:s=>s==='[data-fight-strike]'?strikeControls:s==='[data-fight-blocker]'?blockControls:[],
-    commitFightStrike:()=>{strikes++;fight.completed=true;return true;},
-    commitFightBlock:()=>{blocks++;fight.completed=true;return true;},
-    showFightBlockSelection:()=>{shieldSelections++;},
-    finishFight:()=>{},save:()=>{}
-  };
-  const render=new Function('ctx','with(ctx){'+code+'\nreturn renderFightResolution;}')(ctx);
-  render();
-  assert.match(html,/data-fight-strike="hit"/);
-  assert.match(html,/data-fight-blocker="hit"/);
-  assert.match(html,/id="fightStrikeHeading"/);
-  assert.match(html,/id="fightBlockHeading"/);
-  assert.equal(typeof strikeControls[0].onclick,'function');
-  assert.equal(typeof blockControls[0].onclick,'function');
-  {
-    assert.match(html,/experimental-fight-sequence/);
-    assert.equal((html.match(/experimental-fight-pool-details/g)||[]).length,2);
-    assert.match(html,/fight-portrait-attacker/);
-    assert.match(html,/fight-portrait-defender/);
-    assert.match(html,/Your Turn/);
-    assert.match(html,/Gunner \(Flamer\)/);
-    assert.match(html,/7\/7/);
-    assert.match(html,/21\/21/);
-    assert.match(html,/Crits 0/);
-    assert.match(html,/Normal 1/);
-    assert.doesNotMatch(html,/★|●/);
-    assert.match(html,/How Fight Resolution works/);
+const first=source.indexOf('  function experimentalFightPoolHtml(');
+const last=source.indexOf('  async function rollFightParticipant(',first);
+assert(first>0&&last>first);
+const sourceCode=source.slice(first,last);
+const success=(id,kind)=>({id,kind,status:'unresolved'});
+let tombStandard=null;
+for(const mode of ['tomb','classic']){
+  for(const enabled of [false,true]){
+    const hit=success('hit','normal'),enemy=success('enemy','normal');
+    const fight={
+      attacker:{side:'player',id:'gunner-flamer',label:'Gunner (Flamer)',
+        wounds:7,maxWounds:7,profile:{name:'Bayonet'}},
+      defender:{side:'npo',id:'crawler',label:'Canoptek Tomb Crawler',
+        wounds:21,maxWounds:21,profile:{name:'Claws'}},
+      successes:{attacker:[hit],defender:[enemy]},turn:'attacker',
+      history:[],completed:false,blockCapacity:{attacker:1}
+    };
+    let html='';
+    const confirm={disabled:true};
+    const ctx={
+      state:{fightState:fight},
+      document:{documentElement:{dataset:{ui:mode,experimental:enabled?'on':'off'}}},
+      experimentalFeaturesEnabled:()=>enabled,
+      isPvpMode:()=>false,
+      unresolvedFightSuccesses:(f,role)=>f.successes[role].filter(x=>x.status==='unresolved'),
+      otherFightRole:role=>role==='attacker'?'defender':'attacker',
+      equivalentRemainingFightStrikes:()=>null,
+      semanticFightActions:()=>({strikes:[{success:hit,damage:2}],
+        blocks:[{blocker:hit,target:enemy}]}),
+      titleCaseRuleId:v=>v[0].toUpperCase()+v.slice(1),
+      escapeHtml:v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'),
+      fightParticipantPortrait:(p,role)=>'<span class="fight-portrait fight-portrait-'+role+'"></span>',
+      fightPoolHtml:(f,role)=>'<section class="fight-pool legacy-'+role+'"></section>',
+      fightLastResolutionHtml:()=>'<section class="fight-last-resolution">EXCHANGE</section>',
+      showModal:(title,body)=>{assert.equal(title,'Fight Resolution');html=body;},
+      modal:{querySelectorAll:()=>[]},
+      $:id=>id==='#confirmExperimentalFightChoice'?confirm:null,
+      $$:()=>[],
+      commitFightStrike:()=>true,commitFightBlock:()=>true,
+      showFightBlockSelection:()=>{},
+      finishFight:()=>{},save:()=>{}
+    };
+    const render=new Function('ctx','with(ctx){'+sourceCode+
+      '\nreturn renderFightResolution;}')(ctx);
+    render();
+    if(mode==='tomb'){
+      assert.match(html,/experimental-fight-choice-screen/);
+      assert.match(html,/fight-portrait-attacker/);
+      assert.match(html,/fight-portrait-defender/);
+      assert.match(html,/id="fightStrikeHeading"/);
+      assert.match(html,/id="fightBlockHeading"/);
+      assert.match(html,/data-exp-fight-choice="strike"/);
+      assert.match(html,/data-exp-fight-choice="block"/);
+      assert.match(html,/Confirm your action/);
+      assert.match(html,/Crits 0/);
+      assert.match(html,/Normal 1/);
+      assert.match(html,/How Fight Resolution works/);
+      assert.doesNotMatch(html,/BLOCK UNAVAILABLE/);
+      if(tombStandard===null)tombStandard=html;
+      else assert.equal(html,tombStandard,
+        'Standard and Experimental must render exactly the same Fight Resolution');
+    }else{
+      assert.doesNotMatch(html,/experimental-fight-choice-screen/);
+      assert.match(html,/fight-action/);
+      assert.match(html,/data-fight-strike="hit"/);
+      assert.match(html,/data-fight-blocker="hit"/);
+    }
   }
-  strikeControls[0].onclick();
-  assert.equal(strikes,1,'Strike must call the existing engine exactly once');
-  assert.equal(blocks,0,'Strike must not invoke Block');
-  fight.completed=false;
-  blockControls[0].onclick();
-  assert.equal(blocks,1,'Regular Block must call the existing engine exactly once');
-  assert.equal(strikes,1,'Block must not invoke Strike');
-  fight.completed=false;
-  fight.blockCapacity.attacker=2;
-  render();
-  assert.match(html,/BLOCK · SHIELD/);
-  blockControls[0].onclick();
-  assert.equal(shieldSelections,1,'Shield must use existing target-selection flow');
-  assert.equal(blocks,1,'Shield selection must not directly commit a Block');
 }
 """
     result = subprocess.run(["node", "-e", script], cwd=ROOT, capture_output=True, text=True)
@@ -104,7 +102,7 @@ def test_pvp_and_shield_instruction_remains_unambiguous():
     assert "fightLastResolutionHtml(fight)" in src
 
 
-def test_standard_template_and_gameplay_are_unchanged():
+def test_classic_legacy_template_and_gameplay_are_unchanged():
     src = APP.split("  function renderFightResolution(){", 1)[1].split(
         "  async function rollFightParticipant(", 1
     )[0]
@@ -123,7 +121,7 @@ def test_standard_template_and_gameplay_are_unchanged():
     assert "showFightBlockSelection(fight,role,button.dataset.fightBlocker,button.dataset.fightBlockTarget)" in src
 
 
-def test_preview_css_cannot_leak_into_standard_or_other_screens():
+def test_shared_portrait_css_cannot_leak_into_classic_or_other_screens():
     section = CSS.split("opt-in compact Fight Resolution. Standard markup and styles untouched. */", 1)[1]
     assert "pointer-events:none;" in section
     assert ".experimental-fight-pool .experimental-fight-card-wounds" in section
@@ -141,7 +139,7 @@ def test_version_and_offline_cache_are_consistent():
     assert f"styles.css?v={CURRENT_APP_VERSION}" in HTML
 
 
-def test_narrow_iphone_columns_are_experimental_only():
+def test_narrow_iphone_columns_work_in_both_tomb_modes():
     narrow = CSS.split("single-column fallback in Experimental Fight Resolution only. */", 1)[1]
     assert "@media(max-width:374px)" in narrow
     assert '.experimental-fight-pools{\n    grid-template-columns:repeat(2,minmax(0,1fr));' in narrow
