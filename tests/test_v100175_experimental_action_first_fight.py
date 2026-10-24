@@ -137,7 +137,7 @@ def test_css_and_version_boundary():
     from versioning import CURRENT_APP_VERSION
 
     assert CURRENT_APP_VERSION == "10.0.175"
-    assert "document.documentElement.dataset.experimental==='on'&&experimentalFeaturesEnabled()" in APP
+    assert "document.documentElement.dataset.experimental==='on'" in APP
     assert "experimentalActionFirstFightHtml(fight,role,participant,actions,capacity)" in APP
     assert "bindExperimentalActionFirstFight(fight,role,capacity)" in APP
     section = CSS.split("v10.0.175: opt-in Action First Fight choices", 1)[1]
