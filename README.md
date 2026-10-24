@@ -1,4 +1,16 @@
-# Tomb World Battle Guide v10.0.174
+# Tomb World Battle Guide v10.0.175
+
+## v10.0.175
+
+### Experimental: Action First Fight Resolution
+
+- In **Experimental** only, replace the Fight Resolution decision area with large vertical STRIKE and BLOCK choices, based on the selected first mockup.
+- Group legal Critical and Normal Success actions by STRIKE and BLOCK, with explicit damage and the enemy success that a Block cancels. Never ask the human to select the NPO's decision.
+- Require selecting exactly one action and confirming before spending a success. The existing automatic solo NPO decision engine and alternating turn rules are unchanged.
+- Preserve Shield target selection, fight history, portraits, active participant and wound counters, and no-block scenarios.
+- Standard and Classic remain unchanged. Experimental is enabled using the app's version-label toggle (seven taps).
+- Refresh the service-worker app shell and assets to v10.0.175.
+
 
 ## v10.0.174
 

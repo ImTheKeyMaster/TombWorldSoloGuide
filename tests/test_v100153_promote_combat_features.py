@@ -14,8 +14,10 @@ SW = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 
 def test_promoted_tomb_ui_is_not_gated_by_the_preview_toggle():
     assert APP.count("experimentalFeaturesEnabled()") == 2  # definition + panel checkbox
-    # All approved portrait and promoted UI styling is shared by both modes.
-    assert '[data-experimental="on"]' not in CSS  # All approved features, including eliminations, are standard
+    # Previously promoted styling stays shared; new opt-in Fight styling is isolated.
+    promoted_css, action_first_css = CSS.split("/* v10.0.175: opt-in Action First Fight choices", 1)
+    assert '[data-experimental="on"]' not in promoted_css
+    assert 'html[data-ui="tomb"][data-experimental="on"] .experimental-fight-choice-screen' in action_first_css
     assert 'html[data-ui="tomb"] .experimental-fight-pool' in CSS
     assert 'html[data-ui="tomb"] .combat-resolution-modal .dedicated-combat-screen > #automaticCombat{order:2}' in CSS
     assert 'html[data-ui="tomb"] .combat-resolution-modal .multi-target-attack-progress{' in CSS
