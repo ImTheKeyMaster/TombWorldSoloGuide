@@ -65,7 +65,7 @@ assert.match(brutal.card,/experimental-fight-block-unavailable/);
 assert.match(brutal.card,/Deal 2 damage/);
 assert.doesNotMatch(brutal.card,/data-exp-fight-choice="block"/);
 assert.match(brutal.card,/Resolve Selected Action/);
-assert.equal((brutal.card.match(/experimental-fight-block-unavailable/g)||[]).length,1,
+assert.equal((brutal.card.match(/class="experimental-fight-block-unavailable"/g)||[]).length,1,
   'Notice must render exactly once');
 assert.match(build({own:[success('a','normal'),success('b','normal')]}).notice,/BLOCK UNAVAILABLE/);
 assert.match(build({role:'defender'}).notice,/BLOCK UNAVAILABLE/,'PVP and reverse roles use same logic');
