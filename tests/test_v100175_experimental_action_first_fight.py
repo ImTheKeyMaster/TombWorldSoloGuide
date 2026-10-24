@@ -101,8 +101,11 @@ function runCase({mode='tomb',enabled=true,shield=false,choice='strike',noBlocks
     assert.doesNotMatch(states.markup,/id="fightBlockHeading"/);
   }else{
     assert.match(states.markup,/id="fightBlockHeading"/);
-    assert.match(states.markup,/Cancel 1 enemy Critical Success/);
-    assert.match(states.markup,/Cancel 1 enemy Normal Success/);
+    if(shield)assert.match(states.markup,/Shield: choose up to 2 enemy successes/);
+    else{
+      assert.match(states.markup,/Cancel 1 enemy Critical Success/);
+      assert.match(states.markup,/Cancel 1 enemy Normal Success/);
+    }
   }
   const option=states.choices.find(button=>choice==='strike'
     ?button.dataset.fightStrike==='player-critical'
