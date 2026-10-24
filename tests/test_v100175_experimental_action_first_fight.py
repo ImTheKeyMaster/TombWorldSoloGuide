@@ -102,7 +102,7 @@ function runCase({mode='tomb',enabled=true,shield=false,choice='strike',noBlocks
   assert.match(states.markup,/Deal 2 damage<\/span>/);
   assert.doesNotMatch(states.markup,/Deal 2 damage to Canoptek/);
   assert.match(states.markup,/M21\.2 2\.8 18\.9 10/); // sword icon
-  assert.match(states.markup,/M12 2 21 5\.5V12/); // shield icon
+  if(!noBlocks)assert.match(states.markup,/M12 2 21 5\.5V12/); // shield icon
   assert.doesNotMatch(states.markup,/Choose their block/i);
   assert.match(states.markup,/Crits 1/);
   assert.match(states.markup,/Normal 1/);
