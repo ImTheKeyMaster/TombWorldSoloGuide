@@ -50,7 +50,7 @@ def test_new_framing_supersedes_tiny_death_korps_cutouts_without_moving_base():
         ('html[data-ui="tomb"] .experimental-fight-pool .fight-portrait.death-korps-portrait','width:min(76%,118px)'),
         ('html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait.death-korps-portrait','width:min(115%,205px)'),
     ):
-        blocks=re.findall(re.escape(selector)+r"\\s*\\{([^}]*)\\}",tail)
+        blocks=re.findall(re.escape(selector)+r"\s*\{([^}]*)\}",tail)
         assert len(blocks)==1
         assert size in blocks[0]
     assert "height:calc(100% - 14px)" not in CSS
