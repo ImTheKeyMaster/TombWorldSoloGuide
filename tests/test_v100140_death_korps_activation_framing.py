@@ -39,31 +39,42 @@ def test_death_korps_only_not_deathwatch_or_roster():
     assert CSS.index(KORPS_SELECTOR) > CSS.index('/* v10.0.135/169: Reveal the portrait')
 
 
-def test_landscape_desktop_matches_deathwatch_figure_footprint():
+def test_landscape_desktop_shows_more_of_full_miniature():
     rule = portrait_rules()[0]
-    assert "width:185%;" in rule
-    assert "right:-11%;" in rule
-    assert "top:0;" in rule
+    assert "width:135%;" in rule
+    assert "right:-5%;" in rule
+    assert "top:4px;" in rule
     assert "transform:none;" in rule
     assert "clip-path" not in rule  # Retain the existing overlap and silhouette treatment.
 
 
-def test_iphone_portrait_uses_smaller_scale_and_narrow_fallback():
+def test_iphone_portrait_scales_down_to_show_full_model_and_base():
     rules = portrait_rules()
     assert re.search(
         r"@media\(max-width:520px\)\s*\{\s*" + re.escape(KORPS_SELECTOR),
         CSS,
     )
-    assert "width:195%;" in rules[1]
-    assert "right:-13%;" in rules[1]
-    assert "top:0;" in rules[1]
+    assert "width:140%;" in rules[1]
+    assert "right:-5%;" in rules[1]
+    assert "top:8px;" in rules[1]
     assert re.search(
         r"@media\(max-width:380px\)\s*\{\s*" + re.escape(KORPS_SELECTOR),
         CSS,
     )
-    assert "width:200%;" in rules[2]
-    assert "right:-14%;" in rules[2]
-    assert "top:0;" in rules[2]
+    assert "width:145%;" in rules[2]
+    assert "right:-6%;" in rules[2]
+    assert "top:6px;" in rules[2]
+
+
+def test_miniature_zoom_is_reduced_from_v100184_and_other_factions_unchanged():
+    rules = portrait_rules()
+    widths = [int(re.search(r"width:([0-9]+)%", rule).group(1)) for rule in rules]
+    assert widths == [135, 140, 145]
+    assert all(new < old for new, old in zip(widths, [185, 195, 200]))
+    assert all(new < old for new, old in zip(widths, [150, 157, 160]))
+    assert ":has(img.death-korps-portrait-photo)" in KORPS_SELECTOR
+    assert "img.deathwatch-portrait-photo" in CSS
+    assert "img.experimental-necron-framed-svg" in CSS
 
 
 def test_existing_activation_scroll_and_portrait_layering_are_preserved():
