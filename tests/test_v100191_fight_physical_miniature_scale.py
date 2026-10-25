@@ -55,6 +55,63 @@ assert.equal(calculatePair([{baseMm:25,geometry:trooper},{baseMm:28,geometry:mac
     assert r.returncode==0, r.stderr or r.stdout
 
 
+def test_mount_measures_image_bases_and_positions_pills_without_clipping_heads():
+    source = r"""
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const bytes=(w,h,upper,baseFrom,baseLeft,baseRight)=>{
+  const b = new Uint8ClampedArray(w*h*4);
+  for(let y=upper;y<h-2;y++) for(let x=(y>=baseFrom?baseLeft:Math.floor(w*.35));
+      x<=(y>=baseFrom?baseRight:Math.floor(w*.65));x++) b[(y*w+x)*4+3]=255;
+  return b;
+};
+const images = [
+  {complete:true,naturalWidth:110,naturalHeight:150,currentSrc:'trooper.png',
+   pixels:bytes(110,150,20,125,20,89),style:{}},
+  {complete:true,naturalWidth:100,naturalHeight:200,currentSrc:'macrocyte.webp',
+   pixels:bytes(100,200,3,175,20,75),style:{}}
+];
+const frames=images.map((_,i)=>({dataset:{fightBaseMm:i===0?'25':'28'},
+  classList:{has:[],add(value){this.has.push(value);}}}));
+const cards=images.map((image,i)=>({
+  matches:()=>true,
+  getBoundingClientRect:()=>({height:200,width:170}),
+  querySelector: selector=> selector.includes(' > img.')?image:frames[i]
+}));
+const container={children:cards,isConnected:true};
+const root={querySelector:()=>container};
+const document={createElement:()=>{
+  let active=null;
+  return {width:0,height:0,getContext:()=>({
+    drawImage:image=>{active=image;},
+    getImageData:()=>({data:active.pixels})
+  })};
+}};
+const win={};
+(new Function('window','document',fs.readFileSync('fight-portrait-scale.js','utf8')))(win,document);
+win.TombWorldFightPortraitScale.mount(root);
+for(let i=0;i<2;i++){
+  assert(frames[i].classList.has.includes('is-table-scaled'));
+  for(const key of ['width','height','left','bottom']) assert(Number.isFinite(parseFloat(images[i].style[key])));
+}
+// The taller macrocyte has 90% of 200px, the trooper stays shorter.
+// Both silhouettes land on precisely the same 2px baseline.
+const {analyzePixels,calculatePair}=win.TombWorldFightPortraitScale;
+const geometry=images.map(im=>analyzePixels(im.pixels,im.naturalWidth,im.naturalHeight));
+const layouts=calculatePair(geometry.map((g,i)=>({geometry:g,baseMm:i===0?25:28})),200);
+assert(Math.abs(Math.max(...layouts.map(x=>x.figureHeight))-180)<.001);
+assert(layouts[0].figureHeight<layouts[1].figureHeight);
+for(let i=0;i<2;i++){
+  const b=parseFloat(images[i].style.bottom);
+  assert(Math.abs(b+layouts[i].transparentBottom-2)<.001);
+  const t=200-2-layouts[i].figureHeight;
+  assert(t>=19.99, 'no miniature head may be cropped above its card');
+}
+"""
+    r = subprocess.run(["node", "-e", source], cwd=ROOT, text=True, capture_output=True, timeout=30)
+    assert r.returncode == 0, r.stderr or r.stdout
+
+
 def test_shared_native_markup_has_physical_bases_and_only_two_fight_invocations():
     assert "baseMm=Number(npo.baseSize)||28" in APP
     assert "baseMm=Number(playerDefinition(participant.id).baseSize)||25" in APP
