@@ -51,7 +51,7 @@ def test_fight_resolution_korps_larger_and_same_full_height_alignment():
 
 
 def test_both_fight_surfaces_use_one_uncropped_bottom_aligned_photo_rule():
-    tail = CSS.split("/* v10.0.189: Keep Fight Resolution", 1)[1]
+    tail = CSS.split("/* v10.0.190: Fight Resolution", 1)[1]
     selector = ('html[data-ui="tomb"] .experimental-fight-pool .fight-portrait .fight-portrait-artwork,\n'
                 'html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait .fight-portrait-artwork')
     rule = last_rule(selector)
