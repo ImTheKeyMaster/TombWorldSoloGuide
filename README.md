@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.189
+# Tomb World Battle Guide v10.0.190
+
+## v10.0.190
+
+### Match Death Korps to Necron miniature scale in Fight cards
+
+- Remove the extra Death Korps width and right offset introduced in v10.0.189 on Fight Result, restoring the same 100%/190px maximum as the Necron.
+- Remove the Death Korps-only 118px/76% size boost in Fight Resolution so it inherits the Necron's normal 98px/68% frame, including the narrow-screen responsive scaling.
+- Preserve both miniatures' full-height, contained and bottom-aligned artwork, their card text overlays, all portrait mappings and preloading, and the existing Death Korps Activation framing.
+- Standard and Experimental Tomb modes share the fix; combat mechanics and persisted state are unchanged.
 
 ## v10.0.189
 
