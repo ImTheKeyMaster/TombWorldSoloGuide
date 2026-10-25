@@ -23,6 +23,7 @@ const context={
  state:{roster:[]},
  selectedPlayerTeamName:()=> 'Death Korps',
  playerDefinition:id=>id==='gunner-plasma-gun'?{id}:null,
+ deathKorpsPortraitImage:id=>id==='gunner-plasma-gun'?'Assets/Images/TombUI/DeathKorps/Death_Korps_gunner_plasma.png':'',
  deathKorpsCombatPortraitSvg:(id,cls)=>
   '<img class="'+cls+' death-korps-portrait-photo" src="Assets/Images/TombUI/DeathKorps/Death_Korps_gunner_plasma.png">',
  deathwatchPortraitImage:()=>'',deathwatchPortraitSvg:()=>'',experimentalNecronPortraitSvg:()=> '',
