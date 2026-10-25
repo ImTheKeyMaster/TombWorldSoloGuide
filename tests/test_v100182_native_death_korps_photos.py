@@ -40,6 +40,8 @@ const ctx={
  playerCurrentWounds:()=>7,
  playerHumanActionCatalog:()=>[],
  playerHumanActionState:()=>({}),
+ selectHumanPlayerAction:()=>{},
+ confirmEndHumanPlayerActivation:()=>{},
  renderHumanActivationShell:params=>{activationCaptured=params;},
  renderOperativeStatusPanel:()=>{},
  unawakenedScoutRooms:()=>[],
