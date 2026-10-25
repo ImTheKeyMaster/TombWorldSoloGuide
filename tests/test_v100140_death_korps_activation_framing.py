@@ -41,9 +41,13 @@ def test_death_korps_only_not_deathwatch_or_roster():
 
 def test_landscape_desktop_matches_deathwatch_figure_footprint():
     rule = portrait_rules()[0]
-    assert "width:138%;" in rule
-    assert "right:-6%;" in rule
-    assert "top:0;" in rule
+    assert "width:122%;" in rule
+    assert "right:-4%;" in rule
+    assert "top:auto;" in rule
+    assert "bottom:0;" in rule
+    assert "height:100%;" in rule
+    assert "object-fit:contain;" in rule
+    assert "object-position:right bottom;" in rule
     assert "transform:none;" in rule
     assert "clip-path" not in rule  # Retain the existing overlap and silhouette treatment.
 
@@ -54,16 +58,16 @@ def test_iphone_portrait_uses_smaller_scale_and_narrow_fallback():
         r"@media\(max-width:520px\)\s*\{\s*" + re.escape(KORPS_SELECTOR),
         CSS,
     )
-    assert "width:145%;" in rules[1]
-    assert "right:-6%;" in rules[1]
-    assert "top:0;" in rules[1]
+    assert "width:125%;" in rules[1]
+    assert "right:-4%;" in rules[1]
+    assert "top:auto;" in rules[1]
     assert re.search(
         r"@media\(max-width:380px\)\s*\{\s*" + re.escape(KORPS_SELECTOR),
         CSS,
     )
-    assert "width:148%;" in rules[2]
-    assert "right:-7%;" in rules[2]
-    assert "top:0;" in rules[2]
+    assert "width:128%;" in rules[2]
+    assert "right:-5%;" in rules[2]
+    assert "top:auto;" in rules[2]
 
 
 def test_existing_activation_scroll_and_portrait_layering_are_preserved():
