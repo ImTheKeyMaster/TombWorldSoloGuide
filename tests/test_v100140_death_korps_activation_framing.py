@@ -68,7 +68,7 @@ def test_iphone_portrait_scales_down_to_show_full_model_and_base():
 
 def test_miniature_zoom_is_reduced_from_v100184_and_other_factions_unchanged():
     rules = portrait_rules()
-    widths = [int(re.search(r"width:(\\d+)%", rule).group(1)) for rule in rules]
+    widths = [int(re.search(r"width:([0-9]+)%", rule).group(1)) for rule in rules]
     assert widths == [135, 140, 145]
     assert all(new < old for new, old in zip(widths, [185, 195, 200]))
     assert all(new < old for new, old in zip(widths, [150, 157, 160]))
