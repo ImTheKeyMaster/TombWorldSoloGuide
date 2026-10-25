@@ -42,12 +42,12 @@ def test_every_deathwatch_id_has_one_supplied_portrait_in_both_modes():
         assert old + "/" not in SW
 
 
-def test_photo_lookup_and_svg_render_are_identical_in_both_modes_and_preloaded():
+def test_photo_lookup_and_native_img_render_are_identical_in_both_modes_and_preloaded():
     script = r"""
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const source=fs.readFileSync('app.js','utf8');
-const start=source.indexOf('  const DEATHWATCH_PORTRAIT_ROOT=');
+const start=source.indexOf('  function portraitImageMarkup(');
 const end=source.indexOf('  // User-photographed Death Korps cutouts',start);
 assert(start>0&&end>start);
 const pictures=[];
@@ -75,8 +75,8 @@ for(const mode of ['off','on']){
   const url='Assets/Images/TombUI/Deathwatch/'+file;
   assert.equal(api.url(id),url,mode+': '+id);
   const svg=api.svg(id,'art');
-  assert(svg.includes('<image href="'+url+'"'),mode+': '+id);
-  assert(svg.includes('class="art"'),mode+': '+id);
+  assert(svg.includes('src="'+url+'"'),mode+': '+id);
+  assert(svg.includes('class="art deathwatch-portrait-photo"'),mode+': '+id);
   assert(!svg.includes('<filter')&&!svg.includes('filter="'),mode+': '+id);
  }
 }
@@ -107,7 +107,7 @@ def test_all_portrait_surfaces_use_shared_code_without_old_filter_or_preview_gat
     assert "function deathwatchPortraitSvg(id,svgClass='')" in APP
     assert "function warmDeathwatchPortraitImages(ids)" in APP
     assert "const resolvedPortraitMarkup=portraitMarkup;" in APP
-    assert 'href="${escapeHtml(deathwatchPortraitImage(activation.operativeId))}"' in APP
+    assert "deathwatchPortraitSvg(activation.operativeId,'experimental-activation-portrait-svg')" in APP
     assert "return deathwatchPortraitSvg(id,svgClass)" in APP
     assert "deathwatchPortraitSvg(id,'blast-result-portrait-artwork')" in APP
     assert "deathwatchPortraitSvg(participant.id,'fight-portrait-artwork')" in APP
