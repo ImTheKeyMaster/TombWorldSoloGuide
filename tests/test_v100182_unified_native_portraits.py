@@ -75,7 +75,7 @@ def test_photo_surfaces_reuse_pipeline_and_keep_visual_appearance():
     assert "object-position:center top" in CSS
     assert "object-position:center center" in CSS
     assert "opacity:.52;" in CSS  # Approved Deathwatch contrast unchanged
-    assert "width:195%" in CSS  # Larger Death Korps photo matches Necron activation prominence
+    assert "width:145%" in CSS  # Smaller Death Korps image reveals the full model
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
     assert "function refreshSvgPortraitsAfterResume(" in APP  # Fallback retained for other SVGs
 
