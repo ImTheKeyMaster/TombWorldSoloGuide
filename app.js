@@ -7873,7 +7873,9 @@ function showPlayerActivation(){
     }
     const deathwatch=participant.side==='player'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'
       &&!!deathwatchPortraitImage(participant.id);
-    return artwork?`<span class="fight-portrait fight-portrait-${role}${deathwatch?' deathwatch-portrait':''}" aria-hidden="true">${artwork}</span>`:'';
+    const deathKorps=participant.side==='player'&&selectedPlayerTeamName().toLowerCase()==='death korps'
+      &&!!deathKorpsPortraitImage(participant.id);
+    return artwork?`<span class="fight-portrait fight-portrait-${role}${deathwatch?' deathwatch-portrait':''}${deathKorps?' death-korps-portrait':''}" aria-hidden="true">${artwork}</span>`:'';
   }
   function fightRollParticipantHtml(fight,role,animate){
     const participant=fight[role],profile=participant.profile,dice=participant.attackDice.map(fightDiePresentation);
