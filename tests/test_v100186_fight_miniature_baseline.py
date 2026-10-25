@@ -33,7 +33,7 @@ def test_both_fight_cards_share_a_bottom_aligned_uncropped_miniature():
 
 def test_other_portrait_screens_and_existing_death_korps_zoom_unchanged():
     start=CSS.index("/* v10.0.186: Fight Resolution miniature bases")
-    tail=CSS[start:]
+    tail=CSS[start:].split("/* v10.0.187: Align both Fight Result",1)[0]
     assert ".experimental-fight-pool .fight-portrait" in tail
     assert ".fight-roll-pool" not in tail
     assert ".fight-result-card" not in tail

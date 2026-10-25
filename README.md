@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.186
+# Tomb World Battle Guide v10.0.187
+
+## v10.0.187
+
+### Fit and align both Fight Result miniatures
+
+- Match Death Korps and Necron miniature bases along the bottom of their respective Fight Result cards, keeping the entire figure in view rather than clipping its head.
+- Limit decorative portrait width and soften the edge nearest the text, so operative names, wounds, and damage remain readable without hiding either miniature.
+- Preserve the approved Fight Resolution base alignment, reduced Death Korps Activation zoom, native shared image renderer, Standard/Experimental modes, and all combat state and logic.
 
 ## v10.0.186
 

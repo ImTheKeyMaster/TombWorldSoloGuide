@@ -3024,3 +3024,26 @@ html[data-ui="tomb"] .experimental-fight-pool .fight-portrait-artwork{
   object-fit:contain;
   object-position:center bottom;
 }
+
+/* v10.0.187: Align both Fight Result miniature bases at the card bottom.
+   Fit the whole cutout inside the card and keep the left text column readable.
+   Only Fight Result artwork changes; Fight Resolution and Activation retain
+   their approved sizes, masking and positions. */
+html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait{
+  inset:0 0 0 auto;
+  width:min(48%,148px);
+  max-width:none;
+  height:100%;
+  opacity:.4;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.24) 28%,rgba(0,0,0,.76) 62%,#000 95%);
+  mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.24) 28%,rgba(0,0,0,.76) 62%,#000 95%);
+}
+html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait .fight-portrait-artwork{
+  display:block;
+  width:100%;
+  height:100%;
+  max-height:100%;
+  object-fit:contain;
+  object-position:center bottom;
+  transform:none;
+}
