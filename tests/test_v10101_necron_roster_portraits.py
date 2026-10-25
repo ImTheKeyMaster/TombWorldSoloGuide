@@ -59,8 +59,8 @@ def test_portrait_mapping_matches_supported_tomb_world_npo_types():
 
 def test_necron_portraits_use_supplied_precolored_transparent_assets_without_runtime_filter():
     source = section("function experimentalNecronPortraitSvg", "function experimentalNecronPortraitMarkup")
-    assert '<image href="' in source
-    assert 'x="0" y="0" width="384" height="384"' in source
+    assert "portraitImageMarkup(" in source
+    assert "experimental-necron-framed-svg" in source
     for old_filter_piece in (
         "<filter",
         "feColorMatrix",
