@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.185
+# Tomb World Battle Guide v10.0.186
+
+## v10.0.186
+
+### Align miniature bases and reveal full Trooper portrait in Fight Resolution
+
+- Bottom-anchor both the player and Necron model portraits in the compact Tomb Fight Resolution participant cards, rather than offsetting them above the card. This prevents the Death Korps Trooper's head from being cropped by the upper edge and visually aligns model bases.
+- Use contain-fit and bottom-aligned image positioning inside each portrait surface, preserving each faction's existing fade, opacity, and masking, as well as dice, wounds, status badges, and text layout.
+- Keep the already-approved v10.0.185 **smaller Death Korps Activation portrait** unchanged, along with the unified native PNG/WebP image renderer, Classic mode, saved game state and all combat logic.
 
 ## v10.0.185
 
