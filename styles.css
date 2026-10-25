@@ -3096,3 +3096,13 @@ html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait.is-ta
 html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait:not(.is-table-scaled){
   right:12%;
 }
+
+
+/* v10.0.193: Reduce Death Korps shooting portrait zoom by 20% only in
+   multi-target completion cards and the dedicated Resolve Combat dice cards.
+   Baseline artwork is scale(1.3); 1.3 * 0.8 = 1.04. Leave Deathwatch,
+   Necrons, Fight Result, Fight Roll and Activation unaffected. */
+html[data-ui="tomb"] .attack-confirmation-card.has-target-portrait .blast-result-portrait-artwork.death-korps-portrait-photo,
+html[data-ui="tomb"] .dedicated-combat-screen .shooting-roll-pool.has-fight-portrait .fight-portrait-artwork.death-korps-portrait-photo{
+  transform:scale(1.04);
+}

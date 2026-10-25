@@ -30,8 +30,11 @@ def test_both_fight_result_portraits_bottom_align_and_fit_whole_figure():
     assert "object-fit:contain" in photo
     assert "object-position:center bottom" in photo
     assert "transform:none" in photo
-    assert ".death-korps-portrait" not in CSS.split("/* v10.0.187:",1)[1].split("/* v10.0.189:",1)[0]
-    assert ".experimental-necron-framed-svg" not in CSS.split("/* v10.0.187:",1)[1].split("/* v10.0.189:",1)[0]
+    # Scope the historical v10.0.187 check to that release's Fight Result styles.
+    # Later versions may intentionally style these factions on unrelated screens.
+    result_css = CSS.split("/* v10.0.187:",1)[1].split("/* v10.0.190:",1)[0]
+    assert ".death-korps-portrait" not in result_css
+    assert ".experimental-necron-framed-svg" not in result_css
 
 
 def test_fight_result_photos_stay_behind_text_without_changing_result_content():

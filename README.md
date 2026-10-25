@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.192
+# Tomb World Battle Guide v10.0.193
+
+## v10.0.193
+
+### Reduce Death Korps shooting portrait zoom by 20%
+
+- Reduce only Death Korps artwork in Blast/Torrent multi-target shooting result cards and in Resolve Combat attack/defense dice cards from 1.3× to 1.04× image zoom, exactly 20% smaller.
+- Preserve portrait placement, existing fade/contrast, text, dice, and combat mechanics. The parent card dimensions and baseline positioning are unchanged.
+- Leave Deathwatch and Necron artwork at its existing zoom, as well as Fight Result, Fight Roll and Activation portraits. No changes to the shared renderer or saved state.
+- Apply in both Standard and Experimental Tomb UI, and update the offline PWA assets/cache version.
 
 ## v10.0.192
 
