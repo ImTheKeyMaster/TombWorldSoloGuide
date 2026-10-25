@@ -24,7 +24,7 @@ def test_v100106_mask_and_runtime_zoom_are_superseded_by_supplied_cutouts():
     assert "-1.42" not in source
     assert 'tableValues="0 0 0 .10 .45 .80 1 1 1"' not in source
     assert "experimentalNecronPortraitFrame" not in APP
-    assert 'x="0" y="0" width="384" height="384"' in source
+    assert "return portraitImageMarkup(" in source
 
 
 def test_single_direct_renderer_still_feeds_all_experimental_necron_portraits():
