@@ -44,24 +44,21 @@ assert.doesNotMatch(necron,/death-korps-portrait|deathwatch-portrait/);
     assert result.returncode==0,result.stderr or result.stdout
 
 
-def test_new_framing_supersedes_tiny_death_korps_cutouts_without_moving_base():
-    tail=CSS.split("/* v10.0.189: Keep Fight Resolution",1)[1]
-    for selector,size in (
-        ('html[data-ui="tomb"] .experimental-fight-pool .fight-portrait.death-korps-portrait','width:min(76%,118px)'),
-        ('html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait.death-korps-portrait','width:min(115%,205px)'),
-    ):
-        blocks=re.findall(re.escape(selector)+r"\s*\{([^}]*)\}",tail)
-        assert len(blocks)==1
-        assert size in blocks[0]
-    assert "height:calc(100% - 14px)" not in CSS
-    assert "height:calc(100% - 18px)" not in CSS
-    assert "margin-top:14px" not in tail
-    assert "margin-top:18px" not in tail
+def test_current_framing_preserves_full_height_baseline_without_faction_zoom():
+    # The v10.0.188 top insets and v10.0.189 oversize modifiers are gone.
+    tail=CSS.split("/* v10.0.190:",1)[1]
+    for removed in ("height:calc(100% - 14px)", "height:calc(100% - 18px)",
+                    "width:min(76%,118px)", "width:min(115%,205px)"):
+        assert removed not in CSS
+    assert ".fight-portrait.death-korps-portrait{" not in tail
+    assert "object-fit:contain" in tail
+    assert "object-position:center bottom" in tail
     assert "/* v10.0.186: Fight Resolution miniature bases" in CSS
     assert "/* v10.0.187: Align both Fight Result miniature bases" in CSS
     assert "width:135%;" in CSS
     assert "width:140%;" in CSS
     assert "width:145%;" in CSS
+
 
 def test_release_consistency_and_state_unchanged():
     html=(ROOT/"index.html").read_text(encoding="utf-8")
