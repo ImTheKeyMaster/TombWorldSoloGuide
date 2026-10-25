@@ -101,9 +101,9 @@ def test_activation_mask_and_framing_remain_and_native_image_scoped_to_korps():
     selector=prefix+'.experimental-activation-portrait:has(img.death-korps-portrait-photo) .experimental-activation-portrait-svg'
     rules=re.findall(re.escape(selector)+r"\s*\{([^}]*)\}",CSS)
     assert len(rules)==3
-    assert "width:185%" in rules[0]
-    assert "width:195%" in rules[1]
-    assert "width:200%" in rules[2]
+    assert "width:138%" in rules[0]
+    assert "width:145%" in rules[1]
+    assert "width:148%" in rules[2]
     assert "mask-image:linear-gradient" in CSS
     assert "clip-path:inset(-96px -96px -64px -220px)" in CSS
     assert "img.death-korps-portrait-photo," in CSS
