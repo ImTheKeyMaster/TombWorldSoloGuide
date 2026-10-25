@@ -3066,3 +3066,26 @@ html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait .figh
   object-position:center bottom;
   transform:none;
 }
+
+/* v10.0.191: Fight miniatures share a real-world pixels-per-mm scale derived
+   from transparent silhouette/base measurements, not a shared image-box size.
+   The taller cutout reaches 90% of the card; both bases sit at the same bottom
+   baseline. Only Fight Resolution and Fight Result opt into this treatment. */
+html[data-ui="tomb"] .experimental-fight-pool .fight-portrait.is-table-scaled,
+html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait.is-table-scaled{
+  inset:0;
+  width:100%;
+  height:100%;
+  max-width:none;
+}
+html[data-ui="tomb"] .experimental-fight-pool .fight-portrait.is-table-scaled .fight-portrait-artwork,
+html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait.is-table-scaled .fight-portrait-artwork{
+  position:absolute;
+  display:block;
+  max-width:none;
+  max-height:none;
+  object-fit:fill;
+  object-position:center bottom;
+  transform:none;
+  margin:0;
+}
