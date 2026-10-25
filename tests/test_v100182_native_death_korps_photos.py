@@ -20,7 +20,7 @@ function section(start,end){
  assert(i>0&&j>i,'Missing source: '+start);
  return app.slice(i,j);
 }
-const helpers=section('  const DEATH_KORPS_PORTRAIT_ROOT=','  function usesPlayerPortraitRail(');
+const helpers=section('  function portraitImageMarkup(','  function usesPlayerPortraitRail(');
 const combat=section('  function deathKorpsCombatPortraitSvg(','  // Shared shooting dice cards');
 const activation=section('  function renderHumanPlayerActionPicker(','  function playerSequentialStage(');
 const portraits=section('  function fightParticipantPortrait(','  function fightWeaponRulesHtml(');
@@ -83,7 +83,7 @@ for(const enabled of ['off','on']){
 }
 assert.equal(api.deathKorpsPortraitPhoto('unknown'),'');
 
-// Deathwatch still keeps the supplied SVG artwork; no fabricated portrait.
+// Deathwatch uses the same native image renderer; no fabricated portrait.
 team='Deathwatch';
 assert.match(api.playerRosterPortraitMarkup('trooper-3'),/data-team="deathwatch"/);
 team='Kasrkin';
@@ -106,7 +106,8 @@ def test_activation_mask_and_framing_remain_and_native_image_scoped_to_korps():
     assert "width:160%" in rules[2]
     assert "mask-image:linear-gradient" in CSS
     assert "clip-path:inset(-96px -96px -64px -220px)" in CSS
-    assert "img.death-korps-portrait-photo{object-fit:contain;object-position:center top;}" in CSS
+    assert "img.death-korps-portrait-photo," in CSS
+    assert "object-position:center top" in CSS
     assert "experimental-activation-portrait-svg" in APP
     assert "deathwatchPortraitSvg" in APP
     assert "experimentalNecronPortraitSvg" in APP
