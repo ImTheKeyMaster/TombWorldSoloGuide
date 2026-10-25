@@ -59,8 +59,9 @@ def test_operatives_keep_the_expected_portrait_associations():
 
 def test_supplied_images_are_rendered_directly_without_recoloring_or_keying():
     source = section("function experimentalNecronPortraitSvg", "function experimentalNecronPortraitMarkup")
-    assert '<image href="' in source
-    assert 'x="0" y="0" width="384" height="384"' in source
+    assert "return portraitImageMarkup(" in source
+    assert "experimental-necron-framed-svg" in source
+    assert "APP_VERSION" in source
     for removed_runtime_treatment in (
         "experimentalNecronGreenPortraitSvg",
         "experimentalNecronPortraitFrame",
