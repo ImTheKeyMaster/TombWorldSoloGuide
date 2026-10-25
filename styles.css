@@ -3016,32 +3016,28 @@ html[data-ui="tomb"] img.experimental-necron-framed-svg{
   object-position:center center;
 }
 
-/* v10.0.182: Anchor both miniature bases to the bottom of their Fight
-   Resolution cards. The older top offset clipped high-reaching Death Korps
-   Troopers, and left bases at different heights for different factions. */
-html[data-ui="tomb"] .experimental-fight-pool .fight-portrait{
-  top:auto;
-  bottom:0;
-  height:100%;
+/* v10.0.182: Move ONLY Death Korps Fight Resolution cutouts down so
+   tall helmets and weapons are not clipped. Necron and Deathwatch images
+   retain their approved positioning. */
+html[data-ui="tomb"] .experimental-fight-pool .fight-portrait.death-korps-portrait{
+  top:12px;
+  bottom:auto;
 }
-html[data-ui="tomb"] .experimental-fight-pool .fight-portrait-artwork{
+html[data-ui="tomb"] .experimental-fight-pool .fight-portrait.death-korps-portrait .fight-portrait-artwork{
   object-fit:contain;
   object-position:center bottom;
   transform:none;
 }
 
-/* v10.0.182: Fight Result miniatures fit inside their own cards, with both
-   bases on the same lower edge. Fade artwork behind overlapping labels so
-   names, damage and wounds remain legible on narrow iPhones. */
-html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait{
+/* v10.0.182: Position Death Korps at the bottom of Fight Result cards,
+   without moving the already-correct Necron or Deathwatch miniatures.
+   Text remains above decorative photography using existing z-index rules. */
+html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait.death-korps-portrait{
   inset:0 0 0 auto;
-  width:min(57%,168px);
   height:100%;
   max-width:none;
-  -webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.18) 38%,rgba(0,0,0,.65) 67%,#000 100%);
-  mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.18) 38%,rgba(0,0,0,.65) 67%,#000 100%);
 }
-html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait-artwork{
+html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait.death-korps-portrait .fight-portrait-artwork{
   width:100%;
   height:100%;
   object-fit:contain;
