@@ -7,12 +7,14 @@ on:
       - service-worker.js
       - index.html
       - styles.css
+      - fight-portrait-scale.js
       - tests/test_v100182_native_death_korps_photos.py
       - tests/test_v100183_unified_native_portraits.py
       - tests/test_v100187_fight_result_portrait_baseline.py
       - tests/test_v100188_death_korps_fight_downward_position.py
       - tests/test_v100189_large_fight_portraits.py
       - tests/test_v100190_death_korps_necron_equal_scale.py
+      - tests/test_v100191_fight_physical_miniature_scale.py
       - tests/test_v100164_experimental_death_korps_portraits.py
       - tests/test_v100145_death_korps_preload.py
       - tests/test_v100153_promote_combat_features.py
@@ -24,12 +26,14 @@ on:
       - service-worker.js
       - index.html
       - styles.css
+      - fight-portrait-scale.js
       - tests/test_v100182_native_death_korps_photos.py
       - tests/test_v100183_unified_native_portraits.py
       - tests/test_v100187_fight_result_portrait_baseline.py
       - tests/test_v100188_death_korps_fight_downward_position.py
       - tests/test_v100189_large_fight_portraits.py
       - tests/test_v100190_death_korps_necron_equal_scale.py
+      - tests/test_v100191_fight_physical_miniature_scale.py
       - tests/test_v100164_experimental_death_korps_portraits.py
       - tests/test_v100153_promote_combat_features.py
   workflow_dispatch:
@@ -49,6 +53,7 @@ jobs:
         run: |
           node --check app.js
           node --check service-worker.js
+          node --check fight-portrait-scale.js
       - name: Install test runner
         run: python -m pip install pytest
       - name: Check Death Korps and combat regression tests
@@ -62,6 +67,7 @@ jobs:
             tests/test_v100188_death_korps_fight_downward_position.py \
             tests/test_v100189_large_fight_portraits.py \
             tests/test_v100190_death_korps_necron_equal_scale.py \
+            tests/test_v100191_fight_physical_miniature_scale.py \
             tests/test_v100145_death_korps_preload.py \
             tests/test_v100140_death_korps_activation_framing.py \
             tests/test_v100141_npo_player_target_rail.py \
