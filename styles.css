@@ -2602,26 +2602,28 @@ html[data-ui="tomb"] #modal.human-activation-modal #modalBody>.modal-inner{
   padding-bottom:calc(28px + env(safe-area-inset-bottom));
 }
 
-/* v10.0.140/184: Match Death Korps activation model prominence to Necron.
-   Preserve the approved fade, crop, and overlap with Movement/actions. */
+/* v10.0.185: Zoom Death Korps activation photos OUT so the full
+   miniature, including its base, fits within the portrait area. Match
+   Necron's complete-figure framing, not its raw zoom percentage. Preserve
+   the existing transparency, fade and overlap with Movement/actions. */
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:has(img.death-korps-portrait-photo) .experimental-activation-portrait-svg{
-  width:185%;
-  right:-11%;
-  top:0;
+  width:135%;
+  right:-5%;
+  top:4px;
   transform:none;
 }
 @media(max-width:520px){
   html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:has(img.death-korps-portrait-photo) .experimental-activation-portrait-svg{
-    width:195%;
-    right:-13%;
-    top:0;
+    width:140%;
+    right:-5%;
+    top:8px;
   }
 }
 @media(max-width:380px){
   html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:has(img.death-korps-portrait-photo) .experimental-activation-portrait-svg{
-    width:200%;
-    right:-14%;
-    top:0;
+    width:145%;
+    right:-6%;
+    top:6px;
   }
 }
 
