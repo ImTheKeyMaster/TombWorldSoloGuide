@@ -7,6 +7,7 @@ on:
       - service-worker.js
       - index.html
       - styles.css
+      - fight-portrait-scale.js
       - tests/test_v100182_native_death_korps_photos.py
       - tests/test_v100183_unified_native_portraits.py
       - tests/test_v100187_fight_result_portrait_baseline.py
@@ -24,6 +25,7 @@ on:
       - service-worker.js
       - index.html
       - styles.css
+      - fight-portrait-scale.js
       - tests/test_v100182_native_death_korps_photos.py
       - tests/test_v100183_unified_native_portraits.py
       - tests/test_v100187_fight_result_portrait_baseline.py
@@ -49,6 +51,7 @@ jobs:
         run: |
           node --check app.js
           node --check service-worker.js
+          node --check fight-portrait-scale.js
       - name: Install test runner
         run: python -m pip install pytest
       - name: Check Death Korps and combat regression tests
