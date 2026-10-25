@@ -6,6 +6,12 @@ on:
       - app.js
       - service-worker.js
       - index.html
+      - styles.css
+      - tests/test_v100182_native_death_korps_photos.py
+      - tests/test_v100183_unified_native_portraits.py
+      - tests/test_v100187_fight_result_portrait_baseline.py
+      - tests/test_v100188_death_korps_fight_downward_position.py
+      - tests/test_v100189_large_fight_portraits.py
       - tests/test_v100164_experimental_death_korps_portraits.py
       - tests/test_v100145_death_korps_preload.py
       - tests/test_v100153_promote_combat_features.py
@@ -16,6 +22,12 @@ on:
       - app.js
       - service-worker.js
       - index.html
+      - styles.css
+      - tests/test_v100182_native_death_korps_photos.py
+      - tests/test_v100183_unified_native_portraits.py
+      - tests/test_v100187_fight_result_portrait_baseline.py
+      - tests/test_v100188_death_korps_fight_downward_position.py
+      - tests/test_v100189_large_fight_portraits.py
       - tests/test_v100164_experimental_death_korps_portraits.py
       - tests/test_v100153_promote_combat_features.py
   workflow_dispatch:
@@ -41,6 +53,12 @@ jobs:
         run: |
           python -m pytest -q \
             tests/test_v100164_experimental_death_korps_portraits.py \
+            tests/test_v100182_native_death_korps_photos.py \
+            tests/test_v100183_unified_native_portraits.py \
+            tests/test_v100186_fight_miniature_baseline.py \
+            tests/test_v100187_fight_result_portrait_baseline.py \
+            tests/test_v100188_death_korps_fight_downward_position.py \
+            tests/test_v100189_large_fight_portraits.py \
             tests/test_v100145_death_korps_preload.py \
             tests/test_v100140_death_korps_activation_framing.py \
             tests/test_v100141_npo_player_target_rail.py \
