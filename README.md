@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.186
+# Tomb World Battle Guide v10.0.187
+
+## v10.0.187
+
+### Move only Death Korps Fight miniatures down
+
+- Keep the Necron and Deathwatch Fight Resolution and Fight Result portraits exactly where they were in v10.0.186.
+- Correct Death Korps Fight Resolution portrait framing by lowering its image surface slightly and removing the remaining magnification that could crop the Trooper's head.
+- Bottom-align the Death Korps photo within Fight Result participant cards so more of the full model and base is visible without changing text, wounds, damage, and elimination states.
+- Preserve v10.0.185's reduced Death Korps activation zoom and the already-standard shared native image renderer.
+- No changes to combat mechanics, save data or other factions.
 
 ## v10.0.186
 
