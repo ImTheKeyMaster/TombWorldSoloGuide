@@ -23,14 +23,14 @@ def test_release_is_v100104_or_newer():
 def test_supplied_assets_are_preframed_so_runtime_frame_math_is_gone():
     source = section("function experimentalNecronPortraitSvg", "function experimentalNecronPortraitMarkup")
     assert "experimentalNecronPortraitFrame" not in APP
-    assert 'x="0" y="0" width="384" height="384"' in source
-    assert 'preserveAspectRatio="xMidYMid meet"' in source
+    assert "return portraitImageMarkup(" in source
+    assert "object-fit:contain" in CSS
     assert "experimental-necron-framed-svg" in source
 
 
 def test_framing_clips_safely_in_all_experimental_views():
     assert ".experimental-necron-framed-svg{" in CSS
-    assert "overflow:hidden!important" in CSS
+    assert "object-position:center center" in CSS
     assert ".experimental-necron-roster-picker .experimental-roster-tinted-svg{" in CSS
     assert "transform:none" in CSS
     assert "filter:none" in CSS
