@@ -3027,4 +3027,24 @@ html[data-ui="tomb"] .experimental-fight-pool .fight-portrait{
 html[data-ui="tomb"] .experimental-fight-pool .fight-portrait-artwork{
   object-fit:contain;
   object-position:center bottom;
+  transform:none;
+}
+
+/* v10.0.182: Fight Result miniatures fit inside their own cards, with both
+   bases on the same lower edge. Fade artwork behind overlapping labels so
+   names, damage and wounds remain legible on narrow iPhones. */
+html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait{
+  inset:0 0 0 auto;
+  width:min(57%,168px);
+  height:100%;
+  max-width:none;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.18) 38%,rgba(0,0,0,.65) 67%,#000 100%);
+  mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.18) 38%,rgba(0,0,0,.65) 67%,#000 100%);
+}
+html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait-artwork{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center bottom;
+  transform:none;
 }
