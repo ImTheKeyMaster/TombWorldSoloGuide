@@ -60,7 +60,7 @@ def test_low_opacity_background_is_hard_clamped_after_sharpening():
 
 def test_existing_photoshop_colorization_and_high_res_source_remain_intact():
     source = activation_source()
-    assert 'viewBox="0 0 384 384"' in source
+    assert "deathwatchPortraitSvg(activation.operativeId,'experimental-activation-portrait-svg')" in source
     assert "deathwatchPortraitImage(activation.operativeId)" in source
     assert "grayKeyed" not in source
     assert "colorized" not in source
