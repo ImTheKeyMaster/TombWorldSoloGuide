@@ -61,8 +61,7 @@ def test_shared_native_markup_has_physical_bases_and_only_two_fight_invocations(
     assert "baseMm=Number(playerDefinition(participant.id).baseSize)||32" in APP
     assert 'data-fight-base-mm="${baseMm}"' in APP
     assert "function scaleFightPortraits(){" in APP
-    assert APP.count("    scaleFightPortraits();")==1  # Fight Result
-    assert APP.count("      scaleFightPortraits();")==1  # Fight Resolution
+    assert APP.count("scaleFightPortraits();")==2  # Fight Resolution and Fight Result
     assert "window.TombWorldFightPortraitScale?.mount(modalBody)" in APP
     assert "function portraitImageMarkup(src,cssClass='',factionClass='')" in APP
     assert "function warmDeathKorpsPortraitImages(" in APP
@@ -90,6 +89,6 @@ def test_release_offline_shell_and_saved_state():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in SW
     assert f"V{CURRENT_APP_VERSION}" in HTML
     assert f"fight-portrait-scale.js?v={CURRENT_APP_VERSION}" in HTML
-    assert "'./fight-portrait-scale.js" not in SW or 'fight-portrait-scale.js?v=${APP_VERSION}' in SW
+    assert 'fight-portrait-scale.js?v=${APP_VERSION}' in SW
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
     assert "const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';" in APP
