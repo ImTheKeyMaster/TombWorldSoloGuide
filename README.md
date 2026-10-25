@@ -1,4 +1,11 @@
-# Tomb World Battle Guide v10.0.183
+# Tomb World Battle Guide v10.0.184
+
+## v10.0.184
+
+### Match Death Korps activation portrait zoom to Necron activation
+
+- Increase the Death Korps activation photograph size only, using responsive widths of 185% (desktop), 195% (phone), and 200% (narrow phone), with adjusted top/right positioning. This gives the model greater visual prominence, closer to the approved Necron activation portrait.
+- Preserve portrait fade, mask, layering behind Completed Actions and Movement, and the unified native image renderer. Do not alter Deathwatch or Necron zoom, combat portraits, roster cards, rules, dice, or saved game state.
 
 ## v10.0.183
 
