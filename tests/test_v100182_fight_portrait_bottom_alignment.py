@@ -12,17 +12,17 @@ APP=(ROOT/"app.js").read_text(encoding="utf-8")
 
 def test_only_death_korps_moves_down_in_fight_resolution():
     specific='html[data-ui="tomb"] .experimental-fight-pool .fight-portrait.death-korps-portrait'
-    rule=re.findall(re.escape(specific)+r"\\s*\\{([^}]*)\\}",CSS)
+    rule=re.findall(re.escape(specific)+r"\s*\{([^}]*)\}",CSS)
     assert len(rule)==1
     assert "top:12px;" in rule[0]
     assert "bottom:auto;" in rule[0]
     art=specific+' .fight-portrait-artwork'
-    art_rule=re.findall(re.escape(art)+r"\\s*\\{([^}]*)\\}",CSS)
+    art_rule=re.findall(re.escape(art)+r"\s*\{([^}]*)\}",CSS)
     assert len(art_rule)==1
     assert "object-position:center bottom" in art_rule[0]
     assert "object-fit:contain" in art_rule[0]
     assert "transform:none" in art_rule[0]
-    assert "html[data-ui=\\"tomb\\"] .fight-portrait.deathwatch-portrait" in CSS
+    assert "html[data-ui=\"tomb\"] .fight-portrait.deathwatch-portrait" in CSS
     assert "opacity:.38" in CSS
     # Do not add new overrides to the generic Necron or Deathwatch portrait.
     tail=CSS.split("/* v10.0.182: Move ONLY Death Korps Fight Resolution",1)[1]
@@ -32,19 +32,19 @@ def test_only_death_korps_moves_down_in_fight_resolution():
 
 def test_only_death_korps_fight_result_is_bottom_aligned():
     selector='html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait.death-korps-portrait'
-    rule=re.findall(re.escape(selector)+r"\\s*\\{([^}]*)\\}",CSS)
+    rule=re.findall(re.escape(selector)+r"\s*\{([^}]*)\}",CSS)
     assert len(rule)==1
     assert "inset:0 0 0 auto" in rule[0]
     assert "height:100%" in rule[0]
     art=selector+' .fight-portrait-artwork'
-    art_rule=re.findall(re.escape(art)+r"\\s*\\{([^}]*)\\}",CSS)
+    art_rule=re.findall(re.escape(art)+r"\s*\{([^}]*)\}",CSS)
     assert len(art_rule)==1
     assert "object-fit:contain" in art_rule[0]
     assert "object-position:center bottom" in art_rule[0]
     assert "transform:none" in art_rule[0]
     assert "death-korps-portrait" in APP
     assert "deathKorpsPortraitImage(participant.id)" in APP
-    assert "html[data-ui=\\"tomb\\"] .fight-result-card .fight-portrait{" in CSS
+    assert "html[data-ui=\"tomb\"] .fight-result-card .fight-portrait{" in CSS
 
 def test_death_korps_activation_zoom_reduced_for_full_figure():
     selector=(
