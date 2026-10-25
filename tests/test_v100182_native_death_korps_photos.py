@@ -85,7 +85,7 @@ assert.equal(api.deathKorpsPortraitPhoto('unknown'),'');
 
 // Deathwatch uses the same native image renderer; no fabricated portrait.
 team='Deathwatch';
-assert.match(api.playerRosterPortraitMarkup('trooper-3'),/data-team="deathwatch"/);
+assert.match(api.playerRosterPortraitMarkup('disruptor'),/deathwatch-portrait-photo/);
 team='Kasrkin';
 assert.equal(api.fightParticipantPortrait({side:'player',id:'gunner-plasma-gun'},'attacker'),'');
 """
