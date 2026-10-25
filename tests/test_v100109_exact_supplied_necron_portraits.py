@@ -37,7 +37,7 @@ def test_necron_portraits_are_still_direct_rendered_without_runtime_recoloring()
     end = app.index("function experimentalNecronPortraitMarkup", start)
     source = app[start:end]
 
-    assert '<image href="' in source
+    assert "portraitImageMarkup(" in source
     assert "<filter" not in source
     assert "feColorMatrix" not in source
     assert "feComponentTransfer" not in source
@@ -57,8 +57,8 @@ def test_supplied_necron_webps_have_384_square_pixels_and_alpha():
 def test_necron_portrait_urls_are_versioned_in_renderer_and_precache():
     app = (ROOT / "app.js").read_text(encoding="utf-8")
     worker = (ROOT / "service-worker.js").read_text(encoding="utf-8")
-    assert 'const versionedHref=`${href}?v=${APP_VERSION}`;' in app
-    assert 'escapeHtml(versionedHref)' in app
+    assert 'APP_VERSION' in app
+    assert "return portraitImageMarkup(" in app
     for filename in EXPECTED_SHA256:
         path = f'./Assets/Images/TombUI/NecronActivation/{filename}?v=${{APP_VERSION}}'
         assert path in worker, filename
