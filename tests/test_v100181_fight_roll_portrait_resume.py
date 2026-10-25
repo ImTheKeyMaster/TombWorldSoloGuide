@@ -25,6 +25,7 @@ const context={
  playerDefinition:id=>id==='gunner-plasma-gun'?{id}:null,
  deathKorpsCombatPortraitSvg:(id,cls)=>
   '<img class="'+cls+' death-korps-portrait-photo" src="Assets/Images/TombUI/DeathKorps/Death_Korps_gunner_plasma.png">',
+ deathKorpsPortraitImage:id=>id==='gunner-plasma-gun'?'Assets/Images/TombUI/DeathKorps/Death_Korps_gunner_plasma.png':'',
  deathwatchPortraitImage:()=>'',deathwatchPortraitSvg:()=>'',experimentalNecronPortraitSvg:()=> '',
  escapeHtml:text=>String(text),
  fightDiePresentation:d=>({value:d.value,retained:true,kind:'hit'}),
