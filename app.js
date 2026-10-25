@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.181';
+  const APP_VERSION = '10.0.182';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5280,7 +5280,7 @@ document.addEventListener('touchend',function(e){
       portraitMarkup:document.documentElement.dataset.ui==='tomb'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'&&deathwatchPortraitImage(activation.operativeId)
         ?`<svg class="experimental-activation-portrait-svg" viewBox="0 0 384 384" preserveAspectRatio="xMidYMin meet" aria-hidden="true" focusable="false"><image href="${escapeHtml(deathwatchPortraitImage(activation.operativeId))}" x="0" y="0" width="384" height="384" preserveAspectRatio="xMidYMin meet"/></svg>`
         :document.documentElement.dataset.ui==='tomb'&&selectedPlayerTeamName().toLowerCase()==='death korps'&&deathKorpsPortraitImage(activation.operativeId)
-        ?`<svg class="experimental-activation-portrait-svg" viewBox="0 0 384 384" preserveAspectRatio="xMidYMin meet" aria-hidden="true"><image href="${escapeHtml(deathKorpsPortraitImage(activation.operativeId))}" x="0" y="0" width="384" height="384" preserveAspectRatio="xMidYMin meet"/></svg>`:''
+        ?deathKorpsPortraitPhoto(activation.operativeId,'experimental-activation-portrait-svg'):''
     });
     renderOperativeStatusPanel(activation.operativeId);
   }
@@ -5576,6 +5576,13 @@ document.addEventListener('touchend',function(e){
   function deathKorpsPortraitImage(id){
     const filename=DEATH_KORPS_PORTRAITS[id];
     return filename?`${DEATH_KORPS_PORTRAIT_ROOT}Death_Korps_${filename}.png`:'';
+  }
+  // Native HTML images avoid iOS PWA loss of external SVG-image paint surfaces.
+  // Apply the same sizing and masks as the former SVG using existing CSS classes.
+  function deathKorpsPortraitPhoto(id,cssClass=''){
+    const src=deathKorpsPortraitImage(id);
+    if(!src)return '';
+    return `<img class="${escapeHtml(cssClass)} death-korps-portrait-photo" src="${escapeHtml(src)}" width="384" height="384" decoding="async" draggable="false" alt="">`;
   }
   // Keep one decoded image per unique photograph across roster, combat, and
   // activation screens. Return readiness so team setup can wait for first use.
@@ -6028,9 +6035,7 @@ function showPlayerActivation(){
   }
 
   function deathKorpsCombatPortraitSvg(id,svgClass=''){
-    const src=deathKorpsPortraitImage(id);
-    if(!src)return '';
-    return `<svg class="${escapeHtml(svgClass)}" viewBox="0 0 384 384" preserveAspectRatio="xMidYMin meet" aria-hidden="true" focusable="false"><image href="${escapeHtml(src)}" x="0" y="0" width="384" height="384" preserveAspectRatio="xMidYMin meet"/></svg>`;
+    return deathKorpsPortraitPhoto(id,svgClass);
   }
   // Shared shooting dice cards reuse the Fight Roll portrait markup and styling.
   // Templates live in the current combat modal so restored/animated rolls
