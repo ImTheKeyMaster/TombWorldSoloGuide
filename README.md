@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.190
+# Tomb World Battle Guide v10.0.191
+
+## v10.0.191
+
+### Table-accurate miniature scaling in Fight cards
+
+- Use a shared runtime canvas measurement of each native portrait's visible silhouette and the widest opaque horizontal span in the base band, instead of fitting incompatible PNG/WebP canvas dimensions into matching CSS boxes.
+- Pair participants using real-world miniature base diameters (e.g. 25mm Death Korps and 28mm Canoptek Macrocyte Warrior from NPO metadata). Compute a single common pixels-per-mm scale based on their measured figure-to-base proportions. Set the taller visible figure to 90% of the card height; retain relative height and base-width ratios for the other model.
+- Align the bottoms of the physical miniature silhouettes 2px above the bottom of the cards. Center miniature bases, not opaque bounding boxes. Preserve card text layering, masks, brightness, and bottom-aligned sizing fallback when canvas is not available.
+- Apply only in Tomb Fight Resolution and Fight Result; Standard and Experimental share the same flow. Activation, Fight Roll, image preloading, roster and gameplay persistence remain unchanged.
 
 ## v10.0.190
 
