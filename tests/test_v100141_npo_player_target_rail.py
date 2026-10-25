@@ -29,6 +29,7 @@ const section=(start,end)=>{
   return src.slice(a,b);
 };
 const code=[
+  section('  function portraitImageMarkup(', '  // Approved green Deathwatch cutouts'),
   section('  const DEATH_KORPS_PORTRAIT_ROOT=', '  function playerRosterPortraitMarkup('),
   section('  function playerRosterPortraitMarkup(', '  function usesPlayerPortraitRail('),
   section('  function experimentalNpoTargetRosterRail(', '  function updateNpoTargetConfirmationAvailability(')
