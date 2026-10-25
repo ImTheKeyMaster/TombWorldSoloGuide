@@ -3024,3 +3024,21 @@ html[data-ui="tomb"] .experimental-fight-pool .fight-portrait-artwork{
   object-fit:contain;
   object-position:center bottom;
 }
+
+
+/* v10.0.187: Move ONLY Death Korps miniature portraits lower.
+   Necron and Deathwatch models retain their existing approved positioning.
+   The artwork stays behind card text and is not enlarged beyond its frame. */
+html[data-ui="tomb"] .experimental-fight-pool .fight-portrait.death-korps-portrait{
+  bottom:-12px;
+}
+html[data-ui="tomb"] .experimental-fight-pool .fight-portrait.death-korps-portrait .fight-portrait-artwork{
+  transform:none;
+  object-fit:contain;
+  object-position:center bottom;
+}
+html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait.death-korps-portrait .fight-portrait-artwork{
+  transform:none;
+  object-fit:contain;
+  object-position:center bottom;
+}
