@@ -26,7 +26,8 @@ const ctx={
  deathwatchPortraitImage:id=>id==='bombard'?'Assets/Images/TombUI/Deathwatch/Deathwatch_bombard.png':'',
  deathwatchPortraitSvg:id=>'<svg data-team="deathwatch" data-id="'+id+'"></svg>',
  experimentalNecronPortraitSvg:()=>'<svg data-team="necron"></svg>',
- deathKorpsCombatPortraitSvg:()=>'<svg data-team="korps"></svg>'
+ deathKorpsCombatPortraitSvg:()=>'<svg data-team="korps"></svg>',
+ deathKorpsPortraitImage:id=>id==='confidant'?'Assets/Images/TombUI/DeathKorps/Death_Korps_confidant.png':''
 };
 const draw=new Function('ctx','with(ctx){'+app.slice(start,end)+'\nreturn fightParticipantPortrait;}')(ctx);
 const deathwatch=draw({side:'player',id:'bombard'},'attacker');
