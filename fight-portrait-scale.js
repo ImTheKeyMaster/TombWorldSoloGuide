@@ -134,9 +134,14 @@
         const width = card.getBoundingClientRect().width;
         // Centre each *base*, not the transparent image canvas.
         const centreX = width * .77;
+        // Fight Result: expose more of the miniature's right side without
+        // changing its physical scale or base-to-bottom alignment. The active
+        // Fight Resolution pools keep their original base centres.
+        const resultLeftShift = container.classList?.contains('fight-result-participants')
+          ? width * .12 : 0;
         image.style.width = layout.imageWidth + 'px';
         image.style.height = layout.imageHeight + 'px';
-        image.style.left = (centreX - layout.baseCenter) + 'px';
+        image.style.left = (centreX - resultLeftShift - layout.baseCenter) + 'px';
         image.style.bottom = (2 - layout.transparentBottom) + 'px';
         frame.classList.add('is-table-scaled');
       });

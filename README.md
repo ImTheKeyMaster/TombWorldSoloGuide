@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.191
+# Tomb World Battle Guide v10.0.192
+
+## v10.0.192
+
+### Shift Fight Result portraits left to show more of each miniature
+
+- Move both Fight Result miniature/base centres 12% of their card width leftward, matching the approved visual mockup so more of each miniature and its right-side equipment are visible.
+- Keep physical miniature scale, the taller model's 90% height cap, both bases aligned 2px above the card bottoms, fade, text readability, and unchanged card layout.
+- Limit the horizontal shift to Fight Result in both Standard and Experimental. Leave Fight Resolution, Activation, game state, and image assets untouched.
+- Apply the same horizontal adjustment to fallback Fight Result CSS if silhouette measurement is unavailable; update the offline PWA version to v10.0.192.
 
 ## v10.0.191
 

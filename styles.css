@@ -3089,3 +3089,10 @@ html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait.is-ta
   transform:none;
   margin:0;
 }
+
+
+/* v10.0.192: Mirror the Fight Result-only left shift when silhouette
+   measurement is unavailable; measured images use fight-portrait-scale.js. */
+html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait:not(.is-table-scaled){
+  right:12%;
+}

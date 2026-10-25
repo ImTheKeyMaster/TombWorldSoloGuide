@@ -78,7 +78,9 @@ const cards=images.map((image,i)=>({
   getBoundingClientRect:()=>({height:200,width:170}),
   querySelector: selector=> selector.includes(' > img.')?image:frames[i]
 }));
-const container={children:cards,isConnected:true};
+let isFightResult=false;
+const container={children:cards,isConnected:true,
+  classList:{contains(name){return name==='fight-result-participants' && isFightResult;}}};
 const root={querySelector:()=>container};
 const document={createElement:()=>{
   let active=null;
@@ -106,6 +108,16 @@ for(let i=0;i<2;i++){
   assert(Math.abs(b+layouts[i].transparentBottom-2)<.001);
   const t=200-2-layouts[i].figureHeight;
   assert(t>=17.99, 'no miniature head may be cropped above its card');
+}
+// The approved Fight Result mockup shifts both models 12% of card width
+// to the left, while preserving every scale/baseline value. Fight
+// Resolution remains anchored at the original position.
+const original=images.map(image=>({...image.style}));
+isFightResult=true;
+win.TombWorldFightPortraitScale.mount(root);
+for(let i=0;i<2;i++){
+  assert(Math.abs(parseFloat(original[i].left)-parseFloat(images[i].style.left)-170*.12)<.001);
+  for(const key of ['width','height','bottom']) assert.equal(images[i].style[key],original[i][key]);
 }
 """
     r = subprocess.run(["node", "-e", source], cwd=ROOT, text=True, capture_output=True, timeout=30)
@@ -136,6 +148,9 @@ def test_styles_layering_and_fallback_are_scoped_to_fights():
     assert "MAX_FIGURE_HEIGHT_RATIO = 0.90" in ENGINE
     assert "figureHeight * baseMm / geometry.baseWidth" in ENGINE
     assert "centreX = width * .77" in ENGINE
+    assert "resultLeftShift = container.classList?.contains('fight-result-participants')" in ENGINE
+    assert "? width * .12 : 0" in ENGINE
+    assert 'right:12%' in CSS
     assert "image.style.bottom = (2 - layout.transparentBottom)" in ENGINE
     assert "new ResizeObserver(refresh)" in ENGINE
     assert "image.addEventListener('load', refresh, { once: true })" in ENGINE
