@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.188
+# Tomb World Battle Guide v10.0.189
+
+## v10.0.189
+
+### Restore large bottom-aligned Fight miniature portraits
+
+- Restore the Necron's formerly larger Fight Result cutout width (up to 190px or full card width) while keeping the shared bottom baseline, contained head and readable names/wounds/damage.
+- Slightly enlarge Death Korps cutouts in Fight Result and Fight Resolution without zoom-clipping. Remove the v10.0.188 per-faction top insets that made them smaller.
+- Use one bottom-anchored, full-height native-image styling rule for both Fight surfaces and all factions. Preserve the already unified portrait renderer, faction mappings, green Deathwatch brightness, preloading and the complete Death Korps Activation framing from v10.0.185.
+- Standard and Experimental share the same Tomb Fight screens. No gameplay state, save schema, or other layouts changed.
 
 ## v10.0.188
 

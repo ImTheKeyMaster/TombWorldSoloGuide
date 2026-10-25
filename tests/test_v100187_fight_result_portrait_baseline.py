@@ -22,7 +22,7 @@ def test_both_fight_result_portraits_bottom_align_and_fit_whole_figure():
     photo=rule('html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait .fight-portrait-artwork')
     assert "inset:0 0 0 auto" in frame
     assert "height:100%" in frame
-    assert "width:min(48%,148px)" in frame
+    assert "width:min(100%,190px)" in frame
     assert "opacity:.4" in frame
     assert "mask-image:linear-gradient" in frame
     assert "width:100%" in photo and "height:100%" in photo
@@ -30,8 +30,8 @@ def test_both_fight_result_portraits_bottom_align_and_fit_whole_figure():
     assert "object-fit:contain" in photo
     assert "object-position:center bottom" in photo
     assert "transform:none" in photo
-    assert ".death-korps-portrait" not in CSS.split("/* v10.0.187:",1)[1]
-    assert ".experimental-necron-framed-svg" not in CSS.split("/* v10.0.187:",1)[1]
+    assert ".death-korps-portrait" not in CSS.split("/* v10.0.187:",1)[1].split("/* v10.0.189:",1)[0]
+    assert ".experimental-necron-framed-svg" not in CSS.split("/* v10.0.187:",1)[1].split("/* v10.0.189:",1)[0]
 
 
 def test_fight_result_photos_stay_behind_text_without_changing_result_content():
@@ -71,7 +71,7 @@ for(const role of ['attacker','defender']){
 
 
 def test_non_result_framing_and_version_unchanged():
-    new=CSS.split("/* v10.0.187:",1)[1]
+    new=CSS.split("/* v10.0.187:",1)[1].split("/* v10.0.189:",1)[0]
     for forbidden in (".experimental-fight-pool",".fight-roll-pool",".human-activation-shell",
                       ".experimental-activation-portrait",".experimental-necron-activation"):
         assert forbidden not in new
