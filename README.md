@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.180
+# Tomb World Battle Guide v10.0.181
+
+## v10.0.181
+
+### Repaint SVG portraits after extended iOS PWA suspension
+
+- Address iOS WebKit occasionally showing an empty operative portrait after resuming a standalone PWA, even though the rest of the Fight Roll card and its dice remain visible.
+- Preserve the fast, debounced 100 ms SVG image-node refresh and follow it with a 1500 ms rebuild of SVG paint surfaces, which can be necessary after WebKit restores backgrounded GPU/compositing resources.
+- Cancel both repaint phases if the app returns to the background; support visibility changes, window focus, and back/forward cache restoration without affecting fight results, state persistence, current screen, or scroll position.
+- Keep existing portrait coverage limited to factions with supplied miniature artwork. Death Korps and Deathwatch support Fight portraits; teams without supplied Fight portraits are not given fictitious artwork.
+- Add resume/repaint regression coverage, including shared SVG roots and repeated foreground/background cycles.
 
 ## v10.0.180
 
