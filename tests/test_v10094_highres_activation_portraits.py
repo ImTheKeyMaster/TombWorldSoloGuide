@@ -46,9 +46,9 @@ def test_roster_rail_can_reuse_high_resolution_activation_assets():
     assert 'experimental-roster-image' in source
     assert "return deathwatchPortraitSvg(id,svgClass)" in source
 
-def test_activation_svg_processes_at_384_square_resolution():
+def test_native_activation_images_still_use_384_square_resolution():
     source = activation_source()
-    assert 'viewBox="0 0 384 384"' in source
+    assert "function portraitImageMarkup(" in source
     assert 'width="384" height="384"' in source
     assert "experimentalActivationPortraitCutout" not in source
 

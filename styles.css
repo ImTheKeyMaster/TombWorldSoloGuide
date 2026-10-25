@@ -1925,7 +1925,8 @@ html[data-ui="tomb"] .setup-true-hex-card>.wizard-actions .btn.ghost{
 
 /* v10.0.107: Supplied Necron portraits are pre-colored transparent cutouts; only viewport clipping remains. */
 html[data-ui="tomb"] .experimental-necron-framed-svg{
-  overflow:hidden!important;
+  object-fit:contain;
+  object-position:center center;
 }
 html[data-ui="tomb"] .experimental-necron-roster-picker .experimental-roster-tinted-svg{
   transform:none;
@@ -2999,6 +3000,14 @@ html[data-ui="tomb"] .experimental-fight-choice-screen .experimental-fight-block
   color:var(--text);font-weight:800;
 }
 
-/* v10.0.182: Native Death Korps photos use their original 384px square
-   framing, masks and sizing without an external SVG image paint layer. */
-html[data-ui="tomb"] img.death-korps-portrait-photo{object-fit:contain;object-position:center top;}
+/* v10.0.182: All pre-colored transparent cutouts share native image loading.
+   Keep the existing card-specific size, position, masks and opacity. */
+html[data-ui="tomb"] img.death-korps-portrait-photo,
+html[data-ui="tomb"] img.deathwatch-portrait-photo{
+  object-fit:contain;
+  object-position:center top;
+}
+html[data-ui="tomb"] img.experimental-necron-framed-svg{
+  object-fit:contain;
+  object-position:center center;
+}
