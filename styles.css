@@ -3013,7 +3013,7 @@ html[data-ui="tomb"] img.deathwatch-portrait-photo{
 }
 html[data-ui="tomb"] img.experimental-necron-framed-svg{
   object-fit:contain;
-  object-position:center center;
+  object-position:center top;
 }
 
 /* v10.0.182: Move ONLY Death Korps Fight Resolution cutouts down so
