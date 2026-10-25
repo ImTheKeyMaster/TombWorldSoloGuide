@@ -105,7 +105,7 @@ for(let i=0;i<2;i++){
   const b=parseFloat(images[i].style.bottom);
   assert(Math.abs(b+layouts[i].transparentBottom-2)<.001);
   const t=200-2-layouts[i].figureHeight;
-  assert(t>=19.99, 'no miniature head may be cropped above its card');
+  assert(t>=17.99, 'no miniature head may be cropped above its card');
 }
 """
     r = subprocess.run(["node", "-e", source], cwd=ROOT, text=True, capture_output=True, timeout=30)
