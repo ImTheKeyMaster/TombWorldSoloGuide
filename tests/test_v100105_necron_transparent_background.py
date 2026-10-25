@@ -21,7 +21,7 @@ def test_release_is_v100105_or_newer():
 
 def test_transparency_now_comes_from_supplied_assets_not_runtime_keying():
     source = section("function experimentalNecronPortraitSvg", "function experimentalNecronPortraitMarkup")
-    assert '<image href="' in source
+    assert "portraitImageMarkup(" in source
     assert "backgroundKey" not in source
     assert "subjectMask" not in source
     assert "feColorMatrix" not in source
@@ -30,5 +30,5 @@ def test_transparency_now_comes_from_supplied_assets_not_runtime_keying():
 
 def test_precentered_cutouts_render_neutrally():
     source = section("function experimentalNecronPortraitSvg", "function experimentalNecronPortraitMarkup")
-    assert 'x="0" y="0" width="384" height="384"' in source
+    assert "experimental-necron-framed-svg" in source
     assert "experimentalNecronPortraitFrame" not in APP
