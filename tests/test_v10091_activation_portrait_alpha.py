@@ -16,13 +16,15 @@ def test_release_is_v10091_or_newer():
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
 
 
-def test_activation_art_uses_svg_luminance_key_for_true_rendered_alpha():
+def test_activation_art_uses_prepared_native_alpha_cutouts():
     source = APP[
         APP.index("function renderHumanActivationShell")
         : APP.index("function playerSequentialStage")
     ]
-    assert '<svg class="experimental-activation-portrait-svg"' in source
-    assert 'href="${escapeHtml(deathwatchPortraitImage(activation.operativeId))}"' in source
+    assert "deathwatchPortraitSvg(activation.operativeId,'experimental-activation-portrait-svg')" in source
+    assert 'function portraitImageMarkup(' in APP
+    assert 'src="${escapeHtml(src)}"' in APP
+    assert '<svg class="experimental-activation-portrait-svg"' not in source
     assert "experimentalActivationPortraitCutout" not in source
     assert "<feColorMatrix" not in source
     assert "const resolvedPortraitMarkup=portraitMarkup;" in source
