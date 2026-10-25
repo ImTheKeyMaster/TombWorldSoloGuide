@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.180';
+  const APP_VERSION = '10.0.181';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2470,28 +2470,59 @@ document.addEventListener('touchend',function(e){
   window.addEventListener('resize',()=>{syncAppHeaderHeight();scheduleOperativeStatusLayout();});
   window.addEventListener('orientationchange',()=>{syncAppHeaderHeight();scheduleOperativeStatusLayout();});
 
-  // iOS PWA resume can leave external SVG <image> resources visually blank
-  // until a viewport resize. Recreate only those paint nodes on foreground,
-  // preserving the active dialog, scroll position and unsaved game UI state.
+  // iOS standalone PWAs can restore the DOM before WebKit restores the
+  // external SVG image compositor surfaces. Repainting once after focus is
+  // insufficient after a long suspension, even though rotating repaints them.
+  // Touch only decorative SVG image nodes, never modal/game state or layout.
   let svgPortraitResumeTimer=null;
-  function refreshSvgPortraitsAfterResume(){
-    svgPortraitResumeTimer=null;
+  let svgPortraitSettleTimer=null;
+  function refreshSvgPortraitsAfterResume(rebuildRoots=false){
     if(document.visibilityState==='hidden')return;
-    document.querySelectorAll('svg image[href]').forEach(image=>{
+    const images=document.querySelectorAll('svg image[href]');
+    const replacedRoots=new Set();
+    images.forEach(image=>{
+      if(rebuildRoots){
+        const root=image.closest?.('svg');
+        if(root){
+          if(!replacedRoots.has(root)){
+            replacedRoots.add(root);
+            root.replaceWith(root.cloneNode(true));
+          }
+          return;
+        }
+      }
       image.replaceWith(image.cloneNode(true));
     });
   }
   function scheduleSvgPortraitRefresh(){
     if(document.visibilityState==='hidden')return;
     clearTimeout(svgPortraitResumeTimer);
-    svgPortraitResumeTimer=setTimeout(refreshSvgPortraitsAfterResume,100);
+    clearTimeout(svgPortraitSettleTimer);
+    // First restore the external image elements, then recreate their SVG
+    // surfaces after WebKit has had time to restore foreground compositing.
+    svgPortraitResumeTimer=setTimeout(()=>{
+      svgPortraitResumeTimer=null;
+      refreshSvgPortraitsAfterResume();
+    },100);
+    svgPortraitSettleTimer=setTimeout(()=>{
+      svgPortraitSettleTimer=null;
+      refreshSvgPortraitsAfterResume(true);
+    },1500);
+  }
+  function cancelSvgPortraitRefresh(){
+    clearTimeout(svgPortraitResumeTimer);
+    clearTimeout(svgPortraitSettleTimer);
+    svgPortraitResumeTimer=null;
+    svgPortraitSettleTimer=null;
   }
   document.addEventListener('visibilitychange',()=>{
     if(document.visibilityState==='visible')scheduleSvgPortraitRefresh();
+    else cancelSvgPortraitRefresh();
   });
   window.addEventListener('pageshow',event=>{
     if(event.persisted)scheduleSvgPortraitRefresh();
   });
+  window.addEventListener('pagehide',cancelSvgPortraitRefresh);
   window.addEventListener('focus',scheduleSvgPortraitRefresh);
 
 
