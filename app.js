@@ -5622,7 +5622,7 @@ document.addEventListener('touchend',function(e){
     if(selectedPlayerTeamName().toLowerCase()!=='death korps')return deathwatchPortraitSvg(id,svgClass);
     const src=deathKorpsPortraitImage(id);
     if(!src)return '<span class="death-korps-portrait-placeholder" aria-hidden="true">?</span>';
-    return `<svg class="${escapeHtml(svgClass)}" viewBox="0 0 384 384" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false"><image href="${escapeHtml(src)}" x="0" y="0" width="384" height="384" preserveAspectRatio="xMidYMid meet"/></svg>`;
+    return deathKorpsPortraitPhoto(id,svgClass);
   }
   function usesPlayerPortraitRail(){
     return document.documentElement.dataset.ui==='tomb'&&['deathwatch','death korps'].includes(selectedPlayerTeamName().toLowerCase());
