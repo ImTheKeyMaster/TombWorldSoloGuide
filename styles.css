@@ -2606,22 +2606,22 @@ html[data-ui="tomb"] #modal.human-activation-modal #modalBody>.modal-inner{
    visual prominence of the Necron activation miniature. Keep the approved
    right-side crop, fade and overlap behind Completed Actions/Movement. */
 html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:has(img.death-korps-portrait-photo) .experimental-activation-portrait-svg{
-  width:185%;
-  right:-11%;
+  width:138%;
+  right:-6%;
   top:0;
   transform:none;
 }
 @media(max-width:520px){
   html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:has(img.death-korps-portrait-photo) .experimental-activation-portrait-svg{
-    width:195%;
-    right:-13%;
+    width:145%;
+    right:-6%;
     top:0;
   }
 }
 @media(max-width:380px){
   html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>.experimental-activation-portrait:has(img.death-korps-portrait-photo) .experimental-activation-portrait-svg{
-    width:200%;
-    right:-14%;
+    width:148%;
+    right:-7%;
     top:0;
   }
 }
@@ -3009,4 +3009,17 @@ html[data-ui="tomb"] img.deathwatch-portrait-photo{
 html[data-ui="tomb"] img.experimental-necron-framed-svg{
   object-fit:contain;
   object-position:center center;
+}
+
+/* v10.0.182: Anchor both miniature bases to the bottom of their Fight
+   Resolution cards. The older top offset clipped high-reaching Death Korps
+   Troopers, and left bases at different heights for different factions. */
+html[data-ui="tomb"] .experimental-fight-pool .fight-portrait{
+  top:auto;
+  bottom:0;
+  height:100%;
+}
+html[data-ui="tomb"] .experimental-fight-pool .fight-portrait-artwork{
+  object-fit:contain;
+  object-position:center bottom;
 }
