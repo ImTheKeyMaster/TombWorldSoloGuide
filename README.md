@@ -6,7 +6,7 @@
 
 - All three factions now use one native HTML image renderer across activation, Fight Roll, combat summaries, and roster surfaces, removing embedded external SVG image dependencies that may stop painting when iOS suspends the PWA.
 - Keep faction-specific asset lookup separate: Death Korps and Deathwatch use PNG photos; Necrons use supplied, pre-colored transparent WebPs (with existing versioned URLs and model-specific selection).
-- Preserve original file mappings, preloading, approved fade/mask, brightness, sizing and framing, including Death Korps overlap behind Movement/Completed Actions, Deathwatch contrast, and Necron crops. The native IMG uses `object-fit: contain` with faction-specific positioning.
+- Preserve original file mappings, preloading, approved fade/mask, Deathwatch brightness, and Necron crops. Adjust only the Death Korps activation portrait zoom and position (185% desktop, 195% phone, 200% narrow phone) to more closely match Necron activation portrait prominence while keeping overlap behind Movement/Completed Actions. Native images use `object-fit: contain` with faction-specific positioning.
 - Retain SVG resume recovery for any other SVG artwork. No combat mechanics, saved data, navigation, or operative state is modified.
 - Add shared native-renderer regression tests for all factions, Trooper 3 activation, plasma Gunner Fight Roll and existing roster/combat paths.
 
