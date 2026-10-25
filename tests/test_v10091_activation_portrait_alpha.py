@@ -21,8 +21,8 @@ def test_activation_art_uses_svg_luminance_key_for_true_rendered_alpha():
         APP.index("function renderHumanActivationShell")
         : APP.index("function playerSequentialStage")
     ]
-    assert '<svg class="experimental-activation-portrait-svg"' in source
-    assert 'href="${escapeHtml(deathwatchPortraitImage(activation.operativeId))}"' in source
+    assert "deathwatchPortraitSvg(activation.operativeId,'experimental-activation-portrait-svg')" in source
+    assert "portraitImageMarkup(" in APP
     assert "experimentalActivationPortraitCutout" not in source
     assert "<feColorMatrix" not in source
     assert "const resolvedPortraitMarkup=portraitMarkup;" in source
