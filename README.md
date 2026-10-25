@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.184
+# Tomb World Battle Guide v10.0.185
+
+## v10.0.185
+
+### Show the complete Death Korps miniature on activation
+
+- Correct the v10.0.184 Death Korps activation zoom increase, which made the model more prominent but cropped more of the miniature. The goal is to **zoom out**, showing more of the figure and its base like the Necron activation example.
+- Reduce Death Korps activation photo widths to 135% (default), 140% (phone), and 145% (narrow phone), previously 185% / 195% / 200%. Position the smaller photo slightly inside the right edge.
+- Change only Death Korps activation framing. Preserve approved portrait masks, transparency, overlap behind Completed Actions or Movement, all other faction sizes, the shared native image renderer, game rules and saved state.
 
 ## v10.0.184
 
