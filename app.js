@@ -5528,6 +5528,8 @@ document.addEventListener('touchend',function(e){
   // One renderer for all supplied Tomb UI cutouts (Deathwatch, Death Korps,
   // Necrons). Keep image selection separate from presentation so iOS WebKit
   // doesn't need to restore external images inside SVG paint surfaces.
+  // Legacy *Svg helper names remain at call sites for compatibility, but the
+  // three faction-specific wrappers now all return this native <img> markup.
   function portraitImageMarkup(src,cssClass='',factionClass=''){
     if(!src)return '';
     const classes=[cssClass,factionClass].filter(Boolean).join(' ');
