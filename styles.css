@@ -3011,3 +3011,16 @@ html[data-ui="tomb"] img.experimental-necron-framed-svg{
   object-fit:contain;
   object-position:center center;
 }
+
+/* v10.0.186: Fight Resolution miniature bases share the same baseline.
+   Anchoring the faded portrait surface to the card bottom prevents tall
+   Death Korps models clipping at the top while keeping Necron art aligned. */
+html[data-ui="tomb"] .experimental-fight-pool .fight-portrait{
+  top:auto;
+  bottom:0;
+  height:100%;
+}
+html[data-ui="tomb"] .experimental-fight-pool .fight-portrait-artwork{
+  object-fit:contain;
+  object-position:center bottom;
+}
