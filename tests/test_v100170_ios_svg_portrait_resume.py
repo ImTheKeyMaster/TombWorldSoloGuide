@@ -9,23 +9,31 @@ ROOT = Path(__file__).resolve().parents[1]
 APP = (ROOT / "app.js").read_text(encoding="utf-8")
 
 
-def test_foreground_replaces_svg_images_once_and_skips_background():
+def test_foreground_repaints_images_then_rebuilds_svg_roots_after_resume():
     script = r"""
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const source=fs.readFileSync('app.js','utf8');
-const start=source.indexOf('  // iOS PWA resume can leave external SVG');
+const start=source.indexOf('  // iOS standalone PWAs can restore the DOM');
 const end=source.indexOf('  function normalizeSarcophagusControllers(',start);
 assert(start>0&&end>start,'resume hook is correctly scoped');
-const listeners={}, windowListeners={}, replaced=[];
+const listeners={},windowListeners={},replaced=[],rootsReplaced=[];
 const timers=new Map();
-let nextTimer=0, queries=0;
-const createImage=id=>({
+let nextTimer=0,queries=0;
+const root=id=>({
+  id,
+  cloneNode(deep){assert.equal(deep,true);return {id,clone:true};},
+  replaceWith(next){rootsReplaced.push({old:this,next});}
+});
+const sharedRoot=root('shared'),otherRoot=root('other');
+const image=(id,svg)=>({
   id,
   href:'Assets/Images/TombUI/'+id+'.png',
-  cloneNode(deep){assert.equal(deep,true);return {id:this.id,href:this.href,isClone:true};},
+  closest(selector){assert.equal(selector,'svg');return svg;},
+  cloneNode(deep){assert.equal(deep,true);return {id,href:this.href,clone:true};},
   replaceWith(next){replaced.push({old:this,next});}
 });
-const images=[createImage('confidant'),createImage('geomancer')];
+const images=[image('confidant',sharedRoot),image('plasma-gunner',sharedRoot),
+  image('necron',otherRoot)];
 const document={
   visibilityState:'hidden',
   addEventListener(type,cb){listeners[type]=cb;},
@@ -37,16 +45,15 @@ const document={
 };
 const window={addEventListener(type,cb){windowListeners[type]=cb;}};
 const setTimeout=(cb,ms)=>{
-  assert.equal(ms,100);
-  const id=++nextTimer;
-  timers.set(id,cb);
+  assert([100,1500].includes(ms));
+  const id=++nextTimer;timers.set(id,{cb,ms});
   return id;
 };
 const clearTimeout=id=>{timers.delete(id);};
-const runTimer=()=>{
-  const callbacks=[...timers.values()];
-  timers.clear();
-  callbacks.forEach(cb=>cb());
+const runTimer=ms=>{
+  const selected=[...timers.entries()].filter(([id,t])=>t.ms===ms);
+  selected.forEach(([id])=>timers.delete(id));
+  selected.forEach(([id,t])=>t.cb());
 };
 new Function('document','window','setTimeout','clearTimeout',
   source.slice(start,end)
@@ -54,35 +61,42 @@ new Function('document','window','setTimeout','clearTimeout',
 assert.equal(typeof listeners.visibilitychange,'function');
 assert.equal(typeof windowListeners.pageshow,'function');
 assert.equal(typeof windowListeners.focus,'function');
+assert.equal(typeof windowListeners.pagehide,'function');
 listeners.visibilitychange();
 windowListeners.focus();
-assert.equal(timers.size,0,'nothing to repaint while app is hidden');
+assert.equal(timers.size,0,'nothing should repaint while hidden');
 document.visibilityState='visible';
 listeners.visibilitychange();
 windowListeners.focus();
-assert.equal(timers.size,1,'visibility and focus are coalesced');
-runTimer();
+assert.equal(timers.size,2,'visibility and focus events must debounce both phases');
+runTimer(100);
 assert.equal(queries,1);
-assert.equal(replaced.length,2);
-assert(replaced.every(x=>x.next.isClone&&x.next.href===x.old.href),
-  'only original image data is re-instantiated');
-windowListeners.pageshow({persisted:false});
-assert.equal(timers.size,0,'normal page loads do not trigger extra work');
-windowListeners.pageshow({persisted:true});
-assert.equal(timers.size,1,'bfcache restores repaint image resources');
-runTimer();
-assert.equal(replaced.length,4);
-windowListeners.focus();
-document.visibilityState='hidden';
-runTimer();
-assert.equal(replaced.length,4,'if backgrounded before timeout no repaint');
+assert.equal(replaced.length,3,'first phase recreates SVG image resources');
+assert(replaced.every(x=>x.next.clone&&x.next.href===x.old.href),
+  'first phase preserves image URLs and attributes');
+runTimer(1500);
 assert.equal(queries,2);
+assert.equal(rootsReplaced.length,2,'second phase rebuilds each unique SVG root once');
+assert(rootsReplaced.every(x=>x.next.clone));
+windowListeners.pageshow({persisted:false});
+assert.equal(timers.size,0,'normal page loads do not reschedule');
+windowListeners.pageshow({persisted:true});
+assert.equal(timers.size,2,'BFCache restore retries both phases');
+windowListeners.pagehide();
+assert.equal(timers.size,0,'pagehide cancels pending repaint');
+document.visibilityState='visible';
+windowListeners.focus();
+assert.equal(timers.size,2);
+document.visibilityState='hidden';
+listeners.visibilitychange();
+assert.equal(timers.size,0,'backgrounding cancels both timers');
+runTimer(100);runTimer(1500);
+assert.equal(queries,2,'backgrounded pages do not repaint');
 """
     result = subprocess.run(
         ["node", "-e", script], cwd=ROOT, capture_output=True, text=True, timeout=30
     )
     assert result.returncode == 0, result.stderr or result.stdout
-
 
 def test_restore_only_svg_image_nodes_and_preserve_gameplay():
     start = APP.index("  // iOS PWA resume can leave external SVG")
@@ -90,6 +104,9 @@ def test_restore_only_svg_image_nodes_and_preserve_gameplay():
     code = APP[start:end]
     assert "querySelectorAll('svg image[href]')" in code
     assert "image.replaceWith(image.cloneNode(true))" in code
+    assert "root.replaceWith(root.cloneNode(true))" in code
+    assert "window.addEventListener('pagehide',cancelSvgPortraitRefresh)" in code
+    assert "1500" in code
     assert "showModal(" not in code
     assert "save()" not in code
     assert "renderHumanPlayerActionPicker(" not in code
