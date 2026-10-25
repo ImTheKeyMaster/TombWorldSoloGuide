@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.187
+# Tomb World Battle Guide v10.0.188
+
+## v10.0.188
+
+### Position only Death Korps miniature cutouts lower in Fight views
+
+- Correct the Death Korps model framing in Fight Resolution and Fight Result: reduce the portrait artwork's effective height slightly and inset it from the top so the head is fully visible while the base stays aligned to the bottom of its card.
+- Leave Necron and Deathwatch miniature positions, image sizing, and fading exactly as approved in v10.0.187. No shared image renderer changes.
+- Preserve v10.0.185 Death Korps activation zoom, the Fight Result card layout, combat rules, dice, text, and save state.
 
 ## v10.0.187
 

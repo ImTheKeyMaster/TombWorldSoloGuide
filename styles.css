@@ -3047,3 +3047,22 @@ html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait .figh
   object-position:center bottom;
   transform:none;
 }
+
+
+/* v10.0.188: Death Korps-only downward fitting in Fight cards.
+   Preserve the approved Necron/Deathwatch baseline and all card typography.
+   Inset the figure from the top while preserving its bottom alignment. */
+html[data-ui="tomb"] .experimental-fight-pool .fight-portrait.death-korps-portrait .fight-portrait-artwork{
+  height:calc(100% - 14px);
+  margin-top:14px;
+  transform:none;
+  object-fit:contain;
+  object-position:center bottom;
+}
+html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait.death-korps-portrait .fight-portrait-artwork{
+  height:calc(100% - 18px);
+  margin-top:18px;
+  transform:none;
+  object-fit:contain;
+  object-position:center bottom;
+}
