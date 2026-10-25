@@ -72,7 +72,7 @@ def test_text_fades_shared_pipeline_activation_and_state_preserved():
     assert "return portraitImageMarkup(src?" in APP
     assert "function warmDeathwatchPortraitImages(" in APP
     assert "function warmDeathKorpsPortraitImages(" in APP
-    assert "function warmExperimentalNecronPortraitImages(" in APP or "function warmNecronPortraitImages(" in APP
+    assert "function experimentalNecronPortraitImage(npo)" in APP  # Necron source selection remains shared
     for width in (135, 140, 145):
         assert f"width:{width}%" in CSS
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
