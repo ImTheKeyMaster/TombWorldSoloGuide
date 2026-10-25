@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.190';
+  const APP_VERSION = '10.0.191';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -7860,20 +7860,28 @@ function showPlayerActivation(){
   }
   function fightParticipantPortrait(participant,role){
     if(!participant?.id)return '';
-    let artwork='';
+    let artwork='',baseMm=0;
     if(participant.side==='npo'){
       const npo=state.roster.find(item=>item.id===participant.id);
-      if(npo)artwork=experimentalNecronPortraitSvg(npo,`fightPortraitNecron-${role}`,'fight-portrait-artwork');
+      if(npo){
+        artwork=experimentalNecronPortraitSvg(npo,`fightPortraitNecron-${role}`,'fight-portrait-artwork');
+        baseMm=Number(npo.baseSize)||28; // Use the NPO's recorded physical base, where available.
+      }
     }else if(participant.side==='player'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'&&playerDefinition(participant.id)){
       artwork=deathwatchPortraitSvg(participant.id,'fight-portrait-artwork');
+      baseMm=Number(playerDefinition(participant.id).baseSize)||32;
     }else if(participant.side==='player'&&selectedPlayerTeamName().toLowerCase()==='death korps'&&playerDefinition(participant.id)){
       artwork=deathKorpsCombatPortraitSvg(participant.id,'fight-portrait-artwork');
+      baseMm=Number(playerDefinition(participant.id).baseSize)||25;
     }
     const deathwatch=participant.side==='player'&&selectedPlayerTeamName().toLowerCase()==='deathwatch'
       &&!!deathwatchPortraitImage(participant.id);
     const deathKorps=participant.side==='player'&&selectedPlayerTeamName().toLowerCase()==='death korps'
       &&!!deathKorpsPortraitImage(participant.id);
-    return artwork?`<span class="fight-portrait fight-portrait-${role}${deathwatch?' deathwatch-portrait':''}${deathKorps?' death-korps-portrait':''}" aria-hidden="true">${artwork}</span>`:'';
+    return artwork?`<span class="fight-portrait fight-portrait-${role}${deathwatch?' deathwatch-portrait':''}${deathKorps?' death-korps-portrait':''}" data-fight-base-mm="${baseMm}" aria-hidden="true">${artwork}</span>`:'';
+  }
+  function scaleFightPortraits(){
+    if(document.documentElement.dataset.ui==='tomb')window.TombWorldFightPortraitScale?.mount(modalBody);
   }
   function fightRollParticipantHtml(fight,role,animate){
     const participant=fight[role],profile=participant.profile,dice=participant.attackDice.map(fightDiePresentation);
@@ -7975,6 +7983,7 @@ function showPlayerActivation(){
   function renderFightResult(fight){
     const result=fight.result;
     showModal('Fight Result',`<div class="fight-result" role="status" aria-label="Fight finished"><p class="fight-finished">FIGHT FINISHED</p><div class="fight-result-participants">${fightResultParticipantHtml(result.participants.attacker,'attacker')}${fightResultParticipantHtml(result.participants.defender,'defender')}</div><div class="fight-result-explanation"><h3>SUMMARY</h3>${result.explanation.map(line=>`<p>${escapeHtml(line)}</p>`).join('')}</div><div class="wizard-actions"><button class="btn primary" id="continueFightResult" data-dialog-focus>Continue</button></div></div>`,undefined,'fight-result');
+    scaleFightPortraits();
     $('#continueFightResult').onclick=()=>{const button=$('#continueFightResult');button.disabled=true;acknowledgeFightResult(fight);};
   }
   function finishFight(fight){
@@ -8148,6 +8157,7 @@ function showPlayerActivation(){
     const capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
     if(document.documentElement.dataset.ui==='tomb'){
       showModal('Fight Resolution',experimentalActionFirstFightHtml(fight,role,participant,actions,capacity));
+      scaleFightPortraits();
       bindExperimentalActionFirstFight(fight,role,capacity);
       return;
     }
