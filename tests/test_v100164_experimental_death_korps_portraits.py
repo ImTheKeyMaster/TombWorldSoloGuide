@@ -7,6 +7,7 @@ from versioning import CURRENT_APP_VERSION
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = (ROOT / "app.js").read_text(encoding="utf-8")
+CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
 SW = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 INDEX = (ROOT / "index.html").read_text(encoding="utf-8")
 README = (ROOT / "README.md").read_text(encoding="utf-8")
@@ -114,3 +115,31 @@ def test_version_and_existing_portrait_surfaces_stay_intact():
     assert "function playerRosterPortraitMarkup(" in APP
     assert "function resumeCombatAfterWeaponRuleCheck(" in APP
     assert "function advanceMultiTargetAttackSequence(" in APP
+
+
+def test_death_korps_shooting_portrait_zoom_is_80_percent_of_previous_on_two_screens():
+    """Only Korps images in these two shooting screens lose 20% of their zoom."""
+    assert "transform:scale(1.3);" in CSS
+    assert "portrait=deathKorpsCombatPortraitSvg(id,'blast-result-portrait-artwork');" in APP
+    assert "portrait=deathKorpsCombatPortraitSvg" in APP
+    assert "const portraitClass=portrait?' fight-roll-pool shooting-roll-pool has-fight-portrait':'';" in APP
+    assert "artwork=deathKorpsCombatPortraitSvg(participant.id,'fight-portrait-artwork');" in APP
+
+    override = CSS.split("/* v10.0.193:", 1)[1]
+    summary = ('html[data-ui="tomb"] .attack-confirmation-card.has-target-portrait '
+               '.blast-result-portrait-artwork.death-korps-portrait-photo')
+    combat = ('html[data-ui="tomb"] .dedicated-combat-screen '
+              '.shooting-roll-pool.has-fight-portrait '
+              '.fight-portrait-artwork.death-korps-portrait-photo')
+    assert summary + "," in override
+    assert combat + "{" in override
+    assert re.search(r"\{\s*transform:scale\(1\.04\);\s*\}", override)
+    assert abs(1.04 / 1.3 - 0.8) < 1e-12
+
+    # No change to Deathwatch, Necron, regular Fight Result/Fight Roll or Activation.
+    selectors = override.split("{", 1)[0]
+    assert selectors.count("death-korps-portrait-photo") == 2
+    for excluded in ("deathwatch-portrait-photo", "experimental-necron-framed-svg",
+                     "fight-result-card", "experimental-fight-pool", "human-activation-shell"):
+        assert excluded not in selectors
+    assert "transform-origin:top right" in CSS
