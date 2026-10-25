@@ -41,8 +41,8 @@ def test_portrait_filter_matches_photoshop_colorize_and_keeps_light_sharpening()
 def test_portrait_preserves_background_alpha_key():
     source = activation_source()
     assert "experimentalActivationPortraitCutout" not in source
-    assert "<image href=" in source
-    assert "preserveAspectRatio=" in source
+    assert "deathwatchPortraitSvg(activation.operativeId,'experimental-activation-portrait-svg')" in source
+    assert "portraitImageMarkup(" in APP
 
 def test_portrait_can_reach_movement_panel_without_black_box_clipping():
     block = portrait_css()
