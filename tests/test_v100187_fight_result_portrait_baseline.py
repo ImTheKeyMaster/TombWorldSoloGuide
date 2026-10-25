@@ -71,7 +71,7 @@ for(const role of ['attacker','defender']){
 
 
 def test_non_result_framing_and_version_unchanged():
-    new=CSS.split("/* v10.0.187:",1)[1].split("/* v10.0.189:",1)[0]
+    new=CSS.split("/* v10.0.187:",1)[1].split("/* v10.0.190:",1)[0]
     for forbidden in (".experimental-fight-pool",".fight-roll-pool",".human-activation-shell",
                       ".experimental-activation-portrait",".experimental-necron-activation"):
         assert forbidden not in new
