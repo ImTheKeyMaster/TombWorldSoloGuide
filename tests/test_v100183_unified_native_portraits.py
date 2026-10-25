@@ -70,7 +70,7 @@ def test_photo_surfaces_reuse_pipeline_and_keep_visual_appearance():
     assert "deathKorpsPortraitPhoto(activation.operativeId,'experimental-activation-portrait-svg')" in APP
     assert "experimentalNecronPortraitSvg(n,'experimentalNecronHumanActivationTint','experimental-activation-portrait-svg')" in APP
     assert "return deathKorpsPortraitPhoto(id,svgClass)" in APP
-    assert "return deathKorpsPortraitPhoto(id,cssClass)" in APP
+    assert "function deathKorpsPortraitPhoto(id,cssClass='')" in APP
     assert "return deathwatchPortraitSvg(id,svgClass)" in APP
     assert "object-position:center top" in CSS
     assert "object-position:center center" in CSS
