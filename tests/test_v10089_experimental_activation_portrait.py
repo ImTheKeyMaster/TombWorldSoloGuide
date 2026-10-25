@@ -42,8 +42,8 @@ def test_activation_portrait_is_deathwatch_experimental_only():
 def test_activation_portrait_is_decorative_and_noninteractive():
     source = activation_source()
     assert 'class="experimental-activation-portrait" aria-hidden="true"' in source
-    assert 'class="experimental-activation-portrait-svg"' in source
-    assert 'focusable="false"' in source
+    assert "deathwatchPortraitSvg(activation.operativeId,'experimental-activation-portrait-svg')" in source
+    assert 'alt=""' in APP
     block = portrait_css()
     assert "pointer-events:none" in block
 
@@ -51,8 +51,8 @@ def test_activation_portrait_is_decorative_and_noninteractive():
 def test_portrait_uses_alpha_cutout_instead_of_css_blending():
     source = activation_source()
     block = portrait_css()
-    assert 'class="experimental-activation-portrait-svg"' in source
-    assert 'href="${escapeHtml(deathwatchPortraitImage(activation.operativeId))}"' in source
+    assert "deathwatchPortraitSvg(activation.operativeId,'experimental-activation-portrait-svg')" in source
+    assert "portraitImageMarkup(" in APP
     assert "experimentalActivationPortraitCutout" not in source
     assert "feColorMatrix" not in source
     assert "mix-blend-mode" not in block
