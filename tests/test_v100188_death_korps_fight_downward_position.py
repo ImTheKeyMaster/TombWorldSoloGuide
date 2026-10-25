@@ -44,35 +44,24 @@ assert.doesNotMatch(necron,/death-korps-portrait|deathwatch-portrait/);
     assert result.returncode==0,result.stderr or result.stdout
 
 
-def test_figure_moves_down_without_clipping_model_base():
-    tail=CSS.split("/* v10.0.188: Death Korps-only downward fitting",1)[1]
-    for context,top_inset in (
-        ('.experimental-fight-pool','14px'),
-        ('.fight-result-card.has-fight-portrait','18px'),
+def test_new_framing_supersedes_tiny_death_korps_cutouts_without_moving_base():
+    tail=CSS.split("/* v10.0.189: Keep Fight Resolution",1)[1]
+    for selector,size in (
+        ('html[data-ui="tomb"] .experimental-fight-pool .fight-portrait.death-korps-portrait','width:min(76%,118px)'),
+        ('html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait.death-korps-portrait','width:min(115%,205px)'),
     ):
-        sel=('html[data-ui="tomb"] '+context+
-             ' .fight-portrait.death-korps-portrait .fight-portrait-artwork')
-        blocks=re.findall(re.escape(sel)+r"\s*\{([^}]*)\}",tail)
+        blocks=re.findall(re.escape(selector)+r"\\s*\\{([^}]*)\\}",tail)
         assert len(blocks)==1
-        for declaration in (
-            f"height:calc(100% - {top_inset})",
-            f"margin-top:{top_inset}",
-            "transform:none",
-            "object-fit:contain",
-            "object-position:center bottom",
-        ):
-            assert declaration in blocks[0],declaration
-    assert ".experimental-fight-pool .fight-portrait{" not in tail
-    assert ".fight-result-card.has-fight-portrait .fight-portrait{" not in tail
-    assert ".experimental-necron-framed-svg{" not in tail
-    assert ".deathwatch-portrait{" not in tail
-    # The existing Necron/result baseline and small Korps activation zoom remain.
+        assert size in blocks[0]
+    assert "height:calc(100% - 14px)" not in CSS
+    assert "height:calc(100% - 18px)" not in CSS
+    assert "margin-top:14px" not in tail
+    assert "margin-top:18px" not in tail
     assert "/* v10.0.186: Fight Resolution miniature bases" in CSS
     assert "/* v10.0.187: Align both Fight Result miniature bases" in CSS
     assert "width:135%;" in CSS
     assert "width:140%;" in CSS
     assert "width:145%;" in CSS
-
 
 def test_release_consistency_and_state_unchanged():
     html=(ROOT/"index.html").read_text(encoding="utf-8")
