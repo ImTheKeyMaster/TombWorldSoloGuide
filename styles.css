@@ -3049,18 +3049,12 @@ html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait .figh
 }
 
 
-/* v10.0.189: Keep Fight Resolution and Fight Result cutouts full-height and
-   bottom-aligned. Restore the Necron's earlier large Fight Result framing.
-   Give Death Korps a modestly larger image area to balance its smaller cutouts.
-   Unlike v10.0.188, no artificial top insets shrink the miniatures. */
-html[data-ui="tomb"] .experimental-fight-pool .fight-portrait.death-korps-portrait{
-  width:min(76%,118px);
-  max-width:none;
-}
-html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait.death-korps-portrait{
-  width:min(115%,205px);
-  right:-4px;
-}
+/* v10.0.190: Fight Resolution and Fight Result use the SAME image frame for
+   Death Korps, Necrons and Deathwatch. Remove the v10.0.189 Death Korps
+   width/offset boosts so its head-to-base height visually matches the Necron.
+   Keep the approved larger Necron, aligned bases and full-height contain rule.
+   The 390px and 374px responsive Fight Resolution widths are now inherited
+   naturally by every faction, including Death Korps. */
 html[data-ui="tomb"] .experimental-fight-pool .fight-portrait .fight-portrait-artwork,
 html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait .fight-portrait-artwork{
   display:block;

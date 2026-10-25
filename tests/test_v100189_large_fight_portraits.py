@@ -27,9 +27,11 @@ def test_fight_result_necron_regains_large_frame_and_retains_bottom_baseline():
     assert "opacity:.4" in frame
     assert "-webkit-mask-image:linear-gradient" in frame
     assert "mask-image:linear-gradient" in frame
-    korps = last_rule('html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait.death-korps-portrait')
-    assert "width:min(115%,205px)" in korps
-    assert "right:-4px" in korps
+    # v10.0.190 removes the v10.0.189 Death Korps-only enlarged frame.
+    # Both factions now inherit this same result card frame.
+    tail = CSS.split("/* v10.0.190:", 1)[1]
+    assert "width:min(115%,205px)" not in CSS
+    assert ".fight-portrait.death-korps-portrait{" not in tail
 
 
 def test_fight_resolution_korps_larger_and_same_full_height_alignment():
@@ -37,9 +39,11 @@ def test_fight_resolution_korps_larger_and_same_full_height_alignment():
     assert "top:auto" in shared_frame
     assert "bottom:0" in shared_frame
     assert "height:100%" in shared_frame
-    korps = last_rule('html[data-ui="tomb"] .experimental-fight-pool .fight-portrait.death-korps-portrait')
-    assert "width:min(76%,118px)" in korps
-    assert "max-width:none" in korps
+    # Death Korps and Necrons inherit the same 98px/68% responsive frame.
+    frame = CSS.split('html[data-ui="tomb"] .experimental-fight-pool .fight-portrait{', 1)[1].split('}', 1)[0]
+    assert "width:98px" in frame
+    assert "max-width:68%" in frame
+    assert "width:min(76%,118px)" not in CSS
     # The Necron stays on the already-approved 98px Fight Resolution scale.
     assert "width:98px" in CSS
     assert "height:calc(100% - 14px)" not in CSS
@@ -47,7 +51,7 @@ def test_fight_resolution_korps_larger_and_same_full_height_alignment():
 
 
 def test_both_fight_surfaces_use_one_uncropped_bottom_aligned_photo_rule():
-    tail = CSS.split("/* v10.0.189: Keep Fight Resolution", 1)[1]
+    tail = CSS.split("/* v10.0.190: Fight Resolution", 1)[1]
     selector = ('html[data-ui="tomb"] .experimental-fight-pool .fight-portrait .fight-portrait-artwork,\n'
                 'html[data-ui="tomb"] .fight-result-card.has-fight-portrait .fight-portrait .fight-portrait-artwork')
     rule = last_rule(selector)
