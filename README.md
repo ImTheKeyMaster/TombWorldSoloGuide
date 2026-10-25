@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.181
+# Tomb World Battle Guide v10.0.182
+
+## v10.0.182
+
+### Stop Death Korps portraits vanishing after iOS PWA suspension
+
+- Render Death Korps photographic portraits with native HTML image elements in activation, Fight Roll, combat and roster surfaces, removing their dependency on external images inside SVG, which may stop painting when iOS suspends the PWA.
+- Preserve operative-to-photo mappings, image preloading, approved fade/mask, sizing and composition, plus the Movement/Completed Actions overlap. Update the Death Korps-specific framing selector to match the native image, with unchanged layout dimensions.
+- Keep Necron and Deathwatch SVG artwork and the shared SVG resume fallback intact. Preserve all battle/game state and all existing gameplay and portrait file URLs.
+- Cover Trooper 3 activation, plasma Gunner Fight Roll, Death Korps roster/combat output and Standard/Experimental equality with dedicated tests.
 
 ## v10.0.181
 

@@ -14,7 +14,7 @@ README = (ROOT / "README.md").read_text(encoding="utf-8")
 
 KORPS_SELECTOR = (
     'html[data-ui="tomb"] .human-activation-shell.has-operative-portrait>'
-    '.experimental-activation-portrait:has(image[href*="Death_Korps_"])'
+    '.experimental-activation-portrait:has(img.death-korps-portrait-photo)'
     ' .experimental-activation-portrait-svg'
 )
 
@@ -32,7 +32,7 @@ def test_death_korps_only_not_deathwatch_or_roster():
     assert "selectedPlayerTeamName().toLowerCase()==='death korps'" in APP
     assert "deathwatchPortraitImage(activation.operativeId)" in APP
     assert 'experimental-activation-portrait' in APP
-    assert "Death_Korps_" in KORPS_SELECTOR
+    assert "death-korps-portrait-photo" in KORPS_SELECTOR
     assert "Deathwatch" not in KORPS_SELECTOR
     assert "experimental-roster" not in KORPS_SELECTOR
     # These targeted rules must win over the older general Deathwatch zoom.

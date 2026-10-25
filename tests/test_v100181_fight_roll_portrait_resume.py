@@ -9,7 +9,7 @@ ROOT=Path(__file__).resolve().parents[1]
 APP=(ROOT/"app.js").read_text(encoding="utf-8")
 
 
-def test_death_korps_plasma_gunner_fight_uses_svg_image_that_can_be_refreshed():
+def test_death_korps_plasma_gunner_fight_uses_native_image_not_external_svg():
     script=r"""
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const source=fs.readFileSync('app.js','utf8');
@@ -24,7 +24,7 @@ const context={
  selectedPlayerTeamName:()=> 'Death Korps',
  playerDefinition:id=>id==='gunner-plasma-gun'?{id}:null,
  deathKorpsCombatPortraitSvg:(id,cls)=>
-  '<svg class="'+cls+'"><image href="Assets/Images/TombUI/DeathKorps/Death_Korps_gunner_plasma.png"/></svg>',
+  '<img class="'+cls+' death-korps-portrait-photo" src="Assets/Images/TombUI/DeathKorps/Death_Korps_gunner_plasma.png">',
  deathwatchPortraitImage:()=>'',deathwatchPortraitSvg:()=>'',experimentalNecronPortraitSvg:()=> '',
  escapeHtml:text=>String(text),
  fightDiePresentation:d=>({value:d.value,retained:true,kind:'hit'}),
@@ -38,8 +38,9 @@ const gunner={side:'player',id:'gunner-plasma-gun',label:'Gunner 2 (Plasma Gun)'
 const html=api.fightRollParticipantHtml({attacker:gunner},'attacker',false);
 assert.match(html,/Gunner 2 \(Plasma Gun\)/);
 assert.match(html,/class="combat-stage fight-roll-pool has-fight-portrait"/);
-assert.match(html,/svg class="fight-portrait-artwork"/);
-assert.match(html,/svg image|<image href="Assets\/Images\/TombUI\/DeathKorps\/Death_Korps_gunner_plasma.png"/);
+assert.match(html,/img class="fight-portrait-artwork death-korps-portrait-photo"/);
+assert.match(html,/src="Assets\/Images\/TombUI\/DeathKorps\/Death_Korps_gunner_plasma.png"/);
+assert.doesNotMatch(html,/<svg|<image href/);
 assert.match(html,/class="dice-row settled"/);
 assert.match(html,/1 Normal Success/);
 context.selectedPlayerTeamName=()=> 'Kasrkin';
