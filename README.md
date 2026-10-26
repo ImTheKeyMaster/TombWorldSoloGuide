@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.193
+# Tomb World Battle Guide v10.0.194
+
+## v10.0.194
+
+### Show a fixed Necron weapon when only one profile is available
+
+- On the Tomb UI Necron Select Weapon screen, replace the iOS/browser dropdown with a read-only weapon name when exactly one profile is available.
+- Preserve the existing selection index in a hidden input so guidance, weapon rules, confirmation, back navigation and saved attack drafts continue to use the same code path.
+- Keep the dropdown and dynamic guidance updates for multiple profiles. Standard and Experimental share this behavior.
+- Reuse the already approved read-only weapon styling from player combat; leave gameplay, portraits, preloading, settings and saved state unchanged.
 
 ## v10.0.193
 
