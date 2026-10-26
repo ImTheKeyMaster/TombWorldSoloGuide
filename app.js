@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.193';
+  const APP_VERSION = '10.0.194';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -9738,12 +9738,14 @@ function showPlayerActivation(){
   }
 
   function showExperimentalNpoWeaponSelection(n,profiles,attackType,selectedIndex,onContinue,onCancel){
-    const initial=selectedIndex>=0?selectedIndex:profiles.length===1?0:-1;
-    const choices=profiles.map((weapon,index)=>`<option value="${index}" ${index===initial?'selected':''}>${escapeHtml(canonicalAttackProfile(weapon).name)}</option>`).join('');
-    showModal('Select Weapon',`<p>Choose a weapon profile before resolving the attack.</p>
-      <div class="field"><label for="experimentalNpoWeaponProfile">Weapon</label>
-        <select id="experimentalNpoWeaponProfile"><option value="" ${initial<0?'selected ':''}disabled>Choose a profile...</option>${choices}</select>
-      </div>
+    const singleProfile=profiles.length===1;
+    const initial=singleProfile?0:selectedIndex>=0?selectedIndex:-1;
+    const choices=singleProfile?'':profiles.map((weapon,index)=>`<option value="${index}" ${index===initial?'selected':''}>${escapeHtml(canonicalAttackProfile(weapon).name)}</option>`).join('');
+    const weaponControl=singleProfile
+      ? `<div class="field"><label>Weapon</label><div class="readonly-select">${escapeHtml(canonicalAttackProfile(profiles[0]).name)}</div><input type="hidden" id="experimentalNpoWeaponProfile" value="0"></div>`
+      : `<div class="field"><label for="experimentalNpoWeaponProfile">Weapon</label><select id="experimentalNpoWeaponProfile"><option value="" ${initial<0?'selected ':''}disabled>Choose a profile...</option>${choices}</select></div>`;
+    showModal('Select Weapon',`<p>${singleProfile?'Only one weapon profile is available for this attack.':'Choose a weapon profile before resolving the attack.'}</p>
+      ${weaponControl}
       <div id="experimentalNpoWeaponGuidance" aria-live="polite"></div>
       ${tombWeaponRulesAtSelection()?'<div id="experimentalNpoWeaponRules" aria-live="polite"></div>':''}
       <div class="wizard-actions"><button class="btn ghost" id="cancelExperimentalNpoWeapon">Cancel</button><button class="btn primary" id="confirmExperimentalNpoWeapon" disabled>Continue to Combat</button></div>`);
@@ -9755,7 +9757,7 @@ function showPlayerActivation(){
       if(rules)rules.innerHTML=profile?weaponRulesHtml(profile):'';
       confirm.disabled=!profile;
     };
-    select.addEventListener('change',updateGuidance);
+    if(!singleProfile)select.addEventListener('change',updateGuidance);
     $('#cancelExperimentalNpoWeapon').onclick=onCancel;
     confirm.onclick=()=>{
       if(confirm.disabled)return;
