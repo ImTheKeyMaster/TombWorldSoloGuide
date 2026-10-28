@@ -10188,7 +10188,20 @@ function showPlayerActivation(){
       const transaction=eventTransaction(`attack:${state.turningPoint}:${state.activationNumber}:npo:${n.id}:${target.id}`,{definitionAnswers:{}});
       if(transaction.definitionAnswers.sameRoomAsC1===undefined)transaction.definitionAnswers.sameRoomAsC1=Boolean($('#sameRoomAsC1')?.checked);
       if(transaction.definitionAnswers.sameRoomAsRoyalWarden===undefined)transaction.definitionAnswers.sameRoomAsRoyalWarden=n.type==='Royal Warden'||Boolean($('#sameRoomAsRoyalWarden')?.checked);
-      const profile=effectiveWeaponProfile(baseProfile,{attackerSide:'npo',attackType,sameRoomAsC1:transaction.definitionAnswers.sameRoomAsC1,sameRoomAsRoyalWarden:transaction.definitionAnswers.sameRoomAsRoyalWarden});
+      let profile=effectiveWeaponProfile(baseProfile,{attackerSide:'npo',attackType,sameRoomAsC1:transaction.definitionAnswers.sameRoomAsC1,sameRoomAsRoyalWarden:transaction.definitionAnswers.sameRoomAsRoyalWarden});
+      // The Aegis storm shield worsens Piercing (but not Piercing Crits) by 1.
+      // Apply it to the profile BEFORE defense dice are requested, including
+      // when an interrupted NPO attack is resumed.
+      if(attackType==='shoot'&&targetSide==='player'&&isDeathwatchPlayerTeam()&&target.id==='aegis'){
+        const reduced=Math.max(0,Number(profile.ap||0)-1);
+        const rules=(profile.rules||[]).flatMap(rule=>{
+          const match=String(rule).match(/^Piercing (\d+)$/i);
+          if(!match)return [rule];
+          const amount=Math.max(0,Number(match[1])-1);
+          return amount?[`Piercing ${amount}`]:[];
+        });
+        profile={...profile,ap:reduced,rules};
+      }
       const profileSelect=$('#npoCombatProfile');
       if(profileSelect)profileSelect.disabled=true;
       const weapon=$('.compact-combat-profile div:nth-child(4) strong');
