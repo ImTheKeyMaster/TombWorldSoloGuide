@@ -27,6 +27,7 @@ def ceaseless_result(roster, turning_point=2, resolved_turning_point=None):
     script = "\n".join(
         (
             "const MAX_NPOS=10;",
+            "const isPvpMode=()=>true;",
             f"const state={{turningPoint:{turning_point},roster:{json.dumps(roster)},strategyData:{json.dumps(strategy_data)}}};",
             function_source("ceaselessScuttlingAvailable").strip(),
             function_source("ceaselessScuttlingEligible").strip(),
@@ -135,21 +136,18 @@ def test_roster_model_preserves_deployed_reserve_and_out_of_action_instances():
     assert "npo.battlefieldState==='out-of-action'||npo.wounds<=0" in create_scuttling
 
 
-def test_solo_only_shows_and_gates_an_eligible_pending_resolution():
+def test_joint_ops_solo_cannot_require_competitive_scuttling():
+    # A Ceaseless Scuttling is a competitive gambit, not an NPO Mission Pack rule.
     actions = function_source("strategyActionsStepHtml")
     pending = function_source("soloCeaselessScuttlingPending")
-    can_leave = function_source("canLeaveStrategyActions")
-
+    eligible = function_source("ceaselessScuttlingEligible")
+    assert "if(!isPvpMode())return false" in eligible
     assert "!isPvpMode()&&ceaselessScuttlingEligible()" in pending
-    assert "!soloCeaselessScuttlingPending()" in can_leave
-    assert "state.turningPoint>1&&scuttlingAvailable&&(isPvpMode()||scuttlingEligible||scuttlingResolved)" in actions
-    assert ">Use A Ceaseless Scuttling</button>" in actions
-    assert "Macrocyte Warrior set up" in actions
-    assert "disabled:actionsBlocked" in actions
-    assert "Confirm the Macrocyte Warrior setup before continuing." in actions
-    assert "isPvpMode()?'Review optional Strategic Gambits.':'Resolve applicable Strategic Gambits.'" in actions
-    assert "Decline" not in actions
-    assert "Skip" not in actions
+    assert "const scuttlingCard=isPvpMode()&&state.turningPoint>1" in actions
+    assert ceaseless_result(
+        [{"type":"Canoptek Macrocyte Warrior","battlefieldState":"deployed","wounds":7}]
+    )["eligible"] is True  # PvP only
+    assert "const SAVE_VERSION = 3;" in PERSISTENCE
 
 
 def test_pvp_keeps_optional_choice_and_reports_the_exact_primary_blocker():
