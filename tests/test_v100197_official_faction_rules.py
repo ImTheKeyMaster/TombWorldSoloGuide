@@ -88,6 +88,8 @@ assert(api.playerWeaponProfile(gun,option).rules.includes('Blast 1"'));
 """
     node(script)
     assert "deathwatchAmmoTransaction().used=true" in APP
+    assert "if(attackType==='shoot'&&targetSide==='player'&&isDeathwatchPlayerTeam()&&target.id==='aegis')" in APP
+    assert "profile={...profile,ap:reduced,rules}" in APP
     assert "stage.deathwatchAmmoRule=ammunition.value" in APP
     assert "deathwatchAmmoLegal(weapon,option.value)" in APP
 
