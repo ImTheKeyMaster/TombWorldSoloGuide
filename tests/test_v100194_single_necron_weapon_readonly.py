@@ -38,6 +38,7 @@ function simulate(profiles,{preview=false,selected=-1,showRules=true}={}){
   tombWeaponRulesAtSelection:()=>showRules,
   npoCombatGuidanceHtml:(n,{profile})=>'<p>Advice '+profile.name+'</p>',
   weaponRulesHtml:profile=>'<p>Rule '+profile.name+'</p>',
+  terrainShootingHintHtml:()=>'<details class="terrain-shooting-hint"></details>',
   showModal:(name,html)=>{title=name;markup=html;}
  };
  render(ctx)({type:'Necron Warrior'},profiles,'shoot',selected,i=>confirmed.push(i),()=>{cancelled++;});

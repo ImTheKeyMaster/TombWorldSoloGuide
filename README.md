@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.194
+# Tomb World Battle Guide v10.0.195
+
+## v10.0.195
+
+### October 28 Kill Team terrain guidance
+
+- Update the How It Works and in-game Help references: Tomb World wall pieces including pillars follow normal terrain rules; Vantage Point cover depends on the rampart's Light/Heavy category and targeting line; ladders cannot extend a Reposition beyond the ladder's permitted span.
+- Show an optional collapsed Terrain & cover reference at Player and Necron shooting weapon selection without changing existing weapon controls or increasing the default modal height significantly.
+- Link to the official Games Workshop October 28 announcement for current terrain diagrams. Tabletop geometry remains a player decision, not an automatically inferred legality or saving throw.
+- All Deathwatch, Canoptek Circle and Spectre Squad unit/team errata remain on hold until verified against the October 28 PDFs.
+- No changes to movement calculations, cover saves, targets, weapon rules, combat resolution, mission logic, NPO AI decisions, saved state, portraits or preloading.
 
 ## v10.0.194
 

@@ -3106,3 +3106,21 @@ html[data-ui="tomb"] .attack-confirmation-card.has-target-portrait .blast-result
 html[data-ui="tomb"] .dedicated-combat-screen .shooting-roll-pool.has-fight-portrait .fight-portrait-artwork.death-korps-portrait-photo{
   transform:scale(1.04);
 }
+
+/* v10.0.195: Compact, opt-in tabletop terrain reminder in shooting dialogs. */
+html[data-ui="tomb"] .terrain-shooting-hint{
+  margin:8px 0;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:rgba(255,255,255,.018);
+  padding:7px 12px;
+  color:var(--muted);
+  font-size:.82rem;
+  line-height:1.4;
+}
+html[data-ui="tomb"] .terrain-shooting-hint summary{
+  color:var(--text);
+  cursor:pointer;
+  font-weight:650;
+}
+html[data-ui="tomb"] .terrain-shooting-hint p{margin:8px 0 2px}

@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.194';
+  const APP_VERSION = '10.0.195';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2998,6 +2998,10 @@ document.addEventListener('touchend',function(e){
     }
   }
 
+  function terrainShootingHintHtml(){
+    return '<details class="terrain-shooting-hint"><summary>Terrain &amp; cover · October 2026</summary><p>Tomb World walls, including pillars, follow normal cover and obscuring rules. When shooting an elevated operative from below, check the rampart\'s Light/Heavy terrain category and the targeting line. The player confirms cover and target legality on the tabletop.</p></details>';
+  }
+
   function guideInstructionsHtml(full=false){
     const overview=`<section class="help-section">
       <h3>What the Guide does</h3>
@@ -3036,6 +3040,14 @@ document.addEventListener('touchend',function(e){
       <p>Select a Ready Player operative, choose one legal action, and resolve it completely. The Guide commits that action and its AP before returning to the action picker. Canceling a later uncommitted action never rolls back actions already completed.</p>
     </section>`;
 
+    const terrain=`<section class="help-section" id="tombTerrainRulesReference">
+      <h3>Terrain update · 28 October 2026</h3>
+      <p><strong>Tomb World walls:</strong> Apply normal Kill Team terrain rules to all wall sections, including pillars and details in them. Do not apply the former Tomb World exceptions that ignored certain wall features when checking cover or obscuring.</p>
+      <p><strong>Vantage Points:</strong> When shooting at an operative above you, check the rampart's Light or Heavy cover category and the attacker's targeting line. The elevated operative is not automatically in cover solely because it is on a Vantage Point.</p>
+      <p><strong>Ladders:</strong> A ladder does not extend a Reposition beyond its permitted span to reach a higher ledge in one move. Check the legal move and endpoint on the tabletop.</p>
+      <p class="muted">The Guide cannot measure terrain, visibility or movement geometry. Check the current official rules and diagrams at <a href="https://www.warhammer-community.com/en-gb/articles/k04goqrk/kill-team-october-update/" target="_blank" rel="noopener noreferrer">Games Workshop's October 2026 update</a>.</p>
+    </section>`;
+
     const npoRoster=`<section class="help-section">
       <h3>Tomb World NPO roster</h3>
       <p>The supported pool uses the physical models in the Tomb World box: the <strong>Canoptek Circle</strong> (Geomancer, Canoptek Tomb Crawler, Canoptek Macrocyte Warrior, Canoptek Macrocyte Accelerator, and Canoptek Macrocyte Reanimator), <strong>Necron Warriors</strong>, and <strong>Canoptek Scarab Swarms</strong>.</p>
@@ -3052,8 +3064,8 @@ document.addEventListener('touchend',function(e){
       <article><h4>Expended</h4><p>The operative has activated or is otherwise unavailable.</p></article>
     </section>`;
 
-    if(full)return presentSideTerminology(overview+npoRoster+flow+ai+combat+quick);
-    return presentSideTerminology(npoRoster+ai+quick);
+    if(full)return presentSideTerminology(overview+npoRoster+flow+ai+combat+terrain+quick);
+    return presentSideTerminology(npoRoster+ai+terrain+quick);
   }
 
   function renderHome(){
@@ -8350,6 +8362,7 @@ function showPlayerActivation(){
       <p ${useExperimentalTargetRail?'tabindex="-1" data-dialog-focus':''}>Select the target and attack profile before rolling.</p>
       ${targetControl}
       ${weaponControl}
+      ${attackType==='shoot'?terrainShootingHintHtml():''}
       ${darkDistance}
       <div class="summary-box weapon-details${attackType==='melee'?' melee-weapon-summary melee-weapon-summary-pending':''}" id="playerWeaponSummary" aria-hidden="true"${attackType==='shoot'?' hidden':''}><div id="playerWeaponSummaryContent"></div>${meleeWeaponSummarySizers}</div>
       <div id="aggressiveDefenseFields"></div>
@@ -9745,6 +9758,7 @@ function showPlayerActivation(){
       ? `<div class="field"><label>Weapon</label><div class="readonly-select">${escapeHtml(canonicalAttackProfile(profiles[0]).name)}</div><input type="hidden" id="experimentalNpoWeaponProfile" value="0"></div>`
       : `<div class="field"><label for="experimentalNpoWeaponProfile">Weapon</label><select id="experimentalNpoWeaponProfile"><option value="" ${initial<0?'selected ':''}disabled>Choose a profile...</option>${choices}</select></div>`;
     showModal('Select Weapon',`<p>${singleProfile?'Only one weapon profile is available for this attack.':'Choose a weapon profile before resolving the attack.'}</p>
+      ${terrainShootingHintHtml()}
       ${weaponControl}
       <div id="experimentalNpoWeaponGuidance" aria-live="polite"></div>
       ${tombWeaponRulesAtSelection()?'<div id="experimentalNpoWeaponRules" aria-live="polite"></div>':''}
