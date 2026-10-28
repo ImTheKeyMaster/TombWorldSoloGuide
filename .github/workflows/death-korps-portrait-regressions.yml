@@ -20,6 +20,7 @@ on:
       - tests/test_v100153_promote_combat_features.py
       - tests/test_v100195_october_terrain_guidance.py
       - tests/test_v100197_official_faction_rules.py
+      - tests/test_v100198_jointops_specialists.py
       - Player_Operatives/DeathWatch.json
       - Player_Operatives/SpectreSquad.json
       - tests/test_v100194_single_necron_weapon_readonly.py
@@ -43,6 +44,7 @@ on:
       - tests/test_v100153_promote_combat_features.py
       - tests/test_v100195_october_terrain_guidance.py
       - tests/test_v100197_official_faction_rules.py
+      - tests/test_v100198_jointops_specialists.py
       - Player_Operatives/DeathWatch.json
       - Player_Operatives/SpectreSquad.json
       - tests/test_v100194_single_necron_weapon_readonly.py
@@ -84,6 +86,7 @@ jobs:
             tests/test_v100153_promote_combat_features.py \
             tests/test_v100195_october_terrain_guidance.py \
             tests/test_v100197_official_faction_rules.py \
+            tests/test_v100198_jointops_specialists.py \
             tests/test_v100150_experimental_weapon_guidance_selection.py \
             tests/test_v100157_experimental_weapon_rules_selection.py \
             tests/test_v100194_single_necron_weapon_readonly.py \
