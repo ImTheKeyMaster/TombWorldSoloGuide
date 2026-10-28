@@ -5275,7 +5275,9 @@ document.addEventListener('touchend',function(e){
     const completed=new Set(activation?.completedActionIds||[]),remaining=Number(activation?.remainingAp||0);
     const discountedBreachCompleted=(activation?.resolvedActions||[]).some(record=>record.id==='breach'&&record.apCost===1);
     if(completed.has(action.id)&&!playerMayRepeatAction(activation,action.id))return {status:'Used',disabled:true,reason:'Used'};
-    if(action.cost>remaining)return {status:'Insufficient AP',disabled:true,reason:`Needs ${action.cost} AP`};
+    const freeScoutHatch=action.id==='hatch'&&spectreGuideScoutingAvailable()
+      &&!(activation?.resolvedActions||[]).some(record=>record.scoutTerrainDiscount);
+    if(action.cost>remaining&&!freeScoutHatch)return {status:'Insufficient AP',disabled:true,reason:`Needs ${action.cost} AP`};
     if(action.id==='charge'&&['move','dash','fallBack'].some(id=>completed.has(id)))return {status:'Unavailable',disabled:true,reason:'Unavailable after movement'};
     if(['move','dash','fallBack'].includes(action.id)&&completed.has('charge'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Charge'};
     if(action.id==='fallBack'&&completed.has('move'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Reposition'};
@@ -5326,7 +5328,12 @@ document.addEventListener('touchend',function(e){
     const activation=activePlayerActivation();
     if(!activation)return showPlayerActivation();
     if(playerActivationOperativeEliminated(activation.operativeId)){void completeHumanPlayerActivation();return;}
-    if(activation.remainingAp<=0){void completeHumanPlayerActivation();return;}
+    if(activation.remainingAp<=0){
+      const zeroCostAction=playerHumanActionCatalog(activation).some(action=>
+        (action.cost===0||action.id==='hatch'&&spectreGuideScoutingAvailable())
+        &&!playerHumanActionState(action,activation).disabled);
+      if(!zeroCostAction){void completeHumanPlayerActivation();return;}
+    }
     const operative=playerDefinition(activation.operativeId);
     const effects=[...(state.npoRuleState?.aplModifiers||[]),...(state.eventState?.playerAplModifiers||[])]
       .filter(item=>item.targetId===activation.operativeId)
@@ -5452,7 +5459,8 @@ document.addEventListener('touchend',function(e){
     if(used){proceed(false);return;}
     showModal('Scout Terrain · Operate Hatch',`<p>Is this hatchway's access point scouted, and has this operative not used the Scout Terrain benefit in this activation? The Guide scouts terrain in your territory or within 3 inches of it. Territory terrain remains scouted if the Guide is incapacitated.</p><div class="wizard-actions"><button class="btn ghost" id="cancelScoutHatch">Cancel</button><button class="btn secondary" id="regularScoutHatch">No · 1AP</button><button class="btn primary" id="discountedScoutHatch">Yes · 0AP</button></div>`);
     $('#cancelScoutHatch').onclick=cancelCurrentHumanPlayerAction;
-    $('#regularScoutHatch').onclick=()=>proceed(false);
+    if(activation.remainingAp<1)$('#regularScoutHatch').disabled=true;
+    $('#regularScoutHatch').onclick=()=>{if(activation.remainingAp>=1)proceed(false);};
     $('#discountedScoutHatch').onclick=()=>proceed(true);
   }
 
@@ -5539,7 +5547,13 @@ document.addEventListener('touchend',function(e){
   function continueAfterCommittedHumanAction(){
     const activation=activePlayerActivation();
     if(!activation)return false;
-    if(playerActivationOperativeEliminated(activation.operativeId)||activation.remainingAp<=0){void completeHumanPlayerActivation();return true;}
+    if(playerActivationOperativeEliminated(activation.operativeId)){void completeHumanPlayerActivation();return true;}
+    if(activation.remainingAp<=0){
+      const furtherFreeActions=playerHumanActionCatalog(activation).some(action=>
+        (action.cost===0||action.id==='hatch'&&spectreGuideScoutingAvailable())
+        &&!playerHumanActionState(action,activation).disabled);
+      if(!furtherFreeActions){void completeHumanPlayerActivation();return true;}
+    }
     renderHumanPlayerActionPicker();
     return true;
   }
@@ -9356,7 +9370,12 @@ function showPlayerActivation(){
       const canCool=actor.value.startsWith('trooper-')&&!record.coolHeadedUsed;
       cool.disabled=!canCool;if(!canCool)cool.checked=false;
       $('#fieldcraftDamage').hidden=action.value!=='shoot';
-      btn.disabled=!candidates.includes(actor.value)||!$('#fieldcraftConfirmed').checked||!(cool.checked||(record.points===null?1:record.points)>0);
+      const repositionAlreadyUsed=(record.repositionUsedIds||[]).includes(actor.value)
+        ||(state.activationHistory||[]).some(item=>item.side==='player'&&item.label===playerName(actor.value)
+          &&(item.actions||[]).some(performed=>performed.id==='move'));
+      btn.disabled=!candidates.includes(actor.value)||!$('#fieldcraftConfirmed').checked
+        ||action.value==='move'&&repositionAlreadyUsed
+        ||!(cool.checked||(record.points===null?1:record.points)>0);
     };
     [actor,action,cool,$('#fieldcraftConfirmed'),$('#fieldcraftVoxReady')].filter(Boolean).forEach(control=>control.addEventListener('change',update));
     $('#fieldcraftBack').onclick=()=>renderNpoActionResult(n,actionRecord,Boolean(actionRecord.endsActivation));
@@ -9493,7 +9512,9 @@ function showPlayerActivation(){
     // saved activation, remaining AP, AI target or action history.
     const offerFieldcraft=!isPvpMode()&&isSpectrePlayerTeam()&&n.order==='Engage'
       &&n.wounds>0&&spectreFieldcraftCandidates().length>0
-      &&!spectreFieldcraftRecord().interruptedEnemyActivationIds.includes(activation.activationId);
+      &&!spectreFieldcraftRecord().interruptedEnemyActivationIds.includes(activation.activationId)
+      &&(spectreFieldcraftRecord().points===null||spectreFieldcraftRecord().points>0
+        ||!spectreFieldcraftRecord().coolHeadedUsed&&spectreFieldcraftCandidates().some(id=>id.startsWith('trooper-')));
     if(transitionMode===NPO_ACTION_TRANSITIONS.ACKNOWLEDGE||offerFieldcraft){
       activation.awaitingActionResult={...record,endsActivation};
       if(endsActivation)activation.completed=true;
