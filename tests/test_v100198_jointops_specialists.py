@@ -70,6 +70,15 @@ assert(!api.spectreMayInterruptNpo({...enemy,order:'Conceal'},act));
     assert "activation.awaitingActionResult={...record,endsActivation}" in APP
     assert "state.lastActivation?.side==='npo'&&!state.lastActivation.committed&&state.lastActivation.awaitingActionResult" in APP
 
+def test_zero_ap_scout_terrain_and_reposition_tracking():
+    assert "const freeScoutHatch=action.id==='hatch'&&spectreGuideScoutingAvailable()" in APP
+    assert "if(action.cost>remaining&&!freeScoutHatch)" in APP
+    assert "const zeroCostAction=playerHumanActionCatalog(activation).some(action=>" in APP
+    assert "const furtherFreeActions=playerHumanActionCatalog(activation).some(action=>" in APP
+    assert "if(activation.remainingAp<1)$('#regularScoutHatch').disabled=true" in APP
+    assert "const repositionAlreadyUsed=(record.repositionUsedIds||[]).includes(actor.value)" in APP
+    assert "item.side==='player'&&item.label===playerName(actor.value)" in APP
+
 def test_version():
     assert CURRENT_APP_VERSION == '10.0.198'
     assert "V10.0.198" in (ROOT / 'index.html').read_text(encoding='utf-8')
