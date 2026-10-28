@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.197';
+  const APP_VERSION = '10.0.198';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5202,7 +5202,8 @@ document.addEventListener('touchend',function(e){
     return (activation?.resolvedActions||[]).filter(action=>action.id===actionId).length;
   }
   function playerMayRepeatAction(activation,actionId){
-    return isDeathwatchPlayerTeam()&&['shoot','melee'].includes(actionId)&&playerActionUses(activation,actionId)<2;
+    return isDeathwatchPlayerTeam()&&['shoot','melee'].includes(actionId)&&playerActionUses(activation,actionId)<2
+      &&playerActionUses(activation,actionId==='shoot'?'melee':'shoot')<2;
   }
   function deathwatchSecondShootExtraCost(activation,weaponName){
     if(!isDeathwatchPlayerTeam()||!playerActionUses(activation,'shoot'))return 0;
@@ -5210,7 +5211,7 @@ document.addEventListener('touchend',function(e){
     const prior=last?.attackSummaries?.[0]?.weaponName||'';
     const special=/auxiliary grenade launcher|frag cannon|heavy plasma incinerator|infernus heavy bolter|plasma pistol|stalker bolt rifle/i;
     const melta=/melta bomb/i;
-    return Number(melta.test(weaponName)||melta.test(prior)||(special.test(weaponName)&&special.test(prior||weaponName)));
+    return Number(melta.test(weaponName)||melta.test(prior)||(special.test(weaponName)&&special.test(prior)));
   }
   function playerHumanActionCatalog(activation=activePlayerActivation()){
     const operativeId=activation?.operativeId,operative=playerDefinition(operativeId);
@@ -6903,12 +6904,13 @@ function showPlayerActivation(){
   }
   function deathwatchAmmoLegal(weapon,rule){
     if(!rule||!DEATHWATCH_SPECIAL_AMMO.includes(rule)||/melta bomb|frag grenade|krak grenade/i.test(weapon?.name||''))return false;
-    return rule!=='Blast 1"'||!(weapon.rules||[]).some(value=>/Torrent/i.test(value));
+    return rule!=='Blast 1"'||!(weapon.rules||[]).some(value=>/\bTorrent\b/i.test(value));
   }
   function deathwatchAugmentProfile(weapon,profile,context){
     const rule=context.stage?.deathwatchAmmoRule;
     if(!isDeathwatchPlayerTeam()||context.attackType!=='shoot'||!deathwatchAmmoLegal(weapon,rule)||deathwatchAmmoTransaction().used)return profile;
-    return {...profile,rules:[...profile.rules,rule],critThreshold:rule==='Lethal 5+'?Math.min(5,profile.critThreshold):profile.critThreshold};
+    const rules=profile.rules.includes(rule)?profile.rules:[...profile.rules,rule];
+    return {...profile,rules,critThreshold:rule==='Lethal 5+'?Math.min(5,profile.critThreshold):profile.critThreshold};
   }
 
   function playerWeaponProfile(weapon,{operativeId,attackType,weaponIndex,stage}={}){
@@ -8712,7 +8714,7 @@ function showPlayerActivation(){
     const resolution=diceDraft.devastatingIncapacitated?{normal:0,critical:0,damage:0}:resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,profile);
     const devastatingDamage=Number(diceDraft.devastatingDamage??devastatingDamageForAttack(diceDraft.attackDice,profile));
     const result={
-      ...recordedCombat({attackerName:playerName(stage.playerOperativeId),defenderName:targetName,attackType,attackerSide:'player',defenderSide:targetSide,profile:{...profile,rules:weapon.rules||[]},before,
+      ...recordedCombat({attackerName:playerName(stage.playerOperativeId),defenderName:targetName,attackType,attackerSide:'player',defenderSide:targetSide,profile:{...profile},before,
         normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical,damage:resolution.damage+devastatingDamage}),
       targetId:n.id,targetName,side:targetSide,weaponName:weapon.name,weaponIndex,
       severeApplied:diceDraft.attackDice.some(die=>die.severeConverted),devastatingDamage,devastatingApplied:true,devastatingIncapacitated:Boolean(diceDraft.devastatingIncapacitated)
