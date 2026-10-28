@@ -3039,7 +3039,7 @@ document.addEventListener('touchend',function(e){
     const terrain=`<section class="help-section" id="tombTerrainRulesReference">
       <h3>Terrain update · 28 October 2026</h3>
       <p><strong>Tomb World walls:</strong> Walls remain Heavy and Wall terrain. No operative can move or see over or through them; measure distances around them. For cover and obscuring, only corners and ends of Wall terrain can intervene unless the active operative has passed that wall. Follow the official Tomb World diagram for this exception.</p>
-      <p><strong>Vantage Points:</strong> When shooting at an operative above you, check the rampart's Light or Heavy cover category and the attacker's targeting line. The elevated operative is not automatically in cover solely because it is on a Vantage Point.</p>
+      <p><strong>Vantage Points:</strong> When targeting an operative on Vantage terrain from below, a rampart above the targeting line counts as intervening only when it is within the target's Control Range. Apply the Light or Heavy cover classification using that rule and the current Core Rules illustrations.</p>
       <p><strong>Ladders:</strong> A ladder does not extend a Reposition beyond its permitted span to reach a higher ledge in one move. Check the legal move and endpoint on the tabletop.</p>
       <p class="muted">The Guide cannot measure terrain, visibility or movement geometry. Check the current official rules and diagrams at <a href="https://www.warhammer-community.com/en-gb/articles/k04goqrk/kill-team-october-update/" target="_blank" rel="noopener noreferrer">Games Workshop's October 2026 update</a>.</p>
     </section>`;
