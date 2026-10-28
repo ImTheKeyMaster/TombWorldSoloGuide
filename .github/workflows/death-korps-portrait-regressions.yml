@@ -23,6 +23,9 @@ on:
       - tests/test_v100198_jointops_specialists.py
       - tests/test_v100198_jointops_npo_profiles.py
       - tests/test_aggressive_defense_d3.py
+      - tests/test_v1009_aggressive_defence_result_display.py
+      - tests/test_v9231_ceaseless_scuttling_mode_behavior.py
+      - tests/test_v9262_ceaseless_scuttling_actions.py
       - Player_Operatives/DeathWatch.json
       - Player_Operatives/SpectreSquad.json
       - tests/test_v100194_single_necron_weapon_readonly.py
@@ -49,6 +52,9 @@ on:
       - tests/test_v100198_jointops_specialists.py
       - tests/test_v100198_jointops_npo_profiles.py
       - tests/test_aggressive_defense_d3.py
+      - tests/test_v1009_aggressive_defence_result_display.py
+      - tests/test_v9231_ceaseless_scuttling_mode_behavior.py
+      - tests/test_v9262_ceaseless_scuttling_actions.py
       - Player_Operatives/DeathWatch.json
       - Player_Operatives/SpectreSquad.json
       - tests/test_v100194_single_necron_weapon_readonly.py
@@ -93,6 +99,9 @@ jobs:
             tests/test_v100198_jointops_specialists.py \
             tests/test_v100198_jointops_npo_profiles.py \
             tests/test_aggressive_defense_d3.py \
+            tests/test_v1009_aggressive_defence_result_display.py \
+            tests/test_v9231_ceaseless_scuttling_mode_behavior.py \
+            tests/test_v9262_ceaseless_scuttling_actions.py \
             tests/test_v100150_experimental_weapon_guidance_selection.py \
             tests/test_v100157_experimental_weapon_rules_selection.py \
             tests/test_v100194_single_necron_weapon_readonly.py \
