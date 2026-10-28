@@ -1,6 +1,17 @@
-# Tomb World Battle Guide v10.0.197
+# Tomb World Battle Guide v10.0.198
 
-## v10.0.197
+## v10.0.198
+
+### Follow-up corrections and Spectre specialist action support
+
+- **Deathwatch:** enforce the either-two-Shoots-or-two-Fights restriction; require both shooting profiles to be in the special-weapon list for the second Shoot AP surcharge (or either to be a melta bomb); do not duplicate an already-present ammunition rule; and retain the selected Special Issue Ammunition modifiers in recorded combat summaries rather than replacing them with base weapon rules.
+- **Spectre:** add guided Issue Mission (0AP), Medikit (0AP), and Load Weapon (1AP) with target selection and AP accounting; ensure Load Weapon's Charge/Dash/Shoot conflicts are enforced in both directions. Medikit heals up to the recorded 2D3 roll.
+- **Spectre Elite Fieldcraft:** during a Solo NPO Engage-order activation, pause after the NPO action for an optional free Spectre Shoot, Dash or Reposition. Keep the suspended NPO activation and AP state intact; track once-per-NPO-activation, once-per-operative-turn and Fieldcraft point usage. Resolve range/movement and shooting on the tabletop and enter the NPO's remaining wounds, including any reanimation.
+- **Joint Ops:** competitive Canoptek Circle stats and matrix rules remain excluded. Existing Solo NPO profiles, threat rules, mission data, portrait assets, Standard/Experimental modes and PWA offline settings remain unchanged.
+- **Still guided:** Deathwatch counteractions and ploy/equipment economy; Spectre Medic! reactive saves, Camo Cloaks cover saves and some conditional weapon abilities. The Guide does not infer unseen tabletop visibility or ranges.
+
+
+## v10.0.198
 
 ### Official October 28 Kill Team mechanics and Joint Ops precedence
 
