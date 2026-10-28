@@ -99,7 +99,7 @@ for(const preview of [false,true])for(const hasRules of [false,true]){
  singleTarget:{id:'t',type:'warrior'},npoDefinition:()=>({id:'warrior'}),activeNpos:()=>[],
  playerWeaponProfile:()=>({rules:hasRules?['Piercing 1']:[]}),weaponHasRule:()=>false,
  tombWeaponRulesAtSelection:()=>true,weaponRulesHtml:profile=>profile?.rules?.length?'rules':'',
- isPvpMode:()=>false,darkDistance:false,showPlayerCombatResolution:()=>calls.push('auto'),
+ isPvpMode:()=>false,isDeathwatchPlayerTeam:()=>false,darkDistance:false,showPlayerCombatResolution:()=>calls.push('auto'),
  onResolved:()=>{},onCancel:()=>{}};
  new Function('ctx','with(ctx){'+fast+'}')(ctx);
  assert.equal(calls.length,hasRules?0:1);

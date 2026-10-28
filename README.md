@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.0.196
+# Tomb World Battle Guide v10.0.197
+
+## v10.0.197
+
+### Official October 28 Kill Team mechanics and Joint Ops precedence
+
+- **Joint Ops precedence:** retain the distinct Tomb World Joint Ops Necron NPO datacards, variant rules, mission tables, wound totals and AI; the competitive Canoptek Circle roster and obelisk matrix are not substituted. The competitive Dimensional Banishment clarification is already handled through target survival checking.
+- **Deathwatch:** make Gravis optional (at most one); permit a second Shoot or a second Fight per activation; charge the correct extra AP for a second Shoot using qualifying weapons, with selected weapon names preserved in activation history. Add once-per-turn Special Issue Ammunition selection on the Shoot weapon screen (excluding melta bombs/universal grenades, and Blast on Torrent). Apply Aegis storm shield double-block capacity, Demolisher's Aggressive Force damage reduction and charged heavy-hammer Brutal/Ceaseless conditions. Publish complete faction-rule guidance for unautomated counteractions.
+- **Spectre Squad:** constrain the Vox-Relay Beacon to its Signal action, expose a real 1AP Signal for the Beacon and Vox-Operator with the correct respective 6-inch or visibility rules, apply +1 player APL until the recipient's next activation and persist it through save/load. Provide a tabletop-confirmed 0AP Scout Terrain Operate Hatch discount once per activation (when a Guide has been selected). Correct the Vox-Operator's Signal wording and the Ready Step guidance for games beyond four turning points.
+- **Core / Tomb World:** correct the previously overgeneralized Tomb World wall cover/obscuring reference. Only wall corners and ends intervene unless the active operative has passed the wall. Clarify when an elevated rampart intervenes under the October Core Rules.
+- Preserves Standard and Experimental, portraits, weapon-selection single-choice UX, existing mission logic and save key.
+- **Still guided, not automated:** Spectre Elite Fieldcraft interruptions and other specialist free actions; Deathwatch counteraction combinations, equipment selections and full ploy accounting. Never silently resolve tabletop visibility, range or positioning.
 
 ## v10.0.196
 

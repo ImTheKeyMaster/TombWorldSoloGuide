@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.196';
+  const APP_VERSION = '10.0.197';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3038,8 +3038,8 @@ document.addEventListener('touchend',function(e){
 
     const terrain=`<section class="help-section" id="tombTerrainRulesReference">
       <h3>Terrain update · 28 October 2026</h3>
-      <p><strong>Tomb World walls:</strong> Apply normal Kill Team terrain rules to all wall sections, including pillars and details in them. Do not apply the former Tomb World exceptions that ignored certain wall features when checking cover or obscuring.</p>
-      <p><strong>Vantage Points:</strong> When shooting at an operative above you, check the rampart's Light or Heavy cover category and the attacker's targeting line. The elevated operative is not automatically in cover solely because it is on a Vantage Point.</p>
+      <p><strong>Tomb World walls:</strong> Walls remain Heavy and Wall terrain. No operative can move or see over or through them; measure distances around them. For cover and obscuring, only corners and ends of Wall terrain can intervene unless the active operative has passed that wall. Follow the official Tomb World diagram for this exception.</p>
+      <p><strong>Vantage Points:</strong> When targeting an operative on Vantage terrain from below, a rampart above the targeting line counts as intervening only when it is within the target's Control Range. Apply the Light or Heavy cover classification using that rule and the current Core Rules illustrations.</p>
       <p><strong>Ladders:</strong> A ladder does not extend a Reposition beyond its permitted span to reach a higher ledge in one move. Check the legal move and endpoint on the tabletop.</p>
       <p class="muted">The Guide cannot measure terrain, visibility or movement geometry. Check the current official rules and diagrams at <a href="https://www.warhammer-community.com/en-gb/articles/k04goqrk/kill-team-october-update/" target="_blank" rel="noopener noreferrer">Games Workshop's October 2026 update</a>.</p>
     </section>`;
@@ -5196,11 +5196,28 @@ document.addEventListener('touchend',function(e){
     return true;
   }
 
+  function isDeathwatchPlayerTeam(){return selectedPlayerTeamName().toLowerCase()==='deathwatch';}
+  function isSpectrePlayerTeam(){return selectedPlayerTeamName().toLowerCase()==='spectre squad';}
+  function playerActionUses(activation,actionId){
+    return (activation?.resolvedActions||[]).filter(action=>action.id===actionId).length;
+  }
+  function playerMayRepeatAction(activation,actionId){
+    return isDeathwatchPlayerTeam()&&['shoot','melee'].includes(actionId)&&playerActionUses(activation,actionId)<2;
+  }
+  function deathwatchSecondShootExtraCost(activation,weaponName){
+    if(!isDeathwatchPlayerTeam()||!playerActionUses(activation,'shoot'))return 0;
+    const last=activation?.resolvedActions?.filter(action=>action.id==='shoot').at(-1);
+    const prior=last?.attackSummaries?.[0]?.weaponName||'';
+    const special=/auxiliary grenade launcher|frag cannon|heavy plasma incinerator|infernus heavy bolter|plasma pistol|stalker bolt rifle/i;
+    const melta=/melta bomb/i;
+    return Number(melta.test(weaponName)||melta.test(prior)||(special.test(weaponName)&&special.test(prior||weaponName)));
+  }
   function playerHumanActionCatalog(activation=activePlayerActivation()){
     const operativeId=activation?.operativeId,operative=playerDefinition(operativeId);
     if(!operative)return [];
     const missionAction=mission()?.actionGuide?.missionAction;
     const breachLabel=missionAction?.existingAction==='breach'?missionAction.displayLabel:'Breach';
+    if(isSpectrePlayerTeam()&&operative.id==='vox-relay-beacon')return [{id:'signal',name:'Signal',group:'mission',cost:1}];
     const actions=[
       {id:'move',name:'Reposition',group:'movement',cost:1},
       {id:'dash',name:'Dash',group:'movement',cost:1},
@@ -5211,6 +5228,7 @@ document.addEventListener('touchend',function(e){
       {id:'hatch',name:'Operate Hatch',group:'mission',cost:1},
       {id:'breach',name:breachLabel,group:'mission',cost:breachApCost(operative)}
     ];
+    if(isSpectrePlayerTeam()&&operative.id.startsWith('vox-operator-'))actions.push({id:'signal',name:'Signal',group:'mission',cost:1});
     const transponder=state.missionState;
     if(missionAction?.id==='pickUpMarker'&&missionEngine()?.type==='transponder'&&!transponder?.transponderFound&&missionEngine().sites.some(site=>!transponder?.sites?.[site.id]||transponder.sites[site.id]==='available')){
       actions.push({id:missionAction.id,name:missionAction.displayLabel,group:'mission',cost:missionAction.apCost});
@@ -5224,13 +5242,14 @@ document.addEventListener('touchend',function(e){
   function playerHumanActionState(action,activation=activePlayerActivation()){
     const completed=new Set(activation?.completedActionIds||[]),remaining=Number(activation?.remainingAp||0);
     const discountedBreachCompleted=(activation?.resolvedActions||[]).some(record=>record.id==='breach'&&record.apCost===1);
-    if(completed.has(action.id))return {status:'Used',disabled:true,reason:'Used'};
+    if(completed.has(action.id)&&!playerMayRepeatAction(activation,action.id))return {status:'Used',disabled:true,reason:'Used'};
     if(action.cost>remaining)return {status:'Insufficient AP',disabled:true,reason:`Needs ${action.cost} AP`};
     if(action.id==='charge'&&['move','dash','fallBack'].some(id=>completed.has(id)))return {status:'Unavailable',disabled:true,reason:'Unavailable after movement'};
     if(['move','dash','fallBack'].includes(action.id)&&completed.has('charge'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Charge'};
     if(action.id==='fallBack'&&completed.has('move'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Reposition'};
     if(action.id==='move'&&completed.has('fallBack'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Fall Back'};
     if(discountedBreachCompleted&&['shoot','charge'].includes(action.id))return {status:'Unavailable',disabled:true,reason:'Unavailable after Breach'};
+    if(action.id==='signal'&&!inPlayLivingPlayerOperativeIds().some(id=>id!==activation.operativeId&&playerDefinition(id)?.id!=='vox-relay-beacon'))return {status:'Unavailable',disabled:true,reason:'No eligible teammate'};
     if(action.id==='shoot'&&!playerAttackWeapons(activation.operativeId,'shoot').length)return {status:'Unavailable',disabled:true,reason:'No ranged weapon'};
     if(action.id==='melee'&&!playerAttackWeapons(activation.operativeId,'melee').length)return {status:'Unavailable',disabled:true,reason:'No melee weapon'};
     if(['shoot','melee'].includes(action.id)&&!hasValidPlayerCombatTargets({}))return {status:'Unavailable',disabled:true,reason:'No valid target'};
@@ -5309,6 +5328,51 @@ document.addEventListener('touchend',function(e){
     save();renderHumanPlayerActionPicker();
   }
 
+  function showSpectreSignalSelection(stage){
+    const activation=activePlayerActivation();
+    if(!activation||!isSpectrePlayerTeam())return cancelCurrentHumanPlayerAction();
+    const beacon=activation.operativeId==='vox-relay-beacon';
+    const candidates=inPlayLivingPlayerOperativeIds().filter(id=>id!==activation.operativeId&&playerDefinition(id)?.id!=='vox-relay-beacon');
+    const choices=candidates.map(id=>'<option value="'+escapeHtml(id)+'">'+escapeHtml(playerName(id))+'</option>').join('');
+    const requirement=beacon?'within 6 inches':'visible to the Vox-Operator';
+    showModal('Spectre Signal',`<p>Select an eligible teammate ${requirement}. Confirm tabletop range, visibility and that the signalling operative is not within enemy Control Range.</p><div class="field"><label for="spectreSignalTarget">Recipient</label><select id="spectreSignalTarget"><option value="">Select an operative...</option>${choices}</select></div><div class="wizard-actions"><button class="btn ghost" id="cancelSpectreSignal">Cancel</button><button class="btn primary" id="confirmSpectreSignal" disabled>Confirm Signal · 1AP</button></div>`);
+    $('#cancelSpectreSignal').onclick=cancelCurrentHumanPlayerAction;
+    $('#spectreSignalTarget').onchange=()=>{$('#confirmSpectreSignal').disabled=!candidates.includes($('#spectreSignalTarget').value);};
+    $('#confirmSpectreSignal').onclick=()=>{
+      const targetId=$('#spectreSignalTarget').value;
+      if(!candidates.includes(targetId)||!activePlayerActivation()?.pendingAction)return;
+      if(!commitHumanPlayerAction(stage,{deferContinuation:true}))return;
+      // Player APL is calculated from eventState.playerAplModifiers (not NPO modifiers).
+      const effectId=`spectre-signal:${activation.activationId}:${targetId}`;
+      if(!state.eventState.playerAplModifiers.some(item=>item.id===effectId))state.eventState.playerAplModifiers.push({id:effectId,sourceId:activation.operativeId,targetId,ruleId:'spectre-signal',amount:1,expires:'end-of-target-next-activation'});
+      log(`${playerName(activation.operativeId)} signalled ${playerName(targetId)}: +1 APL until the end of the target's next activation.`);
+      save();continueAfterCommittedHumanAction();
+    };
+  }
+
+  function spectreGuideScoutingAvailable(){
+    // Official commentary: territory scouted by the Guide remains scouted
+    // even if the Guide is later incapacitated.
+    return isSpectrePlayerTeam()&&(state.playerRoster||[]).some(id=>id.startsWith('guide-'));
+  }
+  function selectSpectreScoutHatchDiscount(stage,action){
+    const activation=activePlayerActivation();
+    const used=(activation?.resolvedActions||[]).some(record=>record.scoutTerrainDiscount);
+    const proceed=discount=>{
+      if(!activePlayerActivation()?.pendingAction)return;
+      const cost=discount?0:1;
+      activation.pendingAction.cost=cost;stage.humanActionCost=cost;stage.scoutTerrainDiscount=discount;
+      save();
+      if(state.missionId==='demolition-protocol')showActivationFeatureTargetSelection(stage,'operate-hatch');
+      else showPendingHumanPlayerActionCompletion(stage,action,{hatch:'Confirm that Operate Hatch was completed on the tabletop.'},'Action Complete');
+    };
+    if(used){proceed(false);return;}
+    showModal('Scout Terrain · Operate Hatch',`<p>Is this hatchway's access point scouted, and has this operative not used the Scout Terrain benefit in this activation? The Guide scouts terrain in your territory or within 3 inches of it. Territory terrain remains scouted if the Guide is incapacitated.</p><div class="wizard-actions"><button class="btn ghost" id="cancelScoutHatch">Cancel</button><button class="btn secondary" id="regularScoutHatch">No · 1AP</button><button class="btn primary" id="discountedScoutHatch">Yes · 0AP</button></div>`);
+    $('#cancelScoutHatch').onclick=cancelCurrentHumanPlayerAction;
+    $('#regularScoutHatch').onclick=()=>proceed(false);
+    $('#discountedScoutHatch').onclick=()=>proceed(true);
+  }
+
   function selectHumanPlayerAction(actionId){
     const activation=activePlayerActivation();
     const action=playerHumanActionCatalog(activation).find(item=>item.id===actionId);
@@ -5316,10 +5380,12 @@ document.addEventListener('touchend',function(e){
     activation.pendingAction={activationId:activation.activationId,actionId:action.id,actionSequence:activation.actionSequence+1,cost:action.cost};
     const stage=playerSequentialStage(action);
     state.combatState={side:'player',stage};save();
+    if(action.id==='signal'){showSpectreSignalSelection(stage);return;}
     if(action.id==='shoot'||action.id==='melee'){
       showPendingPlayerAttackWizard(stage,action.id,result=>continuePlayerMultiTargetAttack(stage,action.id,result),cancelCurrentHumanPlayerAction);
       return;
     }
+    if(action.id==='hatch'&&spectreGuideScoutingAvailable()){selectSpectreScoutHatchDiscount(stage,action);return;}
     if(action.id==='hatch'&&state.missionId==='demolition-protocol'){showActivationFeatureTargetSelection(stage,'operate-hatch');return;}
     if(action.id==='breach'&&state.missionId==='demolition-protocol'){showActivationFeatureTargetSelection(stage,'breach');return;}
     if(action.id==='breach'&&mission()?.actionGuide?.missionAction?.existingAction==='breach'){
@@ -5363,7 +5429,7 @@ document.addEventListener('touchend',function(e){
   function commitHumanPlayerAction(stage,{deferContinuation=false,deferPersistence=false}={}){
     const activation=activePlayerActivation(),pending=activation?.pendingAction;
     if(!activation||!pending||pending.activationId!==activation.activationId||pending.actionId!==stage.humanActionId)return false;
-    if((activation.completedActionIds||[]).includes(pending.actionId))return false;
+    if((activation.completedActionIds||[]).includes(pending.actionId)&&!playerMayRepeatAction(activation,pending.actionId))return false;
     const before=activation.remainingAp;
     if(!Number.isFinite(pending.cost)||pending.cost<0||pending.cost>before)return false;
     const attacks=[...pendingAttackResults(stage,'shoot'),...pendingAttackResults(stage,'melee')];
@@ -5371,8 +5437,12 @@ document.addEventListener('touchend',function(e){
     const summary=primary?primary.attackType==='melee'?`${stage.humanActionName} · ${primary.targetName} · Dealt ${Number(primary.damageDealt??primary.damage??0)} · Suffered ${Number(primary.damageSuffered??0)}`:`${stage.humanActionName} · ${primary.targetName} · ${attacks.reduce((sum,item)=>sum+Number(item.damage||0),0)} damage`:stage.humanActionName;
     activation.remainingAp=before-pending.cost;
     activation.actionSequence=pending.actionSequence;
+    if(pending.actionId==='shoot'&&isDeathwatchPlayerTeam()&&stage.deathwatchAmmoRule&&!deathwatchAmmoTransaction().used){
+      deathwatchAmmoTransaction().used=true;
+      deathwatchAmmoTransaction().rule=stage.deathwatchAmmoRule;
+    }
     activation.completedActionIds=[...(activation.completedActionIds||[]),pending.actionId];
-    activation.resolvedActions=[...(activation.resolvedActions||[]),{sequence:pending.actionSequence,id:pending.actionId,name:stage.humanActionName,summary,apCost:pending.cost,apBefore:before,apRemaining:activation.remainingAp,attackSummaries:attacks.map(item=>item.attackType==='melee'?{targetId:item.targetId,targetName:item.targetName,before:item.before,after:item.after,damage:item.damage,attackType:item.attackType,damageDealt:item.attackerDamageDealt,damageSuffered:item.defenderDamageDealt,attackerBefore:item.attackerBefore,attackerAfter:item.attackerAfter,defenderBefore:item.defenderBefore,defenderAfter:item.defenderAfter,attackerIncapacitated:item.attackerIncapacitated,defenderIncapacitated:item.defenderIncapacitated,fightTransactionId:item.fightTransactionId}:{targetId:item.targetId,targetName:item.targetName,before:item.before,after:item.after,damage:item.damage,attackType:item.attackType})}];
+    activation.resolvedActions=[...(activation.resolvedActions||[]),{sequence:pending.actionSequence,id:pending.actionId,name:stage.humanActionName,summary,apCost:pending.cost,apBefore:before,apRemaining:activation.remainingAp,scoutTerrainDiscount:Boolean(stage.scoutTerrainDiscount),attackSummaries:attacks.map(item=>item.attackType==='melee'?{weaponName:item.weaponName||'',targetId:item.targetId,targetName:item.targetName,before:item.before,after:item.after,damage:item.damage,attackType:item.attackType,damageDealt:item.attackerDamageDealt,damageSuffered:item.defenderDamageDealt,attackerBefore:item.attackerBefore,attackerAfter:item.attackerAfter,defenderBefore:item.defenderBefore,defenderAfter:item.defenderAfter,attackerIncapacitated:item.attackerIncapacitated,defenderIncapacitated:item.defenderIncapacitated,fightTransactionId:item.fightTransactionId}:{weaponName:item.weaponName||'',targetId:item.targetId,targetName:item.targetName,before:item.before,after:item.after,damage:item.damage,attackType:item.attackType})}];
     const promptForFirstOpen=state.missionId==='scout-sub-crypt'&&['hatch','breach'].includes(pending.actionId)&&unawakenedScoutRooms().length>0;
     activation.pendingAction=null;state.combatState=null;state.missionActionContext=null;
     log(`${playerName(activation.operativeId)} completed ${summary}. ${activation.remainingAp} AP remaining.`);
@@ -6825,11 +6895,27 @@ function showPlayerActivation(){
     return {weaponId,profileId:explicitProfileId||`${weaponId}:default`};
   }
 
-  function playerWeaponProfile(weapon,{operativeId,attackType,weaponIndex}={}){
+  const DEATHWATCH_SPECIAL_AMMO=Object.freeze(['Blast 1"','Devastating 1','Lethal 5+','Piercing Crits 1','Saturate','Severe']);
+  function deathwatchAmmoTransaction(){
+    const key=`deathwatch-ammunition:${state.turningPoint}`;
+    const transactions=state.eventState.transactions||(state.eventState.transactions={});
+    return transactions[key]||(transactions[key]={id:key,used:false,turningPoint:state.turningPoint});
+  }
+  function deathwatchAmmoLegal(weapon,rule){
+    if(!rule||!DEATHWATCH_SPECIAL_AMMO.includes(rule)||/melta bomb|frag grenade|krak grenade/i.test(weapon?.name||''))return false;
+    return rule!=='Blast 1"'||!(weapon.rules||[]).some(value=>/Torrent/i.test(value));
+  }
+  function deathwatchAugmentProfile(weapon,profile,context){
+    const rule=context.stage?.deathwatchAmmoRule;
+    if(!isDeathwatchPlayerTeam()||context.attackType!=='shoot'||!deathwatchAmmoLegal(weapon,rule)||deathwatchAmmoTransaction().used)return profile;
+    return {...profile,rules:[...profile.rules,rule],critThreshold:rule==='Lethal 5+'?Math.min(5,profile.critThreshold):profile.critThreshold};
+  }
+
+  function playerWeaponProfile(weapon,{operativeId,attackType,weaponIndex,stage}={}){
     const damage=parseWeaponDamage(weapon?.damage);
     const lethalRule=(weapon?.rules||[]).map(String).map(rule=>rule.match(/Lethal\s*(\d)\+/i)).find(Boolean);
     const identity=canonicalPlayerWeaponIdentity({operativeId,attackType,weapon,weaponIndex});
-    return {
+    const profile={
       dice:Number(weapon?.attacks||4),
       hit:Number(weapon?.hit||3),
       critThreshold:Number(lethalRule?.[1]||6),
@@ -6842,6 +6928,11 @@ function showPlayerActivation(){
       weaponName:weapon?.name||'',profileName:weapon?.profileName||weapon?.name||'',
       name:weapon?.profileName||weapon?.name||''
     };
+    if(isDeathwatchPlayerTeam()&&operativeId==='demolisher'&&attackType==='melee'&&stage?.sequential&&/heavy thunder hammer/i.test(weapon?.name||'')){
+      profile.rules.push('Brutal');
+      if((activePlayerActivation()?.resolvedActions||[]).some(action=>action.id==='charge'))profile.rules.push('Ceaseless');
+    }
+    return deathwatchAugmentProfile(weapon,profile,{attackType,stage});
   }
 
   const combatAbilityHandlers = {
@@ -7769,7 +7860,10 @@ function showPlayerActivation(){
     return state.npoRuleState.stage3Triggers[id]||(state.npoRuleState.stage3Triggers[id]={id,status:'pending',...defaults});
   }
   function fightParticipantDefinitionId(participant){return npoDefinition(state.roster.find(item=>item.id===participant?.id)?.type)?.id||null;}
-  function shieldBlockCapacity(participant){return fightParticipantDefinitionId(participant)==='lychguard'&&participant.profile?.weaponId==='hyperphase-sword'?2:1;}
+  function shieldBlockCapacity(participant){
+    if(participant?.side==='player'&&isDeathwatchPlayerTeam()&&participant.id==='aegis'&&weaponHasRule(participant.profile,'shield'))return 2;
+    return fightParticipantDefinitionId(participant)==='lychguard'&&participant.profile?.weaponId==='hyperphase-sword'?2:1;
+  }
   function qualifyingWhirlingStrike(fight,role,success){return success?.kind==='critical'&&fightParticipantDefinitionId(fight?.[role])==='skorpekh-destroyer'&&fight[role].profile?.weaponId==='skorpekh-hyperphase-weapons';}
   function qualifyingHorrifyingFlaying(fight,role,after){return after<=0&&fightParticipantDefinitionId(fight?.[role])==='flayed-one';}
   async function resolveWhirlingOnslaught(fight,historyEntry){
@@ -7815,7 +7909,12 @@ function showPlayerActivation(){
   function commitFightStrike(fight,role,successId){
     if(!fight||fight.completed||fight.turn!==role)return false;
     const success=unresolvedFightSuccesses(fight,role).find(item=>item.id===successId);if(!success)return false;
-    const actor=fight[role],target=fight[otherFightRole(role)],resolvingRemaining=!unresolvedFightSuccesses(fight,otherFightRole(role)).length,damage=success.kind==='critical'?actor.profile.crit:actor.profile.normal;
+    const actor=fight[role],target=fight[otherFightRole(role)],resolvingRemaining=!unresolvedFightSuccesses(fight,otherFightRole(role)).length;
+    const rawDamage=success.kind==='critical'?actor.profile.crit:actor.profile.normal;
+    // Official Deathwatch Demolisher: each 3+ damage strike is reduced by 1
+    // while fighting or retaliating. Do not stack with Shield That Slays.
+    const demolisherDefense=isDeathwatchPlayerTeam()&&target.side==='player'&&target.id==='demolisher'&&rawDamage>=3;
+    const damage=rawDamage-(demolisherDefense?1:0);
     success.status='struck';const before=target.wounds,after=Math.max(0,before-damage);target.wounds=after;
     if(!pendingPlayerNpoFightIncapacitation(fight))setFightOperativeWounds(target,after);
     const shock=success.kind==='critical'?resolveFightShock(fight,role):null;
@@ -8342,6 +8441,12 @@ function showPlayerActivation(){
     const weaponControl=weapons.length===1
       ? `<div class="${weaponFieldClass}"><label>Weapon</label><div class="readonly-select">${escapeHtml(weapons[0].name)}</div><input type="hidden" id="playerWeaponSelect" value="0"></div>`
       : `<div class="${weaponFieldClass}"><label>Weapon</label><select id="playerWeaponSelect"><option value="">Select a weapon...</option>${weapons.map((weapon,index)=>`<option value="${index}">${escapeHtml(weapon.name)}</option>`).join('')}</select></div>`;
+    const ammunitionAvailable=attackType==='shoot'&&isDeathwatchPlayerTeam()&&!deathwatchAmmoTransaction().used;
+    const ammunitionControl=ammunitionAvailable
+      ? `<div class="field"><label for="deathwatchAmmo">Special Issue Ammunition (once per turning point)</label><select id="deathwatchAmmo"><option value="">No special ammunition</option>${DEATHWATCH_SPECIAL_AMMO.map(rule=>`<option value="${escapeHtml(rule)}"${stage.deathwatchAmmoRule===rule?' selected':''}>${escapeHtml(rule)}</option>`).join('')}</select></div>`
+      : '';
+    const secondShoot=attackType==='shoot'&&isDeathwatchPlayerTeam()&&playerActionUses(activePlayerActivation(),'shoot')>0;
+    const secondShootHint=secondShoot?'<p class="muted">Veteran Astartes: a second Shoot may cost an additional AP depending on both selected weapons.</p>':'';
     const meleeWeaponSummarySizers=attackType==='melee'
       ? weapons.map(weapon=>`<div class="melee-weapon-summary-sizer" aria-hidden="true">${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}</div>`).join('')
       : '';
@@ -8358,6 +8463,8 @@ function showPlayerActivation(){
       <p ${useExperimentalTargetRail?'tabindex="-1" data-dialog-focus':''}>Select the target and attack profile before rolling.</p>
       ${targetControl}
       ${weaponControl}
+      ${ammunitionControl}
+      ${secondShootHint}
       ${darkDistance}
       <div class="summary-box weapon-details${attackType==='melee'?' melee-weapon-summary melee-weapon-summary-pending':''}" id="playerWeaponSummary" aria-hidden="true"${attackType==='shoot'?' hidden':''}><div id="playerWeaponSummaryContent"></div>${meleeWeaponSummarySizers}</div>
       <div id="aggressiveDefenseFields"></div>
@@ -8370,7 +8477,13 @@ function showPlayerActivation(){
       const weapon=weaponSelect.value===''?null:weapons[Number(weaponSelect.value)];
       const weaponSummary=$('#playerWeaponSummary');
       const weaponIndex=weapon?weapons.indexOf(weapon):-1;
-      const profile=weapon?playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex}):null;
+      const ammunition=$('#deathwatchAmmo');
+      if(ammunition){
+        for(const option of ammunition.options)if(option.value)option.disabled=!deathwatchAmmoLegal(weapon,option.value);
+        if(ammunition.value&&!deathwatchAmmoLegal(weapon,ammunition.value))ammunition.value='';
+        stage.deathwatchAmmoRule=ammunition.value;
+      }
+      const profile=weapon?playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex,stage}):null;
       $('#playerWeaponSummaryContent').innerHTML=weapon
         ? `<div class="weapon-profile-stats">${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}</div>${weaponRulesHtml(profile,{semanticHeading:true})}`
         : '';
@@ -8380,7 +8493,8 @@ function showPlayerActivation(){
       weaponSummary.setAttribute('aria-hidden',String(!weapon));
       $('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target,attackType);
       if(npoDefinition(target?.type)?.id==='skorpekh-destroyer'&&target.order==='Conceal')$('#aggressiveDefenseFields').insertAdjacentHTML('beforeend','<p class="muted"><strong>Hulking:</strong> while Concealed, this Skorpekh cannot use Light terrain to prevent it from being selected as a target.</p>');
-      $('#openCombatResolution').disabled=!target||!weapon;
+      const extraAp=attackType==='shoot'&&weapon?deathwatchSecondShootExtraCost(activePlayerActivation(),weapon.name):0;
+      $('#openCombatResolution').disabled=!target||!weapon||Boolean(activePlayerActivation()?.pendingAction&&activePlayerActivation().remainingAp<1+extraAp);
     };
     targetSelect.addEventListener('change',renderChoices);
     if(useExperimentalTargetRail){
@@ -8411,11 +8525,18 @@ function showPlayerActivation(){
       });
     }
     weaponSelect.addEventListener('change',renderChoices);
+    $('#deathwatchAmmo')?.addEventListener('change',renderChoices);
     $('#cancelPendingAttack').onclick=()=>cancelPendingPlayerCombat(stage,attackType,onCancel);
     $('#openCombatResolution').onclick=()=>{
       const target=activeNpos().find(n=>n.id===targetSelect.value);
       const weaponIndex=Number(weaponSelect.value);
-      const weapon=weapons[weaponIndex],profile=playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex});
+      const weapon=weapons[weaponIndex],profile=playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex,stage});
+      const pending=activePlayerActivation()?.pendingAction;
+      if(pending&&attackType==='shoot'){
+        const required=1+deathwatchSecondShootExtraCost(activePlayerActivation(),weapon.name);
+        if(activePlayerActivation().remainingAp<required){showToast('This second Shoot requires more AP with the selected weapon.');return;}
+        pending.cost=required;stage.humanActionCost=required;save();
+      }
       const moreThanEight=Boolean($('#darkOfTombDistance')?.checked);
       const proceed=()=>{
         resumeCombatAfterWeaponRuleCheck({
@@ -8446,11 +8567,11 @@ function showPlayerActivation(){
       void guardianProtocolCheck().then(blocked=>{if(blocked)return;if(weaponHasRule(profile,'seek-light')&&target.order==='Conceal'){showSeekLightCheck({target,resolutionKey,onContinue:selectSecondaryTargets,onBack:back});return;}selectSecondaryTargets();});
     };
     renderChoices();
-    const singleProfile=weapons.length===1?playerWeaponProfile(weapons[0],{operativeId:stage.playerOperativeId,attackType,weaponIndex:0}):null;
+    const singleProfile=weapons.length===1?playerWeaponProfile(weapons[0],{operativeId:stage.playerOperativeId,attackType,weaponIndex:0,stage}):null;
     const requiresStage3TargetCheck=attackType==='shoot'&&(npoDefinition(singleTarget?.type)?.id==='royal-warden'&&activeNpos().some(item=>npoDefinition(item.type)?.id==='lychguard'&&item.order==='Engage')||npoDefinition(singleTarget?.type)?.id==='skorpekh-destroyer'&&singleTarget.order==='Conceal');
     const requiresTabletopCheck=requiresStage3TargetCheck||singleProfile&&['seek-light','blast','torrent'].some(ruleId=>weaponHasRule(singleProfile,ruleId));
     const rulesRequireSelection=attackType==='shoot'&&tombWeaponRulesAtSelection()&&Boolean(weaponRulesHtml(singleProfile));
-    if(!isPvpMode()&&singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte Warrior'&&!darkDistance&&!requiresTabletopCheck&&!rulesRequireSelection)showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
+    if(!isPvpMode()&&!(attackType==='shoot'&&isDeathwatchPlayerTeam())&&singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte Warrior'&&!darkDistance&&!requiresTabletopCheck&&!rulesRequireSelection)showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
   }
 
   function showPlayerCombatResolution(stage,attackType,targetId,weaponIndex,onResolved,onCancel,{result=null,animate=true,moreThanEight=false,deferRoll=false,committedAttackDice=null,committedDefenseDice=null}={}){
@@ -8490,7 +8611,7 @@ function showPlayerActivation(){
     }
     if(!target||!weapon){showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel);return;}
     const attackLabel=attackType==='shoot'?'Shooting':'Melee';
-    const profile=locked?.profile||playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex});
+    const profile=locked?.profile||playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex,stage});
     const targetName=targetSide==='player'?playerName(targetId):npoName(target);
     if(attackType==='melee'){
       const retaliationProfile=canonicalAttackProfile(npoAttackProfiles(target,'melee')[0]);
@@ -8585,7 +8706,7 @@ function showPlayerActivation(){
     const weaponIndex=Number(selection.weaponIndex??$('#playerWeaponSelect')?.value)||0;
     const weapon=weapons[weaponIndex];
     const locked=state.weaponRuleResolution?.orderedTargetIds?.length>1?lockedMultiTargetProfile(state.weaponRuleResolution,stage.playerOperativeId):null;
-    const profile=locked?.profile||playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex});
+    const profile=locked?.profile||playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex,stage});
     const targetName=targetSide==='player'?playerName(n.id):npoName(n);
     const before=targetSide==='player'?playerCurrentWounds(n.id):projectedNpoWounds(n.id,stage);
     const resolution=diceDraft.devastatingIncapacitated?{normal:0,critical:0,damage:0}:resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,profile);
@@ -10067,7 +10188,20 @@ function showPlayerActivation(){
       const transaction=eventTransaction(`attack:${state.turningPoint}:${state.activationNumber}:npo:${n.id}:${target.id}`,{definitionAnswers:{}});
       if(transaction.definitionAnswers.sameRoomAsC1===undefined)transaction.definitionAnswers.sameRoomAsC1=Boolean($('#sameRoomAsC1')?.checked);
       if(transaction.definitionAnswers.sameRoomAsRoyalWarden===undefined)transaction.definitionAnswers.sameRoomAsRoyalWarden=n.type==='Royal Warden'||Boolean($('#sameRoomAsRoyalWarden')?.checked);
-      const profile=effectiveWeaponProfile(baseProfile,{attackerSide:'npo',attackType,sameRoomAsC1:transaction.definitionAnswers.sameRoomAsC1,sameRoomAsRoyalWarden:transaction.definitionAnswers.sameRoomAsRoyalWarden});
+      let profile=effectiveWeaponProfile(baseProfile,{attackerSide:'npo',attackType,sameRoomAsC1:transaction.definitionAnswers.sameRoomAsC1,sameRoomAsRoyalWarden:transaction.definitionAnswers.sameRoomAsRoyalWarden});
+      // The Aegis storm shield worsens Piercing (but not Piercing Crits) by 1.
+      // Apply it to the profile BEFORE defense dice are requested, including
+      // when an interrupted NPO attack is resumed.
+      if(attackType==='shoot'&&targetSide==='player'&&isDeathwatchPlayerTeam()&&target.id==='aegis'){
+        const reduced=Math.max(0,Number(profile.ap||0)-1);
+        const rules=(profile.rules||[]).flatMap(rule=>{
+          const match=String(rule).match(/^Piercing (\d+)$/i);
+          if(!match)return [rule];
+          const amount=Math.max(0,Number(match[1])-1);
+          return amount?[`Piercing ${amount}`]:[];
+        });
+        profile={...profile,ap:reduced,rules};
+      }
       const profileSelect=$('#npoCombatProfile');
       if(profileSelect)profileSelect.disabled=true;
       const weapon=$('.compact-combat-profile div:nth-child(4) strong');
