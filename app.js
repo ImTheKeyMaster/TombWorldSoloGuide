@@ -2018,6 +2018,7 @@ document.addEventListener('touchend',function(e){
     if(state.lastActivation?.side==='player'&&state.lastActivation.committed&&state.lastActivation.completionHookPending){await completeHumanPlayerActivation();return true;}
     if(state.lastActivation?.npoId&&state.lastActivation.committed&&state.lastActivation.completionHookPending){await completeNpoActivation();return true;}
     if(isPvpMode()&&Boolean(state.lastActivation?.pendingAction?.diceResults||state.lastActivation?.pendingAction?.resolvedResult))return resumeNpoSpecialActionContext();
+    if(state.lastActivation?.side==='npo'&&!state.lastActivation.committed&&state.lastActivation.awaitingActionResult){continueNpoActivation();return true;}
     if(state.combatState?.side==='player'){
       const stage={...state.combatState.stage};
       const resumableSequentialAction=stage.shoot||stage.melee||stage.missionFeatureCommitted||stage.missionBreachCommitted||Object.keys(stage.threatRolls||{}).length>0;
@@ -9323,6 +9324,67 @@ function showPlayerActivation(){
     renderHumanNpoActionPicker(n);
   }
 
+  function spectreFieldcraftCandidates(){
+    if(!isSpectrePlayerTeam())return [];
+    const record=spectreFieldcraftRecord();
+    return inPlayLivingPlayerOperativeIds().filter(id=>id!=='vox-relay-beacon'
+      &&!record.usedOperativeIds.includes(id)
+      &&(!state.playerActivatedIds.includes(id)||record.issuedOperativeIds.includes(id)));
+  }
+  function spectreMayInterruptNpo(n,activation){
+    if(isPvpMode()||!isSpectrePlayerTeam()||!n||n.order!=='Engage'||n.wounds<=0
+      ||activation?.side!=='npo'||activation.committed||!activation.awaitingActionResult)return false;
+    const record=spectreFieldcraftRecord(),candidates=spectreFieldcraftCandidates();
+    if(record.interruptedEnemyActivationIds.includes(activation.activationId)||!candidates.length)return false;
+    return record.points===null||record.points>0||!record.coolHeadedUsed&&candidates.some(id=>id.startsWith('trooper-'));
+  }
+  function showSpectreFieldcraftInterrupt(n,actionRecord){
+    const activation=state.lastActivation;
+    if(!spectreMayInterruptNpo(n,activation))return renderNpoActionResult(n,actionRecord,Boolean(actionRecord.endsActivation));
+    const record=spectreFieldcraftRecord(),candidates=spectreFieldcraftCandidates();
+    const vox=record.points===null?'<label class="check-row"><input type="checkbox" id="fieldcraftVoxReady"> In the Ready Step, a Vox-Operator was in the killzone and outside enemy Control Range (2 Fieldcraft points instead of 1)</label>':`<p>Remaining Fieldcraft points: ${record.points}</p>`;
+    showModal('Elite Fieldcraft',`<p>${escapeHtml(npoName(n))} just completed an action with an Engage order. You can interrupt this activation once, after that action and before the next one.</p>${vox}
+      <div class="field"><label for="fieldcraftOperative">Eligible friendly Spectre</label><select id="fieldcraftOperative"><option value="">Select...</option>${candidates.map(id=>`<option value="${escapeHtml(id)}">${escapeHtml(playerName(id))}</option>`).join('')}</select></div>
+      <div class="field"><label for="fieldcraftAction">Free action</label><select id="fieldcraftAction"><option value="shoot">Shoot at interrupted NPO (not Guard)</option><option value="dash">Dash</option><option value="move">Reposition</option></select></div>
+      <label class="check-row"><input id="fieldcraftCool" type="checkbox"> Cool-Headed Trooper (0 points, once this turning point)</label>
+      <div class="field" id="fieldcraftDamage"><label for="fieldcraftWounds">NPO wounds remaining after resolving Shoot on tabletop</label><select id="fieldcraftWounds">${Array.from({length:n.wounds+1},(_,w)=>`<option value="${w}"${w===n.wounds?' selected':''}>${w}</option>`).join('')}</select></div>
+      <p class="muted">Confirm ready status (or Issue Mission), Control Range, valid targets, movement, order and visibility. Shoot can change order and can only target this NPO; use point-blank Guard hit penalty if applicable. Reposition cannot be repeated this turning point. Dash and Reposition cannot finish closer to the NPO or enemy drop zone except wholly within your drop zone; ignore Wall terrain for that check and do not teleport. Resolve all shooting, incapacitation and reanimation rules on the tabletop before recording wounds.</p>
+      <label class="check-row"><input id="fieldcraftConfirmed" type="checkbox"> I resolved the free action and all tabletop consequences</label>
+      <div class="wizard-actions"><button class="btn ghost" id="fieldcraftBack">Back</button><button class="btn primary" id="fieldcraftCommit" disabled>Record Interruption</button></div>`);
+    const actor=$('#fieldcraftOperative'),action=$('#fieldcraftAction'),cool=$('#fieldcraftCool'),btn=$('#fieldcraftCommit');
+    const update=()=>{
+      const canCool=actor.value.startsWith('trooper-')&&!record.coolHeadedUsed;
+      cool.disabled=!canCool;if(!canCool)cool.checked=false;
+      $('#fieldcraftDamage').hidden=action.value!=='shoot';
+      btn.disabled=!candidates.includes(actor.value)||!$('#fieldcraftConfirmed').checked||!(cool.checked||(record.points===null?1:record.points)>0);
+    };
+    [actor,action,cool,$('#fieldcraftConfirmed'),$('#fieldcraftVoxReady')].filter(Boolean).forEach(control=>control.addEventListener('change',update));
+    $('#fieldcraftBack').onclick=()=>renderNpoActionResult(n,actionRecord,Boolean(actionRecord.endsActivation));
+    btn.onclick=()=>{
+      if(btn.disabled||!spectreMayInterruptNpo(n,activation))return;
+      const id=actor.value,chosen=action.value,useCool=cool.checked;
+      if(!candidates.includes(id)||!['shoot','dash','move'].includes(chosen))return;
+      if(record.points===null)record.points=$('#fieldcraftVoxReady')?.checked?2:1;
+      if(useCool){if(record.coolHeadedUsed||!id.startsWith('trooper-'))return;record.coolHeadedUsed=true;}
+      else{if(record.points<1)return;record.points--;}
+      record.usedOperativeIds.push(id);
+      record.interruptedEnemyActivationIds.push(activation.activationId);
+      if(record.issuedOperativeIds.includes(id)){
+        record.issuedOperativeIds=record.issuedOperativeIds.filter(item=>item!==id);
+        record.counteractProhibitedIds=[...(record.counteractProhibitedIds||[]),id];
+      }
+      if(chosen==='move')record.repositionUsedIds=[...(record.repositionUsedIds||[]),id];
+      if(chosen==='shoot'){
+        const wounds=Math.max(0,Math.min(n.wounds,Number($('#fieldcraftWounds').value)));
+        n.wounds=wounds;
+        if(!wounds){n.ready=false;n.deployed=false;n.battlefieldState='out-of-action';}
+      }
+      activation.lastFieldcraftInterrupt={operativeId:id,actionId:chosen,npoId:n.id};
+      log(`${playerName(id)} interrupted ${npoName(n)} with a free ${chosen==='move'?'Reposition':chosen==='dash'?'Dash':'Shoot'} (${record.points} Fieldcraft points remain).`);
+      save();renderNpoActionResult(n,actionRecord,Boolean(actionRecord.endsActivation));
+    };
+    update();
+  }
   function continueSoloNpoActivation(){
     const activation=state.lastActivation,n=state.roster.find(item=>item.id===activation?.npoId);
     if(!activation||activation.committed)return;
@@ -9426,7 +9488,13 @@ function showPlayerActivation(){
     state.npoAttackTargetId=null;state.npoAttackSummary=null;
     const journalAction=['reposition','dash'].includes(actionId)?npoMovementInstruction(n,actionName):actionName;
     log(`${npoName(n)} completed ${journalAction}. ${activation.remainingAp} AP remaining.`);
-    if(transitionMode===NPO_ACTION_TRANSITIONS.ACKNOWLEDGE){
+    // Pause automated NPO continuation after an Engage-order action to allow a
+    // rules-legal Spectre Fieldcraft interruption without changing the NPO's
+    // saved activation, remaining AP, AI target or action history.
+    const offerFieldcraft=!isPvpMode()&&isSpectrePlayerTeam()&&n.order==='Engage'
+      &&n.wounds>0&&spectreFieldcraftCandidates().length>0
+      &&!spectreFieldcraftRecord().interruptedEnemyActivationIds.includes(activation.activationId);
+    if(transitionMode===NPO_ACTION_TRANSITIONS.ACKNOWLEDGE||offerFieldcraft){
       activation.awaitingActionResult={...record,endsActivation};
       if(endsActivation)activation.completed=true;
       save();renderNpoActionResult(n,record,endsActivation);
@@ -9443,9 +9511,11 @@ function showPlayerActivation(){
   function renderNpoActionResult(n,record,endsActivation=false){
     const activation=state.lastActivation,canContinue=!endsActivation&&activation.remainingAp>0;
     const history=activation.resolvedActions.map(action=>escapeHtml(conciseNpoActionName(action))).join(', ');
-    modalBody.innerHTML=`<div class="modal-inner ai-result"><div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div><div class="summary-box"><strong>${escapeHtml(conciseNpoActionName(record))} completed</strong><p>AP: ${record.apBefore} → ${record.apRemaining} · ${record.apCost} AP spent</p>${record.result?`<p>${escapeHtml(typeof record.result==='string'?record.result:record.result.summary||'Action resolved.')}</p>`:''}<p><strong>Completed actions:</strong> ${history}</p></div><div class="wizard-actions"><button class="btn primary" id="continueNpoActivation">${canContinue?'Continue Activation':'Complete Activation'}</button></div></div>`;
+    const fieldcraftButton=spectreMayInterruptNpo(n,activation)?'<button class="btn secondary" id="spectreFieldcraftInterrupt">Elite Fieldcraft · Interrupt</button>':'';
+    modalBody.innerHTML=`<div class="modal-inner ai-result"><div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div><div class="summary-box"><strong>${escapeHtml(conciseNpoActionName(record))} completed</strong><p>AP: ${record.apBefore} → ${record.apRemaining} · ${record.apCost} AP spent</p>${record.result?`<p>${escapeHtml(typeof record.result==='string'?record.result:record.result.summary||'Action resolved.')}</p>`:''}<p><strong>Completed actions:</strong> ${history}</p></div><div class="wizard-actions">${fieldcraftButton}<button class="btn primary" id="continueNpoActivation">${canContinue?'Continue Activation':'Complete Activation'}</button></div></div>`;
     if(!modal.open)modal.showModal();
     focusInitialDialogControl(modal);
+    $('#spectreFieldcraftInterrupt')?.addEventListener('click',()=>showSpectreFieldcraftInterrupt(n,record));
     $('#continueNpoActivation').onclick=()=>{const button=$('#continueNpoActivation');button.disabled=true;activation.awaitingActionResult=null;save();if(canContinue)continueNpoActivation();else completeNpoActivation();};
   }
 
