@@ -850,7 +850,7 @@ document.addEventListener('touchend',function(e){
   const npoDefinitions = {
     'Canoptek Scarab Swarm': {
       id:'canoptek-scarab-swarm',name:'Canoptek Scarab Swarm',type:'Canoptek Scarab Swarm',faction:'Necron Host',physicalQuantity:3,move:6,apl:2,save:5,wounds:10,baseSize:40,
-      keywords:['Necron Host','Necron','Canoptek','Scarab Swarm'],compatibilityBehavior:'Brawler',compatibilityAttack:{dice:5,hit:4,normal:2,crit:3},defaultWeaponId:'feeder-mandibles',loadoutOptions:null,
+      keywords:['Necron Host','Necron','Canoptek','Scarab Swarm'],compatibilityBehavior:'Brawler',compatibilityAttack:{dice:5,hit:4,normal:1,crit:2},defaultWeaponId:'feeder-mandibles',loadoutOptions:null,
       rangedWeapons:[],meleeWeapons:[{id:'feeder-mandibles',name:'Feeder mandibles',type:'melee',attacks:5,hit:4,damage:{normal:1,critical:2},rules:[],ruleIds:[]}],
       actions:[],passiveRules:[],abilities:[],strategicRules:[],
       behavior:{summary:'Move towards the enemy to fight them, seeking cover on the way.',actions:['Fight','Charge the closest player operative via the shortest possible route','Reposition towards the closest player operative, to cover if possible','Dash towards the closest player operative, to cover if possible'],operatesHatches:true}
@@ -872,8 +872,8 @@ document.addEventListener('touchend',function(e){
       loadoutOptions:[{id:'twin-gauss-reapers',name:'Twin gauss reapers and claws'},{id:'transdimensional-isolator',name:'Transdimensional isolator and claws'}],
       rangedWeapons:[
         {id:'twin-gauss-reapers',name:'Twin gauss reapers',type:'ranged',profiles:[
-          {id:'focused',name:'Focused',attacks:5,hit:4,damage:{normal:4,critical:5},rules:['Piercing 1','Severe'],ruleIds:['piercing','severe']},
-          {id:'sweeping',name:'Sweeping',attacks:4,hit:4,damage:{normal:4,critical:5},rules:['Piercing 1','Severe','Torrent 1"'],ruleIds:['piercing','severe','torrent'],torrent:1,manualResolution:'Also attack each other target within 1 inch of the primary target. Resolve each attack separately. Do not attack the primary target twice.'}
+          {id:'focused',name:'Focused',attacks:5,hit:4,damage:{normal:4,critical:5},rules:['Piercing 1','Punishing'],ruleIds:['piercing','punishing']},
+          {id:'sweeping',name:'Sweeping',attacks:4,hit:4,damage:{normal:4,critical:5},rules:['Piercing 1','Punishing','Torrent 1"'],ruleIds:['piercing','punishing','torrent'],torrent:1,manualResolution:'Also attack each other target within 1 inch of the primary target. Resolve each attack separately. Do not attack the primary target twice.'}
         ]},
         {id:'transdimensional-isolator',name:'Transdimensional isolator',type:'ranged',attacks:5,hit:4,damage:{normal:5,critical:6},rules:['Dimensional Banishment'],ruleIds:['dimensional-banishment'],postAttackEffect:{id:'dimensional-banishment',trigger:{damageInflictedOrCriticalRetained:true,targetMustSurvive:true},roll:'2D6',comparison:'greater-than-post-damage-wounds',incapacitationPrecedence:true}}
       ],
@@ -901,17 +901,17 @@ document.addEventListener('touchend',function(e){
     },
     'Canoptek Macrocyte Warrior': {
       id:'canoptek-macrocyte-warrior',name:'Canoptek Macrocyte Warrior',type:'Canoptek Macrocyte Warrior',faction:'Canoptek Circle',physicalQuantity:3,move:7,apl:2,save:4,wounds:7,baseSize:28,
-      keywords:['Canoptek Circle','Necron','Canoptek','Macrocyte','Warrior'],compatibilityBehavior:'Sentinel',compatibilityAttack:{dice:4,hit:4,normal:2,crit:3},defaultWeaponId:'gauss-scalpel',loadoutOptions:[{id:'gauss-scalpel',name:'Gauss scalpel and claws & tail'},{id:'tesla-caster',name:'Tesla caster and claws & tail'}],
+      keywords:['Canoptek Circle','Necron','Canoptek','Macrocyte','Warrior'],compatibilityBehavior:'Sentinel',compatibilityAttack:{dice:4,hit:4,normal:3,crit:4},defaultWeaponId:'gauss-scalpel',loadoutOptions:[{id:'gauss-scalpel',name:'Gauss scalpel and claws & tail'},{id:'tesla-caster',name:'Tesla caster and claws & tail'}],
       rangedWeapons:[
-        {id:'gauss-scalpel',name:'Gauss scalpel',type:'ranged',attacks:4,hit:4,damage:{normal:2,critical:3},rules:['Piercing 1'],ruleIds:['piercing']},
-        {id:'tesla-caster',name:'Tesla caster',type:'ranged',profiles:[{id:'focused',name:'Focused',attacks:4,hit:4,damage:{normal:2,critical:3},rules:[],ruleIds:[]},{id:'living-lightning',name:'Living lightning',attacks:4,hit:4,damage:{normal:2,critical:3},rules:['Blast 2"'],ruleIds:['blast'],blast:2,manualResolution:'Also attack each other target within 2 inches of the primary target. Resolve each attack separately. Do not attack the primary target twice.'}]}
+        {id:'gauss-scalpel',name:'Gauss scalpel',type:'ranged',attacks:4,hit:4,damage:{normal:3,critical:4},rules:['Piercing 1'],ruleIds:['piercing']},
+        {id:'tesla-caster',name:'Tesla caster',type:'ranged',profiles:[{id:'focused',name:'Focused',attacks:5,hit:4,damage:{normal:2,critical:3},rules:[],ruleIds:[]},{id:'living-lightning',name:'Living lightning',attacks:5,hit:4,damage:{normal:2,critical:3},rules:['Blast 2"'],ruleIds:['blast'],blast:2,manualResolution:'Also attack each other target within 2 inches of the primary target. Resolve each attack separately. Do not attack the primary target twice.'}]}
       ],
-      meleeWeapons:[{id:'claws-and-tail',name:'Claws & tail',type:'melee',attacks:3,hit:4,damage:{normal:3,critical:4},rules:[],ruleIds:[]}],actions:[],
+      meleeWeapons:[{id:'claws-and-tail',name:'Claws & tail',type:'melee',attacks:4,hit:4,damage:{normal:3,critical:4},rules:[],ruleIds:[]}],actions:[],
       passiveRules:[
-        {id:'aggressive-defence',name:'Aggressive Defence',trigger:'incapacitated',sourceMustBeEnemyOperative:true,sourceRange:2,oncePerIncapacitation:true,roll:'D3',successThreshold:2,damage:1,resolveBeforeRemoval:true,description:'When an enemy operative within 2 inches incapacitates this operative, the Guide automatically rolls D3 before removal; on 2+, inflict exactly 1 damage on that enemy.'},
-        {id:'expendable-construct',name:'Expendable Construct',excludeFromScoring:['escape','survive','incapacitated'],description:'Ignore this operative for scoring conditions that require operatives to escape, survive, or be incapacitated.'}
-      ],abilities:[{id:'aggressive-defence',name:'Aggressive Defence',text:'When an enemy operative within 2 inches incapacitates this operative, the Guide automatically rolls D3 before removal; on 2+, inflict exactly 1 damage on that enemy.'},{id:'expendable-construct',name:'Expendable Construct',text:'Ignore this operative for scoring conditions that require operatives to escape, survive, or be incapacitated.'}],
-      strategicRules:[{id:'a-ceaseless-scuttling',name:'A Ceaseless Scuttling',kind:'strategic-gambit',turningPointMinimum:2,requiresLivingFriendlyBelow:3,operativeType:'Canoptek Macrocyte Warrior',physicalLimit:3,setUp:{ready:true,order:'Conceal',location:'NPO drop zone'},manualResolution:true,description:'After Turning Point 1, if fewer than three friendly Warriors remain, another legally equipped Warrior may be set up ready with a Conceal order wholly within the NPO drop zone, subject to the three-model limit.'}],
+        {id:'aggressive-defence',name:'Aggressive Defence',trigger:'incapacitated',sourceMustBeEnemyOperative:true,sourceRange:2,oncePerIncapacitation:true,roll:'D3',successThreshold:2,damage:'roll-result',resolveBeforeRemoval:true,description:'When a player operative within 2 inches incapacitates this Macrocyte, roll D3. On 2+, inflict damage equal to the D3 result (2 or 3) on the attacking player.'},
+      ],abilities:[{id:'aggressive-defence',name:'Aggressive Defence',text:'If a player operative within 2 inches incapacitates this operative, roll D3: on 2+, the attacking player suffers damage equal to the result.'}],
+      // Joint Ops does not grant Expendable Construct or A Ceaseless Scuttling.
+      strategicRules:[],
       behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use Living Lightning when it can hit at least two Player operatives and no NPOs.'}
     },
     'Canoptek Macrocyte Accelerator': {
@@ -2170,6 +2170,8 @@ document.addEventListener('touchend',function(e){
     return roster.some(npo=>npo.type==='Canoptek Macrocyte Warrior');
   }
   function ceaselessScuttlingEligible(turningPoint=state.turningPoint,roster=state.roster,strategyData=state.strategyData){
+    // Competitive gambit is not part of Joint Ops Solo; retain only the PvP workflow.
+    if(!isPvpMode())return false;
     const living=roster.filter(npo=>npo.type==='Canoptek Macrocyte Warrior'&&npo.wounds>0).length;
     const deployed=roster.filter(npo=>npo.battlefieldState==='deployed'&&npo.wounds>0).length;
     return ceaselessScuttlingAvailable(roster)&&turningPoint>1&&living<3&&deployed<MAX_NPOS
@@ -2209,7 +2211,7 @@ document.addEventListener('touchend',function(e){
     log(`A Ceaseless Scuttling created ${npoName(warrior)} (${definition.loadoutOptions.find(option=>option.id===weaponId).name}) ready with a Conceal order in the NPO drop zone.`);
     return warrior;
   }
-  function aggressiveDefenceDamage(rollResult){return Number(rollResult)>=2?1:0;}
+  function aggressiveDefenceDamage(rollResult){return Number(rollResult)>=2?Number(rollResult):0;}
   function reanimateEligible({reanimator,target,visible,distance,sourceInControlRange=false,targetInControlRange=false,shootTargets=[]}){
     const used=state.npoRuleState.oncePerTurningPoint.reanimate===state.turningPoint;
     return !used&&reanimator&&target&&reanimator.id!==target.id&&reanimator.wounds>0&&target.type&&npoDefinition(target.type)?.keywords.includes('Canoptek Circle')
@@ -8416,7 +8418,7 @@ function showPlayerActivation(){
 
   function aggressiveDefenseDamage(rollResult){
     const result=Math.max(1,Math.min(3,Math.round(Number(rollResult)||1)));
-    return result>=2?1:0;
+    return result>=2?result:0;
   }
 
   function aggressiveDefenseDamageValue(combat){
