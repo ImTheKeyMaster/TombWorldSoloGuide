@@ -6138,6 +6138,8 @@ function showPlayerActivation(){
     const conversions=type=>attackDice.filter(die=>die[type]).length;
     const severe=conversions('severeConverted');
     if(severe)messages.push(`Severe: ${severe} normal ${severe===1?'success became a critical success':'successes became critical successes'}.`);
+    const punishing=conversions('punishingConverted');
+    if(punishing)messages.push(`Punishing: ${punishing} failed attack die retained as a normal success.`);
     const rending=conversions('rendingConverted');
     if(rending)messages.push(`Rending: ${rending} normal ${rending===1?'success became a critical success':'successes became critical successes'}.`);
     const lethal=Number(profile.critThreshold||6);
@@ -7188,8 +7190,7 @@ function showPlayerActivation(){
     if(onInitialRoll)onInitialRoll(dice);
     if(isPvpMode())acknowledgeDiceRequest(requestKey);
     const rerolled=await applyWeaponRuleRerolls(dice,profile,{attackerSide,container,rollerLabel,requestKeyBase,onCheckpoint:onInitialRoll,rerollPolicy});
-    const severe=applySevereToAttackDice(retainSuccessfulDice(rerolled),profile);
-    return applyRendingToAttackDice(severe.dice,profile).dice;
+    return applyAttackSuccessConversions(rerolled,profile);
   }
 
   async function requestDefenseDice(count,threshold,{rollerLabel='',requestKeyBase=''}={}){
@@ -7213,8 +7214,21 @@ function showPlayerActivation(){
     return {dice:updatedDice,applied:true,convertedIndex};
   }
 
+  function applyPunishingToAttackDice(dice,profile){
+    // Joint Ops Tomb Crawler: a retained critical success allows one failed
+    // attack die to be retained as a normal success. Apply after any rerolls
+    // and before later success conversions. Persist the conversion on the die.
+    const updated=(dice||[]).map(die=>({...die}));
+    if(!weaponHasRule(profile,'punishing')||updated.some(die=>die.punishingConverted)
+      ||!updated.some(die=>die.retained&&die.kind==='crit'))return {dice:updated,applied:false,convertedIndex:-1};
+    const index=updated.findIndex(die=>!die.retained&&die.kind==='miss');
+    if(index<0)return {dice:updated,applied:false,convertedIndex:-1};
+    updated[index]={...updated[index],kind:'hit',retained:true,originalKind:'miss',punishingConverted:true};
+    return {dice:updated,applied:true,convertedIndex:index};
+  }
   function applyAttackSuccessConversions(dice,profile){
-    const severe=applySevereToAttackDice(retainSuccessfulDice(dice),profile);
+    const punished=applyPunishingToAttackDice(retainSuccessfulDice(dice),profile);
+    const severe=applySevereToAttackDice(punished.dice,profile);
     return applyRendingToAttackDice(severe.dice,profile).dice;
   }
 
@@ -7785,6 +7799,7 @@ function showPlayerActivation(){
   function attackRuleAppliedHtml(dice=[]){
     const messages=[];
     if(dice.some(die=>die.rendingConverted))messages.push('Rending applied: one normal success became a critical success.');
+    if(dice.some(die=>die.punishingConverted))messages.push('Punishing applied: one failed die was retained as a normal success.');
     const rerollRules=[...new Set(dice.map(die=>die.rerolledBy).filter(Boolean))];
     rerollRules.forEach(rule=>messages.push(`${rule[0].toUpperCase()+rule.slice(1)} reroll applied.`));
     return messages.map(message=>`<p class="severe-applied" role="status">${escapeHtml(message)}</p>`).join('');
