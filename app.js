@@ -59,6 +59,7 @@
     balanced:{mode:'guided',phase:'attack-reroll'},
     ceaseless:{mode:'guided',phase:'attack-reroll'},
     rending:{mode:'automatic',phase:'after-attack-roll'},
+    punishing:{mode:'automatic',phase:'after-attack-roll'},
     devastating:{mode:'automatic',phase:'after-attack-roll'},
     saturate:{mode:'automatic',phase:'before-defense-roll'},
     accurate:{mode:'automatic',phase:'attack-roll'},
@@ -4147,7 +4148,7 @@ document.addEventListener('touchend',function(e){
       : scuttlingResolved
         ? '<p class="strategy-exception-complete">No legal setup location was available.</p>'
         : '<button type="button" class="btn primary big-action" id="scuttlingSetup">Set Up Macrocyte Warrior</button><button type="button" class="btn ghost strategy-exception-action" id="scuttlingNoLegalSetup">No Legal Setup Location</button>';
-    const scuttlingCard=state.turningPoint>1&&scuttlingAvailable&&(isPvpMode()||scuttlingEligible||scuttlingResolved)
+    const scuttlingCard=isPvpMode()&&state.turningPoint>1&&scuttlingAvailable&&(scuttlingEligible||scuttlingResolved)
       ? `<section class="card reinforcement-card"><p class="eyebrow">STRATEGIC GAMBIT</p><h3>A Ceaseless Scuttling</h3><p>${scuttlingEligible?(isPvpMode()?'Fewer than three Macrocyte Warriors remain. You may reuse an incapacitated miniature to set up a new operative instance.':'Fewer than three Macrocyte Warriors remain. Set up another Macrocyte Warrior ready with a Conceal order wholly within the NPO drop zone.'):scuttlingResolved&&!isPvpMode()?'A Ceaseless Scuttling is complete for this Turning Point.':escapeHtml(ceaselessScuttlingUnavailableReason())}</p>${isPvpMode()?`<button class="btn secondary" id="ceaselessScuttling" ${scuttlingEligible?'':'disabled'}>Use A Ceaseless Scuttling</button>`:soloScuttlingControl}</section>`:'';
     const actionsHtml=`${missionStrategyPromptHtml()}${factionGuidanceHtml('gambits')}${scuttlingCard}`;
     const actionsBlocked=missionPending||scuttlingPending;
@@ -9547,7 +9548,7 @@ function showPlayerActivation(){
   }
 
   function renderNpoActionResult(n,record,endsActivation=false){
-    const activation=state.lastActivation,canContinue=!endsActivation&&activation.remainingAp>0;
+    const activation=state.lastActivation,canContinue=!endsActivation&&n.wounds>0&&activation.remainingAp>0;
     const history=activation.resolvedActions.map(action=>escapeHtml(conciseNpoActionName(action))).join(', ');
     const fieldcraftButton=spectreMayInterruptNpo(n,activation)?'<button class="btn secondary" id="spectreFieldcraftInterrupt">Elite Fieldcraft · Interrupt</button>':'';
     modalBody.innerHTML=`<div class="modal-inner ai-result"><div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div><div class="summary-box"><strong>${escapeHtml(conciseNpoActionName(record))} completed</strong><p>AP: ${record.apBefore} → ${record.apRemaining} · ${record.apCost} AP spent</p>${record.result?`<p>${escapeHtml(typeof record.result==='string'?record.result:record.result.summary||'Action resolved.')}</p>`:''}<p><strong>Completed actions:</strong> ${history}</p></div><div class="wizard-actions">${fieldcraftButton}<button class="btn primary" id="continueNpoActivation">${canContinue?'Continue Activation':'Complete Activation'}</button></div></div>`;
