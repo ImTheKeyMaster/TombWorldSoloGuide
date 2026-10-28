@@ -5342,7 +5342,9 @@ document.addEventListener('touchend',function(e){
       const targetId=$('#spectreSignalTarget').value;
       if(!candidates.includes(targetId)||!activePlayerActivation()?.pendingAction)return;
       if(!commitHumanPlayerAction(stage,{deferContinuation:true}))return;
-      applyTemporaryAplModifier({sourceId:`signal:${activation.activationId}`,targetId,ruleId:'spectre-signal',amount:1,deferCurrentActivation:state.playerActivatedIds.includes(targetId)===false&&activePlayerActivation()?.operativeId===targetId});
+      // Player APL is calculated from eventState.playerAplModifiers (not NPO modifiers).
+      const effectId=`spectre-signal:${activation.activationId}:${targetId}`;
+      if(!state.eventState.playerAplModifiers.some(item=>item.id===effectId))state.eventState.playerAplModifiers.push({id:effectId,sourceId:activation.operativeId,targetId,ruleId:'spectre-signal',amount:1,expires:'end-of-target-next-activation'});
       log(`${playerName(activation.operativeId)} signalled ${playerName(targetId)}: +1 APL until the end of the target's next activation.`);
       save();continueAfterCommittedHumanAction();
     };
