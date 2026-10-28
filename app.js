@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.196';
+  const APP_VERSION = '10.0.197';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3038,7 +3038,7 @@ document.addEventListener('touchend',function(e){
 
     const terrain=`<section class="help-section" id="tombTerrainRulesReference">
       <h3>Terrain update · 28 October 2026</h3>
-      <p><strong>Tomb World walls:</strong> Apply normal Kill Team terrain rules to all wall sections, including pillars and details in them. Do not apply the former Tomb World exceptions that ignored certain wall features when checking cover or obscuring.</p>
+      <p><strong>Tomb World walls:</strong> Walls remain Heavy and Wall terrain. No operative can move or see over or through them; measure distances around them. For cover and obscuring, only corners and ends of Wall terrain can intervene unless the active operative has passed that wall. Follow the official Tomb World diagram for this exception.</p>
       <p><strong>Vantage Points:</strong> When shooting at an operative above you, check the rampart's Light or Heavy cover category and the attacker's targeting line. The elevated operative is not automatically in cover solely because it is on a Vantage Point.</p>
       <p><strong>Ladders:</strong> A ladder does not extend a Reposition beyond its permitted span to reach a higher ledge in one move. Check the legal move and endpoint on the tabletop.</p>
       <p class="muted">The Guide cannot measure terrain, visibility or movement geometry. Check the current official rules and diagrams at <a href="https://www.warhammer-community.com/en-gb/articles/k04goqrk/kill-team-october-update/" target="_blank" rel="noopener noreferrer">Games Workshop's October 2026 update</a>.</p>
@@ -5196,11 +5196,28 @@ document.addEventListener('touchend',function(e){
     return true;
   }
 
+  function isDeathwatchPlayerTeam(){return selectedPlayerTeamName().toLowerCase()==='deathwatch';}
+  function isSpectrePlayerTeam(){return selectedPlayerTeamName().toLowerCase()==='spectre squad';}
+  function playerActionUses(activation,actionId){
+    return (activation?.resolvedActions||[]).filter(action=>action.id===actionId).length;
+  }
+  function playerMayRepeatAction(activation,actionId){
+    return isDeathwatchPlayerTeam()&&['shoot','melee'].includes(actionId)&&playerActionUses(activation,actionId)<2;
+  }
+  function deathwatchSecondShootExtraCost(activation,weaponName){
+    if(!isDeathwatchPlayerTeam()||!playerActionUses(activation,'shoot'))return 0;
+    const last=activation?.resolvedActions?.filter(action=>action.id==='shoot').at(-1);
+    const prior=last?.attackSummaries?.[0]?.weaponName||'';
+    const special=/auxiliary grenade launcher|frag cannon|heavy plasma incinerator|infernus heavy bolter|plasma pistol|stalker bolt rifle/i;
+    const melta=/melta bomb/i;
+    return Number(melta.test(weaponName)||melta.test(prior)||(special.test(weaponName)&&special.test(prior||weaponName)));
+  }
   function playerHumanActionCatalog(activation=activePlayerActivation()){
     const operativeId=activation?.operativeId,operative=playerDefinition(operativeId);
     if(!operative)return [];
     const missionAction=mission()?.actionGuide?.missionAction;
     const breachLabel=missionAction?.existingAction==='breach'?missionAction.displayLabel:'Breach';
+    if(isSpectrePlayerTeam()&&operative.id==='vox-relay-beacon')return [{id:'signal',name:'Signal',group:'mission',cost:1}];
     const actions=[
       {id:'move',name:'Reposition',group:'movement',cost:1},
       {id:'dash',name:'Dash',group:'movement',cost:1},
@@ -5211,6 +5228,7 @@ document.addEventListener('touchend',function(e){
       {id:'hatch',name:'Operate Hatch',group:'mission',cost:1},
       {id:'breach',name:breachLabel,group:'mission',cost:breachApCost(operative)}
     ];
+    if(isSpectrePlayerTeam()&&operative.id.startsWith('vox-operator-'))actions.push({id:'signal',name:'Signal',group:'mission',cost:1});
     const transponder=state.missionState;
     if(missionAction?.id==='pickUpMarker'&&missionEngine()?.type==='transponder'&&!transponder?.transponderFound&&missionEngine().sites.some(site=>!transponder?.sites?.[site.id]||transponder.sites[site.id]==='available')){
       actions.push({id:missionAction.id,name:missionAction.displayLabel,group:'mission',cost:missionAction.apCost});
@@ -5224,13 +5242,14 @@ document.addEventListener('touchend',function(e){
   function playerHumanActionState(action,activation=activePlayerActivation()){
     const completed=new Set(activation?.completedActionIds||[]),remaining=Number(activation?.remainingAp||0);
     const discountedBreachCompleted=(activation?.resolvedActions||[]).some(record=>record.id==='breach'&&record.apCost===1);
-    if(completed.has(action.id))return {status:'Used',disabled:true,reason:'Used'};
+    if(completed.has(action.id)&&!playerMayRepeatAction(activation,action.id))return {status:'Used',disabled:true,reason:'Used'};
     if(action.cost>remaining)return {status:'Insufficient AP',disabled:true,reason:`Needs ${action.cost} AP`};
     if(action.id==='charge'&&['move','dash','fallBack'].some(id=>completed.has(id)))return {status:'Unavailable',disabled:true,reason:'Unavailable after movement'};
     if(['move','dash','fallBack'].includes(action.id)&&completed.has('charge'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Charge'};
     if(action.id==='fallBack'&&completed.has('move'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Reposition'};
     if(action.id==='move'&&completed.has('fallBack'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Fall Back'};
     if(discountedBreachCompleted&&['shoot','charge'].includes(action.id))return {status:'Unavailable',disabled:true,reason:'Unavailable after Breach'};
+    if(action.id==='signal'&&!inPlayLivingPlayerOperativeIds().some(id=>id!==activation.operativeId&&playerDefinition(id)?.id!=='vox-relay-beacon'))return {status:'Unavailable',disabled:true,reason:'No eligible teammate'};
     if(action.id==='shoot'&&!playerAttackWeapons(activation.operativeId,'shoot').length)return {status:'Unavailable',disabled:true,reason:'No ranged weapon'};
     if(action.id==='melee'&&!playerAttackWeapons(activation.operativeId,'melee').length)return {status:'Unavailable',disabled:true,reason:'No melee weapon'};
     if(['shoot','melee'].includes(action.id)&&!hasValidPlayerCombatTargets({}))return {status:'Unavailable',disabled:true,reason:'No valid target'};
@@ -5309,6 +5328,26 @@ document.addEventListener('touchend',function(e){
     save();renderHumanPlayerActionPicker();
   }
 
+  function showSpectreSignalSelection(stage){
+    const activation=activePlayerActivation();
+    if(!activation||!isSpectrePlayerTeam())return cancelCurrentHumanPlayerAction();
+    const beacon=activation.operativeId==='vox-relay-beacon';
+    const candidates=inPlayLivingPlayerOperativeIds().filter(id=>id!==activation.operativeId&&playerDefinition(id)?.id!=='vox-relay-beacon');
+    const choices=candidates.map(id=>'<option value="'+escapeHtml(id)+'">'+escapeHtml(playerName(id))+'</option>').join('');
+    const requirement=beacon?'within 6 inches':'visible to the Vox-Operator';
+    showModal('Spectre Signal',`<p>Select an eligible teammate ${requirement}. Confirm tabletop range, visibility and that the signalling operative is not within enemy Control Range.</p><div class="field"><label for="spectreSignalTarget">Recipient</label><select id="spectreSignalTarget"><option value="">Select an operative...</option>${choices}</select></div><div class="wizard-actions"><button class="btn ghost" id="cancelSpectreSignal">Cancel</button><button class="btn primary" id="confirmSpectreSignal" disabled>Confirm Signal · 1AP</button></div>`);
+    $('#cancelSpectreSignal').onclick=cancelCurrentHumanPlayerAction;
+    $('#spectreSignalTarget').onchange=()=>{$('#confirmSpectreSignal').disabled=!candidates.includes($('#spectreSignalTarget').value);};
+    $('#confirmSpectreSignal').onclick=()=>{
+      const targetId=$('#spectreSignalTarget').value;
+      if(!candidates.includes(targetId)||!activePlayerActivation()?.pendingAction)return;
+      if(!commitHumanPlayerAction(stage,{deferContinuation:true}))return;
+      applyTemporaryAplModifier({sourceId:`signal:${activation.activationId}`,targetId,ruleId:'spectre-signal',amount:1,deferCurrentActivation:state.playerActivatedIds.includes(targetId)===false&&activePlayerActivation()?.operativeId===targetId});
+      log(`${playerName(activation.operativeId)} signalled ${playerName(targetId)}: +1 APL until the end of the target's next activation.`);
+      save();continueAfterCommittedHumanAction();
+    };
+  }
+
   function selectHumanPlayerAction(actionId){
     const activation=activePlayerActivation();
     const action=playerHumanActionCatalog(activation).find(item=>item.id===actionId);
@@ -5316,6 +5355,7 @@ document.addEventListener('touchend',function(e){
     activation.pendingAction={activationId:activation.activationId,actionId:action.id,actionSequence:activation.actionSequence+1,cost:action.cost};
     const stage=playerSequentialStage(action);
     state.combatState={side:'player',stage};save();
+    if(action.id==='signal'){showSpectreSignalSelection(stage);return;}
     if(action.id==='shoot'||action.id==='melee'){
       showPendingPlayerAttackWizard(stage,action.id,result=>continuePlayerMultiTargetAttack(stage,action.id,result),cancelCurrentHumanPlayerAction);
       return;
@@ -5363,7 +5403,7 @@ document.addEventListener('touchend',function(e){
   function commitHumanPlayerAction(stage,{deferContinuation=false,deferPersistence=false}={}){
     const activation=activePlayerActivation(),pending=activation?.pendingAction;
     if(!activation||!pending||pending.activationId!==activation.activationId||pending.actionId!==stage.humanActionId)return false;
-    if((activation.completedActionIds||[]).includes(pending.actionId))return false;
+    if((activation.completedActionIds||[]).includes(pending.actionId)&&!playerMayRepeatAction(activation,pending.actionId))return false;
     const before=activation.remainingAp;
     if(!Number.isFinite(pending.cost)||pending.cost<0||pending.cost>before)return false;
     const attacks=[...pendingAttackResults(stage,'shoot'),...pendingAttackResults(stage,'melee')];
@@ -5372,7 +5412,7 @@ document.addEventListener('touchend',function(e){
     activation.remainingAp=before-pending.cost;
     activation.actionSequence=pending.actionSequence;
     activation.completedActionIds=[...(activation.completedActionIds||[]),pending.actionId];
-    activation.resolvedActions=[...(activation.resolvedActions||[]),{sequence:pending.actionSequence,id:pending.actionId,name:stage.humanActionName,summary,apCost:pending.cost,apBefore:before,apRemaining:activation.remainingAp,attackSummaries:attacks.map(item=>item.attackType==='melee'?{targetId:item.targetId,targetName:item.targetName,before:item.before,after:item.after,damage:item.damage,attackType:item.attackType,damageDealt:item.attackerDamageDealt,damageSuffered:item.defenderDamageDealt,attackerBefore:item.attackerBefore,attackerAfter:item.attackerAfter,defenderBefore:item.defenderBefore,defenderAfter:item.defenderAfter,attackerIncapacitated:item.attackerIncapacitated,defenderIncapacitated:item.defenderIncapacitated,fightTransactionId:item.fightTransactionId}:{targetId:item.targetId,targetName:item.targetName,before:item.before,after:item.after,damage:item.damage,attackType:item.attackType})}];
+    activation.resolvedActions=[...(activation.resolvedActions||[]),{sequence:pending.actionSequence,id:pending.actionId,name:stage.humanActionName,summary,apCost:pending.cost,apBefore:before,apRemaining:activation.remainingAp,attackSummaries:attacks.map(item=>item.attackType==='melee'?{weaponName:item.weaponName||'',targetId:item.targetId,targetName:item.targetName,before:item.before,after:item.after,damage:item.damage,attackType:item.attackType,damageDealt:item.attackerDamageDealt,damageSuffered:item.defenderDamageDealt,attackerBefore:item.attackerBefore,attackerAfter:item.attackerAfter,defenderBefore:item.defenderBefore,defenderAfter:item.defenderAfter,attackerIncapacitated:item.attackerIncapacitated,defenderIncapacitated:item.defenderIncapacitated,fightTransactionId:item.fightTransactionId}:{weaponName:item.weaponName||'',targetId:item.targetId,targetName:item.targetName,before:item.before,after:item.after,damage:item.damage,attackType:item.attackType})}];
     const promptForFirstOpen=state.missionId==='scout-sub-crypt'&&['hatch','breach'].includes(pending.actionId)&&unawakenedScoutRooms().length>0;
     activation.pendingAction=null;state.combatState=null;state.missionActionContext=null;
     log(`${playerName(activation.operativeId)} completed ${summary}. ${activation.remainingAp} AP remaining.`);
