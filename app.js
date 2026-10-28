@@ -8382,6 +8382,8 @@ function showPlayerActivation(){
     const weaponControl=weapons.length===1
       ? `<div class="${weaponFieldClass}"><label>Weapon</label><div class="readonly-select">${escapeHtml(weapons[0].name)}</div><input type="hidden" id="playerWeaponSelect" value="0"></div>`
       : `<div class="${weaponFieldClass}"><label>Weapon</label><select id="playerWeaponSelect"><option value="">Select a weapon...</option>${weapons.map((weapon,index)=>`<option value="${index}">${escapeHtml(weapon.name)}</option>`).join('')}</select></div>`;
+    const secondShoot=attackType==='shoot'&&isDeathwatchPlayerTeam()&&playerActionUses(activePlayerActivation(),'shoot')>0;
+    const secondShootHint=secondShoot?'<p class="muted">Veteran Astartes: a second Shoot may cost an additional AP depending on both selected weapons.</p>':'';
     const meleeWeaponSummarySizers=attackType==='melee'
       ? weapons.map(weapon=>`<div class="melee-weapon-summary-sizer" aria-hidden="true">${weapon.attacks} dice · ${weapon.hit}+ · ${escapeHtml(weapon.damage)}</div>`).join('')
       : '';
@@ -8398,6 +8400,7 @@ function showPlayerActivation(){
       <p ${useExperimentalTargetRail?'tabindex="-1" data-dialog-focus':''}>Select the target and attack profile before rolling.</p>
       ${targetControl}
       ${weaponControl}
+      ${secondShootHint}
       ${darkDistance}
       <div class="summary-box weapon-details${attackType==='melee'?' melee-weapon-summary melee-weapon-summary-pending':''}" id="playerWeaponSummary" aria-hidden="true"${attackType==='shoot'?' hidden':''}><div id="playerWeaponSummaryContent"></div>${meleeWeaponSummarySizers}</div>
       <div id="aggressiveDefenseFields"></div>
@@ -8420,7 +8423,8 @@ function showPlayerActivation(){
       weaponSummary.setAttribute('aria-hidden',String(!weapon));
       $('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target,attackType);
       if(npoDefinition(target?.type)?.id==='skorpekh-destroyer'&&target.order==='Conceal')$('#aggressiveDefenseFields').insertAdjacentHTML('beforeend','<p class="muted"><strong>Hulking:</strong> while Concealed, this Skorpekh cannot use Light terrain to prevent it from being selected as a target.</p>');
-      $('#openCombatResolution').disabled=!target||!weapon;
+      const extraAp=attackType==='shoot'&&weapon?deathwatchSecondShootExtraCost(activePlayerActivation(),weapon.name):0;
+      $('#openCombatResolution').disabled=!target||!weapon||Boolean(activePlayerActivation()?.pendingAction&&activePlayerActivation().remainingAp<1+extraAp);
     };
     targetSelect.addEventListener('change',renderChoices);
     if(useExperimentalTargetRail){
@@ -8456,6 +8460,12 @@ function showPlayerActivation(){
       const target=activeNpos().find(n=>n.id===targetSelect.value);
       const weaponIndex=Number(weaponSelect.value);
       const weapon=weapons[weaponIndex],profile=playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex});
+      const pending=activePlayerActivation()?.pendingAction;
+      if(pending&&attackType==='shoot'){
+        const required=1+deathwatchSecondShootExtraCost(activePlayerActivation(),weapon.name);
+        if(activePlayerActivation().remainingAp<required){showToast('This second Shoot requires more AP with the selected weapon.');return;}
+        pending.cost=required;stage.humanActionCost=required;save();
+      }
       const moreThanEight=Boolean($('#darkOfTombDistance')?.checked);
       const proceed=()=>{
         resumeCombatAfterWeaponRuleCheck({
@@ -8490,7 +8500,7 @@ function showPlayerActivation(){
     const requiresStage3TargetCheck=attackType==='shoot'&&(npoDefinition(singleTarget?.type)?.id==='royal-warden'&&activeNpos().some(item=>npoDefinition(item.type)?.id==='lychguard'&&item.order==='Engage')||npoDefinition(singleTarget?.type)?.id==='skorpekh-destroyer'&&singleTarget.order==='Conceal');
     const requiresTabletopCheck=requiresStage3TargetCheck||singleProfile&&['seek-light','blast','torrent'].some(ruleId=>weaponHasRule(singleProfile,ruleId));
     const rulesRequireSelection=attackType==='shoot'&&tombWeaponRulesAtSelection()&&Boolean(weaponRulesHtml(singleProfile));
-    if(!isPvpMode()&&singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte Warrior'&&!darkDistance&&!requiresTabletopCheck&&!rulesRequireSelection)showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
+    if(!isPvpMode()&&!(attackType==='shoot'&&isDeathwatchPlayerTeam())&&singleTarget&&weapons.length===1&&singleTarget.type!=='Canoptek Macrocyte Warrior'&&!darkDistance&&!requiresTabletopCheck&&!rulesRequireSelection)showPlayerCombatResolution(stage,attackType,singleTarget.id,0,onResolved,onCancel);
   }
 
   function showPlayerCombatResolution(stage,attackType,targetId,weaponIndex,onResolved,onCancel,{result=null,animate=true,moreThanEight=false,deferRoll=false,committedAttackDice=null,committedDefenseDice=null}={}){
