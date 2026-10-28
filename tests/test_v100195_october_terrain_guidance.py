@@ -35,9 +35,9 @@ for(const pvp of [false,true]){
     const reference=api.guideInstructionsHtml(full);
     assert.match(reference,/Terrain update · 28 October 2026/);
     assert.match(reference,/Tomb World walls/);
-    assert.match(reference,/normal Kill Team terrain rules/);
+    assert.match(reference,/only corners and ends of Wall terrain/);
     assert.match(reference,/Vantage Points/);
-    assert.match(reference,/rampart's Light or Heavy cover/);
+    assert.match(reference,/rampart above the targeting line/);
     assert.match(reference,/targeting line/);
     assert.match(reference,/Ladders/);
     assert.match(reference,/permitted span/);
