@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.195
+# Tomb World Battle Guide v10.0.196
+
+## v10.0.196
+
+### Restore uncluttered weapon-selection dialogs
+
+- Remove the October 2026 Terrain & cover dropdown/disclosure from both player and Necron shooting weapon-selection screens in Standard and Experimental.
+- Delete its unused markup helper and CSS. Keep October 28 Tomb World terrain clarifications in How It Works and the in-game Help reference.
+- Preserve weapon selection, single-profile read-only labels, weapon rules, guidance, Cancel/Continue, combat state, saves and preloading.
 
 ## v10.0.195
 
