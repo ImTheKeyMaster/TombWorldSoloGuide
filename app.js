@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.197';
+  const APP_VERSION = '10.0.198';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -59,6 +59,7 @@
     balanced:{mode:'guided',phase:'attack-reroll'},
     ceaseless:{mode:'guided',phase:'attack-reroll'},
     rending:{mode:'automatic',phase:'after-attack-roll'},
+    punishing:{mode:'automatic',phase:'after-attack-roll'},
     devastating:{mode:'automatic',phase:'after-attack-roll'},
     saturate:{mode:'automatic',phase:'before-defense-roll'},
     accurate:{mode:'automatic',phase:'attack-roll'},
@@ -850,7 +851,7 @@ document.addEventListener('touchend',function(e){
   const npoDefinitions = {
     'Canoptek Scarab Swarm': {
       id:'canoptek-scarab-swarm',name:'Canoptek Scarab Swarm',type:'Canoptek Scarab Swarm',faction:'Necron Host',physicalQuantity:3,move:6,apl:2,save:5,wounds:10,baseSize:40,
-      keywords:['Necron Host','Necron','Canoptek','Scarab Swarm'],compatibilityBehavior:'Brawler',compatibilityAttack:{dice:5,hit:4,normal:2,crit:3},defaultWeaponId:'feeder-mandibles',loadoutOptions:null,
+      keywords:['Necron Host','Necron','Canoptek','Scarab Swarm'],compatibilityBehavior:'Brawler',compatibilityAttack:{dice:5,hit:4,normal:1,crit:2},defaultWeaponId:'feeder-mandibles',loadoutOptions:null,
       rangedWeapons:[],meleeWeapons:[{id:'feeder-mandibles',name:'Feeder mandibles',type:'melee',attacks:5,hit:4,damage:{normal:1,critical:2},rules:[],ruleIds:[]}],
       actions:[],passiveRules:[],abilities:[],strategicRules:[],
       behavior:{summary:'Move towards the enemy to fight them, seeking cover on the way.',actions:['Fight','Charge the closest player operative via the shortest possible route','Reposition towards the closest player operative, to cover if possible','Dash towards the closest player operative, to cover if possible'],operatesHatches:true}
@@ -872,8 +873,8 @@ document.addEventListener('touchend',function(e){
       loadoutOptions:[{id:'twin-gauss-reapers',name:'Twin gauss reapers and claws'},{id:'transdimensional-isolator',name:'Transdimensional isolator and claws'}],
       rangedWeapons:[
         {id:'twin-gauss-reapers',name:'Twin gauss reapers',type:'ranged',profiles:[
-          {id:'focused',name:'Focused',attacks:5,hit:4,damage:{normal:4,critical:5},rules:['Piercing 1','Severe'],ruleIds:['piercing','severe']},
-          {id:'sweeping',name:'Sweeping',attacks:4,hit:4,damage:{normal:4,critical:5},rules:['Piercing 1','Severe','Torrent 1"'],ruleIds:['piercing','severe','torrent'],torrent:1,manualResolution:'Also attack each other target within 1 inch of the primary target. Resolve each attack separately. Do not attack the primary target twice.'}
+          {id:'focused',name:'Focused',attacks:5,hit:4,damage:{normal:4,critical:5},rules:['Piercing 1','Punishing'],ruleIds:['piercing','punishing']},
+          {id:'sweeping',name:'Sweeping',attacks:4,hit:4,damage:{normal:4,critical:5},rules:['Piercing 1','Punishing','Torrent 1"'],ruleIds:['piercing','punishing','torrent'],torrent:1,manualResolution:'Also attack each other target within 1 inch of the primary target. Resolve each attack separately. Do not attack the primary target twice.'}
         ]},
         {id:'transdimensional-isolator',name:'Transdimensional isolator',type:'ranged',attacks:5,hit:4,damage:{normal:5,critical:6},rules:['Dimensional Banishment'],ruleIds:['dimensional-banishment'],postAttackEffect:{id:'dimensional-banishment',trigger:{damageInflictedOrCriticalRetained:true,targetMustSurvive:true},roll:'2D6',comparison:'greater-than-post-damage-wounds',incapacitationPrecedence:true}}
       ],
@@ -901,17 +902,17 @@ document.addEventListener('touchend',function(e){
     },
     'Canoptek Macrocyte Warrior': {
       id:'canoptek-macrocyte-warrior',name:'Canoptek Macrocyte Warrior',type:'Canoptek Macrocyte Warrior',faction:'Canoptek Circle',physicalQuantity:3,move:7,apl:2,save:4,wounds:7,baseSize:28,
-      keywords:['Canoptek Circle','Necron','Canoptek','Macrocyte','Warrior'],compatibilityBehavior:'Sentinel',compatibilityAttack:{dice:4,hit:4,normal:2,crit:3},defaultWeaponId:'gauss-scalpel',loadoutOptions:[{id:'gauss-scalpel',name:'Gauss scalpel and claws & tail'},{id:'tesla-caster',name:'Tesla caster and claws & tail'}],
+      keywords:['Canoptek Circle','Necron','Canoptek','Macrocyte','Warrior'],compatibilityBehavior:'Sentinel',compatibilityAttack:{dice:4,hit:4,normal:3,crit:4},defaultWeaponId:'gauss-scalpel',loadoutOptions:[{id:'gauss-scalpel',name:'Gauss scalpel and claws & tail'},{id:'tesla-caster',name:'Tesla caster and claws & tail'}],
       rangedWeapons:[
-        {id:'gauss-scalpel',name:'Gauss scalpel',type:'ranged',attacks:4,hit:4,damage:{normal:2,critical:3},rules:['Piercing 1'],ruleIds:['piercing']},
-        {id:'tesla-caster',name:'Tesla caster',type:'ranged',profiles:[{id:'focused',name:'Focused',attacks:4,hit:4,damage:{normal:2,critical:3},rules:[],ruleIds:[]},{id:'living-lightning',name:'Living lightning',attacks:4,hit:4,damage:{normal:2,critical:3},rules:['Blast 2"'],ruleIds:['blast'],blast:2,manualResolution:'Also attack each other target within 2 inches of the primary target. Resolve each attack separately. Do not attack the primary target twice.'}]}
+        {id:'gauss-scalpel',name:'Gauss scalpel',type:'ranged',attacks:4,hit:4,damage:{normal:3,critical:4},rules:['Piercing 1'],ruleIds:['piercing']},
+        {id:'tesla-caster',name:'Tesla caster',type:'ranged',profiles:[{id:'focused',name:'Focused',attacks:5,hit:4,damage:{normal:2,critical:3},rules:[],ruleIds:[]},{id:'living-lightning',name:'Living lightning',attacks:5,hit:4,damage:{normal:2,critical:3},rules:['Blast 2"'],ruleIds:['blast'],blast:2,manualResolution:'Also attack each other target within 2 inches of the primary target. Resolve each attack separately. Do not attack the primary target twice.'}]}
       ],
-      meleeWeapons:[{id:'claws-and-tail',name:'Claws & tail',type:'melee',attacks:3,hit:4,damage:{normal:3,critical:4},rules:[],ruleIds:[]}],actions:[],
+      meleeWeapons:[{id:'claws-and-tail',name:'Claws & tail',type:'melee',attacks:4,hit:4,damage:{normal:3,critical:4},rules:[],ruleIds:[]}],actions:[],
       passiveRules:[
-        {id:'aggressive-defence',name:'Aggressive Defence',trigger:'incapacitated',sourceMustBeEnemyOperative:true,sourceRange:2,oncePerIncapacitation:true,roll:'D3',successThreshold:2,damage:1,resolveBeforeRemoval:true,description:'When an enemy operative within 2 inches incapacitates this operative, the Guide automatically rolls D3 before removal; on 2+, inflict exactly 1 damage on that enemy.'},
-        {id:'expendable-construct',name:'Expendable Construct',excludeFromScoring:['escape','survive','incapacitated'],description:'Ignore this operative for scoring conditions that require operatives to escape, survive, or be incapacitated.'}
-      ],abilities:[{id:'aggressive-defence',name:'Aggressive Defence',text:'When an enemy operative within 2 inches incapacitates this operative, the Guide automatically rolls D3 before removal; on 2+, inflict exactly 1 damage on that enemy.'},{id:'expendable-construct',name:'Expendable Construct',text:'Ignore this operative for scoring conditions that require operatives to escape, survive, or be incapacitated.'}],
-      strategicRules:[{id:'a-ceaseless-scuttling',name:'A Ceaseless Scuttling',kind:'strategic-gambit',turningPointMinimum:2,requiresLivingFriendlyBelow:3,operativeType:'Canoptek Macrocyte Warrior',physicalLimit:3,setUp:{ready:true,order:'Conceal',location:'NPO drop zone'},manualResolution:true,description:'After Turning Point 1, if fewer than three friendly Warriors remain, another legally equipped Warrior may be set up ready with a Conceal order wholly within the NPO drop zone, subject to the three-model limit.'}],
+        {id:'aggressive-defence',name:'Aggressive Defence',trigger:'incapacitated',sourceMustBeEnemyOperative:true,sourceRange:2,oncePerIncapacitation:true,roll:'D3',successThreshold:2,damage:'roll-result',resolveBeforeRemoval:true,description:'When a player operative within 2 inches incapacitates this Macrocyte, roll D3. On 2+, inflict damage equal to the D3 result (2 or 3) on the attacking player.'},
+      ],abilities:[{id:'aggressive-defence',name:'Aggressive Defence',text:'If a player operative within 2 inches incapacitates this operative, roll D3: on 2+, the attacking player suffers damage equal to the result.'}],
+      // Joint Ops does not grant Expendable Construct or A Ceaseless Scuttling.
+      strategicRules:[],
       behavior:{summary:'Fight if necessary; otherwise move to an ideal position to shoot when outside player control range.',actions:['Fight','Shoot','Reposition to gain a valid unobscured target or better win the mission','Dash to gain a valid unobscured target or better win the mission'],operatesHatches:true,weaponGuidance:'Use Living Lightning when it can hit at least two Player operatives and no NPOs.'}
     },
     'Canoptek Macrocyte Accelerator': {
@@ -2018,6 +2019,7 @@ document.addEventListener('touchend',function(e){
     if(state.lastActivation?.side==='player'&&state.lastActivation.committed&&state.lastActivation.completionHookPending){await completeHumanPlayerActivation();return true;}
     if(state.lastActivation?.npoId&&state.lastActivation.committed&&state.lastActivation.completionHookPending){await completeNpoActivation();return true;}
     if(isPvpMode()&&Boolean(state.lastActivation?.pendingAction?.diceResults||state.lastActivation?.pendingAction?.resolvedResult))return resumeNpoSpecialActionContext();
+    if(state.lastActivation?.side==='npo'&&!state.lastActivation.committed&&state.lastActivation.awaitingActionResult){continueNpoActivation();return true;}
     if(state.combatState?.side==='player'){
       const stage={...state.combatState.stage};
       const resumableSequentialAction=stage.shoot||stage.melee||stage.missionFeatureCommitted||stage.missionBreachCommitted||Object.keys(stage.threatRolls||{}).length>0;
@@ -2169,6 +2171,8 @@ document.addEventListener('touchend',function(e){
     return roster.some(npo=>npo.type==='Canoptek Macrocyte Warrior');
   }
   function ceaselessScuttlingEligible(turningPoint=state.turningPoint,roster=state.roster,strategyData=state.strategyData){
+    // Competitive gambit is not part of Joint Ops Solo; retain only the PvP workflow.
+    if(!isPvpMode())return false;
     const living=roster.filter(npo=>npo.type==='Canoptek Macrocyte Warrior'&&npo.wounds>0).length;
     const deployed=roster.filter(npo=>npo.battlefieldState==='deployed'&&npo.wounds>0).length;
     return ceaselessScuttlingAvailable(roster)&&turningPoint>1&&living<3&&deployed<MAX_NPOS
@@ -2208,7 +2212,7 @@ document.addEventListener('touchend',function(e){
     log(`A Ceaseless Scuttling created ${npoName(warrior)} (${definition.loadoutOptions.find(option=>option.id===weaponId).name}) ready with a Conceal order in the NPO drop zone.`);
     return warrior;
   }
-  function aggressiveDefenceDamage(rollResult){return Number(rollResult)>=2?1:0;}
+  function aggressiveDefenceDamage(rollResult){return Number(rollResult)>=2?Number(rollResult):0;}
   function reanimateEligible({reanimator,target,visible,distance,sourceInControlRange=false,targetInControlRange=false,shootTargets=[]}){
     const used=state.npoRuleState.oncePerTurningPoint.reanimate===state.turningPoint;
     return !used&&reanimator&&target&&reanimator.id!==target.id&&reanimator.wounds>0&&target.type&&npoDefinition(target.type)?.keywords.includes('Canoptek Circle')
@@ -4144,7 +4148,7 @@ document.addEventListener('touchend',function(e){
       : scuttlingResolved
         ? '<p class="strategy-exception-complete">No legal setup location was available.</p>'
         : '<button type="button" class="btn primary big-action" id="scuttlingSetup">Set Up Macrocyte Warrior</button><button type="button" class="btn ghost strategy-exception-action" id="scuttlingNoLegalSetup">No Legal Setup Location</button>';
-    const scuttlingCard=state.turningPoint>1&&scuttlingAvailable&&(isPvpMode()||scuttlingEligible||scuttlingResolved)
+    const scuttlingCard=isPvpMode()&&state.turningPoint>1&&scuttlingAvailable&&(scuttlingEligible||scuttlingResolved)
       ? `<section class="card reinforcement-card"><p class="eyebrow">STRATEGIC GAMBIT</p><h3>A Ceaseless Scuttling</h3><p>${scuttlingEligible?(isPvpMode()?'Fewer than three Macrocyte Warriors remain. You may reuse an incapacitated miniature to set up a new operative instance.':'Fewer than three Macrocyte Warriors remain. Set up another Macrocyte Warrior ready with a Conceal order wholly within the NPO drop zone.'):scuttlingResolved&&!isPvpMode()?'A Ceaseless Scuttling is complete for this Turning Point.':escapeHtml(ceaselessScuttlingUnavailableReason())}</p>${isPvpMode()?`<button class="btn secondary" id="ceaselessScuttling" ${scuttlingEligible?'':'disabled'}>Use A Ceaseless Scuttling</button>`:soloScuttlingControl}</section>`:'';
     const actionsHtml=`${missionStrategyPromptHtml()}${factionGuidanceHtml('gambits')}${scuttlingCard}`;
     const actionsBlocked=missionPending||scuttlingPending;
@@ -5202,7 +5206,8 @@ document.addEventListener('touchend',function(e){
     return (activation?.resolvedActions||[]).filter(action=>action.id===actionId).length;
   }
   function playerMayRepeatAction(activation,actionId){
-    return isDeathwatchPlayerTeam()&&['shoot','melee'].includes(actionId)&&playerActionUses(activation,actionId)<2;
+    return isDeathwatchPlayerTeam()&&['shoot','melee'].includes(actionId)&&playerActionUses(activation,actionId)<2
+      &&playerActionUses(activation,actionId==='shoot'?'melee':'shoot')<2;
   }
   function deathwatchSecondShootExtraCost(activation,weaponName){
     if(!isDeathwatchPlayerTeam()||!playerActionUses(activation,'shoot'))return 0;
@@ -5210,7 +5215,32 @@ document.addEventListener('touchend',function(e){
     const prior=last?.attackSummaries?.[0]?.weaponName||'';
     const special=/auxiliary grenade launcher|frag cannon|heavy plasma incinerator|infernus heavy bolter|plasma pistol|stalker bolt rifle/i;
     const melta=/melta bomb/i;
-    return Number(melta.test(weaponName)||melta.test(prior)||(special.test(weaponName)&&special.test(prior||weaponName)));
+    return Number(melta.test(weaponName)||melta.test(prior)||(special.test(weaponName)&&special.test(prior)));
+  }
+  function spectreFieldcraftRecord(){
+    const key=`spectre-fieldcraft:${state.turningPoint}`;
+    const record=eventTransaction(key,{points:null,usedOperativeIds:[],interruptedEnemyActivationIds:[],issuedOperativeIds:[],coolHeadedUsed:false});
+    for(const field of ['usedOperativeIds','interruptedEnemyActivationIds','issuedOperativeIds']){
+      if(!Array.isArray(record[field]))record[field]=[];
+    }
+    return record;
+  }
+  function spectreIssueMissionCandidates(){
+    if(!isSpectrePlayerTeam())return [];
+    const record=spectreFieldcraftRecord();
+    return inPlayLivingPlayerOperativeIds().filter(id=>id!=='vox-relay-beacon'
+      &&state.playerActivatedIds.includes(id)&&!record.usedOperativeIds.includes(id)
+      &&!record.issuedOperativeIds.includes(id));
+  }
+  function spectreMedicCandidates(){
+    if(!isSpectrePlayerTeam())return [];
+    return inPlayLivingPlayerOperativeIds().filter(id=>id!=='vox-relay-beacon'
+      &&playerCurrentWounds(id)<Number(playerDefinition(id)?.wounds||0));
+  }
+  function spectreLoaderCandidates(loaderId){
+    if(!isSpectrePlayerTeam())return [];
+    return inPlayLivingPlayerOperativeIds().filter(id=>id!==loaderId&&id!=='vox-relay-beacon'
+      &&playerAttackWeapons(id,'shoot').length);
   }
   function playerHumanActionCatalog(activation=activePlayerActivation()){
     const operativeId=activation?.operativeId,operative=playerDefinition(operativeId);
@@ -5228,7 +5258,12 @@ document.addEventListener('touchend',function(e){
       {id:'hatch',name:'Operate Hatch',group:'mission',cost:1},
       {id:'breach',name:breachLabel,group:'mission',cost:breachApCost(operative)}
     ];
-    if(isSpectrePlayerTeam()&&operative.id.startsWith('vox-operator-'))actions.push({id:'signal',name:'Signal',group:'mission',cost:1});
+    if(isSpectrePlayerTeam()){
+      if(operative.id.startsWith('vox-operator-'))actions.push({id:'signal',name:'Signal',group:'mission',cost:1});
+      if(operative.id==='veteran-sergeant')actions.push({id:'issueMission',name:'Issue Mission',group:'operative',cost:0});
+      if(operative.id.startsWith('field-medicae-'))actions.push({id:'medikit',name:'Medikit',group:'operative',cost:0});
+      if(operative.id.startsWith('loader-'))actions.push({id:'loadWeapon',name:'Load Weapon',group:'operative',cost:1});
+    }
     const transponder=state.missionState;
     if(missionAction?.id==='pickUpMarker'&&missionEngine()?.type==='transponder'&&!transponder?.transponderFound&&missionEngine().sites.some(site=>!transponder?.sites?.[site.id]||transponder.sites[site.id]==='available')){
       actions.push({id:missionAction.id,name:missionAction.displayLabel,group:'mission',cost:missionAction.apCost});
@@ -5243,13 +5278,20 @@ document.addEventListener('touchend',function(e){
     const completed=new Set(activation?.completedActionIds||[]),remaining=Number(activation?.remainingAp||0);
     const discountedBreachCompleted=(activation?.resolvedActions||[]).some(record=>record.id==='breach'&&record.apCost===1);
     if(completed.has(action.id)&&!playerMayRepeatAction(activation,action.id))return {status:'Used',disabled:true,reason:'Used'};
-    if(action.cost>remaining)return {status:'Insufficient AP',disabled:true,reason:`Needs ${action.cost} AP`};
+    const freeScoutHatch=action.id==='hatch'&&spectreGuideScoutingAvailable()
+      &&!(activation?.resolvedActions||[]).some(record=>record.scoutTerrainDiscount);
+    if(action.cost>remaining&&!freeScoutHatch)return {status:'Insufficient AP',disabled:true,reason:`Needs ${action.cost} AP`};
     if(action.id==='charge'&&['move','dash','fallBack'].some(id=>completed.has(id)))return {status:'Unavailable',disabled:true,reason:'Unavailable after movement'};
     if(['move','dash','fallBack'].includes(action.id)&&completed.has('charge'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Charge'};
     if(action.id==='fallBack'&&completed.has('move'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Reposition'};
     if(action.id==='move'&&completed.has('fallBack'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Fall Back'};
     if(discountedBreachCompleted&&['shoot','charge'].includes(action.id))return {status:'Unavailable',disabled:true,reason:'Unavailable after Breach'};
     if(action.id==='signal'&&!inPlayLivingPlayerOperativeIds().some(id=>id!==activation.operativeId&&playerDefinition(id)?.id!=='vox-relay-beacon'))return {status:'Unavailable',disabled:true,reason:'No eligible teammate'};
+    if(action.id==='issueMission'&&!spectreIssueMissionCandidates().length)return {status:'Unavailable',disabled:true,reason:'No eligible expended teammate'};
+    if(action.id==='medikit'&&!spectreMedicCandidates().length)return {status:'Unavailable',disabled:true,reason:'No wounded teammate'};
+    if(action.id==='loadWeapon'&&!spectreLoaderCandidates(activation.operativeId).length)return {status:'Unavailable',disabled:true,reason:'No teammate with a ranged weapon'};
+    if(action.id==='loadWeapon'&&['charge','dash','shoot'].some(id=>completed.has(id)))return {status:'Unavailable',disabled:true,reason:'Unavailable after Charge, Dash or Shoot'};
+    if(completed.has('loadWeapon')&&['charge','dash','shoot'].includes(action.id))return {status:'Unavailable',disabled:true,reason:'Unavailable after Load Weapon'};
     if(action.id==='shoot'&&!playerAttackWeapons(activation.operativeId,'shoot').length)return {status:'Unavailable',disabled:true,reason:'No ranged weapon'};
     if(action.id==='melee'&&!playerAttackWeapons(activation.operativeId,'melee').length)return {status:'Unavailable',disabled:true,reason:'No melee weapon'};
     if(['shoot','melee'].includes(action.id)&&!hasValidPlayerCombatTargets({}))return {status:'Unavailable',disabled:true,reason:'No valid target'};
@@ -5289,7 +5331,12 @@ document.addEventListener('touchend',function(e){
     const activation=activePlayerActivation();
     if(!activation)return showPlayerActivation();
     if(playerActivationOperativeEliminated(activation.operativeId)){void completeHumanPlayerActivation();return;}
-    if(activation.remainingAp<=0){void completeHumanPlayerActivation();return;}
+    if(activation.remainingAp<=0){
+      const zeroCostAction=playerHumanActionCatalog(activation).some(action=>
+        (action.cost===0||action.id==='hatch'&&spectreGuideScoutingAvailable())
+        &&!playerHumanActionState(action,activation).disabled);
+      if(!zeroCostAction){void completeHumanPlayerActivation();return;}
+    }
     const operative=playerDefinition(activation.operativeId);
     const effects=[...(state.npoRuleState?.aplModifiers||[]),...(state.eventState?.playerAplModifiers||[])]
       .filter(item=>item.targetId===activation.operativeId)
@@ -5350,6 +5397,52 @@ document.addEventListener('touchend',function(e){
     };
   }
 
+  function showSpectreSpecialistAction(stage,action){
+    const activation=activePlayerActivation();
+    if(!activation)return;
+    let candidates=[];
+    if(action.id==='issueMission')candidates=spectreIssueMissionCandidates();
+    if(action.id==='medikit')candidates=spectreMedicCandidates();
+    if(action.id==='loadWeapon')candidates=spectreLoaderCandidates(activation.operativeId);
+    if(!candidates.length){cancelCurrentHumanPlayerAction();return;}
+    const names=candidates.map(id=>`<option value="${escapeHtml(id)}">${escapeHtml(playerName(id))}</option>`).join('');
+    const instructions={
+      issueMission:'Select an expended teammate visible to the Veteran Sergeant. Confirm the Sergeant is outside all enemy Control Ranges. This operative may interrupt once with Elite Fieldcraft despite being expended, but cannot then counteract; Reposition remains prohibited if already used this turning point.',
+      medikit:'Select a wounded friendly operative in the Medicae’s Control Range. Confirm the Medicae is outside enemy Control Range, and that Medic! has not saved the recipient during this turning point. Roll 2D3 on the tabletop and enter their total.',
+      loadWeapon:'Select a friendly operative within the Loader’s Control Range and more than 3 inches from every enemy. The Loader must be outside enemy Control Range. That operative immediately performs a free Shoot action (not Guard) and may change order. Resolve its shooting on the tabletop and record any wounds in the roster before confirming.'
+    };
+    const totalField=action.id==='medikit'?'<div class="field"><label for="spectreMedikitTotal">2D3 total</label><select id="spectreMedikitTotal"><option value="">Select roll...</option>'+[2,3,4,5,6].map(n=>`<option value="${n}">${n}</option>`).join('')+'</select></div>':'';
+    const confirmation=action.id==='medikit'?'<label class="check-row"><input id="spectreMedikitLegal" type="checkbox"> Recipient did not benefit from Medic! this turning point</label>':'<label class="check-row"><input id="spectreSpecialLegal" type="checkbox"> Confirm all tabletop conditions and resulting actions have been resolved</label>';
+    showModal(action.name,`<p>${escapeHtml(instructions[action.id])}</p><div class="field"><label for="spectreSpecialTarget">Friendly operative</label><select id="spectreSpecialTarget"><option value="">Select an operative...</option>${names}</select></div>${totalField}${confirmation}<div class="wizard-actions"><button class="btn ghost" id="cancelSpectreSpecial">Back</button><button class="btn primary" id="confirmSpectreSpecial" disabled>Confirm · ${action.cost}AP</button></div>`);
+    const confirm=$('#confirmSpectreSpecial');
+    const update=()=>{confirm.disabled=!candidates.includes($('#spectreSpecialTarget').value)||!(action.id==='medikit'?$('#spectreMedikitLegal').checked&&Number($('#spectreMedikitTotal').value)>=2:$('#spectreSpecialLegal').checked);};
+    $('#spectreSpecialTarget').onchange=update;
+    $('#spectreMedikitTotal')?.addEventListener('change',update);
+    $('#spectreMedikitLegal')?.addEventListener('change',update);
+    $('#spectreSpecialLegal')?.addEventListener('change',update);
+    $('#cancelSpectreSpecial').onclick=cancelCurrentHumanPlayerAction;
+    confirm.onclick=()=>{
+      const targetId=$('#spectreSpecialTarget').value;
+      if(confirm.disabled||!candidates.includes(targetId))return;
+      const healing=action.id==='medikit'?Number($('#spectreMedikitTotal').value):0;
+      const woundsBefore=action.id==='medikit'?playerCurrentWounds(targetId):0;
+      if(!commitHumanPlayerAction(stage,{deferContinuation:true}))return;
+      if(action.id==='issueMission'){
+        const record=spectreFieldcraftRecord();
+        record.issuedOperativeIds.push(targetId);
+        log(`${playerName(targetId)} may use Elite Fieldcraft despite being expended until the end of this turning point.`);
+      }else if(action.id==='medikit'){
+        const maximum=Number(playerDefinition(targetId)?.wounds||woundsBefore);
+        const restored=Math.min(maximum,woundsBefore+healing);
+        state.playerWounds=state.playerWounds||{};
+        state.playerWounds[targetId]=restored;
+        log(`${playerName(targetId)} recovered ${restored-woundsBefore} wounds using Medikit (${healing} rolled).`);
+      }else{
+        log(`${playerName(targetId)} performed a free Shoot action directed by ${playerName(activation.operativeId)} (Load Weapon). Record any inflicted wounds in the roster.`);
+      }
+      save();continueAfterCommittedHumanAction();
+    };
+  }
   function spectreGuideScoutingAvailable(){
     // Official commentary: territory scouted by the Guide remains scouted
     // even if the Guide is later incapacitated.
@@ -5369,7 +5462,8 @@ document.addEventListener('touchend',function(e){
     if(used){proceed(false);return;}
     showModal('Scout Terrain · Operate Hatch',`<p>Is this hatchway's access point scouted, and has this operative not used the Scout Terrain benefit in this activation? The Guide scouts terrain in your territory or within 3 inches of it. Territory terrain remains scouted if the Guide is incapacitated.</p><div class="wizard-actions"><button class="btn ghost" id="cancelScoutHatch">Cancel</button><button class="btn secondary" id="regularScoutHatch">No · 1AP</button><button class="btn primary" id="discountedScoutHatch">Yes · 0AP</button></div>`);
     $('#cancelScoutHatch').onclick=cancelCurrentHumanPlayerAction;
-    $('#regularScoutHatch').onclick=()=>proceed(false);
+    if(activation.remainingAp<1)$('#regularScoutHatch').disabled=true;
+    $('#regularScoutHatch').onclick=()=>{if(activation.remainingAp>=1)proceed(false);};
     $('#discountedScoutHatch').onclick=()=>proceed(true);
   }
 
@@ -5381,6 +5475,7 @@ document.addEventListener('touchend',function(e){
     const stage=playerSequentialStage(action);
     state.combatState={side:'player',stage};save();
     if(action.id==='signal'){showSpectreSignalSelection(stage);return;}
+    if(['issueMission','medikit','loadWeapon'].includes(action.id)){showSpectreSpecialistAction(stage,action);return;}
     if(action.id==='shoot'||action.id==='melee'){
       showPendingPlayerAttackWizard(stage,action.id,result=>continuePlayerMultiTargetAttack(stage,action.id,result),cancelCurrentHumanPlayerAction);
       return;
@@ -5455,7 +5550,13 @@ document.addEventListener('touchend',function(e){
   function continueAfterCommittedHumanAction(){
     const activation=activePlayerActivation();
     if(!activation)return false;
-    if(playerActivationOperativeEliminated(activation.operativeId)||activation.remainingAp<=0){void completeHumanPlayerActivation();return true;}
+    if(playerActivationOperativeEliminated(activation.operativeId)){void completeHumanPlayerActivation();return true;}
+    if(activation.remainingAp<=0){
+      const furtherFreeActions=playerHumanActionCatalog(activation).some(action=>
+        (action.cost===0||action.id==='hatch'&&spectreGuideScoutingAvailable())
+        &&!playerHumanActionState(action,activation).disabled);
+      if(!furtherFreeActions){void completeHumanPlayerActivation();return true;}
+    }
     renderHumanPlayerActionPicker();
     return true;
   }
@@ -6038,6 +6139,8 @@ function showPlayerActivation(){
     const conversions=type=>attackDice.filter(die=>die[type]).length;
     const severe=conversions('severeConverted');
     if(severe)messages.push(`Severe: ${severe} normal ${severe===1?'success became a critical success':'successes became critical successes'}.`);
+    const punishing=conversions('punishingConverted');
+    if(punishing)messages.push(`Punishing: ${punishing} failed attack die retained as a normal success.`);
     const rending=conversions('rendingConverted');
     if(rending)messages.push(`Rending: ${rending} normal ${rending===1?'success became a critical success':'successes became critical successes'}.`);
     const lethal=Number(profile.critThreshold||6);
@@ -6903,12 +7006,13 @@ function showPlayerActivation(){
   }
   function deathwatchAmmoLegal(weapon,rule){
     if(!rule||!DEATHWATCH_SPECIAL_AMMO.includes(rule)||/melta bomb|frag grenade|krak grenade/i.test(weapon?.name||''))return false;
-    return rule!=='Blast 1"'||!(weapon.rules||[]).some(value=>/Torrent/i.test(value));
+    return rule!=='Blast 1"'||!(weapon.rules||[]).some(value=>/\bTorrent\b/i.test(value));
   }
   function deathwatchAugmentProfile(weapon,profile,context){
     const rule=context.stage?.deathwatchAmmoRule;
     if(!isDeathwatchPlayerTeam()||context.attackType!=='shoot'||!deathwatchAmmoLegal(weapon,rule)||deathwatchAmmoTransaction().used)return profile;
-    return {...profile,rules:[...profile.rules,rule],critThreshold:rule==='Lethal 5+'?Math.min(5,profile.critThreshold):profile.critThreshold};
+    const rules=profile.rules.includes(rule)?profile.rules:[...profile.rules,rule];
+    return {...profile,rules,critThreshold:rule==='Lethal 5+'?Math.min(5,profile.critThreshold):profile.critThreshold};
   }
 
   function playerWeaponProfile(weapon,{operativeId,attackType,weaponIndex,stage}={}){
@@ -7087,8 +7191,7 @@ function showPlayerActivation(){
     if(onInitialRoll)onInitialRoll(dice);
     if(isPvpMode())acknowledgeDiceRequest(requestKey);
     const rerolled=await applyWeaponRuleRerolls(dice,profile,{attackerSide,container,rollerLabel,requestKeyBase,onCheckpoint:onInitialRoll,rerollPolicy});
-    const severe=applySevereToAttackDice(retainSuccessfulDice(rerolled),profile);
-    return applyRendingToAttackDice(severe.dice,profile).dice;
+    return applyAttackSuccessConversions(rerolled,profile);
   }
 
   async function requestDefenseDice(count,threshold,{rollerLabel='',requestKeyBase=''}={}){
@@ -7112,8 +7215,21 @@ function showPlayerActivation(){
     return {dice:updatedDice,applied:true,convertedIndex};
   }
 
+  function applyPunishingToAttackDice(dice,profile){
+    // Joint Ops Tomb Crawler: a retained critical success allows one failed
+    // attack die to be retained as a normal success. Apply after any rerolls
+    // and before later success conversions. Persist the conversion on the die.
+    const updated=(dice||[]).map(die=>({...die}));
+    if(!weaponHasRule(profile,'punishing')||updated.some(die=>die.punishingConverted)
+      ||!updated.some(die=>die.retained&&die.kind==='crit'))return {dice:updated,applied:false,convertedIndex:-1};
+    const index=updated.findIndex(die=>!die.retained&&die.kind==='miss');
+    if(index<0)return {dice:updated,applied:false,convertedIndex:-1};
+    updated[index]={...updated[index],kind:'hit',retained:true,originalKind:'miss',punishingConverted:true};
+    return {dice:updated,applied:true,convertedIndex:index};
+  }
   function applyAttackSuccessConversions(dice,profile){
-    const severe=applySevereToAttackDice(retainSuccessfulDice(dice),profile);
+    const punished=applyPunishingToAttackDice(retainSuccessfulDice(dice),profile);
+    const severe=applySevereToAttackDice(punished.dice,profile);
     return applyRendingToAttackDice(severe.dice,profile).dice;
   }
 
@@ -7684,6 +7800,7 @@ function showPlayerActivation(){
   function attackRuleAppliedHtml(dice=[]){
     const messages=[];
     if(dice.some(die=>die.rendingConverted))messages.push('Rending applied: one normal success became a critical success.');
+    if(dice.some(die=>die.punishingConverted))messages.push('Punishing applied: one failed die was retained as a normal success.');
     const rerollRules=[...new Set(dice.map(die=>die.rerolledBy).filter(Boolean))];
     rerollRules.forEach(rule=>messages.push(`${rule[0].toUpperCase()+rule.slice(1)} reroll applied.`));
     return messages.map(message=>`<p class="severe-applied" role="status">${escapeHtml(message)}</p>`).join('');
@@ -8317,7 +8434,7 @@ function showPlayerActivation(){
 
   function aggressiveDefenseDamage(rollResult){
     const result=Math.max(1,Math.min(3,Math.round(Number(rollResult)||1)));
-    return result>=2?1:0;
+    return result>=2?result:0;
   }
 
   function aggressiveDefenseDamageValue(combat){
@@ -8712,7 +8829,7 @@ function showPlayerActivation(){
     const resolution=diceDraft.devastatingIncapacitated?{normal:0,critical:0,damage:0}:resolveRetainedCombat(diceDraft.attackDice,diceDraft.defenseDice,profile);
     const devastatingDamage=Number(diceDraft.devastatingDamage??devastatingDamageForAttack(diceDraft.attackDice,profile));
     const result={
-      ...recordedCombat({attackerName:playerName(stage.playerOperativeId),defenderName:targetName,attackType,attackerSide:'player',defenderSide:targetSide,profile:{...profile,rules:weapon.rules||[]},before,
+      ...recordedCombat({attackerName:playerName(stage.playerOperativeId),defenderName:targetName,attackType,attackerSide:'player',defenderSide:targetSide,profile:{...profile},before,
         normalSuccesses:resolution.normal,criticalSuccesses:resolution.critical,damage:resolution.damage+devastatingDamage}),
       targetId:n.id,targetName,side:targetSide,weaponName:weapon.name,weaponIndex,
       severeApplied:diceDraft.attackDice.some(die=>die.severeConverted),devastatingDamage,devastatingApplied:true,devastatingIncapacitated:Boolean(diceDraft.devastatingIncapacitated)
@@ -9239,6 +9356,72 @@ function showPlayerActivation(){
     renderHumanNpoActionPicker(n);
   }
 
+  function spectreFieldcraftCandidates(){
+    if(!isSpectrePlayerTeam())return [];
+    const record=spectreFieldcraftRecord();
+    return inPlayLivingPlayerOperativeIds().filter(id=>id!=='vox-relay-beacon'
+      &&!record.usedOperativeIds.includes(id)
+      &&(!state.playerActivatedIds.includes(id)||record.issuedOperativeIds.includes(id)));
+  }
+  function spectreMayInterruptNpo(n,activation){
+    if(isPvpMode()||!isSpectrePlayerTeam()||!n||n.order!=='Engage'||n.wounds<=0
+      ||activation?.side!=='npo'||activation.committed||!activation.awaitingActionResult)return false;
+    const record=spectreFieldcraftRecord(),candidates=spectreFieldcraftCandidates();
+    if(record.interruptedEnemyActivationIds.includes(activation.activationId)||!candidates.length)return false;
+    return record.points===null||record.points>0||!record.coolHeadedUsed&&candidates.some(id=>id.startsWith('trooper-'));
+  }
+  function showSpectreFieldcraftInterrupt(n,actionRecord){
+    const activation=state.lastActivation;
+    if(!spectreMayInterruptNpo(n,activation))return renderNpoActionResult(n,actionRecord,Boolean(actionRecord.endsActivation));
+    const record=spectreFieldcraftRecord(),candidates=spectreFieldcraftCandidates();
+    const vox=record.points===null?'<label class="check-row"><input type="checkbox" id="fieldcraftVoxReady"> In the Ready Step, a Vox-Operator was in the killzone and outside enemy Control Range (2 Fieldcraft points instead of 1)</label>':`<p>Remaining Fieldcraft points: ${record.points}</p>`;
+    showModal('Elite Fieldcraft',`<p>${escapeHtml(npoName(n))} just completed an action with an Engage order. You can interrupt this activation once, after that action and before the next one.</p>${vox}
+      <div class="field"><label for="fieldcraftOperative">Eligible friendly Spectre</label><select id="fieldcraftOperative"><option value="">Select...</option>${candidates.map(id=>`<option value="${escapeHtml(id)}">${escapeHtml(playerName(id))}</option>`).join('')}</select></div>
+      <div class="field"><label for="fieldcraftAction">Free action</label><select id="fieldcraftAction"><option value="shoot">Shoot at interrupted NPO (not Guard)</option><option value="dash">Dash</option><option value="move">Reposition</option></select></div>
+      <label class="check-row"><input id="fieldcraftCool" type="checkbox"> Cool-Headed Trooper (0 points, once this turning point)</label>
+      <div class="field" id="fieldcraftDamage"><label for="fieldcraftWounds">NPO wounds remaining after resolving Shoot on tabletop</label><select id="fieldcraftWounds">${Array.from({length:n.wounds+1},(_,w)=>`<option value="${w}"${w===n.wounds?' selected':''}>${w}</option>`).join('')}</select></div>
+      <p class="muted">Confirm ready status (or Issue Mission), Control Range, valid targets, movement, order and visibility. Shoot can change order and can only target this NPO; use point-blank Guard hit penalty if applicable. Reposition cannot be repeated this turning point. Dash and Reposition cannot finish closer to the NPO or enemy drop zone except wholly within your drop zone; ignore Wall terrain for that check and do not teleport. Resolve all shooting, incapacitation and reanimation rules on the tabletop before recording wounds.</p>
+      <label class="check-row"><input id="fieldcraftConfirmed" type="checkbox"> I resolved the free action and all tabletop consequences</label>
+      <div class="wizard-actions"><button class="btn ghost" id="fieldcraftBack">Back</button><button class="btn primary" id="fieldcraftCommit" disabled>Record Interruption</button></div>`);
+    const actor=$('#fieldcraftOperative'),action=$('#fieldcraftAction'),cool=$('#fieldcraftCool'),btn=$('#fieldcraftCommit');
+    const update=()=>{
+      const canCool=actor.value.startsWith('trooper-')&&!record.coolHeadedUsed;
+      cool.disabled=!canCool;if(!canCool)cool.checked=false;
+      $('#fieldcraftDamage').hidden=action.value!=='shoot';
+      const repositionAlreadyUsed=(record.repositionUsedIds||[]).includes(actor.value)
+        ||(state.activationHistory||[]).some(item=>item.side==='player'&&item.label===playerName(actor.value)
+          &&(item.actions||[]).some(performed=>performed.id==='move'));
+      btn.disabled=!candidates.includes(actor.value)||!$('#fieldcraftConfirmed').checked
+        ||action.value==='move'&&repositionAlreadyUsed
+        ||!(cool.checked||(record.points===null?1:record.points)>0);
+    };
+    [actor,action,cool,$('#fieldcraftConfirmed'),$('#fieldcraftVoxReady')].filter(Boolean).forEach(control=>control.addEventListener('change',update));
+    $('#fieldcraftBack').onclick=()=>renderNpoActionResult(n,actionRecord,Boolean(actionRecord.endsActivation));
+    btn.onclick=()=>{
+      if(btn.disabled||!spectreMayInterruptNpo(n,activation))return;
+      const id=actor.value,chosen=action.value,useCool=cool.checked;
+      if(!candidates.includes(id)||!['shoot','dash','move'].includes(chosen))return;
+      if(record.points===null)record.points=$('#fieldcraftVoxReady')?.checked?2:1;
+      if(useCool){if(record.coolHeadedUsed||!id.startsWith('trooper-'))return;record.coolHeadedUsed=true;}
+      else{if(record.points<1)return;record.points--;}
+      record.usedOperativeIds.push(id);
+      record.interruptedEnemyActivationIds.push(activation.activationId);
+      if(record.issuedOperativeIds.includes(id)){
+        record.issuedOperativeIds=record.issuedOperativeIds.filter(item=>item!==id);
+        record.counteractProhibitedIds=[...(record.counteractProhibitedIds||[]),id];
+      }
+      if(chosen==='move')record.repositionUsedIds=[...(record.repositionUsedIds||[]),id];
+      if(chosen==='shoot'){
+        const wounds=Math.max(0,Math.min(n.wounds,Number($('#fieldcraftWounds').value)));
+        n.wounds=wounds;
+        if(!wounds){n.ready=false;n.deployed=false;n.battlefieldState='out-of-action';}
+      }
+      activation.lastFieldcraftInterrupt={operativeId:id,actionId:chosen,npoId:n.id};
+      log(`${playerName(id)} interrupted ${npoName(n)} with a free ${chosen==='move'?'Reposition':chosen==='dash'?'Dash':'Shoot'} (${record.points} Fieldcraft points remain).`);
+      save();renderNpoActionResult(n,actionRecord,Boolean(actionRecord.endsActivation));
+    };
+    update();
+  }
   function continueSoloNpoActivation(){
     const activation=state.lastActivation,n=state.roster.find(item=>item.id===activation?.npoId);
     if(!activation||activation.committed)return;
@@ -9342,7 +9525,15 @@ function showPlayerActivation(){
     state.npoAttackTargetId=null;state.npoAttackSummary=null;
     const journalAction=['reposition','dash'].includes(actionId)?npoMovementInstruction(n,actionName):actionName;
     log(`${npoName(n)} completed ${journalAction}. ${activation.remainingAp} AP remaining.`);
-    if(transitionMode===NPO_ACTION_TRANSITIONS.ACKNOWLEDGE){
+    // Pause automated NPO continuation after an Engage-order action to allow a
+    // rules-legal Spectre Fieldcraft interruption without changing the NPO's
+    // saved activation, remaining AP, AI target or action history.
+    const offerFieldcraft=!isPvpMode()&&isSpectrePlayerTeam()&&n.order==='Engage'
+      &&n.wounds>0&&spectreFieldcraftCandidates().length>0
+      &&!spectreFieldcraftRecord().interruptedEnemyActivationIds.includes(activation.activationId)
+      &&(spectreFieldcraftRecord().points===null||spectreFieldcraftRecord().points>0
+        ||!spectreFieldcraftRecord().coolHeadedUsed&&spectreFieldcraftCandidates().some(id=>id.startsWith('trooper-')));
+    if(transitionMode===NPO_ACTION_TRANSITIONS.ACKNOWLEDGE||offerFieldcraft){
       activation.awaitingActionResult={...record,endsActivation};
       if(endsActivation)activation.completed=true;
       save();renderNpoActionResult(n,record,endsActivation);
@@ -9357,11 +9548,13 @@ function showPlayerActivation(){
   }
 
   function renderNpoActionResult(n,record,endsActivation=false){
-    const activation=state.lastActivation,canContinue=!endsActivation&&activation.remainingAp>0;
+    const activation=state.lastActivation,canContinue=!endsActivation&&n.wounds>0&&activation.remainingAp>0;
     const history=activation.resolvedActions.map(action=>escapeHtml(conciseNpoActionName(action))).join(', ');
-    modalBody.innerHTML=`<div class="modal-inner ai-result"><div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div><div class="summary-box"><strong>${escapeHtml(conciseNpoActionName(record))} completed</strong><p>AP: ${record.apBefore} → ${record.apRemaining} · ${record.apCost} AP spent</p>${record.result?`<p>${escapeHtml(typeof record.result==='string'?record.result:record.result.summary||'Action resolved.')}</p>`:''}<p><strong>Completed actions:</strong> ${history}</p></div><div class="wizard-actions"><button class="btn primary" id="continueNpoActivation">${canContinue?'Continue Activation':'Complete Activation'}</button></div></div>`;
+    const fieldcraftButton=spectreMayInterruptNpo(n,activation)?'<button class="btn secondary" id="spectreFieldcraftInterrupt">Elite Fieldcraft · Interrupt</button>':'';
+    modalBody.innerHTML=`<div class="modal-inner ai-result"><div class="ai-result-title"><div><h2>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div><div class="summary-box"><strong>${escapeHtml(conciseNpoActionName(record))} completed</strong><p>AP: ${record.apBefore} → ${record.apRemaining} · ${record.apCost} AP spent</p>${record.result?`<p>${escapeHtml(typeof record.result==='string'?record.result:record.result.summary||'Action resolved.')}</p>`:''}<p><strong>Completed actions:</strong> ${history}</p></div><div class="wizard-actions">${fieldcraftButton}<button class="btn primary" id="continueNpoActivation">${canContinue?'Continue Activation':'Complete Activation'}</button></div></div>`;
     if(!modal.open)modal.showModal();
     focusInitialDialogControl(modal);
+    $('#spectreFieldcraftInterrupt')?.addEventListener('click',()=>showSpectreFieldcraftInterrupt(n,record));
     $('#continueNpoActivation').onclick=()=>{const button=$('#continueNpoActivation');button.disabled=true;activation.awaitingActionResult=null;save();if(canContinue)continueNpoActivation();else completeNpoActivation();};
   }
 

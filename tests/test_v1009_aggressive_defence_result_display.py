@@ -45,13 +45,13 @@ def test_rolls_one_two_and_three_render_the_exact_consequences():
     for roll, outcome in ((2, two), (3, three)):
         assert f"D3 ROLL: {roll}" in outcome["html"]
         assert ">RETALIATION<" in outcome["html"]
-        assert "Deathwatch Veteran Warrior suffers 1 retaliatory damage." in outcome["html"]
+        assert f"Deathwatch Veteran Warrior suffers {roll} retaliatory damage." in outcome["html"]
 
 
 def test_missing_attacker_name_uses_explicit_fallback():
     one, two, _ = rendered_outcomes("")
     assert "The attacking operative suffers no damage." in one["html"]
-    assert "The attacking operative suffers 1 retaliatory damage." in two["html"]
+    assert "The attacking operative suffers 2 retaliatory damage." in two["html"]
     assert one["announcement"] == "D3 Roll 1. No retaliatory damage. The attacking operative suffers no damage."
 
 
@@ -88,6 +88,6 @@ def test_pipeline_proximity_summary_and_save_contract_are_preserved():
     assert "n.type==='Canoptek Macrocyte Warrior'&&pending.attackerWithinTwo&&!pending.aggressiveDefenseResolved" in pipeline
     assert pipeline.index("showAggressiveDefenseResolution") < pipeline.index("n.wounds=Math.max")
     assert "combatAbilityReminder(combat)" in source("function renderCombatResolution", "function showSharedCombatResolutionScreen")
-    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) == (10, 0, 9)
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 198)
     assert "const SAVE_VERSION = 3;" in (ROOT / "persistence.js").read_text(encoding="utf-8")
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
