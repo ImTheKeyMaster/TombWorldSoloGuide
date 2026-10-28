@@ -5213,6 +5213,31 @@ document.addEventListener('touchend',function(e){
     const melta=/melta bomb/i;
     return Number(melta.test(weaponName)||melta.test(prior)||(special.test(weaponName)&&special.test(prior)));
   }
+  function spectreFieldcraftRecord(){
+    const key=`spectre-fieldcraft:${state.turningPoint}`;
+    const record=eventTransaction(key,{points:null,usedOperativeIds:[],interruptedEnemyActivationIds:[],issuedOperativeIds:[],coolHeadedUsed:false});
+    for(const field of ['usedOperativeIds','interruptedEnemyActivationIds','issuedOperativeIds']){
+      if(!Array.isArray(record[field]))record[field]=[];
+    }
+    return record;
+  }
+  function spectreIssueMissionCandidates(){
+    if(!isSpectrePlayerTeam())return [];
+    const record=spectreFieldcraftRecord();
+    return inPlayLivingPlayerOperativeIds().filter(id=>id!=='vox-relay-beacon'
+      &&state.playerActivatedIds.includes(id)&&!record.usedOperativeIds.includes(id)
+      &&!record.issuedOperativeIds.includes(id));
+  }
+  function spectreMedicCandidates(){
+    if(!isSpectrePlayerTeam())return [];
+    return inPlayLivingPlayerOperativeIds().filter(id=>id!=='vox-relay-beacon'
+      &&playerCurrentWounds(id)<Number(playerDefinition(id)?.wounds||0));
+  }
+  function spectreLoaderCandidates(loaderId){
+    if(!isSpectrePlayerTeam())return [];
+    return inPlayLivingPlayerOperativeIds().filter(id=>id!==loaderId&&id!=='vox-relay-beacon'
+      &&playerAttackWeapons(id,'shoot').length);
+  }
   function playerHumanActionCatalog(activation=activePlayerActivation()){
     const operativeId=activation?.operativeId,operative=playerDefinition(operativeId);
     if(!operative)return [];
@@ -5229,7 +5254,12 @@ document.addEventListener('touchend',function(e){
       {id:'hatch',name:'Operate Hatch',group:'mission',cost:1},
       {id:'breach',name:breachLabel,group:'mission',cost:breachApCost(operative)}
     ];
-    if(isSpectrePlayerTeam()&&operative.id.startsWith('vox-operator-'))actions.push({id:'signal',name:'Signal',group:'mission',cost:1});
+    if(isSpectrePlayerTeam()){
+      if(operative.id.startsWith('vox-operator-'))actions.push({id:'signal',name:'Signal',group:'mission',cost:1});
+      if(operative.id==='veteran-sergeant')actions.push({id:'issueMission',name:'Issue Mission',group:'operative',cost:0});
+      if(operative.id.startsWith('field-medicae-'))actions.push({id:'medikit',name:'Medikit',group:'operative',cost:0});
+      if(operative.id.startsWith('loader-'))actions.push({id:'loadWeapon',name:'Load Weapon',group:'operative',cost:1});
+    }
     const transponder=state.missionState;
     if(missionAction?.id==='pickUpMarker'&&missionEngine()?.type==='transponder'&&!transponder?.transponderFound&&missionEngine().sites.some(site=>!transponder?.sites?.[site.id]||transponder.sites[site.id]==='available')){
       actions.push({id:missionAction.id,name:missionAction.displayLabel,group:'mission',cost:missionAction.apCost});
@@ -5251,6 +5281,11 @@ document.addEventListener('touchend',function(e){
     if(action.id==='move'&&completed.has('fallBack'))return {status:'Unavailable',disabled:true,reason:'Unavailable after Fall Back'};
     if(discountedBreachCompleted&&['shoot','charge'].includes(action.id))return {status:'Unavailable',disabled:true,reason:'Unavailable after Breach'};
     if(action.id==='signal'&&!inPlayLivingPlayerOperativeIds().some(id=>id!==activation.operativeId&&playerDefinition(id)?.id!=='vox-relay-beacon'))return {status:'Unavailable',disabled:true,reason:'No eligible teammate'};
+    if(action.id==='issueMission'&&!spectreIssueMissionCandidates().length)return {status:'Unavailable',disabled:true,reason:'No eligible expended teammate'};
+    if(action.id==='medikit'&&!spectreMedicCandidates().length)return {status:'Unavailable',disabled:true,reason:'No wounded teammate'};
+    if(action.id==='loadWeapon'&&!spectreLoaderCandidates(activation.operativeId).length)return {status:'Unavailable',disabled:true,reason:'No teammate with a ranged weapon'};
+    if(action.id==='loadWeapon'&&['charge','dash','shoot'].some(id=>completed.has(id)))return {status:'Unavailable',disabled:true,reason:'Unavailable after Charge, Dash or Shoot'};
+    if(completed.has('loadWeapon')&&['charge','dash','shoot'].includes(action.id))return {status:'Unavailable',disabled:true,reason:'Unavailable after Load Weapon'};
     if(action.id==='shoot'&&!playerAttackWeapons(activation.operativeId,'shoot').length)return {status:'Unavailable',disabled:true,reason:'No ranged weapon'};
     if(action.id==='melee'&&!playerAttackWeapons(activation.operativeId,'melee').length)return {status:'Unavailable',disabled:true,reason:'No melee weapon'};
     if(['shoot','melee'].includes(action.id)&&!hasValidPlayerCombatTargets({}))return {status:'Unavailable',disabled:true,reason:'No valid target'};
@@ -5351,6 +5386,52 @@ document.addEventListener('touchend',function(e){
     };
   }
 
+  function showSpectreSpecialistAction(stage,action){
+    const activation=activePlayerActivation();
+    if(!activation)return;
+    let candidates=[];
+    if(action.id==='issueMission')candidates=spectreIssueMissionCandidates();
+    if(action.id==='medikit')candidates=spectreMedicCandidates();
+    if(action.id==='loadWeapon')candidates=spectreLoaderCandidates(activation.operativeId);
+    if(!candidates.length){cancelCurrentHumanPlayerAction();return;}
+    const names=candidates.map(id=>`<option value="${escapeHtml(id)}">${escapeHtml(playerName(id))}</option>`).join('');
+    const instructions={
+      issueMission:'Select an expended teammate visible to the Veteran Sergeant. Confirm the Sergeant is outside all enemy Control Ranges. This operative may interrupt once with Elite Fieldcraft despite being expended, but cannot then counteract; Reposition remains prohibited if already used this turning point.',
+      medikit:'Select a wounded friendly operative in the Medicae’s Control Range. Confirm the Medicae is outside enemy Control Range, and that Medic! has not saved the recipient during this turning point. Roll 2D3 on the tabletop and enter their total.',
+      loadWeapon:'Select a friendly operative within the Loader’s Control Range and more than 3 inches from every enemy. The Loader must be outside enemy Control Range. That operative immediately performs a free Shoot action (not Guard) and may change order. Resolve its shooting on the tabletop and record any wounds in the roster before confirming.'
+    };
+    const totalField=action.id==='medikit'?'<div class="field"><label for="spectreMedikitTotal">2D3 total</label><select id="spectreMedikitTotal"><option value="">Select roll...</option>'+[2,3,4,5,6].map(n=>`<option value="${n}">${n}</option>`).join('')+'</select></div>':'';
+    const confirmation=action.id==='medikit'?'<label class="check-row"><input id="spectreMedikitLegal" type="checkbox"> Recipient did not benefit from Medic! this turning point</label>':'<label class="check-row"><input id="spectreSpecialLegal" type="checkbox"> Confirm all tabletop conditions and resulting actions have been resolved</label>';
+    showModal(action.name,`<p>${escapeHtml(instructions[action.id])}</p><div class="field"><label for="spectreSpecialTarget">Friendly operative</label><select id="spectreSpecialTarget"><option value="">Select an operative...</option>${names}</select></div>${totalField}${confirmation}<div class="wizard-actions"><button class="btn ghost" id="cancelSpectreSpecial">Back</button><button class="btn primary" id="confirmSpectreSpecial" disabled>Confirm · ${action.cost}AP</button></div>`);
+    const confirm=$('#confirmSpectreSpecial');
+    const update=()=>{confirm.disabled=!candidates.includes($('#spectreSpecialTarget').value)||!(action.id==='medikit'?$('#spectreMedikitLegal').checked&&Number($('#spectreMedikitTotal').value)>=2:$('#spectreSpecialLegal').checked);};
+    $('#spectreSpecialTarget').onchange=update;
+    $('#spectreMedikitTotal')?.addEventListener('change',update);
+    $('#spectreMedikitLegal')?.addEventListener('change',update);
+    $('#spectreSpecialLegal')?.addEventListener('change',update);
+    $('#cancelSpectreSpecial').onclick=cancelCurrentHumanPlayerAction;
+    confirm.onclick=()=>{
+      const targetId=$('#spectreSpecialTarget').value;
+      if(confirm.disabled||!candidates.includes(targetId))return;
+      const healing=action.id==='medikit'?Number($('#spectreMedikitTotal').value):0;
+      const woundsBefore=action.id==='medikit'?playerCurrentWounds(targetId):0;
+      if(!commitHumanPlayerAction(stage,{deferContinuation:true}))return;
+      if(action.id==='issueMission'){
+        const record=spectreFieldcraftRecord();
+        record.issuedOperativeIds.push(targetId);
+        log(`${playerName(targetId)} may use Elite Fieldcraft despite being expended until the end of this turning point.`);
+      }else if(action.id==='medikit'){
+        const maximum=Number(playerDefinition(targetId)?.wounds||woundsBefore);
+        const restored=Math.min(maximum,woundsBefore+healing);
+        state.playerWounds=state.playerWounds||{};
+        state.playerWounds[targetId]=restored;
+        log(`${playerName(targetId)} recovered ${restored-woundsBefore} wounds using Medikit (${healing} rolled).`);
+      }else{
+        log(`${playerName(targetId)} performed a free Shoot action directed by ${playerName(activation.operativeId)} (Load Weapon). Record any inflicted wounds in the roster.`);
+      }
+      save();continueAfterCommittedHumanAction();
+    };
+  }
   function spectreGuideScoutingAvailable(){
     // Official commentary: territory scouted by the Guide remains scouted
     // even if the Guide is later incapacitated.
@@ -5382,6 +5463,7 @@ document.addEventListener('touchend',function(e){
     const stage=playerSequentialStage(action);
     state.combatState={side:'player',stage};save();
     if(action.id==='signal'){showSpectreSignalSelection(stage);return;}
+    if(['issueMission','medikit','loadWeapon'].includes(action.id)){showSpectreSpecialistAction(stage,action);return;}
     if(action.id==='shoot'||action.id==='melee'){
       showPendingPlayerAttackWizard(stage,action.id,result=>continuePlayerMultiTargetAttack(stage,action.id,result),cancelCurrentHumanPlayerAction);
       return;
