@@ -589,5 +589,17 @@
         }
       ]
     }
+  ],
+  "factionRules": [
+    {
+      "id": "veteran-astartes",
+      "name": "Veteran Astartes",
+      "text": "During each Deathwatch activation you can perform either two Shoot actions or two Fight actions. A second Shoot costs +1AP if an auxiliary grenade launcher, frag cannon, heavy plasma incinerator, infernus heavy bolter, plasma pistol or stalker bolt rifle is selected for both, or if a melta bomb is selected for either. Counteracting operatives can act regardless of order and perform an additional different 1AP action for free; Shoot and Fight cannot both be performed in one counteraction. Repeated activation attacks and second-Shoot AP are tracked; counteractions still require tabletop guidance."
+    },
+    {
+      "id": "special-issue-ammunition",
+      "name": "Special Issue Ammunition",
+      "text": "Once per turning point, when a Deathwatch operative shoots, its ranged weapon may gain one weapon rule for that action: Blast 1 inch, Devastating 1, Lethal 5+, Piercing Crits 1, Saturate or Severe. Not allowed with universal explosive grenades or melta bombs, and Blast cannot be added to Torrent. Select the effect on the weapon screen. Ammunition Reserve is a separate optional equipment rule."
+    }
   ]
 }
