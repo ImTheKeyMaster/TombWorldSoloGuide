@@ -16,7 +16,7 @@
   "source": {
     "publisher": "Games Workshop",
     "document": "Deathwatch Kill Team Rules",
-    "revision": "28 January 2026"
+    "revision": "28 October 2026"
   },
   "rosterCategories": [
     {
@@ -34,7 +34,7 @@
       "id": "gravis",
       "label": "Gravis",
       "order": 3,
-      "requiredCount": 1
+      "maxCount": 1
     }
   ],
   "operatives": [
