@@ -5348,6 +5348,29 @@ document.addEventListener('touchend',function(e){
     };
   }
 
+  function spectreGuideScoutingAvailable(){
+    // Official commentary: territory scouted by the Guide remains scouted
+    // even if the Guide is later incapacitated.
+    return isSpectrePlayerTeam()&&(state.playerRoster||[]).some(id=>id.startsWith('guide-'));
+  }
+  function selectSpectreScoutHatchDiscount(stage,action){
+    const activation=activePlayerActivation();
+    const used=(activation?.resolvedActions||[]).some(record=>record.scoutTerrainDiscount);
+    const proceed=discount=>{
+      if(!activePlayerActivation()?.pendingAction)return;
+      const cost=discount?0:1;
+      activation.pendingAction.cost=cost;stage.humanActionCost=cost;stage.scoutTerrainDiscount=discount;
+      save();
+      if(state.missionId==='demolition-protocol')showActivationFeatureTargetSelection(stage,'operate-hatch');
+      else showPendingHumanPlayerActionCompletion(stage,action,{hatch:'Confirm that Operate Hatch was completed on the tabletop.'},'Action Complete');
+    };
+    if(used){proceed(false);return;}
+    showModal('Scout Terrain · Operate Hatch',`<p>Is this hatchway's access point scouted, and has this operative not used the Scout Terrain benefit in this activation? The Guide scouts terrain in your territory or within 3 inches of it. Territory terrain remains scouted if the Guide is incapacitated.</p><div class="wizard-actions"><button class="btn ghost" id="cancelScoutHatch">Cancel</button><button class="btn secondary" id="regularScoutHatch">No · 1AP</button><button class="btn primary" id="discountedScoutHatch">Yes · 0AP</button></div>`);
+    $('#cancelScoutHatch').onclick=cancelCurrentHumanPlayerAction;
+    $('#regularScoutHatch').onclick=()=>proceed(false);
+    $('#discountedScoutHatch').onclick=()=>proceed(true);
+  }
+
   function selectHumanPlayerAction(actionId){
     const activation=activePlayerActivation();
     const action=playerHumanActionCatalog(activation).find(item=>item.id===actionId);
@@ -5360,6 +5383,7 @@ document.addEventListener('touchend',function(e){
       showPendingPlayerAttackWizard(stage,action.id,result=>continuePlayerMultiTargetAttack(stage,action.id,result),cancelCurrentHumanPlayerAction);
       return;
     }
+    if(action.id==='hatch'&&spectreGuideScoutingAvailable()){selectSpectreScoutHatchDiscount(stage,action);return;}
     if(action.id==='hatch'&&state.missionId==='demolition-protocol'){showActivationFeatureTargetSelection(stage,'operate-hatch');return;}
     if(action.id==='breach'&&state.missionId==='demolition-protocol'){showActivationFeatureTargetSelection(stage,'breach');return;}
     if(action.id==='breach'&&mission()?.actionGuide?.missionAction?.existingAction==='breach'){
@@ -5416,7 +5440,7 @@ document.addEventListener('touchend',function(e){
       deathwatchAmmoTransaction().rule=stage.deathwatchAmmoRule;
     }
     activation.completedActionIds=[...(activation.completedActionIds||[]),pending.actionId];
-    activation.resolvedActions=[...(activation.resolvedActions||[]),{sequence:pending.actionSequence,id:pending.actionId,name:stage.humanActionName,summary,apCost:pending.cost,apBefore:before,apRemaining:activation.remainingAp,attackSummaries:attacks.map(item=>item.attackType==='melee'?{weaponName:item.weaponName||'',targetId:item.targetId,targetName:item.targetName,before:item.before,after:item.after,damage:item.damage,attackType:item.attackType,damageDealt:item.attackerDamageDealt,damageSuffered:item.defenderDamageDealt,attackerBefore:item.attackerBefore,attackerAfter:item.attackerAfter,defenderBefore:item.defenderBefore,defenderAfter:item.defenderAfter,attackerIncapacitated:item.attackerIncapacitated,defenderIncapacitated:item.defenderIncapacitated,fightTransactionId:item.fightTransactionId}:{weaponName:item.weaponName||'',targetId:item.targetId,targetName:item.targetName,before:item.before,after:item.after,damage:item.damage,attackType:item.attackType})}];
+    activation.resolvedActions=[...(activation.resolvedActions||[]),{sequence:pending.actionSequence,id:pending.actionId,name:stage.humanActionName,summary,apCost:pending.cost,apBefore:before,apRemaining:activation.remainingAp,scoutTerrainDiscount:Boolean(stage.scoutTerrainDiscount),attackSummaries:attacks.map(item=>item.attackType==='melee'?{weaponName:item.weaponName||'',targetId:item.targetId,targetName:item.targetName,before:item.before,after:item.after,damage:item.damage,attackType:item.attackType,damageDealt:item.attackerDamageDealt,damageSuffered:item.defenderDamageDealt,attackerBefore:item.attackerBefore,attackerAfter:item.attackerAfter,defenderBefore:item.defenderBefore,defenderAfter:item.defenderAfter,attackerIncapacitated:item.attackerIncapacitated,defenderIncapacitated:item.defenderIncapacitated,fightTransactionId:item.fightTransactionId}:{weaponName:item.weaponName||'',targetId:item.targetId,targetName:item.targetName,before:item.before,after:item.after,damage:item.damage,attackType:item.attackType})}];
     const promptForFirstOpen=state.missionId==='scout-sub-crypt'&&['hatch','breach'].includes(pending.actionId)&&unawakenedScoutRooms().length>0;
     activation.pendingAction=null;state.combatState=null;state.missionActionContext=null;
     log(`${playerName(activation.operativeId)} completed ${summary}. ${activation.remainingAp} AP remaining.`);
