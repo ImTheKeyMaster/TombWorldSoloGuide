@@ -18,6 +18,7 @@ on:
       - tests/test_v100164_experimental_death_korps_portraits.py
       - tests/test_v100145_death_korps_preload.py
       - tests/test_v100153_promote_combat_features.py
+      - tests/test_v100195_october_terrain_guidance.py
       - tests/test_v100194_single_necron_weapon_readonly.py
   push:
     branches:
@@ -37,6 +38,7 @@ on:
       - tests/test_v100191_fight_physical_miniature_scale.py
       - tests/test_v100164_experimental_death_korps_portraits.py
       - tests/test_v100153_promote_combat_features.py
+      - tests/test_v100195_october_terrain_guidance.py
       - tests/test_v100194_single_necron_weapon_readonly.py
   workflow_dispatch:
 
@@ -74,6 +76,7 @@ jobs:
             tests/test_v100140_death_korps_activation_framing.py \
             tests/test_v100141_npo_player_target_rail.py \
             tests/test_v100153_promote_combat_features.py \
+            tests/test_v100195_october_terrain_guidance.py \
             tests/test_v100150_experimental_weapon_guidance_selection.py \
             tests/test_v100157_experimental_weapon_rules_selection.py \
             tests/test_v100194_single_necron_weapon_readonly.py \
