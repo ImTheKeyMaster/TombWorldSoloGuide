@@ -38,7 +38,6 @@ function simulate(profiles,{preview=false,selected=-1,showRules=true}={}){
   tombWeaponRulesAtSelection:()=>showRules,
   npoCombatGuidanceHtml:(n,{profile})=>'<p>Advice '+profile.name+'</p>',
   weaponRulesHtml:profile=>'<p>Rule '+profile.name+'</p>',
-  terrainShootingHintHtml:()=>'<details class="terrain-shooting-hint"></details>',
   showModal:(name,html)=>{title=name;markup=html;}
  };
  render(ctx)({type:'Necron Warrior'},profiles,'shoot',selected,i=>confirmed.push(i),()=>{cancelled++;});
@@ -47,6 +46,7 @@ function simulate(profiles,{preview=false,selected=-1,showRules=true}={}){
 for(const preview of [false,true]){
  let t=simulate([{name:'Gauss flayer',id:'gauss'}],{preview});
  assert.equal(t.title,'Select Weapon');
+ assert.doesNotMatch(t.markup,/terrain-shooting-hint|Terrain &amp; cover/i);
  assert.match(t.markup,/class="readonly-select">Gauss flayer<\/div>/);
  assert.match(t.markup,/<input type="hidden" id="experimentalNpoWeaponProfile" value="0">/);
  assert.doesNotMatch(t.markup,/<select\b/i,'no native iOS dropdown on one choice');

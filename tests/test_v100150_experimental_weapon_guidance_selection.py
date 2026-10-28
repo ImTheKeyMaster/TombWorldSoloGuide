@@ -35,7 +35,6 @@ const ctx={
   $:id=>controls[id],
   tombWeaponRulesAtSelection:()=>true,
   weaponRulesHtml:profile=>profile?.name?'Rules: '+profile.name:'',
-  terrainShootingHintHtml:()=>'<details class="terrain-shooting-hint"></details>',
   showModal:(name,value)=>{title=name;markup=value;showCalls++;},
   escapeHtml:x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'),
   canonicalAttackProfile:x=>x,

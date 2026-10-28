@@ -33,7 +33,6 @@ function simulate(experimental,profiles){
  canonicalAttackProfile:x=>x,escapeHtml:x=>x,
  npoCombatGuidanceHtml:(n,{profile})=>'Guidance '+profile.id,
  weaponRulesHtml:profile=>profile?.rules?.length?'<section>Rules '+profile.id+'</section>':'',
- terrainShootingHintHtml:()=>'<details class="terrain-shooting-hint"></details>',
  showModal:(title,html)=>{assert.equal(title,'Select Weapon');markup=html;},
  $:selector=>controls[selector]};
  const fn=new Function('ctx','with(ctx){'+flag+chooser+'return showExperimentalNpoWeaponSelection;}')(ctx);

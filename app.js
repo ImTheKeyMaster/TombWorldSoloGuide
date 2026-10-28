@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.195';
+  const APP_VERSION = '10.0.196';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -2996,10 +2996,6 @@ document.addEventListener('touchend',function(e){
         if(setupHeading){setupHeading.tabIndex=-1;setupHeading.focus({preventScroll:true});}
       });
     }
-  }
-
-  function terrainShootingHintHtml(){
-    return '<details class="terrain-shooting-hint"><summary>Terrain &amp; cover · October 2026</summary><p>Tomb World walls, including pillars, follow normal cover and obscuring rules. When shooting an elevated operative from below, check the rampart\'s Light/Heavy terrain category and the targeting line. The player confirms cover and target legality on the tabletop.</p></details>';
   }
 
   function guideInstructionsHtml(full=false){
@@ -8362,7 +8358,6 @@ function showPlayerActivation(){
       <p ${useExperimentalTargetRail?'tabindex="-1" data-dialog-focus':''}>Select the target and attack profile before rolling.</p>
       ${targetControl}
       ${weaponControl}
-      ${attackType==='shoot'?terrainShootingHintHtml():''}
       ${darkDistance}
       <div class="summary-box weapon-details${attackType==='melee'?' melee-weapon-summary melee-weapon-summary-pending':''}" id="playerWeaponSummary" aria-hidden="true"${attackType==='shoot'?' hidden':''}><div id="playerWeaponSummaryContent"></div>${meleeWeaponSummarySizers}</div>
       <div id="aggressiveDefenseFields"></div>
@@ -9758,7 +9753,6 @@ function showPlayerActivation(){
       ? `<div class="field"><label>Weapon</label><div class="readonly-select">${escapeHtml(canonicalAttackProfile(profiles[0]).name)}</div><input type="hidden" id="experimentalNpoWeaponProfile" value="0"></div>`
       : `<div class="field"><label for="experimentalNpoWeaponProfile">Weapon</label><select id="experimentalNpoWeaponProfile"><option value="" ${initial<0?'selected ':''}disabled>Choose a profile...</option>${choices}</select></div>`;
     showModal('Select Weapon',`<p>${singleProfile?'Only one weapon profile is available for this attack.':'Choose a weapon profile before resolving the attack.'}</p>
-      ${terrainShootingHintHtml()}
       ${weaponControl}
       <div id="experimentalNpoWeaponGuidance" aria-live="polite"></div>
       ${tombWeaponRulesAtSelection()?'<div id="experimentalNpoWeaponRules" aria-live="polite"></div>':''}
