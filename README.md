@@ -11,7 +11,7 @@
 - **Still guided:** Deathwatch counteractions and ploy/equipment economy; Spectre Medic! reactive saves, Camo Cloaks cover saves and some conditional weapon abilities. The Guide does not infer unseen tabletop visibility or ranges.
 
 
-## v10.0.198
+## v10.0.197
 
 ### Official October 28 Kill Team mechanics and Joint Ops precedence
 
