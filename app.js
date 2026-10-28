@@ -6928,6 +6928,10 @@ function showPlayerActivation(){
       weaponName:weapon?.name||'',profileName:weapon?.profileName||weapon?.name||'',
       name:weapon?.profileName||weapon?.name||''
     };
+    if(isDeathwatchPlayerTeam()&&operativeId==='demolisher'&&attackType==='melee'&&stage?.sequential&&/heavy thunder hammer/i.test(weapon?.name||'')){
+      profile.rules.push('Brutal');
+      if((activePlayerActivation()?.resolvedActions||[]).some(action=>action.id==='charge'))profile.rules.push('Ceaseless');
+    }
     return deathwatchAugmentProfile(weapon,profile,{attackType,stage});
   }
 
@@ -7856,7 +7860,10 @@ function showPlayerActivation(){
     return state.npoRuleState.stage3Triggers[id]||(state.npoRuleState.stage3Triggers[id]={id,status:'pending',...defaults});
   }
   function fightParticipantDefinitionId(participant){return npoDefinition(state.roster.find(item=>item.id===participant?.id)?.type)?.id||null;}
-  function shieldBlockCapacity(participant){return fightParticipantDefinitionId(participant)==='lychguard'&&participant.profile?.weaponId==='hyperphase-sword'?2:1;}
+  function shieldBlockCapacity(participant){
+    if(participant?.side==='player'&&isDeathwatchPlayerTeam()&&participant.id==='aegis'&&weaponHasRule(participant.profile,'shield'))return 2;
+    return fightParticipantDefinitionId(participant)==='lychguard'&&participant.profile?.weaponId==='hyperphase-sword'?2:1;
+  }
   function qualifyingWhirlingStrike(fight,role,success){return success?.kind==='critical'&&fightParticipantDefinitionId(fight?.[role])==='skorpekh-destroyer'&&fight[role].profile?.weaponId==='skorpekh-hyperphase-weapons';}
   function qualifyingHorrifyingFlaying(fight,role,after){return after<=0&&fightParticipantDefinitionId(fight?.[role])==='flayed-one';}
   async function resolveWhirlingOnslaught(fight,historyEntry){
@@ -7902,7 +7909,12 @@ function showPlayerActivation(){
   function commitFightStrike(fight,role,successId){
     if(!fight||fight.completed||fight.turn!==role)return false;
     const success=unresolvedFightSuccesses(fight,role).find(item=>item.id===successId);if(!success)return false;
-    const actor=fight[role],target=fight[otherFightRole(role)],resolvingRemaining=!unresolvedFightSuccesses(fight,otherFightRole(role)).length,damage=success.kind==='critical'?actor.profile.crit:actor.profile.normal;
+    const actor=fight[role],target=fight[otherFightRole(role)],resolvingRemaining=!unresolvedFightSuccesses(fight,otherFightRole(role)).length;
+    const rawDamage=success.kind==='critical'?actor.profile.crit:actor.profile.normal;
+    // Official Deathwatch Demolisher: each 3+ damage strike is reduced by 1
+    // while fighting or retaliating. Do not stack with Shield That Slays.
+    const demolisherDefense=isDeathwatchPlayerTeam()&&target.side==='player'&&target.id==='demolisher'&&rawDamage>=3;
+    const damage=rawDamage-(demolisherDefense?1:0);
     success.status='struck';const before=target.wounds,after=Math.max(0,before-damage);target.wounds=after;
     if(!pendingPlayerNpoFightIncapacitation(fight))setFightOperativeWounds(target,after);
     const shock=success.kind==='critical'?resolveFightShock(fight,role):null;
