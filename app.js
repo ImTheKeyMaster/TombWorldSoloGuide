@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.204';
+  const APP_VERSION = '10.0.205';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8609,6 +8609,13 @@ function showPlayerActivation(){
     }).join('');
     return `<div class="field player-combat-target-field"><p id="playerCombatTargetLabel" class="player-combat-target-label">Target ${escapeHtml(targetSideLabel)}</p><div class="experimental-roster-rail-shell player-combat-target-shell"><div class="experimental-roster-rail player-combat-target-rail" role="radiogroup" aria-labelledby="playerCombatTargetLabel">${items}</div></div><input type="hidden" id="combatTarget" value="${escapeHtml(selectedId)}"></div>`;
   }
+  // Never coerce an unselected weapon (the empty option) to profile index zero.
+  function selectedPlayerWeaponIndex(rawValue,weapons){
+    if(typeof rawValue!=='string'||!/^(0|[1-9]\d*)$/.test(rawValue))return -1;
+    const index=Number(rawValue);
+    return Number.isSafeInteger(index)&&index<weapons.length?index:-1;
+  }
+
   function showPendingPlayerAttackWizard(stage,attackType,onResolved,onCancel,preferredTargetId=''){
     const targetSideLabel=isPvpMode()?'Necron':'NPO';
     const targets=sortedNposForDisplay(activeNpos().filter(n=>projectedNpoWounds(n.id,stage)>0));
@@ -8674,15 +8681,15 @@ function showPlayerActivation(){
       ${darkDistance}
       <div class="summary-box weapon-details${attackType==='melee'?' melee-weapon-summary melee-weapon-summary-pending':''}" id="playerWeaponSummary" aria-hidden="true"${attackType==='shoot'?' hidden':''}><div id="playerWeaponSummaryContent"></div>${meleeWeaponSummarySizers}</div>
       <div id="aggressiveDefenseFields"></div>
-      <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button><button class="btn primary" id="openCombatResolution">Continue</button></div>`);
+      <div class="wizard-actions"><button class="btn ghost" id="cancelPendingAttack">Cancel</button><button class="btn primary" id="openCombatResolution" disabled>Continue</button></div>`);
 
     const targetSelect=$('#combatTarget');
     const weaponSelect=$('#playerWeaponSelect');
     const renderChoices=()=>{
-      const target=activeNpos().find(n=>n.id===targetSelect.value);
-      const weapon=weaponSelect.value===''?null:weapons[Number(weaponSelect.value)];
+      const target=activeNpos().find(n=>n.id===targetSelect.value&&projectedNpoWounds(n.id,stage)>0);
+      const weaponIndex=selectedPlayerWeaponIndex(weaponSelect.value,weapons);
+      const weapon=weaponIndex<0?null:weapons[weaponIndex];
       const weaponSummary=$('#playerWeaponSummary');
-      const weaponIndex=weapon?weapons.indexOf(weapon):-1;
       const ammunition=$('#deathwatchAmmo');
       if(ammunition){
         for(const option of ammunition.options)if(option.value)option.disabled=!deathwatchAmmoLegal(weapon,option.value);
@@ -8734,9 +8741,21 @@ function showPlayerActivation(){
     $('#deathwatchAmmo')?.addEventListener('change',renderChoices);
     $('#cancelPendingAttack').onclick=()=>cancelPendingPlayerCombat(stage,attackType,onCancel);
     $('#openCombatResolution').onclick=()=>{
-      const target=activeNpos().find(n=>n.id===targetSelect.value);
-      const weaponIndex=Number(weaponSelect.value);
-      const weapon=weapons[weaponIndex],profile=playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex,stage});
+      const target=activeNpos().find(n=>n.id===targetSelect.value&&projectedNpoWounds(n.id,stage)>0);
+      const weaponIndex=selectedPlayerWeaponIndex(weaponSelect.value,weapons);
+      const weapon=weaponIndex<0?null:weapons[weaponIndex];
+      if(!weapon){
+        renderChoices();
+        showToast('Select a weapon before continuing.');
+        if(weaponSelect.tagName==='SELECT')weaponSelect.focus();
+        return;
+      }
+      if(!target){
+        renderChoices();
+        showToast('Select an available target before continuing.');
+        return;
+      }
+      const profile=playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex,stage});
       const pending=activePlayerActivation()?.pendingAction;
       if(pending&&attackType==='shoot'){
         const required=1+deathwatchSecondShootExtraCost(activePlayerActivation(),weapon.name);
