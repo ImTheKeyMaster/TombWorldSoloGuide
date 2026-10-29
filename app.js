@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.213';
+  const APP_VERSION = '10.0.214';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -717,11 +717,11 @@ document.addEventListener('touchend',function(e){
         .filter(entry=>entry.forwardScoutingOption===true)
         .sort((a,b)=>(a.forwardScoutingOrder||0)-(b.forwardScoutingOrder||0))
       : [];
-    const ruleHtml=entry=>`<div class="mission-rule"><strong>${escapeHtml(entry.name)}</strong>${entry.timing?`<small>${escapeHtml(entry.timing)}</small>`:''}<p>${escapeHtml(entry.text)}</p></div>`;
+    const ruleHtml=entry=>`<details class="mission-rule faction-rule-disclosure"><summary><strong>${escapeHtml(entry.name)}</strong></summary><div class="faction-rule-body">${entry.timing?`<small>${escapeHtml(entry.timing)}</small>`:''}<p>${escapeHtml(entry.text)}</p></div></details>`;
     const forwardScoutingHtml=entry=>{
       const count=forwardScoutingOptions.length;
       const options=forwardScoutingOptions.map(option=>`<article class="forward-scouting-option"><header><strong>${escapeHtml(option.name)}</strong>${Number.isFinite(option.selectionLimit)?`<span>Maximum ${option.selectionLimit}</span>`:''}</header>${option.timing?`<small>${escapeHtml(option.timing)}</small>`:''}<p>${escapeHtml(option.text)}</p></article>`).join('');
-      return `<div class="mission-rule forward-scouting-rule"><strong>${escapeHtml(entry.name)}</strong>${entry.timing?`<small>${escapeHtml(entry.timing)}</small>`:''}<p>${escapeHtml(entry.text)}</p><details class="forward-scouting-disclosure"><summary><span class="when-closed">View ${count} scouting options</span><span class="when-open">Hide ${count} scouting options</span></summary><div class="forward-scouting-options">${options}</div></details></div>`;
+      return `<details class="mission-rule forward-scouting-rule faction-rule-disclosure"><summary><strong>${escapeHtml(entry.name)}</strong></summary><div class="faction-rule-body">${entry.timing?`<small>${escapeHtml(entry.timing)}</small>`:''}<p>${escapeHtml(entry.text)}</p><details class="forward-scouting-disclosure"><summary><span class="when-closed">View ${count} scouting options</span><span class="when-open">Hide ${count} scouting options</span></summary><div class="forward-scouting-options">${options}</div></details></div></details>`;
     };
     const visibleEntries=kind==='rules'&&forwardScoutingOptions.length?entries.filter(entry=>entry.forwardScoutingOption!==true):entries;
     return `<section class="card faction-guidance"><h3>${title}</h3>${visibleEntries.map(entry=>entry.forwardScoutingParent===true&&forwardScoutingOptions.length?forwardScoutingHtml(entry):ruleHtml(entry)).join('')}<p class="muted">Resolve these rules on the tabletop; the Guide presents reminders without simulating positioning.</p></section>`;
