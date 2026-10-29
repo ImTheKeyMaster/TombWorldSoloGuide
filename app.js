@@ -8398,8 +8398,8 @@ function showPlayerActivation(){
       ?'Starting with the attacker, players alternate resolving one success as a Strike or Block.'
       :'You and the NPO alternate resolving one success. You choose for your operative. The Guide automatically resolves the NPO’s response.';
     const duelPreview=experimentalFeaturesEnabled()&&!isPvpMode();
-    const strikeGlyph="<svg viewBox=\"0 0 24 24\" width=\"28\" height=\"28\" fill=\"currentColor\"><path d=\"M21.2 2.8 18.9 10l-7.2 7.2-4-4 7.2-7.2 6.3-3.2Z\"/><path d=\"m5.9 11.7 6.4 6.4-1.5 1.5-6.4-6.4z\"/><path d=\"m8.1 17.1-4.4 4.4-1.5-1.5 4.4-4.4z\"/></svg>";
-    const blockGlyph="<svg viewBox=\"0 0 24 24\" width=\"28\" height=\"28\" fill=\"currentColor\"><path d=\"M12 2 21 5.5V12c0 5.5-3.7 9.2-9 11-5.3-1.8-9-5.5-9-11V5.5L12 2Z\"/><path d=\"M12 5.5 6.3 7.7V12c0 3.5 2 6 5.7 7.6V5.5Z\" fill=\"#092319\"/></svg>";
+    const strikeGlyph=`<svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M21.2 2.8 18.9 10l-7.2 7.2-4-4 7.2-7.2 6.3-3.2Z"/><path d="m5.9 11.7 6.4 6.4-1.5 1.5-6.4-6.4z"/><path d="m8.1 17.1-4.4 4.4-1.5-1.5 4.4-4.4z"/></svg>`;
+    const blockGlyph=`<svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 2 21 5.5V12c0 5.5-3.7 9.2-9 11-5.3-1.8-9-5.5-9-11V5.5L12 2Z"/><path d="M12 5.5 6.3 7.7V12c0 3.5 2 6 5.7 7.6V5.5Z" fill="#092319"/></svg>`;
     const strikes=actions.strikes.map(({success,damage})=>{
       const advice=experimentalFightStrikeAdvice(fight,role,success,damage,actions);
       return `<button type="button" class="experimental-fight-option" data-exp-fight-choice="strike" data-fight-strike="${escapeHtml(success.id)}" data-exp-fight-kind="${escapeHtml(success.kind)}" data-exp-fight-damage="${damage}" aria-pressed="false" aria-label="Strike with ${success.kind} success, deal ${damage} damage to ${escapeHtml(enemy.label)}${advice?`. ${advice}`:''}">
