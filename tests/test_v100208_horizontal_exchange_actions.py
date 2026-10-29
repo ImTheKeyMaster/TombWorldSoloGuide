@@ -58,7 +58,10 @@ assert.deepEqual([...html.matchAll(/aria-label="Exchange (\d+)"/g)].map(m=>m[1])
 assert.equal((html.match(/class="fight-exchange-group-number"/g)||[]).length,2);
 assert(html.indexOf('3 DAMAGE')<html.indexOf('BLOCKED'));
 assert(html.indexOf('BLOCKED')<html.indexOf('4 DAMAGE'));
-assert(html.includes('Dealt 3 damage to Necron Warrior 8'));
+assert(html.includes('3 DAMAGE'));
+assert(html.includes('6 → 3 wounds'),'Compact strike still shows the wound delta');
+assert(html.includes('Horde-Slayer') && html.includes('Necron Warrior 8'),'Both actors remain identified');
+assert(html.includes('Canceled 1 enemy Normal Success'),'Block outcome remains explicit');
 assert(html.includes('NPO RESPONSE'));
 preview=false;
 const standard=render(fight);

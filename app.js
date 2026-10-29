@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.210';
+  const APP_VERSION = '10.0.211';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8158,18 +8158,23 @@ function showPlayerActivation(){
     const icon=isStrike
       ? '<svg viewBox="0 0 24 24" width="23" height="23" fill="currentColor" aria-hidden="true"><path d="M21.2 2.8 18.9 10l-7.2 7.2-4-4 7.2-7.2 6.3-3.2Z"/><path d="m5.9 11.7 6.4 6.4-1.5 1.5-6.4-6.4z"/><path d="m8.1 17.1-4.4 4.4-1.5-1.5 4.4-4.4z"/></svg>'
       : '<svg viewBox="0 0 24 24" width="23" height="23" fill="currentColor" aria-hidden="true"><path d="M12 2 21 5.5V12c0 5.5-3.7 9.2-9 11-5.3-1.8-9-5.5-9-11V5.5L12 2Z"/><path d="M12 5.5 6.3 7.7V12c0 3.5 2 6 5.7 7.6V5.5Z" fill="#092319"/></svg>';
-    const headline=isStrike?`${titleCaseRuleId(entry.successKind)} Success`:`${isPlayer?'You':actor.label} blocked`;
+    const headline=`${titleCaseRuleId(entry.successKind)} Success`;
     const blockedKinds=(entry.blockedKinds||[]).map(titleCaseRuleId);
-    const details=isStrike
-      ? `Dealt ${Number(entry.damage)||0} damage to ${target.label} · ${entry.before} → ${entry.after} wounds`
-      : `Used ${titleCaseRuleId(entry.successKind)} Success to block ${blockedKinds.length===1?'1 ':''}${target.label} ${blockedKinds.join(' and ')} ${blockedKinds.length===1?'Success':'Successes'}`;
-    const outcome=isStrike?`${Number(entry.damage)||0} DAMAGE`:'BLOCKED';
+    const damage=Number(entry.damage)||0;
+    const detail=isStrike
+      ? `${entry.before} → ${entry.after} wounds`
+      : `Canceled ${blockedKinds.length} enemy ${blockedKinds.join(' + ')} ${blockedKinds.length===1?'Success':'Successes'}`;
+    const outcome=isStrike?`${damage} DAMAGE`:'BLOCKED';
+    // A compact, legible mobile timeline: the two action cards of each
+    // numbered exchange read left to right. No extra descriptive paragraphs.
     return `<div class="fight-exchange-card ${isPlayer?'fight-exchange-player':'fight-exchange-npo'}" role="listitem">
       <span class="fight-exchange-icon" aria-hidden="true">${icon}</span>
       <div class="fight-exchange-copy">
-        <div class="fight-exchange-heading"><span class="fight-exchange-owner">${owner}</span><span class="fight-exchange-outcome">${outcome}</span></div>
+        <span class="fight-exchange-owner">${owner}</span>
+        <span class="fight-exchange-actor">${escapeHtml(actor.label)}</span>
         <strong>${escapeHtml(headline)}</strong>
-        <span class="fight-exchange-details">${escapeHtml(details)}</span>
+        <span class="fight-exchange-outcome">${outcome}</span>
+        <span class="fight-exchange-details">${escapeHtml(detail)}</span>
       </div>
     </div>`;
   }

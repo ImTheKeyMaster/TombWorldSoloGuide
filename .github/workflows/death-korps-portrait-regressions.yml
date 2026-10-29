@@ -38,6 +38,7 @@ on:
       - tests/test_v100207_experimental_fight_panel_borders.py
       - tests/test_v100208_horizontal_exchange_actions.py
       - tests/test_v100209_experimental_fight_heading_icons.py
+      - tests/test_v100211_compact_fight_exchange_rail.py
   push:
     branches:
       - main
@@ -76,6 +77,7 @@ on:
       - tests/test_v100207_experimental_fight_panel_borders.py
       - tests/test_v100208_horizontal_exchange_actions.py
       - tests/test_v100209_experimental_fight_heading_icons.py
+      - tests/test_v100211_compact_fight_exchange_rail.py
   workflow_dispatch:
 
 jobs:
@@ -133,4 +135,5 @@ jobs:
             tests/test_v100206_experimental_fight_duel_layout.py \
             tests/test_v100207_experimental_fight_panel_borders.py \
             tests/test_v100208_horizontal_exchange_actions.py \
-            tests/test_v100209_experimental_fight_heading_icons.py
+            tests/test_v100209_experimental_fight_heading_icons.py \
+            tests/test_v100211_compact_fight_exchange_rail.py
