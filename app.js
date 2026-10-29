@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.203';
+  const APP_VERSION = '10.0.204';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -271,9 +271,24 @@ document.addEventListener('touchend',function(e){
   let showOperativeStatusPreference=localStorage.getItem(OPERATIVE_STATUS_PREFERENCE_KEY)==='true';
   let operativeStatusResizeTimer=null;
 
+  // Startup must settle even with an unreliable network. A controlled PWA
+  // receives its cached resources from the service worker immediately; first
+  // installs cannot be allowed to wait indefinitely for a partial response.
+  async function fetchInitialGameData(path,timeoutMs=7500){
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),timeoutMs);
+    try{
+      const response=await fetch(path,{cache:'default',signal:controller.signal});
+      if(!response.ok)return response;
+      // Keep the deadline through the body, not just HTTP headers. The
+      // returned response remains consumable by existing .json() callers.
+      const body=await response.text();
+      return new Response(body,{status:response.status,statusText:response.statusText,headers:response.headers});
+    }finally{clearTimeout(timeout);}
+  }
   async function loadBackgroundManifest(){
     try{
-      const response=await fetch(BACKGROUND_MANIFEST_PATH,{cache:'no-store'});
+      const response=await fetchInitialGameData(BACKGROUND_MANIFEST_PATH,4500);
       if(!response.ok)throw new Error(`Unable to load background manifest (${response.status})`);
       const data=await response.json();
       backgroundManifest=Array.isArray(data.landscape)?data.landscape.filter(filename=>/^Landscape-\d{2,}\.png$/.test(filename)):[];
@@ -401,11 +416,14 @@ document.addEventListener('touchend',function(e){
     navigator.serviceWorker.addEventListener('controllerchange',()=>{
       if(updateRequested)window.location.reload();
     });
-    window.addEventListener('load',()=>{
-      navigator.serviceWorker.register('./service-worker.js',{scope:'./'})
+    // The HTML is parsed by the time app.js executes. Do not wait for the
+    // window load event: on a spotty network a CSS/image load can delay it.
+    navigator.serviceWorker.register('./service-worker.js',{scope:'./'})
         .then(registration=>{
           if(standalonePwa)navigator.serviceWorker.ready.then(readyRegistration=>{
-            readyRegistration.active?.postMessage({type:'ENSURE_OFFLINE_PACKAGE'});
+            // Large optional media downloads must never contend with boot scripts
+            // and game data during an unreliable cold start.
+            setTimeout(()=>readyRegistration.active?.postMessage({type:'ENSURE_OFFLINE_PACKAGE'}),12000);
           });
           if(registration.waiting)showUpdate(registration.waiting);
           registration.addEventListener('updatefound',()=>{
@@ -419,7 +437,6 @@ document.addEventListener('touchend',function(e){
           });
         })
         .catch(()=>{});
-    });
   }
 
   registerServiceWorker();
@@ -433,12 +450,12 @@ document.addEventListener('touchend',function(e){
   let missionLoadRequestId=0;
   const missionActivationStarts=new Set();
   async function loadMissionPack(){
-    const manifestResponse=await fetch('Missions/manifest.json',{cache:'no-store'});
+    const manifestResponse=await fetchInitialGameData('Missions/manifest.json');
     if(!manifestResponse.ok)throw new Error(`Unable to load Missions/manifest.json (${manifestResponse.status})`);
     missionManifest=await manifestResponse.json();
     if(!Array.isArray(missionManifest.missions)||!missionManifest.missions.length)throw new Error('Mission manifest has no missions.');
     const loaded=await Promise.all(missionManifest.missions.map(async entry=>{
-      const response=await fetch(`Missions/${entry.file}`,{cache:'no-store'});
+      const response=await fetchInitialGameData(`Missions/${entry.file}`);
       if(!response.ok)throw new Error(`Unable to load ${entry.file} (${response.status})`);
       return response.json();
     }));
@@ -490,7 +507,7 @@ document.addEventListener('touchend',function(e){
   let optionalRulesExpanded=false;
   let lastRenderedSetupStepId=null;
   async function loadPlayerManifest(){
-    const response=await fetch('Player_Operatives/manifest.json',{cache:'no-store'});
+    const response=await fetchInitialGameData('Player_Operatives/manifest.json');
     if(!response.ok)throw new Error(`Unable to load manifest.json (${response.status})`);
     const data=await response.json();
     if(!Array.isArray(data.teams)||!data.teams.length)throw new Error('manifest.json has no Kill Teams.');
@@ -527,7 +544,7 @@ document.addEventListener('touchend',function(e){
     playerTeamData=null;
     render();
     try{
-      const response=await fetch(`Player_Operatives/${entry.file}`,{cache:'no-store'});
+      const response=await fetchInitialGameData(`Player_Operatives/${entry.file}`);
       if(!response.ok)throw new Error(`Unable to load ${entry.file} (${response.status})`);
       const data=await response.json();
       validatePlayerTeamData(data,entry.file);

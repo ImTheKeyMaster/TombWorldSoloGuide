@@ -82,7 +82,7 @@ const warmDeathKorpsPortraitImages=ids=>{
 };
 const dependencies={
   state,
-  fetch:async()=>({ok:true,json:async()=>({teamName:'Death Korps',operatives:[{id:'confidant'}]})}),
+  fetchInitialGameData:async()=>({ok:true,json:async()=>({teamName:'Death Korps',operatives:[{id:'confidant'}]})}),
   validatePlayerTeamData:()=>{},
   render:()=>{},save:()=>true,assignPlayerDisplayNumbers:()=>{},
   clearPlayerTeamDependentState:()=>{},
