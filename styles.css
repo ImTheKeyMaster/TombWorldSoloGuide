@@ -2890,6 +2890,64 @@ html[data-ui="tomb"] .fight-result-card.experimental-eliminated-card .fight-elim
 /* v10.0.173: Approved red-outline elimination cards are standard in Tomb UI;
    retain Experimental mode for future changes. */
 
+/* v10.0.199: Experimental-only last exchange timeline. The Standard renderer is unchanged.
+   Only approved Tomb palette accents: green for the player, white for the NPO. */
+html[data-ui="tomb"][data-experimental="on"] .fight-last-resolution-timeline{
+  gap:9px;padding:12px;border-left:2px solid var(--green);
+  background:rgba(41,127,78,.11);
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-list{
+  display:grid;gap:8px;min-width:0;
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-card{
+  --exchange-accent:var(--text);
+  display:grid;grid-template-columns:26px 23px minmax(0,1fr);
+  align-items:center;gap:9px;min-width:0;padding:10px;
+  border:1px solid rgba(228,241,235,.48);border-radius:11px;
+  background:rgba(224,244,233,.035);
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-player{
+  --exchange-accent:var(--green);border-color:rgba(77,215,143,.48);
+  background:rgba(41,127,78,.11);
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-number{
+  width:26px;height:26px;display:grid;place-items:center;flex:none;
+  border-radius:50%;background:var(--exchange-accent);color:#062012;
+  font-size:.8rem;font-weight:950;font-variant-numeric:tabular-nums;
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-icon{
+  color:var(--exchange-accent);display:grid;place-items:center;
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-icon svg{display:block;width:22px;height:22px}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-copy{
+  display:grid;gap:4px;min-width:0;border-left:1px solid rgba(226,239,230,.27);
+  padding-left:10px;
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-heading{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 8px;min-width:0;
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-owner{
+  color:var(--exchange-accent);font-size:.67rem;font-weight:950;letter-spacing:.07em;
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-outcome{
+  padding:2px 7px;border-radius:7px;border:1px solid var(--exchange-accent);
+  color:var(--exchange-accent);font-size:.63rem;font-weight:900;white-space:nowrap;
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-copy>strong{
+  font-size:.86rem;font-weight:850;overflow-wrap:anywhere;
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-details{
+  color:var(--muted);font-size:.76rem;line-height:1.35;overflow-wrap:anywhere;
+}
+@media(max-width:400px){
+  html[data-ui="tomb"][data-experimental="on"] .fight-exchange-card{
+    grid-template-columns:24px 20px minmax(0,1fr);gap:6px;padding:9px 7px;
+  }
+  html[data-ui="tomb"][data-experimental="on"] .fight-exchange-number{width:24px;height:24px}
+  html[data-ui="tomb"][data-experimental="on"] .fight-exchange-icon svg{width:19px;height:19px}
+  html[data-ui="tomb"][data-experimental="on"] .fight-exchange-copy{padding-left:7px}
+}
+
 /* v10.0.175/180: Approved Action First Fight choices for Standard and Experimental Tomb UI. */
 html[data-ui="tomb"] .experimental-fight-choice-screen .experimental-fight-step{
   display:flex;align-items:center;gap:10px;margin-top:5px;
