@@ -50,7 +50,7 @@ const standard = render(fight, 'attacker');
 assert(!standard.includes('Crits 2'));
 assert(!standard.includes('Normal 3'));
 assert(standard.includes('experimental-fight-card-dice'));
-assert.deepEqual([...standard.matchAll(/data-face="(\\d)"/g)].map(m=>Number(m[1])),[2,5,6,4,3]);
+assert.deepEqual([...standard.matchAll(/data-face="(\d)"/g)].map(m=>Number(m[1])),[2,5,6,4,3]);
 experimental = true;
 const preview = render(fight, 'attacker');
 assert.equal(preview, standard, 'Standard and Experimental must show identical dice');
