@@ -63,7 +63,7 @@ def test_native_disclosure_is_collapsed_accessible_and_compact():
     assert "Hide ${count} scouting options" in APP
     assert '<details class="forward-scouting-disclosure" open>' not in APP
     assert 'class="forward-scouting-option"' in APP
-    assert 'class="mission-rule forward-scouting-rule"' in APP
+    assert 'class="mission-rule forward-scouting-rule faction-rule-disclosure"' in APP
     assert '.forward-scouting-disclosure summary' in CSS
     assert 'min-height:48px' in CSS
     assert '.forward-scouting-options{border-left:' in CSS
