@@ -63,8 +63,9 @@ assert.equal((html.match(/class="fight-exchange-card /g)||[]).length,1);
 assert.equal((html.match(/class="fight-exchange-number"/g)||[]).length,1);
 assert(!html.includes('SWIPE TO REVIEW'));
 experimental=false;
-assert(!render(fight).includes('fight-exchange-card'),'Standard unchanged');
-assert(render(fight).includes('fight-resolution-record'));
+assert(render(fight).includes('fight-exchange-card'),'Standard shares promoted timeline');
+experimental=true;
+assert(render(fight).includes('fight-exchange-card'));
 experimental=true;pvp=true;
 assert(!render(fight).includes('fight-exchange-card'),'PvP unchanged');
 """)
@@ -72,7 +73,7 @@ assert(!render(fight).includes('fight-exchange-card'),'PvP unchanged');
 
 def test_horizontal_rail_uses_small_individually_numbered_cards():
     block=CSS.split("/* v10.0.212: Mockup-style compact",1)[1]
-    prefix='html[data-ui="tomb"][data-experimental="on"] .is-duel-layout'
+    prefix='html[data-ui="tomb"] .is-duel-layout'
     assert prefix in block
     assert '.fight-exchange-history{' in block
     assert 'display:flex;' in block
