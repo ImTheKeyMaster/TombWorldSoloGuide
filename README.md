@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.206
+# Tomb World Battle Guide v10.0.207
+
+## v10.0.207
+
+### Experimental Fight combatants without button-like card borders
+
+- **Purely informational panels:** remove both outer card borders, the active operative's glowing outline, and separate panel fills from the two top Fight Resolution combatant panels in Experimental Solo.
+- **Keep the identity cues:** preserve the ACTING NOW label, centered VS badge, names, portraits, weapons, wounds, remaining successes, and the thin internal statistic separators.
+- **No gameplay/UI side effects:** preserve the horizontal exchanges, Strike/Block selectors, Standard and PvP appearances, combat mechanics, and saved game format.
+- **PWA:** advance shell, app, and offline cache to 10.0.207.
 
 ## v10.0.206
 
