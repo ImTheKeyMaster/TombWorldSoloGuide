@@ -80,6 +80,7 @@ assert(a>0&&b>a);
 let enabled=false;
 const ctx={
   experimentalFeaturesEnabled:()=>enabled,isPvpMode:()=>false,
+  otherFightRole:role=>role==='attacker'?'defender':'attacker',
   experimentalFightPoolHtml:()=>'<div></div>',
   fightLastResolutionHtml:()=>'',experimentalFightBlockUnavailableHtml:()=> '',
   escapeHtml:String,titleCaseRuleId:String,
