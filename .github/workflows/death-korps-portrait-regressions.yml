@@ -23,6 +23,7 @@ on:
       - tests/test_v100198_jointops_specialists.py
       - tests/test_v100199_experimental_fight_exchange.py
       - tests/test_v100201_chronological_fight_exchange.py
+      - tests/test_v100203_fight_auto_strike_clarity.py
       - tests/test_v100198_jointops_npo_profiles.py
       - tests/test_aggressive_defense_d3.py
       - tests/test_v1009_aggressive_defence_result_display.py
@@ -54,6 +55,7 @@ on:
       - tests/test_v100198_jointops_specialists.py
       - tests/test_v100199_experimental_fight_exchange.py
       - tests/test_v100201_chronological_fight_exchange.py
+      - tests/test_v100203_fight_auto_strike_clarity.py
       - tests/test_v100198_jointops_npo_profiles.py
       - tests/test_aggressive_defense_d3.py
       - tests/test_v1009_aggressive_defence_result_display.py
@@ -103,6 +105,7 @@ jobs:
             tests/test_v100198_jointops_specialists.py \
             tests/test_v100199_experimental_fight_exchange.py \
             tests/test_v100201_chronological_fight_exchange.py \
+            tests/test_v100203_fight_auto_strike_clarity.py \
             tests/test_v100198_jointops_npo_profiles.py \
             tests/test_aggressive_defense_d3.py \
             tests/test_v1009_aggressive_defence_result_display.py \

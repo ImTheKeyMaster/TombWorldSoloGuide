@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.202
+# Tomb World Battle Guide v10.0.203
+
+## v10.0.203
+
+### Explain automatic Fight strikes in Experimental
+
+- **Clarity before confirming:** when a selected Strike will leave only matching successes and the opponent has no successes, describe their automatic follow-up damage and whether it will eliminate the target.
+- **Fight Result:** show a chronological breakdown of chosen and automatically resolved Strikes, including actual damage applied when the last Strike would otherwise exceed remaining wounds.
+- **Combat rules unchanged:** keep the existing automatic-strike behavior, but add an optional `automatic` marker to Fight history, preserved by normal save/resume. The result breakdown is Experimental-only. Standard and PvP UI stay unchanged.
+- **PWA:** advance to version 10.0.203 so both the app and cached assets refresh.
 
 ## v10.0.202
 
