@@ -2910,6 +2910,10 @@ html[data-ui="tomb"][data-experimental="on"] .fight-exchange-player{
   --exchange-accent:var(--green);border-color:rgba(77,215,143,.48);
   background:rgba(41,127,78,.11);
 }
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-npo{
+  --exchange-accent:var(--text);border-color:rgba(232,246,238,.55);
+  background:rgba(235,246,239,.04);
+}
 html[data-ui="tomb"][data-experimental="on"] .fight-exchange-number{
   width:26px;height:26px;display:grid;place-items:center;flex:none;
   border-radius:50%;background:var(--exchange-accent);color:#062012;
