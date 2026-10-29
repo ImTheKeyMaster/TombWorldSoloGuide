@@ -3664,9 +3664,9 @@ html[data-ui="tomb"] .is-duel-layout .fight-exchange-details{
 }
 
 
-/* v10.0.217: Experiment-only Fight summary. Render the same static die faces
-   as the actual Fight roll, scaled into five equal slots per participant.
-   The class is only emitted with Experimental enabled; Standard is untouched. */
+/* v10.1.0: Approved Fight summary dice in Standard and Experimental.
+   Render actual settled Fight die faces in five equal responsive slots per side.
+   These static dice use the original Fight roll palette without animation. */
 html[data-ui="tomb"] .experimental-fight-pool .experimental-fight-card-dice{
   display:grid;
   grid-template-columns:repeat(5,minmax(0,1fr));
