@@ -37,7 +37,7 @@ def test_both_experimental_combatant_cards_have_no_border_glow_or_fill():
 
 
 def test_choice_panels_keep_their_interactive_framing():
-    new_rule = CSS.split("/* v10.0.207: Experimental Solo Fight combatants", 1)[1]
+    new_rule = CSS.split("/* v10.0.207: Experimental Solo Fight combatants", 1)[1].split("/* v10.0.208: Experimental Solo exchange timeline", 1)[0]
     assert ".experimental-fight-option" not in new_rule
     assert ".experimental-fight-choice-group" not in new_rule
     assert ".fight-exchange-group" not in new_rule
