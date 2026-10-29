@@ -31,7 +31,7 @@ def test_click_arrow_and_selection_update_hidden_input():
     assert 'data-dialog-focus' in WIZARD
 
 def test_legacy_weapon_and_continue_flow_still_in_place():
-    for snippet in ('id="playerWeaponSelect"',"const weaponSelect=$('#playerWeaponSelect');","weaponSelect.addEventListener('change',renderChoices)","$('#openCombatResolution').disabled=!target||!weapon;","$('#openCombatResolution').onclick=()=>{",'guardianProtocolCheck','showSecondaryTargetCheck','resumeCombatAfterWeaponRuleCheck'):
+    for snippet in ('id="playerWeaponSelect"',"const weaponSelect=$('#playerWeaponSelect');","weaponSelect.addEventListener('change',renderChoices)","$('#openCombatResolution').disabled=!target||!weapon||","$('#openCombatResolution').onclick=()=>{",'guardianProtocolCheck','showSecondaryTargetCheck','resumeCombatAfterWeaponRuleCheck'):
         assert snippet in WIZARD
 
 def test_mobile_horizontal_scroll_stays_within_rail():
