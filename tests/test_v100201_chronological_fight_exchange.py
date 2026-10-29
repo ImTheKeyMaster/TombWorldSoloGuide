@@ -37,7 +37,7 @@ const nextNpo={role:'defender',type:'block',successKind:'normal',blockedKinds:['
 const nextPlayer={role:'attacker',type:'strike',successKind:'normal',damage:3,before:9,after:6};
 const fight={attacker:{side:'player',label:'Bombard'},defender:{side:'npo',label:'Flayed One 1'},history:[]};
 const matchCount=(html,re)=>(html.match(re)||[]).length;
-const groups=html=>[...html.matchAll(/aria-label="Exchange (\d+)"/g)].map(match=>match[1]);
+const groups=html=>[...html.matchAll(/aria-label="Action (\d+):/g)].map(match=>match[1]);
 const recordPositions=html=>({npo:html.indexOf('fight-exchange-npo'),you:html.indexOf('fight-exchange-player')});
 fight.history=[npo];
 let html=render(fight);
@@ -46,29 +46,29 @@ assert(html.includes('NPO ACTION'));
 assert.equal(matchCount(html,/class="fight-exchange-card /g),1);
 fight.history.push(player);
 html=render(fight);
-assert.deepEqual(groups(html),['1']);
+assert.deepEqual(groups(html),['1','2']);
 assert.equal(matchCount(html,/class="fight-exchange-card /g),2);
 assert(recordPositions(html).npo<recordPositions(html).you);
 assert(html.includes('NPO ACTION')&&html.includes('YOUR ACTION'));
 assert(html.includes('4 DAMAGE')&&html.includes('BLOCKED'));
-assert.equal(matchCount(html,/class="fight-exchange-group-number"/g),1);
+assert.equal(matchCount(html,/class="fight-exchange-number"/g),2);
 assert(!html.includes('class="fight-exchange-number"'));
 fight.history.push(nextNpo);
 html=render(fight);
-assert.deepEqual(groups(html),['1','2']);
+assert.deepEqual(groups(html),['1','2','3']);
 assert.equal(matchCount(html,/class="fight-exchange-card /g),3);
 assert(html.includes('4 DAMAGE'),'Earlier exchange must remain visible');
 assert(html.indexOf('4 DAMAGE')<html.indexOf('3 DAMAGE')||!html.includes('3 DAMAGE'));
-assert.equal(matchCount(html,/class="fight-exchange-group is-latest"/g),1);
+assert.equal(matchCount(html,/class="fight-exchange-number"/g),3);
 fight.history.push(nextPlayer);
 html=render(fight);
-assert.deepEqual(groups(html),['1','2']);
+assert.deepEqual(groups(html),['1','2','3','4']);
 assert.equal(matchCount(html,/class="fight-exchange-card /g),4);
 assert(recordPositions(html).npo<recordPositions(html).you);
 assert(html.includes('3 DAMAGE'));
 assert(html.includes('4 DAMAGE'));
 assert(html.indexOf('4 DAMAGE')<html.indexOf('3 DAMAGE'));
-assert.equal(matchCount(html,/class="fight-exchange-group is-latest"/g),1);
+assert.equal(matchCount(html,/class="fight-exchange-number"/g),4);
 assert.equal(fight.history.length,4,'Rendering must not mutate saved action history');
 preview=false;
 html=render(fight);
@@ -98,7 +98,7 @@ const html=render(fight);
 assert(html.indexOf('fight-exchange-player')<html.indexOf('fight-exchange-npo'));
 assert(html.includes('NPO RESPONSE'));
 assert(html.includes('aria-label="Exchange 1"'));
-assert((html.match(/class="fight-exchange-group-number"/g)||[]).length===1);
+assert((html.match(/class="fight-exchange-number"/g)||[]).length===2);
 """)
 
 
@@ -115,14 +115,16 @@ def test_normal_block_shield_is_reused_and_unavailable_shield_is_untouched():
     assert '<path d="m5 19 14-14"' not in exchange
 
 
-def test_exchange_marker_belongs_to_group_not_each_action():
-    block = CSS.split('/* v10.0.199: Experimental-only last exchange timeline.',1)[1].split('/* v10.0.175/180:',1)[0]
-    assert '.fight-exchange-label{' in block
-    assert '.fight-exchange-group-number{' in block
-    assert '.fight-exchange-number{' not in block
-    assert 'grid-template-columns:23px minmax(0,1fr)' in block
-    assert 'grid-template-columns:20px minmax(0,1fr)' in block
+def test_action_marker_belongs_to_each_compact_card():
+    block = CSS.split('/* v10.0.212: Mockup-style compact',1)[1]
+    assert '.fight-exchange-number{' in block
+    assert 'flex:0 0 clamp(94px,26vw,115px);' in block
+    assert 'scroll-snap-align:start;' in block
     assert 'html[data-ui="tomb"][data-experimental="on"]' in block
+    renderer = APP.split('  function experimentalFightExchangeRecordHtml(',1)[1].split('  function fightLastResolutionHtml(',1)[0]
+    assert 'position+1' in renderer
+    assert 'fight-exchange-number' in renderer
+    assert 'fight-exchange-group-number' not in renderer
 
 
 def test_current_version():
