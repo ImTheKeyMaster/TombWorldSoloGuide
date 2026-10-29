@@ -52,7 +52,7 @@ const fight={
  ]
 };
 const html=render(fight);
-assert.equal((html.match(/class="fight-exchange-group/g)||[]).length,2);
+assert.equal((html.match(/class="fight-exchange-group(?: is-latest)?"/g)||[]).length,2);
 assert.equal((html.match(/class="fight-exchange-card /g)||[]).length,3);
 assert.deepEqual([...html.matchAll(/aria-label="Exchange (\d+)"/g)].map(m=>m[1]),['1','2']);
 assert.equal((html.match(/class="fight-exchange-group-number"/g)||[]).length,2);
