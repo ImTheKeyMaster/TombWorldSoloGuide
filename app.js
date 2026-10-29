@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.201';
+  const APP_VERSION = '10.0.202';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8162,15 +8162,21 @@ function showPlayerActivation(){
     const entries=soloExchange?[previous,latest]:[latest];
     // Standard and PvP retain their existing exchange renderer and layout.
     if(document.documentElement.dataset.ui==='tomb'&&experimentalFeaturesEnabled()&&!isPvpMode()){
-      // History is appended in action order. Pair consecutive actions from the
-      // beginning of the fight, regardless of which participant acted first.
-      // Only the exchange is numbered, never the individual actions inside it.
-      const exchangeIndex=Math.floor((fight.history.length-1)/2);
-      const exchangeNumber=exchangeIndex+1;
-      const exchangeActions=fight.history.slice(exchangeIndex*2,exchangeIndex*2+2);
-      return `<section class="fight-last-resolution fight-last-resolution-timeline" role="status" aria-label="Last exchange, number ${exchangeNumber}">
-        <div class="fight-exchange-label"><small>LAST EXCHANGE</small><span class="fight-exchange-group-number" aria-label="Exchange ${exchangeNumber}">${exchangeNumber}</span></div>
-        <div class="fight-exchange-list" role="list">${exchangeActions.map((entry,index)=>experimentalFightExchangeRecordHtml(fight,entry,index)).join('')}</div>
+      // Stored history is already chronological. Render every pair as one
+      // numbered exchange, including a final exchange with a single action.
+      const exchangeGroups=[];
+      for(let start=0;start<fight.history.length;start+=2){
+        const exchangeNumber=start/2+1;
+        const exchangeActions=fight.history.slice(start,start+2);
+        const latest=start+2>=fight.history.length;
+        exchangeGroups.push(`<section class="fight-exchange-group${latest?' is-latest':''}" role="listitem" aria-label="Exchange ${exchangeNumber}">
+          <div class="fight-exchange-label"><small>EXCHANGE</small><span class="fight-exchange-group-number" aria-hidden="true">${exchangeNumber}</span></div>
+          <div class="fight-exchange-list" role="list">${exchangeActions.map((entry,index)=>experimentalFightExchangeRecordHtml(fight,entry,index)).join('')}</div>
+        </section>`);
+      }
+      return `<section class="fight-last-resolution fight-last-resolution-timeline" role="group" aria-label="Fight exchanges">
+        <div class="fight-exchanges-heading"><small>EXCHANGES</small></div>
+        <div class="fight-exchange-history" role="list" aria-label="Chronological exchanges">${exchangeGroups.join('')}</div>
       </section>`;
     }
     return `<section class="fight-last-resolution" role="status" aria-label="Last exchange"><small>LAST EXCHANGE</small>${entries.map(entry=>fightResolutionRecordHtml(fight,entry)).join('')}</section>`;
@@ -8416,6 +8422,8 @@ function showPlayerActivation(){
     const capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
     if(document.documentElement.dataset.ui==='tomb'){
       showModal('Fight Resolution',experimentalActionFirstFightHtml(fight,role,participant,actions,capacity));
+      const exchangeHistory=modal.querySelector('.fight-exchange-history');
+      if(exchangeHistory)exchangeHistory.scrollTop=exchangeHistory.scrollHeight;
       scaleFightPortraits();
       bindExperimentalActionFirstFight(fight,role,capacity);
       return;

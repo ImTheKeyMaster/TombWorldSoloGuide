@@ -2910,6 +2910,25 @@ html[data-ui="tomb"][data-experimental="on"] .fight-exchange-group-number{
 html[data-ui="tomb"][data-experimental="on"] .fight-exchange-list{
   display:grid;gap:8px;min-width:0;
 }
+html[data-ui="tomb"][data-experimental="on"] .fight-exchanges-heading>small{
+  color:var(--muted);font-size:.7rem;font-weight:900;letter-spacing:.1em;
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-history{
+  display:grid;gap:10px;min-width:0;max-height:min(42vh,320px);
+  overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  padding-right:2px;scrollbar-width:thin;
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-group{
+  display:grid;gap:8px;min-width:0;padding:10px;
+  border:1px solid var(--line);border-radius:12px;
+  background:rgba(7,20,13,.55);
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-group.is-latest{
+  border-color:rgba(77,215,143,.55);background:rgba(41,127,78,.11);
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-group:not(.is-latest) .fight-exchange-card{
+  opacity:.84;
+}
 html[data-ui="tomb"][data-experimental="on"] .fight-exchange-card{
   --exchange-accent:var(--text);
   display:grid;grid-template-columns:23px minmax(0,1fr);

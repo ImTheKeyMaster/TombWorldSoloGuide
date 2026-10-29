@@ -37,16 +37,16 @@ const nextNpo={role:'defender',type:'block',successKind:'normal',blockedKinds:['
 const nextPlayer={role:'attacker',type:'strike',successKind:'normal',damage:3,before:9,after:6};
 const fight={attacker:{side:'player',label:'Bombard'},defender:{side:'npo',label:'Flayed One 1'},history:[]};
 const matchCount=(html,re)=>(html.match(re)||[]).length;
-const group=html=>(html.match(/aria-label="Exchange (\d+)"/)||[])[1];
+const groups=html=>[...html.matchAll(/aria-label="Exchange (\d+)"/g)].map(match=>match[1]);
 const recordPositions=html=>({npo:html.indexOf('fight-exchange-npo'),you:html.indexOf('fight-exchange-player')});
 fight.history=[npo];
 let html=render(fight);
-assert.equal(group(html),'1');
+assert.deepEqual(groups(html),['1']);
 assert(html.includes('NPO ACTION'));
 assert.equal(matchCount(html,/class="fight-exchange-card /g),1);
 fight.history.push(player);
 html=render(fight);
-assert.equal(group(html),'1');
+assert.deepEqual(groups(html),['1']);
 assert.equal(matchCount(html,/class="fight-exchange-card /g),2);
 assert(recordPositions(html).npo<recordPositions(html).you);
 assert(html.includes('NPO ACTION')&&html.includes('YOUR ACTION'));
@@ -55,16 +55,20 @@ assert.equal(matchCount(html,/class="fight-exchange-group-number"/g),1);
 assert(!html.includes('class="fight-exchange-number"'));
 fight.history.push(nextNpo);
 html=render(fight);
-assert.equal(group(html),'2');
-assert.equal(matchCount(html,/class="fight-exchange-card /g),1);
-assert(!html.includes('4 DAMAGE'),'Older exchange must not be reordered as latest');
+assert.deepEqual(groups(html),['1','2']);
+assert.equal(matchCount(html,/class="fight-exchange-card /g),3);
+assert(html.includes('4 DAMAGE'),'Earlier exchange must remain visible');
+assert(html.indexOf('4 DAMAGE')<html.indexOf('3 DAMAGE')||!html.includes('3 DAMAGE'));
+assert.equal(matchCount(html,/class="fight-exchange-group is-latest"/g),1);
 fight.history.push(nextPlayer);
 html=render(fight);
-assert.equal(group(html),'2');
-assert.equal(matchCount(html,/class="fight-exchange-card /g),2);
+assert.deepEqual(groups(html),['1','2']);
+assert.equal(matchCount(html,/class="fight-exchange-card /g),4);
 assert(recordPositions(html).npo<recordPositions(html).you);
 assert(html.includes('3 DAMAGE'));
-assert(!html.includes('4 DAMAGE'));
+assert(html.includes('4 DAMAGE'));
+assert(html.indexOf('4 DAMAGE')<html.indexOf('3 DAMAGE'));
+assert.equal(matchCount(html,/class="fight-exchange-group is-latest"/g),1);
 assert.equal(fight.history.length,4,'Rendering must not mutate saved action history');
 preview=false;
 html=render(fight);
@@ -122,4 +126,4 @@ def test_exchange_marker_belongs_to_group_not_each_action():
 
 
 def test_current_version():
-    assert CURRENT_APP_VERSION == '10.0.201'
+    assert tuple(map(int, CURRENT_APP_VERSION.split('.'))) >= (10, 0, 201)

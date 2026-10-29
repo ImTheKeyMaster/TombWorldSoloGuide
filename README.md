@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.201
+# Tomb World Battle Guide v10.0.202
+
+## v10.0.202
+
+### Full Fight exchange history in Experimental
+
+- **All exchanges:** keep every resolved action visible as numbered exchanges in the original sequence. Exchange groups contain two actions where available, including a final single-action group.
+- **Compact mobile history:** keep the newest exchange highlighted and scroll the bounded history area to the latest entry; scroll upward to review earlier exchanges without pushing Fight choices off-screen.
+- **Compatibility:** preserve the Standard/PvP history view, Block shield icons, action logic, stored Fight history, and existing save schema. Release/PWA cache v10.0.202.
 
 ## v10.0.201
 
