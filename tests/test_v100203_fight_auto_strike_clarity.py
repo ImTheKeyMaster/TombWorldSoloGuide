@@ -108,7 +108,7 @@ def test_saved_game_and_standard_mode_compatibility():
     assert "if(human&&automaticStrikes){commitFightStrike(fight,role,automaticStrikes[0].id,{automatic:true});" in APP
     assert "experimentalFightAutomaticStrikeResultHtml(result)" in APP
     assert 'html[data-ui="tomb"][data-experimental="on"] .fight-auto-strike-result' in CSS
-    assert CURRENT_APP_VERSION=="10.0.203"
-    assert "const APP_VERSION = '10.0.203';" in APP
-    assert "const APP_VERSION = '10.0.203';" in (ROOT/"service-worker.js").read_text()
-    assert "V10.0.203" in (ROOT/"index.html").read_text()
+    assert tuple(map(int,CURRENT_APP_VERSION.split("."))) >= (10,0,203)
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in (ROOT/"service-worker.js").read_text()
+    assert f"V{CURRENT_APP_VERSION}" in (ROOT/"index.html").read_text()
