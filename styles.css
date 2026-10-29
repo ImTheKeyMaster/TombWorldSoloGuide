@@ -3239,6 +3239,15 @@ html[data-ui="tomb"] .is-duel-layout .experimental-fight-versus::before{
 html[data-ui="tomb"] .is-duel-layout .experimental-fight-versus span{
   position:relative;z-index:1;
 }
+
+/* v10.1.1: On desktop and wide touch screens, reserve a center gutter
+   for the rotated VS diamond rather than letting it cover wound counts.
+   Narrow phone layouts retain their approved 10px spacing. */
+@media (min-width:600px) and (min-height:520px), (min-width:480px) and (hover:hover) and (pointer:fine){
+  html[data-ui="tomb"] .experimental-fight-choice-screen.is-duel-layout .experimental-fight-pools{
+    gap:56px;
+  }
+}
 /* Each swipeable tile is a whole numbered exchange, containing its
    actual one or two actions in chronological order. No re-numbering of moves. */
 html[data-ui="tomb"] .is-duel-layout .fight-exchanges-heading{
