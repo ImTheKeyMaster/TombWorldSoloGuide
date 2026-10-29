@@ -80,6 +80,6 @@ def test_zero_ap_scout_terrain_and_reposition_tracking():
     assert "item.side==='player'&&item.label===playerName(actor.value)" in APP
 
 def test_version():
-    assert CURRENT_APP_VERSION == '10.0.198'
-    assert "V10.0.198" in (ROOT / 'index.html').read_text(encoding='utf-8')
-    assert "const APP_VERSION = '10.0.198';" in (ROOT / 'service-worker.js').read_text(encoding='utf-8')
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 198)
+    assert f"V{CURRENT_APP_VERSION}" in (ROOT / 'index.html').read_text(encoding='utf-8')
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in (ROOT / 'service-worker.js').read_text(encoding='utf-8')
