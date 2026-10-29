@@ -55,7 +55,9 @@ assert(upgraded.includes('YOUR ACTION')&&upgraded.includes('NPO RESPONSE'));
 assert(upgraded.includes('6 DAMAGE')&&upgraded.includes('BLOCKED'));
 assert(upgraded.includes('Normal Success')&&upgraded.includes('Critical Success'));
 assert(upgraded.includes('10 → 4 wounds'));
-assert(upgraded.includes('aria-label="Last exchange"'));
+assert(upgraded.includes('aria-label="Last exchange, number 1"'));
+assert.equal((upgraded.match(/class="fight-exchange-group-number"/g)||[]).length,1);
+assert(!upgraded.includes('class="fight-exchange-number"'));
 const npoStart=upgraded.indexOf('class="fight-exchange-card fight-exchange-npo"');
 const npoShield=npoStart>=0?upgraded.slice(npoStart,upgraded.indexOf('</svg>',npoStart)+6):'';
 assert(npoShield,'The block exchange should render a shield SVG');
@@ -66,7 +68,7 @@ assert(!npoShield.includes('clip-path'),'Block exchange icon must be a plain shi
 fight.history=[fight.history[0]];
 assert.equal((api.fightLastResolutionHtml(fight).match(/class="fight-exchange-card /g)||[]).length,1);
 fight.history=[{role:'defender',type:'strike',successKind:'critical',damage:2,before:8,after:6}];
-assert(api.fightLastResolutionHtml(fight).includes('NPO RESPONSE'));
+assert(api.fightLastResolutionHtml(fight).includes('NPO ACTION'));
 assert(api.fightLastResolutionHtml(fight).includes('2 DAMAGE'));
 fight.history=[
   {role:'attacker',type:'strike',successKind:'normal',damage:6,before:10,after:4},
@@ -113,7 +115,8 @@ def test_styles_are_experimental_only_and_use_no_amber():
     assert "fight-exchange-player" in block and "fight-exchange-npo" in block
     assert "--exchange-accent:var(--text)" in block
     assert "--exchange-accent:var(--green)" in block
-    assert "fight-exchange-number" in block
+    assert "fight-exchange-group-number" in block
+    assert "fight-exchange-label" in block
     for unwanted in ("amber", "yellow", "#ffcc", "#ffc", "#f4b"):
         assert unwanted not in block.lower()
     # Existing Standard rules still own the original markup and numbered action headings.
@@ -139,5 +142,6 @@ def test_unavailable_block_retains_its_slash_separately_from_exchange_shield():
     assert 'clip-path="url(#experimentalFightBlockShieldClip)"' in unavailable
     assert '<path d="m5 19 14-14"' in unavailable
     assert '<path d="m5 19 14-14"' not in exchange
-    assert 'fill="none" stroke="currentColor"' in exchange
+    assert 'fill="currentColor"' in exchange
+    assert 'fill="#092319"' in exchange
 
