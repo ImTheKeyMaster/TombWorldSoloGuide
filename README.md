@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.1.0
+# Tomb World Battle Guide v10.1.1
+
+## v10.1.1
+
+### Keep centered VS clear of Fight wounds on desktop
+
+- **Desktop fix:** Reserve a 56px center gutter between Fight Resolution combatant summaries so the rotated VS diamond cannot overlap either wound count or combatant details.
+- **Phone unchanged:** The existing tight 10px VS spacing is preserved for narrow touch layouts, including phone landscape. Wider touch layouts receive the desktop gutter.
+- **No combat changes:** Standard and Experimental share this styling fix; dice, exchange history, combat logic, portraits and controls are unchanged. Refresh PWA assets to v10.1.1.
 
 ## v10.1.0
 
