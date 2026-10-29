@@ -21,28 +21,65 @@
     }
   </script>
   <style>
-    /* Prevents browser default white first paint before app CSS loads. */
-    html,body{margin:0;min-height:100%;background:#06100c;color-scheme:dark}
-    #app:empty{min-height:100vh;background:#06100c}
+    /* Dark critical shell is available before external stylesheet or app JS. */
+    html,body{margin:0;min-height:100%;background:#06100c;color:#e3f2e9;color-scheme:dark;font-family:system-ui,-apple-system,sans-serif}
+    #app{min-height:80vh;box-sizing:border-box}
+    html:not(.app-css-ready) .app-header,html:not(.app-css-ready) #gameBackground,
+    html:not(.app-css-ready) .ambient-grid{display:none}
+    #startupPlaceholder{box-sizing:border-box;margin:12vh auto 0;max-width:480px;padding:22px;
+      border:1px solid #2a6043;border-radius:20px;background:#091b13;color:#e3f2e9}
+    #startupPlaceholder h2{font-size:1.25rem;margin:0 0 12px}
+    #startupPlaceholder p{color:#a8c5b4;line-height:1.5}
+    #startupPlaceholder .startup-retry-actions{display:flex;flex-wrap:wrap;gap:10px}
+    #startupPlaceholder button{border:1px solid #6cf0a4;background:#6cf0a4;color:#06180e;
+      border-radius:11px;padding:12px 15px;font:700 1rem system-ui,-apple-system,sans-serif}
+    #startupPlaceholder button.secondary{background:transparent;color:#e3f2e9}
+    #startupPlaceholder [hidden]{display:none!important}
   </style>
+  <script>
+    // Works even if the actual app bundle or CSS is blocked by connectivity.
+    window.setTimeout(() => {
+      const placeholder=document.getElementById('startupPlaceholder');
+      if(!placeholder)return;
+      const message=document.getElementById('startupMessage');
+      const actions=document.getElementById('startupActions');
+      if(message)message.textContent='The Guide is taking longer than expected to start. Check your connection or retry. Your saved battle is still on this device.';
+      if(actions)actions.hidden=false;
+    },9000);
+    window.addEventListener('click',event=>{
+      if(event.target?.id==='startupRetry')location.reload();
+      if(event.target?.id!=='startupExport')return;
+      try{
+        const data=localStorage.getItem('tombWorldBattleGuide.v1');
+        if(!data){document.getElementById('startupMessage').textContent='No locally saved battle is available to export.';return;}
+        const url=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+        const a=document.createElement('a');a.href=url;a.download='tomb-world-battle-guide-recovery-save.json';
+        document.body.appendChild(a);a.click();a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),15000);
+      }catch(error){
+        document.getElementById('startupMessage').textContent='The browser could not access saved game storage. No data was erased.';
+      }
+    });
+  </script>
   <link rel="icon" href="Assets/favicon.ico" type="image/x-icon">
   <link rel="icon" href="Assets/icon-192.png" type="image/png">
-  <link rel="apple-touch-icon" sizes="180x180" href="Assets/icon-180.png?v=10.0.203">
+  <link rel="apple-touch-icon" sizes="180x180" href="Assets/icon-180.png?v=10.0.204">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=10.0.203">
-  <script async src="analytics.js?release=10.0.203"></script>
+  <link rel="stylesheet" href="styles.css?v=10.0.204" media="print" onload="this.media='all';document.documentElement.classList.add('app-css-ready')">
+  <noscript><link rel="stylesheet" href="styles.css?v=10.0.204"></noscript>
+  <script async src="analytics.js?release=10.0.204"></script>
 </head>
 <body>
   <div id="gameBackground" aria-hidden="true"></div>
   <div class="ambient-grid" aria-hidden="true"></div>
   <header class="app-header">
     <div class="brand">
-      <img src="Assets/icon-192.png?v=10.0.203" alt="" class="brand-icon">
+      <img src="Assets/icon-192.png?v=10.0.204" alt="" class="brand-icon">
       <div><span>UNOFFICIAL TOMB WORLD PLAY AID</span><h1>Tomb World Battle Guide</h1></div>
     </div>
     <div class="header-actions">
       <button class="header-menu-btn" id="gameMenuBtn" hidden>Game Menu</button>
-      <div class="version">V10.0.203</div>
+      <div class="version">V10.0.204</div>
       <button class="narration-speaker-btn" id="narrationSpeakerBtn" type="button" aria-label="Master audio on" aria-pressed="true" title="Master audio on">
         <svg class="narration-icon-enabled" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9v6h4l5 4V5L8 9H4z"></path><path d="M16 8.5c1.3 1.8 1.3 5.2 0 7M19 6c2.7 3.2 2.7 8.8 0 12"></path></svg>
         <svg class="narration-icon-disabled" viewBox="0 0 24 24" aria-hidden="true" focusable="false" hidden><path d="M4 9v6h4l5 4V5L8 9H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path><path d="M16 9 L21 15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path><path d="M21 9 L16 15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path></svg>
@@ -55,7 +92,16 @@
 
   <div id="gameWorkspace" class="game-workspace">
     <aside id="operativeStatusPanel" class="operative-status-panel" aria-label="Operative status" hidden></aside>
-    <main id="app" class="app-shell" aria-live="polite"></main>
+    <main id="app" class="app-shell" aria-live="polite">
+      <section id="startupPlaceholder" role="status" aria-label="Starting Tomb World Battle Guide">
+        <h2>Tomb World Guide</h2>
+        <p id="startupMessage">Loading your saved battle and game rules…</p>
+        <div id="startupActions" class="startup-retry-actions" hidden>
+          <button id="startupRetry" type="button">Retry Loading</button>
+          <button id="startupExport" class="secondary" type="button">Export Saved Battle</button>
+        </div>
+      </section>
+    </main>
   </div>
 
 
@@ -122,16 +168,16 @@
     <button class="btn primary" id="updateAppBtn" type="button">Update App</button>
   </div>
   <input id="importInput" type="file" accept="application/json" hidden>
-  <script src="mission-engine.js?v=10.0.203"></script>
-  <script src="persistence.js?v=10.0.203"></script>
-  <script src="deadly-encounters.js?v=10.0.203"></script>
-  <script src="event-effects.js?v=10.0.203"></script>
-  <script src="audio-capabilities.js?v=10.0.203"></script>
-  <script src="narration.js?v=10.0.203"></script>
-  <script src="narration-transcript.js?v=10.0.203"></script>
-  <script src="ambient.js?v=10.0.203"></script>
-  <script src="dice-sfx.js?v=10.0.203"></script>
-  <script src="fight-portrait-scale.js?v=10.0.203"></script>
-  <script src="app.js?v=10.0.203"></script>
+  <script src="mission-engine.js?v=10.0.204"></script>
+  <script src="persistence.js?v=10.0.204"></script>
+  <script src="deadly-encounters.js?v=10.0.204"></script>
+  <script src="event-effects.js?v=10.0.204"></script>
+  <script src="audio-capabilities.js?v=10.0.204"></script>
+  <script src="narration.js?v=10.0.204"></script>
+  <script src="narration-transcript.js?v=10.0.204"></script>
+  <script src="ambient.js?v=10.0.204"></script>
+  <script src="dice-sfx.js?v=10.0.204"></script>
+  <script src="fight-portrait-scale.js?v=10.0.204"></script>
+  <script src="app.js?v=10.0.204"></script>
 </body>
 </html>
