@@ -8175,7 +8175,7 @@ function showPlayerActivation(){
     }
     return `<section class="fight-last-resolution" role="status" aria-label="Last exchange"><small>LAST EXCHANGE</small>${entries.map(entry=>fightResolutionRecordHtml(fight,entry)).join('')}</section>`;
   }
-    function equivalentRemainingFightStrikes(fight,role){
+  function equivalentRemainingFightStrikes(fight,role){
     const own=unresolvedFightSuccesses(fight,role),enemy=unresolvedFightSuccesses(fight,otherFightRole(role));
     return own.length&&!enemy.length&&new Set(own.map(success=>success.kind)).size===1?own:null;
   }
