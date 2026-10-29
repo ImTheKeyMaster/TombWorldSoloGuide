@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.199
+# Tomb World Battle Guide v10.0.200
+
+## v10.0.200
+
+### Experimental Fight Resolution block shield clarification
+
+- **Experimental only:** display an unbroken white shield outline for a successful Block recorded in Last Exchange. The slash remains exclusively on the existing Block Unavailable action guidance icon.
+- **Standard mode and Fight mechanics:** unchanged; all combat outcomes, saved games and miniature portraits are preserved.
+- **PWA:** increment app and offline cache release to v10.0.200.
 
 ## v10.0.199
 

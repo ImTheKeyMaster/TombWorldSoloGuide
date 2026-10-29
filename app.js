@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.199';
+  const APP_VERSION = '10.0.200';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8140,7 +8140,7 @@ function showPlayerActivation(){
     const owner=isPlayer?'YOUR ACTION':'NPO RESPONSE';
     const icon=isStrike
       ? '<svg viewBox="0 0 24 24" width="23" height="23" fill="currentColor" aria-hidden="true"><path d="M21.2 2.8 18.9 10l-7.2 7.2-4-4 7.2-7.2 6.3-3.2Z"/><path d="m5.9 11.7 6.4 6.4-1.5 1.5-6.4-6.4z"/><path d="m8.1 17.1-4.4 4.4-1.5-1.5 4.4-4.4z"/></svg>'
-      : '<svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 20 5.5V12c0 4.8-3.2 8.2-8 10-4.8-1.8-8-5.2-8-10V5.5L12 2Z"/><path d="m5 19 14-14"/></svg>';
+      : '<svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 20 5.5V12c0 4.8-3.2 8.2-8 10-4.8-1.8-8-5.2-8-10V5.5L12 2Z"/></svg>';
     const headline=isStrike?`${titleCaseRuleId(entry.successKind)} Success`:`${isPlayer?'You':actor.label} blocked`;
     const blockedKinds=(entry.blockedKinds||[]).map(titleCaseRuleId);
     const details=isStrike
