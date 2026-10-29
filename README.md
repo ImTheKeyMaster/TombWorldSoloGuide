@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.208
+# Tomb World Battle Guide v10.0.209
+
+## v10.0.209
+
+### Experimental Fight action headings use one sword and one shield icon
+
+- **Strike and Block headers:** show a single sword or half-filled shield directly left of each group title, retaining the label, subtitle, and green visual language.
+- **Cleaner choices:** omit repeated icons from inside each Experimental Solo Strike/Block option card, while preserving their radio selectors, selectable state, labels, damage/block details, and confirmation behavior.
+- **Scoped behavior:** Standard and PvP keep their original option icons and unchanged layout; other Fight screens, horizontal exchange history, VS badge, and borderless combatant summaries remain untouched.
+- **PWA refresh:** bump app, HTML and service-worker versions to 10.0.209. No combat logic or save-format changes.
 
 ## v10.0.208
 
