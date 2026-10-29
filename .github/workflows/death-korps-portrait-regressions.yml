@@ -154,4 +154,6 @@ jobs:
             tests/test_v100214_collapsible_faction_guidance.py \
             tests/test_v100215_solo_npo_fight_ai_regression.py \
             tests/test_v100216_deployment_faction_rule_order.py \
+            tests/test_v100146_experimental_fight_preview.py \
+            tests/test_v100175_experimental_action_first_fight.py \
             tests/test_v100217_experimental_fight_dice.py
