@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.1.1
+# Tomb World Battle Guide v10.1.2
+
+## v10.1.2
+
+### Clarify Shield Block target selection
+
+- **Selected player success:** the Shield Block dialog explicitly identifies the Critical or Normal Success being spent and says the checkbox choices are **enemy** successes to cancel.
+- **Smarter defaults:** when Shield can cancel all legal enemy successes (up to the Shield capacity of two), automatically check each of them. When more targets remain than Shield can cancel, retain the player's initially targeted enemy success without arbitrarily selecting other targets.
+- **Editable targets:** either enemy target can be unchecked; keep the selection limit at two and disable confirmation when none is selected. Block legality, turn sequencing, and combat resolution remain unchanged.
+- **Release:** refresh versioned PWA assets/cache to v10.1.2, preserving Standard and Experimental mode parity.
+
+
 
 ## v10.1.1
 

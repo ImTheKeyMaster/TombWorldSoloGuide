@@ -49,12 +49,12 @@ def test_phone_still_uses_original_central_vs_spacing():
 
 
 def test_release_cache_and_both_mode_fight_dice_remain_current():
-    assert CURRENT_APP_VERSION == "10.1.1"
-    assert "const APP_VERSION = '10.1.1';" in APP
-    assert "const APP_VERSION = '10.1.1';" in WORKER
-    assert "app.js?v=10.1.1" in INDEX
-    assert "styles.css?v=10.1.1" in INDEX
-    assert "V10.1.1" in INDEX
+    assert tuple(map(int,CURRENT_APP_VERSION.split("."))) >= (10,1,1)
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in WORKER
+    assert f"app.js?v={CURRENT_APP_VERSION}" in INDEX
+    assert f"styles.css?v={CURRENT_APP_VERSION}" in INDEX
+    assert f"V{CURRENT_APP_VERSION}" in INDEX
     pool = APP.split("  function experimentalFightPoolHtml(", 1)[1].split(
         "  function experimentalFightResolutionHtml(", 1
     )[0]
