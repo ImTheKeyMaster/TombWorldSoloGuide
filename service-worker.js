@@ -299,8 +299,14 @@ async function archivedCacheMatchExact(request) {
 async function fetchWithStartupTimeout(request,timeoutMs=4500) {
   const controller=new AbortController();
   const timeout=setTimeout(()=>controller.abort(),timeoutMs);
-  try{return await fetch(request,{signal:controller.signal});}
-  finally{clearTimeout(timeout);}
+  try{
+    const response=await fetch(request,{signal:controller.signal});
+    if(!response.ok)return response;
+    // A weak cellular connection can deliver headers but hang on the body.
+    // Keep the abort deadline active until the whole asset has arrived.
+    const body=await response.blob();
+    return new Response(body,{status:response.status,statusText:response.statusText,headers:response.headers});
+  }finally{clearTimeout(timeout);}
 }
 const OFFLINE_STARTUP_HTML=`<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
