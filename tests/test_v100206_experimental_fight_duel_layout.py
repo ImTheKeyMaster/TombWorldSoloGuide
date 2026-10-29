@@ -102,7 +102,7 @@ assert(!render(fight).includes('fight-exchange-history'),'PvP history remains un
 def test_horizontal_scrolling_and_responsive_two_column_css():
     assert 'exchangeHistory.scrollLeft=exchangeHistory.scrollWidth-exchangeHistory.clientWidth' in APP
     assert 'else exchangeHistory.scrollTop=exchangeHistory.scrollHeight' in APP
-    block=CSS.split('/* v10.0.206: Fight Resolution concept 3, opt-in Experimental Solo only.',1)[1]
+    block=CSS.split('/* v10.0.206/213: Approved Solo Fight Resolution design promoted to Standard.',1)[1]
     assert 'grid-auto-flow:column' in block
     assert 'overflow-x:auto;overflow-y:hidden' in block
     assert 'scroll-snap-type:x proximity' in block
