@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.211
+# Tomb World Battle Guide v10.0.212
+
+## v10.0.212
+
+### Compact per-action exchange history (Experimental Solo)
+
+- **Mockup-style sizing:** action cards are much narrower and shorter, allowing roughly three cards to appear across a typical iPhone instead of two oversized cards, with the rest available by horizontal swipe.
+- **One number per action:** number each recorded strike or block sequentially, beginning at 1 and continuing in exact chronological history order. Remove the old per-exchange group headings and numbering.
+- **Short summaries:** each card shows a small number badge, sword/shield icon, operative/NPO name, success kind, damage/blocked outcome, and wound delta or canceled success. Full names remain available to assistive technology even when visually truncated.
+- **Preserve:** no fabricated future action, no Clear button, no history mutation, no combat-mechanic changes; existing Standard/PvP fight presentation remains unchanged.
+- **PWA:** version 10.0.212 with updated app, HTML and service-worker cache.
 
 ## v10.0.211
 
