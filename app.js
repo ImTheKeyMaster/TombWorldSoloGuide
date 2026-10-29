@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.1';
+  const APP_VERSION = '10.1.2';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8203,8 +8203,16 @@ function showPlayerActivation(){
     return own.length&&!enemy.length&&new Set(own.map(success=>success.kind)).size===1?own:null;
   }
   function showFightBlockSelection(fight,role,blockerId,initialTargetId){
-    const blocker=unresolvedFightSuccesses(fight,role).find(item=>item.id===blockerId),legal=fightBlockTargets(fight,role,blocker),capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
-    showModal('Shield Block',`<p><strong>Shield:</strong> this Block can block up to two unresolved successes.</p><div class="checklist">${legal.map(target=>`<label class="check-row"><input type="checkbox" name="shieldBlockTarget" value="${escapeHtml(target.id)}" ${target.id===initialTargetId?'checked':''}><span>${titleCaseRuleId(target.kind)} success</span></label>`).join('')}</div><div class="wizard-actions"><button class="btn primary" id="commitShieldBlock">Block Selected Successes</button></div>`);
+    const blocker=unresolvedFightSuccesses(fight,role).find(item=>item.id===blockerId);
+    const legal=fightBlockTargets(fight,role,blocker||{});
+    const capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
+    // If Shield can cancel every legal enemy success, select all by default.
+    // With more legal targets than capacity, preserve the user's initial choice.
+    const defaultIds=legal.length<=capacity
+      ?legal.map(target=>target.id)
+      :[legal.find(target=>target.id===initialTargetId)?.id||legal[0]?.id].filter(Boolean);
+    const preselected=new Set(defaultIds);
+    showModal('Shield Block',`<p>You're using your <strong>${titleCaseRuleId(blocker?.kind||'normal')} Success</strong> to block up to ${capacity} enemy successes.</p><p><strong>Select enemy successes to cancel:</strong></p><div class="checklist" role="group" aria-label="Enemy successes to cancel">${legal.map(target=>`<label class="check-row"><input type="checkbox" name="shieldBlockTarget" value="${escapeHtml(target.id)}" ${preselected.has(target.id)?'checked':''}><span>${titleCaseRuleId(target.kind)} Success</span></label>`).join('')}</div><div class="wizard-actions"><button class="btn primary" id="commitShieldBlock" ${preselected.size?'':'disabled'}>Block Selected Successes</button></div>`);
     const inputs=$$('[name="shieldBlockTarget"]',modal),button=$('#commitShieldBlock');
     inputs.forEach(input=>input.onchange=()=>{const selected=inputs.filter(item=>item.checked);if(selected.length>capacity)input.checked=false;button.disabled=!inputs.some(item=>item.checked);});
     button.onclick=()=>{const selected=inputs.filter(input=>input.checked).map(input=>input.value);if(commitFightBlock(fight,role,blockerId,selected))renderFightResolution();};
