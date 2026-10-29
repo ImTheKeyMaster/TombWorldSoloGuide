@@ -3457,3 +3457,50 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-car
   border-left:1px solid rgba(226,239,230,.27);
   padding-left:9px;
 }
+
+
+/* v10.0.209: In Experimental Solo Fight, each action group has one icon in
+   its header instead of a repeated icon inside every selectable option. */
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-choice-group h5{
+  display:flex;
+  align-items:flex-start;
+  gap:7px;
+  min-width:0;
+}
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-choice-group h5 .experimental-fight-heading-symbol{
+  flex:0 0 22px;
+  width:22px;
+  height:22px;
+  display:grid;
+  place-items:center;
+  margin:0;
+  color:var(--green);
+}
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-heading-symbol svg{
+  display:block;
+  width:20px;
+  height:20px;
+}
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-choice-group h5 .experimental-fight-heading-label{
+  display:grid;
+  flex:1;
+  min-width:0;
+  gap:3px;
+  margin:0;
+  color:var(--green);
+  font-size:.75rem;
+  font-weight:950;
+  letter-spacing:.09em;
+}
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-heading-label strong{
+  font:inherit;
+  color:inherit;
+}
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-heading-label small{
+  color:var(--muted);
+  font-size:.64rem;
+  font-weight:600;
+  letter-spacing:0;
+  line-height:1.3;
+  text-transform:none;
+}
