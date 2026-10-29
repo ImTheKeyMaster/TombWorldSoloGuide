@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.213
+# Tomb World Battle Guide v10.0.214
+
+## v10.0.214
+
+### Collapsible faction rules and strategic gambits
+
+- **Progressive disclosure:** display each faction rule title as a compact, collapsed, tappable accordion in the setup/deployment guidance screen. The user expands only the rules they need to review.
+- **Accessible behavior:** native `details`/`summary` controls, 48px touch targets, chevron direction, focus ring, and reduced-motion support.
+- **Shared guidance renderer:** strategic gambits also use compact disclosures. Forward Scouting's nested nine-option disclosure remains available inside its parent rule when expanded.
+- **Preserve functionality:** complete rule/timing text is unchanged; mission briefing and other unrelated rule panels are unaffected. Setup Back and Deployment Complete, game mechanics and saved-game data are unchanged.
+- **PWA:** update to 10.0.214 including offline cache refresh.
 
 ## v10.0.213
 
