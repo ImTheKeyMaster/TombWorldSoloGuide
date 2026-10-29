@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.211';
+  const APP_VERSION = '10.0.212';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8152,26 +8152,24 @@ function showPlayerActivation(){
     return `<div class="fight-resolution-record"><strong>${escapeHtml(actorName)} ${action}</strong>${detail}</div>`;
   }
   function experimentalFightExchangeRecordHtml(fight,entry,position){
-    const actor=fight[entry.role],target=fight[otherFightRole(entry.role)];
+    const actor=fight[entry.role];
     const isPlayer=actor.side==='player',isStrike=entry.type==='strike';
-    const owner=isPlayer?'YOUR ACTION':position===0?'NPO ACTION':'NPO RESPONSE';
     const icon=isStrike
       ? '<svg viewBox="0 0 24 24" width="23" height="23" fill="currentColor" aria-hidden="true"><path d="M21.2 2.8 18.9 10l-7.2 7.2-4-4 7.2-7.2 6.3-3.2Z"/><path d="m5.9 11.7 6.4 6.4-1.5 1.5-6.4-6.4z"/><path d="m8.1 17.1-4.4 4.4-1.5-1.5 4.4-4.4z"/></svg>'
       : '<svg viewBox="0 0 24 24" width="23" height="23" fill="currentColor" aria-hidden="true"><path d="M12 2 21 5.5V12c0 5.5-3.7 9.2-9 11-5.3-1.8-9-5.5-9-11V5.5L12 2Z"/><path d="M12 5.5 6.3 7.7V12c0 3.5 2 6 5.7 7.6V5.5Z" fill="#092319"/></svg>';
     const headline=`${titleCaseRuleId(entry.successKind)} Success`;
     const blockedKinds=(entry.blockedKinds||[]).map(titleCaseRuleId);
     const damage=Number(entry.damage)||0;
-    const detail=isStrike
-      ? `${entry.before} → ${entry.after} wounds`
-      : `Canceled ${blockedKinds.length} enemy ${blockedKinds.join(' + ')} ${blockedKinds.length===1?'Success':'Successes'}`;
+    const detail=isStrike?`${entry.before} → ${entry.after} wounds`
+      :`${blockedKinds.length} ${blockedKinds.join(' + ')} ${blockedKinds.length===1?'Success':'Successes'} canceled`;
     const outcome=isStrike?`${damage} DAMAGE`:'BLOCKED';
-    // A compact, legible mobile timeline: the two action cards of each
-    // numbered exchange read left to right. No extra descriptive paragraphs.
-    return `<div class="fight-exchange-card ${isPlayer?'fight-exchange-player':'fight-exchange-npo'}" role="listitem">
+    // One sequential number per resolved action. History is never re-ordered,
+    // grouped into artificial rounds, or changed in persistent game state.
+    return `<div class="fight-exchange-card ${isPlayer?'fight-exchange-player':'fight-exchange-npo'}" role="listitem" aria-label="Action ${position+1}: ${escapeHtml(actor.label)}, ${escapeHtml(headline)}, ${escapeHtml(outcome)}">
+      <span class="fight-exchange-number" aria-hidden="true">${position+1}</span>
       <span class="fight-exchange-icon" aria-hidden="true">${icon}</span>
       <div class="fight-exchange-copy">
-        <span class="fight-exchange-owner">${owner}</span>
-        <span class="fight-exchange-actor">${escapeHtml(actor.label)}</span>
+        <span class="fight-exchange-actor" title="${escapeHtml(actor.label)}">${escapeHtml(actor.label)}</span>
         <strong>${escapeHtml(headline)}</strong>
         <span class="fight-exchange-outcome">${outcome}</span>
         <span class="fight-exchange-details">${escapeHtml(detail)}</span>
@@ -8184,21 +8182,12 @@ function showPlayerActivation(){
     const entries=soloExchange?[previous,latest]:[latest];
     // Standard and PvP retain their existing exchange renderer and layout.
     if(document.documentElement.dataset.ui==='tomb'&&experimentalFeaturesEnabled()&&!isPvpMode()){
-      // Stored history is already chronological. Render every pair as one
-      // numbered exchange, including a final exchange with a single action.
-      const exchangeGroups=[];
-      for(let start=0;start<fight.history.length;start+=2){
-        const exchangeNumber=start/2+1;
-        const exchangeActions=fight.history.slice(start,start+2);
-        const latest=start+2>=fight.history.length;
-        exchangeGroups.push(`<section class="fight-exchange-group${latest?' is-latest':''}" role="listitem" aria-label="Exchange ${exchangeNumber}">
-          <div class="fight-exchange-label"><small>EXCHANGE</small><span class="fight-exchange-group-number" aria-hidden="true">${exchangeNumber}</span></div>
-          <div class="fight-exchange-list" role="list">${exchangeActions.map((entry,index)=>experimentalFightExchangeRecordHtml(fight,entry,index)).join('')}</div>
-        </section>`);
-      }
-      return `<section class="fight-last-resolution fight-last-resolution-timeline" role="group" aria-label="Fight exchanges">
-        <div class="fight-exchanges-heading"><small>EXCHANGES</small>${exchangeGroups.length>1?'<span class="fight-exchange-swipe-hint">SWIPE TO REVIEW</span>':''}</div>
-        <div class="fight-exchange-history" role="list" tabindex="0" aria-label="Chronological exchanges, swipe horizontally to review">${exchangeGroups.join('')}</div>
+      // One compact card per action, numbered in actual chronological order.
+      // No fabricated "next" entry or interactive "clear" action.
+      const actionCards=fight.history.map((entry,index)=>experimentalFightExchangeRecordHtml(fight,entry,index));
+      return `<section class="fight-last-resolution fight-last-resolution-timeline" role="group" aria-label="Fight exchange history">
+        <div class="fight-exchanges-heading"><small>EXCHANGE HISTORY</small>${actionCards.length>2?'<span class="fight-exchange-swipe-hint">SWIPE TO REVIEW</span>':''}</div>
+        <div class="fight-exchange-history" role="list" tabindex="0" aria-label="Chronological fight actions, swipe horizontally to review">${actionCards.join('')}</div>
       </section>`;
     }
     return `<section class="fight-last-resolution" role="status" aria-label="Last exchange"><small>LAST EXCHANGE</small>${entries.map(entry=>fightResolutionRecordHtml(fight,entry)).join('')}</section>`;
