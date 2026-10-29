@@ -16,7 +16,7 @@ const start=source.indexOf('  function experimentalFightPoolHtml(');
 const end=source.indexOf('  async function rollFightParticipant(',start);
 assert(start>=0&&end>start);
 const code=source.slice(start,end);
-const mk=(id,kind)=>({id,kind,status:'unresolved'});
+const mk=(id,kind)=>({id,kind,value:kind==='critical'?6:4,status:'unresolved'});
 const normal=mk('player-normal','normal'),critical=mk('player-critical','critical');
 const npoNormal=mk('npo-normal','normal'),npoCritical=mk('npo-critical','critical');
 const makeFight=()=>({
@@ -47,6 +47,7 @@ function runCase({mode='tomb',enabled=true,shield=false,choice='strike',noBlocks
     state:{fightState:fight},
     document:{documentElement:{dataset:{ui:mode,experimental:enabled?'on':'off'}}},
     experimentalFeaturesEnabled:()=>enabled,
+    dieHtml:d=>`<div class="die ${d.kind}" data-face="${d.value}"></div>`,
     isPvpMode:()=>false,
     otherFightRole:role=>role==='attacker'?'defender':'attacker',
     unresolvedFightSuccesses:(f,role)=>f.successes[role].filter(s=>s.status==='unresolved'),
@@ -104,8 +105,10 @@ function runCase({mode='tomb',enabled=true,shield=false,choice='strike',noBlocks
   assert.match(states.markup,/M21\.2 2\.8 18\.9 10/); // sword icon
   if(!noBlocks)assert.match(states.markup,/M12 2 21 5\.5V12/); // shield icon
   assert.doesNotMatch(states.markup,/Choose their block/i);
-  assert.match(states.markup,/Crits 1/);
-  assert.match(states.markup,/Normal 1/);
+  assert.match(states.markup,/experimental-fight-card-dice/);
+  assert.match(states.markup,/class="die crit"/);
+  assert.match(states.markup,/class="die hit"/);
+  assert.match(states.markup,/Unresolved successes: 1 critical, 1 normal/);
   assert.equal(states.choices.length,noBlocks?2:5);
   assert.equal(confirm.disabled,true);
   assert.equal(states.strikes.length,0);
