@@ -20,7 +20,7 @@ const first=source.indexOf('  function experimentalFightPoolHtml(');
 const last=source.indexOf('  async function rollFightParticipant(',first);
 assert(first>0&&last>first);
 const sourceCode=source.slice(first,last);
-const success=(id,kind)=>({id,kind,status:'unresolved'});
+const success=(id,kind)=>({id,kind,value:kind==='critical'?6:4,status:'unresolved'});
 let tombStandard=null;
 for(const mode of ['tomb','classic']){
   for(const enabled of [false,true]){
@@ -39,6 +39,7 @@ for(const mode of ['tomb','classic']){
       state:{fightState:fight},
       document:{documentElement:{dataset:{ui:mode,experimental:enabled?'on':'off'}}},
       experimentalFeaturesEnabled:()=>enabled,
+      dieHtml:d=>`<div class="die ${d.kind}" data-face="${d.value}"></div>`,
       isPvpMode:()=>false,
       unresolvedFightSuccesses:(f,role)=>f.successes[role].filter(x=>x.status==='unresolved'),
       otherFightRole:role=>role==='attacker'?'defender':'attacker',
@@ -70,8 +71,9 @@ for(const mode of ['tomb','classic']){
       assert.match(html,/data-exp-fight-choice="strike"/);
       assert.match(html,/data-exp-fight-choice="block"/);
       assert.match(html,/Confirm your action/);
-      assert.match(html,/Crits 0/);
-      assert.match(html,/Normal 1/);
+      assert.match(html,/experimental-fight-card-dice/);
+      assert.match(html,/class="die hit"/);
+      assert.match(html,/Unresolved successes: 0 critical, 1 normal/);
       assert.match(html,/How Fight Resolution works/);
       assert.doesNotMatch(html,/BLOCK UNAVAILABLE/);
       if(tombStandard===null)tombStandard=html;
