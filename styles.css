@@ -3194,3 +3194,24 @@ html[data-ui="tomb"] .dedicated-combat-screen .shooting-roll-pool.has-fight-port
   transform:scale(1.04);
 }
 
+
+/* v10.0.203: Explain automatic residual Fight strikes, Experimental only. */
+html[data-ui="tomb"][data-experimental="on"] .fight-auto-strike-result{
+  display:grid;gap:9px;padding:12px;border-left:3px solid var(--green);
+  background:rgba(41,127,78,.11);min-width:0;
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-auto-strike-result h3{
+  margin:0;font-size:.78rem;letter-spacing:.07em;
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-auto-strike-result p{
+  margin:0;color:var(--muted);font-size:.8rem;line-height:1.45;
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-auto-strike-result ol{
+  display:grid;gap:7px;list-style:decimal;margin:0;padding-left:23px;
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-auto-strike-result li{
+  padding-left:1px;font-size:.8rem;line-height:1.38;
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-auto-strike-result li strong,
+html[data-ui="tomb"][data-experimental="on"] .fight-auto-strike-result li span{display:block}
+html[data-ui="tomb"][data-experimental="on"] .fight-auto-strike-result li span{color:var(--muted)}
