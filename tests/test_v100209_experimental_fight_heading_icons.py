@@ -82,7 +82,7 @@ for(const [exp,isPvp] of [[false,false],[true,true]]){
 
 
 def test_icon_header_styles_only_in_experimental_duel():
-    block = CSS.split("/* v10.0.209: In Experimental Solo Fight", 1)[1]
+    block = CSS.split("/* v10.0.209: In Experimental Solo Fight", 1)[1].split("/* v10.0.211: Flatten Experimental Fight history", 1)[0]
     assert 'html[data-ui="tomb"][data-experimental="on"] .is-duel-layout' in block
     assert '.experimental-fight-heading-symbol' in block
     assert '.experimental-fight-heading-label' in block
