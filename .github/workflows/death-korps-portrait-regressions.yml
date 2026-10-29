@@ -44,6 +44,7 @@ on:
       - tests/test_v100214_collapsible_faction_guidance.py
       - tests/test_v100215_solo_npo_fight_ai_regression.py
       - tests/test_v100216_deployment_faction_rule_order.py
+      - tests/test_v100217_experimental_fight_dice.py
   push:
     branches:
       - main
@@ -88,6 +89,7 @@ on:
       - tests/test_v100214_collapsible_faction_guidance.py
       - tests/test_v100215_solo_npo_fight_ai_regression.py
       - tests/test_v100216_deployment_faction_rule_order.py
+      - tests/test_v100217_experimental_fight_dice.py
   workflow_dispatch:
 
 jobs:
@@ -151,4 +153,5 @@ jobs:
             tests/test_v100213_promoted_fight_resolution.py \
             tests/test_v100214_collapsible_faction_guidance.py \
             tests/test_v100215_solo_npo_fight_ai_regression.py \
-            tests/test_v100216_deployment_faction_rule_order.py
+            tests/test_v100216_deployment_faction_rule_order.py \
+            tests/test_v100217_experimental_fight_dice.py
