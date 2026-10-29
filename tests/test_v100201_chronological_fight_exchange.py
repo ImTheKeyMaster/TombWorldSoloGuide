@@ -97,7 +97,7 @@ const fight={
 const html=render(fight);
 assert(html.indexOf('fight-exchange-player')<html.indexOf('fight-exchange-npo'));
 assert(html.includes('NPO RESPONSE'));
-assert(html.includes('aria-label="Exchange 1"'));
+assert(html.includes('aria-label="Action 1:'));
 assert((html.match(/class="fight-exchange-number"/g)||[]).length===2);
 """)
 
