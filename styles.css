@@ -3664,6 +3664,43 @@ html[data-ui="tomb"] .is-duel-layout .fight-exchange-details{
 }
 
 
+/* v10.0.217: Experiment-only Fight summary. Render the same static die faces
+   as the actual Fight roll, scaled into five equal slots per participant.
+   The class is only emitted with Experimental enabled; Standard is untouched. */
+html[data-ui="tomb"] .experimental-fight-pool .experimental-fight-card-dice{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  align-items:start;
+  flex-wrap:initial;
+  gap:clamp(2px,.75vw,5px);
+  width:100%;
+  max-width:190px;
+  min-width:0;
+}
+html[data-ui="tomb"] .experimental-fight-pool .experimental-fight-card-dice .die{
+  width:100%;
+  height:auto;
+  min-width:0;
+  min-height:0;
+  aspect-ratio:1;
+  box-sizing:border-box;
+  border-radius:clamp(3px,.85vw,8px);
+  padding:clamp(2px,.55vw,5px);
+  animation:none;
+  transition:none;
+}
+html[data-ui="tomb"] .experimental-fight-pool .experimental-fight-card-dice .pip{
+  width:clamp(2px,.75vw,5px);
+  height:clamp(2px,.75vw,5px);
+}
+html[data-ui="tomb"] .experimental-fight-pool .experimental-fight-card-dice .experimental-fight-no-dice,
+html[data-ui="tomb"] .experimental-fight-pool .experimental-fight-card-dice .experimental-fight-die-unavailable{
+  grid-column:span 5;
+  font-size:.67rem;
+  font-weight:750;
+  color:var(--muted);
+}
+
 /* v10.0.212: Mockup-style compact, individually numbered chronological actions.
    Three cards fit across a typical iPhone. This is Experimental Solo only;
    no change to Standard/PvP or the combat state/history. */
@@ -3866,39 +3903,3 @@ html[data-ui="tomb"] .is-duel-layout .fight-exchange-history>.fight-exchange-car
   }
 }
 
-/* v10.0.217: Experiment-only Fight summary. Render the same static die faces
-   as the actual Fight roll, scaled into five equal slots per participant.
-   The class is only emitted with Experimental enabled; Standard is untouched. */
-html[data-ui="tomb"] .experimental-fight-pool .experimental-fight-card-dice{
-  display:grid;
-  grid-template-columns:repeat(5,minmax(0,1fr));
-  align-items:start;
-  flex-wrap:initial;
-  gap:clamp(2px,.75vw,5px);
-  width:100%;
-  max-width:190px;
-  min-width:0;
-}
-html[data-ui="tomb"] .experimental-fight-pool .experimental-fight-card-dice .die{
-  width:100%;
-  height:auto;
-  min-width:0;
-  min-height:0;
-  aspect-ratio:1;
-  box-sizing:border-box;
-  border-radius:clamp(3px,.85vw,8px);
-  padding:clamp(2px,.55vw,5px);
-  animation:none;
-  transition:none;
-}
-html[data-ui="tomb"] .experimental-fight-pool .experimental-fight-card-dice .pip{
-  width:clamp(2px,.75vw,5px);
-  height:clamp(2px,.75vw,5px);
-}
-html[data-ui="tomb"] .experimental-fight-pool .experimental-fight-card-dice .experimental-fight-no-dice,
-html[data-ui="tomb"] .experimental-fight-pool .experimental-fight-card-dice .experimental-fight-die-unavailable{
-  grid-column:span 5;
-  font-size:.67rem;
-  font-weight:750;
-  color:var(--muted);
-}
