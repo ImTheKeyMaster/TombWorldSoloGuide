@@ -20,8 +20,11 @@ def test_promoted_tomb_ui_is_not_gated_by_the_preview_toggle():
     assert "if(document.documentElement.dataset.ui==='tomb'&&experimentalFeaturesEnabled()&&!isPvpMode())" in APP
     experimental_start = CSS.index("/* v10.0.199: Experimental-only last exchange timeline.")
     experimental_end = CSS.index("/* v10.0.175/180: Approved Action First Fight",experimental_start)
-    promoted_css = CSS[:experimental_start] + CSS[experimental_end:]
+    # The newer v10.0.206 duel experiment is another independently gated block.
+    duel_preview_start = CSS.index("/* v10.0.206: Fight Resolution concept 3, opt-in Experimental Solo only.")
+    promoted_css = CSS[:experimental_start] + CSS[experimental_end:duel_preview_start]
     assert '[data-experimental="on"]' not in promoted_css
+    assert 'html[data-ui="tomb"][data-experimental="on"] .is-duel-layout' in CSS[duel_preview_start:]
     assert 'html[data-ui="tomb"] .experimental-fight-choice-screen' in CSS
     assert 'html[data-ui="tomb"] .experimental-fight-choice-screen .experimental-fight-block-unavailable' in CSS
     assert 'html[data-ui="tomb"] .experimental-fight-pool' in CSS
