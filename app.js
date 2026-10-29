@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.205';
+  const APP_VERSION = '10.0.206';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8192,8 +8192,8 @@ function showPlayerActivation(){
         </section>`);
       }
       return `<section class="fight-last-resolution fight-last-resolution-timeline" role="group" aria-label="Fight exchanges">
-        <div class="fight-exchanges-heading"><small>EXCHANGES</small></div>
-        <div class="fight-exchange-history" role="list" aria-label="Chronological exchanges">${exchangeGroups.join('')}</div>
+        <div class="fight-exchanges-heading"><small>EXCHANGES</small>${exchangeGroups.length>1?'<span class="fight-exchange-swipe-hint">SWIPE TO REVIEW</span>':''}</div>
+        <div class="fight-exchange-history" role="list" tabindex="0" aria-label="Chronological exchanges, swipe horizontally to review">${exchangeGroups.join('')}</div>
       </section>`;
     }
     return `<section class="fight-last-resolution" role="status" aria-label="Last exchange"><small>LAST EXCHANGE</small>${entries.map(entry=>fightResolutionRecordHtml(fight,entry)).join('')}</section>`;
@@ -8397,6 +8397,7 @@ function showPlayerActivation(){
     const help=isPvpMode()
       ?'Starting with the attacker, players alternate resolving one success as a Strike or Block.'
       :'You and the NPO alternate resolving one success. You choose for your operative. The Guide automatically resolves the NPO’s response.';
+    const duelPreview=experimentalFeaturesEnabled()&&!isPvpMode();
     const strikes=actions.strikes.map(({success,damage})=>{
       const advice=experimentalFightStrikeAdvice(fight,role,success,damage,actions);
       return `<button type="button" class="experimental-fight-option" data-exp-fight-choice="strike" data-fight-strike="${escapeHtml(success.id)}" data-exp-fight-kind="${escapeHtml(success.kind)}" data-exp-fight-damage="${damage}" aria-pressed="false" aria-label="Strike with ${success.kind} success, deal ${damage} damage to ${escapeHtml(enemy.label)}${advice?`. ${advice}`:''}">
@@ -8410,11 +8411,12 @@ function showPlayerActivation(){
       <span class="experimental-fight-option-copy"><strong>${titleCaseRuleId(blocker.kind)} Success</strong><span>${capacity>1?'Shield: choose up to 2 enemy successes':`Cancel 1 enemy ${titleCaseRuleId(target.kind)} Success`}</span></span>
       <span class="experimental-fight-option-radio" aria-hidden="true"></span>
     </button>`).join('');
-    return `<div class="fight-sequence experimental-fight-sequence experimental-fight-choice-screen">
-      <div class="fight-pools experimental-fight-pools">${experimentalFightPoolHtml(fight,'attacker')}${experimentalFightPoolHtml(fight,'defender')}</div>
+    return `<div class="fight-sequence experimental-fight-sequence experimental-fight-choice-screen${duelPreview?' is-duel-layout':''}">
+      <div class="fight-pools experimental-fight-pools">${experimentalFightPoolHtml(fight,'attacker')}${experimentalFightPoolHtml(fight,'defender')}${duelPreview?'<span class="experimental-fight-versus" aria-hidden="true"><span>VS</span></span>':''}</div>
       ${fightLastResolutionHtml(fight)}
       <section class="fight-turn experimental-fight-turn" aria-label="Acting now: ${escapeHtml(participant.label)}">
         <div class="experimental-fight-step">${experimentalFeaturesEnabled()?'':'<span class="experimental-fight-step-number" aria-hidden="true">1</span>'}<h4>Choose your action</h4></div>
+        ${duelPreview?'<div class="experimental-fight-choice-columns">':''}
         <section class="experimental-fight-choice-group" aria-labelledby="fightStrikeHeading">
           <h5 id="fightStrikeHeading">STRIKE <span>Deal damage</span></h5>
           <div class="experimental-fight-option-list">${strikes}</div>
@@ -8423,6 +8425,7 @@ function showPlayerActivation(){
           <h5 id="fightBlockHeading">${capacity>1?'BLOCK · SHIELD':'BLOCK'} <span>Cancel an enemy attack success</span></h5>
           <div class="experimental-fight-option-list">${blocks}</div>
         </section>`:experimentalFightBlockUnavailableHtml(fight,role,actions)}
+        ${duelPreview?'</div>':''}
         <div class="experimental-fight-step">${experimentalFeaturesEnabled()?'':'<span class="experimental-fight-step-number" aria-hidden="true">2</span>'}<h4>Confirm your action</h4></div>
         <button type="button" class="btn primary experimental-fight-confirm" id="confirmExperimentalFightChoice" disabled>Resolve Selected Action</button>
       </section>
@@ -8469,7 +8472,10 @@ function showPlayerActivation(){
     if(document.documentElement.dataset.ui==='tomb'){
       showModal('Fight Resolution',experimentalActionFirstFightHtml(fight,role,participant,actions,capacity));
       const exchangeHistory=modal.querySelector('.fight-exchange-history');
-      if(exchangeHistory)exchangeHistory.scrollTop=exchangeHistory.scrollHeight;
+      if(exchangeHistory){
+        if(experimentalFeaturesEnabled()&&!isPvpMode())exchangeHistory.scrollLeft=exchangeHistory.scrollWidth-exchangeHistory.clientWidth;
+        else exchangeHistory.scrollTop=exchangeHistory.scrollHeight;
+      }
       scaleFightPortraits();
       bindExperimentalActionFirstFight(fight,role,capacity);
       return;
