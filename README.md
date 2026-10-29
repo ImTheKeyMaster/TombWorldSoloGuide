@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.216
+# Tomb World Battle Guide v10.0.217
+
+## v10.0.217
+
+### Experimental Fight Resolution: retained dice instead of counts
+
+- **Experimental only:** replace the `Crits / Normal` text counts beneath both operatives' wounds with the actual unresolved rolled dice. Standard keeps its approved counts.
+- **Unanimated and faithful:** use the same `dieHtml` faces, green normal and gold critical styling as the Fight dice roll. Reuse the original die values, removing dice as successes are spent or blocked.
+- **Responsive:** present five equal die slots per participant, maintaining matching sizes on both sides of the modal at all viewport widths, and allow more than five to wrap without clipping.
+- **No rules changes:** the Fight success pools, NPO decisions, damage, exchange history, and action selection stay unchanged. Update cache and PWA release to 10.0.217.
+
 
 ## v10.0.216
 

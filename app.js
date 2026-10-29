@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.216';
+  const APP_VERSION = '10.0.217';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8294,6 +8294,16 @@ function showPlayerActivation(){
     const participant=fight[role],pool=unresolvedFightSuccesses(fight,role);
     const critical=pool.filter(item=>item.kind==='critical').length,normal=pool.length-critical;
     const active=fight.turn===role,portrait=fightParticipantPortrait(participant,role);
+    // Keep Standard's approved text counts. The Experimental preview reuses
+    // the settled Fight-roll dice, retaining each actual face and success kind.
+    const successesHtml=experimentalFeaturesEnabled()
+      ? `<div class="experimental-fight-card-successes experimental-fight-card-dice" aria-label="Unresolved successes: ${critical} critical, ${normal} normal">${pool.map(success=>{
+          const rolledDie=participant.attackDice?.[success.dieIndex];
+          const value=Number(rolledDie?.value??success.value);
+          if(!Number.isInteger(value)||value<1||value>6)return '<span class="experimental-fight-die-unavailable" aria-label="Die value unavailable">?</span>';
+          return dieHtml({value,kind:success.kind==='critical'?'crit':'hit',ariaLabel:`Unresolved ${success.kind} success, rolled ${value}`});
+        }).join('')||'<span class="experimental-fight-no-dice">No successes</span>'}</div>`
+      : `<div class="experimental-fight-card-successes" aria-label="Unresolved successes: ${critical} critical, ${normal} normal"><span aria-label="${critical} critical successes">Crits ${critical}</span><span aria-label="${normal} normal successes">Normal ${normal}</span></div>`;
     return `<section class="fight-pool experimental-fight-pool${active?' active':''}${portrait?' has-fight-portrait':''}" aria-label="${active?'Acting now: ':''}${escapeHtml(participant.label)}">
       ${portrait}
       <div class="experimental-fight-pool-details">
@@ -8301,7 +8311,7 @@ function showPlayerActivation(){
         <strong class="experimental-fight-card-name">${escapeHtml(participant.label)}</strong>
         <small class="experimental-fight-card-weapon">${escapeHtml(participant.profile.name)}</small>
         <div class="experimental-fight-card-wounds"><strong>${participant.wounds}/${participant.maxWounds}</strong><span>wounds</span></div>
-        <div class="experimental-fight-card-successes" aria-label="Unresolved successes: ${critical} critical, ${normal} normal"><span aria-label="${critical} critical successes">Crits ${critical}</span><span aria-label="${normal} normal successes">Normal ${normal}</span></div>
+        ${successesHtml}
       </div>
     </section>`;
   }
