@@ -40,6 +40,7 @@ on:
       - tests/test_v100209_experimental_fight_heading_icons.py
       - tests/test_v100211_compact_fight_exchange_rail.py
       - tests/test_v100212_compact_numbered_actions.py
+      - tests/test_v100213_promoted_fight_resolution.py
   push:
     branches:
       - main
@@ -80,6 +81,7 @@ on:
       - tests/test_v100209_experimental_fight_heading_icons.py
       - tests/test_v100211_compact_fight_exchange_rail.py
       - tests/test_v100212_compact_numbered_actions.py
+      - tests/test_v100213_promoted_fight_resolution.py
   workflow_dispatch:
 
 jobs:
@@ -139,4 +141,5 @@ jobs:
             tests/test_v100208_horizontal_exchange_actions.py \
             tests/test_v100209_experimental_fight_heading_icons.py \
             tests/test_v100211_compact_fight_exchange_rail.py \
-            tests/test_v100212_compact_numbered_actions.py
+            tests/test_v100212_compact_numbered_actions.py \
+            tests/test_v100213_promoted_fight_resolution.py
