@@ -9,7 +9,7 @@
 - **Deterministic regression coverage:** test lethal Strike precedence, critical and normal Block legality, Brutal restrictions, saved action history progression, and 240 combinations of melee success pools, remaining wounds, Shield capacity, and Brutal.
 - **Shared mechanics:** both Standard and Experimental Solo modes use the same decision engine. Fight damage profiles, PvP choices, and save format are unchanged. PWA assets refresh to v10.0.215.
 
-## v10.0.215
+## v10.0.214
 
 ### Collapsible faction rules and strategic gambits
 
@@ -17,7 +17,7 @@
 - **Accessible behavior:** native `details`/`summary` controls, 48px touch targets, chevron direction, focus ring, and reduced-motion support.
 - **Shared guidance renderer:** strategic gambits also use compact disclosures. Forward Scouting's nested nine-option disclosure remains available inside its parent rule when expanded.
 - **Preserve functionality:** complete rule/timing text is unchanged; mission briefing and other unrelated rule panels are unaffected. Setup Back and Deployment Complete, game mechanics and saved-game data are unchanged.
-- **PWA:** update to 10.0.215 including offline cache refresh.
+- **PWA:** update to 10.0.214 including offline cache refresh.
 
 ## v10.0.213
 
