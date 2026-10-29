@@ -85,9 +85,9 @@ const fight={attacker:{side:'player',label:'Gunner'},defender:{side:'npo',label:
 const html=render(fight);
 assert(html.includes('tabindex="0"'),'Swipeable history is keyboard accessible');
 assert(html.includes('SWIPE TO REVIEW'));
-assert.deepEqual([...html.matchAll(/aria-label="Exchange (\d+)"/g)].map(m=>m[1]),['1','2']);
+assert.deepEqual([...html.matchAll(/aria-label="Action (\d+):/g)].map(m=>m[1]),['1','2','3']);
 assert.equal((html.match(/class="fight-exchange-card /g)||[]).length,3);
-assert.equal((html.match(/class="fight-exchange-group-number"/g)||[]).length,2);
+assert.equal((html.match(/class="fight-exchange-number"/g)||[]).length,3);
 assert(html.indexOf('1 DAMAGE')<html.indexOf('BLOCKED'));
 assert(html.indexOf('BLOCKED')<html.indexOf('3 DAMAGE'));
 assert.equal(fight.history.length,3);
