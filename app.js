@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.202';
+  const APP_VERSION = '10.0.203';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8023,7 +8023,7 @@ function showPlayerActivation(){
     if(trigger.id.startsWith('whirling:'))await resolveWhirlingOnslaught(fight,historyEntry);
     else if(trigger.id.startsWith('horrifying-flaying:'))await resolveHorrifyingFlaying(fight,historyEntry);
   }
-  function commitFightStrike(fight,role,successId){
+  function commitFightStrike(fight,role,successId,{automatic=false}={}){
     if(!fight||fight.completed||fight.turn!==role)return false;
     const success=unresolvedFightSuccesses(fight,role).find(item=>item.id===successId);if(!success)return false;
     const actor=fight[role],target=fight[otherFightRole(role)],resolvingRemaining=!unresolvedFightSuccesses(fight,otherFightRole(role)).length;
@@ -8035,7 +8035,7 @@ function showPlayerActivation(){
     success.status='struck';const before=target.wounds,after=Math.max(0,before-damage);target.wounds=after;
     if(!pendingPlayerNpoFightIncapacitation(fight))setFightOperativeWounds(target,after);
     const shock=success.kind==='critical'?resolveFightShock(fight,role):null;
-    const historyEntry={index:fight.resolutionIndex++,type:'strike',role,successId,successKind:success.kind,damage,before,after,targetSide:target.side,targetId:target.id,...(resolvingRemaining?{resolvingRemaining:true}:{}),...(shock?{shockDiscardedSuccessId:shock.id}:{})};fight.history.push(historyEntry);
+    const historyEntry={index:fight.resolutionIndex++,type:'strike',role,successId,successKind:success.kind,damage,before,after,targetSide:target.side,targetId:target.id,...(automatic?{automatic:true}:{}),...(resolvingRemaining?{resolvingRemaining:true}:{}),...(shock?{shockDiscardedSuccessId:shock.id}:{})};fight.history.push(historyEntry);
     if(after<=0){fight.completed=true;fight.incapacitatedRole=otherFightRole(role);}else advanceFightTurn(fight);save();
     if(before>0&&after<=0&&actor.side==='npo'&&target.side==='player'){
       const sourceNpo=state.roster.find(item=>item.id===actor.id);
@@ -8245,9 +8245,24 @@ function showPlayerActivation(){
     try{continuation(fight.result);state.fightState=null;save();}
     finally{fightCompletionInProgress=false;}
   }
+  function experimentalFightAutomaticStrikeResultHtml(result){
+    if(!experimentalFeaturesEnabled()||isPvpMode()||document.documentElement.dataset.ui!=='tomb')return '';
+    const history=Array.isArray(result?.fightHistory)?result.fightHistory:[];
+    const automatic=history.filter(entry=>entry.type==='strike'&&entry.automatic);
+    if(!automatic.length)return '';
+    const strikes=history.filter(entry=>entry.type==='strike');
+    const rows=strikes.map(entry=>{
+      const before=Number(entry.before),after=Number(entry.after),potential=Number(entry.damage);
+      const applied=Math.max(0,before-after);
+      const actor=entry.role==='attacker'?result.attackerName:result.defenderName;
+      const damageText=applied<potential?`${applied} applied (${potential} potential)`:`${applied} damage`;
+      return `<li><strong>${escapeHtml(entry.automatic?'AUTO':'CHOSEN')} · ${escapeHtml(actor)} · ${escapeHtml(titleCaseRuleId(entry.successKind))} Strike</strong><span>${escapeHtml(damageText)} · ${before} → ${after} wounds</span></li>`;
+    }).join('');
+    return `<section class="fight-auto-strike-result" aria-label="Fight strike breakdown"><h3>STRIKES RESOLVED</h3><p>With no enemy successes remaining, the Guide automatically resolved ${automatic.length} additional ${automatic.length===1?'Strike':'Strikes'} after your choice.</p><ol>${rows}</ol><p>Damage shown on the Fight Result is the actual wounds lost, not unused excess damage.</p></section>`;
+  }
   function renderFightResult(fight){
     const result=fight.result;
-    showModal('Fight Result',`<div class="fight-result" role="status" aria-label="Fight finished"><p class="fight-finished">FIGHT FINISHED</p><div class="fight-result-participants">${fightResultParticipantHtml(result.participants.attacker,'attacker')}${fightResultParticipantHtml(result.participants.defender,'defender')}</div><div class="fight-result-explanation"><h3>SUMMARY</h3>${result.explanation.map(line=>`<p>${escapeHtml(line)}</p>`).join('')}</div><div class="wizard-actions"><button class="btn primary" id="continueFightResult" data-dialog-focus>Continue</button></div></div>`,undefined,'fight-result');
+    showModal('Fight Result',`<div class="fight-result" role="status" aria-label="Fight finished"><p class="fight-finished">FIGHT FINISHED</p><div class="fight-result-participants">${fightResultParticipantHtml(result.participants.attacker,'attacker')}${fightResultParticipantHtml(result.participants.defender,'defender')}</div><div class="fight-result-explanation"><h3>SUMMARY</h3>${result.explanation.map(line=>`<p>${escapeHtml(line)}</p>`).join('')}</div>${experimentalFightAutomaticStrikeResultHtml(result)}<div class="wizard-actions"><button class="btn primary" id="continueFightResult" data-dialog-focus>Continue</button></div></div>`,undefined,'fight-result');
     scaleFightPortraits();
     $('#continueFightResult').onclick=()=>{const button=$('#continueFightResult');button.disabled=true;acknowledgeFightResult(fight);};
   }
@@ -8297,7 +8312,21 @@ function showPlayerActivation(){
   // Shared Tomb UI Action First Fight Resolution. Classic retains its existing flow.
   // Contextual advice is shown only when both normal and critical successes remain.
   // It does not imply that the player is guaranteed another turn before the NPO acts.
+  function experimentalFightAutomaticStrikePreview(fight,role,success,damage){
+    if(!experimentalFeaturesEnabled()||isPvpMode())return '';
+    const enemy=otherFightRole(role),target=fight[enemy];
+    if(unresolvedFightSuccesses(fight,enemy).length||!target||target.wounds<=damage)return '';
+    const remaining=unresolvedFightSuccesses(fight,role).filter(item=>item.id!==success.id);
+    if(!remaining.length||remaining.some(item=>item.kind!==remaining[0].kind))return '';
+    const kind=remaining[0].kind,each=Number(kind==='critical'?fight[role].profile.crit:fight[role].profile.normal);
+    if(!Number.isFinite(each)||each<=0)return '';
+    const total=damage+remaining.length*each;
+    const count=remaining.length,kindName=titleCaseRuleId(kind);
+    return `Then ${count} ${kindName} ${count===1?'Success':'Successes'} auto-strike for ${each} each (${remaining.length*each} more). ${total>=target.wounds?`Combined damage ${total} eliminates this ${target.wounds}-wound target.`:`Combined potential damage: ${total}.`}`;
+  }
   function experimentalFightStrikeAdvice(fight,role,success,damage,actions){
+    const automaticPreview=experimentalFightAutomaticStrikePreview(fight,role,success,damage);
+    if(automaticPreview)return automaticPreview;
     const own=unresolvedFightSuccesses(fight,role);
     const criticalCount=own.filter(item=>item.kind==='critical').length;
     const normalCount=own.filter(item=>item.kind==='normal').length;
@@ -8416,7 +8445,7 @@ function showPlayerActivation(){
     }
     const role=fight.turn,participant=fight[role],human=participant.side==='player'||isPvpMode();
     const automaticStrikes=equivalentRemainingFightStrikes(fight,role);
-    if(human&&automaticStrikes){commitFightStrike(fight,role,automaticStrikes[0].id);renderFightResolution();return;}
+    if(human&&automaticStrikes){commitFightStrike(fight,role,automaticStrikes[0].id,{automatic:true});renderFightResolution();return;}
     if(!human){const choice=soloNpoFightDecision(fight,role);if(choice.type==='block')commitFightBlock(fight,role,choice.successId,choice.targetSuccessIds);else commitFightStrike(fight,role,choice.successId);renderFightResolution();return;}
     const actions=semanticFightActions(fight,role);
     const capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
