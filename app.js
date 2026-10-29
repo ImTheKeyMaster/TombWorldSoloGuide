@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.209';
+  const APP_VERSION = '10.0.210';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8420,11 +8420,11 @@ function showPlayerActivation(){
         <div class="experimental-fight-step">${experimentalFeaturesEnabled()?'':'<span class="experimental-fight-step-number" aria-hidden="true">1</span>'}<h4>Choose your action</h4></div>
         ${duelPreview?'<div class="experimental-fight-choice-columns">':''}
         <section class="experimental-fight-choice-group" aria-labelledby="fightStrikeHeading">
-          <h5 id="fightStrikeHeading">${duelPreview?`<span class="experimental-fight-heading-symbol" aria-hidden="true">${strikeGlyph}</span><span class="experimental-fight-heading-label"><strong>STRIKE</strong><small>Deal damage</small></span>`:'STRIKE <span>Deal damage</span>'}</h5>
+          <h5 id="fightStrikeHeading">${duelPreview?`<span class="experimental-fight-heading-symbol" aria-hidden="true">${strikeGlyph}</span><span class="experimental-fight-heading-label"><strong>STRIKE</strong></span>`:'STRIKE <span>Deal damage</span>'}</h5>
           <div class="experimental-fight-option-list">${strikes}</div>
         </section>
         ${blocks?`<section class="experimental-fight-choice-group" aria-labelledby="fightBlockHeading">
-          <h5 id="fightBlockHeading">${duelPreview?`<span class="experimental-fight-heading-symbol" aria-hidden="true">${blockGlyph}</span><span class="experimental-fight-heading-label"><strong>${capacity>1?'BLOCK · SHIELD':'BLOCK'}</strong><small>Cancel an enemy attack success</small></span>`:`${capacity>1?'BLOCK · SHIELD':'BLOCK'} <span>Cancel an enemy attack success</span>`}</h5>
+          <h5 id="fightBlockHeading">${duelPreview?`<span class="experimental-fight-heading-symbol" aria-hidden="true">${blockGlyph}</span><span class="experimental-fight-heading-label"><strong>${capacity>1?'BLOCK · SHIELD':'BLOCK'}</strong></span>`:`${capacity>1?'BLOCK · SHIELD':'BLOCK'} <span>Cancel an enemy attack success</span>`}</h5>
           <div class="experimental-fight-option-list">${blocks}</div>
         </section>`:experimentalFightBlockUnavailableHtml(fight,role,actions)}
         ${duelPreview?'</div>':''}
