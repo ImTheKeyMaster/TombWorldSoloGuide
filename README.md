@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.200
+# Tomb World Battle Guide v10.0.201
+
+## v10.0.201
+
+### Experimental Fight Resolution exchange chronology
+
+- **Chronological exchange order:** pair consecutive resolved actions from the beginning of a Fight, whether the NPO or the player acts first. Preserve actual action order from saved fight history, even on re-render and resume.
+- **Exchange numbering:** display one numbered circle in the Last Exchange heading for the exchange, never a circle beside each action. Exchange 1 contains actions 1 and 2, Exchange 2 contains actions 3 and 4, and so on.
+- **Block appearance:** use the exact half-filled shield icon from the available normal Block choice in the exchange display. Leave the crossed-out Block Unavailable icon untouched.
+- **Isolation:** Standard and PvP remain unchanged; no Fight decision, dice, save schema, profile, or portrait changes. Release and PWA cache updated to v10.0.201.
 
 ## v10.0.200
 

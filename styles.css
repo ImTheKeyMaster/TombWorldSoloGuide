@@ -2896,12 +2896,23 @@ html[data-ui="tomb"][data-experimental="on"] .fight-last-resolution-timeline{
   gap:9px;padding:12px;border-left:2px solid var(--green);
   background:rgba(41,127,78,.11);
 }
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-label{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-label>small{
+  color:var(--muted);font-size:.7rem;font-weight:900;letter-spacing:.1em;
+}
+html[data-ui="tomb"][data-experimental="on"] .fight-exchange-group-number{
+  width:26px;height:26px;display:grid;place-items:center;flex:none;
+  border-radius:50%;background:var(--green);color:#062012;
+  font-size:.8rem;font-weight:950;font-variant-numeric:tabular-nums;
+}
 html[data-ui="tomb"][data-experimental="on"] .fight-exchange-list{
   display:grid;gap:8px;min-width:0;
 }
 html[data-ui="tomb"][data-experimental="on"] .fight-exchange-card{
   --exchange-accent:var(--text);
-  display:grid;grid-template-columns:26px 23px minmax(0,1fr);
+  display:grid;grid-template-columns:23px minmax(0,1fr);
   align-items:center;gap:9px;min-width:0;padding:10px;
   border:1px solid rgba(228,241,235,.48);border-radius:11px;
   background:rgba(224,244,233,.035);
@@ -2913,11 +2924,6 @@ html[data-ui="tomb"][data-experimental="on"] .fight-exchange-player{
 html[data-ui="tomb"][data-experimental="on"] .fight-exchange-npo{
   --exchange-accent:var(--text);border-color:rgba(232,246,238,.55);
   background:rgba(235,246,239,.04);
-}
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-number{
-  width:26px;height:26px;display:grid;place-items:center;flex:none;
-  border-radius:50%;background:var(--exchange-accent);color:#062012;
-  font-size:.8rem;font-weight:950;font-variant-numeric:tabular-nums;
 }
 html[data-ui="tomb"][data-experimental="on"] .fight-exchange-icon{
   color:var(--exchange-accent);display:grid;place-items:center;
@@ -2945,9 +2951,9 @@ html[data-ui="tomb"][data-experimental="on"] .fight-exchange-details{
 }
 @media(max-width:400px){
   html[data-ui="tomb"][data-experimental="on"] .fight-exchange-card{
-    grid-template-columns:24px 20px minmax(0,1fr);gap:6px;padding:9px 7px;
+    grid-template-columns:20px minmax(0,1fr);gap:7px;padding:9px 8px;
   }
-  html[data-ui="tomb"][data-experimental="on"] .fight-exchange-number{width:24px;height:24px}
+  html[data-ui="tomb"][data-experimental="on"] .fight-exchange-group-number{width:24px;height:24px}
   html[data-ui="tomb"][data-experimental="on"] .fight-exchange-icon svg{width:19px;height:19px}
   html[data-ui="tomb"][data-experimental="on"] .fight-exchange-copy{padding-left:7px}
 }
