@@ -1,4 +1,4 @@
-"""Regression coverage for v10.0.217 Experimental-only Fight dice summaries."""
+"""Regression coverage for approved Fight dice (Experimental in 10.0.217, promoted in 10.1.0)."""
 from pathlib import Path
 import subprocess
 
@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CSS = (ROOT / "styles.css").read_text(encoding="utf-8")
 
 
-def test_static_dice_reuse_rolled_faces_and_do_not_change_standard():
+def test_static_dice_reuse_rolled_faces_with_standard_experimental_parity():
     script = r"""
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -47,15 +47,13 @@ const fight = {
   }
 };
 const standard = render(fight, 'attacker');
-assert(standard.includes('Crits 2'));
-assert(standard.includes('Normal 3'));
-assert(!standard.includes('experimental-fight-card-dice'));
-assert(!standard.includes('data-face='));
+assert(!standard.includes('Crits 2'));
+assert(!standard.includes('Normal 3'));
+assert(standard.includes('experimental-fight-card-dice'));
+assert.deepEqual([...standard.matchAll(/data-face="(\\d)"/g)].map(m=>Number(m[1])),[2,5,6,4,3]);
 experimental = true;
 const preview = render(fight, 'attacker');
-assert(!preview.includes('Crits 2'));
-assert(!preview.includes('Normal 3'));
-assert(preview.includes('experimental-fight-card-dice'));
+assert.equal(preview, standard, 'Standard and Experimental must show identical dice');
 assert.deepEqual([...preview.matchAll(/data-face="(\d)"/g)].map(m=>Number(m[1])),[2,5,6,4,3]);
 assert.equal((preview.match(/class="die hit"/g)||[]).length,3);
 assert.equal((preview.match(/class="die crit"/g)||[]).length,2);
@@ -77,7 +75,7 @@ assert(render(fight,'attacker').includes('data-face="4"'),
 
 
 def test_five_equal_responsive_die_slots_and_original_palette():
-    section = CSS.split("/* v10.0.217: Experiment-only Fight summary", 1)[1]
+    section = CSS.split("/* v10.1.0: Approved Fight summary dice", 1)[1]
     assert "grid-template-columns:repeat(5,minmax(0,1fr));" in section
     assert "aspect-ratio:1;" in section
     assert "width:100%;" in section
@@ -87,4 +85,4 @@ def test_five_equal_responsive_die_slots_and_original_palette():
     assert ".experimental-fight-card-dice .pip" in section
     assert ".die.crit{background:#8b6c1f;border-color:#f0d570}" in CSS
     assert ".die{width:44px;height:44px;" in CSS
-    assert "experimental-fight-card-dice" not in CSS.split("/* v10.0.217: Experiment-only Fight summary",1)[0]
+    assert "experimental-fight-card-dice" not in CSS.split("/* v10.1.0: Approved Fight summary dice",1)[0]
