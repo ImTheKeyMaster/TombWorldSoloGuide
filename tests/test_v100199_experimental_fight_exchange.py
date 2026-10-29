@@ -1,6 +1,6 @@
 """Regression coverage for the v10.0.199 Experimental-only fight exchange redesign.
 
-Standard mode must render the previous markup, and no Fight mechanics change.
+Standard and Experimental share the approved history renderer and no Fight mechanics change.
 """
 import subprocess
 from pathlib import Path
@@ -43,11 +43,12 @@ const fight={
   ],
 };
 const standard=api.fightLastResolutionHtml(fight);
-assert(standard.includes('fight-resolution-record'));
-assert(standard.includes('YOU STRUCK'));
-assert(!standard.includes('fight-exchange-card'));
+assert(standard.includes('fight-exchange-card'));
+assert(standard.includes('aria-label="Action 1:'));
+assert(standard.includes('EXCHANGE HISTORY'));
 experimental=true;
 const upgraded=api.fightLastResolutionHtml(fight);
+assert.equal(upgraded,standard,'Standard and Experimental share identical action history');
 assert.equal((upgraded.match(/class="fight-exchange-card /g)||[]).length,2);
 assert(upgraded.includes('fight-exchange-player'));
 assert(upgraded.includes('fight-exchange-npo'));
@@ -100,7 +101,7 @@ const render=new Function('ctx','with(ctx){'+source.slice(a,b)+'return experimen
 const fight={attacker:{side:'player',label:'Demolisher'},defender:{side:'npo',label:'Scarab'}};
 const actions={strikes:[],blocks:[]};
 const baseline=render(fight,'attacker',fight.attacker,actions,1);
-assert.equal((baseline.match(/experimental-fight-step-number/g)||[]).length,2);
+assert.equal((baseline.match(/experimental-fight-step-number/g)||[]).length,0);
 assert(baseline.includes('Choose your action')&&baseline.includes('Confirm your action'));
 enabled=true;
 const newHtml=render(fight,'attacker',fight.attacker,actions,1);
@@ -110,10 +111,10 @@ assert(newHtml.includes('confirmExperimentalFightChoice'));
 """)
 
 def test_styles_are_experimental_only_and_use_no_amber():
-    start=CSS.index("/* v10.0.199: Experimental-only last exchange timeline.")
+    start=CSS.index("/* v10.0.199/213: Shared Solo Fight action history, Standard and Experimental.")
     end=CSS.index("/* v10.0.175/180: Approved Action First Fight",start)
     block=CSS[start:end]
-    assert "html[data-ui=\"tomb\"][data-experimental=\"on\"]" in block
+    assert "html[data-ui=\"tomb\"] .is-duel-layout" in block
     assert "fight-exchange-player" in block and "fight-exchange-npo" in block
     assert "--exchange-accent:var(--text)" in block
     assert "--exchange-accent:var(--green)" in block
@@ -123,7 +124,7 @@ def test_styles_are_experimental_only_and_use_no_amber():
         assert unwanted not in block.lower()
     # Existing Standard rules still own the original markup and numbered action headings.
     assert 'return `<div class="fight-resolution-record">' in APP
-    assert "experimentalFeaturesEnabled()?'':'<span class=" in APP
+    assert "duelPreview?'':'<span class=" in APP
 
 def test_release_version_and_cache_are_synchronized():
     assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 199)

@@ -17,14 +17,14 @@ def test_promoted_tomb_ui_is_not_gated_by_the_preview_toggle():
     # New opt-in experiments may use the toggle, so do not count its references.
     assert "if(document.documentElement.dataset.ui==='tomb'){" in APP
     assert "experimentalActionFirstFightHtml(fight,role,participant,actions,capacity)" in APP
-    assert "if(document.documentElement.dataset.ui==='tomb'&&experimentalFeaturesEnabled()&&!isPvpMode())" in APP
-    experimental_start = CSS.index("/* v10.0.199: Experimental-only last exchange timeline.")
+    assert "if(document.documentElement.dataset.ui==='tomb'&&!isPvpMode())" in APP
+    experimental_start = CSS.index("/* v10.0.199/213: Shared Solo Fight action history, Standard and Experimental.")
     experimental_end = CSS.index("/* v10.0.175/180: Approved Action First Fight",experimental_start)
-    # The newer v10.0.206 duel experiment is another independently gated block.
-    duel_preview_start = CSS.index("/* v10.0.206: Fight Resolution concept 3, opt-in Experimental Solo only.")
+    # The approved v10.0.206+ Solo Fight design is now shared across both modes.
+    duel_preview_start = CSS.index("/* v10.0.206/213: Approved Solo Fight Resolution design promoted to Standard.")
     promoted_css = CSS[:experimental_start] + CSS[experimental_end:duel_preview_start]
     assert '[data-experimental="on"]' not in promoted_css
-    assert 'html[data-ui="tomb"][data-experimental="on"] .is-duel-layout' in CSS[duel_preview_start:]
+    assert 'html[data-ui="tomb"] .is-duel-layout' in CSS[duel_preview_start:]
     assert 'html[data-ui="tomb"] .experimental-fight-choice-screen' in CSS
     assert 'html[data-ui="tomb"] .experimental-fight-choice-screen .experimental-fight-block-unavailable' in CSS
     assert 'html[data-ui="tomb"] .experimental-fight-pool' in CSS

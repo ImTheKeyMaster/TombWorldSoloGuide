@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.212
+# Tomb World Battle Guide v10.0.213
+
+## v10.0.213
+
+### Promote approved Fight Resolution design to Standard
+
+- **One shared Solo interface:** Standard and Experimental now use the same borderless combatant summaries, centered VS badge, side-by-side Strike/Block options with single header icons and no duplicate subtitles, and the compact, individually numbered horizontal action history.
+- **Historical integrity:** the action cards follow true recorded order with one number per action. The rail scrolls to the latest after each update, without modifying existing fights or saves.
+- **Maintain Experimental for future improvements:** the toggle remains functional for other experimental features; there is no longer a divergent Solo Fight Resolution UI.
+- **Isolation:** PvP and non-Tomb screens continue using their existing rendering paths. No changes to combat mechanics, dice, or saved-game format.
+- **Offline PWA:** upgrade HTML, JavaScript and service worker caches to v10.0.213.
 
 ## v10.0.212
 

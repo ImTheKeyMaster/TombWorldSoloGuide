@@ -72,7 +72,7 @@ assert.equal(matchCount(html,/class="fight-exchange-number"/g),4);
 assert.equal(fight.history.length,4,'Rendering must not mutate saved action history');
 preview=false;
 html=render(fight);
-assert(html.includes('fight-resolution-record'),'Standard still uses its original renderer');
+assert(html.includes('fight-exchange-history'),'Standard shares promoted action history');
 assert(!html.includes('fight-exchange-group-number'));
 """)
 
@@ -120,7 +120,7 @@ def test_action_marker_belongs_to_each_compact_card():
     assert '.fight-exchange-number{' in block
     assert 'flex:0 0 clamp(94px,26vw,115px);' in block
     assert 'scroll-snap-align:start;' in block
-    assert 'html[data-ui="tomb"][data-experimental="on"]' in block
+    assert 'html[data-ui="tomb"] .is-duel-layout' in block
     renderer = APP.split('  function experimentalFightExchangeRecordHtml(',1)[1].split('  function fightLastResolutionHtml(',1)[0]
     assert 'position+1' in renderer
     assert 'fight-exchange-number' in renderer

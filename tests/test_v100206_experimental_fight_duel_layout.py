@@ -51,8 +51,9 @@ assert(preview.includes('aria-pressed="false"'));
 experimental=false;
 const standard=render();
 for(const marker of ['is-duel-layout','experimental-fight-versus','experimental-fight-choice-columns']){
-  assert(!standard.includes(marker),'Standard must not include '+marker);
+  assert(standard.includes(marker),'Standard must share promoted '+marker);
 }
+assert.equal(standard,preview,'Solo Fight choice markup is identical in both modes');
 experimental=true;pvp=true;
 const versus=render();
 assert(!versus.includes('is-duel-layout'),'PvP not opted in');
@@ -92,7 +93,7 @@ assert(html.indexOf('1 DAMAGE')<html.indexOf('BLOCKED'));
 assert(html.indexOf('BLOCKED')<html.indexOf('3 DAMAGE'));
 assert.equal(fight.history.length,3);
 experimental=false;
-assert(!render(fight).includes('fight-exchange-history'),'Standard history remains untouched');
+assert(render(fight).includes('fight-exchange-history'),'Standard shares promoted history');
 experimental=true;pvp=true;
 assert(!render(fight).includes('fight-exchange-history'),'PvP history remains untouched');
 """)
@@ -101,14 +102,14 @@ assert(!render(fight).includes('fight-exchange-history'),'PvP history remains un
 def test_horizontal_scrolling_and_responsive_two_column_css():
     assert 'exchangeHistory.scrollLeft=exchangeHistory.scrollWidth-exchangeHistory.clientWidth' in APP
     assert 'else exchangeHistory.scrollTop=exchangeHistory.scrollHeight' in APP
-    block=CSS.split('/* v10.0.206: Fight Resolution concept 3, opt-in Experimental Solo only.',1)[1]
+    block=CSS.split('/* v10.0.206/213: Approved Solo Fight Resolution design promoted to Standard.',1)[1]
     assert 'grid-auto-flow:column' in block
     assert 'overflow-x:auto;overflow-y:hidden' in block
     assert 'scroll-snap-type:x proximity' in block
     assert 'grid-template-columns:repeat(2,minmax(0,1fr))' in block
     assert '.experimental-fight-versus::before' in block
     assert '.experimental-fight-choice-columns' in block
-    assert 'html[data-ui="tomb"][data-experimental="on"] .is-duel-layout' in block
+    assert 'html[data-ui="tomb"] .is-duel-layout' in block
     assert 'max-width:360px' in block
 
 

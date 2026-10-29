@@ -2890,91 +2890,91 @@ html[data-ui="tomb"] .fight-result-card.experimental-eliminated-card .fight-elim
 /* v10.0.173: Approved red-outline elimination cards are standard in Tomb UI;
    retain Experimental mode for future changes. */
 
-/* v10.0.199: Experimental-only last exchange timeline. The Standard renderer is unchanged.
+/* v10.0.199/213: Shared Solo Fight action history, Standard and Experimental.
    Only approved Tomb palette accents: green for the player, white for the NPO. */
-html[data-ui="tomb"][data-experimental="on"] .fight-last-resolution-timeline{
+html[data-ui="tomb"] .is-duel-layout .fight-last-resolution-timeline{
   gap:9px;padding:12px;border-left:2px solid var(--green);
   background:rgba(41,127,78,.11);
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-label{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-label{
   display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-label>small{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-label>small{
   color:var(--muted);font-size:.7rem;font-weight:900;letter-spacing:.1em;
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-group-number{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-group-number{
   width:26px;height:26px;display:grid;place-items:center;flex:none;
   border-radius:50%;background:var(--green);color:#062012;
   font-size:.8rem;font-weight:950;font-variant-numeric:tabular-nums;
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-list{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-list{
   display:grid;gap:8px;min-width:0;
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchanges-heading>small{
+html[data-ui="tomb"] .is-duel-layout .fight-exchanges-heading>small{
   color:var(--muted);font-size:.7rem;font-weight:900;letter-spacing:.1em;
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-history{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-history{
   display:grid;gap:10px;min-width:0;max-height:min(42vh,320px);
   overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
   padding-right:2px;scrollbar-width:thin;
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-group{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-group{
   display:grid;gap:8px;min-width:0;padding:10px;
   border:1px solid var(--line);border-radius:12px;
   background:rgba(7,20,13,.55);
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-group.is-latest{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-group.is-latest{
   border-color:rgba(77,215,143,.55);background:rgba(41,127,78,.11);
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-group:not(.is-latest) .fight-exchange-card{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-group:not(.is-latest) .fight-exchange-card{
   opacity:.84;
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-card{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-card{
   --exchange-accent:var(--text);
   display:grid;grid-template-columns:23px minmax(0,1fr);
   align-items:center;gap:9px;min-width:0;padding:10px;
   border:1px solid rgba(228,241,235,.48);border-radius:11px;
   background:rgba(224,244,233,.035);
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-player{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-player{
   --exchange-accent:var(--green);border-color:rgba(77,215,143,.48);
   background:rgba(41,127,78,.11);
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-npo{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-npo{
   --exchange-accent:var(--text);border-color:rgba(232,246,238,.55);
   background:rgba(235,246,239,.04);
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-icon{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-icon{
   color:var(--exchange-accent);display:grid;place-items:center;
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-icon svg{display:block;width:22px;height:22px}
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-copy{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-icon svg{display:block;width:22px;height:22px}
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-copy{
   display:grid;gap:4px;min-width:0;border-left:1px solid rgba(226,239,230,.27);
   padding-left:10px;
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-heading{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-heading{
   display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 8px;min-width:0;
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-owner{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-owner{
   color:var(--exchange-accent);font-size:.67rem;font-weight:950;letter-spacing:.07em;
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-outcome{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-outcome{
   padding:2px 7px;border-radius:7px;border:1px solid var(--exchange-accent);
   color:var(--exchange-accent);font-size:.63rem;font-weight:900;white-space:nowrap;
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-copy>strong{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-copy>strong{
   font-size:.86rem;font-weight:850;overflow-wrap:anywhere;
 }
-html[data-ui="tomb"][data-experimental="on"] .fight-exchange-details{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-details{
   color:var(--muted);font-size:.76rem;line-height:1.35;overflow-wrap:anywhere;
 }
 @media(max-width:400px){
-  html[data-ui="tomb"][data-experimental="on"] .fight-exchange-card{
+  html[data-ui="tomb"] .is-duel-layout .fight-exchange-card{
     grid-template-columns:20px minmax(0,1fr);gap:7px;padding:9px 8px;
   }
-  html[data-ui="tomb"][data-experimental="on"] .fight-exchange-group-number{width:24px;height:24px}
-  html[data-ui="tomb"][data-experimental="on"] .fight-exchange-icon svg{width:19px;height:19px}
-  html[data-ui="tomb"][data-experimental="on"] .fight-exchange-copy{padding-left:7px}
+  html[data-ui="tomb"] .is-duel-layout .fight-exchange-group-number{width:24px;height:24px}
+  html[data-ui="tomb"] .is-duel-layout .fight-exchange-icon svg{width:19px;height:19px}
+  html[data-ui="tomb"] .is-duel-layout .fight-exchange-copy{padding-left:7px}
 }
 
 /* v10.0.203: Explain automatic residual Fight strikes, Experimental only. */
@@ -3216,41 +3216,41 @@ html[data-ui="tomb"] .dedicated-combat-screen .shooting-roll-pool.has-fight-port
 }
 
 
-/* v10.0.206: Fight Resolution concept 3, opt-in Experimental Solo only.
-   Standard Tomb UI and PvP retain their original markup and presentation. */
-html[data-ui="tomb"][data-experimental="on"] .experimental-fight-choice-screen.is-duel-layout .experimental-fight-pools{
+/* v10.0.206/213: Approved Solo Fight Resolution design promoted to Standard.
+   Both Standard and Experimental use is-duel-layout; PvP is unchanged. */
+html[data-ui="tomb"] .experimental-fight-choice-screen.is-duel-layout .experimental-fight-pools{
   position:relative;isolation:isolate;gap:10px;overflow:visible;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-pool{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-pool{
   min-width:0;border-radius:14px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-versus{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-versus{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   width:35px;height:35px;display:grid;place-items:center;
   z-index:3;pointer-events:none;color:#dcfbe9;
   font-size:.72rem;font-weight:950;letter-spacing:.04em;
   text-shadow:0 2px 6px rgba(0,0,0,.65);
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-versus::before{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-versus::before{
   content:"";position:absolute;inset:2px;background:#0c2b1d;
   border:1px solid #4dd78f;border-radius:6px;transform:rotate(45deg);
   box-shadow:0 0 0 3px #06120c;z-index:-1;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-versus span{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-versus span{
   position:relative;z-index:1;
 }
 /* Each swipeable tile is a whole numbered exchange, containing its
    actual one or two actions in chronological order. No re-numbering of moves. */
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchanges-heading{
+html[data-ui="tomb"] .is-duel-layout .fight-exchanges-heading{
   display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-swipe-hint{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-swipe-hint{
   color:var(--green);font-size:.61rem;font-weight:800;letter-spacing:.065em;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-last-resolution-timeline{
+html[data-ui="tomb"] .is-duel-layout .fight-last-resolution-timeline{
   padding:10px 8px 12px;gap:8px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-history{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-history{
   display:grid;grid-auto-flow:column;grid-auto-columns:clamp(190px,57%,245px);
   grid-template-columns:none;gap:8px;
   overflow-x:auto;overflow-y:hidden;max-height:none;min-width:0;
@@ -3259,123 +3259,123 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-his
   -webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;
   scrollbar-width:thin;scrollbar-color:rgba(108,240,164,.55) transparent;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-group{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-group{
   scroll-snap-align:start;align-self:stretch;min-width:0;
   padding:8px;gap:7px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-group-number{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-group-number{
   width:23px;height:23px;font-size:.74rem;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-label>small{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-label>small{
   font-size:.6rem;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-list{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-list{
   display:grid;gap:6px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-card{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-card{
   grid-template-columns:17px minmax(0,1fr);
   gap:5px;align-items:start;padding:7px 5px;border-radius:9px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-icon svg{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-icon svg{
   width:17px;height:17px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-copy{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-copy{
   padding-left:6px;gap:3px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-heading{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-heading{
   gap:3px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-owner{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-owner{
   font-size:.57rem;letter-spacing:.04em;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-outcome{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-outcome{
   padding:1px 4px;font-size:.56rem;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-copy>strong{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-copy>strong{
   font-size:.73rem;line-height:1.2;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-details{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-details{
   font-size:.67rem;line-height:1.28;
 }
 /* The mockup's simultaneous offensive and defensive choice panels.
    Existing button attributes and confirm handler are intentionally untouched. */
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-choice-columns{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-columns{
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
   gap:9px;align-items:stretch;min-width:0;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-choice-columns>.experimental-fight-choice-group{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-columns>.experimental-fight-choice-group{
   display:flex;flex-direction:column;gap:8px;min-width:0;
   padding:9px 7px;border:1px solid rgba(135,211,180,.38);
   border-radius:13px;background:rgba(9,28,20,.83);
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-choice-columns>.experimental-fight-choice-group:first-child{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-columns>.experimental-fight-choice-group:first-child{
   border-color:rgba(198,100,94,.75);
   background:linear-gradient(160deg,rgba(105,42,42,.16),rgba(6,23,16,.8) 40%);
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-choice-columns>.experimental-fight-choice-group:nth-child(2){
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-columns>.experimental-fight-choice-group:nth-child(2){
   border-color:rgba(82,162,173,.65);
   background:linear-gradient(160deg,rgba(25,89,102,.2),rgba(6,23,16,.8) 40%);
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-choice-group h5{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-group h5{
   display:block;font-size:.75rem;line-height:1.3;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-choice-group h5 span{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-group h5 span{
   display:block;margin-top:3px;font-size:.64rem;line-height:1.3;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-option-list{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-option-list{
   display:grid;gap:7px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-option{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-option{
   position:relative;display:grid;grid-template-columns:17px minmax(0,1fr);
   align-items:start;gap:6px;min-height:100px;padding:10px 7px;
   border-radius:10px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-option.is-selected{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-option.is-selected{
   padding:9px 6px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-option-radio{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-option-radio{
   grid-column:1;grid-row:1;width:16px;height:16px;margin-top:4px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-option-copy{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-option-copy{
   grid-column:2;grid-row:1;gap:5px;overflow-wrap:anywhere;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-option-copy strong{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-option-copy strong{
   font-size:.78rem;line-height:1.22;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-option-copy>span{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-option-copy>span{
   font-size:.72rem;line-height:1.25;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-option-copy .experimental-fight-strike-advice{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-option-copy .experimental-fight-strike-advice{
   font-size:.68rem;line-height:1.3;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-option-icon{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-option-icon{
   position:absolute;right:5px;bottom:4px;width:24px;height:24px;
   color:var(--green);opacity:.17;pointer-events:none;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-option-icon svg{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-option-icon svg{
   width:23px;height:23px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-choice-columns>.experimental-fight-block-unavailable{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-columns>.experimental-fight-block-unavailable{
   align-self:stretch;display:block;padding:10px 8px;
   border:1px solid rgba(82,162,173,.65);border-radius:13px;
   background:rgba(25,89,102,.12);
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-choice-columns>.experimental-fight-block-unavailable .experimental-fight-block-unavailable-icon{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-columns>.experimental-fight-block-unavailable .experimental-fight-block-unavailable-icon{
   margin:0 0 6px;
 }
 @media(max-width:360px){
-  html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-choice-columns{gap:6px}
-  html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-choice-columns>.experimental-fight-choice-group{padding:7px 5px}
-  html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-option{padding:8px 5px;gap:4px}
-  html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-option.is-selected{padding:7px 4px}
-  html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-option-copy strong{font-size:.72rem}
+  html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-columns{gap:6px}
+  html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-columns>.experimental-fight-choice-group{padding:7px 5px}
+  html[data-ui="tomb"] .is-duel-layout .experimental-fight-option{padding:8px 5px;gap:4px}
+  html[data-ui="tomb"] .is-duel-layout .experimental-fight-option.is-selected{padding:7px 4px}
+  html[data-ui="tomb"] .is-duel-layout .experimental-fight-option-copy strong{font-size:.72rem}
 }
 
 /* v10.0.207: Experimental Solo Fight combatants are informational,
    not action buttons. Remove card outlines, active glow and card fills;
    preserve the centered VS, portraits, stats, and acting-now pill. */
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-pool,
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-pool.active{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-pool,
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-pool.active{
   border:0;
   box-shadow:none;
   background:transparent;
@@ -3385,13 +3385,13 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight
 /* v10.0.208: Experimental Solo exchange timeline shows the ACTIONS side by side.
    One full-width, swipeable tile = one numbered exchange (1 or 2 actual moves).
    Standard, PvP, and fight history data are unchanged. */
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-history{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-history{
   display:flex;
   grid-auto-flow:unset;
   grid-auto-columns:unset;
   align-items:stretch;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-group{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-group{
   box-sizing:border-box;
   flex:0 0 calc(100% - 4px);
   width:calc(100% - 4px);
@@ -3399,13 +3399,13 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-gro
   align-self:stretch;
   scroll-snap-align:start;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-list{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-list{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:7px;
   align-items:stretch;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-card{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-card{
   grid-template-columns:minmax(0,1fr);
   grid-template-rows:auto 1fr;
   align-content:start;
@@ -3414,46 +3414,46 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-car
   min-height:155px;
   padding:9px 8px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-icon{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-icon{
   justify-self:start;
   margin-left:3px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-copy{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-copy{
   border-left:0;
   padding-left:0;
   gap:5px;
   align-content:start;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-heading{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-heading{
   display:flex;
   flex-direction:column;
   align-items:flex-start;
   justify-content:flex-start;
   gap:5px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-owner{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-owner{
   font-size:.63rem;
   line-height:1.2;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-outcome{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-outcome{
   font-size:.61rem;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-copy>strong{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-copy>strong{
   font-size:.77rem;
   line-height:1.25;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-details{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-details{
   font-size:.71rem;
   line-height:1.33;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-card:only-child{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-card:only-child{
   grid-column:1/-1;
   grid-template-columns:23px minmax(0,1fr);
   grid-template-rows:auto;
   min-height:105px;
   align-items:start;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-card:only-child .fight-exchange-copy{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-card:only-child .fight-exchange-copy{
   border-left:1px solid rgba(226,239,230,.27);
   padding-left:9px;
 }
@@ -3461,13 +3461,13 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-car
 
 /* v10.0.209: In Experimental Solo Fight, each action group has one icon in
    its header instead of a repeated icon inside every selectable option. */
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-choice-group h5{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-group h5{
   display:flex;
   align-items:flex-start;
   gap:7px;
   min-width:0;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-choice-group h5 .experimental-fight-heading-symbol{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-group h5 .experimental-fight-heading-symbol{
   flex:0 0 22px;
   width:22px;
   height:22px;
@@ -3476,12 +3476,12 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight
   margin:0;
   color:var(--green);
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-heading-symbol svg{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-heading-symbol svg{
   display:block;
   width:20px;
   height:20px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-choice-group h5 .experimental-fight-heading-label{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-group h5 .experimental-fight-heading-label{
   display:grid;
   flex:1;
   min-width:0;
@@ -3492,11 +3492,11 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight
   font-weight:950;
   letter-spacing:.09em;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-heading-label strong{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-heading-label strong{
   font:inherit;
   color:inherit;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-heading-label small{
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-heading-label small{
   color:var(--muted);
   font-size:.64rem;
   font-weight:600;
@@ -3510,12 +3510,12 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight
    action-card rail as in concept 3. A numbered exchange contains up to two
    sequential cards; the number is never repeated on individual actions.
    Strictly scoped to Experimental Solo, not the Standard or PvP flow. */
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-last-resolution-timeline{
+html[data-ui="tomb"] .is-duel-layout .fight-last-resolution-timeline{
   padding:10px 8px 12px;
   gap:8px;
   background:rgba(41,127,78,.065);
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-history{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-history{
   display:flex;
   gap:12px;
   align-items:stretch;
@@ -3529,8 +3529,8 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-his
   -webkit-overflow-scrolling:touch;
   padding:2px 2px 9px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-group,
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-group.is-latest{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-group,
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-group.is-latest{
   display:flex;
   flex:0 0 auto;
   flex-direction:column;
@@ -3544,7 +3544,7 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-gro
   box-shadow:none;
   scroll-snap-align:end;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-label{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-label{
   display:flex;
   flex-direction:row;
   align-items:center;
@@ -3552,24 +3552,24 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-lab
   gap:8px;
   padding:0 3px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-label>small{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-label>small{
   font-size:.61rem;
   letter-spacing:.075em;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-group-number{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-group-number{
   width:23px;
   height:23px;
   font-size:.72rem;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-list{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-list{
   display:flex;
   flex-direction:row;
   gap:7px;
   align-items:stretch;
   width:max-content;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-card,
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-card:only-child{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-card,
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-card:only-child{
   position:relative;
   box-sizing:border-box;
   display:flex;
@@ -3585,10 +3585,10 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-car
   border-radius:11px;
   background:rgba(5,22,15,.83);
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-group.is-latest .fight-exchange-card{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-group.is-latest .fight-exchange-card{
   background:rgba(22,63,40,.35);
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-card:not(:last-child)::after{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-card:not(:last-child)::after{
   content:"›";
   position:absolute;
   z-index:2;
@@ -3601,19 +3601,19 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-car
   text-shadow:0 1px 4px #06110d;
   pointer-events:none;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-icon{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-icon{
   display:grid;
   place-items:center;
   flex:none;
   margin:0;
   color:var(--exchange-accent);
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-icon svg{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-icon svg{
   width:21px;
   height:21px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-copy,
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-card:only-child .fight-exchange-copy{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-copy,
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-card:only-child .fight-exchange-copy{
   display:flex;
   flex:1;
   flex-direction:column;
@@ -3625,12 +3625,12 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-car
   border:0;
   text-align:center;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-owner{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-owner{
   font-size:.57rem;
   line-height:1.2;
   letter-spacing:.04em;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-actor{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-actor{
   display:block;
   min-height:2.35em;
   max-width:100%;
@@ -3640,12 +3640,12 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-act
   color:var(--text);
   overflow-wrap:anywhere;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-copy>strong{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-copy>strong{
   font-size:.72rem;
   font-weight:800;
   line-height:1.2;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-outcome{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-outcome{
   display:block;
   font-size:.65rem;
   letter-spacing:.035em;
@@ -3654,7 +3654,7 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-out
   border:1px solid var(--exchange-accent);
   border-radius:7px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-details{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-details{
   display:block;
   margin-top:auto;
   color:var(--muted);
@@ -3667,11 +3667,11 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-det
 /* v10.0.212: Mockup-style compact, individually numbered chronological actions.
    Three cards fit across a typical iPhone. This is Experimental Solo only;
    no change to Standard/PvP or the combat state/history. */
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-last-resolution-timeline{
+html[data-ui="tomb"] .is-duel-layout .fight-last-resolution-timeline{
   padding:9px 7px 10px;
   gap:8px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-history{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-history{
   display:flex;
   flex-direction:row;
   align-items:stretch;
@@ -3685,8 +3685,8 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-his
   -webkit-overflow-scrolling:touch;
   overscroll-behavior-x:contain;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-history>.fight-exchange-card,
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-history>.fight-exchange-card:only-child{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-history>.fight-exchange-card,
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-history>.fight-exchange-card:only-child{
   position:relative;
   box-sizing:border-box;
   display:flex;
@@ -3703,7 +3703,7 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-his
   scroll-snap-align:start;
   background:rgba(5,22,15,.82);
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-history>.fight-exchange-card:not(:last-child)::after{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-history>.fight-exchange-card:not(:last-child)::after{
   content:"›";
   position:absolute;
   top:48%;
@@ -3715,7 +3715,7 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-his
   color:var(--green);
   pointer-events:none;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-number{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-number{
   position:absolute;
   top:5px;
   left:5px;
@@ -3731,19 +3731,19 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-num
   line-height:1;
   font-variant-numeric:tabular-nums;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-history>.fight-exchange-card .fight-exchange-icon{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-history>.fight-exchange-card .fight-exchange-icon{
   display:grid;
   flex:none;
   place-items:center;
   margin:1px 0 0;
   color:var(--exchange-accent);
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-history>.fight-exchange-card .fight-exchange-icon svg{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-history>.fight-exchange-card .fight-exchange-icon svg{
   width:18px;
   height:18px;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-history>.fight-exchange-card .fight-exchange-copy,
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-history>.fight-exchange-card:only-child .fight-exchange-copy{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-history>.fight-exchange-card .fight-exchange-copy,
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-history>.fight-exchange-card:only-child .fight-exchange-copy{
   display:flex;
   flex:1;
   flex-direction:column;
@@ -3756,7 +3756,7 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-his
   padding:0;
   text-align:center;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-actor{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-actor{
   display:-webkit-box;
   -webkit-line-clamp:2;
   -webkit-box-orient:vertical;
@@ -3771,13 +3771,13 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-act
   font-weight:850;
   line-height:1.09;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-history>.fight-exchange-card .fight-exchange-copy>strong{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-history>.fight-exchange-card .fight-exchange-copy>strong{
   font-size:.65rem;
   font-weight:800;
   line-height:1.13;
   letter-spacing:0;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-history>.fight-exchange-card .fight-exchange-outcome{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-history>.fight-exchange-card .fight-exchange-outcome{
   display:block;
   padding:0;
   border:0;
@@ -3789,7 +3789,7 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-his
   line-height:1.15;
   text-transform:lowercase;
 }
-html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-history>.fight-exchange-card .fight-exchange-details{
+html[data-ui="tomb"] .is-duel-layout .fight-exchange-history>.fight-exchange-card .fight-exchange-details{
   display:block;
   margin-top:auto;
   color:var(--muted);
@@ -3798,7 +3798,7 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-his
   overflow-wrap:anywhere;
 }
 @media(max-width:360px){
-  html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-history>.fight-exchange-card{
+  html[data-ui="tomb"] .is-duel-layout .fight-exchange-history>.fight-exchange-card{
     flex-basis:clamp(90px,27vw,102px);
     width:clamp(90px,27vw,102px);
     padding-inline:5px;

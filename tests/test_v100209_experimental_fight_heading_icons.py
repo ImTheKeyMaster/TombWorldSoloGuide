@@ -1,4 +1,4 @@
-"""v10.0.209: one Strike/Block icon per heading in Experimental Solo only."""
+"""v10.0.209/213: one Strike/Block icon per heading in both Solo modes."""
 from pathlib import Path
 import subprocess
 
@@ -68,14 +68,18 @@ preview=render();
 assert.equal(count(preview,/class="experimental-fight-heading-symbol"/g),1);
 assert(preview.includes('class="experimental-fight-block-unavailable"'));
 actions.blocks=[{blocker:{id:'n1',kind:'normal'},target:{id:'enemy-n',kind:'normal'}}];
-for(const [exp,isPvp] of [[false,false],[true,true]]){
-  experimental=exp;pvp=isPvp;
-  const html=render();
-  assert.equal(count(html,/class="experimental-fight-heading-symbol"/g),0,'No preview heading icon');
-  assert.equal(count(html,/class="experimental-fight-option-icon"/g),3,'Original icon per option');
-  assert(html.includes('<h5 id="fightStrikeHeading">STRIKE <span>Deal damage</span></h5>'));
-  assert(html.includes('<h5 id="fightBlockHeading">BLOCK <span>Cancel an enemy attack success</span></h5>'));
-}
+experimental=false;pvp=false;
+const standard=render();
+assert.equal(count(standard,/class="experimental-fight-heading-symbol"/g),2,'Standard uses the promoted header icons');
+assert.equal(count(standard,/class="experimental-fight-option-icon"/g),0,'No repeated icons in Standard');
+experimental=true;pvp=false;
+assert.equal(render(),standard,'Standard and Experimental Solo headers match');
+pvp=true;
+const versus=render();
+assert.equal(count(versus,/class="experimental-fight-heading-symbol"/g),0,'PvP remains unchanged');
+assert.equal(count(versus,/class="experimental-fight-option-icon"/g),3,'PvP retains original icons');
+assert(versus.includes('<h5 id="fightStrikeHeading">STRIKE <span>Deal damage</span></h5>'));
+assert(versus.includes('<h5 id="fightBlockHeading">BLOCK <span>Cancel an enemy attack success</span></h5>'));
 """
     result = subprocess.run(["node", "-e", script], cwd=ROOT, capture_output=True, text=True, timeout=30)
     assert result.returncode == 0, result.stderr or result.stdout
@@ -83,7 +87,7 @@ for(const [exp,isPvp] of [[false,false],[true,true]]){
 
 def test_icon_header_styles_only_in_experimental_duel():
     block = CSS.split("/* v10.0.209: In Experimental Solo Fight", 1)[1].split("/* v10.0.211: Flatten Experimental Fight history", 1)[0]
-    assert 'html[data-ui="tomb"][data-experimental="on"] .is-duel-layout' in block
+    assert 'html[data-ui="tomb"] .is-duel-layout' in block
     assert '.experimental-fight-heading-symbol' in block
     assert '.experimental-fight-heading-label' in block
     assert 'width:20px;' in block

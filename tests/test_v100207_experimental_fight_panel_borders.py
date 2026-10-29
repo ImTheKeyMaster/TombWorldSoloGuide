@@ -18,7 +18,7 @@ WORKER = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 def test_both_experimental_combatant_cards_have_no_border_glow_or_fill():
     start = "/* v10.0.207: Experimental Solo Fight combatants are informational,"
     block = CSS.split(start, 1)[1]
-    selector = 'html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-pool'
+    selector = 'html[data-ui="tomb"] .is-duel-layout .experimental-fight-pool'
     assert selector + "," in block
     assert selector + ".active{" in block
     match = re.search(re.escape(selector + ".active{") + r"([^}]*)}", block)
@@ -28,7 +28,7 @@ def test_both_experimental_combatant_cards_have_no_border_glow_or_fill():
     assert declarations["border"] == "0"
     assert declarations["box-shadow"] == "none"
     assert declarations["background"] == "transparent"
-    # The legacy styling is retained for Standard and PvP.
+    # The generic fallback styling remains for non-duel and PvP contexts.
     assert ".fight-pool.active{border-color:var(--accent);box-shadow:" in CSS
     assert '<span class="experimental-fight-versus"' in APP
     assert "experimental-fight-card-status" in APP

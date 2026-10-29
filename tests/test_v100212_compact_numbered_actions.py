@@ -59,11 +59,12 @@ assert(html.includes('NPO ACTION'));
 assert(html.includes('NPO RESPONSE'));
 assert(html.includes('Canoptek Macrocyte Warrior 2'),'Full actor label is retained in the markup');
 assert(html.includes('aria-label="Chronological fight actions, swipe horizontally to review"'));
+const experimentalHtml=html;
 experimental=false;
 html=render(fight);
-assert(html.includes('fight-resolution-record'));
-assert(!html.includes('fight-exchange-number'));
-assert(!html.includes('fight-exchange-history'));
+assert.equal(html,experimentalHtml,'Standard and Experimental share compact action history');
+assert(html.includes('fight-exchange-number'));
+assert(html.includes('fight-exchange-history'));
 experimental=true;pvp=true;
 html=render(fight);
 assert(html.includes('fight-resolution-record'));
@@ -75,7 +76,7 @@ assert(!html.includes('fight-exchange-number'));
 
 def test_mobile_card_density_and_explicit_scope():
     block=CSS.split("/* v10.0.212: Mockup-style compact",1)[1]
-    assert 'html[data-ui="tomb"][data-experimental="on"] .is-duel-layout' in block
+    assert 'html[data-ui="tomb"] .is-duel-layout' in block
     assert 'flex:0 0 clamp(94px,26vw,115px);' in block
     assert 'width:clamp(94px,26vw,115px);' in block
     assert 'min-height:130px;' in block
