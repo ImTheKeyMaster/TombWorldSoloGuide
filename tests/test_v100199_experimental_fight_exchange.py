@@ -56,6 +56,12 @@ assert(upgraded.includes('6 DAMAGE')&&upgraded.includes('BLOCKED'));
 assert(upgraded.includes('Normal Success')&&upgraded.includes('Critical Success'));
 assert(upgraded.includes('10 → 4 wounds'));
 assert(upgraded.includes('aria-label="Last exchange"'));
+const npoShield=upgraded.match(/<div class="fight-exchange-card fight-exchange-npo"[\\s\\S]*?<\\/svg>/)?.[0];
+assert(npoShield,'The block exchange should render a shield SVG');
+assert(npoShield.includes('M12 2 20 5.5V12'),'Shield outline remains intact');
+assert(!npoShield.includes('m5 19 14-14'),'Block exchange must not use unavailable slash');
+assert(!npoShield.includes('clip-path'),'Block exchange icon must be a plain shield');
+
 fight.history=[fight.history[0]];
 assert.equal((api.fightLastResolutionHtml(fight).match(/class="fight-exchange-card /g)||[]).length,1);
 fight.history=[{role:'defender',type:'strike',successKind:'critical',damage:2,before:8,after:6}];
@@ -114,10 +120,23 @@ def test_styles_are_experimental_only_and_use_no_amber():
     assert "experimentalFeaturesEnabled()?'':'<span class=" in APP
 
 def test_release_version_and_cache_are_synchronized():
-    assert CURRENT_APP_VERSION == "10.0.199"
-    assert "const APP_VERSION = '10.0.199';" in APP
-    assert "const APP_VERSION = '10.0.199';" in (ROOT / "service-worker.js").read_text()
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 199)
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in (ROOT / "service-worker.js").read_text()
     index=(ROOT / "index.html").read_text()
-    assert '<div class="version">V10.0.199</div>' in index
-    assert "styles.css?v=10.0.199" in index
-    assert "app.js?v=10.0.199" in index
+    assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in index
+    assert f"styles.css?v={CURRENT_APP_VERSION}" in index
+    assert f"app.js?v={CURRENT_APP_VERSION}" in index
+
+def test_unavailable_block_retains_its_slash_separately_from_exchange_shield():
+    unavailable_start = APP.index("  function experimentalFightBlockUnavailableHtml(")
+    unavailable_end = APP.index("  function experimentalActionFirstFightHtml(", unavailable_start)
+    unavailable = APP[unavailable_start:unavailable_end]
+    exchange_start = APP.index("  function experimentalFightExchangeRecordHtml(")
+    exchange_end = APP.index("  function fightLastResolutionHtml(", exchange_start)
+    exchange = APP[exchange_start:exchange_end]
+    assert 'clip-path="url(#experimentalFightBlockShieldClip)"' in unavailable
+    assert '<path d="m5 19 14-14"' in unavailable
+    assert '<path d="m5 19 14-14"' not in exchange
+    assert 'fill="none" stroke="currentColor"' in exchange
+
