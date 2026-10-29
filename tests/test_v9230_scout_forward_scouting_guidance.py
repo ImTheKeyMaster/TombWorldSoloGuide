@@ -83,7 +83,10 @@ def test_other_team_guidance_and_deployment_paths_remain_generic():
         team = json.loads((ROOT / "Player_Operatives" / filename).read_text(encoding="utf-8"))
         assert not any(rule.get("forwardScoutingOption") is True for rule in team.get("factionRules", []))
         assert not any(rule.get("forwardScoutingOption") is True for rule in team.get("strategicGambits", []))
-    assert "${missionRoll}${factionGuidanceHtml()}${hasStartingNpos?" in APP
+    assert "${missionRoll}${rerollControl}${hasStartingNpos?" in APP
+    deployment = APP.split("if(stepId===\'deploy\'){", 1)[1].split("const m=mission();", 1)[0]
+    assert deployment.count("${factionGuidanceHtml()}") == 1
+    assert deployment.index('id="playerDeployed"') < deployment.index("${factionGuidanceHtml()}")
     assert 'id="playerDeployed" type="checkbox"' in APP
     assert "Resolve these rules on the tabletop; the Guide presents reminders without simulating positioning." in APP
 

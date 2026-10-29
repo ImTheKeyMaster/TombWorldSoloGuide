@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.0.215
+# Tomb World Battle Guide v10.0.216
+
+## v10.0.216
+
+### Deployment Faction Rules placement
+
+- **Checklist first:** On Deploy Kill Teams, present the starting-roster roll, any re-roll control, Check All and every deployment checklist pill before Faction Rules Guidance.
+- **Rules still accessible:** The existing collapsed faction rules appear below the deployment checklist and above Back / Deployment Complete, for missions with or without starting NPOs.
+- **No mechanics changes:** Preserve deployment validation, Check All, faction rule text/disclosures, navigation, and saved game state. Refresh the PWA to 10.0.216.
 
 ## v10.0.215
 
