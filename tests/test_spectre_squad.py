@@ -123,7 +123,7 @@ class SpectreSquadTests(unittest.TestCase):
     def test_combat_filter_and_single_multi_weapon_behaviour(self):
         self.assertIn("filter(w=>w.type===wantedType)", self.app)
         self.assertIn('<option value="">Select a weapon...</option>', self.app)
-        self.assertIn("weaponSelect.value===''?null", self.app)
+        self.assertIn("selectedPlayerWeaponIndex(weaponSelect.value,weapons)", self.app)
         self.assertIn("<strong>Weapon:</strong> —", self.app)
         self.assertIn("weapon.attacks", self.app)
         self.assertIn("if(singleTarget&&weapons.length===1", self.app)
