@@ -69,8 +69,8 @@ def test_target_weapon_spacing_and_focus_accessibility_are_shared():
 
 
 def test_selection_validation_and_profile_behavior_are_unchanged():
-    assert "weaponSelect.value===''?null:weapons[Number(weaponSelect.value)]" in WIZARD
-    assert "$('#openCombatResolution').disabled=!target||!weapon;" in WIZARD
+    assert "selectedPlayerWeaponIndex(weaponSelect.value,weapons)" in WIZARD
+    assert "$('#openCombatResolution').disabled=!target||!weapon||" in WIZARD
     assert "const moreThanEight=Boolean($('#darkOfTombDistance')?.checked);" in WIZARD
     assert "weaponHasRule(profile,'blast')?'blast':weaponHasRule(profile,'torrent')?'torrent':null" in WIZARD
     assert "playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex})" in WIZARD

@@ -77,7 +77,7 @@ class GuidedCombatResumeTests(unittest.TestCase):
         self.assertIn("weaponHasRule(profile,'seek-light')", APP)
         self.assertIn("weaponHasRule(baseProfile,'blast')", APP)
         self.assertIn("weaponHasRule(profile,'torrent')", APP)
-        self.assertIn("const weaponIndex=Number(weaponSelect.value)", APP)
+        self.assertIn("const weaponIndex=selectedPlayerWeaponIndex(weaponSelect.value,weapons)", APP)
         self.assertIn("const moreThanEight=Boolean($('#darkOfTombDistance')?.checked)", APP)
 
     def test_11_version_851_is_consistent(self):

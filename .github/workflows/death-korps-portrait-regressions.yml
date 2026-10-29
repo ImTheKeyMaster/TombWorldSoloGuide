@@ -33,6 +33,7 @@ on:
       - Player_Operatives/DeathWatch.json
       - Player_Operatives/SpectreSquad.json
       - tests/test_v100194_single_necron_weapon_readonly.py
+      - tests/test_weapon_selection_required.py
   push:
     branches:
       - main
@@ -66,6 +67,7 @@ on:
       - Player_Operatives/DeathWatch.json
       - Player_Operatives/SpectreSquad.json
       - tests/test_v100194_single_necron_weapon_readonly.py
+      - tests/test_weapon_selection_required.py
   workflow_dispatch:
 
 jobs:
@@ -118,4 +120,5 @@ jobs:
             tests/test_v100157_experimental_weapon_rules_selection.py \
             tests/test_v100194_single_necron_weapon_readonly.py \
             tests/test_v8629_player_multitarget_combat_resume.py \
-            tests/test_v851_guided_combat_resume.py
+            tests/test_v851_guided_combat_resume.py \
+            tests/test_weapon_selection_required.py

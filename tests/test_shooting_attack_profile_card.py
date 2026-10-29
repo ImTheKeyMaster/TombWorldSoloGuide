@@ -35,7 +35,7 @@ class ShootingAttackProfileCardTests(unittest.TestCase):
         wizard = self.source("function showPendingPlayerAttackWizard", "function showPlayerCombatResolution")
         resolution = self.source("function showPlayerCombatResolution", "function previewPendingPlayerAttack")
         automatic_rolls = self.source("function runAutomaticCombatRolls", "function retainedDiceTotals")
-        self.assertIn("weaponSelect.value===''?null:weapons[Number(weaponSelect.value)]", wizard)
+        self.assertIn("selectedPlayerWeaponIndex(weaponSelect.value,weapons)", wizard)
         self.assertIn('<option value="">Select a weapon...</option>', wizard)
         self.assertIn("runAutomaticCombatRolls({container:screen.dice,profile", resolution)
         self.assertIn("rolledAttackDiceForProfile(profile)", automatic_rolls)

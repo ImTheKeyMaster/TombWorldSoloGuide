@@ -184,9 +184,9 @@ const api=new Function('ctx','with(ctx){'+source.slice(a,b)+'return fetchWithSta
 
 
 def test_version_and_pwa_cache_match():
-    assert CURRENT_APP_VERSION=="10.0.204"
-    assert "const APP_VERSION = '10.0.204';" in APP
-    assert "const APP_VERSION = '10.0.204';" in SW
-    assert '<div class="version">V10.0.204</div>' in HTML
-    assert 'styles.css?v=10.0.204' in HTML
-    assert 'app.js?v=10.0.204' in HTML
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 204)
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in SW
+    assert f'<div class="version">V{CURRENT_APP_VERSION}</div>' in HTML
+    assert f'styles.css?v={CURRENT_APP_VERSION}' in HTML
+    assert f'app.js?v={CURRENT_APP_VERSION}' in HTML

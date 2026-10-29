@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.204
+# Tomb World Battle Guide v10.0.205
+
+## v10.0.205
+
+### Require an explicit weapon choice before resolving any attack
+
+- **No accidental first-weapon selection:** never convert the empty "Select a weapon..." option into index 0 when a player chooses Continue on a shooting or melee attack, including after previous actions in the same activation.
+- **Defense in depth:** initialize Continue as disabled; enable it only with a valid target and weapon; revalidate both in the click handler before resolving weapon rules, deducting AP, or rolling dice.
+- **Single-weapon operatives:** keep the existing locked-in, read-only weapon choice with an explicit index 0. Preserve Deathwatch Special Issue Ammunition, target rails, and Standard/Experimental flows.
+- **PWA:** bump to 10.0.205 to refresh cached HTML, JavaScript, and service-worker assets without changing saved-game format.
 
 ## v10.0.204
 
