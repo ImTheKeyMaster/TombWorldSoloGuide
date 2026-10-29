@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.209
+# Tomb World Battle Guide v10.0.210
+
+## v10.0.210
+
+### Remove redundant subtitles from Experimental Fight action headings
+
+- **Experimental Solo:** show only the sword and STRIKE title, and shield and BLOCK title, with no “Deal damage” or “Cancel an enemy attack success” subtitle.
+- **Choice details remain:** continue showing action outcomes and descriptions inside the selectable cards, along with the existing radio controls.
+- **Standard and PvP unchanged:** retain their current headings, subtitles and combat behavior. Preserve the existing Experimental horizontal exchange history, VS badge, portrait styling, icon treatment, and saved-game format.
+- **PWA:** update versioned HTML, JavaScript and service-worker cache to 10.0.210.
 
 ## v10.0.209
 
