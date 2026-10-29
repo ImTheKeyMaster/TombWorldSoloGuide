@@ -13,9 +13,15 @@ SW = (ROOT / "service-worker.js").read_text(encoding="utf-8")
 
 
 def test_promoted_tomb_ui_is_not_gated_by_the_preview_toggle():
-    assert APP.count("experimentalFeaturesEnabled()") == 2  # definition + panel checkbox
-    # Approved Fight styles are shared by Standard and Experimental.
-    assert '[data-experimental="on"]' not in CSS
+    # Existing promoted Tomb UI remains shared regardless of the preview toggle.
+    # New opt-in experiments may use the toggle, so do not count its references.
+    assert "if(document.documentElement.dataset.ui==='tomb'){" in APP
+    assert "experimentalActionFirstFightHtml(fight,role,participant,actions,capacity)" in APP
+    assert "if(document.documentElement.dataset.ui==='tomb'&&experimentalFeaturesEnabled()&&!isPvpMode())" in APP
+    experimental_start = CSS.index("/* v10.0.199: Experimental-only last exchange timeline.")
+    experimental_end = CSS.index("/* v10.0.175/180: Approved Action First Fight",experimental_start)
+    promoted_css = CSS[:experimental_start] + CSS[experimental_end:]
+    assert '[data-experimental="on"]' not in promoted_css
     assert 'html[data-ui="tomb"] .experimental-fight-choice-screen' in CSS
     assert 'html[data-ui="tomb"] .experimental-fight-choice-screen .experimental-fight-block-unavailable' in CSS
     assert 'html[data-ui="tomb"] .experimental-fight-pool' in CSS
