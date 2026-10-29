@@ -61,7 +61,8 @@ assert(!upgraded.includes('class="fight-exchange-number"'));
 const npoStart=upgraded.indexOf('class="fight-exchange-card fight-exchange-npo"');
 const npoShield=npoStart>=0?upgraded.slice(npoStart,upgraded.indexOf('</svg>',npoStart)+6):'';
 assert(npoShield,'The block exchange should render a shield SVG');
-assert(npoShield.includes('M12 2 20 5.5V12'),'Shield outline remains intact');
+assert(npoShield.includes('M12 2 21 5.5V12'),'Normal Block shield outline remains intact');
+assert(npoShield.includes('M12 5.5 6.3 7.7V12'),'Normal Block half-filled shield detail is retained');
 assert(!npoShield.includes('m5 19 14-14'),'Block exchange must not use unavailable slash');
 assert(!npoShield.includes('clip-path'),'Block exchange icon must be a plain shield');
 
