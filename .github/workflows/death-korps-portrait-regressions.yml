@@ -36,6 +36,7 @@ on:
       - tests/test_weapon_selection_required.py
       - tests/test_v100206_experimental_fight_duel_layout.py
       - tests/test_v100207_experimental_fight_panel_borders.py
+      - tests/test_v100208_horizontal_exchange_actions.py
   push:
     branches:
       - main
@@ -72,6 +73,7 @@ on:
       - tests/test_weapon_selection_required.py
       - tests/test_v100206_experimental_fight_duel_layout.py
       - tests/test_v100207_experimental_fight_panel_borders.py
+      - tests/test_v100208_horizontal_exchange_actions.py
   workflow_dispatch:
 
 jobs:
@@ -127,4 +129,5 @@ jobs:
             tests/test_v851_guided_combat_resume.py \
             tests/test_weapon_selection_required.py \
             tests/test_v100206_experimental_fight_duel_layout.py \
-            tests/test_v100207_experimental_fight_panel_borders.py
+            tests/test_v100207_experimental_fight_panel_borders.py \
+            tests/test_v100208_horizontal_exchange_actions.py

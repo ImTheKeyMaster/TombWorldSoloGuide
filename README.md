@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.207
+# Tomb World Battle Guide v10.0.208
+
+## v10.0.208
+
+### Experimental Fight exchange actions displayed horizontally
+
+- **Actual requested mockup:** each numbered exchange is one horizontally swipeable tile containing its actions side by side, rather than stacking its actions vertically. With two actions, the two cards share the available width. A single unfinished exchange action spans the tile width.
+- **Chronological grouping:** continue to group pairs of consecutive actions into Exchange 1, Exchange 2 and so on; never number each action as a separate exchange. Keep the player/NPO identity, results, damage details, and all history.
+- **Scope:** Experimental Solo only. Preserve Standard and PvP, borderless top combatant summaries, centered VS, side-by-side Strike and Block, confirmation, combat engine, and saved-game format.
+- **PWA:** refresh app, HTML, and service worker to v10.0.208.
 
 ## v10.0.207
 
