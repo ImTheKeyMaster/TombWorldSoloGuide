@@ -41,7 +41,7 @@ fight.history=structuredClone(history);
 let html=render(fight);
 assert.deepEqual([...html.matchAll(/aria-label="Action (\d+):/g)].map(m=>m[1]),['1','2','3','4','5']);
 assert.equal((html.match(/class="fight-exchange-card /g)||[]).length,5);
-assert.equal((html.match(/class="fight-exchange-number"/g)||[]).length,3);
+assert.equal((html.match(/class="fight-exchange-number"/g)||[]).length,5);
 assert(!html.includes('fight-exchange-group is-latest'));
 assert.equal((html.match(/class="fight-exchange-actor"/g)||[]).length,5);
 assert.equal((html.match(/class="fight-exchange-outcome"/g)||[]).length,5);
