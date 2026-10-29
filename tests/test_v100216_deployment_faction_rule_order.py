@@ -46,7 +46,7 @@ def test_guidance_is_not_conditional_on_starting_npos_or_team():
     # In zero-starting-NPO missions the bulk action disappears, but the
     # same player deployment checkbox and faction disclosures remain visible.
     assert "const hasStartingNpos=generation.deployedNpoIds.length>0;" in deployment
-    assert "${hasStartingNpos?`<div class=\\"setup-bulk-row\\"" in deployment
+    assert '${hasStartingNpos?`<div class="setup-bulk-row"' in deployment
     assert "id=\"npoDeployed\"" in deployment
     assert "id=\"playerDeployed\"" in deployment
     assert "${factionGuidanceHtml()}" in deployment
@@ -59,7 +59,7 @@ def test_rules_still_use_collapsible_faction_guidance_and_setup_handlers():
         "  function playerDisplayIdentity(", 1
     )[0]
     assert '<details class="mission-rule faction-rule-disclosure">' in guidance
-    assert "Forward Scouting" in guidance
+    assert "forwardScoutingParent" in guidance
     assert 'faction-rule-disclosure' in guidance
     assert "Resolve these rules on the tabletop" in guidance
     setup_handlers = APP.split("  function bindSetup(", 1)[1].split(
