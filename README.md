@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.198
+# Tomb World Battle Guide v10.0.199
+
+## v10.0.199
+
+### Experimental-only Fight Resolution exchange timeline
+
+- **Experimental mode:** replace the blended Last Exchange text with two compact, numbered player/NPO action cards, including Strike/Block icons and a concise damage or Block outcome. Use the established green accent for the player and white for the NPO, without introducing yellow or amber.
+- **Action selection:** remove the numbered circles next to "Choose your action" and "Confirm your action" in Experimental mode. The exchange timeline keeps its 1/2 turn numbers.
+- **Standard mode:** keep the existing Last Exchange rendering and numbered action headings unchanged. No combat mechanics, portraits, rules, save schema, or offline asset inventory changes.
+- **PWA:** advance the application, asset cache URLs, and service-worker version to 10.0.199 to refresh the experimental styling.
 
 ## v10.0.198
 

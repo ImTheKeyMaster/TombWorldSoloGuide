@@ -86,4 +86,4 @@ assert.equal(f(2,[{type:'Canoptek Macrocyte Warrior',wounds:7,battlefieldState:'
     assert "tombWorldVariant" in APP
 
 def test_release_version():
-    assert CURRENT_APP_VERSION == "10.0.198"
+    assert tuple(map(int, CURRENT_APP_VERSION.split("."))) >= (10, 0, 198)
