@@ -39,10 +39,10 @@ const fight={attacker:{side:'player',label:'Blademaster'},defender:{side:'npo',l
 assert.equal(render(fight),'');
 fight.history=structuredClone(history);
 let html=render(fight);
-assert.deepEqual([...html.matchAll(/aria-label="Exchange (\d+)"/g)].map(m=>m[1]),['1','2','3']);
+assert.deepEqual([...html.matchAll(/aria-label="Action (\d+):/g)].map(m=>m[1]),['1','2','3','4','5']);
 assert.equal((html.match(/class="fight-exchange-card /g)||[]).length,5);
-assert.equal((html.match(/class="fight-exchange-group-number"/g)||[]).length,3);
-assert.equal((html.match(/class="fight-exchange-group is-latest"/g)||[]).length,1);
+assert.equal((html.match(/class="fight-exchange-number"/g)||[]).length,3);
+assert(!html.includes('fight-exchange-group is-latest'));
 assert.equal((html.match(/class="fight-exchange-actor"/g)||[]).length,5);
 assert.equal((html.match(/class="fight-exchange-outcome"/g)||[]).length,5);
 assert(html.includes('SWIPE TO REVIEW'));
@@ -51,7 +51,7 @@ assert(html.indexOf('1 DAMAGE')<html.indexOf('BLOCKED'));
 assert(html.indexOf('BLOCKED')<html.indexOf('4 DAMAGE'));
 assert(html.indexOf('4 DAMAGE')<html.indexOf('6 DAMAGE'));
 assert(html.includes('7 → 3 wounds'));
-assert(html.includes('Canceled 1 enemy Normal Success'));
+assert(html.includes('1 Normal Success canceled'));
 assert(html.includes('Canoptek Macrocyte Warrior 2'));
 assert(html.includes('NPO ACTION')&&html.includes('NPO RESPONSE')&&html.includes('YOUR ACTION'));
 assert(!html.includes('Dealt 4 damage to Canoptek'),'Old redundant verbose descriptions removed');
@@ -60,7 +60,7 @@ assert.deepEqual(fight.history,history,'Rendering cannot mutate saved fight data
 fight.history=[history[0]];
 html=render(fight);
 assert.equal((html.match(/class="fight-exchange-card /g)||[]).length,1);
-assert.equal((html.match(/class="fight-exchange-group-number"/g)||[]).length,1);
+assert.equal((html.match(/class="fight-exchange-number"/g)||[]).length,1);
 assert(!html.includes('SWIPE TO REVIEW'));
 experimental=false;
 assert(!render(fight).includes('fight-exchange-card'),'Standard unchanged');
@@ -70,20 +70,15 @@ assert(!render(fight).includes('fight-exchange-card'),'PvP unchanged');
 """)
 
 
-def test_horizontal_rail_uses_flat_groups_and_small_action_cards():
-    block=CSS.split("/* v10.0.211: Flatten Experimental Fight history",1)[1]
+def test_horizontal_rail_uses_small_individually_numbered_cards():
+    block=CSS.split("/* v10.0.212: Mockup-style compact",1)[1]
     prefix='html[data-ui="tomb"][data-experimental="on"] .is-duel-layout'
     assert prefix in block
     assert '.fight-exchange-history{' in block
-    assert '.fight-exchange-group.is-latest{' in block
-    assert 'width:max-content;' in block
     assert 'display:flex;' in block
     assert 'flex-direction:row;' in block
-    assert 'flex:0 0 clamp(128px,38vw,164px);' in block
-    assert '.fight-exchange-card:not(:last-child)::after' in block
-    assert '.fight-exchange-card:only-child' in block
-    assert 'border:0;' in block
-    assert 'background:transparent;' in block
+    assert 'flex:0 0 clamp(94px,26vw,115px);' in block
+    assert '.fight-exchange-number{' in block
     assert 'overflow-x:auto;' in block
     assert '.experimental-fight-option' not in block
     assert '.experimental-fight-pool' not in block
