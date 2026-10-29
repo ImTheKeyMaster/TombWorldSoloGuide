@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.0.217
+# Tomb World Battle Guide v10.1.0
+
+## v10.1.0
+
+### Promote approved Fight Resolution dice to Standard
+
+- **Standard and Experimental:** Both modes now show the actual remaining Fight dice beneath each operative's wounds, rather than text counts. Retain the approved 10.0.217 appearance and matching face values.
+- **Static and responsive:** Identical-size dice on both participants, up to five in a row per operative; normal successes remain green and critical successes gold, without animations.
+- **Behavior unchanged:** Dice disappear as Strike or Block successes are spent; NPO fight decisions, combat state, action order, exchange history, PvP, and Classic mode retain their existing logic.
+- **Experimental remains available:** Keep the opt-in Experimental toggle for future trials.
+- **PWA major/minor update:** Set app version and offline cache to 10.1.0, refresh versioned assets to ensure iOS picks up the promotion.
+
 
 ## v10.0.217
 
