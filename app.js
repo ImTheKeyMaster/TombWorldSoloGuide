@@ -278,7 +278,12 @@ document.addEventListener('touchend',function(e){
     const controller=new AbortController();
     const timeout=setTimeout(()=>controller.abort(),timeoutMs);
     try{
-      return await fetch(path,{cache:'default',signal:controller.signal});
+      const response=await fetch(path,{cache:'default',signal:controller.signal});
+      if(!response.ok)return response;
+      // Keep the deadline through the body, not just HTTP headers. The
+      // returned response remains consumable by existing .json() callers.
+      const body=await response.text();
+      return new Response(body,{status:response.status,statusText:response.statusText,headers:response.headers});
     }finally{clearTimeout(timeout);}
   }
   async function loadBackgroundManifest(){
