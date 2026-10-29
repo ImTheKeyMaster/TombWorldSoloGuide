@@ -1,6 +1,6 @@
 'use strict';
 
-const APP_VERSION = '10.0.203';
+const APP_VERSION = '10.0.204';
 const CACHE_PREFIX = 'tomb-world-battle-guide-';
 const LEGACY_CACHE_PREFIXES = ['tomb-world-solo-guide-'];
 const CACHE_NAME = `${CACHE_PREFIX}${APP_VERSION}`;
@@ -285,15 +285,66 @@ self.addEventListener('message',event=>{
   event.waitUntil?.(offlinePreparationPromise);
 });
 
-async function networkFirst(request) {
-  const cache = await caches.open(CACHE_NAME);
-  try {
-    const response = await fetch(request);
-    if (!response.ok) return cachedFallback(cache, request, response);
-    await cacheResponse(cache, request, response);
+// A cold-start PWA must never wait on the network for a shell already stored
+// on-device. The next release is fetched by the browser's service-worker
+// update check, not by blocking the current app's startup.
+async function archivedCacheMatchExact(request) {
+  for(const name of (await caches.keys()).filter(name=>isTombWorldCache(name)&&name!==CACHE_NAME).reverse()) {
+    const archived=await caches.open(name);
+    const response=await archived.match(request);
+    if(response)return response;
+  }
+  return null;
+}
+async function fetchWithStartupTimeout(request,timeoutMs=4500) {
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),timeoutMs);
+  try{return await fetch(request,{signal:controller.signal});}
+  finally{clearTimeout(timeout);}
+}
+const OFFLINE_STARTUP_HTML=`<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07140f">
+<title>Tomb World Guide · Offline</title>
+<style>html,body{margin:0;min-height:100%;background:#06100c;color:#e3f2e9;font:16px system-ui,sans-serif}
+main{box-sizing:border-box;max-width:520px;margin:12vh auto;padding:28px 22px}
+h1{font-size:1.5rem}p{line-height:1.5;color:#bad0c1}
+button{background:#6ef0a6;color:#062012;border:0;border-radius:12px;padding:14px 22px;font-weight:750;font-size:1rem}</style>
+</head><body><main><h1>Tomb World Guide</h1>
+<p>The offline app files are not yet available on this device. Connect to Wi-Fi or cellular data, then retry. Your saved battle has not been deleted.</p>
+<button onclick="location.reload()">Retry Loading</button></main></body></html>`;
+function offlineStartupResponse() {
+  return new Response(OFFLINE_STARTUP_HTML,{status:503,headers:{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'}});
+}
+async function offlineFirstNavigation(request) {
+  const cache=await caches.open(CACHE_NAME);
+  const cached=await cache.match(request)||await cache.match(APP_SHELL)
+    ||await archivedCacheMatch(request)||await archivedCacheMatch(APP_SHELL);
+  if(cached)return cached;
+  try{
+    const response=await fetchWithStartupTimeout(request);
+    if(!response.ok)return offlineStartupResponse();
+    await cacheResponse(cache,request,response);
     return response;
-  } catch {
-    return cachedFallback(cache, request);
+  }catch(error){
+    console.warn('[Offline startup] App shell not cached and network unavailable.',error);
+    return offlineStartupResponse();
+  }
+}
+async function offlineFirstCodeAndData(request) {
+  const cache=await caches.open(CACHE_NAME);
+  // Exact request URLs matter. Never mix JavaScript/CSS from a previous
+  // release simply because the filename matches after stripping ?v=.
+  const cached=await cache.match(request)||await archivedCacheMatchExact(request);
+  if(cached)return cached;
+  try{
+    const response=await fetchWithStartupTimeout(request);
+    if(!response.ok)return response;
+    await cacheResponse(cache,request,response);
+    return response;
+  }catch(error){
+    console.warn('[Offline startup] A required script or data file was unavailable.',request.url,error);
+    return Response.error();
   }
 }
 
@@ -345,11 +396,11 @@ self.addEventListener('fetch', event => {
   // Reference PDFs are hosted online but must not be included in the PWA cache.
   if (/\.pdf$/i.test(url.pathname)) return;
   if (request.mode === 'navigate' || url.pathname.endsWith('/index.html')) {
-    event.respondWith(networkFirst(request));
+    event.respondWith(offlineFirstNavigation(request));
     return;
   }
   if (/\.(?:js|css|json|webmanifest)$/i.test(url.pathname)) {
-    event.respondWith(networkFirst(request));
+    event.respondWith(offlineFirstCodeAndData(request));
     return;
   }
   if (/\.(?:png|svg|jpe?g|gif|webp|ico|mp3|ogg)$/i.test(url.pathname)) {
