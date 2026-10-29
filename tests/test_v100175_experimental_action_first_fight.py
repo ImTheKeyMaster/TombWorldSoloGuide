@@ -42,7 +42,7 @@ function runCase({mode='tomb',enabled=true,shield=false,choice='strike',noBlocks
   if(npoTurn)fight.turn='defender';
   const states={choices:[],markup:'',modals:0,strikes:[],blocks:[],shields:[],finished:0};
   const confirm={disabled:true};
-  const modal={querySelectorAll:()=>states.choices};
+  const modal={querySelector:()=>null,querySelectorAll:()=>states.choices};
   const ctx={
     state:{fightState:fight},
     document:{documentElement:{dataset:{ui:mode,experimental:enabled?'on':'off'}}},
@@ -65,6 +65,7 @@ function runCase({mode='tomb',enabled=true,shield=false,choice='strike',noBlocks
         .map(match=>controlFromTag(match[0]));
     },
     modal,
+    scaleFightPortraits:()=>{},
     $:selector=>selector==='#confirmExperimentalFightChoice'?confirm:null,
     $$:()=>[],
     commitFightStrike:(f,role,id)=>{states.strikes.push([role,id]);f.completed=true;return true;},
@@ -187,7 +188,8 @@ const actions={
 };
 const ctx={
   unresolvedFightSuccesses:(f,role)=>f.successes[role].filter(s=>s.status==='unresolved'),
-  otherFightRole:role=>role==='attacker'?'defender':'attacker'
+  otherFightRole:role=>role==='attacker'?'defender':'attacker',
+  experimentalFightAutomaticStrikePreview:()=>''
 };
 const advice=new Function('ctx','with(ctx){'+source.slice(start,end)+'\nreturn experimentalFightStrikeAdvice;}')(ctx);
 assert.match(advice(fight,'attacker',normal,2,actions),/possible later Block, if you act again/);
