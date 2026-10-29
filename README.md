@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.0.214
+# Tomb World Battle Guide v10.0.215
+
+## v10.0.215
+
+### Solo NPO Fight decision regression hardening
+
+- **Aegis vs. Macrocyte regression:** after a 6-damage critical Strike leaves the NPO at 1 wound, its remaining normal success must Strike rather than Block a harmless normal success while Aegis retains a lethal critical success.
+- **Shield judgement:** a two-success Shield Block is chosen for survival only when the unblocked enemy successes cannot still incapacitate the NPO; legitimate two-success defensive Blocks remain available.
+- **Deterministic regression coverage:** test lethal Strike precedence, critical and normal Block legality, Brutal restrictions, saved action history progression, and 240 combinations of melee success pools, remaining wounds, Shield capacity, and Brutal.
+- **Shared mechanics:** both Standard and Experimental Solo modes use the same decision engine. Fight damage profiles, PvP choices, and save format are unchanged. PWA assets refresh to v10.0.215.
 
 ## v10.0.214
 

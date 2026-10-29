@@ -42,6 +42,7 @@ on:
       - tests/test_v100212_compact_numbered_actions.py
       - tests/test_v100213_promoted_fight_resolution.py
       - tests/test_v100214_collapsible_faction_guidance.py
+      - tests/test_v100215_solo_npo_fight_ai_regression.py
   push:
     branches:
       - main
@@ -84,6 +85,7 @@ on:
       - tests/test_v100212_compact_numbered_actions.py
       - tests/test_v100213_promoted_fight_resolution.py
       - tests/test_v100214_collapsible_faction_guidance.py
+      - tests/test_v100215_solo_npo_fight_ai_regression.py
   workflow_dispatch:
 
 jobs:
@@ -145,4 +147,5 @@ jobs:
             tests/test_v100211_compact_fight_exchange_rail.py \
             tests/test_v100212_compact_numbered_actions.py \
             tests/test_v100213_promoted_fight_resolution.py \
-            tests/test_v100214_collapsible_faction_guidance.py
+            tests/test_v100214_collapsible_faction_guidance.py \
+            tests/test_v100215_solo_npo_fight_ai_regression.py
