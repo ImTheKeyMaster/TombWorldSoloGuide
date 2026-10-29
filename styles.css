@@ -3370,3 +3370,13 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight
   html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-option.is-selected{padding:7px 4px}
   html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-option-copy strong{font-size:.72rem}
 }
+
+/* v10.0.207: Experimental Solo Fight combatants are informational,
+   not action buttons. Remove card outlines, active glow and card fills;
+   preserve the centered VS, portraits, stats, and acting-now pill. */
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-pool,
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-pool.active{
+  border:0;
+  box-shadow:none;
+  background:transparent;
+}
