@@ -19,7 +19,7 @@ def test_small_numbered_action_cards_are_horizontally_swipeable():
     assert 'scroll-snap-align:start;' in css
     assert '.fight-exchange-number{' in css
     assert '.fight-exchange-card:not(:last-child)::after' in css
-    assert 'html[data-ui="tomb"][data-experimental="on"] .is-duel-layout' in css
+    assert 'html[data-ui="tomb"] .is-duel-layout' in css
     assert 'html[data-ui="tomb"] .experimental-fight-choice-screen' in CSS
     assert "experimental-fight-versus" in APP
 
@@ -61,8 +61,8 @@ assert(html.includes('1 Normal Success canceled'),'Block outcome remains explici
 assert(html.includes('NPO RESPONSE'));
 preview=false;
 const standard=render(fight);
-assert(standard.includes('fight-resolution-record'));
-assert(!standard.includes('fight-exchange-history'));
+assert(standard.includes('fight-exchange-history'));
+assert.equal(standard,html,'Both Solo modes share promoted history');
 assert.equal(fight.history.length,3);
 """
     result=subprocess.run(["node","-e",js],cwd=ROOT,capture_output=True,text=True,timeout=30)
