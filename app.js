@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.214';
+  const APP_VERSION = '10.0.215';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8074,9 +8074,13 @@ function showPlayerActivation(){
   function soloNpoFightDecision(fight,role){
     const actor=fight[role],opponent=fight[otherFightRole(role)],own=unresolvedFightSuccesses(fight,role),enemy=unresolvedFightSuccesses(fight,otherFightRole(role)),capacity=Math.max(1,Number(fight.blockCapacity?.[role]||1));
     const kill=[...own].sort((a,b)=>(a.kind==='critical')-(b.kind==='critical')).find(item=>(item.kind==='critical'?actor.profile.crit:actor.profile.normal)>=opponent.wounds);if(kill)return {type:'strike',successId:kill.id};
-    if(capacity>1&&enemy.reduce((total,item)=>total+(item.kind==='critical'?opponent.profile.crit:opponent.profile.normal),0)>=actor.wounds){
+    const incomingDamage=enemy.reduce((total,item)=>total+(item.kind==='critical'?opponent.profile.crit:opponent.profile.normal),0);
+    if(capacity>1&&incomingDamage>=actor.wounds){
       const shieldPlans=own.map(blocker=>({blocker,targets:fightBlockTargets(fight,role,blocker).sort((a,b)=>(b.kind==='critical'?opponent.profile.crit:opponent.profile.normal)-(a.kind==='critical'?opponent.profile.crit:opponent.profile.normal)).slice(0,capacity)}))
-        .filter(plan=>plan.targets.length)
+        // A Shield Block is only defensive if the remaining successes
+        // cannot still incapacitate this NPO. In particular, never spend a
+        // normal success blocking a normal while a lethal crit is untouched.
+        .filter(plan=>plan.targets.length&&incomingDamage-plan.targets.reduce((total,item)=>total+(item.kind==='critical'?opponent.profile.crit:opponent.profile.normal),0)<actor.wounds)
         .sort((a,b)=>b.targets.reduce((total,item)=>total+(item.kind==='critical'?opponent.profile.crit:opponent.profile.normal),0)-a.targets.reduce((total,item)=>total+(item.kind==='critical'?opponent.profile.crit:opponent.profile.normal),0));
       if(shieldPlans.length)return {type:'block',successId:shieldPlans[0].blocker.id,targetSuccessIds:shieldPlans[0].targets.map(item=>item.id)};
     }
