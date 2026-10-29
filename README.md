@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.205
+# Tomb World Battle Guide v10.0.206
+
+## v10.0.206
+
+### Experimental Fight Resolution duel layout
+
+- **VS divider:** add a compact centered diamond VS badge between the two existing portrait/stat cards, with no change to combatant information or portrait positioning.
+- **Horizontal exchange history:** swipe through numbered exchange cards in chronological order, each retaining its one or two action records and full damage/block details. Automatically scroll to the latest exchange on re-render.
+- **Strike and Block:** arrange available choices as two side-by-side, visually distinct panels with compact option cards, preserved button semantics, and the existing confirm workflow. Explain unavailable Blocks as before.
+- **Strictly Experimental Solo:** Standard Tomb and PvP continue using their original markup, vertical fight history, and Strike/Block presentation. No combat logic, save format, or dice changes.
+- **PWA:** advance all shell/code/service-worker versions to 10.0.206.
 
 ## v10.0.205
 
