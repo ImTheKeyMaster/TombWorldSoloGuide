@@ -3804,3 +3804,64 @@ html[data-ui="tomb"] .is-duel-layout .fight-exchange-history>.fight-exchange-car
     padding-inline:5px;
   }
 }
+
+
+/* v10.0.214: Faction rules and strategic gambits are progressively disclosed.
+   These selectors intentionally do not affect mission briefings or the
+   nested Forward Scouting options disclosure. */
+.faction-guidance .faction-rule-disclosure{
+  padding:0;
+  overflow:hidden;
+}
+.faction-guidance .faction-rule-disclosure + .faction-rule-disclosure{
+  margin-top:9px;
+}
+.faction-guidance .faction-rule-disclosure > summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-height:48px;
+  box-sizing:border-box;
+  padding:10px 14px;
+  cursor:pointer;
+  list-style:none;
+  color:var(--green);
+}
+.faction-guidance .faction-rule-disclosure > summary::-webkit-details-marker{
+  display:none;
+}
+.faction-guidance .faction-rule-disclosure > summary > strong{
+  min-width:0;
+  font-weight:850;
+  color:var(--green);
+}
+.faction-guidance .faction-rule-disclosure > summary::after{
+  content:'›';
+  display:block;
+  flex:none;
+  color:var(--green);
+  font-size:1.35rem;
+  line-height:1;
+  transform:rotate(0deg);
+  transition:transform .15s ease;
+}
+.faction-guidance .faction-rule-disclosure[open] > summary::after{
+  transform:rotate(90deg);
+}
+.faction-guidance .faction-rule-disclosure > summary:focus-visible{
+  outline:2px solid var(--green);
+  outline-offset:-3px;
+  border-radius:10px;
+}
+.faction-guidance .faction-rule-body{
+  padding:0 14px 14px;
+}
+.faction-guidance .faction-rule-body > p{
+  margin-top:8px;
+}
+@media(prefers-reduced-motion:reduce){
+  .faction-guidance .faction-rule-disclosure > summary::after{
+    transition:none;
+  }
+}
