@@ -3380,3 +3380,80 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight
   box-shadow:none;
   background:transparent;
 }
+
+
+/* v10.0.208: Experimental Solo exchange timeline shows the ACTIONS side by side.
+   One full-width, swipeable tile = one numbered exchange (1 or 2 actual moves).
+   Standard, PvP, and fight history data are unchanged. */
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-history{
+  display:flex;
+  grid-auto-flow:unset;
+  grid-auto-columns:unset;
+  align-items:stretch;
+}
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-group{
+  box-sizing:border-box;
+  flex:0 0 calc(100% - 4px);
+  width:calc(100% - 4px);
+  min-width:0;
+  align-self:stretch;
+  scroll-snap-align:start;
+}
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+  align-items:stretch;
+}
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-card{
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:auto 1fr;
+  align-content:start;
+  gap:6px;
+  min-width:0;
+  min-height:155px;
+  padding:9px 8px;
+}
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-icon{
+  justify-self:start;
+  margin-left:3px;
+}
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-copy{
+  border-left:0;
+  padding-left:0;
+  gap:5px;
+  align-content:start;
+}
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-heading{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:flex-start;
+  gap:5px;
+}
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-owner{
+  font-size:.63rem;
+  line-height:1.2;
+}
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-outcome{
+  font-size:.61rem;
+}
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-copy>strong{
+  font-size:.77rem;
+  line-height:1.25;
+}
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-details{
+  font-size:.71rem;
+  line-height:1.33;
+}
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-card:only-child{
+  grid-column:1/-1;
+  grid-template-columns:23px minmax(0,1fr);
+  grid-template-rows:auto;
+  min-height:105px;
+  align-items:start;
+}
+html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .fight-exchange-card:only-child .fight-exchange-copy{
+  border-left:1px solid rgba(226,239,230,.27);
+  padding-left:9px;
+}
