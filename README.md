@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.0.203
+# Tomb World Battle Guide v10.0.204
+
+## v10.0.204
+
+### Offline-first cold start reliability on iPhone PWA
+
+- **Immediate offline startup:** return already-cached HTML, JS, CSS, JSON and app shell resources before asking the network. Match versioned code exactly so previous JavaScript and new HTML are never combined. Retain historical completed offline caches until the replacement is fully prepared.
+- **Poor connectivity:** cap new, uncached core resource fetch attempts rather than leaving requests pending indefinitely. A missing shell renders a dark standalone retry page; a missing script/data file is reported as a load error instead of blocking forever.
+- **Visible loading and recovery:** render an inline, dark startup panel independently of external CSS/JS. If the application has not rendered within 9 seconds, offer Retry Loading and Export Saved Battle; no local saved game is deleted.
+- **Nonblocking styling and updates:** load noncritical stylesheet without preventing the initial dark screen, register the service worker without waiting for the window load event, and defer large optional offline media downloads until after startup.
+- **Bounded startup data:** initial mission/team/background manifest requests use deadlines and normal browser HTTP caching in addition to the PWA service worker. Failing fetches do not erase local saves.
+- **Preservation:** Standard and Experimental, fight resolution, portraits, mission logic, save schema and all NPO/Imperial rules remain unchanged. All release/PWA asset versions advance together.
 
 ## v10.0.203
 
