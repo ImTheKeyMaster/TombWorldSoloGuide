@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.0.212';
+  const APP_VERSION = '10.0.213';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8181,8 +8181,9 @@ function showPlayerActivation(){
     const latest=fight.history.at(-1);if(!latest)return '';
     const previous=fight.history.at(-2),soloExchange=!isPvpMode()&&fight[latest.role]?.side==='npo'&&previous&&fight[previous.role]?.side==='player';
     const entries=soloExchange?[previous,latest]:[latest];
-    // Standard and PvP retain their existing exchange renderer and layout.
-    if(document.documentElement.dataset.ui==='tomb'&&experimentalFeaturesEnabled()&&!isPvpMode()){
+    // Approved Solo Fight exchange history is shared by Standard and Experimental.
+    // PvP and non-Tomb layouts keep their existing renderer.
+    if(document.documentElement.dataset.ui==='tomb'&&!isPvpMode()){
       // One compact card per action, numbered in actual chronological order.
       // No fabricated "next" entry or interactive "clear" action.
       const actionCards=fight.history.map((entry,index)=>experimentalFightExchangeRecordHtml(fight,entry,index));
@@ -8392,7 +8393,7 @@ function showPlayerActivation(){
     const help=isPvpMode()
       ?'Starting with the attacker, players alternate resolving one success as a Strike or Block.'
       :'You and the NPO alternate resolving one success. You choose for your operative. The Guide automatically resolves the NPO’s response.';
-    const duelPreview=experimentalFeaturesEnabled()&&!isPvpMode();
+    const duelPreview=!isPvpMode();
     const strikeGlyph=`<svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M21.2 2.8 18.9 10l-7.2 7.2-4-4 7.2-7.2 6.3-3.2Z"/><path d="m5.9 11.7 6.4 6.4-1.5 1.5-6.4-6.4z"/><path d="m8.1 17.1-4.4 4.4-1.5-1.5 4.4-4.4z"/></svg>`;
     const blockGlyph=`<svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 2 21 5.5V12c0 5.5-3.7 9.2-9 11-5.3-1.8-9-5.5-9-11V5.5L12 2Z"/><path d="M12 5.5 6.3 7.7V12c0 3.5 2 6 5.7 7.6V5.5Z" fill="#092319"/></svg>`;
     const strikes=actions.strikes.map(({success,damage})=>{
@@ -8412,7 +8413,7 @@ function showPlayerActivation(){
       <div class="fight-pools experimental-fight-pools">${experimentalFightPoolHtml(fight,'attacker')}${experimentalFightPoolHtml(fight,'defender')}${duelPreview?'<span class="experimental-fight-versus" aria-hidden="true"><span>VS</span></span>':''}</div>
       ${fightLastResolutionHtml(fight)}
       <section class="fight-turn experimental-fight-turn" aria-label="Acting now: ${escapeHtml(participant.label)}">
-        <div class="experimental-fight-step">${experimentalFeaturesEnabled()?'':'<span class="experimental-fight-step-number" aria-hidden="true">1</span>'}<h4>Choose your action</h4></div>
+        <div class="experimental-fight-step">${duelPreview?'':'<span class="experimental-fight-step-number" aria-hidden="true">1</span>'}<h4>Choose your action</h4></div>
         ${duelPreview?'<div class="experimental-fight-choice-columns">':''}
         <section class="experimental-fight-choice-group" aria-labelledby="fightStrikeHeading">
           <h5 id="fightStrikeHeading">${duelPreview?`<span class="experimental-fight-heading-symbol" aria-hidden="true">${strikeGlyph}</span><span class="experimental-fight-heading-label"><strong>STRIKE</strong></span>`:'STRIKE <span>Deal damage</span>'}</h5>
@@ -8423,7 +8424,7 @@ function showPlayerActivation(){
           <div class="experimental-fight-option-list">${blocks}</div>
         </section>`:experimentalFightBlockUnavailableHtml(fight,role,actions)}
         ${duelPreview?'</div>':''}
-        <div class="experimental-fight-step">${experimentalFeaturesEnabled()?'':'<span class="experimental-fight-step-number" aria-hidden="true">2</span>'}<h4>Confirm your action</h4></div>
+        <div class="experimental-fight-step">${duelPreview?'':'<span class="experimental-fight-step-number" aria-hidden="true">2</span>'}<h4>Confirm your action</h4></div>
         <button type="button" class="btn primary experimental-fight-confirm" id="confirmExperimentalFightChoice" disabled>Resolve Selected Action</button>
       </section>
       <details class="experimental-fight-help"><summary>How Fight Resolution works</summary><p>${help}</p></details>
@@ -8470,7 +8471,7 @@ function showPlayerActivation(){
       showModal('Fight Resolution',experimentalActionFirstFightHtml(fight,role,participant,actions,capacity));
       const exchangeHistory=modal.querySelector('.fight-exchange-history');
       if(exchangeHistory){
-        if(experimentalFeaturesEnabled()&&!isPvpMode())exchangeHistory.scrollLeft=exchangeHistory.scrollWidth-exchangeHistory.clientWidth;
+        if(!isPvpMode())exchangeHistory.scrollLeft=exchangeHistory.scrollWidth-exchangeHistory.clientWidth;
         else exchangeHistory.scrollTop=exchangeHistory.scrollHeight;
       }
       scaleFightPortraits();
