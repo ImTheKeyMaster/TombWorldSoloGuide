@@ -3229,7 +3229,7 @@ html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight
   width:35px;height:35px;display:grid;place-items:center;
   z-index:3;pointer-events:none;color:#dcfbe9;
   font-size:.72rem;font-weight:950;letter-spacing:.04em;
-  filter:drop-shadow(0 2px 6px rgba(0,0,0,.65));
+  text-shadow:0 2px 6px rgba(0,0,0,.65);
 }
 html[data-ui="tomb"][data-experimental="on"] .is-duel-layout .experimental-fight-versus::before{
   content:"";position:absolute;inset:2px;background:#0c2b1d;
