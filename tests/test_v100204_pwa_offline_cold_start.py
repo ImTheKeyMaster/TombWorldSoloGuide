@@ -124,7 +124,10 @@ def test_first_paint_and_boot_recovery_do_not_depend_on_external_scripts():
 
 def test_manifest_requests_are_bounded_and_startup_does_not_wait_for_window_load():
     assert "async function fetchInitialGameData(path,timeoutMs=7500)" in APP
-    assert "return await fetch(path,{cache:'default',signal:controller.signal});" in APP
+    assert "const response=await fetch(path,{cache:'default',signal:controller.signal});" in APP
+    assert "const body=await response.text();" in APP
+    assert "return new Response(body,{status:response.status,statusText:response.statusText,headers:response.headers});" in APP
+    assert "const body=await response.blob();" in SW
     assert "fetchInitialGameData('Missions/manifest.json')" in APP
     assert "fetchInitialGameData('Player_Operatives/manifest.json')" in APP
     assert "fetchInitialGameData(BACKGROUND_MANIFEST_PATH,4500)" in APP
@@ -133,6 +136,51 @@ def test_manifest_requests_are_bounded_and_startup_does_not_wait_for_window_load
     assert "window.addEventListener('load'" not in sw_registration
     assert "ENSURE_OFFLINE_PACKAGE" in sw_registration
     assert "12000" in sw_registration
+
+
+def test_startup_fetch_deadline_covers_stalled_body_not_just_headers():
+    node(r"""
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const source=fs.readFileSync('app.js','utf8');
+const a=source.indexOf('  async function fetchInitialGameData(');
+const b=source.indexOf('  async function loadBackgroundManifest(',a);
+const fetch=async (path,{signal})=>{
+  const stream=new ReadableStream({start(controller){
+    controller.enqueue(new TextEncoder().encode('{"partial":true'));
+    signal.addEventListener('abort',()=>controller.error(new DOMException('Aborted','AbortError')),{once:true});
+  }});
+  return new Response(stream,{headers:{'Content-Type':'application/json'}});
+};
+const api=new Function('ctx','with(ctx){'+source.slice(a,b)+'return fetchInitialGameData;}')({fetch,AbortController,Response,setTimeout,clearTimeout});
+(async()=>{
+ const result=await Promise.race([
+   api('/Missions/manifest.json',35).then(()=> 'unexpected resolve',()=> 'aborted'),
+   new Promise(resolve=>setTimeout(()=>resolve('failed to time out'),1000))
+ ]);
+ assert.equal(result,'aborted','The startup timeout must abort a stalled body.');
+})().catch(e=>{console.error(e);process.exitCode=1;});
+""")
+    node(r"""
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const source=fs.readFileSync('service-worker.js','utf8');
+const a=source.indexOf('async function fetchWithStartupTimeout(');
+const b=source.indexOf('const OFFLINE_STARTUP_HTML=',a);
+const fetch=async (request,{signal})=>{
+  const stream=new ReadableStream({start(controller){
+    controller.enqueue(new TextEncoder().encode('<html>partial'));
+    signal.addEventListener('abort',()=>controller.error(new DOMException('Aborted','AbortError')),{once:true});
+  }});
+  return new Response(stream,{headers:{'Content-Type':'text/html'}});
+};
+const api=new Function('ctx','with(ctx){'+source.slice(a,b)+'return fetchWithStartupTimeout;}')({fetch,AbortController,Response,setTimeout,clearTimeout});
+(async()=>{
+ const result=await Promise.race([
+   api(new Request('https://example.com/index.html'),35).then(()=> 'unexpected resolve',()=> 'aborted'),
+   new Promise(resolve=>setTimeout(()=>resolve('failed to time out'),1000))
+ ]);
+ assert.equal(result,'aborted','The service-worker timeout must abort a stalled body.');
+})().catch(e=>{console.error(e);process.exitCode=1;});
+""")
 
 
 def test_version_and_pwa_cache_match():
