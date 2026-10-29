@@ -35,6 +35,7 @@ on:
       - tests/test_v100194_single_necron_weapon_readonly.py
       - tests/test_weapon_selection_required.py
       - tests/test_v100206_experimental_fight_duel_layout.py
+      - tests/test_v100207_experimental_fight_panel_borders.py
   push:
     branches:
       - main
@@ -70,6 +71,7 @@ on:
       - tests/test_v100194_single_necron_weapon_readonly.py
       - tests/test_weapon_selection_required.py
       - tests/test_v100206_experimental_fight_duel_layout.py
+      - tests/test_v100207_experimental_fight_panel_borders.py
   workflow_dispatch:
 
 jobs:
@@ -124,4 +126,5 @@ jobs:
             tests/test_v8629_player_multitarget_combat_resume.py \
             tests/test_v851_guided_combat_resume.py \
             tests/test_weapon_selection_required.py \
-            tests/test_v100206_experimental_fight_duel_layout.py
+            tests/test_v100206_experimental_fight_duel_layout.py \
+            tests/test_v100207_experimental_fight_panel_borders.py
