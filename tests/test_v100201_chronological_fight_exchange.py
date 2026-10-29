@@ -52,7 +52,7 @@ assert(recordPositions(html).npo<recordPositions(html).you);
 assert(html.includes('NPO ACTION')&&html.includes('YOUR ACTION'));
 assert(html.includes('4 DAMAGE')&&html.includes('BLOCKED'));
 assert.equal(matchCount(html,/class="fight-exchange-number"/g),2);
-assert(!html.includes('class="fight-exchange-number"'));
+assert(!html.includes('class="fight-exchange-group-number"'));
 fight.history.push(nextNpo);
 html=render(fight);
 assert.deepEqual(groups(html),['1','2','3']);
