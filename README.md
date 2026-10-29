@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.0.210
+# Tomb World Battle Guide v10.0.211
+
+## v10.0.211
+
+### Experimental Fight Resolution: compact exchange rail inspired by mockup 3
+
+- **Flat chronological history:** replace the large outlined nested exchange panels with a row of compact individually bordered action cards, arranged left to right like the third design mockup. Subtle connector chevrons distinguish the sequence.
+- **Number exchanges, not actions:** retain one number for each actual exchange of up to two recorded actions, with a small unbordered EXCHANGE label. Keep all exchanges in order and swipe horizontally to older/newer groups; auto-scroll to the latest.
+- **Concise action summaries:** each card shows the player or NPO, miniature/operative name, success kind, damage or blocked outcome, and relevant wounds change or canceled success. No invented steps or clearing saved combat history.
+- **Scope:** Experimental Solo only. Standard and PvP, duel stats/portraits/VS, Strike/Block actions, combat rules, and save format are unchanged.
+- **PWA:** update to v10.0.211 with offline cache refresh.
 
 ## v10.0.210
 
