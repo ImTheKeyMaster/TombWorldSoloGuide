@@ -75,7 +75,7 @@ assert(!html.includes('fight-exchange-number'));
 
 
 def test_mobile_card_density_and_explicit_scope():
-    block=CSS.split("/* v10.0.212: Mockup-style compact",1)[1]
+    block=CSS.split("/* v10.0.212: Mockup-style compact",1)[1].split("/* v10.0.214: Faction rules",1)[0]
     assert 'html[data-ui="tomb"] .is-duel-layout' in block
     assert 'flex:0 0 clamp(94px,26vw,115px);' in block
     assert 'width:clamp(94px,26vw,115px);' in block

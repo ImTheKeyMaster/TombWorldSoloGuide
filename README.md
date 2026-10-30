@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.1.5
+# Tomb World Battle Guide v10.1.6
+
+## v10.1.6
+
+### Strike and Block choice inset on Fight Resolution
+
+- **6px inset:** Keep a consistent 6px of space between each choice pill and its outer Strike/Block card, including the sides and bottom. Maintain the approved heading alignment and compact card dimensions.
+- **Selection clarity:** Selected green glows and keyboard focus outlines have sufficient space and do not touch the outer Strike/Block card borders.
+- **Shared modes:** Apply only to the Solo Tomb Fight Resolution layout in both Standard and Experimental modes. PvP, combat mechanics, dice, exchange history, and other action screens are unchanged.
+- **Release:** Refresh app and offline PWA caches to v10.1.6.
 
 ## v10.1.5
 
