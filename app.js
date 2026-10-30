@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.2';
+  const APP_VERSION = '10.1.3';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8285,9 +8285,19 @@ function showPlayerActivation(){
     }).join('');
     return `<section class="fight-auto-strike-result" aria-label="Fight strike breakdown"><h3>STRIKES RESOLVED</h3><p>With no enemy successes remaining, the Guide automatically resolved ${automatic.length} additional ${automatic.length===1?'Strike':'Strikes'} after your choice.</p><ol>${rows}</ol><p>Damage shown on the Fight Result is the actual wounds lost, not unused excess damage.</p></section>`;
   }
+  // Keep the full saved explanation for compatibility, but avoid repeating
+  // long-form damage sentences beneath the two participant cards in Tomb UI.
+  function compactFightResultSummaryHtml(result){
+    const damageRows=['attacker','defender'].map(role=>{
+      const participant=result.participants[role];
+      return `<div class="fight-result-summary-row"><span>${escapeHtml(participant.name)}</span><strong>${Number(participant.damageDealt)||0} damage</strong></div>`;
+    }).join('');
+    const notes=(result.explanation||[]).filter(line=>line!=='No damage was dealt.'&&!/ dealt \\d+ total Strike damage\\.$/.test(line));
+    return `<div class="fight-result-summary-rows" aria-label="Damage dealt by each fighter">${damageRows}</div>${notes.map(line=>`<p class="fight-result-summary-note">${escapeHtml(line)}</p>`).join('')}`;
+  }
   function renderFightResult(fight){
     const result=fight.result;
-    showModal('Fight Result',`<div class="fight-result" role="status" aria-label="Fight finished"><p class="fight-finished">FIGHT FINISHED</p><div class="fight-result-participants">${fightResultParticipantHtml(result.participants.attacker,'attacker')}${fightResultParticipantHtml(result.participants.defender,'defender')}</div><div class="fight-result-explanation"><h3>SUMMARY</h3>${result.explanation.map(line=>`<p>${escapeHtml(line)}</p>`).join('')}</div>${experimentalFightAutomaticStrikeResultHtml(result)}<div class="wizard-actions"><button class="btn primary" id="continueFightResult" data-dialog-focus>Continue</button></div></div>`,undefined,'fight-result');
+    showModal('Fight Result',`<div class="fight-result" role="status" aria-label="Fight finished"><p class="fight-finished">FIGHT FINISHED</p><div class="fight-result-participants">${fightResultParticipantHtml(result.participants.attacker,'attacker')}${fightResultParticipantHtml(result.participants.defender,'defender')}</div><div class="fight-result-explanation"><h3>SUMMARY</h3>${document.documentElement.dataset.ui==='tomb'?compactFightResultSummaryHtml(result):result.explanation.map(line=>`<p>${escapeHtml(line)}</p>`).join('')}</div>${experimentalFightAutomaticStrikeResultHtml(result)}<div class="wizard-actions"><button class="btn primary" id="continueFightResult" data-dialog-focus>Continue</button></div></div>`,undefined,'fight-result');
     scaleFightPortraits();
     $('#continueFightResult').onclick=()=>{const button=$('#continueFightResult');button.disabled=true;acknowledgeFightResult(fight);};
   }
