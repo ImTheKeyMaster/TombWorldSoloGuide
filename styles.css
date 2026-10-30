@@ -3986,3 +3986,14 @@ html[data-ui="tomb"] .fight-result-summary-header>span{
 html[data-ui="tomb"] .fight-result-summary-row>strong{
   font-variant-numeric:tabular-nums;
 }
+
+
+/* v10.1.5: Reduce dead space above the Weapon Rules heading on Fight Roll.
+   Scoped to the Fight Roll wrapper so weapon selection and combat guidance
+   retain their approved spacing on other screens. */
+.fight-roll>.fight-weapon-rules>.weapon-rules{
+  margin:3px 0 4px;
+}
+.fight-roll>.fight-weapon-rules>.weapon-rules>h3{
+  margin:0 0 5px;
+}
