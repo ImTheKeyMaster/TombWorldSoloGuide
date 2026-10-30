@@ -36,7 +36,7 @@ def test_automatic_strike_preview_shared():
 
 
 def test_shared_styles_and_version():
-    section = CSS.split("/* v10.1.8: Automatic residual Fight strike explanations shared", 1)[1].split("/* v10.0.175/180:", 1)[0]
+    section = CSS.split("/* v10.0.203: Explain automatic residual Fight strikes", 1)[1].split("/* v10.0.175/180:", 1)[0]
     assert '[data-experimental="on"]' not in section
     assert 'html[data-ui="tomb"] .fight-auto-strike-result' in section
     for text in (APP, SW, HTML):
