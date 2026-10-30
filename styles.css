@@ -2977,7 +2977,7 @@ html[data-ui="tomb"] .is-duel-layout .fight-exchange-details{
   html[data-ui="tomb"] .is-duel-layout .fight-exchange-copy{padding-left:7px}
 }
 
-/* v10.1.8: Automatic residual Fight strike explanations shared by Standard and Experimental. */
+/* v10.0.203: Explain automatic residual Fight strikes, now shared by Standard and Experimental. */
 html[data-ui="tomb"] .fight-auto-strike-result{
   display:grid;gap:9px;padding:12px;border-left:3px solid var(--green);
   background:rgba(41,127,78,.11);min-width:0;
@@ -4023,7 +4023,7 @@ html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-columns>.experim
 }
 
 
-/* v10.1.8: Bottom-align Solo Fight participant copy and dice even when ACTING
+/* v10.1.7: Bottom-align Solo Fight participant copy and dice even when ACTING
    NOW is taller than the opposing NECRON/OPERATIVE status. Keep the badges
    top-aligned, and leave absolute-positioned model portraits and VS unchanged. */
 html[data-ui="tomb"] .experimental-fight-choice-screen.is-duel-layout .experimental-fight-pools{
