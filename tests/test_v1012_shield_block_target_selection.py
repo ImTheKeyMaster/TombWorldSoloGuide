@@ -111,7 +111,7 @@ assert.equal(api.fightBlockTargets(f,'attacker',f.successes.attacker[0]).length,
 
 
 def test_release_and_shared_fight_flow_remain_intact():
-    assert CURRENT_APP_VERSION=="10.1.2"
+    assert tuple(map(int,CURRENT_APP_VERSION.split("."))) >= (10,1,2)
     assert "function shieldBlockCapacity(participant)" in APP
     assert "function soloNpoFightDecision(fight,role)" in APP
     assert "function experimentalActionFirstFightHtml(fight,role,participant,actions,capacity)" in APP
@@ -121,7 +121,7 @@ def test_release_and_shared_fight_flow_remain_intact():
     assert "const STORAGE_KEY = 'tombWorldBattleGuide.v1';" in APP
     worker=(ROOT/"service-worker.js").read_text(encoding="utf-8")
     html=(ROOT/"index.html").read_text(encoding="utf-8")
-    assert "const APP_VERSION = '10.1.2';" in worker
-    assert "app.js?v=10.1.2" in html
-    assert "styles.css?v=10.1.2" in html
-    assert "V10.1.2" in html
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in worker
+    assert f"app.js?v={CURRENT_APP_VERSION}" in html
+    assert f"styles.css?v={CURRENT_APP_VERSION}" in html
+    assert f"V{CURRENT_APP_VERSION}" in html
