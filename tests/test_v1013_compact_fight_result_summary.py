@@ -40,7 +40,7 @@ const compact=api.compactFightResultSummaryHtml(result);
 assert(compact.includes('Marksman</span><strong>9 damage'));
 assert(compact.includes('Necron Warrior 5</span><strong>3 damage'));
 assert(!compact.includes('total Strike damage'));
-assert.equal((compact.match(/fight-result-summary-row/g)||[]).length,2);
+assert.equal((compact.match(/class="fight-result-summary-row"/g)||[]).length,2);
 api.renderFightResult({result});
 assert(markup.includes('class="fight-result-explanation"'));
 assert(markup.includes('fight-result-summary-rows'));
