@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.1.2
+# Tomb World Battle Guide v10.1.3
+
+## v10.1.3
+
+### Compact Fight Result Summary
+
+- **Space-saving summary:** Replace repetitive full-sentence damage descriptions with a compact, two-row breakdown naming each participant and actual damage dealt.
+- **Keep special context:** Preserve messages about blocks, missing successes and other special outcomes as smaller notes below the damage rows. The full saved Fight explanation and Fight mechanics remain unchanged.
+- **Scoped:** Both Standard and Experimental Tomb UI receive the compact Summary. Classic retains the original explanatory display. Strike history, portrait cards and elimination presentation are unchanged.
+- **Offline:** Refresh PWA versioned assets and caches to v10.1.3.
 
 ## v10.1.2
 
