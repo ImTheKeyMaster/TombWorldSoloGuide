@@ -3957,3 +3957,32 @@ html[data-ui="tomb"] .fight-result-explanation .fight-result-summary-note{
   font-size:.77rem;
   line-height:1.35;
 }
+
+
+/* v10.1.4: Explicit scorecard column label avoids confusion between incoming
+   and outgoing damage. Works on Standard and Experimental Tomb Fight Results. */
+html[data-ui="tomb"] .fight-result-summary-header{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+  min-width:0;
+}
+html[data-ui="tomb"] .fight-result-summary-header>h3{
+  margin:0 0 3px;
+  font-size:.78rem;
+  line-height:1.2;
+  letter-spacing:.08em;
+}
+html[data-ui="tomb"] .fight-result-summary-header>span{
+  color:var(--muted);
+  font-size:.66rem;
+  font-weight:850;
+  letter-spacing:.055em;
+  line-height:1.2;
+  text-align:right;
+  white-space:nowrap;
+}
+html[data-ui="tomb"] .fight-result-summary-row>strong{
+  font-variant-numeric:tabular-nums;
+}

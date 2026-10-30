@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.1.3
+# Tomb World Battle Guide v10.1.4
+
+## v10.1.4
+
+### Fight Result Summary: Damage Dealt column
+
+- **Unambiguous scorecard:** Place the shared `DAMAGE DEALT` heading above the right column in the Fight Result Summary, opposite `SUMMARY`. Display bare numeric damage totals (for example, Gunner 6 and Canoptek Macrocyte Warrior 2 0).
+- **Compact and responsive:** Right-align totals, support long fighter names without clipping, preserve compact spacing and special-context notes below the damage rows.
+- **Both Tomb modes:** Standard and Experimental share this display. Classic retains its original explanatory text. No change to damage calculations, saved outcomes, Fight portraits, Strikes Resolved, or combat mechanics.
+- **Release:** Refresh PWA resources and cache to 10.1.4.
 
 ## v10.1.3
 
