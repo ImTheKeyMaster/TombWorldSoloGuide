@@ -47,6 +47,7 @@ on:
       - tests/test_v100217_experimental_fight_dice.py
       - tests/test_v1011_desktop_fight_vs_gutter.py
       - tests/test_v1012_shield_block_target_selection.py
+      - tests/test_v1013_compact_fight_result_summary.py
   push:
     branches:
       - main
@@ -94,6 +95,7 @@ on:
       - tests/test_v100217_experimental_fight_dice.py
       - tests/test_v1011_desktop_fight_vs_gutter.py
       - tests/test_v1012_shield_block_target_selection.py
+      - tests/test_v1013_compact_fight_result_summary.py
   workflow_dispatch:
 
 jobs:
@@ -162,4 +164,5 @@ jobs:
             tests/test_v100175_experimental_action_first_fight.py \
             tests/test_v100217_experimental_fight_dice.py \
             tests/test_v1011_desktop_fight_vs_gutter.py \
-            tests/test_v1012_shield_block_target_selection.py
+            tests/test_v1012_shield_block_target_selection.py \
+            tests/test_v1013_compact_fight_result_summary.py
