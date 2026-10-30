@@ -8292,7 +8292,7 @@ function showPlayerActivation(){
       const participant=result.participants[role];
       return `<div class="fight-result-summary-row"><span>${escapeHtml(participant.name)}</span><strong>${Number(participant.damageDealt)||0} damage</strong></div>`;
     }).join('');
-    const notes=(result.explanation||[]).filter(line=>line!=='No damage was dealt.'&&!/ dealt \\d+ total Strike damage\\.$/.test(line));
+    const notes=(result.explanation||[]).filter(line=>line!=='No damage was dealt.'&&!/ dealt \d+ total Strike damage\.$/.test(line));
     return `<div class="fight-result-summary-rows" aria-label="Damage dealt by each fighter">${damageRows}</div>${notes.map(line=>`<p class="fight-result-summary-note">${escapeHtml(line)}</p>`).join('')}`;
   }
   function renderFightResult(fight){
