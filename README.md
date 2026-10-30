@@ -1,13 +1,21 @@
-# Tomb World Battle Guide v10.1.7
+# Tomb World Battle Guide v10.1.8
 
-## v10.1.7
+## v10.1.8
+
+### Promote Automatic Strike guidance to Standard
+
+- **Shared Fight preview:** Both Standard and Experimental now explain eligible automatic follow-up Strikes when the opponent has no remaining successes.
+- **Shared Fight result:** Both modes show the same chosen-versus-automatic Strike breakdown when automatic Strikes occur.
+- **No mechanics changes:** Preserve existing Strike resolution, Classic/PvP isolation, and the Experimental opt-in toggle.
+
+## v10.1.8
 
 ### Bottom-aligned Fight Resolution summaries
 
 - **Aligned wounds and dice:** Keep each Solo Fight participant's name, weapon, wound count, and remaining dice anchored at the bottom of equal-height panels, so the taller ACTING NOW badge no longer offsets one fighter's stats.
 - **Badges stay at top:** The status pill remains top-aligned with the other participant's status label. Long names and weapons can still wrap naturally.
 - **Portraits untouched:** Keep the existing absolute portrait placement, miniature sizing, VS badge, responsive dice sizing, and Fight mechanics. The same change applies to Standard and Experimental Tomb UI, not PvP.
-- **Offline release:** Update versioned PWA assets and cache to v10.1.7.
+- **Offline release:** Update versioned PWA assets and cache to v10.1.8.
 
 ## v10.1.6
 

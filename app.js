@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.7';
+  const APP_VERSION = '10.1.8';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8271,7 +8271,7 @@ function showPlayerActivation(){
     finally{fightCompletionInProgress=false;}
   }
   function experimentalFightAutomaticStrikeResultHtml(result){
-    if(!experimentalFeaturesEnabled()||isPvpMode()||document.documentElement.dataset.ui!=='tomb')return '';
+    if(isPvpMode()||document.documentElement.dataset.ui!=='tomb')return '';
     const history=Array.isArray(result?.fightHistory)?result.fightHistory:[];
     const automatic=history.filter(entry=>entry.type==='strike'&&entry.automatic);
     if(!automatic.length)return '';
@@ -8356,7 +8356,7 @@ function showPlayerActivation(){
   // Contextual advice is shown only when both normal and critical successes remain.
   // It does not imply that the player is guaranteed another turn before the NPO acts.
   function experimentalFightAutomaticStrikePreview(fight,role,success,damage){
-    if(!experimentalFeaturesEnabled()||isPvpMode())return '';
+    if(isPvpMode()||document.documentElement.dataset.ui!=='tomb')return '';
     const enemy=otherFightRole(role),target=fight[enemy];
     if(unresolvedFightSuccesses(fight,enemy).length||!target||target.wounds<=damage)return '';
     const remaining=unresolvedFightSuccesses(fight,role).filter(item=>item.id!==success.id);

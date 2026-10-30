@@ -47,7 +47,7 @@ assert.deepEqual(fight.history.map(x=>!!x.automatic),[false,true,true]);
 assert.equal(fight.history.reduce((total,x)=>total+x.before-x.after,0),9);
 """)
 
-def test_preview_explains_follow_up_but_not_mixed_strikes_or_standard():
+def test_preview_explains_follow_up_but_not_mixed_strikes():
     js(r"""
 const assert=require('node:assert/strict'),fs=require('node:fs'),s=fs.readFileSync('app.js','utf8');
 const a=s.indexOf('  function experimentalFightAutomaticStrikePreview('),
@@ -55,6 +55,7 @@ const a=s.indexOf('  function experimentalFightAutomaticStrikePreview('),
 let on=true;
 const ctx={
   experimentalFeaturesEnabled:()=>on,isPvpMode:()=>false,
+  document:{documentElement:{dataset:{ui:'tomb'}}},
   otherFightRole:r=>r==='attacker'?'defender':'attacker',
   titleCaseRuleId:x=>x.charAt(0).toUpperCase()+x.slice(1),
   unresolvedFightSuccesses:(f,r)=>f.successes[r].filter(x=>x.status==='unresolved')
@@ -70,7 +71,7 @@ assert.equal(preview(f,'attacker',f.successes.attacker[1],3),'');
 f.successes.defender=[{id:'enemy',kind:'normal',status:'unresolved'}];
 assert.equal(preview(f,'attacker',f.successes.attacker[0],4),'');
 f.successes.defender=[];on=false;
-assert.equal(preview(f,'attacker',f.successes.attacker[0],4),'');
+assert(preview(f,'attacker',f.successes.attacker[0],4).includes('auto-strike'));
 """)
 
 def test_result_breakdown_distinguishes_chosen_automatic_and_effective_damage():
@@ -96,7 +97,7 @@ assert(output.includes('4 damage · 9 → 5 wounds'));
 assert(output.includes('3 damage · 5 → 2 wounds'));
 assert(output.includes('2 applied (3 potential) · 2 → 0 wounds'));
 assert.equal(html(result),output);
-on=false;assert.equal(html(result),'');
+on=false;assert.equal(html(result),output);
 on=true;pvp=true;assert.equal(html(result),'');
 pvp=false;assert.equal(html({...result,fightHistory:result.fightHistory.slice(0,1)}),'');
 """)
@@ -107,7 +108,7 @@ def test_saved_game_and_standard_mode_compatibility():
     assert "history:Array.isArray(fight.history)?fight.history.filter(isRecord).map(item=>({...item})):[]" in APP
     assert "if(human&&automaticStrikes){commitFightStrike(fight,role,automaticStrikes[0].id,{automatic:true});" in APP
     assert "experimentalFightAutomaticStrikeResultHtml(result)" in APP
-    assert 'html[data-ui="tomb"][data-experimental="on"] .fight-auto-strike-result' in CSS
+    assert 'html[data-ui="tomb"] .fight-auto-strike-result' in CSS
     assert tuple(map(int,CURRENT_APP_VERSION.split("."))) >= (10,0,203)
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in (ROOT/"service-worker.js").read_text()
