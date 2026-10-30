@@ -4021,3 +4021,29 @@ html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-columns>.experim
     padding-inline:7px;
   }
 }
+
+
+/* v10.1.7: Bottom-align Solo Fight participant copy and dice even when ACTING
+   NOW is taller than the opposing NECRON/OPERATIVE status. Keep the badges
+   top-aligned, and leave absolute-positioned model portraits and VS unchanged. */
+html[data-ui="tomb"] .experimental-fight-choice-screen.is-duel-layout .experimental-fight-pools{
+  align-items:stretch;
+}
+html[data-ui="tomb"] .experimental-fight-choice-screen.is-duel-layout .experimental-fight-pool{
+  display:flex;
+  flex-direction:column;
+}
+html[data-ui="tomb"] .experimental-fight-choice-screen.is-duel-layout .experimental-fight-pool-details{
+  display:flex;
+  flex:1;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+}
+html[data-ui="tomb"] .experimental-fight-choice-screen.is-duel-layout .experimental-fight-card-status{
+  align-self:flex-start;
+  flex:none;
+}
+html[data-ui="tomb"] .experimental-fight-choice-screen.is-duel-layout .experimental-fight-card-name{
+  margin-top:auto;
+}
