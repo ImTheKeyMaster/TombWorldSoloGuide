@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.1.4
+# Tomb World Battle Guide v10.1.5
+
+## v10.1.5
+
+### Tighten Fight Roll Weapon Rules spacing
+
+- Reduce the gap above each Weapon Rules panel to 3px and remove the default top margin on its heading. The weapon rule text retains comfortable spacing and readability.
+- Scope the styling to the Fight Roll only. Both Standard and Experimental are updated; other weapon guidance, dice, portraits and Fight mechanics stay unchanged.
+- Refresh the app and PWA offline cache to v10.1.5.
 
 ## v10.1.4
 

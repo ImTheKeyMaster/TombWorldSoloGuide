@@ -64,11 +64,11 @@ def test_tomb_scoping_and_original_classic_fight_summary():
 
 
 def test_release_version_is_consistent():
-    assert CURRENT_APP_VERSION=="10.1.4"
+    assert tuple(map(int,CURRENT_APP_VERSION.split("."))) >= (10,1,4)
     index=(ROOT/"index.html").read_text(encoding="utf-8")
     worker=(ROOT/"service-worker.js").read_text(encoding="utf-8")
-    assert "const APP_VERSION = '10.1.4';" in APP
-    assert "const APP_VERSION = '10.1.4';" in worker
-    assert "app.js?v=10.1.4" in index
-    assert "styles.css?v=10.1.4" in index
-    assert "V10.1.4" in index
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in worker
+    assert f"app.js?v={CURRENT_APP_VERSION}" in index
+    assert f"styles.css?v={CURRENT_APP_VERSION}" in index
+    assert f"V{CURRENT_APP_VERSION}" in index
