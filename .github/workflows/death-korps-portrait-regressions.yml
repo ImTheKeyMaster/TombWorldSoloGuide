@@ -51,6 +51,7 @@ on:
       - tests/test_v1014_fight_summary_damage_column.py
       - tests/test_v1015_fight_roll_rules_spacing.py
       - tests/test_v1016_fight_choice_pill_padding.py
+      - tests/test_v1017_fight_summary_bottom_alignment.py
   push:
     branches:
       - main
@@ -102,6 +103,7 @@ on:
       - tests/test_v1014_fight_summary_damage_column.py
       - tests/test_v1015_fight_roll_rules_spacing.py
       - tests/test_v1016_fight_choice_pill_padding.py
+      - tests/test_v1017_fight_summary_bottom_alignment.py
   workflow_dispatch:
 
 jobs:
@@ -174,4 +176,5 @@ jobs:
             tests/test_v1013_compact_fight_result_summary.py \
             tests/test_v1014_fight_summary_damage_column.py \
             tests/test_v1015_fight_roll_rules_spacing.py \
-            tests/test_v1016_fight_choice_pill_padding.py
+            tests/test_v1016_fight_choice_pill_padding.py \
+            tests/test_v1017_fight_summary_bottom_alignment.py
