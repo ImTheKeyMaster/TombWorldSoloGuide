@@ -37,8 +37,10 @@ const result={
  explanation:['Marksman dealt 9 total Strike damage.','Necron Warrior 5 dealt 3 total Strike damage.'],
 };
 const compact=api.compactFightResultSummaryHtml(result);
-assert(compact.includes('Marksman</span><strong>9 damage'));
-assert(compact.includes('Necron Warrior 5</span><strong>3 damage'));
+assert(compact.includes('Marksman</span><strong>9</strong>'));
+assert(compact.includes('<div class="fight-result-summary-header"><h3>SUMMARY</h3><span>DAMAGE DEALT</span></div>'));
+assert(!compact.includes('9 damage'))
+assert(compact.includes('Necron Warrior 5</span><strong>3</strong>'));
 assert(!compact.includes('total Strike damage'));
 assert.equal((compact.match(/class="fight-result-summary-row"/g)||[]).length,2);
 api.renderFightResult({result});
@@ -68,7 +70,7 @@ assert(special.includes('Aegis &amp; &lt;Shield&gt;'));
 assert(special.includes('Aegis blocked 2 Macrocyte Normal Successes.'));
 assert(special.includes('Neither operative retained a success.'));
 assert(!special.includes('No damage was dealt.'));
-assert(special.includes('0 damage'));
+assert(special.includes('<strong>0</strong>'));
 const oneSided=api.compactFightResultSummaryHtml({
  participants:{attacker:{name:'Scout',damageDealt:4},defender:{name:'Warrior',damageDealt:0}},
  explanation:['Warrior retained no successes.','Scout dealt 4 total Strike damage.']
@@ -96,11 +98,11 @@ def test_summary_spacing_is_scoped_and_fight_mechanics_preserved():
 
 
 def test_version_and_pwa_cache_consistency():
-    assert CURRENT_APP_VERSION=="10.1.3"
-    assert "const APP_VERSION = '10.1.3';" in APP
+    assert tuple(map(int,CURRENT_APP_VERSION.split("."))) >= (10,1,3)
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in APP
     html=(ROOT/"index.html").read_text(encoding="utf-8")
     worker=(ROOT/"service-worker.js").read_text(encoding="utf-8")
-    assert "const APP_VERSION = '10.1.3';" in worker
-    assert "app.js?v=10.1.3" in html
-    assert "styles.css?v=10.1.3" in html
-    assert "V10.1.3" in html
+    assert f"const APP_VERSION = '{CURRENT_APP_VERSION}';" in worker
+    assert f"app.js?v={CURRENT_APP_VERSION}" in html
+    assert f"styles.css?v={CURRENT_APP_VERSION}" in html
+    assert f"V{CURRENT_APP_VERSION}" in html
