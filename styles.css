@@ -3997,3 +3997,27 @@ html[data-ui="tomb"] .fight-result-summary-row>strong{
 .fight-roll>.fight-weapon-rules>.weapon-rules>h3{
   margin:0 0 5px;
 }
+
+
+/* v10.1.6: Give Solo Fight Strike/Block radio-option pills a visible 6px
+   inset from their enclosing cards on every side. The inset also contains
+   the selected glow and keyboard focus outline. Shared Standard/Experimental;
+   do not alter PvP or the action button dimensions. */
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-columns>.experimental-fight-choice-group{
+  padding:9px 0 0;
+}
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-columns>.experimental-fight-choice-group>h5{
+  padding-inline:9px;
+}
+html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-columns>.experimental-fight-choice-group>.experimental-fight-option-list{
+  box-sizing:border-box;
+  padding:6px;
+}
+@media(max-width:360px){
+  html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-columns>.experimental-fight-choice-group{
+    padding:7px 0 0;
+  }
+  html[data-ui="tomb"] .is-duel-layout .experimental-fight-choice-columns>.experimental-fight-choice-group>h5{
+    padding-inline:7px;
+  }
+}
