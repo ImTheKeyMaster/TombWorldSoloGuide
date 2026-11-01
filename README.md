@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.1.9
+# Tomb World Battle Guide v10.1.10
+
+## v10.1.10
+
+### Deathwatch shooting weapon and ammunition field spacing
+
+- Add 12px of vertical separation between the Weapon control and the Special Issue Ammunition label in Resolve Shooting Attack.
+- Scope the spacing to the immediately adjacent Deathwatch ammunition field, leaving all other attack dialogs and control spacing unchanged.
+- Refresh versioned PWA assets and cache to v10.1.10. No combat mechanics changes.
 
 ## v10.1.9
 
