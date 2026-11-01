@@ -28,6 +28,7 @@ on:
       - tests/test_v100198_jointops_npo_profiles.py
       - tests/test_aggressive_defense_d3.py
       - tests/test_v1009_aggressive_defence_result_display.py
+      - tests/test_v10116_aggressive_defence_portrait_wounds.py
       - tests/test_v9231_ceaseless_scuttling_mode_behavior.py
       - tests/test_v9262_ceaseless_scuttling_actions.py
       - Player_Operatives/DeathWatch.json
@@ -80,6 +81,7 @@ on:
       - tests/test_v100198_jointops_npo_profiles.py
       - tests/test_aggressive_defense_d3.py
       - tests/test_v1009_aggressive_defence_result_display.py
+      - tests/test_v10116_aggressive_defence_portrait_wounds.py
       - tests/test_v9231_ceaseless_scuttling_mode_behavior.py
       - tests/test_v9262_ceaseless_scuttling_actions.py
       - Player_Operatives/DeathWatch.json
@@ -150,6 +152,7 @@ jobs:
             tests/test_v100198_jointops_npo_profiles.py \
             tests/test_aggressive_defense_d3.py \
             tests/test_v1009_aggressive_defence_result_display.py \
+            tests/test_v10116_aggressive_defence_portrait_wounds.py \
             tests/test_v9231_ceaseless_scuttling_mode_behavior.py \
             tests/test_v9262_ceaseless_scuttling_actions.py \
             tests/test_v100150_experimental_weapon_guidance_selection.py \

@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.1.15
+# Tomb World Battle Guide v10.1.16
+
+## v10.1.16
+
+### Experimental Aggressive Defence portrait and wound preview
+
+- **Experimental only:** The Aggressive Defence result displays the affected operative's existing Fight portrait, retaliatory damage, and before/after wounds.
+- **Elimination:** A lethal retaliation shows a red outline and the prominent ELIMINATED status; D3 rolls of 1 show unchanged wounds and no damage.
+- **Rules unchanged:** Wounds are previewed without mutation until Continue. Existing once-only damage application, resumed rolls, PvP, and Standard presentation are preserved.
+- **Offline cache:** PWA updated to 10.1.16.
 
 ## v10.1.15
 

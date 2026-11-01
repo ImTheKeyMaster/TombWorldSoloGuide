@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.15';
+  const APP_VERSION = '10.1.16';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -6718,7 +6718,10 @@ function showPlayerActivation(){
     acknowledgeCurrentDiceRequest();
     missionDialogLocked=true;
     const animate=!isPvpMode()&&!restoredRoll;
-    const outcome=aggressiveDefenseOutcome(retaliation.roll,playerName(stage.playerOperativeId));
+    const usePortraitResult=experimentalFeaturesEnabled()&&document.documentElement.dataset.ui==='tomb';
+    const outcome=usePortraitResult
+      ? experimentalAggressiveDefenseOutcome(retaliation.roll,stage.playerOperativeId,playerName(stage.playerOperativeId),playerCurrentWounds(stage.playerOperativeId),Boolean(pending.aggressiveDefenseDamageApplied))
+      : aggressiveDefenseOutcome(retaliation.roll,playerName(stage.playerOperativeId));
     showModal('Aggressive Defence',`<p><strong>${escapeHtml(npoName(target))}</strong> was incapacitated by an enemy operative within 2 inches.</p><section class="combat-stage" aria-label="Aggressive Defence roll"><div class="dice-row ${animate?'animated-roll':'settled'}" id="aggressiveDefenseDie">${animate?rollingDieHtml():dieHtml({value:retaliation.roll,kind:'hit',retained:true})}</div><div class="aggressive-defense-result" id="aggressiveDefenseResult" role="status" aria-live="polite" ${animate?'hidden':''} ${animate?'':`aria-label="${escapeHtml(outcome.announcement)}"`}>${animate?'':outcome.html}</div></section><div class="wizard-actions"><button class="btn primary" id="continueAggressiveDefense" ${animate?'disabled':''}>Continue</button></div>`);
     if(animate)void TombWorldDiceSfx.play();
     const button=$('#continueAggressiveDefense');
@@ -8577,6 +8580,18 @@ function showPlayerActivation(){
     return {html:`<strong>D3 ROLL: ${roll}</strong><small class="${outcomeClass}">${heading}</small><p>${consequence}</p>`,announcement};
   }
 
+  // Experimental result preview only. Damage is still committed once on Continue.
+  function experimentalAggressiveDefenseOutcome(roll,operativeId,attackerName='',beforeWounds=0,alreadyApplied=false){
+    const damage=aggressiveDefenseDamage(roll);
+    const name=String(attackerName||'').trim()||'The attacking operative';
+    const before=Math.max(0,Number(beforeWounds)||0);
+    const after=alreadyApplied?before:Math.max(0,before-damage);
+    const eliminated=after===0;
+    const portrait=fightParticipantPortrait({side:'player',id:operativeId},'aggressive-defence');
+    const consequence=alreadyApplied?'Retaliatory damage already applied':damage>0?`Took ${damage} retaliatory damage`:'No retaliatory damage';
+    const announcement=`D3 Roll ${roll}. ${name}. ${consequence}. Wounds ${before} to ${after}.${eliminated?' Eliminated.':''}`;
+    return {html:`<strong>D3 ROLL: ${roll}</strong><div class="aggressive-defense-operative${eliminated?' eliminated':''}">${portrait?`<span class="aggressive-defense-operative-portrait">${portrait}</span>`:''}<div class="aggressive-defense-operative-details"><strong class="aggressive-defense-operative-name">${escapeHtml(name)}</strong><span class="aggressive-defense-damage ${damage>0?'retaliation':'no-retaliation'}">${escapeHtml(consequence)}</span><span class="aggressive-defense-wounds">Wounds <strong>${before} → ${after}</strong></span>${eliminated?'<strong class="fight-eliminated">ELIMINATED</strong>':''}</div></div>`,announcement};
+  }
   function aggressiveDefenseRollHtml(){
     return `<section class="combat-stage" id="aggressiveDefenseRoll" aria-label="Aggressive Defence roll">
       <small>AGGRESSIVE DEFENSE CONSTRUCT</small>
