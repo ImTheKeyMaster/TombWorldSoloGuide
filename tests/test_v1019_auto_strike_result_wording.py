@@ -32,14 +32,15 @@ const allAuto=render(base);
 assert(allAuto.includes('automatically resolved 2 Strikes.'));
 assert(!allAuto.includes('after your choice'));
 assert(!allAuto.includes('additional 2'));
-assert.equal((allAuto.match(/AUTO · Bombard · Normal Strike/g)||[]).length,2);
+assert.equal((allAuto.match(/\(AUTO\) Bombard · Normal Strike/g)||[]).length,2);
 const mixed=render({...base,fightHistory:[
   {type:'strike',role:'attacker',successKind:'critical',damage:4,before:11,after:7},
   ...base.fightHistory
 ]});
 assert(mixed.includes('automatically resolved 2 additional Strikes after your choice.'));
-assert(mixed.includes('CHOSEN · Bombard · Critical Strike'));
-assert.equal((mixed.match(/AUTO · Bombard · Normal Strike/g)||[]).length,2);
+assert(mixed.includes('Bombard · Critical Strike'));
+assert(!mixed.includes('CHOSEN'));
+assert.equal((mixed.match(/\(AUTO\) Bombard · Normal Strike/g)||[]).length,2);
 const single=render({...base,fightHistory:base.fightHistory.slice(0,1)});
 assert(single.includes('automatically resolved 1 Strike.'));
 assert(!single.includes('after your choice'));
