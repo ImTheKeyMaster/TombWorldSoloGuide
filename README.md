@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.1.13
+# Tomb World Battle Guide v10.1.14
+
+## v10.1.14
+
+### Cleaner player attack results
+
+- **Less clutter:** Remove the redundant damage-on-Continue explanation under player attack outcomes. Both player and NPO result screens now omit this implementation detail.
+- **Same behavior:** Preserve pending damage calculations, Continue commit behavior, and once-only damage safeguards.
+- **Offline cache:** PWA resources updated to 10.1.14.
 
 ## v10.1.13
 
