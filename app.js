@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.10';
+  const APP_VERSION = '10.1.11';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -9294,17 +9294,64 @@ function showPlayerActivation(){
     return {key:movementInquiry?.id||`${id}-${applicability?'applicability':'feasibility'}`,action,actionId:id,type:applicability?'applicability':'feasibility',title,help:help||'Check the action’s target, distance, and placement. Select Yes only if the action can be completed now.',movementIntent:movementInquiry||null,concernsControlRange:Boolean(inquiry?.concernsControlRange)};
   }
 
+  function useConciseExperimentalNpoGuide(){
+    return !isPvpMode()&&document.documentElement.dataset.ui==='tomb'&&experimentalFeaturesEnabled();
+  }
+  function conciseNpoQuestionTitle(q){
+    const id=q.actionId||npoActionId(q.action);
+    if(id==='fall-back')return q.type==='applicability'?'In enemy control range?':'Can Fall Back safely?';
+    if(id==='shoot')return 'Valid shooting target?';
+    if(id==='fight')return 'Enemy in control range?';
+    if(id==='charge')return 'Can Charge a target?';
+    if(id==='reposition'||id==='dash'){
+      const inches=id==='dash'?'3':q.title.match(/up to (\d+(?:\.\d+)?) inches?/i)?.[1];
+      const move=(id==='dash'?'Dash':'Reposition')+(inches?` ${inches}″`:'');
+      const purpose=q.movementIntent?.purpose;
+      if(purpose==='enable-shoot')return `Can ${move} to Shoot?`;
+      if(purpose==='enable-fight')return `Can ${move} toward a target?`;
+      if(purpose==='toward-royal-warden')return `Can ${move} toward the leader?`;
+      return `Can ${move} improve position?`;
+    }
+    return q.title;
+  }
+  function conciseNpoChoiceLabels(q){
+    const id=q.actionId||npoActionId(q.action);
+    if(id==='fall-back')return q.type==='applicability'?['Out of range','In range']:['Cannot Fall Back','Can Fall Back'];
+    if(id==='shoot')return ['No target','Can Shoot'];
+    if(id==='fight')return ['No target','Can Fight'];
+    if(id==='charge')return ['Cannot Charge','Can Charge'];
+    if(id==='reposition')return ['Cannot Reposition','Can Reposition'];
+    if(id==='dash')return ['Cannot Dash','Can Dash'];
+    return ['Not possible','Can use'];
+  }
   function renderCompletedNpoQuestions(history){
+    if(useConciseExperimentalNpoGuide()){
+      if(!history.length)return '';
+      const recent=history.slice(-5),older=history.length-recent.length;
+      const chips=recent.map(item=>{
+        const name=conciseNpoActionName({id:npoActionId(item.action),name:item.action});
+        const answer=item.type==='selected'?'Selected':item.answer?'Yes':'No';
+        const mark=item.type==='selected'||item.answer?'✓':'✕';
+        return `<span class="npo-compact-history-chip ${item.answer||item.type==='selected'?'passed':'declined'}" role="listitem" aria-label="${escapeHtml(name)}: ${answer}" title="${escapeHtml(item.question||item.action)}"><span>${escapeHtml(name)}</span><strong aria-hidden="true">${mark}</strong></span>`;
+      }).join('');
+      return `<div class="npo-compact-history" role="list" aria-label="Previous NPO decisions">${older?`<span class="npo-compact-history-older" aria-label="${older} earlier checks">+${older} earlier</span>`:''}${chips}</div>`;
+    }
     return history.map(item=>`<div class="npo-question-complete npo-question-history"><span>${escapeHtml(item.question||item.action)}</span><strong>${item.type==='selected'?'Selected':item.answer?'Yes':'No'}</strong></div>`).join('');
   }
-
   function renderActiveNpoQuestion(q){
+    if(useConciseExperimentalNpoGuide()){
+      const [noLabel,yesLabel]=conciseNpoChoiceLabels(q);
+      return `<section class="npo-question-active npo-question-card--active npo-active-question npo-concise-question" aria-live="polite" aria-atomic="true" aria-labelledby="activeNpoQuestion">
+        <h3 id="activeNpoQuestion">${escapeHtml(conciseNpoQuestionTitle(q))}</h3>
+        <details class="npo-compact-guidance"><summary>ⓘ Rules &amp; guidance</summary><p id="activeNpoQuestionHelp">${escapeHtml(q.title)} ${escapeHtml(q.help)}</p></details>
+        <div class="ai-choice-grid"><button class="ai-choice no" data-answer="no"><span aria-hidden="true">✕</span><strong>${escapeHtml(noLabel)}</strong></button><button class="ai-choice yes" data-answer="yes"><span aria-hidden="true">✓</span><strong>${escapeHtml(yesLabel)}</strong></button></div>
+      </section>`;
+    }
     return `<section class="npo-question-active npo-question-card--active npo-active-question" aria-live="polite" aria-atomic="true" aria-labelledby="activeNpoQuestion" aria-describedby="activeNpoQuestionHelp">
       <h3 id="activeNpoQuestion">${escapeHtml(q.title)}</h3><p id="activeNpoQuestionHelp">${escapeHtml(q.help)}</p>
       <div class="ai-choice-grid"><button class="ai-choice no" data-answer="no"><strong>No</strong></button><button class="ai-choice yes" data-answer="yes"><strong>Yes</strong></button></div>
     </section>`;
   }
-
   function renderNpoActionProgress(activation=state.lastActivation){
     const actions=activation?.resolvedActions||[];
     if(!actions.length||activation.remainingAp<=0)return '';
@@ -9371,6 +9418,13 @@ function showPlayerActivation(){
     const pendingBreach=(state.npoRuleState.pendingMovementEffects||[]).some(item=>item.targetId===n.id&&item.ruleId==='molecular-breach');
     const loadout=definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name||npoWeapon(definition,n.weaponId)?.name;
     const engrammatic=n.wounds<n.maxWounds&&activeNpos().some(item=>npoDefinition(item.type)?.id==='royal-warden')?`<p class="muted">${escapeHtml(STAGE3_RULE_TEXT.engrammatic)}</p>`:'';
+    if(useConciseExperimentalNpoGuide()){
+      const portrait=experimentalNecronPortraitSvg(n,'experimentalNecronWizardTint','experimental-necron-wizard-svg');
+      const compactProfile=`<div class="activation-profile-strip npo-compact-profile" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>AP: ${state.lastActivation.remainingAp}/${state.lastActivation.startingAp}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Molecular Breach next move</span>':''}</div>`;
+      const specialRule=engrammatic?`<details class="npo-compact-guidance npo-header-rule"><summary>Special rule</summary>${engrammatic}</details>`:'';
+      const content=`<span class="npo-compact-kicker">${escapeHtml(opponentSingularLabel())} Activation</span><h2 id="activeNpoQuestionHeading">${escapeHtml(npoName(n))}</h2>${compactProfile}${specialRule}`;
+      return `<div class="experimental-necron-activation-header has-operative-portrait npo-concise-header"><div class="experimental-necron-activation-copy">${content}</div><div class="experimental-necron-activation-portrait" aria-hidden="true">${portrait}</div></div>${renderNpoActionProgress()}`;
+    }
     const profile=`<div class="activation-profile-strip" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>AP remaining: ${state.lastActivation.remainingAp}/${state.lastActivation.startingAp}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP this activation (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Next movement uses Molecular Breach</span>':''}</div>`;
     const portrait=document.documentElement.dataset.ui==='tomb'?experimentalNecronPortraitSvg(n,'experimentalNecronWizardTint','experimental-necron-wizard-svg'):'';
     const header=portrait
@@ -9888,6 +9942,18 @@ function showPlayerActivation(){
 
   function renderNpoMovementConfirmation(n,pendingAction,decision){
     const displayAction=conciseNpoActionName(pendingAction),headingId='activeNpoMovementHeading',instructionId='activeNpoMovementInstruction';
+    if(useConciseExperimentalNpoGuide()){
+      const instruction=decision.reason.split('. ')[0].replace(/\.$/,'')+'.';
+      const currentAp=state.lastActivation.remainingAp;
+      modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}<div class="ai-wizard"><div class="npo-question-flow"><section class="npo-question-active npo-question-card--active npo-movement-confirmation npo-concise-movement" aria-labelledby="${headingId}" aria-describedby="${instructionId}"><h3 id="${headingId}">${escapeHtml(displayAction)}</h3><p id="${instructionId}">${escapeHtml(instruction)}</p><div class="npo-compact-ap-cost" role="status">${currentAp} AP → ${currentAp-pendingAction.apCost} AP</div><details class="npo-compact-guidance"><summary>ⓘ Movement rules</summary><p>${escapeHtml(decision.reason)}</p></details><div class="ai-choice-grid"><button class="ai-choice yes npo-movement-confirm" id="confirmNpoMovement"><strong>Movement Complete</strong></button></div></section></div>${renderNpoGuideFooter()}</div></div>`;
+      if(!modal.open)modal.showModal();
+      modal.setAttribute('aria-labelledby','activeNpoQuestionHeading');
+      modal.setAttribute('tabindex','-1');
+      $('[data-close]',modal).onclick=closeModal;
+      $('#aiBack').onclick=()=>backFromNpoMovementConfirmation(n);
+      requestAnimationFrame(()=>focusInitialDialogControl(modal));
+      return;
+    }
     modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}<div class="ai-wizard"><div class="npo-question-flow"><section class="npo-question-active npo-question-card--active npo-movement-confirmation" aria-labelledby="${headingId}" aria-describedby="${instructionId}"><h3 id="${headingId}">${escapeHtml(displayAction)}</h3><p id="${instructionId}">${escapeHtml(decision.reason)}</p><p class="npo-movement-cost">Costs ${pendingAction.apCost} AP (${state.lastActivation.remainingAp} AP to ${state.lastActivation.remainingAp-pendingAction.apCost} AP)</p><div class="ai-choice-grid"><button class="ai-choice yes npo-movement-confirm" id="confirmNpoMovement"><strong>Confirm ${escapeHtml(displayAction)} Complete</strong></button></div></section></div>${renderNpoGuideFooter()}</div></div>`;
     if(!modal.open)modal.showModal();
     modal.setAttribute('aria-labelledby','activeNpoQuestionHeading');
@@ -10021,6 +10087,11 @@ function showPlayerActivation(){
         ? `<input id="npoPriorityTarget" value="${escapeHtml(targetName)}" readonly>`
         : `<select id="npoPriorityTarget" ${attackResolved?'disabled':''}><option value="" ${state.npoAttackTargetId?'':'selected'}>${isPvpMode()?'Choose an eligible target.':'Select the first operative that matches the priority above.'}</option>${targetOptions}</select>`;
     const targetPriority=!isPvpMode()&&decision.target.length?`<p>Choose the target in this order:</p><ol>${decision.target.map(item=>`<li>${escapeHtml(item)}</li>`).join('')}</ol><p>Randomize only if still tied.</p>`:'';
+    const condensedTargetGuide=useConciseExperimentalNpoGuide()&&attackRequired&&!attackResolved;
+    const reasonMarkup=condensedTargetGuide?'':`<p>${escapeHtml(decision.reason)}</p>`;
+    const priorityMarkup=condensedTargetGuide
+      ? `<p class="npo-compact-target-prompt">Select the highest-priority eligible target.</p><details class="npo-compact-guidance npo-target-priority-details"><summary>ⓘ Target priority &amp; rules</summary>${targetPriority}<p>${escapeHtml(decision.reason)}</p></details>`
+      : `${isPvpMode()?'':`<small>TARGET PRIORITY</small>`}${targetPriority}`;
     const attackSummary=attackResolved&&state.npoAttackSummary?{
       ...state.npoAttackSummary,
       side:'player',
@@ -10030,7 +10101,7 @@ function showPlayerActivation(){
     modalBody.innerHTML=`<div class="modal-inner ai-result">
       <div class="ai-result-title"><div><h2 ${useExperimentalTargetRail?'tabindex="-1" data-dialog-focus':''}>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div>
       ${attackRequired&&questionHistory.length?`<div class="npo-question-flow">${renderCompletedNpoQuestions(questionHistory.filter(item=>item.type!=='selected'))}</div>`:''}
-      <div class="npo-result-card"><div><small>${isPvpMode()?'SELECTED ACTION':'NEXT ACTION'}</small><strong>${escapeHtml(decision.action)}</strong><p>${escapeHtml(decision.reason)}</p><div class="npo-target-priority">${isPvpMode()?'':`<small>TARGET PRIORITY</small>`}${targetPriority}${attackRequired?`<div class="field target-selection">${useExperimentalTargetRail?'<p class="npo-target-roster-label">Select Target</p>':'<label for="npoPriorityTarget">Select Target</label>'}${targetField}</div>`:''}</div></div></div>
+      <div class="npo-result-card"><div><small>${isPvpMode()?'SELECTED ACTION':'NEXT ACTION'}</small><strong>${escapeHtml(decision.action)}</strong>${reasonMarkup}<div class="npo-target-priority">${priorityMarkup}${attackRequired?`<div class="field target-selection">${useExperimentalTargetRail?'<p class="npo-target-roster-label">Select Target</p>':'<label for="npoPriorityTarget">Select Target</label>'}${targetField}</div>`:''}</div></div></div>
       ${attackRequired&&!targetConfirmed&&(isPvpMode()||eligibleTargetIds.length>1)?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
       ${attackRequired&&!targetConfirmed&&!isPvpMode()&&eligibleTargetIds.length===1?`<button class="btn secondary big-action" id="resolveNpoTarget">Resolve Combat</button>`:''}
       ${attackSummary?`${renderEliminationSummary(attackSummary)}<section class="card npo-attack-summary">
