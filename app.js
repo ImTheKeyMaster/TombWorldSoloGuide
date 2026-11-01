@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.9';
+  const APP_VERSION = '10.1.10';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8691,7 +8691,7 @@ function showPlayerActivation(){
       : `<div class="${weaponFieldClass}"><label>Weapon</label><select id="playerWeaponSelect"><option value="">Select a weapon...</option>${weapons.map((weapon,index)=>`<option value="${index}">${escapeHtml(weapon.name)}</option>`).join('')}</select></div>`;
     const ammunitionAvailable=attackType==='shoot'&&isDeathwatchPlayerTeam()&&!deathwatchAmmoTransaction().used;
     const ammunitionControl=ammunitionAvailable
-      ? `<div class="field"><label for="deathwatchAmmo">Special Issue Ammunition (once per turning point)</label><select id="deathwatchAmmo"><option value="">No special ammunition</option>${DEATHWATCH_SPECIAL_AMMO.map(rule=>`<option value="${escapeHtml(rule)}"${stage.deathwatchAmmoRule===rule?' selected':''}>${escapeHtml(rule)}</option>`).join('')}</select></div>`
+      ? `<div class="field deathwatch-ammunition-field"><label for="deathwatchAmmo">Special Issue Ammunition (once per turning point)</label><select id="deathwatchAmmo"><option value="">No special ammunition</option>${DEATHWATCH_SPECIAL_AMMO.map(rule=>`<option value="${escapeHtml(rule)}"${stage.deathwatchAmmoRule===rule?' selected':''}>${escapeHtml(rule)}</option>`).join('')}</select></div>`
       : '';
     const secondShoot=attackType==='shoot'&&isDeathwatchPlayerTeam()&&playerActionUses(activePlayerActivation(),'shoot')>0;
     const secondShootHint=secondShoot?'<p class="muted">Veteran Astartes: a second Shoot may cost an additional AP depending on both selected weapons.</p>':'';
