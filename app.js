@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.14';
+  const APP_VERSION = '10.1.15';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -9292,8 +9292,9 @@ function showPlayerActivation(){
     return {key:movementInquiry?.id||`${id}-${applicability?'applicability':'feasibility'}`,action,actionId:id,type:applicability?'applicability':'feasibility',title,help:help||'Check the action’s target, distance, and placement. Select Yes only if the action can be completed now.',movementIntent:movementInquiry||null,concernsControlRange:Boolean(inquiry?.concernsControlRange)};
   }
 
-  function useConciseExperimentalNpoGuide(){
-    return !isPvpMode()&&document.documentElement.dataset.ui==='tomb'&&experimentalFeaturesEnabled();
+  function useConciseNpoGuide(){
+    // This concise solo NPO Activation design is now standard.
+    return !isPvpMode()&&document.documentElement.dataset.ui==='tomb';
   }
   function conciseNpoQuestionTitle(q){
     const id=q.actionId||npoActionId(q.action);
@@ -9323,7 +9324,7 @@ function showPlayerActivation(){
     return ['Not possible','Can use'];
   }
   function renderCompletedNpoQuestions(history){
-    if(useConciseExperimentalNpoGuide()){
+    if(useConciseNpoGuide()){
       if(!history.length)return '';
       const recent=history.slice(-5),older=history.length-recent.length;
       const chips=recent.map(item=>{
@@ -9337,7 +9338,7 @@ function showPlayerActivation(){
     return history.map(item=>`<div class="npo-question-complete npo-question-history"><span>${escapeHtml(item.question||item.action)}</span><strong>${item.type==='selected'?'Selected':item.answer?'Yes':'No'}</strong></div>`).join('');
   }
   function renderActiveNpoQuestion(q){
-    if(useConciseExperimentalNpoGuide()){
+    if(useConciseNpoGuide()){
       const [noLabel,yesLabel]=conciseNpoChoiceLabels(q);
       return `<section class="npo-question-active npo-question-card--active npo-active-question npo-concise-question" aria-live="polite" aria-atomic="true" aria-labelledby="activeNpoQuestion">
         <h3 id="activeNpoQuestion">${escapeHtml(conciseNpoQuestionTitle(q))}</h3>
@@ -9416,7 +9417,7 @@ function showPlayerActivation(){
     const pendingBreach=(state.npoRuleState.pendingMovementEffects||[]).some(item=>item.targetId===n.id&&item.ruleId==='molecular-breach');
     const loadout=definition.loadoutOptions?.find(option=>option.id===n.weaponId)?.name||npoWeapon(definition,n.weaponId)?.name;
     const engrammatic=n.wounds<n.maxWounds&&activeNpos().some(item=>npoDefinition(item.type)?.id==='royal-warden')?`<p class="muted">${escapeHtml(STAGE3_RULE_TEXT.engrammatic)}</p>`:'';
-    if(useConciseExperimentalNpoGuide()){
+    if(useConciseNpoGuide()){
       const portrait=experimentalNecronPortraitSvg(n,'experimentalNecronWizardTint','experimental-necron-wizard-svg');
       const compactProfile=`<div class="activation-profile-strip npo-compact-profile" role="status" aria-live="polite" aria-label="Activation profile"><span>Wounds: ${n.wounds}/${n.maxWounds}</span><span>AP: ${state.lastActivation.remainingAp}/${state.lastActivation.startingAp}</span>${loadout?`<span>${escapeHtml(loadout)}</span>`:''}${modifiers.map(item=>`<span>${item.amount>0?'+':''}${item.amount} AP (${escapeHtml(titleCaseRuleId(item.ruleId))})</span>`).join('')}${pendingBreach?'<span>Molecular Breach next move</span>':''}</div>`;
       const specialRule=engrammatic?`<details class="npo-compact-guidance npo-header-rule"><summary>Special rule</summary>${engrammatic}</details>`:'';
@@ -9940,7 +9941,7 @@ function showPlayerActivation(){
 
   function renderNpoMovementConfirmation(n,pendingAction,decision){
     const displayAction=conciseNpoActionName(pendingAction),headingId='activeNpoMovementHeading',instructionId='activeNpoMovementInstruction';
-    if(useConciseExperimentalNpoGuide()){
+    if(useConciseNpoGuide()){
       const instruction=decision.reason.split('. ')[0].replace(/\.$/,'')+'.';
       const currentAp=state.lastActivation.remainingAp;
       modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}<div class="ai-wizard"><div class="npo-question-flow"><section class="npo-question-active npo-question-card--active npo-movement-confirmation npo-concise-movement" aria-labelledby="${headingId}" aria-describedby="${instructionId}"><h3 id="${headingId}">${escapeHtml(displayAction)}</h3><p id="${instructionId}">${escapeHtml(instruction)}</p><div class="npo-compact-ap-cost" role="status">${currentAp} AP → ${currentAp-pendingAction.apCost} AP</div><details class="npo-compact-guidance"><summary>ⓘ Movement rules</summary><p>${escapeHtml(decision.reason)}</p></details><div class="ai-choice-grid"><button class="ai-choice yes npo-movement-confirm" id="confirmNpoMovement"><strong>Movement Complete</strong></button></div></section></div>${renderNpoGuideFooter()}</div></div>`;
@@ -10085,7 +10086,7 @@ function showPlayerActivation(){
         ? `<input id="npoPriorityTarget" value="${escapeHtml(targetName)}" readonly>`
         : `<select id="npoPriorityTarget" ${attackResolved?'disabled':''}><option value="" ${state.npoAttackTargetId?'':'selected'}>${isPvpMode()?'Choose an eligible target.':'Select the first operative that matches the priority above.'}</option>${targetOptions}</select>`;
     const targetPriority=!isPvpMode()&&decision.target.length?`<p>Choose the target in this order:</p><ol>${decision.target.map(item=>`<li>${escapeHtml(item)}</li>`).join('')}</ol><p>Randomize only if still tied.</p>`:'';
-    const condensedTargetGuide=useConciseExperimentalNpoGuide()&&attackRequired&&!attackResolved;
+    const condensedTargetGuide=useConciseNpoGuide()&&attackRequired&&!attackResolved;
     const reasonMarkup=condensedTargetGuide?'':`<p>${escapeHtml(decision.reason)}</p>`;
     const priorityMarkup=condensedTargetGuide
       ? `<p class="npo-compact-target-prompt">Select the highest-priority eligible target.</p><details class="npo-compact-guidance npo-target-priority-details"><summary>ⓘ Target priority &amp; rules</summary>${targetPriority}<p>${escapeHtml(decision.reason)}</p></details>`
