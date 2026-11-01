@@ -81,8 +81,8 @@ def test_experimental_styles_and_pwa_versions():
     assert "npo-concise-header" in APP
     assert "npo-compact-history" in APP
     assert "npo-concise-question" in APP
-    assert 'html[data-ui="tomb"][data-experimental="on"] .npo-concise-question' in CSS
-    assert 'html[data-ui="tomb"][data-experimental="on"] .npo-target-priority-details' in CSS
+    assert 'html[data-ui="tomb"] .npo-concise-question' in CSS
+    assert 'html[data-ui="tomb"] .npo-target-priority-details' in CSS
     assert CURRENT_APP_VERSION == "10.1.11"
     assert CURRENT_APP_VERSION in APP
     assert CURRENT_APP_VERSION in SW
