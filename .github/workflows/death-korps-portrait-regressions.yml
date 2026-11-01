@@ -30,6 +30,8 @@ on:
       - tests/test_v1009_aggressive_defence_result_display.py
       - tests/test_v10116_aggressive_defence_portrait_wounds.py
       - tests/test_v10117_strategy_and_shoot_ux.py
+      - tests/test_v10118_recycled_npo_miniatures.py
+      - tests/test_v701_npo_inventory.py
       - tests/test_v9231_ceaseless_scuttling_mode_behavior.py
       - tests/test_v9262_ceaseless_scuttling_actions.py
       - Player_Operatives/DeathWatch.json
@@ -84,6 +86,8 @@ on:
       - tests/test_v1009_aggressive_defence_result_display.py
       - tests/test_v10116_aggressive_defence_portrait_wounds.py
       - tests/test_v10117_strategy_and_shoot_ux.py
+      - tests/test_v10118_recycled_npo_miniatures.py
+      - tests/test_v701_npo_inventory.py
       - tests/test_v9231_ceaseless_scuttling_mode_behavior.py
       - tests/test_v9262_ceaseless_scuttling_actions.py
       - Player_Operatives/DeathWatch.json
@@ -155,6 +159,8 @@ jobs:
             tests/test_aggressive_defense_d3.py \
             tests/test_v1009_aggressive_defence_result_display.py \
             tests/test_v10117_strategy_and_shoot_ux.py \
+            tests/test_v10118_recycled_npo_miniatures.py \
+            tests/test_v701_npo_inventory.py \
             tests/test_v10116_aggressive_defence_portrait_wounds.py \
             tests/test_v9231_ceaseless_scuttling_mode_behavior.py \
             tests/test_v9262_ceaseless_scuttling_actions.py \
