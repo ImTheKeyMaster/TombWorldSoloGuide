@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.8';
+  const APP_VERSION = '10.1.9';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8276,6 +8276,7 @@ function showPlayerActivation(){
     const automatic=history.filter(entry=>entry.type==='strike'&&entry.automatic);
     if(!automatic.length)return '';
     const strikes=history.filter(entry=>entry.type==='strike');
+    const hasChosenStrike=strikes.some(entry=>!entry.automatic);
     const rows=strikes.map(entry=>{
       const before=Number(entry.before),after=Number(entry.after),potential=Number(entry.damage);
       const applied=Math.max(0,before-after);
@@ -8283,7 +8284,7 @@ function showPlayerActivation(){
       const damageText=applied<potential?`${applied} applied (${potential} potential)`:`${applied} damage`;
       return `<li><strong>${escapeHtml(entry.automatic?'AUTO':'CHOSEN')} · ${escapeHtml(actor)} · ${escapeHtml(titleCaseRuleId(entry.successKind))} Strike</strong><span>${escapeHtml(damageText)} · ${before} → ${after} wounds</span></li>`;
     }).join('');
-    return `<section class="fight-auto-strike-result" aria-label="Fight strike breakdown"><h3>STRIKES RESOLVED</h3><p>With no enemy successes remaining, the Guide automatically resolved ${automatic.length} additional ${automatic.length===1?'Strike':'Strikes'} after your choice.</p><ol>${rows}</ol><p>Damage shown on the Fight Result is the actual wounds lost, not unused excess damage.</p></section>`;
+    return `<section class="fight-auto-strike-result" aria-label="Fight strike breakdown"><h3>STRIKES RESOLVED</h3><p>With no enemy successes remaining, the Guide automatically resolved ${automatic.length}${hasChosenStrike?' additional':''} ${automatic.length===1?'Strike':'Strikes'}${hasChosenStrike?' after your choice':''}.</p><ol>${rows}</ol><p>Damage shown on the Fight Result is the actual wounds lost, not unused excess damage.</p></section>`;
   }
   // Keep the full saved explanation for compatibility, but avoid repeating
   // long-form damage sentences beneath the two participant cards in Tomb UI.
