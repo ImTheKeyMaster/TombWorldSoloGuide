@@ -1327,7 +1327,7 @@ document.addEventListener('touchend',function(e){
     merged.tombWorldVariant=TOMB_WORLD_VARIANTS[raw.tombWorldVariant]?raw.tombWorldVariant:'standard';
     merged.roster=Array.isArray(raw.roster)?raw.roster.map(normalizeNpo).filter(Boolean):[];
     const usedDisplayNumbers={};
-    merged.roster.forEach(npo=>{
+    if(!merged.roster.some(npo=>npo.physicalReuse===true))merged.roster.forEach(npo=>{
       const definition=npoDefinition(npo.type);
       if(definition?.physicalQuantity<=1){npo.displayNumber=null;return;}
       const used=usedDisplayNumbers[npo.type]||(usedDisplayNumbers[npo.type]=new Set());
@@ -1692,6 +1692,7 @@ document.addEventListener('touchend',function(e){
   }
   function validateNpoRoster(roster=state.roster,variantId=null){
     const errors=[], ids=new Set(), displayNumbers={},counts=Object.fromEntries(Object.keys(npoDefinitions).map(type=>[type,0]));
+    const physicalReuseHistory=Array.isArray(roster)&&roster.some(npo=>npo?.physicalReuse===true);
     if(!Array.isArray(roster))return {valid:false,errors:['NPO roster must be an array.']};
     roster.forEach((npo,index)=>{
       if(!isRecord(npo)){errors.push(`NPO ${index+1} is invalid.`);return;}
@@ -1703,13 +1704,13 @@ document.addEventListener('touchend',function(e){
       if(variantId!==null&&tombsBeyondCountingNpoDefinitionsForValidation[npo.type]&&!variantAllowsExpansionNpo(npo.type,variantId)){
         errors.push(`${npo.type} is not legal for the ${(TOMB_WORLD_VARIANTS[variantId]||TOMB_WORLD_VARIANTS.standard).name} variant.`);return;
       }
-      if(npoDefinitions[npo.type])counts[npo.type]++;
+      if(npoDefinitions[npo.type]&&(!physicalReuseHistory||npo.wounds>0))counts[npo.type]++;
       if(!npo.name)errors.push(`NPO ${npo.id||index+1} is missing a name.`);
       if(definition.physicalQuantity>1){
         const used=displayNumbers[npo.type]||(displayNumbers[npo.type]=new Set());
         if(!Number.isInteger(npo.displayNumber)||npo.displayNumber<1)errors.push(`${definition.name} is missing a display number.`);
-        else if(used.has(npo.displayNumber))errors.push(`${definition.name} has duplicate display number ${npo.displayNumber}.`);
-        else used.add(npo.displayNumber);
+        else if((!physicalReuseHistory||npo.wounds>0)&&used.has(npo.displayNumber))errors.push(`${definition.name} has duplicate display number ${npo.displayNumber}.`);
+        else if(!physicalReuseHistory||npo.wounds>0)used.add(npo.displayNumber);
       }
       if(definition.loadoutOptions&&!definition.loadoutOptions.some(option=>option.id===npo.weaponId))errors.push(`${definition.name} has an unsupported loadout.`);
     });
@@ -1720,11 +1721,11 @@ document.addEventListener('touchend',function(e){
         && count-definition.physicalQuantity<=roster.filter(npo=>npo?.type===type&&npo.createdBy==='a-ceaseless-scuttling').length;
       if(count>definition.physicalQuantity&&!scuttlingException)errors.push(`${type} exceeds its physical quantity of ${definition.physicalQuantity}.`);
     });
-    const standardAllocated=roster.filter(npo=>npoDefinitions[npo?.type]).length;
+    const standardAllocated=roster.filter(npo=>npoDefinitions[npo?.type]&&(!physicalReuseHistory||npo.wounds>0)).length;
     const excessIsScuttlingHistory=standardAllocated>MAX_PHYSICAL_NPOS
       && standardAllocated-MAX_PHYSICAL_NPOS<=roster.filter(npo=>npo?.createdBy==='a-ceaseless-scuttling').length;
     if(standardAllocated>MAX_PHYSICAL_NPOS&&!excessIsScuttlingHistory)errors.push(`Allocated NPOs exceed the ${MAX_PHYSICAL_NPOS}-model Tomb World inventory.`);
-    if(roster.filter(npo=>npo?.type===TOMB_CRAWLER_TYPE&&npo.weaponId===ISOLATOR_LOADOUT).length>1)errors.push('Only one Tomb Crawler can have a transdimensional isolator.');
+    if(roster.filter(npo=>npo?.type===TOMB_CRAWLER_TYPE&&npo.weaponId===ISOLATOR_LOADOUT&&(!physicalReuseHistory||npo.wounds>0)).length>1)errors.push('Only one Tomb Crawler can have a transdimensional isolator.');
     return {valid:errors.length===0,errors,inventory:npoInventory(roster)};
   }
   function variantAllowsExpansionNpo(type,variantId=state?.tombWorldVariant){
@@ -2271,14 +2272,15 @@ document.addEventListener('touchend',function(e){
   function createNpo(type,name=`${type} ${state.roster.length+1}`,options={}){
     const definition=npoDefinition(type);
     if(!definition)throw new Error(`Unknown NPO type: ${type}`);
-    const [physicalInstance]=lowestAvailableNpoInstances(type,1,options.allocationContext||{});
+    const allocationContext={...(options.allocationContext||{}),reuseEliminated:options.reuseEliminated===true};
+    const [physicalInstance]=lowestAvailableNpoInstances(type,1,allocationContext);
     if(!physicalInstance)throw new Error(`No ${type} model remains available.`);
     let weaponId=npoWeapon(definition,options.weaponId)?.id||definition.defaultWeaponId;
-    if(type===TOMB_CRAWLER_TYPE&&weaponId===ISOLATOR_LOADOUT&&state.roster.some(npo=>npo.type===type&&npo.weaponId===ISOLATOR_LOADOUT))weaponId=definition.defaultWeaponId;
+    if(type===TOMB_CRAWLER_TYPE&&weaponId===ISOLATOR_LOADOUT&&state.roster.some(npo=>npo.type===type&&npo.weaponId===ISOLATOR_LOADOUT&&(!options.reuseEliminated||npo.wounds>0)))weaponId=definition.defaultWeaponId;
     const battlefieldState=options.battlefieldState||(options.deployed===false?'reserve':'deployed');
     const dormant=battlefieldState==='deployed'&&(options.dormant??state.threat===0);
     return {
-      id:physicalInstance.id,name,type,displayNumber:physicalInstance.displayNumber,move:definition.move,apl:definition.apl,save:definition.save,
+      id:physicalInstance.id,name,type,displayNumber:physicalInstance.displayNumber,...(physicalInstance.physicalReuse?{physicalReuse:true}:{}),move:definition.move,apl:definition.apl,save:definition.save,
       maxWounds:definition.wounds,wounds:definition.wounds,baseSize:definition.baseSize,
       behavior:definition.compatibilityBehavior,attack:canonicalAttackProfile(npoAttackProfiles({type,weaponId},'shoot')[0]||npoAttackProfiles({type,weaponId},'melee')[0]),weaponId,order:'Conceal',
       ready:options.ready??(battlefieldState==='deployed'&&!dormant),dormant,
