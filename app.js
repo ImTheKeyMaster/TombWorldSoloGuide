@@ -4216,8 +4216,9 @@ document.addEventListener('touchend',function(e){
     const blockedReason=reinforcementBlockedReason(capacityBlocked,inventoryBlocked,blockedCount);
     const deployedSection=deployedNpos.length?`<div class="reinforcement-deployed"><h3>${deployedNpos.length} ${escapeHtml(deployedNpos.length===1?opponentSingularLabel():opponentPluralLabel())} deployed</h3><ul class="reinforcement-list">${deployedNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul></div>`:'';
     const pendingSection=pendingNpos.length?`<div class="reinforcement-pending"><h3>Deploy ${pendingNpos.length} ${escapeHtml(pendingNpos.length===1?opponentSingularLabel():opponentPluralLabel())}</h3><ul class="reinforcement-list">${pendingNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul><p>Deploy ${pendingNpos.length===1?`this ${escapeHtml(opponentSingularLabel())}`:`these ${escapeHtml(opponentPluralLabel())}`} onto the battlefield using the Tomb World reinforcement rules.</p></div>`:'';
+    const retryBlocked=canRetryBlockedReinforcements()?'<div class="wizard-actions"><button type="button" class="btn secondary" id="retryBlockedReinforcements">Retry Reinforcements</button></div>':'';
     const reinforcementCard=deployingNpos.length||blockedCount
-      ? `<section class="card reinforcement-card" aria-live="polite"><p class="eyebrow">REINFORCEMENTS</p><p>The Guide automatically determined and generated this Turning Point’s reinforcements. Place the generated models using the instructions below.</p>${deployedSection}${pendingSection}${blockedCount?`<div class="reinforcement-blocked" role="status"><h3>${deployingNpos.length?`${blockedCount} additional reinforcement${blockedCount===1?'':'s'} could not be deployed`:'No reinforcements could be deployed'}</h3><p>${blockedReason}</p></div>`:''}</section>`
+      ? `<section class="card reinforcement-card" aria-live="polite"><p class="eyebrow">REINFORCEMENTS</p><p>The Guide automatically determined and generated this Turning Point’s reinforcements. Place the generated models using the instructions below.</p>${deployedSection}${pendingSection}${blockedCount?`<div class="reinforcement-blocked" role="status"><h3>${deployingNpos.length?`${blockedCount} additional reinforcement${blockedCount===1?'':'s'} could not be deployed`:'No reinforcements could be deployed'}</h3><p>${blockedReason}</p></div>`:''}${retryBlocked}</section>`
       : '<div class="summary-box strategy-empty-message">The Guide automatically determined that no reinforcements were generated this Turning Point.</div>';
     const placements=deployingNpos.map(npo=>{const portrait=reinforcementPlacementPortrait(npo);return `<label class="check-row reinforcement-placement-row${portrait?' has-portrait':''}"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong>${isHumanNpoReplacementPending(npo)?`<span class="field"><span>Choose NPO</span><select aria-label="Choose replacement for ${escapeHtml(npoName(npo))}" data-reinforcement-replacement="${escapeHtml(npo.id)}">${npo.replacementOptions.map(type=>`<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('')}</select></span>`:''}<small>Randomly determine an open hatchway, set up this operative with a Conceal order following the Tomb World reinforcement placement restrictions, then confirm.</small></span>${portrait}</label>`;}).join('');
     const showStatTooltips=!window.matchMedia('(max-width:600px)').matches;
@@ -4461,7 +4462,13 @@ document.addEventListener('touchend',function(e){
     $('#dismissGradeMilestone')?.addEventListener('click',()=>{state.gradeMilestone=null;save();render();});
     $$('[data-player-operative]').forEach(button=>button.addEventListener('click',()=>showPlayerOperativeStatus(button.dataset.playerOperative)));
     $('#startTp')?.addEventListener('click',startTurningPoint);
-    $$('[data-reinforcement-placement]').forEach(input=>input.addEventListener('change',()=>confirmReinforcementPlacement(input.dataset.reinforcementPlacement,input.checked)));
+    $('[data-reinforcement-placement]').forEach(input=>input.addEventListener('change',()=>confirmReinforcementPlacement(input.dataset.reinforcementPlacement,input.checked)));
+    $('#retryBlockedReinforcements')?.addEventListener('click',event=>{
+      if(!canRetryBlockedReinforcements())return;
+      event.currentTarget.disabled=true;
+      processReinforcementStage({retryBlockedInventory:true});
+      save();render();
+    });
     $('#eventNpoSelect')?.addEventListener('change',e=>{$('#resolveStrategyEvent').disabled=!e.target.value;});
     $('#eventReplacementChoice')?.addEventListener('change',e=>{$('#eventLychguardLoadoutField')?.toggleAttribute('hidden',e.target.value!=='Lychguard');});
     $('#resolveStrategyEvent')?.addEventListener('click',event=>{
