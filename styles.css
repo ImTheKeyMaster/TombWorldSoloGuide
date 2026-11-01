@@ -1763,6 +1763,8 @@ html[data-ui="tomb"] .experimental-necron-wizard-svg{
 
 .melee-weapon-summary{display:grid}
 .weapon-field{margin-top:6px}
+/* Keep Deathwatch ammunition label clear of the shooting weapon selector. */
+.weapon-field + .deathwatch-ammunition-field{margin-top:12px}
 .melee-weapon-summary>#playerWeaponSummaryContent,.melee-weapon-summary>.melee-weapon-summary-sizer{grid-area:1/1}
 .melee-weapon-summary-sizer,.melee-weapon-summary-pending{visibility:hidden}
 .weapon-details .weapon-rules{margin:14px 0 0;padding:14px 0 0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent}
