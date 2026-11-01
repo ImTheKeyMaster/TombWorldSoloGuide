@@ -1644,13 +1644,18 @@ document.addEventListener('touchend',function(e){
     return merged;
   }
   function npoDefinition(type){return npoDefinitions[type]||tombsBeyondCountingNpoDefinitions[type]||null;}
+  function experimentalNpoMiniatureReuseEnabled(){
+    return !isPvpMode()&&document.documentElement.dataset.ui==='tomb'&&experimentalFeaturesEnabled();
+  }
   function uniqueNpoInstances(roster=state.roster){
     const seen=new Set();
     return (Array.isArray(roster)?roster:[]).filter(npo=>isRecord(npo)&&typeof npo.id==='string'&&npo.id&&!seen.has(npo.id)&&seen.add(npo.id));
   }
-  function npoInventory(roster=state.roster){
+  function npoInventory(roster=state.roster,{reuseEliminated=false}={}){
     const used=Object.fromEntries(Object.keys(npoDefinitions).map(type=>[type,0]));
-    uniqueNpoInstances(roster).forEach(npo=>{if(npoDefinitions[npo.type])used[npo.type]++;});
+    uniqueNpoInstances(roster).forEach(npo=>{
+      if(npoDefinitions[npo.type]&&(!reuseEliminated||npo.wounds>0))used[npo.type]++;
+    });
     return Object.fromEntries(Object.entries(npoDefinitions).map(([type,definition])=>[type,{
       maximum:definition.physicalQuantity,used:used[type],remaining:Math.max(0,definition.physicalQuantity-used[type])
     }]));
@@ -1658,24 +1663,32 @@ document.addEventListener('touchend',function(e){
   function lowestAvailableNpoInstances(type,quantity,allocationContext={}){
     const definition=npoDefinition(type),roster=Array.isArray(allocationContext.roster)?allocationContext.roster:state.roster;
     if(!definition||!Number.isInteger(quantity)||quantity<1)return [];
-    const allocated=uniqueNpoInstances(roster).filter(npo=>npo.type===type);
+    const reuseEliminated=allocationContext.reuseEliminated===true;
+    const allInstances=uniqueNpoInstances(roster);
+    const allocated=allInstances.filter(npo=>npo.type===type&&(!reuseEliminated||npo.wounds>0));
     if(!Number.isFinite(definition.physicalQuantity)){
-      const allocatedIds=new Set(allocated.map(npo=>npo.id)),available=[];
+      const allocatedIds=new Set(allInstances.map(npo=>npo.id)),available=[];
       for(let number=1;available.length<quantity;number++){
         const id=`${definition.id}-${number}`;
         if(!allocatedIds.has(id))available.push({id,displayNumber:number});
       }
       return available;
     }
-    if(definition.physicalQuantity===1)return allocated.length?[]:[{id:`${definition.id}-1`,displayNumber:null}];
-    const allocatedIds=new Set(allocated.map(npo=>npo.id));
-    const allocatedNumbers=new Set(allocated.map(npo=>Number(npo.displayNumber)).filter(Number.isInteger));
+    const allIds=new Set(allInstances.map(npo=>npo.id));
+    const usedNumbers=new Set(allocated.map(npo=>Number(npo.displayNumber)).filter(Number.isInteger));
     const available=[];
-    for(let displayNumber=1;displayNumber<=definition.physicalQuantity;displayNumber++){
-      const id=`${definition.id}-${displayNumber}`;
-      if(!allocatedIds.has(id)&&!allocatedNumbers.has(displayNumber))available.push({id,displayNumber:definition.physicalQuantity>1?displayNumber:null});
+    for(let number=1;number<=definition.physicalQuantity&&available.length<quantity;number++){
+      if(usedNumbers.has(number)||definition.physicalQuantity===1&&allocated.length)continue;
+      const baseId=`${definition.id}-${number}`;
+      let id=baseId;
+      if(reuseEliminated&&allIds.has(id)){
+        let sequence=1;
+        while(allIds.has(`${baseId}-reused-${sequence}`))sequence++;
+        id=`${baseId}-reused-${sequence}`;
+      }
+      available.push({id,displayNumber:definition.physicalQuantity>1?number:null,physicalReuse:id!==baseId});
     }
-    return available.slice(0,quantity);
+    return available;
   }
   function validateNpoRoster(roster=state.roster,variantId=null){
     const errors=[], ids=new Set(), displayNumbers={},counts=Object.fromEntries(Object.keys(npoDefinitions).map(type=>[type,0]));
