@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.13';
+  const APP_VERSION = '10.1.14';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -9021,7 +9021,6 @@ function showPlayerActivation(){
     let resolutionCommitted=false;
     const display=displaySharedCombatResult(result,{
       pending:true,animate,waiting:waiting||banishmentAnimating,
-      message:'This result has been recorded. Wounds will be applied exactly once when you Continue.',
       onContinue:()=>{
         if(resolutionCommitted||stage[`${attackType}CombatDraft`]!==result)return;
         resolutionCommitted=true;
