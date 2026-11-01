@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.17';
+  const APP_VERSION = '10.1.18';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -1327,7 +1327,7 @@ document.addEventListener('touchend',function(e){
     merged.tombWorldVariant=TOMB_WORLD_VARIANTS[raw.tombWorldVariant]?raw.tombWorldVariant:'standard';
     merged.roster=Array.isArray(raw.roster)?raw.roster.map(normalizeNpo).filter(Boolean):[];
     const usedDisplayNumbers={};
-    merged.roster.forEach(npo=>{
+    if(!merged.roster.some(npo=>npo.physicalReuse===true))merged.roster.forEach(npo=>{
       const definition=npoDefinition(npo.type);
       if(definition?.physicalQuantity<=1){npo.displayNumber=null;return;}
       const used=usedDisplayNumbers[npo.type]||(usedDisplayNumbers[npo.type]=new Set());
@@ -1644,13 +1644,18 @@ document.addEventListener('touchend',function(e){
     return merged;
   }
   function npoDefinition(type){return npoDefinitions[type]||tombsBeyondCountingNpoDefinitions[type]||null;}
+  function experimentalNpoMiniatureReuseEnabled(){
+    return !isPvpMode()&&document.documentElement.dataset.ui==='tomb'&&experimentalFeaturesEnabled();
+  }
   function uniqueNpoInstances(roster=state.roster){
     const seen=new Set();
     return (Array.isArray(roster)?roster:[]).filter(npo=>isRecord(npo)&&typeof npo.id==='string'&&npo.id&&!seen.has(npo.id)&&seen.add(npo.id));
   }
-  function npoInventory(roster=state.roster){
+  function npoInventory(roster=state.roster,{reuseEliminated=false}={}){
     const used=Object.fromEntries(Object.keys(npoDefinitions).map(type=>[type,0]));
-    uniqueNpoInstances(roster).forEach(npo=>{if(npoDefinitions[npo.type])used[npo.type]++;});
+    uniqueNpoInstances(roster).forEach(npo=>{
+      if(npoDefinitions[npo.type]&&(!reuseEliminated||npo.wounds>0))used[npo.type]++;
+    });
     return Object.fromEntries(Object.entries(npoDefinitions).map(([type,definition])=>[type,{
       maximum:definition.physicalQuantity,used:used[type],remaining:Math.max(0,definition.physicalQuantity-used[type])
     }]));
@@ -1658,27 +1663,36 @@ document.addEventListener('touchend',function(e){
   function lowestAvailableNpoInstances(type,quantity,allocationContext={}){
     const definition=npoDefinition(type),roster=Array.isArray(allocationContext.roster)?allocationContext.roster:state.roster;
     if(!definition||!Number.isInteger(quantity)||quantity<1)return [];
-    const allocated=uniqueNpoInstances(roster).filter(npo=>npo.type===type);
+    const reuseEliminated=allocationContext.reuseEliminated===true;
+    const allInstances=uniqueNpoInstances(roster);
+    const allocated=allInstances.filter(npo=>npo.type===type&&(!reuseEliminated||npo.wounds>0));
     if(!Number.isFinite(definition.physicalQuantity)){
-      const allocatedIds=new Set(allocated.map(npo=>npo.id)),available=[];
+      const allocatedIds=new Set(allInstances.map(npo=>npo.id)),available=[];
       for(let number=1;available.length<quantity;number++){
         const id=`${definition.id}-${number}`;
         if(!allocatedIds.has(id))available.push({id,displayNumber:number});
       }
       return available;
     }
-    if(definition.physicalQuantity===1)return allocated.length?[]:[{id:`${definition.id}-1`,displayNumber:null}];
-    const allocatedIds=new Set(allocated.map(npo=>npo.id));
-    const allocatedNumbers=new Set(allocated.map(npo=>Number(npo.displayNumber)).filter(Number.isInteger));
+    const allIds=new Set(allInstances.map(npo=>npo.id));
+    const usedNumbers=new Set(allocated.map(npo=>Number(npo.displayNumber)).filter(Number.isInteger));
     const available=[];
-    for(let displayNumber=1;displayNumber<=definition.physicalQuantity;displayNumber++){
-      const id=`${definition.id}-${displayNumber}`;
-      if(!allocatedIds.has(id)&&!allocatedNumbers.has(displayNumber))available.push({id,displayNumber:definition.physicalQuantity>1?displayNumber:null});
+    for(let number=1;number<=definition.physicalQuantity&&available.length<quantity;number++){
+      if(usedNumbers.has(number)||definition.physicalQuantity===1&&allocated.length)continue;
+      const baseId=`${definition.id}-${number}`;
+      let id=baseId;
+      if(reuseEliminated&&allIds.has(id)){
+        let sequence=1;
+        while(allIds.has(`${baseId}-reused-${sequence}`))sequence++;
+        id=`${baseId}-reused-${sequence}`;
+      }
+      available.push({id,displayNumber:definition.physicalQuantity>1?number:null,physicalReuse:id!==baseId});
     }
-    return available.slice(0,quantity);
+    return available;
   }
   function validateNpoRoster(roster=state.roster,variantId=null){
     const errors=[], ids=new Set(), displayNumbers={},counts=Object.fromEntries(Object.keys(npoDefinitions).map(type=>[type,0]));
+    const physicalReuseHistory=Array.isArray(roster)&&roster.some(npo=>npo?.physicalReuse===true);
     if(!Array.isArray(roster))return {valid:false,errors:['NPO roster must be an array.']};
     roster.forEach((npo,index)=>{
       if(!isRecord(npo)){errors.push(`NPO ${index+1} is invalid.`);return;}
@@ -1690,13 +1704,13 @@ document.addEventListener('touchend',function(e){
       if(variantId!==null&&tombsBeyondCountingNpoDefinitionsForValidation[npo.type]&&!variantAllowsExpansionNpo(npo.type,variantId)){
         errors.push(`${npo.type} is not legal for the ${(TOMB_WORLD_VARIANTS[variantId]||TOMB_WORLD_VARIANTS.standard).name} variant.`);return;
       }
-      if(npoDefinitions[npo.type])counts[npo.type]++;
+      if(npoDefinitions[npo.type]&&(!physicalReuseHistory||npo.wounds>0))counts[npo.type]++;
       if(!npo.name)errors.push(`NPO ${npo.id||index+1} is missing a name.`);
       if(definition.physicalQuantity>1){
         const used=displayNumbers[npo.type]||(displayNumbers[npo.type]=new Set());
         if(!Number.isInteger(npo.displayNumber)||npo.displayNumber<1)errors.push(`${definition.name} is missing a display number.`);
-        else if(used.has(npo.displayNumber))errors.push(`${definition.name} has duplicate display number ${npo.displayNumber}.`);
-        else used.add(npo.displayNumber);
+        else if((!physicalReuseHistory||npo.wounds>0)&&used.has(npo.displayNumber))errors.push(`${definition.name} has duplicate display number ${npo.displayNumber}.`);
+        else if(!physicalReuseHistory||npo.wounds>0)used.add(npo.displayNumber);
       }
       if(definition.loadoutOptions&&!definition.loadoutOptions.some(option=>option.id===npo.weaponId))errors.push(`${definition.name} has an unsupported loadout.`);
     });
@@ -1707,12 +1721,12 @@ document.addEventListener('touchend',function(e){
         && count-definition.physicalQuantity<=roster.filter(npo=>npo?.type===type&&npo.createdBy==='a-ceaseless-scuttling').length;
       if(count>definition.physicalQuantity&&!scuttlingException)errors.push(`${type} exceeds its physical quantity of ${definition.physicalQuantity}.`);
     });
-    const standardAllocated=roster.filter(npo=>npoDefinitions[npo?.type]).length;
+    const standardAllocated=roster.filter(npo=>npoDefinitions[npo?.type]&&(!physicalReuseHistory||npo.wounds>0)).length;
     const excessIsScuttlingHistory=standardAllocated>MAX_PHYSICAL_NPOS
       && standardAllocated-MAX_PHYSICAL_NPOS<=roster.filter(npo=>npo?.createdBy==='a-ceaseless-scuttling').length;
     if(standardAllocated>MAX_PHYSICAL_NPOS&&!excessIsScuttlingHistory)errors.push(`Allocated NPOs exceed the ${MAX_PHYSICAL_NPOS}-model Tomb World inventory.`);
-    if(roster.filter(npo=>npo?.type===TOMB_CRAWLER_TYPE&&npo.weaponId===ISOLATOR_LOADOUT).length>1)errors.push('Only one Tomb Crawler can have a transdimensional isolator.');
-    return {valid:errors.length===0,errors,inventory:npoInventory(roster)};
+    if(roster.filter(npo=>npo?.type===TOMB_CRAWLER_TYPE&&npo.weaponId===ISOLATOR_LOADOUT&&(!physicalReuseHistory||npo.wounds>0)).length>1)errors.push('Only one Tomb Crawler can have a transdimensional isolator.');
+    return {valid:errors.length===0,errors,inventory:npoInventory(roster,{reuseEliminated:physicalReuseHistory})};
   }
   function variantAllowsExpansionNpo(type,variantId=state?.tombWorldVariant){
     if(variantId==='flayer-curse')return type==='Flayed One';
@@ -2258,14 +2272,15 @@ document.addEventListener('touchend',function(e){
   function createNpo(type,name=`${type} ${state.roster.length+1}`,options={}){
     const definition=npoDefinition(type);
     if(!definition)throw new Error(`Unknown NPO type: ${type}`);
-    const [physicalInstance]=lowestAvailableNpoInstances(type,1,options.allocationContext||{});
+    const allocationContext={...(options.allocationContext||{}),reuseEliminated:options.reuseEliminated===true};
+    const [physicalInstance]=lowestAvailableNpoInstances(type,1,allocationContext);
     if(!physicalInstance)throw new Error(`No ${type} model remains available.`);
     let weaponId=npoWeapon(definition,options.weaponId)?.id||definition.defaultWeaponId;
-    if(type===TOMB_CRAWLER_TYPE&&weaponId===ISOLATOR_LOADOUT&&state.roster.some(npo=>npo.type===type&&npo.weaponId===ISOLATOR_LOADOUT))weaponId=definition.defaultWeaponId;
+    if(type===TOMB_CRAWLER_TYPE&&weaponId===ISOLATOR_LOADOUT&&state.roster.some(npo=>npo.type===type&&npo.weaponId===ISOLATOR_LOADOUT&&(!options.reuseEliminated||npo.wounds>0)))weaponId=definition.defaultWeaponId;
     const battlefieldState=options.battlefieldState||(options.deployed===false?'reserve':'deployed');
     const dormant=battlefieldState==='deployed'&&(options.dormant??state.threat===0);
     return {
-      id:physicalInstance.id,name,type,displayNumber:physicalInstance.displayNumber,move:definition.move,apl:definition.apl,save:definition.save,
+      id:physicalInstance.id,name,type,displayNumber:physicalInstance.displayNumber,...(physicalInstance.physicalReuse?{physicalReuse:true}:{}),move:definition.move,apl:definition.apl,save:definition.save,
       maxWounds:definition.wounds,wounds:definition.wounds,baseSize:definition.baseSize,
       behavior:definition.compatibilityBehavior,attack:canonicalAttackProfile(npoAttackProfiles({type,weaponId},'shoot')[0]||npoAttackProfiles({type,weaponId},'melee')[0]),weaponId,order:'Conceal',
       ready:options.ready??(battlefieldState==='deployed'&&!dormant),dormant,
@@ -4201,8 +4216,9 @@ document.addEventListener('touchend',function(e){
     const blockedReason=reinforcementBlockedReason(capacityBlocked,inventoryBlocked,blockedCount);
     const deployedSection=deployedNpos.length?`<div class="reinforcement-deployed"><h3>${deployedNpos.length} ${escapeHtml(deployedNpos.length===1?opponentSingularLabel():opponentPluralLabel())} deployed</h3><ul class="reinforcement-list">${deployedNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul></div>`:'';
     const pendingSection=pendingNpos.length?`<div class="reinforcement-pending"><h3>Deploy ${pendingNpos.length} ${escapeHtml(pendingNpos.length===1?opponentSingularLabel():opponentPluralLabel())}</h3><ul class="reinforcement-list">${pendingNpos.map(npo=>`<li>${escapeHtml(npoName(npo))}</li>`).join('')}</ul><p>Deploy ${pendingNpos.length===1?`this ${escapeHtml(opponentSingularLabel())}`:`these ${escapeHtml(opponentPluralLabel())}`} onto the battlefield using the Tomb World reinforcement rules.</p></div>`:'';
+    const retryBlocked=canRetryBlockedReinforcements()?'<div class="wizard-actions"><button type="button" class="btn secondary" id="retryBlockedReinforcements">Retry Reinforcements</button></div>':'';
     const reinforcementCard=deployingNpos.length||blockedCount
-      ? `<section class="card reinforcement-card" aria-live="polite"><p class="eyebrow">REINFORCEMENTS</p><p>The Guide automatically determined and generated this Turning Point’s reinforcements. Place the generated models using the instructions below.</p>${deployedSection}${pendingSection}${blockedCount?`<div class="reinforcement-blocked" role="status"><h3>${deployingNpos.length?`${blockedCount} additional reinforcement${blockedCount===1?'':'s'} could not be deployed`:'No reinforcements could be deployed'}</h3><p>${blockedReason}</p></div>`:''}</section>`
+      ? `<section class="card reinforcement-card" aria-live="polite"><p class="eyebrow">REINFORCEMENTS</p><p>The Guide automatically determined and generated this Turning Point’s reinforcements. Place the generated models using the instructions below.</p>${deployedSection}${pendingSection}${blockedCount?`<div class="reinforcement-blocked" role="status"><h3>${deployingNpos.length?`${blockedCount} additional reinforcement${blockedCount===1?'':'s'} could not be deployed`:'No reinforcements could be deployed'}</h3><p>${blockedReason}</p></div>`:''}${retryBlocked}</section>`
       : '<div class="summary-box strategy-empty-message">The Guide automatically determined that no reinforcements were generated this Turning Point.</div>';
     const placements=deployingNpos.map(npo=>{const portrait=reinforcementPlacementPortrait(npo);return `<label class="check-row reinforcement-placement-row${portrait?' has-portrait':''}"><input type="checkbox" data-reinforcement-placement="${escapeHtml(npo.id)}" aria-label="Confirm placement for ${escapeHtml(npoName(npo))}" ${npo.reinforcement?.placementConfirmed?'checked':''}><span><strong>${escapeHtml(npoName(npo))} · ${escapeHtml(npoWeapon(npoDefinition(npo.type),npo.weaponId)?.name||npo.weaponId)}</strong>${isHumanNpoReplacementPending(npo)?`<span class="field"><span>Choose NPO</span><select aria-label="Choose replacement for ${escapeHtml(npoName(npo))}" data-reinforcement-replacement="${escapeHtml(npo.id)}">${npo.replacementOptions.map(type=>`<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('')}</select></span>`:''}<small>Randomly determine an open hatchway, set up this operative with a Conceal order following the Tomb World reinforcement placement restrictions, then confirm.</small></span>${portrait}</label>`;}).join('');
     const showStatTooltips=!window.matchMedia('(max-width:600px)').matches;
@@ -4446,7 +4462,13 @@ document.addEventListener('touchend',function(e){
     $('#dismissGradeMilestone')?.addEventListener('click',()=>{state.gradeMilestone=null;save();render();});
     $$('[data-player-operative]').forEach(button=>button.addEventListener('click',()=>showPlayerOperativeStatus(button.dataset.playerOperative)));
     $('#startTp')?.addEventListener('click',startTurningPoint);
-    $$('[data-reinforcement-placement]').forEach(input=>input.addEventListener('change',()=>confirmReinforcementPlacement(input.dataset.reinforcementPlacement,input.checked)));
+    $('[data-reinforcement-placement]').forEach(input=>input.addEventListener('change',()=>confirmReinforcementPlacement(input.dataset.reinforcementPlacement,input.checked)));
+    $('#retryBlockedReinforcements')?.addEventListener('click',event=>{
+      if(!canRetryBlockedReinforcements())return;
+      event.currentTarget.disabled=true;
+      processReinforcementStage({retryBlockedInventory:true});
+      save();render();
+    });
     $('#eventNpoSelect')?.addEventListener('change',e=>{$('#resolveStrategyEvent').disabled=!e.target.value;});
     $('#eventReplacementChoice')?.addEventListener('change',e=>{$('#eventLychguardLoadoutField')?.toggleAttribute('hidden',e.target.value!=='Lychguard');});
     $('#resolveStrategyEvent')?.addEventListener('click',event=>{
@@ -4943,13 +4965,27 @@ document.addEventListener('touchend',function(e){
     return true;
   }
 
-  function processReinforcementStage(){
-    if(state.strategyPipeline.completed.includes('reinforcement'))return;
+  function canRetryBlockedReinforcements(){
+    const reinforcement=state.reinforcementState||{};
+    return experimentalNpoMiniatureReuseEnabled()
+      &&state.phase==='strategy'&&state.strategyStage==='summary'
+      &&state.strategyPipeline?.completed?.includes('reinforcement')
+      &&reinforcement.turningPoint===state.turningPoint
+      &&reinforcement.status==='blocked'
+      &&Number(reinforcement.blocked)>0
+      &&Number(reinforcement.blockedByInventory)===Number(reinforcement.blocked)
+      &&!(reinforcement.operativeIds||[]).length;
+  }
+
+  function processReinforcementStage({retryBlockedInventory=false}={}){
+    if(retryBlockedInventory&&!canRetryBlockedReinforcements())return;
+    if(state.strategyPipeline.completed.includes('reinforcement')&&!retryBlockedInventory)return;
+    const reuseEliminated=experimentalNpoMiniatureReuseEnabled();
     const d=state.strategyData,reinforcements=[];
     let blocked=0;
     state.reinforcementState={turningPoint:state.turningPoint,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0,blockedByCapacity:0,blockedByInventory:0};
     d.grade=threatGrade();
-    if(reinforcementTriggered(d)){
+    if(reinforcementTriggered(d)||retryBlockedInventory&&state.turningPoint>1&&Number(d.grade)>0){
       const requested=gradeConfig(d.grade).reinforcements,slots=Math.max(0,MAX_NPOS-activeNpos().length),actual=Math.min(requested,slots);
       blocked=requested-actual;
       state.reinforcementState.blockedByCapacity=blocked;
@@ -4964,7 +5000,7 @@ document.addEventListener('touchend',function(e){
           n.battlefieldState='reserve';n.deployed=false;n.dormant=false;n.ready=false;
           n.replacementOptions=rr.replacementOptions||null;n.replacementTransactionId=rr.replacementTransactionId||null;
         }else{
-          n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId,deployed:false,reinforcement:{turningPoint:state.turningPoint,placementConfirmed:false},replacementOptions:rr.replacementOptions,replacementTransactionId:rr.replacementTransactionId});
+          n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId,deployed:false,reuseEliminated,reinforcement:{turningPoint:state.turningPoint,placementConfirmed:false},replacementOptions:rr.replacementOptions,replacementTransactionId:rr.replacementTransactionId});
           if(!commitNpoRoster([...state.roster,n],'add a reinforcement')){blocked++;state.reinforcementState.blockedByInventory++;continue;}
           state.newIds.push(n.id);
         }
@@ -4978,7 +5014,7 @@ document.addEventListener('touchend',function(e){
     d.blocked=blocked;
     state.reinforcementState.blocked=blocked;
     state.reinforcementState.status=reinforcements.length?'placement':blocked?'blocked':'complete';
-    completeStrategyStage('reinforcement','complete');
+    if(!state.strategyPipeline.completed.includes('reinforcement'))completeStrategyStage('reinforcement','complete');
     state.strategyPipeline.current='complete';
   }
 
@@ -5126,7 +5162,7 @@ document.addEventListener('touchend',function(e){
   }
 
   function randomReinforcement(){
-    const canAllocate=result=>reserveNpos().some(npo=>npo.type===result.type)||npoInventory()[result.type]?.remaining>0;
+    const canAllocate=result=>reserveNpos().some(npo=>npo.type===result.type)||npoInventory(state.roster,{reuseEliminated:experimentalNpoMiniatureReuseEnabled()})[result.type]?.remaining>0;
     for(let attempts=0;attempts<24;attempts++){const result=rollNpo();if(canAllocate(result))return result;}
     const legal=npoGenerationTable.filter(canAllocate);
     if(!legal.length){console.warn('[NPO inventory] No legal physical model remains for reinforcement.');return null;}
@@ -10747,7 +10783,7 @@ function showPlayerActivation(){
       <section class="card"><h3>Mission rules</h3><div class="mission-rules">${rules}</div></section>
       <section class="card"><h3>Victory</h3><p><strong>Win:</strong> ${escapeHtml(presentSideTerminology(m.victory?.win||'See mission rules.'))}</p><p><strong>Lose:</strong> ${escapeHtml(presentSideTerminology(m.victory?.lose||'See mission rules.'))}</p></section>${missionProgressHtml()}`;
   }
-  function renderRoster(){const available=Object.values(npoInventory()).reduce((sum,item)=>sum+item.remaining,0);app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">${escapeHtml(opponentSingularLabel().toUpperCase())} ROSTER</p><h2>${activeNpos().length} active ${escapeHtml(opponentPluralLabel())}</h2><p>${available} of ${MAX_PHYSICAL_NPOS} physical models remain available. Activation status is tracked automatically.</p></div><button class="btn secondary" id="addNpo" ${available?'':'disabled'}>Add ${escapeHtml(opponentSingularLabel())}</button></div><div class="player-roster-grid npo-roster-grid">${state.roster.length?sortedNposForDisplay(state.roster).map(n=>npoRosterCard(n,n.battlefieldState==='deployed'||n.wounds<=0)).join(''):`<div class="card empty">No ${escapeHtml(opponentPluralLabel())} are currently on the battlefield.</div>`}</div>`;$('#addNpo').onclick=showAddNpo;$$('[data-wound]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.wound,-1));$$('[data-heal]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.heal,1));$$('[data-delete]').forEach(b=>b.onclick=()=>deleteNpo(b.dataset.delete));$$('[data-npo-loadout]').forEach(select=>select.onchange=()=>changeNpoLoadout(select.dataset.npoLoadout,select.value));}
+  function renderRoster(){const available=Object.values(npoInventory(state.roster,{reuseEliminated:experimentalNpoMiniatureReuseEnabled()})).reduce((sum,item)=>sum+item.remaining,0);app.innerHTML=`<div class="panel-title"><div><p class="eyebrow">${escapeHtml(opponentSingularLabel().toUpperCase())} ROSTER</p><h2>${activeNpos().length} active ${escapeHtml(opponentPluralLabel())}</h2><p>${available} of ${MAX_PHYSICAL_NPOS} physical models remain available. Activation status is tracked automatically.</p></div><button class="btn secondary" id="addNpo" ${available?'':'disabled'}>Add ${escapeHtml(opponentSingularLabel())}</button></div><div class="player-roster-grid npo-roster-grid">${state.roster.length?sortedNposForDisplay(state.roster).map(n=>npoRosterCard(n,n.battlefieldState==='deployed'||n.wounds<=0)).join(''):`<div class="card empty">No ${escapeHtml(opponentPluralLabel())} are currently on the battlefield.</div>`}</div>`;$('#addNpo').onclick=showAddNpo;$$('[data-wound]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.wound,-1));$$('[data-heal]').forEach(b=>b.onclick=()=>adjustWounds(b.dataset.heal,1));$$('[data-delete]').forEach(b=>b.onclick=()=>deleteNpo(b.dataset.delete));$$('[data-npo-loadout]').forEach(select=>select.onchange=()=>changeNpoLoadout(select.dataset.npoLoadout,select.value));}
   function renderPlayerRoster(){
     const casualties=new Set(state.playerCasualtyIds||[]);
     const activated=new Set(state.playerActivatedIds||[]);

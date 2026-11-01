@@ -74,15 +74,15 @@ class V701NpoInventoryTests(unittest.TestCase):
     def test_inventory_counts_each_instance_once_in_every_lifecycle_state(self):
         inventory = self.source("function uniqueNpoInstances", "function validateNpoRoster")
         self.assertIn("seen.has(npo.id)", inventory)
-        self.assertNotIn("wounds", inventory)
-        self.assertNotIn("battlefieldState", inventory)
+        self.assertIn("(!reuseEliminated||npo.wounds>0)", inventory)
+        self.assertIn("function experimentalNpoMiniatureReuseEnabled()", APP)
 
     def test_reinforcement_uses_reserves_then_validated_remaining_models(self):
         reinforcement = self.source("function processReinforcementStage", "function reinforcementTriggered")
         picker = self.source("function randomReinforcement", "function nextNpo")
         self.assertIn("reserveNpos().find", reinforcement)
         self.assertIn("commitNpoRoster", reinforcement)
-        self.assertIn("npoInventory()[result.type]?.remaining", picker)
+        self.assertIn("npoInventory(state.roster,{reuseEliminated:experimentalNpoMiniatureReuseEnabled()})", picker)
         self.assertIn("No legal physical model remains", picker)
 
     def test_numbering_is_stored_separately_from_unique_id(self):

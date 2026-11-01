@@ -1,4 +1,15 @@
-# Tomb World Battle Guide v10.1.17
+# Tomb World Battle Guide v10.1.18
+
+## v10.1.18
+
+### Experimental: reuse eliminated NPO miniatures for reinforcements
+
+- **Fix exhaustion:** Experimental Solo Tomb reinforcements can reuse physical miniature slots from eliminated NPOs. The 10-NPO simultaneous battlefield limit and each miniature type's physical quantity still apply.
+- **New gameplay identity:** Every reused miniature receives a fresh NPO instance ID, full wounds and new action state. Elimination and combat records for its prior instance remain intact.
+- **Existing saves:** Reused slots remain valid after save/reload, including when Experimental is turned off, without changing existing elimination history or old IDs.
+- **Blocked turning points:** When a Strategy Phase had no deployable reinforcements solely because of historical inventory exhaustion, Experimental offers Retry Reinforcements without replaying committed initiative or event dice.
+- **Isolation:** New-generation recycling is enabled only for Solo Tomb Experimental, not Standard or PvP. All other game rules and variant-specific behavior remain unchanged.
+- **Offline cache:** Bump versioned app assets and service worker to v10.1.18.
 
 ## v10.1.17
 
