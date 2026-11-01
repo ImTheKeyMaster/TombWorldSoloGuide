@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.1.8
+# Tomb World Battle Guide v10.1.9
+
+## v10.1.9
+
+### Clarify fully automatic Fight Result strikes
+
+- **All-auto rounds:** When every Strike was automatic, show “With no enemy successes remaining, the Guide automatically resolved 2 Strikes.” rather than implying the player made a choice.
+- **Mixed rounds:** Preserve “2 additional Strikes after your choice” when a manually chosen Strike preceded automatic follow-up Strikes.
+- **Shared renderer:** Applies to Standard and Experimental Solo Tomb Fight Results. No combat mechanics, Strike history, damage calculations, or PvP changes.
+- **Offline release:** Update PWA versioned assets and cache to 10.1.9.
 
 ## v10.1.8
 
