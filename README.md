@@ -1,4 +1,12 @@
-# Tomb World Battle Guide v10.1.12
+# Tomb World Battle Guide v10.1.13
+
+## v10.1.13
+
+### Cleaner NPO attack results
+
+- **Less clutter:** Remove the redundant one-time damage explanation below the NPO attack outcome and allow the results area to contract naturally.
+- **No mechanics changes:** Damage and wounds totals, the Continue action, and protection against repeated damage remain unchanged.
+- **Offline cache:** PWA resources updated to 10.1.13.
 
 ## v10.1.12
 
