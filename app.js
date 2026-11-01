@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.17';
+  const APP_VERSION = '10.1.18';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -4958,13 +4958,27 @@ document.addEventListener('touchend',function(e){
     return true;
   }
 
-  function processReinforcementStage(){
-    if(state.strategyPipeline.completed.includes('reinforcement'))return;
+  function canRetryBlockedReinforcements(){
+    const reinforcement=state.reinforcementState||{};
+    return experimentalNpoMiniatureReuseEnabled()
+      &&state.phase==='strategy'&&state.strategyStage==='summary'
+      &&state.strategyPipeline?.completed?.includes('reinforcement')
+      &&reinforcement.turningPoint===state.turningPoint
+      &&reinforcement.status==='blocked'
+      &&Number(reinforcement.blocked)>0
+      &&Number(reinforcement.blockedByInventory)===Number(reinforcement.blocked)
+      &&!(reinforcement.operativeIds||[]).length;
+  }
+
+  function processReinforcementStage({retryBlockedInventory=false}={}){
+    if(retryBlockedInventory&&!canRetryBlockedReinforcements())return;
+    if(state.strategyPipeline.completed.includes('reinforcement')&&!retryBlockedInventory)return;
+    const reuseEliminated=experimentalNpoMiniatureReuseEnabled();
     const d=state.strategyData,reinforcements=[];
     let blocked=0;
     state.reinforcementState={turningPoint:state.turningPoint,status:'idle',operativeIds:[],blockedOperativeIds:[],blocked:0,blockedByCapacity:0,blockedByInventory:0};
     d.grade=threatGrade();
-    if(reinforcementTriggered(d)){
+    if(reinforcementTriggered(d)||retryBlockedInventory&&state.turningPoint>1&&Number(d.grade)>0){
       const requested=gradeConfig(d.grade).reinforcements,slots=Math.max(0,MAX_NPOS-activeNpos().length),actual=Math.min(requested,slots);
       blocked=requested-actual;
       state.reinforcementState.blockedByCapacity=blocked;
@@ -4979,7 +4993,7 @@ document.addEventListener('touchend',function(e){
           n.battlefieldState='reserve';n.deployed=false;n.dormant=false;n.ready=false;
           n.replacementOptions=rr.replacementOptions||null;n.replacementTransactionId=rr.replacementTransactionId||null;
         }else{
-          n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId,deployed:false,reinforcement:{turningPoint:state.turningPoint,placementConfirmed:false},replacementOptions:rr.replacementOptions,replacementTransactionId:rr.replacementTransactionId});
+          n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId,deployed:false,reuseEliminated,reinforcement:{turningPoint:state.turningPoint,placementConfirmed:false},replacementOptions:rr.replacementOptions,replacementTransactionId:rr.replacementTransactionId});
           if(!commitNpoRoster([...state.roster,n],'add a reinforcement')){blocked++;state.reinforcementState.blockedByInventory++;continue;}
           state.newIds.push(n.id);
         }
@@ -4993,7 +5007,7 @@ document.addEventListener('touchend',function(e){
     d.blocked=blocked;
     state.reinforcementState.blocked=blocked;
     state.reinforcementState.status=reinforcements.length?'placement':blocked?'blocked':'complete';
-    completeStrategyStage('reinforcement','complete');
+    if(!state.strategyPipeline.completed.includes('reinforcement'))completeStrategyStage('reinforcement','complete');
     state.strategyPipeline.current='complete';
   }
 
@@ -5141,7 +5155,7 @@ document.addEventListener('touchend',function(e){
   }
 
   function randomReinforcement(){
-    const canAllocate=result=>reserveNpos().some(npo=>npo.type===result.type)||npoInventory()[result.type]?.remaining>0;
+    const canAllocate=result=>reserveNpos().some(npo=>npo.type===result.type)||npoInventory(state.roster,{reuseEliminated:experimentalNpoMiniatureReuseEnabled()})[result.type]?.remaining>0;
     for(let attempts=0;attempts<24;attempts++){const result=rollNpo();if(canAllocate(result))return result;}
     const legal=npoGenerationTable.filter(canAllocate);
     if(!legal.length){console.warn('[NPO inventory] No legal physical model remains for reinforcement.');return null;}
