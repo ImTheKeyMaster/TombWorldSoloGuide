@@ -91,11 +91,12 @@ const result={attackerName:'Horde-Slayer',defenderName:'Necron Warrior 2',fightH
 const output=html(result);
 assert(output.includes('STRIKES RESOLVED'));
 assert(output.includes('automatically resolved 2 additional Strikes'));
-assert(output.includes('CHOSEN · Horde-Slayer · Critical Strike'));
-assert.equal((output.match(/AUTO · Horde-Slayer · Normal Strike/g)||[]).length,2);
-assert(output.includes('4 damage · 9 → 5 wounds'));
-assert(output.includes('3 damage · 5 → 2 wounds'));
-assert(output.includes('2 applied (3 potential) · 2 → 0 wounds'));
+assert(output.includes('Horde-Slayer · Critical Strike'));
+assert(!output.includes('CHOSEN'));
+assert(!output.includes('CHOSEN'));
+assert.equal((output.match(/\(AUTO\) Horde-Slayer · Normal Strike/g)||[]).length,2);
+assert(output.includes('Dealt 4 damage · 9 → 5 wounds'));
+assert(output.includes('Dealt 3 damage · 5 → 2 wounds'));
 assert.equal(html(result),output);
 on=false;assert.equal(html(result),output);
 on=true;pvp=true;assert.equal(html(result),'');
