@@ -41,6 +41,31 @@ assert(mixed.includes('automatically resolved 2 additional Strikes after your ch
 assert(mixed.includes('Bombard · Critical Strike'));
 assert(!mixed.includes('CHOSEN'));
 assert.equal((mixed.match(/\(AUTO\) Bombard · Normal Strike/g)||[]).length,2);
+// Screenshot regression: opposing chosen Strike plus two automatic follow-ups.
+const screenshot={
+  attackerName:'Sergeant',defenderName:'Canoptek Tomb Crawler 2',
+  fightHistory:[
+    {type:'strike',role:'attacker',successKind:'critical',damage:6,before:13,after:7},
+    {type:'strike',role:'defender',successKind:'normal',damage:4,before:7,after:3},
+    {type:'strike',role:'attacker',successKind:'normal',damage:4,before:7,after:3,automatic:true},
+    {type:'strike',role:'attacker',successKind:'normal',damage:4,before:3,after:0,automatic:true}
+  ],
+  participants:{
+    attacker:{name:'Sergeant',damageDealt:13},
+    defender:{name:'Canoptek Tomb Crawler 2',damageDealt:4}
+  },
+  explanation:[]
+};
+const output=render(screenshot);
+assert(output.includes('<strong>Sergeant · Critical Strike</strong><span>Dealt 6 damage · 13 → 7 wounds</span>'));
+assert(output.includes('<strong>Canoptek Tomb Crawler 2 · Normal Strike</strong><span>Dealt 4 damage · 7 → 3 wounds</span>'));
+assert(output.includes('<strong>(AUTO) Sergeant · Normal Strike</strong><span>Dealt 4 damage · 3 → 0 wounds (Eliminated)</span>'));
+assert.equal((output.match(/\(AUTO\) Sergeant · Normal Strike/g)||[]).length,2);
+assert(!output.includes('CHOSEN'));
+assert(!output.includes('applied (4 potential)'));
+const summary=new Function('ctx','with(ctx){'+source.slice(first,last)+'return compactFightResultSummaryHtml;}')(ctx)(screenshot);
+assert(summary.includes('<span>Sergeant</span><strong>13</strong>'));
+assert(summary.includes('<span>Canoptek Tomb Crawler 2</span><strong>4</strong>'));
 const single=render({...base,fightHistory:base.fightHistory.slice(0,1)});
 assert(single.includes('automatically resolved 1 Strike.'));
 assert(!single.includes('after your choice'));
