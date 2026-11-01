@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.1.16
+# Tomb World Battle Guide v10.1.17
+
+## v10.1.17
+
+### Strategy recovery and second Shoot clarity
+
+- **Strategy retry:** The recovery screen now explains that the Strategy Phase paused during initiative or event resolution without suggesting saved dice were lost.
+- **Experimental reinforcement review:** The deployment checkbox cards appear before the dynamically growing reinforcements summary so each confirmation does not push the remaining choices down.
+- **Deathwatch second Shoot:** When a weapon combination needs more AP than remains, the weapon selection displays the exact requirement and available AP. Unavailable second Shoots are flagged in the action picker instead of leading to a disabled Continue button with no explanation.
+- **No rules change:** Repeat-Shoot AP costs and validation remain authoritative. The state schema, committed dice, and placements are preserved.
+- **Offline PWA cache:** Updated to v10.1.17.
 
 ## v10.1.16
 
