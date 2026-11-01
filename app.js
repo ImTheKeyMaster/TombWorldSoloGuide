@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.16';
+  const APP_VERSION = '10.1.17';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -4212,8 +4212,10 @@ document.addEventListener('touchend',function(e){
     const unresolved=!canLeaveStrategyEvents();
     const blocked=!canCompleteStrategyPhase();
     const warning=unresolved?'<div class="summary-box strategy-warning"><strong>Event resolution is incomplete.</strong><p>Return to Tomb World Events and finish the required event transaction.</p></div>':'';
+    const placementChecklist=deployingNpos.length?`<div class="checklist">${placements}</div>`:'';
+    const reinforcementContent=experimentalFeaturesEnabled()?`${placementChecklist}${reinforcementCard}`:`${reinforcementCard}${placementChecklist}`;
     const reason=state.reinforcementState.status==='placement'?'Confirm every reinforcement placement before completing the Strategy Phase.':missionStrategyPending()?'Resolve the mandatory mission Strategy Phase rule before completing the Strategy Phase.':unresolved?'Resolve the required Tomb World event or redraw before completing the Strategy Phase.':'';
-    return `${strategyProgressHtml('review')}<h2 id="strategy-step-heading">Deploy Reinforcements and Review</h2>${warning}${reinforcementCard}${deployingNpos.length?`<div class="checklist">${placements}</div>`:''}${battlefield}${strategyNavigationHtml({backId:'backStrategyEvents',backLabel:'Back to Tomb World Events',continueId:'continueStrategy',continueLabel:'Strategy Phase Complete',disabled:blocked,disabledReason:reason})}`;
+    return `${strategyProgressHtml('review')}<h2 id="strategy-step-heading">Deploy Reinforcements and Review</h2>${warning}${reinforcementContent}${battlefield}${strategyNavigationHtml({backId:'backStrategyEvents',backLabel:'Back to Tomb World Events',continueId:'continueStrategy',continueLabel:'Strategy Phase Complete',disabled:blocked,disabledReason:reason})}`;
   }
 
   function reinforcementBlockedReason(capacityBlocked,inventoryBlocked,totalBlocked){
@@ -4226,7 +4228,7 @@ document.addEventListener('touchend',function(e){
   function strategyCard(){
     const d=state.strategyData||{};
     if(state.strategyStage==='mission-ready')return `<section class="next-card"><span class="phase">STRATEGY PHASE · READY STEP</span><h2>Mission event pending</h2><p>Complete the mission Ready-step event before initiative is determined.</p><button class="btn primary big-action" id="retryMissionReady">Continue Mission Event</button></section>`;
-    if(['initiative','event'].includes(state.strategyStage))return `<section class="next-card"><span class="phase">STRATEGY PHASE</span><h2>Dice resolution interrupted</h2><p>Continue from the last fully committed result. No committed dice will be rerolled.</p><button class="btn primary big-action" id="retryStrategyDice">Continue Strategy Phase</button></section>`;
+    if(['initiative','event'].includes(state.strategyStage))return `<section class="next-card"><span class="phase">STRATEGY PHASE</span><h2>Resume Strategy Phase</h2><p>The Guide paused during initiative or event resolution. Resume from saved progress. Dice results already recorded will not be rerolled.</p><button class="btn primary big-action" id="retryStrategyDice">Continue Strategy Phase</button></section>`;
     if(state.strategyStage!=='summary')return '';
     const step=strategyViewStep(d);
     return `<section class="next-card strategy-step">${step==='actions'?strategyActionsStepHtml(d):step==='events'?strategyEventsStepHtml(d):strategyReviewStepHtml(d)}</section>`;
@@ -5310,6 +5312,10 @@ document.addEventListener('touchend',function(e){
     if(action.id==='loadWeapon'&&['charge','dash','shoot'].some(id=>completed.has(id)))return {status:'Unavailable',disabled:true,reason:'Unavailable after Charge, Dash or Shoot'};
     if(completed.has('loadWeapon')&&['charge','dash','shoot'].includes(action.id))return {status:'Unavailable',disabled:true,reason:'Unavailable after Load Weapon'};
     if(action.id==='shoot'&&!playerAttackWeapons(activation.operativeId,'shoot').length)return {status:'Unavailable',disabled:true,reason:'No ranged weapon'};
+    if(action.id==='shoot'&&isDeathwatchPlayerTeam()&&playerActionUses(activation,'shoot')){
+      const minimumAp=Math.min(...playerAttackWeapons(activation.operativeId,'shoot').map(weapon=>1+deathwatchSecondShootExtraCost(activation,weapon.name)));
+      if(minimumAp>remaining)return {status:'Insufficient AP',disabled:true,reason:`Second Shoot requires ${minimumAp} AP`};
+    }
     if(action.id==='melee'&&!playerAttackWeapons(activation.operativeId,'melee').length)return {status:'Unavailable',disabled:true,reason:'No melee weapon'};
     if(['shoot','melee'].includes(action.id)&&!hasValidPlayerCombatTargets({}))return {status:'Unavailable',disabled:true,reason:'No valid target'};
     if(action.id==='hatch'&&state.missionId==='demolition-protocol'&&!closedMissionFeatures('hatchway').length)return {status:'Unavailable',disabled:true,reason:'No closed hatchway'};
@@ -8727,6 +8733,7 @@ function showPlayerActivation(){
       ${weaponControl}
       ${ammunitionControl}
       ${secondShootHint}
+      <p class="combat-ap-guidance" id="playerShootApGuidance" role="status" aria-live="polite" hidden></p>
       ${darkDistance}
       <div class="summary-box weapon-details${attackType==='melee'?' melee-weapon-summary melee-weapon-summary-pending':''}" id="playerWeaponSummary" aria-hidden="true"${attackType==='shoot'?' hidden':''}><div id="playerWeaponSummaryContent"></div>${meleeWeaponSummarySizers}</div>
       <div id="aggressiveDefenseFields"></div>
@@ -8755,8 +8762,19 @@ function showPlayerActivation(){
       weaponSummary.setAttribute('aria-hidden',String(!weapon));
       $('#aggressiveDefenseFields').innerHTML=aggressiveDefenseFields(target,attackType);
       if(npoDefinition(target?.type)?.id==='skorpekh-destroyer'&&target.order==='Conceal')$('#aggressiveDefenseFields').insertAdjacentHTML('beforeend','<p class="muted"><strong>Hulking:</strong> while Concealed, this Skorpekh cannot use Light terrain to prevent it from being selected as a target.</p>');
-      const extraAp=attackType==='shoot'&&weapon?deathwatchSecondShootExtraCost(activePlayerActivation(),weapon.name):0;
-      $('#openCombatResolution').disabled=!target||!weapon||Boolean(activePlayerActivation()?.pendingAction&&activePlayerActivation().remainingAp<1+extraAp);
+      const activation=activePlayerActivation();
+      const extraAp=attackType==='shoot'&&weapon?deathwatchSecondShootExtraCost(activation,weapon.name):0;
+      const requiredAp=1+extraAp;
+      const remainingAp=Number(activation?.remainingAp)||0;
+      const insufficientAp=Boolean(activation?.pendingAction&&weapon&&remainingAp<requiredAp);
+      const apGuidance=$('#playerShootApGuidance');
+      if(apGuidance){
+        apGuidance.hidden=!insufficientAp;
+        apGuidance.textContent=insufficientAp
+          ? `This ${secondShoot?'second ':''}Shoot with ${weapon.name} requires ${requiredAp} AP; only ${remainingAp} AP ${remainingAp===1?'remains':'remain'}. Cancel and choose another action.`
+          : '';
+      }
+      $('#openCombatResolution').disabled=!target||!weapon||insufficientAp;
     };
     targetSelect.addEventListener('change',renderChoices);
     if(useExperimentalTargetRail){

@@ -1473,6 +1473,13 @@ button.tracker-operative:hover{
 .aggressive-defense-result .retaliation{color:var(--green)}
 .aggressive-defense-result .no-retaliation{color:var(--muted)}
 .aggressive-defense-result p{margin:0}
+/* Explain an unavailable second Shoot beside the weapon rather than silently disabling Continue. */
+.combat-ap-guidance:not([hidden]){
+  margin:10px 0;padding:10px 12px;border:1px solid var(--danger);
+  border-radius:11px;background:rgba(125,25,25,.16);color:var(--text);
+  font-size:.88rem;line-height:1.45;
+}
+
 
 /* Experimental Aggressive Defence: put the affected model beside the wound outcome. */
 .aggressive-defense-operative{
