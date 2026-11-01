@@ -52,7 +52,7 @@ class GuidedCombatResumeTests(unittest.TestCase):
         self.assertIn("if(resolutionCommitted", APP)
 
     def test_07_damage_waits_for_continue_and_is_committed_once(self):
-        self.assertIn("Damage is applied exactly once when you Continue.", APP)
+        self.assertNotIn("Damage is applied exactly once when you Continue.", APP)
         self.assertIn("if(resolutionCommitted", APP)
         self.assertIn("if(resolutionCommitted||stage[`${attackType}CombatDraft`]!==result)return", APP)
         self.assertIn("resolutionCommitted=true", APP)
