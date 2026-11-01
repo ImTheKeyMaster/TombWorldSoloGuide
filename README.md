@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.1.11
+# Tomb World Battle Guide v10.1.12
+
+## v10.1.12
+
+### Clearer Fight Result Strike wording
+
+- **Strike labels:** Remove `CHOSEN` for player-selected and NPO-selected Strikes; label automatic follow-ups `(AUTO)` before the operative name.
+- **Damage text:** Prefix every Strike outcome with `Dealt`, show the weapon's full Strike damage even when excess exceeds remaining wounds, and append `(Eliminated)` when the last wound is lost (e.g., `Dealt 4 damage · 3 → 0 wounds (Eliminated)`).
+- **Totals unchanged:** Fight Result Summary still counts actual wounds removed; clarify this in the note below the Strike history.
+- **No mechanics changes:** Combat rules, wound and damage accounting, turn sequence, game state, Standard/Experimental parity and PvP remain unchanged.
+- **Offline cache:** PWA resources updated to 10.1.12.
 
 ## v10.1.11
 
