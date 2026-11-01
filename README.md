@@ -1,4 +1,16 @@
-# Tomb World Battle Guide v10.1.10
+# Tomb World Battle Guide v10.1.11
+
+## v10.1.11
+
+### Experimental: action-first NPO Activation UX
+
+- **Compact prior decisions:** Show recent action/outcome chips instead of full repeated question cards.
+- **Short prompts:** Lead with one tabletop question, context-specific yes/no choices, and a collapsed Rules & guidance disclosure preserving the original official-condition wording.
+- **Quieter header:** In Experimental, use a name-first NPO header, compact wounds/AP/loadout pills, and collapsible lengthy special-rule text. Portrait placement remains model-specific.
+- **Movement guidance:** Keep physical reposition confirmation, show a concise movement instruction and before/after AP, and retain the complete rationale in Movement rules.
+- **Target selection:** Show the target rail prominently with a compact reminder; keep the ordered target-selection priorities and full rationale under a disclosure.
+- **Isolation:** Only Tomb Solo with Experimental toggle on uses this presentation. Standard and PvP retain existing markup. NPO priorities, eligibility, movement, targeting, combat, save format, and action commit logic are unchanged.
+- **PWA:** Version and offline cache updated to 10.1.11.
 
 ## v10.1.10
 
