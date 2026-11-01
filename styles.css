@@ -239,6 +239,72 @@ html[data-ui="tomb"] .combat-applied-rules li::before{
 @keyframes dieSettle{0%{transform:scale(.82) rotate(-8deg)}70%{transform:scale(1.08) rotate(2deg)}100%{transform:scale(1) rotate(0)}}
 @media(max-width:520px){.ai-choice-grid{gap:9px}.ai-choice{min-height:96px}}
 
+/* v10.1.11: Experimental-only concise solo NPO Activation presentation. */
+html[data-ui="tomb"] .npo-compact-kicker{
+  display:block;color:var(--green);font-size:.69rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;
+}
+html[data-ui="tomb"] .npo-concise-header h2{
+  margin:0 0 9px;font-size:clamp(1.05rem,3.4vw,1.4rem);line-height:1.2;overflow-wrap:anywhere;
+}
+html[data-ui="tomb"] .npo-compact-profile{
+  display:flex;flex-wrap:wrap;gap:5px;margin:0;
+}
+html[data-ui="tomb"] .npo-compact-profile span{
+  min-width:0;max-width:100%;overflow-wrap:anywhere;font-size:.72rem;
+}
+html[data-ui="tomb"] .npo-compact-history{
+  display:flex;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;max-width:100%;padding:2px 0 5px;
+}
+html[data-ui="tomb"] .npo-compact-history-chip,
+html[data-ui="tomb"] .npo-compact-history-older{
+  display:flex;align-items:center;gap:6px;flex:0 0 auto;padding:7px 10px;border:1px solid rgba(118,245,168,.21);border-radius:999px;
+  background:#07140f;color:var(--muted);font-size:.73rem;font-weight:750;white-space:nowrap;
+}
+html[data-ui="tomb"] .npo-compact-history-chip strong{color:var(--green);font-size:.8rem}
+html[data-ui="tomb"] .npo-compact-history-chip.declined strong{color:var(--muted)}
+html[data-ui="tomb"] .npo-compact-history-older{border-style:dashed}
+html[data-ui="tomb"] .npo-concise-question,
+html[data-ui="tomb"] .npo-concise-movement{padding:16px}
+html[data-ui="tomb"] .npo-concise-question h3,
+html[data-ui="tomb"] .npo-concise-movement h3{font-size:clamp(1.1rem,4vw,1.36rem);line-height:1.3;margin:0 0 8px}
+html[data-ui="tomb"] .npo-compact-guidance{margin:7px 0 0;max-width:100%}
+html[data-ui="tomb"] .npo-compact-guidance summary{
+  cursor:pointer;width:fit-content;max-width:100%;font-size:.79rem;color:var(--muted);font-weight:750;line-height:1.5;
+}
+html[data-ui="tomb"] .npo-compact-guidance[open] summary{color:var(--green)}
+html[data-ui="tomb"] .npo-compact-guidance p,
+html[data-ui="tomb"] .npo-compact-guidance ol{margin:7px 0 0;color:var(--muted);font-size:.8rem;line-height:1.5}
+html[data-ui="tomb"] .npo-compact-guidance ol{padding-left:1.2rem}
+html[data-ui="tomb"] .npo-header-rule{margin-top:8px}
+html[data-ui="tomb"] .npo-concise-question .ai-choice-grid,
+html[data-ui="tomb"] .npo-concise-movement .ai-choice-grid{gap:9px;margin:14px 0 0}
+html[data-ui="tomb"] .npo-concise-question .ai-choice,
+html[data-ui="tomb"] .npo-concise-movement .ai-choice{
+  min-width:0;min-height:67px;gap:4px;padding:10px 6px;border-radius:13px;font-size:.87rem;
+}
+html[data-ui="tomb"] .npo-concise-question .ai-choice span{
+  width:auto;height:auto;border:0;background:transparent;font-size:1.2rem;line-height:1.1;
+}
+html[data-ui="tomb"] .npo-concise-question .ai-choice strong,
+html[data-ui="tomb"] .npo-concise-movement .ai-choice strong{
+  font-size:.82rem;line-height:1.25;text-align:center;overflow-wrap:anywhere;
+}
+html[data-ui="tomb"] .npo-concise-question .ai-choice.yes span{color:var(--green)}
+html[data-ui="tomb"] .npo-concise-question .ai-choice.no span{color:var(--muted)}
+html[data-ui="tomb"] .npo-concise-movement .npo-compact-ap-cost{
+  margin:9px 0;color:var(--green);font-size:.85rem;font-weight:850;
+}
+html[data-ui="tomb"] .npo-compact-target-prompt{
+  margin:0 0 7px;color:var(--text);font-size:.84rem;
+}
+html[data-ui="tomb"] .npo-target-priority-details{margin:7px 0 12px}
+html[data-ui="tomb"] .npo-target-priority-details>p{margin-top:8px}
+html[data-ui="tomb"] .npo-target-priority-details ol li{margin:3px 0}
+@media(max-width:520px){
+  html[data-ui="tomb"] .npo-concise-question,
+  html[data-ui="tomb"] .npo-concise-movement{padding:13px}
+}
+
 /* v3.5.1 NPO activation question flow */
 .npo-question-flow{display:grid;gap:9px;margin:18px 0}
 .ai-result .npo-question-flow{margin-bottom:10px}
@@ -4049,3 +4115,4 @@ html[data-ui="tomb"] .experimental-fight-choice-screen.is-duel-layout .experimen
 html[data-ui="tomb"] .experimental-fight-choice-screen.is-duel-layout .experimental-fight-card-name{
   margin-top:auto;
 }
+
