@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.11';
+  const APP_VERSION = '10.1.12';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8279,12 +8279,11 @@ function showPlayerActivation(){
     const hasChosenStrike=strikes.some(entry=>!entry.automatic);
     const rows=strikes.map(entry=>{
       const before=Number(entry.before),after=Number(entry.after),potential=Number(entry.damage);
-      const applied=Math.max(0,before-after);
       const actor=entry.role==='attacker'?result.attackerName:result.defenderName;
-      const damageText=applied<potential?`${applied} applied (${potential} potential)`:`${applied} damage`;
-      return `<li><strong>${escapeHtml(entry.automatic?'AUTO':'CHOSEN')} · ${escapeHtml(actor)} · ${escapeHtml(titleCaseRuleId(entry.successKind))} Strike</strong><span>${escapeHtml(damageText)} · ${before} → ${after} wounds</span></li>`;
+      const damageText=`Dealt ${potential} damage · ${before} → ${after} wounds${before>0&&after===0?' (Eliminated)':''}`;
+      return `<li><strong>${entry.automatic?'(AUTO) ':''}${escapeHtml(actor)} · ${escapeHtml(titleCaseRuleId(entry.successKind))} Strike</strong><span>${escapeHtml(damageText)}</span></li>`;
     }).join('');
-    return `<section class="fight-auto-strike-result" aria-label="Fight strike breakdown"><h3>STRIKES RESOLVED</h3><p>With no enemy successes remaining, the Guide automatically resolved ${automatic.length}${hasChosenStrike?' additional':''} ${automatic.length===1?'Strike':'Strikes'}${hasChosenStrike?' after your choice':''}.</p><ol>${rows}</ol><p>Damage shown on the Fight Result is the actual wounds lost, not unused excess damage.</p></section>`;
+    return `<section class="fight-auto-strike-result" aria-label="Fight strike breakdown"><h3>STRIKES RESOLVED</h3><p>With no enemy successes remaining, the Guide automatically resolved ${automatic.length}${hasChosenStrike?' additional':''} ${automatic.length===1?'Strike':'Strikes'}${hasChosenStrike?' after your choice':''}.</p><ol>${rows}</ol><p>Damage Dealt totals count wounds actually lost, excluding excess damage.</p></section>`;
   }
   // Keep the full saved explanation for compatibility, but avoid repeating
   // long-form damage sentences beneath the two participant cards in Tomb UI.
