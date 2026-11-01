@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.1.14
+# Tomb World Battle Guide v10.1.15
+
+## v10.1.15
+
+### Promote concise solo NPO Activation to Standard
+
+- **Default solo NPO guide:** Promote the tested Experimental NPO Activation layout into Standard: compact operative/wounds/AP/loadout header, short decision prompts, context-aware yes/no choices, and collapsible rules guidance.
+- **Clearer progression:** Preserve compact recent-decision history, focused movement confirmation, and condensed target priority rules.
+- **Scope:** Applies to solo Tomb UI in Standard and Experimental. PvP remains unchanged, and the separate Experimental UI preference remains available for future trials.
+- **No gameplay changes:** NPO decision sequence, movement legality, targeting, combat, AP, save state, and activation transitions use existing logic.
+- **Offline cache:** PWA updated to 10.1.15.
 
 ## v10.1.14
 
