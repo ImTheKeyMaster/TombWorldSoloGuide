@@ -1,6 +1,7 @@
 """Standard and Experimental must share automatic Fight Strike explanations."""
 from pathlib import Path
 import re
+from versioning import CURRENT_APP_VERSION
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = (ROOT / "app.js").read_text(encoding="utf-8")
@@ -40,6 +41,6 @@ def test_shared_styles_and_version():
     assert '[data-experimental="on"]' not in section
     assert 'html[data-ui="tomb"] .fight-auto-strike-result' in section
     for text in (APP, SW, HTML):
-        assert "10.1.8" in text
+        assert CURRENT_APP_VERSION in text
     assert "10.1.7" not in HTML
     assert "Experimental Mode is reserved for future previews." in HTML
