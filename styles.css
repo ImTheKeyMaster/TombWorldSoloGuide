@@ -4051,12 +4051,6 @@ html[data-ui="tomb"] .experimental-fight-choice-screen.is-duel-layout .experimen
 }
 
 /* v10.1.11: Experimental-only concise solo NPO Activation presentation. */
-html[data-ui="tomb"][data-experimental="on"] .npo-concise-header.has-operative-portrait{
-  min-height:156px;
-}
-html[data-ui="tomb"][data-experimental="on"] .npo-concise-header .experimental-necron-activation-portrait{
-  min-height:156px;
-}
 html[data-ui="tomb"][data-experimental="on"] .npo-compact-kicker{
   display:block;color:var(--green);font-size:.69rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;
 }
@@ -4118,10 +4112,6 @@ html[data-ui="tomb"][data-experimental="on"] .npo-target-priority-details{margin
 html[data-ui="tomb"][data-experimental="on"] .npo-target-priority-details>p{margin-top:8px}
 html[data-ui="tomb"][data-experimental="on"] .npo-target-priority-details ol li{margin:3px 0}
 @media(max-width:520px){
-  html[data-ui="tomb"][data-experimental="on"] .npo-concise-header.has-operative-portrait{
-    min-height:142px;grid-template-columns:minmax(0,1fr) 112px;
-  }
-  html[data-ui="tomb"][data-experimental="on"] .npo-concise-header .experimental-necron-activation-portrait{min-height:142px}
   html[data-ui="tomb"][data-experimental="on"] .npo-concise-question,
   html[data-ui="tomb"][data-experimental="on"] .npo-concise-movement{padding:13px}
 }
