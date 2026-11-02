@@ -82,3 +82,31 @@ def test_unchanged_strategy_and_ap_commit_paths():
     assert "pending.cost=required;stage.humanActionCost=required;save();" in APP
     assert "acknowledgeDiceRequest(requestKey)" in APP
     assert "canLeaveStrategyEvents()" in APP
+
+def test_reinforcement_placement_bindings_work_with_zero_or_multiple_rows():
+    """The resumed game must render even when no new reinforcements are pending."""
+    bind = body("function bindPlay(){", "let skipRemainingActivationsPending")
+    line = next(line.strip() for line in bind.splitlines()
+                if "data-reinforcement-placement" in line)
+    assert line.startswith("$$('[data-reinforcement-placement]').forEach(")
+    node(f"""
+      const assert=require('node:assert/strict');
+      let elements=[];
+      let confirmations=[];
+      const $$=()=>elements;
+      const confirmReinforcementPlacement=(id,confirmed)=>confirmations.push([id,confirmed]);
+      // A saved game without pending reinforcements previously crashed on startup.
+      {line}
+      assert.deepEqual(confirmations,[]);
+      const checkbox=(id,checked)=>({{
+        dataset:{{reinforcementPlacement:id}},checked,
+        addEventListener(type,fn){{assert.equal(type,'change');this.onChange=fn;}}
+      }});
+      elements=[checkbox('npo-1',true),checkbox('npo-2',false)];
+      {line}
+      assert.equal(typeof elements[0].onChange,'function');
+      assert.equal(typeof elements[1].onChange,'function');
+      elements[0].onChange();
+      elements[1].onChange();
+      assert.deepEqual(confirmations,[['npo-1',true],['npo-2',false]]);
+    """)

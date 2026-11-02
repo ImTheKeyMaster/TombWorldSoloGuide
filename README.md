@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.1.18
+# Tomb World Battle Guide v10.1.19
+
+## v10.1.19
+
+### Hotfix: Game recovery and reinforcement checkbox binding
+
+- **Startup recovery:** Fix an exception while binding reinforcement placement checkboxes in an active game. Rendering now safely handles zero or several checkboxes.
+- **Save protection:** Keep existing game state and reinforcement selections intact; no reset or save migration is needed.
+- **Regression coverage:** Exercise both a saved game with no pending placement rows and multiple actionable reinforcement placement rows.
+- **Offline update:** Bump app assets and the versioned service-worker cache to v10.1.19.
 
 ## v10.1.18
 
