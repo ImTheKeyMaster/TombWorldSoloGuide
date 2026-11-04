@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.21';
+  const APP_VERSION = '10.1.22';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -6760,7 +6760,7 @@ function showPlayerActivation(){
     acknowledgeCurrentDiceRequest();
     missionDialogLocked=true;
     const animate=!isPvpMode()&&!restoredRoll;
-    const usePortraitResult=experimentalFeaturesEnabled()&&document.documentElement.dataset.ui==='tomb';
+    const usePortraitResult=!isPvpMode()&&document.documentElement.dataset.ui==='tomb';
     const outcome=usePortraitResult
       ? experimentalAggressiveDefenseOutcome(retaliation.roll,stage.playerOperativeId,playerName(stage.playerOperativeId),playerCurrentWounds(stage.playerOperativeId),Boolean(pending.aggressiveDefenseDamageApplied))
       : aggressiveDefenseOutcome(retaliation.roll,playerName(stage.playerOperativeId));
@@ -7605,6 +7605,22 @@ function showPlayerActivation(){
     return record;
   }
 
+  // Both Solo Tomb modes present the same operative portrait and committed Hot wound result.
+  // This renderer is read-only: applyHotDamage() has already committed its result once.
+  function hotWeaponPortraitOutcome(record){
+    const participant={side:record.attackerSide,id:record.attackerId};
+    const name=record.attackerSide==='player'
+      ? playerName(record.attackerId)
+      : npoName(state.roster.find(npo=>npo.id===record.attackerId));
+    const portrait=fightParticipantPortrait(participant,'hot-weapon');
+    const damage=Math.max(0,Number(record.damage)||0);
+    const before=Math.max(0,Number(record.woundsBefore)||0);
+    const after=Math.max(0,Number(record.woundsAfter)||0);
+    const eliminated=Boolean(record.incapacitated);
+    const consequence=damage>0?`Took ${damage} Hot damage`:'No damage';
+    return `<div class="aggressive-defense-operative${eliminated?' eliminated':''}">${portrait?`<span class="aggressive-defense-operative-portrait">${portrait}</span>`:''}<div class="aggressive-defense-operative-details"><strong class="aggressive-defense-operative-name">${escapeHtml(name)}</strong><span class="aggressive-defense-damage ${damage>0?'retaliation':'no-retaliation'}">${consequence}</span><span class="aggressive-defense-wounds">Wounds <strong>${before} → ${after}</strong></span>${eliminated?'<strong class="fight-eliminated">ELIMINATED</strong>':''}</div></div>`;
+  }
+
   async function showHotResult(record,onContinue){
     try{record=await resolveHotTransaction(record);}
     catch(error){console.error('[Hot] Dice request failed. No Hot damage was applied.',error);return;}
@@ -7616,9 +7632,11 @@ function showPlayerActivation(){
       const name=record.attackerSide==='player'?playerName(record.attackerId):npoName(state.roster.find(npo=>npo.id===record.attackerId));
       const comparison=record.damage?`${record.roll} is lower than ${record.effectiveHit}.`:`${record.roll} is not lower than ${record.effectiveHit}.`;
       const outcome=record.damage?`${escapeHtml(name)} suffers ${record.damage} damage.${record.incapacitated?' The operative is incapacitated.':`<br>Wounds: ${record.woundsBefore} -&gt; ${record.woundsAfter}`}`:'No damage.';
+      const showPortraitResult=!isPvpMode()&&document.documentElement.dataset.ui==='tomb';
+      const resultOutcome=showPortraitResult?hotWeaponPortraitOutcome(record):`<strong>${outcome}</strong>`;
       const reducedMotion=isPvpMode()||matchMedia('(prefers-reduced-motion: reduce)').matches;
       const die=reducedMotion?dieHtml({value:record.roll,ariaLabel:`D6 roll: ${record.roll}`}):rollingDieHtml();
-      showModal('HOT WEAPON CHECK',`<p>${HOT_RULE_EXPLANATION}</p><p>${hotRuleInstruction()}</p><section class="combat-stage" aria-label="Hot Weapon Check result"><div class="dice-row ${reducedMotion?'settled':'animated-roll'}" id="hotRollDie">${die}</div><div id="hotRollResult" role="status" aria-live="polite" ${reducedMotion?'':'hidden'}><p><strong>D6 Roll: ${record.roll}</strong><br>Hit Stat: ${record.effectiveHit}+</p><p>${escapeHtml(comparison)}</p><strong>${outcome}</strong></div></section><div class="wizard-actions"><button class="btn primary" id="continueHot" ${reducedMotion?'':'disabled'}>Continue</button></div>`,undefined,`hot:${record.id}`);
+      showModal('HOT WEAPON CHECK',`<p>${HOT_RULE_EXPLANATION}</p><p>${hotRuleInstruction()}</p><section class="combat-stage" aria-label="Hot Weapon Check result"><div class="dice-row ${reducedMotion?'settled':'animated-roll'}" id="hotRollDie">${die}</div><div id="hotRollResult" class="${showPortraitResult?'aggressive-defense-result hot-weapon-result':''}" role="status" aria-live="polite" ${reducedMotion?'':'hidden'}><p><strong>D6 Roll: ${record.roll}</strong><br>Hit Stat: ${record.effectiveHit}+</p><p>${escapeHtml(comparison)}</p>${resultOutcome}</div></section><div class="wizard-actions"><button class="btn primary" id="continueHot" ${reducedMotion?'':'disabled'}>Continue</button></div>`,undefined,`hot:${record.id}`);
       if(!reducedMotion){
         void TombWorldDiceSfx.play();
         setTimeout(()=>{
@@ -8639,7 +8657,7 @@ function showPlayerActivation(){
     return {html:`<strong>D3 ROLL: ${roll}</strong><small class="${outcomeClass}">${heading}</small><p>${consequence}</p>`,announcement};
   }
 
-  // Experimental result preview only. Damage is still committed once on Continue.
+  // Shared Solo Tomb result preview. Damage is still committed once on Continue.
   function experimentalAggressiveDefenseOutcome(roll,operativeId,attackerName='',beforeWounds=0,alreadyApplied=false){
     const damage=aggressiveDefenseDamage(roll);
     const name=String(attackerName||'').trim()||'The attacking operative';

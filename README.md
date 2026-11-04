@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.1.21
+# Tomb World Battle Guide v10.1.22
+
+## v10.1.22
+
+### Shared Solo Hot Weapon Check and Aggressive Defence operative results
+
+- **Both Standard and Experimental:** Aggressive Defence now shows the affected operative's miniature, retaliatory damage and before/after wounds in both Solo Tomb modes, instead of the previous Standard text-only fallback.
+- **Hot Weapon Check:** The roll result now shows the attacking operative's portrait, Hot damage (including no damage) and before/after wounds. Incapacitation uses the same prominent red ELIMINATED treatment. This includes both player and NPO attacker pictures when available.
+- **Consistent portraits:** Both results use the existing Fight portrait renderer and the same full-height, bottom-aligned, uncropped miniature styling across Deathwatch, Death Korps, and Necron NPO portraits.
+- **Gameplay unchanged:** Hot damage stays committed once before its result dialog, Aggressive Defence is still committed once on Continue, and both dice and restored outcomes remain intact. PvP and classic UI keep existing presentations.
+- **Offline PWA:** Refresh versioned app assets and cache to v10.1.22.
 
 ## v10.1.21
 
