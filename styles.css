@@ -1874,6 +1874,19 @@ html[data-ui="tomb"] .experimental-necron-wizard-svg{
 .weapon-field{margin-top:6px}
 /* Keep Deathwatch ammunition label clear of the shooting weapon selector. */
 .weapon-field + .deathwatch-ammunition-field{margin-top:12px}
+
+/* Experimental: explain the selected Special Issue Ammunition immediately below its selector. */
+.deathwatch-ammo-benefit:not([hidden]){
+  margin:9px 0 14px;padding:11px 13px;
+  border:1px solid var(--line);border-radius:12px;background:rgba(91,205,139,.055);
+  color:var(--text);font-size:.91rem;line-height:1.45;
+}
+.deathwatch-ammo-benefit-heading{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.deathwatch-ammo-benefit-heading strong{color:var(--green);font-size:.95rem}
+.deathwatch-ammo-benefit-heading span{font-size:.65rem;letter-spacing:.09em;color:var(--muted);font-weight:700}
+.deathwatch-ammo-benefit p{margin:5px 0 4px}
+.deathwatch-ammo-benefit small{display:block;color:var(--muted);font-size:.78rem}
+
 .melee-weapon-summary>#playerWeaponSummaryContent,.melee-weapon-summary>.melee-weapon-summary-sizer{grid-area:1/1}
 .melee-weapon-summary-sizer,.melee-weapon-summary-pending{visibility:hidden}
 .weapon-details .weapon-rules{margin:14px 0 0;padding:14px 0 0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent}
