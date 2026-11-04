@@ -93,3 +93,15 @@ for(const mode of ['standard','experimental']){{
   }}
 }}
 """)
+
+
+def test_no_legal_ammunition_options_show_readonly_value_in_standard_and_experimental():
+    wizard = slice_between("function showPendingPlayerAttackWizard", "function showPlayerCombatResolution")
+    assert 'id="deathwatchAmmoUnavailable" hidden>No special ammunition</div>' in wizard
+    assert "const noAmmoChoices=Boolean(weapon)&&![...ammunition.options].some(option=>option.value&&!option.disabled);" in wizard
+    assert "ammunition.hidden=noAmmoChoices;" in wizard
+    assert "$('#deathwatchAmmoUnavailable').hidden=!noAmmoChoices;" in wizard
+    assert "stage.deathwatchAmmoRule=ammunition.value" in wizard
+    assert "weaponSelect.addEventListener('change',renderChoices)" in wizard
+    assert "const ammunitionAvailable=attackType==='shoot'&&isDeathwatchPlayerTeam()&&!deathwatchAmmoTransaction().used;" in wizard
+    assert '#deathwatchAmmo[hidden],#deathwatchAmmoUnavailable[hidden]{display:none}' in CSS
