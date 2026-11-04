@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.19';
+  const APP_VERSION = '10.1.20';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -7061,6 +7061,23 @@ function showPlayerActivation(){
   }
 
   const DEATHWATCH_SPECIAL_AMMO=Object.freeze(['Blast 1"','Devastating 1','Lethal 5+','Piercing Crits 1','Saturate','Severe']);
+
+  // Short, player-facing consequences of each official Special Issue Ammunition choice.
+  const DEATHWATCH_AMMO_BENEFITS=Object.freeze({
+    'Blast 1"':'Also attack other operatives within 1" of the primary target, resolving each separately. Useful against clustered enemies.',
+    'Devastating 1':'Each retained critical success deals 1 immediate damage before defence, in addition to its normal attack damage.',
+    'Lethal 5+':'Attack rolls of 5 or 6 count as critical successes, increasing your chance of critical damage and effects.',
+    'Piercing Crits 1':'If you retain a critical success, the defender rolls 1 fewer defence die. This does not stack with stronger Piercing.',
+    'Saturate':'The defender cannot retain cover saves, even when they are in cover.',
+    'Severe':'If you retain no critical successes but have a normal success, change one normal success into a critical.'
+  });
+  function deathwatchAmmoBenefitHtml(rule,weapon){
+    const benefit=DEATHWATCH_AMMO_BENEFITS[rule];
+    if(!benefit||!deathwatchAmmoLegal(weapon,rule))return '';
+    const innate=(weapon?.rules||[]).includes(rule);
+    const note=innate?'This weapon already has this rule, so selecting it adds no extra effect.':'The Guide applies this effect automatically.';
+    return `<div class="deathwatch-ammo-benefit-heading"><strong>${escapeHtml(rule)}</strong><span>AMMUNITION BENEFIT</span></div><p>${escapeHtml(benefit)}</p><small>${escapeHtml(note)}</small>`;
+  }
   function deathwatchAmmoTransaction(){
     const key=`deathwatch-ammunition:${state.turningPoint}`;
     const transactions=state.eventState.transactions||(state.eventState.transactions={});
@@ -8749,6 +8766,7 @@ function showPlayerActivation(){
     const ammunitionControl=ammunitionAvailable
       ? `<div class="field deathwatch-ammunition-field"><label for="deathwatchAmmo">Special Issue Ammunition (once per turning point)</label><select id="deathwatchAmmo"><option value="">No special ammunition</option>${DEATHWATCH_SPECIAL_AMMO.map(rule=>`<option value="${escapeHtml(rule)}"${stage.deathwatchAmmoRule===rule?' selected':''}>${escapeHtml(rule)}</option>`).join('')}</select></div>`
       : '';
+    const experimentalAmmoGuidance=ammunitionAvailable&&experimentalFeaturesEnabled()&&document.documentElement.dataset.ui==='tomb';
     const secondShoot=attackType==='shoot'&&isDeathwatchPlayerTeam()&&playerActionUses(activePlayerActivation(),'shoot')>0;
     const secondShootHint=secondShoot?'<p class="muted">Veteran Astartes: a second Shoot may cost an additional AP depending on both selected weapons.</p>':'';
     const meleeWeaponSummarySizers=attackType==='melee'
@@ -8768,6 +8786,7 @@ function showPlayerActivation(){
       ${targetControl}
       ${weaponControl}
       ${ammunitionControl}
+      ${experimentalAmmoGuidance?'<section class="deathwatch-ammo-benefit" id="deathwatchAmmoBenefit" aria-live="polite" aria-label="Selected special issue ammunition benefit" hidden></section>':''}
       ${secondShootHint}
       <p class="combat-ap-guidance" id="playerShootApGuidance" role="status" aria-live="polite" hidden></p>
       ${darkDistance}
@@ -8787,6 +8806,12 @@ function showPlayerActivation(){
         for(const option of ammunition.options)if(option.value)option.disabled=!deathwatchAmmoLegal(weapon,option.value);
         if(ammunition.value&&!deathwatchAmmoLegal(weapon,ammunition.value))ammunition.value='';
         stage.deathwatchAmmoRule=ammunition.value;
+        const benefit=$('#deathwatchAmmoBenefit');
+        if(benefit){
+          const html=ammunition.value?deathwatchAmmoBenefitHtml(ammunition.value,weapon):'';
+          benefit.innerHTML=html;
+          benefit.hidden=!html;
+        }
       }
       const profile=weapon?playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex,stage}):null;
       $('#playerWeaponSummaryContent').innerHTML=weapon
