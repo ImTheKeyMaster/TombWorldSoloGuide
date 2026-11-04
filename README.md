@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.1.24
+# Tomb World Battle Guide v10.1.25
+
+## v10.1.25
+
+### Show a read-only value when Special Issue Ammunition has no legal choices
+
+- **Standard and Experimental:** The shooting attack form replaces its special ammunition dropdown with a non-interactive “No special ammunition” field for weapons like the melta bomb.
+- **Dynamic selection:** Switching to an eligible weapon restores the dropdown. Illegal previous selections remain cleared.
+- **Gameplay preserved:** No changes to ammunition use, rules, or combat calculations.
+- **Offline PWA:** Refresh versioned assets and the cache to v10.1.25.
 
 ## v10.1.24
 
