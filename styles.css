@@ -1483,23 +1483,27 @@ button.tracker-operative:hover{
 
 /* Experimental Aggressive Defence: put the affected model beside the wound outcome. */
 .aggressive-defense-operative{
-  display:flex;align-items:center;gap:12px;min-width:0;min-height:112px;
-  margin-top:9px;padding:10px;border:1px solid var(--line);
+  display:flex;align-items:center;gap:10px;min-width:0;min-height:184px;
+  margin-top:9px;padding:8px 10px 0;border:1px solid var(--line);
   border-radius:12px;background:#07140f;
 }
 .aggressive-defense-operative.eliminated{
   border:2px solid var(--danger);
   background:rgba(125,25,25,.16);
 }
+/* Applies to every portrait returned by the shared Fight renderer (Deathwatch
+   and Death Korps), not a specific operative or artwork file. */
 .aggressive-defense-operative-portrait{
-  flex:none;display:block;width:88px;height:110px;overflow:hidden;align-self:flex-end;
+  flex:0 0 min(46%,168px);display:block;width:min(46%,168px);
+  min-width:0;min-height:176px;overflow:hidden;align-self:stretch;
 }
 html[data-ui="tomb"] .aggressive-defense-operative-portrait .fight-portrait{
-  display:block;position:static;inset:auto;width:100%;height:100%;max-width:none;
-  opacity:.8;transform:none;-webkit-mask-image:none;mask-image:none;
+  display:block;position:relative;inset:auto;width:100%;height:100%;max-width:none;
+  opacity:.86;transform:none;-webkit-mask-image:none;mask-image:none;
 }
-html[data-ui="tomb"] .aggressive-defense-operative-portrait .fight-portrait-artwork{
-  display:block;width:100%;height:100%;max-height:100%;transform:none;
+html[data-ui="tomb"] .aggressive-defense-operative-portrait img.fight-portrait-artwork{
+  display:block;position:absolute;inset:auto 0 0;
+  width:100%;height:100%;max-width:none;max-height:none;margin:0;transform:none;
   object-fit:contain;object-position:center bottom;
 }
 .aggressive-defense-operative-details{display:grid;flex:1;gap:6px;min-width:0}
@@ -1513,8 +1517,10 @@ html[data-ui="tomb"] .aggressive-defense-operative-portrait .fight-portrait-artw
   margin:0;color:var(--danger);font-size:1.04rem;font-weight:950;letter-spacing:.07em;
 }
 @media(max-width:380px){
-  .aggressive-defense-operative{gap:9px;padding:9px}
-  .aggressive-defense-operative-portrait{width:72px;height:100px}
+  .aggressive-defense-operative{gap:8px;min-height:170px;padding:8px 8px 0}
+  .aggressive-defense-operative-portrait{
+    flex-basis:min(44%,145px);width:min(44%,145px);min-height:164px;
+  }
 }
 @media(max-width:600px){
   .combat-resolution-modal{width:calc(100% - 16px);max-height:calc(100dvh - 12px)}

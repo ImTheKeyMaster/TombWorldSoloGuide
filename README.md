@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.1.20
+# Tomb World Battle Guide v10.1.21
+
+## v10.1.21
+
+### Experimental: enlarge Aggressive Defence operative portraits
+
+- **All operatives:** Aggressive Defence result portraits now use a flexible, taller image column for every supported player operative, including Deathwatch and Death Korps. The change is not specific to Bombard.
+- **Full miniature visible:** Contain scaling preserves aspect ratio and avoids cropping. Artwork is aligned to the bottom of the card, with space retained for the operative name, retaliation damage and wound change.
+- **Responsive:** Narrow iPhone displays keep a practical text column, while larger screens give portraits more room.
+- **No mechanics change:** All dice, wounds, elimination effects and other Fight/Activation portrait sizes are unchanged.
+- **Offline PWA:** Update app assets and cache to v10.1.21.
 
 ## v10.1.20
 
