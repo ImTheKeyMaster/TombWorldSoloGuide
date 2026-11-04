@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.1.25
+# Tomb World Battle Guide v10.1.26
+
+## v10.1.26
+
+### Clarify the NPO enemy control-range check
+
+- **Standard and Experimental Solo Tomb:** The NPO Fall Back applicability prompt now reads “In enemy control range (1″)?” so players see the relevant distance without opening guidance.
+- **Rules & guidance:** Explain measuring from the nearest points of bases, the 1″ limit, the visibility requirement, and mutual control range if either operative sees the other. The choice labels stay “In range” and “Out of range”.
+- **No gameplay changes:** Fall Back eligibility, action costs, decisions, saves, combat, and other game modes remain unchanged.
+- **Offline PWA:** Refresh versioned assets and the cache to v10.1.26.
 
 ## v10.1.25
 
