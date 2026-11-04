@@ -83,7 +83,8 @@ def test_shared_portrait_renderer_supports_all_available_team_pictures():
     assert "fightParticipantPortrait({side:'player',id:operativeId},'aggressive-defence')" in retaliation
     assert ".aggressive-defense-operative-portrait" in CSS
     assert "object-fit:contain;object-position:center bottom" in CSS
-    assert "min-height:184px" in CSS
+    assert "min-height:184px" not in CSS
+    assert "height:146px;overflow:hidden;align-self:flex-end" in CSS
     assert "max-width:none;max-height:none;margin:0;transform:none" in CSS
 
 

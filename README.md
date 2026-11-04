@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.1.26
+# Tomb World Battle Guide v10.1.27
+
+## v10.1.27
+
+### Reduce empty space above miniature portraits in special-result cards
+
+- **Standard and Experimental Solo Tomb:** Aggressive Defence and Hot result cards share a compact, content-sized operative portrait slot across Deathwatch, Death Korps and Necron operatives.
+- **No clipped miniatures:** The existing image alpha-analysis logic trims transparent artwork margins, preserving each miniature’s full visible silhouette, aspect ratio and bottom alignment. If measurement is unavailable, use smaller uncropped CSS fallback dimensions.
+- **Wound outcomes unchanged:** Keep the affected operative, wound values, dice results, elimination status and damage timing untouched.
+- **Offline PWA:** Refresh app assets and offline cache to v10.1.27.
 
 ## v10.1.26
 

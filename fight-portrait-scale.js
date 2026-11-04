@@ -159,7 +159,68 @@
     refresh();
   }
 
+
+  // Special result cards show one fully visible miniature beside its wound
+  // outcome. Use the same transparent-pixel measurements as paired Fight cards
+  // to remove top whitespace without zooming or cropping faction artwork.
+  const SPECIAL_RESULT_MAX_FIGURE_HEIGHT = 150;
+  function calculateSpecialResultLayout(geometry, frameWidth) {
+    if (!geometry || !(frameWidth > 8) || !(geometry.figureHeight > 0)) return null;
+    const visibleWidth = geometry.right - geometry.left + 1;
+    if (!(visibleWidth > 0)) return null;
+    const scale = Math.min((frameWidth - 8) / visibleWidth,
+      SPECIAL_RESULT_MAX_FIGURE_HEIGHT / geometry.figureHeight);
+    if (!(scale > 0) || !Number.isFinite(scale)) return null;
+    const figureHeight = geometry.figureHeight * scale;
+    return {
+      imageWidth: geometry.width * scale,
+      imageHeight: geometry.height * scale,
+      imageLeft: (frameWidth - visibleWidth * scale) / 2 - geometry.left * scale,
+      imageBottom: 4 - (geometry.height - 1 - geometry.bottom) * scale,
+      frameHeight: Math.ceil(figureHeight + 8),
+      figureHeight
+    };
+  }
+
+  let specialResultObserver = null;
+  function mountSpecialResult(root) {
+    if (specialResultObserver) {
+      specialResultObserver.disconnect();
+      specialResultObserver = null;
+    }
+    if (!root?.querySelectorAll) return;
+    const frames = Array.from(root.querySelectorAll('.aggressive-defense-operative-portrait'))
+      .filter(frame => frame.querySelector('img.fight-portrait-artwork'));
+    if (!frames.length) return;
+
+    function refresh() {
+      frames.forEach(frame => {
+        if (!frame.isConnected) return;
+        const img = frame.querySelector('img.fight-portrait-artwork');
+        const geometry = img && measureImage(img);
+        const layout = calculateSpecialResultLayout(geometry, frame.getBoundingClientRect().width);
+        if (!layout) return; // Keep uncropped CSS fallback for unavailable artwork.
+        frame.style.height = layout.frameHeight + 'px';
+        img.style.width = layout.imageWidth + 'px';
+        img.style.height = layout.imageHeight + 'px';
+        img.style.left = layout.imageLeft + 'px';
+        img.style.right = 'auto';
+        img.style.bottom = layout.imageBottom + 'px';
+      });
+    }
+
+    frames.forEach(frame => {
+      const img = frame.querySelector('img.fight-portrait-artwork');
+      if (!img.complete || !img.naturalWidth) img.addEventListener('load', refresh, { once: true });
+    });
+    if (typeof ResizeObserver !== 'undefined') {
+      specialResultObserver = new ResizeObserver(refresh);
+      frames.forEach(frame => specialResultObserver.observe(frame));
+    }
+    refresh();
+  }
+
   window.TombWorldFightPortraitScale = Object.freeze({
-    mount, analyzePixels, calculatePair
+    mount, mountSpecialResult, analyzePixels, calculatePair, calculateSpecialResultLayout
   });
 })();
