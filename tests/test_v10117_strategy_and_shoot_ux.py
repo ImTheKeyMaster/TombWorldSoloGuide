@@ -28,10 +28,11 @@ def test_paused_strategy_copy_is_actionable_and_does_not_claim_lost_dice():
     assert "finishTurningPointStart" in body("function bindPlay", "async function startTurningPoint")
 
 
-def test_experimental_reinforcement_card_follows_stable_checkbox_list():
+def test_standard_and_experimental_reinforcement_card_follows_stable_checkbox_list():
     review = body("function strategyReviewStepHtml", "function reinforcementBlockedReason")
     assert "const placementChecklist=deployingNpos.length?" in review
-    assert "experimentalFeaturesEnabled()?\u0060\u0024{placementChecklist}\u0024{reinforcementCard}\u0060:\u0060\u0024{reinforcementCard}\u0024{placementChecklist}\u0060" in review
+    assert "const reinforcementContent=`${placementChecklist}${reinforcementCard}`;" in review
+    assert "const reinforcementContent=experimentalFeaturesEnabled()?" not in review
     assert "\u0024{warning}\u0024{reinforcementContent}\u0024{battlefield}" in review
     assert "npo.reinforcement?.placementConfirmed" in review
     assert 'data-reinforcement-placement=' in review

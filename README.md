@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.1.22
+# Tomb World Battle Guide v10.1.23
+
+## v10.1.23
+
+### Promote stable reinforcement placement layout
+
+- **Standard and Experimental:** Place deployment confirmation checkboxes ahead of the changing reinforcement summary and totals, preventing the choices from moving down as each placement is confirmed.
+- **Current Battlefield State:** Keep the battlefield state below the checkboxes and reinforcement summary.
+- **Gameplay unchanged:** Preserve generation, placement confirmation, saved state, dice and combat mechanics.
+- **Offline PWA:** Cache version updated to v10.1.23.
 
 ## v10.1.22
 

@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.22';
+  const APP_VERSION = '10.1.23';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -4229,7 +4229,7 @@ document.addEventListener('touchend',function(e){
     const blocked=!canCompleteStrategyPhase();
     const warning=unresolved?'<div class="summary-box strategy-warning"><strong>Event resolution is incomplete.</strong><p>Return to Tomb World Events and finish the required event transaction.</p></div>':'';
     const placementChecklist=deployingNpos.length?`<div class="checklist">${placements}</div>`:'';
-    const reinforcementContent=experimentalFeaturesEnabled()?`${placementChecklist}${reinforcementCard}`:`${reinforcementCard}${placementChecklist}`;
+    const reinforcementContent=`${placementChecklist}${reinforcementCard}`;
     const reason=state.reinforcementState.status==='placement'?'Confirm every reinforcement placement before completing the Strategy Phase.':missionStrategyPending()?'Resolve the mandatory mission Strategy Phase rule before completing the Strategy Phase.':unresolved?'Resolve the required Tomb World event or redraw before completing the Strategy Phase.':'';
     return `${strategyProgressHtml('review')}<h2 id="strategy-step-heading">Deploy Reinforcements and Review</h2>${warning}${reinforcementContent}${battlefield}${strategyNavigationHtml({backId:'backStrategyEvents',backLabel:'Back to Tomb World Events',continueId:'continueStrategy',continueLabel:'Strategy Phase Complete',disabled:blocked,disabledReason:reason})}`;
   }
