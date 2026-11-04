@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.25';
+  const APP_VERSION = '10.1.26';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -9165,7 +9165,7 @@ function showPlayerActivation(){
       concernsControlRange:true,
       applicabilityQuestion:'Is this NPO within the control range of any Player operative?',
       feasibilityQuestion:'Can it move away and finish outside every Player operative’s control range?',
-      applicabilityHelp:'Select Yes if this NPO is currently within a Player operative’s control range. Do not move the NPO yet.',
+      applicabilityHelp:'Measure between the nearest points of the models’ bases. They are in each other’s control range when within 1″ and at least one operative can see the other. Select In range only when both conditions are met. Do not move the NPO yet.',
       feasibilityHelp:n=>`Move it up to ${npoDefinition(n.type)?.move} inches. Select Yes only if its base fits at a destination outside every Player operative’s control range.`,
       selectedInstruction:'Fall Back using the shortest available route and finish outside every Player operative’s control range.'
     },
@@ -9413,7 +9413,7 @@ function showPlayerActivation(){
   }
   function conciseNpoQuestionTitle(q){
     const id=q.actionId||npoActionId(q.action);
-    if(id==='fall-back')return q.type==='applicability'?'In enemy control range?':'Can Fall Back safely?';
+    if(id==='fall-back')return q.type==='applicability'?'In enemy control range (1″)?':'Can Fall Back safely?';
     if(id==='shoot')return 'Valid shooting target?';
     if(id==='fight')return 'Enemy in control range?';
     if(id==='charge')return 'Can Charge a target?';
