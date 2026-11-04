@@ -68,8 +68,8 @@ def test_portrait_fills_result_card_height_without_distortion_or_clipping():
         assert forbidden not in css
 
 
-def test_unchanged_damage_commit_and_experimental_only_gate():
+def test_unchanged_damage_commit_and_shared_solo_tomb_gate():
     damage=source("async function showAggressiveDefenseResolution", "function showIncapacitationOrderChoice")
-    assert "experimentalFeaturesEnabled()&&document.documentElement.dataset.ui==='tomb'" in damage
+    assert "const usePortraitResult=!isPvpMode()&&document.documentElement.dataset.ui==='tomb';" in damage
     assert "if(aggressiveDamage>0&&!pending.aggressiveDefenseDamageApplied)" in damage
     assert "pending.aggressiveDefenseResolved=true" in damage
