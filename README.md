@@ -1,4 +1,14 @@
-# Tomb World Battle Guide v10.1.23
+# Tomb World Battle Guide v10.1.24
+
+## v10.1.24
+
+### Promote Special Issue Ammunition benefits to Standard
+
+- **Standard and Experimental Solo Tomb:** Explain the effect immediately beneath the Special Issue Ammunition selector for each of the six Deathwatch ammunition choices.
+- **Existing guidance:** Retain rules for Blast, Devastating, Lethal, Piercing Crits, Saturate and Severe, including illegal selections and duplicate weapon-rule warnings.
+- **Scope:** Standard PvP presentation remains unchanged; Experimental PvP retains the previous preview behavior.
+- **Gameplay unchanged:** No changes to damage, cover, save dice, ammunition uses, action costs, weapon profiles or saved data.
+- **PWA:** Refresh versioned assets and offline cache to v10.1.24.
 
 ## v10.1.23
 

@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.23';
+  const APP_VERSION = '10.1.24';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -8784,7 +8784,7 @@ function showPlayerActivation(){
     const ammunitionControl=ammunitionAvailable
       ? `<div class="field deathwatch-ammunition-field"><label for="deathwatchAmmo">Special Issue Ammunition (once per turning point)</label><select id="deathwatchAmmo"><option value="">No special ammunition</option>${DEATHWATCH_SPECIAL_AMMO.map(rule=>`<option value="${escapeHtml(rule)}"${stage.deathwatchAmmoRule===rule?' selected':''}>${escapeHtml(rule)}</option>`).join('')}</select></div>`
       : '';
-    const experimentalAmmoGuidance=ammunitionAvailable&&experimentalFeaturesEnabled()&&document.documentElement.dataset.ui==='tomb';
+    const showAmmoGuidance=ammunitionAvailable&&document.documentElement.dataset.ui==='tomb'&&(!isPvpMode()||experimentalFeaturesEnabled());
     const secondShoot=attackType==='shoot'&&isDeathwatchPlayerTeam()&&playerActionUses(activePlayerActivation(),'shoot')>0;
     const secondShootHint=secondShoot?'<p class="muted">Veteran Astartes: a second Shoot may cost an additional AP depending on both selected weapons.</p>':'';
     const meleeWeaponSummarySizers=attackType==='melee'
@@ -8804,7 +8804,7 @@ function showPlayerActivation(){
       ${targetControl}
       ${weaponControl}
       ${ammunitionControl}
-      ${experimentalAmmoGuidance?'<section class="deathwatch-ammo-benefit" id="deathwatchAmmoBenefit" aria-live="polite" aria-label="Selected special issue ammunition benefit" hidden></section>':''}
+      ${showAmmoGuidance?'<section class="deathwatch-ammo-benefit" id="deathwatchAmmoBenefit" aria-live="polite" aria-label="Selected special issue ammunition benefit" hidden></section>':''}
       ${secondShootHint}
       <p class="combat-ap-guidance" id="playerShootApGuidance" role="status" aria-live="polite" hidden></p>
       ${darkDistance}

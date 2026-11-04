@@ -50,9 +50,11 @@ assert(DEATHWATCH_AMMO_BENEFITS['Blast 1"'].includes('other operatives'));
 """)
 
 
-def test_dynamic_guidance_is_experimental_only_and_next_to_selector():
+def test_dynamic_guidance_is_in_both_solo_modes_and_next_to_selector():
     wizard = slice_between("function showPendingPlayerAttackWizard", "function showPlayerCombatResolution")
-    assert "experimentalFeaturesEnabled()&&document.documentElement.dataset.ui==='tomb'" in wizard
+    assert "const showAmmoGuidance=ammunitionAvailable&&document.documentElement.dataset.ui==='tomb'&&(!isPvpMode()||experimentalFeaturesEnabled());" in wizard
+    assert "${showAmmoGuidance?" in wizard
+    assert "${experimentalAmmoGuidance?" not in wizard
     assert 'id="deathwatchAmmoBenefit"' in wizard
     assert wizard.index("${ammunitionControl}") < wizard.index("deathwatchAmmoBenefit") < wizard.index("${secondShootHint}")
     assert "stage.deathwatchAmmoRule=ammunition.value" in wizard
@@ -71,3 +73,23 @@ def test_ammo_and_attack_mechanics_still_use_existing_transaction_and_rules():
     assert "const rules=profile.rules.includes(rule)?profile.rules:[...profile.rules,rule]" in ammo
     assert "option.disabled=!deathwatchAmmoLegal(weapon,option.value)" in wizard
     assert "playerWeaponProfile(weapon,{operativeId:stage.playerOperativeId,attackType,weaponIndex,stage})" in wizard
+
+
+def test_ammo_guidance_mode_gate_behaviour():
+    wizard = slice_between("function showPendingPlayerAttackWizard", "function showPlayerCombatResolution")
+    predicate = next(line.strip() for line in wizard.splitlines() if line.strip().startswith("const showAmmoGuidance="))
+    node(f"""
+const assert=require('node:assert/strict');
+for(const mode of ['standard','experimental']){{
+  for(const gameMode of ['solo','pvp']){{
+    for(const available of [false,true]){{
+      const ammunitionAvailable=available;
+      const document={{documentElement:{{dataset:{{ui:'tomb'}}}}}};
+      const isPvpMode=()=>gameMode==='pvp';
+      const experimentalFeaturesEnabled=()=>mode==='experimental';
+      {predicate}
+      assert.equal(showAmmoGuidance,available&&(gameMode==='solo'||mode==='experimental'));
+    }}
+  }}
+}}
+""")
