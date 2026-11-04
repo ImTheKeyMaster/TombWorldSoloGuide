@@ -51,16 +51,16 @@ def test_all_supported_player_operative_types_use_the_shared_portrait():
 
 def test_portrait_fills_result_card_height_without_distortion_or_clipping():
     css=CSS[CSS.index("/* Experimental Aggressive Defence:"):CSS.index("@media(max-width:600px)",CSS.index("/* Experimental Aggressive Defence:"))]
-    assert "min-height:184px" in css
+    assert "min-height:184px" not in css
     assert "flex:0 0 min(46%,168px)" in css
-    assert "min-height:176px;overflow:hidden;align-self:stretch" in css
+    assert "height:146px;overflow:hidden;align-self:flex-end" in css
     assert "position:relative" in css
     assert "position:absolute;inset:auto 0 0" in css
     assert "object-fit:contain;object-position:center bottom" in css
     assert "img.fight-portrait-artwork" in css
     assert ".aggressive-defense-operative-portrait{width:72px;height:100px}" not in css
     assert "flex-basis:min(44%,145px)" in css
-    assert "min-height:164px" in css
+    assert "height:136px" in css
     assert ".aggressive-defense-operative-details{display:grid;flex:1" in css
     assert "opacity:.86" in css
     # Same CSS applies to both factions, never a particular operative or portrait file.
