@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.26';
+  const APP_VERSION = '10.1.27';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -6774,6 +6774,7 @@ function showPlayerActivation(){
       die.classList.replace('animated-roll','settled');
       const result=$('#aggressiveDefenseResult');
       result.innerHTML=outcome.html;
+      window.TombWorldFightPortraitScale?.mountSpecialResult(modalBody);
       result.setAttribute('aria-label',outcome.announcement);
       result.hidden=false;
       button.disabled=false;
@@ -11363,6 +11364,8 @@ function showPlayerActivation(){
     modal.setAttribute('aria-labelledby','modalTitle');
     modal.setAttribute('tabindex','-1');
     if(!modal.open)modal.showModal();
+    // Trim transparent portrait margins in shared Aggressive Defence and Hot result cards.
+    window.TombWorldFightPortraitScale?.mountSpecialResult(modalBody);
     modal._focusKey=nextFocusKey;
     modal._onClose=onClose;
     $$('[data-close]',modal).forEach(b=>b.onclick=closeModal);
