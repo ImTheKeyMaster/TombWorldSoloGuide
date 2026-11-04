@@ -60,9 +60,9 @@ def test_rolled_damage_never_produces_negative_wounds():
     assert "already applied" in outcome(3, 8, already_applied=True)["html"]
 
 
-def test_only_experimental_tomb_uses_portrait_preview_and_standard_keeps_legacy():
+def test_both_solo_tomb_modes_use_portrait_preview_and_pvp_keeps_legacy():
     resolver = source("async function showAggressiveDefenseResolution", "function showIncapacitationOrderChoice")
-    assert "experimentalFeaturesEnabled()&&document.documentElement.dataset.ui==='tomb'" in resolver
+    assert "const usePortraitResult=!isPvpMode()&&document.documentElement.dataset.ui==='tomb';" in resolver
     assert "experimentalAggressiveDefenseOutcome(" in resolver
     assert ": aggressiveDefenseOutcome(retaliation.roll,playerName(stage.playerOperativeId))" in resolver
     assert "playerCurrentWounds(stage.playerOperativeId)" in resolver
