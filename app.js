@@ -6774,9 +6774,9 @@ function showPlayerActivation(){
       die.classList.replace('animated-roll','settled');
       const result=$('#aggressiveDefenseResult');
       result.innerHTML=outcome.html;
-      window.TombWorldFightPortraitScale?.mountSpecialResult(modalBody);
       result.setAttribute('aria-label',outcome.announcement);
       result.hidden=false;
+      window.TombWorldFightPortraitScale?.mountSpecialResult(modalBody);
       button.disabled=false;
     },DICE_ROLL_ANIMATION_MS);
     button.onclick=()=>{
