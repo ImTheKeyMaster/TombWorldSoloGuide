@@ -7064,7 +7064,7 @@ function showPlayerActivation(){
 
   // Short, player-facing consequences of each official Special Issue Ammunition choice.
   const DEATHWATCH_AMMO_BENEFITS=Object.freeze({
-    'Blast 1"':'Also attack other operatives within 1" of the primary target, resolving each separately. Useful against clustered enemies.',
+    'Blast 1"':'Shoot other operatives visible to and within 1" of the primary target (including allies), resolving each attack separately. Useful against clusters.',
     'Devastating 1':'Each retained critical success deals 1 immediate damage before defence, in addition to its normal attack damage.',
     'Lethal 5+':'Attack rolls of 5 or 6 count as critical successes, increasing your chance of critical damage and effects.',
     'Piercing Crits 1':'If you retain a critical success, the defender rolls 1 fewer defence die. This does not stack with stronger Piercing.',
