@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.1.19
+# Tomb World Battle Guide v10.1.20
+
+## v10.1.20
+
+### Experimental Special Issue Ammunition explanations
+
+- **Benefits in context:** Selecting one of the six Deathwatch Special Issue Ammunition options displays an immediate, compact explanation beneath the selector. Descriptions cover Blast, Devastating, Lethal, Piercing Crits, Saturate and Severe.
+- **No duplicate bonuses:** Warn if the chosen weapon already has the selected rule. Unavailable Blast/Torrent combinations remain disabled and unselected choices do not add extra content.
+- **Experimental only:** Solo Tomb Experimental sees the explanation while Standard and PvP retain the prior layout. All attack/defence calculations, ammunition use tracking, weapon selection, and save schema are unchanged.
+- **Offline PWA:** Updated versioned resources and cache to v10.1.20.
 
 ## v10.1.19
 
