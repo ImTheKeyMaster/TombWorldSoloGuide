@@ -1880,6 +1880,7 @@ html[data-ui="tomb"] .experimental-necron-wizard-svg{
 .weapon-field{margin-top:6px}
 /* Keep Deathwatch ammunition label clear of the shooting weapon selector. */
 .weapon-field + .deathwatch-ammunition-field{margin-top:12px}
+#deathwatchAmmo[hidden],#deathwatchAmmoUnavailable[hidden]{display:none}
 
 /* Explain the selected Special Issue Ammunition immediately below its selector in both Solo Tomb modes. */
 .deathwatch-ammo-benefit:not([hidden]){
