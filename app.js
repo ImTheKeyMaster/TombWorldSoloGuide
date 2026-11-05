@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.27';
+  const APP_VERSION = '10.1.28';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -4990,7 +4990,7 @@ document.addEventListener('touchend',function(e){
       blocked=requested-actual;
       state.reinforcementState.blockedByCapacity=blocked;
       for(let i=0;i<actual;i++){
-        const request=tombWorldVariantHook('reinforcementGeneration',randomReinforcement());
+        const request=tombWorldVariantHook('reinforcementGeneration',randomReinforcement(state.reinforcementState.operativeIds));
         const rr=resolveVariantNpoRequest(request,{transactionId:`reinforcement:${state.turningPoint}:${i}:${request?.type||'none'}`});
         if(!rr){blocked++;state.reinforcementState.blockedByInventory++;continue;}
         const type=rr.type;
@@ -5000,7 +5000,15 @@ document.addEventListener('touchend',function(e){
           n.battlefieldState='reserve';n.deployed=false;n.dormant=false;n.ready=false;
           n.replacementOptions=rr.replacementOptions||null;n.replacementTransactionId=rr.replacementTransactionId||null;
         }else{
-          n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId,deployed:false,reuseEliminated,reinforcement:{turningPoint:state.turningPoint,placementConfirmed:false},replacementOptions:rr.replacementOptions,replacementTransactionId:rr.replacementTransactionId});
+          if(!(npoInventory(state.roster,{reuseEliminated})[type]?.remaining>0)){
+            blocked++;state.reinforcementState.blockedByInventory++;continue;
+          }
+          try{
+            n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId,deployed:false,reuseEliminated,reinforcement:{turningPoint:state.turningPoint,placementConfirmed:false},replacementOptions:rr.replacementOptions,replacementTransactionId:rr.replacementTransactionId});
+          }catch(error){
+            if(!/^No .+ model remains available\.$/.test(String(error?.message)))throw error;
+            blocked++;state.reinforcementState.blockedByInventory++;continue;
+          }
           if(!commitNpoRoster([...state.roster,n],'add a reinforcement')){blocked++;state.reinforcementState.blockedByInventory++;continue;}
           state.newIds.push(n.id);
         }
@@ -5161,8 +5169,9 @@ document.addEventListener('touchend',function(e){
     if(event.definitionId==='transdimensional-relocation')requestAnimationFrame(()=>focusInitialDialogControl(app));
   }
 
-  function randomReinforcement(){
-    const canAllocate=result=>reserveNpos().some(npo=>npo.type===result.type)||npoInventory(state.roster,{reuseEliminated:experimentalNpoMiniatureReuseEnabled()})[result.type]?.remaining>0;
+  function randomReinforcement(excludedReserveIds=[]){
+    const excluded=new Set(excludedReserveIds);
+    const canAllocate=result=>reserveNpos().some(npo=>npo.type===result.type&&!excluded.has(npo.id))||npoInventory(state.roster,{reuseEliminated:experimentalNpoMiniatureReuseEnabled()})[result.type]?.remaining>0;
     for(let attempts=0;attempts<24;attempts++){const result=rollNpo();if(canAllocate(result))return result;}
     const legal=npoGenerationTable.filter(canAllocate);
     if(!legal.length){console.warn('[NPO inventory] No legal physical model remains for reinforcement.');return null;}
