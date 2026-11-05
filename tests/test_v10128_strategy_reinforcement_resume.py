@@ -34,6 +34,7 @@ const journal=[];
 const experimentalNpoMiniatureReuseEnabled=()=>false;
 const gradeConfig=grade=>({reinforcements:grade});
 const threatGrade=()=>3;
+const reinforcementTriggered=()=>state.strategyPipeline.current==='reinforcement'&&state.turningPoint>1&&state.strategyData.grade>0;
 const activeNpos=()=>state.roster.filter(npo=>npo.battlefieldState==='deployed'&&npo.wounds>0);
 const reserveNpos=()=>state.roster.filter(npo=>npo.battlefieldState==='reserve'&&npo.wounds>0);
 const npoInventory=()=>({'Necron Warrior':{remaining:0},'Royal Warden':{remaining:0}});
