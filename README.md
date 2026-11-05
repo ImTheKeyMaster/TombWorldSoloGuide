@@ -1,13 +1,20 @@
-# Tomb World Battle Guide v10.1.27
+# Tomb World Battle Guide v10.1.28
 
-## v10.1.27
+## v10.1.28
+
+### Recover Strategy Phase when Necron reinforcements exceed available physical models
+
+- **Standard and Experimental Solo Tomb:** Reinforcement generation never selects an already allocated reserve model again in the same Turning Point.
+- **Physical inventory:** When the requested Grade exceeds available reserve and unallocated Necron miniatures, count the shortage as blocked reinforcements instead of throwing an error; retain legal models for placement.
+- **Recovery:** A saved Strategy Phase paused after event resolution resumes directly into reinforcements without rerolling initiative or completed events.
+- **Offline PWA:** Refresh app assets and offline cache to v10.1.28.
 
 ### Reduce empty space above miniature portraits in special-result cards
 
 - **Standard and Experimental Solo Tomb:** Aggressive Defence and Hot result cards share a compact, content-sized operative portrait slot across Deathwatch, Death Korps and Necron operatives.
 - **No clipped miniatures:** The existing image alpha-analysis logic trims transparent artwork margins, preserving each miniature’s full visible silhouette, aspect ratio and bottom alignment. If measurement is unavailable, use smaller uncropped CSS fallback dimensions.
 - **Wound outcomes unchanged:** Keep the affected operative, wound values, dice results, elimination status and damage timing untouched.
-- **Offline PWA:** Refresh app assets and offline cache to v10.1.27.
+- **Offline PWA:** Refresh app assets and offline cache to v10.1.28.
 
 ## v10.1.26
 
