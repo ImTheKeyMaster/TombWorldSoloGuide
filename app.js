@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.27';
+  const APP_VERSION = '10.1.28';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -4657,12 +4657,12 @@ document.addEventListener('touchend',function(e){
         if(Array.isArray(state.strategyData.events))await beginCurrentEvent();
         else await processEventStage();
       }
+      if(!state.strategyData.eventPending)processReinforcementStage();
     }catch(error){
-      console.error('[Strategy Dice]',error);
+      console.error('[Strategy Phase]',error);
       save();render();
       return false;
     }
-    if(!state.strategyData.eventPending)processReinforcementStage();
     const {grade,reinforcements}=state.strategyData;
     state.phase='strategy';state.strategyStage='summary';state.nextSide='player';state.activeNpoId=null;
     log(`Turning Point ${state.turningPoint} started. Grade ${grade}; ${state.strategyData.eventPending?'reinforcements await event resolution':`${reinforcements.length} reinforcement(s)`}.`);
@@ -5000,6 +5000,10 @@ document.addEventListener('touchend',function(e){
           n.battlefieldState='reserve';n.deployed=false;n.dormant=false;n.ready=false;
           n.replacementOptions=rr.replacementOptions||null;n.replacementTransactionId=rr.replacementTransactionId||null;
         }else{
+          if(!lowestAvailableNpoInstances(type,1,{reuseEliminated}).length){
+            blocked++;state.reinforcementState.blockedByInventory++;
+            continue;
+          }
           n=createNpo(type,`${type} R${state.turningPoint}-${i+1}`,{weaponId:rr.weaponId,deployed:false,reuseEliminated,reinforcement:{turningPoint:state.turningPoint,placementConfirmed:false},replacementOptions:rr.replacementOptions,replacementTransactionId:rr.replacementTransactionId});
           if(!commitNpoRoster([...state.roster,n],'add a reinforcement')){blocked++;state.reinforcementState.blockedByInventory++;continue;}
           state.newIds.push(n.id);
@@ -5162,7 +5166,10 @@ document.addEventListener('touchend',function(e){
   }
 
   function randomReinforcement(){
-    const canAllocate=result=>reserveNpos().some(npo=>npo.type===result.type)||npoInventory(state.roster,{reuseEliminated:experimentalNpoMiniatureReuseEnabled()})[result.type]?.remaining>0;
+    const alreadySelected=new Set([...(state.reinforcementState?.operativeIds||[]),...(state.reinforcementState?.blockedOperativeIds||[])]);
+    const availableReserves=reserveNpos().filter(npo=>!alreadySelected.has(npo.id));
+    const inventory=npoInventory(state.roster,{reuseEliminated:experimentalNpoMiniatureReuseEnabled()});
+    const canAllocate=result=>availableReserves.some(npo=>npo.type===result.type)||inventory[result.type]?.remaining>0;
     for(let attempts=0;attempts<24;attempts++){const result=rollNpo();if(canAllocate(result))return result;}
     const legal=npoGenerationTable.filter(canAllocate);
     if(!legal.length){console.warn('[NPO inventory] No legal physical model remains for reinforcement.');return null;}
