@@ -1,4 +1,13 @@
-# Tomb World Battle Guide v10.1.27
+# Tomb World Battle Guide v10.1.28
+
+## v10.1.28
+
+### Keep the Strategy Phase moving when only reserve Necrons remain
+
+- **Reserve-first reinforcement allocation:** At Grade 3, exclude reserve operatives already allocated during this Turning Point before selecting the next reinforcement. Never select the same physical model twice.
+- **Physical inventory exhausted:** If fewer than three eligible Necron models remain, mark the shortfall as blocked reinforcements rather than attempting to create a model already used or eliminated.
+- **Interrupted saved games:** The existing Continue Strategy Phase action can retry the unfinished reinforcement stage without resetting initiative, event results, mission progress, or saved casualties.
+- **Both Standard and Experimental:** Same reinforcement fix, unchanged rules and save schema. Update versioned web assets and offline cache to 10.1.28.
 
 ## v10.1.27
 
