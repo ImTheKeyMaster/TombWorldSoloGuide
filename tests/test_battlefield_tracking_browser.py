@@ -113,7 +113,7 @@ with sync_playwright() as p:
     page.get_by_text("Review Operative Positions / Orders",exact=True).click()
     assert page.locator('select[aria-label="Operative to identify"]').count()==1
     # A movement is confirmed directly and a second AP is previewed, not committed.
-    page.evaluate("reconConfig={...reconConfig,token:{},setup:false,turn:1,missionNumber:null,actorKey:null,actionOrder:(m,c,planned=[])=>['Reposition','Dash'].filter(x=>!planned.includes(x.toLowerCase())),models:reconConfig.models.map(m=>m.side==='npo'?{...m,canShoot:false,focus:'fight',ap:2}:m)};TombWorldReconTracking.open(document.querySelector('#host'),reconConfig)")
+    page.evaluate("reconConfig={...reconConfig,token:{},setup:false,turn:1,missionNumber:null,actorKey:null,actionOrder:(m,c,planned=[])=>['Reposition','Dash'].filter(x=>!planned.includes(x.toLowerCase())),models:reconConfig.models.map(m=>m.side==='npo'?{...m,canShoot:false,focus:'fight',move:2,ap:2}:m)};TombWorldReconTracking.open(document.querySelector('#host'),reconConfig)")
     page.locator("input[aria-label='Choose tactical photo']").set_input_files({"name":"board.png","mimeType":"image/png","buffer":image()})
     page.get_by_text("Confirm Board Area",exact=True).click()
     tap(93,73);tap(150,73)
