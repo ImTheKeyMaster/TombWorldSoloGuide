@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.38';
+  const APP_VERSION = '10.1.39';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5210,7 +5210,7 @@ document.addEventListener('touchend',function(e){
     const result=legal[roll(legal.length)-1];return {...result,weaponId:generatedWeaponId(result)};
   }
   // Experimental photo tracking is transient; the physical board remains authoritative.
-  let reconApprovedPlan=null,reconDisplayPlan=null;
+  let reconApprovedPlan=null,reconDisplayPlan=null,reconContinuation=null;
   function reconTrackingEnabled(){return !isPvpMode()&&experimentalFeaturesEnabled()&&Boolean(window.TombWorldReconTracking);}
   function reconTrackingControl(){
     return reconTrackingEnabled()?'<button class="btn secondary big-action recon-scan-entry" id="startReconTracking" type="button">Scan Battlefield</button>':'';
@@ -5229,9 +5229,9 @@ document.addEventListener('touchend',function(e){
     showModal(setup?'Capture Battlefield':'Battlefield Recon','<div id="reconTrackingHost"></div>');
     const host=modalBody.querySelector('#reconTrackingHost');
     if(!host)throw Error('Capture dialog host missing');
-    window.TombWorldReconTracking.open(host,{token,turn,scanKey,setup,missionNumber:mission()?.number,complete:()=>finishSetup(true),models:[...np,...pp],actorKey:actor?'n:'+actor.id:null,activated:pp.filter(p=>!p.ready).map(p=>p.key),ready:np.filter(p=>p.ready).map(p=>p.key),valid,
-      actionOrder:(m,inControl)=>{const n=readyNpos().find(x=>x.id===m.id);if(!n)return [];const context={inEnemyControlRange:inControl,remainingAp:m.ap,completedActionIds:actor?activation.completedActionIds:[]};return recommendedNpoActions(n,context).filter(name=>!actor||!(activation.declinedActionIds||[]).includes(npoActionId(name)));},
-      manual:()=>{reconApprovedPlan=null;reconDisplayPlan=null;if(setup){finishSetup();return;}if(actor)runNpoPrompt(actor,0,{},activation.questionHistory||[]);else{closeModal();render();}},
+    window.TombWorldReconTracking.open(host,{token,turn,scanKey,setup,missionNumber:mission()?.number,complete:()=>finishSetup(true),models:[...np,...pp],actorKey:actor?'n:'+actor.id:null,startingAp:actor?activation.startingAp:null,completedActions:actor?(activation.resolvedActions||[]).map(x=>conciseNpoActionName(x)):[],activated:pp.filter(p=>!p.ready).map(p=>p.key),ready:np.filter(p=>p.ready).map(p=>p.key),valid,
+      actionOrder:(m,inControl,planned=[] )=>{const n=readyNpos().find(x=>'n:'+x.id===m.key);if(!n)return [];const context={inEnemyControlRange:inControl,remainingAp:m.ap,completedActionIds:[...(actor?activation.completedActionIds||[]:[]),...planned]};return recommendedNpoActions(n,context).filter(name=>!actor||!(activation.declinedActionIds||[]).includes(npoActionId(name)));},
+      manual:()=>{reconApprovedPlan=null;reconDisplayPlan=null;reconContinuation=null;if(setup){finishSetup();return;}if(actor)runNpoPrompt(actor,0,{},activation.questionHistory||[]);else{closeModal();render();}},
       accept:plan=>{
         if(!valid())return;
         const n=readyNpos().find(x=>'n:'+x.id===plan.actor);
@@ -5258,7 +5258,8 @@ document.addEventListener('touchend',function(e){
     activation.movementIntent=['reposition','dash'].includes(id)?{id:id+'-recon',purpose:'general-position',actionId:id,decisionPass:activation.decisionPass}:null;
     activation.pendingFollowUpAction=null;
     const nextHistory=[...history,{index:0,answers,answer:true,action:p.action,type:'feasibility',question:'Photo recommendation confirmed',contextBefore},{action:p.action,type:'selected',question:conciseNpoActionName({id,name:p.action})}];
-    resolveNpo(n,{...answers,action:p.action},nextHistory,['shoot','fight'].includes(id)?target:null);
+    reconContinuation={token:state,activationId:activation.activationId};
+    resolveNpo(n,{...answers,action:p.action},nextHistory,['shoot','fight'].includes(id)?target:null,Boolean(p.movementConfirmed&&npoActionChangesContext(id)));
     return true;
   }
 
@@ -9851,6 +9852,12 @@ function showPlayerActivation(){
     if(activation.remainingAp<=0){completeNpoActivation();return;}
     const available=recommendedNpoActions(n,activation.currentContext||{}).filter(name=>!(activation.declinedActionIds||[]).includes(npoActionId(name)));
     if(!available.length){renderNpoActivationEnd(n,'No useful actions remain.');return;}
+    // Reassess the same operative after a confirmed Recon action. Do not
+    // select another ready NPO or assume the photographed move was exact.
+    if(reconTrackingEnabled()&&reconContinuation?.token===state&&reconContinuation.activationId===activation.activationId){
+      reconContinuation=null;
+      try{if(showReconTracking(n))return;}catch(error){recordReconLaunchError(error);}
+    }
     runNpoPrompt(n,0,{},activation.questionHistory||[]);
   }
 
@@ -10103,13 +10110,13 @@ function showPlayerActivation(){
     commitNpoAction({actionId:action.id,actionName:action.name,apCost:npoActionCost(n,action.id),result,changesPosition:Boolean(action.changesPosition||action.materiallyChangesContext)});
   }
 
-  function resolveNpo(n,c,questionHistory=[],reconTargetId=null){
+  function resolveNpo(n,c,questionHistory=[],reconTargetId=null,movementConfirmed=false){
     state.npoAttackTargetId=reconTargetId&&eligibleNpoAttackTargets().includes(reconTargetId)?reconTargetId:null;
     const decision=chooseNpoDecision(n,c);
     const id=npoActionId(decision.action),cost=npoActionCost(n,id);
     if(cost===null||cost>state.lastActivation.remainingAp){showToast('That action is no longer legal.');continueNpoActivation();return;}
     state.lastActivation={...state.lastActivation,npoId:n.id,name:npoName(n),...decision,answers:c,questionHistory,pendingAction:{id,name:decision.action,apCost:cost,decisionPass:state.lastActivation.decisionPass},committed:false};
-    save();resolveNpoAction(n,state.lastActivation.pendingAction);
+    save();resolveNpoAction(n,state.lastActivation.pendingAction,movementConfirmed);
   }
 
   function backFromNpoMovementConfirmation(n){
@@ -10183,7 +10190,14 @@ function showPlayerActivation(){
     requestAnimationFrame(()=>focusInitialDialogControl(modal));
   }
 
-  function resolveNpoAction(n,pendingAction){
+  function commitConfirmedNpoMovement(n,pendingAction,decision){
+    if(!canCommitNpoAction(pendingAction.id,pendingAction.apCost))return false;
+    const effect=consumeMolecularBreach(n.id,pendingAction.id==='fall-back'?'Fall Back':pendingAction.name.split(' ')[0]);
+    const finalApDash=pendingAction.id==='dash'&&state.lastActivation.remainingAp===pendingAction.apCost&&!state.lastActivation.pendingFollowUpAction&&!isPvpMode();
+    return commitNpoAction({actionId:pendingAction.id,actionName:pendingAction.name,apCost:pendingAction.apCost,result:effect||decision.reason,changesPosition:true,endsActivation:finalApDash,transitionMode:finalApDash?NPO_ACTION_TRANSITIONS.COMPLETE_ACTIVATION:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});
+  }
+
+  function resolveNpoAction(n,pendingAction,movementConfirmed=false){
     if(!pendingAction||state.lastActivation?.pendingAction?.id!==pendingAction.id)return;
     if(!isPvpMode()&&normalizeUnknownAttackMovement(state.lastActivation)){
       save();runNpoPrompt(n,0,{},state.lastActivation.questionHistory||[]);return;
@@ -10191,8 +10205,9 @@ function showPlayerActivation(){
     const decision=isPvpMode()?humanNpoDecision(n,pendingAction.name):chooseNpoDecision(n,{action:pendingAction.name});
     if(npoSpecialAction(n,pendingAction.name)){resolveNpoSpecialAction(n,decision,state.lastActivation.answers||{},state.lastActivation.questionHistory||[]);return;}
     if(npoActionChangesContext(pendingAction.id)){
+      if(movementConfirmed&&reconTrackingEnabled()){commitConfirmedNpoMovement(n,pendingAction,decision);return;}
       renderNpoMovementConfirmation(n,pendingAction,decision);
-      $('#confirmNpoMovement').onclick=()=>{const button=$('#confirmNpoMovement');if(!canCommitNpoAction(pendingAction.id,pendingAction.apCost))return;button.disabled=true;const effect=consumeMolecularBreach(n.id,pendingAction.id==='fall-back'?'Fall Back':pendingAction.name.split(' ')[0]);const finalApDash=pendingAction.id==='dash'&&state.lastActivation.remainingAp===pendingAction.apCost&&!state.lastActivation.pendingFollowUpAction&&!isPvpMode();commitNpoAction({actionId:pendingAction.id,actionName:pendingAction.name,apCost:pendingAction.apCost,result:effect||decision.reason,changesPosition:true,endsActivation:finalApDash,transitionMode:finalApDash?NPO_ACTION_TRANSITIONS.COMPLETE_ACTIVATION:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});};
+      $('#confirmNpoMovement').onclick=()=>{const button=$('#confirmNpoMovement');if(!canCommitNpoAction(pendingAction.id,pendingAction.apCost))return;button.disabled=true;commitConfirmedNpoMovement(n,pendingAction,decision);};
       return;
     }
     const activation=state.lastActivation;
