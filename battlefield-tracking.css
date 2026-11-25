@@ -20,3 +20,6 @@ html[data-experimental="off"] .recon-scan-entry,html[data-experimental="off"] [d
 .recon-frame canvas.rt-crop-mode{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}.recon-frame canvas.rt-crop-mode:active{cursor:grabbing}.rt-controls .btn{min-height:44px}
 
 .rt-map-adjust{border:1px solid var(--line);border-radius:10px;padding:10px}.rt-map-adjust summary{cursor:pointer;color:var(--muted);font-weight:700;font-size:.85rem}.rt-map-adjust .rt-actions{margin-top:9px}
+
+/* Mission terrain overlay drag/resize, separate from the physical board crop. */
+.recon-frame canvas.rt-map-mode{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}.recon-frame canvas.rt-map-mode:active{cursor:grabbing}
