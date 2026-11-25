@@ -7,6 +7,7 @@ on:
       - tests/battlefield-tracking.test.cjs
       - tests/recon-setup-recovery.test.cjs
       - tests/test_battlefield_tracking_browser.py
+      - tests/test_recon_app_launch.py
       - battlefield-recon.js
       - battlefield-recon.css
       - app.js
@@ -40,3 +41,4 @@ jobs:
       - run: |
           python tests/test_battlefield_recon_browser.py
           python tests/test_battlefield_tracking_browser.py
+          python tests/test_recon_app_launch.py
