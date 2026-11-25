@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.38
+# Tomb World Battle Guide v10.1.39
+
+## v10.1.39
+
+- Experimental Recon: Move Complete commits the indicated movement through the existing guarded AP transaction, without a second movement confirmation. Show actual available/spent/remaining AP and preview the next action after movement if feasible. After a Recon action, automatically reopen the scan for the same NPO if AP and legal actions remain; a fresh photo verifies the next action. Combat retains the existing resolution flow. Standard unchanged.
 
 ## v10.1.38
 

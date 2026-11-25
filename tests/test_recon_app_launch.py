@@ -26,7 +26,26 @@ hook=r"""
     // Strategy fixture avoids dice and narration, exercising retry without advancing game state.
     strategy:()=>{Object.assign(state,{turningPoint:1,phase:'strategy',strategyStage:'summary',strategyData:{viewStep:'actions',reinforcements:[],grade:0},strategyPipeline:{current:'complete',completed:['ready','initiative','event','reinforcement']}});render();},
     state:()=>({phase:state.phase,turn:state.turningPoint,players:state.playerRoster.length,npos:state.roster.length}),
-    launch:()=>showReconTracking(null,true)
+    launch:()=>showReconTracking(null,true),
+    prepareMovement:()=>{
+      closeModal();
+      state.phase='firefight';state.nextSide='npo';state.turningPoint=1;
+      const n=createNpo('Necron Warrior',undefined,{ready:true});
+      n.ready=true;n.deployed=true;n.battlefieldState='deployed';n.dormant=false;
+      state.roster=[n];state.activeNpoId=null;state.lastActivation=null;
+      render();
+      const original=window.TombWorldReconTracking.open;
+      window.TombWorldReconTracking.open=(host,config)=>{window.__reconConfig=config;original(host,config);};
+      showReconTracking();
+      return n.id;
+    },
+    confirmMove:(kind='dash')=>{
+      const c=window.__reconConfig,m=c.models.find(m=>m.side==='npo');
+      const action=c.actionOrder(m,false).find(x=>npoActionId(x)===kind);
+      if(!action)throw Error('No action '+kind);
+      c.accept({actor:m.key,action,id:kind,inControl:false,shootable:false,fightable:false,movementConfirmed:true});
+    },
+    ap:()=>({id:state.activeNpoId,remaining:state.lastActivation?.remainingAp,completed:state.lastActivation?.completedActionIds,committed:state.lastActivation?.committed})
   };
 """
 assert source.rstrip().endswith("})();")
@@ -56,6 +75,16 @@ try:
         page.locator(".recon-tracking").wait_for(state="visible")
         page.get_by_text("Skip Recon Setup",exact=True).click()
         assert page.evaluate("__reconFixture.state()")==before
+        actor=page.evaluate("__reconFixture.prepareMovement()")
+        page.evaluate("__reconFixture.confirmMove('dash')")
+        page.wait_for_function("window.__reconConfig.actorKey!==null")
+        assert page.evaluate("__reconFixture.ap()")=={"id":actor,"remaining":1,"completed":["dash"],"committed":False}
+        assert page.locator('#confirmNpoMovement').count()==0
+        assert '1 AP remaining' in page.locator('.rt-ap-progress').inner_text()
+        page.evaluate("__reconFixture.confirmMove('reposition')")
+        page.wait_for_function("__reconFixture.ap().committed===true")
+        assert page.evaluate("__reconFixture.ap().remaining")==0
+        assert page.evaluate("__reconFixture.ap().completed")==["dash","reposition"]
         assert not errors,errors
         browser.close()
 finally:

@@ -499,10 +499,24 @@ function trackingUI(){
     const s=session,models=config.models.map(m=>({...m,...(s.meta[m.key]?.base&&!m.base?{base:s.meta[m.key].base}:{}),...(m.side==='player'&&m.order==='Unknown'&&s.meta[m.key]?.order?{order:s.meta[m.key].order}:{})}));
     // A player may change order during their activation. Unknown must remain unknown until confirmed.
     if(s.frame)for(const m of models.filter(m=>m.side==='player'&&(s.turn!==config.turn||!s.activated.has(m.key)&&config.activated.includes(m.key))))if(config.models.find(x=>x.key===m.key)?.order==='Unknown')m.order='Unknown';
-    let frame=null,positions={},board=null,walls=[],objectives=[],mapped=false,stage='photo',wallStart=null,selected='',plan=null,seq=0,raw=null,crop=null,dragging=null,autoRectified=false,mapLayout=null,rotation=0,mapFit=null,openDoors=[],diagnostics=[],capture=null;
-    host.innerHTML='<section class="recon-tracking"><p class="eyebrow">TACTICAL SCAN · EXPERIMENTAL</p><p class="rt-status" role="status" aria-live="polite"></p><div class="recon-upload"><label class="btn secondary">Take Photo<input type="file" accept="image/*" capture="environment" aria-label="Take tactical photo"></label><label class="btn ghost">Choose Photo<input type="file" accept="image/*" aria-label="Choose tactical photo"></label></div><div class="rt-work" hidden><div class="rt-recommendation" hidden></div><div class="recon-frame"><canvas aria-label="Battlefield photograph and tactical overlays"></canvas></div><div class="rt-controls"></div></div><div class="wizard-actions"><button type="button" class="btn ghost rt-manual">Use Manual Guide</button></div></section>';
+    let frame=null,positions={},board=null,walls=[],objectives=[],mapped=false,stage='photo',wallStart=null,selected='',plan=null,seq=0,raw=null,crop=null,dragging=null,autoRectified=false,mapLayout=null,rotation=0,mapFit=null,openDoors=[],diagnostics=[],capture=null,nextPlan=null;
+    host.innerHTML='<section class="recon-tracking"><p class="eyebrow">TACTICAL SCAN · EXPERIMENTAL</p><p class="rt-status" role="status" aria-live="polite"></p><p class="rt-metadata rt-ap-progress" hidden></p><div class="recon-upload"><label class="btn secondary">Take Photo<input type="file" accept="image/*" capture="environment" aria-label="Take tactical photo"></label><label class="btn ghost">Choose Photo<input type="file" accept="image/*" aria-label="Choose tactical photo"></label></div><div class="rt-work" hidden><div class="rt-recommendation" hidden></div><div class="recon-frame"><canvas aria-label="Battlefield photograph and tactical overlays"></canvas></div><div class="rt-controls"></div></div><div class="wizard-actions"><button type="button" class="btn ghost rt-manual">Use Manual Guide</button></div></section>';
     const get=q=>host.querySelector(q),status=get('.rt-status'),canvas=get('canvas'),controls=get('.rt-controls'),work=get('.rt-work'),recommendation=get('.rt-recommendation');
     const tell=t=>status.textContent=t;
+    const progress=get('.rt-ap-progress'),active=models.find(m=>m.key===config.actorKey);
+    if(active&&!config.setup){
+      progress.hidden=false;
+      progress.textContent=active.name+' · '+active.ap+' AP remaining'+(config.completedActions?.length?' · Completed: '+config.completedActions.join(', '):'');
+    }
+    const actionLabel=id=>id==='fall-back'?'Fall Back':id[0].toUpperCase()+id.slice(1);
+    const isMove=p=>['reposition','dash','charge','fall-back'].includes(p.id);
+    const cost=p=>p.id==='fall-back'?2:1;
+    function confirmPlan(button,check=null){
+      if(!live()||button.disabled||(check&&!check.checked))return;
+      button.disabled=true;
+      preview={frame,positions,models,board,walls,objectives,plan};
+      config.accept({...plan,movementConfirmed:isMove(plan)});
+    }
     const button=(label,fn,kind='secondary')=>{const b=document.createElement('button');b.type='button';b.className='btn '+kind;b.textContent=label;b.onclick=fn;return b;};
     const live=()=>host.isConnected&&document.documentElement.dataset.experimental==='on'&&config.valid();
     const repaint=()=>{
@@ -582,16 +596,21 @@ function trackingUI(){
         }
         else{
           const a=models.find(m=>m.key===plan.actor),target=models.find(m=>m.key===plan.target);
-          tell('Tactical recommendation · confirm on the physical table');
+          tell(isMove(plan)?'Move the indicated operative, then confirm completion.':'Resolve the indicated action.');
+          const remaining=Math.max(0,a.ap-cost(plan)),starting=config.startingAp??a.ap;
+          const apSummary=starting-a.ap>0?'AP spent: '+(starting-a.ap)+' of '+starting+' · ':'';
+          const next=nextPlan?('Next planned action: '+actionLabel(nextPlan.id)+(nextPlan.distance!=null?' · '+nextPlan.distance.toFixed(1)+'″':'')+(nextPlan.target?' · '+(models.find(m=>m.key===nextPlan.target)?.name||'target'):'' )+'. Reassess after confirming this action.'):'Next action will be assessed after this action is resolved.';
+          const apHtml='<p class="rt-ap-summary"><b>'+esc(apSummary+a.ap+' AP available · '+cost(plan)+' AP for '+actionLabel(plan.id)+' · '+remaining+' AP remaining after')+'</b></p>'+(remaining?'<p>'+esc(next)+'</p>':'<p>Final AP of this activation.</p>');
+          const buttonLabel=isMove(plan)?'Move Complete':plan.id==='shoot'?'Resolve Shoot':plan.id==='fight'?'Resolve Fight':'Resolve '+actionLabel(plan.id);
           const info=document.createElement('div');info.className='rt-plan';
           const intent=plan.intent||(plan.id==='shoot'?'Shoot a priority eligible enemy.':plan.id==='fight'?'Fight a priority enemy in control range.':'Improve the tactical position.');
-          info.innerHTML='<strong>'+esc(a?.name)+' · '+esc(plan.id==='fall-back'?'Fall Back':plan.id[0].toUpperCase()+plan.id.slice(1))+'</strong><p><b>Tactical Intent:</b> '+esc(intent)+'</p><p>'+esc(plan.destination?`${plan.distance.toFixed(1)}″ along the marked route${target?` toward ${target.name}`:''}.`:target?`Target ${target.name}.`:'')+'</p>'+(plan.followUp?'<p>Potential follow-up: '+esc(plan.followUp)+'</p>':'')+(plan.hatchway?'<p>Later route requires an open hatchway. Verify and resolve opening on the tabletop before crossing.</p>':'')+'<small>Green: current route. Red: attack target. Amber: future goal or hatchway. Verify tabletop legality before accepting.</small>';
+          info.innerHTML='<strong>'+esc(a?.name)+' · '+esc(plan.id==='fall-back'?'Fall Back':plan.id[0].toUpperCase()+plan.id.slice(1))+'</strong><p><b>Tactical Intent:</b> '+esc(intent)+'</p><p>'+esc(plan.destination?`${plan.distance.toFixed(1)}″ along the marked route${target?` toward ${target.name}`:''}.`:target?`Target ${target.name}.`:'')+'</p>'+(plan.followUp?'<p>Potential follow-up: '+esc(plan.followUp)+'</p>':'')+(plan.hatchway?'<p>Later route requires an open hatchway. Verify and resolve opening on the tabletop before crossing.</p>':'') +apHtml+'<small>Green: current route. Red: attack target. Amber: future goal or hatchway. Verify tabletop legality before confirming.</small>';
           recommendation.hidden=false;recommendation.append(info);
           if(plan.skipped?.length){
             const note=document.createElement('p');note.textContent='Check higher-priority actions first: '+plan.skipped.map(s=>s.action+' ('+s.reason+')').join('; ');info.append(note);
             const label=document.createElement('label');label.className='rt-check';const check=document.createElement('input');check.type='checkbox';label.append(check,document.createTextNode(' No legal higher-priority route exists on the tabletop.'));controls.append(label);
-            const accept=button('Accept Tactical Recommendation',()=>{if(!live()||!check.checked)return;preview={frame,positions,models,board,walls,objectives,plan};config.accept(plan);},'primary');accept.disabled=true;check.onchange=()=>accept.disabled=!check.checked;controls.append(accept);
-          }else controls.append(button('Accept Tactical Recommendation',()=>{if(!live())return;preview={frame,positions,models,board,walls,objectives,plan};config.accept(plan);},'primary'));
+            const accept=button(buttonLabel,()=>confirmPlan(accept,check),'primary');accept.disabled=true;check.onchange=()=>accept.disabled=!check.checked;controls.append(accept);
+          }else{const confirm=button(buttonLabel,()=>confirmPlan(confirm),'primary');controls.append(confirm);}
           controls.append(button('Review / Correct Models',()=>{stage='identify';plan=null;selected='';update();},'ghost'),button('Review Mission Layout',()=>{stage='terrain';plan=null;update();},'ghost'),button('Recalibrate Photo',resetCalibration,'ghost'));
         }
       }
@@ -660,7 +679,18 @@ function trackingUI(){
       s.meta=Object.fromEntries(models.map(m=>[m.key,{base:m.base,order:m.order}]));s.frame=frame;s.board={...board};s.positions={...positions};s.walls=walls.map(w=>w.map(p=>({...p})));s.objectives=objectives.map(p=>({...p}));s.mapped=mapped;s.turn=config.turn;s.activated=new Set(config.activated);s.ready=new Set(config.ready);s.scanKey=config.scanKey;s.mapRotation=rotation;s.mapFit=mapFit;s.openDoors=[...openDoors];s.capture=capture;
       if(config.setup){config.complete();return;}
       const future=mapLayout&&maps.geometry(config.missionNumber,board,rotation,mapLayout.doors.map(d=>d.id),mapFit);
-      diagnostics=[];plan=core.plan({board,positions,models,walls,objectives,doors:mapLayout?.doors||[],terrain:mapLayout?.terrain||[],futureWalls:future?.walls||null,mapped,actorKey:config.actorKey,actionOrder:config.actionOrder,diagnostics});
+      const input={board,positions,models,walls,objectives,doors:mapLayout?.doors||[],terrain:mapLayout?.terrain||[],futureWalls:future?.walls||null,mapped,actorKey:config.actorKey,actionOrder:config.actionOrder};
+      diagnostics=[];plan=core.plan({...input,diagnostics});nextPlan=null;
+      if(plan){
+        const actor=models.find(m=>m.key===plan.actor),remaining=actor.ap-cost(plan);
+        // Only predict a second action after movement: attacks may change
+        // wounds/roster, and the real board must be rescanned after either.
+        if(remaining>0&&isMove(plan)&&plan.destination){
+          const projected={...positions,[actor.key]:{...positions[actor.key],...plan.destination}};
+          nextPlan=core.plan({...input,actorKey:actor.key,positions:projected,models:models.map(m=>m.key===actor.key?{...m,ap:remaining}:m),
+            actionOrder:(m,inControl)=>config.actionOrder(m,inControl,[plan.id]).filter(name=>String(name).toLowerCase().split(' ')[0]!==plan.id)});
+        }
+      }
       stage='plan';update();
     }
     async function load(file){
@@ -712,7 +742,7 @@ function trackingUI(){
       else if(stage==='wall'){if(!wallStart){wallStart=p;update();}else{if(core.dist(wallStart,p)<4)return;walls.push([wallStart,p]);mapped=false;wallStart=null;stage='terrain';update();}}
       else if(stage==='objective'){objectives.push(p);stage='terrain';update();}
     };
-    if(s.frame)tell('Capture a fresh photograph from the same overhead position for a tactical recommendation.');
+    if(s.frame)tell(active?'Capture a fresh photograph to assess this operative’s remaining AP.':'Capture a fresh photograph from the same overhead position for a tactical recommendation.');
     else tell('Photograph the deployed board from directly overhead. Identify each miniature once.');
   }
   function renderPreview(host){
