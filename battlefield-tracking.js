@@ -169,31 +169,55 @@ function calibrationCore(){
   function detect(data,w,h){
     if(w<80||h<80||data.length!==w*h*4)return null;
     const gray=new Float32Array(w*h);
-    for(let i=0;i<gray.length;i++)gray[i]=.299*data[4*i]+.587*data[4*i+1]+.114*data[4*i+2];
+    // Warm wooden surrounds remain distinguishable even under uneven lighting.
+    for(let i=0;i<gray.length;i++)gray[i]=.299*data[4*i]+.587*data[4*i+1]+.114*data[4*i+2]+1.6*(data[4*i]-data[4*i+2]);
     function line(vertical,far){
-      const across=vertical?w:h,along=vertical?h:w,window=Math.max(3,Math.round(across*.012)),hits=[];
+      const across=vertical?w:h,along=vertical?h:w,window=Math.max(3,Math.round(across*.012)),rows=[];
       const pixel=(a,b)=>vertical?gray[b*w+a]:gray[a*w+b];
+      const start=Math.max(window,Math.round(across*(far?.60:.025))),end=Math.min(across-window,Math.round(across*(far?.975:.40)));
       for(let b=Math.round(along*.23);b<along*.78;b+=Math.max(2,Math.round(along*.018))){
-        let best=null;
-        const start=Math.round(across*(far?.60:.025)),end=Math.round(across*(far?.975:.40));
-        for(let a=Math.max(window,start);a<Math.min(across-window,end);a++){
+        const scores=new Float32Array(across);
+        for(let a=start;a<end;a++){
           let outside=0,inside=0;
           for(let k=1;k<=window;k++){outside+=pixel(a+(far?k:-k),b);inside+=pixel(a+(far?-k:k),b);}
-          const score=(outside-inside)/window;
-          if(!best||score>best.score)best={a,b,score};
+          scores[a]=(outside-inside)/window;
         }
-        if(best?.score>=19)hits.push(best);
+        rows.push({b,scores});
       }
-      if(hits.length<12)return null;
-      const slopes=[];
-      for(let i=0;i<hits.length;i++)for(let j=i+1;j<hits.length;j++)if(Math.abs(hits[j].b-hits[i].b)>along*.16)slopes.push((hits[j].a-hits[i].a)/(hits[j].b-hits[i].b));
-      if(!slopes.length)return null;
-      let m=median(slopes),c=median(hits.map(p=>p.a-m*p.b));
-      const inliers=hits.filter(p=>Math.abs(p.a-m*p.b-c)<across*.025);
-      if(inliers.length<Math.max(10,hits.length*.65)||Math.abs(m)>.35)return null;
-      const mb=inliers.reduce((v,p)=>v+p.b,0)/inliers.length,ma=inliers.reduce((v,p)=>v+p.a,0)/inliers.length;
-      m=inliers.reduce((v,p)=>v+(p.b-mb)*(p.a-ma),0)/inliers.reduce((v,p)=>v+(p.b-mb)**2,0);c=ma-m*mb;
-      return {m,c};
+      if(rows.length<12)return null;
+      // Score continuous edge hypotheses across all sampled rows instead of
+      // choosing the strongest individual reflection or terrain feature.
+      let best=null;
+      for(let step=-25;step<=25;step++){
+        const m=step/100;
+        for(let mid=start;mid<end;mid++){
+          let support=0,total=0;
+          for(const {b,scores} of rows){
+            const a=Math.round(mid+m*(b-along/2));
+            if(a<start+2||a>=end-2)continue;
+            const score=Math.max(scores[a-2],scores[a-1],scores[a],scores[a+1],scores[a+2]);
+            if(score>22)support++;
+            total+=clamp(score,0,55);
+          }
+          if(support/rows.length<.78)continue;
+          const rank=total/rows.length+180*(far?1-mid/across:mid/across);
+          if(!best||rank>best.rank)best={m,mid,rank};
+        }
+      }
+      if(!best)return null;
+      // Refine the actual edge within the tolerance band, avoiding a systematic
+      // inward bias from the hypothesis scoring.
+      const hits=[];
+      for(const {b,scores} of rows){
+        const center=Math.round(best.mid+best.m*(b-along/2));
+        let a=center,score=-Infinity;
+        for(let x=Math.max(start,center-3);x<Math.min(end,center+4);x++)if(scores[x]>score){a=x;score=scores[x];}
+        if(score>22)hits.push({a,b});
+      }
+      if(hits.length<10)return null;
+      const mb=hits.reduce((v,p)=>v+p.b,0)/hits.length,ma=hits.reduce((v,p)=>v+p.a,0)/hits.length;
+      const m=hits.reduce((v,p)=>v+(p.b-mb)*(p.a-ma),0)/hits.reduce((v,p)=>v+(p.b-mb)**2,0);
+      return {m,c:ma-m*mb};
     }
     const l=line(true,false),r=line(true,true),t=line(false,false),b=line(false,true);
     if(!l||!r||!t||!b)return null;
