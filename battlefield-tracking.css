@@ -13,3 +13,5 @@
 .rt-plan strong{color:var(--green);font-size:1rem}.rt-plan p{margin:6px 0;font-size:.9rem}.rt-plan small{color:var(--muted);line-height:1.35}
 .recon-scan-entry{width:100%;margin:8px 0 12px;min-height:48px}.recon-approved{margin:10px 0}
 html[data-experimental="off"] .recon-scan-entry,html[data-experimental="off"] [data-recon-plan]{display:none!important}
+
+.rt-metadata{display:grid;gap:5px;color:var(--muted);font-size:.8rem;margin:0}.rt-metadata input{width:100%;min-height:46px;background:#07140f;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:1rem}

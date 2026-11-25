@@ -10313,6 +10313,7 @@ function showPlayerActivation(){
           showToast(`That ${playerSideLabel()} operative is no longer an eligible target. Select another target.`);
           return;
         }
+        if(reconDisplayPlan&&reconDisplayPlan.target!=='p:'+id){reconDisplayPlan=null;window.TombWorldReconTracking?.clearPreview();$('[data-recon-plan]',modal)?.remove();}
         state.npoAttackTargetId=id;
         save();
         targetButtons.forEach(button=>{

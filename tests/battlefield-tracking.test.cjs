@@ -19,4 +19,5 @@ const prior={x:25,y:25,r:7,template:c.patch(old,w,h,{x:25,y:25},7)};
 const res=c.track({'n:a':prior},next,w,h,{x0:0,y0:0,x1:99,y1:99},[models[0]],new Set(['n:a']));
 a(res['n:a']&&c.dist(res['n:a'],{x:51,y:40})<4);
 a.equal(c.track({'n:a':prior},new Uint8ClampedArray(w*h*4),w,h,{x0:0,y0:0,x1:99,y1:99},[models[0]],new Set(['n:a']))['n:a'],null);
+a.equal(c.plan({...args,positions:{...positions,'p:b':{x:123,y:100}},actionOrder:()=>['Fight','Shoot']}),null);
 console.log('Tracking and tactical geometry checks passed.');
