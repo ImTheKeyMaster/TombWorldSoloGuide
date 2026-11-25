@@ -1,0 +1,23 @@
+'use strict';
+const c=require('../battlefield-tracking.js'),a=require('node:assert/strict');
+const board={x0:0,y0:0,x1:300,y1:300,width:30,height:30},models=[{key:'n:a',side:'npo',ready:true,base:32,move:6,ap:2,canShoot:true,range:12,focus:'shoot',wounds:9},{key:'p:b',side:'player',ready:true,base:32,order:'Engage',wounds:5}];
+const positions={'n:a':{x:100,y:100},'p:b':{x:150,y:100}};
+const args={board,positions,models,mapped:true,actionOrder:()=>['Shoot','Reposition']};
+a.equal(c.segmentDistance({x:1,y:1},{x:0,y:0},{x:2,y:0}),1);
+a.equal(c.plan(args).id,'shoot');
+a.equal(c.plan({...args,positions:{...positions,'p:b':{x:119,y:100}},actionOrder:()=>['Fight','Shoot']}).id,'fight');
+a.equal(c.plan({...args,mapped:false}),null);
+a.equal(c.plan({...args,walls:[[{x:125,y:0},{x:125,y:300}]],actionOrder:()=>['Shoot']}),null);
+a.equal(c.plan({...args,models:[models[0],{...models[1],order:'Conceal'}]}),null);
+a.equal(c.plan({...args,actionOrder:()=>['Overcharge','Shoot']}),null);
+a.equal(c.plan({...args,positions:{'n:a':positions['n:a']}}),null);
+a.equal(c.plan({...args,models:[{...models[0],base:null},models[1]]}),null);
+const w=100,h=100,old=new Uint8ClampedArray(w*h*4),next=new Uint8ClampedArray(w*h*4);
+function paint(data,cx,cy){for(let y=-7;y<=7;y++)for(let x=-7;x<=7;x++){const i=((cy+y)*w+cx+x)*4;data[i]=100+x*9;data[i+1]=100+y*8;data[i+2]=190;data[i+3]=255;}}
+paint(old,25,25);paint(next,51,40);
+const prior={x:25,y:25,r:7,template:c.patch(old,w,h,{x:25,y:25},7)};
+const res=c.track({'n:a':prior},next,w,h,{x0:0,y0:0,x1:99,y1:99},[models[0]],new Set(['n:a']));
+a(res['n:a']&&c.dist(res['n:a'],{x:51,y:40})<4);
+a.equal(c.track({'n:a':prior},new Uint8ClampedArray(w*h*4),w,h,{x0:0,y0:0,x1:99,y1:99},[models[0]],new Set(['n:a']))['n:a'],null);
+a.equal(c.plan({...args,positions:{...positions,'p:b':{x:123,y:100}},actionOrder:()=>['Fight','Shoot']}),null);
+console.log('Tracking and tactical geometry checks passed.');
