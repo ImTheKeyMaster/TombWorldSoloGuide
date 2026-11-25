@@ -83,3 +83,20 @@ const hatch=c.plan({...tactical,walls:solid,doors:[door],futureWalls:[[{x:150,y:
 a(hatch&&hatch.hatchway&&hatch.destination.x>150&&hatch.distance<=5);
 for(let i=1;i<hatch.path.length;i++)a(c.segmentGap(hatch.path[i-1],hatch.path[i],...solid[0])>6);
 console.log('Tactical intent, obstacle detour and closed hatchway regressions passed.');
+
+// Mission alignment drag changes only the fitted terrain; opposite corner stays anchored.
+for(let rotation=0;rotation<4;rotation++)for(let mission=1;mission<=6;mission++){
+  const bounds=c.maps.fitBounds(mission,mb,rotation),initial={sx:1,sy:1,dx:0,dy:0},rect=c.maps.fitRect(mb,bounds,initial);
+  const moved=c.maps.dragFit(mb,bounds,initial,'move',22,-30);
+  a(Math.abs(moved.dx-.05)<1e-9&&Math.abs(moved.dy+.05)<1e-9);a.equal(moved.sx,1);a.equal(moved.sy,1);
+  for(const corner of ['nw','ne','se','sw']){
+    const fit=c.maps.dragFit(mb,bounds,initial,corner,12,20),after=c.maps.fitRect(mb,bounds,fit);
+    a(Math.abs((corner.includes('w')?after.x+after.w-rect.x-rect.w:after.x-rect.x))<1e-8);
+    a(Math.abs((corner.includes('n')?after.y+after.h-rect.y-rect.h:after.y-rect.y))<1e-8);
+    const limited=c.maps.dragFit(mb,bounds,initial,corner,10000,-10000);
+    a(limited.sx>=.65&&limited.sx<=1.35&&limited.sy>=.65&&limited.sy<=1.35&&Math.abs(limited.dx)<=.25&&Math.abs(limited.dy)<=.25);
+  }
+  const before=c.maps.geometry(mission,mb,rotation,[0]),after=c.maps.geometry(mission,mb,rotation,[0],moved);
+  a(after.doors[0].open);a(Math.abs(after.doors[0].x-before.doors[0].x-22)<1e-8);
+}
+console.log('Mission overlay handle movement, independent scaling and hatchway preservation passed.');

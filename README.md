@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.40
+# Tomb World Battle Guide v10.1.41
+
+## v10.1.41
+
+- Experimental Recon: drag the mission alignment frame to translate terrain, and drag its four corner handles to resize horizontally and vertically around the opposite corner. The physical board crop and model locations stay fixed. Hatchway taps, rotation, auto-alignment and fine-adjustment buttons remain available; changes invalidate terrain confirmation. Standard unchanged.
 
 ## v10.1.40
 

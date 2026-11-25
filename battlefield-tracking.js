@@ -431,7 +431,40 @@ function mapCore(){
     }
     return best;
   }
-  return {geometry,alignment};
+  // Use fixed reference bounds from the unscaled terrain, independent of
+  // hatchway state. The mission overlay can stretch independently in X/Y;
+  // this never changes the calibrated physical killzone or model positions.
+  function fitBounds(number,board,rotation){
+    const g=geometry(number,board,rotation);
+    if(!g)return null;
+    const pts=[...g.walls.flat(),...g.terrain,...g.doors];
+    const W=board.x1-board.x0,H=board.y1-board.y0;
+    return {l:Math.min(...pts.map(p=>(p.x-board.x0)/W)),r:Math.max(...pts.map(p=>(p.x-board.x0)/W)),
+      t:Math.min(...pts.map(p=>(p.y-board.y0)/H)),b:Math.max(...pts.map(p=>(p.y-board.y0)/H))};
+  }
+  function fitRect(board,bounds,fit){
+    const W=board.x1-board.x0,H=board.y1-board.y0;
+    return {x:board.x0+W*(.5+(bounds.l-.5)*fit.sx+fit.dx),y:board.y0+H*(.5+(bounds.t-.5)*fit.sy+fit.dy),
+      w:W*(bounds.r-bounds.l)*fit.sx,h:H*(bounds.b-bounds.t)*fit.sy};
+  }
+  function dragFit(board,bounds,fit,handle,dx,dy){
+    const clamp=(v,l,h)=>Math.max(l,Math.min(h,v)),W=board.x1-board.x0,H=board.y1-board.y0;
+    if(handle==='move')return {...fit,dx:clamp(fit.dx+dx/W,-.25,.25),dy:clamp(fit.dy+dy/H,-.25,.25)};
+    function axis(lo,hi,s,d,delta,lower){
+      const anchor=(lower?hi:lo)-.5;
+      let min=.65,max=1.35;
+      if(Math.abs(anchor)>1e-9){
+        const a=s+(d-.25)/anchor,b=s+(d+.25)/anchor;
+        min=Math.max(min,Math.min(a,b));max=Math.min(max,Math.max(a,b));
+      }
+      const scale=clamp(s+(lower?-1:1)*delta/(hi-lo),min,max);
+      return [scale,clamp(d-anchor*(scale-s),-.25,.25)];
+    }
+    const [sx,x]=axis(bounds.l,bounds.r,fit.sx,fit.dx,dx/W,handle.includes('w'));
+    const [sy,y]=axis(bounds.t,bounds.b,fit.sy,fit.dy,dy/H,handle.includes('n'));
+    return {sx,sy,dx:x,dy:y};
+  }
+  return {geometry,alignment,fitBounds,fitRect,dragFit};
 }
 function snapCore(){
   const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -532,7 +565,7 @@ function trackingUI(){
     const s=session,models=config.models.map(m=>({...m,...(s.meta[m.key]?.base&&!m.base?{base:s.meta[m.key].base}:{}),...(m.side==='player'&&m.order==='Unknown'&&s.meta[m.key]?.order?{order:s.meta[m.key].order}:{})}));
     // A player may change order during their activation. Unknown must remain unknown until confirmed.
     if(s.frame)for(const m of models.filter(m=>m.side==='player'&&(s.turn!==config.turn||!s.activated.has(m.key)&&config.activated.includes(m.key))))if(config.models.find(x=>x.key===m.key)?.order==='Unknown')m.order='Unknown';
-    let frame=null,positions={},board=null,walls=[],objectives=[],mapped=false,stage='photo',wallStart=null,selected='',plan=null,seq=0,raw=null,crop=null,dragging=null,autoRectified=false,mapLayout=null,rotation=0,mapFit=null,openDoors=[],diagnostics=[],capture=null,nextPlan=null,reused=false;
+    let frame=null,positions={},board=null,walls=[],objectives=[],mapped=false,stage='photo',wallStart=null,selected='',plan=null,seq=0,raw=null,crop=null,dragging=null,autoRectified=false,mapLayout=null,rotation=0,mapFit=null,openDoors=[],diagnostics=[],capture=null,nextPlan=null,reused=false,suppressMapClick=false;
     host.innerHTML='<section class="recon-tracking"><p class="eyebrow">TACTICAL SCAN · EXPERIMENTAL</p><p class="rt-status" role="status" aria-live="polite"></p><p class="rt-metadata rt-ap-progress" hidden></p><div class="recon-upload"><label class="btn secondary">Take Photo<input type="file" accept="image/*" capture="environment" aria-label="Take tactical photo"></label><label class="btn ghost">Choose Photo<input type="file" accept="image/*" aria-label="Choose tactical photo"></label></div><div class="rt-work" hidden><div class="rt-recommendation" hidden></div><div class="recon-frame"><canvas aria-label="Battlefield photograph and tactical overlays"></canvas></div><div class="rt-controls"></div></div><div class="wizard-actions"><button type="button" class="btn ghost rt-manual">Use Manual Guide</button></div></section>';
     const get=q=>host.querySelector(q),status=get('.rt-status'),canvas=get('canvas'),controls=get('.rt-controls'),work=get('.rt-work'),recommendation=get('.rt-recommendation');
     const tell=t=>status.textContent=t;
@@ -557,15 +590,41 @@ function trackingUI(){
     }
     const button=(label,fn,kind='secondary')=>{const b=document.createElement('button');b.type='button';b.className='btn '+kind;b.textContent=label;b.onclick=fn;return b;};
     const live=()=>host.isConnected&&document.documentElement.dataset.experimental==='on'&&config.valid();
+    // Clamp handles to the visible photo so even a misaligned overlay can
+    // be grabbed and brought back into view.
+    function alignmentHandles(){
+      if(stage!=='terrain'||!mapLayout||!mapFit||!board)return null;
+      const bounds=maps.fitBounds(config.missionNumber,board,rotation);
+      if(!bounds)return null;
+      const rect=maps.fitRect(board,bounds,mapFit),pad=Math.max(12,canvas.width/45);
+      const x=v=>Math.max(pad,Math.min(canvas.width-pad,v)),y=v=>Math.max(pad,Math.min(canvas.height-pad,v));
+      const left=x(rect.x),right=x(rect.x+rect.w),top=y(rect.y),bottom=y(rect.y+rect.h);
+      return {bounds,left,right,top,bottom,corners:[['nw',left,top],['ne',right,top],['se',right,bottom],['sw',left,bottom]]};
+    }
+    function invalidateAlignment(){
+      refreshMap();const check=get('.rt-check input');if(check)check.checked=false;
+    }
     const repaint=()=>{
       canvas.classList.toggle('rt-crop-mode',stage==='crop');
+      canvas.classList.toggle('rt-map-mode',stage==='terrain'&&Boolean(mapLayout));
       if(!frame)return;
       draw(canvas,frame,positions,models,board,stage==='identify'&&mapLayout?[]:walls,stage==='identify'&&mapLayout?[]:objectives,plan,stage!=='plan'||!plan,stage==='plan'?nextPlan:null,reused);
       if(mapLayout&&stage==='terrain'){
         const c=canvas.getContext('2d');c.font='bold 11px system-ui';c.textAlign='center';
         for(const p of mapLayout.terrain){c.strokeStyle='#eacb83';c.lineWidth=1.3;c.setLineDash([3,3]);c.beginPath();c.arc(p.x,p.y,Math.max(5,p.r*.65),0,Math.PI*2);c.stroke();}c.setLineDash([]);
         for(const p of mapLayout.doors){c.fillStyle=p.open?'#76f5a8':'#f0c66a';c.fillRect(p.x-4,p.y-4,8,8);}
-      }
+        const h=alignmentHandles();
+        if(h){
+          c.save();c.strokeStyle='#8ff5ca';c.lineWidth=1.5;c.setLineDash([6,5]);c.strokeRect(h.left,h.top,h.right-h.left,h.bottom-h.top);c.setLineDash([]);
+          const radius=Math.max(7,canvas.width/48);
+          for(const [,x,y] of h.corners){
+            c.beginPath();c.arc(x,y,radius+2,0,Math.PI*2);c.fillStyle='#07140f';c.fill();
+            c.beginPath();c.arc(x,y,radius,0,Math.PI*2);c.fillStyle='#8ff5ca';c.fill();
+          }
+          c.restore();
+          canvas.dataset.alignmentHandles=JSON.stringify(h.corners);
+        }
+      }else delete canvas.dataset.alignmentHandles;
       if(stage!=='crop'||!crop)return;
       const ctx=canvas.getContext('2d'),{x,y,w,h}=crop;
       ctx.fillStyle='rgba(3,12,8,.45)';ctx.beginPath();ctx.rect(0,0,canvas.width,canvas.height);ctx.rect(x,y,w,h);ctx.fill('evenodd');
@@ -604,12 +663,12 @@ function trackingUI(){
         controls.append(button('Clear Selected Marker',()=>{delete positions[selected];update();},'ghost'));
       }else if(stage==='terrain'){
         if(mapLayout){
-          tell('Mission layout loaded automatically. Check the overlay against the board. Tap a hatchway square to mark it open or closed.');
+          tell('Drag inside the alignment frame to move the mission layout. Drag a corner handle to resize it. Tap a hatchway square to toggle open or closed.');
           const note=document.createElement('p');note.className='rt-metadata';note.textContent='Amber: walls, terrain and closed hatchways. Green squares: open hatchways.';controls.append(note);
           const adjustments=document.createElement('details');adjustments.className='rt-map-adjust';
           const summary=document.createElement('summary');summary.textContent='Adjust mission alignment';adjustments.append(summary);
           const grid=document.createElement('div');grid.className='rt-actions';
-          const change=(key,delta)=>{mapFit={...mapFit,[key]:Math.max(key.startsWith('s')?.65:-.25,Math.min(key.startsWith('s')?1.35:.25,mapFit[key]+delta))};refreshMap();repaint();const check=get('.rt-check input');if(check)check.checked=false;};
+          const change=(key,delta)=>{mapFit={...mapFit,[key]:Math.max(key.startsWith('s')?.65:-.25,Math.min(key.startsWith('s')?1.35:.25,mapFit[key]+delta))};invalidateAlignment();repaint();};
           for(const [label,key,delta] of [['← Left','dx',-.015],['Right →','dx',.015],['↑ Up','dy',-.015],['Down ↓','dy',.015],['Narrower','sx',-.025],['Wider','sx',.025],['Shorter','sy',-.025],['Taller','sy',.025]])grid.append(button(label,()=>change(key,delta),'ghost'));
           adjustments.append(grid);controls.append(adjustments,button('Rotate Mission Layout 90°',()=>{rotation=(rotation+1)%4;mapFit={sx:1,sy:1,dx:0,dy:0};openDoors=[];refreshMap();update();},'ghost'),button('Auto-align Mission Layout',()=>{openDoors=[];refreshMap(true);update();},'ghost'),button(reused?'Take New Photo':'Recalibrate Photo',reused?()=>get('input[aria-label="Take tactical photo"]').click():resetCalibration,'ghost'));
         }else{
@@ -756,20 +815,40 @@ function trackingUI(){
     get('.rt-manual').onclick=()=>{seq++;preview=null;continuation=null;config.manual();};
     function canvasPoint(e){const r=canvas.getBoundingClientRect();return {x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height};}
     canvas.addEventListener('pointerdown',e=>{
-      if(stage!=='crop'||!crop||!live())return;
-      const p=canvasPoint(e),radius=Math.max(15,canvas.width/23),corners=[['nw',crop.x,crop.y],['ne',crop.x+crop.w,crop.y],['se',crop.x+crop.w,crop.y+crop.h],['sw',crop.x,crop.y+crop.h]];
-      const handle=corners.find(([,x,y])=>Math.hypot(p.x-x,p.y-y)<=radius)?.[0]||(p.x>=crop.x&&p.x<=crop.x+crop.w&&p.y>=crop.y&&p.y<=crop.y+crop.h?'move':null);
-      if(!handle)return;
-      e.preventDefault();dragging={handle,p,rect:{...crop},id:e.pointerId};canvas.setPointerCapture(e.pointerId);
+      suppressMapClick=false;
+      if(!live()||dragging||e.button!==0)return;
+      const p=canvasPoint(e),radius=Math.max(15,canvas.width/23);
+      if(stage==='crop'&&crop){
+        const corners=[['nw',crop.x,crop.y],['ne',crop.x+crop.w,crop.y],['se',crop.x+crop.w,crop.y+crop.h],['sw',crop.x,crop.y+crop.h]];
+        const handle=corners.find(([,x,y])=>Math.hypot(p.x-x,p.y-y)<=radius)?.[0]||(p.x>=crop.x&&p.x<=crop.x+crop.w&&p.y>=crop.y&&p.y<=crop.y+crop.h?'move':null);
+        if(!handle)return;
+        e.preventDefault();dragging={kind:'crop',handle,p,rect:{...crop},id:e.pointerId};
+      }else if(stage==='terrain'&&mapLayout){
+        const h=alignmentHandles();if(!h)return;
+        const handle=h.corners.find(([,x,y])=>Math.hypot(p.x-x,p.y-y)<=radius)?.[0]||(p.x>=h.left&&p.x<=h.right&&p.y>=h.top&&p.y<=h.bottom?'move':null);
+        if(!handle)return;
+        dragging={kind:'map',handle,p,bounds:h.bounds,fit:{...mapFit},id:e.pointerId,moved:false};
+      }else return;
+      canvas.setPointerCapture(e.pointerId);
     });
     canvas.addEventListener('pointermove',e=>{
-      if(stage!=='crop'||dragging?.id!==e.pointerId)return;
-      const p=canvasPoint(e);crop=calibration.drag(dragging.rect,dragging.handle,p.x-dragging.p.x,p.y-dragging.p.y,canvas.width,canvas.height);repaint();
+      if(dragging?.id!==e.pointerId||!live())return;
+      const p=canvasPoint(e),dx=p.x-dragging.p.x,dy=p.y-dragging.p.y;
+      if(dragging.kind==='crop'&&stage==='crop'){
+        crop=calibration.drag(dragging.rect,dragging.handle,dx,dy,canvas.width,canvas.height);repaint();
+      }else if(dragging.kind==='map'&&stage==='terrain'){
+        // Keep a tap distinct from dragging, including taps directly on doors.
+        if(!dragging.moved&&Math.hypot(dx,dy)<5*canvas.width/canvas.getBoundingClientRect().width)return;
+        dragging.moved=true;suppressMapClick=true;
+        mapFit=maps.dragFit(board,dragging.bounds,dragging.fit,dragging.handle,dx,dy);
+        invalidateAlignment();repaint();
+      }
     });
-    const endDrag=e=>{if(dragging?.id===e.pointerId)dragging=null;};
+    const endDrag=e=>{if(dragging?.id===e.pointerId){if(dragging.kind==='map'&&dragging.moved)suppressMapClick=true;dragging=null;}};
     canvas.addEventListener('pointerup',endDrag);canvas.addEventListener('pointercancel',endDrag);canvas.addEventListener('lostpointercapture',endDrag);
     canvas.onclick=e=>{
       if(!frame||!live())return;
+      if(suppressMapClick){suppressMapClick=false;return;}
       const rect=canvas.getBoundingClientRect(),p={x:(e.clientX-rect.left)*canvas.width/rect.width,y:(e.clientY-rect.top)*canvas.height/rect.height};
       if(stage==='crop')return;
       if(!board||!core.inside(p,board))return;
