@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.35';
+  const APP_VERSION = '10.1.36';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -3999,6 +3999,12 @@ document.addEventListener('touchend',function(e){
     const gradeDescription=state.gradeMilestone?gradeGameplayDescription(state.gradeMilestone.grade,{threat:state.gradeMilestone.threat,turningPoint:Math.max(2,state.turningPoint),suggestedInitiative:state.strategyData?.suggestedInitiative,restlessTombEnabled:state.restlessTombEnabled}):null;
     const milestone=gradeDescription?`<section class="grade-milestone" role="dialog" aria-labelledby="grade-milestone-heading" aria-describedby="grade-milestone-description"><div><small>THREAT ESCALATION</small><h2 id="grade-milestone-heading">Grade ${gradeDescription.grade}: ${escapeHtml(gradeDescription.name)}</h2><span>${escapeHtml(gradeDescription.threatRange)}</span><section id="grade-milestone-description" class="grade-gameplay-changes" aria-labelledby="grade-gameplay-heading"><h3 id="grade-gameplay-heading">GAMEPLAY CHANGES</h3><ul>${gradeDescription.effects.map(effect=>`<li>${escapeHtml(effect.text)}</li>`).join('')}</ul></section></div><button class="btn ghost compact" id="dismissGradeMilestone">Dismiss</button></section>`:'';
     app.innerHTML=hud()+milestone+`<div class="phase-track"><span class="${state.phase==='strategy'?'current':''}">Strategy</span>›<span class="${state.phase==='firefight'?'current':''}">Activations</span>›<span class="${state.phase==='end'?'current':''}">End Turning Point</span></div>${state.phase!=='strategy'?activeEventEffectsHtml():''}${nextStepCard()}${state.phase==='firefight'?activationTracker():''}`;
+    if(state.phase==='strategy'&&state.turningPoint===1&&state.strategyStage==='summary'&&reconTrackingEnabled()&&reconCaptureCompletedFor!==state){
+      app.insertAdjacentHTML('beforeend','<section class="card"><p class="eyebrow">BATTLEFIELD RECON · OPTIONAL</p><button class="btn secondary big-action" id="retryReconSetup" type="button">Capture Battlefield</button><p class="muted" id="reconLaunchNotice" role="status"></p></section>');
+      const notice=$('#reconLaunchNotice');
+      if(reconLaunchError)notice.textContent='Previous capture could not open: '+reconLaunchError;
+      $('#retryReconSetup').onclick=()=>{try{if(!showReconTracking(null,true))throw Error('Photo interface did not mount');}catch(error){recordReconLaunchError(error);if(modal.open)closeModal();notice.textContent='Unable to open capture: '+reconLaunchError;}};
+    }
     bindPlay();
     requestAnimationFrame(narrateVisibleStrategyEvents);
     requestAnimationFrame(narrateVisibleGradeMilestone);
@@ -4618,6 +4624,9 @@ document.addEventListener('touchend',function(e){
   }
 
   let reconSetupFinishedFor=null;
+  let reconCaptureCompletedFor=null;
+  let reconLaunchError='';
+  function recordReconLaunchError(error){reconLaunchError=String(error?.message||error||'Unknown error');console.warn('[Battlefield Recon] Capture unavailable.',error);}
   let turningPointStartInFlight=null;
   async function startTurningPoint({skipRecon=false}={}){
     if(state.phase!=='between'||turningPointStartInFlight===state)return;
@@ -4628,7 +4637,7 @@ document.addEventListener('touchend',function(e){
           if(showReconTracking(null,true))return;
           throw new Error('Recon setup did not open');
         }catch(error){
-          console.warn('[Battlefield Recon] Setup unavailable; continuing without Recon.',error);
+          recordReconLaunchError(error);
           if(modal.open)closeModal();
           showToast('Battlefield Recon unavailable. Starting the game without it.');
         }
@@ -5208,19 +5217,19 @@ document.addEventListener('touchend',function(e){
   }
   function showReconTracking(actor=null,setup=false){
     if(!reconTrackingEnabled())return;
-    const token=state,turn=state.turningPoint,activation=state.lastActivation,scanKey=`${turn}:${state.activationNumber}:${actor?.id||''}:${actor?activation?.decisionPass||0:0}`;
+    const token=state,turn=state.turningPoint,phase=state.phase,activation=state.lastActivation,scanKey=`${turn}:${state.activationNumber}:${actor?.id||''}:${actor?activation?.decisionPass||0:0}`;
     const np=activeNpos().map(n=>{
-      const d=npoDefinition(n.type),profiles=npoAttackProfiles(n,'shoot');
+      const d=npoDefinition(n.type),profiles=setup?[]:npoAttackProfiles(n,'shoot');
       const ranges=profiles.map(p=>{const match=(p.rules||[]).map(String).map(r=>r.match(/^Range\s*(\d+)/i)).find(Boolean);return Number(p.range??match?.[1]??Infinity);});
-      return {key:'n:'+n.id,id:n.id,side:'npo',name:npoName(n),base:Number(n.baseSize||d?.baseSize)||null,move:npoRepositionDistance(n),ap:actor?.id===n.id?activation.remainingAp:effectiveApl(n.id,d?.apl),ready:readyNpos().some(x=>x.id===n.id),wounds:n.wounds,canShoot:profiles.length>0,range:ranges.length?Math.min(...ranges):null,focus:npoMovementFocus(n,'')};
+      return {key:'n:'+n.id,id:n.id,side:'npo',name:npoName(n),base:Number(n.baseSize||d?.baseSize)||null,move:npoRepositionDistance(n),ap:setup?Number(d?.apl||0):actor?.id===n.id?activation?.remainingAp:effectiveApl(n.id,d?.apl),ready:!setup&&readyNpos().some(x=>x.id===n.id),wounds:n.wounds,canShoot:profiles.length>0,range:ranges.length?Math.min(...ranges):null,focus:setup?null:npoMovementFocus(n,'')};
     });
-    const pp=inPlayLivingPlayerOperativeIds().map(id=>({key:'p:'+id,id,side:'player',name:playerName(id),base:Number(playerDefinition(id)?.baseSize)||null,wounds:playerCurrentWounds(id),order:state.playerOperativeStates?.[id]?.order||'Unknown',ready:!state.playerActivatedIds.includes(id)}));
-    const valid=()=>state===token&&reconTrackingEnabled()&&state.turningPoint===turn&&(setup?state.phase==='between'&&turn===0:state.nextSide==='npo')&&(!actor||(state.activeNpoId===actor.id&&state.lastActivation?.decisionPass===activation.decisionPass&&!state.lastActivation.pendingAction));
-    const finishSetup=()=>{if(!valid())return;reconSetupFinishedFor=state;closeModal();void startTurningPoint({skipRecon:true});};
+    const pp=inPlayLivingPlayerOperativeIds().map(id=>({key:'p:'+id,id,side:'player',name:playerName(id),base:Number(playerDefinition(id)?.baseSize)||null,wounds:playerCurrentWounds(id),order:state.playerOperativeStates?.[id]?.order||'Unknown',ready:!(state.playerActivatedIds||[]).includes(id)}));
+    const valid=()=>state===token&&reconTrackingEnabled()&&state.turningPoint===turn&&(setup?state.phase===phase&&(phase==='between'&&turn===0||phase==='strategy'&&turn===1&&state.strategyStage==='summary'):state.nextSide==='npo')&&(!actor||(state.activeNpoId===actor.id&&state.lastActivation?.decisionPass===activation.decisionPass&&!state.lastActivation.pendingAction));
+    const finishSetup=(captured=false)=>{if(!valid())return;reconSetupFinishedFor=state;if(captured){reconCaptureCompletedFor=state;reconLaunchError='';}closeModal();if(phase==='between')void startTurningPoint({skipRecon:true});else render();};
     showModal(setup?'Capture Battlefield':'Battlefield Recon','<div id="reconTrackingHost"></div>');
-    const host=$('#reconTrackingHost');
-    if(!host)return false;
-    window.TombWorldReconTracking.open(host,{token,turn,scanKey,setup,missionNumber:mission().number,complete:finishSetup,models:[...np,...pp],actorKey:actor?'n:'+actor.id:null,activated:pp.filter(p=>!p.ready).map(p=>p.key),ready:np.filter(p=>p.ready).map(p=>p.key),valid,
+    const host=modalBody.querySelector('#reconTrackingHost');
+    if(!host)throw Error('Capture dialog host missing');
+    window.TombWorldReconTracking.open(host,{token,turn,scanKey,setup,missionNumber:mission()?.number,complete:()=>finishSetup(true),models:[...np,...pp],actorKey:actor?'n:'+actor.id:null,activated:pp.filter(p=>!p.ready).map(p=>p.key),ready:np.filter(p=>p.ready).map(p=>p.key),valid,
       actionOrder:(m,inControl)=>{const n=readyNpos().find(x=>x.id===m.id);if(!n)return [];const context={inEnemyControlRange:inControl,remainingAp:m.ap,completedActionIds:actor?activation.completedActionIds:[]};return recommendedNpoActions(n,context).filter(name=>!actor||!(activation.declinedActionIds||[]).includes(npoActionId(name)));},
       manual:()=>{reconApprovedPlan=null;reconDisplayPlan=null;if(setup){finishSetup();return;}if(actor)runNpoPrompt(actor,0,{},activation.questionHistory||[]);else{closeModal();render();}},
       accept:plan=>{
@@ -5232,7 +5241,9 @@ document.addEventListener('touchend',function(e){
         else beginNpoActivation(n,{refreshPlayCard:true});
       }
     });
-    return Boolean(host.querySelector('.recon-tracking'));
+    if(!host.querySelector('.recon-tracking'))throw Error('Capture interface did not mount');
+    reconLaunchError='';
+    return true;
   }
   function applyReconRecommendation(n,answers,history){
     const p=reconApprovedPlan;reconApprovedPlan=null;
