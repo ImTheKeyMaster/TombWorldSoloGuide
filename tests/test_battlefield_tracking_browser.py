@@ -25,6 +25,7 @@ with sync_playwright() as p:
     page.set_content('<html data-experimental="on"><body><div id="host"></div></body></html>')
     for f in ["styles.css","battlefield-recon.css","battlefield-tracking.css"]:page.add_style_tag(path=str(ROOT/f))
     page.add_script_tag(path=str(ROOT/"battlefield-tracking.js"))
+    page.evaluate("() => {window.overlayLabels=[];const original=CanvasRenderingContext2D.prototype.fillText;CanvasRenderingContext2D.prototype.fillText=function(text,...args){overlayLabels.push(String(text));return original.call(this,text,...args)};}")
     page.evaluate("""window.reconConfig={token:{},turn:1,scanKey:'1',activated:[],ready:['n:a'],models:[{key:'n:a',side:'npo',name:'Warrior',base:32,ready:true,move:6,ap:2,canShoot:true,range:12,focus:'shoot',wounds:9},{key:'p:b',side:'player',name:'Gunner',base:32,order:'Engage',wounds:5}],valid:()=>true,actionOrder:()=>['Shoot','Reposition'],manual:()=>{window.manual=true},accept:p=>{window.accepted=p}};TombWorldReconTracking.open(document.querySelector('#host'),reconConfig)""")
     page.locator("input[aria-label='Choose tactical photo']").set_input_files({"name":"board.png","mimeType":"image/png","buffer":image()})
     page.get_by_text('Confirm Board Area',exact=True).wait_for()
@@ -123,9 +124,31 @@ with sync_playwright() as p:
     page.get_by_text("Move Complete",exact=True).wait_for()
     assert '1 AP remaining after' in page.locator('.rt-recommendation').inner_text()
     assert 'Next planned action: Dash' in page.locator('.rt-recommendation').inner_text()
+    assert page.evaluate("['1 ACTING NPO','2 MOVE HERE','3 DASH HERE'].every(label=>overlayLabels.includes(label))")
     page.get_by_text("Move Complete",exact=True).click()
     assert page.evaluate("window.accepted.movementConfirmed") is True
     assert page.evaluate("window.accepted.id")=="reposition"
+    # Same photograph, confirmed position, only the remaining action.
+    page.evaluate("reconConfig={...reconConfig,actorKey:'n:a',reusePrevious:true,completedActionIds:['reposition'],completedActions:['Reposition'],startingAp:2,models:reconConfig.models.map(m=>m.side==='npo'?{...m,ap:1}:m),actionOrder:()=>['Dash']};TombWorldReconTracking.open(document.querySelector('#host'),reconConfig)")
+    page.get_by_text("Move Complete",exact=True).wait_for()
+    assert 'same photograph' in page.locator('.rt-status').inner_text()
+    assert '1 AP available' in page.locator('.rt-recommendation').inner_text()
+    assert 'Final AP' in page.locator('.rt-recommendation').inner_text()
+    assert page.get_by_text("Confirm Board Area",exact=True).count()==0
+    assert page.evaluate("overlayLabels.includes('1 CONFIRMED NPO')")
+    page.get_by_text("Move Complete",exact=True).click()
+    assert page.evaluate("window.accepted.id")=="dash"
+    # Move then Shoot: both routes/target appear in the original photo.
+    page.evaluate("overlayLabels=[];reconConfig={...reconConfig,token:{},actorKey:null,reusePrevious:false,startingAp:null,completedActionIds:[],completedActions:[],models:reconConfig.models.map(m=>m.side==='npo'?{...m,ap:2,move:4,canShoot:true,range:4,focus:'shoot'}:m),actionOrder:(m,c,done=[])=>['Shoot','Reposition'].filter(x=>!done.includes(x.toLowerCase()))};TombWorldReconTracking.open(document.querySelector('#host'),reconConfig)")
+    page.locator("input[aria-label='Choose tactical photo']").set_input_files({"name":"board.png","mimeType":"image/png","buffer":image()})
+    page.get_by_text("Confirm Board Area",exact=True).click()
+    tap(93,73);tap(150,73)
+    page.get_by_text("Confirm Operative Positions",exact=True).click()
+    page.locator(".rt-check input").check()
+    page.get_by_text("Assess Battlefield",exact=True).click()
+    page.get_by_text("Move Complete",exact=True).wait_for()
+    assert 'Next planned action: Shoot' in page.locator('.rt-recommendation').inner_text()
+    assert page.evaluate("['1 ACTING NPO','2 MOVE HERE','3 POTENTIAL TARGET'].every(label=>overlayLabels.includes(label))")
     assert not errors,errors
     browser.close()
 print("Tactical scan browser workflow passed.")

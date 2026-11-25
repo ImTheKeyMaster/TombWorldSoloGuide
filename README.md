@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.39
+# Tomb World Battle Guide v10.1.40
+
+## v10.1.40
+
+- Experimental Recon: show the acting NPO, current move and planned second action/target as numbered overlays on one photograph. Confirm actions separately; reuse the photograph and confirmed destination for the same activation, recalculating the next action from the updated roster and AP. Optional new photo for position changes or tabletop interruptions; never overwrite photographic tracking templates with projected positions. Standard unchanged.
 
 ## v10.1.39
 
