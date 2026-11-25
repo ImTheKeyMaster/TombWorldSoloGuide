@@ -81,6 +81,8 @@ try:
         assert page.evaluate("__reconFixture.ap()")=={"id":actor,"remaining":1,"completed":["dash"],"committed":False}
         assert page.locator('#confirmNpoMovement').count()==0
         assert '1 AP remaining' in page.locator('.rt-ap-progress').inner_text()
+        assert page.evaluate("window.__reconConfig.reusePrevious===true")
+        assert page.evaluate("window.__reconConfig.completedActionIds")==["dash"]
         page.evaluate("__reconFixture.confirmMove('reposition')")
         page.wait_for_function("__reconFixture.ap().committed===true")
         assert page.evaluate("__reconFixture.ap().remaining")==0

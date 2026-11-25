@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.39';
+  const APP_VERSION = '10.1.40';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5215,7 +5215,7 @@ document.addEventListener('touchend',function(e){
   function reconTrackingControl(){
     return reconTrackingEnabled()?'<button class="btn secondary big-action recon-scan-entry" id="startReconTracking" type="button">Scan Battlefield</button>':'';
   }
-  function showReconTracking(actor=null,setup=false){
+  function showReconTracking(actor=null,setup=false,reusePrevious=false){
     if(!reconTrackingEnabled())return;
     const token=state,turn=state.turningPoint,phase=state.phase,activation=state.lastActivation,scanKey=`${turn}:${state.activationNumber}:${actor?.id||''}:${actor?activation?.decisionPass||0:0}`;
     const np=activeNpos().map(n=>{
@@ -5229,7 +5229,7 @@ document.addEventListener('touchend',function(e){
     showModal(setup?'Capture Battlefield':'Battlefield Recon','<div id="reconTrackingHost"></div>');
     const host=modalBody.querySelector('#reconTrackingHost');
     if(!host)throw Error('Capture dialog host missing');
-    window.TombWorldReconTracking.open(host,{token,turn,scanKey,setup,missionNumber:mission()?.number,complete:()=>finishSetup(true),models:[...np,...pp],actorKey:actor?'n:'+actor.id:null,startingAp:actor?activation.startingAp:null,completedActions:actor?(activation.resolvedActions||[]).map(x=>conciseNpoActionName(x)):[],activated:pp.filter(p=>!p.ready).map(p=>p.key),ready:np.filter(p=>p.ready).map(p=>p.key),valid,
+    window.TombWorldReconTracking.open(host,{token,turn,scanKey,setup,missionNumber:mission()?.number,complete:()=>finishSetup(true),models:[...np,...pp],actorKey:actor?'n:'+actor.id:null,reusePrevious,completedActionIds:actor?[...(activation.completedActionIds||[])]:[],startingAp:actor?activation.startingAp:null,completedActions:actor?(activation.resolvedActions||[]).map(x=>conciseNpoActionName(x)):[],activated:pp.filter(p=>!p.ready).map(p=>p.key),ready:np.filter(p=>p.ready).map(p=>p.key),valid,
       actionOrder:(m,inControl,planned=[] )=>{const n=readyNpos().find(x=>'n:'+x.id===m.key);if(!n)return [];const context={inEnemyControlRange:inControl,remainingAp:m.ap,completedActionIds:[...(actor?activation.completedActionIds||[]:[]),...planned]};return recommendedNpoActions(n,context).filter(name=>!actor||!(activation.declinedActionIds||[]).includes(npoActionId(name)));},
       manual:()=>{reconApprovedPlan=null;reconDisplayPlan=null;reconContinuation=null;if(setup){finishSetup();return;}if(actor)runNpoPrompt(actor,0,{},activation.questionHistory||[]);else{closeModal();render();}},
       accept:plan=>{
@@ -5254,11 +5254,11 @@ document.addEventListener('touchend',function(e){
     const target=p.target?.startsWith('p:')?p.target.slice(2):null;
     if(['shoot','fight'].includes(id)&&(!target||!eligibleNpoAttackTargets().includes(target))){reconDisplayPlan=null;return false;}
     const contextBefore={...activation.currentContext};activation.currentContext=context;
-    // Do not guarantee a follow-up: the next real photograph or normal guide checks the board.
+    // Do not guarantee a follow-up: recalculate using the confirmed movement and actual combat results.
     activation.movementIntent=['reposition','dash'].includes(id)?{id:id+'-recon',purpose:'general-position',actionId:id,decisionPass:activation.decisionPass}:null;
     activation.pendingFollowUpAction=null;
     const nextHistory=[...history,{index:0,answers,answer:true,action:p.action,type:'feasibility',question:'Photo recommendation confirmed',contextBefore},{action:p.action,type:'selected',question:conciseNpoActionName({id,name:p.action})}];
-    reconContinuation={token:state,activationId:activation.activationId};
+    reconContinuation={token:state,activationId:activation.activationId,actionId:id};
     resolveNpo(n,{...answers,action:p.action},nextHistory,['shoot','fight'].includes(id)?target:null,Boolean(p.movementConfirmed&&npoActionChangesContext(id)));
     return true;
   }
@@ -9852,11 +9852,12 @@ function showPlayerActivation(){
     if(activation.remainingAp<=0){completeNpoActivation();return;}
     const available=recommendedNpoActions(n,activation.currentContext||{}).filter(name=>!(activation.declinedActionIds||[]).includes(npoActionId(name)));
     if(!available.length){renderNpoActivationEnd(n,'No useful actions remain.');return;}
-    // Reassess the same operative after a confirmed Recon action. Do not
-    // select another ready NPO or assume the photographed move was exact.
+    // Continue on the same photograph after a committed Recon action.
+    // Fieldcraft can move another operative and therefore invalidates reuse.
     if(reconTrackingEnabled()&&reconContinuation?.token===state&&reconContinuation.activationId===activation.activationId){
+      const reuse=!activation.lastFieldcraftInterrupt&&activation.completedActionIds?.at(-1)===reconContinuation.actionId;
       reconContinuation=null;
-      try{if(showReconTracking(n))return;}catch(error){recordReconLaunchError(error);}
+      try{if(showReconTracking(n,false,reuse))return;}catch(error){recordReconLaunchError(error);}
     }
     runNpoPrompt(n,0,{},activation.questionHistory||[]);
   }

@@ -470,9 +470,9 @@ function snapCore(){
 }
 function trackingUI(){
   const core=trackingCore(),calibration=calibrationCore(),maps=mapCore(),snapping=snapCore();
-  let session=null,preview=null;
+  let session=null,preview=null,continuation=null;
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  function draw(canvas,frame,positions,models,board,walls,objectives,plan,showLabels){
+  function draw(canvas,frame,positions,models,board,walls,objectives,plan,showLabels,nextPlan=null,projected=false){
     const ctx=canvas.getContext('2d');
     canvas.width=frame.width;canvas.height=frame.height;ctx.drawImage(frame,0,0);
     const ring=(p,color,r=11,dash=false)=>{ctx.save();ctx.setLineDash(dash?[5,4]:[]);ctx.strokeStyle='#06100c';ctx.lineWidth=5;ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.stroke();ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.stroke();ctx.restore();};
@@ -481,25 +481,58 @@ function trackingUI(){
     if(showLabels){walls.forEach(([a,b])=>line(a,b,'#f0c66a'));objectives.forEach(p=>ring(p,'#f0c66a',8,true));}
     if(showLabels)models.forEach((m,i)=>{const p=positions[m.key];if(!p)return;const c=m.side==='npo'?'#76f5a8':'#91caff';ring(p,c,Math.max(8,p.r||10));ctx.font='bold 11px system-ui';ctx.fillStyle='#06100c';ctx.fillRect(p.x-9,p.y-19,19,13);ctx.fillStyle=c;ctx.textAlign='center';ctx.fillText(String(i+1),p.x,p.y-9);});
     if(plan){
-      const a=positions[plan.actor],t=positions[plan.target],d=plan.destination;
-      if(a){
-        const route=plan.path||[a,d].filter(Boolean);
-        for(let i=1;i<route.length;i++)line(route[i-1],route[i],'#76f5a8',false,i===route.length-1);
-        if(t)line(d||a,t,'#ff7f83',true,true);
-        ring(a,'#76f5a8',Math.max(12,a.r||10));if(d)ring(d,'#76f5a8',12,true);if(t)ring(t,'#ff7f83',Math.max(12,t.r||10));
-        const goal=positions[plan.goalTarget]||plan.goal;if(goal)ring(goal,'#f0c66a',Math.max(12,goal.r||10),true);
-        if(plan.hatchway)ring(plan.hatchway,'#f0c66a',9,true);
+      const origin=positions[plan.actor];
+      if(origin){
+        const green='#76f5a8',red='#ff7f83',amber='#f0c66a',labels=[];
+        let marker=1;
+        const tag=(p,text,color,radius=13)=>{
+          ctx.save();ctx.font='bold 12px system-ui';ctx.textAlign='left';ctx.textBaseline='middle';
+          const w=ctx.measureText(text).width+12,h=19;
+          const candidates=[[p.x-w/2,p.y-radius-h-4],[p.x-w/2,p.y+radius+4],[p.x+radius+5,p.y-h/2],[p.x-radius-w-5,p.y-h/2]].map(([x,y])=>({x:Math.max(2,Math.min(canvas.width-w-2,x)),y:Math.max(2,Math.min(canvas.height-h-2,y)),w,h}));
+          const overlaps=(a,b)=>a.x<b.x+b.w+3&&a.x+a.w+3>b.x&&a.y<b.y+b.h+3&&a.y+a.h+3>b.y;
+          const rect=candidates.find(c=>labels.every(l=>!overlaps(c,l)))||candidates[0];labels.push(rect);
+          ctx.fillStyle='#06100c';ctx.fillRect(rect.x,rect.y,w,h);ctx.strokeStyle=color;ctx.lineWidth=1;ctx.strokeRect(rect.x,rect.y,w,h);ctx.fillStyle=color;ctx.fillText(text,rect.x+6,rect.y+h/2);ctx.restore();
+        };
+        const marks=[];
+        function action(p,start,future){
+          const d=p.destination,t=positions[p.target];
+          if(d){
+            const route=p.path||[start,d];
+            for(let i=1;i<route.length;i++)line(route[i-1],route[i],green,future,i===route.length-1);
+            ring(d,green,Math.max(12,origin.r||10),true);
+            marks.push([d,(marker++)+' '+(p.id==='dash'?'DASH HERE':'MOVE HERE'),green]);
+          }
+          if(t){
+            // A movement's prospective target is not another AP unless the
+            // second planned action is an actual attack.
+            const attack=p.id==='shoot'||p.id==='fight',charge=p.id==='charge';
+            if(attack||charge||(!nextPlan&&p.followUp)){
+              line(d||start,t,red,true,true);ring(t,red,Math.max(12,t.r||10));
+              marks.push([t,(marker++)+' '+(charge?'CHARGE TARGET':future?'POTENTIAL TARGET':attack?'ATTACK TARGET':'POTENTIAL TARGET'),red]);
+            }
+          }
+          if(p.hatchway)ring(p.hatchway,amber,9,true);
+          if(!t&&!nextPlan){const goal=positions[p.goalTarget]||p.goal;if(goal)ring(goal,amber,Math.max(12,goal.r||10),true);}
+          return d||start;
+        }
+        ring(origin,green,Math.max(12,origin.r||10),projected);
+        const end=action(plan,origin,false);
+        if(nextPlan&&nextPlan.actor===plan.actor)action(nextPlan,end,true);
+        // Draw labels last so routes cannot obscure the numbered instructions.
+        tag(origin,'1 '+(projected?'CONFIRMED NPO':'ACTING NPO'),green,Math.max(12,origin.r||10));
+        // Number 1 is reserved for the actor; destination and target follow.
+        for(const [point,label,color] of marks)tag(point,label.replace(/^\d+/,n=>String(Number(n)+1)),color);
       }
     }
   }
   function open(host,config){
     if(!host||!config||document.documentElement.dataset.experimental!=='on')return;
-    if(!session||session.token!==config.token)session={token:config.token,board:null,positions:{},walls:[],objectives:[],mapped:false,frame:null,turn:null,activated:new Set(),ready:new Set(),meta:{},mapRotation:0,mapFit:null,openDoors:[],capture:null};
+    if(!session||session.token!==config.token){continuation=null;session={token:config.token,board:null,positions:{},walls:[],objectives:[],mapped:false,frame:null,turn:null,activated:new Set(),ready:new Set(),meta:{},mapRotation:0,mapFit:null,openDoors:[],capture:null};}
     preview=null;
     const s=session,models=config.models.map(m=>({...m,...(s.meta[m.key]?.base&&!m.base?{base:s.meta[m.key].base}:{}),...(m.side==='player'&&m.order==='Unknown'&&s.meta[m.key]?.order?{order:s.meta[m.key].order}:{})}));
     // A player may change order during their activation. Unknown must remain unknown until confirmed.
     if(s.frame)for(const m of models.filter(m=>m.side==='player'&&(s.turn!==config.turn||!s.activated.has(m.key)&&config.activated.includes(m.key))))if(config.models.find(x=>x.key===m.key)?.order==='Unknown')m.order='Unknown';
-    let frame=null,positions={},board=null,walls=[],objectives=[],mapped=false,stage='photo',wallStart=null,selected='',plan=null,seq=0,raw=null,crop=null,dragging=null,autoRectified=false,mapLayout=null,rotation=0,mapFit=null,openDoors=[],diagnostics=[],capture=null,nextPlan=null;
+    let frame=null,positions={},board=null,walls=[],objectives=[],mapped=false,stage='photo',wallStart=null,selected='',plan=null,seq=0,raw=null,crop=null,dragging=null,autoRectified=false,mapLayout=null,rotation=0,mapFit=null,openDoors=[],diagnostics=[],capture=null,nextPlan=null,reused=false;
     host.innerHTML='<section class="recon-tracking"><p class="eyebrow">TACTICAL SCAN · EXPERIMENTAL</p><p class="rt-status" role="status" aria-live="polite"></p><p class="rt-metadata rt-ap-progress" hidden></p><div class="recon-upload"><label class="btn secondary">Take Photo<input type="file" accept="image/*" capture="environment" aria-label="Take tactical photo"></label><label class="btn ghost">Choose Photo<input type="file" accept="image/*" aria-label="Choose tactical photo"></label></div><div class="rt-work" hidden><div class="rt-recommendation" hidden></div><div class="recon-frame"><canvas aria-label="Battlefield photograph and tactical overlays"></canvas></div><div class="rt-controls"></div></div><div class="wizard-actions"><button type="button" class="btn ghost rt-manual">Use Manual Guide</button></div></section>';
     const get=q=>host.querySelector(q),status=get('.rt-status'),canvas=get('canvas'),controls=get('.rt-controls'),work=get('.rt-work'),recommendation=get('.rt-recommendation');
     const tell=t=>status.textContent=t;
@@ -515,6 +548,11 @@ function trackingUI(){
       if(!live()||button.disabled||(check&&!check.checked))return;
       button.disabled=true;
       preview={frame,positions,models,board,walls,objectives,plan};
+      // Keep projected positions separate from the photographic templates:
+      // pixels still show the original board until the next real capture.
+      const confirmed={...positions};
+      if(isMove(plan)&&plan.destination)confirmed[plan.actor]={...positions[plan.actor],...plan.destination};
+      continuation={token:config.token,turn:config.turn,actor:plan.actor,action:plan.id,frame,board:{...board},positions:confirmed,walls,objectives,mapped,rotation,mapFit,openDoors:[...openDoors]};
       config.accept({...plan,movementConfirmed:isMove(plan)});
     }
     const button=(label,fn,kind='secondary')=>{const b=document.createElement('button');b.type='button';b.className='btn '+kind;b.textContent=label;b.onclick=fn;return b;};
@@ -522,7 +560,7 @@ function trackingUI(){
     const repaint=()=>{
       canvas.classList.toggle('rt-crop-mode',stage==='crop');
       if(!frame)return;
-      draw(canvas,frame,positions,models,board,stage==='identify'&&mapLayout?[]:walls,stage==='identify'&&mapLayout?[]:objectives,plan,stage!=='plan'||!plan);
+      draw(canvas,frame,positions,models,board,stage==='identify'&&mapLayout?[]:walls,stage==='identify'&&mapLayout?[]:objectives,plan,stage!=='plan'||!plan,stage==='plan'?nextPlan:null,reused);
       if(mapLayout&&stage==='terrain'){
         const c=canvas.getContext('2d');c.font='bold 11px system-ui';c.textAlign='center';
         for(const p of mapLayout.terrain){c.strokeStyle='#eacb83';c.lineWidth=1.3;c.setLineDash([3,3]);c.beginPath();c.arc(p.x,p.y,Math.max(5,p.r*.65),0,Math.PI*2);c.stroke();}c.setLineDash([]);
@@ -573,7 +611,7 @@ function trackingUI(){
           const grid=document.createElement('div');grid.className='rt-actions';
           const change=(key,delta)=>{mapFit={...mapFit,[key]:Math.max(key.startsWith('s')?.65:-.25,Math.min(key.startsWith('s')?1.35:.25,mapFit[key]+delta))};refreshMap();repaint();const check=get('.rt-check input');if(check)check.checked=false;};
           for(const [label,key,delta] of [['← Left','dx',-.015],['Right →','dx',.015],['↑ Up','dy',-.015],['Down ↓','dy',.015],['Narrower','sx',-.025],['Wider','sx',.025],['Shorter','sy',-.025],['Taller','sy',.025]])grid.append(button(label,()=>change(key,delta),'ghost'));
-          adjustments.append(grid);controls.append(adjustments,button('Rotate Mission Layout 90°',()=>{rotation=(rotation+1)%4;mapFit={sx:1,sy:1,dx:0,dy:0};openDoors=[];refreshMap();update();},'ghost'),button('Auto-align Mission Layout',()=>{openDoors=[];refreshMap(true);update();},'ghost'),button('Recalibrate Photo',resetCalibration,'ghost'));
+          adjustments.append(grid);controls.append(adjustments,button('Rotate Mission Layout 90°',()=>{rotation=(rotation+1)%4;mapFit={sx:1,sy:1,dx:0,dy:0};openDoors=[];refreshMap();update();},'ghost'),button('Auto-align Mission Layout',()=>{openDoors=[];refreshMap(true);update();},'ghost'),button(reused?'Take New Photo':'Recalibrate Photo',reused?()=>get('input[aria-label="Take tactical photo"]').click():resetCalibration,'ghost'));
         }else{
           tell('No verified mission layout is available. Use the manual guide or mark blocking terrain.');
           const group=document.createElement('div');group.className='rt-actions';
@@ -592,26 +630,32 @@ function trackingUI(){
           const reasons=document.createElement('div');reasons.className='rt-plan';
           const heading=document.createElement('strong');heading.textContent='Assessment results';reasons.append(heading);
           for(const reason of diagnostics){const p=document.createElement('p');const model=models.find(m=>m.key===reason.actor);p.textContent=(model?model.name+': ':'')+reason.message;reasons.append(p);}
-          controls.append(reasons,button('Review Operative Positions / Orders',()=>{selected='';stage='identify';update();}),button('Review Mission Layout',()=>{stage='terrain';update();},'ghost'));
+          controls.append(reasons);
+          if(!reused)controls.append(button('Review Operative Positions / Orders',()=>{selected='';stage='identify';update();}));
+          else controls.append(button('Position differs? Take New Photo',()=>get('input[aria-label="Take tactical photo"]').click(),'ghost'));
+          controls.append(button('Review Mission Layout',()=>{stage='terrain';update();},'ghost'));
         }
         else{
           const a=models.find(m=>m.key===plan.actor),target=models.find(m=>m.key===plan.target);
-          tell(isMove(plan)?'Move the indicated operative, then confirm completion.':'Resolve the indicated action.');
+          tell((reused?'Using the same photograph; marked positions reflect confirmed actions. ':'')+(isMove(plan)?'Move the indicated operative, then confirm completion.':'Resolve the indicated action.'));
           const remaining=Math.max(0,a.ap-cost(plan)),starting=config.startingAp??a.ap;
           const apSummary=starting-a.ap>0?'AP spent: '+(starting-a.ap)+' of '+starting+' · ':'';
-          const next=nextPlan?('Next planned action: '+actionLabel(nextPlan.id)+(nextPlan.distance!=null?' · '+nextPlan.distance.toFixed(1)+'″':'')+(nextPlan.target?' · '+(models.find(m=>m.key===nextPlan.target)?.name||'target'):'' )+'. Reassess after confirming this action.'):'Next action will be assessed after this action is resolved.';
+          const next=nextPlan?('Next planned action: '+actionLabel(nextPlan.id)+(nextPlan.distance!=null?' · '+nextPlan.distance.toFixed(1)+'″':'')+(nextPlan.target?' · '+(models.find(m=>m.key===nextPlan.target)?.name||'target'):'' )+'. Shown on the same photograph; confirmed separately.'):'Remaining AP will be assessed after this action is resolved.';
           const apHtml='<p class="rt-ap-summary"><b>'+esc(apSummary+a.ap+' AP available · '+cost(plan)+' AP for '+actionLabel(plan.id)+' · '+remaining+' AP remaining after')+'</b></p>'+(remaining?'<p>'+esc(next)+'</p>':'<p>Final AP of this activation.</p>');
           const buttonLabel=isMove(plan)?'Move Complete':plan.id==='shoot'?'Resolve Shoot':plan.id==='fight'?'Resolve Fight':'Resolve '+actionLabel(plan.id);
           const info=document.createElement('div');info.className='rt-plan';
           const intent=plan.intent||(plan.id==='shoot'?'Shoot a priority eligible enemy.':plan.id==='fight'?'Fight a priority enemy in control range.':'Improve the tactical position.');
-          info.innerHTML='<strong>'+esc(a?.name)+' · '+esc(plan.id==='fall-back'?'Fall Back':plan.id[0].toUpperCase()+plan.id.slice(1))+'</strong><p><b>Tactical Intent:</b> '+esc(intent)+'</p><p>'+esc(plan.destination?`${plan.distance.toFixed(1)}″ along the marked route${target?` toward ${target.name}`:''}.`:target?`Target ${target.name}.`:'')+'</p>'+(plan.followUp?'<p>Potential follow-up: '+esc(plan.followUp)+'</p>':'')+(plan.hatchway?'<p>Later route requires an open hatchway. Verify and resolve opening on the tabletop before crossing.</p>':'') +apHtml+'<small>Green: current route. Red: attack target. Amber: future goal or hatchway. Verify tabletop legality before confirming.</small>';
+          info.innerHTML='<strong>'+esc(a?.name)+' · '+esc(plan.id==='fall-back'?'Fall Back':plan.id[0].toUpperCase()+plan.id.slice(1))+'</strong><p><b>Tactical Intent:</b> '+esc(intent)+'</p><p>'+esc(plan.destination?`${plan.distance.toFixed(1)}″ along the marked route${target?` toward ${target.name}`:''}.`:target?`Target ${target.name}.`:'')+'</p>'+(plan.followUp&&!nextPlan?'<p>Potential follow-up: '+esc(plan.followUp)+'</p>':'')+(plan.hatchway?'<p>Later route requires an open hatchway. Verify and resolve opening on the tabletop before crossing.</p>':'') +apHtml+'<small>Green: movement (dashed for next action). Red: attack target. Amber: future goal or hatchway. Follow the numbered markers in order.</small>';
           recommendation.hidden=false;recommendation.append(info);
           if(plan.skipped?.length){
             const note=document.createElement('p');note.textContent='Check higher-priority actions first: '+plan.skipped.map(s=>s.action+' ('+s.reason+')').join('; ');info.append(note);
             const label=document.createElement('label');label.className='rt-check';const check=document.createElement('input');check.type='checkbox';label.append(check,document.createTextNode(' No legal higher-priority route exists on the tabletop.'));controls.append(label);
             const accept=button(buttonLabel,()=>confirmPlan(accept,check),'primary');accept.disabled=true;check.onchange=()=>accept.disabled=!check.checked;controls.append(accept);
           }else{const confirm=button(buttonLabel,()=>confirmPlan(confirm),'primary');controls.append(confirm);}
-          controls.append(button('Review / Correct Models',()=>{stage='identify';plan=null;selected='';update();},'ghost'),button('Review Mission Layout',()=>{stage='terrain';plan=null;update();},'ghost'),button('Recalibrate Photo',resetCalibration,'ghost'));
+          if(!reused)controls.append(button('Review / Correct Models',()=>{stage='identify';plan=null;selected='';update();},'ghost'));
+          controls.append(button('Review Mission Layout',()=>{stage='terrain';plan=null;update();},'ghost'));
+          if(!reused)controls.append(button('Recalibrate Photo',resetCalibration,'ghost'));
+          else controls.append(button('Position differs? Take New Photo',()=>get('input[aria-label="Take tactical photo"]').click(),'ghost'));
         }
       }
       repaint();
@@ -676,17 +720,18 @@ function trackingUI(){
     function assess(){
       if(!live()||!board||models.some(m=>!positions[m.key]))return;
       if(!mapped){tell('Confirm that the terrain matches the physical board before proceeding.');return;}
-      s.meta=Object.fromEntries(models.map(m=>[m.key,{base:m.base,order:m.order}]));s.frame=frame;s.board={...board};s.positions={...positions};s.walls=walls.map(w=>w.map(p=>({...p})));s.objectives=objectives.map(p=>({...p}));s.mapped=mapped;s.turn=config.turn;s.activated=new Set(config.activated);s.ready=new Set(config.ready);s.scanKey=config.scanKey;s.mapRotation=rotation;s.mapFit=mapFit;s.openDoors=[...openDoors];s.capture=capture;
+      if(!reused){s.meta=Object.fromEntries(models.map(m=>[m.key,{base:m.base,order:m.order}]));s.frame=frame;s.board={...board};s.positions={...positions};s.walls=walls.map(w=>w.map(p=>({...p})));s.objectives=objectives.map(p=>({...p}));s.mapped=mapped;s.turn=config.turn;s.activated=new Set(config.activated);s.ready=new Set(config.ready);s.scanKey=config.scanKey;s.mapRotation=rotation;s.mapFit=mapFit;s.openDoors=[...openDoors];s.capture=capture;}
       if(config.setup){config.complete();return;}
       const future=mapLayout&&maps.geometry(config.missionNumber,board,rotation,mapLayout.doors.map(d=>d.id),mapFit);
       const input={board,positions,models,walls,objectives,doors:mapLayout?.doors||[],terrain:mapLayout?.terrain||[],futureWalls:future?.walls||null,mapped,actorKey:config.actorKey,actionOrder:config.actionOrder};
       diagnostics=[];plan=core.plan({...input,diagnostics});nextPlan=null;
       if(plan){
         const actor=models.find(m=>m.key===plan.actor),remaining=actor.ap-cost(plan);
-        // Only predict a second action after movement: attacks may change
-        // wounds/roster, and the real board must be rescanned after either.
-        if(remaining>0&&isMove(plan)&&plan.destination){
-          const projected={...positions,[actor.key]:{...positions[actor.key],...plan.destination}};
+        // Preview the second AP from the expected post-action board. After
+        // combat, rebuild the plan from the actual surviving roster.
+        if(remaining>0){
+          const projected={...positions};
+          if(isMove(plan)&&plan.destination)projected[actor.key]={...positions[actor.key],...plan.destination};
           nextPlan=core.plan({...input,actorKey:actor.key,positions:projected,models:models.map(m=>m.key===actor.key?{...m,ap:remaining}:m),
             actionOrder:(m,inControl)=>config.actionOrder(m,inControl,[plan.id]).filter(name=>String(name).toLowerCase().split(' ')[0]!==plan.id)});
         }
@@ -701,14 +746,14 @@ function trackingUI(){
         if(ticket!==seq||!live())return;
         const factor=Math.min(1,600/Math.max(im.naturalWidth,im.naturalHeight));
         const next=document.createElement('canvas');next.width=Math.max(1,Math.round(im.naturalWidth*factor));next.height=Math.max(1,Math.round(im.naturalHeight*factor));
-        next.getContext('2d').drawImage(im,0,0,next.width,next.height);raw=next;work.hidden=false;
+        next.getContext('2d').drawImage(im,0,0,next.width,next.height);raw=next;work.hidden=false;reused=false;continuation=null;
         resetCalibration(true);
       }catch(e){if(ticket===seq&&live())tell('Could not read photo. Try a JPEG or another image.');}
       finally{if(url)URL.revokeObjectURL(url);}
     }
     host.querySelectorAll('input[type=file]').forEach(i=>i.onchange=()=>{const f=i.files?.[0];i.value='';if(f)void load(f);});
     get('.rt-manual').textContent=config.setup?'Skip Recon Setup':'Use Manual Guide';
-    get('.rt-manual').onclick=()=>{seq++;preview=null;config.manual();};
+    get('.rt-manual').onclick=()=>{seq++;preview=null;continuation=null;config.manual();};
     function canvasPoint(e){const r=canvas.getBoundingClientRect();return {x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height};}
     canvas.addEventListener('pointerdown',e=>{
       if(stage!=='crop'||!crop||!live())return;
@@ -742,7 +787,16 @@ function trackingUI(){
       else if(stage==='wall'){if(!wallStart){wallStart=p;update();}else{if(core.dist(wallStart,p)<4)return;walls.push([wallStart,p]);mapped=false;wallStart=null;stage='terrain';update();}}
       else if(stage==='objective'){objectives.push(p);stage='terrain';update();}
     };
-    if(s.frame)tell(active?'Capture a fresh photograph to assess this operative’s remaining AP.':'Capture a fresh photograph from the same overhead position for a tactical recommendation.');
+    const saved=continuation;
+    // Only reuse within the same activation, after the app confirms that
+    // the previous action actually committed. Never reuse for a new NPO.
+    if(config.reusePrevious&&active&&saved&&saved.token===config.token&&saved.turn===config.turn&&saved.actor===active.key&&config.completedActionIds?.at(-1)===saved.action&&saved.mapped&&models.every(m=>saved.positions[m.key])){
+      reused=true;frame=saved.frame;board={...saved.board};positions=Object.fromEntries(models.map(m=>[m.key,{...saved.positions[m.key]}]));
+      walls=saved.walls.map(w=>w.map(p=>({...p})));objectives=saved.objectives.map(p=>({...p}));
+      rotation=saved.rotation;mapFit=saved.mapFit;openDoors=[...saved.openDoors];refreshMap();mapped=true;
+      work.hidden=false;assess();return;
+    }
+    if(s.frame)tell(active?'Capture a photograph or use the manual guide to assess this operative’s remaining AP.':'Capture a fresh photograph from the same overhead position for a tactical recommendation.');
     else tell('Photograph the deployed board from directly overhead. Identify each miniature once.');
   }
   function renderPreview(host){
