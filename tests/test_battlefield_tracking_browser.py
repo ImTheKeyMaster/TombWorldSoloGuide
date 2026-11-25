@@ -42,6 +42,7 @@ with sync_playwright() as p:
     page.mouse.up()
     page.get_by_text("Confirm Board Area",exact=True).click()
     assert page.evaluate("document.querySelector('canvas').width===600&&document.querySelector('canvas').height===440")
+    # Fixture circle centers mapped through the crop rectangle.
     tap(95,75);tap(150,75)
     page.get_by_text("Confirm Operative Positions",exact=True).click()
     page.locator(".rt-check input").check()

@@ -248,8 +248,88 @@ function calibrationCore(){
   }
   return {fit,drag,detect,project,warp};
 }
+function mapCore(){
+  // Digitized from Assets/Maps/mission-01..06.png, not the legacy schematic JSON.
+  // Coordinates are in the map image's playable area (45,45)-(1035,885).
+  const layouts={
+    '01':{walls:[[178,62,178,331],[178,331,716,331],[312,331,312,870],[444,196,444,331],[580,196,580,331],[716,62,716,601],[312,601,851,601],[851,601,851,870],[447,736,716,736]],doors:[[178,130],[242,331],[380,331],[648,331],[716,130],[716,533],[380,601],[650,601],[312,805],[851,805]],terrain:[[282,162,27],[511,89,27],[853,200,27],[408,469,27],[599,460,51],[511,263,40],[578,811,40]],objectives:[[1035,465,'Escape']]},
+    '02':{walls:[[446,62,446,331],[850,62,850,601],[178,331,850,331],[178,331,178,601],[178,601,850,601],[312,601,312,870],[578,331,578,870]],doors:[[446,130],[850,265],[381,331],[514,331],[178,537],[578,403],[850,536],[650,601],[312,668],[578,806]],terrain:[[607,79,27],[756,233,27],[311,467,27],[659,466,51],[448,737,27],[510,535,40],[510,668,40]],objectives:[]},
+    '03':{walls:[[66,185,1011,185],[336,185,336,726],[738,185,738,726],[738,455,1011,455],[67,591,336,591],[336,726,1011,726]],doors:[[533,185],[945,185],[336,257],[336,525],[267,591],[738,523],[945,455],[679,726],[945,726]],terrain:[[211,461,27],[462,322,27],[535,454,51],[613,592,27],[942,322,27],[810,247,40],[810,665,40]],objectives:[[134,525,'Search site'],[467,455,'Search site'],[807,391,'Search site']]},
+    '04':{walls:[[607,51,607,185],[470,185,1011,185],[470,185,470,455],[740,185,740,726],[67,455,1011,455],[202,455,202,727],[202,727,740,727]],doors:[[607,118],[675,185],[945,185],[470,385],[135,455],[675,455],[945,455],[202,525],[740,525],[406,727]],terrain:[[272,266,27],[401,271,40],[655,323,51],[882,289,27],[809,392,40],[406,589,27],[598,588,27]],objectives:[[655,323,'Sarcophagus']]},
+    '05':{walls:[[66,185,470,185],[470,185,470,725],[740,78,740,322],[470,322,877,322],[877,322,877,592],[877,458,1011,458],[470,592,877,592],[202,318,202,585],[202,585,338,585],[67,725,470,725]],doors:[[268,185],[470,254],[740,148],[673,322],[812,322],[877,391],[945,458],[810,592],[470,391],[272,725]],terrain:[[605,201,27],[607,450,27],[742,454,27],[718,710,27],[285,385,51],[134,385,40],[943,532,40]],objectives:[]},
+    '06':{walls:[[312,62,312,466],[588,62,588,604],[312,332,998,332],[178,466,178,870],[178,604,998,604],[451,466,451,870]],doors:[[312,264],[588,128],[648,332],[588,401],[451,533],[524,604],[657,604],[928,604],[178,804],[451,806]],terrain:[[454,131,27],[727,196,27],[510,261,40],[649,539,40],[727,472,27],[312,730,27],[671,740,51]],objectives:[[105,465,'Regroup zone']]}
+  };
+  function geometry(number,board,rotation=0,open=[],fit={sx:1,sy:1,dx:0,dy:0}){
+    const l=layouts[String(number).padStart(2,'0')];if(!l||!board)return null;
+    const W=board.x1-board.x0,H=board.y1-board.y0;
+    const point=(x,y)=>{
+      let u=(x-45)/990,v=(y-45)/840;
+      for(let k=0;k<(rotation%4+4)%4;k++)[u,v]=[1-v,u];
+      return {x:board.x0+W*(.5+(u-.5)*fit.sx+fit.dx),y:board.y0+H*(.5+(v-.5)*fit.sy+fit.dy)};
+    };
+    const doors=l.doors.map(([x,y],id)=>({...point(x,y),id,open:open.includes(id)}));
+    const walls=[];
+    for(const [x,y,xx,yy] of l.walls){
+      const a=point(x,y),b=point(xx,yy),dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy);
+      const gaps=doors.filter(d=>d.open&&Math.abs((d.x-a.x)*dy-(d.y-a.y)*dx)/len<2).map(d=>((d.x-a.x)*dx+(d.y-a.y)*dy)/len).filter(t=>t>0&&t<len).sort((a,b)=>a-b);
+      let start=0;const half=1.05*W/board.width;
+      for(const t of [...gaps,len+half]){const end=Math.min(len,t-half);if(end>start)walls.push([{x:a.x+dx*start/len,y:a.y+dy*start/len},{x:a.x+dx*end/len,y:a.y+dy*end/len}]);start=Math.max(start,t+half);}
+    }
+    const terrain=l.terrain.map(([x,y,r])=>({...point(x,y),r:r/990*W}));
+    const objectives=l.objectives.map(([x,y,label])=>({...point(x,y),label}));
+    return {walls,doors,terrain,objectives,rotation,fit};
+  }
+  function alignment(number,board,data,w,h){
+    if(!layouts[String(number).padStart(2,'0')])return null;
+    const gray=new Float32Array(w*h);for(let i=0;i<gray.length;i++)gray[i]=(data[i*4]+data[i*4+1]+data[i*4+2])/3;
+    const sample=(x,y)=>gray[Math.max(0,Math.min(h-1,Math.round(y)))*w+Math.max(0,Math.min(w-1,Math.round(x)))];
+    const edge=(p,n,offset)=>Math.abs(sample(p.x+n.x*offset,p.y+n.y*offset)-sample(p.x+n.x*(offset+2),p.y+n.y*(offset+2)));
+    let best=null;
+    for(let rotation=0;rotation<4;rotation++)for(const sx of [.9,1,1.1])for(const sy of [.9,1,1.1])for(const dx of [-.04,0,.04])for(const dy of [-.04,0,.04]){
+      const fit={sx,sy,dx,dy},g=geometry(number,board,rotation,[],fit);let sum=0,count=0;
+      for(const [a,b] of g.walls){const len=Math.hypot(b.x-a.x,b.y-a.y),n={x:-(b.y-a.y)/len,y:(b.x-a.x)/len};for(let t=10;t<len-10;t+=12){const p={x:a.x+(b.x-a.x)*t/len,y:a.y+(b.y-a.y)*t/len};if(p.x<15||p.x>w-15||p.y<15||p.y>h-15)continue;let e=0;for(const k of [-6,-4,-2,0,2,4,6])e=Math.max(e,edge(p,n,k));sum+=e-.5*(edge(p,n,12)+edge(p,n,-12));count++;}}
+      const score=count?sum/count-2*(Math.abs(sx-1)+Math.abs(sy-1)):0;
+      if(!best||score>best.score)best={rotation,fit,score};
+    }
+    return best;
+  }
+  return {geometry,alignment};
+}
+function snapCore(){
+  const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+  // Locate compact foreground near a tap. Blank background must never create a roster assignment.
+  function snap(data,w,h,tap,r,blocked=()=>false){
+    r=Math.max(5,r);
+    const extent=Math.ceil(r*2.6),x0=Math.max(0,Math.floor(tap.x-extent)),x1=Math.min(w-1,Math.ceil(tap.x+extent)),y0=Math.max(0,Math.floor(tap.y-extent)),y1=Math.min(h-1,Math.ceil(tap.y+extent));
+    const pixel=(x,y)=>{const i=(y*w+x)*4;return [data[i],data[i+1],data[i+2]];};
+    const samples=[[],[],[]];
+    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(dist({x,y},tap)>r*1.65){const p=pixel(x,y);p.forEach((v,i)=>samples[i].push(v));}
+    if(samples[0].length<16)return null;
+    const bg=samples.map(a=>{a.sort((a,b)=>a-b);return a[a.length>>1];});
+    const contrast=(x,y)=>{const p=pixel(x,y);return Math.max(...p.map((v,i)=>Math.abs(v-bg[i])));};
+    const ww=x1-x0+1,hh=y1-y0+1,mask=new Uint8Array(ww*hh);
+    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(contrast(x,y)>=22)mask[(y-y0)*ww+x-x0]=1;
+    const candidates=[];
+    for(let i=0;i<mask.length;i++){
+      if(!mask[i])continue;const queue=[i];mask[i]=0;let sx=0,sy=0,loX=Infinity,loY=Infinity,hiX=-Infinity,hiY=-Infinity,near=Infinity;
+      for(let k=0;k<queue.length;k++){
+        const n=queue[k],x=n%ww+x0,y=Math.floor(n/ww)+y0;
+        sx+=x;sy+=y;loX=Math.min(loX,x);hiX=Math.max(hiX,x);loY=Math.min(loY,y);hiY=Math.max(hiY,y);near=Math.min(near,dist({x,y},tap));
+        for(const z of [n%ww?n-1:-1,n%ww<ww-1?n+1:-1,n>=ww?n-ww:-1,n<ww*(hh-1)?n+ww:-1])if(z>=0&&mask[z]){mask[z]=0;queue.push(z);}
+      }
+      const bw=hiX-loX+1,bh=hiY-loY+1,p={x:(loX+hiX)/2,y:(loY+hiY)/2,r};
+      if(queue.length<Math.max(9,r*r*.28)||Math.min(bw,bh)<r*.65||Math.max(bw,bh)>r*3.6||Math.min(bw,bh)/Math.max(bw,bh)<.38||near>r*.25||dist(p,tap)>r*1.05||blocked(p))continue;
+      if(loX===x0||hiX===x1||loY===y0||hiY===y1)continue;
+      // Bounding box center rather than click position; reject elongated wall fragments.
+      candidates.push({...p,score:dist(p,tap)/r+Math.abs(Math.max(bw,bh)/(2*r)-1)*.35});
+    }
+    candidates.sort((a,b)=>a.score-b.score);
+    return candidates[0]||null;
+  }
+  return {snap};
+}
 function trackingUI(){
-  const core=trackingCore(),calibration=calibrationCore();
+  const core=trackingCore(),calibration=calibrationCore(),maps=mapCore(),snapping=snapCore();
   let session=null,preview=null;
   const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function draw(canvas,frame,positions,models,board,walls,objectives,plan,showLabels){
@@ -267,12 +347,12 @@ function trackingUI(){
   }
   function open(host,config){
     if(!host||!config||document.documentElement.dataset.experimental!=='on')return;
-    if(!session||session.token!==config.token)session={token:config.token,board:null,positions:{},walls:[],objectives:[],mapped:false,frame:null,turn:null,activated:new Set(),ready:new Set(),meta:{}};
+    if(!session||session.token!==config.token)session={token:config.token,board:null,positions:{},walls:[],objectives:[],mapped:false,frame:null,turn:null,activated:new Set(),ready:new Set(),meta:{},mapRotation:0,mapFit:null,openDoors:[]};
     preview=null;
     const s=session,models=config.models.map(m=>({...m,...(s.meta[m.key]?.base&&!m.base?{base:s.meta[m.key].base}:{}),...(m.side==='player'&&m.order==='Unknown'&&s.meta[m.key]?.order?{order:s.meta[m.key].order}:{})}));
     // A player may change order during their activation. Unknown must remain unknown until confirmed.
     if(s.frame)for(const m of models.filter(m=>m.side==='player'&&(s.turn!==config.turn||!s.activated.has(m.key)&&config.activated.includes(m.key))))if(config.models.find(x=>x.key===m.key)?.order==='Unknown')m.order='Unknown';
-    let frame=null,positions={},board=null,walls=[],objectives=[],mapped=false,stage='photo',wallStart=null,selected='',plan=null,seq=0,raw=null,crop=null,dragging=null,autoRectified=false;
+    let frame=null,positions={},board=null,walls=[],objectives=[],mapped=false,stage='photo',wallStart=null,selected='',plan=null,seq=0,raw=null,crop=null,dragging=null,autoRectified=false,mapLayout=null,rotation=0,mapFit=null,openDoors=[];
     host.innerHTML='<section class="recon-tracking"><p class="eyebrow">TACTICAL SCAN · EXPERIMENTAL</p><p class="rt-status" role="status" aria-live="polite"></p><div class="recon-upload"><label class="btn secondary">Take Photo<input type="file" accept="image/*" capture="environment" aria-label="Take tactical photo"></label><label class="btn ghost">Choose Photo<input type="file" accept="image/*" aria-label="Choose tactical photo"></label></div><div class="rt-work" hidden><div class="recon-frame"><canvas aria-label="Battlefield photograph and tactical overlays"></canvas></div><div class="rt-controls"></div></div><div class="wizard-actions"><button type="button" class="btn ghost rt-manual">Use Manual Guide</button></div></section>';
     const get=q=>host.querySelector(q),status=get('.rt-status'),canvas=get('canvas'),controls=get('.rt-controls'),work=get('.rt-work');
     const tell=t=>status.textContent=t;
@@ -282,6 +362,11 @@ function trackingUI(){
       canvas.classList.toggle('rt-crop-mode',stage==='crop');
       if(!frame)return;
       draw(canvas,frame,positions,models,board,walls,objectives,plan,stage!=='plan');
+      if(mapLayout&&stage!=='crop'&&stage!=='plan'){
+        const c=canvas.getContext('2d');c.font='bold 11px system-ui';c.textAlign='center';
+        for(const p of mapLayout.terrain){c.strokeStyle='#eacb83';c.lineWidth=1.3;c.setLineDash([3,3]);c.beginPath();c.arc(p.x,p.y,Math.max(5,p.r*.65),0,Math.PI*2);c.stroke();}c.setLineDash([]);
+        for(const p of mapLayout.doors){c.fillStyle=p.open?'#76f5a8':'#f0c66a';c.fillRect(p.x-4,p.y-4,8,8);}
+      }
       if(stage!=='crop'||!crop)return;
       const ctx=canvas.getContext('2d'),{x,y,w,h}=crop;
       ctx.fillStyle='rgba(3,12,8,.45)';ctx.beginPath();ctx.rect(0,0,canvas.width,canvas.height);ctx.rect(x,y,w,h);ctx.fill('evenodd');
@@ -292,6 +377,12 @@ function trackingUI(){
         ctx.beginPath();ctx.arc(px,py,radius,0,Math.PI*2);ctx.fillStyle='#8ff5ca';ctx.fill();
       }
     };
+    function refreshMap(realign=false){
+      if(!config.missionNumber||!frame||!board)return;
+      if(realign||!mapFit){const data=frame.getContext('2d').getImageData(0,0,frame.width,frame.height).data;const found=maps.alignment(config.missionNumber,board,data,frame.width,frame.height);if(!found)return;rotation=found.rotation;mapFit=found.fit;}
+      mapLayout=maps.geometry(config.missionNumber,board,rotation,openDoors,mapFit);
+      if(mapLayout){walls=mapLayout.walls;objectives=mapLayout.objectives;mapped=false;}
+    }
     function update(){
       controls.replaceChildren();
       if(stage==='crop'){
@@ -311,13 +402,19 @@ function trackingUI(){
         if(!missing.length)controls.append(button('Confirm Operative Positions',()=>{stage='terrain';update();},'primary'));
         controls.append(button('Clear Selected Marker',()=>{delete positions[selected];update();},'ghost'));
       }else if(stage==='terrain'){
-        tell('Mark wall sections once, leaving open hatchways unmarked. Tap two endpoints per wall. Add objectives if useful.');
-        const group=document.createElement('div');group.className='rt-actions';
-        group.append(button('Mark Wall',()=>{stage='wall';wallStart=null;update();}),button('Mark Objective',()=>{stage='objective';update();}),button('Undo Wall',()=>{walls.pop();repaint();update();},'ghost'),button('Undo Objective',()=>{objectives.pop();repaint();update();},'ghost'));
-        controls.append(group);
+        if(mapLayout){
+          tell('Mission layout loaded automatically. Check the overlay against the board. Tap a hatchway square to mark it open or closed.');
+          const note=document.createElement('p');note.className='rt-metadata';note.textContent='Amber: walls, terrain and closed hatchways. Green squares: open hatchways.';controls.append(note);
+          controls.append(button('Rotate Mission Layout 90°',()=>{rotation=(rotation+1)%4;mapFit={sx:1,sy:1,dx:0,dy:0};openDoors=[];refreshMap();update();},'ghost'),button('Auto-align Mission Layout',()=>{openDoors=[];refreshMap(true);update();},'ghost'),button('Recalibrate Photo',resetCalibration,'ghost'));
+        }else{
+          tell('No verified mission layout is available. Use the manual guide or mark blocking terrain.');
+          const group=document.createElement('div');group.className='rt-actions';
+          group.append(button('Mark Wall',()=>{stage='wall';wallStart=null;update();}),button('Mark Objective',()=>{stage='objective';update();}),button('Undo Wall',()=>{walls.pop();repaint();update();},'ghost'),button('Undo Objective',()=>{objectives.pop();repaint();update();},'ghost'));
+          controls.append(group);
+        }
         const unresolved=models.filter(m=>!m.base);if(unresolved.length){const note=document.createElement('p');note.className='rt-metadata';note.textContent='Base size required for '+unresolved.map(m=>m.name).join(', ')+'.';controls.append(note,button('Set Missing Base Sizes',()=>{selected=unresolved[0].key;stage='identify';update();}));}
         const unknown=models.filter(m=>m.side==='player'&&m.order==='Unknown');if(unknown.length){const note=document.createElement('p');note.className='rt-metadata';note.textContent='Unknown orders may prevent shooting recommendations. Update them if needed.';controls.append(note,button('Review Player Orders',()=>{selected=unknown[0].key;stage='identify';update();},'ghost'));}
-        const check=document.createElement('label');check.className='rt-check';const input=document.createElement('input');input.type='checkbox';input.checked=mapped;input.onchange=()=>{mapped=input.checked;};check.append(input,document.createTextNode(' All blocking terrain is marked; verify physical board and open hatchways.'));controls.append(check);
+        const check=document.createElement('label');check.className='rt-check';const input=document.createElement('input');input.type='checkbox';input.checked=mapped;input.onchange=()=>{mapped=input.checked;};check.append(input,document.createTextNode(mapLayout?' Mission overlay matches the physical board, including hatchway states.':' All blocking terrain is marked; verify physical board and open hatchways.'));controls.append(check);
         controls.append(button(config.setup?'Finish Recon Setup':'Assess Battlefield',assess,'primary'));
       }else if(stage==='wall'){tell(wallStart?'Tap the other end of this wall.':'Tap the first end of the wall.');controls.append(button('Cancel Wall',()=>{wallStart=null;stage='terrain';update();},'ghost'));}
       else if(stage==='objective'){tell('Tap the centre of an objective.');controls.append(button('Cancel Objective',()=>{stage='terrain';update();},'ghost'));}
@@ -341,7 +438,7 @@ function trackingUI(){
     }
     function resetCalibration(){
       if(!raw)return;
-      positions={};board=null;walls=[];objectives=[];mapped=false;plan=null;dragging=null;frame=raw;autoRectified=false;
+      positions={};board=null;walls=[];objectives=[];mapped=false;mapLayout=null;mapFit=null;plan=null;dragging=null;frame=raw;autoRectified=false;
       const ctx=raw.getContext('2d'),data=ctx.getImageData(0,0,raw.width,raw.height).data,q=calibration.detect(data,raw.width,raw.height);
       if(q){
         const horizontal=Math.hypot(q[1].x-q[0].x,q[1].y-q[0].y)>=Math.hypot(q[3].x-q[0].x,q[3].y-q[0].y);
@@ -371,16 +468,18 @@ function trackingUI(){
         for(let y=12;y<out.height-12;y+=13)for(let x=12;x<out.width-12;x+=13){if(Object.values(s.positions).some(p=>core.dist(p,{x,y})<(p.r||8)*2))continue;const i=(y*out.width+x)*4;delta+=(Math.abs(data[i]-before[i])+Math.abs(data[i+1]-before[i+1])+Math.abs(data[i+2]-before[i+2]))/3;count++;}
         if(count&&delta/count<16){
           walls=s.walls.map(w=>w.map(p=>({...p})));objectives=s.objectives.map(p=>({...p}));mapped=false;
+          if(config.missionNumber){rotation=s.mapRotation;mapFit=s.mapFit;openDoors=[...s.openDoors];refreshMap();}
           const changed=new Set(models.filter(m=>m.side==='player'&&(!s.activated.has(m.key)&&config.activated.includes(m.key)||s.turn!==config.turn)||m.side==='npo'&&(s.ready.has(m.key)&&!config.ready.includes(m.key)||m.key===config.actorKey||s.turn!==config.turn)).map(m=>m.key));
           const matches=core.track(s.positions,data,out.width,out.height,board,models,changed);
           positions=Object.fromEntries(Object.entries(matches).filter(([,p])=>p));stage='review';update();return;
         }
       }
-      positions={};walls=[];objectives=[];mapped=false;selected='';stage='identify';update();
+      positions={};walls=[];objectives=[];mapped=false;selected='';openDoors=[];refreshMap(true);stage='identify';update();
     }
     function assess(){
       if(!live()||!board||models.some(m=>!positions[m.key]))return;
-      s.meta=Object.fromEntries(models.map(m=>[m.key,{base:m.base,order:m.order}]));s.frame=frame;s.board={...board};s.positions={...positions};s.walls=walls.map(w=>w.map(p=>({...p})));s.objectives=objectives.map(p=>({...p}));s.mapped=mapped;s.turn=config.turn;s.activated=new Set(config.activated);s.ready=new Set(config.ready);s.scanKey=config.scanKey;
+      if(mapLayout&&!mapped){tell('Confirm that the mission overlay matches the physical board before proceeding.');return;}
+      s.meta=Object.fromEntries(models.map(m=>[m.key,{base:m.base,order:m.order}]));s.frame=frame;s.board={...board};s.positions={...positions};s.walls=walls.map(w=>w.map(p=>({...p})));s.objectives=objectives.map(p=>({...p}));s.mapped=mapped;s.turn=config.turn;s.activated=new Set(config.activated);s.ready=new Set(config.ready);s.scanKey=config.scanKey;s.mapRotation=rotation;s.mapFit=mapFit;s.openDoors=[...openDoors];
       if(config.setup){config.complete();return;}
       plan=core.plan({board,positions,models,walls,objectives,mapped,actorKey:config.actorKey,actionOrder:config.actionOrder});
       stage='plan';update();
@@ -422,12 +521,16 @@ function trackingUI(){
       if(!board||!core.inside(p,board))return;
       if(stage==='identify'){
         const m=models.find(m=>m.key===selected);if(!m)return;
-        if(Object.entries(positions).some(([k,v])=>k!==selected&&core.dist(p,v)<5)){tell('That location is already assigned. Select a different miniature.');return;}
         const r=Math.max(5,Math.round((m.base||32)/50.8*(board.x1-board.x0)/board.width));
         const data=frame.getContext('2d').getImageData(0,0,frame.width,frame.height).data;
-        positions[selected]={...p,r,template:core.patch(data,frame.width,frame.height,p,r)};
+        const blocked=q=>Boolean(mapLayout&&(mapLayout.walls.some(([a,b])=>core.segmentDistance(q,a,b)<r*.48)||mapLayout.terrain.some(t=>core.dist(q,t)<t.r*.72)));
+        const hit=snapping.snap(data,frame.width,frame.height,p,r,blocked);
+        if(!hit){tell('No distinct miniature detected at that location. Tap directly on its base, or retake a clearer photo.');return;}
+        if(Object.entries(positions).some(([k,v])=>k!==selected&&core.dist(hit,v)<Math.max(5,r*.85))){tell('That miniature is already assigned. Select a different model.');return;}
+        positions[selected]={x:hit.x,y:hit.y,r,template:core.patch(data,frame.width,frame.height,hit,r)};
         selected=models.find(m=>!positions[m.key])?.key||selected;update();
-      }else if(stage==='wall'){if(!wallStart){wallStart=p;update();}else{if(core.dist(wallStart,p)<4)return;walls.push([wallStart,p]);mapped=false;wallStart=null;stage='terrain';update();}}
+      }else if(stage==='terrain'&&mapLayout){const door=mapLayout.doors.reduce((best,d)=>core.dist(d,p)<12&&(!best||core.dist(d,p)<core.dist(best,p))?d:best,null);if(door){openDoors=door.open?openDoors.filter(id=>id!==door.id):[...openDoors,door.id];refreshMap();update();}}
+      else if(stage==='wall'){if(!wallStart){wallStart=p;update();}else{if(core.dist(wallStart,p)<4)return;walls.push([wallStart,p]);mapped=false;wallStart=null;stage='terrain';update();}}
       else if(stage==='objective'){objectives.push(p);stage='terrain';update();}
     };
     if(s.frame)tell('Capture a fresh photograph from the same overhead position. Previously identified models will be tracked.');
@@ -443,4 +546,4 @@ function trackingUI(){
   return {open,clearPreview};
 }
 if(typeof document!=='undefined')window.TombWorldReconTracking=trackingUI();
-if(typeof module!=='undefined')module.exports={...trackingCore(),calibration:calibrationCore()};
+if(typeof module!=='undefined')module.exports={...trackingCore(),calibration:calibrationCore(),maps:mapCore(),snapping:snapCore()};

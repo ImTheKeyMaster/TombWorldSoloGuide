@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.31';
+  const APP_VERSION = '10.1.32';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5198,7 +5198,7 @@ document.addEventListener('touchend',function(e){
     const valid=()=>state===token&&reconTrackingEnabled()&&state.turningPoint===turn&&(setup?state.phase==='between'&&turn===0:state.nextSide==='npo')&&(!actor||(state.activeNpoId===actor.id&&state.lastActivation?.decisionPass===activation.decisionPass&&!state.lastActivation.pendingAction));
     const finishSetup=()=>{if(!valid())return;reconSetupFinishedFor=state;closeModal();void startTurningPoint();};
     showModal(setup?'Capture Battlefield':'Battlefield Recon','<div id="reconTrackingHost"></div>');
-    window.TombWorldReconTracking.open($('#reconTrackingHost'),{token,turn,scanKey,setup,complete:finishSetup,models:[...np,...pp],actorKey:actor?'n:'+actor.id:null,activated:pp.filter(p=>!p.ready).map(p=>p.key),ready:np.filter(p=>p.ready).map(p=>p.key),valid,
+    window.TombWorldReconTracking.open($('#reconTrackingHost'),{token,turn,scanKey,setup,missionNumber:mission().number,complete:finishSetup,models:[...np,...pp],actorKey:actor?'n:'+actor.id:null,activated:pp.filter(p=>!p.ready).map(p=>p.key),ready:np.filter(p=>p.ready).map(p=>p.key),valid,
       actionOrder:(m,inControl)=>{const n=readyNpos().find(x=>x.id===m.id);if(!n)return [];const context={inEnemyControlRange:inControl,remainingAp:m.ap,completedActionIds:actor?activation.completedActionIds:[]};return recommendedNpoActions(n,context).filter(name=>!actor||!(activation.declinedActionIds||[]).includes(npoActionId(name)));},
       manual:()=>{reconApprovedPlan=null;reconDisplayPlan=null;if(setup){finishSetup();return;}if(actor)runNpoPrompt(actor,0,{},activation.questionHistory||[]);else{closeModal();render();}},
       accept:plan=>{

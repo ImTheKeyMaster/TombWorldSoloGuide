@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.31
+# Tomb World Battle Guide v10.1.32
+
+## v10.1.32
+
+- Experimental Battlefield Recon imports wall, hatchway and terrain-marker layouts for all six displayed mission maps. Automatic alignment proposes a rotation and scale; the player verifies alignment and current door states. Miniature assignment requires a compact detected foreground feature and snaps to its estimated center; empty taps are ignored. No Standard gameplay changes.
 
 ## v10.1.31
 
