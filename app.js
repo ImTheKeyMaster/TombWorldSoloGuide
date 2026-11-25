@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.28';
+  const APP_VERSION = '10.1.29';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -10062,12 +10062,17 @@ function showPlayerActivation(){
     requestAnimationFrame(()=>focusInitialDialogControl(modal));
   }
 
+  function battlefieldReconMarkup(n,kind,action){
+    if(isPvpMode()||!experimentalFeaturesEnabled())return '';
+    return `<div data-recon-kind="${kind}" data-recon-actor="${escapeHtml(npoName(n))}" data-recon-action="${escapeHtml(action)}"></div>`;
+  }
+
   function renderNpoMovementConfirmation(n,pendingAction,decision){
     const displayAction=conciseNpoActionName(pendingAction),headingId='activeNpoMovementHeading',instructionId='activeNpoMovementInstruction';
     if(useConciseNpoGuide()){
       const instruction=decision.reason.split('. ')[0].replace(/\.$/,'')+'.';
       const currentAp=state.lastActivation.remainingAp;
-      modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}<div class="ai-wizard"><div class="npo-question-flow"><section class="npo-question-active npo-question-card--active npo-movement-confirmation npo-concise-movement" aria-labelledby="${headingId}" aria-describedby="${instructionId}"><h3 id="${headingId}">${escapeHtml(displayAction)}</h3><p id="${instructionId}">${escapeHtml(instruction)}</p><div class="npo-compact-ap-cost" role="status">${currentAp} AP → ${currentAp-pendingAction.apCost} AP</div><details class="npo-compact-guidance"><summary>ⓘ Movement rules</summary><p>${escapeHtml(decision.reason)}</p></details><div class="ai-choice-grid"><button class="ai-choice yes npo-movement-confirm" id="confirmNpoMovement"><strong>Movement Complete</strong></button></div></section></div>${renderNpoGuideFooter()}</div></div>`;
+      modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}<div class="ai-wizard"><div class="npo-question-flow"><section class="npo-question-active npo-question-card--active npo-movement-confirmation npo-concise-movement" aria-labelledby="${headingId}" aria-describedby="${instructionId}"><h3 id="${headingId}">${escapeHtml(displayAction)}</h3><p id="${instructionId}">${escapeHtml(instruction)}</p><div class="npo-compact-ap-cost" role="status">${currentAp} AP → ${currentAp-pendingAction.apCost} AP</div><details class="npo-compact-guidance"><summary>ⓘ Movement rules</summary><p>${escapeHtml(decision.reason)}</p></details>${battlefieldReconMarkup(n,'move',displayAction)}<div class="ai-choice-grid"><button class="ai-choice yes npo-movement-confirm" id="confirmNpoMovement"><strong>Movement Complete</strong></button></div></section></div>${renderNpoGuideFooter()}</div></div>`;
       if(!modal.open)modal.showModal();
       modal.setAttribute('aria-labelledby','activeNpoQuestionHeading');
       modal.setAttribute('tabindex','-1');
@@ -10076,7 +10081,7 @@ function showPlayerActivation(){
       requestAnimationFrame(()=>focusInitialDialogControl(modal));
       return;
     }
-    modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}<div class="ai-wizard"><div class="npo-question-flow"><section class="npo-question-active npo-question-card--active npo-movement-confirmation" aria-labelledby="${headingId}" aria-describedby="${instructionId}"><h3 id="${headingId}">${escapeHtml(displayAction)}</h3><p id="${instructionId}">${escapeHtml(decision.reason)}</p><p class="npo-movement-cost">Costs ${pendingAction.apCost} AP (${state.lastActivation.remainingAp} AP to ${state.lastActivation.remainingAp-pendingAction.apCost} AP)</p><div class="ai-choice-grid"><button class="ai-choice yes npo-movement-confirm" id="confirmNpoMovement"><strong>Confirm ${escapeHtml(displayAction)} Complete</strong></button></div></section></div>${renderNpoGuideFooter()}</div></div>`;
+    modalBody.innerHTML=`<div class="modal-inner">${renderNpoActivationHeader(n)}<div class="ai-wizard"><div class="npo-question-flow"><section class="npo-question-active npo-question-card--active npo-movement-confirmation" aria-labelledby="${headingId}" aria-describedby="${instructionId}"><h3 id="${headingId}">${escapeHtml(displayAction)}</h3><p id="${instructionId}">${escapeHtml(decision.reason)}</p><p class="npo-movement-cost">Costs ${pendingAction.apCost} AP (${state.lastActivation.remainingAp} AP to ${state.lastActivation.remainingAp-pendingAction.apCost} AP)</p>${battlefieldReconMarkup(n,'move',displayAction)}<div class="ai-choice-grid"><button class="ai-choice yes npo-movement-confirm" id="confirmNpoMovement"><strong>Confirm ${escapeHtml(displayAction)} Complete</strong></button></div></section></div>${renderNpoGuideFooter()}</div></div>`;
     if(!modal.open)modal.showModal();
     modal.setAttribute('aria-labelledby','activeNpoQuestionHeading');
     modal.setAttribute('tabindex','-1');
@@ -10224,6 +10229,7 @@ function showPlayerActivation(){
       <div class="ai-result-title"><div><h2 ${useExperimentalTargetRail?'tabindex="-1" data-dialog-focus':''}>${escapeHtml(npoName(n))}</h2><p>${escapeHtml(n.type)}</p></div></div>
       ${attackRequired&&questionHistory.length?`<div class="npo-question-flow">${renderCompletedNpoQuestions(questionHistory.filter(item=>item.type!=='selected'))}</div>`:''}
       <div class="npo-result-card"><div><small>${isPvpMode()?'SELECTED ACTION':'NEXT ACTION'}</small><strong>${escapeHtml(decision.action)}</strong>${reasonMarkup}<div class="npo-target-priority">${priorityMarkup}${attackRequired?`<div class="field target-selection">${useExperimentalTargetRail?'<p class="npo-target-roster-label">Select Target</p>':'<label for="npoPriorityTarget">Select Target</label>'}${targetField}</div>`:''}</div></div></div>
+      ${attackRequired&&!targetConfirmed?battlefieldReconMarkup(n,'attack',decision.action):''}
       ${attackRequired&&!targetConfirmed&&(isPvpMode()||eligibleTargetIds.length>1)?`<button class="btn secondary big-action" id="confirmNpoTarget" ${state.npoAttackTargetId?'':'disabled'}>Confirm Target</button>`:''}
       ${attackRequired&&!targetConfirmed&&!isPvpMode()&&eligibleTargetIds.length===1?`<button class="btn secondary big-action" id="resolveNpoTarget">Resolve Combat</button>`:''}
       ${attackSummary?`${renderEliminationSummary(attackSummary)}<section class="card npo-attack-summary">
