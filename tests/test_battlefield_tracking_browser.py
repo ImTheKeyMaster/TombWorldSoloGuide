@@ -100,6 +100,8 @@ with sync_playwright() as p:
     assert 'Confirm the overlay' in page.locator('.rt-status').inner_text()
     # Drag a mission corner and then translate the whole overlay on the photo.
     import json
+    # Reset the synthetic image's auto-alignment to a deterministic, in-frame fit.
+    page.get_by_text('Rotate Mission Layout 90°',exact=True).click()
     canvas.scroll_into_view_if_needed()
     def handles():
         return json.loads(canvas.get_attribute("data-alignment-handles"))
@@ -116,7 +118,7 @@ with sync_playwright() as p:
     canvas.scroll_into_view_if_needed()
     drag_map(before[0][1],before[0][2],35,25)
     resized=handles()
-    assert resized[0][1]>before[0][1] and resized[0][2]>before[0][2]
+    assert resized[0][1]>before[0][1] and resized[0][2]>before[0][2], (before,resized,canvas.bounding_box())
     assert abs(resized[2][1]-before[2][1])<1 and abs(resized[2][2]-before[2][2])<1
     assert not page.locator('.rt-check input').is_checked()
     cx=(resized[0][1]+resized[2][1])/2;cy=(resized[0][2]+resized[2][2])/2
