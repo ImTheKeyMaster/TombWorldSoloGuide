@@ -47,6 +47,18 @@ function trackingCore(){
           if(Number.isFinite(score))candidates.push({x,y,score});
         }
       candidates.sort((a,b)=>a.score-b.score);
+      // Refine the strongest separated coarse matches at one-pixel resolution.
+      if(step>1){
+        const seeds=[];
+        for(const c of candidates){if(seeds.every(p=>dist(p,c)>radius*.8))seeds.push(c);if(seeds.length>=12)break;}
+        for(const c of seeds)for(let dy=-step;dy<=step;dy++)for(let dx=-step;dx<=step;dx++){
+          const p={x:c.x+dx,y:c.y+dy};
+          if(p.x<board.x0+radius||p.x>board.x1-radius||p.y<board.y0+radius||p.y>board.y1-radius||claimed.some(q=>dist(p,q)<Math.max(q.r,radius)))continue;
+          const score=matchScore(prior.template,patch(data,w,h,p,radius));
+          if(Number.isFinite(score))candidates.push({...p,score});
+        }
+        candidates.sort((a,b)=>a.score-b.score);
+      }
       best=candidates[0];second=best&&candidates.find(c=>dist(c,best)>radius*1.65);
       const confident=Boolean(best&&best.score<=9&&(!second||second.score-best.score>=1.1));
       if(confident){results[m.key]={x:best.x,y:best.y,r:radius,template:patch(data,w,h,best,radius)};claimed.push(results[m.key]);}
