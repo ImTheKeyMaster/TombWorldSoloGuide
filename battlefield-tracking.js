@@ -66,11 +66,19 @@ function trackingCore(){
     }
     return results;
   }
-  function plan({board,positions,models,walls=[],objectives=[],mapped=false,actorKey=null,actionOrder}){
-    if(!board||!mapped||!models.length||models.some(m=>!positions[m.key]||!Number.isFinite(m.base)||m.base<=0))return null;
+  function plan({board,positions,models,walls=[],objectives=[],mapped=false,actorKey=null,actionOrder,diagnostics=[]}){
+    const report=(code,message,actor=null)=>{diagnostics.push({code,message,actor:actor?.key||null});return null;};
+    if(!board)return report('board','The playable board has not been calibrated.');
+    if(!mapped)return report('terrain','Confirm the mission layout and hatchway states.');
+    if(!models.length)return report('roster','No deployed operatives were supplied.');
+    const missing=models.filter(m=>!positions[m.key]);
+    if(missing.length)return report('positions','Missing positions: '+missing.map(m=>m.name||m.key).join(', ')+'.');
+    const sizes=models.filter(m=>!Number.isFinite(m.base)||m.base<=0);
+    if(sizes.length)return report('base','Base diameter needed: '+sizes.map(m=>m.name||m.key).join(', ')+'.');
     const units=models.map(m=>({...m,p:physical(positions[m.key],board),r:m.base/50.8}));
     const players=units.filter(m=>m.side==='player'),npos=units.filter(m=>m.side==='npo'),ready=npos.filter(m=>m.ready&&(!actorKey||m.key===actorKey));
-    if(!players.length||!ready.length)return null;
+    if(!players.length)return report('enemies','No living player operatives on the board.');
+    if(!ready.length)return report('ready','No ready NPO is available for this activation.');
     const barriers=walls.map(w=>w.map(p=>physical(p,board)));
     const obj=objectives.map(p=>physical(p,board));
     const edge=(a,b)=>Math.max(0,dist(a.p,b.p)-a.r-b.r);
@@ -89,10 +97,12 @@ function trackingCore(){
       return players.filter(b=>kind==='fight'?control(a,b):shooting(a,b,from)).sort((b,c)=>b.wounds-c.wounds||dist(from,b.p)-dist(from,c.p)||Number(c.ready)-Number(b.ready));
     }
     const ranking=ready.map(a=>({a,threat:Number(targets(a,'fight').length>0||targets(a,'shoot').length>0),distance:Math.min(...players.map(b=>edge(a,b))),objective:obj.length?Math.min(...obj.map(p=>dist(a.p,p))):Infinity})).sort((b,c)=>c.threat-b.threat||b.distance-c.distance||b.objective-c.objective);
-    const a=ranking[0].a;
+    // A candidate that requires a tabletop ruling must not prevent another ready NPO from acting.
+    function evaluate(a){
+    const skipped=[];
     const inControl=players.some(b=>control(a,b));
     // Borderline base-to-base estimates cannot establish control range reliably.
-    if(players.some(b=>Math.abs(edge(a,b)-1)<.15&&visible(a,b)))return null;
+    if(players.some(b=>Math.abs(edge(a,b)-1)<.15&&visible(a,b)))return report('control','Control range is too close to the 1-inch boundary to estimate reliably.',a);
     // A straight unobstructed movement is conservative; no invented routes through walls.
     const validMove=(p,chargeTarget=null)=>{
       if(p.x<a.r+.1||p.y<a.r+.1||p.x>board.width-a.r-.1||p.y>board.height-a.r-.1||!clear(a.p,p,a.r))return false;
@@ -123,26 +133,31 @@ function trackingCore(){
       return {destination:imagePoint(best.p,board),target:best.target?.key||null,distance:dist(a.p,best.p),followUp:kind==='charge'&&a.ap>=2?'fight':best.target&&a.ap>=2?'shoot':null};
     }
     const order=actionOrder(a,inControl);
-    if(!Array.isArray(order))return null;
+    if(!Array.isArray(order)||!order.length)return report('actions','No legal actions are available in the current activation.',a);
     for(const name of order){
       const id=String(name).toLowerCase().split(' ')[0];
       if(id==='fight'){
-        const target=targets(a,'fight')[0];if(target)return {actor:a.key,action:name,id,target:target.key,inControl,shootable:targets(a,'shoot').length>0,fightable:true};
+        const target=targets(a,'fight')[0];if(target)return {actor:a.key,action:name,id,target:target.key,inControl,shootable:targets(a,'shoot').length>0,fightable:true,skipped};
       }else if(id==='shoot'){
-        if(inControl)return null;
-        const target=targets(a,'shoot')[0];if(target)return {actor:a.key,action:name,id,target:target.key,inControl,shootable:true,fightable:false};
+        if(inControl)continue;
+        const target=targets(a,'shoot')[0];if(target)return {actor:a.key,action:name,id,target:target.key,inControl,shootable:true,fightable:false,skipped};
         // Conceal/cover and unknown orders cannot be treated as proof no target exists.
-        if(players.some(b=>b.order!=='Engage'&&visible(a,b)))return null;
+        if(a.canShoot&&players.some(b=>b.order!=='Engage'&&visible(a,b)&&(!Number.isFinite(a.range)||edge(a,b)<=a.range)))return report('orders','A visible enemy has an unknown or Conceal order; shooting eligibility needs a tabletop check.',a);
       }else if(['charge','reposition','dash'].includes(id)){
-        if(inControl)return null;
+        if(inControl)continue;
+        if(!Number.isFinite(a.move))return report('move-stat','Movement allowance is missing.',a);
         const move=movement(id);
-        if(move)return {actor:a.key,action:name,id,...move,inControl,shootable:targets(a,'shoot').length>0,fightable:false};
-        // No straight route found is not proof that no legal path exists.
-        return null;
+        if(move)return {actor:a.key,action:name,id,...move,inControl,shootable:targets(a,'shoot').length>0,fightable:false,skipped};
+        // Search lower-priority movement options, but explicitly flag that curved
+        // routes for the higher-priority action have not been ruled out.
+        skipped.push({action:name,reason:'No unobstructed straight route found.'});
       }else if(id==='fall'){
-        if(inControl)return null;
-      }else return null; // Special actions and hatch operation remain with the rules engine.
+        if(inControl)return report('fall-back','Fall Back requires a tabletop route check.',a);
+      }else return report('special',name+' requires a tabletop rules check.',a);
     }
+    return report('route',skipped.length?'No supported straight movement or eligible attack found; a route around walls or a hatchway may be available.':'No eligible attack or supported movement was found.',a);
+    }
+    for(const {a} of ranking){const result=evaluate(a);if(result)return result;}
     return null;
   }
   return {dist,inside,physical,imagePoint,segmentDistance,patch,matchScore,track,plan};
@@ -355,7 +370,7 @@ function trackingUI(){
     const s=session,models=config.models.map(m=>({...m,...(s.meta[m.key]?.base&&!m.base?{base:s.meta[m.key].base}:{}),...(m.side==='player'&&m.order==='Unknown'&&s.meta[m.key]?.order?{order:s.meta[m.key].order}:{})}));
     // A player may change order during their activation. Unknown must remain unknown until confirmed.
     if(s.frame)for(const m of models.filter(m=>m.side==='player'&&(s.turn!==config.turn||!s.activated.has(m.key)&&config.activated.includes(m.key))))if(config.models.find(x=>x.key===m.key)?.order==='Unknown')m.order='Unknown';
-    let frame=null,positions={},board=null,walls=[],objectives=[],mapped=false,stage='photo',wallStart=null,selected='',plan=null,seq=0,raw=null,crop=null,dragging=null,autoRectified=false,mapLayout=null,rotation=0,mapFit=null,openDoors=[];
+    let frame=null,positions={},board=null,walls=[],objectives=[],mapped=false,stage='photo',wallStart=null,selected='',plan=null,seq=0,raw=null,crop=null,dragging=null,autoRectified=false,mapLayout=null,rotation=0,mapFit=null,openDoors=[],diagnostics=[];
     host.innerHTML='<section class="recon-tracking"><p class="eyebrow">TACTICAL SCAN · EXPERIMENTAL</p><p class="rt-status" role="status" aria-live="polite"></p><div class="recon-upload"><label class="btn secondary">Take Photo<input type="file" accept="image/*" capture="environment" aria-label="Take tactical photo"></label><label class="btn ghost">Choose Photo<input type="file" accept="image/*" aria-label="Choose tactical photo"></label></div><div class="rt-work" hidden><div class="recon-frame"><canvas aria-label="Battlefield photograph and tactical overlays"></canvas></div><div class="rt-controls"></div></div><div class="wizard-actions"><button type="button" class="btn ghost rt-manual">Use Manual Guide</button></div></section>';
     const get=q=>host.querySelector(q),status=get('.rt-status'),canvas=get('canvas'),controls=get('.rt-controls'),work=get('.rt-work');
     const tell=t=>status.textContent=t;
@@ -364,7 +379,7 @@ function trackingUI(){
     const repaint=()=>{
       canvas.classList.toggle('rt-crop-mode',stage==='crop');
       if(!frame)return;
-      draw(canvas,frame,positions,models,board,stage==='identify'&&mapLayout?[]:walls,stage==='identify'&&mapLayout?[]:objectives,plan,stage!=='plan');
+      draw(canvas,frame,positions,models,board,stage==='identify'&&mapLayout?[]:walls,stage==='identify'&&mapLayout?[]:objectives,plan,stage!=='plan'||!plan);
       if(mapLayout&&stage==='terrain'){
         const c=canvas.getContext('2d');c.font='bold 11px system-ui';c.textAlign='center';
         for(const p of mapLayout.terrain){c.strokeStyle='#eacb83';c.lineWidth=1.3;c.setLineDash([3,3]);c.beginPath();c.arc(p.x,p.y,Math.max(5,p.r*.65),0,Math.PI*2);c.stroke();}c.setLineDash([]);
@@ -436,13 +451,24 @@ function trackingUI(){
         if(!missing.length)controls.append(button('Review Terrain & Assess',()=>{stage='terrain';update();},'primary'));
         controls.append(button('Recalibrate Photo',()=>{resetCalibration();},'ghost'));
       }else if(stage==='plan'){
-        if(!plan){tell('No reliable tactical recommendation from this photo. The normal guide remains available.');controls.append(button('Review Positions / Terrain',()=>{stage='terrain';update();}));}
+        if(!plan){
+          tell('Recon could not confirm a tactical action. This does not mean there are no legal moves.');
+          const reasons=document.createElement('div');reasons.className='rt-plan';
+          const heading=document.createElement('strong');heading.textContent='Assessment results';reasons.append(heading);
+          for(const reason of diagnostics){const p=document.createElement('p');const model=models.find(m=>m.key===reason.actor);p.textContent=(model?model.name+': ':'')+reason.message;reasons.append(p);}
+          controls.append(reasons,button('Review Operative Positions / Orders',()=>{selected='';stage='identify';update();}),button('Review Mission Layout',()=>{stage='terrain';update();},'ghost'));
+        }
         else{
           const a=models.find(m=>m.key===plan.actor),target=models.find(m=>m.key===plan.target);
           tell('Tactical recommendation · confirm on the physical table');
           const info=document.createElement('div');info.className='rt-plan';
           info.innerHTML='<strong>'+esc(a?.name)+' · '+esc(plan.id==='fall-back'?'Fall Back':plan.id[0].toUpperCase()+plan.id.slice(1))+'</strong><p>'+esc(plan.destination?`${plan.distance.toFixed(1)}″ proposed straight movement${target?` toward ${target.name}`:''}.`:target?`Target ${target.name}.`:'')+'</p>'+(plan.followUp?'<p>Potential follow-up: '+esc(plan.followUp)+'</p>':'')+'<small>Green: acting NPO / destination. Red: target. Check visibility, cover, base fit and special rules before accepting.</small>';
-          controls.append(info,button('Accept Tactical Recommendation',()=>{if(!live())return;preview={frame,positions,models,board,walls,objectives,plan};config.accept(plan);},'primary'),button('Review Positions / Terrain',()=>{stage='terrain';plan=null;update();},'ghost'));
+          if(plan.skipped?.length){
+            const note=document.createElement('p');note.textContent='Check higher-priority actions first: '+plan.skipped.map(s=>s.action+' ('+s.reason+')').join('; ');info.append(note);
+            const label=document.createElement('label');label.className='rt-check';const check=document.createElement('input');check.type='checkbox';label.append(check,document.createTextNode(' No legal higher-priority route exists on the tabletop.'));controls.append(info,label);
+            const accept=button('Accept Tactical Recommendation',()=>{if(!live()||!check.checked)return;preview={frame,positions,models,board,walls,objectives,plan};config.accept(plan);},'primary');accept.disabled=true;check.onchange=()=>accept.disabled=!check.checked;controls.append(accept);
+          }else controls.append(info,button('Accept Tactical Recommendation',()=>{if(!live())return;preview={frame,positions,models,board,walls,objectives,plan};config.accept(plan);},'primary'));
+          controls.append(button('Review Positions / Terrain',()=>{stage='terrain';plan=null;update();},'ghost'));
         }
       }
       repaint();
@@ -492,7 +518,7 @@ function trackingUI(){
       if(mapLayout&&!mapped){tell('Confirm that the mission overlay matches the physical board before proceeding.');return;}
       s.meta=Object.fromEntries(models.map(m=>[m.key,{base:m.base,order:m.order}]));s.frame=frame;s.board={...board};s.positions={...positions};s.walls=walls.map(w=>w.map(p=>({...p})));s.objectives=objectives.map(p=>({...p}));s.mapped=mapped;s.turn=config.turn;s.activated=new Set(config.activated);s.ready=new Set(config.ready);s.scanKey=config.scanKey;s.mapRotation=rotation;s.mapFit=mapFit;s.openDoors=[...openDoors];
       if(config.setup){config.complete();return;}
-      plan=core.plan({board,positions,models,walls,objectives,mapped,actorKey:config.actorKey,actionOrder:config.actionOrder});
+      diagnostics=[];plan=core.plan({board,positions,models,walls,objectives,mapped,actorKey:config.actorKey,actionOrder:config.actionOrder,diagnostics});
       stage='plan';update();
     }
     async function load(file){

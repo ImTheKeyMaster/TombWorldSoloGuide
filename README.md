@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.33
+# Tomb World Battle Guide v10.1.34
+
+## v10.1.34
+
+- Experimental Recon now evaluates additional ready NPOs when the first candidate cannot be assessed, displays concrete assessment blockers, and proposes lower-priority straight moves only with explicit tabletop verification of higher-priority routes. Standard unchanged.
 
 ## v10.1.33
 

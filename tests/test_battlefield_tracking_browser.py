@@ -83,6 +83,18 @@ with sync_playwright() as p:
     page.locator('.rt-check input').check()
     page.get_by_text('Confirm Mission Layout',exact=True).click()
     assert page.locator('select[aria-label="Operative to identify"]').count()==1
+    # A blocked assessment must explain its cause and allow direct roster correction.
+    page.evaluate("reconConfig={...reconConfig,token:{},setup:false,turn:1,missionNumber:null,actionOrder:()=>['Overcharge']};TombWorldReconTracking.open(document.querySelector('#host'),reconConfig)")
+    page.locator("input[aria-label='Choose tactical photo']").set_input_files({"name":"board.png","mimeType":"image/png","buffer":image()})
+    page.get_by_text("Confirm Board Area",exact=True).click()
+    tap(93,73);tap(150,73)
+    page.get_by_text("Confirm Operative Positions",exact=True).click()
+    page.locator(".rt-check input").check()
+    page.get_by_text("Assess Battlefield",exact=True).click()
+    assert "Overcharge requires a tabletop rules check" in page.locator(".rt-plan").inner_text()
+    assert page.get_by_text("Accept Tactical Recommendation",exact=True).count()==0
+    page.get_by_text("Review Operative Positions / Orders",exact=True).click()
+    assert page.locator('select[aria-label="Operative to identify"]').count()==1
     assert not errors,errors
     browser.close()
 print("Tactical scan browser workflow passed.")
