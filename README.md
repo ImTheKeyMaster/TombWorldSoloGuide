@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.29
+# Tomb World Battle Guide v10.1.30
+
+## v10.1.30
+
+- Experimental solo tactical scan: initial board calibration and roster identification, session-local photographic matching, manually mapped wall segments and optional objectives, tentative NPO selection and action recommendations using existing priorities. Fixed overhead framing required; uncertain detections require correction. Only straight movement is proposed, not full rules validation. Unsupported actions fall back to the existing guide. No persistent virtual board or save schema changes.
 
 ## v10.1.29
 
