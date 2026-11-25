@@ -40,10 +40,16 @@ with sync_playwright() as p:
     page.mouse.down()
     page.mouse.move(b["x"]+b["width"]*.08,b["y"]+b["height"]*.20,steps=5)
     page.mouse.up()
+    # Reload the same fixture to restore the initial crop after exercising drag.
+    page.locator("input[aria-label='Choose tactical photo']").set_input_files({"name":"board.png","mimeType":"image/png","buffer":image()})
+    page.get_by_text('Confirm Board Area',exact=True).wait_for()
     page.get_by_text("Confirm Board Area",exact=True).click()
     assert page.evaluate("document.querySelector('canvas').width===600&&document.querySelector('canvas').height===440")
-    # Fixture circle centers mapped through the crop rectangle.
-    tap(95,75);tap(150,75)
+    # Blank floor must not assign the first operative.
+    tap(35,35)
+    assert 'No distinct miniature' in page.locator('.rt-status').inner_text()
+    assert page.locator('select[aria-label="Operative to identify"]').input_value()=='n:a'
+    tap(93,73);tap(150,73)
     page.get_by_text("Confirm Operative Positions",exact=True).click()
     page.locator(".rt-check input").check()
     page.get_by_text("Assess Battlefield",exact=True).click()
@@ -61,10 +67,22 @@ with sync_playwright() as p:
     page.evaluate("reconConfig={...reconConfig,token:{},turn:0,setup:true,complete:()=>{window.setupDone=true}};TombWorldReconTracking.open(document.querySelector('#host'),reconConfig)")
     page.locator("input[aria-label='Choose tactical photo']").set_input_files({"name":"board.png","mimeType":"image/png","buffer":image()})
     page.get_by_text("Confirm Board Area",exact=True).click()
-    tap(95,75);tap(150,75)
+    tap(93,73);tap(150,73)
     page.get_by_text("Confirm Operative Positions",exact=True).click()
     page.get_by_text("Finish Recon Setup",exact=True).click()
     assert page.evaluate("window.setupDone===true")
+    # A real mission ID loads a geometry overlay rather than manual marking controls.
+    page.evaluate("reconConfig={...reconConfig,token:{},missionNumber:'01'};TombWorldReconTracking.open(document.querySelector('#host'),reconConfig)")
+    page.locator("input[aria-label='Choose tactical photo']").set_input_files({"name":"board.png","mimeType":"image/png","buffer":image()})
+    page.get_by_text('Confirm Board Area',exact=True).click()
+    page.get_by_text('Confirm Mission Layout',exact=True).wait_for()
+    assert page.get_by_text('Mark Wall',exact=True).count()==0
+    assert page.get_by_text('Mark Objective',exact=True).count()==0
+    page.get_by_text('Confirm Mission Layout',exact=True).click()
+    assert 'Confirm the overlay' in page.locator('.rt-status').inner_text()
+    page.locator('.rt-check input').check()
+    page.get_by_text('Confirm Mission Layout',exact=True).click()
+    assert page.locator('select[aria-label="Operative to identify"]').count()==1
     assert not errors,errors
     browser.close()
 print("Tactical scan browser workflow passed.")

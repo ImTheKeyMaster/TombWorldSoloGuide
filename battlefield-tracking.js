@@ -321,7 +321,17 @@ function snapCore(){
       if(queue.length<Math.max(9,r*r*.28)||Math.min(bw,bh)<r*.65||Math.max(bw,bh)>r*3.6||Math.min(bw,bh)/Math.max(bw,bh)<.38||near>r*.25||dist(p,tap)>r*1.05||blocked(p))continue;
       if(loX===x0||hiX===x1||loY===y0||hiY===y1)continue;
       // Bounding box center rather than click position; reject elongated wall fragments.
-      candidates.push({...p,score:dist(p,tap)/r+Math.abs(Math.max(bw,bh)/(2*r)-1)*.35});
+      let center=p,bestRim=0;
+      for(let yy=Math.round(p.y-r*.65);yy<=p.y+r*.65;yy++)for(let xx=Math.round(p.x-r*.65);xx<=p.x+r*.65;xx++){
+        const q={x:xx,y:yy};if(dist(q,tap)>r*1.05||blocked(q))continue;
+        for(const radius of [r*.85,r,r*1.15]){
+          let total=0,hits=0,quadrants=[0,0,0,0];
+          for(let k=0;k<16;k++){const t=k*Math.PI/8,dx=Math.cos(t),dy=Math.sin(t),ax=Math.round(xx+dx*(radius-1.5)),ay=Math.round(yy+dy*(radius-1.5)),bx=Math.round(xx+dx*(radius+1.5)),by=Math.round(yy+dy*(radius+1.5));if(ax<0||ay<0||bx<0||by<0||ax>=w||bx>=w||ay>=h||by>=h)continue;const a=pixel(ax,ay),b=pixel(bx,by),e=Math.max(...a.map((v,i)=>Math.abs(v-b[i])));total+=Math.min(e,90);if(e>=20){hits++;quadrants[k>>2]++;}}
+          const score=total/16-dist(p,q)*.5;
+          if(hits>=10&&quadrants.every(v=>v>=1)&&score>bestRim){bestRim=score;center={...q,r};}
+        }
+      }
+      candidates.push({...center,score:dist(center,tap)/r+Math.abs(Math.max(bw,bh)/(2*r)-1)*.35});
     }
     candidates.sort((a,b)=>a.score-b.score);
     return candidates[0]||null;
@@ -361,8 +371,8 @@ function trackingUI(){
     const repaint=()=>{
       canvas.classList.toggle('rt-crop-mode',stage==='crop');
       if(!frame)return;
-      draw(canvas,frame,positions,models,board,walls,objectives,plan,stage!=='plan');
-      if(mapLayout&&stage!=='crop'&&stage!=='plan'){
+      draw(canvas,frame,positions,models,board,stage==='identify'&&mapLayout?[]:walls,stage==='identify'&&mapLayout?[]:objectives,plan,stage!=='plan');
+      if(mapLayout&&stage==='terrain'){
         const c=canvas.getContext('2d');c.font='bold 11px system-ui';c.textAlign='center';
         for(const p of mapLayout.terrain){c.strokeStyle='#eacb83';c.lineWidth=1.3;c.setLineDash([3,3]);c.beginPath();c.arc(p.x,p.y,Math.max(5,p.r*.65),0,Math.PI*2);c.stroke();}c.setLineDash([]);
         for(const p of mapLayout.doors){c.fillStyle=p.open?'#76f5a8':'#f0c66a';c.fillRect(p.x-4,p.y-4,8,8);}
@@ -399,13 +409,19 @@ function trackingUI(){
         select.onchange=()=>{selected=select.value;update();};controls.append(select);
         if(current&&!current.base){const label=document.createElement('label');label.className='rt-metadata';label.textContent='Base diameter (mm)';const input=document.createElement('input');input.type='number';input.min='10';input.max='100';input.placeholder='e.g. 32';input.onchange=()=>{const v=Number(input.value);if(v>=10&&v<=100){current.base=v;update();}};label.append(input);controls.append(label);}
         if(current?.side==='player'){const label=document.createElement('label');label.className='rt-metadata';label.textContent='Current tabletop order';const order=document.createElement('select');for(const value of ['Unknown','Engage','Conceal']){const option=document.createElement('option');option.value=value;option.textContent=value;order.append(option);}order.value=current.order;order.onchange=()=>{current.order=order.value;};label.append(order);controls.append(label);}
-        if(!missing.length)controls.append(button('Confirm Operative Positions',()=>{stage='terrain';update();},'primary'));
+        if(!missing.length)controls.append(button('Confirm Operative Positions',()=>{if(mapLayout&&mapped)assess();else{stage='terrain';update();}},'primary'));
+        if(mapLayout)controls.append(button('Review Mission Layout',()=>{stage='terrain';update();},'ghost'));
         controls.append(button('Clear Selected Marker',()=>{delete positions[selected];update();},'ghost'));
       }else if(stage==='terrain'){
         if(mapLayout){
           tell('Mission layout loaded automatically. Check the overlay against the board. Tap a hatchway square to mark it open or closed.');
           const note=document.createElement('p');note.className='rt-metadata';note.textContent='Amber: walls, terrain and closed hatchways. Green squares: open hatchways.';controls.append(note);
-          controls.append(button('Rotate Mission Layout 90°',()=>{rotation=(rotation+1)%4;mapFit={sx:1,sy:1,dx:0,dy:0};openDoors=[];refreshMap();update();},'ghost'),button('Auto-align Mission Layout',()=>{openDoors=[];refreshMap(true);update();},'ghost'),button('Recalibrate Photo',resetCalibration,'ghost'));
+          const adjustments=document.createElement('details');adjustments.className='rt-map-adjust';
+          const summary=document.createElement('summary');summary.textContent='Adjust mission alignment';adjustments.append(summary);
+          const grid=document.createElement('div');grid.className='rt-actions';
+          const change=(key,delta)=>{mapFit={...mapFit,[key]:Math.max(key.startsWith('s')?.65:-.25,Math.min(key.startsWith('s')?1.35:.25,mapFit[key]+delta))};refreshMap();repaint();const check=get('.rt-check input');if(check)check.checked=false;};
+          for(const [label,key,delta] of [['← Left','dx',-.015],['Right →','dx',.015],['↑ Up','dy',-.015],['Down ↓','dy',.015],['Narrower','sx',-.025],['Wider','sx',.025],['Shorter','sy',-.025],['Taller','sy',.025]])grid.append(button(label,()=>change(key,delta),'ghost'));
+          adjustments.append(grid);controls.append(adjustments,button('Rotate Mission Layout 90°',()=>{rotation=(rotation+1)%4;mapFit={sx:1,sy:1,dx:0,dy:0};openDoors=[];refreshMap();update();},'ghost'),button('Auto-align Mission Layout',()=>{openDoors=[];refreshMap(true);update();},'ghost'),button('Recalibrate Photo',resetCalibration,'ghost'));
         }else{
           tell('No verified mission layout is available. Use the manual guide or mark blocking terrain.');
           const group=document.createElement('div');group.className='rt-actions';
@@ -415,7 +431,8 @@ function trackingUI(){
         const unresolved=models.filter(m=>!m.base);if(unresolved.length){const note=document.createElement('p');note.className='rt-metadata';note.textContent='Base size required for '+unresolved.map(m=>m.name).join(', ')+'.';controls.append(note,button('Set Missing Base Sizes',()=>{selected=unresolved[0].key;stage='identify';update();}));}
         const unknown=models.filter(m=>m.side==='player'&&m.order==='Unknown');if(unknown.length){const note=document.createElement('p');note.className='rt-metadata';note.textContent='Unknown orders may prevent shooting recommendations. Update them if needed.';controls.append(note,button('Review Player Orders',()=>{selected=unknown[0].key;stage='identify';update();},'ghost'));}
         const check=document.createElement('label');check.className='rt-check';const input=document.createElement('input');input.type='checkbox';input.checked=mapped;input.onchange=()=>{mapped=input.checked;};check.append(input,document.createTextNode(mapLayout?' Mission overlay matches the physical board, including hatchway states.':' All blocking terrain is marked; verify physical board and open hatchways.'));controls.append(check);
-        controls.append(button(config.setup?'Finish Recon Setup':'Assess Battlefield',assess,'primary'));
+                const missing=models.some(m=>!positions[m.key]);
+        controls.append(button(mapLayout&&missing?'Confirm Mission Layout':config.setup?'Finish Recon Setup':'Assess Battlefield',()=>{if(mapLayout&&!mapped){tell('Confirm the overlay and hatchway states first.');return;}if(mapLayout&&missing){stage='identify';update();return;}assess();},'primary'));
       }else if(stage==='wall'){tell(wallStart?'Tap the other end of this wall.':'Tap the first end of the wall.');controls.append(button('Cancel Wall',()=>{wallStart=null;stage='terrain';update();},'ghost'));}
       else if(stage==='objective'){tell('Tap the centre of an objective.');controls.append(button('Cancel Objective',()=>{stage='terrain';update();},'ghost'));}
       else if(stage==='review'){
@@ -474,7 +491,7 @@ function trackingUI(){
           positions=Object.fromEntries(Object.entries(matches).filter(([,p])=>p));stage='review';update();return;
         }
       }
-      positions={};walls=[];objectives=[];mapped=false;selected='';openDoors=[];refreshMap(true);stage='identify';update();
+      positions={};walls=[];objectives=[];mapped=false;selected='';openDoors=[];refreshMap(true);stage=mapLayout?'terrain':'identify';update();
     }
     function assess(){
       if(!live()||!board||models.some(m=>!positions[m.key]))return;
