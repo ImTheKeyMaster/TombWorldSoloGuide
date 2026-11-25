@@ -21,3 +21,17 @@ a(res['n:a']&&c.dist(res['n:a'],{x:51,y:40})<4);
 a.equal(c.track({'n:a':prior},new Uint8ClampedArray(w*h*4),w,h,{x0:0,y0:0,x1:99,y1:99},[models[0]],new Set(['n:a']))['n:a'],null);
 a.equal(c.plan({...args,positions:{...positions,'p:b':{x:123,y:100}},actionOrder:()=>['Fight','Shoot']}),null);
 console.log('Tracking and tactical geometry checks passed.');
+
+const cal=c.calibration,rect=cal.fit(400,600);
+a(Math.abs(rect.w/rect.h-22/30)<1e-10);
+const resized=cal.drag(rect,'se',-50,-80,400,600);
+a(resized.w<rect.w&&Math.abs(resized.w/resized.h-22/30)<1e-10);
+const moved=cal.drag(resized,'move',-1000,1000,400,600);
+a.equal(moved.x,0);a(Math.abs(moved.y+moved.h-600)<1e-8);
+for(const handle of ['nw','ne','sw','se']){const r=cal.drag(rect,handle,10000,-10000,400,600);a(r.x>=-1e-8&&r.y>=-1e-8&&r.x+r.w<=400+1e-8&&r.y+r.h<=600+1e-8);a(Math.abs(r.w/r.h-22/30)<1e-10);}
+const W=240,H=320,d=new Uint8ClampedArray(W*H*4);
+for(let y=0;y<H;y++)for(let x=0;x<W;x++){const val=x>25+y*.025&&x<216-y*.018&&y>30+x*.025&&y<294-x*.025?40:190,i=(y*W+x)*4;d[i]=d[i+1]=d[i+2]=val;d[i+3]=255;}
+const q=cal.detect(d,W,H);a(q&&Math.abs(q[0].x-26)<8);a(Math.abs(cal.project(q,1,1).x-q[2].x)<1e-8);
+a.equal(cal.detect(new Uint8ClampedArray(W*H*4),W,H),null);
+const warped=cal.warp(d,W,H,q,120,160,10);a.equal(warped.length,120*160*4);a(warped[(80*120+60)*4]<60);
+console.log('Board calibration checks passed.');
