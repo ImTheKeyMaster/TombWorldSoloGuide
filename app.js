@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.37';
+  const APP_VERSION = '10.1.38';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5221,7 +5221,7 @@ document.addEventListener('touchend',function(e){
     const np=activeNpos().map(n=>{
       const d=npoDefinition(n.type),profiles=setup?[]:npoAttackProfiles(n,'shoot');
       const ranges=profiles.map(p=>{const match=(p.rules||[]).map(String).map(r=>r.match(/^Range\s*(\d+)/i)).find(Boolean);return Number(p.range??match?.[1]??Infinity);});
-      return {key:'n:'+n.id,id:n.id,side:'npo',name:npoName(n),base:Number(n.baseSize||d?.baseSize)||null,move:npoRepositionDistance(n),ap:setup?Number(d?.apl||0):actor?.id===n.id?activation?.remainingAp:effectiveApl(n.id,d?.apl),ready:!setup&&readyNpos().some(x=>x.id===n.id),wounds:n.wounds,canShoot:profiles.length>0,range:ranges.length?Math.min(...ranges):null,focus:setup?null:npoMovementFocus(n,'')};
+      return {key:'n:'+n.id,id:n.id,side:'npo',name:npoName(n),base:Number(n.baseSize||d?.baseSize)||null,move:npoRepositionDistance(n),ap:setup?Number(d?.apl||0):actor?.id===n.id?activation?.remainingAp:effectiveApl(n.id,d?.apl),ready:!setup&&readyNpos().some(x=>x.id===n.id),wounds:n.wounds,canShoot:profiles.length>0,range:ranges.length?Math.min(...ranges):null,type:n.type,operatesHatches:Boolean(d?.behavior?.operatesHatches),focus:setup?null:npoMovementFocus(n,d?.behavior?.actions?.find(action=>action.startsWith('Reposition'))||'')};
     });
     const pp=inPlayLivingPlayerOperativeIds().map(id=>({key:'p:'+id,id,side:'player',name:playerName(id),base:Number(playerDefinition(id)?.baseSize)||null,wounds:playerCurrentWounds(id),order:state.playerOperativeStates?.[id]?.order||'Unknown',ready:!(state.playerActivatedIds||[]).includes(id)}));
     const valid=()=>state===token&&reconTrackingEnabled()&&state.turningPoint===turn&&(setup?state.phase===phase&&(phase==='between'&&turn===0||phase==='strategy'&&turn===1&&state.strategyStage==='summary'):state.nextSide==='npo')&&(!actor||(state.activeNpoId===actor.id&&state.lastActivation?.decisionPass===activation.decisionPass&&!state.lastActivation.pendingAction));

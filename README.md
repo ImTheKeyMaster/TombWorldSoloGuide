@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.37
+# Tomb World Battle Guide v10.1.38
+
+## v10.1.38
+
+- Experimental Recon uses the operative's actual movement priority, searches collision-checked multi-segment routes and scores reachable shooting positions, melee approaches or mission objectives. Closed hatchways are future route candidates only; opening them remains a tabletop/manual step. Recommendations show Tactical Intent and the complete current movement path. Removed the redundant Review Player Orders button from terrain review; orders remain editable in model review. Standard unchanged.
 
 ## v10.1.37
 
