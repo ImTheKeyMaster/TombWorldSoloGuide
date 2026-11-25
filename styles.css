@@ -4180,25 +4180,3 @@ html[data-ui="tomb"] .experimental-fight-choice-screen.is-duel-layout .experimen
   margin-top:auto;
 }
 
-
-/* Experimental Battlefield Recon. No impact outside opt-in solo action screens. */
-.recon-panel{margin:14px 0;border:1px solid var(--line);border-radius:14px;background:#07160f;overflow:hidden;text-align:left}
-.recon-panel summary{display:flex;align-items:center;gap:10px;padding:12px;cursor:pointer;list-style:none;font-weight:850;color:var(--green);min-height:48px}
-.recon-panel summary::-webkit-details-marker{display:none}
-.recon-panel summary::after{content:'+';margin-left:auto;font-size:1.25rem}
-.recon-panel[open] summary::after{content:'−'}
-.recon-panel summary small{display:block;font-weight:600;font-size:.72rem;color:var(--muted);margin-top:3px}
-.recon-emblem{font-size:1.7rem;line-height:1;color:var(--green)}
-.recon-body{padding:0 12px 12px;min-width:0}
-.recon-panel .recon-context{margin:0 0 10px;color:var(--text);font-size:.86rem;font-weight:750}
-.recon-upload,.recon-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.recon-upload .btn,.recon-tools .btn{position:relative;min-width:0;padding:10px 6px;display:grid;place-items:center;text-align:center;font-size:.78rem;line-height:1.2}
-.recon-upload input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
-.recon-upload label:focus-within{outline:2px solid var(--green);outline-offset:2px}
-.recon-panel .recon-status,.recon-panel .recon-note{font-size:.78rem;margin:10px 0;line-height:1.4;color:var(--muted)}
-.recon-frame{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#040a07;margin-bottom:10px}
-.recon-frame canvas{display:block;width:100%;height:auto;max-width:100%;cursor:crosshair}
-.recon-panel .recon-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 0 0;font-size:.75rem;font-weight:800;color:var(--green)}
-.recon-legend .recon-target{color:var(--danger)}
-.recon-workspace[hidden]{display:none!important}
-html:not([data-experimental="on"]) [data-recon-kind]{display:none!important}

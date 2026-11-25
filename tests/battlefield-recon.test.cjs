@@ -16,4 +16,7 @@ assert.equal((app.match(/battlefieldReconMarkup\(n,'move',displayAction\)/g)||[]
 assert(app.includes("battlefieldReconMarkup(n,'attack',decision.action)"));
 assert(fs.readFileSync('index.html','utf8').includes('battlefield-recon.js?v=10.1.29'));
 assert(fs.readFileSync('service-worker.js','utf8').includes('battlefield-recon.js?v='));
-console.log('Battlefield Recon: 11 checks passed.');
+assert.deepEqual(c.detect(new Uint8ClampedArray(0),0,0),[]);
+assert(fs.readFileSync('index.html','utf8').includes('battlefield-recon.css?v=10.1.29'));
+assert(fs.readFileSync('service-worker.js','utf8').includes('battlefield-recon.css?v='));
+console.log('Battlefield Recon: 14 checks passed.');

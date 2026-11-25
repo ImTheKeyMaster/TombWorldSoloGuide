@@ -1,0 +1,32 @@
+name: Battlefield Recon regression checks
+on:
+  pull_request:
+    paths:
+      - battlefield-recon.js
+      - battlefield-recon.css
+      - app.js
+      - index.html
+      - service-worker.js
+      - tests/battlefield-recon.test.cjs
+      - tests/test_battlefield_recon_browser.py
+      - .github/workflows/battlefield-recon.yml
+jobs:
+  recon:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          node --check battlefield-recon.js
+          node --check app.js
+          node --check service-worker.js
+          node tests/battlefield-recon.test.cjs
+      - run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - run: python tests/test_battlefield_recon_browser.py
