@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.34
+# Tomb World Battle Guide v10.1.35
+
+## v10.1.35
+
+- Experimental Battlefield Recon setup can be bypassed directly from the first Turning Point card. If opening the optional scan throws or fails to mount, the guide continues without Recon and displays a notice. A start-in-flight guard prevents duplicate Turning Point starts. Standard setup behavior is unchanged.
 
 ## v10.1.34
 

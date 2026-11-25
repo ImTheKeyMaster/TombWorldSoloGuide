@@ -5,6 +5,7 @@ on:
       - battlefield-tracking.js
       - battlefield-tracking.css
       - tests/battlefield-tracking.test.cjs
+      - tests/recon-setup-recovery.test.cjs
       - tests/test_battlefield_tracking_browser.py
       - battlefield-recon.js
       - battlefield-recon.css
@@ -32,6 +33,7 @@ jobs:
           node tests/battlefield-recon.test.cjs
           node --check battlefield-tracking.js
           node tests/battlefield-tracking.test.cjs
+          node tests/recon-setup-recovery.test.cjs
       - run: |
           python -m pip install playwright
           python -m playwright install --with-deps chromium

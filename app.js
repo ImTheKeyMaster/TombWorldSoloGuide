@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.34';
+  const APP_VERSION = '10.1.35';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -4019,7 +4019,7 @@ document.addEventListener('touchend',function(e){
   function nextStepCard(){
     if(state.completed) return `<section class="next-card"><span class="phase">MISSION COMPLETE</span><h2>Record the outcome</h2><p>The mission has reached its conclusion. Review the Journal or begin a new game.</p><button class="btn primary big-action" id="newGameFromPlay">Start New Game</button></section>`;
     if(state.phase==='between'){
-      return `<section class="next-card"><span class="phase">NEXT STEP</span><h2>Start Turning Point ${state.turningPoint+1}</h2><p>The Guide will ready operatives, apply mission Ready rules, determine initiative, then process current events and reinforcements.</p><button class="btn primary big-action" id="startTp">Start Next Turning Point</button></section>`;
+      return `<section class="next-card"><span class="phase">NEXT STEP</span><h2>Start Turning Point ${state.turningPoint+1}</h2><p>The Guide will ready operatives, apply mission Ready rules, determine initiative, then process current events and reinforcements.</p><button class="btn primary big-action" id="startTp">Start Next Turning Point</button>${state.turningPoint===0&&reconTrackingEnabled()?'<button class="btn ghost big-action" id="startTpWithoutRecon" type="button">Start Without Battlefield Recon</button>':''}</section>`;
     }
     if(state.phase==='strategy') return strategyCard();
     if(state.phase==='end'){
@@ -4461,7 +4461,8 @@ document.addEventListener('touchend',function(e){
   function bindPlay(){
     $('#dismissGradeMilestone')?.addEventListener('click',()=>{state.gradeMilestone=null;save();render();});
     $$('[data-player-operative]').forEach(button=>button.addEventListener('click',()=>showPlayerOperativeStatus(button.dataset.playerOperative)));
-    $('#startTp')?.addEventListener('click',startTurningPoint);
+    $('#startTp')?.addEventListener('click',()=>void startTurningPoint());
+    $('#startTpWithoutRecon')?.addEventListener('click',()=>void startTurningPoint({skipRecon:true}));
     $$('[data-reinforcement-placement]').forEach(input=>input.addEventListener('change',()=>confirmReinforcementPlacement(input.dataset.reinforcementPlacement,input.checked)));
     $('#retryBlockedReinforcements')?.addEventListener('click',event=>{
       if(!canRetryBlockedReinforcements())return;
@@ -4617,10 +4618,26 @@ document.addEventListener('touchend',function(e){
   }
 
   let reconSetupFinishedFor=null;
-  async function startTurningPoint(){
-    if(state.turningPoint===0&&state.phase==='between'&&reconTrackingEnabled()&&reconSetupFinishedFor!==state){
-      save();render();showReconTracking(null,true);return;
+  let turningPointStartInFlight=null;
+  async function startTurningPoint({skipRecon=false}={}){
+    if(state.phase!=='between'||turningPointStartInFlight===state)return;
+    if(state.turningPoint===0&&reconTrackingEnabled()&&reconSetupFinishedFor!==state){
+      if(!skipRecon){
+        try{
+          save();render();
+          if(showReconTracking(null,true))return;
+          throw new Error('Recon setup did not open');
+        }catch(error){
+          console.warn('[Battlefield Recon] Setup unavailable; continuing without Recon.',error);
+          if(modal.open)closeModal();
+          showToast('Battlefield Recon unavailable. Starting the game without it.');
+        }
+      }
+      reconSetupFinishedFor=state;
     }
+    const startState=state;
+    turningPointStartInFlight=startState;
+    try{
     state.turningPoint++;
     state.finalResolution={...state.finalResolution,pending:false,turningPointEnded:false,cleanupComplete:false};
     state.npoRuleState.reanimatedTargetIds=[];
@@ -4643,6 +4660,9 @@ document.addEventListener('touchend',function(e){
       save();render();return;
     }
     await finishTurningPointStart();
+    }finally{
+      if(turningPointStartInFlight===startState)turningPointStartInFlight=null;
+    }
   }
 
   async function continueTurningPointStart(){
@@ -5196,9 +5216,11 @@ document.addEventListener('touchend',function(e){
     });
     const pp=inPlayLivingPlayerOperativeIds().map(id=>({key:'p:'+id,id,side:'player',name:playerName(id),base:Number(playerDefinition(id)?.baseSize)||null,wounds:playerCurrentWounds(id),order:state.playerOperativeStates?.[id]?.order||'Unknown',ready:!state.playerActivatedIds.includes(id)}));
     const valid=()=>state===token&&reconTrackingEnabled()&&state.turningPoint===turn&&(setup?state.phase==='between'&&turn===0:state.nextSide==='npo')&&(!actor||(state.activeNpoId===actor.id&&state.lastActivation?.decisionPass===activation.decisionPass&&!state.lastActivation.pendingAction));
-    const finishSetup=()=>{if(!valid())return;reconSetupFinishedFor=state;closeModal();void startTurningPoint();};
+    const finishSetup=()=>{if(!valid())return;reconSetupFinishedFor=state;closeModal();void startTurningPoint({skipRecon:true});};
     showModal(setup?'Capture Battlefield':'Battlefield Recon','<div id="reconTrackingHost"></div>');
-    window.TombWorldReconTracking.open($('#reconTrackingHost'),{token,turn,scanKey,setup,missionNumber:mission().number,complete:finishSetup,models:[...np,...pp],actorKey:actor?'n:'+actor.id:null,activated:pp.filter(p=>!p.ready).map(p=>p.key),ready:np.filter(p=>p.ready).map(p=>p.key),valid,
+    const host=$('#reconTrackingHost');
+    if(!host)return false;
+    window.TombWorldReconTracking.open(host,{token,turn,scanKey,setup,missionNumber:mission().number,complete:finishSetup,models:[...np,...pp],actorKey:actor?'n:'+actor.id:null,activated:pp.filter(p=>!p.ready).map(p=>p.key),ready:np.filter(p=>p.ready).map(p=>p.key),valid,
       actionOrder:(m,inControl)=>{const n=readyNpos().find(x=>x.id===m.id);if(!n)return [];const context={inEnemyControlRange:inControl,remainingAp:m.ap,completedActionIds:actor?activation.completedActionIds:[]};return recommendedNpoActions(n,context).filter(name=>!actor||!(activation.declinedActionIds||[]).includes(npoActionId(name)));},
       manual:()=>{reconApprovedPlan=null;reconDisplayPlan=null;if(setup){finishSetup();return;}if(actor)runNpoPrompt(actor,0,{},activation.questionHistory||[]);else{closeModal();render();}},
       accept:plan=>{
@@ -5210,6 +5232,7 @@ document.addEventListener('touchend',function(e){
         else beginNpoActivation(n,{refreshPlayCard:true});
       }
     });
+    return Boolean(host.querySelector('.recon-tracking'));
   }
   function applyReconRecommendation(n,answers,history){
     const p=reconApprovedPlan;reconApprovedPlan=null;
