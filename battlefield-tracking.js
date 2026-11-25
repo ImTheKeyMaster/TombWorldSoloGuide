@@ -602,7 +602,7 @@ function trackingUI(){
       return {bounds,left,right,top,bottom,corners:[['nw',left,top],['ne',right,top],['se',right,bottom],['sw',left,bottom]]};
     }
     function invalidateAlignment(){
-      refreshMap();const check=get('.rt-check input');if(check)check.checked=false;
+      refreshMap();
     }
     const repaint=()=>{
       canvas.classList.toggle('rt-crop-mode',stage==='crop');
@@ -663,14 +663,9 @@ function trackingUI(){
         controls.append(button('Clear Selected Marker',()=>{delete positions[selected];update();},'ghost'));
       }else if(stage==='terrain'){
         if(mapLayout){
-          tell('Drag inside the alignment frame to move the mission layout. Drag a corner handle to resize it. Tap a hatchway square to toggle open or closed.');
+          tell('Drag inside the frame to move the layout. Drag a corner to resize it. Tap hatchways to toggle open or closed, then confirm the layout.');
           const note=document.createElement('p');note.className='rt-metadata';note.textContent='Amber: walls, terrain and closed hatchways. Green squares: open hatchways.';controls.append(note);
-          const adjustments=document.createElement('details');adjustments.className='rt-map-adjust';
-          const summary=document.createElement('summary');summary.textContent='Adjust mission alignment';adjustments.append(summary);
-          const grid=document.createElement('div');grid.className='rt-actions';
-          const change=(key,delta)=>{mapFit={...mapFit,[key]:Math.max(key.startsWith('s')?.65:-.25,Math.min(key.startsWith('s')?1.35:.25,mapFit[key]+delta))};invalidateAlignment();repaint();};
-          for(const [label,key,delta] of [['← Left','dx',-.015],['Right →','dx',.015],['↑ Up','dy',-.015],['Down ↓','dy',.015],['Narrower','sx',-.025],['Wider','sx',.025],['Shorter','sy',-.025],['Taller','sy',.025]])grid.append(button(label,()=>change(key,delta),'ghost'));
-          adjustments.append(grid);controls.append(adjustments,button('Rotate Mission Layout 90°',()=>{rotation=(rotation+1)%4;mapFit={sx:1,sy:1,dx:0,dy:0};openDoors=[];refreshMap();update();},'ghost'),button('Auto-align Mission Layout',()=>{openDoors=[];refreshMap(true);update();},'ghost'),button(reused?'Take New Photo':'Recalibrate Photo',reused?()=>get('input[aria-label="Take tactical photo"]').click():resetCalibration,'ghost'));
+          controls.append(button('Rotate Mission Layout 90°',()=>{rotation=(rotation+1)%4;mapFit={sx:1,sy:1,dx:0,dy:0};openDoors=[];refreshMap();update();},'ghost'),button('Auto-align Mission Layout',()=>{openDoors=[];refreshMap(true);update();},'ghost'),button(reused?'Take New Photo':'Recalibrate Photo',reused?()=>get('input[aria-label="Take tactical photo"]').click():resetCalibration,'ghost'));
         }else{
           tell('No verified mission layout is available. Use the manual guide or mark blocking terrain.');
           const group=document.createElement('div');group.className='rt-actions';
@@ -678,9 +673,13 @@ function trackingUI(){
           controls.append(group);
         }
         const unresolved=models.filter(m=>!m.base);if(unresolved.length){const note=document.createElement('p');note.className='rt-metadata';note.textContent='Base size required for '+unresolved.map(m=>m.name).join(', ')+'.';controls.append(note,button('Set Missing Base Sizes',()=>{selected=unresolved[0].key;stage='identify';update();}));}
-        const check=document.createElement('label');check.className='rt-check';const input=document.createElement('input');input.type='checkbox';input.checked=mapped;input.onchange=()=>{mapped=input.checked;};check.append(input,document.createTextNode(mapLayout?' Mission overlay matches the physical board, including hatchway states.':' All blocking terrain is marked; verify physical board and open hatchways.'));controls.append(check);
-                const missing=models.some(m=>!positions[m.key]);
-        controls.append(button(missing?'Confirm Mission Layout':config.setup?'Finish Recon Setup':'Assess Battlefield',()=>{if(!mapped){tell(mapLayout?'Confirm the overlay and hatchway states first.':'Confirm the marked terrain first.');return;}if(missing){stage='identify';update();return;}assess();},'primary'));
+        // A verified mission's primary button is the confirmation itself.
+        // Manual terrain marking still requires explicit completeness review.
+        if(!mapLayout){
+          const check=document.createElement('label');check.className='rt-check';const input=document.createElement('input');input.type='checkbox';input.checked=mapped;input.onchange=()=>{mapped=input.checked;};check.append(input,document.createTextNode(' All blocking terrain is marked; verify physical board and open hatchways.'));controls.append(check);
+        }
+        const missing=models.some(m=>!positions[m.key]);
+        controls.append(button(missing?'Confirm Mission Layout':config.setup?'Finish Recon Setup':'Assess Battlefield',()=>{if(!live())return;if(mapLayout)mapped=true;if(!mapped){tell('Confirm the marked terrain first.');return;}if(missing){stage='identify';update();return;}assess();},'primary'));
       }else if(stage==='wall'){tell(wallStart?'Tap the other end of this wall.':'Tap the first end of the wall.');controls.append(button('Cancel Wall',()=>{wallStart=null;stage='terrain';update();},'ghost'));}
       else if(stage==='objective'){tell('Tap the centre of an objective.');controls.append(button('Cancel Objective',()=>{stage='terrain';update();},'ghost'));}
       else if(stage==='plan'){
