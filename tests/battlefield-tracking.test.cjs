@@ -60,3 +60,11 @@ const route=c.plan({...args,models:[{...models[0],move:3,canShoot:false,focus:'f
 a(route&&route.id==='reposition');a.equal(route.skipped[0].action,'Charge');
 const blockedReasons=[];a.equal(c.plan({...args,actionOrder:()=>['Overcharge'],diagnostics:blockedReasons}),null);a.equal(blockedReasons[0].code,'special');
 console.log('Multi-candidate and diagnostic regressions passed.');
+
+// A localized hatchway change must invalidate terrain even if the overall board matches.
+const bw=120,bh=120,priorBoard=new Uint8ClampedArray(bw*bh*4).fill(40),nextBoard=priorBoard.slice();
+a.deepEqual(c.compareBoard(priorBoard,nextBoard,bw,bh,{},[{x:60,y:60}]),{aligned:true,terrainStable:true});
+for(let y=50;y<=70;y++)for(let x=50;x<=70;x++)nextBoard.fill(200,(y*bw+x)*4,(y*bw+x)*4+3);
+a.deepEqual(c.compareBoard(priorBoard,nextBoard,bw,bh,{},[{x:60,y:60}]),{aligned:true,terrainStable:false});
+a.equal(c.compareBoard(priorBoard,new Uint8ClampedArray(bw*bh*4).fill(200),bw,bh).aligned,false);
+console.log('Repeat scan and hatchway change checks passed.');

@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.36
+# Tomb World Battle Guide v10.1.37
+
+## v10.1.37
+
+- Experimental Recon: matching photos reuse the confirmed crop and terrain, track the models and immediately show the recommended NPO, action and target/destination. Missing model identities, mismatched framing or changes near hatchways require review. Model and terrain correction remain available; acceptance and tabletop legality checks remain explicit. Standard behavior is unchanged.
 
 ## v10.1.36
 

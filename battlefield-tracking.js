@@ -66,6 +66,26 @@ function trackingCore(){
     }
     return results;
   }
+  // Compare the confirmed board to a newly normalized photo. Local hatchway
+  // changes invalidate terrain even if the overall board still matches.
+  function compareBoard(before,after,w,h,positions={},doors=[]){
+    const pixelDelta=(x,y)=>{const i=(y*w+x)*4;return (Math.abs(before[i]-after[i])+Math.abs(before[i+1]-after[i+1])+Math.abs(before[i+2]-after[i+2]))/3;};
+    let delta=0,count=0;
+    for(let y=12;y<h-12;y+=13)for(let x=12;x<w-12;x+=13){
+      if(Object.values(positions).some(p=>dist(p,{x,y})<(p.r||8)*2))continue;
+      delta+=pixelDelta(x,y);count++;
+    }
+    const aligned=count>0&&delta/count<16;
+    const changedDoors=doors.filter(d=>{
+      let sum=0,n=0,changed=0;
+      for(let y=Math.max(0,Math.round(d.y)-12);y<=Math.min(h-1,Math.round(d.y)+12);y+=2)
+        for(let x=Math.max(0,Math.round(d.x)-12);x<=Math.min(w-1,Math.round(d.x)+12);x+=2){
+          const diff=pixelDelta(x,y);sum+=diff;n++;if(diff>35)changed++;
+        }
+      return !n||sum/n>18||changed/n>.2;
+    });
+    return {aligned,terrainStable:aligned&&!changedDoors.length};
+  }
   function plan({board,positions,models,walls=[],objectives=[],mapped=false,actorKey=null,actionOrder,diagnostics=[]}){
     const report=(code,message,actor=null)=>{diagnostics.push({code,message,actor:actor?.key||null});return null;};
     if(!board)return report('board','The playable board has not been calibrated.');
@@ -160,7 +180,7 @@ function trackingCore(){
     for(const {a} of ranking){const result=evaluate(a);if(result)return result;}
     return null;
   }
-  return {dist,inside,physical,imagePoint,segmentDistance,patch,matchScore,track,plan};
+  return {dist,inside,physical,imagePoint,segmentDistance,patch,matchScore,track,compareBoard,plan};
 }
 function calibrationCore(){
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
@@ -365,14 +385,14 @@ function trackingUI(){
   }
   function open(host,config){
     if(!host||!config||document.documentElement.dataset.experimental!=='on')return;
-    if(!session||session.token!==config.token)session={token:config.token,board:null,positions:{},walls:[],objectives:[],mapped:false,frame:null,turn:null,activated:new Set(),ready:new Set(),meta:{},mapRotation:0,mapFit:null,openDoors:[]};
+    if(!session||session.token!==config.token)session={token:config.token,board:null,positions:{},walls:[],objectives:[],mapped:false,frame:null,turn:null,activated:new Set(),ready:new Set(),meta:{},mapRotation:0,mapFit:null,openDoors:[],capture:null};
     preview=null;
     const s=session,models=config.models.map(m=>({...m,...(s.meta[m.key]?.base&&!m.base?{base:s.meta[m.key].base}:{}),...(m.side==='player'&&m.order==='Unknown'&&s.meta[m.key]?.order?{order:s.meta[m.key].order}:{})}));
     // A player may change order during their activation. Unknown must remain unknown until confirmed.
     if(s.frame)for(const m of models.filter(m=>m.side==='player'&&(s.turn!==config.turn||!s.activated.has(m.key)&&config.activated.includes(m.key))))if(config.models.find(x=>x.key===m.key)?.order==='Unknown')m.order='Unknown';
-    let frame=null,positions={},board=null,walls=[],objectives=[],mapped=false,stage='photo',wallStart=null,selected='',plan=null,seq=0,raw=null,crop=null,dragging=null,autoRectified=false,mapLayout=null,rotation=0,mapFit=null,openDoors=[],diagnostics=[];
-    host.innerHTML='<section class="recon-tracking"><p class="eyebrow">TACTICAL SCAN · EXPERIMENTAL</p><p class="rt-status" role="status" aria-live="polite"></p><div class="recon-upload"><label class="btn secondary">Take Photo<input type="file" accept="image/*" capture="environment" aria-label="Take tactical photo"></label><label class="btn ghost">Choose Photo<input type="file" accept="image/*" aria-label="Choose tactical photo"></label></div><div class="rt-work" hidden><div class="recon-frame"><canvas aria-label="Battlefield photograph and tactical overlays"></canvas></div><div class="rt-controls"></div></div><div class="wizard-actions"><button type="button" class="btn ghost rt-manual">Use Manual Guide</button></div></section>';
-    const get=q=>host.querySelector(q),status=get('.rt-status'),canvas=get('canvas'),controls=get('.rt-controls'),work=get('.rt-work');
+    let frame=null,positions={},board=null,walls=[],objectives=[],mapped=false,stage='photo',wallStart=null,selected='',plan=null,seq=0,raw=null,crop=null,dragging=null,autoRectified=false,mapLayout=null,rotation=0,mapFit=null,openDoors=[],diagnostics=[],capture=null;
+    host.innerHTML='<section class="recon-tracking"><p class="eyebrow">TACTICAL SCAN · EXPERIMENTAL</p><p class="rt-status" role="status" aria-live="polite"></p><div class="recon-upload"><label class="btn secondary">Take Photo<input type="file" accept="image/*" capture="environment" aria-label="Take tactical photo"></label><label class="btn ghost">Choose Photo<input type="file" accept="image/*" aria-label="Choose tactical photo"></label></div><div class="rt-work" hidden><div class="rt-recommendation" hidden></div><div class="recon-frame"><canvas aria-label="Battlefield photograph and tactical overlays"></canvas></div><div class="rt-controls"></div></div><div class="wizard-actions"><button type="button" class="btn ghost rt-manual">Use Manual Guide</button></div></section>';
+    const get=q=>host.querySelector(q),status=get('.rt-status'),canvas=get('canvas'),controls=get('.rt-controls'),work=get('.rt-work'),recommendation=get('.rt-recommendation');
     const tell=t=>status.textContent=t;
     const button=(label,fn,kind='secondary')=>{const b=document.createElement('button');b.type='button';b.className='btn '+kind;b.textContent=label;b.onclick=fn;return b;};
     const live=()=>host.isConnected&&document.documentElement.dataset.experimental==='on'&&config.valid();
@@ -402,7 +422,7 @@ function trackingUI(){
       if(mapLayout){walls=mapLayout.walls;objectives=mapLayout.objectives;mapped=false;}
     }
     function update(){
-      controls.replaceChildren();
+      controls.replaceChildren();recommendation.replaceChildren();recommendation.hidden=true;
       if(stage==='crop'){
         tell(autoRectified?'Board detected and straightened. Drag the frame or corner handles to fit the playable area.':'Align the frame with the playable board. Drag the frame or corner handles to adjust.');
         controls.append(button('Confirm Board Area',confirmCrop,'primary'),button('Rotate Photo 90°',rotatePhoto,'ghost'));
@@ -417,8 +437,8 @@ function trackingUI(){
         select.onchange=()=>{selected=select.value;update();};controls.append(select);
         if(current&&!current.base){const label=document.createElement('label');label.className='rt-metadata';label.textContent='Base diameter (mm)';const input=document.createElement('input');input.type='number';input.min='10';input.max='100';input.placeholder='e.g. 32';input.onchange=()=>{const v=Number(input.value);if(v>=10&&v<=100){current.base=v;update();}};label.append(input);controls.append(label);}
         if(current?.side==='player'){const label=document.createElement('label');label.className='rt-metadata';label.textContent='Current tabletop order';const order=document.createElement('select');for(const value of ['Unknown','Engage','Conceal']){const option=document.createElement('option');option.value=value;option.textContent=value;order.append(option);}order.value=current.order;order.onchange=()=>{current.order=order.value;};label.append(order);controls.append(label);}
-        if(!missing.length)controls.append(button('Confirm Operative Positions',()=>{if(mapLayout&&mapped)assess();else{stage='terrain';update();}},'primary'));
-        if(mapLayout)controls.append(button('Review Mission Layout',()=>{stage='terrain';update();},'ghost'));
+        if(!missing.length)controls.append(button('Confirm Operative Positions',()=>{if(mapped)assess();else{stage='terrain';update();}},'primary'));
+        controls.append(button('Review Mission Layout',()=>{stage='terrain';update();},'ghost'));
         controls.append(button('Adjust Board Crop',resetCalibration,'ghost'));
         controls.append(button('Clear Selected Marker',()=>{delete positions[selected];update();},'ghost'));
       }else if(stage==='terrain'){
@@ -441,16 +461,10 @@ function trackingUI(){
         const unknown=models.filter(m=>m.side==='player'&&m.order==='Unknown');if(unknown.length){const note=document.createElement('p');note.className='rt-metadata';note.textContent='Unknown orders may prevent shooting recommendations. Update them if needed.';controls.append(note,button('Review Player Orders',()=>{selected=unknown[0].key;stage='identify';update();},'ghost'));}
         const check=document.createElement('label');check.className='rt-check';const input=document.createElement('input');input.type='checkbox';input.checked=mapped;input.onchange=()=>{mapped=input.checked;};check.append(input,document.createTextNode(mapLayout?' Mission overlay matches the physical board, including hatchway states.':' All blocking terrain is marked; verify physical board and open hatchways.'));controls.append(check);
                 const missing=models.some(m=>!positions[m.key]);
-        controls.append(button(mapLayout&&missing?'Confirm Mission Layout':config.setup?'Finish Recon Setup':'Assess Battlefield',()=>{if(mapLayout&&!mapped){tell('Confirm the overlay and hatchway states first.');return;}if(mapLayout&&missing){stage='identify';update();return;}assess();},'primary'));
+        controls.append(button(missing?'Confirm Mission Layout':config.setup?'Finish Recon Setup':'Assess Battlefield',()=>{if(!mapped){tell(mapLayout?'Confirm the overlay and hatchway states first.':'Confirm the marked terrain first.');return;}if(missing){stage='identify';update();return;}assess();},'primary'));
       }else if(stage==='wall'){tell(wallStart?'Tap the other end of this wall.':'Tap the first end of the wall.');controls.append(button('Cancel Wall',()=>{wallStart=null;stage='terrain';update();},'ghost'));}
       else if(stage==='objective'){tell('Tap the centre of an objective.');controls.append(button('Cancel Objective',()=>{stage='terrain';update();},'ghost'));}
-      else if(stage==='review'){
-        const missing=models.filter(m=>!positions[m.key]);
-        tell(missing.length?`${missing.length} operative(s) could not be tracked reliably. Correct only these positions.`:'Positions tracked. Verify the photo matches the physical board.');
-        controls.append(button(missing.length?'Identify Missing Models':'Review / Correct Models',()=>{selected=missing[0]?.key||'';stage='identify';update();}));
-        if(!missing.length)controls.append(button('Review Terrain & Assess',()=>{stage='terrain';update();},'primary'));
-        controls.append(button('Recalibrate Photo',()=>{resetCalibration();},'ghost'));
-      }else if(stage==='plan'){
+      else if(stage==='plan'){
         if(!plan){
           tell('Recon could not confirm a tactical action. This does not mean there are no legal moves.');
           const reasons=document.createElement('div');reasons.className='rt-plan';
@@ -463,17 +477,18 @@ function trackingUI(){
           tell('Tactical recommendation · confirm on the physical table');
           const info=document.createElement('div');info.className='rt-plan';
           info.innerHTML='<strong>'+esc(a?.name)+' · '+esc(plan.id==='fall-back'?'Fall Back':plan.id[0].toUpperCase()+plan.id.slice(1))+'</strong><p>'+esc(plan.destination?`${plan.distance.toFixed(1)}″ proposed straight movement${target?` toward ${target.name}`:''}.`:target?`Target ${target.name}.`:'')+'</p>'+(plan.followUp?'<p>Potential follow-up: '+esc(plan.followUp)+'</p>':'')+'<small>Green: acting NPO / destination. Red: target. Check visibility, cover, base fit and special rules before accepting.</small>';
+          recommendation.hidden=false;recommendation.append(info);
           if(plan.skipped?.length){
             const note=document.createElement('p');note.textContent='Check higher-priority actions first: '+plan.skipped.map(s=>s.action+' ('+s.reason+')').join('; ');info.append(note);
-            const label=document.createElement('label');label.className='rt-check';const check=document.createElement('input');check.type='checkbox';label.append(check,document.createTextNode(' No legal higher-priority route exists on the tabletop.'));controls.append(info,label);
+            const label=document.createElement('label');label.className='rt-check';const check=document.createElement('input');check.type='checkbox';label.append(check,document.createTextNode(' No legal higher-priority route exists on the tabletop.'));controls.append(label);
             const accept=button('Accept Tactical Recommendation',()=>{if(!live()||!check.checked)return;preview={frame,positions,models,board,walls,objectives,plan};config.accept(plan);},'primary');accept.disabled=true;check.onchange=()=>accept.disabled=!check.checked;controls.append(accept);
-          }else controls.append(info,button('Accept Tactical Recommendation',()=>{if(!live())return;preview={frame,positions,models,board,walls,objectives,plan};config.accept(plan);},'primary'));
-          controls.append(button('Review Positions / Terrain',()=>{stage='terrain';plan=null;update();},'ghost'));
+          }else controls.append(button('Accept Tactical Recommendation',()=>{if(!live())return;preview={frame,positions,models,board,walls,objectives,plan};config.accept(plan);},'primary'));
+          controls.append(button('Review / Correct Models',()=>{stage='identify';plan=null;selected='';update();},'ghost'),button('Review Mission Layout',()=>{stage='terrain';plan=null;update();},'ghost'),button('Recalibrate Photo',resetCalibration,'ghost'));
         }
       }
       repaint();
     }
-    function resetCalibration(){
+    function resetCalibration(attemptAutomatic=false){
       if(!raw)return;
       positions={};board=null;walls=[];objectives=[];mapped=false;mapLayout=null;mapFit=null;plan=null;dragging=null;frame=raw;autoRectified=false;
       const ctx=raw.getContext('2d'),data=ctx.getImageData(0,0,raw.width,raw.height).data,q=calibration.detect(data,raw.width,raw.height);
@@ -485,7 +500,13 @@ function trackingUI(){
         im.data.set(calibration.warp(data,raw.width,raw.height,q,corrected.width,corrected.height,pad));c.putImageData(im,0,0);
         frame=corrected;crop={x:pad,y:pad,w,h};autoRectified=true;
       }else crop=calibration.fit(frame.width,frame.height);
-      stage='crop';update();
+      stage='crop';
+      // Reuse the last confirmed crop only when framing mode and orientation match.
+      if(attemptAutomatic===true&&!config.setup&&s.mapped&&s.capture&&s.capture.rectified===autoRectified&&Math.abs(frame.width/frame.height-s.capture.aspect)<.015){
+        const c=s.capture.rect;crop={x:c.x*frame.width,y:c.y*frame.height,w:c.w*frame.width,h:c.h*frame.height};
+        if(confirmCrop(true))return;
+      }
+      update();
     }
     function rotatePhoto(){
       if(!frame)return;
@@ -493,30 +514,41 @@ function trackingUI(){
       const c=rotated.getContext('2d');c.translate(rotated.width,0);c.rotate(Math.PI/2);c.drawImage(frame,0,0);
       crop={x:frame.height-crop.y-crop.h,y:crop.x,w:crop.h,h:crop.w};frame=rotated;update();
     }
-    function confirmCrop(){
-      if(!live()||!crop)return;
+    function confirmCrop(automatic=false){
+      if(!live()||!crop)return false;
+      automatic=automatic===true;
+      const previousFrame=frame,previousCrop={...crop};
+      capture={rectified:autoRectified,aspect:frame.width/frame.height,rect:{x:crop.x/frame.width,y:crop.y/frame.height,w:crop.w/frame.width,h:crop.h/frame.height}};
       const out=document.createElement('canvas'),landscape=crop.w>crop.h;
       out.width=landscape?600:440;out.height=landscape?440:600;
       out.getContext('2d').drawImage(frame,crop.x,crop.y,crop.w,crop.h,0,0,out.width,out.height);
       frame=out;crop=null;board={x0:0,y0:0,x1:out.width,y1:out.height,width:landscape?30:22,height:landscape?22:30};
       if(s.frame&&s.board&&s.frame.width===out.width&&s.frame.height===out.height){
         const data=out.getContext('2d').getImageData(0,0,out.width,out.height).data,before=s.frame.getContext('2d').getImageData(0,0,out.width,out.height).data;
-        let delta=0,count=0;
-        for(let y=12;y<out.height-12;y+=13)for(let x=12;x<out.width-12;x+=13){if(Object.values(s.positions).some(p=>core.dist(p,{x,y})<(p.r||8)*2))continue;const i=(y*out.width+x)*4;delta+=(Math.abs(data[i]-before[i])+Math.abs(data[i+1]-before[i+1])+Math.abs(data[i+2]-before[i+2]))/3;count++;}
-        if(count&&delta/count<16){
-          walls=s.walls.map(w=>w.map(p=>({...p})));objectives=s.objectives.map(p=>({...p}));mapped=false;
+        const priorLayout=config.missionNumber&&s.mapFit?maps.geometry(config.missionNumber,board,s.mapRotation,s.openDoors,s.mapFit):null;
+        const comparison=core.compareBoard(before,data,out.width,out.height,s.positions,priorLayout?.doors||[]);
+        if(comparison.aligned){
+          walls=s.walls.map(w=>w.map(p=>({...p})));objectives=s.objectives.map(p=>({...p}));
           if(config.missionNumber){rotation=s.mapRotation;mapFit=s.mapFit;openDoors=[...s.openDoors];refreshMap();}
+          mapped=Boolean(s.mapped&&comparison.terrainStable&&(!config.missionNumber||priorLayout&&mapLayout));
           const changed=new Set(models.filter(m=>m.side==='player'&&(!s.activated.has(m.key)&&config.activated.includes(m.key)||s.turn!==config.turn)||m.side==='npo'&&(s.ready.has(m.key)&&!config.ready.includes(m.key)||m.key===config.actorKey||s.turn!==config.turn)).map(m=>m.key));
           const matches=core.track(s.positions,data,out.width,out.height,board,models,changed);
-          positions=Object.fromEntries(Object.entries(matches).filter(([,p])=>p));stage='review';update();return;
+          positions=Object.fromEntries(Object.entries(matches).filter(([,p])=>p));
+          const missing=models.filter(m=>!positions[m.key]);
+          if(!missing.length&&mapped&&!config.setup){assess();return true;}
+          selected=missing[0]?.key||'';
+          stage=!mapped?'terrain':missing.length?'identify':'terrain';update();
+          if(!mapped&&priorLayout&&!comparison.terrainStable)tell('The photo changed near a hatchway. Confirm the current hatchway states before continuing.');
+          return true;
         }
       }
-      positions={};walls=[];objectives=[];mapped=false;selected='';openDoors=[];refreshMap(true);stage=mapLayout?'terrain':'identify';update();
+      if(automatic){frame=previousFrame;crop=previousCrop;board=null;capture=null;stage='crop';return false;}
+      positions={};walls=[];objectives=[];mapped=false;selected='';openDoors=[];refreshMap(true);stage=mapLayout?'terrain':'identify';update();return true;
     }
     function assess(){
       if(!live()||!board||models.some(m=>!positions[m.key]))return;
-      if(mapLayout&&!mapped){tell('Confirm that the mission overlay matches the physical board before proceeding.');return;}
-      s.meta=Object.fromEntries(models.map(m=>[m.key,{base:m.base,order:m.order}]));s.frame=frame;s.board={...board};s.positions={...positions};s.walls=walls.map(w=>w.map(p=>({...p})));s.objectives=objectives.map(p=>({...p}));s.mapped=mapped;s.turn=config.turn;s.activated=new Set(config.activated);s.ready=new Set(config.ready);s.scanKey=config.scanKey;s.mapRotation=rotation;s.mapFit=mapFit;s.openDoors=[...openDoors];
+      if(!mapped){tell('Confirm that the terrain matches the physical board before proceeding.');return;}
+      s.meta=Object.fromEntries(models.map(m=>[m.key,{base:m.base,order:m.order}]));s.frame=frame;s.board={...board};s.positions={...positions};s.walls=walls.map(w=>w.map(p=>({...p})));s.objectives=objectives.map(p=>({...p}));s.mapped=mapped;s.turn=config.turn;s.activated=new Set(config.activated);s.ready=new Set(config.ready);s.scanKey=config.scanKey;s.mapRotation=rotation;s.mapFit=mapFit;s.openDoors=[...openDoors];s.capture=capture;
       if(config.setup){config.complete();return;}
       diagnostics=[];plan=core.plan({board,positions,models,walls,objectives,mapped,actorKey:config.actorKey,actionOrder:config.actionOrder,diagnostics});
       stage='plan';update();
@@ -530,7 +562,7 @@ function trackingUI(){
         const factor=Math.min(1,600/Math.max(im.naturalWidth,im.naturalHeight));
         const next=document.createElement('canvas');next.width=Math.max(1,Math.round(im.naturalWidth*factor));next.height=Math.max(1,Math.round(im.naturalHeight*factor));
         next.getContext('2d').drawImage(im,0,0,next.width,next.height);raw=next;work.hidden=false;
-        resetCalibration();
+        resetCalibration(true);
       }catch(e){if(ticket===seq&&live())tell('Could not read photo. Try a JPEG or another image.');}
       finally{if(url)URL.revokeObjectURL(url);}
     }
@@ -570,7 +602,7 @@ function trackingUI(){
       else if(stage==='wall'){if(!wallStart){wallStart=p;update();}else{if(core.dist(wallStart,p)<4)return;walls.push([wallStart,p]);mapped=false;wallStart=null;stage='terrain';update();}}
       else if(stage==='objective'){objectives.push(p);stage='terrain';update();}
     };
-    if(s.frame)tell('Capture a fresh photograph from the same overhead position. Previously identified models will be tracked.');
+    if(s.frame)tell('Capture a fresh photograph from the same overhead position for a tactical recommendation.');
     else tell('Photograph the deployed board from directly overhead. Identify each miniature once.');
   }
   function renderPreview(host){
