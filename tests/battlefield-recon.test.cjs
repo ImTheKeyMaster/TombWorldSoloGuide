@@ -1,0 +1,22 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const c=require('../battlefield-recon.js');
+assert.equal(c.nearest({x:1,y:1},[{x:2,y:2},{x:9,y:9}],3).x,2);
+assert.equal(c.nearest({x:0,y:0},[{x:5,y:5}],2),null);
+assert.deepEqual(c.pointFromRect(150,100,{left:100,top:50,width:100,height:100},500,1000),{x:250,y:500});
+assert.equal(c.pointFromRect(99,100,{left:100,top:50,width:100,height:100},500,1000),null);
+const n=240,data=new Uint8ClampedArray(n*n*4);
+for(let y=0;y<n;y++)for(let x=0;x<n;x++){const v=Math.hypot(x-120,y-120)<7?230:30;data.fill(v,(y*n+x)*4,(y*n+x)*4+3);}
+assert(c.detect(data,n,n).some(p=>c.distance(p,{x:120,y:120})<5));
+assert.equal(c.detect(new Uint8ClampedArray(n*n*4),n,n).length,0);
+const app=fs.readFileSync('app.js','utf8');
+assert(app.includes("if(isPvpMode()||!experimentalFeaturesEnabled())return '';"));
+assert.equal((app.match(/battlefieldReconMarkup\(n,'move',displayAction\)/g)||[]).length,2);
+assert(app.includes("battlefieldReconMarkup(n,'attack',decision.action)"));
+assert(fs.readFileSync('index.html','utf8').includes('battlefield-recon.js?v=10.1.29'));
+assert(fs.readFileSync('service-worker.js','utf8').includes('battlefield-recon.js?v='));
+assert.deepEqual(c.detect(new Uint8ClampedArray(0),0,0),[]);
+assert(fs.readFileSync('index.html','utf8').includes('battlefield-recon.css?v=10.1.29'));
+assert(fs.readFileSync('service-worker.js','utf8').includes('battlefield-recon.css?v='));
+console.log('Battlefield Recon: 14 checks passed.');

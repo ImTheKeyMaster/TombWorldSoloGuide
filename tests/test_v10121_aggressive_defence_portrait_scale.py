@@ -50,7 +50,7 @@ def test_all_supported_player_operative_types_use_the_shared_portrait():
 
 
 def test_portrait_fills_result_card_height_without_distortion_or_clipping():
-    css=CSS[CSS.index("/* Experimental Aggressive Defence:"):CSS.index("@media(max-width:600px)",CSS.index("/* Experimental Aggressive Defence:"))]
+    css=CSS[CSS.index("/* Shared Solo Tomb Aggressive Defence / Hot outcomes:"):CSS.index("@media(max-width:600px)",CSS.index("/* Shared Solo Tomb Aggressive Defence / Hot outcomes:"))]
     assert "min-height:184px" not in css
     assert "flex:0 0 min(46%,168px)" in css
     assert "height:146px;overflow:hidden;align-self:flex-end" in css

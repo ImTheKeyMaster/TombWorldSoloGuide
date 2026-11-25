@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.28
+# Tomb World Battle Guide v10.1.29
+
+## v10.1.29
+
+- Experimental solo-only Battlefield Recon: optional current-photo upload, unverified local image-based model/terrain suggestions, and touch annotation for the active NPO and a destination or target. No simulated board or game-state changes. Photos are local, temporary, and never uploaded. Base detection does not identify factions, validate rules, or choose targets. Standard gameplay is unchanged.
 
 ## v10.1.28
 
