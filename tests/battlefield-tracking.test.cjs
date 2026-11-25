@@ -49,3 +49,14 @@ const ww=120,hh=120,photo=new Uint8ClampedArray(ww*hh*4);
 for(let y=0;y<hh;y++)for(let x=0;x<ww;x++){let v=70+Math.round(x/10);const rr=Math.hypot(x-55,y-60);if(rr<=12)v=rr>9?112:48;if(x>=55&&x<=77&&Math.abs(y-57)<=2)v=175;if(x>=90&&x<=97)v=180;photo.fill(v,(y*ww+x)*4,(y*ww+x)*4+3);}
 const picked=c.snapping.snap(photo,ww,hh,{x:60,y:62},12);a(picked&&Math.hypot(picked.x-55,picked.y-60)<=4);a.equal(c.snapping.snap(photo,ww,hh,{x:25,y:85},12),null);a.equal(c.snapping.snap(photo,ww,hh,{x:93,y:60},12),null);a.equal(c.snapping.snap(photo,ww,hh,{x:55,y:60},12,()=>true),null);
 console.log('Partial rim, wall, weapon and empty floor selection regressions passed.');
+
+const reasons=[];
+a.equal(c.plan({...args,models:[{...models[0],base:null},models[1]],diagnostics:reasons}),null);
+a.equal(reasons[0].code,'base');
+const second={...models[0],key:'n:c',name:'Warrior 2',wounds:9};
+const all={...args,models:[{...models[0],name:'Support'},second,models[1]],positions:{...positions,'n:c':{x:100,y:140}},actionOrder:m=>m.key==='n:a'?['Overcharge','Shoot']:['Shoot','Reposition']};
+a.equal(c.plan(all).actor,'n:c');
+const route=c.plan({...args,models:[{...models[0],move:3,canShoot:false,focus:'fight'},models[1]],positions:{...positions,'p:b':{x:220,y:100}},actionOrder:()=>['Fight','Charge','Reposition','Dash']});
+a(route&&route.id==='reposition');a.equal(route.skipped[0].action,'Charge');
+const blockedReasons=[];a.equal(c.plan({...args,actionOrder:()=>['Overcharge'],diagnostics:blockedReasons}),null);a.equal(blockedReasons[0].code,'special');
+console.log('Multi-candidate and diagnostic regressions passed.');
