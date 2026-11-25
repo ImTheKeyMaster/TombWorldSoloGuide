@@ -25,7 +25,7 @@ with sync_playwright() as p:
     page.set_content('<html data-experimental="on"><body><div id="host"></div></body></html>')
     for f in ["styles.css","battlefield-recon.css","battlefield-tracking.css"]:page.add_style_tag(path=str(ROOT/f))
     page.add_script_tag(path=str(ROOT/"battlefield-tracking.js"))
-    page.evaluate("window.overlayLabels=[];const original=CanvasRenderingContext2D.prototype.fillText;CanvasRenderingContext2D.prototype.fillText=function(text,...args){overlayLabels.push(String(text));return original.call(this,text,...args)}")
+    page.evaluate("() => {window.overlayLabels=[];const original=CanvasRenderingContext2D.prototype.fillText;CanvasRenderingContext2D.prototype.fillText=function(text,...args){overlayLabels.push(String(text));return original.call(this,text,...args)};}")
     page.evaluate("""window.reconConfig={token:{},turn:1,scanKey:'1',activated:[],ready:['n:a'],models:[{key:'n:a',side:'npo',name:'Warrior',base:32,ready:true,move:6,ap:2,canShoot:true,range:12,focus:'shoot',wounds:9},{key:'p:b',side:'player',name:'Gunner',base:32,order:'Engage',wounds:5}],valid:()=>true,actionOrder:()=>['Shoot','Reposition'],manual:()=>{window.manual=true},accept:p=>{window.accepted=p}};TombWorldReconTracking.open(document.querySelector('#host'),reconConfig)""")
     page.locator("input[aria-label='Choose tactical photo']").set_input_files({"name":"board.png","mimeType":"image/png","buffer":image()})
     page.get_by_text('Confirm Board Area',exact=True).wait_for()
