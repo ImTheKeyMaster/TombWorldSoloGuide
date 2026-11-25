@@ -23,16 +23,18 @@ def test_card_modes_and_existing_activation_paths():
 const fs=require('node:fs'),source=fs.readFileSync('app.js','utf8');
 const block=(begin,end)=>source.slice(source.indexOf(begin),source.indexOf(end,source.indexOf(begin)));
 const body=block('function nextStepCard(){','function missionStrategyPending()');
+const recon=block('function reconTrackingEnabled(){','function showReconTracking(');
 const create=new Function('ctx',`
 const {state,setNextActivation,playerOperativesRemaining,activationSideName,
 experimentalFeaturesEnabled,activePlayerActivation,playerName,
 experimentalDeathwatchRosterMarkup,remainingPlayerOperatives,activationProgressLabel,
 escapeHtml,skipRemainingActivationsControl,activationModelLabel,readyNpos,
-isPvpMode,opponentSingularLabel,experimentalNecronRosterMarkup,document}=ctx;
+isPvpMode,opponentSingularLabel,experimentalNecronRosterMarkup,document,window}=ctx;
+${recon};
 ${body};
 return nextStepCard;
 `);
-function card({experimental=false,team='Deathwatch',side='player',active=null,count=4}={}){
+function card({experimental=false,team='Deathwatch',side='player',active=null,count=4,pvp=false}={}){
   const state={completed:false,phase:'firefight',nextSide:side,playerActivated:1,
     npoActivated:1,initiative:'player'};
   return create({state,setNextActivation:()=>{},playerOperativesRemaining:()=>count,
@@ -44,7 +46,7 @@ function card({experimental=false,team='Deathwatch',side='player',active=null,co
     activationProgressLabel:()=> 'ACTIVATION 2 OF 13',escapeHtml:String,
     skipRemainingActivationsControl:()=>'<button id="skipRemainingActivations">Skip Remaining</button>',
     activationModelLabel:()=> 'a Deathwatch Operative',readyNpos:()=>[{id:'n1'}],
-    isPvpMode:()=>false,opponentSingularLabel:()=> 'Necron',
+    isPvpMode:()=>pvp,window:{TombWorldReconTracking:{}},opponentSingularLabel:()=> 'Necron',
     experimentalNecronRosterMarkup:(operatives,options)=>`<div id="experimentalInlineNecronPicker">NECRON ${operatives.length},${options.inline}</div>`
   })();
 }
@@ -68,6 +70,9 @@ check(necron.includes('id="experimentalInlineNecronPicker"')&&
 check(card({experimental:false,side:'npo'}).includes('id="experimentalInlineNecronPicker"')&&
   !card({experimental:false,side:'npo'}).includes('id="npoActivation"'),
   'Combined Necron activation must now be standard');
+check(necron.includes('id="startReconTracking"'), 'Experimental solo NPO scan missing');
+check(!card({experimental:false,side:'npo'}).includes('id="startReconTracking"'), 'Standard must not show scan');
+check(!card({experimental:true,side:'npo',pvp:true}).includes('id="startReconTracking"'), 'PvP must not show scan');
 """)
 
 
