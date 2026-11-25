@@ -2,7 +2,7 @@
 
 ## v10.1.36
 
-- Experimental Recon capture no longer computes tactical weapon/AP metadata at initial setup; the first Strategy Phase exposes an optional capture retry, and shows the underlying launch error if capture fails. Retrying does not reroll initiative or alter the Turning Point. Added an integration test using the actual app and mission/operative data.
+- Fix the initial setup render failing when Strategy data has not yet been initialized. Experimental Recon capture no longer computes tactical weapon/AP metadata at initial setup; the first Strategy Phase exposes an optional capture retry, and shows the underlying launch error if capture fails. Retrying does not reroll initiative or alter the Turning Point. Added an integration test using the actual app and mission/operative data.
 
 ## v10.1.35
 

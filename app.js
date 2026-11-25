@@ -4109,7 +4109,7 @@ document.addEventListener('touchend',function(e){
   }
 
   function strategyViewStep(data=state.strategyData||{}){
-    return ['actions','events','review'].includes(data.viewStep)?data.viewStep:'actions';
+    return ['actions','events','review'].includes(data?.viewStep)?data.viewStep:'actions';
   }
 
   function strategyProgressHtml(step){
