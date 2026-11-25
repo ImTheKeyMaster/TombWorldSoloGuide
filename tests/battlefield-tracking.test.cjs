@@ -35,3 +35,11 @@ const q=cal.detect(d,W,H);a(q&&Math.abs(q[0].x-26)<8);a(Math.abs(cal.project(q,1
 a.equal(cal.detect(new Uint8ClampedArray(W*H*4),W,H),null);
 const warped=cal.warp(d,W,H,q,120,160,10);a.equal(warped.length,120*160*4);a(warped[(80*120+60)*4]<60);
 console.log('Board calibration checks passed.');
+
+const mb={x0:0,y0:0,x1:440,y1:600,width:22,height:30};
+for(let i=1;i<=6;i++){const g=c.maps.geometry(i,mb);a(g.walls.length&&g.doors.length&&g.terrain.length);}
+const closed=c.maps.geometry(1,mb),opened=c.maps.geometry(1,mb,0,[0]);a(opened.walls.length>closed.walls.length);a(opened.doors[0].open);a.notDeepEqual(c.maps.geometry(1,mb,1).walls,closed.walls);
+a.equal(c.maps.geometry(99,mb),null);
+const img=new Uint8ClampedArray(100*100*4);for(let y=0;y<100;y++)for(let x=0;x<100;x++){const v=Math.hypot(x-50,y-50)<=9?180:40;img.fill(v,(y*100+x)*4,(y*100+x)*4+3);}
+a.equal(c.snapping.snap(img,100,100,{x:55,y:52},9).x,50);a.equal(c.snapping.snap(img,100,100,{x:15,y:15},9),null);a.equal(c.snapping.snap(img,100,100,{x:55,y:52},9,()=>true),null);
+console.log('Mission layouts and miniature snapping checks passed.');
