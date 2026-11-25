@@ -68,3 +68,18 @@ for(let y=50;y<=70;y++)for(let x=50;x<=70;x++)nextBoard.fill(200,(y*bw+x)*4,(y*b
 a.deepEqual(c.compareBoard(priorBoard,nextBoard,bw,bh,{},[{x:60,y:60}]),{aligned:true,terrainStable:false});
 a.equal(c.compareBoard(priorBoard,new Uint8ClampedArray(bw*bh*4).fill(200),bw,bh).aligned,false);
 console.log('Repeat scan and hatchway change checks passed.');
+
+// A Marksman must not blindly move toward an enemy behind a solid wall.
+const marksman={...models[0],move:5,focus:'shoot',operatesHatches:true,name:'Warrior'},enemy={...models[1],name:'Gunner'};
+const tactical={...args,models:[marksman,enemy],positions:{'n:a':{x:200,y:100},'p:b':{x:100,y:100}},actionOrder:()=>['Shoot','Reposition']};
+const solid=[[{x:150,y:0},{x:150,y:300}]];
+a.equal(c.plan({...tactical,walls:solid}),null);
+const detour=c.plan({...tactical,walls:[[{x:150,y:0},{x:150,y:225}]]});
+a(detour&&detour.id==='reposition'&&detour.destination.y>120&&detour.distance<=5&&detour.intent.includes('firing position'));
+const around=c.plan({...tactical,models:[{...marksman,move:9,range:20},enemy],positions:{'n:a':{x:180,y:120},'p:b':{x:100,y:120}},walls:[[{x:150,y:0},{x:150,y:145}]]});
+a(around&&around.path.length>=2&&around.distance<=9);
+const door={x:150,y:160,id:1,open:false};
+const hatch=c.plan({...tactical,walls:solid,doors:[door],futureWalls:[[{x:150,y:0},{x:150,y:149.5}],[{x:150,y:170.5},{x:150,y:300}]]});
+a(hatch&&hatch.hatchway&&hatch.destination.x>150&&hatch.distance<=5);
+for(let i=1;i<hatch.path.length;i++)a(c.segmentGap(hatch.path[i-1],hatch.path[i],...solid[0])>6);
+console.log('Tactical intent, obstacle detour and closed hatchway regressions passed.');

@@ -64,7 +64,7 @@ with sync_playwright() as p:
     assert page.get_by_text("Confirm Board Area",exact=True).count()==0
     assert page.get_by_text("Review Terrain & Assess",exact=True).count()==0
     assert page.locator('.rt-recommendation').is_visible()
-    for value in ['Warrior','Shoot','Gunner']:
+    for value in ['Warrior','Shoot','Gunner','Tactical Intent']:
         assert value in page.locator('.rt-recommendation').inner_text()
     page.get_by_text("Review / Correct Models",exact=True).click()
     assert page.locator('select[aria-label="Operative to identify"]').count()==1
@@ -91,6 +91,7 @@ with sync_playwright() as p:
     page.get_by_text('Confirm Mission Layout',exact=True).wait_for()
     assert page.get_by_text('Mark Wall',exact=True).count()==0
     assert page.get_by_text('Mark Objective',exact=True).count()==0
+    assert page.get_by_text('Review Player Orders',exact=True).count()==0
     page.get_by_text('Confirm Mission Layout',exact=True).click()
     assert 'Confirm the overlay' in page.locator('.rt-status').inner_text()
     page.locator('.rt-check input').check()

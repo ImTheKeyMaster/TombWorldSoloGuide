@@ -86,7 +86,51 @@ function trackingCore(){
     });
     return {aligned,terrainStable:aligned&&!changedDoors.length};
   }
-  function plan({board,positions,models,walls=[],objectives=[],mapped=false,actorKey=null,actionOrder,diagnostics=[]}){
+  // Segment clearance checks keep both the grid edges and the simplified
+  // movement overlay outside walls and the other models' bases.
+  function segmentGap(a,b,c,d){
+    const cross=(p,q,r)=>(q.x-p.x)*(r.y-p.y)-(q.y-p.y)*(r.x-p.x);
+    if(cross(a,b,c)*cross(a,b,d)<0&&cross(c,d,a)*cross(c,d,b)<0)return 0;
+    return Math.min(segmentDistance(a,c,d),segmentDistance(b,c,d),segmentDistance(c,a,b),segmentDistance(d,a,b));
+  }
+  function routeGrid(board,start,legal,strategic,max){
+    const step=.5,cols=Math.ceil(board.width/step),rows=Math.ceil(board.height/step),nodes=[];
+    for(let y=0;y<rows;y++)for(let x=0;x<cols;x++)nodes.push({x:(x+.5)*step,y:(y+.5)*step});
+    const edges=nodes.map(()=>[]),seeds=[];
+    for(let i=0;i<nodes.length;i++){
+      const p=nodes[i],x=i%cols,y=Math.floor(i/cols);
+      if(dist(start,p)<=.9&&legal(start,p))seeds.push([i,dist(start,p)]);
+      if(!strategic(p,p))continue;
+      for(const [dx,dy] of [[1,0],[0,1],[1,1],[-1,1]]){
+        const nx=x+dx,ny=y+dy;if(nx<0||nx>=cols||ny>=rows)continue;
+        const j=ny*cols+nx,q=nodes[j];if(!strategic(p,q))continue;
+        const cost=dist(p,q),open=legal(p,q);
+        // Closed hatchways may be future routes, never part of the current move.
+        const edge={to:j,cost,open},back={...edge,to:i};edges[i].push(edge);edges[j].push(back);
+      }
+    }
+    function search(initial,future,limit=Infinity){
+      const distance=new Float64Array(nodes.length).fill(Infinity),prev=new Int32Array(nodes.length).fill(-1),heap=[];
+      function push(item){let i=heap.length;heap.push(item);while(i){const j=(i-1)>>1;if(heap[j][1]<=item[1])break;heap[i]=heap[j];i=j;}heap[i]=item;}
+      function pop(){const first=heap[0],last=heap.pop();if(heap.length){let i=0;while(2*i+1<heap.length){let j=2*i+1;if(j+1<heap.length&&heap[j+1][1]<heap[j][1])j++;if(heap[j][1]>=last[1])break;heap[i]=heap[j];i=j;}heap[i]=last;}return first;}
+      for(const [i,d] of initial)if(d<distance[i]){distance[i]=d;push([i,d]);}
+      while(heap.length){const [i,d]=pop();if(d!==distance[i]||d>limit)continue;
+        for(const e of edges[i]){
+          if(!e.open&&!future)continue;
+          const v=d+e.cost+(e.open?0:1.5);
+          if(v<=limit&&v<distance[e.to]-1e-8){distance[e.to]=v;prev[e.to]=i;push([e.to,v]);}
+        }
+      }
+      return {distance,prev};
+    }
+    const reach=search(seeds,false,max);
+    function path(i){
+      const raw=[];for(let j=i;j>=0;j=reach.prev[j])raw.push(nodes[j]);raw.reverse();raw.unshift(start);
+      const out=[start];let k=0;while(k<raw.length-1){let j=raw.length-1;while(j>k+1&&!legal(raw[k],raw[j]))j--;out.push(raw[j]);k=j;}return out;
+    }
+    return {nodes,seeds,reach,path,field:goals=>search(goals.map(i=>[i,0]),true)};
+  }
+  function plan({board,positions,models,walls=[],objectives=[],doors=[],futureWalls=null,terrain=[],mapped=false,actorKey=null,actionOrder,diagnostics=[]}){
     const report=(code,message,actor=null)=>{diagnostics.push({code,message,actor:actor?.key||null});return null;};
     if(!board)return report('board','The playable board has not been calibrated.');
     if(!mapped)return report('terrain','Confirm the mission layout and hatchway states.');
@@ -100,15 +144,13 @@ function trackingCore(){
     if(!players.length)return report('enemies','No living player operatives on the board.');
     if(!ready.length)return report('ready','No ready NPO is available for this activation.');
     const barriers=walls.map(w=>w.map(p=>physical(p,board)));
-    const obj=objectives.map(p=>physical(p,board));
+    const obj=objectives.map(p=>({...physical(p,board),label:p.label||'mission objective'}));
+    const futureBarriers=(futureWalls||walls).map(w=>w.map(p=>physical(p,board)));
+    const obstacles=terrain.map(t=>({...physical(t,board),r:t.r/(board.x1-board.x0)*board.width*.65}));
+    const closedDoors=doors.filter(d=>!d.open).map(d=>({...physical(d,board),id:d.id}));
     const edge=(a,b)=>Math.max(0,dist(a.p,b.p)-a.r-b.r);
-    function clear(a,b,r=0){
-      const steps=Math.max(1,Math.ceil(dist(a,b)/.12));
-      for(let i=0;i<=steps;i++){
-        const p={x:a.x+(b.x-a.x)*i/steps,y:a.y+(b.y-a.y)*i/steps};
-        if(barriers.some(([s,t])=>segmentDistance(p,s,t)<r+.12))return false;
-      }
-      return true;
+    function clear(a,b,r=0,segments=barriers){
+      return !segments.some(([s,t])=>segmentGap(a,b,s,t)<r+.12);
     }
     const visible=(a,b)=>clear(a.p,b.p,0);
     const control=(a,b)=>edge(a,b)<=.93&&visible(a,b);
@@ -123,36 +165,96 @@ function trackingCore(){
     const inControl=players.some(b=>control(a,b));
     // Borderline base-to-base estimates cannot establish control range reliably.
     if(players.some(b=>Math.abs(edge(a,b)-1)<.15&&visible(a,b)))return report('control','Control range is too close to the 1-inch boundary to estimate reliably.',a);
-    // A straight unobstructed movement is conservative; no invented routes through walls.
-    const validMove=(p,chargeTarget=null)=>{
-      if(p.x<a.r+.1||p.y<a.r+.1||p.x>board.width-a.r-.1||p.y>board.height-a.r-.1||!clear(a.p,p,a.r))return false;
+    const order=actionOrder(a,inControl);
+    const canFollow=id=>a.ap>=2&&Array.isArray(order)&&order.some(name=>String(name).toLowerCase().split(' ')[0]===id);
+    function legalSegment(from,to,chargeTarget=null,segments=barriers){
+      if(to.x<a.r+.1||to.y<a.r+.1||to.x>board.width-a.r-.1||to.y>board.height-a.r-.1||!clear(from,to,a.r,segments))return false;
+      if(obstacles.some(t=>segmentDistance(t,from,to)<a.r+t.r+.08))return false;
       for(const b of units.filter(b=>b.key!==a.key)){
-        if(segmentDistance(b.p,a.p,p)<a.r+b.r+.08)return false;
-        if(b.side==='player'&&b.key!==chargeTarget?.key&&segmentDistance(b.p,a.p,p)<a.r+b.r+1.04)return false;
+        if(segmentDistance(b.p,from,to)<a.r+b.r+.08)return false;
+        if(b.side==='player'&&b.key!==chargeTarget?.key&&segmentDistance(b.p,from,to)<a.r+b.r+1.04)return false;
       }
       return true;
-    };
+    }
+    function result(grid,i,extra){
+      const path=grid.path(i),distance=path.slice(1).reduce((v,p,j)=>v+dist(path[j],p),0);
+      return {destination:imagePoint(path.at(-1),board),path:path.map(p=>imagePoint(p,board)),distance,...extra};
+    }
     function movement(kind){
       if(inControl||!Number.isFinite(a.move))return null;
-      const max=kind==='dash'?3:kind==='charge'?a.move+2:a.move;
-      const focus=a.focus;
-      const goal=focus==='mission'&&obj.length?obj.reduce((b,c)=>dist(a.p,b)<dist(a.p,c)?b:c):players.reduce((b,c)=>dist(a.p,b.p)<dist(a.p,c.p)?b:c).p;
-      let best=null;
-      for(let d=.5;d<=max-.12;d+=.5)for(let i=0;i<32;i++){
-        const t=i*Math.PI/16,p={x:a.p.x+d*Math.cos(t),y:a.p.y+d*Math.sin(t)};
-        if(kind==='charge'){
-          const target=players.find(b=>dist(p,b.p)-a.r-b.r>=.1&&dist(p,b.p)-a.r-b.r<=.85&&clear(p,b.p)&&validMove(p,b));
-          if(target){const score=target.wounds+d*.1;if(!best||score<best.score)best={p,target,score};}
-        }else if(validMove(p)){
-          const next=targets(a,'shoot',p)[0],improvement=dist(a.p,goal)-dist(p,goal);
-          const score=improvement+(focus==='shoot'&&next?100:0);
-          if(score>.2&&(!best||score>best.score))best={p,target:focus==='shoot'?next:null,score};
+      const max=(kind==='dash'?3:kind==='charge'?a.move+2:a.move)-.12;
+      if(kind==='charge'){
+        let best=null;
+        for(const target of players){
+          const legal=(p,q)=>legalSegment(p,q,target),grid=routeGrid(board,a.p,legal,legal,max);
+          grid.nodes.forEach((p,i)=>{
+            const d=grid.reach.distance[i],gap=dist(p,target.p)-a.r-target.r;
+            if(!Number.isFinite(d)||gap<.1||gap>.85||!clear(p,target.p))return;
+            const score=target.wounds*100+d;
+            if(!best||score<best.score)best={score,move:result(grid,i,{target:target.key,intent:'Reach '+(target.name||'the enemy')+' in control range.',followUp:canFollow('fight')?'fight':null})};
+          });
         }
+        return best?.move||null;
       }
-      if(!best)return null;
-      return {destination:imagePoint(best.p,board),target:best.target?.key||null,distance:dist(a.p,best.p),followUp:kind==='charge'&&a.ap>=2?'fight':best.target&&a.ap>=2?'shoot':null};
+      const legal=(p,q)=>legalSegment(p,q),strategic=(p,q)=>legalSegment(p,q,null,a.operatesHatches?futureBarriers:barriers);
+      const grid=routeGrid(board,a.p,legal,strategic,max);
+      const focus=a.focus,shootFocus=focus==='shoot'&&a.canShoot;
+      const firing=(p,b)=>clear(p,b.p)&&(!Number.isFinite(a.range)||Math.max(0,dist(p,b.p)-a.r-b.r)<=a.range-.12);
+      // Use actual firing positions as goals, rather than the enemy's centre.
+      // Future routes may use an opened hatch, but the movement itself cannot.
+      const known=players.filter(b=>b.order==='Engage'),potential=players.filter(b=>b.order!=='Engage');
+      const shootingGoals=list=>grid.nodes.flatMap((p,i)=>strategic(p,p)&&list.some(b=>firing(p,b))?[i]:[]);
+      const groups=[];
+      if(shootFocus){
+        const goals=shootingGoals(known);if(goals.length)groups.push({goals,type:'shoot',targets:known});
+      }
+      if(focus==='fight'){
+        const nearest=[...players].sort((b,c)=>edge(a,b)-edge(a,c))[0];
+        const goals=grid.nodes.flatMap((p,i)=>strategic(p,p)&&dist(p,nearest.p)-a.r-nearest.r<=1.85&&clear(p,nearest.p)?[i]:[]);
+        if(goals.length)groups.push({goals,type:'fight',targets:[nearest]});
+      }
+      if(focus==='warden'){
+        const leader=npos.find(n=>n.type==='Royal Warden');
+        if(leader){const goals=grid.nodes.flatMap((p,i)=>strategic(p,p)&&dist(p,leader.p)-a.r-leader.r<=2?[i]:[]);if(goals.length)groups.push({goals,type:'warden',targets:[leader]});}
+      }
+      if(obj.length){
+        const goals=grid.nodes.flatMap((p,i)=>strategic(p,p)&&obj.some(o=>dist(p,o)<=2)?[i]:[]);
+        if(goals.length)groups.push({goals,type:'mission'});
+      }
+      if(shootFocus&&potential.length){const goals=shootingGoals(potential);if(goals.length)groups.push({goals,type:'potential',targets:potential});}
+      // An immediately attainable shot outranks longer-term positioning.
+      if(shootFocus&&canFollow('shoot')){
+        let best=null;
+        grid.nodes.forEach((p,i)=>{const d=grid.reach.distance[i];if(!Number.isFinite(d)||d<.25)return;const t=targets(a,'shoot',p)[0];if(!t)return;const score=t.wounds*100+d;if(!best||score<best.score)best={i,t,score};});
+        if(best)return result(grid,best.i,{target:best.t.key,intent:'Establish a firing position against '+(best.t.name||'the enemy')+'.',followUp:'shoot'});
+      }
+      for(const group of groups){
+        const field=grid.field(group.goals),baseline=Math.min(...grid.seeds.map(([i,d])=>field.distance[i]+d));
+        if(!Number.isFinite(baseline)||baseline<.4)continue;
+        let best=null;
+        grid.nodes.forEach((p,i)=>{
+          const d=grid.reach.distance[i],remaining=field.distance[i];
+          if(!Number.isFinite(d)||!Number.isFinite(remaining)||d<.25||baseline-remaining<.45)return;
+          const score=remaining+d*.03;
+          if(!best||score<best.score)best={i,score};
+        });
+        if(!best)continue;
+        let end=best.i,hatch=null,prior=end;
+        while(field.prev[end]>=0){
+          const next=field.prev[end],p=grid.nodes[end],q=grid.nodes[next];
+          if(!legal(p,q)&&closedDoors.length&&!hatch)hatch=[...closedDoors].sort((b,c)=>segmentDistance(b,p,q)-segmentDistance(c,p,q))[0];
+          prior=end;end=next;
+        }
+        const goal=grid.nodes[end],target=group.targets?.filter(b=>group.type!=='shoot'&&group.type!=='potential'||firing(goal,b)).sort((b,c)=>dist(goal,b.p)-dist(goal,c.p))[0];
+        const objective=group.type==='mission'?[...obj].sort((b,c)=>dist(goal,b)-dist(goal,c))[0]:null;
+        const intent=group.type==='shoot'?'Advance along a reachable route toward a firing position against '+(target?.name||'the enemy')+'.':
+          group.type==='potential'?'Advance toward a potential firing position; verify the enemy order and cover before shooting.':
+          group.type==='fight'?'Close the distance along a reachable route to '+(target?.name||'the enemy')+'.':
+          group.type==='warden'?'Move toward the Royal Warden.':'Move to help contest or defend '+(objective?.label||'the mission objective')+'.';
+        return result(grid,best.i,{goalTarget:target?.key||null,goal:imagePoint(goal,board),intent,hatchway:hatch?imagePoint(hatch,board):null,followUp:null});
+      }
+      return null;
     }
-    const order=actionOrder(a,inControl);
     if(!Array.isArray(order)||!order.length)return report('actions','No legal actions are available in the current activation.',a);
     for(const name of order){
       const id=String(name).toLowerCase().split(' ')[0];
@@ -170,17 +272,17 @@ function trackingCore(){
         if(move)return {actor:a.key,action:name,id,...move,inControl,shootable:targets(a,'shoot').length>0,fightable:false,skipped};
         // Search lower-priority movement options, but explicitly flag that curved
         // routes for the higher-priority action have not been ruled out.
-        skipped.push({action:name,reason:'No unobstructed straight route found.'});
+        skipped.push({action:name,reason:'No supported route within the movement allowance found.'});
       }else if(id==='fall'){
         if(inControl)return report('fall-back','Fall Back requires a tabletop route check.',a);
       }else return report('special',name+' requires a tabletop rules check.',a);
     }
-    return report('route',skipped.length?'No supported straight movement or eligible attack found; a route around walls or a hatchway may be available.':'No eligible attack or supported movement was found.',a);
+    return report('route',skipped.length?'No reachable tactical position or eligible attack found. Check hatchway access, terrain and special rules.':'No eligible attack or movement that improves a tactical goal was found.',a);
     }
     for(const {a} of ranking){const result=evaluate(a);if(result)return result;}
     return null;
   }
-  return {dist,inside,physical,imagePoint,segmentDistance,patch,matchScore,track,compareBoard,plan};
+  return {dist,inside,physical,imagePoint,segmentDistance,segmentGap,routeGrid,patch,matchScore,track,compareBoard,plan};
 }
 function calibrationCore(){
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
@@ -380,7 +482,14 @@ function trackingUI(){
     if(showLabels)models.forEach((m,i)=>{const p=positions[m.key];if(!p)return;const c=m.side==='npo'?'#76f5a8':'#91caff';ring(p,c,Math.max(8,p.r||10));ctx.font='bold 11px system-ui';ctx.fillStyle='#06100c';ctx.fillRect(p.x-9,p.y-19,19,13);ctx.fillStyle=c;ctx.textAlign='center';ctx.fillText(String(i+1),p.x,p.y-9);});
     if(plan){
       const a=positions[plan.actor],t=positions[plan.target],d=plan.destination;
-      if(a){if(d)line(a,d,'#76f5a8',false,true);if(t)line(d||a,t,'#ff7f83',true,true);ring(a,'#76f5a8',Math.max(12,a.r||10));if(d)ring(d,'#76f5a8',12,true);if(t)ring(t,'#ff7f83',Math.max(12,t.r||10));}
+      if(a){
+        const route=plan.path||[a,d].filter(Boolean);
+        for(let i=1;i<route.length;i++)line(route[i-1],route[i],'#76f5a8',false,i===route.length-1);
+        if(t)line(d||a,t,'#ff7f83',true,true);
+        ring(a,'#76f5a8',Math.max(12,a.r||10));if(d)ring(d,'#76f5a8',12,true);if(t)ring(t,'#ff7f83',Math.max(12,t.r||10));
+        const goal=positions[plan.goalTarget]||plan.goal;if(goal)ring(goal,'#f0c66a',Math.max(12,goal.r||10),true);
+        if(plan.hatchway)ring(plan.hatchway,'#f0c66a',9,true);
+      }
     }
   }
   function open(host,config){
@@ -458,7 +567,6 @@ function trackingUI(){
           controls.append(group);
         }
         const unresolved=models.filter(m=>!m.base);if(unresolved.length){const note=document.createElement('p');note.className='rt-metadata';note.textContent='Base size required for '+unresolved.map(m=>m.name).join(', ')+'.';controls.append(note,button('Set Missing Base Sizes',()=>{selected=unresolved[0].key;stage='identify';update();}));}
-        const unknown=models.filter(m=>m.side==='player'&&m.order==='Unknown');if(unknown.length){const note=document.createElement('p');note.className='rt-metadata';note.textContent='Unknown orders may prevent shooting recommendations. Update them if needed.';controls.append(note,button('Review Player Orders',()=>{selected=unknown[0].key;stage='identify';update();},'ghost'));}
         const check=document.createElement('label');check.className='rt-check';const input=document.createElement('input');input.type='checkbox';input.checked=mapped;input.onchange=()=>{mapped=input.checked;};check.append(input,document.createTextNode(mapLayout?' Mission overlay matches the physical board, including hatchway states.':' All blocking terrain is marked; verify physical board and open hatchways.'));controls.append(check);
                 const missing=models.some(m=>!positions[m.key]);
         controls.append(button(missing?'Confirm Mission Layout':config.setup?'Finish Recon Setup':'Assess Battlefield',()=>{if(!mapped){tell(mapLayout?'Confirm the overlay and hatchway states first.':'Confirm the marked terrain first.');return;}if(missing){stage='identify';update();return;}assess();},'primary'));
@@ -476,7 +584,8 @@ function trackingUI(){
           const a=models.find(m=>m.key===plan.actor),target=models.find(m=>m.key===plan.target);
           tell('Tactical recommendation · confirm on the physical table');
           const info=document.createElement('div');info.className='rt-plan';
-          info.innerHTML='<strong>'+esc(a?.name)+' · '+esc(plan.id==='fall-back'?'Fall Back':plan.id[0].toUpperCase()+plan.id.slice(1))+'</strong><p>'+esc(plan.destination?`${plan.distance.toFixed(1)}″ proposed straight movement${target?` toward ${target.name}`:''}.`:target?`Target ${target.name}.`:'')+'</p>'+(plan.followUp?'<p>Potential follow-up: '+esc(plan.followUp)+'</p>':'')+'<small>Green: acting NPO / destination. Red: target. Check visibility, cover, base fit and special rules before accepting.</small>';
+          const intent=plan.intent||(plan.id==='shoot'?'Shoot a priority eligible enemy.':plan.id==='fight'?'Fight a priority enemy in control range.':'Improve the tactical position.');
+          info.innerHTML='<strong>'+esc(a?.name)+' · '+esc(plan.id==='fall-back'?'Fall Back':plan.id[0].toUpperCase()+plan.id.slice(1))+'</strong><p><b>Tactical Intent:</b> '+esc(intent)+'</p><p>'+esc(plan.destination?`${plan.distance.toFixed(1)}″ along the marked route${target?` toward ${target.name}`:''}.`:target?`Target ${target.name}.`:'')+'</p>'+(plan.followUp?'<p>Potential follow-up: '+esc(plan.followUp)+'</p>':'')+(plan.hatchway?'<p>Later route requires an open hatchway. Verify and resolve opening on the tabletop before crossing.</p>':'')+'<small>Green: current route. Red: attack target. Amber: future goal or hatchway. Verify tabletop legality before accepting.</small>';
           recommendation.hidden=false;recommendation.append(info);
           if(plan.skipped?.length){
             const note=document.createElement('p');note.textContent='Check higher-priority actions first: '+plan.skipped.map(s=>s.action+' ('+s.reason+')').join('; ');info.append(note);
@@ -550,7 +659,8 @@ function trackingUI(){
       if(!mapped){tell('Confirm that the terrain matches the physical board before proceeding.');return;}
       s.meta=Object.fromEntries(models.map(m=>[m.key,{base:m.base,order:m.order}]));s.frame=frame;s.board={...board};s.positions={...positions};s.walls=walls.map(w=>w.map(p=>({...p})));s.objectives=objectives.map(p=>({...p}));s.mapped=mapped;s.turn=config.turn;s.activated=new Set(config.activated);s.ready=new Set(config.ready);s.scanKey=config.scanKey;s.mapRotation=rotation;s.mapFit=mapFit;s.openDoors=[...openDoors];s.capture=capture;
       if(config.setup){config.complete();return;}
-      diagnostics=[];plan=core.plan({board,positions,models,walls,objectives,mapped,actorKey:config.actorKey,actionOrder:config.actionOrder,diagnostics});
+      const future=mapLayout&&maps.geometry(config.missionNumber,board,rotation,mapLayout.doors.map(d=>d.id),mapFit);
+      diagnostics=[];plan=core.plan({board,positions,models,walls,objectives,doors:mapLayout?.doors||[],terrain:mapLayout?.terrain||[],futureWalls:future?.walls||null,mapped,actorKey:config.actorKey,actionOrder:config.actionOrder,diagnostics});
       stage='plan';update();
     }
     async function load(file){
