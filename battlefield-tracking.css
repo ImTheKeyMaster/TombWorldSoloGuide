@@ -15,3 +15,6 @@
 html[data-experimental="off"] .recon-scan-entry,html[data-experimental="off"] [data-recon-plan]{display:none!important}
 
 .rt-metadata{display:grid;gap:5px;color:var(--muted);font-size:.8rem;margin:0}.rt-metadata input{width:100%;min-height:46px;background:#07140f;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:1rem}
+
+/* Fixed-ratio touch crop calibration. */
+.recon-frame canvas.rt-crop-mode{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}.recon-frame canvas.rt-crop-mode:active{cursor:grabbing}.rt-controls .btn{min-height:44px}

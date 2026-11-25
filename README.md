@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.30
+# Tomb World Battle Guide v10.1.31
+
+## v10.1.31
+
+- Experimental solo Recon starts after deployment, before Turning Point 1. Capture or skip without affecting Standard. Automatic dark-surface board edge detection and perspective correction where confident; a touch-adjustable 30:22 calibration frame, rotation, and original-photo fallback replace dimension entry. Confirmed crops normalize to a consistent board image for model tracking. The requested 30 × 22 inch scale is fixed; use manual guidance if your physical board differs.
 
 ## v10.1.30
 

@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.30';
+  const APP_VERSION = '10.1.31';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -4616,7 +4616,11 @@ document.addEventListener('touchend',function(e){
     return true;
   }
 
+  let reconSetupFinishedFor=null;
   async function startTurningPoint(){
+    if(state.turningPoint===0&&state.phase==='between'&&reconTrackingEnabled()&&reconSetupFinishedFor!==state){
+      save();render();showReconTracking(null,true);return;
+    }
     state.turningPoint++;
     state.finalResolution={...state.finalResolution,pending:false,turningPointEnded:false,cleanupComplete:false};
     state.npoRuleState.reanimatedTargetIds=[];
@@ -5182,7 +5186,7 @@ document.addEventListener('touchend',function(e){
   function reconTrackingControl(){
     return reconTrackingEnabled()?'<button class="btn secondary big-action recon-scan-entry" id="startReconTracking" type="button">Scan Battlefield</button>':'';
   }
-  function showReconTracking(actor=null){
+  function showReconTracking(actor=null,setup=false){
     if(!reconTrackingEnabled())return;
     const token=state,turn=state.turningPoint,activation=state.lastActivation,scanKey=`${turn}:${state.activationNumber}:${actor?.id||''}:${actor?activation?.decisionPass||0:0}`;
     const np=activeNpos().map(n=>{
@@ -5191,11 +5195,12 @@ document.addEventListener('touchend',function(e){
       return {key:'n:'+n.id,id:n.id,side:'npo',name:npoName(n),base:Number(n.baseSize||d?.baseSize)||null,move:npoRepositionDistance(n),ap:actor?.id===n.id?activation.remainingAp:effectiveApl(n.id,d?.apl),ready:readyNpos().some(x=>x.id===n.id),wounds:n.wounds,canShoot:profiles.length>0,range:ranges.length?Math.min(...ranges):null,focus:npoMovementFocus(n,'')};
     });
     const pp=inPlayLivingPlayerOperativeIds().map(id=>({key:'p:'+id,id,side:'player',name:playerName(id),base:Number(playerDefinition(id)?.baseSize)||null,wounds:playerCurrentWounds(id),order:state.playerOperativeStates?.[id]?.order||'Unknown',ready:!state.playerActivatedIds.includes(id)}));
-    const valid=()=>state===token&&reconTrackingEnabled()&&state.turningPoint===turn&&state.nextSide==='npo'&&(!actor||(state.activeNpoId===actor.id&&state.lastActivation?.decisionPass===activation.decisionPass&&!state.lastActivation.pendingAction));
-    showModal('Battlefield Recon','<div id="reconTrackingHost"></div>');
-    window.TombWorldReconTracking.open($('#reconTrackingHost'),{token,turn,scanKey,models:[...np,...pp],actorKey:actor?'n:'+actor.id:null,activated:pp.filter(p=>!p.ready).map(p=>p.key),ready:np.filter(p=>p.ready).map(p=>p.key),valid,
+    const valid=()=>state===token&&reconTrackingEnabled()&&state.turningPoint===turn&&(setup?state.phase==='between'&&turn===0:state.nextSide==='npo')&&(!actor||(state.activeNpoId===actor.id&&state.lastActivation?.decisionPass===activation.decisionPass&&!state.lastActivation.pendingAction));
+    const finishSetup=()=>{if(!valid())return;reconSetupFinishedFor=state;closeModal();void startTurningPoint();};
+    showModal(setup?'Capture Battlefield':'Battlefield Recon','<div id="reconTrackingHost"></div>');
+    window.TombWorldReconTracking.open($('#reconTrackingHost'),{token,turn,scanKey,setup,complete:finishSetup,models:[...np,...pp],actorKey:actor?'n:'+actor.id:null,activated:pp.filter(p=>!p.ready).map(p=>p.key),ready:np.filter(p=>p.ready).map(p=>p.key),valid,
       actionOrder:(m,inControl)=>{const n=readyNpos().find(x=>x.id===m.id);if(!n)return [];const context={inEnemyControlRange:inControl,remainingAp:m.ap,completedActionIds:actor?activation.completedActionIds:[]};return recommendedNpoActions(n,context).filter(name=>!actor||!(activation.declinedActionIds||[]).includes(npoActionId(name)));},
-      manual:()=>{reconApprovedPlan=null;reconDisplayPlan=null;if(actor)runNpoPrompt(actor,0,{},activation.questionHistory||[]);else{closeModal();render();}},
+      manual:()=>{reconApprovedPlan=null;reconDisplayPlan=null;if(setup){finishSetup();return;}if(actor)runNpoPrompt(actor,0,{},activation.questionHistory||[]);else{closeModal();render();}},
       accept:plan=>{
         if(!valid())return;
         const n=readyNpos().find(x=>'n:'+x.id===plan.actor);
