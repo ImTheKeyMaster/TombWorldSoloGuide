@@ -41,5 +41,11 @@ for(let i=1;i<=6;i++){const g=c.maps.geometry(i,mb);a(g.walls.length&&g.doors.le
 const closed=c.maps.geometry(1,mb),opened=c.maps.geometry(1,mb,0,[0]);a(opened.walls.length>closed.walls.length);a(opened.doors[0].open);a.notDeepEqual(c.maps.geometry(1,mb,1).walls,closed.walls);
 a.equal(c.maps.geometry(99,mb),null);
 const img=new Uint8ClampedArray(100*100*4);for(let y=0;y<100;y++)for(let x=0;x<100;x++){const v=Math.hypot(x-50,y-50)<=9?180:40;img.fill(v,(y*100+x)*4,(y*100+x)*4+3);}
-a.equal(c.snapping.snap(img,100,100,{x:55,y:52},9).x,50);a.equal(c.snapping.snap(img,100,100,{x:15,y:15},9),null);a.equal(c.snapping.snap(img,100,100,{x:55,y:52},9,()=>true),null);
+a(Math.abs(c.snapping.snap(img,100,100,{x:55,y:52},9).x-50)<=2);a.equal(c.snapping.snap(img,100,100,{x:15,y:15},9),null);a.equal(c.snapping.snap(img,100,100,{x:55,y:52},9,()=>true),null);
 console.log('Mission layouts and miniature snapping checks passed.');
+
+// A dim base, protruding weapon, gradient floor and nearby wall must not displace the selected base.
+const ww=120,hh=120,photo=new Uint8ClampedArray(ww*hh*4);
+for(let y=0;y<hh;y++)for(let x=0;x<ww;x++){let v=70+Math.round(x/10);const rr=Math.hypot(x-55,y-60);if(rr<=12)v=rr>9?112:48;if(x>=55&&x<=77&&Math.abs(y-57)<=2)v=175;if(x>=90&&x<=97)v=180;photo.fill(v,(y*ww+x)*4,(y*ww+x)*4+3);}
+const picked=c.snapping.snap(photo,ww,hh,{x:60,y:62},12);a(picked&&Math.hypot(picked.x-55,picked.y-60)<=4);a.equal(c.snapping.snap(photo,ww,hh,{x:25,y:85},12),null);a.equal(c.snapping.snap(photo,ww,hh,{x:93,y:60},12),null);a.equal(c.snapping.snap(photo,ww,hh,{x:55,y:60},12,()=>true),null);
+console.log('Partial rim, wall, weapon and empty floor selection regressions passed.');

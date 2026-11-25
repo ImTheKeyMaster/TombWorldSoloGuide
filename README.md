@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.32
+# Tomb World Battle Guide v10.1.33
+
+## v10.1.33
+
+- Experimental Recon: fit base rims directly around a tap instead of foreground fragments; accept partial rim evidence while rejecting empty floor, constrain selection to the tapped base, and prevent terrain masks from shifting the winning fit. Reject undersized or orientation-inconsistent automatic board crops and allow recalibration during identification.
 
 ## v10.1.32
 

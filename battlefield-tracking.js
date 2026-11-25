@@ -225,7 +225,8 @@ function calibrationCore(){
     const q=[intersection(l,t),intersection(r,t),intersection(r,b),intersection(l,b)];
     if(q.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)||p.x<0||p.y<0||p.x>=w||p.y>=h))return null;
     const len=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),width=(len(q[0],q[1])+len(q[2],q[3]))/2,height=(len(q[0],q[3])+len(q[1],q[2]))/2;
-    if(width<w*.4||height<h*.4||width/height<.48||width/height>2.1)return null;
+    if(width<w*.58||height<h*.58||width/height<.48||width/height>2.1)return null;
+    if((w/h<.87&&width>height)||(w/h>1.15&&height>width))return null;
     return q;
   }
   function project(q,u,v){
@@ -297,44 +298,36 @@ function mapCore(){
 }
 function snapCore(){
   const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
-  // Locate compact foreground near a tap. Blank background must never create a roster assignment.
+  // Fit the circular base directly. Weapons, shadows and disconnected highlights
+  // must not pull the selected center away from the physical miniature.
+  const rays=Array.from({length:24},(_,k)=>[Math.cos(k*Math.PI/12),Math.sin(k*Math.PI/12)]);
   function snap(data,w,h,tap,r,blocked=()=>false){
+    if(data.length!==w*h*4||!Number.isFinite(tap.x)||!Number.isFinite(tap.y)||!Number.isFinite(r))return null;
     r=Math.max(5,r);
-    const extent=Math.ceil(r*2.6),x0=Math.max(0,Math.floor(tap.x-extent)),x1=Math.min(w-1,Math.ceil(tap.x+extent)),y0=Math.max(0,Math.floor(tap.y-extent)),y1=Math.min(h-1,Math.ceil(tap.y+extent));
-    const pixel=(x,y)=>{const i=(y*w+x)*4;return [data[i],data[i+1],data[i+2]];};
-    const samples=[[],[],[]];
-    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(dist({x,y},tap)>r*1.65){const p=pixel(x,y);p.forEach((v,i)=>samples[i].push(v));}
-    if(samples[0].length<16)return null;
-    const bg=samples.map(a=>{a.sort((a,b)=>a-b);return a[a.length>>1];});
-    const contrast=(x,y)=>{const p=pixel(x,y);return Math.max(...p.map((v,i)=>Math.abs(v-bg[i])));};
-    const ww=x1-x0+1,hh=y1-y0+1,mask=new Uint8Array(ww*hh);
-    for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(contrast(x,y)>=22)mask[(y-y0)*ww+x-x0]=1;
-    const candidates=[];
-    for(let i=0;i<mask.length;i++){
-      if(!mask[i])continue;const queue=[i];mask[i]=0;let sx=0,sy=0,loX=Infinity,loY=Infinity,hiX=-Infinity,hiY=-Infinity,near=Infinity;
-      for(let k=0;k<queue.length;k++){
-        const n=queue[k],x=n%ww+x0,y=Math.floor(n/ww)+y0;
-        sx+=x;sy+=y;loX=Math.min(loX,x);hiX=Math.max(hiX,x);loY=Math.min(loY,y);hiY=Math.max(hiY,y);near=Math.min(near,dist({x,y},tap));
-        for(const z of [n%ww?n-1:-1,n%ww<ww-1?n+1:-1,n>=ww?n-ww:-1,n<ww*(hh-1)?n+ww:-1])if(z>=0&&mask[z]){mask[z]=0;queue.push(z);}
-      }
-      const bw=hiX-loX+1,bh=hiY-loY+1,p={x:(loX+hiX)/2,y:(loY+hiY)/2,r};
-      if(queue.length<Math.max(9,r*r*.28)||Math.min(bw,bh)<r*.65||Math.max(bw,bh)>r*3.6||Math.min(bw,bh)/Math.max(bw,bh)<.38||near>r*.25||dist(p,tap)>r*1.05||blocked(p))continue;
-      if(loX===x0||hiX===x1||loY===y0||hiY===y1)continue;
-      // Bounding box center rather than click position; reject elongated wall fragments.
-      let center=p,bestRim=0;
-      for(let yy=Math.round(p.y-r*.65);yy<=p.y+r*.65;yy++)for(let xx=Math.round(p.x-r*.65);xx<=p.x+r*.65;xx++){
-        const q={x:xx,y:yy};if(dist(q,tap)>r*1.05||blocked(q))continue;
-        for(const radius of [r*.85,r,r*1.15]){
-          let total=0,hits=0,quadrants=[0,0,0,0];
-          for(let k=0;k<16;k++){const t=k*Math.PI/8,dx=Math.cos(t),dy=Math.sin(t),ax=Math.round(xx+dx*(radius-1.5)),ay=Math.round(yy+dy*(radius-1.5)),bx=Math.round(xx+dx*(radius+1.5)),by=Math.round(yy+dy*(radius+1.5));if(ax<0||ay<0||bx<0||by<0||ax>=w||bx>=w||ay>=h||by>=h)continue;const a=pixel(ax,ay),b=pixel(bx,by),e=Math.max(...a.map((v,i)=>Math.abs(v-b[i])));total+=Math.min(e,90);if(e>=20){hits++;quadrants[k>>2]++;}}
-          const score=total/16-dist(p,q)*.5;
-          if(hits>=10&&quadrants.every(v=>v>=1)&&score>bestRim){bestRim=score;center={...q,r};}
+    const search=r*.85,step=r>22?2:1,radiusStep=Math.max(1,Math.round(r/6));
+    let best=null;
+    for(let y=Math.max(0,Math.round(tap.y-search));y<=Math.min(h-1,tap.y+search);y+=step)
+      for(let x=Math.max(0,Math.round(tap.x-search));x<=Math.min(w-1,tap.x+search);x+=step){
+        const offset=dist({x,y},tap);if(offset>search)continue;
+        for(let rad=r*.65;rad<=r*1.7;rad+=radiusStep){
+          if(offset>rad*.9)continue; // A nearby empty floor tap is not a selection.
+          let total=0,hits=0,quadrants=[0,0,0,0],valid=0;
+          for(let k=0;k<rays.length;k++){
+            const [dx,dy]=rays[k],ax=Math.round(x+dx*(rad-2)),ay=Math.round(y+dy*(rad-2)),bx=Math.round(x+dx*(rad+2)),by=Math.round(y+dy*(rad+2));
+            if(ax<0||ay<0||bx<0||by<0||ax>=w||bx>=w||ay>=h||by>=h)continue;
+            const i=(ay*w+ax)*4,j=(by*w+bx)*4;
+            const edge=Math.max(Math.abs(data[i]-data[j]),Math.abs(data[i+1]-data[j+1]),Math.abs(data[i+2]-data[j+2]));
+            valid++;total+=Math.min(edge,65);
+            if(edge>=15){hits++;quadrants[Math.floor(k/6)]++;}
+          }
+          if(valid<22||hits<12||quadrants.slice(0,4).some(v=>v<2))continue;
+          const score=total/24+hits*.65-offset*.6-Math.abs(rad-r)*.35;
+          if(score>=26&&(!best||score>best.score))best={x,y,r,detectedRadius:rad,score};
         }
       }
-      candidates.push({...center,score:dist(center,tap)/r+Math.abs(Math.max(bw,bh)/(2*r)-1)*.35});
-    }
-    candidates.sort((a,b)=>a.score-b.score);
-    return candidates[0]||null;
+    // Reject the winning fit when it is a known fixed terrain feature; do not
+    // move the selection to a weaker, off-base match merely to avoid the mask.
+    return best&&!blocked(best)?best:null;
   }
   return {snap};
 }
@@ -411,6 +404,7 @@ function trackingUI(){
         if(current?.side==='player'){const label=document.createElement('label');label.className='rt-metadata';label.textContent='Current tabletop order';const order=document.createElement('select');for(const value of ['Unknown','Engage','Conceal']){const option=document.createElement('option');option.value=value;option.textContent=value;order.append(option);}order.value=current.order;order.onchange=()=>{current.order=order.value;};label.append(order);controls.append(label);}
         if(!missing.length)controls.append(button('Confirm Operative Positions',()=>{if(mapLayout&&mapped)assess();else{stage='terrain';update();}},'primary'));
         if(mapLayout)controls.append(button('Review Mission Layout',()=>{stage='terrain';update();},'ghost'));
+        controls.append(button('Adjust Board Crop',resetCalibration,'ghost'));
         controls.append(button('Clear Selected Marker',()=>{delete positions[selected];update();},'ghost'));
       }else if(stage==='terrain'){
         if(mapLayout){
@@ -540,9 +534,9 @@ function trackingUI(){
         const m=models.find(m=>m.key===selected);if(!m)return;
         const r=Math.max(5,Math.round((m.base||32)/50.8*(board.x1-board.x0)/board.width));
         const data=frame.getContext('2d').getImageData(0,0,frame.width,frame.height).data;
-        const blocked=q=>Boolean(mapLayout&&(mapLayout.walls.some(([a,b])=>core.segmentDistance(q,a,b)<r*.48)||mapLayout.terrain.some(t=>core.dist(q,t)<t.r*.72)));
+        const blocked=q=>Boolean(mapLayout&&mapped&&(mapLayout.walls.some(([a,b])=>core.segmentDistance(q,a,b)<r*.22)||mapLayout.terrain.some(t=>core.dist(q,t)<Math.min(t.r*.45,r*.65))));
         const hit=snapping.snap(data,frame.width,frame.height,p,r,blocked);
-        if(!hit){tell('No distinct miniature detected at that location. Tap directly on its base, or retake a clearer photo.');return;}
+        if(!hit){tell('No miniature base detected at that spot. Tap the centre of its base and try again.');return;}
         if(Object.entries(positions).some(([k,v])=>k!==selected&&core.dist(hit,v)<Math.max(5,r*.85))){tell('That miniature is already assigned. Select a different model.');return;}
         positions[selected]={x:hit.x,y:hit.y,r,template:core.patch(data,frame.width,frame.height,hit,r)};
         selected=models.find(m=>!positions[m.key])?.key||selected;update();

@@ -47,7 +47,7 @@ with sync_playwright() as p:
     assert page.evaluate("document.querySelector('canvas').width===600&&document.querySelector('canvas').height===440")
     # Blank floor must not assign the first operative.
     tap(35,35)
-    assert 'No distinct miniature' in page.locator('.rt-status').inner_text()
+    assert 'No miniature base' in page.locator('.rt-status').inner_text()
     assert page.locator('select[aria-label="Operative to identify"]').input_value()=='n:a'
     tap(93,73);tap(150,73)
     page.get_by_text("Confirm Operative Positions",exact=True).click()
