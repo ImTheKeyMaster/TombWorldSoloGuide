@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.43
+# Tomb World Battle Guide v10.1.44
+
+## v10.1.44
+
+- Experimental Recon: require a supported circular base rim, tighter radius fit and a tap within the detected base before assigning a miniature. Reject confirmed terrain and nearby empty-floor taps, preserve the selected operative on a miss, and draw the marker around the fitted outer rim. Standard unchanged.
 
 ## v10.1.43
 
