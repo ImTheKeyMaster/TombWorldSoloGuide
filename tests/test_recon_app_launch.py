@@ -33,6 +33,7 @@ hook=r"""
       const n=createNpo('Necron Warrior',undefined,{ready:true});
       n.ready=true;n.deployed=true;n.battlefieldState='deployed';n.dormant=false;
       state.roster=[n];state.activeNpoId=null;state.lastActivation=null;
+      state.fightState=null;state.weaponRuleResolution=null;state.pendingDice=null;
       render();
       const original=window.TombWorldReconTracking.open;
       window.TombWorldReconTracking.open=(host,config)=>{window.__reconConfig=config;original(host,config);};
@@ -47,6 +48,16 @@ hook=r"""
       return target.key.slice(2);
     },
     attack:()=>({target:state.npoAttackTargetId,confirmed:state.lastActivation?.targetConfirmed,pending:state.lastActivation?.pendingAction?.id,remaining:state.lastActivation?.remainingAp,completed:state.lastActivation?.completedActionIds}),
+    resumeAttack:(stale=false)=>{
+      closeModal();
+      reconApprovedPlan=null;reconDisplayPlan=null;reconContinuation=null;
+      state.lastActivation={...state.lastActivation,pendingAction:{...state.lastActivation.pendingAction},targetConfirmed:false,combatDraft:null};
+      const target=state.lastActivation.pendingAction.reconTargetId;
+      if(stale)state.playerOperativeStates[target]={...state.playerOperativeStates[target],inPlay:false};
+      state.npoAttackTargetId=null;
+      save();continueNpoActivation();
+      if(stale)state.playerOperativeStates[target]={...state.playerOperativeStates[target],inPlay:true};
+    },
     confirmMove:(kind='dash',followKind=null)=>{
       const c=window.__reconConfig,m=c.models.find(m=>m.side==='npo');
       const action=c.actionOrder(m,false).find(x=>npoActionId(x)===kind);
@@ -114,6 +125,32 @@ try:
             assert page.evaluate("__reconFixture.attack()")=={"target":target,"confirmed":True,"pending":kind,"remaining":2,"completed":[]}
             assert page.locator('#confirmNpoTarget').count()==0
             assert page.locator('[data-npo-target-id]').count()==0
+        # Reopen an approved pending attack after the transient photo plan is gone.
+        actor=page.evaluate("__reconFixture.prepareMovement()")
+        target=page.evaluate("__reconFixture.confirmAttack('shoot')")
+        page.wait_for_function("__reconFixture.attack().confirmed===true")
+        page.evaluate("__reconFixture.resumeAttack()")
+        page.wait_for_function("__reconFixture.attack().confirmed===true")
+        assert page.evaluate("__reconFixture.attack()")=={"target":target,"confirmed":True,"pending":"shoot","remaining":2,"completed":[]}
+        assert page.locator('#confirmNpoTarget').count()==0
+        assert page.locator('[data-npo-target-id]').count()==0
+        # Back out of the actual weapon/combat screen: return to Recon,
+        # not the redundant target carousel. AP remains unspent.
+        back=page.locator('#cancelExperimentalNpoWeapon, #cancelNpoAttack')
+        assert back.count()==1
+        back.click()
+        page.locator('.recon-tracking').wait_for(state="visible")
+        assert page.evaluate("__reconFixture.ap().remaining")==2
+        assert page.locator('#confirmNpoTarget').count()==0
+        # An eliminated/unavailable approved target triggers reassessment.
+        actor=page.evaluate("__reconFixture.prepareMovement()")
+        page.evaluate("__reconFixture.confirmAttack('shoot')")
+        page.wait_for_function("__reconFixture.attack().confirmed===true")
+        page.evaluate("__reconFixture.resumeAttack(true)")
+        page.locator('.recon-tracking').wait_for(state="visible")
+        assert page.evaluate("__reconFixture.ap().remaining")==2
+        assert page.locator('#confirmNpoTarget').count()==0
+        assert page.locator('[data-npo-target-id]').count()==0
         # A single move + Shoot confirmation deducts only movement AP,
         # automatically enters combat for the chosen target, and leaves attack AP pending.
         actor=page.evaluate("__reconFixture.prepareMovement()")

@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.47';
+  const APP_VERSION = '10.1.48';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -10129,7 +10129,7 @@ function showPlayerActivation(){
     const decision=chooseNpoDecision(n,c);
     const id=npoActionId(decision.action),cost=npoActionCost(n,id);
     if(cost===null||cost>state.lastActivation.remainingAp){showToast('That action is no longer legal.');continueNpoActivation();return;}
-    state.lastActivation={...state.lastActivation,npoId:n.id,name:npoName(n),...decision,answers:c,questionHistory,pendingAction:{id,name:decision.action,apCost:cost,decisionPass:state.lastActivation.decisionPass},committed:false};
+    state.lastActivation={...state.lastActivation,npoId:n.id,name:npoName(n),...decision,answers:c,questionHistory,pendingAction:{id,name:decision.action,apCost:cost,decisionPass:state.lastActivation.decisionPass,...(['shoot','fight'].includes(id)&&reconTargetId?{reconTargetId}: {})},targetConfirmed:false,attackResolved:false,committed:false};
     save();resolveNpoAction(n,state.lastActivation.pendingAction,movementConfirmed,reconTargetId);
   }
 
@@ -10211,6 +10211,35 @@ function showPlayerActivation(){
     return commitNpoAction({actionId:pendingAction.id,actionName:pendingAction.name,apCost:pendingAction.apCost,result:effect||decision.reason,changesPosition:true,endsActivation:finalApDash,transitionMode:finalApDash?NPO_ACTION_TRANSITIONS.COMPLETE_ACTIVATION:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});
   }
 
+  // Provenance belongs to the pending attack, not to a transient photo overlay.
+  // Recover v47 approvals from the matching overlay when possible; without
+  // an authoritative target, a previously approved photo attack must rescan.
+  function pendingReconAttack(n,pending=state.lastActivation?.pendingAction){
+    const activation=state.lastActivation;
+    if(!reconTrackingEnabled()||!pending||!['shoot','fight'].includes(pending.id)||activation?.npoId!==n.id||state.activeNpoId!==n.id)return null;
+    if(typeof pending.reconTargetId==='string'&&pending.reconTargetId)return {targetId:pending.reconTargetId};
+    const displayed=reconDisplayPlan;
+    if(displayed?.token===state&&displayed.npoId===n.id&&displayed.id===pending.id&&displayed.target?.startsWith('p:'))return {targetId:displayed.target.slice(2)};
+    if((activation.questionHistory||[]).some(item=>item.question==='Photo recommendation confirmed'&&npoActionId(item.action)===pending.id))return {targetId:null};
+    return null;
+  }
+
+  function reassessReconAttack(n){
+    const activation=state.lastActivation;
+    // Do not discard an in-progress combat transaction or pending dice.
+    if(activation.combatDraft||state.weaponRuleResolution||state.fightState||state.pendingDice){save();closeModal();render();return;}
+    reconApprovedPlan=null;reconDisplayPlan=null;reconContinuation=null;
+    window.TombWorldReconTracking?.clearPreview();
+    activation.pendingAction=null;activation.targetConfirmed=false;activation.attackRequired=false;activation.attackResolved=false;
+    activation.questionHistory=[];activation.answers={};
+    activation.currentContext={inEnemyControlRange:null,hasValidShootTarget:null,hasValidFightTarget:null};
+    state.npoAttackTargetId=null;state.npoAttackSummary=null;
+    save();
+    try{if(showReconTracking(n))return;}catch(error){recordReconLaunchError(error);}
+    showToast('Recon is unavailable. Use the manual guide to reassess the attack.');
+    runNpoPrompt(n,0,{},[]);
+  }
+
   function resolveNpoAction(n,pendingAction,movementConfirmed=false,reconTargetId=null){
     if(!pendingAction||state.lastActivation?.pendingAction?.id!==pendingAction.id)return;
     if(!isPvpMode()&&normalizeUnknownAttackMovement(state.lastActivation)){
@@ -10225,15 +10254,20 @@ function showPlayerActivation(){
       return;
     }
     const activation=state.lastActivation;
-    // The player has already confirmed the photo plan, including its target.
-    // Only a newly supplied, still-valid Recon target may bypass the picker;
-    // ordinary/manual activations and saved combat resume retain their flow.
-    if(reconTrackingEnabled()&&reconTargetId&&['shoot','fight'].includes(pendingAction.id)
-      &&reconDisplayPlan?.token===state&&reconDisplayPlan.npoId===n.id
-      &&reconDisplayPlan.id===pendingAction.id&&reconDisplayPlan.target==='p:'+reconTargetId
-      &&state.npoAttackTargetId===reconTargetId&&eligibleNpoAttackTargets().includes(reconTargetId)
-      &&canCommitNpoAction(pendingAction.id,pendingAction.apCost)){
-      confirmNpoAttackTarget(n,decision,reconTargetId);return;
+    const approval=pendingReconAttack(n,pendingAction);
+    if(approval&&!activation.attackResolved){
+      const targetId=approval.targetId;
+      // A confirmed combat with a saved transaction follows the existing
+      // resume path, including multi-target weapon sequences.
+      const resuming=activation.targetConfirmed&&(activation.combatDraft||state.weaponRuleResolution||state.fightState||state.pendingDice);
+      if(!resuming){
+        if(!targetId||!eligibleNpoAttackTargets().includes(targetId)||!canCommitNpoAction(pendingAction.id,pendingAction.apCost)){
+          reassessReconAttack(n);return;
+        }
+        pendingAction.reconTargetId=targetId;
+        state.npoAttackTargetId=targetId;
+        confirmNpoAttackTarget(n,decision,targetId);return;
+      }
     }
     renderNpoDecisionResult(n,decision,activation.dice||[],activation.answers||{},Boolean(activation.attackResolved),false,/^(shoot|fight)$/.test(pendingAction.id),Boolean(activation.targetConfirmed),activation.questionHistory||[]);
   }
@@ -10317,6 +10351,7 @@ function showPlayerActivation(){
         result:attackSummaries.map(item=>`${item.targetName} ${item.skipped?'skipped':`${item.damage} damage`}`).join(', '),
         attackSummary:summary,attackSummaries,transitionMode:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});
     },()=>{
+      if(pendingReconAttack(n)){reassessReconAttack(n);return;}
       save();
       renderNpoDecisionResult(n,decision,resolvedDice,answers,false,false,true,false);
     },animate);
