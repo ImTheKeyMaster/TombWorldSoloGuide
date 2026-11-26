@@ -96,8 +96,10 @@ with sync_playwright() as p:
     assert page.get_by_text('Mark Wall',exact=True).count()==0
     assert page.get_by_text('Mark Objective',exact=True).count()==0
     assert page.get_by_text('Review Player Orders',exact=True).count()==0
-    page.get_by_text('Confirm Mission Layout',exact=True).click()
-    assert 'Confirm the overlay' in page.locator('.rt-status').inner_text()
+    assert page.locator('.rt-check input').count()==0
+    assert page.get_by_text('Adjust mission alignment',exact=True).count()==0
+    assert page.get_by_text('Rotate Mission Layout 90°',exact=True).count()==1
+    assert page.get_by_text('Auto-align Mission Layout',exact=True).count()==1
     # Drag a mission corner and then translate the whole overlay on the photo.
     import json
     # Reset the synthetic image's auto-alignment to a deterministic, in-frame fit.
@@ -114,23 +116,20 @@ with sync_playwright() as p:
         page.mouse.move(px+box["width"]*dx/size[0],py+box["height"]*dy/size[1],steps=6);page.mouse.up()
     before=handles()
     assert len(before)==4 and canvas.evaluate("(el)=>getComputedStyle(el).touchAction")=="none"
-    page.locator('.rt-check input').check()
     canvas.scroll_into_view_if_needed()
     drag_map(before[0][1],before[0][2],35,25)
     resized=handles()
     assert resized[0][1]>before[0][1] and resized[0][2]>before[0][2], (before,resized,canvas.bounding_box())
     assert abs(resized[2][1]-before[2][1])<1 and abs(resized[2][2]-before[2][2])<1
-    assert not page.locator('.rt-check input').is_checked()
+    assert page.locator('.rt-check input').count()==0
     cx=(resized[0][1]+resized[2][1])/2;cy=(resized[0][2]+resized[2][2])/2
     drag_map(cx,cy,20,10)
     translated=handles()
     assert translated[0][1]>resized[0][1] and translated[0][2]>resized[0][2]
-    assert not page.locator('.rt-check input').is_checked()
-    # Old fine-adjustment controls remain functional.
-    page.get_by_text("Adjust mission alignment",exact=True).click()
-    page.get_by_text("← Left",exact=True).click()
-    assert handles()[0][1]<translated[0][1]
-    page.locator('.rt-check input').check()
+    assert page.locator('.rt-check input').count()==0
+    # Confirmation is one click after adjustment, with no redundant checkbox.
+    assert page.get_by_text("Adjust mission alignment",exact=True).count()==0
+    assert page.get_by_text("← Left",exact=True).count()==0
     page.get_by_text('Confirm Mission Layout',exact=True).click()
     assert page.locator('select[aria-label="Operative to identify"]').count()==1
     # A blocked assessment must explain its cause and allow direct roster correction.

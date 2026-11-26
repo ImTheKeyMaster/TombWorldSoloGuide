@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.41
+# Tomb World Battle Guide v10.1.42
+
+## v10.1.42
+
+- Experimental Recon: remove the redundant mission layout confirmation checkbox and fine-adjustment panel. The primary button confirms the current terrain alignment and hatchway states directly. Drag handles, rotation, auto-alignment and recalibration remain available. Manual terrain marking retains its completeness checkbox. Standard unchanged.
 
 ## v10.1.41
 
