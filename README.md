@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.48
+# Tomb World Battle Guide v10.1.49
+
+## v10.1.49
+
+- Experimental Recon: accept taps on visible miniature bodies and weapons extending beyond a confidently detected base, while retaining the fitted base centre and rejecting adjacent empty floor. Added regression coverage for overhang taps, floor and terrain rejection.
 
 ## v10.1.48
 
