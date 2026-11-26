@@ -590,8 +590,8 @@ function trackingUI(){
     const isMove=p=>['reposition','dash','charge','fall-back'].includes(p.id);
     const cost=p=>p.id==='fall-back'?2:1;
     const combined=()=>Boolean(isMove(plan)&&nextPlan&&nextPlan.actor===plan.actor&&['reposition','dash','charge','shoot','fight'].includes(nextPlan.id)&&cost(plan)+cost(nextPlan)<=models.find(m=>m.key===plan.actor).ap);
-    function confirmPlan(button,check=null){
-      if(!live()||button.disabled||(check&&!check.checked))return;
+    function confirmPlan(button){
+      if(!live()||button.disabled)return;
       button.disabled=true;
       preview={frame,positions,models,board,walls,objectives,plan};
       // Keep projected positions separate from the photographic templates:
@@ -670,9 +670,6 @@ function trackingUI(){
         select.onchange=()=>{selected=select.value;update();};controls.append(select);
         if(current&&!current.base){const label=document.createElement('label');label.className='rt-metadata';label.textContent='Base diameter (mm)';const input=document.createElement('input');input.type='number';input.min='10';input.max='100';input.placeholder='e.g. 32';input.onchange=()=>{const v=Number(input.value);if(v>=10&&v<=100){current.base=v;update();}};label.append(input);controls.append(label);}
         if(!missing.length)controls.append(button('Confirm Operative Positions',()=>{if(mapped)assess();else{stage='terrain';update();}},'primary'));
-        controls.append(button('Review Mission Layout',()=>{stage='terrain';update();},'ghost'));
-        controls.append(button('Adjust Board Crop',resetCalibration,'ghost'));
-        controls.append(button('Clear Selected Marker',()=>{delete positions[selected];update();},'ghost'));
       }else if(stage==='terrain'){
         if(mapLayout){
           tell('Drag inside the frame to move the layout. Drag a corner to resize it. Tap hatchways to toggle open or closed, then confirm the layout.');
@@ -703,7 +700,6 @@ function trackingUI(){
           controls.append(reasons);
           if(!reused)controls.append(button('Review Operative Positions',()=>{selected='';stage='identify';update();}));
           else controls.append(button('Position differs? Take New Photo',()=>get('input[aria-label="Take tactical photo"]').click(),'ghost'));
-          controls.append(button('Review Mission Layout',()=>{stage='terrain';update();},'ghost'));
         }
         else{
           const a=models.find(m=>m.key===plan.actor),target=models.find(m=>m.key===plan.target);
@@ -720,12 +716,10 @@ function trackingUI(){
           recommendation.hidden=false;recommendation.append(info);
           const skipped=[...(plan.skipped||[]),...(batch?nextPlan.skipped||[]:[])];
           if(skipped.length){
-            const note=document.createElement('p');note.textContent='Check higher-priority actions first: '+skipped.map(s=>s.action+' ('+s.reason+')').join('; ');info.append(note);
-            const label=document.createElement('label');label.className='rt-check';const check=document.createElement('input');check.type='checkbox';label.append(check,document.createTextNode(' No legal higher-priority route exists on the tabletop.'));controls.append(label);
-            const accept=button(buttonLabel,()=>confirmPlan(accept,check),'primary');accept.disabled=true;check.onchange=()=>accept.disabled=!check.checked;controls.append(accept);
-          }else{const confirm=button(buttonLabel,()=>confirmPlan(confirm),'primary');controls.append(confirm);}
+            const note=document.createElement('p');note.textContent='Higher-priority routes not found: '+skipped.map(s=>s.action+' ('+s.reason+')').join('; ');info.append(note);
+          }
+          const confirm=button(buttonLabel,()=>confirmPlan(confirm),'primary');controls.append(confirm);
           if(!reused)controls.append(button('Review / Correct Models',()=>{stage='identify';plan=null;selected='';update();},'ghost'));
-          controls.append(button('Review Mission Layout',()=>{stage='terrain';plan=null;update();},'ghost'));
           if(!reused)controls.append(button('Recalibrate Photo',resetCalibration,'ghost'));
           else controls.append(button('Position differs? Take New Photo',()=>get('input[aria-label="Take tactical photo"]').click(),'ghost'));
         }

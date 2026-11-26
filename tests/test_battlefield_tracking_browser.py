@@ -79,12 +79,12 @@ with sync_playwright() as p:
         assert value in page.locator('.rt-recommendation').inner_text()
     page.get_by_text("Review / Correct Models",exact=True).click()
     assert page.locator('select[aria-label="Operative to identify"]').count()==1
+    for name in ["Review Mission Layout","Adjust Board Crop","Clear Selected Marker"]:
+        assert page.get_by_text(name,exact=True).count()==0
     page.get_by_text("Confirm Operative Positions",exact=True).click()
     page.get_by_text("Resolve Shoot",exact=True).wait_for()
-    page.get_by_text("Review Mission Layout",exact=True).click()
-    assert page.locator(".rt-check input").is_checked()
-    page.get_by_text("Assess Battlefield",exact=True).click()
-    page.get_by_text("Resolve Shoot",exact=True).wait_for()
+    assert page.get_by_text("Review Mission Layout",exact=True).count()==0
+    assert page.get_by_text("Resolve Shoot",exact=True).is_enabled()
     page.get_by_text("Use Manual Guide",exact=True).click()
     assert page.evaluate("window.manual")
     page.evaluate("reconConfig={...reconConfig,token:{},turn:0,setup:true,complete:()=>{window.setupDone=true}};TombWorldReconTracking.open(document.querySelector('#host'),reconConfig)")
@@ -152,8 +152,8 @@ with sync_playwright() as p:
     assert page.get_by_text("Resolve Shoot",exact=True).count()==0
     page.get_by_text("Review Operative Positions",exact=True).click()
     assert page.locator('select[aria-label="Operative to identify"]').count()==1
-    # Both planned moves are displayed and submitted by one confirmation.
-    page.evaluate("reconConfig={...reconConfig,token:{},setup:false,turn:1,missionNumber:null,actorKey:null,actionOrder:(m,c,planned=[])=>['Reposition','Dash'].filter(x=>!planned.includes(x.toLowerCase())),models:reconConfig.models.map(m=>m.side==='npo'?{...m,canShoot:false,focus:'fight',move:2,ap:2}:m)};TombWorldReconTracking.open(document.querySelector('#host'),reconConfig)")
+    # A skipped higher-priority Charge must not require a separate checkbox.
+    page.evaluate("reconConfig={...reconConfig,token:{},setup:false,turn:1,missionNumber:null,actorKey:null,actionOrder:(m,c,planned=[])=>[...(m.ap===2?['Charge']:[]),'Reposition','Dash'].filter(x=>!planned.includes(x.toLowerCase())),models:reconConfig.models.map(m=>m.side==='npo'?{...m,canShoot:false,focus:'fight',move:2,ap:2}:m)};TombWorldReconTracking.open(document.querySelector('#host'),reconConfig)")
     page.locator("input[aria-label='Choose tactical photo']").set_input_files({"name":"board.png","mimeType":"image/png","buffer":image()})
     page.get_by_text("Confirm Board Area",exact=True).click()
     tap(93,73);tap(150,73)
@@ -163,6 +163,10 @@ with sync_playwright() as p:
     page.get_by_text("Confirm Activation",exact=True).wait_for()
     assert '1 AP remaining after' in page.locator('.rt-recommendation').inner_text()
     assert 'Next planned action: Dash' in page.locator('.rt-recommendation').inner_text()
+    assert 'Higher-priority routes not found: Charge' in page.locator('.rt-recommendation').inner_text()
+    assert page.locator('.rt-check input').count()==0
+    assert page.get_by_text("Confirm Activation",exact=True).is_enabled()
+    assert page.get_by_text("Review Mission Layout",exact=True).count()==0
     assert page.evaluate("['1 ACTING NPO','2 MOVE HERE','3 DASH HERE'].every(label=>overlayLabels.includes(label))")
     page.get_by_text("Confirm Activation",exact=True).click()
     assert page.evaluate("window.accepted.movementConfirmed") is True
