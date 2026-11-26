@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.44
+# Tomb World Battle Guide v10.1.45
+
+## v10.1.45
+
+- Experimental Recon: remove the higher-priority-route acknowledgment checkbox and redundant Review Mission Layout, Adjust Board Crop, and Clear Selected Marker buttons. Keep an informational skipped-route explanation, direct confirmation, model reassignment, photo recapture and initial terrain calibration. Manual terrain completeness confirmation and Standard remain unchanged.
 
 ## v10.1.44
 
