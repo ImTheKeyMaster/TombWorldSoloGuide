@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.46';
+  const APP_VERSION = '10.1.47';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -10130,7 +10130,7 @@ function showPlayerActivation(){
     const id=npoActionId(decision.action),cost=npoActionCost(n,id);
     if(cost===null||cost>state.lastActivation.remainingAp){showToast('That action is no longer legal.');continueNpoActivation();return;}
     state.lastActivation={...state.lastActivation,npoId:n.id,name:npoName(n),...decision,answers:c,questionHistory,pendingAction:{id,name:decision.action,apCost:cost,decisionPass:state.lastActivation.decisionPass},committed:false};
-    save();resolveNpoAction(n,state.lastActivation.pendingAction,movementConfirmed);
+    save();resolveNpoAction(n,state.lastActivation.pendingAction,movementConfirmed,reconTargetId);
   }
 
   function backFromNpoMovementConfirmation(n){
@@ -10211,7 +10211,7 @@ function showPlayerActivation(){
     return commitNpoAction({actionId:pendingAction.id,actionName:pendingAction.name,apCost:pendingAction.apCost,result:effect||decision.reason,changesPosition:true,endsActivation:finalApDash,transitionMode:finalApDash?NPO_ACTION_TRANSITIONS.COMPLETE_ACTIVATION:NPO_ACTION_TRANSITIONS.AUTO_CONTINUE});
   }
 
-  function resolveNpoAction(n,pendingAction,movementConfirmed=false){
+  function resolveNpoAction(n,pendingAction,movementConfirmed=false,reconTargetId=null){
     if(!pendingAction||state.lastActivation?.pendingAction?.id!==pendingAction.id)return;
     if(!isPvpMode()&&normalizeUnknownAttackMovement(state.lastActivation)){
       save();runNpoPrompt(n,0,{},state.lastActivation.questionHistory||[]);return;
@@ -10225,6 +10225,16 @@ function showPlayerActivation(){
       return;
     }
     const activation=state.lastActivation;
+    // The player has already confirmed the photo plan, including its target.
+    // Only a newly supplied, still-valid Recon target may bypass the picker;
+    // ordinary/manual activations and saved combat resume retain their flow.
+    if(reconTrackingEnabled()&&reconTargetId&&['shoot','fight'].includes(pendingAction.id)
+      &&reconDisplayPlan?.token===state&&reconDisplayPlan.npoId===n.id
+      &&reconDisplayPlan.id===pendingAction.id&&reconDisplayPlan.target==='p:'+reconTargetId
+      &&state.npoAttackTargetId===reconTargetId&&eligibleNpoAttackTargets().includes(reconTargetId)
+      &&canCommitNpoAction(pendingAction.id,pendingAction.apCost)){
+      confirmNpoAttackTarget(n,decision,reconTargetId);return;
+    }
     renderNpoDecisionResult(n,decision,activation.dice||[],activation.answers||{},Boolean(activation.attackResolved),false,/^(shoot|fight)$/.test(pendingAction.id),Boolean(activation.targetConfirmed),activation.questionHistory||[]);
   }
 
@@ -10272,9 +10282,9 @@ function showPlayerActivation(){
     };
   }
 
-  function confirmNpoAttackTarget(n,decision){
+  function confirmNpoAttackTarget(n,decision,confirmedReconTarget=null){
     const targetControl=$('#npoPriorityTarget');
-    const selectedTargetId=String((targetControl?.tagName==='SELECT'?targetControl.value:'')||state.npoAttackTargetId||'');
+    const selectedTargetId=String(confirmedReconTarget||(targetControl?.tagName==='SELECT'?targetControl.value:'')||state.npoAttackTargetId||'');
     const eligibleTargetIds=eligibleNpoAttackTargets();
     if(!selectedTargetId||!eligibleTargetIds.includes(selectedTargetId)){
       state.npoAttackTargetId=null;

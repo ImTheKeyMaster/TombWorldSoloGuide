@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.46
+# Tomb World Battle Guide v10.1.47
+
+## v10.1.47
+
+- Experimental Recon: a confirmed photo attack target bypasses manual target selection and opens the normal combat wizard immediately. The pending action, actor, target and AP are revalidated first; manual targeting, combat resume and Standard remain unchanged. Includes real-app direct Shoot/Fight and move-then-Shoot regression coverage. Includes the v10.1.46 touch-selection fix.
 
 ## v10.1.46
 

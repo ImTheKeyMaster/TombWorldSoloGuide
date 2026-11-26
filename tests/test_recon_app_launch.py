@@ -39,13 +39,23 @@ hook=r"""
       showReconTracking();
       return n.id;
     },
+    confirmAttack:(kind='shoot')=>{
+      const c=window.__reconConfig,m=c.models.find(m=>m.side==='npo'),target=c.models.filter(m=>m.side==='player')[1];
+      const action=c.actionOrder(m,kind==='fight').find(x=>npoActionId(x)===kind);
+      if(!action||!target)throw Error('Missing attack fixture');
+      c.accept({actor:m.key,action,id:kind,target:target.key,inControl:kind==='fight',shootable:kind==='shoot',fightable:kind==='fight'});
+      return target.key.slice(2);
+    },
+    attack:()=>({target:state.npoAttackTargetId,confirmed:state.lastActivation?.targetConfirmed,pending:state.lastActivation?.pendingAction?.id,remaining:state.lastActivation?.remainingAp,completed:state.lastActivation?.completedActionIds}),
     confirmMove:(kind='dash',followKind=null)=>{
       const c=window.__reconConfig,m=c.models.find(m=>m.side==='npo');
       const action=c.actionOrder(m,false).find(x=>npoActionId(x)===kind);
       if(!action)throw Error('No action '+kind);
       const next=followKind?c.actionOrder({...m,ap:m.ap-1},false,[kind]).find(x=>npoActionId(x)===followKind):null;
       if(followKind&&!next)throw Error('Missing follow-up '+followKind);
-      c.accept({actor:m.key,action,id:kind,inControl:false,shootable:false,fightable:false,movementConfirmed:true,confirmedFollowUp:next?{actor:m.key,id:followKind,action:next,inControl:false,shootable:false,fightable:false}:null});
+      const target=c.models.filter(m=>m.side==='player')[1];
+      c.accept({actor:m.key,action,id:kind,inControl:false,shootable:false,fightable:false,movementConfirmed:true,confirmedFollowUp:next?{actor:m.key,id:followKind,action:next,inControl:followKind==='fight',shootable:followKind==='shoot',fightable:followKind==='fight',target:['shoot','fight'].includes(followKind)?target.key:null}:null});
+      return target.key.slice(2);
     },
     ap:()=>({id:state.activeNpoId,remaining:state.lastActivation?.remainingAp,completed:state.lastActivation?.completedActionIds,committed:state.lastActivation?.committed})
   };
@@ -96,6 +106,22 @@ try:
         assert page.evaluate("__reconFixture.ap().remaining")==0
         assert page.evaluate("__reconFixture.ap().completed")==["dash","reposition"]
         assert page.locator('#confirmNpoMovement').count()==0
+        # Recon attack targets are already confirmed by the photo plan.
+        for kind in ['shoot','fight']:
+            actor=page.evaluate("__reconFixture.prepareMovement()")
+            target=page.evaluate("(kind)=>__reconFixture.confirmAttack(kind)",kind)
+            page.wait_for_function("__reconFixture.attack().confirmed===true")
+            assert page.evaluate("__reconFixture.attack()")=={"target":target,"confirmed":True,"pending":kind,"remaining":2,"completed":[]}
+            assert page.locator('#confirmNpoTarget').count()==0
+            assert page.locator('[data-npo-target-id]').count()==0
+        # A single move + Shoot confirmation deducts only movement AP,
+        # automatically enters combat for the chosen target, and leaves attack AP pending.
+        actor=page.evaluate("__reconFixture.prepareMovement()")
+        target=page.evaluate("__reconFixture.confirmMove('reposition','shoot')")
+        page.wait_for_function("__reconFixture.attack().confirmed===true")
+        assert page.evaluate("__reconFixture.attack()")=={"target":target,"confirmed":True,"pending":"shoot","remaining":1,"completed":["reposition"]}
+        assert page.locator('#confirmNpoTarget').count()==0
+        assert page.locator('[data-npo-target-id]').count()==0
         assert not errors,errors
         browser.close()
 finally:
