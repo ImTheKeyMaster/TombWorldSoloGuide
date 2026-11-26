@@ -108,3 +108,22 @@ for(const order of ['Unknown','Conceal','Engage']){
   a.equal(c.plan({...input,walls:[[{x:125,y:0},{x:125,y:300}]],actionOrder:()=>['Shoot']}),null);
 }
 console.log('Order-independent Recon target selection passed.');
+
+// Off-base taps, square terrain, wall junctions and fitted outer rims.
+const sn=c.snapping;
+for(const tap of [{x:60,y:50},{x:61,y:52},{x:50,y:61}])a.equal(sn.snap(img,100,100,tap,9),null);
+for(const tap of [{x:46,y:50},{x:54,y:53},{x:50,y:45}]){
+ const fit=sn.snap(img,100,100,tap,9);a(fit&&Math.hypot(fit.x-50,fit.y-50)<=1.5&&Math.abs(fit.r-9)<=1.5);
+}
+a(Math.abs(picked.r-12)<=2);
+const cap=new Uint8ClampedArray(100*100*4),square=cap.slice();
+for(let y=0;y<100;y++)for(let x=0;x<100;x++){
+ const i=(y*100+x)*4,block=Math.abs(x-50)<=9&&Math.abs(y-50)<=9;
+ square.fill(block?180:45,i,i+3);
+ cap.fill(block||(Math.abs(x-50)<4&&y>20)?180:45,i,i+3);
+}
+a.equal(sn.snap(square,100,100,{x:50,y:50},10),null);
+const wall=[[{x:50,y:20},{x:50,y:99}]];
+for(const tap of [{x:50,y:50},{x:54,y:50},{x:47,y:47}])a.equal(sn.snap(cap,100,100,tap,10,p=>sn.terrainBlocked(p,10,wall)),null);
+a(sn.terrainBlocked({x:52,y:50},10,wall));a(!sn.terrainBlocked({x:65,y:50},10,wall));
+console.log('Strict base hit testing, concentric rim fit and wall cap rejection passed.');

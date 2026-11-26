@@ -46,11 +46,18 @@ with sync_playwright() as p:
     page.get_by_text('Confirm Board Area',exact=True).wait_for()
     page.get_by_text("Confirm Board Area",exact=True).click()
     assert page.evaluate("document.querySelector('canvas').width===600&&document.querySelector('canvas').height===440")
-    # Blank floor must not assign the first operative.
-    tap(35,35)
-    assert 'No miniature base' in page.locator('.rt-status').inner_text()
-    assert page.locator('select[aria-label="Operative to identify"]').input_value()=='n:a'
-    tap(93,73);tap(150,73)
+    # Blank floor and a near-base miss must leave the selection unchanged.
+    for x,y in [(35,35),(105,73)]:
+        tap(x,y)
+        assert 'No miniature base' in page.locator('.rt-status').inner_text()
+        assert page.locator('select[aria-label="Operative to identify"]').input_value()=='n:a'
+        assert page.get_by_text('Confirm Operative Positions',exact=True).count()==0
+    # Tap off-centre but within the actual base; rendered ring must fit the base.
+    page.evaluate("() => {window.rings=[];const arc=CanvasRenderingContext2D.prototype.arc;CanvasRenderingContext2D.prototype.arc=function(x,y,r,...args){rings.push([x,y,r]);return arc.call(this,x,y,r,...args)};}")
+    tap(97,75)
+    assert page.locator('select[aria-label="Operative to identify"]').input_value()=='p:b'
+    assert page.evaluate("rings.some(([x,y,r])=>Math.abs(x-186)<3&&Math.abs(y-107)<3&&r>=15&&r<=21)")
+    tap(150,73)
     page.get_by_text("Confirm Operative Positions",exact=True).click()
     page.locator(".rt-check input").check()
     page.get_by_text("Assess Battlefield",exact=True).click()

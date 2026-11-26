@@ -468,38 +468,52 @@ function mapCore(){
 }
 function snapCore(){
   const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
-  // Fit the circular base directly. Weapons, shadows and disconnected highlights
-  // must not pull the selected center away from the physical miniature.
-  const rays=Array.from({length:24},(_,k)=>[Math.cos(k*Math.PI/12),Math.sin(k*Math.PI/12)]);
+  const rays=Array.from({length:32},(_,k)=>[Math.cos(k*Math.PI/16),Math.sin(k*Math.PI/16)]);
+  // Reject known fixed terrain including wall caps with circular highlights.
+  function terrainBlocked(point,r,walls=[],terrain=[]){
+    const nearWall=([a,b])=>{
+      const dx=b.x-a.x,dy=b.y-a.y,den=dx*dx+dy*dy;
+      const t=den?Math.max(0,Math.min(1,((point.x-a.x)*dx+(point.y-a.y)*dy)/den)):0;
+      return dist(point,{x:a.x+t*dx,y:a.y+t*dy})<Math.max(3,r*.6);
+    };
+    return walls.some(nearWall)||terrain.some(t=>dist(point,t)<Math.max(5,t.r*.75)+r*.2);
+  }
   function snap(data,w,h,tap,r,blocked=()=>false){
     if(data.length!==w*h*4||!Number.isFinite(tap.x)||!Number.isFinite(tap.y)||!Number.isFinite(r))return null;
     r=Math.max(5,r);
-    const search=r*.85,step=r>22?2:1,radiusStep=Math.max(1,Math.round(r/6));
-    let best=null;
+    if(blocked({...tap,r}))return null;
+    // Fit first, then hit-test: never pull the centre toward an empty-floor tap.
+    const search=r*1.4,step=r>22?2:1,radiusStep=Math.max(.75,r/14),candidates=[];
+    const sample=(x,y)=>{x=Math.round(x);y=Math.round(y);return x<0||y<0||x>=w||y>=h?-1:(y*w+x)*4;};
     for(let y=Math.max(0,Math.round(tap.y-search));y<=Math.min(h-1,tap.y+search);y+=step)
       for(let x=Math.max(0,Math.round(tap.x-search));x<=Math.min(w-1,tap.x+search);x+=step){
         const offset=dist({x,y},tap);if(offset>search)continue;
-        for(let rad=r*.65;rad<=r*1.7;rad+=radiusStep){
-          if(offset>rad*.9)continue; // A nearby empty floor tap is not a selection.
-          let total=0,hits=0,quadrants=[0,0,0,0],valid=0;
+        for(let rad=r*.78;rad<=r*1.42;rad+=radiusStep){
+          let total=0,hits=0,octants=Array(8).fill(0),opposed=0,sign=[0,0],support=[];
+          const band=Math.max(1.1,rad*.085);
           for(let k=0;k<rays.length;k++){
-            const [dx,dy]=rays[k],ax=Math.round(x+dx*(rad-2)),ay=Math.round(y+dy*(rad-2)),bx=Math.round(x+dx*(rad+2)),by=Math.round(y+dy*(rad+2));
-            if(ax<0||ay<0||bx<0||by<0||ax>=w||bx>=w||ay>=h||by>=h)continue;
-            const i=(ay*w+ax)*4,j=(by*w+bx)*4;
-            const edge=Math.max(Math.abs(data[i]-data[j]),Math.abs(data[i+1]-data[j+1]),Math.abs(data[i+2]-data[j+2]));
-            valid++;total+=Math.min(edge,65);
-            if(edge>=15){hits++;quadrants[Math.floor(k/6)]++;}
+            const [dx,dy]=rays[k],i=sample(x+dx*(rad-band),y+dy*(rad-band)),j=sample(x+dx*(rad+band),y+dy*(rad+band));
+            if(i<0||j<0){support.push(false);continue;}
+            const diffs=[data[i]-data[j],data[i+1]-data[j+1],data[i+2]-data[j+2]];
+            const delta=diffs.reduce((a,b)=>Math.abs(a)>=Math.abs(b)?a:b,0),edge=Math.abs(delta);
+            total+=Math.min(edge,65);const hit=edge>=16;support.push(hit);
+            if(hit){hits++;octants[k>>2]++;sign[delta>0?0:1]++;}
           }
-          if(valid<22||hits<12||quadrants.slice(0,4).some(v=>v<2))continue;
-          const score=total/24+hits*.65-offset*.6-Math.abs(rad-r)*.35;
-          if(score>=26&&(!best||score>best.score))best={x,y,r,detectedRadius:rad,score};
+          for(let k=0;k<16;k++)if(support[k]&&support[k+16])opposed++;
+          if(hits<21||octants.filter(n=>n>=2).length<7||opposed<9||Math.max(...sign)<hits*.68)continue;
+          const score=total/32+hits*.65+opposed*.4-Math.abs(rad-r)*.7;
+          if(score>=34)candidates.push({x,y,r:rad,detectedRadius:rad,score,offset});
         }
       }
-    // Reject the winning fit when it is a known fixed terrain feature; do not
-    // move the selection to a weaker, off-base match merely to avoid the mask.
-    return best&&!blocked(best)?best:null;
+    candidates.sort((a,b)=>b.score-a.score||a.offset-b.offset);
+    let best=candidates[0];if(!best)return null;
+    // Prefer a supported outer rim near the calibrated base size over the inner bevel.
+    const outer=candidates.filter(c=>dist(c,best)<=Math.max(1.5,r*.14)&&c.r>best.r&&c.score>=best.score*.62&&Math.abs(c.r-r)<Math.abs(best.r-r));
+    if(outer.length)best=outer.sort((a,b)=>Math.abs(a.r-r)-Math.abs(b.r-r)||b.score-a.score)[0];
+    if(blocked(best)||best.offset>best.r*.86)return null;
+    return best;
   }
-  return {snap};
+  return {snap,terrainBlocked};
 }
 function trackingUI(){
   const core=trackingCore(),calibration=calibrationCore(),maps=mapCore(),snapping=snapCore();
@@ -512,7 +526,7 @@ function trackingUI(){
     const line=(a,b,c,dash=false,arrow=false)=>{ctx.save();ctx.setLineDash(dash?[7,5]:[]);ctx.strokeStyle='#06100c';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.strokeStyle=c;ctx.lineWidth=3;ctx.stroke();ctx.setLineDash([]);if(arrow){const t=Math.atan2(b.y-a.y,b.x-a.x);ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x-12*Math.cos(t-.5),b.y-12*Math.sin(t-.5));ctx.lineTo(b.x-12*Math.cos(t+.5),b.y-12*Math.sin(t+.5));ctx.fill();}ctx.restore();};
     if(board&&showLabels){ctx.strokeStyle='#81b8ae';ctx.lineWidth=2;ctx.strokeRect(board.x0,board.y0,board.x1-board.x0,board.y1-board.y0);}
     if(showLabels){walls.forEach(([a,b])=>line(a,b,'#f0c66a'));objectives.forEach(p=>ring(p,'#f0c66a',8,true));}
-    if(showLabels)models.forEach((m,i)=>{const p=positions[m.key];if(!p)return;const c=m.side==='npo'?'#76f5a8':'#91caff';ring(p,c,Math.max(8,p.r||10));ctx.font='bold 11px system-ui';ctx.fillStyle='#06100c';ctx.fillRect(p.x-9,p.y-19,19,13);ctx.fillStyle=c;ctx.textAlign='center';ctx.fillText(String(i+1),p.x,p.y-9);});
+    if(showLabels)models.forEach((m,i)=>{const p=positions[m.key];if(!p)return;const c=m.side==='npo'?'#76f5a8':'#91caff';const radius=Math.max(5,p.r||10);ring(p,c,radius+1);ctx.font='bold 11px system-ui';ctx.fillStyle='#06100c';ctx.fillRect(p.x-9,p.y-radius-10,19,13);ctx.fillStyle=c;ctx.textAlign='center';ctx.fillText(String(i+1),p.x,p.y-radius);});
     if(plan){
       const origin=positions[plan.actor];
       if(origin){
@@ -855,11 +869,11 @@ function trackingUI(){
         const m=models.find(m=>m.key===selected);if(!m)return;
         const r=Math.max(5,Math.round((m.base||32)/50.8*(board.x1-board.x0)/board.width));
         const data=frame.getContext('2d').getImageData(0,0,frame.width,frame.height).data;
-        const blocked=q=>Boolean(mapLayout&&mapped&&(mapLayout.walls.some(([a,b])=>core.segmentDistance(q,a,b)<r*.22)||mapLayout.terrain.some(t=>core.dist(q,t)<Math.min(t.r*.45,r*.65))));
+        const blocked=q=>mapped&&snapping.terrainBlocked(q,r,walls,mapLayout?.terrain||[]);
         const hit=snapping.snap(data,frame.width,frame.height,p,r,blocked);
         if(!hit){tell('No miniature base detected at that spot. Tap the centre of its base and try again.');return;}
-        if(Object.entries(positions).some(([k,v])=>k!==selected&&core.dist(hit,v)<Math.max(5,r*.85))){tell('That miniature is already assigned. Select a different model.');return;}
-        positions[selected]={x:hit.x,y:hit.y,r,template:core.patch(data,frame.width,frame.height,hit,r)};
+        if(Object.entries(positions).some(([k,v])=>k!==selected&&core.dist(hit,v)<Math.max(5,(hit.r+(v.r||r))*.75))){tell('That miniature is already assigned. Select a different model.');return;}
+        positions[selected]={x:hit.x,y:hit.y,r:hit.r,template:core.patch(data,frame.width,frame.height,hit,hit.r)};
         selected=models.find(m=>!positions[m.key])?.key||selected;update();
       }else if(stage==='terrain'&&mapLayout){const door=mapLayout.doors.reduce((best,d)=>core.dist(d,p)<12&&(!best||core.dist(d,p)<core.dist(best,p))?d:best,null);if(door){openDoors=door.open?openDoors.filter(id=>id!==door.id):[...openDoors,door.id];refreshMap();update();}}
       else if(stage==='wall'){if(!wallStart){wallStart=p;update();}else{if(core.dist(wallStart,p)<4)return;walls.push([wallStart,p]);mapped=false;wallStart=null;stage='terrain';update();}}
