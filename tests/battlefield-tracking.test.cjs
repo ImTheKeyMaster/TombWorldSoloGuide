@@ -140,3 +140,20 @@ for(const tap of [{x:50,y:50},{x:54,y:55},{x:42,y:50}]){
 a.equal(sn.snap(dim,100,100,{x:65,y:50},12),null);
 a.equal(sn.snap(new Uint8ClampedArray(100*100*4).fill(50),100,100,{x:50,y:50},12),null);
 console.log('Touch-friendly dim and partially obscured base selection passed.');
+
+// A body or weapon can overhang a base. A real connected foreground tap
+// must keep the fitted base centre; taps on adjacent floor must still fail.
+const overhang=new Uint8ClampedArray(100*100*4);
+for(let y=0;y<100;y++)for(let x=0;x<100;x++){
+ const rr=Math.hypot(x-50,y-50);let v=175+Math.round(x/12);
+ if(rr<=11)v=rr>8?85:120;
+ if(x>=50&&x<=65&&Math.abs(y-49)<=3)v=65;
+ overhang.fill(v,(y*100+x)*4,(y*100+x)*4+3);
+}
+for(const tap of [{x:50,y:50},{x:63,y:49},{x:64,y:49}]){
+ const fit=sn.snap(overhang,100,100,tap,11);
+ a(fit&&Math.hypot(fit.x-50,fit.y-50)<=2&&Math.abs(fit.r-11)<=2);
+}
+for(const tap of [{x:63,y:55},{x:66,y:49},{x:68,y:49}])a.equal(sn.snap(overhang,100,100,tap,11),null);
+a.equal(sn.snap(overhang,100,100,{x:63,y:49},11,()=>true),null);
+console.log('Connected miniature silhouette taps and adjacent floor rejection passed.');
