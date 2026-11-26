@@ -75,19 +75,21 @@ def test_target_confirmation_accepts_valid_and_rejects_stale_choices():
     run_node(r"""
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const src=fs.readFileSync('app.js','utf8');
-const a=src.indexOf('  function confirmNpoAttackTarget(n,decision){');
+const a=src.indexOf('  function confirmNpoAttackTarget(');
 const b=src.indexOf('  function openNpoCombat(',a);
 assert(a>=0&&b>a);
 const code=src.slice(a,b);
-for(const valid of [true,false]){
+// Manual selection and explicit Recon targets must both enforce eligibility.
+for(const [mode,valid] of [['manual',true],['manual',false],['dropdown',true],['dropdown',false],['recon',true],['recon',false]]){
   const events=[];
   const state={
-    npoAttackTargetId:'confidant',npoAttackSummary:null,
+    npoAttackTargetId:mode==='manual'?'confidant':'gunner-flamer',npoAttackSummary:null,
     lastActivation:{pendingAction:{id:'shoot'},answers:{},targetConfirmed:false},
     activationHistory:[]
   };
   const ctx={state,
-    $:()=>null,eligibleNpoAttackTargets:()=>valid?['confidant']:['gunner-flamer'],
+    $:()=>mode==='manual'?null:{tagName:'SELECT',value:mode==='recon'?'gunner-flamer':'confidant'},
+    eligibleNpoAttackTargets:()=>valid?['confidant','gunner-flamer']:['gunner-flamer'],
     renderNpoDecisionResult:()=>events.push('rerender'),
     showToast:()=>events.push('toast'),
     save:()=>events.push('save'),
@@ -99,7 +101,7 @@ for(const valid of [true,false]){
     showNpoTargetRecovery:()=>events.push('recovery')
   };
   const confirm=new Function('ctx','with(ctx){'+code+'\nreturn confirmNpoAttackTarget;}')(ctx);
-  const result=confirm({id:'crawler'}, {action:'Shoot'});
+  const result=confirm({id:'crawler'}, {action:'Shoot'}, ...(mode==='recon'?['confidant']:[]));
   assert.equal(result,valid);
   if(valid){
     assert.equal(state.npoAttackTargetId,'confidant');
@@ -109,6 +111,7 @@ for(const valid of [true,false]){
   }else{
     assert.equal(state.npoAttackTargetId,null);
     assert(!events.includes('combat'));
+    assert.equal(state.lastActivation.targetConfirmed,false);
     assert(events.includes('rerender')&&events.includes('toast'));
   }
 }
