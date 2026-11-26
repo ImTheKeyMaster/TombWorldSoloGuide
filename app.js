@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'tombWorldBattleGuide.v1';
   const EXPERIMENTAL_FEATURES_KEY = 'tombWorldSolo.experimentalFeatures.v1';
-  const APP_VERSION = '10.1.42';
+  const APP_VERSION = '10.1.43';
   const DICE_ROLL_ANIMATION_MS = 750;
   if (typeof navigator !== 'undefined' && 'mediaSession' in navigator && typeof window.MediaMetadata === 'function') {
     try {
@@ -5223,7 +5223,7 @@ document.addEventListener('touchend',function(e){
       const ranges=profiles.map(p=>{const match=(p.rules||[]).map(String).map(r=>r.match(/^Range\s*(\d+)/i)).find(Boolean);return Number(p.range??match?.[1]??Infinity);});
       return {key:'n:'+n.id,id:n.id,side:'npo',name:npoName(n),base:Number(n.baseSize||d?.baseSize)||null,move:npoRepositionDistance(n),ap:setup?Number(d?.apl||0):actor?.id===n.id?activation?.remainingAp:effectiveApl(n.id,d?.apl),ready:!setup&&readyNpos().some(x=>x.id===n.id),wounds:n.wounds,canShoot:profiles.length>0,range:ranges.length?Math.min(...ranges):null,type:n.type,operatesHatches:Boolean(d?.behavior?.operatesHatches),focus:setup?null:npoMovementFocus(n,d?.behavior?.actions?.find(action=>action.startsWith('Reposition'))||'')};
     });
-    const pp=inPlayLivingPlayerOperativeIds().map(id=>({key:'p:'+id,id,side:'player',name:playerName(id),base:Number(playerDefinition(id)?.baseSize)||null,wounds:playerCurrentWounds(id),order:state.playerOperativeStates?.[id]?.order||'Unknown',ready:!(state.playerActivatedIds||[]).includes(id)}));
+    const pp=inPlayLivingPlayerOperativeIds().map(id=>({key:'p:'+id,id,side:'player',name:playerName(id),base:Number(playerDefinition(id)?.baseSize)||null,wounds:playerCurrentWounds(id),ready:!(state.playerActivatedIds||[]).includes(id)}));
     const valid=()=>state===token&&reconTrackingEnabled()&&state.turningPoint===turn&&(setup?state.phase===phase&&(phase==='between'&&turn===0||phase==='strategy'&&turn===1&&state.strategyStage==='summary'):state.nextSide==='npo')&&(!actor||(state.activeNpoId===actor.id&&state.lastActivation?.decisionPass===activation.decisionPass&&!state.lastActivation.pendingAction));
     const finishSetup=(captured=false)=>{if(!valid())return;reconSetupFinishedFor=state;if(captured){reconCaptureCompletedFor=state;reconLaunchError='';}closeModal();if(phase==='between')void startTurningPoint({skipRecon:true});else render();};
     showModal(setup?'Capture Battlefield':'Battlefield Recon','<div id="reconTrackingHost"></div>');
@@ -5258,7 +5258,7 @@ document.addEventListener('touchend',function(e){
     activation.movementIntent=['reposition','dash'].includes(id)?{id:id+'-recon',purpose:'general-position',actionId:id,decisionPass:activation.decisionPass}:null;
     activation.pendingFollowUpAction=null;
     const nextHistory=[...history,{index:0,answers,answer:true,action:p.action,type:'feasibility',question:'Photo recommendation confirmed',contextBefore},{action:p.action,type:'selected',question:conciseNpoActionName({id,name:p.action})}];
-    reconContinuation={token:state,activationId:activation.activationId,actionId:id};
+    reconContinuation={token:state,activationId:activation.activationId,actionId:id,followUp:p.confirmedFollowUp||null};
     resolveNpo(n,{...answers,action:p.action},nextHistory,['shoot','fight'].includes(id)?target:null,Boolean(p.movementConfirmed&&npoActionChangesContext(id)));
     return true;
   }
@@ -9856,7 +9856,20 @@ function showPlayerActivation(){
     // Fieldcraft can move another operative and therefore invalidates reuse.
     if(reconTrackingEnabled()&&reconContinuation?.token===state&&reconContinuation.activationId===activation.activationId){
       const reuse=!activation.lastFieldcraftInterrupt&&activation.completedActionIds?.at(-1)===reconContinuation.actionId;
+      const follow=reconContinuation.followUp;
       reconContinuation=null;
+      // Commit the second confirmed move (or enter combat) through the normal
+      // action transaction. Do not auto-execute if an interruption changed the board.
+      if(reuse&&follow&&follow.actor==='n:'+n.id){
+        const id=npoActionId(follow.action),context={...activation.currentContext,inEnemyControlRange:follow.inControl,hasValidShootTarget:follow.shootable,hasValidFightTarget:follow.fightable};
+        const target=follow.target?.startsWith('p:')?follow.target.slice(2):null;
+        if(recommendedNpoActions(n,context).includes(follow.action)&&!(activation.declinedActionIds||[]).includes(id)&&(!['shoot','fight'].includes(id)||eligibleNpoAttackTargets().includes(target))){
+          window.TombWorldReconTracking?.advanceConfirmed(follow);
+          reconApprovedPlan={...follow,npoId:n.id,token:state,movementConfirmed:npoActionChangesContext(id)};
+          reconDisplayPlan=reconApprovedPlan;
+          if(applyReconRecommendation(n,{},activation.questionHistory||[]))return;
+        }
+      }
       try{if(showReconTracking(n,false,reuse))return;}catch(error){recordReconLaunchError(error);}
     }
     runNpoPrompt(n,0,{},activation.questionHistory||[]);

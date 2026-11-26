@@ -130,7 +130,7 @@ function trackingCore(){
     }
     return {nodes,seeds,reach,path,field:goals=>search(goals.map(i=>[i,0]),true)};
   }
-  function plan({board,positions,models,walls=[],objectives=[],doors=[],futureWalls=null,terrain=[],mapped=false,actorKey=null,actionOrder,diagnostics=[]}){
+  function plan({board,positions,models,walls=[],objectives=[],doors=[],futureWalls=null,terrain=[],mapped=false,actorKey=null,actionOrder,diagnostics=[],ignoreOrders=false}){
     const report=(code,message,actor=null)=>{diagnostics.push({code,message,actor:actor?.key||null});return null;};
     if(!board)return report('board','The playable board has not been calibrated.');
     if(!mapped)return report('terrain','Confirm the mission layout and hatchway states.');
@@ -154,7 +154,7 @@ function trackingCore(){
     }
     const visible=(a,b)=>clear(a.p,b.p,0);
     const control=(a,b)=>edge(a,b)<=.93&&visible(a,b);
-    const shooting=(a,b,from=a.p)=>a.canShoot&&b.order==='Engage'&&clear(from,b.p,0)&&(!Number.isFinite(a.range)||Math.max(0,dist(from,b.p)-a.r-b.r)<=a.range-.12);
+    const shooting=(a,b,from=a.p)=>a.canShoot&&(ignoreOrders||b.order==='Engage')&&clear(from,b.p,0)&&(!Number.isFinite(a.range)||Math.max(0,dist(from,b.p)-a.r-b.r)<=a.range-.12);
     function targets(a,kind,from=a.p){
       return players.filter(b=>kind==='fight'?control(a,b):shooting(a,b,from)).sort((b,c)=>b.wounds-c.wounds||dist(from,b.p)-dist(from,c.p)||Number(c.ready)-Number(b.ready));
     }
@@ -202,7 +202,7 @@ function trackingCore(){
       const firing=(p,b)=>clear(p,b.p)&&(!Number.isFinite(a.range)||Math.max(0,dist(p,b.p)-a.r-b.r)<=a.range-.12);
       // Use actual firing positions as goals, rather than the enemy's centre.
       // Future routes may use an opened hatch, but the movement itself cannot.
-      const known=players.filter(b=>b.order==='Engage'),potential=players.filter(b=>b.order!=='Engage');
+      const known=ignoreOrders?players:players.filter(b=>b.order==='Engage'),potential=ignoreOrders?[]:players.filter(b=>b.order!=='Engage');
       const shootingGoals=list=>grid.nodes.flatMap((p,i)=>strategic(p,p)&&list.some(b=>firing(p,b))?[i]:[]);
       const groups=[];
       if(shootFocus){
@@ -264,7 +264,7 @@ function trackingCore(){
         if(inControl)continue;
         const target=targets(a,'shoot')[0];if(target)return {actor:a.key,action:name,id,target:target.key,inControl,shootable:true,fightable:false,skipped};
         // Conceal/cover and unknown orders cannot be treated as proof no target exists.
-        if(a.canShoot&&players.some(b=>b.order!=='Engage'&&visible(a,b)&&(!Number.isFinite(a.range)||edge(a,b)<=a.range)))return report('orders','A visible enemy has an unknown or Conceal order; shooting eligibility needs a tabletop check.',a);
+        if(!ignoreOrders&&a.canShoot&&players.some(b=>b.order!=='Engage'&&visible(a,b)&&(!Number.isFinite(a.range)||edge(a,b)<=a.range)))return report('orders','A visible enemy has an unknown or Conceal order; shooting eligibility needs a tabletop check.',a);
       }else if(['charge','reposition','dash'].includes(id)){
         if(inControl)continue;
         if(!Number.isFinite(a.move))return report('move-stat','Movement allowance is missing.',a);
@@ -562,9 +562,7 @@ function trackingUI(){
     if(!host||!config||document.documentElement.dataset.experimental!=='on')return;
     if(!session||session.token!==config.token){continuation=null;session={token:config.token,board:null,positions:{},walls:[],objectives:[],mapped:false,frame:null,turn:null,activated:new Set(),ready:new Set(),meta:{},mapRotation:0,mapFit:null,openDoors:[],capture:null};}
     preview=null;
-    const s=session,models=config.models.map(m=>({...m,...(s.meta[m.key]?.base&&!m.base?{base:s.meta[m.key].base}:{}),...(m.side==='player'&&m.order==='Unknown'&&s.meta[m.key]?.order?{order:s.meta[m.key].order}:{})}));
-    // A player may change order during their activation. Unknown must remain unknown until confirmed.
-    if(s.frame)for(const m of models.filter(m=>m.side==='player'&&(s.turn!==config.turn||!s.activated.has(m.key)&&config.activated.includes(m.key))))if(config.models.find(x=>x.key===m.key)?.order==='Unknown')m.order='Unknown';
+    const s=session,models=config.models.map(m=>({...m,...(s.meta[m.key]?.base&&!m.base?{base:s.meta[m.key].base}:{})}));
     let frame=null,positions={},board=null,walls=[],objectives=[],mapped=false,stage='photo',wallStart=null,selected='',plan=null,seq=0,raw=null,crop=null,dragging=null,autoRectified=false,mapLayout=null,rotation=0,mapFit=null,openDoors=[],diagnostics=[],capture=null,nextPlan=null,reused=false,suppressMapClick=false;
     host.innerHTML='<section class="recon-tracking"><p class="eyebrow">TACTICAL SCAN · EXPERIMENTAL</p><p class="rt-status" role="status" aria-live="polite"></p><p class="rt-metadata rt-ap-progress" hidden></p><div class="recon-upload"><label class="btn secondary">Take Photo<input type="file" accept="image/*" capture="environment" aria-label="Take tactical photo"></label><label class="btn ghost">Choose Photo<input type="file" accept="image/*" aria-label="Choose tactical photo"></label></div><div class="rt-work" hidden><div class="rt-recommendation" hidden></div><div class="recon-frame"><canvas aria-label="Battlefield photograph and tactical overlays"></canvas></div><div class="rt-controls"></div></div><div class="wizard-actions"><button type="button" class="btn ghost rt-manual">Use Manual Guide</button></div></section>';
     const get=q=>host.querySelector(q),status=get('.rt-status'),canvas=get('canvas'),controls=get('.rt-controls'),work=get('.rt-work'),recommendation=get('.rt-recommendation');
@@ -577,6 +575,7 @@ function trackingUI(){
     const actionLabel=id=>id==='fall-back'?'Fall Back':id[0].toUpperCase()+id.slice(1);
     const isMove=p=>['reposition','dash','charge','fall-back'].includes(p.id);
     const cost=p=>p.id==='fall-back'?2:1;
+    const combined=()=>Boolean(isMove(plan)&&nextPlan&&nextPlan.actor===plan.actor&&['reposition','dash','charge','shoot','fight'].includes(nextPlan.id)&&cost(plan)+cost(nextPlan)<=models.find(m=>m.key===plan.actor).ap);
     function confirmPlan(button,check=null){
       if(!live()||button.disabled||(check&&!check.checked))return;
       button.disabled=true;
@@ -586,7 +585,7 @@ function trackingUI(){
       const confirmed={...positions};
       if(isMove(plan)&&plan.destination)confirmed[plan.actor]={...positions[plan.actor],...plan.destination};
       continuation={token:config.token,turn:config.turn,actor:plan.actor,action:plan.id,frame,board:{...board},positions:confirmed,walls,objectives,mapped,rotation,mapFit,openDoors:[...openDoors]};
-      config.accept({...plan,movementConfirmed:isMove(plan)});
+      config.accept({...plan,movementConfirmed:isMove(plan),confirmedFollowUp:combined()?nextPlan:null});
     }
     const button=(label,fn,kind='secondary')=>{const b=document.createElement('button');b.type='button';b.className='btn '+kind;b.textContent=label;b.onclick=fn;return b;};
     const live=()=>host.isConnected&&document.documentElement.dataset.experimental==='on'&&config.valid();
@@ -656,7 +655,6 @@ function trackingUI(){
         models.forEach((m,i)=>{const o=document.createElement('option');o.value=m.key;o.textContent=`${i+1}. ${m.name}${positions[m.key]?' ✓':' •'}`;select.append(o);});select.value=selected;
         select.onchange=()=>{selected=select.value;update();};controls.append(select);
         if(current&&!current.base){const label=document.createElement('label');label.className='rt-metadata';label.textContent='Base diameter (mm)';const input=document.createElement('input');input.type='number';input.min='10';input.max='100';input.placeholder='e.g. 32';input.onchange=()=>{const v=Number(input.value);if(v>=10&&v<=100){current.base=v;update();}};label.append(input);controls.append(label);}
-        if(current?.side==='player'){const label=document.createElement('label');label.className='rt-metadata';label.textContent='Current tabletop order';const order=document.createElement('select');for(const value of ['Unknown','Engage','Conceal']){const option=document.createElement('option');option.value=value;option.textContent=value;order.append(option);}order.value=current.order;order.onchange=()=>{current.order=order.value;};label.append(order);controls.append(label);}
         if(!missing.length)controls.append(button('Confirm Operative Positions',()=>{if(mapped)assess();else{stage='terrain';update();}},'primary'));
         controls.append(button('Review Mission Layout',()=>{stage='terrain';update();},'ghost'));
         controls.append(button('Adjust Board Crop',resetCalibration,'ghost'));
@@ -689,24 +687,26 @@ function trackingUI(){
           const heading=document.createElement('strong');heading.textContent='Assessment results';reasons.append(heading);
           for(const reason of diagnostics){const p=document.createElement('p');const model=models.find(m=>m.key===reason.actor);p.textContent=(model?model.name+': ':'')+reason.message;reasons.append(p);}
           controls.append(reasons);
-          if(!reused)controls.append(button('Review Operative Positions / Orders',()=>{selected='';stage='identify';update();}));
+          if(!reused)controls.append(button('Review Operative Positions',()=>{selected='';stage='identify';update();}));
           else controls.append(button('Position differs? Take New Photo',()=>get('input[aria-label="Take tactical photo"]').click(),'ghost'));
           controls.append(button('Review Mission Layout',()=>{stage='terrain';update();},'ghost'));
         }
         else{
           const a=models.find(m=>m.key===plan.actor),target=models.find(m=>m.key===plan.target);
-          tell((reused?'Using the same photograph; marked positions reflect confirmed actions. ':'')+(isMove(plan)?'Move the indicated operative, then confirm completion.':'Resolve the indicated action.'));
+          const batch=combined();
+          tell((reused?'Using the same photograph; marked positions reflect confirmed actions. ':'')+(batch&&isMove(nextPlan)?'Complete both marked moves in order, then confirm once.':isMove(plan)?'Move the indicated operative, then confirm completion.':'Resolve the indicated action.'));
           const remaining=Math.max(0,a.ap-cost(plan)),starting=config.startingAp??a.ap;
           const apSummary=starting-a.ap>0?'AP spent: '+(starting-a.ap)+' of '+starting+' · ':'';
-          const next=nextPlan?('Next planned action: '+actionLabel(nextPlan.id)+(nextPlan.distance!=null?' · '+nextPlan.distance.toFixed(1)+'″':'')+(nextPlan.target?' · '+(models.find(m=>m.key===nextPlan.target)?.name||'target'):'' )+'. Shown on the same photograph; confirmed separately.'):'Remaining AP will be assessed after this action is resolved.';
+          const next=nextPlan?('Next planned action: '+actionLabel(nextPlan.id)+(nextPlan.distance!=null?' · '+nextPlan.distance.toFixed(1)+'″':'')+(nextPlan.target?' · '+(models.find(m=>m.key===nextPlan.target)?.name||'target'):'' )+'+(batch?(isMove(nextPlan)?'. Complete both moves before confirming.':'. Combat resolution follows automatically.') :'. Shown on the same photograph.')):'Remaining AP will be assessed after this action is resolved.';
           const apHtml='<p class="rt-ap-summary"><b>'+esc(apSummary+a.ap+' AP available · '+cost(plan)+' AP for '+actionLabel(plan.id)+' · '+remaining+' AP remaining after')+'</b></p>'+(remaining?'<p>'+esc(next)+'</p>':'<p>Final AP of this activation.</p>');
-          const buttonLabel=isMove(plan)?'Move Complete':plan.id==='shoot'?'Resolve Shoot':plan.id==='fight'?'Resolve Fight':'Resolve '+actionLabel(plan.id);
+          const buttonLabel=batch?'Confirm Activation':isMove(plan)?'Move Complete':plan.id==='shoot'?'Resolve Shoot':plan.id==='fight'?'Resolve Fight':'Resolve '+actionLabel(plan.id);
           const info=document.createElement('div');info.className='rt-plan';
           const intent=plan.intent||(plan.id==='shoot'?'Shoot a priority eligible enemy.':plan.id==='fight'?'Fight a priority enemy in control range.':'Improve the tactical position.');
           info.innerHTML='<strong>'+esc(a?.name)+' · '+esc(plan.id==='fall-back'?'Fall Back':plan.id[0].toUpperCase()+plan.id.slice(1))+'</strong><p><b>Tactical Intent:</b> '+esc(intent)+'</p><p>'+esc(plan.destination?`${plan.distance.toFixed(1)}″ along the marked route${target?` toward ${target.name}`:''}.`:target?`Target ${target.name}.`:'')+'</p>'+(plan.followUp&&!nextPlan?'<p>Potential follow-up: '+esc(plan.followUp)+'</p>':'')+(plan.hatchway?'<p>Later route requires an open hatchway. Verify and resolve opening on the tabletop before crossing.</p>':'') +apHtml+'<small>Green: movement (dashed for next action). Red: attack target. Amber: future goal or hatchway. Follow the numbered markers in order.</small>';
           recommendation.hidden=false;recommendation.append(info);
-          if(plan.skipped?.length){
-            const note=document.createElement('p');note.textContent='Check higher-priority actions first: '+plan.skipped.map(s=>s.action+' ('+s.reason+')').join('; ');info.append(note);
+          const skipped=[...(plan.skipped||[]),...(batch?nextPlan.skipped||[]:[])];
+          if(skipped.length){
+            const note=document.createElement('p');note.textContent='Check higher-priority actions first: '+skipped.map(s=>s.action+' ('+s.reason+')').join('; ');info.append(note);
             const label=document.createElement('label');label.className='rt-check';const check=document.createElement('input');check.type='checkbox';label.append(check,document.createTextNode(' No legal higher-priority route exists on the tabletop.'));controls.append(label);
             const accept=button(buttonLabel,()=>confirmPlan(accept,check),'primary');accept.disabled=true;check.onchange=()=>accept.disabled=!check.checked;controls.append(accept);
           }else{const confirm=button(buttonLabel,()=>confirmPlan(confirm),'primary');controls.append(confirm);}
@@ -778,10 +778,10 @@ function trackingUI(){
     function assess(){
       if(!live()||!board||models.some(m=>!positions[m.key]))return;
       if(!mapped){tell('Confirm that the terrain matches the physical board before proceeding.');return;}
-      if(!reused){s.meta=Object.fromEntries(models.map(m=>[m.key,{base:m.base,order:m.order}]));s.frame=frame;s.board={...board};s.positions={...positions};s.walls=walls.map(w=>w.map(p=>({...p})));s.objectives=objectives.map(p=>({...p}));s.mapped=mapped;s.turn=config.turn;s.activated=new Set(config.activated);s.ready=new Set(config.ready);s.scanKey=config.scanKey;s.mapRotation=rotation;s.mapFit=mapFit;s.openDoors=[...openDoors];s.capture=capture;}
+      if(!reused){s.meta=Object.fromEntries(models.map(m=>[m.key,{base:m.base}]));s.frame=frame;s.board={...board};s.positions={...positions};s.walls=walls.map(w=>w.map(p=>({...p})));s.objectives=objectives.map(p=>({...p}));s.mapped=mapped;s.turn=config.turn;s.activated=new Set(config.activated);s.ready=new Set(config.ready);s.scanKey=config.scanKey;s.mapRotation=rotation;s.mapFit=mapFit;s.openDoors=[...openDoors];s.capture=capture;}
       if(config.setup){config.complete();return;}
       const future=mapLayout&&maps.geometry(config.missionNumber,board,rotation,mapLayout.doors.map(d=>d.id),mapFit);
-      const input={board,positions,models,walls,objectives,doors:mapLayout?.doors||[],terrain:mapLayout?.terrain||[],futureWalls:future?.walls||null,mapped,actorKey:config.actorKey,actionOrder:config.actionOrder};
+      const input={board,positions,models,walls,objectives,doors:mapLayout?.doors||[],terrain:mapLayout?.terrain||[],futureWalls:future?.walls||null,mapped,actorKey:config.actorKey,actionOrder:config.actionOrder,ignoreOrders:true};
       diagnostics=[];plan=core.plan({...input,diagnostics});nextPlan=null;
       if(plan){
         const actor=models.find(m=>m.key===plan.actor),remaining=actor.ap-cost(plan);
@@ -883,8 +883,15 @@ function trackingUI(){
     const {frame,positions,models,board,walls,objectives,plan}=preview;draw(canvas,frame,positions,models,board,walls,objectives,plan,false);
   }
   function clearPreview(){preview=null;}
+  function advanceConfirmed(plan){
+    if(!continuation||continuation.actor!==plan.actor)return;
+    const prior=continuation,positions={...prior.positions};
+    preview={...prior,positions:{...positions},models:[],plan};
+    if(plan.destination)positions[plan.actor]={...positions[plan.actor],...plan.destination};
+    continuation={...prior,positions,action:plan.id};
+  }
   new MutationObserver(()=>{if(document.documentElement.dataset.experimental==='on')document.querySelectorAll('[data-recon-plan]').forEach(renderPreview);}).observe(document.documentElement,{subtree:true,childList:true});
-  return {open,clearPreview};
+  return {open,clearPreview,advanceConfirmed};
 }
 if(typeof document!=='undefined')window.TombWorldReconTracking=trackingUI();
 if(typeof module!=='undefined')module.exports={...trackingCore(),calibration:calibrationCore(),maps:mapCore(),snapping:snapCore()};
