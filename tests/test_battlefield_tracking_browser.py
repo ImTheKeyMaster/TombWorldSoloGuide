@@ -19,7 +19,7 @@ def image():
 
 with sync_playwright() as p:
     browser=p.chromium.launch()
-    page=browser.new_page(viewport={"width":390,"height":844})
+    page=browser.new_page(viewport={"width":390,"height":844},has_touch=True)
     errors=[]
     page.on("pageerror",lambda e: errors.append(str(e)))
     page.set_content('<html data-experimental="on"><body><div id="host"></div></body></html>')
@@ -54,7 +54,9 @@ with sync_playwright() as p:
         assert page.get_by_text('Confirm Operative Positions',exact=True).count()==0
     # Tap off-centre but within the actual base; rendered ring must fit the base.
     page.evaluate("() => {window.rings=[];const arc=CanvasRenderingContext2D.prototype.arc;CanvasRenderingContext2D.prototype.arc=function(x,y,r,...args){rings.push([x,y,r]);return arc.call(this,x,y,r,...args)};}")
-    tap(97,75)
+    # Use actual touchscreen input, not a simulated mouse click.
+    b=canvas.bounding_box()
+    canvas.tap(position={"x":b["width"]*97/300,"y":b["height"]*75/300})
     assert page.locator('select[aria-label="Operative to identify"]').input_value()=='p:b'
     assert page.evaluate("rings.some(([x,y,r])=>Math.abs(x-186)<3&&Math.abs(y-107)<3&&r>=15&&r<=21)")
     tap(150,73)

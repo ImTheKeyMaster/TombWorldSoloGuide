@@ -127,3 +127,16 @@ const wall=[[{x:50,y:20},{x:50,y:99}]];
 for(const tap of [{x:50,y:50},{x:54,y:50},{x:47,y:47}])a.equal(sn.snap(cap,100,100,tap,10,p=>sn.terrainBlocked(p,10,wall)),null);
 a(sn.terrainBlocked({x:52,y:50},10,wall));a(!sn.terrainBlocked({x:65,y:50},10,wall));
 console.log('Strict base hit testing, concentric rim fit and wall cap rejection passed.');
+
+// Touch-friendly fitting: dim, partly obscured rims still select at their true centre.
+const dim=new Uint8ClampedArray(100*100*4);
+for(let y=0;y<100;y++)for(let x=0;x<100;x++){
+ const rr=Math.hypot(x-50,y-50),theta=Math.atan2(y-50,x-50),v=rr<=12&&!(theta>-.5&&theta<.5)?62:50;
+ dim.fill(v,(y*100+x)*4,(y*100+x)*4+3);
+}
+for(const tap of [{x:50,y:50},{x:54,y:55},{x:42,y:50}]){
+ const fit=sn.snap(dim,100,100,tap,12);a(fit&&Math.hypot(fit.x-50,fit.y-50)<=2&&Math.abs(fit.r-12)<=2);
+}
+a.equal(sn.snap(dim,100,100,{x:65,y:50},12),null);
+a.equal(sn.snap(new Uint8ClampedArray(100*100*4).fill(50),100,100,{x:50,y:50},12),null);
+console.log('Touch-friendly dim and partially obscured base selection passed.');

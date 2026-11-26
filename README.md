@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.45
+# Tomb World Battle Guide v10.1.46
+
+## v10.1.46
+
+- Experimental Recon: keep the strict centered base fit and add a radial-evidence fallback for dim or partly interrupted rims. Allow confident taps closer to the base perimeter without expanding selection onto empty floor. Preserve wall/terrain rejection and fitted ring size. Standard unchanged.
 
 ## v10.1.45
 
