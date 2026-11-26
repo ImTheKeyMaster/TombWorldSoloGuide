@@ -100,3 +100,11 @@ for(let rotation=0;rotation<4;rotation++)for(let mission=1;mission<=6;mission++)
   a(after.doors[0].open);a(Math.abs(after.doors[0].x-before.doors[0].x-22)<1e-8);
 }
 console.log('Mission overlay handle movement, independent scaling and hatchway preservation passed.');
+
+// Experimental Recon ignores orders, but does not ignore walls or range.
+for(const order of ['Unknown','Conceal','Engage']){
+  const input={...args,ignoreOrders:true,models:[models[0],{...models[1],order}]};
+  a.equal(c.plan(input).id,'shoot');
+  a.equal(c.plan({...input,walls:[[{x:125,y:0},{x:125,y:300}]],actionOrder:()=>['Shoot']}),null);
+}
+console.log('Order-independent Recon target selection passed.');

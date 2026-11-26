@@ -84,6 +84,7 @@ with sync_playwright() as p:
     page.locator("input[aria-label='Choose tactical photo']").set_input_files({"name":"board.png","mimeType":"image/png","buffer":image()})
     page.get_by_text("Confirm Board Area",exact=True).click()
     tap(93,73);tap(150,73)
+    assert page.get_by_text('Current tabletop order',exact=True).count()==0
     page.get_by_text("Confirm Operative Positions",exact=True).click()
     page.locator(".rt-check input").check()
     page.get_by_text("Finish Recon Setup",exact=True).click()
@@ -142,9 +143,9 @@ with sync_playwright() as p:
     page.get_by_text("Assess Battlefield",exact=True).click()
     assert "Overcharge requires a tabletop rules check" in page.locator(".rt-plan").inner_text()
     assert page.get_by_text("Resolve Shoot",exact=True).count()==0
-    page.get_by_text("Review Operative Positions / Orders",exact=True).click()
+    page.get_by_text("Review Operative Positions",exact=True).click()
     assert page.locator('select[aria-label="Operative to identify"]').count()==1
-    # A movement is confirmed directly and a second AP is previewed, not committed.
+    # Both planned moves are displayed and submitted by one confirmation.
     page.evaluate("reconConfig={...reconConfig,token:{},setup:false,turn:1,missionNumber:null,actorKey:null,actionOrder:(m,c,planned=[])=>['Reposition','Dash'].filter(x=>!planned.includes(x.toLowerCase())),models:reconConfig.models.map(m=>m.side==='npo'?{...m,canShoot:false,focus:'fight',move:2,ap:2}:m)};TombWorldReconTracking.open(document.querySelector('#host'),reconConfig)")
     page.locator("input[aria-label='Choose tactical photo']").set_input_files({"name":"board.png","mimeType":"image/png","buffer":image()})
     page.get_by_text("Confirm Board Area",exact=True).click()
@@ -152,13 +153,14 @@ with sync_playwright() as p:
     page.get_by_text("Confirm Operative Positions",exact=True).click()
     page.locator(".rt-check input").check()
     page.get_by_text("Assess Battlefield",exact=True).click()
-    page.get_by_text("Move Complete",exact=True).wait_for()
+    page.get_by_text("Confirm Activation",exact=True).wait_for()
     assert '1 AP remaining after' in page.locator('.rt-recommendation').inner_text()
     assert 'Next planned action: Dash' in page.locator('.rt-recommendation').inner_text()
     assert page.evaluate("['1 ACTING NPO','2 MOVE HERE','3 DASH HERE'].every(label=>overlayLabels.includes(label))")
-    page.get_by_text("Move Complete",exact=True).click()
+    page.get_by_text("Confirm Activation",exact=True).click()
     assert page.evaluate("window.accepted.movementConfirmed") is True
     assert page.evaluate("window.accepted.id")=="reposition"
+    assert page.evaluate("window.accepted.confirmedFollowUp.id")=="dash"
     # Same photograph, confirmed position, only the remaining action.
     page.evaluate("reconConfig={...reconConfig,actorKey:'n:a',reusePrevious:true,completedActionIds:['reposition'],completedActions:['Reposition'],startingAp:2,models:reconConfig.models.map(m=>m.side==='npo'?{...m,ap:1}:m),actionOrder:()=>['Dash']};TombWorldReconTracking.open(document.querySelector('#host'),reconConfig)")
     page.get_by_text("Move Complete",exact=True).wait_for()
@@ -177,9 +179,12 @@ with sync_playwright() as p:
     page.get_by_text("Confirm Operative Positions",exact=True).click()
     page.locator(".rt-check input").check()
     page.get_by_text("Assess Battlefield",exact=True).click()
-    page.get_by_text("Move Complete",exact=True).wait_for()
+    page.get_by_text("Confirm Activation",exact=True).wait_for()
     assert 'Next planned action: Shoot' in page.locator('.rt-recommendation').inner_text()
     assert page.evaluate("['1 ACTING NPO','2 MOVE HERE','3 POTENTIAL TARGET'].every(label=>overlayLabels.includes(label))")
+    page.get_by_text("Confirm Activation",exact=True).click()
+    assert page.evaluate("window.accepted.confirmedFollowUp.id")=="shoot"
+    assert page.get_by_text("Current tabletop order",exact=True).count()==0
     assert not errors,errors
     browser.close()
 print("Tactical scan browser workflow passed.")

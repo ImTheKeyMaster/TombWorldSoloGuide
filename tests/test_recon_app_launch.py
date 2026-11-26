@@ -39,11 +39,13 @@ hook=r"""
       showReconTracking();
       return n.id;
     },
-    confirmMove:(kind='dash')=>{
+    confirmMove:(kind='dash',followKind=null)=>{
       const c=window.__reconConfig,m=c.models.find(m=>m.side==='npo');
       const action=c.actionOrder(m,false).find(x=>npoActionId(x)===kind);
       if(!action)throw Error('No action '+kind);
-      c.accept({actor:m.key,action,id:kind,inControl:false,shootable:false,fightable:false,movementConfirmed:true});
+      const next=followKind?c.actionOrder({...m,ap:m.ap-1},false,[kind]).find(x=>npoActionId(x)===followKind):null;
+      if(followKind&&!next)throw Error('Missing follow-up '+followKind);
+      c.accept({actor:m.key,action,id:kind,inControl:false,shootable:false,fightable:false,movementConfirmed:true,confirmedFollowUp:next?{actor:m.key,id:followKind,action:next,inControl:false,shootable:false,fightable:false}:null});
     },
     ap:()=>({id:state.activeNpoId,remaining:state.lastActivation?.remainingAp,completed:state.lastActivation?.completedActionIds,committed:state.lastActivation?.committed})
   };
@@ -87,6 +89,13 @@ try:
         page.wait_for_function("__reconFixture.ap().committed===true")
         assert page.evaluate("__reconFixture.ap().remaining")==0
         assert page.evaluate("__reconFixture.ap().completed")==["dash","reposition"]
+        # One confirmation commits both movements through two guarded AP transactions.
+        actor=page.evaluate("__reconFixture.prepareMovement()")
+        page.evaluate("__reconFixture.confirmMove('dash','reposition')")
+        page.wait_for_function("__reconFixture.ap().committed===true")
+        assert page.evaluate("__reconFixture.ap().remaining")==0
+        assert page.evaluate("__reconFixture.ap().completed")==["dash","reposition"]
+        assert page.locator('#confirmNpoMovement').count()==0
         assert not errors,errors
         browser.close()
 finally:

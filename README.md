@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.42
+# Tomb World Battle Guide v10.1.43
+
+## v10.1.43
+
+- Experimental Recon: no player order selection; geometric shooting assessment ignores Engage/Conceal while preserving range and wall checks. Confirm a planned two-move sequence once, or confirm movement and enter the planned combat automatically. Attack dice and any changed/conditional actions still require normal resolution. Standard unchanged.
 
 ## v10.1.42
 
