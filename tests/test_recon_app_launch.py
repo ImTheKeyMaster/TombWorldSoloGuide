@@ -47,6 +47,13 @@ hook=r"""
       return target.key.slice(2);
     },
     attack:()=>({target:state.npoAttackTargetId,confirmed:state.lastActivation?.targetConfirmed,pending:state.lastActivation?.pendingAction?.id,remaining:state.lastActivation?.remainingAp,completed:state.lastActivation?.completedActionIds}),
+    resumeAttack:()=>{
+      closeModal();
+      reconApprovedPlan=null;reconDisplayPlan=null;reconContinuation=null;
+      state.lastActivation={...state.lastActivation,pendingAction:{...state.lastActivation.pendingAction},targetConfirmed:false,combatDraft:null};
+      state.npoAttackTargetId=null;
+      save();continueNpoActivation();
+    },
     confirmMove:(kind='dash',followKind=null)=>{
       const c=window.__reconConfig,m=c.models.find(m=>m.side==='npo');
       const action=c.actionOrder(m,false).find(x=>npoActionId(x)===kind);
@@ -114,6 +121,15 @@ try:
             assert page.evaluate("__reconFixture.attack()")=={"target":target,"confirmed":True,"pending":kind,"remaining":2,"completed":[]}
             assert page.locator('#confirmNpoTarget').count()==0
             assert page.locator('[data-npo-target-id]').count()==0
+        # Reopen an approved pending attack after the transient photo plan is gone.
+        actor=page.evaluate("__reconFixture.prepareMovement()")
+        target=page.evaluate("__reconFixture.confirmAttack('shoot')")
+        page.wait_for_function("__reconFixture.attack().confirmed===true")
+        page.evaluate("__reconFixture.resumeAttack()")
+        page.wait_for_function("__reconFixture.attack().confirmed===true")
+        assert page.evaluate("__reconFixture.attack()")=={"target":target,"confirmed":True,"pending":"shoot","remaining":2,"completed":[]}
+        assert page.locator('#confirmNpoTarget').count()==0
+        assert page.locator('[data-npo-target-id]').count()==0
         # A single move + Shoot confirmation deducts only movement AP,
         # automatically enters combat for the chosen target, and leaves attack AP pending.
         actor=page.evaluate("__reconFixture.prepareMovement()")
