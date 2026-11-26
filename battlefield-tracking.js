@@ -483,34 +483,58 @@ function snapCore(){
     r=Math.max(5,r);
     if(blocked({...tap,r}))return null;
     // Fit first, then hit-test: never pull the centre toward an empty-floor tap.
-    const search=r*1.4,step=r>22?2:1,radiusStep=Math.max(.75,r/14),candidates=[];
+    const search=r*1.4,step=r>22?2:1,radiusStep=Math.max(.75,r/14),candidates=[],partial=[];
     const sample=(x,y)=>{x=Math.round(x);y=Math.round(y);return x<0||y<0||x>=w||y>=h?-1:(y*w+x)*4;};
     for(let y=Math.max(0,Math.round(tap.y-search));y<=Math.min(h-1,tap.y+search);y+=step)
       for(let x=Math.max(0,Math.round(tap.x-search));x<=Math.min(w-1,tap.x+search);x+=step){
         const offset=dist({x,y},tap);if(offset>search)continue;
         for(let rad=r*.78;rad<=r*1.42;rad+=radiusStep){
-          let total=0,hits=0,octants=Array(8).fill(0),opposed=0,sign=[0,0],support=[];
+          let total=0,hits=0,octants=Array(8).fill(0),opposed=0,sign=[0,0],support=[],soft=[],softOctants=Array(8).fill(0),softSign=[0,0],radial=0,radialOctants=Array(8).fill(0);
           const band=Math.max(1.1,rad*.085);
           for(let k=0;k<rays.length;k++){
             const [dx,dy]=rays[k],i=sample(x+dx*(rad-band),y+dy*(rad-band)),j=sample(x+dx*(rad+band),y+dy*(rad+band));
-            if(i<0||j<0){support.push(false);continue;}
+            if(i<0||j<0){support.push(false);soft.push(false);continue;}
             const diffs=[data[i]-data[j],data[i+1]-data[j+1],data[i+2]-data[j+2]];
             const delta=diffs.reduce((a,b)=>Math.abs(a)>=Math.abs(b)?a:b,0),edge=Math.abs(delta);
             total+=Math.min(edge,65);const hit=edge>=16;support.push(hit);
             if(hit){hits++;octants[k>>2]++;sign[delta>0?0:1]++;}
+            // A dim or interrupted base rim can still have real radial
+            // contrast even when the strict full-rim test is not satisfied.
+            const weak=edge>=10;soft.push(weak);
+            if(weak){
+              softOctants[k>>2]++;softSign[delta>0?0:1]++;
+              const channel=diffs.findIndex(v=>v===delta),px=x+dx*rad,py=y+dy*rad;
+              const l=sample(px-dy*band,py+dx*band),v=sample(px+dy*band,py-dx*band);
+              // Tangential contrast from a wall, weapon or corner should
+              // not count as evidence for a circular base perimeter.
+              if(l>=0&&v>=0&&Math.abs(data[l+channel]-data[v+channel])<=edge*.9+3){
+                radial++;radialOctants[k>>2]++;
+              }
+            }
           }
           for(let k=0;k<16;k++)if(support[k]&&support[k+16])opposed++;
-          if(hits<21||octants.filter(n=>n>=2).length<7||opposed<9||Math.max(...sign)<hits*.68)continue;
           const score=total/32+hits*.65+opposed*.4-Math.abs(rad-r)*.7;
-          if(score>=34)candidates.push({x,y,r:rad,detectedRadius:rad,score,offset});
+          const candidate={x,y,r:rad,detectedRadius:rad,score,offset};
+          if(hits>=21&&octants.filter(n=>n>=2).length>=7&&opposed>=9&&Math.max(...sign)>=hits*.68&&score>=34)candidates.push(candidate);
+          // Fallback for obscured / low contrast bases. Keep the same
+          // geometric centre fit and require distributed, radial evidence.
+          const weakHits=softSign[0]+softSign[1];
+          let weakOpposed=0;for(let k=0;k<16;k++)if(soft[k]&&soft[k+16])weakOpposed++;
+          if(rad>=r*.85&&rad<=r*1.30&&weakHits>=19&&softOctants.filter(n=>n>=2).length>=6&&weakOpposed>=6&&Math.max(...softSign)>=weakHits*.65&&radial>=15&&radialOctants.filter(n=>n>=2).length>=6){
+            const weakScore=total/32+weakHits*.65+weakOpposed*.4+radial*.25-Math.abs(rad-r)*1.2;
+            if(weakScore>=26)partial.push({...candidate,score:weakScore});
+          }
         }
       }
-    candidates.sort((a,b)=>b.score-a.score||a.offset-b.offset);
-    let best=candidates[0];if(!best)return null;
+    const ranked=(list)=>list.sort((a,b)=>b.score-a.score||a.offset-b.offset);
+    // Preserve the proven strict fit whenever one exists. A weaker fit
+    // must not turn a near-base miss into an assignment.
+    const pool=candidates.length?ranked(candidates):ranked(partial);
+    let best=pool[0];if(!best)return null;
     // Prefer a supported outer rim near the calibrated base size over the inner bevel.
-    const outer=candidates.filter(c=>dist(c,best)<=Math.max(1.5,r*.14)&&c.r>best.r&&c.score>=best.score*.62&&Math.abs(c.r-r)<Math.abs(best.r-r));
+    const outer=pool.filter(c=>dist(c,best)<=Math.max(1.5,r*.14)&&c.r>best.r&&c.score>=best.score*.62&&Math.abs(c.r-r)<Math.abs(best.r-r));
     if(outer.length)best=outer.sort((a,b)=>Math.abs(a.r-r)-Math.abs(b.r-r)||b.score-a.score)[0];
-    if(blocked(best)||best.offset>best.r*.86)return null;
+    if(blocked(best)||best.offset>best.r*(candidates.length?.95:.9))return null;
     return best;
   }
   return {snap,terrainBlocked};
@@ -865,7 +889,7 @@ function trackingUI(){
         const data=frame.getContext('2d').getImageData(0,0,frame.width,frame.height).data;
         const blocked=q=>mapped&&snapping.terrainBlocked(q,r,walls,mapLayout?.terrain||[]);
         const hit=snapping.snap(data,frame.width,frame.height,p,r,blocked);
-        if(!hit){tell('No miniature base detected at that spot. Tap the centre of its base and try again.');return;}
+        if(!hit){tell('No miniature base detected at that spot. Tap anywhere on the visible base and try again.');return;}
         if(Object.entries(positions).some(([k,v])=>k!==selected&&core.dist(hit,v)<Math.max(5,(hit.r+(v.r||r))*.75))){tell('That miniature is already assigned. Select a different model.');return;}
         positions[selected]={x:hit.x,y:hit.y,r:hit.r,template:core.patch(data,frame.width,frame.height,hit,hit.r)};
         selected=models.find(m=>!positions[m.key])?.key||selected;update();
