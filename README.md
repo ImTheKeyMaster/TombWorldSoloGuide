@@ -1,4 +1,8 @@
-# Tomb World Battle Guide v10.1.47
+# Tomb World Battle Guide v10.1.48
+
+## v10.1.48
+
+- Experimental Recon: retain the approved attack target in the pending action across resume; return to battlefield assessment rather than manual target selection when backing out of an approved attack or when the target is stale. Preserve normal combat transactions and Standard targeting.
 
 ## v10.1.47
 
