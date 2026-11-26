@@ -534,7 +534,36 @@ function snapCore(){
     // Prefer a supported outer rim near the calibrated base size over the inner bevel.
     const outer=pool.filter(c=>dist(c,best)<=Math.max(1.5,r*.14)&&c.r>best.r&&c.score>=best.score*.62&&Math.abs(c.r-r)<Math.abs(best.r-r));
     if(outer.length)best=outer.sort((a,b)=>Math.abs(a.r-r)-Math.abs(b.r-r)||b.score-a.score)[0];
-    if(blocked(best)||best.offset>best.r*(candidates.length?.95:.9))return null;
+    if(blocked(best))return null;
+    if(best.offset<=best.r*(candidates.length?.95:.9))return best;
+    // A tap on a weapon/body protruding past a confidently fitted base is
+    // still a tap on the miniature, not a new centre. Demand real connected
+    // foreground at the tap; never simply enlarge the circular hit area.
+    if(!candidates.length||best.offset>best.r*1.45)return null;
+    const colour=p=>[data[p],data[p+1],data[p+2]];
+    const contrast=(p,q)=>Math.max(...p.map((v,i)=>Math.abs(v-q[i])));
+    const ux=(tap.x-best.x)/best.offset,uy=(tap.y-best.y)/best.offset;
+    const background=[];
+    for(const [dx,dy] of rays){
+      if(dx*ux+dy*uy>.65)continue;
+      const i=sample(best.x+dx*best.r*1.75,best.y+dy*best.r*1.75);
+      if(i>=0)background.push(colour(i));
+    }
+    if(background.length<12)return null;
+    const median=values=>values.sort((a,b)=>a-b)[Math.floor(values.length/2)];
+    const bg=[0,1,2].map(i=>median(background.map(p=>p[i])));
+    const foreground=(x,y)=>{
+      const i=sample(x,y);return i>=0&&contrast(colour(i),bg)>=30;
+    };
+    // Require a patch, not a single noisy pixel or soft halo.
+    let around=0;
+    for(let y=-1;y<=1;y++)for(let x=-1;x<=1;x++)if(foreground(tap.x+x,tap.y+y))around++;
+    if(around<7||!foreground(tap.x,tap.y))return null;
+    // A visible protrusion must connect the tapped region to the fitted base.
+    for(let d=best.r*.85;d<=best.offset;d+=1){
+      const x=best.x+ux*d,y=best.y+uy*d;
+      if(!foreground(x,y)&&!foreground(x-uy,y+ux)&&!foreground(x+uy,y-ux))return null;
+    }
     return best;
   }
   return {snap,terrainBlocked};
@@ -889,7 +918,7 @@ function trackingUI(){
         const data=frame.getContext('2d').getImageData(0,0,frame.width,frame.height).data;
         const blocked=q=>mapped&&snapping.terrainBlocked(q,r,walls,mapLayout?.terrain||[]);
         const hit=snapping.snap(data,frame.width,frame.height,p,r,blocked);
-        if(!hit){tell('No miniature base detected at that spot. Tap anywhere on the visible base and try again.');return;}
+        if(!hit){tell('No miniature detected at that spot. Tap the visible base or miniature body and try again.');return;}
         if(Object.entries(positions).some(([k,v])=>k!==selected&&core.dist(hit,v)<Math.max(5,(hit.r+(v.r||r))*.75))){tell('That miniature is already assigned. Select a different model.');return;}
         positions[selected]={x:hit.x,y:hit.y,r:hit.r,template:core.patch(data,frame.width,frame.height,hit,hit.r)};
         selected=models.find(m=>!positions[m.key])?.key||selected;update();

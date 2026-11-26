@@ -49,7 +49,7 @@ with sync_playwright() as p:
     # Blank floor and a near-base miss must leave the selection unchanged.
     for x,y in [(35,35),(105,73)]:
         tap(x,y)
-        assert 'No miniature base' in page.locator('.rt-status').inner_text()
+        assert 'No miniature detected' in page.locator('.rt-status').inner_text()
         assert page.locator('select[aria-label="Operative to identify"]').input_value()=='n:a'
         assert page.get_by_text('Confirm Operative Positions',exact=True).count()==0
     # Tap off-centre but within the actual base; rendered ring must fit the base.
