@@ -520,7 +520,7 @@ function snapCore(){
           // geometric centre fit and require distributed, radial evidence.
           const weakHits=softSign[0]+softSign[1];
           let weakOpposed=0;for(let k=0;k<16;k++)if(soft[k]&&soft[k+16])weakOpposed++;
-          if(rad>=r*.85&&rad<=r*1.30&&weakHits>=19&&softOctants.filter(n=>n>=2).length>=6&&weakOpposed>=6&&Math.max(...softSign)>=weakHits*.65&&radial>=15&&radialOctants.filter(n=>n>=2).length>=6){
+          if(weakHits-hits>=5&&total/Math.max(1,weakHits)<35&&rad>=r*.85&&rad<=r*1.30&&weakHits>=19&&softOctants.filter(n=>n>=2).length>=6&&weakOpposed>=6&&Math.max(...softSign)>=weakHits*.65&&radial>=15&&radialOctants.filter(n=>n>=2).length>=6){
             const weakScore=total/32+weakHits*.65+weakOpposed*.4+radial*.25-Math.abs(rad-r)*1.2;
             if(weakScore>=26)partial.push({...candidate,score:weakScore});
           }
